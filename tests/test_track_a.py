@@ -4,6 +4,7 @@ import numpy as np
 
 from codec_through.temporal import BlockClass
 from codec_through.track_a import (
+    active_region_block_mask,
     flattened_reuse_mask,
     qwen_merged_grid_shapes,
     qwen_merged_token_counts,
@@ -47,3 +48,25 @@ def test_flattened_reuse_mask_marks_requested_classes() -> None:
         classification, reuse_classes=(BlockClass.STATIC, BlockClass.SHIFTED)
     )
     assert mask.tolist() == [True, True, False, True]
+
+
+def test_active_region_block_mask_excludes_padded_border_blocks() -> None:
+    mask = active_region_block_mask(
+        (112, 84),
+        (28, 0, 84, 84),
+        block_size=28,
+    )
+    assert mask.tolist() == [
+        False,
+        True,
+        True,
+        False,
+        False,
+        True,
+        True,
+        False,
+        False,
+        True,
+        True,
+        False,
+    ]

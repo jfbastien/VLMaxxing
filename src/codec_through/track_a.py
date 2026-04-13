@@ -100,3 +100,40 @@ def flattened_reuse_mask(
 
     allowed = {int(value) for value in reuse_classes}
     return np.isin(classification, list(allowed)).reshape(-1)
+
+
+def active_region_block_mask(
+    frame_size: tuple[int, int],
+    active_box: tuple[int, int, int, int],
+    *,
+    block_size: int,
+) -> npt.NDArray[np.bool_]:
+    """Return a row-major mask for blocks fully inside the active image region."""
+
+    width, height = frame_size
+    left, top, right, bottom = active_box
+    if width <= 0 or height <= 0:
+        raise ValueError("frame dimensions must be positive")
+    if block_size <= 0:
+        raise ValueError("block_size must be positive")
+    if width % block_size != 0 or height % block_size != 0:
+        raise ValueError("frame dimensions must be multiples of block_size")
+    if not (0 <= left <= right <= width and 0 <= top <= bottom <= height):
+        raise ValueError("active_box must lie within the frame bounds")
+
+    rows = height // block_size
+    cols = width // block_size
+    mask = np.zeros((rows, cols), dtype=bool)
+    for row in range(rows):
+        block_top = row * block_size
+        block_bottom = block_top + block_size
+        for col in range(cols):
+            block_left = col * block_size
+            block_right = block_left + block_size
+            mask[row, col] = (
+                block_left >= left
+                and block_right <= right
+                and block_top >= top
+                and block_bottom <= bottom
+            )
+    return mask.reshape(-1)

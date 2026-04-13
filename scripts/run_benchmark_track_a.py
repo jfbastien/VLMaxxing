@@ -28,6 +28,7 @@ from codec_through.temporal import (
     classify_blocks,
 )
 from codec_through.track_a import (
+    active_region_block_mask,
     flattened_reuse_mask,
     qwen_merged_token_counts,
 )
@@ -100,6 +101,7 @@ class BenchmarkItem:
 class PreparedSample:
     item: BenchmarkItem
     frames: list[Image.Image]
+    active_boxes: list[tuple[int, int, int, int]]
     input_ids: mx.array
     pixel_values: mx.array
     mask: mx.array
@@ -135,7 +137,11 @@ def _environment_record(model_path: Path) -> dict[str, Any]:
     }
 
 
-def _square_pad_frame(frame: Image.Image, *, size: int) -> Image.Image:
+def _square_pad_frame(
+    frame: Image.Image,
+    *,
+    size: int,
+) -> tuple[Image.Image, tuple[int, int, int, int]]:
     width, height = frame.size
     if width <= 0 or height <= 0:
         raise ValueError("frame dimensions must be positive")
@@ -148,7 +154,7 @@ def _square_pad_frame(frame: Image.Image, *, size: int) -> Image.Image:
     offset_x = (size - resized.width) // 2
     offset_y = (size - resized.height) // 2
     canvas.paste(resized, (offset_x, offset_y))
-    return canvas
+    return canvas, (offset_x, offset_y, offset_x + resized.width, offset_y + resized.height)
 
 
 def _decode_uniform_frames(
@@ -157,7 +163,7 @@ def _decode_uniform_frames(
     frame_count: int,
     start_seconds: float | None,
     end_seconds: float | None,
-) -> list[Image.Image]:
+) -> tuple[list[Image.Image], list[tuple[int, int, int, int]]]:
     if frame_count <= 0:
         raise ValueError("frame_count must be positive")
     frames: list[Image.Image] = []
@@ -178,7 +184,13 @@ def _decode_uniform_frames(
     else:
         indices = np.linspace(0, len(frames) - 1, frame_count, dtype=int).tolist()
         selected = [frames[index] for index in indices]
-    return [_square_pad_frame(frame, size=BENCHMARK_FRAME_SIZE) for frame in selected]
+    padded_frames: list[Image.Image] = []
+    active_boxes: list[tuple[int, int, int, int]] = []
+    for selected_frame in selected:
+        padded_frame, active_box = _square_pad_frame(selected_frame, size=BENCHMARK_FRAME_SIZE)
+        padded_frames.append(padded_frame)
+        active_boxes.append(active_box)
+    return padded_frames, active_boxes
 
 
 def _multiple_choice_prompt(question: str, choices: list[str]) -> str:
@@ -313,7 +325,7 @@ def _prepare_sample(
             processor.image_processor.do_resize = False
         if hasattr(processor.image_processor, "do_image_splitting"):
             processor.image_processor.do_image_splitting = False
-    frames = _decode_uniform_frames(
+    frames, active_boxes = _decode_uniform_frames(
         item.video_path,
         frame_count=frame_count,
         start_seconds=item.start_seconds,
@@ -345,6 +357,7 @@ def _prepare_sample(
     return PreparedSample(
         item=item,
         frames=frames,
+        active_boxes=active_boxes,
         input_ids=input_ids,
         pixel_values=pixel_values,
         mask=mask,
@@ -364,7 +377,22 @@ def _compute_cached_features(model: Any, sample: PreparedSample) -> mx.array:
     return cast(mx.array, features)
 
 
-def _mix_qwen_features(sample: PreparedSample, features: mx.array) -> tuple[mx.array, list[float]]:
+def _masked_mean(values: np.ndarray, mask: np.ndarray) -> float:
+    if values.shape != mask.shape:
+        raise ValueError("values and mask must have the same shape")
+    if not mask.any():
+        raise ValueError("mask must select at least one block")
+    return float(values[mask].mean())
+
+
+def _mean_or_none(values: list[float]) -> float | None:
+    return float(np.mean(values)) if values else None
+
+
+def _mix_qwen_features(
+    sample: PreparedSample,
+    features: mx.array,
+) -> tuple[mx.array, list[float], list[float]]:
     image_grid_thw = np.array(sample.extra_kwargs["image_grid_thw"].tolist(), dtype=np.int64)
     counts = qwen_merged_token_counts(image_grid_thw, spatial_merge_size=QWEN_SPATIAL_MERGE)
     if len(counts) != len(sample.frames):
@@ -377,7 +405,8 @@ def _mix_qwen_features(sample: PreparedSample, features: mx.array) -> tuple[mx.a
         offset += count
 
     mixed_segments = [dense_segments[0]]
-    reused_ratios: list[float] = []
+    raw_reused_ratios: list[float] = []
+    active_reused_ratios: list[float] = []
     for frame_index in range(1, len(sample.frames)):
         previous = np.array(sample.frames[frame_index - 1], dtype=np.uint8)
         current = np.array(sample.frames[frame_index], dtype=np.uint8)
@@ -393,13 +422,41 @@ def _mix_qwen_features(sample: PreparedSample, features: mx.array) -> tuple[mx.a
                 "classification/token mismatch: "
                 f"mask={reuse_mask.size}, tokens={dense_segments[frame_index].shape[0]}"
             )
+        previous_active = active_region_block_mask(
+            sample.frames[frame_index - 1].size,
+            sample.active_boxes[frame_index - 1],
+            block_size=QWEN_BLOCK_SIZE,
+        )
+        current_active = active_region_block_mask(
+            sample.frames[frame_index].size,
+            sample.active_boxes[frame_index],
+            block_size=QWEN_BLOCK_SIZE,
+        )
+        active_mask = previous_active & current_active
+        if active_mask.size != reuse_mask.size:
+            raise ValueError(
+                "active-region/token mismatch: "
+                f"mask={active_mask.size}, tokens={reuse_mask.size}"
+            )
         mixed_segments.append(
             mx.where(mx.array(reuse_mask[:, None]), mixed_segments[-1], dense_segments[frame_index])
         )
-        reused_ratios.append(float(reuse_mask.mean()))
+        raw_reused_ratios.append(float(reuse_mask.mean()))
+        active_reused_ratios.append(_masked_mean(reuse_mask.astype(np.float32), active_mask))
     mixed = mx.concatenate(mixed_segments, axis=0)
     mx.eval(mixed)
-    return mixed, reused_ratios
+    return mixed, raw_reused_ratios, active_reused_ratios
+
+
+def _select_cached_features(
+    sample: PreparedSample,
+    features: mx.array,
+    *,
+    cache_mode: Literal["default", "identity"],
+) -> tuple[mx.array, list[float], list[float]]:
+    if cache_mode == "identity":
+        return features, [], []
+    return _mix_qwen_features(sample, features)
 
 
 def _generate_response(
@@ -450,6 +507,7 @@ def _run_chunk(
     model_path: Path,
     frame_count: int,
     max_tokens: int,
+    cache_mode: Literal["default", "identity"],
 ) -> list[dict[str, Any]]:
     registry = {
         item.item_id: item
@@ -461,7 +519,11 @@ def _run_chunk(
     for item in selected_items:
         sample = _prepare_sample(model, processor, item, frame_count=frame_count)
         features = _compute_cached_features(model, sample)
-        cached_features, reused_ratios = _mix_qwen_features(sample, features)
+        cached_features, raw_reused_ratios, active_reused_ratios = _select_cached_features(
+            sample,
+            features,
+            cache_mode=cache_mode,
+        )
         dense = _generate_response(
             model,
             processor,
@@ -509,7 +571,10 @@ def _run_chunk(
                     if dense_choice is not None and cached_choice is not None
                     else False
                 ),
-                "reuse_ratio_mean": float(np.mean(reused_ratios)) if reused_ratios else 0.0,
+                "cache_mode": cache_mode,
+                "reuse_ratio_mean": _mean_or_none(active_reused_ratios),
+                "reuse_ratio_mean_active": _mean_or_none(active_reused_ratios),
+                "reuse_ratio_mean_raw": _mean_or_none(raw_reused_ratios),
                 "frame_count": frame_count,
                 "thresholds": {
                     "static": DEFAULT_THRESHOLDS.static_threshold,
@@ -566,6 +631,21 @@ def _write_summary(
     cached_correct = sum(bool(item["cached"]["correct"]) for item in completed_items)
     matched = sum(bool(item["match"]) for item in completed_items)
     parse_failures = sum(bool(item["cached"]["parse_failure"]) for item in completed_items)
+    reuse_ratio_values = [
+        float(item["reuse_ratio_mean"])
+        for item in completed_items
+        if item["reuse_ratio_mean"] is not None
+    ]
+    reuse_ratio_active_values = [
+        float(item["reuse_ratio_mean_active"])
+        for item in completed_items
+        if item["reuse_ratio_mean_active"] is not None
+    ]
+    reuse_ratio_raw_values = [
+        float(item["reuse_ratio_mean_raw"])
+        for item in completed_items
+        if item["reuse_ratio_mean_raw"] is not None
+    ]
     summary = {
         "benchmark": benchmark,
         "environment": _environment_record(model_path),
@@ -579,11 +659,9 @@ def _write_summary(
         "cached_accuracy": cached_correct / len(completed_items) if completed_items else 0.0,
         "agreement": matched / len(completed_items) if completed_items else 0.0,
         "cached_parse_failures": parse_failures,
-        "reuse_ratio_mean": (
-            float(np.mean([item["reuse_ratio_mean"] for item in completed_items]))
-            if completed_items
-            else 0.0
-        ),
+        "reuse_ratio_mean": _mean_or_none(reuse_ratio_values),
+        "reuse_ratio_mean_active": _mean_or_none(reuse_ratio_active_values),
+        "reuse_ratio_mean_raw": _mean_or_none(reuse_ratio_raw_values),
     }
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     summary_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
@@ -604,6 +682,7 @@ def run_benchmark(
     max_tokens: int,
     output_path: Path,
     control: RunControl | None,
+    cache_mode: Literal["default", "identity"],
 ) -> None:
     registry = _load_items(benchmark, per_group=per_group, groups=groups)
     requested_ids = [item.item_id for item in registry]
@@ -629,6 +708,8 @@ def run_benchmark(
             str(frame_count),
             "--max-tokens",
             str(max_tokens),
+            "--cache-mode",
+            cache_mode,
             "--item-id",
             *chunk,
         ]
@@ -670,6 +751,7 @@ def main() -> None:
     run_parser.add_argument("--chunk-size", type=int, default=1)
     run_parser.add_argument("--frame-count", type=int, default=8)
     run_parser.add_argument("--max-tokens", type=int, default=32)
+    run_parser.add_argument("--cache-mode", choices=["default", "identity"], default="default")
     run_parser.add_argument("--model-path", type=Path, default=DEFAULT_MODEL_PATH)
     run_parser.add_argument("--output-path", type=Path, default=DEFAULT_OUTPUT_PATH)
     run_parser.add_argument("--summary-path", type=Path, default=DEFAULT_SUMMARY_PATH)
@@ -681,6 +763,7 @@ def main() -> None:
     chunk_parser.add_argument("--groups", default=None)
     chunk_parser.add_argument("--frame-count", type=int, required=True)
     chunk_parser.add_argument("--max-tokens", type=int, required=True)
+    chunk_parser.add_argument("--cache-mode", choices=["default", "identity"], required=True)
     chunk_parser.add_argument("--model-path", type=Path, required=True)
     chunk_parser.add_argument("--item-id", nargs="+", required=True)
 
@@ -697,6 +780,7 @@ def main() -> None:
                     model_path=args.model_path,
                     frame_count=args.frame_count,
                     max_tokens=args.max_tokens,
+                    cache_mode=cast(Literal["default", "identity"], args.cache_mode),
                 ),
                 sort_keys=True,
             )
@@ -715,6 +799,7 @@ def main() -> None:
         max_tokens=args.max_tokens,
         output_path=args.output_path,
         control=control,
+        cache_mode=cast(Literal["default", "identity"], args.cache_mode),
     )
 
 

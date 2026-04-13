@@ -1,0 +1,54 @@
+{
+  "mvbench_default": {
+    "cache_mode": "default",
+    "cached_correct": true,
+    "cached_text": "A",
+    "dense_correct": true,
+    "dense_text": "A",
+    "item_id": "mvbench:moving_direction:0",
+    "match": true,
+    "raw_minus_active": 0.018333333900996673,
+    "reuse_ratio_mean": 0.9470238089561462,
+    "reuse_ratio_mean_active": 0.9470238089561462,
+    "reuse_ratio_mean_raw": 0.9653571428571429
+  },
+  "mvbench_identity": {
+    "cache_mode": "identity",
+    "cached_correct": true,
+    "cached_text": "A",
+    "dense_correct": true,
+    "dense_text": "A",
+    "item_id": "mvbench:moving_direction:0",
+    "match": true,
+    "raw_minus_active": null,
+    "reuse_ratio_mean": null,
+    "reuse_ratio_mean_active": null,
+    "reuse_ratio_mean_raw": null
+  },
+  "tomato_default": {
+    "cache_mode": "default",
+    "cached_correct": false,
+    "cached_text": "D",
+    "dense_correct": false,
+    "dense_text": "D",
+    "item_id": "tomato:direction:0231-04",
+    "match": true,
+    "raw_minus_active": 0.07571428537368774,
+    "reuse_ratio_mean": 0.8478571431977409,
+    "reuse_ratio_mean_active": 0.8478571431977409,
+    "reuse_ratio_mean_raw": 0.9235714285714286
+  },
+  "tomato_identity": {
+    "cache_mode": "identity",
+    "cached_correct": false,
+    "cached_text": "D",
+    "dense_correct": false,
+    "dense_text": "D",
+    "item_id": "tomato:direction:0231-04",
+    "match": true,
+    "raw_minus_active": null,
+    "reuse_ratio_mean": null,
+    "reuse_ratio_mean_active": null,
+    "reuse_ratio_mean_raw": null
+  }
+}

@@ -85,6 +85,10 @@ narrow but useful starting point:
   the imported benchmark path is also Qwen `7B` via `mlx-vlm`; local benchmark
   gaps should be framed around subset policy, quantization, package revisions,
   and preprocessing rather than a generic `MLX versus PyTorch` mismatch
+- benchmark-path identity now holds exactly on smoke items from both TOMATO and
+  MVBench on the local Qwen `7B` runner
+- benchmark reuse accounting is now pad-masked by default, with raw padded
+  reuse kept only as an auxiliary descriptive field
 
 That is the center of the project today.
 
@@ -436,8 +440,6 @@ Tasks:
     and
     [2026-04-14-phase-1_45-benchmark-diagnostics.md](research/experiments/2026/2026-04-14-phase-1_45-benchmark-diagnostics.md)
 - immediate benchmark follow-up order:
-  - add benchmark-path identity control on Qwen `7B`
-  - add pad-masked reuse accounting on benchmark runs
   - run targeted TOMATO planner and refresh diagnostics on the current
     disagreement items
   - extend natural-video scoring beyond endpoint scene facts

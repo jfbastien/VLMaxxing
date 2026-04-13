@@ -117,6 +117,20 @@ The benchmark-native Track A runner is:
 uv run python scripts/run_benchmark_track_a.py run --benchmark tomato
 ```
 
+Useful control modes:
+
+- `--cache-mode default`:
+  run the normal same-position cached-feature substitution path
+- `--cache-mode identity`:
+  route unchanged dense features back through the benchmark runner to verify
+  cache-path transparency on the exact benchmark code path
+
+Current reuse-accounting rule on the benchmark runner:
+
+- `reuse_ratio_mean` is the pad-masked active-region reuse ratio
+- `reuse_ratio_mean_raw` is also recorded for descriptive comparison
+- identity-mode controls report reuse as `null` because the planner is bypassed
+
 Recommended first TOMATO smoke on this machine:
 
 ```bash
