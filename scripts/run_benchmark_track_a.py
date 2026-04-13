@@ -70,11 +70,13 @@ PREDECESSOR_MVBENCH_TASKS = [
 MVBENCH_SEARCH_DIRS = [
     MVBENCH_VIDEO_DIR / "clevrer" / "video_validation",
     MVBENCH_VIDEO_DIR / "ssv2_video",
-    MVBENCH_VIDEO_DIR / "Moments_in_Time_Raw" / "validation",
+    MVBENCH_VIDEO_DIR / "Moments_in_Time_Raw" / "videos",
     MVBENCH_VIDEO_DIR / "scene_qa" / "video",
-    MVBENCH_VIDEO_DIR / "star",
+    MVBENCH_VIDEO_DIR / "star" / "Charades_v1_480",
     MVBENCH_VIDEO_DIR / "sta" / "sta_video",
     MVBENCH_VIDEO_DIR / "FunQA_test" / "test",
+    MVBENCH_VIDEO_DIR / "data0613" / "star" / "Charades_v1_480",
+    MVBENCH_VIDEO_DIR / "data0613" / "clevrer" / "video_validation",
     MVBENCH_VIDEO_DIR / "data0613",
     MVBENCH_VIDEO_DIR / "vlnqa",
     MVBENCH_VIDEO_DIR,
@@ -225,15 +227,30 @@ def _load_tomato_items(per_group: int, *, splits: list[str] | None = None) -> li
 
 
 def _find_mvbench_video(video_name: str) -> Path:
+    requested = Path(video_name)
     for directory in MVBENCH_SEARCH_DIRS:
-        candidate = directory / video_name
+        candidate = directory / requested
         if candidate.exists():
             return candidate
-        if Path(video_name).suffix == "":
+        if requested.suffix == "":
             for extension in (".mp4", ".avi", ".webm", ".mkv"):
                 candidate = directory / f"{video_name}{extension}"
                 if candidate.exists():
                     return candidate
+    matches: list[Path] = []
+    for directory in MVBENCH_SEARCH_DIRS:
+        if not directory.exists():
+            continue
+        for candidate in directory.rglob(requested.name):
+            if requested.parent == Path(".") or candidate.as_posix().endswith(requested.as_posix()):
+                matches.append(candidate)
+    unique_matches = sorted({path.resolve() for path in matches})
+    if len(unique_matches) == 1:
+        return unique_matches[0]
+    if len(unique_matches) > 1:
+        raise RuntimeError(
+            f"ambiguous MVBench video lookup for {video_name!r}: {unique_matches}"
+        )
     raise FileNotFoundError(
         f"could not locate MVBench video {video_name!r} under {MVBENCH_VIDEO_DIR}"
     )

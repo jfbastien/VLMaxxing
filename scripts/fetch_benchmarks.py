@@ -41,6 +41,7 @@ MVBENCH_PREDECESSOR18_ZIPS = [
     "Moments_in_Time_Raw.zip",
     "clevrer.zip",
     "data0613.zip",
+    "perception.zip",
     "scene_qa.zip",
     "ssv2_video.zip",
     "sta.zip",

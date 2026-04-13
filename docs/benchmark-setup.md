@@ -87,6 +87,10 @@ The default MVBench asset profile is `predecessor18`, which matches the
 predecessor-style `18`-task slice and avoids downloading hosted bundles that
 are not needed for the first generalized reproduction pass.
 
+In practice that hosted predecessor-style slice still needs `perception.zip`
+for several of the saved `18` tasks. The default profile therefore includes it
+even though the earliest draft of this repo's fetch list did not.
+
 To fetch every Hugging Face-hosted MVBench archive instead:
 
 ```bash
@@ -197,8 +201,8 @@ Current implication:
 - the imported predecessor run only saved an `18`-task local slice, so a local
   generalized reproduction can still be meaningful before NTU is complete
 - the default fetch profile mirrors that predecessor-style hosted subset:
-  `FunQA_test`, `Moments_in_Time_Raw`, `clevrer`, `data0613`, `scene_qa`,
-  `ssv2_video`, `sta`, `star`, and `vlnqa`
+  `FunQA_test`, `Moments_in_Time_Raw`, `clevrer`, `data0613`, `perception`,
+  `scene_qa`, `ssv2_video`, `sta`, `star`, and `vlnqa`
 
 Expected final layout:
 
