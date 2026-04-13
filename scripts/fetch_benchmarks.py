@@ -262,7 +262,7 @@ def _fetch_tomato_metadata(paths: BenchmarkPaths, *, dry_run: bool) -> None:
         local_dir=str(paths.hf_dir),
         allow_patterns=allow_patterns,
     )
-    _write_source_record(
+    _merge_source_record(
         paths.source_record_path,
         {
             "dataset": "tomato",
