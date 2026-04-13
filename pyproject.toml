@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Research scaffolding for codec-guided video VLM acceleration."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
-license = { text = "Proprietary / research-in-progress" }
+license = { text = "MIT" }
 authors = [
   { name = "Jean-Francois Bastien" },
 ]

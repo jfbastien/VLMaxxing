@@ -50,6 +50,7 @@ uv sync --group dev --group research --group vlm
 - [docs/clip-policy.md](docs/clip-policy.md): local-only clip and corpus policy
 - [research/README.md](research/README.md): experiment-note and decision-log workflow
 - [paper/framing.md](paper/framing.md): current paper story, anti-claims, and future horizons
+- [docs/chatgpt-review-packet.md](docs/chatgpt-review-packet.md): focused next-pass external review questions
 - [docs/original-repo-audit.md](docs/original-repo-audit.md): what the original repo actually proved
 - [docs/external-feedback-validation.md](docs/external-feedback-validation.md): validated takeaways from Claude and ChatGPT reviews
 - [docs/methodology/performance.md](docs/methodology/performance.md): measurement contract
@@ -118,3 +119,8 @@ The source of truth is:
 - checked-in clean code
 - verified primary references
 - explicit notes about uncertainty and failed ideas
+
+## License
+
+- code: [MIT](LICENSE)
+- docs, research notes, and paper-draft materials: [CC BY 4.0](LICENSE-docs)
