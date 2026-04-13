@@ -83,6 +83,60 @@ Dry-run without downloading anything:
 uv run python scripts/fetch_benchmarks.py --dataset both --mode all --dry-run
 ```
 
+## Benchmark Runner
+
+The benchmark-native Track A runner is:
+
+```bash
+uv run python scripts/run_benchmark_track_a.py run --benchmark tomato
+```
+
+Recommended first TOMATO smoke on this machine:
+
+```bash
+uv run python scripts/run_benchmark_track_a.py run \
+  --benchmark tomato \
+  --per-group 1 \
+  --chunk-size 1 \
+  --frame-count 8 \
+  --max-tokens 32 \
+  --output-path results/tomato_smoke.jsonl \
+  --summary-path results/tomato_smoke_summary.json
+```
+
+Recommended first generalized TOMATO subset after the smoke passes:
+
+```bash
+uv run python scripts/run_benchmark_track_a.py run \
+  --benchmark tomato \
+  --per-group 5 \
+  --chunk-size 1 \
+  --frame-count 8 \
+  --max-tokens 32 \
+  --output-path results/tomato_subset.jsonl \
+  --summary-path results/tomato_subset_summary.json
+```
+
+For long semantic runs, the runner also supports cooperative stop and summary
+checkpointing:
+
+```bash
+uv run python scripts/run_benchmark_track_a.py run \
+  --benchmark tomato \
+  --per-group 5 \
+  --chunk-size 1 \
+  --stop-file /tmp/codec-through-stop \
+  --summary-path results/tomato_subset_summary.json
+```
+
+Then request clean termination with:
+
+```bash
+touch /tmp/codec-through-stop
+```
+
+The runner stops at the next chunk boundary and rewrites the summary JSON.
+
 ## TOMATO Notes
 
 - official code repo: `yale-nlp/TOMATO`

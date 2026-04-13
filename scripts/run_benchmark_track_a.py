@@ -1,0 +1,705 @@
+#!/usr/bin/env python3
+"""Run benchmark-native Track A reproduction slices on local assets."""
+
+from __future__ import annotations
+
+import argparse
+import gc
+import json
+import subprocess
+import sys
+import time
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Literal, cast
+
+import av
+import mlx.core as mx
+import numpy as np
+from datasets import load_dataset  # type: ignore[import-untyped]
+from mlx_vlm import generate, load  # type: ignore[import-untyped]
+from mlx_vlm.utils import prepare_inputs  # type: ignore[import-untyped]
+from PIL import Image
+
+from codec_through.answers import extract_choice  # type: ignore[import-untyped]
+from codec_through.temporal import (  # type: ignore[import-untyped]
+    BlockClass,
+    BlockThresholds,
+    classify_blocks,
+)
+from codec_through.track_a import (  # type: ignore[import-untyped]
+    flattened_reuse_mask,
+    qwen_merged_token_counts,
+)
+
+TOMATO_DATA_DIR = Path("data/benchmarks/tomato/hf/data")
+TOMATO_VIDEO_DIR = Path("data/benchmarks/tomato/videos")
+MVBENCH_JSON_DIR = Path("data/benchmarks/mvbench/hf/json")
+MVBENCH_VIDEO_DIR = Path("data/benchmarks/mvbench/video")
+
+DEFAULT_MODEL_PATH = Path.home() / "models" / "Qwen2.5-VL-7B-Instruct-4bit"
+DEFAULT_THRESHOLDS = BlockThresholds(static_threshold=3.0, shifted_threshold=8.0)
+DEFAULT_REUSE_CLASSES = (BlockClass.STATIC, BlockClass.SHIFTED)
+DEFAULT_OUTPUT_PATH = Path("results/benchmark_track_a.jsonl")
+DEFAULT_SUMMARY_PATH = Path("results/benchmark_track_a_summary.json")
+BENCHMARK_FRAME_SIZE = 560
+QWEN_BLOCK_SIZE = 28
+QWEN_SPATIAL_MERGE = 2
+
+PREDECESSOR_MVBENCH_TASKS = [
+    "action_antonym",
+    "action_count",
+    "action_localization",
+    "action_prediction",
+    "action_sequence",
+    "character_order",
+    "counterfactual_inference",
+    "egocentric_navigation",
+    "fine_grained_action",
+    "moving_attribute",
+    "moving_count",
+    "moving_direction",
+    "object_existence",
+    "object_interaction",
+    "object_shuffle",
+    "scene_transition",
+    "state_change",
+    "unexpected_action",
+]
+
+MVBENCH_SEARCH_DIRS = [
+    MVBENCH_VIDEO_DIR / "clevrer" / "video_validation",
+    MVBENCH_VIDEO_DIR / "ssv2_video",
+    MVBENCH_VIDEO_DIR / "Moments_in_Time_Raw" / "validation",
+    MVBENCH_VIDEO_DIR / "scene_qa" / "video",
+    MVBENCH_VIDEO_DIR / "star",
+    MVBENCH_VIDEO_DIR / "sta" / "sta_video",
+    MVBENCH_VIDEO_DIR / "FunQA_test" / "test",
+    MVBENCH_VIDEO_DIR / "data0613",
+    MVBENCH_VIDEO_DIR / "vlnqa",
+    MVBENCH_VIDEO_DIR,
+]
+
+
+@dataclass(frozen=True, slots=True)
+class BenchmarkItem:
+    item_id: str
+    benchmark: Literal["tomato", "mvbench"]
+    group: str
+    video_path: Path
+    question: str
+    candidates: list[str]
+    answer_index: int
+    start_seconds: float | None = None
+    end_seconds: float | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class PreparedSample:
+    item: BenchmarkItem
+    frames: list[Image.Image]
+    input_ids: mx.array
+    pixel_values: mx.array
+    mask: mx.array
+    extra_kwargs: dict[str, mx.array]
+
+
+@dataclass(frozen=True, slots=True)
+class RunControl:
+    stop_file: Path | None = None
+    summary_path: Path | None = None
+
+
+def _run(command: list[str]) -> str:
+    completed = subprocess.run(command, check=True, capture_output=True, text=True)
+    return completed.stdout.strip()
+
+
+def _environment_record(model_path: Path) -> dict[str, Any]:
+    import datasets
+    import huggingface_hub
+    import mlx_vlm
+
+    return {
+        "git_sha": _run(["git", "rev-parse", "HEAD"]),
+        "git_dirty": bool(_run(["git", "status", "--short"])),
+        "python": sys.version.split()[0],
+        "platform": sys.platform,
+        "ffmpeg": _run(["ffmpeg", "-version"]).splitlines()[0],
+        "datasets": datasets.__version__,
+        "huggingface_hub": huggingface_hub.__version__,
+        "mlx_vlm_module": str(Path(mlx_vlm.__file__).resolve()),
+        "model_path": str(model_path),
+    }
+
+
+def _square_pad_frame(frame: Image.Image, *, size: int) -> Image.Image:
+    width, height = frame.size
+    if width <= 0 or height <= 0:
+        raise ValueError("frame dimensions must be positive")
+    scale = min(size / width, size / height)
+    resized = frame.resize(
+        (round(width * scale), round(height * scale)),
+        Image.Resampling.BICUBIC,
+    )
+    canvas = Image.new("RGB", (size, size), color=(0, 0, 0))
+    offset_x = (size - resized.width) // 2
+    offset_y = (size - resized.height) // 2
+    canvas.paste(resized, (offset_x, offset_y))
+    return canvas
+
+
+def _decode_uniform_frames(
+    video_path: Path,
+    *,
+    frame_count: int,
+    start_seconds: float | None,
+    end_seconds: float | None,
+) -> list[Image.Image]:
+    if frame_count <= 0:
+        raise ValueError("frame_count must be positive")
+    frames: list[Image.Image] = []
+    with av.open(str(video_path)) as container:
+        for frame in container.decode(video=0):
+            timestamp = float(frame.time) if frame.time is not None else None
+            if start_seconds is not None and timestamp is not None and timestamp < start_seconds:
+                continue
+            if end_seconds is not None and timestamp is not None and timestamp > end_seconds:
+                break
+            frames.append(cast(Image.Image, frame.to_image()).convert("RGB"))  # type: ignore[no-untyped-call]
+    if len(frames) < frame_count:
+        raise ValueError(
+            f"expected at least {frame_count} frames from {video_path}, got {len(frames)}"
+        )
+    if frame_count == 1:
+        selected = [frames[0]]
+    else:
+        indices = np.linspace(0, len(frames) - 1, frame_count, dtype=int).tolist()
+        selected = [frames[index] for index in indices]
+    return [_square_pad_frame(frame, size=BENCHMARK_FRAME_SIZE) for frame in selected]
+
+
+def _multiple_choice_prompt(question: str, choices: list[str]) -> str:
+    lines = [question]
+    for index, choice in enumerate(choices):
+        lines.append(f"{chr(ord('A') + index)}. {choice}")
+    lines.append("Answer with one letter only.")
+    return "\n".join(lines)
+
+
+def _load_tomato_items(per_group: int, *, splits: list[str] | None = None) -> list[BenchmarkItem]:
+    requested_splits = splits or [
+        "count",
+        "direction",
+        "rotation",
+        "shape_trend",
+        "velocity_frequency",
+        "visual_cues",
+    ]
+    data_files = {
+        split: str(next(TOMATO_DATA_DIR.glob(f"{split}-*.parquet"))) for split in requested_splits
+    }
+    datasets_by_split = load_dataset("parquet", data_files=data_files)
+    items: list[BenchmarkItem] = []
+    for split in requested_splits:
+        dataset_split = datasets_by_split[split]
+        for example in dataset_split.select(range(min(per_group, len(dataset_split)))):
+            key = cast(str, example["key"])
+            demonstration_type = cast(str, example["demonstration_type"])
+            video_path = TOMATO_VIDEO_DIR / demonstration_type / f"{key}.mp4"
+            if not video_path.exists():
+                raise FileNotFoundError(f"missing TOMATO video: {video_path}")
+            choices = list(cast(list[str], example["options"]))
+            items.append(
+                BenchmarkItem(
+                    item_id=f"tomato:{split}:{key}",
+                    benchmark="tomato",
+                    group=split,
+                    video_path=video_path,
+                    question=_multiple_choice_prompt(cast(str, example["question"]), choices),
+                    candidates=choices,
+                    answer_index=int(example["answer"]),
+                )
+            )
+    return items
+
+
+def _find_mvbench_video(video_name: str) -> Path:
+    for directory in MVBENCH_SEARCH_DIRS:
+        candidate = directory / video_name
+        if candidate.exists():
+            return candidate
+        if Path(video_name).suffix == "":
+            for extension in (".mp4", ".avi", ".webm", ".mkv"):
+                candidate = directory / f"{video_name}{extension}"
+                if candidate.exists():
+                    return candidate
+    raise FileNotFoundError(
+        f"could not locate MVBench video {video_name!r} under {MVBENCH_VIDEO_DIR}"
+    )
+
+
+def _load_mvbench_items(per_group: int, *, tasks: list[str] | None = None) -> list[BenchmarkItem]:
+    requested_tasks = tasks or PREDECESSOR_MVBENCH_TASKS
+    items: list[BenchmarkItem] = []
+    for task in requested_tasks:
+        payload = json.loads((MVBENCH_JSON_DIR / f"{task}.json").read_text())
+        for index, example in enumerate(payload[:per_group]):
+            video_name = str(example["video"])
+            choices = list(cast(list[str], example["candidates"]))
+            answer = str(example["answer"])
+            items.append(
+                BenchmarkItem(
+                    item_id=f"mvbench:{task}:{index}",
+                    benchmark="mvbench",
+                    group=task,
+                    video_path=_find_mvbench_video(video_name),
+                    question=_multiple_choice_prompt(cast(str, example["question"]), choices),
+                    candidates=choices,
+                    answer_index=choices.index(answer),
+                    start_seconds=(
+                        float(example["start"]) if example.get("start") not in {None, ""} else None
+                    ),
+                    end_seconds=(
+                        float(example["end"]) if example.get("end") not in {None, ""} else None
+                    ),
+                )
+            )
+    return items
+
+
+def _load_items(
+    benchmark: Literal["tomato", "mvbench"],
+    *,
+    per_group: int,
+    groups: list[str] | None,
+) -> list[BenchmarkItem]:
+    if benchmark == "tomato":
+        return _load_tomato_items(per_group, splits=groups)
+    return _load_mvbench_items(per_group, tasks=groups)
+
+
+def _load_model(model_path: Path) -> tuple[Any, Any]:
+    return cast(tuple[Any, Any], load(str(model_path)))
+
+
+def _prepare_sample(
+    model: Any,
+    processor: Any,
+    item: BenchmarkItem,
+    *,
+    frame_count: int,
+) -> PreparedSample:
+    del model
+    if hasattr(processor, "image_processor"):
+        if hasattr(processor.image_processor, "do_resize"):
+            processor.image_processor.do_resize = False
+        if hasattr(processor.image_processor, "do_image_splitting"):
+            processor.image_processor.do_image_splitting = False
+    frames = _decode_uniform_frames(
+        item.video_path,
+        frame_count=frame_count,
+        start_seconds=item.start_seconds,
+        end_seconds=item.end_seconds,
+    )
+    messages = [
+        {
+            "role": "user",
+            "content": [
+                *({"type": "image"} for _ in frames),
+                {"type": "text", "text": item.question},
+            ],
+        }
+    ]
+    rendered_prompt = processor.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=True,
+    )
+    raw_inputs = prepare_inputs(processor, images=frames, prompts=rendered_prompt)
+    input_ids = mx.array(raw_inputs["input_ids"])
+    pixel_values = mx.array(raw_inputs["pixel_values"])
+    mask = mx.array(raw_inputs["attention_mask"])
+    extra_kwargs = {
+        key: mx.array(value)
+        for key, value in raw_inputs.items()
+        if key not in {"input_ids", "pixel_values", "attention_mask"}
+    }
+    return PreparedSample(
+        item=item,
+        frames=frames,
+        input_ids=input_ids,
+        pixel_values=pixel_values,
+        mask=mask,
+        extra_kwargs=extra_kwargs,
+    )
+
+
+def _compute_cached_features(model: Any, sample: PreparedSample) -> mx.array:
+    image_grid_thw = sample.extra_kwargs["image_grid_thw"]
+    dtype = model.vision_tower.patch_embed.proj.weight.dtype
+    features = model.vision_tower(
+        sample.pixel_values.astype(dtype),
+        image_grid_thw,
+        output_hidden_states=False,
+    )
+    mx.eval(features)
+    return cast(mx.array, features)
+
+
+def _mix_qwen_features(sample: PreparedSample, features: mx.array) -> tuple[mx.array, list[float]]:
+    image_grid_thw = np.array(sample.extra_kwargs["image_grid_thw"].tolist(), dtype=np.int64)
+    counts = qwen_merged_token_counts(image_grid_thw, spatial_merge_size=QWEN_SPATIAL_MERGE)
+    if len(counts) != len(sample.frames):
+        raise ValueError("frame count and Qwen grid count mismatch")
+
+    dense_segments: list[mx.array] = []
+    offset = 0
+    for count in counts:
+        dense_segments.append(features[offset : offset + count])
+        offset += count
+
+    mixed_segments = [dense_segments[0]]
+    reused_ratios: list[float] = []
+    for frame_index in range(1, len(sample.frames)):
+        previous = np.array(sample.frames[frame_index - 1], dtype=np.uint8)
+        current = np.array(sample.frames[frame_index], dtype=np.uint8)
+        classification = classify_blocks(
+            previous,
+            current,
+            block_size=QWEN_BLOCK_SIZE,
+            thresholds=DEFAULT_THRESHOLDS,
+        )
+        reuse_mask = flattened_reuse_mask(classification, reuse_classes=DEFAULT_REUSE_CLASSES)
+        if reuse_mask.size != dense_segments[frame_index].shape[0]:
+            raise ValueError(
+                "classification/token mismatch: "
+                f"mask={reuse_mask.size}, tokens={dense_segments[frame_index].shape[0]}"
+            )
+        mixed_segments.append(
+            mx.where(mx.array(reuse_mask[:, None]), mixed_segments[-1], dense_segments[frame_index])
+        )
+        reused_ratios.append(float(reuse_mask.mean()))
+    mixed = mx.concatenate(mixed_segments, axis=0)
+    mx.eval(mixed)
+    return mixed, reused_ratios
+
+
+def _generate_response(
+    model: Any,
+    processor: Any,
+    sample: PreparedSample,
+    *,
+    cached_features: mx.array | None,
+    max_tokens: int,
+) -> dict[str, Any]:
+    mx.random.seed(42)
+    kwargs = dict(sample.extra_kwargs)
+    if cached_features is not None:
+        kwargs["cached_image_features"] = cached_features
+    start_ns = time.perf_counter_ns()
+    response = generate(
+        model,
+        processor,
+        "",
+        input_ids=sample.input_ids,
+        pixel_values=sample.pixel_values,
+        mask=sample.mask,
+        max_tokens=max_tokens,
+        temperature=0.0,
+        **kwargs,
+    )
+    elapsed_ms = (time.perf_counter_ns() - start_ns) / 1_000_000
+    return {
+        "text": response.text,
+        "elapsed_ms": elapsed_ms,
+        "prompt_tokens": response.prompt_tokens,
+        "generation_tokens": response.generation_tokens,
+        "peak_memory_gb": response.peak_memory,
+    }
+
+
+def _clear_runtime_state() -> None:
+    gc.collect()
+    mx.clear_cache()
+
+
+def _run_chunk(
+    item_ids: list[str],
+    *,
+    benchmark: Literal["tomato", "mvbench"],
+    per_group: int,
+    groups: list[str] | None,
+    model_path: Path,
+    frame_count: int,
+    max_tokens: int,
+) -> list[dict[str, Any]]:
+    registry = {
+        item.item_id: item
+        for item in _load_items(benchmark, per_group=per_group, groups=groups)
+    }
+    selected_items = [registry[item_id] for item_id in item_ids]
+    model, processor = _load_model(model_path)
+    results: list[dict[str, Any]] = []
+    for item in selected_items:
+        sample = _prepare_sample(model, processor, item, frame_count=frame_count)
+        features = _compute_cached_features(model, sample)
+        cached_features, reused_ratios = _mix_qwen_features(sample, features)
+        dense = _generate_response(
+            model,
+            processor,
+            sample,
+            cached_features=None,
+            max_tokens=max_tokens,
+        )
+        cached = _generate_response(
+            model,
+            processor,
+            sample,
+            cached_features=cached_features,
+            max_tokens=max_tokens,
+        )
+        dense_choice = extract_choice(str(dense["text"]), item.candidates)
+        cached_choice = extract_choice(str(cached["text"]), item.candidates)
+        results.append(
+            {
+                "item_id": item.item_id,
+                "benchmark": item.benchmark,
+                "group": item.group,
+                "video_path": str(item.video_path),
+                "question": item.question,
+                "answer_index": item.answer_index,
+                "dense": {
+                    **dense,
+                    "choice_index": dense_choice,
+                    "correct": (
+                        dense_choice == item.answer_index if dense_choice is not None else False
+                    ),
+                    "parse_failure": dense_choice is None,
+                },
+                "cached": {
+                    **cached,
+                    "choice_index": cached_choice,
+                    "correct": (
+                        cached_choice == item.answer_index
+                        if cached_choice is not None
+                        else False
+                    ),
+                    "parse_failure": cached_choice is None,
+                },
+                "match": (
+                    dense_choice == cached_choice
+                    if dense_choice is not None and cached_choice is not None
+                    else False
+                ),
+                "reuse_ratio_mean": float(np.mean(reused_ratios)) if reused_ratios else 0.0,
+                "frame_count": frame_count,
+                "thresholds": {
+                    "static": DEFAULT_THRESHOLDS.static_threshold,
+                    "shifted": DEFAULT_THRESHOLDS.shifted_threshold,
+                },
+            }
+        )
+        _clear_runtime_state()
+    return results
+
+
+def _chunked(items: list[str], size: int) -> list[list[str]]:
+    if size <= 0:
+        raise ValueError("chunk size must be positive")
+    return [items[index : index + size] for index in range(0, len(items), size)]
+
+
+def _read_completed_ids(output_path: Path) -> set[str]:
+    if not output_path.exists():
+        return set()
+    completed: set[str] = set()
+    with output_path.open() as handle:
+        for line in handle:
+            if not line.strip():
+                continue
+            completed.add(json.loads(line)["item_id"])
+    return completed
+
+
+def _append_results(output_path: Path, payload: list[dict[str, Any]]) -> None:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with output_path.open("a") as handle:
+        for item in payload:
+            handle.write(json.dumps(item, sort_keys=True) + "\n")
+
+
+def _write_summary(
+    summary_path: Path,
+    *,
+    benchmark: Literal["tomato", "mvbench"],
+    requested_ids: list[str],
+    output_path: Path,
+    model_path: Path,
+    stopped_early: bool,
+) -> None:
+    completed_items: list[dict[str, Any]] = []
+    if output_path.exists():
+        with output_path.open() as handle:
+            for line in handle:
+                if line.strip():
+                    completed_items.append(json.loads(line))
+    completed_ids = [item["item_id"] for item in completed_items]
+    dense_correct = sum(bool(item["dense"]["correct"]) for item in completed_items)
+    cached_correct = sum(bool(item["cached"]["correct"]) for item in completed_items)
+    matched = sum(bool(item["match"]) for item in completed_items)
+    parse_failures = sum(bool(item["cached"]["parse_failure"]) for item in completed_items)
+    summary = {
+        "benchmark": benchmark,
+        "environment": _environment_record(model_path),
+        "requested_item_ids": requested_ids,
+        "completed_item_ids": completed_ids,
+        "remaining_item_ids": [
+            item_id for item_id in requested_ids if item_id not in set(completed_ids)
+        ],
+        "stopped_early": stopped_early,
+        "dense_accuracy": dense_correct / len(completed_items) if completed_items else 0.0,
+        "cached_accuracy": cached_correct / len(completed_items) if completed_items else 0.0,
+        "agreement": matched / len(completed_items) if completed_items else 0.0,
+        "cached_parse_failures": parse_failures,
+        "reuse_ratio_mean": (
+            float(np.mean([item["reuse_ratio_mean"] for item in completed_items]))
+            if completed_items
+            else 0.0
+        ),
+    }
+    summary_path.parent.mkdir(parents=True, exist_ok=True)
+    summary_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
+
+
+def _stop_requested(control: RunControl | None) -> bool:
+    return bool(control and control.stop_file is not None and control.stop_file.exists())
+
+
+def run_benchmark(
+    *,
+    benchmark: Literal["tomato", "mvbench"],
+    per_group: int,
+    groups: list[str] | None,
+    chunk_size: int,
+    model_path: Path,
+    frame_count: int,
+    max_tokens: int,
+    output_path: Path,
+    control: RunControl | None,
+) -> None:
+    registry = _load_items(benchmark, per_group=per_group, groups=groups)
+    requested_ids = [item.item_id for item in registry]
+    completed_ids = _read_completed_ids(output_path)
+    pending_ids = [item_id for item_id in requested_ids if item_id not in completed_ids]
+    stopped_early = False
+
+    for chunk in _chunked(pending_ids, chunk_size):
+        if _stop_requested(control):
+            stopped_early = True
+            break
+        command = [
+            sys.executable,
+            __file__,
+            "run-chunk",
+            "--benchmark",
+            benchmark,
+            "--per-group",
+            str(per_group),
+            "--model-path",
+            str(model_path),
+            "--frame-count",
+            str(frame_count),
+            "--max-tokens",
+            str(max_tokens),
+            "--item-id",
+            *chunk,
+        ]
+        if groups:
+            command.extend(["--groups", ",".join(groups)])
+        completed = subprocess.run(command, check=True, capture_output=True, text=True)
+        _append_results(output_path, json.loads(completed.stdout))
+        if control and control.summary_path is not None:
+            _write_summary(
+                control.summary_path,
+                benchmark=benchmark,
+                requested_ids=requested_ids,
+                output_path=output_path,
+                model_path=model_path,
+                stopped_early=False,
+            )
+
+    if _stop_requested(control):
+        stopped_early = True
+    if control and control.summary_path is not None:
+        _write_summary(
+            control.summary_path,
+            benchmark=benchmark,
+            requested_ids=requested_ids,
+            output_path=output_path,
+            model_path=model_path,
+            stopped_early=stopped_early,
+        )
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    run_parser = subparsers.add_parser("run")
+    run_parser.add_argument("--benchmark", choices=["tomato", "mvbench"], required=True)
+    run_parser.add_argument("--per-group", type=int, default=2)
+    run_parser.add_argument("--groups", default=None)
+    run_parser.add_argument("--chunk-size", type=int, default=1)
+    run_parser.add_argument("--frame-count", type=int, default=8)
+    run_parser.add_argument("--max-tokens", type=int, default=32)
+    run_parser.add_argument("--model-path", type=Path, default=DEFAULT_MODEL_PATH)
+    run_parser.add_argument("--output-path", type=Path, default=DEFAULT_OUTPUT_PATH)
+    run_parser.add_argument("--summary-path", type=Path, default=DEFAULT_SUMMARY_PATH)
+    run_parser.add_argument("--stop-file", type=Path, default=None)
+
+    chunk_parser = subparsers.add_parser("run-chunk")
+    chunk_parser.add_argument("--benchmark", choices=["tomato", "mvbench"], required=True)
+    chunk_parser.add_argument("--per-group", type=int, required=True)
+    chunk_parser.add_argument("--groups", default=None)
+    chunk_parser.add_argument("--frame-count", type=int, required=True)
+    chunk_parser.add_argument("--max-tokens", type=int, required=True)
+    chunk_parser.add_argument("--model-path", type=Path, required=True)
+    chunk_parser.add_argument("--item-id", nargs="+", required=True)
+
+    args = parser.parse_args()
+    if args.command == "run-chunk":
+        groups = args.groups.split(",") if args.groups else None
+        print(
+            json.dumps(
+                _run_chunk(
+                    args.item_id,
+                    benchmark=cast(Literal["tomato", "mvbench"], args.benchmark),
+                    per_group=args.per_group,
+                    groups=groups,
+                    model_path=args.model_path,
+                    frame_count=args.frame_count,
+                    max_tokens=args.max_tokens,
+                ),
+                sort_keys=True,
+            )
+        )
+        return
+
+    groups = args.groups.split(",") if args.groups else None
+    control = RunControl(stop_file=args.stop_file, summary_path=args.summary_path)
+    run_benchmark(
+        benchmark=cast(Literal["tomato", "mvbench"], args.benchmark),
+        per_group=args.per_group,
+        groups=groups,
+        chunk_size=args.chunk_size,
+        model_path=args.model_path,
+        frame_count=args.frame_count,
+        max_tokens=args.max_tokens,
+        output_path=args.output_path,
+        control=control,
+    )
+
+
+if __name__ == "__main__":
+    main()

@@ -167,7 +167,7 @@ def _fetch_tomato_assets(paths: BenchmarkPaths, *, dry_run: bool) -> None:
             id=TOMATO_DRIVE_FILE_ID,
             output=str(archive_path),
             quiet=False,
-            fuzzy=False,
+            resume=True,
         )
         if downloaded is None:
             raise RuntimeError("gdown did not return a downloaded TOMATO archive path")
