@@ -21,13 +21,13 @@ from mlx_vlm import generate, load  # type: ignore[import-untyped]
 from mlx_vlm.utils import prepare_inputs  # type: ignore[import-untyped]
 from PIL import Image
 
-from codec_through.answers import extract_choice  # type: ignore[import-untyped]
-from codec_through.temporal import (  # type: ignore[import-untyped]
+from codec_through.answers import extract_choice
+from codec_through.temporal import (
     BlockClass,
     BlockThresholds,
     classify_blocks,
 )
-from codec_through.track_a import (  # type: ignore[import-untyped]
+from codec_through.track_a import (
     flattened_reuse_mask,
     qwen_merged_token_counts,
 )
