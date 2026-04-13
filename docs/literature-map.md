@@ -76,6 +76,46 @@ Important note:
 - this is the verified paper name and URL
 - some seed material referred to adjacent ideas imprecisely; this file uses the verified title
 
+## Spatial And Token Efficiency References
+
+### ToMe
+
+Source:
+
+- <https://arxiv.org/abs/2210.09461>
+
+Why it matters:
+
+- strong spatial/token-merging prior for ViTs
+- useful baseline when discussing merge-style efficiency ideas
+
+What it does not tell us:
+
+- whether temporal same-position reuse is safe
+- whether codec-side routing helps before image tokenization
+
+### FastV
+
+Source:
+
+- <https://arxiv.org/abs/2403.06764>
+
+Why it matters:
+
+- direct reminder that aggressive visual-token pruning claims are architecture-sensitive
+- useful caution when thinking about Qwen-style hybrids with sparse or late checkpoints
+
+### PixelPrune
+
+Source:
+
+- <https://arxiv.org/abs/2604.00886>
+
+Why it matters:
+
+- closest newer evidence that document or GUI-like imagery can be unusually redundant before dense visual encoding
+- supports keeping screen-content specialization in scope
+
 ## Model and Runtime Stack
 
 ### Qwen2.5-VL
@@ -151,9 +191,54 @@ Why it matters:
 
 - useful for visual inspection and debugging of motion-vector extraction
 
+## Machine-Oriented Media Standards
+
+### MPEG VCM
+
+Source:
+
+- <https://www.mpeg.org/standards/MPEG-AI/2/>
+
+Why it matters:
+
+- official sign that machine-oriented video coding is a real standards direction
+- supports the long-term sidecar or machine-first framing without implying that our repo already implements it
+
+### MPEG FCM
+
+Source:
+
+- <https://www.mpeg.org/standards/MPEG-AI/4/>
+
+Why it matters:
+
+- feature compression is directly relevant if later work moves from pixels to intermediate representations
+
+### JPEG AI
+
+Source:
+
+- <https://jpeg.org/jpegai/>
+
+Why it matters:
+
+- useful reference for machine-aware image compression and text/graphics handling
+- supports the screen-content and machine-consumption discussion
+
+## Screen-Content And Codec Design Hints
+
+### AV1 Tooling Overview
+
+Source:
+
+- <https://aomedia.org/docs/aomenc-command-line-parameters-draft.pdf>
+
+Why it matters:
+
+- documents screen-content and global-motion tools such as `intrabc`
+- useful when framing why natural video and screen video should not share one policy blindly
+
 ## What We Still Need To Add
 
-- stronger coverage of screen-content-specific video coding ideas
-- stronger coverage of adaptive partitioning and transform-domain ideas
 - one or two robotics references that are directly about caching or reuse rather than generic VLA efficiency
 - one or two audio references if we decide to expand beyond video

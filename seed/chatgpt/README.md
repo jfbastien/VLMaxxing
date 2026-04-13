@@ -27,6 +27,8 @@ Imported from:
 - `~/Downloads/video_codec_vlm_mac_workplan.md`
 - `~/Downloads/codec_through_codebase_review_revised_plan.md`
 - `~/Downloads/codec_through_experiment_backlog.json`
+- `~/Downloads/codec_through_future_research_memo.md`
+- `~/Downloads/codec_through_future_backlog.json`
 - the related PNG assets in `~/Downloads`
 
 ## Duplicate Files
@@ -42,6 +44,10 @@ Treat these artifacts as:
 - useful
 - promising
 - unverified
+
+These files are preserved for provenance and idea generation.
+
+They are not code patterns to inherit automatically.
 
 The main repo plan promotes a claim only after:
 
@@ -80,4 +86,6 @@ uv run python seed/chatgpt/run_codec_through_toy_experiments.py
 - `video_codec_vlm_mac_workplan.md`
 - `reviews/codec_through_codebase_review_revised_plan.md`
 - `reviews/codec_through_experiment_backlog.json`
+- `reviews/codec_through_future_research_memo.md`
+- `reviews/codec_through_future_backlog.json`
 - `assets/`

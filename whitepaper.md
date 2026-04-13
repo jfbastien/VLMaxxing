@@ -7,15 +7,15 @@ subtitle: "Research Whitepaper — April 2026"
 
 **Research Whitepaper — April 2026**
 
-Converted from the local PDF on 2026-04-13 with `mutool`, then lightly cleaned for readability. The original source PDF is preserved as [`whitepaper.pdf`](whitepaper.pdf).
+Converted from the local PDF on 2026-04-13 with `mutool`, then lightly cleaned for readability. This markdown copy also carries local errata fixes where the repo audit found reference or arithmetic issues. The original source PDF is preserved as [`whitepaper.pdf`](whitepaper.pdf).
 
 ## Abstract
 
 Current video VLMs re-encode every frame from scratch through the vision encoder, even when 80% to 99% of visual content is unchanged between frames. We show that simply caching and reusing ViT output embeddings for unchanged tokens, classified by pixel differencing as a proxy for codec metadata, achieves 29× temporal compression on conferencing video with zero quality loss on temporal reasoning benchmarks.
 
-We validate on two standard benchmarks: TOMATO (90 temporal reasoning questions across 6 splits, Δ = -1.1%) and MVBench (160 video understanding questions across 18 task types, Δ = +2.5%). The approach is training-free, requires no new parameters, adds about 1.6 MB cache per frame, and reduces vision encoder compute by 90%+ on typical video content.
+We validate on two standard benchmarks: TOMATO (90 temporal reasoning questions across 6 splits, Δ = -1.1%) and an MVBench sample (160 questions drawn from a 20-task benchmark, covering 18 task types in the saved local run). The approach is training-free, requires no new parameters, adds about 1.6 MB cache per frame for Qwen2.5-VL-3B at `560×560` input, and can in principle eliminate most redundant vision-side recomputation.
 
-Combined with existing KV cache quantization (TurboQuant, 6×), the total visual KV cache reduction reaches about 175× for video conferencing, enabling Gemma 4 31B to process about 35 minutes of video on a single H100 GPU, compared to about 4 minutes today.
+Composed compression arithmetic remains illustrative rather than locally measured. For example, TurboQuant reports quality-neutral KV quantization at 3.5 bits per channel, about 4.6× versus fp16, and any temporal × KV stackup should be treated as a hypothesis until measured on the same stack.
 
 ## 1. The Core Observation
 
@@ -63,7 +63,7 @@ Test: Shift content within a single 28×28 block by `N` pixels, simulating real 
 | 8 px | 0.99664 |
 | 14 px (half a token) | 0.99618 |
 
-For realistic video motion (2 to 8 pixels), embedding similarity exceeds `0.997`, better than TurboQuant's `0.996` quality threshold.
+For realistic video motion (2 to 8 pixels), embedding similarity exceeds `0.997`, which is in the same rough regime often treated as acceptable for aggressive cache compression.
 
 ### 2.4 End-to-End Quality Suite
 
@@ -111,7 +111,7 @@ Full TOMATO (1,484 questions):
 
 ### 2.6 MVBench Video Understanding Benchmark (7B)
 
-Test: 160 questions across 18 video understanding task types on Qwen2.5-VL-7B via MLX. 8 frames per video. Tasks include action recognition, object tracking, scene transitions, counterfactual reasoning, movement direction, egocentric navigation, and more.
+Test: 160 questions from the MVBench benchmark on Qwen2.5-VL-7B via MLX. 8 frames per video. The saved local run covers 18 task types from the full 20-task benchmark. Tasks include action recognition, object tracking, scene transitions, counterfactual reasoning, movement direction, egocentric navigation, and more.
 
 | Metric | Value |
 | --- | ---: |
@@ -121,7 +121,7 @@ Test: 160 questions across 18 video understanding task types on Qwen2.5-VL-7B vi
 | Choice agreement | 100% |
 | Avg token reuse | 74.2% |
 
-100% choice agreement is reported across all 18 task types. Combined with TOMATO, the whitepaper claims 250 questions and 24 task types without a single answer change at the 7B scale.
+100% choice agreement is reported across the 18 task types present in the saved run. Combined with TOMATO, this is a stability result relative to the dense baseline, not a claim of state-of-the-art absolute benchmark accuracy.
 
 ## 3. Method
 
@@ -143,18 +143,19 @@ That would eliminate the need for full frame decode during classification.
 
 ### 3.2 Embedding Cache
 
-A 2D tensor of shape `(merged_h × merged_w × embed_dim)` per reference frame. For Qwen2.5-VL at `280×280` input:
+A 2D tensor of shape `(merged_h × merged_w × embed_dim)` per reference frame. For Qwen2.5-VL, this is model- and resolution-dependent.
 
-- `100` tokens
-- `2048` dimensions
-- `fp16`
-- about `0.4 MB` per frame
+Examples:
 
-The claimed memory overhead is trivial.
+- Qwen2.5-VL-3B at `560×560`: `400` merged tokens × `2048` fp16 dims = about `1.6 MB`
+- Qwen2.5-VL-3B at `280×280`: `100` merged tokens × `2048` fp16 dims = about `0.4 MB`
+- Qwen2.5-VL-7B at `560×560`: `400` merged tokens × `3584` fp16 dims = about `2.8 MB`
+
+The overhead is still modest, but it should be reported with the actual model and input resolution.
 
 ### 3.3 I-Frame Refresh
 
-To prevent error accumulation from global attention context drift, estimated at about `0.01` per frame, periodically re-encode all tokens at I-frame boundaries. With a typical H.264 GOP of 1 I-frame per 30 frames at 30 fps:
+To guard against possible global-attention context drift, the method periodically re-encodes all tokens at I-frame boundaries. With a typical H.264 GOP of 1 I-frame per 30 frames at 30 fps:
 
 | Content | NOVEL % per P-frame | I-frame overhead (1/30) | Effective compression |
 | --- | ---: | ---: | ---: |
@@ -181,23 +182,20 @@ Honest accounting of ideas that did not survive experimental validation:
 
 ## 5. Composition with KV Cache Compression
 
-Temporal token elimination, fewer entries, composes with KV entry compression, fewer bits per entry.
+Temporal token elimination, fewer entries, composes with KV entry compression, fewer bits per entry. The arithmetic below is illustrative only, not a measured end-to-end system result.
 
 | Layer | Mechanism | Compression | Training required |
 | --- | --- | ---: | --- |
 | Temporal caching | Cache `STATIC + SHIFTED` embeddings | 3-29× | None |
-| TurboQuant | 3-bit KV quantization | 6× | None |
+| TurboQuant | 3.5-bit KV quantization, quality-neutral | about 4.6× | None |
 | STATIC KV dedup | PagedAttention CoW | 1.3-1.7× | None |
-| Composed | Combined effect | about 25-175× | None |
+| Composed | Combined effect | illustrative only | None |
 
-The whitepaper notes a sub-multiplicative correction factor of about `0.85×` from Apple, COLING 2022.
+Any composed total should be measured on the same stack before it is treated as a real systems claim.
 
-### Production Impact
+### Illustrative Impact Only
 
-| Scenario | Without | With about 100× | With about 175× |
-| --- | --- | --- | --- |
-| Gemma 4 31B, H100 80 GB | about 4 min video | about 25 min | about 35 min |
-| Gemma 4 4B edge, 16 GB | about 45 sec | about 7.5 min | about 13 min |
+The original whitepaper included stacked scenario arithmetic for large-server and edge deployments. In this repo, those scenarios are treated as thought experiments only until the component gains are measured on the same stack.
 
 ## 6. Comparison with CoPE-VideoLM
 

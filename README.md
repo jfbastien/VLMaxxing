@@ -10,7 +10,7 @@ This repo starts from a local whitepaper, imported ChatGPT seed artifacts, and a
 - Imported ChatGPT material lives under `seed/chatgpt/`.
 - Selected reference material from the original `codec-through-sam` repo lives under `seed/original_repo/`.
 - Clean rewritten utilities for frame probing, block classification, and strict answer parsing live under `src/codec_through/`.
-- The current research plan and audit docs live in `PLAN.md` and `docs/`.
+- The current research plan, experiment ledger, and paper framing live in `PLAN.md`, `research/`, and `paper/`.
 
 ## Research Principles
 
@@ -36,30 +36,51 @@ If you want the imported reference and seed stacks available too:
 uv sync --group dev --group seed --group research
 ```
 
+If you want the local MLX/MLX-VLM stack available too:
+
+```bash
+uv sync --group dev --group research --group vlm
+```
+
 ## Where To Read First
 
+- [AGENTS.md](AGENTS.md): canonical coding-agent guidance
 - [PLAN.md](PLAN.md): current research plan and phase order
+- [docs/README.md](docs/README.md): where durable knowledge belongs
+- [research/README.md](research/README.md): experiment-note and decision-log workflow
+- [paper/framing.md](paper/framing.md): current paper story, anti-claims, and future horizons
 - [docs/original-repo-audit.md](docs/original-repo-audit.md): what the original repo actually proved
-- [docs/external-feedback-validation.md](docs/external-feedback-validation.md): validation of the newer ChatGPT review and backlog
-- [docs/knowledge-base-notes.md](docs/knowledge-base-notes.md): curated takeaways from the fleet knowledge base
+- [docs/external-feedback-validation.md](docs/external-feedback-validation.md): validated takeaways from Claude and ChatGPT reviews
 - [docs/methodology/performance.md](docs/methodology/performance.md): measurement contract
-- [docs/local-setup.md](docs/local-setup.md): model and tool setup for the local machine
+- [docs/local-setup.md](docs/local-setup.md): repo-centric setup and model guidance
 
 ## Repository Layout
 
 ```text
 .
+├── AGENTS.md
+├── CLAUDE.md
 ├── .github/workflows/ci.yml
 ├── PLAN.md
 ├── README.md
 ├── docs/
+│   ├── README.md
 │   ├── external-feedback-validation.md
 │   ├── knowledge-base-notes.md
 │   ├── literature-map.md
 │   ├── local-setup.md
 │   ├── methodology/
-│   │   └── performance.md
+│   │   ├── performance.md
+│   │   └── timing-harness.md
 │   └── original-repo-audit.md
+├── paper/
+│   └── framing.md
+├── research/
+│   ├── README.md
+│   ├── decision-log.md
+│   └── experiments/
+│       └── 2026/
+│           └── 2026-04-13-phase-0_5-feasibility.md
 ├── seed/
 │   ├── chatgpt/
 │   └── original_repo/
@@ -89,9 +110,3 @@ The source of truth is:
 - checked-in clean code
 - verified primary references
 - explicit notes about uncertainty and failed ideas
-
-## Notes
-
-- No license is declared yet.
-- The current local GGUF models are text-only and do not unblock the video/VLM path by themselves.
-- See [docs/local-setup.md](docs/local-setup.md) for the next model downloads.

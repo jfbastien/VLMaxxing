@@ -33,6 +33,10 @@ research = [
   "av>=14.4.0",
   "httpx>=0.28.1",
 ]
+vlm = [
+  "mlx>=0.31.1",
+  "mlx-vlm>=0.4.4",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/codec_through"]

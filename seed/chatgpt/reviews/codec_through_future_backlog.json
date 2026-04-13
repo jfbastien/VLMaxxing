@@ -1,0 +1,91 @@
+{
+  "theme": "codec-conditioned dynamic compute for multimodal world modeling and control",
+  "now": [
+    {
+      "id": "A1",
+      "title": "Full wall-clock instrumentation",
+      "goal": "Measure decode, classification, resize/colorspace, vision, prefill, and generation separately.",
+      "deliverables": ["timing harness", "CSV logs", "plots by clip type", "p95/p99 latency summaries"]
+    },
+    {
+      "id": "A2",
+      "title": "Codec metadata integration",
+      "goal": "Compare pixel diff versus motion vectors/residual proxies versus hybrid novelty signals.",
+      "deliverables": ["ffmpeg export_mvs path", "PyAV side-data parser", "agreement + latency table"]
+    },
+    {
+      "id": "A3",
+      "title": "Sparse window recompute",
+      "goal": "Skip encoder work for unchanged windows instead of only swapping outputs.",
+      "deliverables": ["window mask executor", "quality comparison", "true encoder speedup numbers"]
+    },
+    {
+      "id": "A4",
+      "title": "Changed-query attention prototype",
+      "goal": "Make changed tokens query broadly while static tokens use memory or local-only paths.",
+      "deliverables": ["cost model", "prototype attention schedule", "accuracy/latency tradeoff"]
+    },
+    {
+      "id": "A5",
+      "title": "Stabilization for ego-motion",
+      "goal": "Align camera motion before same-position caching.",
+      "deliverables": ["global affine/homography path", "IMU-assisted option", "FPV benchmark subset"]
+    },
+    {
+      "id": "A6",
+      "title": "Task-aware media sweeps",
+      "goal": "Test grayscale, low-res, mixed-res ROI, and color-protect policies.",
+      "deliverables": ["per-task ablation tables", "prompt-aware policy heuristics"]
+    },
+    {
+      "id": "A7",
+      "title": "Robustness suite",
+      "goal": "Stress deadline stability under novelty bursts, blur, flicker, scene cuts, and sensor desync.",
+      "deliverables": ["defensive benchmark", "novelty amplification metric", "fallback policy evaluation"]
+    }
+  ],
+  "next": [
+    {
+      "id": "B1",
+      "title": "Screen-content fork",
+      "goal": "Add UI/code/slides-specific policies using copy- and palette-like priors."
+    },
+    {
+      "id": "B2",
+      "title": "Multi-reference and B-frame-aware caching",
+      "goal": "Cache against multiple prior references instead of single-hop previous-frame only."
+    },
+    {
+      "id": "B3",
+      "title": "Sensor-fusion timeline",
+      "goal": "Add timestamps, IMU, pose, depth, or event streams as first-class cache alignment inputs."
+    },
+    {
+      "id": "B4",
+      "title": "Learned refresh gate",
+      "goal": "Train a tiny uncertainty gate on top of heuristic novelty masks."
+    }
+  ],
+  "later": [
+    {
+      "id": "C1",
+      "title": "Machine-oriented codec sidecar",
+      "goal": "Emit novelty masks, motion uncertainty, ROI hints, and timestamps alongside standard bitstreams."
+    },
+    {
+      "id": "C2",
+      "title": "AI-native codec",
+      "goal": "Design a machine-first codec optimized for model utility per joule rather than only human fidelity per bit."
+    },
+    {
+      "id": "C3",
+      "title": "Hardware co-design",
+      "goal": "Map active tiles and tensor-friendly decode primitives to future NPU/GPU/video blocks."
+    },
+    {
+      "id": "C4",
+      "title": "Layered world-state stream",
+      "goal": "Represent scenes as persistent static layers plus dynamic event/object updates with explicit timing."
+    }
+  ]
+}

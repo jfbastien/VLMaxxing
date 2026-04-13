@@ -13,6 +13,7 @@ Every serious performance claim needs:
 - a hypothesis
 - a primary metric
 - a comparison point
+- an acceptance or rejection rule
 - raw samples
 - an environment record
 
@@ -31,6 +32,9 @@ Good:
 - "Replacing pixel differencing with metadata-only routing will lower planner cost, but may lose agreement on FPV clips."
 
 Good hypotheses are falsifiable.
+
+Good experiments are preregistered enough that a later reader can tell whether
+we moved the goalposts.
 
 ## Define The Unit Of Analysis
 
@@ -54,6 +58,7 @@ Quality metrics:
 
 - answer agreement
 - accuracy delta
+- chance-corrected agreement when the task format permits it
 - semantic disagreement rate
 - failure rate by content bucket
 
@@ -85,6 +90,23 @@ Track B:
 
 Never report a Track A result as if it were a Track B speedup.
 
+## Pre-Register Acceptance Bands
+
+Before running a decision-worthy experiment, write down:
+
+- what counts as success
+- what counts as rejection
+- what counts as inconclusive
+
+Example:
+
+- accepted if accuracy stays within `0.5 pp` and agreement stays above `98%`
+- rejected if accuracy drops more than `2 pp` or agreement falls below `90%`
+- inconclusive in between, followed by a targeted follow-up
+
+Exact numbers depend on the experiment, but the bands must be written down
+before the run.
+
 ## Cold, Warm, And Idle
 
 Do not report one latency number as if it explains everything.
@@ -108,6 +130,20 @@ At minimum, report:
 When sample size is large enough, add bootstrap confidence intervals.
 
 Mean-only reporting is not enough for latency-sensitive work.
+
+## Agreement Needs Context
+
+Always report enough to tell whether agreement is meaningful:
+
+- baseline accuracy
+- modified-path accuracy
+- baseline-versus-modified agreement
+- the answer-space size when applicable
+- chance-corrected agreement such as Cohen's kappa for multiple-choice tasks
+
+Aggregate agreement is not enough on its own.
+
+When content buckets exist, report them per bucket, not only in aggregate.
 
 ## Prefer Paired Comparisons
 
@@ -163,6 +199,17 @@ When possible, fix:
 
 If one changes, log it as part of the experiment.
 
+## Determinism Sanity Check
+
+Before interpreting Track A agreement:
+
+- run the dense baseline twice on the same input
+- verify that the runtime is deterministic enough for the experiment
+- record the runtime/backend versions involved
+
+If the baseline itself is unstable, do not present cached-versus-dense
+agreement as if it cleanly isolated the method.
+
 ## Failure Analysis Matters
 
 When an experiment fails:
@@ -190,6 +237,9 @@ Prompt set:
 Environment:
 Warmup policy:
 Comparison:
+Acceptance band:
+Rejection band:
+Inconclusive rule:
 Result:
 Did it match expectation?
 If not, what got falsified?
@@ -223,6 +273,12 @@ Always log:
 Do not compare a smaller faster model against a larger slower model and call that a systems win for the method.
 
 If the model changes, the result is partly about model size and capability.
+
+## Timing Harness
+
+For concrete timing rules such as clock source, backend synchronization, warmup
+stability, and thermal guardrails, follow
+[timing-harness.md](timing-harness.md).
 
 ## What We Will Not Do
 

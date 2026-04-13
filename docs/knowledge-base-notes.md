@@ -54,7 +54,7 @@ Planning effect:
 - keep Q-table work in task-aware spatial-policy phases
 - do not let it become the main spatial-scoring story
 
-### 3. Kill continuous H.264 spatial scoring early
+### 3. Deprioritize continuous H.264 spatial scoring early
 
 Useful KB direction:
 
@@ -67,6 +67,7 @@ Why it survives audit:
 Planning effect:
 
 - do not spend early milestones on exact per-MB bit counting or fine-grained bitrate saliency maps
+- keep this as `deprioritized`, not permanently `killed`, unless a direct rerun closes the question harder
 
 ### 4. Use cheap temporal metadata first
 
@@ -91,12 +92,14 @@ Useful KB direction:
 
 Why it survives audit:
 
-- it matches imported attention results and the sawtooth full-attention pattern
+- it matches imported attention results, and local model-config checks confirm
+  Qwen2.5-VL full-attention blocks at `[7, 15, 23, 31]`
 
 Planning effect:
 
 - sparse visual execution work must be model-specific
 - late checkpoints matter more than generic early-prune folklore
+- the repo should not treat `layer 23` as a reproduced best merge point until it is re-measured locally
 
 ### 6. Keep stackup claims conservative
 

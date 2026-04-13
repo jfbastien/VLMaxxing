@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import IntEnum
 from typing import Any
@@ -60,22 +61,34 @@ class ClassificationSummary:
 def _diff_plane(frame_a: FrameArray, frame_b: FrameArray) -> npt.NDArray[np.float32]:
     if frame_a.ndim not in (2, 3) or frame_b.ndim not in (2, 3):
         raise ValueError("expected 2D grayscale or 3D color frames")
+    if frame_a.shape != frame_b.shape:
+        raise ValueError(
+            f"frame shapes must match exactly, got {frame_a.shape} and {frame_b.shape}"
+        )
 
-    height = min(frame_a.shape[0], frame_b.shape[0])
-    width = min(frame_a.shape[1], frame_b.shape[1])
-    diff = np.abs(
-        frame_a[:height, :width].astype(np.float32) - frame_b[:height, :width].astype(np.float32)
-    )
+    diff = np.abs(frame_a.astype(np.float32) - frame_b.astype(np.float32))
     if diff.ndim == 3:
         return np.asarray(diff.mean(axis=2), dtype=np.float32)
     return np.asarray(diff, dtype=np.float32)
+
+
+def block_size_from_vision_config(vision_config: Mapping[str, Any]) -> int:
+    """Derive a token block size from a model vision config."""
+
+    raw_patch_size = vision_config.get("patch_size")
+    raw_merge_size = vision_config.get("spatial_merge_size", 1)
+    if not isinstance(raw_patch_size, int) or raw_patch_size <= 0:
+        raise ValueError(f"invalid patch_size in vision config: {raw_patch_size!r}")
+    if not isinstance(raw_merge_size, int) or raw_merge_size <= 0:
+        raise ValueError(f"invalid spatial_merge_size in vision config: {raw_merge_size!r}")
+    return raw_patch_size * raw_merge_size
 
 
 def classify_blocks(
     frame_a: FrameArray,
     frame_b: FrameArray,
     *,
-    block_size: int = 28,
+    block_size: int,
     thresholds: BlockThresholds = DEFAULT_THRESHOLDS,
 ) -> npt.NDArray[np.int32]:
     """Classify adjacent-frame blocks as STATIC, SHIFTED, or NOVEL."""
@@ -86,13 +99,18 @@ def classify_blocks(
         raise ValueError("shifted_threshold must be >= static_threshold")
 
     diff = _diff_plane(frame_a, frame_b)
+    if diff.shape[0] % block_size != 0 or diff.shape[1] % block_size != 0:
+        raise ValueError(
+            "frame dimensions must be exact multiples of block_size, "
+            f"got {diff.shape[:2]} and block_size={block_size}"
+        )
+
     block_rows = diff.shape[0] // block_size
     block_cols = diff.shape[1] // block_size
     if block_rows == 0 or block_cols == 0:
-        return np.zeros((1, 1), dtype=np.int32)
+        raise ValueError("frame is smaller than a single block")
 
-    cropped = diff[: block_rows * block_size, : block_cols * block_size]
-    blocks = cropped.reshape(block_rows, block_size, block_cols, block_size).mean(axis=(1, 3))
+    blocks = diff.reshape(block_rows, block_size, block_cols, block_size).mean(axis=(1, 3))
 
     classes = np.full_like(blocks, BlockClass.NOVEL, dtype=np.int32)
     classes[blocks < thresholds.static_threshold] = BlockClass.STATIC

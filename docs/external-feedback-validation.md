@@ -2,133 +2,222 @@
 
 Scope:
 
-- reviewed the imported ChatGPT files under `seed/chatgpt/reviews/`
-- checked their main claims against `codec-through-sam` code and saved result artifacts
+- validated the imported ChatGPT review/backlog files under `seed/chatgpt/reviews/`
+- validated the newer future-research memo and backlog
+- validated the Claude review against the current repo, imported artifacts, local model configs, and primary sources where needed
 
 ## Overall Verdict
 
-The external review is mostly directionally correct.
+The external reviews were useful, but not equally trustworthy.
 
-Its strongest contribution is conceptual clarity:
+What survived validation:
 
-- semantic substitution versus sparse execution
-- codec signals as useful routing signals rather than automatic saliency signals
-- the importance of preserving negative results
+- the repo's main evidentiary split is Track A versus Track B
+- several benchmark-hygiene and fail-closed issues were real
+- the project should keep its current narrow claim and expand only with measured local evidence
+- changed-window execution, screen-content specialization, and decoder-side routing deserve plan space
 
-Its weaker parts are the forward-looking recommendations that are not yet backed by this repo's own evidence.
+What needed reframing:
 
-## Supported
+- `compute-denial` is a worthwhile robustness evaluation bucket, not a current headline claim
+- machine-oriented sidecars and AI-native codecs are future horizons, not near-term repo objectives
+- several stronger whitepaper numbers and phrasing needed correction before they become paper claims
 
-### Semantic substitution versus sparse execution
+## Validated And Fixed In This Commit
 
-Supported by:
+### 1. Fail-closed utility behavior
 
-- imported reference `run_tomato_mlx.py`
-- imported reference `exp_wall_clock_speedup.py`
+Verdict:
 
-Conclusion:
+- VALID
 
-- this distinction is real and should stay central in our docs and code
+Evidence:
 
-### Relocation is mostly a negative result
+- `extract_choice` could treat ambiguous `A or B` output as a real answer
+- `uniform_frame_indices(1, 4)` previously returned duplicates
+- temporal diffing silently cropped mismatched frame shapes
 
-Supported by:
+Fixes made:
 
-- imported `mv_relocation_results.json`
+- ambiguous letter outputs now return `None`
+- invalid frame sampling now raises
+- mismatched frame shapes and misaligned block geometry now raise
 
-Conclusion:
+### 2. Timing harness hazard in frame extraction
 
-- relocation should not lead the next round of work
+Verdict:
 
-Nuance:
+- VALID
 
-- the repo contains isolated improvements, so this is a planning kill, not a mathematical impossibility claim
+Evidence:
 
-### Codec-native branch is valuable, but mixed
+- `src/codec_through/ffmpeg.py` inherited a one-ffmpeg-process-per-frame helper
 
-Supported by:
+Fixes made:
 
-- imported `codec_pipeline.py`
-- imported `exp_per_block_mv_lookup.py`
-- imported `codec_native_results.json`
+- existing helper is now explicitly reference/debug only
+- added `extract_frames_single_pass(...)` for timing-sensitive paths
 
-Conclusion:
+### 3. Qwen geometry and checkpoint nuance
 
-- codec metadata is worth pursuing for routing and systems work
-- pixel diff remains the semantic-validation baseline
+Verdict:
 
-### Benchmark hygiene issues are real
+- VALID
 
-Supported by:
+Evidence:
 
-- original benchmark parsing behavior
-- temp-file-heavy extraction patterns
-- the secret leak in the original Gemma validation script
+- local config inspection confirms Qwen2.5-VL full-attention blocks at `[7, 15, 23, 31]`
+- the stronger claim that layer `23` is the best merge point still comes only from imported artifacts
 
-Conclusion:
+Fixes made:
 
-- clean rewrites and stricter utilities were the right response
+- docs now distinguish locally verified config structure from imported merge-point ranking
 
-## Supported But Should Be Reframed
+## Validated And Promoted Into The Plan
 
-### The repo is "more mature than the whitepaper suggests"
+### 4. Add a Phase 0.5 feasibility spike
 
-This is directionally true, but the maturity is uneven.
+Verdict:
 
-Better framing:
-
-- strong mechanism work
-- strong negative-result exploration
-- uneven systems implementation
-
-### Spatial branch value
-
-The external review is right that the spatial branch matters.
-
-Better framing:
-
-- useful for pre-filters and architecture questions
-- not yet a proven end-to-end spatial compression story
-
-## Open Hypotheses, Not Verified Findings
-
-### Changed-token-focused attention
-
-Status:
-
-- plausible
-- not directly demonstrated by the original repo
+- VALID
 
 Why:
 
-- the repo motivates it indirectly through weak external-signal correlations and model-attention structure
-- it does not implement changed-query execution as a measured result
+- before Phase 1, the repo should prove that the local MLX-VLM path exposes the required cached-feature interface cleanly enough for Track A work
 
-### Canonical-coordinate stabilization as the egomotion path
+Plan impact:
 
-Status:
+- added a preregistered Phase 0.5 experiment note under `research/experiments/2026/`
 
-- plausible and worth testing
-- not a verified repo result
+### 5. Determinism and agreement-floor requirements
 
-### Codec-conditioned frame scheduling as a major win
+Verdict:
 
-Status:
+- VALID
 
-- promising
-- only lightly supported so far by routing ideas and packet metadata work
+Why:
 
-## Claims We Did Not Promote
+- Track A agreement is uninterpretable if the dense baseline itself is unstable
+- raw agreement without baseline accuracy or chance correction is too weak
 
-- M3 Air-specific severity claims derived from M5 Max timing code
-- strong DCT-bypass deprioritization without direct artifact review in this repo
-- any exact composed compression multiplier from stacked methods
+Plan impact:
 
-## Consequences For This Repo
+- methodology now requires repeated dense-baseline checks and chance-corrected agreement when task format permits it
 
-The validated takeaways we promoted into the plan are:
+### 6. Acceptance bands and composition gate
 
-- keep semantic and systems tracks separate
-- keep relocation deprioritized
-- prioritize frame routing and honest timing
-- keep changed-query attention and stabilization as explicit hypotheses, not claims
+Verdict:
+
+- VALID
+
+Why:
+
+- the repo needs preregistered success or rejection criteria
+- stacked multipliers should stay gated until measured on the same stack
+
+Plan impact:
+
+- performance and timing docs now require acceptance bands and explicit composition rules
+
+### 7. Screen-content path and machine-oriented standards
+
+Verdict:
+
+- VALID, WITH SCOPE CONTROL
+
+Why:
+
+- the repo and external sources both support keeping screen content as a separate later-phase branch
+- MPEG VCM, MPEG FCM, JPEG AI, and AV1 screen-content tools support the long-term framing
+
+Plan impact:
+
+- literature map and paper framing now include these directions, but only as future horizons
+
+## Validated But Reframed Or Softened
+
+### 8. Continuous H.264 spatial scoring
+
+Verdict:
+
+- VALID (MINOR)
+
+Why:
+
+- the underlying skepticism is justified
+- calling it fully `killed` is stronger than the current local evidence
+
+Plan impact:
+
+- status changed to `deprioritized`
+
+### 9. Provenance-aware KV policy
+
+Verdict:
+
+- OPINION
+
+Why:
+
+- it was never a core tested claim in this repo
+
+Plan impact:
+
+- treated as `not currently in scope`, not as a killed idea
+
+### 10. Robustness / compute-denial framing
+
+Verdict:
+
+- OPINION
+
+Why:
+
+- it is a useful red-team evaluation idea
+- it is not yet a primary claim backed by this repo
+
+Plan impact:
+
+- kept in `paper/framing.md` as future evaluation language, not as a top-level result
+
+## Still Hypotheses
+
+### 11. Changed-query attention
+
+Verdict:
+
+- CAN'T VERIFY
+
+Why:
+
+- plausible and worth planning
+- not yet backed by local runtime evidence
+
+Plan impact:
+
+- remains after changed-window execution, not before it
+
+### 12. Sensor-fusion codecs and AI-native codecs
+
+Verdict:
+
+- OPINION
+
+Why:
+
+- useful long-term framing
+- outside the currently justified repo scope
+
+Plan impact:
+
+- recorded as future horizons only
+
+## Whitepaper Corrections Triggered By Review
+
+Validated issues:
+
+- MVBench wording needed to distinguish the 20-task benchmark from the local 18-task saved run
+- cache-size arithmetic needed model- and resolution-specific clarification
+- TurboQuant was being presented too aggressively for a quality-neutral composed claim
+
+Those corrections were applied directly in `whitepaper.md`.

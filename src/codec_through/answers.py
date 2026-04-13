@@ -6,6 +6,7 @@ import re
 from collections.abc import Sequence
 
 LETTER_PATTERN = re.compile(r"\b([A-Z])\b")
+CLAUSE_TERMINATOR_PATTERN = re.compile(r"[.!?\n]")
 
 
 def extract_choice(response: str, candidates: Sequence[str]) -> int | None:
@@ -21,10 +22,16 @@ def extract_choice(response: str, candidates: Sequence[str]) -> int | None:
         if normalized.startswith(letter):
             return index
 
-    for match in LETTER_PATTERN.finditer(normalized):
-        letter_index = ord(match.group(1)) - ord("A")
-        if 0 <= letter_index < len(candidates):
-            return letter_index
+    first_clause = CLAUSE_TERMINATOR_PATTERN.split(normalized, maxsplit=1)[0]
+    candidate_letters = {
+        ord(match.group(1)) - ord("A")
+        for match in LETTER_PATTERN.finditer(first_clause)
+        if 0 <= (ord(match.group(1)) - ord("A")) < len(candidates)
+    }
+    if len(candidate_letters) == 1:
+        return next(iter(candidate_letters))
+    if len(candidate_letters) > 1:
+        return None
 
     lowered = response.lower()
     matching_candidates = [

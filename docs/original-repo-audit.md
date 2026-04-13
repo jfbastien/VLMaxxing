@@ -105,12 +105,13 @@ Verified conclusions:
 
 - pixel variance correlates better with final-layer attention than JPEG surviving AC does
 - Q-table flatness is still useful as a cheap binary pre-filter
-- Qwen attention structure has meaningful late checkpoints; layer 23 is the strongest reported merge candidate in the imported results
+- Qwen attention structure has meaningful late checkpoints; the imported results report layer 23 as the strongest merge candidate, and local config checks confirm full-attention blocks at `[7, 15, 23, 31]`
 - H.264 spatial signals can correlate with pixel variance reasonably well, but that does not make them strong saliency signals for the VLM
 
 Important nuance:
 
 - some stronger "ceiling" claims in the KB rely on chained correlations and should be treated as suggestive, not definitive
+- this repo has not yet re-measured the best merge point locally, so `layer 23` remains an imported result, not a reproduced one
 
 ### 7. Benchmark hygiene issues are real
 

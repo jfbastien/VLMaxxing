@@ -76,8 +76,12 @@ def probe_frame_count(video_path: Path) -> int | None:
 def uniform_frame_indices(total_frames: int, sample_count: int) -> list[int]:
     """Match the prototype repo's evenly spaced frame sampling policy."""
 
-    if total_frames <= 0 or sample_count <= 0:
-        return []
+    if total_frames <= 0:
+        raise ValueError("total_frames must be positive")
+    if sample_count <= 0:
+        raise ValueError("sample_count must be positive")
+    if sample_count > total_frames:
+        raise ValueError("sample_count cannot exceed total_frames without duplicate frame decoding")
     if sample_count == 1:
         return [0]
     return [int((index * (total_frames - 1)) / (sample_count - 1)) for index in range(sample_count)]
@@ -89,7 +93,14 @@ def extract_frames(
     *,
     max_size: int = 560,
 ) -> list[ExtractedFrame]:
-    """Extract specific decoded frames with bounded temp-file lifetime."""
+    """Extract frames for reference/debug use.
+
+    This helper spawns one ffmpeg process per requested frame index and therefore
+    is not suitable for timing paths.
+    """
+
+    if any(frame_index < 0 for frame_index in frame_indices):
+        raise ValueError("frame_indices must be non-negative")
 
     extracted: list[ExtractedFrame] = []
     with tempfile.TemporaryDirectory(prefix="codec-through-frames-") as tmp_dir:
@@ -123,7 +134,69 @@ def extract_frames(
     return extracted
 
 
-def probe_frame_packets(video_path: Path, *, max_frames: int = 500) -> list[FramePacketInfo]:
+def extract_frames_single_pass(
+    video_path: Path,
+    frame_indices: Sequence[int],
+    *,
+    max_size: int = 560,
+) -> list[ExtractedFrame]:
+    """Extract specific decoded frames in a single ffmpeg pass.
+
+    Use this helper for timing-sensitive paths. It rejects duplicate frame
+    indices so the returned decode cost matches the requested sampling contract.
+    """
+
+    if any(frame_index < 0 for frame_index in frame_indices):
+        raise ValueError("frame_indices must be non-negative")
+
+    unique_indices = sorted(set(frame_indices))
+    if len(unique_indices) != len(frame_indices):
+        raise ValueError("frame_indices must not contain duplicates")
+    if not unique_indices:
+        return []
+
+    select_terms = "+".join(f"eq(n\\,{frame_index})" for frame_index in unique_indices)
+    extracted_by_index: dict[int, ExtractedFrame] = {}
+
+    with tempfile.TemporaryDirectory(prefix="codec-through-frames-") as tmp_dir:
+        temp_dir = Path(tmp_dir)
+        output_pattern = temp_dir / "frame-%06d.png"
+        _run_command(
+            [
+                "ffmpeg",
+                "-v",
+                "quiet",
+                "-y",
+                "-i",
+                str(video_path),
+                "-vf",
+                (
+                    f"select={select_terms},"
+                    f"scale={max_size}:{max_size}:force_original_aspect_ratio=decrease,"
+                    f"pad={max_size}:{max_size}:(ow-iw)/2:(oh-ih)/2"
+                ),
+                str(output_pattern),
+            ]
+        )
+
+        output_paths = sorted(temp_dir.glob("frame-*.png"))
+        if len(output_paths) != len(unique_indices):
+            raise RuntimeError(
+                "ffmpeg did not produce the expected number of frames: "
+                f"expected {len(unique_indices)}, got {len(output_paths)}"
+            )
+
+        for frame_index, output_path in zip(unique_indices, output_paths, strict=True):
+            with Image.open(output_path) as image:
+                rgb = np.array(image.convert("RGB"), dtype=np.uint8)
+            extracted_by_index[frame_index] = ExtractedFrame(index=frame_index, image=rgb)
+
+    return [extracted_by_index[frame_index] for frame_index in frame_indices]
+
+
+def probe_frame_packets(
+    video_path: Path, *, max_frames: int | None = None
+) -> list[FramePacketInfo]:
     """Extract frame packet metadata used in the original codec pipeline."""
 
     result = _run_command(
@@ -142,8 +215,13 @@ def probe_frame_packets(video_path: Path, *, max_frames: int = 500) -> list[Fram
         ]
     )
     payload = json.loads(result.stdout)
+    frames = payload.get("frames", [])
+    if max_frames is not None and len(frames) > max_frames:
+        raise ValueError(
+            f"ffprobe returned {len(frames)} frames, which exceeds max_frames={max_frames}"
+        )
     packets: list[FramePacketInfo] = []
-    for index, frame in enumerate(payload.get("frames", [])[:max_frames]):
+    for index, frame in enumerate(frames):
         pict_type = str(frame.get("pict_type", ""))
         raw_pkt_size = frame.get("pkt_size", 0)
         pkt_size = int(raw_pkt_size) if str(raw_pkt_size).isdigit() else 0

@@ -4,50 +4,45 @@ Last updated: 2026-04-13
 
 ## Charter
 
-Build a rigorous research program around codec-conditioned dynamic compute for video VLMs.
+Build a rigorous research program around codec-conditioned dynamic compute for
+video VLMs on Apple Silicon.
 
 Primary objective:
 
-- determine which cheap temporal and codec-derived signals can reduce video VLM work on Apple Silicon without unacceptable answer drift
+- determine which cheap temporal and codec-derived signals can reduce video-VLM
+  work without unacceptable answer drift
 
 Secondary objectives:
 
-- keep a clean boundary between semantic validation and true systems speedup
-- preserve negative results so we stop repeating dead ideas
-- create a repo that other agents can review and extend without inheriting prototype drift
+- keep semantic validation separate from true systems speedup
+- preserve negative results so the project narrows the space over time
+- accumulate durable notes that are strong enough to support a later paper
 
 Non-goals for the current phase:
 
 - large-scale training
-- paper-ready grand compression stackups
+- speculative end-to-end stackup arithmetic presented as measured fact
 - architecture changes without local evidence
 
 ## Current Verified Position
 
-The imported whitepaper and original repo justify a narrow but strong starting claim:
+The imported whitepaper, predecessor repo, and direct artifact checks justify a
+narrow but useful starting point:
 
-- video VLM outputs can tolerate substantial temporal embedding reuse
+- video-VLM outputs can tolerate substantial temporal feature reuse
+- the strongest current evidence is Track A answer-stability evidence
+- Track A does not yet prove skipped encoder or attention work
+- simple pixel or packet signals are worth testing as routing signals
 
-The original repo also makes the main missing proof point explicit:
-
-- dense post-encoder substitution is a quality benchmark
-- it is not yet proof of sparse visual execution
-
-That distinction is the center of this plan.
-
-See:
-
-- [docs/original-repo-audit.md](docs/original-repo-audit.md)
-- [docs/external-feedback-validation.md](docs/external-feedback-validation.md)
-- [docs/knowledge-base-notes.md](docs/knowledge-base-notes.md)
+That is the center of the project today.
 
 ## Evidence And Trust Model
 
-Use these trust levels consistently.
+Use these levels consistently.
 
 Highest trust:
 
-- primary papers and official docs in [docs/literature-map.md](docs/literature-map.md)
+- primary papers and official docs listed in [docs/literature-map.md](docs/literature-map.md)
 - checked-in code under `src/`
 - raw saved result artifacts that we inspected directly
 
@@ -55,52 +50,52 @@ Medium trust:
 
 - imported reference scripts under `seed/original_repo/`
 - imported ChatGPT seed artifacts under `seed/chatgpt/`
-- the original repo's benchmark outputs and mechanism experiments
+- imported result files whose schema and headline claims we inspected directly
 
 Lower trust:
 
-- `fleet-kb` synthesized findings
-- `missions/*.toml` plans and agent prompts
-- speculative extrapolations from seed material
+- synthesized KB notes
+- mission files and planning prompts
+- future-work memos and backlogs
+
+Special trust tier:
+
+- imported results that are not locally reproducible on this machine due to
+  memory or runtime constraints remain external evidence even if checked in here
 
 Rules:
 
-- missions generate hypotheses, not conclusions
+- every important claim should say whether it is `reproduced here`,
+  `imported result`, or `hypothesis`
 - KB summaries can set priorities, but they do not replace raw artifacts
-- every future claim in this repo should say whether it is a reproduced result, an imported result, or a hypothesis
+- future-work memos are framing input, not proof
 
 ## What We Are Carrying Forward
 
-From the original repo, these ideas are strong enough to guide the next phase:
+Strong enough to guide the next phase:
 
-- same-position temporal caching is the default baseline
+- same-position reuse is the default temporal baseline
 - pixel differencing is the best current semantic-validation planner baseline
-- frame packet metadata and keyframe detection are promising cheap routing signals
-- Q-table and flatness signals are useful as binary spatial pre-filters
-- architecture-specific attention checkpoints matter for any later sparse execution path
+- packet metadata and keyframe detection are promising cheap routing signals
+- Q-table flatness is useful as a binary pre-filter, not a saliency oracle
+- architecture-specific checkpoints matter for any later sparse-execution path
 
-From the original repo and KB, these cautions are also strong enough to preserve:
+Strong enough to preserve as cautions:
 
-- Qwen-style windowed/full-attention hybrids should not inherit FastV-style early-prune assumptions without direct validation
-- B-frame reuse analysis should log GOP position, not just aggregate frame type
+- Qwen-style hybrids should not inherit generic early-prune folklore without direct validation
+- B/P-frame analysis should log GOP position, not just aggregate frame type
 - exact per-macroblock bit-count recovery is not an early milestone
-- stacked compression multipliers should stay conservative until each component is independently measured
+- composed compression or speedup claims stay gated until measured on the same stack
 
-## What We Are Deprioritizing Or Treating As Killed
+## What We Are Deprioritizing
 
-These are not banned forever, but they should not lead the next round of work.
+These are not mathematically impossible. They are simply poor early bets.
 
-- embedding relocation as a primary temporal path
+- embedding relocation as the primary temporal path
 - DCT-bypass as a near-term systems win
 - continuous H.264 spatial scoring as a main saliency path
 - provenance-aware KV allocation as an early milestone
-- aggressive composed speedup/compression arithmetic before local measurements
-
-Reasoning:
-
-- relocation was mostly negative in the original repo
-- DCT and fine-grained bit-allocation ideas consumed substantial effort for weak evidence
-- spatial codec signals look more useful as uncertainty or pre-filter signals than as saliency oracles
+- aggressive composed speedup or compression arithmetic before local measurements
 
 ## Adoption Map
 
@@ -108,15 +103,16 @@ Reasoning:
 
 Use clean rewrites, not direct prototype imports:
 
-- frame count probing, packet probing, and frame extraction
+- strict answer parsing
+- frame count and packet probing
+- frame extraction helpers
 - temporal block classification
-- frame-level early-exit routing
-- strict benchmark answer parsing that fails closed
-- the Q-table pre-filter core with fallback behavior
+- frame-level routing helpers
+- Q-table pre-filter core
 
 ### Keep As Reference Only
 
-Imported under `seed/original_repo/`:
+Preserve under `seed/`, but do not treat as working code:
 
 - `run_tomato_mlx.py`
 - `codec_pipeline.py`
@@ -124,17 +120,17 @@ Imported under `seed/original_repo/`:
 - `exp_vit_attention_baseline.py`
 - `exp_per_block_mv_lookup.py`
 - `qtable_prefilter.py`
-- selected benchmark and analysis result JSON files
+- selected result JSON files and external review memos
 
 ### Do Not Port As Working Code
 
-- `run_gemma4_validation.py` because it contains a leaked token and poor hygiene
+- `run_gemma4_validation.py` because of the leaked token and poor hygiene
 - mission files as executable workflow
-- fleet KB as a source of truth
+- synthesized KB or review text as if it were measured evidence
 
 ## Explicit Experiment Tracks
 
-Every experiment belongs to one of these tracks.
+Every experiment belongs to one track.
 
 ### Track A: Semantic Substitution
 
@@ -146,21 +142,31 @@ Characteristics:
 
 - dense vision encode may still happen
 - feature substitution after encode is allowed
-- quality agreement is the primary metric
+- agreement and accuracy are the primary metrics
 
 ### Track B: Sparse Execution
 
 Purpose:
 
-- prove real compute savings inside decode, vision, attention, or prefill
+- prove real work is skipped in decode, vision, attention, or prefill
 
 Characteristics:
 
-- timing must distinguish decode, preprocessing, planner, vision, prefill, and generation
-- analytic speedup models are allowed only as projections, never as primary evidence
+- timing must separate decode, preprocessing, routing, vision, prefill, and generation
+- analytic speedup models are projections only
 - wall-clock and memory evidence are required
 
 No result should blur these tracks.
+
+## Knowledge-Maintenance Contract
+
+Every decision-worthy experiment must:
+
+- start as a preregistered note under `research/experiments/<year>/`
+- state success, rejection, and inconclusive bands before the run
+- link raw artifacts instead of hiding them
+- update [research/decision-log.md](research/decision-log.md) if a hypothesis changes status
+- update [paper/framing.md](paper/framing.md) if the claim boundary changes
 
 ## Phase Order
 
@@ -168,21 +174,51 @@ No result should blur these tracks.
 
 Objective:
 
-- make the repo safe, reviewable, and reusable
+- keep the repo reviewable, explicit, and fail-closed
 
 Tasks:
 
-- remove all leftover seed references that should not survive in final docs
-- import selected original-repo references under `seed/original_repo/`
-- keep external ChatGPT reviews under `seed/chatgpt/reviews/`
-- create clean reusable utilities in `src/`
-- record the original repo audit, mapping, and KB notes in `docs/`
+- add canonical agent guidance and knowledge-base routing
+- clean utility behavior that silently hides bugs
+- normalize setup around `uv`, not the current machine's global state
+- preserve imported provenance while keeping it out of the source-of-truth path
 
 Exit criteria:
 
 - repo intent is obvious from `README.md`
-- imported material is partitioned by trust level
-- no benchmark hygiene bug is intentionally copied forward
+- methodology and experiment-note workflow are explicit
+- fail-closed utility behavior is in place
+
+### Phase 0.5: Feasibility And Determinism
+
+Objective:
+
+- prove that the local MLX-VLM path can support Track A work cleanly
+
+Hypothesis:
+
+- Qwen2.5-VL-3B on this machine exposes enough cached-feature functionality for a reliable local Track A bring-up
+
+Tasks:
+
+- verify that the local stack exposes the required cached-feature path
+- run dense baseline twice on the same inputs
+- record determinism or non-determinism before interpreting any agreement result
+
+Primary metrics:
+
+- repeated dense-baseline agreement
+- interface availability
+- parseable outputs
+
+Acceptance band:
+
+- deterministic or effectively deterministic dense baseline
+- feature-substitution path is reachable
+
+Rejection band:
+
+- interface is unavailable or too unstable to support Track A work
 
 ### Phase 1: Reproduce Semantic Substitution Cheaply
 
@@ -192,24 +228,36 @@ Objective:
 
 Hypothesis:
 
-- conservative same-position reuse preserves answers on a small TOMATO slice and curated clips
+- conservative same-position reuse preserves answers on a small temporal subset
 
 Tasks:
 
-- run local MLX-VLM baselines on a small subset
-- compare dense versus cached-answer outputs
-- log parse failures explicitly instead of defaulting to option A
-- sweep refresh intervals conservatively
+- run local MLX-VLM baselines on a small subset first
+- compare dense versus cached outputs
+- log parse failures explicitly
+- run threshold triples: conservative, default, aggressive
+- sweep refresh intervals to test cache drift directly
 
 Primary metrics:
 
-- answer agreement
+- agreement
 - accuracy delta
 - reuse ratio
+- kappa when the task format permits it
 
-Falsifiers:
+Acceptance band:
 
-- cached answers diverge materially on temporal ordering, OCR, color, or egomotion clips
+- accuracy stays within the preregistered tolerance
+- agreement remains high enough to justify further systems work
+
+Rejection band:
+
+- quality drops materially even under conservative thresholds
+
+Important outputs:
+
+- bucketed failures by OCR, color, small-object, egomotion, and screen-like content
+- refresh-interval versus drift evidence
 
 ### Phase 2: Systems Baseline And Honest Timing
 
@@ -219,13 +267,13 @@ Objective:
 
 Hypothesis:
 
-- temp I/O, decode, and dense vision dominate before planner overhead does
+- decode, preprocessing, and dense vision dominate before planner cost does
 
 Tasks:
 
-- build a clean timing harness around the rewritten utilities
-- report decode, preprocess, planner, feature mixing, vision, prefill, and generation separately
-- keep semantic-substitution timing separate from sparse-execution projections
+- build a clean timing harness
+- separate decode, frame extraction, routing, vision, prefill, and generation
+- measure cold, warm, and after-idle behavior when relevant
 
 Primary metrics:
 
@@ -234,9 +282,13 @@ Primary metrics:
 - peak memory
 - planner overhead
 
-Falsifiers:
+Acceptance band:
 
-- if planner overhead dominates on the laptop, codec routing is less attractive than expected
+- harness can reproduce paired timing runs with stable warm results
+
+Rejection band:
+
+- timing noise or harness overhead dominates enough that Track B claims are not interpretable
 
 ### Phase 3: Decoder-Side Routing And Scheduling
 
@@ -247,26 +299,26 @@ Objective:
 Hypotheses:
 
 - tiny non-I frames can often be routed as trivially static
-- frame scheduling can save more than token tricks on constrained hardware
+- frame scheduling may outperform token tricks first on constrained hardware
 
 Tasks:
 
-- packet-size/keyframe routing
+- packet-size and keyframe routing
 - low-resolution and luma-first baselines
 - mixed-resolution global-plus-ROI baselines
 - dynamic frame scheduling around novelty bursts and GOP position
 
 Guardrails:
 
-- prefer skip/non-skip or packet-scale metadata first
-- do not pursue exact per-MB bit counts as a prerequisite
-- log GOP position for B/P frames
-- validate MV sign and reference-frame semantics before trusting per-block lookup experiments
+- use simple metadata first
+- do not require exact per-block bit accounting
+- record frame type and GOP position
+- validate MV semantics before trusting per-block experiments
 
 Primary metrics:
 
 - selected-frame count
-- answer agreement
+- agreement and kappa
 - TTFT
 - total latency
 
@@ -274,22 +326,22 @@ Primary metrics:
 
 Objective:
 
-- move wins into actual model compute
+- move the savings into actual model compute
 
 Hypothesis:
 
-- changed-window recompute is the lowest-risk path to real savings
+- changed-window recompute is the lowest-risk path to real speedup
 
 Tasks:
 
 - prototype changed-window or changed-region recompute contracts
-- keep Qwen-specific layer boundaries explicit
-- validate whether any useful merge/prune point exists for the target model family
+- keep model-specific geometry explicit
+- verify Qwen full-attention checkpoints locally before depending on merge claims
 
 Guardrails:
 
 - do not assume early-layer pruning transfers across architectures
-- for Qwen-like stacks, verify global-attention checkpoints before any pruning claim
+- do not inherit imported `layer 23` merge claims as if reproduced here
 
 Primary metrics:
 
@@ -305,21 +357,21 @@ Objective:
 
 Status:
 
-- this is a hypothesis, not a repo-validated result
+- hypothesis only
 
 Hypothesis:
 
-- static tokens can behave more like memory while changed tokens carry the global query burden
+- static tokens can behave more like memory while changed tokens carry most of the global query burden
 
 Tasks:
 
 - simulate changed-query attention schedules
 - test summary-bank or memory-bank variants
-- only attempt runtime implementation after simulation shows clear value
+- only attempt runtime implementation after simulation and earlier phases justify it
 
 Primary metrics:
 
-- attention interaction counts
+- interaction counts
 - measured latency if implemented
 - answer drift on motion-sensitive tasks
 
@@ -338,12 +390,13 @@ Tasks:
 - global stabilization before caching
 - multi-reference cache experiments
 - residual-gated reuse after stabilization
+- optional IMU-assisted variants only after basic stabilization works
 
 Primary metrics:
 
 - reuse ratio on FPV or mobile clips
-- answer agreement
-- failure bucket analysis
+- agreement and kappa
+- failure-bucket analysis
 
 ### Phase 7: Task-Aware Spatial Policies
 
@@ -354,15 +407,15 @@ Objective:
 Hypotheses:
 
 - Q-table and flatness signals help as pre-filters
-- luma/chroma and resolution decisions should depend on task class
-- screen content likely wants a separate path
+- luma, chroma, and resolution policies should depend on task class
+- screen content wants a separate path
 
 Tasks:
 
 - Q-table binary pre-filter experiments
 - luma/chroma task-policy sweeps
 - low-res plus ROI refinement
-- screen-content fork for slides, UI, and code
+- dedicated screen-content bucket
 
 Primary metrics:
 
@@ -370,26 +423,32 @@ Primary metrics:
 - latency deltas
 - failure concentration by task family
 
+Predicted failure ordering:
+
+- OCR
+- small-object localization
+- color fidelity
+- egomotion
+
 ## Measurement Contract
 
-This repo treats performance work as science, not anecdotes.
+Every serious benchmark requires:
 
-Required for every serious benchmark:
-
-- hypothesis
-- primary metric
-- unit of analysis
-- comparison point
-- warmup policy
+- a hypothesis
+- a track label
+- a primary metric
+- a comparison point
+- a preregistered success/rejection band
 - raw sample retention
-- exact model, prompt, clip, and commit metadata
+- exact model, clip, prompt, and commit metadata
 
 Required reporting:
 
+- baseline accuracy, modified-path accuracy, agreement, and kappa when possible
 - cold versus warm behavior when relevant
-- p50, p95, and p99 when sample sizes support them
+- p50 and p95, plus p99 when sample sizes support it
 - quality metrics and systems metrics reported separately
-- decode and temp-I/O kept separate from model timing when possible
+- decode and temp-I/O separated from model timing when possible
 
 Negative results must record:
 
@@ -398,7 +457,10 @@ Negative results must record:
 - what hypothesis got weaker
 - what next test follows logically
 
-See [docs/methodology/performance.md](docs/methodology/performance.md).
+See:
+
+- [docs/methodology/performance.md](docs/methodology/performance.md)
+- [docs/methodology/timing-harness.md](docs/methodology/timing-harness.md)
 
 ## Local Hardware Plan
 
@@ -409,38 +471,50 @@ Target machine:
 
 Implications:
 
-- prefer MLX-VLM for main local VLM runs
-- iterate on 3B to 4B-class models first
-- use 7B confirmation selectively on smaller subsets
-- treat large-server timing claims from imported repos as context, not local evidence
-
-See [docs/local-setup.md](docs/local-setup.md).
+- prefer MLX-VLM for local Track A and early Track B work
+- iterate on Qwen2.5-VL-3B first
+- use Qwen2.5-VL-7B selectively for confirmation
+- treat full 7B benchmark reproductions that do not fit in memory as partial reproductions, not full replications
 
 ## Immediate Backlog
 
-Near-term priority order:
+Near-term order:
 
-1. clean timing baseline with honest phase splits
-2. packet-size and keyframe routing
-3. semantic substitution reproduction on a small local subset
-4. changed-window sparse-execution design
-5. stabilization and multi-reference experiments for egomotion
-6. Q-table pre-filter and task-aware luma/chroma sweeps
+1. finish Phase 0 hygiene fixes and documentation
+2. run Phase 0.5 feasibility and determinism checks
+3. reproduce a small Track A semantic-substitution slice locally
+4. build the clean timing harness
+5. test packet-size and keyframe routing
+6. design changed-window sparse execution against the verified model geometry
+
+## Future Horizons
+
+Keep these visible, but clearly outside the current evidence boundary:
+
+- robustness against novelty amplification or compute-denial inputs
+- screen-content specialization as a major branch
+- machine-oriented codec sidecars
+- feature-compression and machine-first media standards as adjacent framing
+- sensor-fusion timelines or world-state codecs
+- AI-native codecs and hardware co-design
+
+These are paper-story or long-range-program ideas until local evidence lands.
 
 ## Open Questions
 
-- which local multimodal models expose enough of the vision path to support sparse execution cleanly?
-- which target models have usable late global-attention checkpoints for merge or prune?
-- how much of the original repo's temporal gain survives once decode and file-I/O are measured honestly on this laptop?
-- do the Qwen-specific conclusions generalize at all to Gemma-scale VLMs?
-- which failure classes dominate first: color, OCR, egomotion, or small-object localization?
-- which MV extraction path preserves correct B-frame reference semantics without excessive implementation complexity?
+- does the local MLX-VLM path expose a stable enough cached-feature interface for Track A work?
+- how much of the imported temporal gain survives once decode and file-I/O are measured honestly on this laptop?
+- do Qwen-specific reuse results generalize at all to Gemma-scale VLMs?
+- which failure classes dominate first: OCR, small objects, color, egomotion, or screen content?
+- which MV path preserves correct B-frame semantics without blowing up implementation complexity?
+- after routing and sparse execution, is changed-query attention still worth the engineering cost?
 
 ## Review Requests
 
 The next review pass should focus on:
 
 - whether the phase order is still the highest-signal path for a 16 GB Air
-- whether the killed and deprioritized claims are scoped correctly
-- whether Track A and Track B stay cleanly separated in the docs and future code
-- whether we are still missing a closer benchmark baseline or stronger sparse-execution comparison
+- whether the `deprioritized` list is scoped correctly
+- whether Track A and Track B stay cleanly separated in code and docs
+- whether the preregistration and timing-harness rules are strong enough for paper-grade evidence
+- whether the future-horizon section is ambitious enough without pretending to be current evidence
