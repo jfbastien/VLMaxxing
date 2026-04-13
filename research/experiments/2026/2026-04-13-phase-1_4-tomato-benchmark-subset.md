@@ -108,19 +108,74 @@ Notes:
 
 Run date:
 
-- pending
+- 2026-04-13
 
 Artifacts:
 
-- pending
+- Run A smoke:
+  [phase1_4_run_a_smoke.json](artifacts/phase1_4_run_a_smoke.json)
+- Run B initial subset:
+  - pending
 
 ## Result
 
-Pending.
+Run A: smoke
+
+Preregistration outcome:
+
+- Accepted for the smoke objective
+
+Observed outcome:
+
+- all `6` requested items returned parseable dense and cached answers
+- no item-level runtime crash occurred
+- dense accuracy: `1/6 = 0.167`
+- cached accuracy: `2/6 = 0.333`
+- dense-versus-cached agreement: `5/6 = 0.833`
+- cached parse failures: `0`
+- mean reuse ratio: `0.8425`
+- execution completed cleanly with `chunk_size = 1` and the declared
+  `Qwen2.5-VL-7B-Instruct-4bit` MLX path
+
+Most important qualitative outcome:
+
+- the smoke run brought the benchmark-native TOMATO path online on this machine
+  and stack, but it did not produce claim-strength evidence for `WP-2.5`
+- the dense baseline on this `6`-item slice was weak, and the single cached
+  disagreement improved the answer on one item rather than exposing a clean
+  reuse failure
+
+Run B: initial subset
+
+- pending
 
 ## Interpretation
 
-Pending.
+The smoke run did the job it was supposed to do, and no more.
+
+What is now established:
+
+- the local TOMATO assets, preprocessing path, prompt formatting, parsing, and
+  resumable chunked execution all work end to end on the local `7B` MLX stack
+- the declared local execution contract for this machine remains `chunk_size =
+  1` for this benchmark path
+
+What the smoke run does not establish:
+
+- any meaningful reproduction of the whitepaper TOMATO agreement headline
+- whether cached answers stay close enough to dense on a real local subset to
+  count as generalized reproduction
+
+Why the smoke is still useful:
+
+- it converts the TOMATO lane from planning-only to executable local science
+- it lets the next run focus on subset interpretation rather than asset or
+  harness bring-up
+
+Immediate next step:
+
+- run the preregistered `30`-item initial subset before changing the
+  reproduction-status row for `WP-2.5` beyond "partial, smoke only"
 
 ## Links
 

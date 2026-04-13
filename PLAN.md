@@ -725,8 +725,8 @@ Implications:
 Near-term order:
 
 1. keep the evidence boundary explicit with prereg outcomes and generalized-versus-strict reproduction labels
-2. finish benchmark-native TOMATO setup on this stack, including resumable local execution rules
-3. run a documented TOMATO subset reproduction on Qwen `7B` if memory allows, otherwise on the strongest feasible local fallback with the caveat stated up front
+2. treat benchmark-native TOMATO setup as complete on this stack, with the `6`-item smoke run and resumable local execution rules already in place
+3. run the documented `30`-item TOMATO initial subset on Qwen `7B`, then decide whether the local agreement story is strong enough to scale
 4. build MVBench on the same adapter pattern after the TOMATO path is stable
 5. extend the real-video slice beyond endpoint scene facts so natural middle-event items exist before broad threshold sweeps
 6. compare the repaired mechanism probes on a higher-precision local runtime before treating the locality gap as conceptual disagreement
