@@ -109,19 +109,65 @@ Notes:
 
 Run date:
 
-- pending
+- 2026-04-13
 
 Artifacts:
 
-- pending
+- Run A hosted smoke:
+  [phase1_5_run_a_smoke.json](artifacts/phase1_5_run_a_smoke.json)
+- Run B initial hosted subset:
+  - pending
 
 ## Result
 
-Pending.
+Run A: hosted smoke
+
+Preregistration outcome:
+
+- Accepted for the smoke objective
+
+Observed outcome:
+
+- all `18` requested hosted-slice items returned parseable dense and cached
+  answers
+- no item-level runtime crash occurred
+- dense accuracy: `12/18 = 0.667`
+- cached accuracy: `11/18 = 0.611`
+- dense-versus-cached agreement: `17/18 = 0.944`
+- cached parse failures: `0`
+- mean reuse ratio: `0.6928`
+- only one item disagreed:
+  - `mvbench:object_interaction:0`
+  - dense answer `C` (correct)
+  - cached answer `B` (wrong)
+  - reuse ratio mean `0.7232`
+
+Run B: initial hosted subset
+
+- pending
 
 ## Interpretation
 
-Pending.
+This is the strongest benchmark-native result on the local stack so far.
+
+What the smoke established:
+
+- after adding `perception.zip` and fixing nested hosted-path resolution, the
+  hosted predecessor-style MVBench slice is genuinely runnable locally
+- MVBench on this stack behaves much closer to the imported whitepaper
+  direction than TOMATO does
+- the default same-position cached path preserved `17/18` dense answers on the
+  first hosted item from each predecessor-style task
+
+What the smoke still does not establish:
+
+- a generalized reproduction of `WP-2.6`
+- stability on a larger hosted subset where per-task variance is visible
+
+Immediate next step:
+
+- run the preregistered `54`-item hosted subset before strengthening the
+  reproduction-status row for `WP-2.6` beyond "partial, smoke only"
 
 ## Links
 

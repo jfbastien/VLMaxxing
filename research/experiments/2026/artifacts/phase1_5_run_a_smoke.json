@@ -1,0 +1,868 @@
+{
+  "command": "uv run python scripts/run_benchmark_track_a.py run --benchmark mvbench --per-group 1 --chunk-size 1 --frame-count 8 --max-tokens 32 --output-path results/mvbench_smoke_qwen7b_clean.jsonl --summary-path results/mvbench_smoke_smoke_qwen7b_clean_summary.json --stop-file /tmp/codec-through-mvbench-smoke-clean.stop",
+  "disagreements": [
+    {
+      "answer_index": 2,
+      "benchmark": "mvbench",
+      "cached": {
+        "choice_index": 1,
+        "correct": false,
+        "elapsed_ms": 30908.679542,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3272,
+        "text": "B"
+      },
+      "dense": {
+        "choice_index": 2,
+        "correct": true,
+        "elapsed_ms": 41519.377083,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3272,
+        "text": "C"
+      },
+      "frame_count": 8,
+      "group": "object_interaction",
+      "item_id": "mvbench:object_interaction:0",
+      "match": false,
+      "question": "Which object was taken by the person?\nA. The dish.\nB. The box.\nC. The blanket.\nD. The paper/notebook.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.7232142857142858,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/mvbench/video/star/Charades_v1_480/J84TZ.mp4"
+    }
+  ],
+  "items": [
+    {
+      "answer_index": 2,
+      "benchmark": "mvbench",
+      "cached": {
+        "choice_index": 2,
+        "correct": true,
+        "elapsed_ms": 19051.631125,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3272,
+        "text": "C"
+      },
+      "dense": {
+        "choice_index": 2,
+        "correct": true,
+        "elapsed_ms": 26248.478584,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3272,
+        "text": "C"
+      },
+      "frame_count": 8,
+      "group": "action_antonym",
+      "item_id": "mvbench:action_antonym:0",
+      "match": true,
+      "question": "What is the action performed by the person in the video?\nA. Not sure\nB. Scattering something down\nC. Piling something up\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.29000000000000004,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/mvbench/video/ssv2_video/166583.webm"
+    },
+    {
+      "answer_index": 0,
+      "benchmark": "mvbench",
+      "cached": {
+        "choice_index": 1,
+        "correct": false,
+        "elapsed_ms": 32444.774875,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3268,
+        "text": "B"
+      },
+      "dense": {
+        "choice_index": 1,
+        "correct": false,
+        "elapsed_ms": 34221.625875,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3268,
+        "text": "B"
+      },
+      "frame_count": 8,
+      "group": "action_count",
+      "item_id": "mvbench:action_count:0",
+      "match": true,
+      "question": "How many times did the person launch objects on the table?\nA. 3\nB. 2\nC. 4\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.8878571428571427,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "/Users/jfb/s/codec-through/data/benchmarks/mvbench/video/perception/videos/video_6480.mp4"
+    },
+    {
+      "answer_index": 2,
+      "benchmark": "mvbench",
+      "cached": {
+        "choice_index": 2,
+        "correct": true,
+        "elapsed_ms": 20424.869916,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3293,
+        "text": "C"
+      },
+      "dense": {
+        "choice_index": 2,
+        "correct": true,
+        "elapsed_ms": 32935.74125,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3293,
+        "text": "C"
+      },
+      "frame_count": 8,
+      "group": "action_localization",
+      "item_id": "mvbench:action_localization:0",
+      "match": true,
+      "question": "During which part of the video does the action 'person sitting on a couch' occur?\nA. In the middle of the video.\nB. At the end of the video.\nC. Throughout the entire video.\nD. At the beginning of the video.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.7203571428571429,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/mvbench/video/sta/sta_video/RPY8D.mp4"
+    },
+    {
+      "answer_index": 0,
+      "benchmark": "mvbench",
+      "cached": {
+        "choice_index": 0,
+        "correct": true,
+        "elapsed_ms": 24230.085958,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3275,
+        "text": "A"
+      },
+      "dense": {
+        "choice_index": 0,
+        "correct": true,
+        "elapsed_ms": 32224.047917,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3275,
+        "text": "A"
+      },
+      "frame_count": 8,
+      "group": "action_prediction",
+      "item_id": "mvbench:action_prediction:0",
+      "match": true,
+      "question": "What will the person do next?\nA. Put down the pillow.\nB. Open the door.\nC. Take the book.\nD. Open the closet/cabinet.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.7460714285714286,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/mvbench/video/star/Charades_v1_480/AJTDO.mp4"
+    },
+    {
+      "answer_index": 0,
+      "benchmark": "mvbench",
+      "cached": {
+        "choice_index": 2,
+        "correct": false,
+        "elapsed_ms": 23520.074208,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3283,
+        "text": "C"
+      },
+      "dense": {
+        "choice_index": 2,
+        "correct": false,
+        "elapsed_ms": 33576.15325,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3283,
+        "text": "C"
+      },
+      "frame_count": 8,
+      "group": "action_sequence",
+      "item_id": "mvbench:action_sequence:0",
+      "match": true,
+      "question": "What happened after the person took the food?\nA. Ate the medicine.\nB. Tidied up the blanket.\nC. Put down the cup/glass/bottle.\nD. Took the box.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.8178571428571428,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/mvbench/video/star/Charades_v1_480/ZS9XR.mp4"
+    },
+    {
+      "answer_index": 0,
+      "benchmark": "mvbench",
+      "cached": {
+        "choice_index": 0,
+        "correct": true,
+        "elapsed_ms": 24210.860208,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3264,
+        "text": "A"
+      },
+      "dense": {
+        "choice_index": 0,
+        "correct": true,
+        "elapsed_ms": 33334.813958,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3264,
+        "text": "A"
+      },
+      "frame_count": 8,
+      "group": "character_order",
+      "item_id": "mvbench:character_order:0",
+      "match": true,
+      "question": "What letter did the person write first on the paper?\nA. l\nB. v\nC. e\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.43964285714285717,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "/Users/jfb/s/codec-through/data/benchmarks/mvbench/video/perception/videos/video_1238.mp4"
+    },
+    {
+      "answer_index": 3,
+      "benchmark": "mvbench",
+      "cached": {
+        "choice_index": 3,
+        "correct": true,
+        "elapsed_ms": 24640.477292,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3301,
+        "text": "D"
+      },
+      "dense": {
+        "choice_index": 3,
+        "correct": true,
+        "elapsed_ms": 35296.065625,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3301,
+        "text": "D"
+      },
+      "frame_count": 8,
+      "group": "counterfactual_inference",
+      "item_id": "mvbench:counterfactual_inference:0",
+      "match": true,
+      "question": "Which of the following will happen if the cylinder is removed?\nA. The cyan rubber object and the blue cube collide\nB. The brown cube collides with the metal cube\nC. The cyan rubber object and the metal cube collide\nD. The cyan rubber cube collides with the sphere\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.9407142857142856,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/mvbench/video/clevrer/video_validation/video_11363.mp4"
+    },
+    {
+      "answer_index": 1,
+      "benchmark": "mvbench",
+      "cached": {
+        "choice_index": 1,
+        "correct": true,
+        "elapsed_ms": 23794.745375,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3315,
+        "text": "B"
+      },
+      "dense": {
+        "choice_index": 1,
+        "correct": true,
+        "elapsed_ms": 32948.781666,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3315,
+        "text": "B"
+      },
+      "frame_count": 8,
+      "group": "egocentric_navigation",
+      "item_id": "mvbench:egocentric_navigation:0",
+      "match": true,
+      "question": "This is a navigation video of an agent following instruction: \"Go up the stairs. Take a left at the top of the stairs. Go into the bedroom on the left. Stop in the doorway.\" What is the next action it should take?\nA. Turn right and move forward\nB. Turn left and move forward\nC. Move forward\nD. Stop\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.06964285714285713,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/mvbench/video/vlnqa/left/4504_frame52.mp4"
+    },
+    {
+      "answer_index": 0,
+      "benchmark": "mvbench",
+      "cached": {
+        "choice_index": 0,
+        "correct": true,
+        "elapsed_ms": 27453.575166,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3270,
+        "text": "A"
+      },
+      "dense": {
+        "choice_index": 0,
+        "correct": true,
+        "elapsed_ms": 35232.492291,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3270,
+        "text": "A"
+      },
+      "frame_count": 8,
+      "group": "fine_grained_action",
+      "item_id": "mvbench:fine_grained_action:0",
+      "match": true,
+      "question": "What is the action performed by the person in the video?\nA. bathing\nB. watering\nC. washing\nD. bubbling\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.9421428571428571,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/mvbench/video/Moments_in_Time_Raw/videos/validation/bathing/giphy-DtWRNT4M9ym6Q_0.mp4"
+    },
+    {
+      "answer_index": 0,
+      "benchmark": "mvbench",
+      "cached": {
+        "choice_index": 0,
+        "correct": true,
+        "elapsed_ms": 27956.120958,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3266,
+        "text": "A"
+      },
+      "dense": {
+        "choice_index": 0,
+        "correct": true,
+        "elapsed_ms": 38669.841208,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3266,
+        "text": "A"
+      },
+      "frame_count": 8,
+      "group": "moving_attribute",
+      "item_id": "mvbench:moving_attribute:0",
+      "match": true,
+      "question": "What color is the object that is stationary?\nA. gray\nB. green\nC. yellow\nD. blue\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.9500000000000001,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/mvbench/video/clevrer/video_validation/video_12600.mp4"
+    },
+    {
+      "answer_index": 3,
+      "benchmark": "mvbench",
+      "cached": {
+        "choice_index": 3,
+        "correct": true,
+        "elapsed_ms": 24627.622833,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3268,
+        "text": "D"
+      },
+      "dense": {
+        "choice_index": 3,
+        "correct": true,
+        "elapsed_ms": 40990.759,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3268,
+        "text": "D"
+      },
+      "frame_count": 8,
+      "group": "moving_count",
+      "item_id": "mvbench:moving_count:0",
+      "match": true,
+      "question": "How many red objects are moving?\nA. 3\nB. 5\nC. 4\nD. 2\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.9292857142857144,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/mvbench/video/clevrer/video_validation/video_11123.mp4"
+    },
+    {
+      "answer_index": 0,
+      "benchmark": "mvbench",
+      "cached": {
+        "choice_index": 0,
+        "correct": true,
+        "elapsed_ms": 24716.756041,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3284,
+        "text": "A"
+      },
+      "dense": {
+        "choice_index": 0,
+        "correct": true,
+        "elapsed_ms": 36817.326167,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3284,
+        "text": "A"
+      },
+      "frame_count": 8,
+      "group": "moving_direction",
+      "item_id": "mvbench:moving_direction:0",
+      "match": true,
+      "question": "What direction is the cyan sphere moving in within the video?\nA. The object is stationary.\nB. Up and to the right.\nC. Down and to the left.\nD. Down and to the right.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.9653571428571429,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/mvbench/video/clevrer/video_validation/video_14727.mp4"
+    },
+    {
+      "answer_index": 1,
+      "benchmark": "mvbench",
+      "cached": {
+        "choice_index": 2,
+        "correct": false,
+        "elapsed_ms": 27784.414584,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3265,
+        "text": "C"
+      },
+      "dense": {
+        "choice_index": 2,
+        "correct": false,
+        "elapsed_ms": 41830.078125,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3265,
+        "text": "C"
+      },
+      "frame_count": 8,
+      "group": "object_existence",
+      "item_id": "mvbench:object_existence:0",
+      "match": true,
+      "question": "Are there any moving green objects when the video ends?\nA. not sure\nB. yes\nC. no\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.9489285714285713,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/mvbench/video/clevrer/video_validation/video_13344.mp4"
+    },
+    {
+      "answer_index": 2,
+      "benchmark": "mvbench",
+      "cached": {
+        "choice_index": 1,
+        "correct": false,
+        "elapsed_ms": 30908.679542,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3272,
+        "text": "B"
+      },
+      "dense": {
+        "choice_index": 2,
+        "correct": true,
+        "elapsed_ms": 41519.377083,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3272,
+        "text": "C"
+      },
+      "frame_count": 8,
+      "group": "object_interaction",
+      "item_id": "mvbench:object_interaction:0",
+      "match": false,
+      "question": "Which object was taken by the person?\nA. The dish.\nB. The box.\nC. The blanket.\nD. The paper/notebook.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.7232142857142858,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/mvbench/video/star/Charades_v1_480/J84TZ.mp4"
+    },
+    {
+      "answer_index": 1,
+      "benchmark": "mvbench",
+      "cached": {
+        "choice_index": 2,
+        "correct": false,
+        "elapsed_ms": 28513.025291,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3303,
+        "text": "C"
+      },
+      "dense": {
+        "choice_index": 2,
+        "correct": false,
+        "elapsed_ms": 43335.026958,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3303,
+        "text": "C"
+      },
+      "frame_count": 8,
+      "group": "object_shuffle",
+      "item_id": "mvbench:object_shuffle:0",
+      "match": true,
+      "question": "The person uses multiple similar objects to play an occlusion game. Where is the hidden object at the end of the game from the person's point of view?\nA. Under the first object from the left.\nB. Under the third object from the left.\nC. Under the second object from the left.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.4485714285714285,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "/Users/jfb/s/codec-through/data/benchmarks/mvbench/video/perception/videos/video_10336.mp4"
+    },
+    {
+      "answer_index": 2,
+      "benchmark": "mvbench",
+      "cached": {
+        "choice_index": 1,
+        "correct": false,
+        "elapsed_ms": 32267.8015,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3296,
+        "text": "B"
+      },
+      "dense": {
+        "choice_index": 1,
+        "correct": false,
+        "elapsed_ms": 43805.136333,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3296,
+        "text": "B"
+      },
+      "frame_count": 8,
+      "group": "scene_transition",
+      "item_id": "mvbench:scene_transition:0",
+      "match": true,
+      "question": "What's the right option for how the scenes in the video change?\nA. From the reception desk to the conference room.\nB. From the kitchen to the dining area.\nC. From the server room to the control center.\nD. From the classroom to the library.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.5599999999999999,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/mvbench/video/scene_qa/video/Top010_04755.mp4"
+    },
+    {
+      "answer_index": 1,
+      "benchmark": "mvbench",
+      "cached": {
+        "choice_index": 2,
+        "correct": false,
+        "elapsed_ms": 33030.326458,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3275,
+        "text": "C"
+      },
+      "dense": {
+        "choice_index": 2,
+        "correct": false,
+        "elapsed_ms": 45308.338,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3275,
+        "text": "C"
+      },
+      "frame_count": 8,
+      "group": "state_change",
+      "item_id": "mvbench:state_change:0",
+      "match": true,
+      "question": "What can you say about the temperature of the water being poured?\nA. No water was poured.\nB. The water seems hot.\nC. The water seems cold.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.6692857142857144,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "/Users/jfb/s/codec-through/data/benchmarks/mvbench/video/perception/videos/video_2370.mp4"
+    },
+    {
+      "answer_index": 1,
+      "benchmark": "mvbench",
+      "cached": {
+        "choice_index": 1,
+        "correct": true,
+        "elapsed_ms": 33025.584,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3305,
+        "text": "B"
+      },
+      "dense": {
+        "choice_index": 1,
+        "correct": true,
+        "elapsed_ms": 43586.952333,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3305,
+        "text": "B"
+      },
+      "frame_count": 8,
+      "group": "unexpected_action",
+      "item_id": "mvbench:unexpected_action:0",
+      "match": true,
+      "question": "What unusual action is the man next to the table tennis players performing?\nA. He is trying to catch the ping pong ball with his mouth.\nB. He is tapping his own abdomen.\nC. He is trying to balance a paddle on his nose.\nD. He is hitting a ping pong ball with his elbow.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.42107142857142854,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/mvbench/video/FunQA_test/test/test_humor/H_T_1227_0000_0191.mp4"
+    }
+  ],
+  "label": "mvbench_smoke_qwen7b_clean",
+  "local_results": {
+    "jsonl_path": "results/mvbench_smoke_qwen7b_clean.jsonl",
+    "summary_path": "results/mvbench_smoke_smoke_qwen7b_clean_summary.json"
+  },
+  "per_group": {
+    "action_antonym": {
+      "agreement": 1.0,
+      "cached_accuracy": 1.0,
+      "dense_accuracy": 1.0,
+      "n": 1,
+      "reuse_ratio_mean": 0.29000000000000004
+    },
+    "action_count": {
+      "agreement": 1.0,
+      "cached_accuracy": 0.0,
+      "dense_accuracy": 0.0,
+      "n": 1,
+      "reuse_ratio_mean": 0.8878571428571427
+    },
+    "action_localization": {
+      "agreement": 1.0,
+      "cached_accuracy": 1.0,
+      "dense_accuracy": 1.0,
+      "n": 1,
+      "reuse_ratio_mean": 0.7203571428571429
+    },
+    "action_prediction": {
+      "agreement": 1.0,
+      "cached_accuracy": 1.0,
+      "dense_accuracy": 1.0,
+      "n": 1,
+      "reuse_ratio_mean": 0.7460714285714286
+    },
+    "action_sequence": {
+      "agreement": 1.0,
+      "cached_accuracy": 0.0,
+      "dense_accuracy": 0.0,
+      "n": 1,
+      "reuse_ratio_mean": 0.8178571428571428
+    },
+    "character_order": {
+      "agreement": 1.0,
+      "cached_accuracy": 1.0,
+      "dense_accuracy": 1.0,
+      "n": 1,
+      "reuse_ratio_mean": 0.43964285714285717
+    },
+    "counterfactual_inference": {
+      "agreement": 1.0,
+      "cached_accuracy": 1.0,
+      "dense_accuracy": 1.0,
+      "n": 1,
+      "reuse_ratio_mean": 0.9407142857142856
+    },
+    "egocentric_navigation": {
+      "agreement": 1.0,
+      "cached_accuracy": 1.0,
+      "dense_accuracy": 1.0,
+      "n": 1,
+      "reuse_ratio_mean": 0.06964285714285713
+    },
+    "fine_grained_action": {
+      "agreement": 1.0,
+      "cached_accuracy": 1.0,
+      "dense_accuracy": 1.0,
+      "n": 1,
+      "reuse_ratio_mean": 0.9421428571428571
+    },
+    "moving_attribute": {
+      "agreement": 1.0,
+      "cached_accuracy": 1.0,
+      "dense_accuracy": 1.0,
+      "n": 1,
+      "reuse_ratio_mean": 0.9500000000000001
+    },
+    "moving_count": {
+      "agreement": 1.0,
+      "cached_accuracy": 1.0,
+      "dense_accuracy": 1.0,
+      "n": 1,
+      "reuse_ratio_mean": 0.9292857142857144
+    },
+    "moving_direction": {
+      "agreement": 1.0,
+      "cached_accuracy": 1.0,
+      "dense_accuracy": 1.0,
+      "n": 1,
+      "reuse_ratio_mean": 0.9653571428571429
+    },
+    "object_existence": {
+      "agreement": 1.0,
+      "cached_accuracy": 0.0,
+      "dense_accuracy": 0.0,
+      "n": 1,
+      "reuse_ratio_mean": 0.9489285714285713
+    },
+    "object_interaction": {
+      "agreement": 0.0,
+      "cached_accuracy": 0.0,
+      "dense_accuracy": 1.0,
+      "n": 1,
+      "reuse_ratio_mean": 0.7232142857142858
+    },
+    "object_shuffle": {
+      "agreement": 1.0,
+      "cached_accuracy": 0.0,
+      "dense_accuracy": 0.0,
+      "n": 1,
+      "reuse_ratio_mean": 0.4485714285714285
+    },
+    "scene_transition": {
+      "agreement": 1.0,
+      "cached_accuracy": 0.0,
+      "dense_accuracy": 0.0,
+      "n": 1,
+      "reuse_ratio_mean": 0.5599999999999999
+    },
+    "state_change": {
+      "agreement": 1.0,
+      "cached_accuracy": 0.0,
+      "dense_accuracy": 0.0,
+      "n": 1,
+      "reuse_ratio_mean": 0.6692857142857144
+    },
+    "unexpected_action": {
+      "agreement": 1.0,
+      "cached_accuracy": 1.0,
+      "dense_accuracy": 1.0,
+      "n": 1,
+      "reuse_ratio_mean": 0.42107142857142854
+    }
+  },
+  "phase": "1.5",
+  "run": "A",
+  "summary": {
+    "agreement": 0.9444444444444444,
+    "benchmark": "mvbench",
+    "cached_accuracy": 0.6111111111111112,
+    "cached_parse_failures": 0,
+    "completed_item_ids": [
+      "mvbench:action_antonym:0",
+      "mvbench:action_count:0",
+      "mvbench:action_localization:0",
+      "mvbench:action_prediction:0",
+      "mvbench:action_sequence:0",
+      "mvbench:character_order:0",
+      "mvbench:counterfactual_inference:0",
+      "mvbench:egocentric_navigation:0",
+      "mvbench:fine_grained_action:0",
+      "mvbench:moving_attribute:0",
+      "mvbench:moving_count:0",
+      "mvbench:moving_direction:0",
+      "mvbench:object_existence:0",
+      "mvbench:object_interaction:0",
+      "mvbench:object_shuffle:0",
+      "mvbench:scene_transition:0",
+      "mvbench:state_change:0",
+      "mvbench:unexpected_action:0"
+    ],
+    "dense_accuracy": 0.6666666666666666,
+    "environment": {
+      "datasets": "4.8.4",
+      "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
+      "git_dirty": false,
+      "git_sha": "b33d141ba72569147da613d3fb317d1f12fa3417",
+      "huggingface_hub": "1.10.1",
+      "mlx_vlm_module": "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
+      "model_path": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
+      "platform": "darwin",
+      "python": "3.12.12"
+    },
+    "remaining_item_ids": [],
+    "requested_item_ids": [
+      "mvbench:action_antonym:0",
+      "mvbench:action_count:0",
+      "mvbench:action_localization:0",
+      "mvbench:action_prediction:0",
+      "mvbench:action_sequence:0",
+      "mvbench:character_order:0",
+      "mvbench:counterfactual_inference:0",
+      "mvbench:egocentric_navigation:0",
+      "mvbench:fine_grained_action:0",
+      "mvbench:moving_attribute:0",
+      "mvbench:moving_count:0",
+      "mvbench:moving_direction:0",
+      "mvbench:object_existence:0",
+      "mvbench:object_interaction:0",
+      "mvbench:object_shuffle:0",
+      "mvbench:scene_transition:0",
+      "mvbench:state_change:0",
+      "mvbench:unexpected_action:0"
+    ],
+    "reuse_ratio_mean": 0.6927777777777777,
+    "stopped_early": false
+  }
+}
