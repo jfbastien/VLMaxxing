@@ -22,7 +22,7 @@ questions from chat history.
 ## Relationship To The Corpus
 
 - `data/corpus/manifest.toml` says what the clips are
-- this directory says what we ask about those clips and how we score the answers
+- this directory says what we ask about those clips, which contiguous window to show, and how we score the answers
 
 Do not store long-form per-run outputs here. Those belong in raw artifacts and
 experiment notes.

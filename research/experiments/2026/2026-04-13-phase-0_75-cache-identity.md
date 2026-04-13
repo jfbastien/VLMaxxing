@@ -81,18 +81,75 @@ Notes:
 
 ## Execution
 
-Not run yet.
+Run date:
+
+- 2026-04-13
+
+Decode and sampling:
+
+- decode backend: `pyav`
+- sampling mode: `contiguous_window`
+- Xiph windows: frames `0-7`
+- same clip ids and prompt texts as Phase `0.5`
+
+Conditions:
+
+- `A0`: dense direct generation
+- `A1`: unchanged dense features routed through `cached_image_features`
+- `A2`: deliberately perturbed cached features
+
+Perturbation policy:
+
+- Qwen: zero one frame segment after splitting the concatenated cached features by `image_grid_thw`
+- Gemma: zero cached image features directly
+
+Repetition count:
+
+- `10` per condition per prompt response
+
+Artifact:
+
+- [phase0_75.json](artifacts/phase0_75.json)
 
 ## Result
 
-Pending.
+Accepted.
+
+Key outcomes:
+
+- on all `4` preregistered prompt responses per model, `A0 == A1` exactly across all `10` repetitions
+- prefill logits for `A0` and `A1` matched exactly with `max_abs_diff = 0.0` on both models
+- perturbed-cache logits moved strongly on every sample:
+  - Qwen minimum `A0` versus `A2` logit diff: `27.73`
+  - Gemma minimum `A0` versus `A2` logit diff: `49.5`
+- perturbed text often changed, but not always; the logit probe was the stronger liveness signal
+
+Observed but not interpreted as a systems claim:
+
+- cached-path latencies were often lower than dense latencies
+- this note does **not** present that as Track B evidence because dense vision encode still happened to produce the cached features
 
 ## Interpretation
 
-Pending.
+The cache-path identity control passed cleanly.
+
+What got stronger:
+
+- the local Track A substrate is trustworthy on both Qwen 3B and Gemma E4B
+- later planner-driven disagreements can be attributed to reuse policy rather than to a broken cache interface
+
+What changed in repo status:
+
+- `cache-path identity equivalence for Track A` is now locally validated instead of merely a prerequisite hypothesis
+
+What remains out of scope:
+
+- real skipped compute
+- broader benchmark claims beyond these local controls
 
 ## Links
 
 - [PLAN.md](../../../../PLAN.md)
 - [docs/methodology/preprocessing.md](../../../../docs/methodology/preprocessing.md)
 - [research/experiments/2026/2026-04-13-phase-0_5-feasibility.md](2026-04-13-phase-0_5-feasibility.md)
+- [phase0_75.json](artifacts/phase0_75.json)

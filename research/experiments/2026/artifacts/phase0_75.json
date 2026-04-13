@@ -1,0 +1,276 @@
+{
+  "environment": {
+    "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "git_sha": "ab6722e7ac283411b907652d84ff9365944ee358",
+    "mlx_vlm_module": "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
+    "platform": "macOS-26.3-arm64-arm-64bit",
+    "python": "3.12.12"
+  },
+  "models": {
+    "Qwen2.5-VL-3B-Instruct-4bit": {
+      "samples": [
+        {
+          "a0_equals_a1_exactly": true,
+          "a0_unique_outputs": [
+            "A woman wearing a pink jacket and white shirt is sitting in front of a blue screen."
+          ],
+          "a1_unique_outputs": [
+            "A woman wearing a pink jacket and white shirt is sitting in front of a blue screen."
+          ],
+          "a2_unique_outputs": [
+            "A woman in a pink jacket sits in front of a blue screen."
+          ],
+          "clip_id": "xiph_akiyo_cif",
+          "clip_sha256": "64473ca738ce53bcac90afc49b61ffa616e36f7651ce41ca67bc1f44c8c088c9",
+          "latency_ms": {
+            "A0_dense": {
+              "p50": 4436.9389169999995,
+              "p95": 4577.2070561
+            },
+            "A1_cached_same": {
+              "p50": 4392.1145205,
+              "p95": 9430.1129766
+            },
+            "A2_cached_perturbed": {
+              "p50": 3155.9783125,
+              "p95": 5150.933917149999
+            }
+          },
+          "prefill_logits_max_abs_diff_a0_vs_a1": 0.0,
+          "prefill_logits_max_abs_diff_a0_vs_a2": 32.8125,
+          "question": "Describe the scene in one sentence.",
+          "repetitions_per_condition": 10
+        },
+        {
+          "a0_equals_a1_exactly": true,
+          "a0_unique_outputs": [
+            "The woman's hair changes from being pulled back to being loose and down."
+          ],
+          "a1_unique_outputs": [
+            "The woman's hair changes from being pulled back to being loose and down."
+          ],
+          "a2_unique_outputs": [
+            "The woman's hair changes from being down to being pulled back."
+          ],
+          "clip_id": "xiph_akiyo_cif",
+          "clip_sha256": "64473ca738ce53bcac90afc49b61ffa616e36f7651ce41ca67bc1f44c8c088c9",
+          "latency_ms": {
+            "A0_dense": {
+              "p50": 4991.717708,
+              "p95": 5519.59286455
+            },
+            "A1_cached_same": {
+              "p50": 3411.8776669999997,
+              "p95": 3589.4356333
+            },
+            "A2_cached_perturbed": {
+              "p50": 3047.9233750000003,
+              "p95": 3156.9999875
+            }
+          },
+          "prefill_logits_max_abs_diff_a0_vs_a1": 0.0,
+          "prefill_logits_max_abs_diff_a0_vs_a2": 32.8125,
+          "question": "What changes over time in this clip?",
+          "repetitions_per_condition": 10
+        },
+        {
+          "a0_equals_a1_exactly": true,
+          "a0_unique_outputs": [
+            "A man and a woman are sitting in front of a television set."
+          ],
+          "a1_unique_outputs": [
+            "A man and a woman are sitting in front of a television set."
+          ],
+          "a2_unique_outputs": [
+            "A man and a woman are sitting in front of a television set."
+          ],
+          "clip_id": "xiph_news_cif",
+          "clip_sha256": "548f243e0ff8f11e59ad2464f5e147fe4bb0570fdce6393a02094364671524d6",
+          "latency_ms": {
+            "A0_dense": {
+              "p50": 5271.8610625,
+              "p95": 5481.9019189
+            },
+            "A1_cached_same": {
+              "p50": 3113.639729,
+              "p95": 3318.69030465
+            },
+            "A2_cached_perturbed": {
+              "p50": 2971.0046039999997,
+              "p95": 3130.4893331499998
+            }
+          },
+          "prefill_logits_max_abs_diff_a0_vs_a1": 0.0,
+          "prefill_logits_max_abs_diff_a0_vs_a2": 27.734375,
+          "question": "Describe the scene in one sentence.",
+          "repetitions_per_condition": 10
+        },
+        {
+          "a0_equals_a1_exactly": true,
+          "a0_unique_outputs": [
+            "The man and woman both have their hands on their laps. The man is wearing a black suit and tie, and the"
+          ],
+          "a1_unique_outputs": [
+            "The man and woman both have their hands on their laps. The man is wearing a black suit and tie, and the"
+          ],
+          "a2_unique_outputs": [
+            "The man and woman both have their hands on their laps. The man is wearing a black suit and tie, and the"
+          ],
+          "clip_id": "xiph_news_cif",
+          "clip_sha256": "548f243e0ff8f11e59ad2464f5e147fe4bb0570fdce6393a02094364671524d6",
+          "latency_ms": {
+            "A0_dense": {
+              "p50": 5684.5483540000005,
+              "p95": 6849.3453626499995
+            },
+            "A1_cached_same": {
+              "p50": 4101.5810415,
+              "p95": 4730.5680517499995
+            },
+            "A2_cached_perturbed": {
+              "p50": 5299.401083,
+              "p95": 5449.034575
+            }
+          },
+          "prefill_logits_max_abs_diff_a0_vs_a1": 0.0,
+          "prefill_logits_max_abs_diff_a0_vs_a2": 27.734375,
+          "question": "What changes over time in this clip?",
+          "repetitions_per_condition": 10
+        }
+      ]
+    },
+    "gemma-4-e4b-it-4bit": {
+      "samples": [
+        {
+          "a0_equals_a1_exactly": true,
+          "a0_unique_outputs": [
+            "The images are of the same woman, dressed in a light pink blazer over a white blouse, posing against a backdrop featuring"
+          ],
+          "a1_unique_outputs": [
+            "The images are of the same woman, dressed in a light pink blazer over a white blouse, posing against a backdrop featuring"
+          ],
+          "a2_unique_outputs": [
+            "The image is a collection of several small, mostly black and white, abstract or heavily stylized visual fragments, suggesting a montage"
+          ],
+          "clip_id": "xiph_akiyo_cif",
+          "clip_sha256": "64473ca738ce53bcac90afc49b61ffa616e36f7651ce41ca67bc1f44c8c088c9",
+          "latency_ms": {
+            "A0_dense": {
+              "p50": 11431.056375,
+              "p95": 16921.10765174999
+            },
+            "A1_cached_same": {
+              "p50": 4553.98125,
+              "p95": 4827.4068042
+            },
+            "A2_cached_perturbed": {
+              "p50": 4906.005417,
+              "p95": 4983.78792935
+            }
+          },
+          "prefill_logits_max_abs_diff_a0_vs_a1": 0.0,
+          "prefill_logits_max_abs_diff_a0_vs_a2": 51.0,
+          "question": "Describe the scene in one sentence.",
+          "repetitions_per_condition": 10
+        },
+        {
+          "a0_equals_a1_exactly": true,
+          "a0_unique_outputs": [
+            "The provided images are **identical** in terms of the subject, her attire, and the background.\n\nTherefore, based"
+          ],
+          "a1_unique_outputs": [
+            "The provided images are **identical** in terms of the subject, her attire, and the background.\n\nTherefore, based"
+          ],
+          "a2_unique_outputs": [
+            "Please provide the clip you are referring to. I need the image or video clip to tell you what changes over time."
+          ],
+          "clip_id": "xiph_akiyo_cif",
+          "clip_sha256": "64473ca738ce53bcac90afc49b61ffa616e36f7651ce41ca67bc1f44c8c088c9",
+          "latency_ms": {
+            "A0_dense": {
+              "p50": 8835.2224785,
+              "p95": 9364.6730208
+            },
+            "A1_cached_same": {
+              "p50": 3303.508396,
+              "p95": 3378.0463064
+            },
+            "A2_cached_perturbed": {
+              "p50": 3614.0535419999997,
+              "p95": 3692.32080215
+            }
+          },
+          "prefill_logits_max_abs_diff_a0_vs_a1": 0.0,
+          "prefill_logits_max_abs_diff_a0_vs_a2": 51.0,
+          "question": "What changes over time in this clip?",
+          "repetitions_per_condition": 10
+        },
+        {
+          "a0_equals_a1_exactly": true,
+          "a0_unique_outputs": [
+            "The scene depicts a formal presentation setting featuring a man and a woman standing beside a large screen displaying a scene, with a"
+          ],
+          "a1_unique_outputs": [
+            "The scene depicts a formal presentation setting featuring a man and a woman standing beside a large screen displaying a scene, with a"
+          ],
+          "a2_unique_outputs": [
+            "The image is a collection of several small, mostly black and white, abstract or heavily stylized visual fragments, suggesting a montage"
+          ],
+          "clip_id": "xiph_news_cif",
+          "clip_sha256": "548f243e0ff8f11e59ad2464f5e147fe4bb0570fdce6393a02094364671524d6",
+          "latency_ms": {
+            "A0_dense": {
+              "p50": 9026.782145500001,
+              "p95": 9904.3388872
+            },
+            "A1_cached_same": {
+              "p50": 3328.9048955,
+              "p95": 3934.0995503
+            },
+            "A2_cached_perturbed": {
+              "p50": 3761.9345005,
+              "p95": 3950.9433276
+            }
+          },
+          "prefill_logits_max_abs_diff_a0_vs_a1": 0.0,
+          "prefill_logits_max_abs_diff_a0_vs_a2": 49.5,
+          "question": "Describe the scene in one sentence.",
+          "repetitions_per_condition": 10
+        },
+        {
+          "a0_equals_a1_exactly": true,
+          "a0_unique_outputs": [
+            "The provided images are **identical** in terms of the visual content.\n\nThere are **no discernible changes over time**"
+          ],
+          "a1_unique_outputs": [
+            "The provided images are **identical** in terms of the visual content.\n\nThere are **no discernible changes over time**"
+          ],
+          "a2_unique_outputs": [
+            "Please provide the clip you are referring to. I need the image or video clip to tell you what changes over time."
+          ],
+          "clip_id": "xiph_news_cif",
+          "clip_sha256": "548f243e0ff8f11e59ad2464f5e147fe4bb0570fdce6393a02094364671524d6",
+          "latency_ms": {
+            "A0_dense": {
+              "p50": 9373.8877085,
+              "p95": 10055.2246314
+            },
+            "A1_cached_same": {
+              "p50": 3382.491167,
+              "p95": 3519.7835188999998
+            },
+            "A2_cached_perturbed": {
+              "p50": 3660.3241669999998,
+              "p95": 3859.21716235
+            }
+          },
+          "prefill_logits_max_abs_diff_a0_vs_a1": 0.0,
+          "prefill_logits_max_abs_diff_a0_vs_a2": 49.5,
+          "question": "What changes over time in this clip?",
+          "repetitions_per_condition": 10
+        }
+      ]
+    }
+  },
+  "phase": "0.75"
+}

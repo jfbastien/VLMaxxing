@@ -1,0 +1,134 @@
+{
+  "environment": {
+    "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "git_sha": "ab6722e7ac283411b907652d84ff9365944ee358",
+    "mlx_vlm_module": "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
+    "platform": "macOS-26.3-arm64-arm-64bit",
+    "python": "3.12.12"
+  },
+  "models": {
+    "Qwen2.5-VL-3B-Instruct-4bit": {
+      "api_dag": {
+        "step_1_import_load": true,
+        "step_2_model_load": true,
+        "step_3_dense_generation": true,
+        "step_4_dense_determinism": true,
+        "step_5_cache_liveness": true
+      },
+      "dense_examples": [
+        {
+          "clip_id": "xiph_akiyo_cif",
+          "clip_sha256": "64473ca738ce53bcac90afc49b61ffa616e36f7651ce41ca67bc1f44c8c088c9",
+          "elapsed_ms": 4129.94,
+          "question": "Describe the scene in one sentence.",
+          "response": "A woman wearing a pink jacket and white shirt is sitting in front of a blue screen."
+        },
+        {
+          "clip_id": "xiph_akiyo_cif",
+          "clip_sha256": "64473ca738ce53bcac90afc49b61ffa616e36f7651ce41ca67bc1f44c8c088c9",
+          "elapsed_ms": 3914.665208,
+          "question": "What changes over time in this clip?",
+          "response": "The woman's hair changes from being pulled back to being loose and down."
+        },
+        {
+          "clip_id": "xiph_news_cif",
+          "clip_sha256": "548f243e0ff8f11e59ad2464f5e147fe4bb0570fdce6393a02094364671524d6",
+          "elapsed_ms": 3890.389584,
+          "question": "Describe the scene in one sentence.",
+          "response": "A man and a woman are sitting in front of a television set."
+        },
+        {
+          "clip_id": "xiph_news_cif",
+          "clip_sha256": "548f243e0ff8f11e59ad2464f5e147fe4bb0570fdce6393a02094364671524d6",
+          "elapsed_ms": 4078.960875,
+          "question": "What changes over time in this clip?",
+          "response": "The man and woman both have their hands on their laps. The man is wearing a black suit and tie, and the"
+        }
+      ],
+      "determinism": {
+        "bit_identical": true,
+        "clip_id": "xiph_akiyo_cif",
+        "latency_ms": {
+          "p50": 4388.975603999999,
+          "p95": 4899.708731399999
+        },
+        "question": "Describe the scene in one sentence.",
+        "repetitions": 50,
+        "unique_output_count": 1,
+        "unique_outputs": [
+          "A woman wearing a pink jacket and white shirt is sitting in front of a blue screen."
+        ]
+      },
+      "liveness_probe": {
+        "clip_id": "synthetic_color_swap",
+        "dense_text": "A",
+        "path_live": true,
+        "perturbed_text": "A",
+        "prefill_logits_max_abs_diff": 29.953125,
+        "question": "Which event happens in this clip?\nA. The large center square changes from red to green.\nB. The whole scene pans sideways.\nC. A hard cut changes the room.\nD. Nothing changes.\nAnswer with one letter only."
+      }
+    },
+    "gemma-4-e4b-it-4bit": {
+      "api_dag": {
+        "step_1_import_load": true,
+        "step_2_model_load": true,
+        "step_3_dense_generation": true,
+        "step_4_dense_determinism": true,
+        "step_5_cache_liveness": true
+      },
+      "dense_examples": [
+        {
+          "clip_id": "xiph_akiyo_cif",
+          "clip_sha256": "64473ca738ce53bcac90afc49b61ffa616e36f7651ce41ca67bc1f44c8c088c9",
+          "elapsed_ms": 18685.276708,
+          "question": "Describe the scene in one sentence.",
+          "response": "The images are of the same woman, dressed in a light pink blazer over a white blouse, posing against a backdrop featuring"
+        },
+        {
+          "clip_id": "xiph_akiyo_cif",
+          "clip_sha256": "64473ca738ce53bcac90afc49b61ffa616e36f7651ce41ca67bc1f44c8c088c9",
+          "elapsed_ms": 6594.490375,
+          "question": "What changes over time in this clip?",
+          "response": "The provided images are **identical** in terms of the subject, her attire, and the background.\n\nTherefore, based"
+        },
+        {
+          "clip_id": "xiph_news_cif",
+          "clip_sha256": "548f243e0ff8f11e59ad2464f5e147fe4bb0570fdce6393a02094364671524d6",
+          "elapsed_ms": 7150.821958,
+          "question": "Describe the scene in one sentence.",
+          "response": "The scene depicts a formal presentation setting featuring a man and a woman standing beside a large screen displaying a scene, with a"
+        },
+        {
+          "clip_id": "xiph_news_cif",
+          "clip_sha256": "548f243e0ff8f11e59ad2464f5e147fe4bb0570fdce6393a02094364671524d6",
+          "elapsed_ms": 7028.823209,
+          "question": "What changes over time in this clip?",
+          "response": "The provided images are **identical** in terms of the visual content.\n\nThere are **no discernible changes over time**"
+        }
+      ],
+      "determinism": {
+        "bit_identical": true,
+        "clip_id": "xiph_akiyo_cif",
+        "latency_ms": {
+          "p50": 7344.580270500001,
+          "p95": 8167.008141699997
+        },
+        "question": "Describe the scene in one sentence.",
+        "repetitions": 50,
+        "unique_output_count": 1,
+        "unique_outputs": [
+          "The images are of the same woman, dressed in a light pink blazer over a white blouse, posing against a backdrop featuring"
+        ]
+      },
+      "liveness_probe": {
+        "clip_id": "synthetic_color_swap",
+        "dense_text": "The provided images are",
+        "path_live": true,
+        "perturbed_text": "<|channel>thought\n1",
+        "prefill_logits_max_abs_diff": 46.5,
+        "question": "Which event happens in this clip?\nA. The large center square changes from red to green.\nB. The whole scene pans sideways.\nC. A hard cut changes the room.\nD. Nothing changes.\nAnswer with one letter only."
+      }
+    }
+  },
+  "phase": "0.5"
+}

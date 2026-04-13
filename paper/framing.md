@@ -11,6 +11,11 @@ many video-VLM pipelines assume.
 
 That is the claim the imported evidence supports today.
 
+The current local evidence now adds two useful controls:
+
+- dense baselines and dense-through-cache identity are locally reproduced on the Apple-Silicon MLX-VLM path
+- an initial `12`-item synthetic Qwen pilot preserved every dense answer under default same-position reuse, while the dense baseline itself still missed two event-centric prompts
+
 ## Current Anti-Claims
 
 We are not yet claiming:

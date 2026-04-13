@@ -1,0 +1,188 @@
+{
+  "clips": [
+    {
+      "clip_id": "xiph_akiyo_cif",
+      "clip_sha256": "64473ca738ce53bcac90afc49b61ffa616e36f7651ce41ca67bc1f44c8c088c9",
+      "content_class": "talking-head-proxy",
+      "novel_ratio": 0.0,
+      "reused_ratio": 1.0,
+      "shifted_ratio": 0.010101010101010102,
+      "static_ratio": 0.9898989898989897,
+      "window_frames": 12,
+      "window_start": 0
+    },
+    {
+      "clip_id": "xiph_news_cif",
+      "clip_sha256": "548f243e0ff8f11e59ad2464f5e147fe4bb0570fdce6393a02094364671524d6",
+      "content_class": "anchor-or-conference-proxy",
+      "novel_ratio": 0.04132231404958678,
+      "reused_ratio": 0.9586776859504134,
+      "shifted_ratio": 0.07529843893480258,
+      "static_ratio": 0.8833792470156105,
+      "window_frames": 12,
+      "window_start": 0
+    },
+    {
+      "clip_id": "xiph_coastguard_cif",
+      "clip_sha256": "2d44b9a7f8bb11ca07b024b9007c0c421c1db992dab6096ad15bed9d215d00f1",
+      "content_class": "natural-motion",
+      "novel_ratio": 0.4049586776859504,
+      "reused_ratio": 0.5950413223140497,
+      "shifted_ratio": 0.5555555555555556,
+      "static_ratio": 0.03948576675849403,
+      "window_frames": 12,
+      "window_start": 0
+    },
+    {
+      "clip_id": "xiph_mobile_cif",
+      "clip_sha256": "102022e35a4b3bb9a15324fe520513ff445fbf6bce3eaaa9966192501c0a8757",
+      "content_class": "detail-and-motion",
+      "novel_ratio": 0.7860422405876952,
+      "reused_ratio": 0.21395775941230488,
+      "shifted_ratio": 0.20293847566574844,
+      "static_ratio": 0.011019283746556474,
+      "window_frames": 12,
+      "window_start": 0
+    },
+    {
+      "clip_id": "synthetic_affine_pan",
+      "clip_sha256": "1e52400191da2f311e942f3680b34b980586ab1a883d9910872dc0d5083689b6",
+      "content_class": "synthetic-egomotion",
+      "novel_ratio": 0.0,
+      "reused_ratio": 1.0,
+      "shifted_ratio": 0.08333333333333334,
+      "static_ratio": 0.9166666666666665,
+      "window_frames": 12,
+      "window_start": 18
+    },
+    {
+      "clip_id": "synthetic_scene_cut",
+      "clip_sha256": "f070296397117d96c2aeafc8f9925a908957440ea6755c041e6fdeae091e07bf",
+      "content_class": "synthetic-scene-cut",
+      "novel_ratio": 0.09090909090909091,
+      "reused_ratio": 0.9090909090909091,
+      "shifted_ratio": 0.0,
+      "static_ratio": 0.9090909090909091,
+      "window_frames": 12,
+      "window_start": 18
+    },
+    {
+      "clip_id": "synthetic_fullframe_flicker",
+      "clip_sha256": "3653818deac09d8fb5a6621b001f8967b5d60ed0a4c3590cb428b497f685ef59",
+      "content_class": "synthetic-novelty-amplification",
+      "novel_ratio": 0.9814814814814814,
+      "reused_ratio": 0.018518518518518517,
+      "shifted_ratio": 0.0,
+      "static_ratio": 0.018518518518518517,
+      "window_frames": 12,
+      "window_start": 18
+    },
+    {
+      "clip_id": "synthetic_color_swap",
+      "clip_sha256": "bfc7a550d513d1099ff98a19fbd721094bdbba81687af73da9d86fafb7406769",
+      "content_class": "synthetic-color",
+      "novel_ratio": 0.0101010101010101,
+      "reused_ratio": 0.98989898989899,
+      "shifted_ratio": 0.0,
+      "static_ratio": 0.98989898989899,
+      "window_frames": 12,
+      "window_start": 18
+    },
+    {
+      "clip_id": "synthetic_small_object",
+      "clip_sha256": "f1003a63ca63c40361dfced501daaf385743d286e01b995b468f0415b3dfd6c1",
+      "content_class": "synthetic-small-object",
+      "novel_ratio": 0.01515151515151515,
+      "reused_ratio": 0.9848484848484848,
+      "shifted_ratio": 0.0,
+      "static_ratio": 0.9848484848484848,
+      "window_frames": 12,
+      "window_start": 18
+    },
+    {
+      "clip_id": "synthetic_screen_ocr",
+      "clip_sha256": "499eff8e36a1a109d4861e156623cee3c69bfdcdc1339a285db70783591161c2",
+      "content_class": "synthetic-screen-ocr",
+      "novel_ratio": 0.003367003367003367,
+      "reused_ratio": 0.9966329966329965,
+      "shifted_ratio": 0.0008417508417508417,
+      "static_ratio": 0.9957912457912458,
+      "window_frames": 12,
+      "window_start": 18
+    }
+  ],
+  "content_class_summary": {
+    "anchor-or-conference-proxy": {
+      "novel_ratio": 0.04132231404958678,
+      "reused_ratio": 0.9586776859504134,
+      "shifted_ratio": 0.07529843893480258,
+      "static_ratio": 0.8833792470156105
+    },
+    "detail-and-motion": {
+      "novel_ratio": 0.7860422405876952,
+      "reused_ratio": 0.21395775941230488,
+      "shifted_ratio": 0.20293847566574844,
+      "static_ratio": 0.011019283746556474
+    },
+    "natural-motion": {
+      "novel_ratio": 0.4049586776859504,
+      "reused_ratio": 0.5950413223140497,
+      "shifted_ratio": 0.5555555555555556,
+      "static_ratio": 0.03948576675849403
+    },
+    "synthetic-color": {
+      "novel_ratio": 0.0101010101010101,
+      "reused_ratio": 0.98989898989899,
+      "shifted_ratio": 0.0,
+      "static_ratio": 0.98989898989899
+    },
+    "synthetic-egomotion": {
+      "novel_ratio": 0.0,
+      "reused_ratio": 1.0,
+      "shifted_ratio": 0.08333333333333334,
+      "static_ratio": 0.9166666666666665
+    },
+    "synthetic-novelty-amplification": {
+      "novel_ratio": 0.9814814814814814,
+      "reused_ratio": 0.018518518518518517,
+      "shifted_ratio": 0.0,
+      "static_ratio": 0.018518518518518517
+    },
+    "synthetic-scene-cut": {
+      "novel_ratio": 0.09090909090909091,
+      "reused_ratio": 0.9090909090909091,
+      "shifted_ratio": 0.0,
+      "static_ratio": 0.9090909090909091
+    },
+    "synthetic-screen-ocr": {
+      "novel_ratio": 0.003367003367003367,
+      "reused_ratio": 0.9966329966329965,
+      "shifted_ratio": 0.0008417508417508417,
+      "static_ratio": 0.9957912457912458
+    },
+    "synthetic-small-object": {
+      "novel_ratio": 0.01515151515151515,
+      "reused_ratio": 0.9848484848484848,
+      "shifted_ratio": 0.0,
+      "static_ratio": 0.9848484848484848
+    },
+    "talking-head-proxy": {
+      "novel_ratio": 0.0,
+      "reused_ratio": 1.0,
+      "shifted_ratio": 0.010101010101010102,
+      "static_ratio": 0.9898989898989897
+    }
+  },
+  "environment": {
+    "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "git_sha": "ab6722e7ac283411b907652d84ff9365944ee358",
+    "mlx_vlm_module": "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
+    "platform": "macOS-26.3-arm64-arm-64bit",
+    "python": "3.12.12"
+  },
+  "phase": "1.0",
+  "thresholds": {
+    "shifted_threshold": 8.0,
+    "static_threshold": 3.0
+  }
+}

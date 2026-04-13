@@ -27,3 +27,5 @@ def test_prompt_bank_items_reference_manifest_clips() -> None:
     for item in items:
         assert item["clip_id"] in manifest_clip_ids
         assert 0 <= item["answer_index"] < len(item["choices"])
+        assert item["window_start"] >= 0
+        assert item["window_frames"] > 1

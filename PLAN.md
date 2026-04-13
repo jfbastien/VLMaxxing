@@ -33,6 +33,8 @@ narrow but useful starting point:
 - the strongest current evidence is Track A answer-stability evidence
 - Track A does not yet prove skipped encoder or attention work
 - simple pixel or packet signals are worth testing as routing signals
+- local Qwen 3B and Gemma E4B control runs now show deterministic dense baselines and exact dense-through-cache identity on the preregistered local probes
+- the initial local Qwen synthetic pilot preserved every dense answer under default same-position reuse, but the dense baseline itself still missed two event-centric prompts
 
 That is the center of the project today.
 
@@ -192,6 +194,11 @@ Exit criteria:
 
 ### Phase 0.5: Feasibility And Determinism
 
+Status:
+
+- completed locally on 2026-04-13
+- note: [2026-04-13-phase-0_5-feasibility.md](research/experiments/2026/2026-04-13-phase-0_5-feasibility.md)
+
 Objective:
 
 - prove that the local MLX-VLM path can support Track A work cleanly
@@ -222,6 +229,11 @@ Rejection band:
 - interface is unavailable or too unstable to support Track A work
 
 ### Phase 0.75: Cache-Path Identity Control
+
+Status:
+
+- completed locally on 2026-04-13
+- note: [2026-04-13-phase-0_75-cache-identity.md](research/experiments/2026/2026-04-13-phase-0_75-cache-identity.md)
 
 Objective:
 
@@ -255,6 +267,11 @@ Rejection band:
 - unchanged dense features routed through the cache path already diverge
 
 ### Phase 1.0: Measure Local Redundancy Before Caching
+
+Status:
+
+- completed locally on 2026-04-13
+- note: [2026-04-13-phase-1_0-local-redundancy.md](research/experiments/2026/2026-04-13-phase-1_0-local-redundancy.md)
 
 Objective:
 
@@ -298,7 +315,11 @@ Tasks:
 - use the versioned prompt bank instead of ad hoc questions
 - compare dense versus cached outputs under `contiguous_window` sampling first
 - log parse failures explicitly
-- run threshold triples: aggressive `(1.5, 4)`, default `(3, 8)`, conservative `(5, 12)`
+- initial local pilot completed on 2026-04-13:
+  - dense, `STATIC`-only, and `STATIC+SHIFTED` matched exactly on all `12` scored synthetic items
+  - dense baseline accuracy was `10/12`, so this currently supports answer stability more strongly than broad semantic adequacy
+  - note: [2026-04-13-track-a-local-pilot.md](research/experiments/2026/2026-04-13-track-a-local-pilot.md)
+- run threshold triples: low-reuse `(1.5, 4)`, default `(3, 8)`, high-reuse `(5, 12)`
 - sweep refresh intervals to test cache drift directly
 - keep open-ended prompts qualitative only; use multiple-choice prompts for the
   primary statistics
@@ -324,6 +345,7 @@ Important outputs:
 - bucketed failures by OCR, color, small-object, egomotion, and screen-like content
 - refresh-interval versus drift evidence
 - explicit prompt-bank version and sampling mode on every run
+- any machine-specific execution constraint, such as the current need to chunk the Qwen synthetic pilot on this M3 Air to avoid Metal GPU timeouts
 
 ### Phase 2: Systems Baseline And Honest Timing
 
