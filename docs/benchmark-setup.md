@@ -125,6 +125,12 @@ Useful control modes:
   route unchanged dense features back through the benchmark runner to verify
   cache-path transparency on the exact benchmark code path
 
+Useful diagnosis option:
+
+- `--refresh-interval <k>`:
+  force a dense refresh every `k` frames while keeping the cached-feature path
+  active between refreshes
+
 Current reuse-accounting rule on the benchmark runner:
 
 - `reuse_ratio_mean` is the pad-masked active-region reuse ratio

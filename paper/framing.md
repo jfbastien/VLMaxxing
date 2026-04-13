@@ -34,6 +34,15 @@ The current local evidence now adds two useful controls:
   - TOMATO `30`-item subset: dense `0.300`, cached `0.233`, agreement `0.833`
   - MVBench hosted `54`-item subset: dense `0.630`, cached `0.648`, agreement
     `0.870`
+- first-frame ablations sharpen that split:
+  - TOMATO falls to `0.067` on frame `0` alone
+  - MVBench only falls to `0.519` on frame `0` alone
+  - the current contrast therefore looks content-conditioned before it looks
+    parser-conditioned
+- targeted TOMATO `direction` refresh sweeps now show a concrete repair path:
+  - no refresh gives cached `0.2` and agreement `0.6`
+  - refresh every `4` frames recovers exact dense agreement on the same
+    five-item subset while keeping active reuse at `0.732`
 - local strict and loose parser rescoring are identical on those saved slices
   because parse failures stayed at `0`, so the current local disagreement is
   not a local parser artifact

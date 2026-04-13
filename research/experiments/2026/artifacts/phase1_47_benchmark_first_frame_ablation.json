@@ -1,0 +1,264 @@
+{
+  "mvbench": {
+    "delta": -0.11111111111111116,
+    "first_frame_by_group": {
+      "action_antonym": {
+        "accuracy": 0.3333333333333333,
+        "correct": 1,
+        "n": 3
+      },
+      "action_count": {
+        "accuracy": 0.3333333333333333,
+        "correct": 1,
+        "n": 3
+      },
+      "action_localization": {
+        "accuracy": 0.3333333333333333,
+        "correct": 1,
+        "n": 3
+      },
+      "action_prediction": {
+        "accuracy": 0.3333333333333333,
+        "correct": 1,
+        "n": 3
+      },
+      "action_sequence": {
+        "accuracy": 0.6666666666666666,
+        "correct": 2,
+        "n": 3
+      },
+      "character_order": {
+        "accuracy": 0.6666666666666666,
+        "correct": 2,
+        "n": 3
+      },
+      "counterfactual_inference": {
+        "accuracy": 0.0,
+        "correct": 0,
+        "n": 3
+      },
+      "egocentric_navigation": {
+        "accuracy": 0.6666666666666666,
+        "correct": 2,
+        "n": 3
+      },
+      "fine_grained_action": {
+        "accuracy": 0.3333333333333333,
+        "correct": 1,
+        "n": 3
+      },
+      "moving_attribute": {
+        "accuracy": 0.6666666666666666,
+        "correct": 2,
+        "n": 3
+      },
+      "moving_count": {
+        "accuracy": 1.0,
+        "correct": 3,
+        "n": 3
+      },
+      "moving_direction": {
+        "accuracy": 0.3333333333333333,
+        "correct": 1,
+        "n": 3
+      },
+      "object_existence": {
+        "accuracy": 0.3333333333333333,
+        "correct": 1,
+        "n": 3
+      },
+      "object_interaction": {
+        "accuracy": 0.6666666666666666,
+        "correct": 2,
+        "n": 3
+      },
+      "object_shuffle": {
+        "accuracy": 0.6666666666666666,
+        "correct": 2,
+        "n": 3
+      },
+      "scene_transition": {
+        "accuracy": 0.6666666666666666,
+        "correct": 2,
+        "n": 3
+      },
+      "state_change": {
+        "accuracy": 0.3333333333333333,
+        "correct": 1,
+        "n": 3
+      },
+      "unexpected_action": {
+        "accuracy": 1.0,
+        "correct": 3,
+        "n": 3
+      }
+    },
+    "first_frame_count": 54,
+    "first_frame_dense_accuracy": 0.5185185185185185,
+    "full_by_group": {
+      "action_antonym": {
+        "accuracy": 1.0,
+        "correct": 3,
+        "n": 3
+      },
+      "action_count": {
+        "accuracy": 0.3333333333333333,
+        "correct": 1,
+        "n": 3
+      },
+      "action_localization": {
+        "accuracy": 0.3333333333333333,
+        "correct": 1,
+        "n": 3
+      },
+      "action_prediction": {
+        "accuracy": 1.0,
+        "correct": 3,
+        "n": 3
+      },
+      "action_sequence": {
+        "accuracy": 0.6666666666666666,
+        "correct": 2,
+        "n": 3
+      },
+      "character_order": {
+        "accuracy": 1.0,
+        "correct": 3,
+        "n": 3
+      },
+      "counterfactual_inference": {
+        "accuracy": 0.3333333333333333,
+        "correct": 1,
+        "n": 3
+      },
+      "egocentric_navigation": {
+        "accuracy": 0.6666666666666666,
+        "correct": 2,
+        "n": 3
+      },
+      "fine_grained_action": {
+        "accuracy": 0.3333333333333333,
+        "correct": 1,
+        "n": 3
+      },
+      "moving_attribute": {
+        "accuracy": 1.0,
+        "correct": 3,
+        "n": 3
+      },
+      "moving_count": {
+        "accuracy": 1.0,
+        "correct": 3,
+        "n": 3
+      },
+      "moving_direction": {
+        "accuracy": 0.3333333333333333,
+        "correct": 1,
+        "n": 3
+      },
+      "object_existence": {
+        "accuracy": 0.3333333333333333,
+        "correct": 1,
+        "n": 3
+      },
+      "object_interaction": {
+        "accuracy": 1.0,
+        "correct": 3,
+        "n": 3
+      },
+      "object_shuffle": {
+        "accuracy": 0.0,
+        "correct": 0,
+        "n": 3
+      },
+      "scene_transition": {
+        "accuracy": 0.6666666666666666,
+        "correct": 2,
+        "n": 3
+      },
+      "state_change": {
+        "accuracy": 0.3333333333333333,
+        "correct": 1,
+        "n": 3
+      },
+      "unexpected_action": {
+        "accuracy": 1.0,
+        "correct": 3,
+        "n": 3
+      }
+    },
+    "full_dense_accuracy": 0.6296296296296297,
+    "full_frame_count": 54
+  },
+  "tomato": {
+    "delta": -0.23333333333333334,
+    "first_frame_by_group": {
+      "count": {
+        "accuracy": 0.0,
+        "correct": 0,
+        "n": 5
+      },
+      "direction": {
+        "accuracy": 0.0,
+        "correct": 0,
+        "n": 5
+      },
+      "rotation": {
+        "accuracy": 0.0,
+        "correct": 0,
+        "n": 5
+      },
+      "shape_trend": {
+        "accuracy": 0.0,
+        "correct": 0,
+        "n": 5
+      },
+      "velocity_frequency": {
+        "accuracy": 0.0,
+        "correct": 0,
+        "n": 5
+      },
+      "visual_cues": {
+        "accuracy": 0.4,
+        "correct": 2,
+        "n": 5
+      }
+    },
+    "first_frame_count": 30,
+    "first_frame_dense_accuracy": 0.06666666666666667,
+    "full_by_group": {
+      "count": {
+        "accuracy": 0.2,
+        "correct": 1,
+        "n": 5
+      },
+      "direction": {
+        "accuracy": 0.6,
+        "correct": 3,
+        "n": 5
+      },
+      "rotation": {
+        "accuracy": 0.4,
+        "correct": 2,
+        "n": 5
+      },
+      "shape_trend": {
+        "accuracy": 0.4,
+        "correct": 2,
+        "n": 5
+      },
+      "velocity_frequency": {
+        "accuracy": 0.0,
+        "correct": 0,
+        "n": 5
+      },
+      "visual_cues": {
+        "accuracy": 0.2,
+        "correct": 1,
+        "n": 5
+      }
+    },
+    "full_dense_accuracy": 0.3,
+    "full_frame_count": 30
+  }
+}

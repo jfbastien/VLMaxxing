@@ -453,10 +453,73 @@ def _select_cached_features(
     features: mx.array,
     *,
     cache_mode: Literal["default", "identity"],
+    refresh_interval: int | None,
 ) -> tuple[mx.array, list[float], list[float]]:
     if cache_mode == "identity":
         return features, [], []
-    return _mix_qwen_features(sample, features)
+    if refresh_interval is None or refresh_interval <= 0:
+        return _mix_qwen_features(sample, features)
+
+    image_grid_thw = np.array(sample.extra_kwargs["image_grid_thw"].tolist(), dtype=np.int64)
+    counts = qwen_merged_token_counts(image_grid_thw, spatial_merge_size=QWEN_SPATIAL_MERGE)
+    if len(counts) != len(sample.frames):
+        raise ValueError("frame count and Qwen grid count mismatch")
+
+    dense_segments: list[mx.array] = []
+    offset = 0
+    for count in counts:
+        dense_segments.append(features[offset : offset + count])
+        offset += count
+
+    mixed_segments = [dense_segments[0]]
+    raw_reused_ratios: list[float] = []
+    active_reused_ratios: list[float] = []
+    for frame_index in range(1, len(sample.frames)):
+        if frame_index % refresh_interval == 0:
+            mixed_segments.append(dense_segments[frame_index])
+            raw_reused_ratios.append(0.0)
+            active_reused_ratios.append(0.0)
+            continue
+
+        previous = np.array(sample.frames[frame_index - 1], dtype=np.uint8)
+        current = np.array(sample.frames[frame_index], dtype=np.uint8)
+        classification = classify_blocks(
+            previous,
+            current,
+            block_size=QWEN_BLOCK_SIZE,
+            thresholds=DEFAULT_THRESHOLDS,
+        )
+        reuse_mask = flattened_reuse_mask(classification, reuse_classes=DEFAULT_REUSE_CLASSES)
+        if reuse_mask.size != dense_segments[frame_index].shape[0]:
+            raise ValueError(
+                "classification/token mismatch: "
+                f"mask={reuse_mask.size}, tokens={dense_segments[frame_index].shape[0]}"
+            )
+        previous_active = active_region_block_mask(
+            sample.frames[frame_index - 1].size,
+            sample.active_boxes[frame_index - 1],
+            block_size=QWEN_BLOCK_SIZE,
+        )
+        current_active = active_region_block_mask(
+            sample.frames[frame_index].size,
+            sample.active_boxes[frame_index],
+            block_size=QWEN_BLOCK_SIZE,
+        )
+        active_mask = previous_active & current_active
+        if active_mask.size != reuse_mask.size:
+            raise ValueError(
+                "active-region/token mismatch: "
+                f"mask={active_mask.size}, tokens={reuse_mask.size}"
+            )
+        mixed_segments.append(
+            mx.where(mx.array(reuse_mask[:, None]), mixed_segments[-1], dense_segments[frame_index])
+        )
+        raw_reused_ratios.append(float(reuse_mask.mean()))
+        active_reused_ratios.append(_masked_mean(reuse_mask.astype(np.float32), active_mask))
+
+    mixed = mx.concatenate(mixed_segments, axis=0)
+    mx.eval(mixed)
+    return mixed, raw_reused_ratios, active_reused_ratios
 
 
 def _generate_response(
@@ -508,6 +571,7 @@ def _run_chunk(
     frame_count: int,
     max_tokens: int,
     cache_mode: Literal["default", "identity"],
+    refresh_interval: int | None,
 ) -> list[dict[str, Any]]:
     registry = {
         item.item_id: item
@@ -523,6 +587,7 @@ def _run_chunk(
             sample,
             features,
             cache_mode=cache_mode,
+            refresh_interval=refresh_interval,
         )
         dense = _generate_response(
             model,
@@ -572,6 +637,7 @@ def _run_chunk(
                     else False
                 ),
                 "cache_mode": cache_mode,
+                "refresh_interval": refresh_interval,
                 "reuse_ratio_mean": _mean_or_none(active_reused_ratios),
                 "reuse_ratio_mean_active": _mean_or_none(active_reused_ratios),
                 "reuse_ratio_mean_raw": _mean_or_none(raw_reused_ratios),
@@ -683,6 +749,7 @@ def run_benchmark(
     output_path: Path,
     control: RunControl | None,
     cache_mode: Literal["default", "identity"],
+    refresh_interval: int | None,
 ) -> None:
     registry = _load_items(benchmark, per_group=per_group, groups=groups)
     requested_ids = [item.item_id for item in registry]
@@ -710,6 +777,8 @@ def run_benchmark(
             str(max_tokens),
             "--cache-mode",
             cache_mode,
+            "--refresh-interval",
+            str(refresh_interval) if refresh_interval is not None else "0",
             "--item-id",
             *chunk,
         ]
@@ -752,6 +821,7 @@ def main() -> None:
     run_parser.add_argument("--frame-count", type=int, default=8)
     run_parser.add_argument("--max-tokens", type=int, default=32)
     run_parser.add_argument("--cache-mode", choices=["default", "identity"], default="default")
+    run_parser.add_argument("--refresh-interval", type=int, default=0)
     run_parser.add_argument("--model-path", type=Path, default=DEFAULT_MODEL_PATH)
     run_parser.add_argument("--output-path", type=Path, default=DEFAULT_OUTPUT_PATH)
     run_parser.add_argument("--summary-path", type=Path, default=DEFAULT_SUMMARY_PATH)
@@ -764,6 +834,7 @@ def main() -> None:
     chunk_parser.add_argument("--frame-count", type=int, required=True)
     chunk_parser.add_argument("--max-tokens", type=int, required=True)
     chunk_parser.add_argument("--cache-mode", choices=["default", "identity"], required=True)
+    chunk_parser.add_argument("--refresh-interval", type=int, required=True)
     chunk_parser.add_argument("--model-path", type=Path, required=True)
     chunk_parser.add_argument("--item-id", nargs="+", required=True)
 
@@ -781,6 +852,7 @@ def main() -> None:
                     frame_count=args.frame_count,
                     max_tokens=args.max_tokens,
                     cache_mode=cast(Literal["default", "identity"], args.cache_mode),
+                    refresh_interval=args.refresh_interval if args.refresh_interval > 0 else None,
                 ),
                 sort_keys=True,
             )
@@ -800,6 +872,7 @@ def main() -> None:
         output_path=args.output_path,
         control=control,
         cache_mode=cast(Literal["default", "identity"], args.cache_mode),
+        refresh_interval=args.refresh_interval if args.refresh_interval > 0 else None,
     )
 
 

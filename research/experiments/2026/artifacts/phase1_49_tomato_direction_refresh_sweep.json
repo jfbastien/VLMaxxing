@@ -1,0 +1,30 @@
+{
+  "0": {
+    "agreement": 0.6,
+    "cached_accuracy": 0.2,
+    "dense_accuracy": 0.6,
+    "reuse_ratio_mean_active": 0.8578571421759469,
+    "reuse_ratio_mean_raw": 0.9287857142857143
+  },
+  "1": {
+    "agreement": 1.0,
+    "cached_accuracy": 0.6,
+    "dense_accuracy": 0.6,
+    "reuse_ratio_mean_active": 0.0,
+    "reuse_ratio_mean_raw": 0.0
+  },
+  "2": {
+    "agreement": 1.0,
+    "cached_accuracy": 0.6,
+    "dense_accuracy": 0.6,
+    "reuse_ratio_mean_active": 0.48657142605100356,
+    "reuse_ratio_mean_raw": 0.5288571428571429
+  },
+  "4": {
+    "agreement": 1.0,
+    "cached_accuracy": 0.6,
+    "dense_accuracy": 0.6,
+    "reuse_ratio_mean_active": 0.7324285694531032,
+    "reuse_ratio_mean_raw": 0.7946428571428572
+  }
+}

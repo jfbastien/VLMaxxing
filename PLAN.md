@@ -89,6 +89,18 @@ narrow but useful starting point:
   MVBench on the local Qwen `7B` runner
 - benchmark reuse accounting is now pad-masked by default, with raw padded
   reuse kept only as an auxiliary descriptive field
+- first-frame benchmark ablations now sharpen the contrast:
+  - TOMATO `30`-item slice drops from dense `0.300` at `8` frames to `0.067`
+    at frame `0` only
+  - hosted MVBench `54`-item slice drops from dense `0.630` at `8` frames to
+    `0.519` at frame `0` only
+  - the current TOMATO versus MVBench gap therefore looks content-conditioned
+    before it looks parser-conditioned
+- targeted TOMATO `direction` refresh sweeps now show that the current failure
+  is refresh-sensitive rather than benchmark-path-sensitive:
+  - no refresh: cached `0.2`, agreement `0.6`
+  - refresh every `4` frames: cached `0.6`, agreement `1.0`, active reuse
+    `0.732`
 
 That is the center of the project today.
 
@@ -440,8 +452,8 @@ Tasks:
     and
     [2026-04-14-phase-1_45-benchmark-diagnostics.md](research/experiments/2026/2026-04-14-phase-1_45-benchmark-diagnostics.md)
 - immediate benchmark follow-up order:
-  - run targeted TOMATO planner and refresh diagnostics on the current
-    disagreement items
+  - extend the targeted TOMATO diagnosis beyond the current `direction` subset
+    to see whether the same refresh-sensitive recovery pattern holds elsewhere
   - extend natural-video scoring beyond endpoint scene facts
   - only then decide whether larger TOMATO or MVBench reruns are the best next
     use of local runtime budget
