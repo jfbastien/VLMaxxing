@@ -74,7 +74,8 @@ Artifact:
 
 ## Result
 
-Partial reproduction.
+Inconclusive under the preregistered acceptance band; interpreted narratively as
+partial reproduction.
 
 Repeated-image identity:
 

@@ -24,17 +24,17 @@ Current bottom line:
 | --- | --- | --- | --- |
 | Dense-path determinism and cache-path transparency | Reproduced locally | [2026-04-13-phase-0_5-feasibility.md](../research/experiments/2026/2026-04-13-phase-0_5-feasibility.md), [2026-04-13-phase-0_75-cache-identity.md](../research/experiments/2026/2026-04-13-phase-0_75-cache-identity.md) | Keep as Track A control for later runs |
 | §2.1 exact ViT output identity on two re-encodes | Reproduced locally | [2026-04-13-phase-1_1-direct-mechanism-reproduction.md](../research/experiments/2026/2026-04-13-phase-1_1-direct-mechanism-reproduction.md) | keep as a direct mechanistic control |
-| §2.2 partial-change attention locality | Partial only | [2026-04-13-phase-1_1-direct-mechanism-reproduction.md](../research/experiments/2026/2026-04-13-phase-1_1-direct-mechanism-reproduction.md) shows a locality-shaped effect, but weaker than the imported whitepaper numbers | run follow-up alignment and natural-image locality probes |
-| §2.3 localized motion preserves embeddings | Partial only | [2026-04-13-phase-1_1-direct-mechanism-reproduction.md](../research/experiments/2026/2026-04-13-phase-1_1-direct-mechanism-reproduction.md) reproduces high similarity for `1 px` and `4 px` shifts, but larger shifts degrade more than the imported story suggests | run natural-image and boundary-aware shift probes |
+| §2.2 partial-change attention locality | Partial only | [2026-04-13-phase-1_1-direct-mechanism-reproduction.md](../research/experiments/2026/2026-04-13-phase-1_1-direct-mechanism-reproduction.md) shows a locality-shaped effect on the local MLX `4-bit` path, but the original preregistered `>0.99` far-field band was not met and the current probe still needs a milder perturbation follow-up | run Phase `1.15` alignment, milder perturbation, float32-cosine, and natural-image locality probes |
+| §2.3 localized motion preserves embeddings | Partial only | [2026-04-13-phase-1_1-direct-mechanism-reproduction.md](../research/experiments/2026/2026-04-13-phase-1_1-direct-mechanism-reproduction.md) reproduces high similarity for `1 px` and `4 px` shifts, but the current `8 px` and `14 px` synthetic probe likely crosses a token boundary and should not yet be treated as a clean contradiction of the imported story | run Phase `1.15` with a boundary-safe within-block shift probe and a natural-image cross-check |
 | §2.4 scored real-video quality slice | Imported only | current scored pilot is synthetic-only | run a scored natural-video slice after repairing divergence-capable items |
-| §2.5 TOMATO agreement on Qwen 7B | Imported only | no TOMATO assets or local benchmark run yet | build benchmark-native adapter and run a labeled local reproduction slice |
-| §2.6 MVBench agreement slice | Imported only | no MVBench assets or local benchmark run yet | build MVBench adapter after TOMATO path exists |
+| §2.5 TOMATO agreement on Qwen 7B | Imported only | imported predecessor TOMATO artifacts are present under `seed/original_repo/results/`, but no local TOMATO assets or benchmark-native run exists yet on this stack | build benchmark-native adapter and run a documented local reproduction slice |
+| §2.6 MVBench agreement slice | Imported only | imported predecessor MVBench artifacts are present under `seed/original_repo/results/`, but no local MVBench assets or local benchmark run exists yet on this stack | build MVBench adapter after the TOMATO path exists |
 | Talking-head redundancy regime | Partial only | [2026-04-13-phase-1_0-local-redundancy.md](../research/experiments/2026/2026-04-13-phase-1_0-local-redundancy.md) reproduces a very high-reuse talking-head proxy on `xiph_akiyo_cif` | add matched content-class proxies and the predecessor cross-check clips |
 | Surveillance redundancy regime | Imported only | no local surveillance-class proxy measured yet | add a stable surveillance-like clip and rerun redundancy table |
 | FPV / egomotion redundancy regime | Imported only | no local FPV-like or predecessor FPV cross-check measured yet | add a stable high-motion proxy and rerun redundancy table |
 | Refresh-interval drift / 14-frame tolerance | Imported only | no local refresh sweep yet | run refresh-interval sweep on the hard natural buckets |
 | Q-table spatial correlation | Imported only | Q-table helpers exist, but no local correlation note or artifact is checked in | run local pre-filter correlation study |
-| Track A synthetic answer stability under same-position reuse | Reproduced locally, narrow | [2026-04-13-track-a-local-pilot.md](../research/experiments/2026/2026-04-13-track-a-local-pilot.md), [2026-04-13-track-a-local-pilot-v2.md](../research/experiments/2026/2026-04-13-track-a-local-pilot-v2.md) | keep the stronger v2 suite, then add natural-video scored items and threshold sweeps |
+| Track A synthetic answer stability under same-position reuse | Reproduced locally, narrow | [2026-04-13-track-a-local-pilot.md](../research/experiments/2026/2026-04-13-track-a-local-pilot.md), [2026-04-13-track-a-local-pilot-v2.md](../research/experiments/2026/2026-04-13-track-a-local-pilot-v2.md), and [2026-04-13-phase-1_05-temporal-necessity-ablation.md](../research/experiments/2026/2026-04-13-phase-1_05-temporal-necessity-ablation.md) together show one real cached failure plus prompt-prior contamination in several v2 passes | use the discriminating subset, add natural-video scored items, then run threshold sweeps |
 | Track B skipped-compute, wall-clock, or compression headlines | Not reproduced | current local work is intentionally Track A only | build the in-memory timing path and sparse-execution path before claiming speedup |
 
 ## Interpretation Rules
@@ -53,9 +53,10 @@ Current bottom line:
 If the goal is honest whitepaper reproduction rather than new method work, the
 highest-leverage next steps are:
 
-1. repair the local scored suite so at least one item is divergence-capable
-2. reproduce the direct mechanism claims in feature space on Qwen 3B
-3. add surveillance and FPV-like content-class proxies to the local corpus
-4. run refresh-interval drift on the hardest natural buckets
-5. build benchmark-native TOMATO and MVBench paths only after the local Track A
+1. finish the temporal-necessity cleanup so the discriminating subset is explicit
+2. repair the local mechanism probes before treating the weaker numbers as real disagreement
+3. add scored natural-video items before broad threshold sweeps
+4. add surveillance and FPV-like content-class proxies to the local corpus
+5. run refresh-interval drift on the hardest natural buckets
+6. build benchmark-native TOMATO and MVBench paths only after the local Track A
    foundation is complete

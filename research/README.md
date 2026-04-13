@@ -34,6 +34,16 @@ Every decision-worthy experiment should state:
 - rejection band
 - what counts as inconclusive
 
+When an experiment finishes, explicitly state the preregistration outcome:
+
+- `Accepted`
+- `Rejected`
+- `Inconclusive`
+- `Accepted with caveat` only when the note names the exact caveat
+
+If you want to use softer narrative language like `partial reproduction`, say
+that in `Interpretation`, not instead of the preregistration outcome.
+
 ## Update Rules
 
 - one file per experiment family, not one file per tiny run

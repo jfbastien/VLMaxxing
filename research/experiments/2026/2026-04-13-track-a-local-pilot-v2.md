@@ -125,6 +125,20 @@ Single controlled failure:
   - static critical-span reused ratio mean: `0.981`
   - shifted critical-span reused ratio mean: `0.991`
 
+Diagnostic finding after the follow-up temporal-necessity ablation:
+
+- the raw `11/12` cached headline overcounts true cache safety
+- on the same `synthetic_mid_text_flash` clip, the cached path still answers
+  `syn2_mid_text_flash_word` correctly with `BRAVO`, but the ablation later
+  showed that this item is answerable without the middle frames
+- the paired existential item, `syn2_mid_text_ever_bravo`, fails without the
+  middle frames and also fails under caching
+- that contradiction is strong evidence that some apparent v2 passes are driven
+  by prompt structure or textual prior rather than grounded temporal evidence
+- the follow-up note
+  [2026-04-13-phase-1_05-temporal-necessity-ablation.md](2026-04-13-phase-1_05-temporal-necessity-ablation.md)
+  should be read before using this pilot as a discriminating benchmark
+
 Interpretive contrast with the v1 pilot:
 
 - v1 produced perfect dense-versus-cached agreement on a synthetic suite that
@@ -143,17 +157,23 @@ What got stronger:
   blaming weak baseline semantics
 - critical-span reuse reporting surfaced why clip-wide average reuse alone is
   insufficient
+- the follow-up ablation separated the v2 suite into contaminated items and a
+  smaller discriminating subset
 
 What got weaker:
 
 - default same-position reuse under the current `(3, 8)` thresholds is not
   universally safe, even in the `STATIC`-only condition
 - middle-dependent OCR events are an early failure bucket on this local stack
+- the raw `11/12` cached accuracy should not be treated as the discriminating
+  suite headline because at least two middle-required passes survive without the
+  middle frames
 
 Practical consequence:
 
-- threshold sweeps and refresh-interval work should prioritize temporal
-  necessity, OCR, and late-event questions before broader aggregate reporting
+- threshold sweeps and refresh-interval work should prioritize the
+  discrimination-safe subset, then add more natural-video event items before
+  broader aggregate reporting
 
 What this still does not prove:
 

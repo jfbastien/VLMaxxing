@@ -16,10 +16,11 @@ questions from chat history.
 
 ## Current Files
 
-- [local_suite_v1.toml](local_suite_v1.toml): initial scored synthetic pilot
-  suite for Track A bring-up
 - [local_suite_v2.toml](local_suite_v2.toml): repaired synthetic suite with
-  temporal-necessity items and critical-pair metadata
+  temporal-necessity items and critical-pair metadata; current default for
+  local Track A work
+- [local_suite_v1.toml](local_suite_v1.toml): initial scored synthetic pilot
+  suite preserved for historical comparison
 
 ## Relationship To The Corpus
 

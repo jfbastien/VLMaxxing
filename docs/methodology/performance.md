@@ -165,6 +165,16 @@ For prompt-conditioned local suites, clip-wide mean reuse is not enough when a
 question depends on a narrow temporal event. When the prompt bank provides
 critical-pair metadata, report reuse on that critical span as well.
 
+For divergence-capable local suites, run a temporal-necessity ablation before
+interpreting agreement:
+
+- first frame only
+- first and last frames only
+
+If an item remains correct without the intended temporal evidence, do not treat
+it as a strong discriminating item until it is repaired or explicitly marked as
+endpoint-solvable or prompt-prior contaminated.
+
 ## Prefer Paired Comparisons
 
 When comparing A versus B:

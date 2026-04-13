@@ -426,3 +426,93 @@ Still future work, not executed in this commit:
 - an in-memory decode path for Track B timing runs
 - pad-masked reuse accounting implemented end to end in runtime code
 - automated benchmark-native dataset helpers for TOMATO and MVBench
+
+## Round 4 Validation
+
+### 21. "The v2 pilot headline is inflated by prompt-prior or endpoint contamination"
+
+Verdict:
+
+- VALID
+
+Evidence:
+
+- the follow-up temporal-necessity ablation shows that `syn2_mid_color_flash`
+  and `syn2_mid_text_flash_word` stay correct without the middle frames
+- the paired item `syn2_mid_text_ever_bravo` still fails without the middle
+  frames and under caching, so the contradiction is real and informative
+
+Action:
+
+- added [2026-04-13-phase-1_05-temporal-necessity-ablation.md](../research/experiments/2026/2026-04-13-phase-1_05-temporal-necessity-ablation.md)
+- softened the v2 pilot interpretation and shifted the next-step plan toward the
+  discrimination-safe subset
+
+### 22. "Several v2 metadata flags understate endpoint solvability"
+
+Verdict:
+
+- VALID
+
+Evidence:
+
+- `syn2_flicker_change_type`, `syn2_flicker_layout`, and
+  `syn2_small_object_motion` were all marked as not solvable from first and
+  last frames, but the ablation showed that they are
+- `syn2_color_swap_event` was marked as requiring middle frames even though the
+  selected window endpoints already expose the event
+
+Action:
+
+- corrected the prompt-bank metadata in
+  [research/prompt_bank/local_suite_v2.toml](../research/prompt_bank/local_suite_v2.toml)
+
+### 23. "The current mechanism mismatch is more likely probe-design than conceptual disagreement"
+
+Verdict:
+
+- VALID
+
+Evidence:
+
+- the current shift probe likely crosses a token boundary at larger shifts
+- the current partial-change probe is harsher than the imported whitepaper's
+  intended aligned-token perturbation
+- the local result remains only partial until the repaired probe passes
+
+Action:
+
+- the reproduction ledger and plan now point to a dedicated Phase `1.15`
+  probe-repair step before broader sweeps
+
+### 24. "Synthetic clip provenance should be locked with manifest hashes"
+
+Verdict:
+
+- VALID
+
+Evidence:
+
+- the synthetic MP4s were generated locally but the manifest did not yet record
+  expected hashes
+
+Action:
+
+- added `expected_sha256` values for the synthetic clips and generator-side hash
+  verification
+
+### 25. "The harness issue should be treated as a real root-cause problem, not just a workaround"
+
+Verdict:
+
+- VALID
+
+Evidence:
+
+- the temporal-ablation bring-up accidentally overlapped stale workers and the
+  current local harness still needs explicit stabilization before larger runs
+
+Action:
+
+- current semantic reruns are now being kept single-worker and sequential
+- root-cause work remains queued before the benchmark-native reproduction tranche

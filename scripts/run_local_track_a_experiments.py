@@ -36,7 +36,7 @@ from codec_through.track_a import (
 
 ARTIFACT_DIR = Path("research/experiments/2026/artifacts")
 MANIFEST_PATH = Path("data/corpus/manifest.toml")
-DEFAULT_PROMPT_BANK_PATH = Path("research/prompt_bank/local_suite_v1.toml")
+DEFAULT_PROMPT_BANK_PATH = Path("research/prompt_bank/local_suite_v2.toml")
 QWEN_TARGET_HEIGHT = 252
 PRIMARY_CLIP_IDS = [
     "xiph_akiyo_cif",
@@ -925,6 +925,92 @@ def run_phase_1_1_mechanism() -> dict[str, Any]:
     return result
 
 
+def run_phase_1_05_temporal_necessity_ablation(
+    prompt_bank_path: Path = DEFAULT_PROMPT_BANK_PATH,
+) -> dict[str, Any]:
+    prompt_bank = _load_prompt_bank(prompt_bank_path)
+    items = list(prompt_bank["item"])
+    result: dict[str, Any] = {
+        "phase": "1.05",
+        "environment": _environment_record(),
+        "model": _model_specs()[0].model_id,
+        "prompt_bank": {
+            "path": str(prompt_bank_path),
+            "suite_id": prompt_bank["suite_id"],
+            "version": prompt_bank["version"],
+        },
+        "item_execution_mode": "chunked-subprocesses",
+        "chunk_size": 2,
+        "items": [],
+    }
+
+    chunk_size = 2
+    for chunk_start in range(0, len(items), chunk_size):
+        chunk = items[chunk_start : chunk_start + chunk_size]
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(Path(__file__).resolve()),
+                "temporal_ablation_chunk",
+                "--prompt-bank",
+                str(prompt_bank_path),
+                *[argument for item in chunk for argument in ("--item-id", item["id"])],
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if completed.returncode != 0:
+            message = completed.stderr.strip() or completed.stdout.strip() or "unknown failure"
+            chunk_ids = ",".join(item["id"] for item in chunk)
+            raise RuntimeError(f"temporal_ablation_chunk failed for {chunk_ids}: {message}")
+        result["items"].extend(json.loads(completed.stdout))
+
+    contaminated = [
+        item["id"]
+        for item in result["items"]
+        if item["dense_correct"]
+        and bool(item["requires_middle_frames"])
+        and (item["first_only_correct"] or item["first_last_correct"])
+    ]
+    first_last_metadata_mismatches = [
+        item["id"]
+        for item in result["items"]
+        if not bool(item["solvable_from_first_last"]) and item["first_last_correct"]
+    ]
+    first_only_surprises = [
+        item["id"]
+        for item in result["items"]
+        if bool(item["requires_middle_frames"]) and item["first_only_correct"]
+    ]
+    discriminating_middle_required = [
+        item["id"]
+        for item in result["items"]
+        if bool(item["requires_middle_frames"])
+        and item["dense_correct"]
+        and not item["first_only_correct"]
+        and not item["first_last_correct"]
+    ]
+    result["summary"] = {
+        "item_count": len(result["items"]),
+        "dense_accuracy": sum(int(item["dense_correct"]) for item in result["items"])
+        / len(result["items"]),
+        "first_only_accuracy": sum(int(item["first_only_correct"]) for item in result["items"])
+        / len(result["items"]),
+        "first_last_accuracy": sum(int(item["first_last_correct"]) for item in result["items"])
+        / len(result["items"]),
+        "contaminated_middle_required_items": contaminated,
+        "contaminated_middle_required_count": len(contaminated),
+        "first_last_metadata_mismatch_items": first_last_metadata_mismatches,
+        "first_last_metadata_mismatch_count": len(first_last_metadata_mismatches),
+        "first_only_middle_required_surprise_items": first_only_surprises,
+        "first_only_middle_required_surprise_count": len(first_only_surprises),
+        "discriminating_middle_required_items": discriminating_middle_required,
+        "discriminating_middle_required_count": len(discriminating_middle_required),
+    }
+    return result
+
+
 def run_track_a_pilot(prompt_bank_path: Path = DEFAULT_PROMPT_BANK_PATH) -> dict[str, Any]:
     prompt_bank = _load_prompt_bank(prompt_bank_path)
     items = list(prompt_bank["item"])
@@ -1113,6 +1199,76 @@ def run_track_a_item(
     return run_track_a_chunk([item_id], prompt_bank_path=prompt_bank_path)[0]
 
 
+def run_temporal_ablation_chunk(
+    item_ids: list[str], *, prompt_bank_path: Path = DEFAULT_PROMPT_BANK_PATH
+) -> list[dict[str, Any]]:
+    manifest, _ = _load_manifest()
+    spec = _model_specs()[0]
+    model, processor = _load_model(spec)
+    prompt_bank = _load_prompt_bank(prompt_bank_path)
+    items = {item["id"]: item for item in prompt_bank["item"]}
+    results: list[dict[str, Any]] = []
+    for item_id in item_ids:
+        item = items[item_id]
+        clip = manifest[item["clip_id"]]
+        raw_frames = _decode_contiguous_frames(
+            clip.local_path,
+            start_frame=int(item["window_start"]),
+            frame_count=int(item["window_frames"]),
+        )
+        frames = _preprocess_frames(raw_frames, spec)
+        question = _multiple_choice_question(item)
+
+        dense_sample = _prepare_sample(
+            model, processor, spec, clip_id=item["clip_id"], frames=frames, question=question
+        )
+        first_only_sample = _prepare_sample(
+            model,
+            processor,
+            spec,
+            clip_id=item["clip_id"],
+            frames=[frames[0]],
+            question=question,
+        )
+        first_last_sample = _prepare_sample(
+            model,
+            processor,
+            spec,
+            clip_id=item["clip_id"],
+            frames=[frames[0], frames[-1]],
+            question=question,
+        )
+
+        dense = _generate_text(model, processor, dense_sample, max_tokens=4)
+        first_only = _generate_text(model, processor, first_only_sample, max_tokens=4)
+        first_last = _generate_text(model, processor, first_last_sample, max_tokens=4)
+
+        dense_choice = extract_choice(dense["text"], item["choices"])
+        first_only_choice = extract_choice(first_only["text"], item["choices"])
+        first_last_choice = extract_choice(first_last["text"], item["choices"])
+
+        results.append(
+            {
+                "id": item["id"],
+                "clip_id": item["clip_id"],
+                "bucket": item["bucket"],
+                "answer_index": item["answer_index"],
+                "requires_middle_frames": bool(item.get("requires_middle_frames", False)),
+                "solvable_from_first_last": bool(item.get("solvable_from_first_last", False)),
+                "dense_text": dense["text"],
+                "dense_choice": dense_choice,
+                "dense_correct": dense_choice == item["answer_index"],
+                "first_only_text": first_only["text"],
+                "first_only_choice": first_only_choice,
+                "first_only_correct": first_only_choice == item["answer_index"],
+                "first_last_text": first_last["text"],
+                "first_last_choice": first_last_choice,
+                "first_last_correct": first_last_choice == item["answer_index"],
+            }
+        )
+    return results
+
+
 def _write_artifact(name: str, payload: dict[str, Any]) -> Path:
     ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
     output_path = ARTIFACT_DIR / name
@@ -1128,10 +1284,12 @@ def main() -> None:
             "phase0_5",
             "phase0_75",
             "phase1_0",
+            "phase1_05",
             "phase1_1",
             "track_a_pilot",
             "track_a_chunk",
             "track_a_item",
+            "temporal_ablation_chunk",
             "all",
         ),
     )
@@ -1153,6 +1311,7 @@ def main() -> None:
         ("phase0_5", run_phase_0_5),
         ("phase0_75", run_phase_0_75),
         ("phase1_0", run_phase_1_0),
+        ("phase1_05", lambda: run_phase_1_05_temporal_necessity_ablation(args.prompt_bank)),
         ("phase1_1", run_phase_1_1_mechanism),
         ("track_a_pilot", lambda: run_track_a_pilot(args.prompt_bank)),
     )
@@ -1171,6 +1330,16 @@ def main() -> None:
         print(
             json.dumps(
                 run_track_a_item(args.item_id[0], prompt_bank_path=args.prompt_bank), sort_keys=True
+            )
+        )
+        return
+    if args.phase == "temporal_ablation_chunk":
+        if not args.item_id:
+            raise SystemExit("--item-id is required for temporal_ablation_chunk")
+        print(
+            json.dumps(
+                run_temporal_ablation_chunk(args.item_id, prompt_bank_path=args.prompt_bank),
+                sort_keys=True,
             )
         )
         return

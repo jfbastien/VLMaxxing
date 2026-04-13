@@ -23,6 +23,7 @@ class ClipSpec:
     download_url: str | None = None
     download_command: str | None = None
     needs_local_encode: bool = False
+    expected_sha256: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -68,6 +69,7 @@ def _parse_clip(raw_clip: Any) -> ClipSpec:
         download_url=_optional_str(raw_clip, "download_url"),
         download_command=_optional_str(raw_clip, "download_command"),
         needs_local_encode=bool(raw_clip.get("needs_local_encode", False)),
+        expected_sha256=_optional_str(raw_clip, "expected_sha256"),
     )
 
 

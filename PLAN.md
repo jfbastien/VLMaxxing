@@ -40,6 +40,9 @@ narrow but useful starting point:
 - the repaired local v2 suite now contains a real controlled failure:
   default same-position reuse missed one middle-dependent OCR event that dense
   answered correctly
+- a follow-up temporal-necessity ablation shows that two apparent v2 passes are
+  contaminated by prompt structure or endpoint solvability, so the current
+  discriminating subset is smaller than the raw `11/12` cached headline
 - direct repeated-image feature identity is now reproduced locally on the Qwen
   3B vision path, while the imported locality and shift-strength claims remain
   only partially reproduced here
@@ -334,6 +337,13 @@ Tasks:
   - the failure occurred despite very high clip-wide reuse, which strengthens
     the case for critical-span reporting
   - note: [2026-04-13-track-a-local-pilot-v2.md](research/experiments/2026/2026-04-13-track-a-local-pilot-v2.md)
+- temporal-necessity ablation completed on 2026-04-13:
+  - two apparent middle-required v2 passes survive without the middle frames
+  - the current discrimination-safe subset is `syn2_mid_color_ever_green` plus
+    `syn2_mid_text_ever_bravo`
+  - metadata for several endpoint-solvable items was corrected immediately
+    after the run
+  - note: [2026-04-13-phase-1_05-temporal-necessity-ablation.md](research/experiments/2026/2026-04-13-phase-1_05-temporal-necessity-ablation.md)
 - repair the synthetic suite before treating it as a strong semantic benchmark:
   - fix weak items whose wording overclaims what is actually visible
   - add temporal-necessity items where middle frames matter and endpoints are insufficient
@@ -342,8 +352,12 @@ Tasks:
   - exact feature identity on repeated image encodes
   - partial-change locality
   - localized-motion similarity
-- run threshold triples: low-reuse `(1.5, 4)`, default `(3, 8)`, high-reuse `(5, 12)`
-- sweep refresh intervals to test cache drift directly
+- repair the current mechanism probes before treating weaker local numbers as a
+  real disagreement with the imported whitepaper
+- add scored natural-video items before broad threshold sweeps
+- run threshold triples: low-reuse `(1.5, 4)`, default `(3, 8)`, high-reuse `(5, 12)` on the discrimination-safe subset and then on natural-video items
+- sweep refresh intervals to test cache drift directly after the repaired
+  probes and natural-video items land
 - keep open-ended prompts qualitative only; use multiple-choice prompts for the
   primary statistics
 
@@ -369,6 +383,24 @@ Important outputs:
 - refresh-interval versus drift evidence
 - explicit prompt-bank version and sampling mode on every run
 - any machine-specific execution constraint, such as the current need to chunk the Qwen synthetic pilot on this M3 Air to avoid Metal GPU timeouts
+
+### Phase 1.05: Temporal-Necessity Ablation
+
+Status:
+
+- completed locally on 2026-04-13
+- note: [2026-04-13-phase-1_05-temporal-necessity-ablation.md](research/experiments/2026/2026-04-13-phase-1_05-temporal-necessity-ablation.md)
+
+Objective:
+
+- separate genuinely discriminating temporal items from prompt-prior or
+  endpoint-solvable items before interpreting threshold sweeps
+
+Outcome:
+
+- two middle-required v2 items remain discrimination-safe
+- two other apparent middle-required passes are contaminated and should not be
+  used as primary sweep targets without rewrite
 
 ### Phase 1.1: Direct Mechanism Reproduction
 

@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import subprocess
 import tempfile
+import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -36,6 +38,7 @@ SPECS = (
     SyntheticClipSpec("synthetic_screen_ocr", "screen-like clip with OCR text change"),
     SyntheticClipSpec("synthetic_mid_text_flash", "screen text briefly changes and then reverts"),
 )
+MANIFEST_PATH = Path("data/corpus/manifest.toml")
 
 
 def _font() -> ImageFont.ImageFont | ImageFont.FreeTypeFont:
@@ -263,10 +266,42 @@ def _encode_clip(
     subprocess.run(command, check=True)
 
 
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _load_expected_hashes(manifest_path: Path) -> dict[str, str]:
+    if not manifest_path.exists():
+        return {}
+    payload = tomllib.loads(manifest_path.read_text())
+    hashes: dict[str, str] = {}
+    for clip in payload.get("clip", []):
+        if clip.get("method") != "generated":
+            continue
+        clip_id = clip.get("id")
+        expected_sha256 = clip.get("expected_sha256")
+        if not isinstance(clip_id, str):
+            raise ValueError(f"generated clip id must be a string, got {clip_id!r}")
+        if expected_sha256 is None:
+            continue
+        if not isinstance(expected_sha256, str) or not expected_sha256:
+            raise ValueError(
+                f"generated clip expected_sha256 must be a non-empty string, got "
+                f"{expected_sha256!r}"
+            )
+        hashes[clip_id] = expected_sha256
+    return hashes
+
+
 def _render_clip(
     output_dir: Path,
     spec: SyntheticClipSpec,
     *,
+    expected_sha256: str | None,
     fps: int,
     frame_count: int,
     force: bool,
@@ -279,6 +314,13 @@ def _render_clip(
             image.save(frames_dir / f"frame-{frame_index:04d}.png")
         destination = output_dir / f"{spec.clip_id}.mp4"
         _encode_clip(frames_dir, destination, fps=fps, force=force, dry_run=dry_run)
+        if not dry_run and expected_sha256 is not None:
+            actual_sha256 = _sha256(destination)
+            if actual_sha256 != expected_sha256:
+                raise RuntimeError(
+                    f"synthetic clip hash mismatch for {spec.clip_id}: "
+                    f"expected {expected_sha256}, got {actual_sha256}"
+                )
 
 
 def _parse_args() -> argparse.Namespace:
@@ -334,11 +376,13 @@ def main() -> None:
 
     output_dir = args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
+    expected_hashes = _load_expected_hashes(MANIFEST_PATH)
     for spec in specs:
         print(f"generate {spec.clip_id}: {spec.description}")
         _render_clip(
             output_dir,
             spec,
+            expected_sha256=expected_hashes.get(spec.clip_id),
             fps=args.fps,
             frame_count=args.frames,
             force=args.force,

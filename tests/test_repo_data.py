@@ -16,6 +16,15 @@ def test_corpus_manifest_includes_synthetic_tier() -> None:
     assert "synthetic_mid_text_flash" in clip_ids
 
 
+def test_generated_manifest_clips_pin_expected_sha256() -> None:
+    payload = tomllib.loads(Path("data/corpus/manifest.toml").read_text())
+    generated_clips = [clip for clip in payload["clip"] if clip["method"] == "generated"]
+
+    assert generated_clips
+    for clip in generated_clips:
+        assert clip["expected_sha256"]
+
+
 def test_prompt_bank_items_reference_manifest_clips() -> None:
     manifest = tomllib.loads(Path("data/corpus/manifest.toml").read_text())
     manifest_clip_ids = {clip["id"] for clip in manifest["clip"]}

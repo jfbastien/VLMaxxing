@@ -23,6 +23,10 @@ The current local evidence now adds two useful controls:
 - a repaired synthetic v2 suite now includes a controlled failure: default
   same-position reuse misses one middle-dependent OCR flash that dense answers
   correctly
+- a follow-up temporal-necessity ablation shows that some other apparent v2
+  passes are contaminated by prompt structure or endpoint solvability, so the
+  current local synthetic result should be read through the smaller
+  discrimination-safe subset
 - direct repeated-image feature identity is reproduced locally, but the stronger
   locality and shift-strength claims are still only partial on the current
   controlled probes
@@ -72,7 +76,8 @@ What this repo is trying to show:
 Near-term paper:
 
 - honest separation of semantic substitution from sparse execution
-- local reproduction of answer-stability claims on Apple Silicon
+- local reproduction of the Track A controls plus a narrow, failure-capable
+  answer-stability slice on Apple Silicon
 - careful measurement of where latency actually goes
 - decoder-side routing and scheduling baselines
 
