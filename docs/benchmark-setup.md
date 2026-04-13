@@ -59,6 +59,18 @@ Fetch the TOMATO video bundle from the official Google Drive file:
 uv run python scripts/fetch_benchmarks.py --dataset tomato --mode assets
 ```
 
+If the official Drive bundle is quota-blocked or the transfer is corrupted, the
+fetch script falls back to the public `ellisbrown/TOMATO` Hugging Face mirror,
+which hosts `video_shard_000.tar.zst` through `video_shard_005.tar.zst`. The
+selected asset source is recorded in `data/benchmarks/tomato/SOURCE.json`.
+
+If the Drive path is already known-bad on the current machine, skip straight to
+the mirror:
+
+```bash
+uv run python scripts/fetch_benchmarks.py --dataset tomato --mode assets --tomato-video-source mirror
+```
+
 Fetch MVBench task JSON and NTU reference list from Hugging Face:
 
 ```bash
@@ -155,8 +167,9 @@ The runner stops at the next chunk boundary and rewrites the summary JSON.
 - QA table license from the dataset card: `CC BY-SA 4.0`
 
 This repo uses the official Hugging Face tables plus the official Google Drive
-video bundle. The fetch script hard-codes the public Drive file id from the
-official TOMATO README so the acquisition path is auditable.
+video bundle when available. If the Drive bundle is unavailable, it falls back
+to the public `ellisbrown/TOMATO` shard mirror and records that choice in the
+local source record so the acquisition path remains auditable.
 
 Expected final layout:
 
