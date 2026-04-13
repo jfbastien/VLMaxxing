@@ -46,6 +46,9 @@ narrow but useful starting point:
 - direct repeated-image feature identity is now reproduced locally on the Qwen
   3B vision path, while the imported locality and shift-strength claims remain
   only partially reproduced here
+- repaired mechanism probes removed the worst synthetic boundary artifact, but
+  the local MLX `4-bit` path still remains weaker than the imported
+  whitepaper-strength locality and shift story
 
 That is the center of the project today.
 
@@ -419,6 +422,27 @@ Outcome:
 - exact repeated-image feature identity is reproduced locally
 - partial-change locality and localized-shift similarity reproduce only
   qualitatively, not yet at the imported whitepaper strength
+
+### Phase 1.15: Mechanism Probe Repair
+
+Status:
+
+- completed locally on 2026-04-13
+- note: [2026-04-13-phase-1_15-mechanism-probe-repair.md](research/experiments/2026/2026-04-13-phase-1_15-mechanism-probe-repair.md)
+
+Objective:
+
+- separate probe-design artifacts from real stack-specific weakness in the
+  direct mechanism reproductions
+
+Outcome:
+
+- repaired within-block shifts no longer show the earlier catastrophic
+  non-monotonic collapse
+- repaired probes still remain weaker than the imported whitepaper-strength
+  locality and shift bands on the local MLX `4-bit` path
+- the next discriminating follow-up is a precision/runtime comparison, not more
+  synthetic-probe tweaking
 
 ### Phase 2: Systems Baseline And Honest Timing
 

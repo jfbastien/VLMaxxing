@@ -59,6 +59,7 @@ PHASE_OPEN_PROMPTS = [
 ]
 MECHANISM_IMAGE_SIZE = (336, 252)
 MECHANISM_TARGET = (4, 5)
+MECHANISM_BLOCK_SIZE = 28
 
 
 @dataclass(frozen=True, slots=True)
@@ -444,20 +445,22 @@ def _critical_mean(values: list[float], indices: list[int]) -> float | None:
     return float(np.mean([values[index] for index in indices]))
 
 
+def _mechanism_target_origin() -> tuple[int, int]:
+    row, col = MECHANISM_TARGET
+    return col * MECHANISM_BLOCK_SIZE, row * MECHANISM_BLOCK_SIZE
+
+
 def _mechanism_base_image() -> Image.Image:
     width, height = MECHANISM_IMAGE_SIZE
     image = Image.new("RGB", (width, height), (28, 32, 42))
     draw = ImageDraw.Draw(image)
-    block_size = 28
-    for x in range(0, width + block_size, block_size):
+    for x in range(0, width + MECHANISM_BLOCK_SIZE, MECHANISM_BLOCK_SIZE):
         draw.line((x, 0, x, height), fill=(52, 58, 74))
-    for y in range(0, height + block_size, block_size):
+    for y in range(0, height + MECHANISM_BLOCK_SIZE, MECHANISM_BLOCK_SIZE):
         draw.line((0, y, width, y), fill=(52, 58, 74))
     draw.rectangle((42, 48, 116, 124), fill=(64, 94, 150), outline=(220, 232, 250), width=2)
     draw.rectangle((224, 96, 304, 176), fill=(82, 138, 84), outline=(228, 238, 216), width=2)
-    row, col = MECHANISM_TARGET
-    x0 = col * block_size
-    y0 = row * block_size
+    x0, y0 = _mechanism_target_origin()
     draw.rectangle((x0 + 6, y0 + 6, x0 + 20, y0 + 20), fill=(242, 208, 74))
     draw.rectangle((x0 + 9, y0 + 9, x0 + 17, y0 + 17), fill=(246, 120, 86))
     return image
@@ -466,12 +469,9 @@ def _mechanism_base_image() -> Image.Image:
 def _mechanism_partial_change_image() -> Image.Image:
     image = _mechanism_base_image().copy()
     draw = ImageDraw.Draw(image)
-    block_size = 28
-    row, col = MECHANISM_TARGET
-    x0 = col * block_size
-    y0 = row * block_size
+    x0, y0 = _mechanism_target_origin()
     draw.rectangle(
-        (x0 + 1, y0 + 1, x0 + block_size - 2, y0 + block_size - 2),
+        (x0 + 1, y0 + 1, x0 + MECHANISM_BLOCK_SIZE - 2, y0 + MECHANISM_BLOCK_SIZE - 2),
         fill=(36, 210, 208),
         outline=(255, 255, 255),
         width=1,
@@ -482,10 +482,7 @@ def _mechanism_partial_change_image() -> Image.Image:
 def _mechanism_shift_image(shift_px: int) -> Image.Image:
     image = _mechanism_base_image().copy()
     draw = ImageDraw.Draw(image)
-    block_size = 28
-    row, col = MECHANISM_TARGET
-    x0 = col * block_size
-    y0 = row * block_size
+    x0, y0 = _mechanism_target_origin()
     draw.rectangle((x0 + 5, y0 + 5, x0 + 21, y0 + 21), fill=(28, 32, 42))
     shifted_left = x0 + 6 + shift_px
     shifted_right = shifted_left + 14
@@ -494,17 +491,69 @@ def _mechanism_shift_image(shift_px: int) -> Image.Image:
     return image
 
 
+def _mechanism_base_image_v2() -> Image.Image:
+    image = _mechanism_base_image().copy()
+    draw = ImageDraw.Draw(image)
+    x0, y0 = _mechanism_target_origin()
+    draw.rectangle((x0 + 5, y0 + 5, x0 + 21, y0 + 21), fill=(28, 32, 42))
+    draw.rectangle((x0 + 4, y0 + 12, x0 + 8, y0 + 16), fill=(242, 208, 74))
+    draw.rectangle((x0 + 5, y0 + 13, x0 + 7, y0 + 15), fill=(246, 120, 86))
+    return image
+
+
+def _mechanism_partial_change_image_v2() -> Image.Image:
+    image = _mechanism_base_image_v2().copy()
+    draw = ImageDraw.Draw(image)
+    x0, y0 = _mechanism_target_origin()
+    draw.rectangle((x0 + 5, y0 + 13, x0 + 7, y0 + 15), fill=(74, 198, 154))
+    return image
+
+
+def _mechanism_shift_image_v2(shift_px: int) -> Image.Image:
+    image = _mechanism_base_image_v2().copy()
+    draw = ImageDraw.Draw(image)
+    x0, y0 = _mechanism_target_origin()
+    draw.rectangle((x0 + 4, y0 + 12, x0 + 8, y0 + 16), fill=(28, 32, 42))
+    shifted_left = x0 + 4 + shift_px
+    shifted_right = shifted_left + 4
+    if shifted_right > x0 + MECHANISM_BLOCK_SIZE:
+        raise ValueError(f"shift {shift_px} leaves the target block")
+    draw.rectangle((shifted_left, y0 + 12, shifted_right, y0 + 16), fill=(242, 208, 74))
+    draw.rectangle((shifted_left + 1, y0 + 13, shifted_right - 1, y0 + 15), fill=(246, 120, 86))
+    return image
+
+
+def _natural_mechanism_base_image(manifest: dict[str, ClipRecord], spec: ModelSpec) -> Image.Image:
+    frame = _decode_contiguous_frames(
+        manifest["xiph_akiyo_cif"].local_path,
+        start_frame=0,
+        frame_count=1,
+    )[0]
+    return _preprocess_frames([frame], spec)[0]
+
+
+def _natural_partial_change_image(image: Image.Image) -> Image.Image:
+    mutated = image.copy()
+    draw = ImageDraw.Draw(mutated)
+    x0, y0 = _mechanism_target_origin()
+    draw.rectangle((x0 + 5, y0 + 13, x0 + 9, y0 + 17), fill=(74, 198, 154))
+    return mutated
+
+
 def _rowwise_cosine_similarity(lhs: np.ndarray, rhs: np.ndarray) -> np.ndarray:
     if lhs.shape != rhs.shape:
         raise ValueError(f"shape mismatch: {lhs.shape} != {rhs.shape}")
     if lhs.ndim != 2:
         raise ValueError("expected rank-2 feature arrays")
-    lhs_norm = np.linalg.norm(lhs, axis=1)
-    rhs_norm = np.linalg.norm(rhs, axis=1)
+    lhs32 = lhs.astype(np.float32, copy=False)
+    rhs32 = rhs.astype(np.float32, copy=False)
+    lhs_norm = np.linalg.norm(lhs32, axis=1)
+    rhs_norm = np.linalg.norm(rhs32, axis=1)
     if np.any(lhs_norm == 0.0) or np.any(rhs_norm == 0.0):
         raise ValueError("zero-norm feature row encountered")
-    cosine = np.sum(lhs * rhs, axis=1) / (lhs_norm * rhs_norm)
-    return cast(np.ndarray, cosine)
+    numerator = np.sum(lhs32 * rhs32, axis=1, dtype=np.float64)
+    cosine = numerator / (lhs_norm * rhs_norm)
+    return cast(np.ndarray, np.clip(cosine, -1.0, 1.0))
 
 
 def _single_image_feature_grid(
@@ -518,7 +567,7 @@ def _single_image_feature_grid(
         frames=[image],
         question="Describe the image in one sentence.",
     )
-    features = np.array(_compute_cached_features(model, spec, sample))
+    features = np.array(_compute_cached_features(model, spec, sample), dtype=np.float32)
     image_grid_thw = np.array(sample.extra_kwargs["image_grid_thw"].tolist(), dtype=np.int64)
     grid_shapes = qwen_merged_grid_shapes(image_grid_thw, spatial_merge_size=2)
     if len(grid_shapes) != 1:
@@ -925,6 +974,119 @@ def run_phase_1_1_mechanism() -> dict[str, Any]:
     return result
 
 
+def run_phase_1_15_mechanism_probe_repair() -> dict[str, Any]:
+    manifest, _ = _load_manifest()
+    spec = _model_specs()[0]
+    model, processor = _load_model(spec)
+    result: dict[str, Any] = {
+        "phase": "1.15",
+        "environment": _environment_record(),
+        "model": spec.model_id,
+        "identity": [],
+        "synthetic_partial_change": {},
+        "natural_partial_change": {},
+        "localized_shift": [],
+    }
+
+    natural_base = _natural_mechanism_base_image(manifest, spec)
+    natural_base_grid, _ = _single_image_feature_grid(model, processor, spec, natural_base)
+    identity_probes = [
+        ("xiph_akiyo_cif_frame0", natural_base),
+        ("mechanism_base_image_v2", _mechanism_base_image_v2()),
+    ]
+    for probe_id, image in identity_probes:
+        features_a, _ = _single_image_feature_grid(model, processor, spec, image)
+        features_b, _ = _single_image_feature_grid(model, processor, spec, image)
+        flat_a = features_a.reshape(-1, features_a.shape[-1])
+        flat_b = features_b.reshape(-1, features_b.shape[-1])
+        cosine = _rowwise_cosine_similarity(flat_a, flat_b)
+        result["identity"].append(
+            {
+                "probe_id": probe_id,
+                "feature_shape": list(features_a.shape),
+                "max_abs_diff": float(np.max(np.abs(flat_a - flat_b))),
+                "mean_row_cosine": float(np.mean(cosine)),
+                "min_row_cosine": float(np.min(cosine)),
+            }
+        )
+
+    synthetic_base_grid, _ = _single_image_feature_grid(
+        model, processor, spec, _mechanism_base_image_v2()
+    )
+    synthetic_partial_grid, _ = _single_image_feature_grid(
+        model, processor, spec, _mechanism_partial_change_image_v2()
+    )
+    synthetic_partial_cosine = _rowwise_cosine_similarity(
+        synthetic_base_grid.reshape(-1, synthetic_base_grid.shape[-1]),
+        synthetic_partial_grid.reshape(-1, synthetic_partial_grid.shape[-1]),
+    ).reshape(synthetic_base_grid.shape[0], synthetic_base_grid.shape[1])
+    synthetic_min_position = np.unravel_index(
+        np.argmin(synthetic_partial_cosine), synthetic_partial_cosine.shape
+    )
+    result["synthetic_partial_change"] = {
+        "target_token": {"row": MECHANISM_TARGET[0], "col": MECHANISM_TARGET[1]},
+        "minimum_cosine_token": {
+            "row": int(synthetic_min_position[0]),
+            "col": int(synthetic_min_position[1]),
+        },
+        "minimum_distance": int(
+            abs(int(synthetic_min_position[0]) - MECHANISM_TARGET[0])
+            + abs(int(synthetic_min_position[1]) - MECHANISM_TARGET[1])
+        ),
+        "target_token_cosine": float(synthetic_partial_cosine[MECHANISM_TARGET]),
+        "distance_summary": _distance_summary(synthetic_partial_cosine, origin=MECHANISM_TARGET),
+    }
+
+    natural_partial_grid, _ = _single_image_feature_grid(
+        model, processor, spec, _natural_partial_change_image(natural_base)
+    )
+    natural_partial_cosine = _rowwise_cosine_similarity(
+        natural_base_grid.reshape(-1, natural_base_grid.shape[-1]),
+        natural_partial_grid.reshape(-1, natural_partial_grid.shape[-1]),
+    ).reshape(natural_partial_grid.shape[0], natural_partial_grid.shape[1])
+    natural_min_position = np.unravel_index(
+        np.argmin(natural_partial_cosine), natural_partial_cosine.shape
+    )
+    result["natural_partial_change"] = {
+        "target_token": {"row": MECHANISM_TARGET[0], "col": MECHANISM_TARGET[1]},
+        "minimum_cosine_token": {
+            "row": int(natural_min_position[0]),
+            "col": int(natural_min_position[1]),
+        },
+        "minimum_distance": int(
+            abs(int(natural_min_position[0]) - MECHANISM_TARGET[0])
+            + abs(int(natural_min_position[1]) - MECHANISM_TARGET[1])
+        ),
+        "target_token_cosine": float(natural_partial_cosine[MECHANISM_TARGET]),
+        "distance_summary": _distance_summary(natural_partial_cosine, origin=MECHANISM_TARGET),
+    }
+
+    for shift_px in (1, 4, 8, 14):
+        shifted_grid, _ = _single_image_feature_grid(
+            model, processor, spec, _mechanism_shift_image_v2(shift_px)
+        )
+        cosine = _rowwise_cosine_similarity(
+            synthetic_base_grid.reshape(-1, synthetic_base_grid.shape[-1]),
+            shifted_grid.reshape(-1, shifted_grid.shape[-1]),
+        ).reshape(synthetic_base_grid.shape[0], synthetic_base_grid.shape[1])
+        distance_summary = _distance_summary(cosine, origin=MECHANISM_TARGET)
+        far_field = [
+            entry["mean_cosine"] for entry in distance_summary if cast(int, entry["distance"]) >= 3
+        ]
+        result["localized_shift"].append(
+            {
+                "shift_px": shift_px,
+                "target_token_cosine": float(cosine[MECHANISM_TARGET]),
+                "right_neighbor_cosine": float(
+                    cosine[MECHANISM_TARGET[0], MECHANISM_TARGET[1] + 1]
+                ),
+                "far_field_mean_cosine": float(np.mean(far_field)),
+                "distance_summary": distance_summary,
+            }
+        )
+    return result
+
+
 def run_phase_1_05_temporal_necessity_ablation(
     prompt_bank_path: Path = DEFAULT_PROMPT_BANK_PATH,
 ) -> dict[str, Any]:
@@ -1286,6 +1448,7 @@ def main() -> None:
             "phase1_0",
             "phase1_05",
             "phase1_1",
+            "phase1_15",
             "track_a_pilot",
             "track_a_chunk",
             "track_a_item",
@@ -1313,6 +1476,7 @@ def main() -> None:
         ("phase1_0", run_phase_1_0),
         ("phase1_05", lambda: run_phase_1_05_temporal_necessity_ablation(args.prompt_bank)),
         ("phase1_1", run_phase_1_1_mechanism),
+        ("phase1_15", run_phase_1_15_mechanism_probe_repair),
         ("track_a_pilot", lambda: run_track_a_pilot(args.prompt_bank)),
     )
     if args.phase == "track_a_chunk":
