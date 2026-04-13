@@ -55,7 +55,9 @@ narrow but useful starting point:
   lowest-reuse
 - a narrow endpoint-oriented real-video slice on the predecessor cross-check
   clips now reproduces dense-versus-cached answer stability locally on Qwen 3B
-  with `6/6` dense, `6/6` `STATIC`-only, and `6/6` `STATIC+SHIFTED`
+  with `6/6` dense, `6/6` `STATIC`-only, and `6/6` `STATIC+SHIFTED`; this is
+  accepted with caveat as an endpoint-oriented generalized reproduction, not a
+  middle-event real-video reproduction
 - the current Qwen Track A harness on this M3 Air remains unstable for a full
   long-lived single-process `12`-item run; chunked subprocess execution remains
   the adopted semantic harness constraint
@@ -715,21 +717,22 @@ Implications:
   a preregistration explicitly overrides it
 - use Qwen2.5-VL-7B selectively for confirmation
 - treat full 7B benchmark reproductions that do not fit in memory as partial reproductions, not full replications
+- treat generalized reproduction as the default benchmark standard on this
+  machine unless a stricter rerun becomes feasible elsewhere
 
 ## Immediate Backlog
 
 Near-term order:
 
-1. tighten the current evidence boundary after the first local bring-up
-2. repair weak synthetic items and add divergence-capable temporal-necessity items
-3. reproduce the direct whitepaper mechanism claims locally in feature space
-4. root-cause or cleanly constrain the current Metal-timeout behavior
-5. add surveillance and FPV-like local content-class coverage
-6. rerun the scored Track A local slice on repaired synthetic and natural clips
-7. run threshold sweeps on the middle and hard buckets
+1. keep the evidence boundary explicit with prereg outcomes and generalized-versus-strict reproduction labels
+2. finish benchmark-native TOMATO setup on this stack, including resumable local execution rules
+3. run a documented TOMATO subset reproduction on Qwen `7B` if memory allows, otherwise on the strongest feasible local fallback with the caveat stated up front
+4. build MVBench on the same adapter pattern after the TOMATO path is stable
+5. extend the real-video slice beyond endpoint scene facts so natural middle-event items exist before broad threshold sweeps
+6. compare the repaired mechanism probes on a higher-precision local runtime before treating the locality gap as conceptual disagreement
+7. run threshold sweeps on the discrimination-safe synthetic subset plus the real-video slice
 8. run refresh-interval drift on the hard natural buckets
-9. set up benchmark-native TOMATO and MVBench reproduction slices
-10. only then move deeper into Track B timing and sparse execution
+9. only then move deeper into Track B timing and sparse execution
 
 ## Future Horizons
 
