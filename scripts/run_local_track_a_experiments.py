@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import gc
 import hashlib
 import json
 import platform
@@ -88,6 +89,12 @@ class PreparedSample:
     pixel_values: mx.array
     mask: mx.array
     extra_kwargs: dict[str, mx.array]
+
+
+@dataclass(frozen=True, slots=True)
+class RunControl:
+    stop_file: Path | None = None
+    checkpoint_path: Path | None = None
 
 
 def _run(command: list[str]) -> str:
@@ -435,6 +442,46 @@ def _mix_qwen_features(
 
 def _load_prompt_bank(path: Path) -> dict[str, Any]:
     return tomllib.loads(path.read_text())
+
+
+def _clear_runtime_state() -> None:
+    gc.collect()
+    mx.clear_cache()
+
+
+def _stop_requested(control: RunControl | None) -> bool:
+    return bool(control and control.stop_file is not None and control.stop_file.exists())
+
+
+def _write_json_atomically(path: Path, payload: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(f"{path.suffix}.tmp")
+    temporary.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+    temporary.replace(path)
+
+
+def _record_checkpoint(
+    control: RunControl | None,
+    *,
+    result: dict[str, Any],
+    requested_ids: list[str],
+    stopped_early: bool,
+) -> None:
+    if control is None or control.checkpoint_path is None:
+        return
+    completed_ids = [item["id"] for item in result.get("items", [])]
+    payload = dict(result)
+    payload["requested_item_ids"] = requested_ids
+    payload["completed_item_ids"] = completed_ids
+    payload["remaining_item_ids"] = [
+        item_id for item_id in requested_ids if item_id not in set(completed_ids)
+    ]
+    payload["stopped_early"] = stopped_early
+    _write_json_atomically(control.checkpoint_path, payload)
+
+
+def _mean_or_none(values: list[float]) -> float | None:
+    return None if not values else float(np.mean(values))
 
 
 def _critical_mean(values: list[float], indices: list[int]) -> float | None:
@@ -1089,9 +1136,12 @@ def run_phase_1_15_mechanism_probe_repair() -> dict[str, Any]:
 
 def run_phase_1_05_temporal_necessity_ablation(
     prompt_bank_path: Path = DEFAULT_PROMPT_BANK_PATH,
+    *,
+    control: RunControl | None = None,
 ) -> dict[str, Any]:
     prompt_bank = _load_prompt_bank(prompt_bank_path)
     items = list(prompt_bank["item"])
+    requested_ids = [item["id"] for item in items]
     result: dict[str, Any] = {
         "phase": "1.05",
         "environment": _environment_record(),
@@ -1108,6 +1158,8 @@ def run_phase_1_05_temporal_necessity_ablation(
 
     chunk_size = 2
     for chunk_start in range(0, len(items), chunk_size):
+        if _stop_requested(control):
+            break
         chunk = items[chunk_start : chunk_start + chunk_size]
         completed = subprocess.run(
             [
@@ -1116,6 +1168,11 @@ def run_phase_1_05_temporal_necessity_ablation(
                 "temporal_ablation_chunk",
                 "--prompt-bank",
                 str(prompt_bank_path),
+                *(
+                    ["--stop-file", str(control.stop_file)]
+                    if control and control.stop_file is not None
+                    else []
+                ),
                 *[argument for item in chunk for argument in ("--item-id", item["id"])],
             ],
             capture_output=True,
@@ -1126,7 +1183,17 @@ def run_phase_1_05_temporal_necessity_ablation(
             message = completed.stderr.strip() or completed.stdout.strip() or "unknown failure"
             chunk_ids = ",".join(item["id"] for item in chunk)
             raise RuntimeError(f"temporal_ablation_chunk failed for {chunk_ids}: {message}")
-        result["items"].extend(json.loads(completed.stdout))
+        chunk_results = json.loads(completed.stdout)
+        result["items"].extend(chunk_results)
+        stopped_early = len(chunk_results) < len(chunk) or _stop_requested(control)
+        _record_checkpoint(
+            control,
+            result=result,
+            requested_ids=requested_ids,
+            stopped_early=stopped_early,
+        )
+        if stopped_early:
+            break
 
     contaminated = [
         item["id"]
@@ -1155,12 +1222,15 @@ def run_phase_1_05_temporal_necessity_ablation(
     ]
     result["summary"] = {
         "item_count": len(result["items"]),
-        "dense_accuracy": sum(int(item["dense_correct"]) for item in result["items"])
-        / len(result["items"]),
-        "first_only_accuracy": sum(int(item["first_only_correct"]) for item in result["items"])
-        / len(result["items"]),
-        "first_last_accuracy": sum(int(item["first_last_correct"]) for item in result["items"])
-        / len(result["items"]),
+        "dense_accuracy": _mean_or_none(
+            [float(int(item["dense_correct"])) for item in result["items"]]
+        ),
+        "first_only_accuracy": _mean_or_none(
+            [float(int(item["first_only_correct"])) for item in result["items"]]
+        ),
+        "first_last_accuracy": _mean_or_none(
+            [float(int(item["first_last_correct"])) for item in result["items"]]
+        ),
         "contaminated_middle_required_items": contaminated,
         "contaminated_middle_required_count": len(contaminated),
         "first_last_metadata_mismatch_items": first_last_metadata_mismatches,
@@ -1170,12 +1240,23 @@ def run_phase_1_05_temporal_necessity_ablation(
         "discriminating_middle_required_items": discriminating_middle_required,
         "discriminating_middle_required_count": len(discriminating_middle_required),
     }
+    _record_checkpoint(
+        control,
+        result=result,
+        requested_ids=requested_ids,
+        stopped_early=bool(len(result["items"]) < len(requested_ids)),
+    )
     return result
 
 
-def run_track_a_pilot(prompt_bank_path: Path = DEFAULT_PROMPT_BANK_PATH) -> dict[str, Any]:
+def run_track_a_pilot(
+    prompt_bank_path: Path = DEFAULT_PROMPT_BANK_PATH,
+    *,
+    control: RunControl | None = None,
+) -> dict[str, Any]:
     prompt_bank = _load_prompt_bank(prompt_bank_path)
     items = list(prompt_bank["item"])
+    requested_ids = [item["id"] for item in items]
     spec = _model_specs()[0]
     result: dict[str, Any] = {
         "phase": "track_a_pilot",
@@ -1198,6 +1279,8 @@ def run_track_a_pilot(prompt_bank_path: Path = DEFAULT_PROMPT_BANK_PATH) -> dict
 
     chunk_size = 2
     for chunk_start in range(0, len(items), chunk_size):
+        if _stop_requested(control):
+            break
         chunk = items[chunk_start : chunk_start + chunk_size]
         completed = subprocess.run(
             [
@@ -1206,6 +1289,11 @@ def run_track_a_pilot(prompt_bank_path: Path = DEFAULT_PROMPT_BANK_PATH) -> dict
                 "track_a_chunk",
                 "--prompt-bank",
                 str(prompt_bank_path),
+                *(
+                    ["--stop-file", str(control.stop_file)]
+                    if control and control.stop_file is not None
+                    else []
+                ),
                 *[argument for item in chunk for argument in ("--item-id", item["id"])],
             ],
             capture_output=True,
@@ -1222,22 +1310,29 @@ def run_track_a_pilot(prompt_bank_path: Path = DEFAULT_PROMPT_BANK_PATH) -> dict
             dense_choices.append(item_result["dense_choice"])
             static_choices.append(item_result["static_choice"])
             shifted_choices.append(item_result["shifted_choice"])
+        stopped_early = len(chunk_results) < len(chunk) or _stop_requested(control)
+        _record_checkpoint(
+            control,
+            result=result,
+            requested_ids=requested_ids,
+            stopped_early=stopped_early,
+        )
+        if stopped_early:
+            break
 
-    dense_accuracy = sum(int(item["dense_correct"]) for item in result["items"]) / len(
-        result["items"]
+    dense_accuracy = _mean_or_none([float(int(item["dense_correct"])) for item in result["items"]])
+    static_accuracy = _mean_or_none(
+        [float(int(item["static_correct"])) for item in result["items"]]
     )
-    static_accuracy = sum(int(item["static_correct"]) for item in result["items"]) / len(
-        result["items"]
+    shifted_accuracy = _mean_or_none(
+        [float(int(item["shifted_correct"])) for item in result["items"]]
     )
-    shifted_accuracy = sum(int(item["shifted_correct"]) for item in result["items"]) / len(
-        result["items"]
+    dense_static_agreement = _mean_or_none(
+        [float(int(lhs == rhs)) for lhs, rhs in zip(dense_choices, static_choices, strict=True)]
     )
-    dense_static_agreement = sum(
-        int(lhs == rhs) for lhs, rhs in zip(dense_choices, static_choices, strict=True)
-    ) / len(dense_choices)
-    dense_shifted_agreement = sum(
-        int(lhs == rhs) for lhs, rhs in zip(dense_choices, shifted_choices, strict=True)
-    ) / len(dense_choices)
+    dense_shifted_agreement = _mean_or_none(
+        [float(int(lhs == rhs)) for lhs, rhs in zip(dense_choices, shifted_choices, strict=True)]
+    )
     result["summary"] = {
         "item_count": len(result["items"]),
         "dense_accuracy": dense_accuracy,
@@ -1245,8 +1340,12 @@ def run_track_a_pilot(prompt_bank_path: Path = DEFAULT_PROMPT_BANK_PATH) -> dict
         "shifted_accuracy": shifted_accuracy,
         "dense_static_agreement": dense_static_agreement,
         "dense_shifted_agreement": dense_shifted_agreement,
-        "dense_static_kappa": _cohens_kappa(dense_choices, static_choices, category_count=4),
-        "dense_shifted_kappa": _cohens_kappa(dense_choices, shifted_choices, category_count=4),
+        "dense_static_kappa": None
+        if not dense_choices
+        else _cohens_kappa(dense_choices, static_choices, category_count=4),
+        "dense_shifted_kappa": None
+        if not dense_choices
+        else _cohens_kappa(dense_choices, shifted_choices, category_count=4),
         "dense_parse_failures": sum(choice is None for choice in dense_choices),
         "static_parse_failures": sum(choice is None for choice in static_choices),
         "shifted_parse_failures": sum(choice is None for choice in shifted_choices),
@@ -1254,11 +1353,20 @@ def run_track_a_pilot(prompt_bank_path: Path = DEFAULT_PROMPT_BANK_PATH) -> dict
             int(bool(item.get("requires_middle_frames", False))) for item in result["items"]
         ),
     }
+    _record_checkpoint(
+        control,
+        result=result,
+        requested_ids=requested_ids,
+        stopped_early=bool(len(result["items"]) < len(requested_ids)),
+    )
     return result
 
 
 def run_track_a_chunk(
-    item_ids: list[str], *, prompt_bank_path: Path = DEFAULT_PROMPT_BANK_PATH
+    item_ids: list[str],
+    *,
+    prompt_bank_path: Path = DEFAULT_PROMPT_BANK_PATH,
+    control: RunControl | None = None,
 ) -> list[dict[str, Any]]:
     manifest, _ = _load_manifest()
     spec = _model_specs()[0]
@@ -1267,6 +1375,8 @@ def run_track_a_chunk(
     items = {item["id"]: item for item in prompt_bank["item"]}
     results: list[dict[str, Any]] = []
     for item_id in item_ids:
+        if _stop_requested(control):
+            break
         item = items[item_id]
         clip = manifest[item["clip_id"]]
         raw_frames = _decode_contiguous_frames(
@@ -1352,6 +1462,22 @@ def run_track_a_chunk(
                 ),
             }
         )
+        del (
+            dense,
+            dense_features,
+            dense_logits,
+            frames,
+            question,
+            raw_frames,
+            sample,
+            shifted,
+            shifted_features,
+            shifted_logits,
+            static,
+            static_features,
+            static_logits,
+        )
+        _clear_runtime_state()
     return results
 
 
@@ -1362,7 +1488,10 @@ def run_track_a_item(
 
 
 def run_temporal_ablation_chunk(
-    item_ids: list[str], *, prompt_bank_path: Path = DEFAULT_PROMPT_BANK_PATH
+    item_ids: list[str],
+    *,
+    prompt_bank_path: Path = DEFAULT_PROMPT_BANK_PATH,
+    control: RunControl | None = None,
 ) -> list[dict[str, Any]]:
     manifest, _ = _load_manifest()
     spec = _model_specs()[0]
@@ -1371,6 +1500,8 @@ def run_temporal_ablation_chunk(
     items = {item["id"]: item for item in prompt_bank["item"]}
     results: list[dict[str, Any]] = []
     for item_id in item_ids:
+        if _stop_requested(control):
+            break
         item = items[item_id]
         clip = manifest[item["clip_id"]]
         raw_frames = _decode_contiguous_frames(
@@ -1428,6 +1559,9 @@ def run_temporal_ablation_chunk(
                 "first_last_correct": first_last_choice == item["answer_index"],
             }
         )
+        del dense, dense_sample, first_last, first_last_sample, first_only, first_only_sample
+        del frames, question, raw_frames
+        _clear_runtime_state()
     return results
 
 
@@ -1468,23 +1602,44 @@ def main() -> None:
         default=None,
         help="Optional artifact filename override for phase outputs.",
     )
+    parser.add_argument(
+        "--stop-file",
+        type=Path,
+        default=None,
+        help="If this path exists, stop cleanly after the current item or chunk.",
+    )
+    parser.add_argument(
+        "--checkpoint-path",
+        type=Path,
+        default=None,
+        help="Optional JSON checkpoint written after each completed chunk.",
+    )
     args = parser.parse_args()
+    control = RunControl(stop_file=args.stop_file, checkpoint_path=args.checkpoint_path)
 
     phases = (
         ("phase0_5", run_phase_0_5),
         ("phase0_75", run_phase_0_75),
         ("phase1_0", run_phase_1_0),
-        ("phase1_05", lambda: run_phase_1_05_temporal_necessity_ablation(args.prompt_bank)),
+        (
+            "phase1_05",
+            lambda: run_phase_1_05_temporal_necessity_ablation(args.prompt_bank, control=control),
+        ),
         ("phase1_1", run_phase_1_1_mechanism),
         ("phase1_15", run_phase_1_15_mechanism_probe_repair),
-        ("track_a_pilot", lambda: run_track_a_pilot(args.prompt_bank)),
+        ("track_a_pilot", lambda: run_track_a_pilot(args.prompt_bank, control=control)),
     )
     if args.phase == "track_a_chunk":
         if not args.item_id:
             raise SystemExit("--item-id is required for track_a_chunk")
         print(
             json.dumps(
-                run_track_a_chunk(args.item_id, prompt_bank_path=args.prompt_bank), sort_keys=True
+                run_track_a_chunk(
+                    args.item_id,
+                    prompt_bank_path=args.prompt_bank,
+                    control=control,
+                ),
+                sort_keys=True,
             )
         )
         return
@@ -1502,7 +1657,11 @@ def main() -> None:
             raise SystemExit("--item-id is required for temporal_ablation_chunk")
         print(
             json.dumps(
-                run_temporal_ablation_chunk(args.item_id, prompt_bank_path=args.prompt_bank),
+                run_temporal_ablation_chunk(
+                    args.item_id,
+                    prompt_bank_path=args.prompt_bank,
+                    control=control,
+                ),
                 sort_keys=True,
             )
         )

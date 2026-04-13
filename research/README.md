@@ -50,3 +50,15 @@ that in `Interpretation`, not instead of the preregistration outcome.
 - append new runs chronologically
 - link raw artifacts instead of pasting giant dumps
 - update [decision-log.md](decision-log.md) when a hypothesis changes status
+
+## Long Local Runs
+
+For long semantic runs on this laptop, prefer cooperative termination over
+force-killing processes:
+
+- use `--checkpoint-path <json>` to persist partial results after each chunk
+- use `--stop-file <path>` to request clean exit after the current item or
+  chunk
+
+This is an operational convenience only. It does not make a run timing-safe for
+Track B.

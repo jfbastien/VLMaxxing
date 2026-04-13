@@ -1,0 +1,49 @@
+{
+  "environment": {
+    "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "git_dirty": true,
+    "git_sha": "bd59c61c939790f07bac6abcd24be81e7e9156dd",
+    "mlx_vlm_module": "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
+    "platform": "macOS-26.3-arm64-arm-64bit",
+    "python": "3.12.12"
+  },
+  "model": "Qwen2.5-VL-3B-Instruct-4bit",
+  "phase": "1.2",
+  "prompt_bank": {
+    "path": "research/prompt_bank/local_suite_v2.toml",
+    "suite_id": "local_suite_v2",
+    "version": 2
+  },
+  "runs": [
+    {
+      "command": "./.venv/bin/python3 scripts/run_local_track_a_experiments.py temporal_ablation_chunk ...",
+      "label": "direct_python_temporal_ablation_chunk",
+      "observation": "crashed during MLX Metal device initialization with NSRangeException before returning JSON",
+      "status": "crash"
+    },
+    {
+      "command": "uv run python scripts/run_local_track_a_experiments.py track_a_chunk ...12 items...",
+      "label": "single_process_track_a_chunk_12_items_without_clear",
+      "observation": "no JSON output after more than two minutes; process dropped near idle CPU and had to be terminated",
+      "status": "hung"
+    },
+    {
+      "command": "uv run python scripts/run_local_track_a_experiments.py track_a_chunk ...12 items...",
+      "label": "single_process_track_a_chunk_12_items_with_clear",
+      "observation": "after adding gc.collect() plus mx.clear_cache() between items, the full 12-item run still produced no JSON after more than two minutes and had to be terminated",
+      "status": "hung"
+    },
+    {
+      "command": "uv run python scripts/run_local_track_a_experiments.py track_a_chunk ...4 items...",
+      "label": "single_process_track_a_chunk_4_items_with_clear",
+      "observation": "returned valid JSON for four items on the same stack after the cache-clear patch",
+      "status": "completed"
+    }
+  ],
+  "summary": {
+    "adopted_operating_rule": "Use uv run plus subprocess chunking for Track A semantics on this machine; do not treat the long-lived single-process path as stable yet.",
+    "cache_clear_fix_sufficient_for_12_items": false,
+    "full_single_process_run_stable": false,
+    "small_single_process_run_stable": true
+  }
+}

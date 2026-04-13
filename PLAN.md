@@ -49,6 +49,12 @@ narrow but useful starting point:
 - repaired mechanism probes removed the worst synthetic boundary artifact, but
   the local MLX `4-bit` path still remains weaker than the imported
   whitepaper-strength locality and shift story
+- the current Qwen Track A harness on this M3 Air remains unstable for a full
+  long-lived single-process `12`-item run; chunked subprocess execution remains
+  the adopted semantic harness constraint
+- long local semantic runs now support cooperative stop-file termination and
+  checkpointed partial results so automation does not depend on force-killing
+  jobs
 
 That is the center of the project today.
 
@@ -443,6 +449,29 @@ Outcome:
   locality and shift bands on the local MLX `4-bit` path
 - the next discriminating follow-up is a precision/runtime comparison, not more
   synthetic-probe tweaking
+
+### Phase 1.2: Track A Harness Stability
+
+Status:
+
+- completed locally on 2026-04-13
+- note: [2026-04-13-phase-1_2-track-a-harness-stability.md](research/experiments/2026/2026-04-13-phase-1_2-track-a-harness-stability.md)
+
+Objective:
+
+- determine whether the local Qwen Track A harness can run the full v2 suite in
+  a stable long-lived single process on this M3 Air
+
+Outcome:
+
+- direct `.venv/bin/python3` invocation is not currently stable on the MLX
+  Metal path here
+- `gc.collect()` plus `mx.clear_cache()` improved the smaller single-process
+  chunk case but did not stabilize a full `12`-item long-lived run
+- chunked subprocess execution remains the adopted Track A semantic operating
+  rule
+- cooperative stop-file termination plus checkpointed partial results now exist
+  so long semantic runs do not need force termination
 
 ### Phase 2: Systems Baseline And Honest Timing
 
