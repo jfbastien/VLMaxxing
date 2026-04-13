@@ -23,6 +23,10 @@ We are not yet claiming:
 
 ## Why This Project Matters
 
+Candidate line worth keeping:
+
+> The codec already knows what changed. Stop re-encoding what didn't.
+
 The systems-engineering thesis is straightforward:
 
 - modern codecs already expose cheap signals about novelty, motion, and reference structure
@@ -33,6 +37,19 @@ Another framing that may survive into the paper:
 
 - classical codecs are hand-designed predictive programs shaped by hardware constraints and perceptual objectives
 - machine-consumption pipelines may want to reuse some of those ideas, but not inherit the human-vision objective blindly
+
+## Comparison Boundary
+
+What adjacent work already shows:
+
+- CoPE-VideoLM shows that trained codec-native representations can materially reduce tokens and TTFT
+- CodecSight shows that codec metadata can drive pre-ViT pruning and selective KV refresh in a serving-oriented pipeline
+
+What this repo is trying to show:
+
+- how far a training-free reuse path can go before architecture changes
+- how to separate answer-stability evidence from true skipped compute
+- which cheap routing signals are useful before we pay for deeper model changes
 
 ## Likely Contribution Stack
 
@@ -54,12 +71,31 @@ Follow-on systems paper if evidence lands:
 These are worth discussing, but should stay clearly labeled as future work until
 local evidence exists:
 
-- changed-query attention
+Closest to current evidence:
+
 - compute-denial or novelty-amplification robustness evaluation
 - multi-reference and IMU-assisted stabilization
+- changed-query attention after changed-window execution
+
+Medium-distance:
+
 - machine-oriented codec sidecars
+- screen-content specialization as a major branch
+
+Far-distance:
+
 - sensor-fusion timelines or world-state codecs
 - AI-native codecs and hardware co-design
+
+## Proxy Chain To State Explicitly
+
+The current training-free planner is a proxy chain:
+
+- pixel-space RGB differencing is standing in for decoded-frame change
+- decoded-frame change is standing in for codec-side motion and residual semantics
+- codec-side motion and residual semantics are standing in for latent-feature reuse decisions
+
+That chain is useful, but reviewers should not mistake it for direct compressed-domain execution.
 
 ## Writing Discipline
 

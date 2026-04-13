@@ -220,4 +220,23 @@ Validated issues:
 - cache-size arithmetic needed model- and resolution-specific clarification
 - TurboQuant was being presented too aggressively for a quality-neutral composed claim
 
-Those corrections were applied directly in `whitepaper.md`.
+Those corrections now live in `seed/whitepaper/whitepaper.md`.
+
+## Additional Round-2 Claude Review Takeaways
+
+Validated and integrated:
+
+- move the imported whitepaper under `seed/`
+- tighten Phase 0.5 with concrete models, clip ids, prompts, API DAG steps, and `N=50` repeated runs
+- add a local redundancy-measurement phase before caching comparisons
+- move Gemma from `later` to `early cross-family check`
+- shrink KB notes so the decision log is the canonical status ledger
+- add a local-only clip policy with primary corpus versus predecessor cross-check tiers
+
+Validated but not executed in this commit:
+
+- adding a repository license
+
+Reason:
+
+- the user has not chosen between MIT and Apache-2.0 yet

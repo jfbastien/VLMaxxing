@@ -17,6 +17,35 @@ Read these before changing anything substantial:
 6. [research/decision-log.md](research/decision-log.md)
 7. [paper/framing.md](paper/framing.md)
 
+Use that order for repo-wide orientation.
+
+Within `docs/`, use [docs/README.md](docs/README.md) as the scoped router for
+the docs subtree only.
+
+## Task Routing
+
+Do not read the whole repo by default. Pull only the context needed for the
+current task.
+
+- For experiment design and evaluation rules:
+  [docs/methodology/performance.md](docs/methodology/performance.md) and
+  [docs/methodology/timing-harness.md](docs/methodology/timing-harness.md)
+- For current claim status, reopen conditions, and killed ideas:
+  [research/decision-log.md](research/decision-log.md)
+- For active roadmap and phase order:
+  [PLAN.md](PLAN.md)
+- For imported predecessor evidence and what it actually proved:
+  [docs/original-repo-audit.md](docs/original-repo-audit.md)
+- For validated external-review takeaways:
+  [docs/external-feedback-validation.md](docs/external-feedback-validation.md)
+- For corpus and local asset policy:
+  [docs/clip-policy.md](docs/clip-policy.md) and
+  [docs/local-setup.md](docs/local-setup.md)
+- For paper contribution boundaries and future-work framing:
+  [paper/framing.md](paper/framing.md)
+- For imported provenance artifacts:
+  `seed/`
+
 ## Current Research Position
 
 Validated enough to guide work:
@@ -73,8 +102,9 @@ Durable homes:
 ## Model And Runtime Notes
 
 - First local target: Qwen2.5-VL-3B on MLX-VLM.
-- Second-pass confirmation: Qwen2.5-VL-7B on smaller slices.
-- Gemma checks are useful, but only after geometry-sensitive helpers use model config rather than Qwen-specific constants.
+- Second local model: Gemma 4 E4B as the early cross-family check.
+- Third-pass confirmation: Qwen2.5-VL-7B on smaller slices.
+- Interpret cross-family results per family. Do not collapse Qwen and Gemma into one acceptance metric.
 - Never assume a `28 px` token block. Derive geometry from model config.
 
 ## Review Standard

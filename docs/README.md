@@ -4,6 +4,10 @@ This directory is for durable background, methodology, and provenance.
 
 It is not the place for per-run scratch notes or agent-local thinking.
 
+See [AGENTS.md](../AGENTS.md) for the canonical repo-wide read order.
+
+This file only routes work inside `docs/`.
+
 ## What Goes Here
 
 - stable measurement rules
@@ -11,6 +15,7 @@ It is not the place for per-run scratch notes or agent-local thinking.
 - audits of imported repos
 - validated takeaways from external review
 - setup instructions that apply to any clean checkout
+- clip and local-asset policy
 
 ## What Does Not Go Here
 
@@ -33,4 +38,5 @@ It is not the place for per-run scratch notes or agent-local thinking.
 - [external-feedback-validation.md](external-feedback-validation.md)
 - [literature-map.md](literature-map.md)
 - [knowledge-base-notes.md](knowledge-base-notes.md)
+- [clip-policy.md](clip-policy.md)
 - [local-setup.md](local-setup.md)

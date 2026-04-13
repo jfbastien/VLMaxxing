@@ -59,6 +59,13 @@ class ClassificationSummary:
 
 
 def _diff_plane(frame_a: FrameArray, frame_b: FrameArray) -> npt.NDArray[np.float32]:
+    """Return mean absolute RGB error or grayscale absolute error.
+
+    The current thresholds are calibrated against mean absolute channel
+    difference in RGB space. Alternatives such as max-channel error, luminance,
+    or perceptual color distance are not equivalent.
+    """
+
     if frame_a.ndim not in (2, 3) or frame_b.ndim not in (2, 3):
         raise ValueError("expected 2D grayscale or 3D color frames")
     if frame_a.shape != frame_b.shape:

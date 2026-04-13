@@ -1,6 +1,6 @@
 # Performance Methodology
 
-This repo treats performance work as science, not vibes.
+This repo treats performance work as controlled research, not screenshot-friendly anecdotes.
 
 The goal is not to produce impressive-looking latency numbers. The goal is to
 measure the right thing, under controlled conditions, with enough context that
@@ -40,13 +40,13 @@ we moved the goalposts.
 
 Do not mix units casually.
 
-Examples:
+Repo-relevant examples:
 
 - per clip
 - per prompt
 - per request
 - per frame
-- per model turn
+- per model family
 
 If the unit changes, say so explicitly.
 
@@ -66,6 +66,7 @@ Systems metrics:
 
 - TTFT
 - total latency
+- generation latency
 - prompt processing speed
 - peak memory
 - planner overhead
@@ -89,6 +90,9 @@ Track B:
 - result must include wall-clock or memory evidence
 
 Never report a Track A result as if it were a Track B speedup.
+
+For short-answer QA, generation can dominate total latency. Report it as a
+separate bucket instead of letting it hide changes in decode, planner, or vision cost.
 
 ## Pre-Register Acceptance Bands
 
@@ -221,6 +225,16 @@ When an experiment fails:
 
 Negative results are data. Unrecorded negative results are waste.
 
+## Failure Attribution Ladder
+
+Use one of these labels in experiment notes:
+
+- harness failure: the measurement apparatus broke, so the result is void
+- runtime failure: the model or backend could not produce output
+- method failure, content-specific: the method failed on a specific bucket and narrows the scope
+- method failure, systemic: the method failed across buckets and weakens the core claim
+- interpretation failure: the experiment ran, but the preregistered bands or assumptions were wrong
+
 ## Minimum Template For A Serious Experiment
 
 Use this template in experiment notes:
@@ -257,6 +271,7 @@ Always log:
 - novel ratio
 - refresh count
 - frame routing decisions
+- the exact diff formulation if pixel diff is used
 
 ### End-To-End Inference Experiments
 
@@ -273,6 +288,11 @@ Always log:
 Do not compare a smaller faster model against a larger slower model and call that a systems win for the method.
 
 If the model changes, the result is partly about model size and capability.
+
+For this repo:
+
+- keep Qwen and Gemma acceptance bands separate
+- use cross-family disagreement as evidence about scope, not as automatic failure of the whole method
 
 ## Timing Harness
 

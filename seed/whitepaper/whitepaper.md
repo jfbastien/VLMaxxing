@@ -7,7 +7,7 @@ subtitle: "Research Whitepaper — April 2026"
 
 **Research Whitepaper — April 2026**
 
-Converted from the local PDF on 2026-04-13 with `mutool`, then lightly cleaned for readability. This markdown copy also carries local errata fixes where the repo audit found reference or arithmetic issues. The original source PDF is preserved as [`whitepaper.pdf`](whitepaper.pdf).
+Converted from the local PDF on 2026-04-13 with `mutool`, then lightly cleaned for readability. This markdown copy also carries local errata fixes where the repo audit found reference or arithmetic issues. The original PDF has been removed from this repo in favor of the corrected markdown import.
 
 ## Abstract
 
@@ -278,7 +278,7 @@ The simplest version of the Codec-Through thesis is presented as working:
 
 The paper's closing claim is that the quality floor for temporal embedding caching is much lower than expected:
 
-- even at `0.85` embedding cosine similarity, after 14 frames without refresh, every output remained semantically correct in the reported tests
+- imported, not yet locally verified in this repo: even at `0.85` embedding cosine similarity, after 14 frames without refresh, every output remained semantically correct in the reported tests
 - 29× temporal compression was reported on conferencing video
 - the paper reports zero delta on all 1,484 TOMATO questions and on a 160-question MVBench slice
 

@@ -2,11 +2,11 @@
 
 Research repo for codec-conditioned acceleration of video vision-language models.
 
-This repo starts from a local whitepaper, imported ChatGPT seed artifacts, and an audited predecessor repo. None of those are treated as final truth. The job here is to turn promising ideas into a reproducible research program with explicit experiment contracts, honest measurement, and preserved negative results.
+This repo starts from an imported whitepaper, imported ChatGPT seed artifacts, and an audited predecessor repo. None of those are treated as final truth. The job here is to turn promising ideas into a reproducible research program with explicit experiment contracts, honest measurement, and preserved negative results.
 
 ## Current Status
 
-- `whitepaper.pdf` and `whitepaper.md` are checked in.
+- the imported whitepaper and its correction notes live under `seed/whitepaper/`.
 - Imported ChatGPT material lives under `seed/chatgpt/`.
 - Selected reference material from the original `codec-through-sam` repo lives under `seed/original_repo/`.
 - Clean rewritten utilities for frame probing, block classification, and strict answer parsing live under `src/codec_through/`.
@@ -47,6 +47,7 @@ uv sync --group dev --group research --group vlm
 - [AGENTS.md](AGENTS.md): canonical coding-agent guidance
 - [PLAN.md](PLAN.md): current research plan and phase order
 - [docs/README.md](docs/README.md): where durable knowledge belongs
+- [docs/clip-policy.md](docs/clip-policy.md): local-only clip and corpus policy
 - [research/README.md](research/README.md): experiment-note and decision-log workflow
 - [paper/framing.md](paper/framing.md): current paper story, anti-claims, and future horizons
 - [docs/original-repo-audit.md](docs/original-repo-audit.md): what the original repo actually proved
@@ -65,6 +66,7 @@ uv sync --group dev --group research --group vlm
 ├── README.md
 ├── docs/
 │   ├── README.md
+│   ├── clip-policy.md
 │   ├── external-feedback-validation.md
 │   ├── knowledge-base-notes.md
 │   ├── literature-map.md
@@ -73,6 +75,9 @@ uv sync --group dev --group research --group vlm
 │   │   ├── performance.md
 │   │   └── timing-harness.md
 │   └── original-repo-audit.md
+├── data/
+│   └── corpus/
+│       └── manifest.toml
 ├── paper/
 │   └── framing.md
 ├── research/
@@ -83,7 +88,10 @@ uv sync --group dev --group research --group vlm
 │           └── 2026-04-13-phase-0_5-feasibility.md
 ├── seed/
 │   ├── chatgpt/
-│   └── original_repo/
+│   ├── original_repo/
+│   └── whitepaper/
+├── scripts/
+│   └── check_model_configs.py
 ├── src/
 │   └── codec_through/
 └── tests/

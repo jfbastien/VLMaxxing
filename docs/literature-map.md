@@ -191,6 +191,42 @@ Why it matters:
 
 - useful for visual inspection and debugging of motion-vector extraction
 
+## Test Media And Dataset Provenance
+
+### Xiph Test Media
+
+Source:
+
+- <https://media.xiph.org/>
+- <https://media.xiph.org/video/derf/>
+
+Why it matters:
+
+- practical stable source for small local bring-up clips
+- useful for low-motion and moderate-motion proxy content without relying on transient video-hosting platforms
+
+### UVG Dataset
+
+Source:
+
+- <https://researchportal.tuni.fi/fi/publications/uvg-dataset-50120fps-4k-sequences-for-video-codec-analysis-and-de>
+
+Why it matters:
+
+- strong later-stage source for reproducible 4K codec experiments
+- useful when the project graduates from tiny bring-up clips to higher-resolution systems work
+
+### EPIC-KITCHENS
+
+Source:
+
+- <https://epic-kitchens.github.io/2022.html>
+
+Why it matters:
+
+- explicit egocentric dataset option for later mobile or FPV-style evaluation
+- non-commercial license means it should be kept separate from the initial lightweight public corpus
+
 ## Machine-Oriented Media Standards
 
 ### MPEG VCM

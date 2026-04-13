@@ -256,7 +256,11 @@ def frame_level_early_exit(
     *,
     threshold: float = 0.02,
 ) -> Literal["ALL_STATIC"] | None:
-    """Return ``ALL_STATIC`` when a tiny non-I frame can skip pixel diff."""
+    """Return ``ALL_STATIC`` when a tiny non-I frame can skip pixel diff.
+
+    The default threshold comes from the predecessor repo and is treated here as
+    an empirical tunable, not as a settled constant.
+    """
 
     if packet.key_frame or packet.pict_type == "I":
         return None

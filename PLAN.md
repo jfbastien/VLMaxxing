@@ -79,6 +79,7 @@ Strong enough to guide the next phase:
 - packet metadata and keyframe detection are promising cheap routing signals
 - Q-table flatness is useful as a binary pre-filter, not a saliency oracle
 - architecture-specific checkpoints matter for any later sparse-execution path
+- the current pixel-diff planner is an RGB proxy for a deeper production hypothesis about codec motion and residual signals
 
 Strong enough to preserve as cautions:
 
@@ -201,24 +202,46 @@ Hypothesis:
 
 Tasks:
 
-- verify that the local stack exposes the required cached-feature path
-- run dense baseline twice on the same inputs
+- verify the local Track A contract via an explicit API DAG
+- run repeated dense baselines on the same fixed inputs
 - record determinism or non-determinism before interpreting any agreement result
 
 Primary metrics:
 
-- repeated dense-baseline agreement
-- interface availability
+- repeated dense-baseline identity
+- interface-step pass/fail status
 - parseable outputs
 
 Acceptance band:
 
-- deterministic or effectively deterministic dense baseline
-- feature-substitution path is reachable
+- exact output-string identity across the preregistered repeated dense runs
+- required API DAG steps succeed up to the intended Track A contract
 
 Rejection band:
 
 - interface is unavailable or too unstable to support Track A work
+
+### Phase 1.0: Measure Local Redundancy Before Caching
+
+Objective:
+
+- quantify how redundant the local clip buckets actually are before interpreting caching outcomes
+
+Hypothesis:
+
+- the local buckets will span meaningfully different static, shifted, and novel ratios
+
+Tasks:
+
+- measure static, shifted, and novel ratios on the primary local corpus
+- report the ratios before any semantic-substitution comparison
+- keep the pixel-diff formulation explicit so later codec-side replacements are comparable
+
+Primary metrics:
+
+- static ratio
+- shifted ratio
+- novel ratio
 
 ### Phase 1: Reproduce Semantic Substitution Cheaply
 
@@ -235,7 +258,7 @@ Tasks:
 - run local MLX-VLM baselines on a small subset first
 - compare dense versus cached outputs
 - log parse failures explicitly
-- run threshold triples: conservative, default, aggressive
+- run threshold triples: aggressive `(1.5, 4)`, default `(3, 8)`, conservative `(5, 12)`
 - sweep refresh intervals to test cache drift directly
 
 Primary metrics:
@@ -267,7 +290,8 @@ Objective:
 
 Hypothesis:
 
-- decode, preprocessing, and dense vision dominate before planner cost does
+- for the non-generation part of the pipeline, decode, preprocessing, and dense
+  vision dominate before planner cost does
 
 Tasks:
 
@@ -337,6 +361,7 @@ Tasks:
 - prototype changed-window or changed-region recompute contracts
 - keep model-specific geometry explicit
 - verify Qwen full-attention checkpoints locally before depending on merge claims
+- include Gemma as the early cross-family check once the Qwen path is burned in
 
 Guardrails:
 
@@ -473,6 +498,7 @@ Implications:
 
 - prefer MLX-VLM for local Track A and early Track B work
 - iterate on Qwen2.5-VL-3B first
+- use Gemma 4 E4B as the second model, with per-family evaluation bands
 - use Qwen2.5-VL-7B selectively for confirmation
 - treat full 7B benchmark reproductions that do not fit in memory as partial reproductions, not full replications
 
@@ -482,10 +508,11 @@ Near-term order:
 
 1. finish Phase 0 hygiene fixes and documentation
 2. run Phase 0.5 feasibility and determinism checks
-3. reproduce a small Track A semantic-substitution slice locally
-4. build the clean timing harness
-5. test packet-size and keyframe routing
-6. design changed-window sparse execution against the verified model geometry
+3. measure local redundancy on the initial clip buckets
+4. reproduce a small Track A semantic-substitution slice locally
+5. build the clean timing harness
+6. test packet-size and keyframe routing
+7. design changed-window sparse execution against the verified model geometry
 
 ## Future Horizons
 

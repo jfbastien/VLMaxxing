@@ -1,0 +1,94 @@
+# Local-only corpus manifest.
+#
+# This file tracks intended assets and provenance.
+# It does not imply that the media files are checked into git.
+
+[[clip]]
+id = "xiph_akiyo_cif"
+tier = "primary"
+method = "http"
+content_class = "talking-head-proxy"
+source_page = "https://media.xiph.org/video/derf/"
+download_url = "https://media.xiph.org/video/derf/y4m/akiyo_cif.y4m"
+local_path = "data/corpus/raw/akiyo_cif.y4m"
+license = "Xiph/Derf public test media; see per-sequence copyright/readme links"
+intended_use = "low-motion temporal reuse baseline"
+needs_local_encode = true
+
+[[clip]]
+id = "xiph_news_cif"
+tier = "primary"
+method = "http"
+content_class = "anchor-or-conference-proxy"
+source_page = "https://media.xiph.org/video/derf/"
+download_url = "https://media.xiph.org/video/derf/y4m/news_cif.y4m"
+local_path = "data/corpus/raw/news_cif.y4m"
+license = "Xiph/Derf public test media; see per-sequence copyright/readme links"
+intended_use = "moderate-motion talking-head baseline"
+needs_local_encode = true
+
+[[clip]]
+id = "xiph_coastguard_cif"
+tier = "primary"
+method = "http"
+content_class = "natural-motion"
+source_page = "https://media.xiph.org/video/derf/"
+download_url = "https://media.xiph.org/video/derf/y4m/coastguard_cif.y4m"
+local_path = "data/corpus/raw/coastguard_cif.y4m"
+license = "Xiph/Derf public test media; see per-sequence copyright/readme links"
+intended_use = "moderate-motion natural-video baseline"
+needs_local_encode = true
+
+[[clip]]
+id = "xiph_mobile_cif"
+tier = "primary"
+method = "http"
+content_class = "detail-and-motion"
+source_page = "https://media.xiph.org/video/derf/"
+download_url = "https://media.xiph.org/video/derf/y4m/mobile_cif.y4m"
+local_path = "data/corpus/raw/mobile_cif.y4m"
+license = "Xiph/Derf public test media; see per-sequence copyright/readme links"
+intended_use = "detail-heavy temporal-reuse stress case"
+needs_local_encode = true
+
+[[clip]]
+id = "crosscheck_talking_head"
+tier = "crosscheck"
+method = "yt-dlp"
+content_class = "talking-head"
+source_page = "https://www.youtube.com/watch?v=DxREm3s1scA"
+local_path = "data/corpus/crosscheck/talking_head.mp4"
+license = "YouTube terms; local cross-check only"
+intended_use = "replicate predecessor repo behavior locally"
+download_command = """yt-dlp -f \"bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720]\" --download-sections \"*0:00-0:30\" -o \"data/corpus/crosscheck/talking_head.%(ext)s\" \"https://www.youtube.com/watch?v=DxREm3s1scA\""""
+
+[[clip]]
+id = "crosscheck_surveillance"
+tier = "crosscheck"
+method = "yt-dlp"
+content_class = "surveillance"
+source_page = "https://www.youtube.com/watch?v=MNn9qKG2UFI"
+local_path = "data/corpus/crosscheck/surveillance.mp4"
+license = "YouTube terms; local cross-check only"
+intended_use = "replicate predecessor repo behavior locally"
+download_command = """yt-dlp -f \"bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720]\" --download-sections \"*0:30-1:00\" -o \"data/corpus/crosscheck/surveillance.%(ext)s\" \"https://www.youtube.com/watch?v=MNn9qKG2UFI\""""
+
+[[clip]]
+id = "crosscheck_fpv_drone"
+tier = "crosscheck"
+method = "yt-dlp"
+content_class = "egomotion"
+source_page = "https://www.youtube.com/watch?v=YPNtouPtkJY"
+local_path = "data/corpus/crosscheck/fpv_drone.mp4"
+license = "YouTube terms; local cross-check only"
+intended_use = "replicate predecessor repo behavior locally"
+download_command = """yt-dlp -f \"bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720]\" --download-sections \"*0:10-0:40\" -o \"data/corpus/crosscheck/fpv_drone.%(ext)s\" \"https://www.youtube.com/watch?v=YPNtouPtkJY\""""
+
+[[derived_encode]]
+id = "standard_h264_crf18_g30"
+video_codec = "libx264"
+preset = "medium"
+crf = 18
+gop = 30
+pixel_format = "yuv420p"
+intended_use = "baseline codec-metadata and packet-size experiments"
