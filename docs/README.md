@@ -34,6 +34,7 @@ This file only routes work inside `docs/`.
 ## Read Order
 
 - [methodology/performance.md](methodology/performance.md)
+- [methodology/preprocessing.md](methodology/preprocessing.md)
 - [methodology/timing-harness.md](methodology/timing-harness.md)
 - [original-repo-audit.md](original-repo-audit.md)
 - [external-feedback-validation.md](external-feedback-validation.md)

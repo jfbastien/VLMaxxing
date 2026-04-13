@@ -42,6 +42,13 @@ If you want the local MLX/MLX-VLM stack available too:
 uv sync --group dev --group research --group vlm
 ```
 
+If you want the local primary and synthetic evaluation clips:
+
+```bash
+uv run python scripts/fetch_corpus.py --tier primary --encode
+uv run python scripts/generate_synthetic_corpus.py
+```
+
 ## Where To Read First
 
 - [AGENTS.md](AGENTS.md): canonical coding-agent guidance
@@ -54,6 +61,7 @@ uv sync --group dev --group research --group vlm
 - [docs/original-repo-audit.md](docs/original-repo-audit.md): what the original repo actually proved
 - [docs/external-feedback-validation.md](docs/external-feedback-validation.md): validated takeaways from Claude and ChatGPT reviews
 - [docs/methodology/performance.md](docs/methodology/performance.md): measurement contract
+- [docs/methodology/preprocessing.md](docs/methodology/preprocessing.md): decode, resize, padding, and sampling contract
 - [docs/local-setup.md](docs/local-setup.md): repo-centric setup and model guidance
 
 ## Repository Layout
@@ -74,6 +82,7 @@ uv sync --group dev --group research --group vlm
 │   ├── local-setup.md
 │   ├── methodology/
 │   │   ├── performance.md
+│   │   ├── preprocessing.md
 │   │   └── timing-harness.md
 │   └── original-repo-audit.md
 ├── data/
@@ -84,15 +93,19 @@ uv sync --group dev --group research --group vlm
 ├── research/
 │   ├── README.md
 │   ├── decision-log.md
+│   ├── prompt_bank/
 │   └── experiments/
 │       └── 2026/
-│           └── 2026-04-13-phase-0_5-feasibility.md
+│           ├── 2026-04-13-phase-0_5-feasibility.md
+│           └── 2026-04-13-phase-0_75-cache-identity.md
 ├── seed/
 │   ├── chatgpt/
 │   ├── original_repo/
 │   └── whitepaper/
 ├── scripts/
-│   └── check_model_configs.py
+│   ├── check_model_configs.py
+│   ├── fetch_corpus.py
+│   └── generate_synthetic_corpus.py
 ├── src/
 │   └── codec_through/
 └── tests/

@@ -84,6 +84,66 @@ license = "YouTube terms; local cross-check only"
 intended_use = "replicate predecessor repo behavior locally"
 download_command = """yt-dlp -f \"bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720]\" --download-sections \"*0:10-0:40\" -o \"data/corpus/crosscheck/fpv_drone.%(ext)s\" \"https://www.youtube.com/watch?v=YPNtouPtkJY\""""
 
+[[clip]]
+id = "synthetic_affine_pan"
+tier = "synthetic"
+method = "generated"
+content_class = "synthetic-egomotion"
+source_page = "scripts/generate_synthetic_corpus.py"
+local_path = "data/corpus/synthetic/synthetic_affine_pan.mp4"
+license = "generated locally by repo workflow"
+intended_use = "controlled camera-motion and same-position-reuse stress case"
+
+[[clip]]
+id = "synthetic_scene_cut"
+tier = "synthetic"
+method = "generated"
+content_class = "synthetic-scene-cut"
+source_page = "scripts/generate_synthetic_corpus.py"
+local_path = "data/corpus/synthetic/synthetic_scene_cut.mp4"
+license = "generated locally by repo workflow"
+intended_use = "controlled hard-cut stress case"
+
+[[clip]]
+id = "synthetic_fullframe_flicker"
+tier = "synthetic"
+method = "generated"
+content_class = "synthetic-novelty-amplification"
+source_page = "scripts/generate_synthetic_corpus.py"
+local_path = "data/corpus/synthetic/synthetic_fullframe_flicker.mp4"
+license = "generated locally by repo workflow"
+intended_use = "controlled compute-denial or novelty-amplification stress case"
+
+[[clip]]
+id = "synthetic_color_swap"
+tier = "synthetic"
+method = "generated"
+content_class = "synthetic-color"
+source_page = "scripts/generate_synthetic_corpus.py"
+local_path = "data/corpus/synthetic/synthetic_color_swap.mp4"
+license = "generated locally by repo workflow"
+intended_use = "controlled color-sensitivity stress case"
+
+[[clip]]
+id = "synthetic_small_object"
+tier = "synthetic"
+method = "generated"
+content_class = "synthetic-small-object"
+source_page = "scripts/generate_synthetic_corpus.py"
+local_path = "data/corpus/synthetic/synthetic_small_object.mp4"
+license = "generated locally by repo workflow"
+intended_use = "controlled small-object and localization stress case"
+
+[[clip]]
+id = "synthetic_screen_ocr"
+tier = "synthetic"
+method = "generated"
+content_class = "synthetic-screen-ocr"
+source_page = "scripts/generate_synthetic_corpus.py"
+local_path = "data/corpus/synthetic/synthetic_screen_ocr.mp4"
+license = "generated locally by repo workflow"
+intended_use = "controlled screen-content and OCR stress case"
+
 [[derived_encode]]
 id = "standard_h264_crf18_g30"
 video_codec = "libx264"

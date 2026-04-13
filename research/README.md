@@ -5,6 +5,7 @@ This directory is the durable experiment ledger.
 ## Structure
 
 - [decision-log.md](decision-log.md): adopted, weakened, killed, revived ideas
+- [prompt_bank](prompt_bank/): versioned prompt sets and answer keys
 - `experiments/<year>/...`: one dated file per decision-worthy experiment family
 
 ## Experiment Note Template

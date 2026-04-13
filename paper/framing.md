@@ -92,6 +92,8 @@ Far-distance:
 The current training-free planner is a proxy chain:
 
 - pixel-space RGB differencing is standing in for decoded-frame change
+- current `STATIC / SHIFTED / NOVEL` planner labels are therefore proxy labels
+  under RGB differencing, not literal codec-motion truth
 - decoded-frame change is standing in for codec-side motion and residual semantics
 - codec-side motion and residual semantics are standing in for latent-feature reuse decisions
 

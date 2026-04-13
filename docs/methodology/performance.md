@@ -75,6 +75,12 @@ Systems metrics:
 
 Do not collapse them into one number.
 
+Preprocessing and sampling are part of the same contract.
+
+See:
+
+- [preprocessing.md](preprocessing.md)
+
 ## Keep Track A And Track B Separate
 
 Track A:
@@ -90,6 +96,12 @@ Track B:
 - result must include wall-clock or memory evidence
 
 Never report a Track A result as if it were a Track B speedup.
+
+Before any planner-driven Track A claim, pass the cache-path identity control:
+
+- dense direct generation
+- dense-through-cache identity
+- deliberately perturbed cached features to prove the path is live
 
 For short-answer QA, generation can dominate total latency. Report it as a
 separate bucket instead of letting it hide changes in decode, planner, or vision cost.
@@ -185,6 +197,7 @@ Raw records should include:
 - machine identifier
 - model identifier
 - prompt or clip id
+- prompt-bank version
 - experiment track
 - all primary metrics
 
@@ -200,8 +213,22 @@ When possible, fix:
 - clip resolution
 - decode backend
 - batch size
+- prompt-bank version
+- Gemma visual token budget when Gemma is used
 
 If one changes, log it as part of the experiment.
+
+## Prompt Protocol
+
+For the main local suite:
+
+- use versioned prompt banks checked into the repo
+- use multiple-choice prompts for primary scored comparisons
+- keep open-ended prompts qualitative unless they have a preregistered scoring rule
+
+Prompt and answer-key files live under:
+
+- [research/prompt_bank](../../research/prompt_bank/)
 
 ## Determinism Sanity Check
 

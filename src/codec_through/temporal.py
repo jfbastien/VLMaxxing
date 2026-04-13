@@ -14,7 +14,12 @@ FrameArray = npt.NDArray[Any]
 
 
 class BlockClass(IntEnum):
-    """Semantic labels for adjacent-frame block reuse."""
+    """Historical planner labels for adjacent-frame block reuse.
+
+    Under the current pixel-diff planner these are proxy classes: low delta,
+    mid delta, and high delta. They are not literal codec-motion semantics
+    until a decoder-side planner replaces the RGB proxy.
+    """
 
     STATIC = 0
     SHIFTED = 1

@@ -113,8 +113,40 @@ Source:
 
 Why it matters:
 
-- closest newer evidence that document or GUI-like imagery can be unusually redundant before dense visual encoding
+- strong newer evidence that document or GUI-like imagery can be unusually redundant before dense visual encoding
 - supports keeping screen-content specialization in scope
+
+What it does not tell us:
+
+- it is not evidence for general natural-video redundancy
+- it is not evidence for codec-motion routing or temporal reuse in natural scenes
+
+## Compressed-Video Lineage
+
+### CoViAR
+
+Source:
+
+- <https://openaccess.thecvf.com/content_cvpr_2018/html/Wu_Compressed_Video_Action_CVPR_2018_paper.html>
+
+Why it matters:
+
+- classic compressed-video ML baseline that works from I-frames, motion vectors,
+  and residuals
+- useful when explaining that codec-aware video ML is not new, but our runtime
+  operating point is different
+
+### DMC-Net
+
+Source:
+
+- <https://openaccess.thecvf.com/content_CVPR_2019/html/Shou_DMC-Net_Generating_Discriminative_Motion_Cues_for_Fast_Compressed_Video_Action_CVPR_2019_paper.html>
+
+Why it matters:
+
+- explicit reminder that raw motion vectors are useful but noisy
+- helpful precedent for treating codec signals as valuable machine inputs without
+  assuming they are perfect semantic saliency signals
 
 ## Model and Runtime Stack
 
@@ -128,6 +160,7 @@ Why it matters:
 
 - relevant open multimodal target family
 - likely the cleanest first comparison point against the seed whitepaper
+- official docs expose video support and image or video feature APIs
 
 ### MLX
 
@@ -151,13 +184,20 @@ Why it matters:
 - practical local inference stack for VLMs on Mac
 - explicitly supports vision-language and omni models
 - includes video support for selected models
-- already exposes vision feature caching and TurboQuant KV settings
+- official README documents vision feature caching and TurboQuant KV-cache options
+
+Important caution:
+
+- runtime support for these knobs does not count as local proof that they are
+  quality-neutral or composable in our stack
 
 ### Gemma Model Family
 
 Source:
 
 - <https://ai.google.dev/gemma/docs/get_started>
+- <https://huggingface.co/docs/transformers/model_doc/gemma4>
+- <https://huggingface.co/google/gemma-4-E4B>
 
 Why it matters:
 
@@ -168,6 +208,42 @@ Current working takeaway:
 
 - Gemma 4 E4B is the most interesting local Gemma target for this machine class
 - Gemma 4 31B is a context reference, not the day-one local model
+- Gemma 4 uses a configurable visual token budget with official supported values
+  `70`, `140`, `280`, `560`, and `1120`
+- the repo's `Qwen -> Gemma -> Qwen-7B` model order is a local research choice,
+  not an official recommendation
+
+## Temporal Redundancy And Dynamic Compute
+
+### Eventful Transformers
+
+Source:
+
+- <https://openaccess.thecvf.com/content/ICCV2023/html/Dutson_Eventful_Transformers_Leveraging_Temporal_Redundancy_in_Vision_Transformers_ICCV_2023_paper.html>
+
+Why it matters:
+
+- closest non-codec temporal-redundancy reference for reprocessing only changed
+  tokens across time
+- especially relevant if Track B becomes changed-window execution and later
+  changed-query attention
+
+### FitPrune
+
+Source:
+
+- <https://arxiv.org/abs/2409.10197>
+
+Why it matters:
+
+- training-free visual-token pruning reference for MLLMs
+- useful adjacent comparison when discussing efficiency work that avoids
+  retraining
+
+What it does not tell us:
+
+- it is not codec-specific
+- it is not itself a temporal-reuse result
 
 ## Codec and Tooling References
 

@@ -240,3 +240,44 @@ Validated but not executed in this commit:
 Reason:
 
 - the user has not chosen between MIT and Apache-2.0 yet
+
+## Additional Round-3 ChatGPT Review Takeaways
+
+Validated and integrated:
+
+- add a Phase 0.75 cache-path identity control between determinism and
+  planner-driven reuse
+- add an explicit preprocessing contract covering decode backend, resize,
+  padding, masking, and sampling mode
+- make prompt banks and answer keys first-class versioned artifacts
+- add a synthetic local stress corpus for controlled OCR, color, small-object,
+  scene-cut, and flicker cases
+- keep `contiguous_window` and `uniform_global` sampling as explicitly separate
+  modes
+- tighten Track B timing rules so temp-image helpers stay reference-only and
+  in-memory decode becomes a required follow-on for paper-grade claims
+- add compressed-video and temporal-redundancy lineage references such as
+  CoViAR, DMC-Net, Eventful Transformers, and FitPrune
+- freeze Gemma's configurable visual token budget in the initial pilot instead
+  of leaving it as a hidden degree of freedom
+
+Validated but reframed:
+
+- the recommended `Qwen -> Gemma -> Qwen-7B` model order is a sensible local
+  repo choice, not an official recommendation from the model authors
+- `STATIC / SHIFTED / NOVEL` remain acceptable code labels, but docs should say
+  clearly that they are proxy classes under the current RGB-diff planner
+- MLX-VLM runtime support for cached image features and TurboQuant is useful
+  tooling evidence, not local proof of quality-neutral composition
+
+False positives or already addressed:
+
+- the claimed gap around missing imported result artifacts is false in the
+  current repo snapshot; the referenced JSON files are present under
+  `seed/original_repo/results/`
+
+Still future work, not executed in this commit:
+
+- an in-memory decode path for Track B timing runs
+- pad-masked reuse accounting implemented end to end in runtime code
+- automated benchmark-native dataset helpers for TOMATO and MVBench

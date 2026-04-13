@@ -13,9 +13,10 @@ Read these before changing anything substantial:
 2. [PLAN.md](PLAN.md)
 3. [docs/README.md](docs/README.md)
 4. [docs/methodology/performance.md](docs/methodology/performance.md)
-5. [research/README.md](research/README.md)
-6. [research/decision-log.md](research/decision-log.md)
-7. [paper/framing.md](paper/framing.md)
+5. [docs/methodology/preprocessing.md](docs/methodology/preprocessing.md)
+6. [research/README.md](research/README.md)
+7. [research/decision-log.md](research/decision-log.md)
+8. [paper/framing.md](paper/framing.md)
 
 Use that order for repo-wide orientation.
 
@@ -29,6 +30,7 @@ current task.
 
 - For experiment design and evaluation rules:
   [docs/methodology/performance.md](docs/methodology/performance.md) and
+  [docs/methodology/preprocessing.md](docs/methodology/preprocessing.md) and
   [docs/methodology/timing-harness.md](docs/methodology/timing-harness.md)
 - For current claim status, reopen conditions, and killed ideas:
   [research/decision-log.md](research/decision-log.md)
@@ -39,8 +41,14 @@ current task.
 - For validated external-review takeaways:
   [docs/external-feedback-validation.md](docs/external-feedback-validation.md)
 - For corpus and local asset policy:
-  [docs/clip-policy.md](docs/clip-policy.md) and
-  [docs/local-setup.md](docs/local-setup.md)
+  [docs/clip-policy.md](docs/clip-policy.md),
+  [docs/local-setup.md](docs/local-setup.md), and
+  [data/corpus/manifest.toml](data/corpus/manifest.toml)
+- For data acquisition or local synthetic generation:
+  [scripts/fetch_corpus.py](scripts/fetch_corpus.py) and
+  [scripts/generate_synthetic_corpus.py](scripts/generate_synthetic_corpus.py)
+- For versioned prompts and answer keys:
+  [research/prompt_bank](research/prompt_bank/)
 - For paper contribution boundaries and future-work framing:
   [paper/framing.md](paper/framing.md)
 - For imported provenance artifacts:

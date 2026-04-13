@@ -76,6 +76,11 @@ Timing reports must separate at least these phases when they exist:
 
 Do not time temp-file-heavy reference helpers and present the result as decode cost.
 
+Current repo rule:
+
+- temp PNG helpers are reference/debug paths only
+- Track B timing runs need an in-memory decode path before paper-grade claims
+
 ## MLX Memory Cache Policy
 
 If MLX memory caches are cleared between runs, log that.
@@ -98,6 +103,13 @@ Track A reports must include:
 - baseline-versus-modified agreement
 - chance-corrected agreement such as Cohen's kappa when the task format permits it
 
+For timing-sensitive QA runs, also freeze:
+
+- constrained output length
+- stop condition or answer-extraction rule
+
+This avoids generation dominating the signal from decode, routing, or vision.
+
 ## Run Manifest
 
 Every raw record should carry:
@@ -111,6 +123,12 @@ Every raw record should carry:
 - machine identifier
 - warmup count
 - experiment track
+- preprocessing mode
+- sampling mode
+- prompt-bank version
+
+If hardware decode is used, log it as a separate decode backend rather than
+mixing it into a software-decode trend line.
 
 Suggested format:
 

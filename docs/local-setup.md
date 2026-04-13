@@ -79,6 +79,40 @@ Why this order:
 This repo does not require a specific model directory layout, but the current
 local convention is `~/models/<model-name>/`.
 
+Gemma note:
+
+- Gemma 4 exposes configurable visual token budgets
+- for this repo's initial pilot work, freeze Gemma E4B at `280` visual tokens
+  unless an experiment note explicitly says otherwise
+
+## Evaluation Data Setup
+
+Bring up the local primary corpus and derived H.264 files:
+
+```bash
+uv run python scripts/fetch_corpus.py --tier primary --encode
+```
+
+Generate the scored synthetic local stress clips:
+
+```bash
+uv run python scripts/generate_synthetic_corpus.py
+```
+
+Optional predecessor cross-check clips:
+
+```bash
+uv run python scripts/fetch_corpus.py --tier crosscheck
+```
+
+The source of truth for clip ids and local paths is:
+
+- [data/corpus/manifest.toml](../data/corpus/manifest.toml)
+
+The policy for what belongs in each corpus tier is:
+
+- [docs/clip-policy.md](clip-policy.md)
+
 ## What This Repo Does Not Assume
 
 - your shell's global Python packages

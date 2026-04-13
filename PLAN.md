@@ -221,6 +221,39 @@ Rejection band:
 
 - interface is unavailable or too unstable to support Track A work
 
+### Phase 0.75: Cache-Path Identity Control
+
+Objective:
+
+- prove that the cached-feature path itself is not introducing semantic drift
+
+Hypothesis:
+
+- routing unchanged dense features back through the cache interface preserves
+  outputs exactly, and deliberate perturbation proves that the path is live
+
+Tasks:
+
+- compare direct dense generation with dense-through-cache generation
+- inject a small deliberate feature perturbation to verify that the cache path
+  is active
+- keep the same clip ids, prompts, and sampling mode as the preregistered note
+
+Primary metrics:
+
+- exact output-string identity for direct dense versus dense-through-cache
+- path-liveness evidence from the deliberate perturbation control
+
+Acceptance band:
+
+- direct dense and dense-through-cache are exactly identical
+- the deliberate perturbation changes at least one response or intermediate
+  feature comparison
+
+Rejection band:
+
+- unchanged dense features routed through the cache path already diverge
+
 ### Phase 1.0: Measure Local Redundancy Before Caching
 
 Objective:
@@ -234,6 +267,8 @@ Hypothesis:
 Tasks:
 
 - measure static, shifted, and novel ratios on the primary local corpus
+- report pad-masked reuse ratios when padding exists
+- keep contiguous-window sampling separate from uniform-global sampling
 - report the ratios before any semantic-substitution comparison
 - keep the pixel-diff formulation explicit so later codec-side replacements are comparable
 
@@ -255,11 +290,18 @@ Hypothesis:
 
 Tasks:
 
-- run local MLX-VLM baselines on a small subset first
-- compare dense versus cached outputs
+- keep the Track A contract explicit as nested claims:
+  - `A-interface`: cache-path identity already holds
+  - `A-static`: conservative low-delta reuse preserves outputs
+  - `A-shifted`: low-delta plus mid-delta reuse stays within tolerance
+- run local MLX-VLM baselines on the scored synthetic suite first
+- use the versioned prompt bank instead of ad hoc questions
+- compare dense versus cached outputs under `contiguous_window` sampling first
 - log parse failures explicitly
 - run threshold triples: aggressive `(1.5, 4)`, default `(3, 8)`, conservative `(5, 12)`
 - sweep refresh intervals to test cache drift directly
+- keep open-ended prompts qualitative only; use multiple-choice prompts for the
+  primary statistics
 
 Primary metrics:
 
@@ -281,6 +323,7 @@ Important outputs:
 
 - bucketed failures by OCR, color, small-object, egomotion, and screen-like content
 - refresh-interval versus drift evidence
+- explicit prompt-bank version and sampling mode on every run
 
 ### Phase 2: Systems Baseline And Honest Timing
 
@@ -296,7 +339,9 @@ Hypothesis:
 Tasks:
 
 - build a clean timing harness
+- add an in-memory decode path for timing-sensitive runs
 - separate decode, frame extraction, routing, vision, prefill, and generation
+- use short constrained outputs so generation does not hide earlier savings
 - measure cold, warm, and after-idle behavior when relevant
 
 Primary metrics:
@@ -338,6 +383,8 @@ Guardrails:
 - do not require exact per-block bit accounting
 - record frame type and GOP position
 - validate MV semantics before trusting per-block experiments
+- keep `uniform_global` sampling as comparability mode, not the default
+  codec-like mechanism path
 
 Primary metrics:
 
@@ -466,6 +513,7 @@ Every serious benchmark requires:
 - a preregistered success/rejection band
 - raw sample retention
 - exact model, clip, prompt, and commit metadata
+- preprocessing and sampling metadata
 
 Required reporting:
 
@@ -485,6 +533,7 @@ Negative results must record:
 See:
 
 - [docs/methodology/performance.md](docs/methodology/performance.md)
+- [docs/methodology/preprocessing.md](docs/methodology/preprocessing.md)
 - [docs/methodology/timing-harness.md](docs/methodology/timing-harness.md)
 
 ## Local Hardware Plan
@@ -499,6 +548,8 @@ Implications:
 - prefer MLX-VLM for local Track A and early Track B work
 - iterate on Qwen2.5-VL-3B first
 - use Gemma 4 E4B as the second model, with per-family evaluation bands
+- freeze Gemma E4B at a `280` visual-token budget for the initial pilot unless
+  a preregistration explicitly overrides it
 - use Qwen2.5-VL-7B selectively for confirmation
 - treat full 7B benchmark reproductions that do not fit in memory as partial reproductions, not full replications
 
@@ -508,9 +559,11 @@ Near-term order:
 
 1. finish Phase 0 hygiene fixes and documentation
 2. run Phase 0.5 feasibility and determinism checks
-3. measure local redundancy on the initial clip buckets
-4. reproduce a small Track A semantic-substitution slice locally
-5. build the clean timing harness
+3. run Phase 0.75 cache-path identity control
+4. fetch the primary Xiph corpus and generate the synthetic local stress corpus
+5. measure local redundancy on the initial clip buckets
+6. reproduce a small Track A semantic-substitution slice locally
+7. build the clean timing harness
 6. test packet-size and keyframe routing
 7. design changed-window sparse execution against the verified model geometry
 
