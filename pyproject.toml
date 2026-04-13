@@ -36,6 +36,8 @@ research = [
 vlm = [
   "mlx>=0.31.1",
   "mlx-vlm>=0.4.4",
+  "torch",
+  "torchvision",
 ]
 
 [tool.hatch.build.targets.wheel]

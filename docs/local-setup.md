@@ -43,6 +43,13 @@ uv sync --group dev --group research --group vlm
 The repo assumes you run commands through `uv run ...`, not through an unrelated
 system Python environment.
 
+Important current note:
+
+- the Qwen2.5-VL video processor path requires `torch` and `torchvision` in the
+  repo environment
+- these are included in the `vlm` group so `uv sync --group ... --group vlm`
+  is the intended setup path
+
 ## Verification Commands
 
 Base verification:
