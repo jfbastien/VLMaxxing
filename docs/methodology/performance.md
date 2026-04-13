@@ -161,6 +161,10 @@ Aggregate agreement is not enough on its own.
 
 When content buckets exist, report them per bucket, not only in aggregate.
 
+For prompt-conditioned local suites, clip-wide mean reuse is not enough when a
+question depends on a narrow temporal event. When the prompt bank provides
+critical-pair metadata, report reuse on that critical span as well.
+
 ## Prefer Paired Comparisons
 
 When comparing A versus B:

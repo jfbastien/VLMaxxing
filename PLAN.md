@@ -37,6 +37,9 @@ narrow but useful starting point:
 - the initial local Qwen synthetic pilot produced dense-versus-cached agreement
   of `1.0` on `12` scored items, but the current suite does not yet include
   divergence-capable or natural-video scored items and should not be generalized
+- the repaired local v2 suite now contains a real controlled failure:
+  default same-position reuse missed one middle-dependent OCR event that dense
+  answered correctly
 
 That is the center of the project today.
 
@@ -322,6 +325,12 @@ Tasks:
   - dense baseline accuracy was `10/12`, and the current suite did not yet include divergence-capable or natural-video scored items
   - treat this as substrate evidence, not as reproduction of the whitepaper's end-to-end quality claim
   - note: [2026-04-13-track-a-local-pilot.md](research/experiments/2026/2026-04-13-track-a-local-pilot.md)
+- repaired local v2 pilot completed on 2026-04-13:
+  - dense accuracy was `12/12`, while both cached conditions dropped one
+    middle-dependent OCR item
+  - the failure occurred despite very high clip-wide reuse, which strengthens
+    the case for critical-span reporting
+  - note: [2026-04-13-track-a-local-pilot-v2.md](research/experiments/2026/2026-04-13-track-a-local-pilot-v2.md)
 - repair the synthetic suite before treating it as a strong semantic benchmark:
   - fix weak items whose wording overclaims what is actually visible
   - add temporal-necessity items where middle frames matter and endpoints are insufficient

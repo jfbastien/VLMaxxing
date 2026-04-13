@@ -34,7 +34,7 @@ Current bottom line:
 | FPV / egomotion redundancy regime | Imported only | no local FPV-like or predecessor FPV cross-check measured yet | add a stable high-motion proxy and rerun redundancy table |
 | Refresh-interval drift / 14-frame tolerance | Imported only | no local refresh sweep yet | run refresh-interval sweep on the hard natural buckets |
 | Q-table spatial correlation | Imported only | Q-table helpers exist, but no local correlation note or artifact is checked in | run local pre-filter correlation study |
-| Track A synthetic answer stability under same-position reuse | Reproduced locally, narrow | [2026-04-13-track-a-local-pilot.md](../research/experiments/2026/2026-04-13-track-a-local-pilot.md) | repair weak synthetic items, add temporal-necessity items, add natural-video scored items |
+| Track A synthetic answer stability under same-position reuse | Reproduced locally, narrow | [2026-04-13-track-a-local-pilot.md](../research/experiments/2026/2026-04-13-track-a-local-pilot.md), [2026-04-13-track-a-local-pilot-v2.md](../research/experiments/2026/2026-04-13-track-a-local-pilot-v2.md) | keep the stronger v2 suite, then add natural-video scored items and threshold sweeps |
 | Track B skipped-compute, wall-clock, or compression headlines | Not reproduced | current local work is intentionally Track A only | build the in-memory timing path and sparse-execution path before claiming speedup |
 
 ## Interpretation Rules

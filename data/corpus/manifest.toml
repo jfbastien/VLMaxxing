@@ -95,6 +95,16 @@ license = "generated locally by repo workflow"
 intended_use = "controlled camera-motion and same-position-reuse stress case"
 
 [[clip]]
+id = "synthetic_affine_pan_v2"
+tier = "synthetic"
+method = "generated"
+content_class = "synthetic-egomotion"
+source_page = "scripts/generate_synthetic_corpus.py"
+local_path = "data/corpus/synthetic/synthetic_affine_pan_v2.mp4"
+license = "generated locally by repo workflow"
+intended_use = "repaired full-scene pan stress case for Track A semantics"
+
+[[clip]]
 id = "synthetic_scene_cut"
 tier = "synthetic"
 method = "generated"
@@ -103,6 +113,16 @@ source_page = "scripts/generate_synthetic_corpus.py"
 local_path = "data/corpus/synthetic/synthetic_scene_cut.mp4"
 license = "generated locally by repo workflow"
 intended_use = "controlled hard-cut stress case"
+
+[[clip]]
+id = "synthetic_scene_cut_v2"
+tier = "synthetic"
+method = "generated"
+content_class = "synthetic-scene-cut"
+source_page = "scripts/generate_synthetic_corpus.py"
+local_path = "data/corpus/synthetic/synthetic_scene_cut_v2.mp4"
+license = "generated locally by repo workflow"
+intended_use = "repaired abrupt-layout-change and hard-cut stress case"
 
 [[clip]]
 id = "synthetic_fullframe_flicker"
@@ -125,6 +145,16 @@ license = "generated locally by repo workflow"
 intended_use = "controlled color-sensitivity stress case"
 
 [[clip]]
+id = "synthetic_mid_color_flash"
+tier = "synthetic"
+method = "generated"
+content_class = "synthetic-temporal-necessity"
+source_page = "scripts/generate_synthetic_corpus.py"
+local_path = "data/corpus/synthetic/synthetic_mid_color_flash.mp4"
+license = "generated locally by repo workflow"
+intended_use = "middle-frame color-flash stress case where endpoints match"
+
+[[clip]]
 id = "synthetic_small_object"
 tier = "synthetic"
 method = "generated"
@@ -143,6 +173,16 @@ source_page = "scripts/generate_synthetic_corpus.py"
 local_path = "data/corpus/synthetic/synthetic_screen_ocr.mp4"
 license = "generated locally by repo workflow"
 intended_use = "controlled screen-content and OCR stress case"
+
+[[clip]]
+id = "synthetic_mid_text_flash"
+tier = "synthetic"
+method = "generated"
+content_class = "synthetic-temporal-necessity"
+source_page = "scripts/generate_synthetic_corpus.py"
+local_path = "data/corpus/synthetic/synthetic_mid_text_flash.mp4"
+license = "generated locally by repo workflow"
+intended_use = "middle-frame OCR flash stress case where endpoints match"
 
 [[derived_encode]]
 id = "standard_h264_crf18_g30"

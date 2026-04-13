@@ -20,6 +20,9 @@ The current local evidence now adds two useful controls:
 - that pilot is still substrate evidence rather than a whitepaper-quality
   reproduction because it does not yet include divergence-capable items or
   scored natural video
+- a repaired synthetic v2 suite now includes a controlled failure: default
+  same-position reuse misses one middle-dependent OCR flash that dense answers
+  correctly
 
 ## Current Anti-Claims
 

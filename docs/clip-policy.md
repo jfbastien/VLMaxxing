@@ -38,17 +38,23 @@ settings for codec-metadata experiments.
 Keep a generated local tier for controlled failure analysis:
 
 - `synthetic_affine_pan`
+- `synthetic_affine_pan_v2`
 - `synthetic_scene_cut`
+- `synthetic_scene_cut_v2`
 - `synthetic_fullframe_flicker`
 - `synthetic_color_swap`
+- `synthetic_mid_color_flash`
 - `synthetic_small_object`
 - `synthetic_screen_ocr`
+- `synthetic_mid_text_flash`
 
 Why this tier exists:
 
 - reproducible without checking media into git
 - exact answer keys are possible
 - lets us stress OCR, color, small-object, flicker, and scene-cut behavior
+- lets us build temporal-necessity items where the middle matters and the
+  endpoints alone are insufficient
 
 These clips are generated locally by:
 

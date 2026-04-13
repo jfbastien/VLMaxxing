@@ -35,7 +35,7 @@ from codec_through.track_a import (
 
 ARTIFACT_DIR = Path("research/experiments/2026/artifacts")
 MANIFEST_PATH = Path("data/corpus/manifest.toml")
-PROMPT_BANK_PATH = Path("research/prompt_bank/local_suite_v1.toml")
+DEFAULT_PROMPT_BANK_PATH = Path("research/prompt_bank/local_suite_v1.toml")
 QWEN_TARGET_HEIGHT = 252
 PRIMARY_CLIP_IDS = [
     "xiph_akiyo_cif",
@@ -429,9 +429,16 @@ def _mix_qwen_features(
     return mixed, reused_ratios
 
 
-def _load_prompt_bank() -> list[dict[str, Any]]:
-    payload = tomllib.loads(PROMPT_BANK_PATH.read_text())
-    return list(payload["item"])
+def _load_prompt_bank(path: Path) -> dict[str, Any]:
+    return tomllib.loads(path.read_text())
+
+
+def _critical_mean(values: list[float], indices: list[int]) -> float | None:
+    if not indices:
+        return None
+    if any(index < 0 or index >= len(values) for index in indices):
+        raise ValueError(f"critical pair index out of range for {len(values)} values: {indices}")
+    return float(np.mean([values[index] for index in indices]))
 
 
 def _load_model(spec: ModelSpec) -> tuple[Any, Any]:
@@ -729,13 +736,19 @@ def run_phase_1_0() -> dict[str, Any]:
     return result
 
 
-def run_track_a_pilot() -> dict[str, Any]:
-    items = _load_prompt_bank()
+def run_track_a_pilot(prompt_bank_path: Path = DEFAULT_PROMPT_BANK_PATH) -> dict[str, Any]:
+    prompt_bank = _load_prompt_bank(prompt_bank_path)
+    items = list(prompt_bank["item"])
     spec = _model_specs()[0]
     result: dict[str, Any] = {
         "phase": "track_a_pilot",
         "environment": _environment_record(),
         "model": spec.model_id,
+        "prompt_bank": {
+            "path": str(prompt_bank_path),
+            "suite_id": prompt_bank["suite_id"],
+            "version": prompt_bank["version"],
+        },
         "thresholds": asdict(DEFAULT_THRESHOLDS),
         "item_execution_mode": "chunked-subprocesses",
         "chunk_size": 2,
@@ -754,6 +767,8 @@ def run_track_a_pilot() -> dict[str, Any]:
                 sys.executable,
                 str(Path(__file__).resolve()),
                 "track_a_chunk",
+                "--prompt-bank",
+                str(prompt_bank_path),
                 *[argument for item in chunk for argument in ("--item-id", item["id"])],
             ],
             capture_output=True,
@@ -798,15 +813,21 @@ def run_track_a_pilot() -> dict[str, Any]:
         "dense_parse_failures": sum(choice is None for choice in dense_choices),
         "static_parse_failures": sum(choice is None for choice in static_choices),
         "shifted_parse_failures": sum(choice is None for choice in shifted_choices),
+        "middle_required_item_count": sum(
+            int(bool(item.get("requires_middle_frames", False))) for item in result["items"]
+        ),
     }
     return result
 
 
-def run_track_a_chunk(item_ids: list[str]) -> list[dict[str, Any]]:
+def run_track_a_chunk(
+    item_ids: list[str], *, prompt_bank_path: Path = DEFAULT_PROMPT_BANK_PATH
+) -> list[dict[str, Any]]:
     manifest, _ = _load_manifest()
     spec = _model_specs()[0]
     model, processor = _load_model(spec)
-    items = {item["id"]: item for item in _load_prompt_bank()}
+    prompt_bank = _load_prompt_bank(prompt_bank_path)
+    items = {item["id"]: item for item in prompt_bank["item"]}
     results: list[dict[str, Any]] = []
     for item_id in item_ids:
         item = items[item_id]
@@ -840,6 +861,10 @@ def run_track_a_chunk(item_ids: list[str]) -> list[dict[str, Any]]:
             reuse_classes=(BlockClass.STATIC, BlockClass.SHIFTED),
         )
 
+        dense_logits = _prefill_logits(model, sample)
+        static_logits = _prefill_logits(model, sample, cached_features=static_features)
+        shifted_logits = _prefill_logits(model, sample, cached_features=shifted_features)
+
         dense = _generate_text(model, processor, sample, max_tokens=4)
         static = _generate_text(
             model, processor, sample, cached_features=static_features, max_tokens=4
@@ -851,15 +876,20 @@ def run_track_a_chunk(item_ids: list[str]) -> list[dict[str, Any]]:
         dense_choice = extract_choice(dense["text"], item["choices"])
         static_choice = extract_choice(static["text"], item["choices"])
         shifted_choice = extract_choice(shifted["text"], item["choices"])
+        critical_pair_indices = [int(value) for value in item.get("critical_pair_indices", [])]
 
         results.append(
             {
                 "id": item["id"],
                 "clip_id": item["clip_id"],
                 "bucket": item["bucket"],
+                "prompt_bank_suite_id": prompt_bank["suite_id"],
                 "window_start": item["window_start"],
                 "window_frames": item["window_frames"],
                 "answer_index": item["answer_index"],
+                "critical_pair_indices": critical_pair_indices,
+                "requires_middle_frames": bool(item.get("requires_middle_frames", False)),
+                "solvable_from_first_last": bool(item.get("solvable_from_first_last", False)),
                 "dense_text": dense["text"],
                 "dense_choice": dense_choice,
                 "static_text": static["text"],
@@ -871,15 +901,27 @@ def run_track_a_chunk(item_ids: list[str]) -> list[dict[str, Any]]:
                 "shifted_correct": shifted_choice == item["answer_index"],
                 "dense_equals_static": dense["text"] == static["text"],
                 "dense_equals_shifted": dense["text"] == shifted["text"],
+                "dense_static_logits_max_abs_diff": _max_abs_diff(dense_logits, static_logits),
+                "dense_shifted_logits_max_abs_diff": _max_abs_diff(dense_logits, shifted_logits),
+                "static_reuse_ratio_by_pair": static_reuse_ratios,
+                "shifted_reuse_ratio_by_pair": shifted_reuse_ratios,
                 "static_reuse_ratio_mean": float(np.mean(static_reuse_ratios)),
                 "shifted_reuse_ratio_mean": float(np.mean(shifted_reuse_ratios)),
+                "static_reuse_ratio_critical_mean": _critical_mean(
+                    static_reuse_ratios, critical_pair_indices
+                ),
+                "shifted_reuse_ratio_critical_mean": _critical_mean(
+                    shifted_reuse_ratios, critical_pair_indices
+                ),
             }
         )
     return results
 
 
-def run_track_a_item(item_id: str) -> dict[str, Any]:
-    return run_track_a_chunk([item_id])[0]
+def run_track_a_item(
+    item_id: str, *, prompt_bank_path: Path = DEFAULT_PROMPT_BANK_PATH
+) -> dict[str, Any]:
+    return run_track_a_chunk([item_id], prompt_bank_path=prompt_bank_path)[0]
 
 
 def _write_artifact(name: str, payload: dict[str, Any]) -> Path:
@@ -904,30 +946,52 @@ def main() -> None:
         ),
     )
     parser.add_argument("--item-id", action="append", default=[])
+    parser.add_argument(
+        "--prompt-bank",
+        type=Path,
+        default=DEFAULT_PROMPT_BANK_PATH,
+        help="Prompt-bank TOML file to use for Track A pilot and item runs.",
+    )
+    parser.add_argument(
+        "--artifact-name",
+        default=None,
+        help="Optional artifact filename override for phase outputs.",
+    )
     args = parser.parse_args()
 
     phases = (
         ("phase0_5", run_phase_0_5),
         ("phase0_75", run_phase_0_75),
         ("phase1_0", run_phase_1_0),
-        ("track_a_pilot", run_track_a_pilot),
+        ("track_a_pilot", lambda: run_track_a_pilot(args.prompt_bank)),
     )
     if args.phase == "track_a_chunk":
         if not args.item_id:
             raise SystemExit("--item-id is required for track_a_chunk")
-        print(json.dumps(run_track_a_chunk(args.item_id), sort_keys=True))
+        print(
+            json.dumps(
+                run_track_a_chunk(args.item_id, prompt_bank_path=args.prompt_bank), sort_keys=True
+            )
+        )
         return
     if args.phase == "track_a_item":
         if len(args.item_id) != 1:
             raise SystemExit("--item-id is required for track_a_item")
-        print(json.dumps(run_track_a_item(args.item_id[0]), sort_keys=True))
+        print(
+            json.dumps(
+                run_track_a_item(args.item_id[0], prompt_bank_path=args.prompt_bank), sort_keys=True
+            )
+        )
         return
     selected = (
         phases if args.phase == "all" else [phase for phase in phases if phase[0] == args.phase]
     )
     for phase_name, runner in selected:
         payload = runner()
-        output_path = _write_artifact(f"{phase_name}.json", payload)
+        artifact_name = (
+            args.artifact_name if args.artifact_name is not None else f"{phase_name}.json"
+        )
+        output_path = _write_artifact(artifact_name, payload)
         print(output_path)
 
 

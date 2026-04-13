@@ -1,0 +1,177 @@
+suite_id = "local_suite_v2"
+version = 2
+track = "A"
+sampling_mode = "contiguous_window"
+notes = """
+Repaired synthetic Track A suite with temporal-necessity items and explicit
+critical-pair metadata. This suite is intended to replace v1 for future local
+pilot work; v1 remains preserved for historical comparison.
+"""
+
+[[item]]
+id = "syn2_affine_object_count"
+clip_id = "synthetic_affine_pan_v2"
+bucket = "synthetic-egomotion"
+prompt_family = "count"
+window_start = 18
+window_frames = 12
+critical_pair_indices = []
+requires_middle_frames = false
+solvable_from_first_last = true
+question = "How many bright pink marker squares stay visible during the pan?"
+choices = ["Zero", "One", "Two", "Four"]
+answer_index = 1
+
+[[item]]
+id = "syn2_cut_after_color"
+clip_id = "synthetic_scene_cut_v2"
+bucket = "synthetic-scene-cut"
+prompt_family = "scene_fact"
+window_start = 18
+window_frames = 12
+critical_pair_indices = [5]
+requires_middle_frames = false
+solvable_from_first_last = true
+question = "After the cut, what is the dominant wall color?"
+choices = ["Blue", "Green", "Orange", "Purple"]
+answer_index = 2
+
+[[item]]
+id = "syn2_flicker_change_type"
+clip_id = "synthetic_fullframe_flicker"
+bucket = "synthetic-novelty-amplification"
+prompt_family = "temporal_change"
+window_start = 18
+window_frames = 12
+critical_pair_indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+requires_middle_frames = false
+solvable_from_first_last = false
+question = "What changes over time in the clip?"
+choices = ["Only the overall brightness changes.", "The main object walks across the frame.", "The text content changes from ALPHA to BRAVO.", "A scene cut replaces the layout."]
+answer_index = 0
+
+[[item]]
+id = "syn2_flicker_layout"
+clip_id = "synthetic_fullframe_flicker"
+bucket = "synthetic-novelty-amplification"
+prompt_family = "scene_fact"
+window_start = 18
+window_frames = 12
+critical_pair_indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+requires_middle_frames = false
+solvable_from_first_last = false
+question = "Does the layout of the shapes change across frames?"
+choices = ["Yes, the shapes move every frame.", "Yes, the background scrolls sideways.", "No, the layout stays fixed.", "No, because there are no shapes."]
+answer_index = 2
+
+[[item]]
+id = "syn2_mid_color_flash"
+clip_id = "synthetic_mid_color_flash"
+bucket = "synthetic-temporal-necessity"
+prompt_family = "temporal_change"
+window_start = 18
+window_frames = 12
+critical_pair_indices = [3, 7]
+requires_middle_frames = true
+solvable_from_first_last = false
+question = "What temporary change happens to the large center square?"
+choices = ["It briefly turns green, then returns to red.", "It moves to the right edge.", "It disappears completely.", "A hard cut replaces the whole scene."]
+answer_index = 0
+
+[[item]]
+id = "syn2_mid_color_ever_green"
+clip_id = "synthetic_mid_color_flash"
+bucket = "synthetic-temporal-necessity"
+prompt_family = "temporal_event"
+window_start = 18
+window_frames = 12
+critical_pair_indices = [3, 7]
+requires_middle_frames = true
+solvable_from_first_last = false
+question = "Did the center square ever become green during the clip?"
+choices = ["Yes, briefly.", "No, it stays red throughout.", "No, it disappears instead.", "No, because the whole scene cuts."]
+answer_index = 0
+
+[[item]]
+id = "syn2_small_object_motion"
+clip_id = "synthetic_small_object"
+bucket = "synthetic-small-object"
+prompt_family = "temporal_change"
+window_start = 18
+window_frames = 12
+critical_pair_indices = []
+requires_middle_frames = false
+solvable_from_first_last = false
+question = "How does the small bright object move?"
+choices = ["It moves left to right.", "It moves top to bottom.", "It stays still.", "It disappears after one frame."]
+answer_index = 0
+
+[[item]]
+id = "syn2_small_object_count"
+clip_id = "synthetic_small_object"
+bucket = "synthetic-small-object"
+prompt_family = "count"
+window_start = 18
+window_frames = 12
+critical_pair_indices = []
+requires_middle_frames = false
+solvable_from_first_last = true
+question = "How many moving bright objects are present?"
+choices = ["Zero", "One", "Two", "Three"]
+answer_index = 1
+
+[[item]]
+id = "syn2_mid_text_flash_word"
+clip_id = "synthetic_mid_text_flash"
+bucket = "synthetic-temporal-necessity"
+prompt_family = "ocr"
+window_start = 18
+window_frames = 12
+critical_pair_indices = [3, 7]
+requires_middle_frames = true
+solvable_from_first_last = false
+question = "What word briefly replaces ALPHA on the screen?"
+choices = ["BRAVO", "CURSOR", "PAN", "GREEN"]
+answer_index = 0
+
+[[item]]
+id = "syn2_mid_text_ever_bravo"
+clip_id = "synthetic_mid_text_flash"
+bucket = "synthetic-temporal-necessity"
+prompt_family = "ocr"
+window_start = 18
+window_frames = 12
+critical_pair_indices = [3, 7]
+requires_middle_frames = true
+solvable_from_first_last = false
+question = "Did the screen text ever show BRAVO during the clip?"
+choices = ["Yes, briefly.", "No, it stays ALPHA throughout.", "No, the text disappears.", "No, because the screen cuts away."]
+answer_index = 0
+
+[[item]]
+id = "syn2_color_swap_event"
+clip_id = "synthetic_color_swap"
+bucket = "synthetic-color"
+prompt_family = "temporal_change"
+window_start = 18
+window_frames = 12
+critical_pair_indices = [5]
+requires_middle_frames = true
+solvable_from_first_last = false
+question = "What happens to the large center square?"
+choices = ["It moves from left to right.", "It changes from red to green.", "It disappears completely.", "It turns into text."]
+answer_index = 1
+
+[[item]]
+id = "syn2_screen_content_type"
+clip_id = "synthetic_screen_ocr"
+bucket = "synthetic-screen-ocr"
+prompt_family = "scene_fact"
+window_start = 18
+window_frames = 12
+critical_pair_indices = [5]
+requires_middle_frames = false
+solvable_from_first_last = true
+question = "What kind of content does the clip depict?"
+choices = ["A natural outdoor scene", "A code-editor or UI-like screen", "A drone camera fly-through", "A parking-lot surveillance camera"]
+answer_index = 1

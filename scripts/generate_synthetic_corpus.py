@@ -22,11 +22,19 @@ class SyntheticClipSpec:
 
 SPECS = (
     SyntheticClipSpec("synthetic_affine_pan", "grid scene with horizontal pan"),
+    SyntheticClipSpec("synthetic_affine_pan_v2", "full-scene horizontal pan with moving content"),
     SyntheticClipSpec("synthetic_scene_cut", "abrupt scene cut between two rooms"),
+    SyntheticClipSpec(
+        "synthetic_scene_cut_v2", "abrupt cut between two distinct geometric layouts"
+    ),
     SyntheticClipSpec("synthetic_fullframe_flicker", "stable layout with brightness flicker"),
     SyntheticClipSpec("synthetic_color_swap", "center square changes color"),
+    SyntheticClipSpec(
+        "synthetic_mid_color_flash", "center square briefly changes color then returns"
+    ),
     SyntheticClipSpec("synthetic_small_object", "small moving object on static background"),
     SyntheticClipSpec("synthetic_screen_ocr", "screen-like clip with OCR text change"),
+    SyntheticClipSpec("synthetic_mid_text_flash", "screen text briefly changes and then reverts"),
 )
 
 
@@ -56,6 +64,27 @@ def _affine_pan_frame(frame_index: int) -> Image.Image:
     return image
 
 
+def _affine_pan_frame_v2(frame_index: int) -> Image.Image:
+    world_width = 576
+    world = Image.new("RGB", (world_width, HEIGHT), (20, 24, 34))
+    draw = ImageDraw.Draw(world)
+    step = 24
+    for x in range(0, world_width + step, step):
+        draw.line((x, 0, x, HEIGHT), fill=(70, 90, 120))
+    for y in range(0, HEIGHT + step, step):
+        draw.line((0, y, world_width, y), fill=(70, 90, 120))
+    draw.rectangle((72, 88, 172, 176), fill=(40, 80, 160), outline=(220, 230, 255), width=2)
+    draw.rectangle((112, 122, 136, 146), fill=(255, 80, 170), outline=(255, 230, 245), width=1)
+    draw.rectangle((248, 78, 332, 164), fill=(74, 120, 72), outline=(228, 240, 220), width=2)
+    draw.ellipse((268, 102, 312, 146), fill=(242, 204, 64), outline=(255, 245, 210), width=2)
+    draw.text((26, 14), "PAN V2", fill=(230, 235, 255), font=_font())
+    draw.text((236, 18), "ANCHOR", fill=(236, 241, 250), font=_font())
+    draw.text((420, 18), "RIGHT", fill=(236, 241, 250), font=_font())
+    max_offset = world_width - WIDTH
+    viewport_x = min(frame_index * 4, max_offset)
+    return world.crop((viewport_x, 0, viewport_x + WIDTH, HEIGHT))
+
+
 def _scene_cut_frame(frame_index: int) -> Image.Image:
     if frame_index < FRAME_COUNT // 2:
         image = _base_canvas((35, 80, 150))
@@ -68,6 +97,26 @@ def _scene_cut_frame(frame_index: int) -> Image.Image:
         draw.rectangle((38, 85, 125, 165), fill=(85, 170, 95))
         draw.rectangle((190, 55, 290, 175), fill=(70, 90, 145))
     draw.text((12, 12), "SCENE CUT", fill=(255, 248, 238), font=_font())
+    return image
+
+
+def _scene_cut_frame_v2(frame_index: int) -> Image.Image:
+    if frame_index < FRAME_COUNT // 2:
+        image = _base_canvas((46, 86, 154))
+        draw = ImageDraw.Draw(image)
+        draw.rectangle((0, HEIGHT - 60, WIDTH, HEIGHT), fill=(52, 62, 84))
+        draw.rectangle((28, 48, 110, 118), fill=(220, 232, 245), outline=(244, 248, 255), width=2)
+        draw.rectangle((76, 132, 232, 192), fill=(212, 166, 98), outline=(248, 232, 210), width=2)
+        draw.rectangle((242, 92, 290, 178), fill=(66, 104, 62), outline=(218, 232, 208), width=2)
+    else:
+        image = _base_canvas((214, 132, 60))
+        draw = ImageDraw.Draw(image)
+        draw.rectangle((0, HEIGHT - 56, WIDTH, HEIGHT), fill=(86, 58, 42))
+        draw.rectangle((38, 72, 158, 156), fill=(82, 92, 146), outline=(214, 224, 244), width=2)
+        draw.rectangle((62, 156, 196, 186), fill=(112, 84, 58), outline=(224, 198, 176), width=2)
+        draw.rectangle((218, 68, 288, 142), fill=(230, 236, 244), outline=(252, 252, 255), width=2)
+        draw.rectangle((238, 86, 268, 108), fill=(42, 168, 118))
+    draw.text((12, 12), "SCENE CUT V2", fill=(255, 248, 238), font=_font())
     return image
 
 
@@ -90,6 +139,20 @@ def _color_swap_frame(frame_index: int) -> Image.Image:
     fill = (220, 40, 50) if frame_index < FRAME_COUNT // 2 else (50, 180, 75)
     draw.rectangle((122, 82, 198, 158), fill=fill, outline=(255, 255, 255), width=2)
     draw.text((12, 12), "COLOR", fill=(20, 20, 20), font=_font())
+    return image
+
+
+def _flash_active(frame_index: int) -> bool:
+    return 22 <= frame_index <= 25
+
+
+def _mid_color_flash_frame(frame_index: int) -> Image.Image:
+    image = _base_canvas((235, 236, 240))
+    draw = ImageDraw.Draw(image)
+    draw.rectangle((94, 54, 226, 186), fill=(120, 120, 125), outline=(20, 20, 20), width=3)
+    fill = (50, 180, 75) if _flash_active(frame_index) else (220, 40, 50)
+    draw.rectangle((122, 82, 198, 158), fill=fill, outline=(255, 255, 255), width=2)
+    draw.text((12, 12), "MID FLASH", fill=(20, 20, 20), font=_font())
     return image
 
 
@@ -127,19 +190,46 @@ def _screen_ocr_frame(frame_index: int) -> Image.Image:
     return image
 
 
+def _mid_text_flash_frame(frame_index: int) -> Image.Image:
+    image = _base_canvas((24, 26, 31))
+    draw = ImageDraw.Draw(image)
+    draw.rounded_rectangle((18, 18, WIDTH - 18, HEIGHT - 18), radius=8, fill=(38, 42, 52))
+    draw.rectangle((18, 18, WIDTH - 18, 42), fill=(52, 58, 74))
+    draw.text((28, 24), "state.py", fill=(232, 236, 245), font=_font())
+    state = "BRAVO" if _flash_active(frame_index) else "ALPHA"
+    lines = [
+        "def state():",
+        "    mode = 'demo'",
+        f"    state = '{state}'",
+        "    return state",
+    ]
+    for line_index, text in enumerate(lines):
+        draw.text((34, 66 + line_index * 26), text, fill=(205, 220, 235), font=_font())
+    draw.text((20, HEIGHT - 28), "MID OCR", fill=(180, 190, 215), font=_font())
+    return image
+
+
 def _render_frame(clip_id: str, frame_index: int) -> Image.Image:
     if clip_id == "synthetic_affine_pan":
         return _affine_pan_frame(frame_index)
+    if clip_id == "synthetic_affine_pan_v2":
+        return _affine_pan_frame_v2(frame_index)
     if clip_id == "synthetic_scene_cut":
         return _scene_cut_frame(frame_index)
+    if clip_id == "synthetic_scene_cut_v2":
+        return _scene_cut_frame_v2(frame_index)
     if clip_id == "synthetic_fullframe_flicker":
         return _fullframe_flicker_frame(frame_index)
     if clip_id == "synthetic_color_swap":
         return _color_swap_frame(frame_index)
+    if clip_id == "synthetic_mid_color_flash":
+        return _mid_color_flash_frame(frame_index)
     if clip_id == "synthetic_small_object":
         return _small_object_frame(frame_index)
     if clip_id == "synthetic_screen_ocr":
         return _screen_ocr_frame(frame_index)
+    if clip_id == "synthetic_mid_text_flash":
+        return _mid_text_flash_frame(frame_index)
     raise ValueError(f"unknown synthetic clip id: {clip_id}")
 
 
