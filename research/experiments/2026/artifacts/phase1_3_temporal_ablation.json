@@ -1,0 +1,143 @@
+{
+  "chunk_size": 2,
+  "environment": {
+    "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "git_dirty": true,
+    "git_sha": "fa64ccdd28ec16e3064d6a2c53640d93fcbc8687",
+    "mlx_vlm_module": "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
+    "platform": "macOS-26.3-arm64-arm-64bit",
+    "python": "3.12.12"
+  },
+  "item_execution_mode": "chunked-subprocesses",
+  "items": [
+    {
+      "answer_index": 0,
+      "bucket": "talking-head",
+      "clip_id": "crosscheck_talking_head",
+      "dense_choice": 1,
+      "dense_correct": false,
+      "dense_text": "B",
+      "first_last_choice": 1,
+      "first_last_correct": false,
+      "first_last_text": "B",
+      "first_only_choice": 1,
+      "first_only_correct": false,
+      "first_only_text": "B",
+      "id": "real_talk_guest_host_cut",
+      "requires_middle_frames": true,
+      "solvable_from_first_last": false
+    },
+    {
+      "answer_index": 0,
+      "bucket": "talking-head",
+      "clip_id": "crosscheck_talking_head",
+      "dense_choice": 0,
+      "dense_correct": true,
+      "dense_text": "A",
+      "first_last_choice": 0,
+      "first_last_correct": true,
+      "first_last_text": "A",
+      "first_only_choice": 0,
+      "first_only_correct": true,
+      "first_only_text": "A",
+      "id": "real_talk_bright_flash",
+      "requires_middle_frames": true,
+      "solvable_from_first_last": false
+    },
+    {
+      "answer_index": 0,
+      "bucket": "surveillance",
+      "clip_id": "crosscheck_surveillance",
+      "dense_choice": 3,
+      "dense_correct": false,
+      "dense_text": "D",
+      "first_last_choice": 0,
+      "first_last_correct": true,
+      "first_last_text": "A",
+      "first_only_choice": 3,
+      "first_only_correct": false,
+      "first_only_text": "D",
+      "id": "real_surv_bus_enter",
+      "requires_middle_frames": false,
+      "solvable_from_first_last": true
+    },
+    {
+      "answer_index": 0,
+      "bucket": "surveillance",
+      "clip_id": "crosscheck_surveillance",
+      "dense_choice": 0,
+      "dense_correct": true,
+      "dense_text": "A",
+      "first_last_choice": 0,
+      "first_last_correct": true,
+      "first_last_text": "A",
+      "first_only_choice": 0,
+      "first_only_correct": true,
+      "first_only_text": "A",
+      "id": "real_surv_motorcycle_left",
+      "requires_middle_frames": false,
+      "solvable_from_first_last": true
+    },
+    {
+      "answer_index": 0,
+      "bucket": "egomotion",
+      "clip_id": "crosscheck_fpv_drone",
+      "dense_choice": 0,
+      "dense_correct": true,
+      "dense_text": "A",
+      "first_last_choice": 0,
+      "first_last_correct": true,
+      "first_last_text": "A",
+      "first_only_choice": 0,
+      "first_only_correct": true,
+      "first_only_text": "A",
+      "id": "real_fpv_road_foreground",
+      "requires_middle_frames": false,
+      "solvable_from_first_last": true
+    },
+    {
+      "answer_index": 0,
+      "bucket": "egomotion",
+      "clip_id": "crosscheck_fpv_drone",
+      "dense_choice": 0,
+      "dense_correct": true,
+      "dense_text": "A",
+      "first_last_choice": 0,
+      "first_last_correct": true,
+      "first_last_text": "A",
+      "first_only_choice": 0,
+      "first_only_correct": true,
+      "first_only_text": "A",
+      "id": "real_fpv_rock_left_end",
+      "requires_middle_frames": false,
+      "solvable_from_first_last": true
+    }
+  ],
+  "model": "Qwen2.5-VL-3B-Instruct-4bit",
+  "phase": "1.05",
+  "prompt_bank": {
+    "path": "research/prompt_bank/crosscheck_slice_v1.toml",
+    "suite_id": "crosscheck_slice_v1",
+    "version": 1
+  },
+  "summary": {
+    "contaminated_middle_required_count": 1,
+    "contaminated_middle_required_items": [
+      "real_talk_bright_flash"
+    ],
+    "dense_accuracy": 0.6666666666666666,
+    "discriminating_middle_required_count": 0,
+    "discriminating_middle_required_items": [],
+    "first_last_accuracy": 0.8333333333333334,
+    "first_last_metadata_mismatch_count": 1,
+    "first_last_metadata_mismatch_items": [
+      "real_talk_bright_flash"
+    ],
+    "first_only_accuracy": 0.6666666666666666,
+    "first_only_middle_required_surprise_count": 1,
+    "first_only_middle_required_surprise_items": [
+      "real_talk_bright_flash"
+    ],
+    "item_count": 6
+  }
+}

@@ -19,6 +19,12 @@ questions from chat history.
 - [local_suite_v2.toml](local_suite_v2.toml): repaired synthetic suite with
   temporal-necessity items and critical-pair metadata; current default for
   local Track A work
+- [crosscheck_slice_v2.toml](crosscheck_slice_v2.toml): endpoint-oriented
+  real-video slice on the predecessor cross-check clips; current natural-video
+  Track A slice for generalized whitepaper reproduction
+- [crosscheck_slice_v1.toml](crosscheck_slice_v1.toml): first cross-check
+  real-video draft preserved because it surfaced weak middle-event items and
+  drove the v2 rewrite
 - [local_suite_v1.toml](local_suite_v1.toml): initial scored synthetic pilot
   suite preserved for historical comparison
 

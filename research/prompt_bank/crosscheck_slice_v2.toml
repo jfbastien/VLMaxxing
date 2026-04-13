@@ -1,0 +1,94 @@
+suite_id = "crosscheck_slice_v2"
+version = 2
+track = "A"
+sampling_mode = "contiguous_window"
+notes = """
+Endpoint-oriented scored real-video slice on the predecessor cross-check clips.
+This version intentionally drops the weak middle-event talking-head items from
+v1 so the first real-video Track A readout is driven by stable scene-fact
+questions on natural video.
+"""
+
+[[item]]
+id = "real2_talk_guest_on_screen"
+clip_id = "crosscheck_talking_head"
+bucket = "talking-head"
+prompt_family = "scene_fact"
+window_start = 356
+window_frames = 12
+critical_pair_indices = [10]
+requires_middle_frames = false
+solvable_from_first_last = true
+question = "By the final frame, what is visible in the studio shot?"
+choices = ["A seated guest in black", "An empty chair with no person", "A highway traffic camera", "An outdoor mountain drone view"]
+answer_index = 0
+
+[[item]]
+id = "real2_talk_host_on_screen"
+clip_id = "crosscheck_talking_head"
+bucket = "talking-head"
+prompt_family = "scene_fact"
+window_start = 615
+window_frames = 12
+critical_pair_indices = [10]
+requires_middle_frames = false
+solvable_from_first_last = true
+question = "By the final frame, who is on screen?"
+choices = ["The seated guest in black", "The suited host at the desk", "A traffic-camera view", "No person is visible"]
+answer_index = 1
+
+[[item]]
+id = "real2_surv_bus_enter"
+clip_id = "crosscheck_surveillance"
+bucket = "surveillance"
+prompt_family = "scene_fact"
+window_start = 507
+window_frames = 12
+critical_pair_indices = [8, 9, 10]
+requires_middle_frames = false
+solvable_from_first_last = true
+question = "By the final frame, is a large white bus entering from the lower left?"
+choices = ["Yes, a white bus is entering.", "No, only small cars are there.", "No, a red car is entering instead.", "No, the lower left is empty."]
+answer_index = 0
+
+[[item]]
+id = "real2_surv_motorcycle_left"
+clip_id = "crosscheck_surveillance"
+bucket = "surveillance"
+prompt_family = "scene_fact"
+window_start = 556
+window_frames = 12
+critical_pair_indices = [8, 9, 10]
+requires_middle_frames = false
+solvable_from_first_last = true
+question = "By the final frame, what small vehicle is visible near the lower left edge?"
+choices = ["A motorcycle", "A bicycle", "A police car", "Nothing is visible there"]
+answer_index = 0
+
+[[item]]
+id = "real2_fpv_road_foreground"
+clip_id = "crosscheck_fpv_drone"
+bucket = "egomotion"
+prompt_family = "scene_fact"
+window_start = 198
+window_frames = 12
+critical_pair_indices = [8, 9, 10]
+requires_middle_frames = false
+solvable_from_first_last = true
+question = "By the final frame, what dominates the center foreground?"
+choices = ["A paved road", "An indoor floor", "A crowd of cars", "Open water"]
+answer_index = 0
+
+[[item]]
+id = "real2_fpv_rock_left_end"
+clip_id = "crosscheck_fpv_drone"
+bucket = "egomotion"
+prompt_family = "scene_fact"
+window_start = 700
+window_frames = 12
+critical_pair_indices = [8, 9, 10]
+requires_middle_frames = false
+solvable_from_first_last = true
+question = "At the end of the clip, where is the large gray rock relative to the frame?"
+choices = ["Mostly off the left edge", "Dominating the center", "Dominating the right edge", "No rock is nearby at all"]
+answer_index = 0

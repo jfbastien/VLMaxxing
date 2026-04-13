@@ -53,9 +53,14 @@ narrow but useful starting point:
   in generalized form on the predecessor cross-check clips: talking-head stays
   highest-reuse, surveillance stays intermediate, and FPV-like egomotion stays
   lowest-reuse
+- a narrow endpoint-oriented real-video slice on the predecessor cross-check
+  clips now reproduces dense-versus-cached answer stability locally on Qwen 3B
+  with `6/6` dense, `6/6` `STATIC`-only, and `6/6` `STATIC+SHIFTED`
 - the current Qwen Track A harness on this M3 Air remains unstable for a full
   long-lived single-process `12`-item run; chunked subprocess execution remains
   the adopted semantic harness constraint
+- real-video `720p` cross-check work currently requires `chunk_size = 1` on
+  this M3 Air to avoid the same Metal timeout class seen at larger chunk sizes
 - long local semantic runs now support cooperative stop-file termination and
   checkpointed partial results so automation does not depend on force-killing
   jobs
@@ -368,6 +373,12 @@ Tasks:
 - repair the current mechanism probes before treating weaker local numbers as a
   real disagreement with the imported whitepaper
 - add scored natural-video items before broad threshold sweeps
+- scored real-video bring-up completed on 2026-04-13:
+  - the first middle-event draft was inconclusive and forced a prompt-bank
+    rewrite
+  - the endpoint-oriented successor slice on the predecessor cross-check clips
+    achieved `6/6` dense and `6/6` cached accuracy on Qwen 3B
+  - note: [2026-04-13-phase-1_3-crosscheck-real-video-slice.md](research/experiments/2026/2026-04-13-phase-1_3-crosscheck-real-video-slice.md)
 - run threshold triples: low-reuse `(1.5, 4)`, default `(3, 8)`, high-reuse `(5, 12)` on the discrimination-safe subset and then on natural-video items
 - sweep refresh intervals to test cache drift directly after the repaired
   probes and natural-video items land

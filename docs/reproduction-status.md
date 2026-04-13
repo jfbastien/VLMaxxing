@@ -26,7 +26,7 @@ Current bottom line:
 | §2.1 exact ViT output identity on two re-encodes | Reproduced locally | [2026-04-13-phase-1_1-direct-mechanism-reproduction.md](../research/experiments/2026/2026-04-13-phase-1_1-direct-mechanism-reproduction.md) | keep as a direct mechanistic control |
 | §2.2 partial-change attention locality | Partial only | [2026-04-13-phase-1_1-direct-mechanism-reproduction.md](../research/experiments/2026/2026-04-13-phase-1_1-direct-mechanism-reproduction.md) plus [2026-04-13-phase-1_15-mechanism-probe-repair.md](../research/experiments/2026/2026-04-13-phase-1_15-mechanism-probe-repair.md) show that the earlier mismatch was partly probe design, but the repaired local MLX `4-bit` probe still misses the target-neighborhood and far-field acceptance bands | compare the repaired probes on a higher-precision local runtime before treating the mismatch as conceptual disagreement |
 | §2.3 localized motion preserves embeddings | Partial only | [2026-04-13-phase-1_1-direct-mechanism-reproduction.md](../research/experiments/2026/2026-04-13-phase-1_1-direct-mechanism-reproduction.md) plus [2026-04-13-phase-1_15-mechanism-probe-repair.md](../research/experiments/2026/2026-04-13-phase-1_15-mechanism-probe-repair.md) show that the catastrophic `8 px` collapse was mostly a boundary artifact, but the repaired `8 px` and `14 px` shifts still remain weaker than the imported whitepaper-strength local-shift story | run a precision/runtime comparison, then decide whether the remaining gap is stack-specific or method-specific |
-| §2.4 scored real-video quality slice | Imported only | current scored pilot is synthetic-only | run a scored natural-video slice after repairing divergence-capable items |
+| §2.4 scored real-video quality slice | Reproduced locally, narrow | [2026-04-13-phase-1_3-crosscheck-real-video-slice.md](../research/experiments/2026/2026-04-13-phase-1_3-crosscheck-real-video-slice.md) now contains a `6`-item endpoint-oriented real-video slice on the predecessor cross-check clips with `6/6` dense and `6/6` cached accuracy on Qwen `3B` | expand beyond endpoint scene facts, then connect the result to TOMATO and MVBench |
 | §2.5 TOMATO agreement on Qwen 7B | Imported only | imported predecessor TOMATO artifacts are present under `seed/original_repo/results/`, but no local TOMATO assets or benchmark-native run exists yet on this stack | build benchmark-native adapter and run a documented local reproduction slice |
 | §2.6 MVBench agreement slice | Imported only | imported predecessor MVBench artifacts are present under `seed/original_repo/results/`, but no local MVBench assets or local benchmark run exists yet on this stack | build MVBench adapter after the TOMATO path exists |
 | Talking-head redundancy regime | Reproduced locally, generalized | [2026-04-13-phase-1_0b-matched-content-redundancy.md](../research/experiments/2026/2026-04-13-phase-1_0b-matched-content-redundancy.md) measures the predecessor talking-head cross-check clip locally and keeps it in the high-reuse regime | add scored real-video items on talking-head content, then benchmark-native runs |
@@ -53,10 +53,8 @@ Current bottom line:
 If the goal is honest whitepaper reproduction rather than new method work, the
 highest-leverage next steps are:
 
-1. finish the temporal-necessity cleanup so the discriminating subset is explicit
-2. repair the local mechanism probes before treating the weaker numbers as real disagreement
-3. add scored natural-video items before broad threshold sweeps
-4. add surveillance and FPV-like content-class proxies to the local corpus
-5. run refresh-interval drift on the hardest natural buckets
-6. build benchmark-native TOMATO and MVBench paths only after the local Track A
-   foundation is complete
+1. extend the real-video slice beyond endpoint scene facts so natural middle-event items are explicit
+2. compare the repaired mechanism probes on a higher-precision runtime before treating the weaker numbers as real disagreement
+3. run threshold sweeps on the discrimination-safe synthetic subset plus the real-video slice
+4. run refresh-interval drift on the hardest natural buckets
+5. build TOMATO and MVBench adapters with the local hardware caveats stated up front

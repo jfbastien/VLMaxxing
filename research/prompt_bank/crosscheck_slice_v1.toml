@@ -1,0 +1,94 @@
+suite_id = "crosscheck_slice_v1"
+version = 1
+track = "A"
+sampling_mode = "contiguous_window"
+notes = """
+Small scored real-video slice on the predecessor cross-check clips. This is a
+generalized whitepaper-reproduction suite, not a stable-paper-evidence corpus.
+Use it to test whether same-position reuse preserves dense answers on natural
+video before benchmark-native TOMATO or MVBench work begins.
+"""
+
+[[item]]
+id = "real_talk_guest_host_cut"
+clip_id = "crosscheck_talking_head"
+bucket = "talking-head"
+prompt_family = "temporal_event"
+window_start = 356
+window_frames = 12
+critical_pair_indices = [5, 6]
+requires_middle_frames = true
+solvable_from_first_last = false
+question = "Does the shot briefly cut away from the seated guest during the clip?"
+choices = ["Yes, it briefly cuts to the suited host.", "No, it stays on the same guest shot throughout.", "Yes, it cuts to a traffic camera.", "Yes, it cuts to a drone view over mountains."]
+answer_index = 0
+
+[[item]]
+id = "real_talk_bright_flash"
+clip_id = "crosscheck_talking_head"
+bucket = "talking-head"
+prompt_family = "temporal_event"
+window_start = 615
+window_frames = 12
+critical_pair_indices = [5, 6]
+requires_middle_frames = true
+solvable_from_first_last = false
+question = "Does the clip briefly flash to a much brighter shot before returning to the dark set?"
+choices = ["Yes, a bright flash appears briefly.", "No, the lighting stays steady throughout.", "No, the only change is that the camera pans left.", "No, it cuts to a road scene instead."]
+answer_index = 0
+
+[[item]]
+id = "real_surv_bus_enter"
+clip_id = "crosscheck_surveillance"
+bucket = "surveillance"
+prompt_family = "scene_fact"
+window_start = 507
+window_frames = 12
+critical_pair_indices = [8, 9, 10]
+requires_middle_frames = false
+solvable_from_first_last = true
+question = "By the final frame, what large vehicle is entering from the lower left?"
+choices = ["A white bus", "A blue van", "A red car", "No large vehicle is entering."]
+answer_index = 0
+
+[[item]]
+id = "real_surv_motorcycle_left"
+clip_id = "crosscheck_surveillance"
+bucket = "surveillance"
+prompt_family = "scene_fact"
+window_start = 556
+window_frames = 12
+critical_pair_indices = [8, 9, 10]
+requires_middle_frames = false
+solvable_from_first_last = true
+question = "By the final frame, what small vehicle is visible near the lower left edge?"
+choices = ["A motorcycle", "A bicycle", "A police car", "Nothing is visible there."]
+answer_index = 0
+
+[[item]]
+id = "real_fpv_road_foreground"
+clip_id = "crosscheck_fpv_drone"
+bucket = "egomotion"
+prompt_family = "scene_fact"
+window_start = 198
+window_frames = 12
+critical_pair_indices = [8, 9, 10]
+requires_middle_frames = false
+solvable_from_first_last = true
+question = "By the final frame, what dominates the center foreground?"
+choices = ["A paved road", "An indoor floor", "A crowd of cars", "Open water"]
+answer_index = 0
+
+[[item]]
+id = "real_fpv_rock_left_end"
+clip_id = "crosscheck_fpv_drone"
+bucket = "egomotion"
+prompt_family = "scene_fact"
+window_start = 700
+window_frames = 12
+critical_pair_indices = [7, 8, 9]
+requires_middle_frames = false
+solvable_from_first_last = true
+question = "At the end of the clip, where is the large gray rock relative to the frame?"
+choices = ["Mostly off the left edge", "Dominating the center", "Dominating the right edge", "No rock is nearby at all."]
+answer_index = 0

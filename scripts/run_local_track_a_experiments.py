@@ -1245,7 +1245,10 @@ def run_phase_1_05_temporal_necessity_ablation(
     prompt_bank_path: Path = DEFAULT_PROMPT_BANK_PATH,
     *,
     control: RunControl | None = None,
+    chunk_size: int = 2,
 ) -> dict[str, Any]:
+    if chunk_size <= 0:
+        raise ValueError("chunk_size must be positive")
     prompt_bank = _load_prompt_bank(prompt_bank_path)
     items = list(prompt_bank["item"])
     requested_ids = [item["id"] for item in items]
@@ -1259,11 +1262,10 @@ def run_phase_1_05_temporal_necessity_ablation(
             "version": prompt_bank["version"],
         },
         "item_execution_mode": "chunked-subprocesses",
-        "chunk_size": 2,
+        "chunk_size": chunk_size,
         "items": [],
     }
 
-    chunk_size = 2
     for chunk_start in range(0, len(items), chunk_size):
         if _stop_requested(control):
             break
@@ -1360,7 +1362,10 @@ def run_track_a_pilot(
     prompt_bank_path: Path = DEFAULT_PROMPT_BANK_PATH,
     *,
     control: RunControl | None = None,
+    chunk_size: int = 2,
 ) -> dict[str, Any]:
+    if chunk_size <= 0:
+        raise ValueError("chunk_size must be positive")
     prompt_bank = _load_prompt_bank(prompt_bank_path)
     items = list(prompt_bank["item"])
     requested_ids = [item["id"] for item in items]
@@ -1376,7 +1381,7 @@ def run_track_a_pilot(
         },
         "thresholds": asdict(DEFAULT_THRESHOLDS),
         "item_execution_mode": "chunked-subprocesses",
-        "chunk_size": 2,
+        "chunk_size": chunk_size,
         "items": [],
     }
 
@@ -1384,7 +1389,6 @@ def run_track_a_pilot(
     static_choices: list[int | None] = []
     shifted_choices: list[int | None] = []
 
-    chunk_size = 2
     for chunk_start in range(0, len(items), chunk_size):
         if _stop_requested(control):
             break
@@ -1722,6 +1726,12 @@ def main() -> None:
         default=None,
         help="Optional JSON checkpoint written after each completed chunk.",
     )
+    parser.add_argument(
+        "--chunk-size",
+        type=int,
+        default=2,
+        help="Chunk size for phase1_05 and track_a_pilot subprocess execution.",
+    )
     args = parser.parse_args()
     control = RunControl(stop_file=args.stop_file, checkpoint_path=args.checkpoint_path)
 
@@ -1732,11 +1742,22 @@ def main() -> None:
         ("phase1_0b", run_phase_1_0b_matched_content_redundancy),
         (
             "phase1_05",
-            lambda: run_phase_1_05_temporal_necessity_ablation(args.prompt_bank, control=control),
+            lambda: run_phase_1_05_temporal_necessity_ablation(
+                args.prompt_bank,
+                control=control,
+                chunk_size=args.chunk_size,
+            ),
         ),
         ("phase1_1", run_phase_1_1_mechanism),
         ("phase1_15", run_phase_1_15_mechanism_probe_repair),
-        ("track_a_pilot", lambda: run_track_a_pilot(args.prompt_bank, control=control)),
+        (
+            "track_a_pilot",
+            lambda: run_track_a_pilot(
+                args.prompt_bank,
+                control=control,
+                chunk_size=args.chunk_size,
+            ),
+        ),
     )
     if args.phase == "track_a_chunk":
         if not args.item_id:
