@@ -1,0 +1,1368 @@
+{
+  "command": "uv run python scripts/run_benchmark_track_a.py run --benchmark tomato --per-group 5 --chunk-size 1 --frame-count 8 --max-tokens 32 --output-path results/tomato_subset30_qwen7b.jsonl --summary-path results/tomato_subset30_qwen7b_summary.json --stop-file /tmp/codec-through-tomato-subset30.stop",
+  "disagreements": [
+    {
+      "answer_index": 2,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 2,
+        "correct": true,
+        "elapsed_ms": 18141.177125,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3291,
+        "text": "C"
+      },
+      "dense": {
+        "choice_index": 0,
+        "correct": false,
+        "elapsed_ms": 24390.390958,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3291,
+        "text": "A"
+      },
+      "frame_count": 8,
+      "group": "count",
+      "item_id": "tomato:count:0209-03",
+      "match": false,
+      "question": "How many trapezoid(s) does the person draw in the air throughout the entire video?\nA. 2\nB. 1\nC. 3\nD. 4\nE. 5\nF. 0\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.7453571428571427,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0209-03.mp4"
+    },
+    {
+      "answer_index": 2,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 3,
+        "correct": false,
+        "elapsed_ms": 26580.178625,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3290,
+        "text": "D"
+      },
+      "dense": {
+        "choice_index": 2,
+        "correct": true,
+        "elapsed_ms": 38258.205,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3290,
+        "text": "C"
+      },
+      "frame_count": 8,
+      "group": "direction",
+      "item_id": "tomato:direction:0231-06",
+      "match": false,
+      "question": "In which direction(s) did the person's hand move?\nA. First to the left then to the right.\nB. Right.\nC. Left.\nD. First to the right then to the left.\nE. Not moving at all\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.925,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0231-06.mp4"
+    },
+    {
+      "answer_index": 4,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 2,
+        "correct": false,
+        "elapsed_ms": 26242.126166,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3282,
+        "text": "C"
+      },
+      "dense": {
+        "choice_index": 4,
+        "correct": true,
+        "elapsed_ms": 41893.36575,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3282,
+        "text": "E"
+      },
+      "frame_count": 8,
+      "group": "direction",
+      "item_id": "tomato:direction:0234-03",
+      "match": false,
+      "question": "In which direction(s) did the person's hand move?\nA. Not moving at all\nB. Up.\nC. Upwards then downwards.\nD. Downwards then upwards.\nE. Down.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.9496428571428572,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0234-03.mp4"
+    },
+    {
+      "answer_index": 3,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 1,
+        "correct": false,
+        "elapsed_ms": 27013.378542,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3286,
+        "text": "B"
+      },
+      "dense": {
+        "choice_index": 0,
+        "correct": false,
+        "elapsed_ms": 39230.751,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3286,
+        "text": "A"
+      },
+      "frame_count": 8,
+      "group": "rotation",
+      "item_id": "tomato:rotation:0216-08",
+      "match": false,
+      "question": "Which direction(s) does the person rotate in?\nA. No rotation.\nB. Counter-clockwise then clockwise.\nC. Counter-clockwise throughout.\nD. Clockwise throughout.\nE. Clockwise then counter-clockwise.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.7510714285714285,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0216-08.mp4"
+    },
+    {
+      "answer_index": 0,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 5,
+        "correct": false,
+        "elapsed_ms": 23984.051625,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3287,
+        "text": "F"
+      },
+      "dense": {
+        "choice_index": 0,
+        "correct": true,
+        "elapsed_ms": 36792.265458,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3287,
+        "text": "A"
+      },
+      "frame_count": 8,
+      "group": "shape_trend",
+      "item_id": "tomato:shape_trend:0210-04",
+      "match": false,
+      "question": "What is the shape of the object that the person drew in the air?\nA. Triangle.\nB. Circle.\nC. Not drawing at all.\nD. Trapezoid.\nE. Square/rectangle.\nF. Diamond.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.8935714285714287,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0210-04.mp4"
+    }
+  ],
+  "items": [
+    {
+      "answer_index": 2,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 2,
+        "correct": true,
+        "elapsed_ms": 18141.177125,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3291,
+        "text": "C"
+      },
+      "dense": {
+        "choice_index": 0,
+        "correct": false,
+        "elapsed_ms": 24390.390958,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3291,
+        "text": "A"
+      },
+      "frame_count": 8,
+      "group": "count",
+      "item_id": "tomato:count:0209-03",
+      "match": false,
+      "question": "How many trapezoid(s) does the person draw in the air throughout the entire video?\nA. 2\nB. 1\nC. 3\nD. 4\nE. 5\nF. 0\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.7453571428571427,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0209-03.mp4"
+    },
+    {
+      "answer_index": 2,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 4,
+        "correct": false,
+        "elapsed_ms": 18593.052916,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3288,
+        "text": "E"
+      },
+      "dense": {
+        "choice_index": 4,
+        "correct": false,
+        "elapsed_ms": 25902.700667,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3288,
+        "text": "E"
+      },
+      "frame_count": 8,
+      "group": "count",
+      "item_id": "tomato:count:0210-03",
+      "match": true,
+      "question": "How many triangle(s) does the person draw in the air throughout the entire video?\nA. 3\nB. 5\nC. 4\nD. 1\nE. 2\nF. 0\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.8557142857142858,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0210-03.mp4"
+    },
+    {
+      "answer_index": 3,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 3,
+        "correct": true,
+        "elapsed_ms": 25118.724542,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3288,
+        "text": "D"
+      },
+      "dense": {
+        "choice_index": 3,
+        "correct": true,
+        "elapsed_ms": 45487.786666,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3288,
+        "text": "D"
+      },
+      "frame_count": 8,
+      "group": "count",
+      "item_id": "tomato:count:0211-03",
+      "match": true,
+      "question": "How many square(s) does the person draw in the air throughout the entire video?\nA. 1\nB. 0\nC. 3\nD. 2\nE. 5\nF. 4\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.8585714285714285,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0211-03.mp4"
+    },
+    {
+      "answer_index": 3,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 4,
+        "correct": false,
+        "elapsed_ms": 24361.509125,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3290,
+        "text": "E"
+      },
+      "dense": {
+        "choice_index": 4,
+        "correct": false,
+        "elapsed_ms": 31164.988,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3290,
+        "text": "E"
+      },
+      "frame_count": 8,
+      "group": "count",
+      "item_id": "tomato:count:0212-03",
+      "match": true,
+      "question": "How many infinity-shaped curve(s) does the person draw in the air throughout the entire video?\nA. 1\nB. 0\nC. 6\nD. 7\nE. 2\nF. 4\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.8910714285714285,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0212-03.mp4"
+    },
+    {
+      "answer_index": 0,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 2,
+        "correct": false,
+        "elapsed_ms": 24772.145,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3289,
+        "text": "C"
+      },
+      "dense": {
+        "choice_index": 2,
+        "correct": false,
+        "elapsed_ms": 35956.016,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3289,
+        "text": "C"
+      },
+      "frame_count": 8,
+      "group": "count",
+      "item_id": "tomato:count:0213-03",
+      "match": true,
+      "question": "How many diamond shape(s) does the person draw in the air throughout the entire video?\nA. 3\nB. 0\nC. 1\nD. 5\nE. 4\nF. 2\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.8882142857142856,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0213-03.mp4"
+    },
+    {
+      "answer_index": 2,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 3,
+        "correct": false,
+        "elapsed_ms": 31006.846833,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3290,
+        "text": "D"
+      },
+      "dense": {
+        "choice_index": 3,
+        "correct": false,
+        "elapsed_ms": 40066.071292,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3290,
+        "text": "D"
+      },
+      "frame_count": 8,
+      "group": "direction",
+      "item_id": "tomato:direction:0231-04",
+      "match": true,
+      "question": "In which direction(s) did the person's hand move?\nA. Not moving at all\nB. Left.\nC. Right.\nD. First to the right then to the left.\nE. First to the left then to the right.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.9235714285714286,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0231-04.mp4"
+    },
+    {
+      "answer_index": 4,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 3,
+        "correct": false,
+        "elapsed_ms": 28024.311375,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3290,
+        "text": "D"
+      },
+      "dense": {
+        "choice_index": 3,
+        "correct": false,
+        "elapsed_ms": 39370.452708,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3290,
+        "text": "D"
+      },
+      "frame_count": 8,
+      "group": "direction",
+      "item_id": "tomato:direction:0231-05",
+      "match": true,
+      "question": "In which direction(s) did the person's hand move?\nA. Not moving at all\nB. Left.\nC. Right.\nD. First to the right then to the left.\nE. First to the left then to the right.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.8900000000000002,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0231-05.mp4"
+    },
+    {
+      "answer_index": 2,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 3,
+        "correct": false,
+        "elapsed_ms": 26580.178625,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3290,
+        "text": "D"
+      },
+      "dense": {
+        "choice_index": 2,
+        "correct": true,
+        "elapsed_ms": 38258.205,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3290,
+        "text": "C"
+      },
+      "frame_count": 8,
+      "group": "direction",
+      "item_id": "tomato:direction:0231-06",
+      "match": false,
+      "question": "In which direction(s) did the person's hand move?\nA. First to the left then to the right.\nB. Right.\nC. Left.\nD. First to the right then to the left.\nE. Not moving at all\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.925,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0231-06.mp4"
+    },
+    {
+      "answer_index": 3,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 3,
+        "correct": true,
+        "elapsed_ms": 26921.76425,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3282,
+        "text": "D"
+      },
+      "dense": {
+        "choice_index": 3,
+        "correct": true,
+        "elapsed_ms": 37707.720584,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3282,
+        "text": "D"
+      },
+      "frame_count": 8,
+      "group": "direction",
+      "item_id": "tomato:direction:0234-02",
+      "match": true,
+      "question": "In which direction(s) did the person's hand move?\nA. Upwards then downwards.\nB. Not moving at all\nC. Downwards then upwards.\nD. Up.\nE. Down.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.9557142857142857,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0234-02.mp4"
+    },
+    {
+      "answer_index": 4,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 2,
+        "correct": false,
+        "elapsed_ms": 26242.126166,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3282,
+        "text": "C"
+      },
+      "dense": {
+        "choice_index": 4,
+        "correct": true,
+        "elapsed_ms": 41893.36575,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3282,
+        "text": "E"
+      },
+      "frame_count": 8,
+      "group": "direction",
+      "item_id": "tomato:direction:0234-03",
+      "match": false,
+      "question": "In which direction(s) did the person's hand move?\nA. Not moving at all\nB. Up.\nC. Upwards then downwards.\nD. Downwards then upwards.\nE. Down.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.9496428571428572,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0234-03.mp4"
+    },
+    {
+      "answer_index": 3,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 3,
+        "correct": true,
+        "elapsed_ms": 27843.557042,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3288,
+        "text": "D"
+      },
+      "dense": {
+        "choice_index": 3,
+        "correct": true,
+        "elapsed_ms": 39274.413625,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3288,
+        "text": "D"
+      },
+      "frame_count": 8,
+      "group": "rotation",
+      "item_id": "tomato:rotation:0215-06",
+      "match": true,
+      "question": "Which direction(s) does the person's hand rotate in?\nA. No rotation.\nB. Clockwise then counter-clockwise.\nC. Counter-clockwise then clockwise.\nD. Clockwise throughout.\nE. Counter-clockwise throughout.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.9510714285714286,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0215-06.mp4"
+    },
+    {
+      "answer_index": 0,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 0,
+        "correct": true,
+        "elapsed_ms": 26972.629917,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3288,
+        "text": "A"
+      },
+      "dense": {
+        "choice_index": 0,
+        "correct": true,
+        "elapsed_ms": 37804.786209,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3288,
+        "text": "A"
+      },
+      "frame_count": 8,
+      "group": "rotation",
+      "item_id": "tomato:rotation:0215-07",
+      "match": true,
+      "question": "Which direction(s) does the person's hand rotate in?\nA. Counter-clockwise throughout.\nB. Clockwise throughout.\nC. Clockwise then counter-clockwise.\nD. Counter-clockwise then clockwise.\nE. No rotation.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.9796428571428571,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0215-07.mp4"
+    },
+    {
+      "answer_index": 3,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 1,
+        "correct": false,
+        "elapsed_ms": 27013.378542,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3286,
+        "text": "B"
+      },
+      "dense": {
+        "choice_index": 0,
+        "correct": false,
+        "elapsed_ms": 39230.751,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3286,
+        "text": "A"
+      },
+      "frame_count": 8,
+      "group": "rotation",
+      "item_id": "tomato:rotation:0216-08",
+      "match": false,
+      "question": "Which direction(s) does the person rotate in?\nA. No rotation.\nB. Counter-clockwise then clockwise.\nC. Counter-clockwise throughout.\nD. Clockwise throughout.\nE. Clockwise then counter-clockwise.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.7510714285714285,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0216-08.mp4"
+    },
+    {
+      "answer_index": 4,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 2,
+        "correct": false,
+        "elapsed_ms": 20437.717125,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3286,
+        "text": "C"
+      },
+      "dense": {
+        "choice_index": 2,
+        "correct": false,
+        "elapsed_ms": 32332.0415,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3286,
+        "text": "C"
+      },
+      "frame_count": 8,
+      "group": "rotation",
+      "item_id": "tomato:rotation:0216-09",
+      "match": true,
+      "question": "Which direction(s) does the person rotate in?\nA. Clockwise throughout.\nB. Clockwise then counter-clockwise.\nC. No rotation.\nD. Counter-clockwise then clockwise.\nE. Counter-clockwise throughout.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.7464285714285716,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0216-09.mp4"
+    },
+    {
+      "answer_index": 4,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 1,
+        "correct": false,
+        "elapsed_ms": 23388.499708,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3288,
+        "text": "B"
+      },
+      "dense": {
+        "choice_index": 1,
+        "correct": false,
+        "elapsed_ms": 33495.348667,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3288,
+        "text": "B"
+      },
+      "frame_count": 8,
+      "group": "rotation",
+      "item_id": "tomato:rotation:0218-08",
+      "match": true,
+      "question": "Which direction(s) does the person's hand rotate in?\nA. Clockwise then counter-clockwise.\nB. Counter-clockwise then clockwise.\nC. Clockwise throughout.\nD. No rotation.\nE. Counter-clockwise throughout.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.9471428571428572,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0218-08.mp4"
+    },
+    {
+      "answer_index": 0,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 3,
+        "correct": false,
+        "elapsed_ms": 22525.251917,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3287,
+        "text": "D"
+      },
+      "dense": {
+        "choice_index": 3,
+        "correct": false,
+        "elapsed_ms": 36601.399875,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3287,
+        "text": "D"
+      },
+      "frame_count": 8,
+      "group": "shape_trend",
+      "item_id": "tomato:shape_trend:0209-04",
+      "match": true,
+      "question": "What is the shape of the object that the person drew in the air?\nA. Trapezoid.\nB. Diamond.\nC. Square/rectangle.\nD. Circle.\nE. Triangle.\nF. Not drawing at all.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.8849999999999999,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0209-04.mp4"
+    },
+    {
+      "answer_index": 2,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 1,
+        "correct": false,
+        "elapsed_ms": 24478.901583,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.69497774,
+        "prompt_tokens": 3287,
+        "text": "B"
+      },
+      "dense": {
+        "choice_index": 1,
+        "correct": false,
+        "elapsed_ms": 34235.917375,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.69497774,
+        "prompt_tokens": 3287,
+        "text": "B"
+      },
+      "frame_count": 8,
+      "group": "shape_trend",
+      "item_id": "tomato:shape_trend:0209-05",
+      "match": true,
+      "question": "What is the shape of the object that the person drew in the air?\nA. Square/rectangle.\nB. Circle.\nC. Trapezoid.\nD. Triangle.\nE. Not drawing at all.\nF. Diamond.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.8814285714285715,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0209-05.mp4"
+    },
+    {
+      "answer_index": 1,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 2,
+        "correct": false,
+        "elapsed_ms": 25688.973375,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3279,
+        "text": "C"
+      },
+      "dense": {
+        "choice_index": 2,
+        "correct": false,
+        "elapsed_ms": 36827.545083,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3279,
+        "text": "C"
+      },
+      "frame_count": 8,
+      "group": "shape_trend",
+      "item_id": "tomato:shape_trend:0231-07",
+      "match": true,
+      "question": "What is the trend of the person's hand movement?\nA. Left.\nB. Left then Right.\nC. Right then Left.\nD. Right.\nE. Not moving at all.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.890357142857143,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0231-07.mp4"
+    },
+    {
+      "answer_index": 0,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 5,
+        "correct": false,
+        "elapsed_ms": 23984.051625,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3287,
+        "text": "F"
+      },
+      "dense": {
+        "choice_index": 0,
+        "correct": true,
+        "elapsed_ms": 36792.265458,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3287,
+        "text": "A"
+      },
+      "frame_count": 8,
+      "group": "shape_trend",
+      "item_id": "tomato:shape_trend:0210-04",
+      "match": false,
+      "question": "What is the shape of the object that the person drew in the air?\nA. Triangle.\nB. Circle.\nC. Not drawing at all.\nD. Trapezoid.\nE. Square/rectangle.\nF. Diamond.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.8935714285714287,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0210-04.mp4"
+    },
+    {
+      "answer_index": 5,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 5,
+        "correct": true,
+        "elapsed_ms": 22151.652458,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3287,
+        "text": "F"
+      },
+      "dense": {
+        "choice_index": 5,
+        "correct": true,
+        "elapsed_ms": 34721.790625,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3287,
+        "text": "F"
+      },
+      "frame_count": 8,
+      "group": "shape_trend",
+      "item_id": "tomato:shape_trend:0210-05",
+      "match": true,
+      "question": "What is the shape of the object that the person drew in the air?\nA. Square/rectangle.\nB. Trapezoid.\nC. Circle.\nD. Diamond.\nE. Not drawing at all.\nF. Triangle.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.8957142857142858,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0210-05.mp4"
+    },
+    {
+      "answer_index": 2,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 1,
+        "correct": false,
+        "elapsed_ms": 24017.208042,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3277,
+        "text": "B"
+      },
+      "dense": {
+        "choice_index": 1,
+        "correct": false,
+        "elapsed_ms": 34747.734292,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3277,
+        "text": "B"
+      },
+      "frame_count": 8,
+      "group": "velocity_frequency",
+      "item_id": "tomato:velocity_frequency:0215-08",
+      "match": true,
+      "question": "What is the pattern of the person's hand's rotation speed?\nA. Decelerating.\nB. Constant speed.\nC. Accelerating.\nD. Not moving at all.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.8778571428571428,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0215-08.mp4"
+    },
+    {
+      "answer_index": 1,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 2,
+        "correct": false,
+        "elapsed_ms": 25685.277542,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3277,
+        "text": "C"
+      },
+      "dense": {
+        "choice_index": 2,
+        "correct": false,
+        "elapsed_ms": 37899.394917,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3277,
+        "text": "C"
+      },
+      "frame_count": 8,
+      "group": "velocity_frequency",
+      "item_id": "tomato:velocity_frequency:0215-09",
+      "match": true,
+      "question": "What is the pattern of the person's hand's rotation speed?\nA. Not moving at all.\nB. Decelerating.\nC. Constant speed.\nD. Accelerating.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.8764285714285714,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0215-09.mp4"
+    },
+    {
+      "answer_index": 2,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 3,
+        "correct": false,
+        "elapsed_ms": 24647.039334,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3275,
+        "text": "D"
+      },
+      "dense": {
+        "choice_index": 3,
+        "correct": false,
+        "elapsed_ms": 37961.145375,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3275,
+        "text": "D"
+      },
+      "frame_count": 8,
+      "group": "velocity_frequency",
+      "item_id": "tomato:velocity_frequency:0216-10",
+      "match": true,
+      "question": "What is the pattern of the person's rotation speed?\nA. Not moving at all.\nB. Decelerating.\nC. Accelerating.\nD. Constant speed.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.7532142857142857,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0216-10.mp4"
+    },
+    {
+      "answer_index": 0,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 2,
+        "correct": false,
+        "elapsed_ms": 23847.049291,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3275,
+        "text": "C"
+      },
+      "dense": {
+        "choice_index": 2,
+        "correct": false,
+        "elapsed_ms": 34931.917333,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3275,
+        "text": "C"
+      },
+      "frame_count": 8,
+      "group": "velocity_frequency",
+      "item_id": "tomato:velocity_frequency:0216-11",
+      "match": true,
+      "question": "What is the pattern of the person's rotation speed?\nA. Decelerating.\nB. Accelerating.\nC. Constant speed.\nD. Not moving at all.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.7360714285714286,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0216-11.mp4"
+    },
+    {
+      "answer_index": 0,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 1,
+        "correct": false,
+        "elapsed_ms": 24016.005,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3277,
+        "text": "B"
+      },
+      "dense": {
+        "choice_index": 1,
+        "correct": false,
+        "elapsed_ms": 36930.2505,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3277,
+        "text": "B"
+      },
+      "frame_count": 8,
+      "group": "velocity_frequency",
+      "item_id": "tomato:velocity_frequency:0218-10",
+      "match": true,
+      "question": "What is the pattern of the person's hand's rotation speed?\nA. Accelerating.\nB. Constant speed.\nC. Decelerating.\nD. Not moving at all.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.8674999999999999,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/human/0218-10.mp4"
+    },
+    {
+      "answer_index": 2,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 3,
+        "correct": false,
+        "elapsed_ms": 24898.064708,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3281,
+        "text": "D"
+      },
+      "dense": {
+        "choice_index": 3,
+        "correct": false,
+        "elapsed_ms": 36492.884708,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3281,
+        "text": "D"
+      },
+      "frame_count": 8,
+      "group": "visual_cues",
+      "item_id": "tomato:visual_cues:0731-00",
+      "match": true,
+      "question": "Which musical instrument sounds last?\nA. Cello.\nB. None of them produces any sound.\nC. Flute.\nD. Violin.\nE. All instruments sound at the same time.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.6721428571428573,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/object/0731-00.mp4"
+    },
+    {
+      "answer_index": 3,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 2,
+        "correct": false,
+        "elapsed_ms": 26209.785458,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3271,
+        "text": "C"
+      },
+      "dense": {
+        "choice_index": 2,
+        "correct": false,
+        "elapsed_ms": 39103.931333,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3271,
+        "text": "C"
+      },
+      "frame_count": 8,
+      "group": "visual_cues",
+      "item_id": "tomato:visual_cues:0732-00",
+      "match": true,
+      "question": "Which musical instrument plays first?\nA. Neither instrument produces any sound.\nB. Both instruments begin simultaneously.\nC. Violin.\nD. Piano.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.4432142857142857,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/object/0732-00.mp4"
+    },
+    {
+      "answer_index": 1,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 1,
+        "correct": true,
+        "elapsed_ms": 26300.538917,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3273,
+        "text": "B"
+      },
+      "dense": {
+        "choice_index": 1,
+        "correct": true,
+        "elapsed_ms": 37639.310041,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3273,
+        "text": "B"
+      },
+      "frame_count": 8,
+      "group": "visual_cues",
+      "item_id": "tomato:visual_cues:0733-00",
+      "match": true,
+      "question": "Which musical instrument plays first?\nA. Neither instrument produces any sound.\nB. Guzheng.\nC. Both instruments begin simultaneously.\nD. Erhu.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.5385714285714286,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/object/0733-00.mp4"
+    },
+    {
+      "answer_index": 2,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 1,
+        "correct": false,
+        "elapsed_ms": 28477.972334,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3271,
+        "text": "B"
+      },
+      "dense": {
+        "choice_index": 1,
+        "correct": false,
+        "elapsed_ms": 33477.759792,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3271,
+        "text": "B"
+      },
+      "frame_count": 8,
+      "group": "visual_cues",
+      "item_id": "tomato:visual_cues:0734-00",
+      "match": true,
+      "question": "Which instrument plays first?\nA. Both instruments begin simultaneously.\nB. Banjo.\nC. Violin.\nD. Neither instrument produces any sound.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.7271428571428571,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/object/0734-00.mp4"
+    },
+    {
+      "answer_index": 0,
+      "benchmark": "tomato",
+      "cached": {
+        "choice_index": 3,
+        "correct": false,
+        "elapsed_ms": 23186.321333,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3275,
+        "text": "D"
+      },
+      "dense": {
+        "choice_index": 3,
+        "correct": false,
+        "elapsed_ms": 37515.732166,
+        "generation_tokens": 2,
+        "parse_failure": false,
+        "peak_memory_gb": 6.694979036,
+        "prompt_tokens": 3275,
+        "text": "D"
+      },
+      "frame_count": 8,
+      "group": "visual_cues",
+      "item_id": "tomato:visual_cues:0735-00",
+      "match": true,
+      "question": "Which Guzheng plays first?\nA. The right one.\nB. Both instruments begin simultaneously.\nC. Neither instrument produces any sound.\nD. The left one.\nAnswer with one letter only.",
+      "reuse_ratio_mean": 0.9171428571428571,
+      "thresholds": {
+        "shifted": 8.0,
+        "static": 3.0
+      },
+      "video_path": "data/benchmarks/tomato/videos/object/0735-00.mp4"
+    }
+  ],
+  "label": "tomato_subset30_qwen7b",
+  "local_results": {
+    "jsonl_path": "results/tomato_subset30_qwen7b.jsonl",
+    "summary_path": "results/tomato_subset30_qwen7b_summary.json"
+  },
+  "per_group": {
+    "count": {
+      "agreement": 0.8,
+      "cached_accuracy": 0.4,
+      "dense_accuracy": 0.2,
+      "n": 5,
+      "reuse_ratio_mean": 0.8477857142857144
+    },
+    "direction": {
+      "agreement": 0.6,
+      "cached_accuracy": 0.2,
+      "dense_accuracy": 0.6,
+      "n": 5,
+      "reuse_ratio_mean": 0.9287857142857143
+    },
+    "rotation": {
+      "agreement": 0.8,
+      "cached_accuracy": 0.4,
+      "dense_accuracy": 0.4,
+      "n": 5,
+      "reuse_ratio_mean": 0.8750714285714286
+    },
+    "shape_trend": {
+      "agreement": 0.8,
+      "cached_accuracy": 0.2,
+      "dense_accuracy": 0.4,
+      "n": 5,
+      "reuse_ratio_mean": 0.8892142857142857
+    },
+    "velocity_frequency": {
+      "agreement": 1.0,
+      "cached_accuracy": 0.0,
+      "dense_accuracy": 0.0,
+      "n": 5,
+      "reuse_ratio_mean": 0.8222142857142856
+    },
+    "visual_cues": {
+      "agreement": 1.0,
+      "cached_accuracy": 0.2,
+      "dense_accuracy": 0.2,
+      "n": 5,
+      "reuse_ratio_mean": 0.6596428571428572
+    }
+  },
+  "phase": "1.4",
+  "run": "B",
+  "summary": {
+    "agreement": 0.8333333333333334,
+    "benchmark": "tomato",
+    "cached_accuracy": 0.23333333333333334,
+    "cached_parse_failures": 0,
+    "completed_item_ids": [
+      "tomato:count:0209-03",
+      "tomato:count:0210-03",
+      "tomato:count:0211-03",
+      "tomato:count:0212-03",
+      "tomato:count:0213-03",
+      "tomato:direction:0231-04",
+      "tomato:direction:0231-05",
+      "tomato:direction:0231-06",
+      "tomato:direction:0234-02",
+      "tomato:direction:0234-03",
+      "tomato:rotation:0215-06",
+      "tomato:rotation:0215-07",
+      "tomato:rotation:0216-08",
+      "tomato:rotation:0216-09",
+      "tomato:rotation:0218-08",
+      "tomato:shape_trend:0209-04",
+      "tomato:shape_trend:0209-05",
+      "tomato:shape_trend:0231-07",
+      "tomato:shape_trend:0210-04",
+      "tomato:shape_trend:0210-05",
+      "tomato:velocity_frequency:0215-08",
+      "tomato:velocity_frequency:0215-09",
+      "tomato:velocity_frequency:0216-10",
+      "tomato:velocity_frequency:0216-11",
+      "tomato:velocity_frequency:0218-10",
+      "tomato:visual_cues:0731-00",
+      "tomato:visual_cues:0732-00",
+      "tomato:visual_cues:0733-00",
+      "tomato:visual_cues:0734-00",
+      "tomato:visual_cues:0735-00"
+    ],
+    "dense_accuracy": 0.3,
+    "environment": {
+      "datasets": "4.8.4",
+      "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
+      "git_dirty": false,
+      "git_sha": "184f26d8ae47abe9fea1c1d512693d138d9e06f1",
+      "huggingface_hub": "1.10.1",
+      "mlx_vlm_module": "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
+      "model_path": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
+      "platform": "darwin",
+      "python": "3.12.12"
+    },
+    "remaining_item_ids": [],
+    "requested_item_ids": [
+      "tomato:count:0209-03",
+      "tomato:count:0210-03",
+      "tomato:count:0211-03",
+      "tomato:count:0212-03",
+      "tomato:count:0213-03",
+      "tomato:direction:0231-04",
+      "tomato:direction:0231-05",
+      "tomato:direction:0231-06",
+      "tomato:direction:0234-02",
+      "tomato:direction:0234-03",
+      "tomato:rotation:0215-06",
+      "tomato:rotation:0215-07",
+      "tomato:rotation:0216-08",
+      "tomato:rotation:0216-09",
+      "tomato:rotation:0218-08",
+      "tomato:shape_trend:0209-04",
+      "tomato:shape_trend:0209-05",
+      "tomato:shape_trend:0231-07",
+      "tomato:shape_trend:0210-04",
+      "tomato:shape_trend:0210-05",
+      "tomato:velocity_frequency:0215-08",
+      "tomato:velocity_frequency:0215-09",
+      "tomato:velocity_frequency:0216-10",
+      "tomato:velocity_frequency:0216-11",
+      "tomato:velocity_frequency:0218-10",
+      "tomato:visual_cues:0731-00",
+      "tomato:visual_cues:0732-00",
+      "tomato:visual_cues:0733-00",
+      "tomato:visual_cues:0734-00",
+      "tomato:visual_cues:0735-00"
+    ],
+    "reuse_ratio_mean": 0.8371190476190478,
+    "stopped_early": false
+  }
+}

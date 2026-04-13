@@ -726,8 +726,8 @@ Near-term order:
 
 1. keep the evidence boundary explicit with prereg outcomes and generalized-versus-strict reproduction labels
 2. treat benchmark-native TOMATO setup as complete on this stack, with the `6`-item smoke run and resumable local execution rules already in place
-3. run the documented `30`-item TOMATO initial subset on Qwen `7B`, then decide whether the local agreement story is strong enough to scale
-4. build MVBench on the same adapter pattern after the TOMATO path is stable
+3. treat the first `30`-item TOMATO subset as completed and currently weaker than the imported benchmark story on this stack
+4. build MVBench on the same adapter pattern next, then use the cross-benchmark picture to decide whether TOMATO needs a higher-precision follow-up or a planner/statistic diagnosis before scaling
 5. extend the real-video slice beyond endpoint scene facts so natural middle-event items exist before broad threshold sweeps
 6. compare the repaired mechanism probes on a higher-precision local runtime before treating the locality gap as conceptual disagreement
 7. run threshold sweeps on the discrimination-safe synthetic subset plus the real-video slice

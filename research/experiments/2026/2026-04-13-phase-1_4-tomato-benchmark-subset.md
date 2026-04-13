@@ -115,7 +115,7 @@ Artifacts:
 - Run A smoke:
   [phase1_4_run_a_smoke.json](artifacts/phase1_4_run_a_smoke.json)
 - Run B initial subset:
-  - pending
+  [phase1_4_run_b_subset30.json](artifacts/phase1_4_run_b_subset30.json)
 
 ## Result
 
@@ -147,7 +147,35 @@ Most important qualitative outcome:
 
 Run B: initial subset
 
-- pending
+Preregistration outcome:
+
+- Inconclusive
+
+Observed outcome:
+
+- dense accuracy: `9/30 = 0.300`
+- cached accuracy: `7/30 = 0.233`
+- dense-versus-cached agreement: `25/30 = 0.833`
+- cached parse failures: `0`
+- mean reuse ratio: `0.8371`
+- the full `30`-item slice completed cleanly with `chunk_size = 1`; no manual
+  intervention or force termination was required
+
+Why this is inconclusive rather than rejected:
+
+- the run missed the acceptance band because cached accuracy fell by `2`
+  answers relative to dense and agreement stayed below the `0.90` target
+- the run did not hit the rejection band because the cached drop was not more
+  than `3`, agreement stayed above `0.75`, and parse failures stayed at `0`
+
+Most important split-level pattern:
+
+- `direction` was the hardest degradation bucket:
+  - dense accuracy `0.6`
+  - cached accuracy `0.2`
+  - agreement `0.6`
+- `velocity_frequency` and `visual_cues` matched dense exactly, but only
+  because the dense baseline itself was weak on those groups
 
 ## Interpretation
 
@@ -174,8 +202,24 @@ Why the smoke is still useful:
 
 Immediate next step:
 
-- run the preregistered `30`-item initial subset before changing the
-  reproduction-status row for `WP-2.5` beyond "partial, smoke only"
+- treat `WP-2.5` as still unreproduced on this stack
+- use the completed `30`-item slice to decide whether the next discriminating
+  move is MVBench, a higher-precision TOMATO follow-up, or a targeted planner
+  diagnosis on the `direction` bucket
+
+Run B interpretation:
+
+- this local stack does not yet support a generalized TOMATO reproduction claim
+  under default same-position reuse and thresholds `(3, 8)`
+- the current evidence is weaker than the imported whitepaper story in two
+  ways:
+  - agreement on the local `30`-item slice is only `0.833`
+  - the local dense baseline itself is also weak at `0.300`
+- that means the next benchmark work should separate two questions instead of
+  collapsing them:
+  - how much of the gap is cache-induced disagreement?
+  - how much is baseline weakness on this MLX `7B` stack and this deterministic
+    subset?
 
 ## Links
 
