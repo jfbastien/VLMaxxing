@@ -116,7 +116,7 @@ Artifacts:
 - Run A hosted smoke:
   [phase1_5_run_a_smoke.json](artifacts/phase1_5_run_a_smoke.json)
 - Run B initial hosted subset:
-  - pending
+  [phase1_5_run_b_subset54.json](artifacts/phase1_5_run_b_subset54.json)
 
 ## Result
 
@@ -144,7 +144,36 @@ Observed outcome:
 
 Run B: initial hosted subset
 
-- pending
+Preregistration outcome:
+
+- Accepted
+
+Observed outcome:
+
+- dense accuracy: `34/54 = 0.630`
+- cached accuracy: `35/54 = 0.648`
+- dense-versus-cached agreement: `47/54 = 0.870`
+- cached parse failures: `0`
+- mean reuse ratio: `0.6942`
+- disagreement summary:
+  - disagreement items: `7`
+  - cached improvements over dense: `3`
+  - cached regressions against dense: `2`
+  - both wrong but different answers: `2`
+
+Most important split-level pattern:
+
+- strongest buckets stayed fully aligned:
+  - `action_antonym`
+  - `action_prediction`
+  - `character_order`
+  - `moving_attribute`
+  - `unexpected_action`
+- the hardest disagreement buckets were:
+  - `action_localization`: agreement `0.333`, cached `0.667`, dense `0.333`
+  - `fine_grained_action`: agreement `0.333`, cached `0.667`, dense `0.333`
+  - `object_interaction`: agreement `0.667`, cached `0.667`, dense `1.0`
+  - `moving_count`: agreement `0.667`, cached `0.667`, dense `1.0`
 
 ## Interpretation
 
@@ -166,8 +195,31 @@ What the smoke still does not establish:
 
 Immediate next step:
 
-- run the preregistered `54`-item hosted subset before strengthening the
-  reproduction-status row for `WP-2.6` beyond "partial, smoke only"
+- strengthen the reproduction-status row for `WP-2.6` to generalized local
+  reproduction
+- use the cross-benchmark contrast against TOMATO to choose the next
+  discriminating follow-up on the weaker benchmark lane
+
+Run B interpretation:
+
+- this hosted `54`-item slice meets the preregistered generalized-reproduction
+  band for `WP-2.6` on the local `Qwen2.5-VL-7B-Instruct-4bit` MLX stack
+- unlike TOMATO on the same stack, MVBench remains in-family with the imported
+  whitepaper direction:
+  - agreement stays high at `0.870`
+  - cached accuracy slightly exceeds dense on the aggregate
+  - parse failures stay at `0`
+- the result is still generalized rather than strict:
+  - `54` hosted items, not the full saved upstream slice
+  - no NTU-manual completion claim
+  - local MLX `4-bit` path, not the imported PyTorch float16 path
+
+Consequence for the reproduction program:
+
+- same-position cached reuse clearly has a benchmark-native "there" there on
+  this stack
+- the most urgent reproduction gap is now explaining why TOMATO is much weaker
+  than MVBench on the same local hardware and method
 
 ## Links
 

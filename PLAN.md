@@ -727,12 +727,13 @@ Near-term order:
 1. keep the evidence boundary explicit with prereg outcomes and generalized-versus-strict reproduction labels
 2. treat benchmark-native TOMATO setup as complete on this stack, with the `6`-item smoke run and resumable local execution rules already in place
 3. treat the first `30`-item TOMATO subset as completed and currently weaker than the imported benchmark story on this stack
-4. treat the hosted MVBench smoke as complete and scale it to the preregistered `54`-item hosted subset before strengthening any `WP-2.6` claim language
-5. extend the real-video slice beyond endpoint scene facts so natural middle-event items exist before broad threshold sweeps
-6. compare the repaired mechanism probes on a higher-precision local runtime before treating the locality gap as conceptual disagreement
-7. run threshold sweeps on the discrimination-safe synthetic subset plus the real-video slice
-8. run refresh-interval drift on the hard natural buckets
-9. only then move deeper into Track B timing and sparse execution
+4. treat the hosted `54`-item MVBench subset as the current strongest benchmark-native local evidence and keep its generalized caveat explicit
+5. return to TOMATO with the cross-benchmark contrast in mind: decide between a higher-precision follow-up, a different documented subset, or a targeted planner/statistic diagnosis
+6. extend the real-video slice beyond endpoint scene facts so natural middle-event items exist before broad threshold sweeps
+7. compare the repaired mechanism probes on a higher-precision local runtime before treating the locality gap as conceptual disagreement
+8. run threshold sweeps on the discrimination-safe synthetic subset plus the real-video slice
+9. run refresh-interval drift on the hard natural buckets
+10. only then move deeper into Track B timing and sparse execution
 
 ## Future Horizons
 
