@@ -71,6 +71,16 @@ Fetch the MVBench hosted video bundles from Hugging Face:
 uv run python scripts/fetch_benchmarks.py --dataset mvbench --mode assets
 ```
 
+The default MVBench asset profile is `predecessor18`, which matches the
+predecessor-style `18`-task slice and avoids downloading hosted bundles that
+are not needed for the first generalized reproduction pass.
+
+To fetch every Hugging Face-hosted MVBench archive instead:
+
+```bash
+uv run python scripts/fetch_benchmarks.py --dataset mvbench --mode assets --mvbench-profile all
+```
+
 Fetch both benchmark stacks:
 
 ```bash
@@ -173,6 +183,9 @@ Current implication:
 - full `20`-task coverage may still require the NTU manual download
 - the imported predecessor run only saved an `18`-task local slice, so a local
   generalized reproduction can still be meaningful before NTU is complete
+- the default fetch profile mirrors that predecessor-style hosted subset:
+  `FunQA_test`, `Moments_in_Time_Raw`, `clevrer`, `data0613`, `scene_qa`,
+  `ssv2_video`, `sta`, `star`, and `vlnqa`
 
 Expected final layout:
 

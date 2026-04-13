@@ -33,6 +33,18 @@ MVBENCH_HOSTED_ZIPS = [
     "vlnqa.zip",
 ]
 
+MVBENCH_PREDECESSOR18_ZIPS = [
+    "FunQA_test.zip",
+    "Moments_in_Time_Raw.zip",
+    "clevrer.zip",
+    "data0613.zip",
+    "scene_qa.zip",
+    "ssv2_video.zip",
+    "sta.zip",
+    "star.zip",
+    "vlnqa.zip",
+]
+
 
 @dataclass(frozen=True, slots=True)
 class BenchmarkPaths:
@@ -194,15 +206,21 @@ def _fetch_mvbench_metadata(paths: BenchmarkPaths, *, dry_run: bool) -> None:
             "dataset": "mvbench",
             "metadata_source": f"hf://datasets/{MVBENCH_DATASET_ID}",
             "hosted_video_archives": MVBENCH_HOSTED_ZIPS,
+            "default_hosted_profile": "predecessor18",
             "manual_component": "NTU RGB+D videos listed in video/MVBench_videos_ntu.txt",
         },
     )
     _validate_mvbench(paths, metadata=True, assets=False)
 
 
-def _fetch_mvbench_assets(paths: BenchmarkPaths, *, dry_run: bool) -> None:
+def _fetch_mvbench_assets(
+    paths: BenchmarkPaths,
+    *,
+    dry_run: bool,
+    archive_names: list[str],
+) -> None:
     if dry_run:
-        for archive_name in MVBENCH_HOSTED_ZIPS:
+        for archive_name in archive_names:
             print(
                 "[dry-run] hf_hub_download "
                 f"{MVBENCH_DATASET_ID} video/{archive_name} -> {paths.downloads_dir}"
@@ -211,7 +229,7 @@ def _fetch_mvbench_assets(paths: BenchmarkPaths, *, dry_run: bool) -> None:
         return
     hf_hub_download, _ = _load_hf()
     downloaded_archives: list[Path] = []
-    for archive_name in MVBENCH_HOSTED_ZIPS:
+    for archive_name in archive_names:
         local_path = Path(
             hf_hub_download(
                 MVBENCH_DATASET_ID,
@@ -251,6 +269,7 @@ def _fetch_dataset(
     *,
     mode: Literal["metadata", "assets", "all"],
     dry_run: bool,
+    mvbench_profile: Literal["predecessor18", "all"],
 ) -> None:
     paths = _paths_for(dataset)
     _ensure_dirs(paths)
@@ -263,7 +282,12 @@ def _fetch_dataset(
     if mode in {"metadata", "all"}:
         _fetch_mvbench_metadata(paths, dry_run=dry_run)
     if mode in {"assets", "all"}:
-        _fetch_mvbench_assets(paths, dry_run=dry_run)
+        archive_names = (
+            MVBENCH_PREDECESSOR18_ZIPS
+            if mvbench_profile == "predecessor18"
+            else MVBENCH_HOSTED_ZIPS
+        )
+        _fetch_mvbench_assets(paths, dry_run=dry_run, archive_names=archive_names)
 
 
 def main() -> None:
@@ -285,6 +309,16 @@ def main() -> None:
         action="store_true",
         help="Print the fetch plan without downloading anything.",
     )
+    parser.add_argument(
+        "--mvbench-profile",
+        choices=["predecessor18", "all"],
+        default="predecessor18",
+        help=(
+            "Which hosted MVBench archive profile to fetch. "
+            "`predecessor18` matches the predecessor-style 18-task slice; "
+            "`all` fetches every hosted archive except the manual NTU component."
+        ),
+    )
     args = parser.parse_args()
 
     selected_datasets = (
@@ -295,6 +329,7 @@ def main() -> None:
             cast(Literal["tomato", "mvbench"], dataset),
             mode=args.mode,
             dry_run=args.dry_run,
+            mvbench_profile=cast(Literal["predecessor18", "all"], args.mvbench_profile),
         )
 
 
