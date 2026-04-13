@@ -39,6 +39,11 @@ vlm = [
   "torch",
   "torchvision",
 ]
+benchmark = [
+  "datasets>=4.8.4",
+  "gdown>=5.2.0",
+  "huggingface_hub>=1.10.1",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/codec_through"]

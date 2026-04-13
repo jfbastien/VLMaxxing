@@ -40,6 +40,12 @@ Local MLX / MLX-VLM work:
 uv sync --group dev --group research --group vlm
 ```
 
+Benchmark-native TOMATO / MVBench helpers:
+
+```bash
+uv sync --group dev --group research --group vlm --group benchmark
+```
+
 The repo assumes you run commands through `uv run ...`, not through an unrelated
 system Python environment.
 
@@ -112,6 +118,12 @@ Optional predecessor cross-check clips:
 uv run python scripts/fetch_corpus.py --tier crosscheck
 ```
 
+Benchmark-native assets:
+
+```bash
+uv run python scripts/fetch_benchmarks.py --dataset both --mode all
+```
+
 The source of truth for clip ids and local paths is:
 
 - [data/corpus/manifest.toml](../data/corpus/manifest.toml)
@@ -119,6 +131,7 @@ The source of truth for clip ids and local paths is:
 The policy for what belongs in each corpus tier is:
 
 - [docs/clip-policy.md](clip-policy.md)
+- [docs/benchmark-setup.md](benchmark-setup.md)
 
 ## What This Repo Does Not Assume
 

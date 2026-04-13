@@ -57,6 +57,7 @@ uv run python scripts/generate_synthetic_corpus.py
 - [docs/reproduction-status.md](docs/reproduction-status.md): what is and is not reproduced locally from the imported whitepaper
 - [docs/README.md](docs/README.md): where durable knowledge belongs
 - [docs/clip-policy.md](docs/clip-policy.md): local-only clip and corpus policy
+- [docs/benchmark-setup.md](docs/benchmark-setup.md): benchmark-native TOMATO and MVBench asset setup
 - [research/README.md](research/README.md): experiment-note and decision-log workflow
 - [paper/framing.md](paper/framing.md): current paper story, anti-claims, and future horizons
 - [docs/chatgpt-review-packet.md](docs/chatgpt-review-packet.md): focused next-pass external review questions

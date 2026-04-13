@@ -16,6 +16,7 @@ This file only routes work inside `docs/`.
 - validated takeaways from external review
 - setup instructions that apply to any clean checkout
 - clip and local-asset policy
+- benchmark-native asset setup
 - focused external review packets
 
 ## What Does Not Go Here
@@ -43,5 +44,6 @@ This file only routes work inside `docs/`.
 - [literature-map.md](literature-map.md)
 - [knowledge-base-notes.md](knowledge-base-notes.md)
 - [clip-policy.md](clip-policy.md)
+- [benchmark-setup.md](benchmark-setup.md)
 - [chatgpt-review-packet.md](chatgpt-review-packet.md)
 - [local-setup.md](local-setup.md)
