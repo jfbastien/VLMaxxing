@@ -39,6 +39,15 @@ Until a cleaner upstream source exists, this repo treats the benchmark sections
 and directly inspected predecessor artifacts as more specific than the abstract
 wording.
 
+Important runtime distinction:
+
+- mechanism sections in the imported whitepaper use Qwen `3B` on
+  `PyTorch/MPS float32`
+- benchmark sections in the imported whitepaper use Qwen `7B` via `mlx-vlm`
+- benchmark reproduction caveats in this repo should therefore focus on subset
+  policy, quantization, package versions, and preprocessing rather than on a
+  generic `MLX versus PyTorch` mismatch
+
 ## Frozen Reproduction Targets
 
 | Claim id | Imported target | Current canonical reading | Scope in this repo |

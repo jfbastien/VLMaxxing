@@ -29,8 +29,9 @@ Hypotheses:
 
 Stack caveats stated up front:
 
-- local model path is `Qwen2.5-VL-7B-Instruct-4bit` under MLX, not the imported
-  PyTorch float16 path
+- the imported benchmark path also used Qwen `7B` via `mlx-vlm`; the local
+  caveat is exact quantization, package revision, and hosted-slice coverage,
+  not a fundamentally different benchmark runtime family
 - chunked subprocess execution is part of the declared semantic harness
   contract on this machine
 - the initial local slice uses only the hosted predecessor-style tasks and does
@@ -42,6 +43,8 @@ Sampling and preprocessing:
 - `8` frames per video
 - resize and black-pad every decoded frame to `560 x 560` to match the imported
   benchmark-style path
+- deterministic first-`N` sampling per hosted task for bring-up; this is
+  reproducible but not yet a seeded-random benchmark subset
 
 Conditions:
 
@@ -175,6 +178,12 @@ Most important split-level pattern:
   - `object_interaction`: agreement `0.667`, cached `0.667`, dense `1.0`
   - `moving_count`: agreement `0.667`, cached `0.667`, dense `1.0`
 
+Important caution:
+
+- every task contributes only `3` items in Run B
+- the per-task numbers above are exploratory only and should not be promoted
+  into benchmark-level claims
+
 ## Interpretation
 
 This is the strongest benchmark-native result on the local stack so far.
@@ -195,24 +204,29 @@ What the smoke still does not establish:
 
 Immediate next step:
 
-- strengthen the reproduction-status row for `WP-2.6` to generalized local
-  reproduction
-- use the cross-benchmark contrast against TOMATO to choose the next
-  discriminating follow-up on the weaker benchmark lane
+- soften the reproduction-status row for `WP-2.6` to make the imported
+  `1.000` agreement gap explicit
+- use the cross-benchmark contrast against TOMATO for benchmark-path identity,
+  pad-masked reuse accounting, and targeted planner diagnosis on the weaker
+  benchmark lane
 
 Run B interpretation:
 
 - this hosted `54`-item slice meets the preregistered generalized-reproduction
   band for `WP-2.6` on the local `Qwen2.5-VL-7B-Instruct-4bit` MLX stack
-- unlike TOMATO on the same stack, MVBench remains in-family with the imported
-  whitepaper direction:
+- unlike TOMATO on the same stack, MVBench remains supportive benchmark-native
+  evidence for the method on this hosted slice:
   - agreement stays high at `0.870`
-  - cached accuracy slightly exceeds dense on the aggregate
   - parse failures stay at `0`
+  - dense and cached remain statistically indistinguishable on the aggregate:
+    `3` cached improvements versus `2` regressions, exact paired `p = 1.0`
 - the result is still generalized rather than strict:
   - `54` hosted items, not the full saved upstream slice
   - no NTU-manual completion claim
-  - local MLX `4-bit` path, not the imported PyTorch float16 path
+  - imported benchmark headline is `1.000` agreement, while the local hosted
+    slice is `0.870`
+  - per-task readings are exploratory because each hosted task contributes only
+    `3` items here
 
 Consequence for the reproduction program:
 

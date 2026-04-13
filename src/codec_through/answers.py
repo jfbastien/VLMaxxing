@@ -9,7 +9,16 @@ LETTER_PATTERN = re.compile(r"\b([A-Z])\b")
 CLAUSE_TERMINATOR_PATTERN = re.compile(r"[.!?\n]")
 
 
-def extract_choice(response: str, candidates: Sequence[str]) -> int | None:
+def _fallback_choice(default_index_on_failure: int | None) -> int | None:
+    return default_index_on_failure
+
+
+def extract_choice(
+    response: str,
+    candidates: Sequence[str],
+    *,
+    default_index_on_failure: int | None = None,
+) -> int | None:
     """Return the parsed answer index or ``None`` if parsing failed.
 
     The original benchmark scripts in ``codec-through-sam`` defaulted to option A
@@ -31,7 +40,7 @@ def extract_choice(response: str, candidates: Sequence[str]) -> int | None:
     if len(candidate_letters) == 1:
         return next(iter(candidate_letters))
     if len(candidate_letters) > 1:
-        return None
+        return _fallback_choice(default_index_on_failure)
 
     lowered = response.lower()
     matching_candidates = [
@@ -40,4 +49,4 @@ def extract_choice(response: str, candidates: Sequence[str]) -> int | None:
     if len(matching_candidates) == 1:
         return matching_candidates[0]
 
-    return None
+    return _fallback_choice(default_index_on_failure)

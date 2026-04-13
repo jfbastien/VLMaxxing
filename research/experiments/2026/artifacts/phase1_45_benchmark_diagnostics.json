@@ -1,0 +1,280 @@
+{
+  "local": {
+    "mvbench_subset54": {
+      "loose_default_to_a": {
+        "agreement": 0.8703703703703703,
+        "agreement_ci95": [
+          0.7557801946793228,
+          0.9357636077051201
+        ],
+        "both_wrong_different": 2,
+        "cached_accuracy": 0.6481481481481481,
+        "cached_accuracy_ci95": [
+          0.5148458381779774,
+          0.7617716827757998
+        ],
+        "cached_improves": 3,
+        "cached_parse_failures": 0,
+        "cached_regresses": 2,
+        "dense_accuracy": 0.6296296296296297,
+        "dense_accuracy_ci95": [
+          0.49627222791081016,
+          0.745768102923745
+        ],
+        "dense_parse_failures": 0,
+        "group_counts": {
+          "action_antonym": 3,
+          "action_count": 3,
+          "action_localization": 3,
+          "action_prediction": 3,
+          "action_sequence": 3,
+          "character_order": 3,
+          "counterfactual_inference": 3,
+          "egocentric_navigation": 3,
+          "fine_grained_action": 3,
+          "moving_attribute": 3,
+          "moving_count": 3,
+          "moving_direction": 3,
+          "object_existence": 3,
+          "object_interaction": 3,
+          "object_shuffle": 3,
+          "scene_transition": 3,
+          "state_change": 3,
+          "unexpected_action": 3
+        },
+        "mcnemar_exact_p": 1.0,
+        "n": 54,
+        "reuse_bins": {
+          "0.5-0.7": {
+            "agreement": 0.8666666666666667,
+            "cached_accuracy": 0.7333333333333333,
+            "dense_accuracy": 0.6666666666666666,
+            "n": 15
+          },
+          "0.7-0.85": {
+            "agreement": 0.875,
+            "cached_accuracy": 0.5,
+            "dense_accuracy": 0.625,
+            "n": 8
+          },
+          "0.85-1.0": {
+            "agreement": 0.85,
+            "cached_accuracy": 0.55,
+            "dense_accuracy": 0.55,
+            "n": 20
+          },
+          "<0.5": {
+            "agreement": 0.9090909090909091,
+            "cached_accuracy": 0.8181818181818182,
+            "dense_accuracy": 0.7272727272727273,
+            "n": 11
+          }
+        }
+      },
+      "strict": {
+        "agreement": 0.8703703703703703,
+        "agreement_ci95": [
+          0.7557801946793228,
+          0.9357636077051201
+        ],
+        "both_wrong_different": 2,
+        "cached_accuracy": 0.6481481481481481,
+        "cached_accuracy_ci95": [
+          0.5148458381779774,
+          0.7617716827757998
+        ],
+        "cached_improves": 3,
+        "cached_parse_failures": 0,
+        "cached_regresses": 2,
+        "dense_accuracy": 0.6296296296296297,
+        "dense_accuracy_ci95": [
+          0.49627222791081016,
+          0.745768102923745
+        ],
+        "dense_parse_failures": 0,
+        "group_counts": {
+          "action_antonym": 3,
+          "action_count": 3,
+          "action_localization": 3,
+          "action_prediction": 3,
+          "action_sequence": 3,
+          "character_order": 3,
+          "counterfactual_inference": 3,
+          "egocentric_navigation": 3,
+          "fine_grained_action": 3,
+          "moving_attribute": 3,
+          "moving_count": 3,
+          "moving_direction": 3,
+          "object_existence": 3,
+          "object_interaction": 3,
+          "object_shuffle": 3,
+          "scene_transition": 3,
+          "state_change": 3,
+          "unexpected_action": 3
+        },
+        "mcnemar_exact_p": 1.0,
+        "n": 54,
+        "reuse_bins": {
+          "0.5-0.7": {
+            "agreement": 0.8666666666666667,
+            "cached_accuracy": 0.7333333333333333,
+            "dense_accuracy": 0.6666666666666666,
+            "n": 15
+          },
+          "0.7-0.85": {
+            "agreement": 0.875,
+            "cached_accuracy": 0.5,
+            "dense_accuracy": 0.625,
+            "n": 8
+          },
+          "0.85-1.0": {
+            "agreement": 0.85,
+            "cached_accuracy": 0.55,
+            "dense_accuracy": 0.55,
+            "n": 20
+          },
+          "<0.5": {
+            "agreement": 0.9090909090909091,
+            "cached_accuracy": 0.8181818181818182,
+            "dense_accuracy": 0.7272727272727273,
+            "n": 11
+          }
+        }
+      }
+    },
+    "tomato_subset30": {
+      "loose_default_to_a": {
+        "agreement": 0.8333333333333334,
+        "agreement_ci95": [
+          0.6643529481431982,
+          0.9266356575964831
+        ],
+        "both_wrong_different": 1,
+        "cached_accuracy": 0.23333333333333334,
+        "cached_accuracy_ci95": [
+          0.11792239210501232,
+          0.40928672330324267
+        ],
+        "cached_improves": 1,
+        "cached_parse_failures": 0,
+        "cached_regresses": 3,
+        "dense_accuracy": 0.3,
+        "dense_accuracy_ci95": [
+          0.16664562643958933,
+          0.4787612101166018
+        ],
+        "dense_parse_failures": 0,
+        "group_counts": {
+          "count": 5,
+          "direction": 5,
+          "rotation": 5,
+          "shape_trend": 5,
+          "velocity_frequency": 5,
+          "visual_cues": 5
+        },
+        "mcnemar_exact_p": 0.625,
+        "n": 30,
+        "reuse_bins": {
+          "0.5-0.7": {
+            "agreement": 1.0,
+            "cached_accuracy": 0.5,
+            "dense_accuracy": 0.5,
+            "n": 2
+          },
+          "0.7-0.85": {
+            "agreement": 0.6666666666666666,
+            "cached_accuracy": 0.16666666666666666,
+            "dense_accuracy": 0.0,
+            "n": 6
+          },
+          "0.85-1.0": {
+            "agreement": 0.8571428571428571,
+            "cached_accuracy": 0.23809523809523808,
+            "dense_accuracy": 0.38095238095238093,
+            "n": 21
+          },
+          "<0.5": {
+            "agreement": 1.0,
+            "cached_accuracy": 0.0,
+            "dense_accuracy": 0.0,
+            "n": 1
+          }
+        }
+      },
+      "strict": {
+        "agreement": 0.8333333333333334,
+        "agreement_ci95": [
+          0.6643529481431982,
+          0.9266356575964831
+        ],
+        "both_wrong_different": 1,
+        "cached_accuracy": 0.23333333333333334,
+        "cached_accuracy_ci95": [
+          0.11792239210501232,
+          0.40928672330324267
+        ],
+        "cached_improves": 1,
+        "cached_parse_failures": 0,
+        "cached_regresses": 3,
+        "dense_accuracy": 0.3,
+        "dense_accuracy_ci95": [
+          0.16664562643958933,
+          0.4787612101166018
+        ],
+        "dense_parse_failures": 0,
+        "group_counts": {
+          "count": 5,
+          "direction": 5,
+          "rotation": 5,
+          "shape_trend": 5,
+          "velocity_frequency": 5,
+          "visual_cues": 5
+        },
+        "mcnemar_exact_p": 0.625,
+        "n": 30,
+        "reuse_bins": {
+          "0.5-0.7": {
+            "agreement": 1.0,
+            "cached_accuracy": 0.5,
+            "dense_accuracy": 0.5,
+            "n": 2
+          },
+          "0.7-0.85": {
+            "agreement": 0.6666666666666666,
+            "cached_accuracy": 0.16666666666666666,
+            "dense_accuracy": 0.0,
+            "n": 6
+          },
+          "0.85-1.0": {
+            "agreement": 0.8571428571428571,
+            "cached_accuracy": 0.23809523809523808,
+            "dense_accuracy": 0.38095238095238093,
+            "n": 21
+          },
+          "<0.5": {
+            "agreement": 1.0,
+            "cached_accuracy": 0.0,
+            "dense_accuracy": 0.0,
+            "n": 1
+          }
+        }
+      }
+    }
+  },
+  "predecessor": {
+    "mvbench_slice_160": {
+      "agreement": 1.0,
+      "both_wrong_match": 96,
+      "cached_accuracy": 0.4,
+      "dense_accuracy": 0.4,
+      "n": 160
+    },
+    "tomato_full_1484": {
+      "agreement": 1.0,
+      "both_wrong_match": 1155,
+      "cached_accuracy": 0.22169811320754718,
+      "dense_accuracy": 0.22169811320754718,
+      "n": 1484
+    }
+  }
+}

@@ -30,13 +30,25 @@ The current local evidence now adds two useful controls:
 - direct repeated-image feature identity is reproduced locally, but the stronger
   locality and shift-strength claims are still only partial on the current
   controlled probes
+- benchmark-native local evidence now splits:
+  - TOMATO `30`-item subset: dense `0.300`, cached `0.233`, agreement `0.833`
+  - MVBench hosted `54`-item subset: dense `0.630`, cached `0.648`, agreement
+    `0.870`
+- local strict and loose parser rescoring are identical on those saved slices
+  because parse failures stayed at `0`, so the current local disagreement is
+  not a local parser artifact
+- imported `100%` benchmark agreement is therefore not the right paper-facing
+  baseline by itself:
+  this repo should compare against both the imported whitepaper and the
+  broader efficiency literature, then explain where the current method is still
+  weaker
 
 ## Current Anti-Claims
 
 We are not yet claiming:
 
 - real sparse execution wins from the current Track A path
-- state-of-the-art benchmark accuracy
+- state-of-the-art benchmark accuracy or efficiency
 - end-to-end gains from stacked compression arithmetic
 - robotics inner-loop safety or real-time guarantees
 - AI-native codecs as a near-term deliverable
@@ -64,6 +76,8 @@ What adjacent work already shows:
 
 - CoPE-VideoLM shows that trained codec-native representations can materially reduce tokens and TTFT
 - CodecSight shows that codec metadata can drive pre-ViT pruning and selective KV refresh in a serving-oriented pipeline
+- FastV and ToMe show that competitive efficiency papers need both meaningful
+  compute reduction and small quality loss, not just a semantic proxy result
 
 What this repo is trying to show:
 
@@ -71,15 +85,30 @@ What this repo is trying to show:
 - how to separate answer-stability evidence from true skipped compute
 - which cheap routing signals are useful before we pay for deeper model changes
 
+What the current evidence says about competitiveness:
+
+- the project now has a credible reproduction substrate and benchmark-native
+  Track A evidence
+- it does not yet have a competitive method-paper position against the current
+  efficiency literature because Track B evidence is still missing and the
+  current agreement range (`0.833` to `0.870`) is weaker than the small-drop
+  quality narratives reported by stronger systems and token-pruning papers
+- the way toward a stronger paper is therefore:
+  - finish the whitepaper reproduction controls honestly
+  - diagnose the TOMATO and MVBench gap causally
+  - use that diagnosis to design a better training-free planner before claiming
+    SOTA relevance
+
 ## Likely Contribution Stack
 
-Near-term paper:
+Near-term strong paper path:
 
-- honest separation of semantic substitution from sparse execution
-- local reproduction of the Track A controls plus a narrow, failure-capable
-  answer-stability slice on Apple Silicon
-- careful measurement of where latency actually goes
-- decoder-side routing and scheduling baselines
+- honest reproduction of the whitepaper controls and benchmark lane on Apple
+  Silicon
+- benchmark-native diagnosis of where same-position reuse fails and why
+- a stronger training-free planner that materially improves the current TOMATO
+  and MVBench range
+- careful Track B timing only after sparse execution exists
 
 Follow-on systems paper if evidence lands:
 

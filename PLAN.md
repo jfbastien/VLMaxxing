@@ -1,6 +1,6 @@
 # Research Plan
 
-Last updated: 2026-04-13
+Last updated: 2026-04-14
 
 ## Charter
 
@@ -66,8 +66,49 @@ narrow but useful starting point:
 - long local semantic runs now support cooperative stop-file termination and
   checkpointed partial results so automation does not depend on force-killing
   jobs
+- the benchmark-native TOMATO and MVBench lanes are now online on local Qwen
+  `7B` via MLX, but they diverge materially:
+  - TOMATO `30`-item subset: dense `0.300`, cached `0.233`, agreement `0.833`
+  - MVBench hosted `54`-item subset: dense `0.630`, cached `0.648`, agreement
+    `0.870`
+- local strict and loose parser rescoring are identical on both benchmark
+  slices because dense and cached parse failures stayed at `0`
+- the predecessor `100%` benchmark-agreement headline is not a safe strict-parser
+  target for this repo:
+  direct artifact inspection plus the documented parse-`A` fallback mean local
+  comparisons should treat it as parser-permissive external evidence rather
+  than as the sole benchmark target
+- the MVBench `+1` cached-over-dense edge is sampling noise on the current
+  hosted `54`-item slice (`3` cached improvements versus `2` regressions, exact
+  paired `p = 1.0`)
+- benchmark interpretation caveat:
+  the imported benchmark path is also Qwen `7B` via `mlx-vlm`; local benchmark
+  gaps should be framed around subset policy, quantization, package revisions,
+  and preprocessing rather than a generic `MLX versus PyTorch` mismatch
 
 That is the center of the project today.
+
+## Current SOTA Position
+
+The scientific target is not merely to reproduce the imported whitepaper. The
+target is to use an honest reproduction base to build a stronger method paper.
+
+Current position relative to the adjacent efficiency literature tracked in
+[docs/literature-map.md](docs/literature-map.md):
+
+- we now have real benchmark-native semantic evidence, which is necessary but
+  not sufficient for a competitive systems or efficiency paper
+- we do not yet have Track B skipped-compute evidence, so we are not yet
+  competitive on latency, throughput, or memory claims against FastV, ToMe,
+  CoPE-VideoLM, CodecSight, or related pruning and compressed-domain methods
+- on quality, the current local benchmark agreement range (`0.833` to `0.870`)
+  is scientifically useful but still weaker than the low-drop quality stories
+  reported by stronger efficiency papers
+- the current best path toward a competitive paper is therefore:
+  - finish honest whitepaper reproduction on this stack
+  - isolate when the planner fails
+  - use that diagnosis to build a stronger training-free planner before making
+    Track B claims
 
 ## Evidence And Trust Model
 
@@ -381,9 +422,31 @@ Tasks:
   - the endpoint-oriented successor slice on the predecessor cross-check clips
     achieved `6/6` dense and `6/6` cached accuracy on Qwen 3B
   - note: [2026-04-13-phase-1_3-crosscheck-real-video-slice.md](research/experiments/2026/2026-04-13-phase-1_3-crosscheck-real-video-slice.md)
-- run threshold triples: low-reuse `(1.5, 4)`, default `(3, 8)`, high-reuse `(5, 12)` on the discrimination-safe subset and then on natural-video items
-- sweep refresh intervals to test cache drift directly after the repaired
-  probes and natural-video items land
+- benchmark-native bring-up completed on 2026-04-13 and 2026-04-14:
+  - TOMATO subset is online but weaker than the imported story
+  - MVBench hosted subset is supportive but materially weaker than the imported
+    `1.000` agreement headline
+  - parser and contrast diagnostics show that the local disagreement is real on
+    the saved slices and that the predecessor `100%` agreement headline should
+    be treated as parser-permissive external evidence rather than a strict
+    local target
+  - notes:
+    [2026-04-13-phase-1_4-tomato-benchmark-subset.md](research/experiments/2026/2026-04-13-phase-1_4-tomato-benchmark-subset.md),
+    [2026-04-13-phase-1_5-mvbench-benchmark-subset.md](research/experiments/2026/2026-04-13-phase-1_5-mvbench-benchmark-subset.md),
+    and
+    [2026-04-14-phase-1_45-benchmark-diagnostics.md](research/experiments/2026/2026-04-14-phase-1_45-benchmark-diagnostics.md)
+- immediate benchmark follow-up order:
+  - add benchmark-path identity control on Qwen `7B`
+  - add pad-masked reuse accounting on benchmark runs
+  - run targeted TOMATO planner and refresh diagnostics on the current
+    disagreement items
+  - extend natural-video scoring beyond endpoint scene facts
+  - only then decide whether larger TOMATO or MVBench reruns are the best next
+    use of local runtime budget
+- run threshold triples: low-reuse `(1.5, 4)`, default `(3, 8)`, high-reuse
+  `(5, 12)` on the discrimination-safe subset and then on natural-video items
+- sweep refresh intervals to test cache drift directly after the benchmark-path
+  identity and pad-masked controls land
 - keep open-ended prompts qualitative only; use multiple-choice prompts for the
   primary statistics
 

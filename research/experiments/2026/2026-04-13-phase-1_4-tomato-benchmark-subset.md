@@ -29,8 +29,9 @@ Hypotheses:
 
 Stack caveats stated up front:
 
-- local model path is `Qwen2.5-VL-7B-Instruct-4bit` under MLX, not the imported
-  PyTorch float16 path
+- the imported benchmark path also used Qwen `7B` via `mlx-vlm`; the local
+  caveat is exact quantization, package revision, and subset size, not a
+  fundamentally different benchmark runtime family
 - chunked subprocess execution is part of the declared semantic harness
   contract on this machine
 - the initial reproduction slice uses a subset, not the full `1,484`-question
@@ -42,6 +43,8 @@ Sampling and preprocessing:
 - `8` frames per video
 - resize and black-pad every decoded frame to `560 x 560` to match the imported
   benchmark-style path
+- deterministic first-`N` sampling per split for bring-up; this is reproducible
+  but not yet a seeded-random benchmark subset
 
 Conditions:
 
@@ -203,9 +206,8 @@ Why the smoke is still useful:
 Immediate next step:
 
 - treat `WP-2.5` as still unreproduced on this stack
-- use the completed `30`-item slice to decide whether the next discriminating
-  move is MVBench, a higher-precision TOMATO follow-up, or a targeted planner
-  diagnosis on the `direction` bucket
+- use the completed `30`-item slice for benchmark-path identity, pad-masked
+  reuse accounting, and targeted planner diagnosis on the `direction` bucket
 
 Run B interpretation:
 
@@ -215,6 +217,10 @@ Run B interpretation:
   ways:
   - agreement on the local `30`-item slice is only `0.833`
   - the local dense baseline itself is also weak at `0.300`
+- follow-up diagnostics now show that local strict and loose parsing are
+  identical on this slice because parse failures stayed at `0`; the current
+  disagreement is therefore a real local semantic difference on this subset,
+  not a local parser artifact
 - that means the next benchmark work should separate two questions instead of
   collapsing them:
   - how much of the gap is cache-induced disagreement?
