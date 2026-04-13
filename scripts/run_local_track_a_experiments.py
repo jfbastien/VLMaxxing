@@ -44,6 +44,13 @@ PRIMARY_CLIP_IDS = [
     "xiph_news_cif",
     "xiph_coastguard_cif",
     "xiph_mobile_cif",
+    "xiph_hall_monitor_cif",
+]
+MATCHED_CONTENT_CLIP_IDS = [
+    "crosscheck_talking_head",
+    "crosscheck_surveillance",
+    "crosscheck_fpv_drone",
+    "xiph_hall_monitor_cif",
 ]
 SYNTHETIC_CLIP_IDS = [
     "synthetic_affine_pan",
@@ -187,6 +194,10 @@ def _preprocess_frames(frames: list[Image.Image], spec: ModelSpec) -> list[Image
             frame = frame.resize((target_width, target_height), Image.Resampling.BICUBIC)
         processed.append(frame)
     return processed
+
+
+def _preprocess_frame(frame: Image.Image, spec: ModelSpec) -> Image.Image:
+    return _preprocess_frames([frame], spec)[0]
 
 
 def _build_messages(frame_count: int, question: str) -> list[dict[str, Any]]:
@@ -938,6 +949,102 @@ def run_phase_1_0() -> dict[str, Any]:
     return result
 
 
+def _stream_pair_summaries(
+    video_path: Path,
+    *,
+    spec: ModelSpec,
+    start_frame: int,
+    max_frames: int | None = None,
+) -> tuple[list[dict[str, float]], int]:
+    if start_frame < 0:
+        raise ValueError("start_frame must be non-negative")
+    if max_frames is not None and max_frames <= 0:
+        raise ValueError("max_frames must be positive when provided")
+
+    pair_summaries: list[dict[str, float]] = []
+    previous: Image.Image | None = None
+    seen_frames = 0
+
+    with av.open(str(video_path)) as container:
+        for index, frame in enumerate(container.decode(video=0)):
+            if index < start_frame:
+                continue
+            current = _preprocess_frame(
+                cast(Image.Image, frame.to_image()).convert("RGB"), spec  # type: ignore[no-untyped-call]
+            )
+            seen_frames += 1
+            if previous is not None:
+                classification = classify_blocks(
+                    np.array(previous, dtype=np.uint8),
+                    np.array(current, dtype=np.uint8),
+                    block_size=spec.block_size,
+                    thresholds=DEFAULT_THRESHOLDS,
+                )
+                summary = summarize_classification(classification)
+                pair_summaries.append(
+                    {
+                        "static_ratio": summary.static_blocks / summary.total_blocks,
+                        "shifted_ratio": summary.shifted_blocks / summary.total_blocks,
+                        "novel_ratio": summary.novel_blocks / summary.total_blocks,
+                        "reused_ratio": summary.reused_ratio,
+                    }
+                )
+            previous = current
+            if max_frames is not None and seen_frames >= max_frames:
+                break
+
+    if seen_frames < 2:
+        raise ValueError(f"expected at least two frames from {video_path}, got {seen_frames}")
+    return pair_summaries, seen_frames
+
+
+def run_phase_1_0b_matched_content_redundancy() -> dict[str, Any]:
+    manifest, _ = _load_manifest()
+    result: dict[str, Any] = {
+        "phase": "1.0b",
+        "environment": _environment_record(),
+        "thresholds": asdict(DEFAULT_THRESHOLDS),
+        "measurement_mode": "full_trim_clip_pairwise_average",
+        "clips": [],
+    }
+    qwen_spec = _model_specs()[0]
+
+    for clip_id in MATCHED_CONTENT_CLIP_IDS:
+        clip = manifest[clip_id]
+        pair_summaries, frame_count = _stream_pair_summaries(
+            clip.local_path,
+            spec=qwen_spec,
+            start_frame=0,
+            max_frames=None,
+        )
+        aggregates = {
+            key: float(np.mean([pair[key] for pair in pair_summaries]))
+            for key in ("static_ratio", "shifted_ratio", "novel_ratio", "reused_ratio")
+        }
+        result["clips"].append(
+            {
+                "clip_id": clip_id,
+                "clip_sha256": _sha256(clip.local_path),
+                "content_class": clip.content_class,
+                "frames_analyzed": frame_count,
+                "pair_count": len(pair_summaries),
+                **aggregates,
+            }
+        )
+
+    by_class: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for clip in result["clips"]:
+        by_class[clip["content_class"]].append(clip)
+    result["content_class_summary"] = {
+        content_class: {
+            key: float(np.mean([entry[key] for entry in entries]))
+            for key in ("static_ratio", "shifted_ratio", "novel_ratio", "reused_ratio")
+        }
+        for content_class, entries in by_class.items()
+    }
+    return result
+
+
 def run_phase_1_1_mechanism() -> dict[str, Any]:
     manifest, _ = _load_manifest()
     spec = _model_specs()[0]
@@ -1580,6 +1687,7 @@ def main() -> None:
             "phase0_5",
             "phase0_75",
             "phase1_0",
+            "phase1_0b",
             "phase1_05",
             "phase1_1",
             "phase1_15",
@@ -1621,6 +1729,7 @@ def main() -> None:
         ("phase0_5", run_phase_0_5),
         ("phase0_75", run_phase_0_75),
         ("phase1_0", run_phase_1_0),
+        ("phase1_0b", run_phase_1_0b_matched_content_redundancy),
         (
             "phase1_05",
             lambda: run_phase_1_05_temporal_necessity_ablation(args.prompt_bank, control=control),

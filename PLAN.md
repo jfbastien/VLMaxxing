@@ -49,6 +49,10 @@ narrow but useful starting point:
 - repaired mechanism probes removed the worst synthetic boundary artifact, but
   the local MLX `4-bit` path still remains weaker than the imported
   whitepaper-strength locality and shift story
+- the whitepaper's content-class redundancy ordering is now reproduced locally
+  in generalized form on the predecessor cross-check clips: talking-head stays
+  highest-reuse, surveillance stays intermediate, and FPV-like egomotion stays
+  lowest-reuse
 - the current Qwen Track A harness on this M3 Air remains unstable for a full
   long-lived single-process `12`-item run; chunked subprocess execution remains
   the adopted semantic harness constraint

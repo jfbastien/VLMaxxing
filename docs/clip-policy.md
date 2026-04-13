@@ -23,12 +23,15 @@ Current initial set:
 - Xiph/Derf motion/detail proxies:
   - `xiph_coastguard_cif`
   - `xiph_mobile_cif`
+- Xiph/Derf surveillance-like proxy:
+  - `xiph_hall_monitor_cif`
 
 Why this set:
 
 - small enough for quick local bring-up
 - stable enough for long-lived reproducibility
-- diverse enough to separate low-motion from higher-motion behavior early
+- diverse enough to separate low-motion, surveillance-like, and higher-motion
+  behavior early
 
 These clips are downloaded locally and then re-encoded locally with fixed codec
 settings for codec-metadata experiments.

@@ -1,0 +1,88 @@
+{
+  "clips": [
+    {
+      "clip_id": "crosscheck_talking_head",
+      "clip_sha256": "4fbfeabd991c69e44bb77e74befe6c2f6a976630ffe12966f606d03eaa38c09d",
+      "content_class": "talking-head",
+      "frames_analyzed": 900,
+      "novel_ratio": 0.030404152762328513,
+      "pair_count": 899,
+      "reused_ratio": 0.9695958472376716,
+      "shifted_ratio": 0.038414596465208256,
+      "static_ratio": 0.9311812507724632
+    },
+    {
+      "clip_id": "crosscheck_surveillance",
+      "clip_sha256": "09ab827b92ebd1674fd8504e19f00481c8980111376207de918f2e5d870be169",
+      "content_class": "surveillance",
+      "frames_analyzed": 901,
+      "novel_ratio": 0.10488425925925927,
+      "pair_count": 900,
+      "reused_ratio": 0.8951157407407409,
+      "shifted_ratio": 0.12695216049382715,
+      "static_ratio": 0.7681635802469136
+    },
+    {
+      "clip_id": "crosscheck_fpv_drone",
+      "clip_sha256": "0d8e09c6583a5ccd00dde0082bfb7c9a85538b28dfe559cab33a18bca588b3c6",
+      "content_class": "egomotion",
+      "frames_analyzed": 899,
+      "novel_ratio": 0.21922946052957187,
+      "pair_count": 898,
+      "reused_ratio": 0.780770539470428,
+      "shifted_ratio": 0.38763610492452366,
+      "static_ratio": 0.39313443454590447
+    },
+    {
+      "clip_id": "xiph_hall_monitor_cif",
+      "clip_sha256": "0a714715eef1b05b0ac7498f75b3354bbca92e09650533eec3b5de06eb481611",
+      "content_class": "surveillance-proxy",
+      "frames_analyzed": 300,
+      "novel_ratio": 0.029796290665855887,
+      "pair_count": 299,
+      "reused_ratio": 0.9702037093341442,
+      "shifted_ratio": 0.19955406911928653,
+      "static_ratio": 0.7706496402148576
+    }
+  ],
+  "content_class_summary": {
+    "egomotion": {
+      "novel_ratio": 0.21922946052957187,
+      "reused_ratio": 0.780770539470428,
+      "shifted_ratio": 0.38763610492452366,
+      "static_ratio": 0.39313443454590447
+    },
+    "surveillance": {
+      "novel_ratio": 0.10488425925925927,
+      "reused_ratio": 0.8951157407407409,
+      "shifted_ratio": 0.12695216049382715,
+      "static_ratio": 0.7681635802469136
+    },
+    "surveillance-proxy": {
+      "novel_ratio": 0.029796290665855887,
+      "reused_ratio": 0.9702037093341442,
+      "shifted_ratio": 0.19955406911928653,
+      "static_ratio": 0.7706496402148576
+    },
+    "talking-head": {
+      "novel_ratio": 0.030404152762328513,
+      "reused_ratio": 0.9695958472376716,
+      "shifted_ratio": 0.038414596465208256,
+      "static_ratio": 0.9311812507724632
+    }
+  },
+  "environment": {
+    "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "git_dirty": true,
+    "git_sha": "ca57023e8fd0750eeffe6a33818bbf1c2a198cae",
+    "mlx_vlm_module": "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
+    "platform": "macOS-26.3-arm64-arm-64bit",
+    "python": "3.12.12"
+  },
+  "measurement_mode": "full_trim_clip_pairwise_average",
+  "phase": "1.0b",
+  "thresholds": {
+    "shifted_threshold": 8.0,
+    "static_threshold": 3.0
+  }
+}
