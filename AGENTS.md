@@ -10,13 +10,14 @@ duplicating instructions.
 Read these before changing anything substantial:
 
 1. [README.md](README.md)
-2. [PLAN.md](PLAN.md)
-3. [docs/README.md](docs/README.md)
-4. [docs/methodology/performance.md](docs/methodology/performance.md)
-5. [docs/methodology/preprocessing.md](docs/methodology/preprocessing.md)
-6. [research/README.md](research/README.md)
-7. [research/decision-log.md](research/decision-log.md)
-8. [paper/framing.md](paper/framing.md)
+2. [docs/reproduction-status.md](docs/reproduction-status.md)
+3. [PLAN.md](PLAN.md)
+4. [docs/README.md](docs/README.md)
+5. [docs/methodology/performance.md](docs/methodology/performance.md)
+6. [docs/methodology/preprocessing.md](docs/methodology/preprocessing.md)
+7. [research/README.md](research/README.md)
+8. [research/decision-log.md](research/decision-log.md)
+9. [paper/framing.md](paper/framing.md)
 
 Use that order for repo-wide orientation.
 
@@ -34,6 +35,8 @@ current task.
   [docs/methodology/timing-harness.md](docs/methodology/timing-harness.md)
 - For current claim status, reopen conditions, and killed ideas:
   [research/decision-log.md](research/decision-log.md)
+- For exact whitepaper-reproduction status and what is still imported-only:
+  [docs/reproduction-status.md](docs/reproduction-status.md)
 - For active roadmap and phase order:
   [PLAN.md](PLAN.md)
 - For imported predecessor evidence and what it actually proved:
@@ -62,6 +65,8 @@ Validated enough to guide work:
 - same-position reuse is the default baseline
 - pixel diff is the current semantic-validation baseline
 - sparse execution is not yet proven and must be measured separately
+- the local controls are reproduced, but the imported whitepaper benchmark and
+  mechanism claims remain mostly unreproduced here
 
 Deprioritized until new evidence appears:
 

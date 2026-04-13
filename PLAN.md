@@ -34,7 +34,9 @@ narrow but useful starting point:
 - Track A does not yet prove skipped encoder or attention work
 - simple pixel or packet signals are worth testing as routing signals
 - local Qwen 3B and Gemma E4B control runs now show deterministic dense baselines and exact dense-through-cache identity on the preregistered local probes
-- the initial local Qwen synthetic pilot preserved every dense answer under default same-position reuse, but the dense baseline itself still missed two event-centric prompts
+- the initial local Qwen synthetic pilot produced dense-versus-cached agreement
+  of `1.0` on `12` scored items, but the current suite does not yet include
+  divergence-capable or natural-video scored items and should not be generalized
 
 That is the center of the project today.
 
@@ -317,8 +319,17 @@ Tasks:
 - log parse failures explicitly
 - initial local pilot completed on 2026-04-13:
   - dense, `STATIC`-only, and `STATIC+SHIFTED` matched exactly on all `12` scored synthetic items
-  - dense baseline accuracy was `10/12`, so this currently supports answer stability more strongly than broad semantic adequacy
+  - dense baseline accuracy was `10/12`, and the current suite did not yet include divergence-capable or natural-video scored items
+  - treat this as substrate evidence, not as reproduction of the whitepaper's end-to-end quality claim
   - note: [2026-04-13-track-a-local-pilot.md](research/experiments/2026/2026-04-13-track-a-local-pilot.md)
+- repair the synthetic suite before treating it as a strong semantic benchmark:
+  - fix weak items whose wording overclaims what is actually visible
+  - add temporal-necessity items where middle frames matter and endpoints are insufficient
+  - add critical-span metadata so reuse on semantically important pairs is measured explicitly
+- reproduce the direct mechanism section locally before claiming the foundation is complete:
+  - exact feature identity on repeated image encodes
+  - partial-change locality
+  - localized-motion similarity
 - run threshold triples: low-reuse `(1.5, 4)`, default `(3, 8)`, high-reuse `(5, 12)`
 - sweep refresh intervals to test cache drift directly
 - keep open-ended prompts qualitative only; use multiple-choice prompts for the
@@ -579,15 +590,16 @@ Implications:
 
 Near-term order:
 
-1. finish Phase 0 hygiene fixes and documentation
-2. run Phase 0.5 feasibility and determinism checks
-3. run Phase 0.75 cache-path identity control
-4. fetch the primary Xiph corpus and generate the synthetic local stress corpus
-5. measure local redundancy on the initial clip buckets
-6. reproduce a small Track A semantic-substitution slice locally
-7. build the clean timing harness
-6. test packet-size and keyframe routing
-7. design changed-window sparse execution against the verified model geometry
+1. tighten the current evidence boundary after the first local bring-up
+2. repair weak synthetic items and add divergence-capable temporal-necessity items
+3. reproduce the direct whitepaper mechanism claims locally in feature space
+4. root-cause or cleanly constrain the current Metal-timeout behavior
+5. add surveillance and FPV-like local content-class coverage
+6. rerun the scored Track A local slice on repaired synthetic and natural clips
+7. run threshold sweeps on the middle and hard buckets
+8. run refresh-interval drift on the hard natural buckets
+9. set up benchmark-native TOMATO and MVBench reproduction slices
+10. only then move deeper into Track B timing and sparse execution
 
 ## Future Horizons
 

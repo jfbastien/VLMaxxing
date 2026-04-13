@@ -258,6 +258,151 @@ Validated and integrated:
   in-memory decode becomes a required follow-on for paper-grade claims
 - add compressed-video and temporal-redundancy lineage references such as
   CoViAR, DMC-Net, Eventful Transformers, and FitPrune
+
+## Post-Bring-Up Review Validation
+
+These checks were run against the current local notes, artifacts, prompt bank,
+generator, and tracked seed material after the first local Track A bring-up.
+
+### 13. "The whitepaper headline claims are not reproduced locally yet"
+
+Verdict:
+
+- VALID
+
+Evidence:
+
+- the repo reproduces determinism, cache-path identity, local redundancy spread,
+  and a narrow synthetic answer-stability slice
+- the repo does not yet contain local direct feature-space reproductions for the
+  whitepaper mechanism section, benchmark-native TOMATO or MVBench runs,
+  refresh-interval drift, or Track B skipped-compute evidence
+
+Action:
+
+- added [reproduction-status.md](reproduction-status.md) as the canonical local
+  ledger for imported versus reproduced claims
+- softened current-plan and paper-framing language so the synthetic pilot is not
+  mistaken for full whitepaper reproduction
+
+### 14. "The first synthetic pilot can be over-interpreted"
+
+Verdict:
+
+- VALID
+
+Evidence:
+
+- the pilot agreement result is real, but the current suite is synthetic-only
+- the current suite does not yet include divergence-capable items where
+  over-aggressive reuse would be expected to fail
+
+Action:
+
+- plan and paper framing now treat the pilot as substrate evidence, not a
+  headline reproduction
+
+### 15. "`synthetic_affine_pan` is a weak semantic pan probe"
+
+Verdict:
+
+- VALID
+
+Evidence:
+
+- the current generator offsets the background grid while leaving the dominant
+  foreground content stationary
+- the prompt wording therefore overstates what the clip visibly shows
+
+Action:
+
+- queued for synthetic-suite repair before threshold sweeps treat it as a strong
+  semantic probe
+
+### 16. "`synthetic_scene_cut` wording is too strong for the current geometry-only clip"
+
+Verdict:
+
+- VALID (MINOR)
+
+Evidence:
+
+- the current clip does show an abrupt layout and color change
+- the current prompt wording says `different room`, which is stronger than the
+  current geometric stand-in supports
+
+Action:
+
+- queued for prompt or clip repair before it carries more semantic weight
+
+### 17. "Phase 0.5 accepted the Qwen cache-liveness step too strongly"
+
+Verdict:
+
+- VALID
+
+Evidence:
+
+- the preregistered step-`5` wording required the altered cached-feature path to
+  change the output
+- on Qwen, output text stayed the same while logits shifted strongly
+- Phase `0.75` is the stronger cache-path identity control
+
+Action:
+
+- Phase `0.5` note now records the Qwen step-`5` result as a caveat rather than
+  a clean direct pass
+
+### 18. "The predecessor result artifacts referenced in `seed/original_repo/results/` are missing"
+
+Verdict:
+
+- FALSE POSITIVE
+
+Evidence:
+
+- the tracked directory contains:
+  - `tomato_7b_ALL_1000.json`
+  - `mvbench_7b_10.json`
+  - `mv_relocation_results.json`
+  - `codec_native_results.json`
+  - `vit_attention_results.json`
+  - `h264_spatial_signals_results.json`
+
+### 19. "Chunked subprocess execution is acceptable for Track A semantics, not for Track B timing"
+
+Verdict:
+
+- VALID
+
+Evidence:
+
+- the current Qwen pilot hit a reproducible Metal GPU timeout in a longer-lived
+  process on this machine
+- the current successful workaround restarts Python subprocesses in `2`-item
+  chunks, which is valid for semantic paired comparisons but not for timing
+
+Action:
+
+- plan and note language keep the current chunking rule as an operational Track A
+  constraint only
+
+### 20. "The next reproduction tranche should prioritize direct mechanism runs, stronger local items, and content-class coverage before benchmark-native claims"
+
+Verdict:
+
+- VALID
+
+Evidence:
+
+- that order closes the current evidence gaps without pretending that TOMATO or
+  MVBench are already locally reproduced
+- it also keeps Track A foundation work ahead of Track B timing or benchmark
+  extrapolation
+
+Action:
+
+- the near-term plan order now reflects this sequence
 - freeze Gemma's configurable visual token budget in the initial pilot instead
   of leaving it as a hidden degree of freedom
 

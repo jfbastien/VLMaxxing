@@ -146,7 +146,12 @@ What got stronger:
 Important limitation:
 
 - the dense baseline itself missed two event-centric questions
-- this pilot therefore supports **answer stability relative to the dense path** more strongly than it supports broad semantic adequacy
+- the current scored suite does not yet include divergence-capable items where
+  dense and cached would be expected to separate if reuse were too aggressive
+- the pilot is synthetic-only and does not yet include scored natural-video items
+- this pilot therefore supports **answer stability relative to the dense path**
+  more strongly than it supports broad semantic adequacy or whitepaper-level
+  reproduction
 
 Operational finding:
 

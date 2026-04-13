@@ -33,6 +33,7 @@ This file only routes work inside `docs/`.
 
 ## Read Order
 
+- [reproduction-status.md](reproduction-status.md)
 - [methodology/performance.md](methodology/performance.md)
 - [methodology/preprocessing.md](methodology/preprocessing.md)
 - [methodology/timing-harness.md](methodology/timing-harness.md)

@@ -53,6 +53,7 @@ uv run python scripts/generate_synthetic_corpus.py
 
 - [AGENTS.md](AGENTS.md): canonical coding-agent guidance
 - [PLAN.md](PLAN.md): current research plan and phase order
+- [docs/reproduction-status.md](docs/reproduction-status.md): what is and is not reproduced locally from the imported whitepaper
 - [docs/README.md](docs/README.md): where durable knowledge belongs
 - [docs/clip-policy.md](docs/clip-policy.md): local-only clip and corpus policy
 - [research/README.md](research/README.md): experiment-note and decision-log workflow

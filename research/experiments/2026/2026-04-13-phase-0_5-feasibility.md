@@ -109,11 +109,11 @@ Artifact:
 
 ## Result
 
-Accepted.
+Accepted overall, with a Qwen step-5 caveat.
 
 Key outcomes:
 
-- both Qwen 3B and Gemma E4B passed API DAG steps `1-5`
+- both Qwen 3B and Gemma E4B passed API DAG steps `1-4`
 - both dense baselines were bit-identical across all `50` preregistered repeats
 - Qwen determinism sample latency: `p50 4389 ms`, `p95 4900 ms`
 - Gemma determinism sample latency: `p50 7345 ms`, `p95 8167 ms`
@@ -122,8 +122,9 @@ Key outcomes:
 
 Strict preregistration caveat:
 
-- Qwen satisfied step `5` through a strong logit-level effect rather than a changed final string on the chosen probe
-- the stronger cache-path conclusion therefore comes from Phase `0.75`, which was explicitly designed for that control
+- Qwen did not satisfy the strict step-`5` text-change criterion on the chosen probe
+- Gemma did satisfy step `5` directly
+- the stronger cross-model cache-path conclusion therefore comes from Phase `0.75`, which was explicitly designed for that control
 
 Representative dense outputs:
 
@@ -137,7 +138,9 @@ The phase hypothesis held.
 What got stronger:
 
 - the local MLX-VLM path is deterministic enough to support Track A work on this machine
-- both model families expose a usable cached-feature control path
+- both model families expose a usable cached-feature control path, but Qwen step `5`
+  in this note should be read as logit-level liveness rather than a text-level
+  semantic change
 
 Important nuance:
 

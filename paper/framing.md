@@ -14,7 +14,12 @@ That is the claim the imported evidence supports today.
 The current local evidence now adds two useful controls:
 
 - dense baselines and dense-through-cache identity are locally reproduced on the Apple-Silicon MLX-VLM path
-- an initial `12`-item synthetic Qwen pilot preserved every dense answer under default same-position reuse, while the dense baseline itself still missed two event-centric prompts
+- an initial `12`-item synthetic Qwen pilot yielded dense-versus-cached agreement
+  of `1.0` under default same-position reuse, while the dense baseline itself
+  still missed two event-centric prompts
+- that pilot is still substrate evidence rather than a whitepaper-quality
+  reproduction because it does not yet include divergence-capable items or
+  scored natural video
 
 ## Current Anti-Claims
 
