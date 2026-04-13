@@ -40,6 +40,9 @@ narrow but useful starting point:
 - the repaired local v2 suite now contains a real controlled failure:
   default same-position reuse missed one middle-dependent OCR event that dense
   answered correctly
+- direct repeated-image feature identity is now reproduced locally on the Qwen
+  3B vision path, while the imported locality and shift-strength claims remain
+  only partially reproduced here
 
 That is the center of the project today.
 
@@ -366,6 +369,24 @@ Important outputs:
 - refresh-interval versus drift evidence
 - explicit prompt-bank version and sampling mode on every run
 - any machine-specific execution constraint, such as the current need to chunk the Qwen synthetic pilot on this M3 Air to avoid Metal GPU timeouts
+
+### Phase 1.1: Direct Mechanism Reproduction
+
+Status:
+
+- completed locally on 2026-04-13
+- note: [2026-04-13-phase-1_1-direct-mechanism-reproduction.md](research/experiments/2026/2026-04-13-phase-1_1-direct-mechanism-reproduction.md)
+
+Objective:
+
+- directly test the mechanistic feature-space claims that the whitepaper uses
+  to justify Track A reuse
+
+Outcome:
+
+- exact repeated-image feature identity is reproduced locally
+- partial-change locality and localized-shift similarity reproduce only
+  qualitatively, not yet at the imported whitepaper strength
 
 ### Phase 2: Systems Baseline And Honest Timing
 

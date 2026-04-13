@@ -5,6 +5,7 @@ import numpy as np
 from codec_through.temporal import BlockClass
 from codec_through.track_a import (
     flattened_reuse_mask,
+    qwen_merged_grid_shapes,
     qwen_merged_token_counts,
     resized_dimensions_for_block_multiple,
 )
@@ -27,6 +28,11 @@ def test_resized_dimensions_for_qwen_xiph_clip() -> None:
 def test_qwen_merged_token_counts_match_merge_geometry() -> None:
     image_grid_thw = np.array([[1, 18, 24], [1, 18, 24]], dtype=np.int64)
     assert qwen_merged_token_counts(image_grid_thw, spatial_merge_size=2) == [108, 108]
+
+
+def test_qwen_merged_grid_shapes_match_merge_geometry() -> None:
+    image_grid_thw = np.array([[1, 18, 24], [1, 18, 24]], dtype=np.int64)
+    assert qwen_merged_grid_shapes(image_grid_thw, spatial_merge_size=2) == [(9, 12), (9, 12)]
 
 
 def test_flattened_reuse_mask_marks_requested_classes() -> None:

@@ -23,6 +23,9 @@ The current local evidence now adds two useful controls:
 - a repaired synthetic v2 suite now includes a controlled failure: default
   same-position reuse misses one middle-dependent OCR flash that dense answers
   correctly
+- direct repeated-image feature identity is reproduced locally, but the stronger
+  locality and shift-strength claims are still only partial on the current
+  controlled probes
 
 ## Current Anti-Claims
 

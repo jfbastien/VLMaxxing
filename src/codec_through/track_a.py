@@ -54,23 +54,38 @@ def qwen_merged_token_counts(
 ) -> list[int]:
     """Return per-frame merged-token counts from Qwen image grid metadata."""
 
+    return [
+        height * width
+        for height, width in qwen_merged_grid_shapes(
+            image_grid_thw, spatial_merge_size=spatial_merge_size
+        )
+    ]
+
+
+def qwen_merged_grid_shapes(
+    image_grid_thw: npt.NDArray[np.integer],
+    *,
+    spatial_merge_size: int,
+) -> list[tuple[int, int]]:
+    """Return per-frame merged-token grid shapes from Qwen image metadata."""
+
     if spatial_merge_size <= 0:
         raise ValueError("spatial_merge_size must be positive")
     if image_grid_thw.ndim != 2 or image_grid_thw.shape[1] != 3:
         raise ValueError("image_grid_thw must be shaped [num_images, 3]")
 
-    divisor = spatial_merge_size**2
-    counts: list[int] = []
+    shapes: list[tuple[int, int]] = []
     for row in image_grid_thw:
         temporal, height, width = (int(value) for value in row)
-        merged = temporal * height * width
-        if merged % divisor != 0:
+        if temporal != 1:
+            raise ValueError(f"expected temporal grid of 1 for image features, got {temporal}")
+        if height % spatial_merge_size != 0 or width % spatial_merge_size != 0:
             raise ValueError(
-                "image grid product must be divisible by spatial_merge_size**2, "
+                "height and width must be divisible by spatial_merge_size, "
                 f"got row={tuple(int(value) for value in row)}"
             )
-        counts.append(merged // divisor)
-    return counts
+        shapes.append((height // spatial_merge_size, width // spatial_merge_size))
+    return shapes
 
 
 def flattened_reuse_mask(

@@ -23,9 +23,9 @@ Current bottom line:
 | Whitepaper area | Current status | Local evidence | Next required step |
 | --- | --- | --- | --- |
 | Dense-path determinism and cache-path transparency | Reproduced locally | [2026-04-13-phase-0_5-feasibility.md](../research/experiments/2026/2026-04-13-phase-0_5-feasibility.md), [2026-04-13-phase-0_75-cache-identity.md](../research/experiments/2026/2026-04-13-phase-0_75-cache-identity.md) | Keep as Track A control for later runs |
-| §2.1 exact ViT output identity on two re-encodes | Partial only | end-to-end bit-identical dense outputs imply a strong corollary, but the direct feature-space measurement is not yet checked in | run direct feature comparison on repeated image encodes |
-| §2.2 partial-change attention locality | Imported only | no local per-token locality measurement yet | run localized perturbation study and measure token-wise cosine by distance |
-| §2.3 localized motion preserves embeddings | Imported only | no local shift-versus-similarity study yet | run local shift sweep on Qwen 3B features |
+| §2.1 exact ViT output identity on two re-encodes | Reproduced locally | [2026-04-13-phase-1_1-direct-mechanism-reproduction.md](../research/experiments/2026/2026-04-13-phase-1_1-direct-mechanism-reproduction.md) | keep as a direct mechanistic control |
+| §2.2 partial-change attention locality | Partial only | [2026-04-13-phase-1_1-direct-mechanism-reproduction.md](../research/experiments/2026/2026-04-13-phase-1_1-direct-mechanism-reproduction.md) shows a locality-shaped effect, but weaker than the imported whitepaper numbers | run follow-up alignment and natural-image locality probes |
+| §2.3 localized motion preserves embeddings | Partial only | [2026-04-13-phase-1_1-direct-mechanism-reproduction.md](../research/experiments/2026/2026-04-13-phase-1_1-direct-mechanism-reproduction.md) reproduces high similarity for `1 px` and `4 px` shifts, but larger shifts degrade more than the imported story suggests | run natural-image and boundary-aware shift probes |
 | §2.4 scored real-video quality slice | Imported only | current scored pilot is synthetic-only | run a scored natural-video slice after repairing divergence-capable items |
 | §2.5 TOMATO agreement on Qwen 7B | Imported only | no TOMATO assets or local benchmark run yet | build benchmark-native adapter and run a labeled local reproduction slice |
 | §2.6 MVBench agreement slice | Imported only | no MVBench assets or local benchmark run yet | build MVBench adapter after TOMATO path exists |
