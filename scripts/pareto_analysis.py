@@ -118,16 +118,31 @@ def _load_cached_points(
 
 def _load_dense_points(frame_budget_summary: Path) -> list[DensePoint]:
     payload = json.loads(frame_budget_summary.read_text())
+    # Accept both the phase-1.9 flat schema ({runs: [...]}) and the phase-1.8
+    # nested schema ({dev: {dense_curve: [...]}}) so older artifacts remain
+    # analyzable without reformatting.
+    if "runs" in payload:
+        runs = payload["runs"]
+    elif "dev" in payload and "dense_curve" in payload["dev"]:
+        runs = payload["dev"]["dense_curve"]
+    elif "dense_curve" in payload:
+        runs = payload["dense_curve"]
+    else:
+        raise ValueError(
+            f"unrecognized dense-curve schema in {frame_budget_summary}"
+        )
     points: list[DensePoint] = []
-    for run in payload["runs"]:
+    for run in runs:
         ci = run.get("dense_accuracy_ci95", [0.0, 1.0])
         points.append(
             DensePoint(
                 frame_count=int(run["frame_count"]),
-                dense_accuracy=float(run["dense_accuracy"]),
+                dense_accuracy=float(
+                    run.get("dense_accuracy") or run.get("accuracy") or 0.0
+                ),
                 ci95_low=float(ci[0]),
                 ci95_high=float(ci[1]),
-                n=int(run["count"]),
+                n=int(run.get("count") or run.get("n") or 0),
             )
         )
     return points
