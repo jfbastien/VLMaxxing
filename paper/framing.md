@@ -53,6 +53,18 @@ The current local evidence now adds two useful controls:
     `content-conditioned` language:
     some items are staleness-limited, while others look confidence-limited even
     when they remain motion-heavy
+  - a follow-up statistic-only sweep narrowed the planner story again:
+    - same-budget `max_abs` reproduces the default mean result almost exactly
+    - lower-budget `top_k_mean` and `max_abs` improve cached accuracy on some
+      non-direction items but do not improve aggregate agreement over the
+      default mean planner
+    - none of the tested statistic-only variants repairs the TOMATO
+      `direction` bucket
+  - the current best local method hypothesis is therefore narrower than
+    `concentration-aware statistic` alone:
+    bounded staleness looks more important than statistic choice on the hard
+    motion slice, and the next missing axis is matched fresh-budget comparison
+    rather than another nearby scalar summary
 - local strict and loose parser rescoring are identical on those saved slices
   because parse failures stayed at `0`, so the current local disagreement is
   not a local parser artifact
@@ -120,6 +132,8 @@ What the current evidence says about competitiveness:
   - diagnose the TOMATO and MVBench gap causally
   - use that diagnosis to design a better training-free planner before claiming
     SOTA relevance
+  - compare policy wins against matched dense frame-budget baselines rather
+    than only against the current default cache policy
 
 ## Likely Contribution Stack
 

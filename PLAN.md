@@ -115,6 +115,16 @@ narrow but useful starting point:
     agreement fell from `0.867` to `0.800` and cached accuracy stayed flat
   - the first `changed_pixel_fraction` attempt did not beat the default mean
     planner on the same dev slice
+  - the next statistic-only sweep tightened that further:
+    - `max_abs (24, 96)` matched the default mean planner exactly at the same
+      active reuse budget
+    - `top_k_mean (12, 36)` and `max_abs (12, 48)` spent about the same
+      fresh-vision budget as `mean + max_age=4`, but still failed to improve
+      agreement over the default mean planner
+    - all tested statistic-only variants left the TOMATO `direction` bucket at
+      cached `0.2`, agreement `0.6`
+    - bounded age therefore remains the strongest current dev-only lever on
+      the motion slice
 
 That is the center of the project today.
 
@@ -146,7 +156,10 @@ Current position relative to the adjacent efficiency literature tracked in
   - keep bounded token age in the search space
   - add dense answer-margin logging so confidence-limited items can be
     separated from staleness-limited ones
-  - test `top_k_mean` and `max_abs` before revisiting CPF thresholds
+  - add matched dense frame-budget baselines so policy gains are compared
+    against equally expensive dense alternatives
+  - only revisit additional planner statistics after the budget and margin
+    picture is clearer
 
 ## Evidence And Trust Model
 
