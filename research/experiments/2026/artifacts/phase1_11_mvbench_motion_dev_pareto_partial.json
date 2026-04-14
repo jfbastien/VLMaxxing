@@ -45,11 +45,29 @@
     }
   ],
   "dense_source": "research/experiments/2026/artifacts/phase1_9_mvbench_motion_frame_budget_dev.json",
-  "n_cached": 4,
+  "n_cached": 5,
   "n_dense": 6,
   "pareto_candidate_count": 0,
   "pareto_candidates": [],
   "policies": [
+    {
+      "agreement": 0.8,
+      "cached_accuracy": 0.7333333333333333,
+      "dense_accuracy": 0.6,
+      "dominated_by_dense_frame": 4,
+      "effective_fresh_frames": 5.157333335156242,
+      "label": "max_abs-8.0-32.0-static-age4",
+      "max_age": 4,
+      "mean_active_reuse": 0.40609523783482254,
+      "n": 15,
+      "pareto_status": "dominated",
+      "reuse_classes": [
+        "static"
+      ],
+      "shifted_threshold": 32.0,
+      "static_threshold": 8.0,
+      "statistic": "max_abs"
+    },
     {
       "agreement": 0.8666666666666667,
       "cached_accuracy": 0.6666666666666666,
