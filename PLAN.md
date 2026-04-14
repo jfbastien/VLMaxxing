@@ -135,6 +135,22 @@ narrow but useful starting point:
     - the disjoint holdout does not preserve that win cleanly:
       dense `6` only reaches `0.267`, while the cached holdout policies stay at
       `0.200`
+  - matched MVBench motion frame-budget baselines (phase 1.9) extend the
+    same control to a different content class:
+    - MVBench motion dev dense curve is non-monotonic (peak `0.733` at
+      `4` frames, drops to `0.600` at `8` frames)
+    - MVBench motion holdout dense curve is monotonically increasing (peaks
+      `0.733` at `8` frames)
+    - same task labels, disjoint clips: the curve-shape difference is
+      content-driven and motivates content-aware sampling later
+  - infrastructure landed in round 7 to enable proper grid-search:
+    - feature replay cache with v2 model-content-hash key
+    - planner grid-search driver with calibration + sweep + max-policies cap
+    - Pareto analysis driver with strict-domination semantics
+    - per-letter logprob logging + stratification analyzer for the
+      confidence-vs-staleness split
+    - all 4 motion-slice planner calibrations (TOMATO + MVBench, dev +
+      holdout, 144 candidate policies each)
 
 That is the center of the project today.
 
