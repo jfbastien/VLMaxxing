@@ -374,6 +374,9 @@ def _select_representative_policies(
             grouped[key].append(point)
         for items in grouped.values():
             # pick per_bin items per (statistic, reuse_classes, max_age) per bin
+            # sorted ascending by calibrated reuse: biases toward the
+            # lowest-reuse (most-aggressive) policy within each group,
+            # which is the more informative end of the bin for Pareto search
             items_sorted = sorted(items, key=lambda p: p.mean_active_reuse)
             take = items_sorted[:per_bin]
             for chosen in take:

@@ -79,6 +79,8 @@ def model_content_sha256(model_path: Path, *, patterns: Iterable[str] | None = N
         patterns = (
             "*.safetensors",
             "*.npz",
+            "*.bin",
+            "*.gguf",
             "config.json",
             "tokenizer.json",
             "tokenizer_config.json",

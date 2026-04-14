@@ -134,10 +134,20 @@ def _load_dense_points(frame_budget_summary: Path) -> list[DensePoint]:
 
 
 def _dominates(dense_acc: float, dense_frames: int, cached_point: CachedPoint) -> bool:
-    """Dense is dominant if it has >= accuracy at <= budget (i.e. it Pareto-dominates)."""
+    """Strict Pareto domination of a cached policy by a dense frame-budget point.
+
+    Dense strictly dominates cached iff it has higher accuracy AND lower
+    budget, OR equal on one dimension and strictly better on the other.
+    Exact ties on both dimensions are treated as non-dominated (i.e. the
+    cached policy stays on the Pareto frontier as a tie).
+    """
+    strictly_higher_acc = dense_acc > cached_point.cached_accuracy
+    strictly_lower_budget = dense_frames < cached_point.effective_fresh_frames
+    equal_acc = dense_acc == cached_point.cached_accuracy
+    equal_budget = dense_frames == cached_point.effective_fresh_frames
     return (
-        dense_acc >= cached_point.cached_accuracy
-        and dense_frames <= cached_point.effective_fresh_frames
+        (strictly_higher_acc and (strictly_lower_budget or equal_budget))
+        or (equal_acc and strictly_lower_budget)
     )
 
 
