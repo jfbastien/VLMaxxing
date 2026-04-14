@@ -837,6 +837,77 @@ def _generate_response(
     }
 
 
+def _letter_token_ids(
+    processor: Any, candidate_letters: list[str]
+) -> list[int]:
+    """Return the single-token id for each candidate letter.
+
+    Raises if a letter tokenizes to more than one token under the active
+    tokenizer. Whitespace variants are tried when the bare letter doesn't
+    encode cleanly.
+    """
+    tokenizer = processor.tokenizer if hasattr(processor, "tokenizer") else processor
+    ids: list[int] = []
+    for letter in candidate_letters:
+        candidates = [letter, f" {letter}"]
+        resolved: int | None = None
+        for variant in candidates:
+            tokens = tokenizer.encode(variant, add_special_tokens=False)
+            if len(tokens) == 1:
+                resolved = int(tokens[0])
+                break
+        if resolved is None:
+            raise ValueError(
+                f"letter {letter!r} does not tokenize to a single token on this tokenizer"
+            )
+        ids.append(resolved)
+    return ids
+
+
+def _option_logprobs(
+    model: Any,
+    processor: Any,
+    sample: PreparedSample,
+    *,
+    candidate_letters: list[str],
+    cached_features: mx.array | None,
+) -> dict[str, Any]:
+    """Compute per-letter log-probabilities at the answer position.
+
+    Runs a single prefill of the model, extracts logits at the final prompt
+    position, applies log-softmax, and reads back one log-probability per
+    candidate letter. Returns the full per-letter map plus:
+      - argmax_letter: letter with the highest logprob
+      - top_margin: logprob(argmax) - logprob(second-highest)
+      - correct_letter / correct_logprob: optional, filled by caller
+    """
+    kwargs = dict(sample.extra_kwargs)
+    if cached_features is not None:
+        kwargs["cached_image_features"] = cached_features
+    outputs = model(sample.input_ids, sample.pixel_values, mask=sample.mask, **kwargs)
+    logits = outputs.logits[0, -1, :]
+    logprobs = logits - mx.logsumexp(logits, keepdims=True)
+    mx.eval(logprobs)
+    logprobs_np = np.array(logprobs)
+
+    letter_ids = _letter_token_ids(processor, candidate_letters)
+    per_letter = {
+        letter: float(logprobs_np[token_id])
+        for letter, token_id in zip(candidate_letters, letter_ids, strict=True)
+    }
+    sorted_letters = sorted(per_letter.items(), key=lambda kv: kv[1], reverse=True)
+    argmax_letter, top_logprob = sorted_letters[0]
+    top_margin = (
+        sorted_letters[0][1] - sorted_letters[1][1] if len(sorted_letters) >= 2 else 0.0
+    )
+    return {
+        "per_letter_logprob": per_letter,
+        "argmax_letter": argmax_letter,
+        "argmax_logprob": top_logprob,
+        "top_margin": float(top_margin),
+    }
+
+
 def _clear_runtime_state() -> None:
     gc.collect()
     mx.clear_cache()
@@ -860,6 +931,7 @@ def _run_chunk(
     use_feature_replay: bool,
     feature_cache_dir: Path,
     allow_dirty: bool,
+    log_option_logprobs: bool = False,
 ) -> list[dict[str, Any]]:
     _ensure_clean_git_tree(allow_dirty=allow_dirty)
     selected_manifest = _load_manifest(manifest_path) if manifest_path is not None else None
@@ -913,6 +985,39 @@ def _run_chunk(
         )
         dense_choice = extract_choice(str(dense["text"]), item.candidates)
         cached_choice = extract_choice(str(cached["text"]), item.candidates)
+        if log_option_logprobs:
+            candidate_letters = [
+                chr(ord("A") + index) for index in range(len(item.candidates))
+            ]
+            try:
+                dense_margin = _option_logprobs(
+                    model,
+                    processor,
+                    sample,
+                    candidate_letters=candidate_letters,
+                    cached_features=None,
+                )
+                cached_margin = _option_logprobs(
+                    model,
+                    processor,
+                    sample,
+                    candidate_letters=candidate_letters,
+                    cached_features=cached_features,
+                )
+                correct_letter = candidate_letters[item.answer_index]
+                dense_margin["correct_letter"] = correct_letter
+                dense_margin["correct_logprob"] = dense_margin["per_letter_logprob"][
+                    correct_letter
+                ]
+                cached_margin["correct_letter"] = correct_letter
+                cached_margin["correct_logprob"] = cached_margin["per_letter_logprob"][
+                    correct_letter
+                ]
+                dense["option_logprobs"] = dense_margin
+                cached["option_logprobs"] = cached_margin
+            except (ValueError, IndexError, KeyError) as exc:
+                dense["option_logprobs_error"] = str(exc)
+                cached["option_logprobs_error"] = str(exc)
         results.append(
             {
                 "item_id": item.item_id,
@@ -1101,6 +1206,7 @@ def run_benchmark(
     use_feature_replay: bool,
     feature_cache_dir: Path,
     allow_dirty: bool,
+    log_option_logprobs: bool = False,
 ) -> None:
     _ensure_clean_git_tree(allow_dirty=allow_dirty)
     environment = _environment_record(model_path)
@@ -1163,6 +1269,8 @@ def run_benchmark(
         command.append("--allow-dirty")
         if not use_feature_replay:
             command.append("--no-feature-replay")
+        if log_option_logprobs:
+            command.append("--log-option-logprobs")
         command.extend(["--feature-cache-dir", str(feature_cache_dir)])
         if manifest_path is not None:
             command.extend(["--manifest", str(manifest_path)])
@@ -1260,6 +1368,11 @@ def main() -> None:
     run_parser.add_argument("--stop-file", type=Path, default=None)
     run_parser.add_argument("--feature-cache-dir", type=Path, default=DEFAULT_FEATURE_CACHE_DIR)
     run_parser.add_argument("--no-feature-replay", action="store_true")
+    run_parser.add_argument(
+        "--log-option-logprobs",
+        action="store_true",
+        help="Record per-option log-probabilities and top-2 margins on every item.",
+    )
     run_parser.add_argument("--allow-dirty", action="store_true")
 
     chunk_parser = subparsers.add_parser("run-chunk")
@@ -1286,6 +1399,7 @@ def main() -> None:
     chunk_parser.add_argument("--item-id", nargs="+", required=True)
     chunk_parser.add_argument("--feature-cache-dir", type=Path, default=DEFAULT_FEATURE_CACHE_DIR)
     chunk_parser.add_argument("--no-feature-replay", action="store_true")
+    chunk_parser.add_argument("--log-option-logprobs", action="store_true")
     chunk_parser.add_argument("--allow-dirty", action="store_true")
 
     args = parser.parse_args()
@@ -1319,6 +1433,7 @@ def main() -> None:
                     use_feature_replay=not bool(args.no_feature_replay),
                     feature_cache_dir=args.feature_cache_dir,
                     allow_dirty=bool(args.allow_dirty),
+                    log_option_logprobs=bool(args.log_option_logprobs),
                 ),
                 sort_keys=True,
             )
@@ -1346,6 +1461,7 @@ def main() -> None:
         use_feature_replay=not bool(args.no_feature_replay),
         feature_cache_dir=args.feature_cache_dir,
         allow_dirty=bool(args.allow_dirty),
+        log_option_logprobs=bool(args.log_option_logprobs),
     )
 
 
