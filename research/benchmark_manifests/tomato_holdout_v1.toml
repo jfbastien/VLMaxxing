@@ -1,0 +1,36 @@
+benchmark = "tomato"
+source = "stratified_random_seed_42"
+description = "Disjoint TOMATO holdout slice: 5 items per split sampled from the remaining local assets with random.Random(42)."
+
+item_ids = [
+  "tomato:count:0040-00",
+  "tomato:count:0226-02",
+  "tomato:count:0879-00",
+  "tomato:count:0882-00",
+  "tomato:count:0888-00",
+  "tomato:direction:0225-07",
+  "tomato:direction:0226-05",
+  "tomato:direction:0271-00",
+  "tomato:direction:0560-01",
+  "tomato:direction:0573-00",
+  "tomato:rotation:0230-14",
+  "tomato:rotation:0298-00",
+  "tomato:rotation:0362-01",
+  "tomato:rotation:0700-00",
+  "tomato:rotation:0700-01",
+  "tomato:shape_trend:0212-02",
+  "tomato:shape_trend:0408-02",
+  "tomato:shape_trend:0618-02",
+  "tomato:shape_trend:0620-00",
+  "tomato:shape_trend:0714-01",
+  "tomato:velocity_frequency:0255-05",
+  "tomato:velocity_frequency:0270-01",
+  "tomato:velocity_frequency:0319-00",
+  "tomato:velocity_frequency:0652-03",
+  "tomato:velocity_frequency:0808-04",
+  "tomato:visual_cues:0736-00",
+  "tomato:visual_cues:0764-00",
+  "tomato:visual_cues:0771-00",
+  "tomato:visual_cues:0789-00",
+  "tomato:visual_cues:0793-00",
+]

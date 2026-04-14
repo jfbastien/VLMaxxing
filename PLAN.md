@@ -89,6 +89,12 @@ narrow but useful starting point:
   MVBench on the local Qwen `7B` runner
 - benchmark reuse accounting is now pad-masked by default, with raw padded
   reuse kept only as an auxiliary descriptive field
+- benchmark process rules are now part of the research substrate:
+  - benchmark runs should fail on dirty trees by default
+  - planner search should happen on explicit dev manifests rather than on the
+    only reported slice
+  - disjoint holdout manifests should stay frozen until a candidate policy is
+    selected
 - first-frame benchmark ablations now sharpen the contrast:
   - TOMATO `30`-item slice drops from dense `0.300` at `8` frames to `0.067`
     at frame `0` only
@@ -125,6 +131,9 @@ Current position relative to the adjacent efficiency literature tracked in
   - isolate when the planner fails
   - use that diagnosis to build a stronger training-free planner before making
     Track B claims
+  - keep reproduction bounded once the control tranche is complete, so later
+    benchmark effort goes into policy improvement rather than repeated slice
+    archaeology
 
 ## Evidence And Trust Model
 

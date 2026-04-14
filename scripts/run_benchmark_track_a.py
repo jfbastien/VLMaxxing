@@ -9,6 +9,8 @@ import json
 import subprocess
 import sys
 import time
+import tomllib
+from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal, cast
@@ -114,9 +116,31 @@ class RunControl:
     summary_path: Path | None = None
 
 
+@dataclass(frozen=True, slots=True)
+class BenchmarkManifest:
+    benchmark: Literal["tomato", "mvbench"]
+    item_ids: list[str]
+    description: str | None = None
+    source: str | None = None
+
+
 def _run(command: list[str]) -> str:
     completed = subprocess.run(command, check=True, capture_output=True, text=True)
     return completed.stdout.strip()
+
+
+def _git_dirty() -> bool:
+    return bool(_run(["git", "status", "--short"]))
+
+
+def _ensure_clean_git_tree(*, allow_dirty: bool) -> None:
+    if allow_dirty:
+        return
+    if _git_dirty():
+        raise SystemExit(
+            "benchmark runs require a clean git tree; commit or stash changes, "
+            "or rerun with --allow-dirty"
+        )
 
 
 def _environment_record(model_path: Path) -> dict[str, Any]:
@@ -126,7 +150,7 @@ def _environment_record(model_path: Path) -> dict[str, Any]:
 
     return {
         "git_sha": _run(["git", "rev-parse", "HEAD"]),
-        "git_dirty": bool(_run(["git", "status", "--short"])),
+        "git_dirty": _git_dirty(),
         "python": sys.version.split()[0],
         "platform": sys.platform,
         "ffmpeg": _run(["ffmpeg", "-version"]).splitlines()[0],
@@ -201,6 +225,24 @@ def _multiple_choice_prompt(question: str, choices: list[str]) -> str:
     return "\n".join(lines)
 
 
+def _tomato_item_from_example(split: str, example: dict[str, Any]) -> BenchmarkItem:
+    key = cast(str, example["key"])
+    demonstration_type = cast(str, example["demonstration_type"])
+    video_path = TOMATO_VIDEO_DIR / demonstration_type / f"{key}.mp4"
+    if not video_path.exists():
+        raise FileNotFoundError(f"missing TOMATO video: {video_path}")
+    choices = list(cast(list[str], example["options"]))
+    return BenchmarkItem(
+        item_id=f"tomato:{split}:{key}",
+        benchmark="tomato",
+        group=split,
+        video_path=video_path,
+        question=_multiple_choice_prompt(cast(str, example["question"]), choices),
+        candidates=choices,
+        answer_index=int(example["answer"]),
+    )
+
+
 def _load_tomato_items(per_group: int, *, splits: list[str] | None = None) -> list[BenchmarkItem]:
     requested_splits = splits or [
         "count",
@@ -218,24 +260,45 @@ def _load_tomato_items(per_group: int, *, splits: list[str] | None = None) -> li
     for split in requested_splits:
         dataset_split = datasets_by_split[split]
         for example in dataset_split.select(range(min(per_group, len(dataset_split)))):
-            key = cast(str, example["key"])
-            demonstration_type = cast(str, example["demonstration_type"])
-            video_path = TOMATO_VIDEO_DIR / demonstration_type / f"{key}.mp4"
-            if not video_path.exists():
-                raise FileNotFoundError(f"missing TOMATO video: {video_path}")
-            choices = list(cast(list[str], example["options"]))
-            items.append(
-                BenchmarkItem(
-                    item_id=f"tomato:{split}:{key}",
-                    benchmark="tomato",
-                    group=split,
-                    video_path=video_path,
-                    question=_multiple_choice_prompt(cast(str, example["question"]), choices),
-                    candidates=choices,
-                    answer_index=int(example["answer"]),
-                )
-            )
+            items.append(_tomato_item_from_example(split, cast(dict[str, Any], example)))
     return items
+
+
+def _parse_tomato_item_id(item_id: str) -> tuple[str, str]:
+    prefix, split, key = item_id.split(":", maxsplit=2)
+    if prefix != "tomato" or not split or not key:
+        raise ValueError(f"invalid TOMATO item id: {item_id!r}")
+    return split, key
+
+
+def _load_tomato_items_by_id(item_ids: list[str]) -> list[BenchmarkItem]:
+    requested_by_split: dict[str, list[str]] = defaultdict(list)
+    for item_id in item_ids:
+        split, key = _parse_tomato_item_id(item_id)
+        requested_by_split[split].append(key)
+
+    data_files = {
+        split: str(next(TOMATO_DATA_DIR.glob(f"{split}-*.parquet")))
+        for split in requested_by_split
+    }
+    datasets_by_split = load_dataset("parquet", data_files=data_files)
+    rows_by_split: dict[str, dict[str, dict[str, Any]]] = {}
+    for split, requested_keys in requested_by_split.items():
+        key_set = set(requested_keys)
+        rows: dict[str, dict[str, Any]] = {}
+        for example in datasets_by_split[split]:
+            key = cast(str, example["key"])
+            if key in key_set:
+                rows[key] = cast(dict[str, Any], example)
+        missing = sorted(key_set - set(rows))
+        if missing:
+            raise KeyError(f"missing TOMATO examples for split {split!r}: {missing}")
+        rows_by_split[split] = rows
+
+    return [
+        _tomato_item_from_example(split, rows_by_split[split][key])
+        for split, key in (_parse_tomato_item_id(item_id) for item_id in item_ids)
+    ]
 
 
 def _find_mvbench_video(video_name: str) -> Path:
@@ -268,32 +331,62 @@ def _find_mvbench_video(video_name: str) -> Path:
     )
 
 
+def _mvbench_item_from_example(
+    task: str,
+    index: int,
+    example: dict[str, Any],
+) -> BenchmarkItem:
+    video_name = str(example["video"])
+    choices = list(cast(list[str], example["candidates"]))
+    answer = str(example["answer"])
+    return BenchmarkItem(
+        item_id=f"mvbench:{task}:{index}",
+        benchmark="mvbench",
+        group=task,
+        video_path=_find_mvbench_video(video_name),
+        question=_multiple_choice_prompt(cast(str, example["question"]), choices),
+        candidates=choices,
+        answer_index=choices.index(answer),
+        start_seconds=(
+            float(example["start"]) if example.get("start") not in {None, ""} else None
+        ),
+        end_seconds=(float(example["end"]) if example.get("end") not in {None, ""} else None),
+    )
+
+
 def _load_mvbench_items(per_group: int, *, tasks: list[str] | None = None) -> list[BenchmarkItem]:
     requested_tasks = tasks or PREDECESSOR_MVBENCH_TASKS
     items: list[BenchmarkItem] = []
     for task in requested_tasks:
         payload = json.loads((MVBENCH_JSON_DIR / f"{task}.json").read_text())
         for index, example in enumerate(payload[:per_group]):
-            video_name = str(example["video"])
-            choices = list(cast(list[str], example["candidates"]))
-            answer = str(example["answer"])
-            items.append(
-                BenchmarkItem(
-                    item_id=f"mvbench:{task}:{index}",
-                    benchmark="mvbench",
-                    group=task,
-                    video_path=_find_mvbench_video(video_name),
-                    question=_multiple_choice_prompt(cast(str, example["question"]), choices),
-                    candidates=choices,
-                    answer_index=choices.index(answer),
-                    start_seconds=(
-                        float(example["start"]) if example.get("start") not in {None, ""} else None
-                    ),
-                    end_seconds=(
-                        float(example["end"]) if example.get("end") not in {None, ""} else None
-                    ),
-                )
+            items.append(_mvbench_item_from_example(task, index, cast(dict[str, Any], example)))
+    return items
+
+
+def _parse_mvbench_item_id(item_id: str) -> tuple[str, int]:
+    prefix, task, raw_index = item_id.split(":", maxsplit=2)
+    if prefix != "mvbench" or not task or not raw_index:
+        raise ValueError(f"invalid MVBench item id: {item_id!r}")
+    return task, int(raw_index)
+
+
+def _load_mvbench_items_by_id(item_ids: list[str]) -> list[BenchmarkItem]:
+    payload_by_task: dict[str, list[dict[str, Any]]] = {}
+    ordered_keys = [_parse_mvbench_item_id(item_id) for item_id in item_ids]
+    for task, _ in ordered_keys:
+        if task not in payload_by_task:
+            payload_by_task[task] = json.loads((MVBENCH_JSON_DIR / f"{task}.json").read_text())
+
+    items: list[BenchmarkItem] = []
+    for task, index in ordered_keys:
+        payload = payload_by_task[task]
+        if index >= len(payload):
+            raise IndexError(
+                f"MVBench item index {index} is out of range for task {task!r} "
+                f"with {len(payload)} examples"
             )
+        items.append(_mvbench_item_from_example(task, index, payload[index]))
     return items
 
 
@@ -306,6 +399,33 @@ def _load_items(
     if benchmark == "tomato":
         return _load_tomato_items(per_group, splits=groups)
     return _load_mvbench_items(per_group, tasks=groups)
+
+
+def _load_items_by_id(
+    benchmark: Literal["tomato", "mvbench"],
+    item_ids: list[str],
+) -> list[BenchmarkItem]:
+    if benchmark == "tomato":
+        return _load_tomato_items_by_id(item_ids)
+    return _load_mvbench_items_by_id(item_ids)
+
+
+def _load_manifest(path: Path) -> BenchmarkManifest:
+    payload = tomllib.loads(path.read_text())
+    benchmark = payload.get("benchmark")
+    item_ids = payload.get("item_ids")
+    if benchmark not in {"tomato", "mvbench"}:
+        raise ValueError(f"invalid benchmark manifest benchmark: {benchmark!r}")
+    if not isinstance(item_ids, list) or not item_ids or not all(
+        isinstance(item_id, str) for item_id in item_ids
+    ):
+        raise ValueError(f"invalid benchmark manifest item_ids: {item_ids!r}")
+    return BenchmarkManifest(
+        benchmark=cast(Literal["tomato", "mvbench"], benchmark),
+        item_ids=list(cast(list[str], item_ids)),
+        description=cast(str | None, payload.get("description")),
+        source=cast(str | None, payload.get("source")),
+    )
 
 
 def _load_model(model_path: Path) -> tuple[Any, Any]:
@@ -567,16 +687,27 @@ def _run_chunk(
     benchmark: Literal["tomato", "mvbench"],
     per_group: int,
     groups: list[str] | None,
+    manifest_path: Path | None,
     model_path: Path,
     frame_count: int,
     max_tokens: int,
     cache_mode: Literal["default", "identity"],
     refresh_interval: int | None,
+    allow_dirty: bool,
 ) -> list[dict[str, Any]]:
-    registry = {
-        item.item_id: item
-        for item in _load_items(benchmark, per_group=per_group, groups=groups)
-    }
+    _ensure_clean_git_tree(allow_dirty=allow_dirty)
+    selected_manifest = _load_manifest(manifest_path) if manifest_path is not None else None
+    if selected_manifest is not None and selected_manifest.benchmark != benchmark:
+        raise ValueError(
+            f"manifest benchmark {selected_manifest.benchmark!r} does not match "
+            f"requested benchmark {benchmark!r}"
+        )
+    registry_source = (
+        _load_items_by_id(benchmark, item_ids=selected_manifest.item_ids)
+        if selected_manifest is not None
+        else _load_items(benchmark, per_group=per_group, groups=groups)
+    )
+    registry = {item.item_id: item for item in registry_source}
     selected_items = [registry[item_id] for item_id in item_ids]
     model, processor = _load_model(model_path)
     results: list[dict[str, Any]] = []
@@ -646,6 +777,8 @@ def _run_chunk(
                     "static": DEFAULT_THRESHOLDS.static_threshold,
                     "shifted": DEFAULT_THRESHOLDS.shifted_threshold,
                 },
+                "selection_mode": "manifest" if selected_manifest is not None else "per_group",
+                "manifest_path": str(manifest_path) if manifest_path is not None else None,
             }
         )
         _clear_runtime_state()
@@ -685,6 +818,12 @@ def _write_summary(
     output_path: Path,
     model_path: Path,
     stopped_early: bool,
+    groups: list[str] | None,
+    per_group: int,
+    frame_count: int,
+    cache_mode: Literal["default", "identity"],
+    refresh_interval: int | None,
+    manifest_path: Path | None,
 ) -> None:
     completed_items: list[dict[str, Any]] = []
     if output_path.exists():
@@ -715,6 +854,15 @@ def _write_summary(
     summary = {
         "benchmark": benchmark,
         "environment": _environment_record(model_path),
+        "selection": {
+            "mode": "manifest" if manifest_path is not None else "per_group",
+            "manifest_path": str(manifest_path) if manifest_path is not None else None,
+            "groups": groups,
+            "per_group": per_group,
+        },
+        "frame_count": frame_count,
+        "cache_mode": cache_mode,
+        "refresh_interval": refresh_interval,
         "requested_item_ids": requested_ids,
         "completed_item_ids": completed_ids,
         "remaining_item_ids": [
@@ -742,6 +890,7 @@ def run_benchmark(
     benchmark: Literal["tomato", "mvbench"],
     per_group: int,
     groups: list[str] | None,
+    manifest_path: Path | None,
     chunk_size: int,
     model_path: Path,
     frame_count: int,
@@ -750,8 +899,20 @@ def run_benchmark(
     control: RunControl | None,
     cache_mode: Literal["default", "identity"],
     refresh_interval: int | None,
+    allow_dirty: bool,
 ) -> None:
-    registry = _load_items(benchmark, per_group=per_group, groups=groups)
+    _ensure_clean_git_tree(allow_dirty=allow_dirty)
+    selected_manifest = _load_manifest(manifest_path) if manifest_path is not None else None
+    if selected_manifest is not None and selected_manifest.benchmark != benchmark:
+        raise ValueError(
+            f"manifest benchmark {selected_manifest.benchmark!r} does not match "
+            f"requested benchmark {benchmark!r}"
+        )
+    registry = (
+        _load_items_by_id(benchmark, item_ids=selected_manifest.item_ids)
+        if selected_manifest is not None
+        else _load_items(benchmark, per_group=per_group, groups=groups)
+    )
     requested_ids = [item.item_id for item in registry]
     completed_ids = _read_completed_ids(output_path)
     pending_ids = [item_id for item_id in requested_ids if item_id not in completed_ids]
@@ -767,8 +928,6 @@ def run_benchmark(
             "run-chunk",
             "--benchmark",
             benchmark,
-            "--per-group",
-            str(per_group),
             "--model-path",
             str(model_path),
             "--frame-count",
@@ -782,6 +941,12 @@ def run_benchmark(
             "--item-id",
             *chunk,
         ]
+        if allow_dirty:
+            command.append("--allow-dirty")
+        if manifest_path is not None:
+            command.extend(["--manifest", str(manifest_path)])
+        else:
+            command.extend(["--per-group", str(per_group)])
         if groups:
             command.extend(["--groups", ",".join(groups)])
         completed = subprocess.run(command, check=True, capture_output=True, text=True)
@@ -794,6 +959,12 @@ def run_benchmark(
                 output_path=output_path,
                 model_path=model_path,
                 stopped_early=False,
+                groups=groups,
+                per_group=per_group,
+                frame_count=frame_count,
+                cache_mode=cache_mode,
+                refresh_interval=refresh_interval,
+                manifest_path=manifest_path,
             )
 
     if _stop_requested(control):
@@ -806,6 +977,12 @@ def run_benchmark(
             output_path=output_path,
             model_path=model_path,
             stopped_early=stopped_early,
+            groups=groups,
+            per_group=per_group,
+            frame_count=frame_count,
+            cache_mode=cache_mode,
+            refresh_interval=refresh_interval,
+            manifest_path=manifest_path,
         )
 
 
@@ -817,6 +994,7 @@ def main() -> None:
     run_parser.add_argument("--benchmark", choices=["tomato", "mvbench"], required=True)
     run_parser.add_argument("--per-group", type=int, default=2)
     run_parser.add_argument("--groups", default=None)
+    run_parser.add_argument("--manifest", type=Path, default=None)
     run_parser.add_argument("--chunk-size", type=int, default=1)
     run_parser.add_argument("--frame-count", type=int, default=8)
     run_parser.add_argument("--max-tokens", type=int, default=32)
@@ -826,17 +1004,20 @@ def main() -> None:
     run_parser.add_argument("--output-path", type=Path, default=DEFAULT_OUTPUT_PATH)
     run_parser.add_argument("--summary-path", type=Path, default=DEFAULT_SUMMARY_PATH)
     run_parser.add_argument("--stop-file", type=Path, default=None)
+    run_parser.add_argument("--allow-dirty", action="store_true")
 
     chunk_parser = subparsers.add_parser("run-chunk")
     chunk_parser.add_argument("--benchmark", choices=["tomato", "mvbench"], required=True)
-    chunk_parser.add_argument("--per-group", type=int, required=True)
+    chunk_parser.add_argument("--per-group", type=int, default=0)
     chunk_parser.add_argument("--groups", default=None)
+    chunk_parser.add_argument("--manifest", type=Path, default=None)
     chunk_parser.add_argument("--frame-count", type=int, required=True)
     chunk_parser.add_argument("--max-tokens", type=int, required=True)
     chunk_parser.add_argument("--cache-mode", choices=["default", "identity"], required=True)
     chunk_parser.add_argument("--refresh-interval", type=int, required=True)
     chunk_parser.add_argument("--model-path", type=Path, required=True)
     chunk_parser.add_argument("--item-id", nargs="+", required=True)
+    chunk_parser.add_argument("--allow-dirty", action="store_true")
 
     args = parser.parse_args()
     if args.command == "run-chunk":
@@ -848,11 +1029,13 @@ def main() -> None:
                     benchmark=cast(Literal["tomato", "mvbench"], args.benchmark),
                     per_group=args.per_group,
                     groups=groups,
+                    manifest_path=args.manifest,
                     model_path=args.model_path,
                     frame_count=args.frame_count,
                     max_tokens=args.max_tokens,
                     cache_mode=cast(Literal["default", "identity"], args.cache_mode),
                     refresh_interval=args.refresh_interval if args.refresh_interval > 0 else None,
+                    allow_dirty=bool(args.allow_dirty),
                 ),
                 sort_keys=True,
             )
@@ -865,6 +1048,7 @@ def main() -> None:
         benchmark=cast(Literal["tomato", "mvbench"], args.benchmark),
         per_group=args.per_group,
         groups=groups,
+        manifest_path=args.manifest,
         chunk_size=args.chunk_size,
         model_path=args.model_path,
         frame_count=args.frame_count,
@@ -873,6 +1057,7 @@ def main() -> None:
         control=control,
         cache_mode=cast(Literal["default", "identity"], args.cache_mode),
         refresh_interval=args.refresh_interval if args.refresh_interval > 0 else None,
+        allow_dirty=bool(args.allow_dirty),
     )
 
 

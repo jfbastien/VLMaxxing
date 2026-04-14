@@ -130,6 +130,12 @@ Useful diagnosis option:
 - `--refresh-interval <k>`:
   force a dense refresh every `k` frames while keeping the cached-feature path
   active between refreshes
+- `--manifest <path>`:
+  run an explicit frozen slice instead of the historical `first N per group`
+  selection path
+- `--allow-dirty`:
+  bypass the default clean-tree guard for debugging only; reportable benchmark
+  artifacts should come from clean commits
 
 Current reuse-accounting rule on the benchmark runner:
 
@@ -155,7 +161,7 @@ Recommended first generalized TOMATO subset after the smoke passes:
 ```bash
 uv run python scripts/run_benchmark_track_a.py run \
   --benchmark tomato \
-  --per-group 5 \
+  --manifest research/benchmark_manifests/tomato_dev_v1.toml \
   --chunk-size 1 \
   --frame-count 8 \
   --max-tokens 32 \
@@ -169,7 +175,7 @@ checkpointing:
 ```bash
 uv run python scripts/run_benchmark_track_a.py run \
   --benchmark tomato \
-  --per-group 5 \
+  --manifest research/benchmark_manifests/tomato_dev_v1.toml \
   --chunk-size 1 \
   --stop-file /tmp/codec-through-stop \
   --summary-path results/tomato_subset_summary.json
@@ -182,6 +188,11 @@ touch /tmp/codec-through-stop
 ```
 
 The runner stops at the next chunk boundary and rewrites the summary JSON.
+
+Benchmark slice policy now lives under
+[research/benchmark_manifests/](../research/benchmark_manifests/README.md).
+Use `*_dev_v1.toml` during planner search and keep `*_holdout_v1.toml` frozen
+until the next policy choice is ready for evaluation.
 
 ## TOMATO Notes
 
