@@ -107,6 +107,14 @@ narrow but useful starting point:
   - no refresh: cached `0.2`, agreement `0.6`
   - refresh every `4` frames: cached `0.6`, agreement `1.0`, active reuse
     `0.732`
+- the first motion-focused planner sweep now narrows the method space:
+  - on the TOMATO motion dev slice, `mean + static,shifted + max_age=4`
+    improved agreement from `0.733` to `0.867` while keeping active reuse at
+    `0.698`
+  - the same policy failed to generalize on the disjoint motion holdout:
+    agreement fell from `0.867` to `0.800` and cached accuracy stayed flat
+  - the first `changed_pixel_fraction` attempt did not beat the default mean
+    planner on the same dev slice
 
 That is the center of the project today.
 
@@ -134,6 +142,11 @@ Current position relative to the adjacent efficiency literature tracked in
   - keep reproduction bounded once the control tranche is complete, so later
     benchmark effort goes into policy improvement rather than repeated slice
     archaeology
+- immediate next method loop from the new evidence:
+  - keep bounded token age in the search space
+  - add dense answer-margin logging so confidence-limited items can be
+    separated from staleness-limited ones
+  - test `top_k_mean` and `max_abs` before revisiting CPF thresholds
 
 ## Evidence And Trust Model
 

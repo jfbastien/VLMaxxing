@@ -43,6 +43,16 @@ The current local evidence now adds two useful controls:
   - no refresh gives cached `0.2` and agreement `0.6`
   - refresh every `4` frames recovers exact dense agreement on the same
     five-item subset while keeping active reuse at `0.732`
+- the first motion-focused planner sweep sharpens that into a stricter method
+  claim:
+  - on the TOMATO motion dev slice, bounded token age (`max_age = 4`) improves
+    agreement and cached accuracy over the default mean planner
+  - on the disjoint motion holdout, that same policy does not improve cached
+    accuracy and actually lowers agreement
+  - the current evidence is therefore more precise than simple
+    `content-conditioned` language:
+    some items are staleness-limited, while others look confidence-limited even
+    when they remain motion-heavy
 - local strict and loose parser rescoring are identical on those saved slices
   because parse failures stayed at `0`, so the current local disagreement is
   not a local parser artifact
@@ -93,6 +103,9 @@ What this repo is trying to show:
 - how far a training-free reuse path can go before architecture changes
 - how to separate answer-stability evidence from true skipped compute
 - which cheap routing signals are useful before we pay for deeper model changes
+- that agreement alone is not enough:
+  the method needs a quality-versus-reuse story that stays honest when dense
+  itself is weak on a slice
 
 What the current evidence says about competitiveness:
 

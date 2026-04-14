@@ -1,0 +1,631 @@
+{
+  "derived": {
+    "dev_age4_minus_default": {
+      "active_reuse_delta": -0.10028571646128381,
+      "agreement_delta": 0.13333333333333341,
+      "cached_accuracy_delta": 0.13333333333333336
+    },
+    "holdout_age4_minus_default": {
+      "active_reuse_delta": -0.10666666715627626,
+      "agreement_delta": -0.06666666666666665,
+      "cached_accuracy_delta": 0.0
+    }
+  },
+  "dev_changed_pixel_fraction": {
+    "by_group": {
+      "direction": {
+        "agreement": 0.6,
+        "cached_accuracy": 0.2,
+        "dense_accuracy": 0.6,
+        "n": 5,
+        "reuse_ratio_mean_active": 0.7560000010899135
+      },
+      "rotation": {
+        "agreement": 0.6,
+        "cached_accuracy": 0.4,
+        "dense_accuracy": 0.4,
+        "n": 5,
+        "reuse_ratio_mean_active": 0.6209999961512429
+      },
+      "shape_trend": {
+        "agreement": 0.8,
+        "cached_accuracy": 0.2,
+        "dense_accuracy": 0.4,
+        "n": 5,
+        "reuse_ratio_mean_active": 0.6674285701342992
+      }
+    },
+    "summary": {
+      "agreement": 0.6666666666666666,
+      "benchmark": "tomato",
+      "cache_mode": "default",
+      "cached_accuracy": 0.26666666666666666,
+      "cached_parse_failures": 0,
+      "completed_item_ids": [
+        "tomato:direction:0231-04",
+        "tomato:direction:0231-05",
+        "tomato:direction:0231-06",
+        "tomato:direction:0234-02",
+        "tomato:direction:0234-03",
+        "tomato:rotation:0215-06",
+        "tomato:rotation:0215-07",
+        "tomato:rotation:0216-08",
+        "tomato:rotation:0216-09",
+        "tomato:rotation:0218-08",
+        "tomato:shape_trend:0209-04",
+        "tomato:shape_trend:0209-05",
+        "tomato:shape_trend:0231-07",
+        "tomato:shape_trend:0210-04",
+        "tomato:shape_trend:0210-05"
+      ],
+      "dense_accuracy": 0.4666666666666667,
+      "environment": {
+        "datasets": "4.8.4",
+        "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
+        "git_dirty": false,
+        "git_sha": "bb780f7a8bb79e90a482dcdbe236f2ac73149c96",
+        "huggingface_hub": "1.10.1",
+        "mlx_vlm_module": "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
+        "model_path": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
+        "platform": "darwin",
+        "python": "3.12.12"
+      },
+      "frame_count": 8,
+      "planner": {
+        "max_age": null,
+        "pixel_change_threshold": 8.0,
+        "reuse_classes": [
+          "static",
+          "shifted"
+        ],
+        "shifted_threshold": 0.08,
+        "static_threshold": 0.02,
+        "statistic": "changed_pixel_fraction",
+        "top_k": 16
+      },
+      "refresh_interval": null,
+      "remaining_item_ids": [],
+      "requested_item_ids": [
+        "tomato:direction:0231-04",
+        "tomato:direction:0231-05",
+        "tomato:direction:0231-06",
+        "tomato:direction:0234-02",
+        "tomato:direction:0234-03",
+        "tomato:rotation:0215-06",
+        "tomato:rotation:0215-07",
+        "tomato:rotation:0216-08",
+        "tomato:rotation:0216-09",
+        "tomato:rotation:0218-08",
+        "tomato:shape_trend:0209-04",
+        "tomato:shape_trend:0209-05",
+        "tomato:shape_trend:0231-07",
+        "tomato:shape_trend:0210-04",
+        "tomato:shape_trend:0210-05"
+      ],
+      "reuse_ratio_mean": 0.6814761891251518,
+      "reuse_ratio_mean_active": 0.6814761891251518,
+      "reuse_ratio_mean_raw": 0.8345952380952381,
+      "selection": {
+        "groups": null,
+        "manifest_path": "research/benchmark_manifests/tomato_motion_dev_v1.toml",
+        "mode": "manifest",
+        "per_group": 2
+      },
+      "stopped_early": false
+    }
+  },
+  "dev_default_mean": {
+    "by_group": {
+      "direction": {
+        "agreement": 0.6,
+        "cached_accuracy": 0.2,
+        "dense_accuracy": 0.6,
+        "n": 5,
+        "reuse_ratio_mean_active": 0.857857142175947
+      },
+      "rotation": {
+        "agreement": 0.8,
+        "cached_accuracy": 0.4,
+        "dense_accuracy": 0.4,
+        "n": 5,
+        "reuse_ratio_mean_active": 0.7571428562913622
+      },
+      "shape_trend": {
+        "agreement": 0.8,
+        "cached_accuracy": 0.2,
+        "dense_accuracy": 0.4,
+        "n": 5,
+        "reuse_ratio_mean_active": 0.778857147693634
+      }
+    },
+    "summary": {
+      "agreement": 0.7333333333333333,
+      "benchmark": "tomato",
+      "cache_mode": "default",
+      "cached_accuracy": 0.26666666666666666,
+      "cached_parse_failures": 0,
+      "completed_item_ids": [
+        "tomato:direction:0231-04",
+        "tomato:direction:0231-05",
+        "tomato:direction:0231-06",
+        "tomato:direction:0234-02",
+        "tomato:direction:0234-03",
+        "tomato:rotation:0215-06",
+        "tomato:rotation:0215-07",
+        "tomato:rotation:0216-08",
+        "tomato:rotation:0216-09",
+        "tomato:rotation:0218-08",
+        "tomato:shape_trend:0209-04",
+        "tomato:shape_trend:0209-05",
+        "tomato:shape_trend:0231-07",
+        "tomato:shape_trend:0210-04",
+        "tomato:shape_trend:0210-05"
+      ],
+      "dense_accuracy": 0.4666666666666667,
+      "environment": {
+        "datasets": "4.8.4",
+        "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
+        "git_dirty": false,
+        "git_sha": "bb780f7a8bb79e90a482dcdbe236f2ac73149c96",
+        "huggingface_hub": "1.10.1",
+        "mlx_vlm_module": "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
+        "model_path": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
+        "platform": "darwin",
+        "python": "3.12.12"
+      },
+      "frame_count": 8,
+      "planner": {
+        "max_age": null,
+        "pixel_change_threshold": 8.0,
+        "reuse_classes": [
+          "static",
+          "shifted"
+        ],
+        "shifted_threshold": 8.0,
+        "static_threshold": 3.0,
+        "statistic": "mean",
+        "top_k": 16
+      },
+      "refresh_interval": null,
+      "remaining_item_ids": [],
+      "requested_item_ids": [
+        "tomato:direction:0231-04",
+        "tomato:direction:0231-05",
+        "tomato:direction:0231-06",
+        "tomato:direction:0234-02",
+        "tomato:direction:0234-03",
+        "tomato:rotation:0215-06",
+        "tomato:rotation:0215-07",
+        "tomato:rotation:0216-08",
+        "tomato:rotation:0216-09",
+        "tomato:rotation:0218-08",
+        "tomato:shape_trend:0209-04",
+        "tomato:shape_trend:0209-05",
+        "tomato:shape_trend:0231-07",
+        "tomato:shape_trend:0210-04",
+        "tomato:shape_trend:0210-05"
+      ],
+      "reuse_ratio_mean": 0.7979523820536477,
+      "reuse_ratio_mean_active": 0.7979523820536477,
+      "reuse_ratio_mean_raw": 0.8976904761904763,
+      "selection": {
+        "groups": null,
+        "manifest_path": "research/benchmark_manifests/tomato_motion_dev_v1.toml",
+        "mode": "manifest",
+        "per_group": 2
+      },
+      "stopped_early": false
+    }
+  },
+  "dev_mean_age4": {
+    "by_group": {
+      "direction": {
+        "agreement": 0.8,
+        "cached_accuracy": 0.4,
+        "dense_accuracy": 0.6,
+        "n": 5,
+        "reuse_ratio_mean_active": 0.7468571380845137
+      },
+      "rotation": {
+        "agreement": 0.8,
+        "cached_accuracy": 0.4,
+        "dense_accuracy": 0.4,
+        "n": 5,
+        "reuse_ratio_mean_active": 0.6599999980202742
+      },
+      "shape_trend": {
+        "agreement": 1.0,
+        "cached_accuracy": 0.4,
+        "dense_accuracy": 0.4,
+        "n": 5,
+        "reuse_ratio_mean_active": 0.6861428606723037
+      }
+    },
+    "summary": {
+      "agreement": 0.8666666666666667,
+      "benchmark": "tomato",
+      "cache_mode": "default",
+      "cached_accuracy": 0.4,
+      "cached_parse_failures": 0,
+      "completed_item_ids": [
+        "tomato:direction:0231-04",
+        "tomato:direction:0231-05",
+        "tomato:direction:0231-06",
+        "tomato:direction:0234-02",
+        "tomato:direction:0234-03",
+        "tomato:rotation:0215-06",
+        "tomato:rotation:0215-07",
+        "tomato:rotation:0216-08",
+        "tomato:rotation:0216-09",
+        "tomato:rotation:0218-08",
+        "tomato:shape_trend:0209-04",
+        "tomato:shape_trend:0209-05",
+        "tomato:shape_trend:0231-07",
+        "tomato:shape_trend:0210-04",
+        "tomato:shape_trend:0210-05"
+      ],
+      "dense_accuracy": 0.4666666666666667,
+      "environment": {
+        "datasets": "4.8.4",
+        "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
+        "git_dirty": false,
+        "git_sha": "bb780f7a8bb79e90a482dcdbe236f2ac73149c96",
+        "huggingface_hub": "1.10.1",
+        "mlx_vlm_module": "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
+        "model_path": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
+        "platform": "darwin",
+        "python": "3.12.12"
+      },
+      "frame_count": 8,
+      "planner": {
+        "max_age": 4,
+        "pixel_change_threshold": 8.0,
+        "reuse_classes": [
+          "static",
+          "shifted"
+        ],
+        "shifted_threshold": 8.0,
+        "static_threshold": 3.0,
+        "statistic": "mean",
+        "top_k": 16
+      },
+      "refresh_interval": null,
+      "remaining_item_ids": [],
+      "requested_item_ids": [
+        "tomato:direction:0231-04",
+        "tomato:direction:0231-05",
+        "tomato:direction:0231-06",
+        "tomato:direction:0234-02",
+        "tomato:direction:0234-03",
+        "tomato:rotation:0215-06",
+        "tomato:rotation:0215-07",
+        "tomato:rotation:0216-08",
+        "tomato:rotation:0216-09",
+        "tomato:rotation:0218-08",
+        "tomato:shape_trend:0209-04",
+        "tomato:shape_trend:0209-05",
+        "tomato:shape_trend:0231-07",
+        "tomato:shape_trend:0210-04",
+        "tomato:shape_trend:0210-05"
+      ],
+      "reuse_ratio_mean": 0.6976666655923639,
+      "reuse_ratio_mean_active": 0.6976666655923639,
+      "reuse_ratio_mean_raw": 0.7764285714285714,
+      "selection": {
+        "groups": null,
+        "manifest_path": "research/benchmark_manifests/tomato_motion_dev_v1.toml",
+        "mode": "manifest",
+        "per_group": 2
+      },
+      "stopped_early": false
+    }
+  },
+  "dev_mean_static_only": {
+    "by_group": {
+      "direction": {
+        "agreement": 0.6,
+        "cached_accuracy": 0.2,
+        "dense_accuracy": 0.6,
+        "n": 5,
+        "reuse_ratio_mean_active": 0.7224285687719073
+      },
+      "rotation": {
+        "agreement": 0.8,
+        "cached_accuracy": 0.4,
+        "dense_accuracy": 0.4,
+        "n": 5,
+        "reuse_ratio_mean_active": 0.589428573846817
+      },
+      "shape_trend": {
+        "agreement": 1.0,
+        "cached_accuracy": 0.4,
+        "dense_accuracy": 0.4,
+        "n": 5,
+        "reuse_ratio_mean_active": 0.5937142848968506
+      }
+    },
+    "summary": {
+      "agreement": 0.8,
+      "benchmark": "tomato",
+      "cache_mode": "default",
+      "cached_accuracy": 0.3333333333333333,
+      "cached_parse_failures": 0,
+      "completed_item_ids": [
+        "tomato:direction:0231-04",
+        "tomato:direction:0231-05",
+        "tomato:direction:0231-06",
+        "tomato:direction:0234-02",
+        "tomato:direction:0234-03",
+        "tomato:rotation:0215-06",
+        "tomato:rotation:0215-07",
+        "tomato:rotation:0216-08",
+        "tomato:rotation:0216-09",
+        "tomato:rotation:0218-08",
+        "tomato:shape_trend:0209-04",
+        "tomato:shape_trend:0209-05",
+        "tomato:shape_trend:0231-07",
+        "tomato:shape_trend:0210-04",
+        "tomato:shape_trend:0210-05"
+      ],
+      "dense_accuracy": 0.4666666666666667,
+      "environment": {
+        "datasets": "4.8.4",
+        "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
+        "git_dirty": false,
+        "git_sha": "bb780f7a8bb79e90a482dcdbe236f2ac73149c96",
+        "huggingface_hub": "1.10.1",
+        "mlx_vlm_module": "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
+        "model_path": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
+        "platform": "darwin",
+        "python": "3.12.12"
+      },
+      "frame_count": 8,
+      "planner": {
+        "max_age": null,
+        "pixel_change_threshold": 8.0,
+        "reuse_classes": [
+          "static"
+        ],
+        "shifted_threshold": 8.0,
+        "static_threshold": 3.0,
+        "statistic": "mean",
+        "top_k": 16
+      },
+      "refresh_interval": null,
+      "remaining_item_ids": [],
+      "requested_item_ids": [
+        "tomato:direction:0231-04",
+        "tomato:direction:0231-05",
+        "tomato:direction:0231-06",
+        "tomato:direction:0234-02",
+        "tomato:direction:0234-03",
+        "tomato:rotation:0215-06",
+        "tomato:rotation:0215-07",
+        "tomato:rotation:0216-08",
+        "tomato:rotation:0216-09",
+        "tomato:rotation:0218-08",
+        "tomato:shape_trend:0209-04",
+        "tomato:shape_trend:0209-05",
+        "tomato:shape_trend:0231-07",
+        "tomato:shape_trend:0210-04",
+        "tomato:shape_trend:0210-05"
+      ],
+      "reuse_ratio_mean": 0.635190475838525,
+      "reuse_ratio_mean_active": 0.635190475838525,
+      "reuse_ratio_mean_raw": 0.812190476190476,
+      "selection": {
+        "groups": null,
+        "manifest_path": "research/benchmark_manifests/tomato_motion_dev_v1.toml",
+        "mode": "manifest",
+        "per_group": 2
+      },
+      "stopped_early": false
+    }
+  },
+  "holdout_default_mean": {
+    "by_group": {
+      "direction": {
+        "agreement": 0.8,
+        "cached_accuracy": 0.4,
+        "dense_accuracy": 0.4,
+        "n": 5,
+        "reuse_ratio_mean_active": 0.7157142904720136
+      },
+      "rotation": {
+        "agreement": 0.8,
+        "cached_accuracy": 0.2,
+        "dense_accuracy": 0.4,
+        "n": 5,
+        "reuse_ratio_mean_active": 0.8962857042040143
+      },
+      "shape_trend": {
+        "agreement": 1.0,
+        "cached_accuracy": 0.0,
+        "dense_accuracy": 0.0,
+        "n": 5,
+        "reuse_ratio_mean_active": 0.88499999748809
+      }
+    },
+    "summary": {
+      "agreement": 0.8666666666666667,
+      "benchmark": "tomato",
+      "cache_mode": "default",
+      "cached_accuracy": 0.2,
+      "cached_parse_failures": 0,
+      "completed_item_ids": [
+        "tomato:direction:0225-07",
+        "tomato:direction:0226-05",
+        "tomato:direction:0271-00",
+        "tomato:direction:0560-01",
+        "tomato:direction:0573-00",
+        "tomato:rotation:0230-14",
+        "tomato:rotation:0298-00",
+        "tomato:rotation:0362-01",
+        "tomato:rotation:0700-00",
+        "tomato:rotation:0700-01",
+        "tomato:shape_trend:0212-02",
+        "tomato:shape_trend:0408-02",
+        "tomato:shape_trend:0618-02",
+        "tomato:shape_trend:0620-00",
+        "tomato:shape_trend:0714-01"
+      ],
+      "dense_accuracy": 0.26666666666666666,
+      "environment": {
+        "datasets": "4.8.4",
+        "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
+        "git_dirty": false,
+        "git_sha": "bb780f7a8bb79e90a482dcdbe236f2ac73149c96",
+        "huggingface_hub": "1.10.1",
+        "mlx_vlm_module": "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
+        "model_path": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
+        "platform": "darwin",
+        "python": "3.12.12"
+      },
+      "frame_count": 8,
+      "planner": {
+        "max_age": null,
+        "pixel_change_threshold": 8.0,
+        "reuse_classes": [
+          "static",
+          "shifted"
+        ],
+        "shifted_threshold": 8.0,
+        "static_threshold": 3.0,
+        "statistic": "mean",
+        "top_k": 16
+      },
+      "refresh_interval": null,
+      "remaining_item_ids": [],
+      "requested_item_ids": [
+        "tomato:direction:0225-07",
+        "tomato:direction:0226-05",
+        "tomato:direction:0271-00",
+        "tomato:direction:0560-01",
+        "tomato:direction:0573-00",
+        "tomato:rotation:0230-14",
+        "tomato:rotation:0298-00",
+        "tomato:rotation:0362-01",
+        "tomato:rotation:0700-00",
+        "tomato:rotation:0700-01",
+        "tomato:shape_trend:0212-02",
+        "tomato:shape_trend:0408-02",
+        "tomato:shape_trend:0618-02",
+        "tomato:shape_trend:0620-00",
+        "tomato:shape_trend:0714-01"
+      ],
+      "reuse_ratio_mean": 0.8323333307213727,
+      "reuse_ratio_mean_active": 0.8323333307213727,
+      "reuse_ratio_mean_raw": 0.9112857142857144,
+      "selection": {
+        "groups": null,
+        "manifest_path": "research/benchmark_manifests/tomato_motion_holdout_v1.toml",
+        "mode": "manifest",
+        "per_group": 2
+      },
+      "stopped_early": false
+    }
+  },
+  "holdout_mean_age4": {
+    "by_group": {
+      "direction": {
+        "agreement": 0.8,
+        "cached_accuracy": 0.4,
+        "dense_accuracy": 0.4,
+        "n": 5,
+        "reuse_ratio_mean_active": 0.6241428588117872
+      },
+      "rotation": {
+        "agreement": 0.6,
+        "cached_accuracy": 0.2,
+        "dense_accuracy": 0.4,
+        "n": 5,
+        "reuse_ratio_mean_active": 0.7758571352809668
+      },
+      "shape_trend": {
+        "agreement": 1.0,
+        "cached_accuracy": 0.0,
+        "dense_accuracy": 0.0,
+        "n": 5,
+        "reuse_ratio_mean_active": 0.7769999966025353
+      }
+    },
+    "summary": {
+      "agreement": 0.8,
+      "benchmark": "tomato",
+      "cache_mode": "default",
+      "cached_accuracy": 0.2,
+      "cached_parse_failures": 0,
+      "completed_item_ids": [
+        "tomato:direction:0225-07",
+        "tomato:direction:0226-05",
+        "tomato:direction:0271-00",
+        "tomato:direction:0560-01",
+        "tomato:direction:0573-00",
+        "tomato:rotation:0230-14",
+        "tomato:rotation:0298-00",
+        "tomato:rotation:0362-01",
+        "tomato:rotation:0700-00",
+        "tomato:rotation:0700-01",
+        "tomato:shape_trend:0212-02",
+        "tomato:shape_trend:0408-02",
+        "tomato:shape_trend:0618-02",
+        "tomato:shape_trend:0620-00",
+        "tomato:shape_trend:0714-01"
+      ],
+      "dense_accuracy": 0.26666666666666666,
+      "environment": {
+        "datasets": "4.8.4",
+        "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
+        "git_dirty": false,
+        "git_sha": "bb780f7a8bb79e90a482dcdbe236f2ac73149c96",
+        "huggingface_hub": "1.10.1",
+        "mlx_vlm_module": "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
+        "model_path": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
+        "platform": "darwin",
+        "python": "3.12.12"
+      },
+      "frame_count": 8,
+      "planner": {
+        "max_age": 4,
+        "pixel_change_threshold": 8.0,
+        "reuse_classes": [
+          "static",
+          "shifted"
+        ],
+        "shifted_threshold": 8.0,
+        "static_threshold": 3.0,
+        "statistic": "mean",
+        "top_k": 16
+      },
+      "refresh_interval": null,
+      "remaining_item_ids": [],
+      "requested_item_ids": [
+        "tomato:direction:0225-07",
+        "tomato:direction:0226-05",
+        "tomato:direction:0271-00",
+        "tomato:direction:0560-01",
+        "tomato:direction:0573-00",
+        "tomato:rotation:0230-14",
+        "tomato:rotation:0298-00",
+        "tomato:rotation:0362-01",
+        "tomato:rotation:0700-00",
+        "tomato:rotation:0700-01",
+        "tomato:shape_trend:0212-02",
+        "tomato:shape_trend:0408-02",
+        "tomato:shape_trend:0618-02",
+        "tomato:shape_trend:0620-00",
+        "tomato:shape_trend:0714-01"
+      ],
+      "reuse_ratio_mean": 0.7256666635650965,
+      "reuse_ratio_mean_active": 0.7256666635650965,
+      "reuse_ratio_mean_raw": 0.787642857142857,
+      "selection": {
+        "groups": null,
+        "manifest_path": "research/benchmark_manifests/tomato_motion_holdout_v1.toml",
+        "mode": "manifest",
+        "per_group": 2
+      },
+      "stopped_early": false
+    }
+  }
+}
