@@ -1,0 +1,21 @@
+benchmark = "mvbench"
+source = "mvbench_hosted_dev_v1"
+description = "Motion-sensitive MVBench development slice for planner search: action_localization, fine_grained_action, object_interaction, moving_direction, and moving_attribute."
+
+item_ids = [
+  "mvbench:action_localization:0",
+  "mvbench:action_localization:1",
+  "mvbench:action_localization:2",
+  "mvbench:fine_grained_action:0",
+  "mvbench:fine_grained_action:1",
+  "mvbench:fine_grained_action:2",
+  "mvbench:object_interaction:0",
+  "mvbench:object_interaction:1",
+  "mvbench:object_interaction:2",
+  "mvbench:moving_direction:0",
+  "mvbench:moving_direction:1",
+  "mvbench:moving_direction:2",
+  "mvbench:moving_attribute:0",
+  "mvbench:moving_attribute:1",
+  "mvbench:moving_attribute:2",
+]

@@ -1,0 +1,21 @@
+benchmark = "tomato"
+source = "tomato_holdout_v1"
+description = "Disjoint motion-heavy TOMATO holdout slice for planner evaluation: direction, rotation, and shape_trend from the frozen holdout manifest."
+
+item_ids = [
+  "tomato:direction:0225-07",
+  "tomato:direction:0226-05",
+  "tomato:direction:0271-00",
+  "tomato:direction:0560-01",
+  "tomato:direction:0573-00",
+  "tomato:rotation:0230-14",
+  "tomato:rotation:0298-00",
+  "tomato:rotation:0362-01",
+  "tomato:rotation:0700-00",
+  "tomato:rotation:0700-01",
+  "tomato:shape_trend:0212-02",
+  "tomato:shape_trend:0408-02",
+  "tomato:shape_trend:0618-02",
+  "tomato:shape_trend:0620-00",
+  "tomato:shape_trend:0714-01",
+]

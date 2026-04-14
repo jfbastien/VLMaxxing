@@ -1,0 +1,21 @@
+benchmark = "tomato"
+source = "tomato_dev_v1"
+description = "Motion-heavy TOMATO development slice used for planner search: direction, rotation, and shape_trend from the frozen dev manifest."
+
+item_ids = [
+  "tomato:direction:0231-04",
+  "tomato:direction:0231-05",
+  "tomato:direction:0231-06",
+  "tomato:direction:0234-02",
+  "tomato:direction:0234-03",
+  "tomato:rotation:0215-06",
+  "tomato:rotation:0215-07",
+  "tomato:rotation:0216-08",
+  "tomato:rotation:0216-09",
+  "tomato:rotation:0218-08",
+  "tomato:shape_trend:0209-04",
+  "tomato:shape_trend:0209-05",
+  "tomato:shape_trend:0231-07",
+  "tomato:shape_trend:0210-04",
+  "tomato:shape_trend:0210-05",
+]

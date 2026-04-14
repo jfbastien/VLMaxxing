@@ -18,6 +18,7 @@ from typing import Any, Literal, cast
 import av
 import mlx.core as mx
 import numpy as np
+import numpy.typing as npt
 from datasets import load_dataset  # type: ignore[import-untyped]
 from mlx_vlm import generate, load  # type: ignore[import-untyped]
 from mlx_vlm.utils import prepare_inputs  # type: ignore[import-untyped]
@@ -26,8 +27,10 @@ from PIL import Image
 from codec_through.answers import extract_choice
 from codec_through.temporal import (
     BlockClass,
+    BlockStatistic,
     BlockThresholds,
-    classify_blocks,
+    PlannerConfig,
+    classify_blocks_with_planner,
 )
 from codec_through.track_a import (
     active_region_block_mask,
@@ -43,6 +46,11 @@ MVBENCH_VIDEO_DIR = Path("data/benchmarks/mvbench/video")
 DEFAULT_MODEL_PATH = Path.home() / "models" / "Qwen2.5-VL-7B-Instruct-4bit"
 DEFAULT_THRESHOLDS = BlockThresholds(static_threshold=3.0, shifted_threshold=8.0)
 DEFAULT_REUSE_CLASSES = (BlockClass.STATIC, BlockClass.SHIFTED)
+DEFAULT_PLANNER = PlannerConfig(
+    statistic=BlockStatistic.MEAN,
+    static_threshold=DEFAULT_THRESHOLDS.static_threshold,
+    shifted_threshold=DEFAULT_THRESHOLDS.shifted_threshold,
+)
 DEFAULT_OUTPUT_PATH = Path("results/benchmark_track_a.jsonl")
 DEFAULT_SUMMARY_PATH = Path("results/benchmark_track_a_summary.json")
 BENCHMARK_FRAME_SIZE = 560
@@ -509,9 +517,72 @@ def _mean_or_none(values: list[float]) -> float | None:
     return float(np.mean(values)) if values else None
 
 
+def _planner_payload(
+    planner_config: PlannerConfig,
+    *,
+    reuse_classes: tuple[BlockClass, ...],
+    max_age: int | None,
+) -> dict[str, Any]:
+    return {
+        "statistic": planner_config.statistic.value,
+        "static_threshold": planner_config.static_threshold,
+        "shifted_threshold": planner_config.shifted_threshold,
+        "pixel_change_threshold": planner_config.pixel_change_threshold,
+        "top_k": planner_config.top_k,
+        "reuse_classes": [block_class.name.lower() for block_class in reuse_classes],
+        "max_age": max_age,
+    }
+
+
+def _parse_reuse_classes(raw_value: str) -> tuple[BlockClass, ...]:
+    mapping = {
+        "static": BlockClass.STATIC,
+        "shifted": BlockClass.SHIFTED,
+        "novel": BlockClass.NOVEL,
+    }
+    selected: list[BlockClass] = []
+    for part in raw_value.split(","):
+        normalized = part.strip().lower()
+        if not normalized:
+            continue
+        if normalized not in mapping:
+            raise ValueError(f"unsupported reuse class: {part!r}")
+        block_class = mapping[normalized]
+        if block_class not in selected:
+            selected.append(block_class)
+    if not selected:
+        raise ValueError("reuse_classes must include at least one class")
+    return tuple(selected)
+
+
+def _validate_max_age(max_age: int | None) -> int | None:
+    if max_age is None:
+        return None
+    if max_age <= 0:
+        raise ValueError("max_age must be positive when provided")
+    return max_age
+
+
+def _apply_age_gate(
+    reuse_mask: npt.NDArray[np.bool_],
+    ages: npt.NDArray[np.int32],
+    *,
+    max_age: int | None,
+) -> tuple[npt.NDArray[np.bool_], npt.NDArray[np.int32]]:
+    if reuse_mask.shape != ages.shape:
+        raise ValueError("reuse_mask and ages must match")
+    allowed = reuse_mask if max_age is None else reuse_mask & (ages < max_age)
+    next_ages = np.where(allowed, ages + 1, 0).astype(np.int32)
+    return allowed, next_ages
+
+
 def _mix_qwen_features(
     sample: PreparedSample,
     features: mx.array,
+    *,
+    planner_config: PlannerConfig,
+    reuse_classes: tuple[BlockClass, ...],
+    max_age: int | None,
 ) -> tuple[mx.array, list[float], list[float]]:
     image_grid_thw = np.array(sample.extra_kwargs["image_grid_thw"].tolist(), dtype=np.int64)
     counts = qwen_merged_token_counts(image_grid_thw, spatial_merge_size=QWEN_SPATIAL_MERGE)
@@ -525,23 +596,25 @@ def _mix_qwen_features(
         offset += count
 
     mixed_segments = [dense_segments[0]]
+    ages = np.zeros(dense_segments[0].shape[0], dtype=np.int32)
     raw_reused_ratios: list[float] = []
     active_reused_ratios: list[float] = []
     for frame_index in range(1, len(sample.frames)):
         previous = np.array(sample.frames[frame_index - 1], dtype=np.uint8)
         current = np.array(sample.frames[frame_index], dtype=np.uint8)
-        classification = classify_blocks(
+        classification = classify_blocks_with_planner(
             previous,
             current,
             block_size=QWEN_BLOCK_SIZE,
-            thresholds=DEFAULT_THRESHOLDS,
+            config=planner_config,
         )
-        reuse_mask = flattened_reuse_mask(classification, reuse_classes=DEFAULT_REUSE_CLASSES)
+        reuse_mask = flattened_reuse_mask(classification, reuse_classes=reuse_classes)
         if reuse_mask.size != dense_segments[frame_index].shape[0]:
             raise ValueError(
                 "classification/token mismatch: "
                 f"mask={reuse_mask.size}, tokens={dense_segments[frame_index].shape[0]}"
             )
+        allowed_mask, ages = _apply_age_gate(reuse_mask, ages, max_age=max_age)
         previous_active = active_region_block_mask(
             sample.frames[frame_index - 1].size,
             sample.active_boxes[frame_index - 1],
@@ -559,10 +632,14 @@ def _mix_qwen_features(
                 f"mask={active_mask.size}, tokens={reuse_mask.size}"
             )
         mixed_segments.append(
-            mx.where(mx.array(reuse_mask[:, None]), mixed_segments[-1], dense_segments[frame_index])
+            mx.where(
+                mx.array(allowed_mask[:, None]),
+                mixed_segments[-1],
+                dense_segments[frame_index],
+            )
         )
-        raw_reused_ratios.append(float(reuse_mask.mean()))
-        active_reused_ratios.append(_masked_mean(reuse_mask.astype(np.float32), active_mask))
+        raw_reused_ratios.append(float(allowed_mask.mean()))
+        active_reused_ratios.append(_masked_mean(allowed_mask.astype(np.float32), active_mask))
     mixed = mx.concatenate(mixed_segments, axis=0)
     mx.eval(mixed)
     return mixed, raw_reused_ratios, active_reused_ratios
@@ -574,11 +651,20 @@ def _select_cached_features(
     *,
     cache_mode: Literal["default", "identity"],
     refresh_interval: int | None,
+    planner_config: PlannerConfig,
+    reuse_classes: tuple[BlockClass, ...],
+    max_age: int | None,
 ) -> tuple[mx.array, list[float], list[float]]:
     if cache_mode == "identity":
         return features, [], []
     if refresh_interval is None or refresh_interval <= 0:
-        return _mix_qwen_features(sample, features)
+        return _mix_qwen_features(
+            sample,
+            features,
+            planner_config=planner_config,
+            reuse_classes=reuse_classes,
+            max_age=max_age,
+        )
 
     image_grid_thw = np.array(sample.extra_kwargs["image_grid_thw"].tolist(), dtype=np.int64)
     counts = qwen_merged_token_counts(image_grid_thw, spatial_merge_size=QWEN_SPATIAL_MERGE)
@@ -592,29 +678,32 @@ def _select_cached_features(
         offset += count
 
     mixed_segments = [dense_segments[0]]
+    ages = np.zeros(dense_segments[0].shape[0], dtype=np.int32)
     raw_reused_ratios: list[float] = []
     active_reused_ratios: list[float] = []
     for frame_index in range(1, len(sample.frames)):
         if frame_index % refresh_interval == 0:
             mixed_segments.append(dense_segments[frame_index])
+            ages = np.zeros(dense_segments[frame_index].shape[0], dtype=np.int32)
             raw_reused_ratios.append(0.0)
             active_reused_ratios.append(0.0)
             continue
 
         previous = np.array(sample.frames[frame_index - 1], dtype=np.uint8)
         current = np.array(sample.frames[frame_index], dtype=np.uint8)
-        classification = classify_blocks(
+        classification = classify_blocks_with_planner(
             previous,
             current,
             block_size=QWEN_BLOCK_SIZE,
-            thresholds=DEFAULT_THRESHOLDS,
+            config=planner_config,
         )
-        reuse_mask = flattened_reuse_mask(classification, reuse_classes=DEFAULT_REUSE_CLASSES)
+        reuse_mask = flattened_reuse_mask(classification, reuse_classes=reuse_classes)
         if reuse_mask.size != dense_segments[frame_index].shape[0]:
             raise ValueError(
                 "classification/token mismatch: "
                 f"mask={reuse_mask.size}, tokens={dense_segments[frame_index].shape[0]}"
             )
+        allowed_mask, ages = _apply_age_gate(reuse_mask, ages, max_age=max_age)
         previous_active = active_region_block_mask(
             sample.frames[frame_index - 1].size,
             sample.active_boxes[frame_index - 1],
@@ -632,10 +721,14 @@ def _select_cached_features(
                 f"mask={active_mask.size}, tokens={reuse_mask.size}"
             )
         mixed_segments.append(
-            mx.where(mx.array(reuse_mask[:, None]), mixed_segments[-1], dense_segments[frame_index])
+            mx.where(
+                mx.array(allowed_mask[:, None]),
+                mixed_segments[-1],
+                dense_segments[frame_index],
+            )
         )
-        raw_reused_ratios.append(float(reuse_mask.mean()))
-        active_reused_ratios.append(_masked_mean(reuse_mask.astype(np.float32), active_mask))
+        raw_reused_ratios.append(float(allowed_mask.mean()))
+        active_reused_ratios.append(_masked_mean(allowed_mask.astype(np.float32), active_mask))
 
     mixed = mx.concatenate(mixed_segments, axis=0)
     mx.eval(mixed)
@@ -693,6 +786,9 @@ def _run_chunk(
     max_tokens: int,
     cache_mode: Literal["default", "identity"],
     refresh_interval: int | None,
+    planner_config: PlannerConfig,
+    reuse_classes: tuple[BlockClass, ...],
+    max_age: int | None,
     allow_dirty: bool,
 ) -> list[dict[str, Any]]:
     _ensure_clean_git_tree(allow_dirty=allow_dirty)
@@ -719,6 +815,9 @@ def _run_chunk(
             features,
             cache_mode=cache_mode,
             refresh_interval=refresh_interval,
+            planner_config=planner_config,
+            reuse_classes=reuse_classes,
+            max_age=max_age,
         )
         dense = _generate_response(
             model,
@@ -774,9 +873,14 @@ def _run_chunk(
                 "reuse_ratio_mean_raw": _mean_or_none(raw_reused_ratios),
                 "frame_count": frame_count,
                 "thresholds": {
-                    "static": DEFAULT_THRESHOLDS.static_threshold,
-                    "shifted": DEFAULT_THRESHOLDS.shifted_threshold,
+                    "static": planner_config.static_threshold,
+                    "shifted": planner_config.shifted_threshold,
                 },
+                "planner": _planner_payload(
+                    planner_config,
+                    reuse_classes=reuse_classes,
+                    max_age=max_age,
+                ),
                 "selection_mode": "manifest" if selected_manifest is not None else "per_group",
                 "manifest_path": str(manifest_path) if manifest_path is not None else None,
             }
@@ -824,6 +928,9 @@ def _write_summary(
     cache_mode: Literal["default", "identity"],
     refresh_interval: int | None,
     manifest_path: Path | None,
+    planner_config: PlannerConfig,
+    reuse_classes: tuple[BlockClass, ...],
+    max_age: int | None,
 ) -> None:
     completed_items: list[dict[str, Any]] = []
     if output_path.exists():
@@ -863,6 +970,11 @@ def _write_summary(
         "frame_count": frame_count,
         "cache_mode": cache_mode,
         "refresh_interval": refresh_interval,
+        "planner": _planner_payload(
+            planner_config,
+            reuse_classes=reuse_classes,
+            max_age=max_age,
+        ),
         "requested_item_ids": requested_ids,
         "completed_item_ids": completed_ids,
         "remaining_item_ids": [
@@ -899,6 +1011,9 @@ def run_benchmark(
     control: RunControl | None,
     cache_mode: Literal["default", "identity"],
     refresh_interval: int | None,
+    planner_config: PlannerConfig,
+    reuse_classes: tuple[BlockClass, ...],
+    max_age: int | None,
     allow_dirty: bool,
 ) -> None:
     _ensure_clean_git_tree(allow_dirty=allow_dirty)
@@ -938,9 +1053,23 @@ def run_benchmark(
             cache_mode,
             "--refresh-interval",
             str(refresh_interval) if refresh_interval is not None else "0",
+            "--statistic",
+            planner_config.statistic.value,
+            "--static-threshold",
+            str(planner_config.static_threshold),
+            "--shifted-threshold",
+            str(planner_config.shifted_threshold),
+            "--pixel-change-threshold",
+            str(planner_config.pixel_change_threshold),
+            "--top-k",
+            str(planner_config.top_k),
+            "--reuse-classes",
+            ",".join(block_class.name.lower() for block_class in reuse_classes),
             "--item-id",
             *chunk,
         ]
+        if max_age is not None:
+            command.extend(["--max-age", str(max_age)])
         if allow_dirty:
             command.append("--allow-dirty")
         if manifest_path is not None:
@@ -965,6 +1094,9 @@ def run_benchmark(
                 cache_mode=cache_mode,
                 refresh_interval=refresh_interval,
                 manifest_path=manifest_path,
+                planner_config=planner_config,
+                reuse_classes=reuse_classes,
+                max_age=max_age,
             )
 
     if _stop_requested(control):
@@ -983,6 +1115,9 @@ def run_benchmark(
             cache_mode=cache_mode,
             refresh_interval=refresh_interval,
             manifest_path=manifest_path,
+            planner_config=planner_config,
+            reuse_classes=reuse_classes,
+            max_age=max_age,
         )
 
 
@@ -1000,6 +1135,29 @@ def main() -> None:
     run_parser.add_argument("--max-tokens", type=int, default=32)
     run_parser.add_argument("--cache-mode", choices=["default", "identity"], default="default")
     run_parser.add_argument("--refresh-interval", type=int, default=0)
+    run_parser.add_argument(
+        "--statistic",
+        choices=[statistic.value for statistic in BlockStatistic],
+        default=DEFAULT_PLANNER.statistic.value,
+    )
+    run_parser.add_argument(
+        "--static-threshold",
+        type=float,
+        default=DEFAULT_PLANNER.static_threshold,
+    )
+    run_parser.add_argument(
+        "--shifted-threshold",
+        type=float,
+        default=DEFAULT_PLANNER.shifted_threshold,
+    )
+    run_parser.add_argument(
+        "--pixel-change-threshold",
+        type=float,
+        default=DEFAULT_PLANNER.pixel_change_threshold,
+    )
+    run_parser.add_argument("--top-k", type=int, default=DEFAULT_PLANNER.top_k)
+    run_parser.add_argument("--reuse-classes", default="static,shifted")
+    run_parser.add_argument("--max-age", type=int, default=None)
     run_parser.add_argument("--model-path", type=Path, default=DEFAULT_MODEL_PATH)
     run_parser.add_argument("--output-path", type=Path, default=DEFAULT_OUTPUT_PATH)
     run_parser.add_argument("--summary-path", type=Path, default=DEFAULT_SUMMARY_PATH)
@@ -1015,11 +1173,31 @@ def main() -> None:
     chunk_parser.add_argument("--max-tokens", type=int, required=True)
     chunk_parser.add_argument("--cache-mode", choices=["default", "identity"], required=True)
     chunk_parser.add_argument("--refresh-interval", type=int, required=True)
+    chunk_parser.add_argument(
+        "--statistic",
+        choices=[statistic.value for statistic in BlockStatistic],
+        required=True,
+    )
+    chunk_parser.add_argument("--static-threshold", type=float, required=True)
+    chunk_parser.add_argument("--shifted-threshold", type=float, required=True)
+    chunk_parser.add_argument("--pixel-change-threshold", type=float, required=True)
+    chunk_parser.add_argument("--top-k", type=int, required=True)
+    chunk_parser.add_argument("--reuse-classes", required=True)
+    chunk_parser.add_argument("--max-age", type=int, default=None)
     chunk_parser.add_argument("--model-path", type=Path, required=True)
     chunk_parser.add_argument("--item-id", nargs="+", required=True)
     chunk_parser.add_argument("--allow-dirty", action="store_true")
 
     args = parser.parse_args()
+    planner_config = PlannerConfig(
+        statistic=BlockStatistic(args.statistic),
+        static_threshold=args.static_threshold,
+        shifted_threshold=args.shifted_threshold,
+        pixel_change_threshold=args.pixel_change_threshold,
+        top_k=args.top_k,
+    )
+    reuse_classes = _parse_reuse_classes(args.reuse_classes)
+    max_age = _validate_max_age(args.max_age)
     if args.command == "run-chunk":
         groups = args.groups.split(",") if args.groups else None
         print(
@@ -1035,6 +1213,9 @@ def main() -> None:
                     max_tokens=args.max_tokens,
                     cache_mode=cast(Literal["default", "identity"], args.cache_mode),
                     refresh_interval=args.refresh_interval if args.refresh_interval > 0 else None,
+                    planner_config=planner_config,
+                    reuse_classes=reuse_classes,
+                    max_age=max_age,
                     allow_dirty=bool(args.allow_dirty),
                 ),
                 sort_keys=True,
@@ -1057,6 +1238,9 @@ def main() -> None:
         control=control,
         cache_mode=cast(Literal["default", "identity"], args.cache_mode),
         refresh_interval=args.refresh_interval if args.refresh_interval > 0 else None,
+        planner_config=planner_config,
+        reuse_classes=reuse_classes,
+        max_age=max_age,
         allow_dirty=bool(args.allow_dirty),
     )
 
