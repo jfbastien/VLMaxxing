@@ -25,6 +25,14 @@ from mlx_vlm.utils import prepare_inputs  # type: ignore[import-untyped]
 from PIL import Image
 
 from codec_through.answers import extract_choice
+from codec_through.feature_cache import (
+    DEFAULT_FEATURE_CACHE_DIR,
+    CacheKey,
+    frame_sequence_sha256,
+    get_feature_cache,
+    preprocessing_hash,
+    put_feature_cache,
+)
 from codec_through.temporal import (
     BlockClass,
     BlockStatistic,
@@ -502,6 +510,63 @@ def _compute_cached_features(model: Any, sample: PreparedSample) -> mx.array:
     return cast(mx.array, features)
 
 
+def _feature_cache_key(sample: PreparedSample, *, model_path: Path) -> CacheKey:
+    width, height = sample.frames[0].size
+    return CacheKey(
+        model_id=str(model_path.resolve()),
+        item_id=sample.item.item_id,
+        frames_sha256=frame_sequence_sha256(sample.frames),
+        frame_count=len(sample.frames),
+        frame_size_h=height,
+        frame_size_w=width,
+        preprocessing_hash=preprocessing_hash(
+            decode_backend="pyav",
+            sampling_mode="uniform_global",
+            max_size=BENCHMARK_FRAME_SIZE,
+        ),
+    )
+
+
+def _compute_cached_features_with_replay(
+    model: Any,
+    sample: PreparedSample,
+    *,
+    model_path: Path,
+    use_feature_replay: bool,
+    feature_cache_dir: Path,
+) -> tuple[mx.array, bool]:
+    if not use_feature_replay:
+        return _compute_cached_features(model, sample), False
+
+    key = _feature_cache_key(sample, model_path=model_path)
+    cached = get_feature_cache(key, cache_dir=feature_cache_dir)
+    current_grid = np.array(sample.extra_kwargs["image_grid_thw"].tolist(), dtype=np.int64)
+    if cached is not None:
+        cached_features_np, cached_grid, _meta = cached
+        if not np.array_equal(cached_grid, current_grid):
+            raise ValueError(
+                f"feature replay cache hit had mismatched image_grid_thw for {sample.item.item_id}"
+            )
+        cached_features = mx.array(cached_features_np)
+        mx.eval(cached_features)
+        return cached_features, True
+
+    features = _compute_cached_features(model, sample)
+    put_feature_cache(
+        key,
+        features=np.array(features),
+        image_grid_thw=current_grid,
+        meta={
+            "benchmark": sample.item.benchmark,
+            "group": sample.item.group,
+            "item_id": sample.item.item_id,
+            "model_id": str(model_path.resolve()),
+        },
+        cache_dir=feature_cache_dir,
+    )
+    return features, False
+
+
 def _masked_mean(values: np.ndarray, mask: np.ndarray) -> float:
     if values.shape != mask.shape:
         raise ValueError("values and mask must have the same shape")
@@ -784,6 +849,8 @@ def _run_chunk(
     planner_config: PlannerConfig,
     reuse_classes: tuple[BlockClass, ...],
     max_age: int | None,
+    use_feature_replay: bool,
+    feature_cache_dir: Path,
     allow_dirty: bool,
 ) -> list[dict[str, Any]]:
     _ensure_clean_git_tree(allow_dirty=allow_dirty)
@@ -804,7 +871,13 @@ def _run_chunk(
     results: list[dict[str, Any]] = []
     for item in selected_items:
         sample = _prepare_sample(model, processor, item, frame_count=frame_count)
-        features = _compute_cached_features(model, sample)
+        features, feature_cache_hit = _compute_cached_features_with_replay(
+            model,
+            sample,
+            model_path=model_path,
+            use_feature_replay=use_feature_replay,
+            feature_cache_dir=feature_cache_dir,
+        )
         cached_features, raw_reused_ratios, active_reused_ratios = _select_cached_features(
             sample,
             features,
@@ -861,6 +934,7 @@ def _run_chunk(
                 ),
                 "cache_mode": cache_mode,
                 "refresh_interval": refresh_interval,
+                "feature_cache_hit": feature_cache_hit,
                 "reuse_ratio_mean": _mean_or_none(active_reused_ratios),
                 "reuse_ratio_mean_active": _mean_or_none(active_reused_ratios),
                 "reuse_ratio_mean_raw": _mean_or_none(raw_reused_ratios),
@@ -924,6 +998,8 @@ def _write_summary(
     planner_config: PlannerConfig,
     reuse_classes: tuple[BlockClass, ...],
     max_age: int | None,
+    use_feature_replay: bool,
+    feature_cache_dir: Path,
 ) -> None:
     completed_items: list[dict[str, Any]] = []
     if output_path.exists():
@@ -936,6 +1012,7 @@ def _write_summary(
     cached_correct = sum(bool(item["cached"]["correct"]) for item in completed_items)
     matched = sum(bool(item["match"]) for item in completed_items)
     parse_failures = sum(bool(item["cached"]["parse_failure"]) for item in completed_items)
+    feature_cache_hits = sum(bool(item.get("feature_cache_hit")) for item in completed_items)
     reuse_ratio_values = [
         float(item["reuse_ratio_mean"])
         for item in completed_items
@@ -963,6 +1040,10 @@ def _write_summary(
         "frame_count": frame_count,
         "cache_mode": cache_mode,
         "refresh_interval": refresh_interval,
+        "feature_replay_enabled": use_feature_replay,
+        "feature_cache_dir": str(feature_cache_dir),
+        "feature_cache_hits": feature_cache_hits,
+        "feature_cache_misses": len(completed_items) - feature_cache_hits,
         "planner": _planner_payload(
             planner_config,
             reuse_classes=reuse_classes,
@@ -1007,6 +1088,8 @@ def run_benchmark(
     planner_config: PlannerConfig,
     reuse_classes: tuple[BlockClass, ...],
     max_age: int | None,
+    use_feature_replay: bool,
+    feature_cache_dir: Path,
     allow_dirty: bool,
 ) -> None:
     _ensure_clean_git_tree(allow_dirty=allow_dirty)
@@ -1068,6 +1151,9 @@ def run_benchmark(
         # writes tracked artifacts, so child chunks should inherit that
         # provenance instead of rejecting the parent's own output files.
         command.append("--allow-dirty")
+        if not use_feature_replay:
+            command.append("--no-feature-replay")
+        command.extend(["--feature-cache-dir", str(feature_cache_dir)])
         if manifest_path is not None:
             command.extend(["--manifest", str(manifest_path)])
         else:
@@ -1093,6 +1179,8 @@ def run_benchmark(
                 planner_config=planner_config,
                 reuse_classes=reuse_classes,
                 max_age=max_age,
+                use_feature_replay=use_feature_replay,
+                feature_cache_dir=feature_cache_dir,
             )
 
     if _stop_requested(control):
@@ -1114,6 +1202,8 @@ def run_benchmark(
             planner_config=planner_config,
             reuse_classes=reuse_classes,
             max_age=max_age,
+            use_feature_replay=use_feature_replay,
+            feature_cache_dir=feature_cache_dir,
         )
 
 
@@ -1158,6 +1248,8 @@ def main() -> None:
     run_parser.add_argument("--output-path", type=Path, default=DEFAULT_OUTPUT_PATH)
     run_parser.add_argument("--summary-path", type=Path, default=DEFAULT_SUMMARY_PATH)
     run_parser.add_argument("--stop-file", type=Path, default=None)
+    run_parser.add_argument("--feature-cache-dir", type=Path, default=DEFAULT_FEATURE_CACHE_DIR)
+    run_parser.add_argument("--no-feature-replay", action="store_true")
     run_parser.add_argument("--allow-dirty", action="store_true")
 
     chunk_parser = subparsers.add_parser("run-chunk")
@@ -1182,6 +1274,8 @@ def main() -> None:
     chunk_parser.add_argument("--max-age", type=int, default=None)
     chunk_parser.add_argument("--model-path", type=Path, required=True)
     chunk_parser.add_argument("--item-id", nargs="+", required=True)
+    chunk_parser.add_argument("--feature-cache-dir", type=Path, default=DEFAULT_FEATURE_CACHE_DIR)
+    chunk_parser.add_argument("--no-feature-replay", action="store_true")
     chunk_parser.add_argument("--allow-dirty", action="store_true")
 
     args = parser.parse_args()
@@ -1212,6 +1306,8 @@ def main() -> None:
                     planner_config=planner_config,
                     reuse_classes=reuse_classes,
                     max_age=max_age,
+                    use_feature_replay=not bool(args.no_feature_replay),
+                    feature_cache_dir=args.feature_cache_dir,
                     allow_dirty=bool(args.allow_dirty),
                 ),
                 sort_keys=True,
@@ -1237,6 +1333,8 @@ def main() -> None:
         planner_config=planner_config,
         reuse_classes=reuse_classes,
         max_age=max_age,
+        use_feature_replay=not bool(args.no_feature_replay),
+        feature_cache_dir=args.feature_cache_dir,
         allow_dirty=bool(args.allow_dirty),
     )
 

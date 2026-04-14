@@ -57,6 +57,14 @@ Sweep artifacts should record, at minimum:
 - promote exactly one policy to the corresponding holdout
 - if the holdout misses materially, record the miss and do not overwrite it
 - do not cite dev-sweep best numbers as final evidence
+- do not call a single threshold point per statistic a `sweep`; that is only a
+  probe
+- use dense feature replay to accelerate repeated Track A policy runs, but do
+  not treat replay as systems evidence
+- when comparing statistics, try to calibrate threshold grids into overlapping
+  active-reuse bands before interpreting quality differences
+- keep dense frame-budget baselines alongside planner sweeps so policy wins are
+  not mistaken for wins over equally expensive dense alternatives
 
 ## Current Working Hypothesis
 

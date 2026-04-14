@@ -19,6 +19,9 @@ Report trade-offs over:
   - reuse classes
   - max age
   - refresh interval
+- dense baseline:
+  - matched frame-budget baselines such as dense `1/2/4/8` frames when the
+    comparison is about Track A quality at a bounded fresh-vision budget
 
 ## Current Rule
 
@@ -36,6 +39,9 @@ and not:
 - `compression ratio`
 
 unless same-stack skipped-compute evidence exists.
+
+Feature replay does not change this rule. Replay reduces repeated experiment
+cost; it is not a Track B win.
 
 ## Holdout Rule
 

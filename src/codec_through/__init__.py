@@ -1,6 +1,14 @@
 """codec-through research package."""
 
 from codec_through.answers import extract_choice
+from codec_through.feature_cache import (
+    DEFAULT_FEATURE_CACHE_DIR,
+    CacheKey,
+    frame_sequence_sha256,
+    get_feature_cache,
+    preprocessing_hash,
+    put_feature_cache,
+)
 from codec_through.ffmpeg import (
     ExtractedFrame,
     FramePacketInfo,
@@ -36,7 +44,9 @@ __all__ = [
     "ClassificationSummary",
     "COMPLEX",
     "CANDIDATE",
+    "CacheKey",
     "block_size_from_vision_config",
+    "DEFAULT_FEATURE_CACHE_DIR",
     "ExtractedFrame",
     "FLAT",
     "FramePacketInfo",
@@ -47,10 +57,14 @@ __all__ = [
     "extract_choice",
     "extract_frames",
     "extract_frames_single_pass",
+    "frame_sequence_sha256",
     "frame_level_early_exit",
+    "get_feature_cache",
     "mean_i_frame_size",
+    "preprocessing_hash",
     "probe_frame_count",
     "probe_frame_packets",
+    "put_feature_cache",
     "summarize_classification",
     "uniform_frame_indices",
 ]

@@ -153,13 +153,16 @@ Current position relative to the adjacent efficiency literature tracked in
     benchmark effort goes into policy improvement rather than repeated slice
     archaeology
 - immediate next method loop from the new evidence:
-  - keep bounded token age in the search space
-  - add dense answer-margin logging so confidence-limited items can be
-    separated from staleness-limited ones
+  - keep bounded token age in the search space, but stop treating it as the
+    only active lever before combined-axis testing lands
+  - use dense feature replay to expand policy search without paying redundant
+    dense vision encodes on every rerun
   - add matched dense frame-budget baselines so policy gains are compared
     against equally expensive dense alternatives
-  - only revisit additional planner statistics after the budget and margin
-    picture is clearer
+  - add dense answer-margin logging so confidence-limited items can be
+    separated from staleness-limited ones
+  - revisit planner statistics through calibrated grids rather than one-point
+    probes
 
 ## Evidence And Trust Model
 

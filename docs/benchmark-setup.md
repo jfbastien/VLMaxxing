@@ -133,6 +133,10 @@ Useful diagnosis option:
 - `--manifest <path>`:
   run an explicit frozen slice instead of the historical `first N per group`
   selection path
+- `--feature-cache-dir <path>`:
+  store or reuse dense vision features for repeated Track A planner sweeps
+- `--no-feature-replay`:
+  disable dense feature replay and force dense recomputation
 - `--allow-dirty`:
   bypass the default clean-tree guard for debugging only; reportable benchmark
   artifacts should come from clean commits
@@ -142,6 +146,12 @@ Current reuse-accounting rule on the benchmark runner:
 - `reuse_ratio_mean` is the pad-masked active-region reuse ratio
 - `reuse_ratio_mean_raw` is also recorded for descriptive comparison
 - identity-mode controls report reuse as `null` because the planner is bypassed
+
+Current replay rule on the benchmark runner:
+
+- replay is a Track A experiment accelerator only
+- cache hits are recorded per item as `feature_cache_hit`
+- replay does not justify speedup or compression language
 
 Recommended first TOMATO smoke on this machine:
 
@@ -193,6 +203,9 @@ Benchmark slice policy now lives under
 [research/benchmark_manifests/](../research/benchmark_manifests/README.md).
 Use `*_dev_v1.toml` during planner search and keep `*_holdout_v1.toml` frozen
 until the next policy choice is ready for evaluation.
+
+Replay methodology and invalidation rules live in
+[docs/methodology/feature-replay.md](methodology/feature-replay.md).
 
 ## TOMATO Notes
 
