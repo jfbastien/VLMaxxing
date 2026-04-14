@@ -54,10 +54,17 @@ Notes:
 Run date:
 
 - 2026-04-14
+- clean-tree summary rerun:
+  - 2026-04-14 after the benchmark runner began failing closed on dirty trees
 
 Artifact:
 
 - [phase1_46_benchmark_controls.json](artifacts/phase1_46_benchmark_controls.json)
+- clean rerun summaries:
+  - [phase1_46_tomato_identity_summary.json](artifacts/phase1_46_tomato_identity_summary.json)
+  - [phase1_46_tomato_default_summary.json](artifacts/phase1_46_tomato_default_summary.json)
+  - [phase1_46_mvbench_identity_summary.json](artifacts/phase1_46_mvbench_identity_summary.json)
+  - [phase1_46_mvbench_default_summary.json](artifacts/phase1_46_mvbench_default_summary.json)
 
 Runner updates used:
 
@@ -100,6 +107,15 @@ Observed outcome:
     - active reuse `0.9470`
     - raw reuse `0.9654`
     - raw minus active `0.0183`
+- the clean rerun removed a stale artifact inconsistency from the old summary
+  JSONs:
+  - earlier identity summaries were produced before identity-mode reuse was
+    normalized to `null`
+  - the current summary artifacts now record:
+    - `git_dirty = false`
+    - `reuse_ratio_mean = null`
+    - `reuse_ratio_mean_active = null`
+    - `reuse_ratio_mean_raw = null`
 
 ## Interpretation
 

@@ -1,6 +1,7 @@
 {
   "agreement": 1.0,
   "benchmark": "tomato",
+  "cache_mode": "identity",
   "cached_accuracy": 0.0,
   "cached_parse_failures": 0,
   "completed_item_ids": [
@@ -10,20 +11,30 @@
   "environment": {
     "datasets": "4.8.4",
     "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
-    "git_dirty": true,
-    "git_sha": "3db5307ed28b63572dacd9eced957834ee520a1b",
+    "git_dirty": false,
+    "git_sha": "35f71b709067c853ad1468c40174b5dddaac1948",
     "huggingface_hub": "1.10.1",
     "mlx_vlm_module": "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
     "model_path": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
     "platform": "darwin",
     "python": "3.12.12"
   },
+  "frame_count": 8,
+  "refresh_interval": null,
   "remaining_item_ids": [],
   "requested_item_ids": [
     "tomato:direction:0231-04"
   ],
-  "reuse_ratio_mean": 1.0,
-  "reuse_ratio_mean_active": 1.0,
-  "reuse_ratio_mean_raw": 1.0,
+  "reuse_ratio_mean": null,
+  "reuse_ratio_mean_active": null,
+  "reuse_ratio_mean_raw": null,
+  "selection": {
+    "groups": [
+      "direction"
+    ],
+    "manifest_path": null,
+    "mode": "per_group",
+    "per_group": 1
+  },
   "stopped_early": false
 }

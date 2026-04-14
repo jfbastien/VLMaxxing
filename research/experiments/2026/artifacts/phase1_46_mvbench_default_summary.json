@@ -1,6 +1,7 @@
 {
   "agreement": 1.0,
   "benchmark": "mvbench",
+  "cache_mode": "default",
   "cached_accuracy": 1.0,
   "cached_parse_failures": 0,
   "completed_item_ids": [
@@ -10,14 +11,16 @@
   "environment": {
     "datasets": "4.8.4",
     "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
-    "git_dirty": true,
-    "git_sha": "3db5307ed28b63572dacd9eced957834ee520a1b",
+    "git_dirty": false,
+    "git_sha": "35f71b709067c853ad1468c40174b5dddaac1948",
     "huggingface_hub": "1.10.1",
     "mlx_vlm_module": "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
     "model_path": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
     "platform": "darwin",
     "python": "3.12.12"
   },
+  "frame_count": 8,
+  "refresh_interval": null,
   "remaining_item_ids": [],
   "requested_item_ids": [
     "mvbench:moving_direction:0"
@@ -25,5 +28,13 @@
   "reuse_ratio_mean": 0.9470238089561462,
   "reuse_ratio_mean_active": 0.9470238089561462,
   "reuse_ratio_mean_raw": 0.9653571428571429,
+  "selection": {
+    "groups": [
+      "moving_direction"
+    ],
+    "manifest_path": null,
+    "mode": "per_group",
+    "per_group": 1
+  },
   "stopped_early": false
 }
