@@ -505,6 +505,11 @@ def _cmd_sweep(args: argparse.Namespace) -> None:
     ]
     bins = _bin_candidates(points, target_bins=target_bins)
     selected = _select_representative_policies(bins, per_bin=args.per_bin)
+    if args.max_policies is not None and len(selected) > args.max_policies:
+        # keep a diverse slice: sort by (statistic, max_age, mean_active_reuse)
+        # then stride across the list so the cap preserves coverage
+        stride = len(selected) / args.max_policies
+        selected = [selected[int(i * stride)] for i in range(args.max_policies)]
     print(f"selected {len(selected)} representative policies", file=sys.stderr)
     args.output_dir.mkdir(parents=True, exist_ok=True)
     results = []
@@ -588,6 +593,15 @@ def main() -> None:
     sweep.add_argument("--calibration", type=Path, required=True)
     sweep.add_argument("--frame-count", type=int, default=8)
     sweep.add_argument("--per-bin", type=int, default=1)
+    sweep.add_argument(
+        "--max-policies",
+        type=int,
+        default=None,
+        help=(
+            "Optional cap on total policy runs. Applied after per-bin "
+            "selection, preserves diversity via stride sampling."
+        ),
+    )
     sweep.add_argument("--output-dir", type=Path, required=True)
     sweep.add_argument("--out", type=Path, required=True)
     sweep.add_argument("--model-path", type=Path, default=DEFAULT_MODEL_PATH)

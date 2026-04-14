@@ -2,7 +2,7 @@
   "agreement": 1.0,
   "benchmark": "mvbench",
   "cache_mode": "identity",
-  "cached_accuracy": 0.5555555555555556,
+  "cached_accuracy": 0.6428571428571429,
   "cached_parse_failures": 0,
   "completed_item_ids": [
     "mvbench:action_localization:4",
@@ -13,9 +13,14 @@
     "mvbench:fine_grained_action:75",
     "mvbench:object_interaction:46",
     "mvbench:object_interaction:75",
-    "mvbench:object_interaction:96"
+    "mvbench:object_interaction:96",
+    "mvbench:moving_direction:32",
+    "mvbench:moving_direction:37",
+    "mvbench:moving_direction:125",
+    "mvbench:moving_attribute:42",
+    "mvbench:moving_attribute:51"
   ],
-  "dense_accuracy": 0.5555555555555556,
+  "dense_accuracy": 0.6428571428571429,
   "environment": {
     "datasets": "4.8.4",
     "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
@@ -29,7 +34,7 @@
   },
   "feature_cache_dir": "research/cache/dense_features",
   "feature_cache_hits": 0,
-  "feature_cache_misses": 9,
+  "feature_cache_misses": 14,
   "feature_replay_enabled": true,
   "frame_count": 6,
   "planner": {
@@ -46,11 +51,6 @@
   },
   "refresh_interval": null,
   "remaining_item_ids": [
-    "mvbench:moving_direction:32",
-    "mvbench:moving_direction:37",
-    "mvbench:moving_direction:125",
-    "mvbench:moving_attribute:42",
-    "mvbench:moving_attribute:51",
     "mvbench:moving_attribute:136"
   ],
   "requested_item_ids": [
