@@ -2,16 +2,26 @@
   "agreement": 1.0,
   "benchmark": "mvbench",
   "cache_mode": "identity",
-  "cached_accuracy": 0.6,
+  "cached_accuracy": 0.7333333333333333,
   "cached_parse_failures": 0,
   "completed_item_ids": [
     "mvbench:action_localization:4",
     "mvbench:action_localization:104",
     "mvbench:action_localization:172",
     "mvbench:fine_grained_action:26",
-    "mvbench:fine_grained_action:33"
+    "mvbench:fine_grained_action:33",
+    "mvbench:fine_grained_action:75",
+    "mvbench:object_interaction:46",
+    "mvbench:object_interaction:75",
+    "mvbench:object_interaction:96",
+    "mvbench:moving_direction:32",
+    "mvbench:moving_direction:37",
+    "mvbench:moving_direction:125",
+    "mvbench:moving_attribute:42",
+    "mvbench:moving_attribute:51",
+    "mvbench:moving_attribute:136"
   ],
-  "dense_accuracy": 0.6,
+  "dense_accuracy": 0.7333333333333333,
   "environment": {
     "datasets": "4.8.4",
     "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
@@ -25,7 +35,7 @@
   },
   "feature_cache_dir": "research/cache/dense_features",
   "feature_cache_hits": 0,
-  "feature_cache_misses": 5,
+  "feature_cache_misses": 15,
   "feature_replay_enabled": true,
   "frame_count": 8,
   "planner": {
@@ -41,18 +51,7 @@
     "top_k": 16
   },
   "refresh_interval": null,
-  "remaining_item_ids": [
-    "mvbench:fine_grained_action:75",
-    "mvbench:object_interaction:46",
-    "mvbench:object_interaction:75",
-    "mvbench:object_interaction:96",
-    "mvbench:moving_direction:32",
-    "mvbench:moving_direction:37",
-    "mvbench:moving_direction:125",
-    "mvbench:moving_attribute:42",
-    "mvbench:moving_attribute:51",
-    "mvbench:moving_attribute:136"
-  ],
+  "remaining_item_ids": [],
   "requested_item_ids": [
     "mvbench:action_localization:4",
     "mvbench:action_localization:104",

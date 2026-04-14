@@ -1,0 +1,221 @@
+{
+  "benchmark": "mvbench",
+  "chunk_size": 1,
+  "frame_counts": [
+    1,
+    2,
+    3,
+    4,
+    6,
+    8
+  ],
+  "manifest_path": "research/benchmark_manifests/mvbench_motion_holdout_v1.toml",
+  "max_tokens": 32,
+  "model_path": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
+  "runs": [
+    {
+      "agreement": 1.0,
+      "count": 15,
+      "dense_accuracy": 0.26666666666666666,
+      "dense_accuracy_ci95": [
+        0.10897453325692374,
+        0.5195043405598057
+      ],
+      "frame_count": 1,
+      "output_path": "research/experiments/2026/artifacts/frame_budget_mvbench_motion_holdout/frame_1.jsonl",
+      "per_group_dense_accuracy": {
+        "action_localization": {
+          "count": 3,
+          "dense_accuracy": 0.0
+        },
+        "fine_grained_action": {
+          "count": 3,
+          "dense_accuracy": 0.3333333333333333
+        },
+        "moving_attribute": {
+          "count": 3,
+          "dense_accuracy": 0.0
+        },
+        "moving_direction": {
+          "count": 3,
+          "dense_accuracy": 0.6666666666666666
+        },
+        "object_interaction": {
+          "count": 3,
+          "dense_accuracy": 0.3333333333333333
+        }
+      },
+      "summary_path": "research/experiments/2026/artifacts/frame_budget_mvbench_motion_holdout/frame_1_summary.json"
+    },
+    {
+      "agreement": 1.0,
+      "count": 15,
+      "dense_accuracy": 0.5333333333333333,
+      "dense_accuracy_ci95": [
+        0.30116980025498397,
+        0.7519046463426261
+      ],
+      "frame_count": 2,
+      "output_path": "research/experiments/2026/artifacts/frame_budget_mvbench_motion_holdout/frame_2.jsonl",
+      "per_group_dense_accuracy": {
+        "action_localization": {
+          "count": 3,
+          "dense_accuracy": 0.3333333333333333
+        },
+        "fine_grained_action": {
+          "count": 3,
+          "dense_accuracy": 0.3333333333333333
+        },
+        "moving_attribute": {
+          "count": 3,
+          "dense_accuracy": 0.6666666666666666
+        },
+        "moving_direction": {
+          "count": 3,
+          "dense_accuracy": 0.6666666666666666
+        },
+        "object_interaction": {
+          "count": 3,
+          "dense_accuracy": 0.6666666666666666
+        }
+      },
+      "summary_path": "research/experiments/2026/artifacts/frame_budget_mvbench_motion_holdout/frame_2_summary.json"
+    },
+    {
+      "agreement": 1.0,
+      "count": 15,
+      "dense_accuracy": 0.6,
+      "dense_accuracy_ci95": [
+        0.357468301206246,
+        0.8017550385865841
+      ],
+      "frame_count": 3,
+      "output_path": "research/experiments/2026/artifacts/frame_budget_mvbench_motion_holdout/frame_3.jsonl",
+      "per_group_dense_accuracy": {
+        "action_localization": {
+          "count": 3,
+          "dense_accuracy": 0.3333333333333333
+        },
+        "fine_grained_action": {
+          "count": 3,
+          "dense_accuracy": 0.3333333333333333
+        },
+        "moving_attribute": {
+          "count": 3,
+          "dense_accuracy": 1.0
+        },
+        "moving_direction": {
+          "count": 3,
+          "dense_accuracy": 0.6666666666666666
+        },
+        "object_interaction": {
+          "count": 3,
+          "dense_accuracy": 0.6666666666666666
+        }
+      },
+      "summary_path": "research/experiments/2026/artifacts/frame_budget_mvbench_motion_holdout/frame_3_summary.json"
+    },
+    {
+      "agreement": 1.0,
+      "count": 15,
+      "dense_accuracy": 0.6,
+      "dense_accuracy_ci95": [
+        0.357468301206246,
+        0.8017550385865841
+      ],
+      "frame_count": 4,
+      "output_path": "research/experiments/2026/artifacts/frame_budget_mvbench_motion_holdout/frame_4.jsonl",
+      "per_group_dense_accuracy": {
+        "action_localization": {
+          "count": 3,
+          "dense_accuracy": 0.3333333333333333
+        },
+        "fine_grained_action": {
+          "count": 3,
+          "dense_accuracy": 0.3333333333333333
+        },
+        "moving_attribute": {
+          "count": 3,
+          "dense_accuracy": 1.0
+        },
+        "moving_direction": {
+          "count": 3,
+          "dense_accuracy": 0.6666666666666666
+        },
+        "object_interaction": {
+          "count": 3,
+          "dense_accuracy": 0.6666666666666666
+        }
+      },
+      "summary_path": "research/experiments/2026/artifacts/frame_budget_mvbench_motion_holdout/frame_4_summary.json"
+    },
+    {
+      "agreement": 1.0,
+      "count": 15,
+      "dense_accuracy": 0.6666666666666666,
+      "dense_accuracy_ci95": [
+        0.41713547738519774,
+        0.8482367556028526
+      ],
+      "frame_count": 6,
+      "output_path": "research/experiments/2026/artifacts/frame_budget_mvbench_motion_holdout/frame_6.jsonl",
+      "per_group_dense_accuracy": {
+        "action_localization": {
+          "count": 3,
+          "dense_accuracy": 0.6666666666666666
+        },
+        "fine_grained_action": {
+          "count": 3,
+          "dense_accuracy": 0.6666666666666666
+        },
+        "moving_attribute": {
+          "count": 3,
+          "dense_accuracy": 1.0
+        },
+        "moving_direction": {
+          "count": 3,
+          "dense_accuracy": 0.6666666666666666
+        },
+        "object_interaction": {
+          "count": 3,
+          "dense_accuracy": 0.3333333333333333
+        }
+      },
+      "summary_path": "research/experiments/2026/artifacts/frame_budget_mvbench_motion_holdout/frame_6_summary.json"
+    },
+    {
+      "agreement": 1.0,
+      "count": 15,
+      "dense_accuracy": 0.7333333333333333,
+      "dense_accuracy_ci95": [
+        0.4804956594401943,
+        0.8910254667430761
+      ],
+      "frame_count": 8,
+      "output_path": "research/experiments/2026/artifacts/frame_budget_mvbench_motion_holdout/frame_8.jsonl",
+      "per_group_dense_accuracy": {
+        "action_localization": {
+          "count": 3,
+          "dense_accuracy": 0.6666666666666666
+        },
+        "fine_grained_action": {
+          "count": 3,
+          "dense_accuracy": 0.3333333333333333
+        },
+        "moving_attribute": {
+          "count": 3,
+          "dense_accuracy": 1.0
+        },
+        "moving_direction": {
+          "count": 3,
+          "dense_accuracy": 0.6666666666666666
+        },
+        "object_interaction": {
+          "count": 3,
+          "dense_accuracy": 1.0
+        }
+      },
+      "summary_path": "research/experiments/2026/artifacts/frame_budget_mvbench_motion_holdout/frame_8_summary.json"
+    }
+  ]
+}
