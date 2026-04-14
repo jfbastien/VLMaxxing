@@ -44,6 +44,11 @@ from codec_through.temporal import (
     classify_blocks_with_planner,
 )
 
+# Re-use the main benchmark runner's manifest + video lookup so path
+# resolution stays consistent across Track A scripts.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from run_benchmark_track_a import _load_items_by_id as _load_benchmark_items  # noqa: E402
+
 TOMATO_VIDEO_DIR = Path("data/benchmarks/tomato/videos")
 MVBENCH_VIDEO_DIR = Path("data/benchmarks/mvbench/video")
 DEFAULT_MODEL_PATH = Path.home() / "models" / "Qwen2.5-VL-7B-Instruct-4bit"
@@ -114,72 +119,36 @@ def _load_manifest(path: Path) -> Manifest:
     return Manifest(benchmark=benchmark, item_ids=ids, path=path)
 
 
-def _tomato_video_path(item_id: str) -> Path:
-    parts = item_id.split(":")
-    if len(parts) != 3:
-        raise ValueError(f"unexpected TOMATO item id: {item_id}")
-    clip_id = parts[2]
-    # TOMATO clip ids encode group implicitly. Walk the known subdirs.
-    for bucket in ("human", "object", "simulated"):
-        candidate = TOMATO_VIDEO_DIR / bucket / f"{clip_id}.mp4"
-        if candidate.exists():
-            return candidate
-    raise FileNotFoundError(f"could not locate TOMATO video for {item_id}")
-
-
-def _mvbench_video_paths(item_id: str) -> Path:
-    # MVBench hosted slice: item_id = mvbench:<task>:<index>. Each task has a
-    # JSON referencing concrete video files; we lean on the jsonl output of
-    # the main runner if it was generated, or fall back to a per-task scan.
-    parts = item_id.split(":")
-    if len(parts) != 3:
-        raise ValueError(f"unexpected MVBench item id: {item_id}")
-    task = parts[1]
-    index = int(parts[2])
-    json_dir = Path("data/benchmarks/mvbench/hf/json")
-    json_path = json_dir / f"{task}.json"
-    if not json_path.exists():
-        raise FileNotFoundError(f"no MVBench json for task {task}: {json_path}")
-    entries = json.loads(json_path.read_text())
-    entry = entries[index]
-    video_rel = entry.get("video") or entry.get("video_path")
-    if video_rel is None:
-        raise ValueError(f"no video field for {item_id}")
-    return cast(Path, Path("data/benchmarks/mvbench/video") / video_rel)
-
-
-def _uniform_frame_indices(total_frames: int, count: int) -> list[int]:
-    if total_frames <= 0 or count <= 0:
-        return []
-    if count >= total_frames:
-        return list(range(total_frames))
-    return [round(i * (total_frames - 1) / (count - 1)) for i in range(count)]
+def _resolve_video_paths(
+    benchmark: Literal["tomato", "mvbench"], item_ids: list[str]
+) -> dict[str, Path]:
+    """Resolve benchmark item ids to video paths via the main runner registry."""
+    items = _load_benchmark_items(benchmark, item_ids=item_ids)
+    return {item.item_id: item.video_path for item in items}
 
 
 def _decode_uniform_frames(video_path: Path, *, frame_count: int) -> list[Image.Image]:
+    """Decode all frames, then resample to frame_count with np.linspace indices.
+
+    Mirrors `scripts/run_benchmark_track_a.py` so calibration reuse ratios
+    match the ratios observed during the actual benchmark run: duplicates
+    allowed when the source clip has fewer than frame_count frames.
+    """
+    if frame_count <= 0:
+        raise ValueError("frame_count must be positive")
+    raw_frames: list[Image.Image] = []
     with av.open(str(video_path)) as container:
         stream = container.streams.video[0]
         stream.thread_type = "AUTO"
-        total_frames = stream.frames or 0
-        if total_frames == 0:
-            # fallback: count via decode
-            total_frames = sum(1 for _ in container.decode(video=0))
-            container.seek(0)
-        indices = _uniform_frame_indices(total_frames, frame_count)
-        wanted = set(indices)
-        frames_by_index: dict[int, Image.Image] = {}
-        for idx, frame in enumerate(container.decode(video=0)):
-            if idx in wanted:
-                img = cast(Image.Image, frame.to_image()).convert("RGB")  # type: ignore[no-untyped-call]
-                frames_by_index[idx] = img
-            if len(frames_by_index) == len(wanted):
-                break
-    ordered = [frames_by_index[i] for i in indices if i in frames_by_index]
-    if len(ordered) != frame_count:
-        raise ValueError(
-            f"{video_path} yielded {len(ordered)} frames, expected {frame_count}"
-        )
-    return ordered
+        for frame in container.decode(video=0):
+            img = cast(Image.Image, frame.to_image()).convert("RGB")  # type: ignore[no-untyped-call]
+            raw_frames.append(img)
+    if not raw_frames:
+        raise ValueError(f"no frames decoded from {video_path}")
+    if frame_count == 1:
+        return [raw_frames[0]]
+    indices = np.linspace(0, len(raw_frames) - 1, frame_count, dtype=int).tolist()
+    return [raw_frames[index] for index in indices]
 
 
 def _letterbox_to(image: Image.Image, *, size: int) -> Image.Image:
@@ -318,14 +287,9 @@ def _default_candidates() -> list[PolicyCandidate]:
     )
 
 
-def _video_path_for_item(benchmark: str, item_id: str) -> Path:
-    if benchmark == "tomato":
-        return _tomato_video_path(item_id)
-    return _mvbench_video_paths(item_id)
-
-
-def _decode_and_normalize(item_id: str, *, benchmark: str, frame_count: int) -> list[np.ndarray]:
-    video_path = _video_path_for_item(benchmark, item_id)
+def _decode_and_normalize(
+    video_path: Path, *, frame_count: int
+) -> list[np.ndarray]:
     frames = _decode_uniform_frames(video_path, frame_count=frame_count)
     letterboxed = [_letterbox_to(f, size=BENCHMARK_FRAME_SIZE) for f in frames]
     return [np.array(f, dtype=np.uint8) for f in letterboxed]
@@ -339,10 +303,11 @@ def _calibrate(
 ) -> list[CalibrationPoint]:
     # decode once per item, then loop policies (cheap on CPU)
     print(f"decoding {len(manifest.item_ids)} clips for calibration", file=sys.stderr)
+    video_paths = _resolve_video_paths(manifest.benchmark, list(manifest.item_ids))
     frames_by_item: dict[str, list[np.ndarray]] = {}
     for item_id in manifest.item_ids:
         frames_by_item[item_id] = _decode_and_normalize(
-            item_id, benchmark=manifest.benchmark, frame_count=frame_count
+            video_paths[item_id], frame_count=frame_count
         )
     results: list[CalibrationPoint] = []
     for idx, cand in enumerate(candidates):

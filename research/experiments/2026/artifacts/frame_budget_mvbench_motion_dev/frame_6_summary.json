@@ -2,7 +2,7 @@
   "agreement": 1.0,
   "benchmark": "mvbench",
   "cache_mode": "identity",
-  "cached_accuracy": 0.4666666666666667,
+  "cached_accuracy": 0.6666666666666666,
   "cached_parse_failures": 0,
   "completed_item_ids": [
     "mvbench:action_localization:0",
@@ -21,12 +21,12 @@
     "mvbench:moving_attribute:1",
     "mvbench:moving_attribute:2"
   ],
-  "dense_accuracy": 0.4666666666666667,
+  "dense_accuracy": 0.6666666666666666,
   "environment": {
     "datasets": "4.8.4",
     "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
-    "git_dirty": false,
-    "git_sha": "b1f8480e12ae10fd7b5ce51dcc1ad3ee11881241",
+    "git_dirty": true,
+    "git_sha": "bd0d4fe8505b44461896bfc92fefde6ce1885811",
     "huggingface_hub": "1.10.1",
     "mlx_vlm_module": "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
     "model_path": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
@@ -34,10 +34,10 @@
     "python": "3.12.12"
   },
   "feature_cache_dir": "research/cache/dense_features",
-  "feature_cache_hits": 15,
-  "feature_cache_misses": 0,
+  "feature_cache_hits": 0,
+  "feature_cache_misses": 15,
   "feature_replay_enabled": true,
-  "frame_count": 1,
+  "frame_count": 6,
   "planner": {
     "max_age": null,
     "pixel_change_threshold": 8.0,
