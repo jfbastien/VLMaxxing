@@ -1,4 +1,4 @@
-"""Dense feature replay cache for Track A benchmark sweeps."""
+"""Dense feature cache for repeated Track A benchmark reruns."""
 
 from __future__ import annotations
 

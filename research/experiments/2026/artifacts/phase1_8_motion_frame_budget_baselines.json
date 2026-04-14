@@ -1,0 +1,268 @@
+{
+  "dev": {
+    "cached_policies": {
+      "default_mean": {
+        "active_reuse": 0.7979523820536477,
+        "agreement": 0.7333333333333333,
+        "cached_accuracy": 0.26666666666666666,
+        "dense_accuracy": 0.4666666666666667,
+        "fresh_frames_equivalent": 2.414333325624466,
+        "fresh_vision_token_equivalent": 965.7333302497865
+      },
+      "mean_max_age_4": {
+        "active_reuse": 0.6976666655923639,
+        "agreement": 0.8666666666666667,
+        "cached_accuracy": 0.4,
+        "dense_accuracy": 0.4666666666666667,
+        "fresh_frames_equivalent": 3.1163333408534526,
+        "fresh_vision_token_equivalent": 1246.533336341381
+      },
+      "mean_static_only": {
+        "active_reuse": 0.635190475838525,
+        "agreement": 0.8,
+        "cached_accuracy": 0.3333333333333333,
+        "dense_accuracy": 0.4666666666666667,
+        "fresh_frames_equivalent": 3.553666669130325,
+        "fresh_vision_token_equivalent": 1421.4666676521301
+      }
+    },
+    "dense_curve": [
+      {
+        "dense_accuracy": 0.0,
+        "dense_accuracy_ci95": [
+          0.0,
+          0.20388330103584862
+        ],
+        "frame_count": 1,
+        "fresh_vision_token_equivalent": 400,
+        "per_group_dense_accuracy": {
+          "direction": {
+            "count": 5,
+            "dense_accuracy": 0.0
+          },
+          "rotation": {
+            "count": 5,
+            "dense_accuracy": 0.0
+          },
+          "shape_trend": {
+            "count": 5,
+            "dense_accuracy": 0.0
+          }
+        }
+      },
+      {
+        "dense_accuracy": 0.26666666666666666,
+        "dense_accuracy_ci95": [
+          0.10897453325692374,
+          0.5195043405598057
+        ],
+        "frame_count": 2,
+        "fresh_vision_token_equivalent": 800,
+        "per_group_dense_accuracy": {
+          "direction": {
+            "count": 5,
+            "dense_accuracy": 0.2
+          },
+          "rotation": {
+            "count": 5,
+            "dense_accuracy": 0.2
+          },
+          "shape_trend": {
+            "count": 5,
+            "dense_accuracy": 0.4
+          }
+        }
+      },
+      {
+        "dense_accuracy": 0.26666666666666666,
+        "dense_accuracy_ci95": [
+          0.10897453325692374,
+          0.5195043405598057
+        ],
+        "frame_count": 3,
+        "fresh_vision_token_equivalent": 1200,
+        "per_group_dense_accuracy": {
+          "direction": {
+            "count": 5,
+            "dense_accuracy": 0.2
+          },
+          "rotation": {
+            "count": 5,
+            "dense_accuracy": 0.2
+          },
+          "shape_trend": {
+            "count": 5,
+            "dense_accuracy": 0.4
+          }
+        }
+      },
+      {
+        "dense_accuracy": 0.26666666666666666,
+        "dense_accuracy_ci95": [
+          0.10897453325692374,
+          0.5195043405598057
+        ],
+        "frame_count": 4,
+        "fresh_vision_token_equivalent": 1600,
+        "per_group_dense_accuracy": {
+          "direction": {
+            "count": 5,
+            "dense_accuracy": 0.2
+          },
+          "rotation": {
+            "count": 5,
+            "dense_accuracy": 0.4
+          },
+          "shape_trend": {
+            "count": 5,
+            "dense_accuracy": 0.2
+          }
+        }
+      },
+      {
+        "dense_accuracy": 0.4,
+        "dense_accuracy_ci95": [
+          0.1982449614134158,
+          0.6425316987937539
+        ],
+        "frame_count": 6,
+        "fresh_vision_token_equivalent": 2400,
+        "per_group_dense_accuracy": {
+          "direction": {
+            "count": 5,
+            "dense_accuracy": 0.4
+          },
+          "rotation": {
+            "count": 5,
+            "dense_accuracy": 0.4
+          },
+          "shape_trend": {
+            "count": 5,
+            "dense_accuracy": 0.4
+          }
+        }
+      },
+      {
+        "dense_accuracy": 0.4666666666666667,
+        "dense_accuracy_ci95": [
+          0.24809535365737387,
+          0.698830199745016
+        ],
+        "frame_count": 8,
+        "fresh_vision_token_equivalent": 3200,
+        "per_group_dense_accuracy": {
+          "direction": {
+            "count": 5,
+            "dense_accuracy": 0.6
+          },
+          "rotation": {
+            "count": 5,
+            "dense_accuracy": 0.4
+          },
+          "shape_trend": {
+            "count": 5,
+            "dense_accuracy": 0.4
+          }
+        }
+      }
+    ],
+    "manifest_path": "research/benchmark_manifests/tomato_motion_dev_v1.toml"
+  },
+  "holdout": {
+    "cached_policies": {
+      "default_mean": {
+        "active_reuse": 0.8323333307213727,
+        "agreement": 0.8666666666666667,
+        "cached_accuracy": 0.2,
+        "dense_accuracy": 0.26666666666666666,
+        "fresh_frames_equivalent": 2.173666684950391,
+        "fresh_vision_token_equivalent": 869.4666739801564
+      },
+      "mean_max_age_4": {
+        "active_reuse": 0.7256666635650965,
+        "agreement": 0.8,
+        "cached_accuracy": 0.2,
+        "dense_accuracy": 0.26666666666666666,
+        "fresh_frames_equivalent": 2.920333355044325,
+        "fresh_vision_token_equivalent": 1168.13334201773
+      }
+    },
+    "dense_curve": [
+      {
+        "dense_accuracy": 0.2,
+        "dense_accuracy_ci95": [
+          0.07047549346981563,
+          0.45185448715169363
+        ],
+        "frame_count": 1,
+        "fresh_vision_token_equivalent": 400,
+        "per_group_dense_accuracy": {
+          "direction": {
+            "count": 5,
+            "dense_accuracy": 0.2
+          },
+          "rotation": {
+            "count": 5,
+            "dense_accuracy": 0.2
+          },
+          "shape_trend": {
+            "count": 5,
+            "dense_accuracy": 0.2
+          }
+        }
+      },
+      {
+        "dense_accuracy": 0.13333333333333333,
+        "dense_accuracy_ci95": [
+          0.03736125910306537,
+          0.37881982832322364
+        ],
+        "frame_count": 4,
+        "fresh_vision_token_equivalent": 1600,
+        "per_group_dense_accuracy": {
+          "direction": {
+            "count": 5,
+            "dense_accuracy": 0.2
+          },
+          "rotation": {
+            "count": 5,
+            "dense_accuracy": 0.2
+          },
+          "shape_trend": {
+            "count": 5,
+            "dense_accuracy": 0.0
+          }
+        }
+      },
+      {
+        "dense_accuracy": 0.26666666666666666,
+        "dense_accuracy_ci95": [
+          0.10897453325692374,
+          0.5195043405598057
+        ],
+        "frame_count": 6,
+        "fresh_vision_token_equivalent": 2400,
+        "per_group_dense_accuracy": {
+          "direction": {
+            "count": 5,
+            "dense_accuracy": 0.4
+          },
+          "rotation": {
+            "count": 5,
+            "dense_accuracy": 0.4
+          },
+          "shape_trend": {
+            "count": 5,
+            "dense_accuracy": 0.0
+          }
+        }
+      }
+    ],
+    "manifest_path": "research/benchmark_manifests/tomato_motion_holdout_v1.toml"
+  },
+  "notes": [
+    "fresh_vision_token_equivalent is a Track A budget heuristic on fixed-size benchmark inputs, not a Track B speedup claim",
+    "dense 8-frame baselines are also present in the phase1_6 summaries and align with the rerun values here"
+  ],
+  "tokens_per_frame": 400
+}

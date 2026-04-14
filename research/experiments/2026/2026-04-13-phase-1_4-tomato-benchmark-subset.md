@@ -217,10 +217,11 @@ Run B interpretation:
   ways:
   - agreement on the local `30`-item slice is only `0.833`
   - the local dense baseline itself is also weak at `0.300`
-- follow-up diagnostics now show that local strict and loose parsing are
-  identical on this slice because parse failures stayed at `0`; the current
-  disagreement is therefore a real local semantic difference on this subset,
-  not a local parser artifact
+- follow-up diagnostics now show that the saved runs had matching strict and
+  loose rescoring on this slice because parse failures stayed at `0`; this
+  subset therefore shows no evidence of a local parsing-driven difference, and
+  the remaining gap should be treated as a semantic or preprocessing diagnosis
+  target
 - that means the next benchmark work should separate two questions instead of
   collapsing them:
   - how much of the gap is cache-induced disagreement?

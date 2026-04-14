@@ -1,4 +1,4 @@
-# Phase 1.7: Motion Statistic Sweep
+# Phase 1.7: Motion Statistic Comparison
 
 ## Preregistration
 

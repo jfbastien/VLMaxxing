@@ -134,13 +134,14 @@ Observed outcome:
 
 Three things are now established.
 
-First, the local TOMATO and MVBench disagreements are not parser artifacts on
-the saved local subsets.
+First, the saved local TOMATO and MVBench subsets show no evidence of
+parser-driven differences.
 
 - strict and loose local rescoring are identical
 - both local slices had zero parse failures
-- future local disagreement analysis should therefore focus on planner behavior,
-  subset composition, and preprocessing, not on local parser permissiveness
+- future local disagreement analysis should therefore focus on planner
+  behavior, subset composition, and preprocessing, not on the tested local
+  parser choice
 
 Second, the predecessor `100%` agreement headline is not a safe strict-parser
 target for this repo.
@@ -160,7 +161,8 @@ target for this repo.
 Third, the current TOMATO versus MVBench contrast is real, but the cause is not
 yet isolated.
 
-- the contrast is not explained by local parser choice
+- the contrast is not explained by the tested local parser choice on these
+  saved subsets
 - the current raw reuse bins are still exploratory because the benchmark runner
   reports reuse over padded frames
 - the right next controls are therefore benchmark-path identity, pad-masked

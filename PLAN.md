@@ -100,14 +100,15 @@ narrow but useful starting point:
     at frame `0` only
   - hosted MVBench `54`-item slice drops from dense `0.630` at `8` frames to
     `0.519` at frame `0` only
-  - the current TOMATO versus MVBench gap therefore looks content-conditioned
-    before it looks parser-conditioned
+- the current TOMATO versus MVBench gap therefore looks more
+  content-conditioned than parser-conditioned on the current slices
 - targeted TOMATO `direction` refresh sweeps now show that the current failure
-  is refresh-sensitive rather than benchmark-path-sensitive:
+  is refresh-sensitive on that five-item slice rather than an obvious
+  benchmark-path breakage:
   - no refresh: cached `0.2`, agreement `0.6`
   - refresh every `4` frames: cached `0.6`, agreement `1.0`, active reuse
     `0.732`
-- the first motion-focused planner sweep now narrows the method space:
+- the first motion-focused planner comparison now narrows the method space:
   - on the TOMATO motion dev slice, `mean + static,shifted + max_age=4`
     improved agreement from `0.733` to `0.867` while keeping active reuse at
     `0.698`
@@ -115,7 +116,7 @@ narrow but useful starting point:
     agreement fell from `0.867` to `0.800` and cached accuracy stayed flat
   - the first `changed_pixel_fraction` attempt did not beat the default mean
     planner on the same dev slice
-  - the next statistic-only sweep tightened that further:
+  - the next statistic-only comparison tightened that further:
     - `max_abs (24, 96)` matched the default mean planner exactly at the same
       active reuse budget
     - `top_k_mean (12, 36)` and `max_abs (12, 48)` spent about the same
@@ -125,6 +126,15 @@ narrow but useful starting point:
       cached `0.2`, agreement `0.6`
     - bounded age therefore remains the strongest current dev-only lever on
       the motion slice
+  - matched dense frame-budget baselines now add a stronger control:
+    - on the motion dev slice, dense `1` through `4` frames all plateau at
+      `0.267`
+    - dense `6` is the first real dense recovery at `0.400`
+    - `mean + max_age=4` matches that `0.400` cached accuracy at about
+      `1247` fresh-vision token-equivalent budget versus dense `6` at `2400`
+    - the disjoint holdout does not preserve that win cleanly:
+      dense `6` only reaches `0.267`, while the cached holdout policies stay at
+      `0.200`
 
 That is the center of the project today.
 
@@ -160,9 +170,13 @@ Current position relative to the adjacent efficiency literature tracked in
   - add matched dense frame-budget baselines so policy gains are compared
     against equally expensive dense alternatives
   - add dense answer-margin logging so confidence-limited items can be
-    separated from staleness-limited ones
+    separated from staleness-limited ones; these are repo-local operational
+    labels, not a standard external taxonomy yet
   - revisit planner statistics through calibrated grids rather than one-point
     probes
+  - treat FastV composition as an explicit later baseline/composition step, but
+    assume adaptation or partial reimplementation on the Qwen/Gemma/MLX stack
+    rather than a plug-and-play import from the published LLaVA codebase
 
 ## Evidence And Trust Model
 

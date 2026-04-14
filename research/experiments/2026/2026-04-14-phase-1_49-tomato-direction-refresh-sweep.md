@@ -113,8 +113,9 @@ Observed outcome:
 
 ## Interpretation
 
-This sweep cleanly attributes the current TOMATO `direction` weakness to the
-refresh policy rather than to the benchmark path itself.
+This five-item refresh comparison makes policy staleness the leading
+explanation for the current TOMATO `direction` weakness on this subset, rather
+than an obvious benchmark-path breakage.
 
 What it shows:
 

@@ -37,37 +37,43 @@ The current local evidence now adds two useful controls:
 - first-frame ablations sharpen that split:
   - TOMATO falls to `0.067` on frame `0` alone
   - MVBench only falls to `0.519` on frame `0` alone
-  - the current contrast therefore looks content-conditioned before it looks
-    parser-conditioned
-- targeted TOMATO `direction` refresh sweeps now show a concrete repair path:
+  - the current contrast therefore looks more content-conditioned than
+    parser-conditioned on the current saved slices
+- targeted TOMATO `direction` refresh sweeps now show a narrow repair path on
+  the same five-item subset:
   - no refresh gives cached `0.2` and agreement `0.6`
   - refresh every `4` frames recovers exact dense agreement on the same
     five-item subset while keeping active reuse at `0.732`
-- the first motion-focused planner sweep sharpens that into a stricter method
-  claim:
+- the first motion-focused planner comparison narrows the diagnosis further:
   - on the TOMATO motion dev slice, bounded token age (`max_age = 4`) improves
     agreement and cached accuracy over the default mean planner
   - on the disjoint motion holdout, that same policy does not improve cached
     accuracy and actually lowers agreement
   - the current evidence is therefore more precise than simple
     `content-conditioned` language:
-    some items are staleness-limited, while others look confidence-limited even
-    when they remain motion-heavy
-  - a follow-up statistic-only sweep narrowed the planner story again:
+    some items look more refresh-sensitive, while others remain weak even under
+    the same motion-heavy grouping
+  - a follow-up statistic-only comparison narrowed the planner story again:
     - same-budget `max_abs` reproduces the default mean result almost exactly
     - lower-budget `top_k_mean` and `max_abs` improve cached accuracy on some
       non-direction items but do not improve aggregate agreement over the
       default mean planner
     - none of the tested statistic-only variants repairs the TOMATO
       `direction` bucket
-  - the current best local method hypothesis is therefore narrower than
-    `concentration-aware statistic` alone:
-    bounded staleness looks more important than statistic choice on the hard
-    motion slice, and the next missing axis is matched fresh-budget comparison
-    rather than another nearby scalar summary
+  - matched dense frame-budget baselines add a stronger control:
+    - on the motion dev slice, dense `1` through `4` frames all plateau at
+      `0.267`
+    - dense `6` is the first real dense recovery at `0.400`
+    - `mean + max_age = 4` matches that `0.400` cached accuracy at about
+      `1247` fresh-vision token-equivalent budget versus dense `6` at `2400`
+    - the holdout slice does not preserve that win cleanly
+- `confidence-limited` and `staleness-limited` remain repo-local operational
+  labels for now; the next experiment should justify them with dense option
+  log-prob or answer-margin logging rather than treating them as standard
+  external terminology
 - local strict and loose parser rescoring are identical on those saved slices
-  because parse failures stayed at `0`, so the current local disagreement is
-  not a local parser artifact
+  because parse failures stayed at `0`, so we saw no evidence that local parser
+  permissiveness explains the current disagreement on those saved subsets
 - imported `100%` benchmark agreement is therefore not the right paper-facing
   baseline by itself:
   this repo should compare against both the imported whitepaper and the
@@ -134,6 +140,9 @@ What the current evidence says about competitiveness:
     SOTA relevance
   - compare policy wins against matched dense frame-budget baselines rather
     than only against the current default cache policy
+  - assume FastV composition will require adaptation or partial
+    reimplementation on the current Qwen/Gemma/MLX stack rather than a
+    plug-and-play reuse of the published LLaVA code
 
 ## Likely Contribution Stack
 
