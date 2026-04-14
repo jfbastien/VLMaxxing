@@ -1,8 +1,8 @@
 {
-  "agreement": 0.9333333333333333,
+  "agreement": 0.8666666666666667,
   "benchmark": "tomato",
   "cache_mode": "default",
-  "cached_accuracy": 0.4,
+  "cached_accuracy": 0.3333333333333333,
   "cached_parse_failures": 0,
   "completed_item_ids": [
     "tomato:direction:0231-04",
@@ -26,7 +26,7 @@
     "datasets": "4.8.4",
     "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
     "git_dirty": true,
-    "git_sha": "56b1d8ec441d33466f5a24bff3d757e737f72199",
+    "git_sha": "11586a92587c0a59d0830347b1fffa7e77816f4e",
     "huggingface_hub": "1.10.1",
     "mlx_vlm_module": "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
     "model_path": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
@@ -39,7 +39,7 @@
   "feature_replay_enabled": true,
   "frame_count": 8,
   "planner": {
-    "max_age": 2,
+    "max_age": 8,
     "pixel_change_threshold": 8.0,
     "reuse_classes": [
       "static"
@@ -68,9 +68,9 @@
     "tomato:shape_trend:0210-04",
     "tomato:shape_trend:0210-05"
   ],
-  "reuse_ratio_mean": 0.2847142846811386,
-  "reuse_ratio_mean_active": 0.2847142846811386,
-  "reuse_ratio_mean_raw": 0.4861190476190477,
+  "reuse_ratio_mean": 0.3751904755830766,
+  "reuse_ratio_mean_active": 0.3751904755830766,
+  "reuse_ratio_mean_raw": 0.6663095238095239,
   "selection": {
     "groups": null,
     "manifest_path": "research/benchmark_manifests/tomato_motion_dev_v1.toml",
