@@ -1,12 +1,43 @@
 {
-  "agreement": 0.8666666666666667,
+  "agreement": 1.0,
   "benchmark": "mvbench",
   "cache_mode": "default",
-  "cached_accuracy": 0.6666666666666666,
+  "cached_accuracy": 0.5,
   "cached_parse_failures": 0,
   "completed_item_ids": [
     "mvbench:action_localization:0",
-    "mvbench:action_localization:1",
+    "mvbench:action_localization:1"
+  ],
+  "dense_accuracy": 0.5,
+  "environment": {
+    "datasets": "4.8.4",
+    "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "git_dirty": true,
+    "git_sha": "f6df578c3a7dd05a26415f2fc5fe9984fcc62504",
+    "huggingface_hub": "1.10.1",
+    "mlx_vlm_module": "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
+    "model_path": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
+    "platform": "darwin",
+    "python": "3.12.12"
+  },
+  "feature_cache_dir": "research/cache/dense_features",
+  "feature_cache_hits": 2,
+  "feature_cache_misses": 0,
+  "feature_replay_enabled": true,
+  "frame_count": 8,
+  "planner": {
+    "max_age": 8,
+    "pixel_change_threshold": 8.0,
+    "reuse_classes": [
+      "static"
+    ],
+    "shifted_threshold": 4.0,
+    "static_threshold": 1.0,
+    "statistic": "mean",
+    "top_k": 16
+  },
+  "refresh_interval": null,
+  "remaining_item_ids": [
     "mvbench:action_localization:2",
     "mvbench:fine_grained_action:0",
     "mvbench:fine_grained_action:1",
@@ -21,36 +52,6 @@
     "mvbench:moving_attribute:1",
     "mvbench:moving_attribute:2"
   ],
-  "dense_accuracy": 0.6,
-  "environment": {
-    "datasets": "4.8.4",
-    "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
-    "git_dirty": true,
-    "git_sha": "afd1a97381c54e06475b9ed4895f3c40d7ec039f",
-    "huggingface_hub": "1.10.1",
-    "mlx_vlm_module": "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
-    "model_path": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
-    "platform": "darwin",
-    "python": "3.12.12"
-  },
-  "feature_cache_dir": "research/cache/dense_features",
-  "feature_cache_hits": 15,
-  "feature_cache_misses": 0,
-  "feature_replay_enabled": true,
-  "frame_count": 8,
-  "planner": {
-    "max_age": 2,
-    "pixel_change_threshold": 8.0,
-    "reuse_classes": [
-      "static"
-    ],
-    "shifted_threshold": 4.0,
-    "static_threshold": 1.0,
-    "statistic": "mean",
-    "top_k": 16
-  },
-  "refresh_interval": null,
-  "remaining_item_ids": [],
   "requested_item_ids": [
     "mvbench:action_localization:0",
     "mvbench:action_localization:1",
@@ -68,9 +69,9 @@
     "mvbench:moving_attribute:1",
     "mvbench:moving_attribute:2"
   ],
-  "reuse_ratio_mean": 0.285631519267779,
-  "reuse_ratio_mean_active": 0.285631519267779,
-  "reuse_ratio_mean_raw": 0.4426190476190476,
+  "reuse_ratio_mean": 0.02827380983425038,
+  "reuse_ratio_mean_active": 0.02827380983425038,
+  "reuse_ratio_mean_raw": 0.37803571428571425,
   "selection": {
     "groups": null,
     "manifest_path": "research/benchmark_manifests/mvbench_motion_dev_v1.toml",

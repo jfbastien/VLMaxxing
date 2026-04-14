@@ -1,0 +1,91 @@
+{
+  "cached_source": "research/experiments/2026/artifacts/phase1_11_mvbench_motion_dev_grid_partial.json",
+  "dense_curve": [
+    {
+      "ci95_high": 0.698830199745016,
+      "ci95_low": 0.24809535365737387,
+      "dense_accuracy": 0.4666666666666667,
+      "frame_count": 1,
+      "n": 15
+    },
+    {
+      "ci95_high": 0.7519046463426261,
+      "ci95_low": 0.30116980025498397,
+      "dense_accuracy": 0.5333333333333333,
+      "frame_count": 2,
+      "n": 15
+    },
+    {
+      "ci95_high": 0.698830199745016,
+      "ci95_low": 0.24809535365737387,
+      "dense_accuracy": 0.4666666666666667,
+      "frame_count": 3,
+      "n": 15
+    },
+    {
+      "ci95_high": 0.8910254667430761,
+      "ci95_low": 0.4804956594401943,
+      "dense_accuracy": 0.7333333333333333,
+      "frame_count": 4,
+      "n": 15
+    },
+    {
+      "ci95_high": 0.8482367556028526,
+      "ci95_low": 0.41713547738519774,
+      "dense_accuracy": 0.6666666666666666,
+      "frame_count": 6,
+      "n": 15
+    },
+    {
+      "ci95_high": 0.8017550385865841,
+      "ci95_low": 0.357468301206246,
+      "dense_accuracy": 0.6,
+      "frame_count": 8,
+      "n": 15
+    }
+  ],
+  "dense_source": "research/experiments/2026/artifacts/phase1_9_mvbench_motion_frame_budget_dev.json",
+  "n_cached": 2,
+  "n_dense": 6,
+  "pareto_candidate_count": 0,
+  "pareto_candidates": [],
+  "policies": [
+    {
+      "agreement": 0.8666666666666667,
+      "cached_accuracy": 0.6666666666666666,
+      "dense_accuracy": 0.6,
+      "dominated_by_dense_frame": 4,
+      "effective_fresh_frames": 6.000579365125548,
+      "label": "mean-1.0-4.0-static-age2",
+      "max_age": 2,
+      "mean_active_reuse": 0.285631519267779,
+      "n": 15,
+      "pareto_status": "dominated",
+      "reuse_classes": [
+        "static"
+      ],
+      "shifted_threshold": 4.0,
+      "static_threshold": 1.0,
+      "statistic": "mean"
+    },
+    {
+      "agreement": 0.8,
+      "cached_accuracy": 0.6666666666666666,
+      "dense_accuracy": 0.6,
+      "dominated_by_dense_frame": 4,
+      "effective_fresh_frames": 5.310246031265706,
+      "label": "mean-1.0-4.0-static-noage",
+      "max_age": null,
+      "mean_active_reuse": 0.384250566962042,
+      "n": 15,
+      "pareto_status": "dominated",
+      "reuse_classes": [
+        "static"
+      ],
+      "shifted_threshold": 4.0,
+      "static_threshold": 1.0,
+      "statistic": "mean"
+    }
+  ],
+  "total_frames": 8
+}

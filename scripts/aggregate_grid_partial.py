@@ -18,10 +18,21 @@ def _cmd_aggregate(args: argparse.Namespace) -> None:
     cal_by_label = {p["candidate"]["label"]: p for p in calibration["points"]}
 
     results = []
+    skipped = 0
     for summary_path in sorted(args.grid_dir.glob("*_summary.json")):
         label = summary_path.name.replace("_summary.json", "")
         cal_entry = cal_by_label.get(label)
         if cal_entry is None:
+            continue
+        summary = json.loads(summary_path.read_text())
+        # Only include summaries where every requested item has completed.
+        # The benchmark runner writes the summary file incrementally as
+        # chunks complete, so a partial summary reflects only the items
+        # processed so far and produces misleading aggregates.
+        requested = summary.get("requested_item_ids") or []
+        completed = summary.get("completed_item_ids") or []
+        if not requested or len(completed) < len(requested):
+            skipped += 1
             continue
         jsonl_path = args.grid_dir / f"{label}.jsonl"
         results.append(
@@ -29,10 +40,12 @@ def _cmd_aggregate(args: argparse.Namespace) -> None:
                 "candidate": cal_entry["candidate"],
                 "jsonl_path": str(jsonl_path),
                 "summary_path": str(summary_path),
-                "summary": json.loads(summary_path.read_text()),
+                "summary": summary,
                 "calibrated_mean_active_reuse": cal_entry["mean_active_reuse"],
             }
         )
+    if skipped:
+        print(f"  (skipped {skipped} in-flight policies)", flush=True)
 
     payload = {
         "manifest_path": calibration["manifest_path"],
