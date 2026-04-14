@@ -2,10 +2,12 @@
 
 from codec_through.answers import extract_choice
 from codec_through.feature_cache import (
+    CACHE_KEY_SCHEMA_VERSION,
     DEFAULT_FEATURE_CACHE_DIR,
     CacheKey,
     frame_sequence_sha256,
     get_feature_cache,
+    model_content_sha256,
     preprocessing_hash,
     put_feature_cache,
 )
@@ -45,6 +47,7 @@ __all__ = [
     "COMPLEX",
     "CANDIDATE",
     "CacheKey",
+    "CACHE_KEY_SCHEMA_VERSION",
     "block_size_from_vision_config",
     "DEFAULT_FEATURE_CACHE_DIR",
     "ExtractedFrame",
@@ -61,6 +64,7 @@ __all__ = [
     "frame_level_early_exit",
     "get_feature_cache",
     "mean_i_frame_size",
+    "model_content_sha256",
     "preprocessing_hash",
     "probe_frame_count",
     "probe_frame_packets",

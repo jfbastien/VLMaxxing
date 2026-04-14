@@ -30,6 +30,7 @@ from codec_through.feature_cache import (
     CacheKey,
     frame_sequence_sha256,
     get_feature_cache,
+    model_content_sha256,
     preprocessing_hash,
     put_feature_cache,
 )
@@ -510,10 +511,13 @@ def _compute_cached_features(model: Any, sample: PreparedSample) -> mx.array:
     return cast(mx.array, features)
 
 
-def _feature_cache_key(sample: PreparedSample, *, model_path: Path) -> CacheKey:
+def _feature_cache_key(
+    sample: PreparedSample, *, model_path: Path, model_content_hash: str
+) -> CacheKey:
     width, height = sample.frames[0].size
     return CacheKey(
         model_id=str(model_path.resolve()),
+        model_content_sha256=model_content_hash,
         item_id=sample.item.item_id,
         frames_sha256=frame_sequence_sha256(sample.frames),
         frame_count=len(sample.frames),
@@ -532,13 +536,16 @@ def _compute_cached_features_with_replay(
     sample: PreparedSample,
     *,
     model_path: Path,
+    model_content_hash: str,
     use_feature_replay: bool,
     feature_cache_dir: Path,
 ) -> tuple[mx.array, bool]:
     if not use_feature_replay:
         return _compute_cached_features(model, sample), False
 
-    key = _feature_cache_key(sample, model_path=model_path)
+    key = _feature_cache_key(
+        sample, model_path=model_path, model_content_hash=model_content_hash
+    )
     cached = get_feature_cache(key, cache_dir=feature_cache_dir)
     current_grid = np.array(sample.extra_kwargs["image_grid_thw"].tolist(), dtype=np.int64)
     if cached is not None:
@@ -561,6 +568,7 @@ def _compute_cached_features_with_replay(
             "group": sample.item.group,
             "item_id": sample.item.item_id,
             "model_id": str(model_path.resolve()),
+            "model_content_sha256": model_content_hash,
         },
         cache_dir=feature_cache_dir,
     )
@@ -868,6 +876,7 @@ def _run_chunk(
     registry = {item.item_id: item for item in registry_source}
     selected_items = [registry[item_id] for item_id in item_ids]
     model, processor = _load_model(model_path)
+    model_content_hash = model_content_sha256(model_path)
     results: list[dict[str, Any]] = []
     for item in selected_items:
         sample = _prepare_sample(model, processor, item, frame_count=frame_count)
@@ -875,6 +884,7 @@ def _run_chunk(
             model,
             sample,
             model_path=model_path,
+            model_content_hash=model_content_hash,
             use_feature_replay=use_feature_replay,
             feature_cache_dir=feature_cache_dir,
         )
