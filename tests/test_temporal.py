@@ -89,23 +89,29 @@ def test_classify_blocks_changed_fraction_is_stricter_on_sparse_changes() -> Non
 
     assert int(mean_classes[0, 0]) == int(BlockClass.SHIFTED)
     assert int(fraction_classes[0, 0]) == int(BlockClass.SHIFTED)
-    assert block_statistic_values(
-        base,
-        changed,
-        block_size=28,
-        config=PlannerConfig(statistic=BlockStatistic.MEAN),
-    )[0, 0] < 6.0
-    assert block_statistic_values(
-        base,
-        changed,
-        block_size=28,
-        config=PlannerConfig(
-            statistic=BlockStatistic.CHANGED_PIXEL_FRACTION,
-            static_threshold=0.01,
-            shifted_threshold=0.03,
-            pixel_change_threshold=8.0,
-        ),
-    )[0, 0] > 0.02
+    assert (
+        block_statistic_values(
+            base,
+            changed,
+            block_size=28,
+            config=PlannerConfig(statistic=BlockStatistic.MEAN),
+        )[0, 0]
+        < 6.0
+    )
+    assert (
+        block_statistic_values(
+            base,
+            changed,
+            block_size=28,
+            config=PlannerConfig(
+                statistic=BlockStatistic.CHANGED_PIXEL_FRACTION,
+                static_threshold=0.01,
+                shifted_threshold=0.03,
+                pixel_change_threshold=8.0,
+            ),
+        )[0, 0]
+        > 0.02
+    )
 
 
 def test_classify_blocks_max_abs_flags_single_pixel_as_novel() -> None:

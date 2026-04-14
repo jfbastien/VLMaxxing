@@ -270,8 +270,7 @@ def _fetch_tomato_metadata(paths: BenchmarkPaths, *, dry_run: bool) -> None:
             "metadata_source": f"hf://datasets/{TOMATO_DATASET_ID}",
             "video_source_primary": f"gdrive://{TOMATO_DRIVE_FILE_ID}",
             "video_source_fallback": (
-                f"hf://datasets/{TOMATO_FALLBACK_DATASET_ID} "
-                f"{','.join(TOMATO_FALLBACK_SHARDS)}"
+                f"hf://datasets/{TOMATO_FALLBACK_DATASET_ID} {','.join(TOMATO_FALLBACK_SHARDS)}"
             ),
         },
     )
@@ -348,8 +347,7 @@ def _fetch_tomato_assets(
             paths.source_record_path,
             {
                 "video_source_selected": (
-                    f"hf://datasets/{TOMATO_FALLBACK_DATASET_ID} "
-                    f"{','.join(TOMATO_FALLBACK_SHARDS)}"
+                    f"hf://datasets/{TOMATO_FALLBACK_DATASET_ID} {','.join(TOMATO_FALLBACK_SHARDS)}"
                 ),
                 "quarantined_primary_archive": str(quarantined),
                 "quarantined_primary_parts": [str(path) for path in quarantined_parts],
@@ -363,8 +361,7 @@ def _fetch_tomato_assets(
         paths.source_record_path,
         {
             "video_source_selected": (
-                f"hf://datasets/{TOMATO_FALLBACK_DATASET_ID} "
-                f"{','.join(TOMATO_FALLBACK_SHARDS)}"
+                f"hf://datasets/{TOMATO_FALLBACK_DATASET_ID} {','.join(TOMATO_FALLBACK_SHARDS)}"
             )
         },
     )
@@ -519,9 +516,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    selected_datasets = (
-        ["tomato", "mvbench"] if args.dataset == "both" else [args.dataset]
-    )
+    selected_datasets = ["tomato", "mvbench"] if args.dataset == "both" else [args.dataset]
     for dataset in selected_datasets:
         _fetch_dataset(
             cast(Literal["tomato", "mvbench"], dataset),

@@ -115,9 +115,10 @@ Observed outcome:
     - dense accuracy `329 / 1,484 = 0.222`
     - cached accuracy `329 / 1,484 = 0.222`
     - `1,155` items are both wrong while still marked `match = true`
-    - direct saved-response inspection shows those `1,155` both-wrong matched
-      items are not merely the same wrong letter:
-      `bl_response = null` and `ca_response = null` on all of them
+    - the preserved JSON is lossy:
+      it records only `split`, `gt`, `bl_correct`, `ca_correct`, `match`, and
+      `reuse`, so the checked-in artifact does not let this repo audit the
+      parsed dense or cached answer letters directly
   - MVBench saved run:
     - `160 / 160` agreement
     - dense accuracy `64 / 160 = 0.400`
@@ -148,9 +149,9 @@ target for this repo.
 - direct inspection of the saved predecessor benchmark JSON shows perfect dense
   versus cached agreement together with large numbers of both-wrong matched
   items
-- on TOMATO, those both-wrong matched items are all saved without parsed
-  baseline or cached answer letters, which is exactly the artifact shape we
-  would expect from a permissive parse-failure fallback
+- on TOMATO, the checked-in saved artifact does not preserve parsed baseline or
+  cached answer letters at all, so parser inflation remains plausible but
+  cannot be quantified directly from the preserved JSON alone
 - without raw predecessor generations, this repo cannot quantify exactly how
   much of the saved `100%` is parser inflation versus genuine method stability
 - that uncertainty is now part of the reproduction contract and should stay

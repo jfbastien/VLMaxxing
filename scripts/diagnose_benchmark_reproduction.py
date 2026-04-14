@@ -41,9 +41,7 @@ def _binomial_two_sided_p(successes: int, failures: int) -> float:
     total = successes + failures
     if total <= 0:
         return 1.0
-    probabilities = [
-        math.comb(total, count) * (0.5**total) for count in range(total + 1)
-    ]
+    probabilities = [math.comb(total, count) * (0.5**total) for count in range(total + 1)]
     target = probabilities[min(successes, failures)]
     return min(1.0, sum(value for value in probabilities if value <= target + 1e-12))
 

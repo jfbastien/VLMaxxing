@@ -286,8 +286,7 @@ def _load_tomato_items_by_id(item_ids: list[str]) -> list[BenchmarkItem]:
         requested_by_split[split].append(key)
 
     data_files = {
-        split: str(next(TOMATO_DATA_DIR.glob(f"{split}-*.parquet")))
-        for split in requested_by_split
+        split: str(next(TOMATO_DATA_DIR.glob(f"{split}-*.parquet"))) for split in requested_by_split
     }
     datasets_by_split = load_dataset("parquet", data_files=data_files)
     rows_by_split: dict[str, dict[str, dict[str, Any]]] = {}
@@ -331,9 +330,7 @@ def _find_mvbench_video(video_name: str) -> Path:
     if len(unique_matches) == 1:
         return unique_matches[0]
     if len(unique_matches) > 1:
-        raise RuntimeError(
-            f"ambiguous MVBench video lookup for {video_name!r}: {unique_matches}"
-        )
+        raise RuntimeError(f"ambiguous MVBench video lookup for {video_name!r}: {unique_matches}")
     raise FileNotFoundError(
         f"could not locate MVBench video {video_name!r} under {MVBENCH_VIDEO_DIR}"
     )
@@ -355,9 +352,7 @@ def _mvbench_item_from_example(
         question=_multiple_choice_prompt(cast(str, example["question"]), choices),
         candidates=choices,
         answer_index=choices.index(answer),
-        start_seconds=(
-            float(example["start"]) if example.get("start") not in {None, ""} else None
-        ),
+        start_seconds=(float(example["start"]) if example.get("start") not in {None, ""} else None),
         end_seconds=(float(example["end"]) if example.get("end") not in {None, ""} else None),
     )
 
@@ -424,8 +419,10 @@ def _load_manifest(path: Path) -> BenchmarkManifest:
     item_ids = payload.get("item_ids")
     if benchmark not in {"tomato", "mvbench"}:
         raise ValueError(f"invalid benchmark manifest benchmark: {benchmark!r}")
-    if not isinstance(item_ids, list) or not item_ids or not all(
-        isinstance(item_id, str) for item_id in item_ids
+    if (
+        not isinstance(item_ids, list)
+        or not item_ids
+        or not all(isinstance(item_id, str) for item_id in item_ids)
     ):
         raise ValueError(f"invalid benchmark manifest item_ids: {item_ids!r}")
     return BenchmarkManifest(
@@ -628,8 +625,7 @@ def _mix_qwen_features(
         active_mask = previous_active & current_active
         if active_mask.size != reuse_mask.size:
             raise ValueError(
-                "active-region/token mismatch: "
-                f"mask={active_mask.size}, tokens={reuse_mask.size}"
+                f"active-region/token mismatch: mask={active_mask.size}, tokens={reuse_mask.size}"
             )
         mixed_segments.append(
             mx.where(
@@ -717,8 +713,7 @@ def _select_cached_features(
         active_mask = previous_active & current_active
         if active_mask.size != reuse_mask.size:
             raise ValueError(
-                "active-region/token mismatch: "
-                f"mask={active_mask.size}, tokens={reuse_mask.size}"
+                f"active-region/token mismatch: mask={active_mask.size}, tokens={reuse_mask.size}"
             )
         mixed_segments.append(
             mx.where(
@@ -855,9 +850,7 @@ def _run_chunk(
                     **cached,
                     "choice_index": cached_choice,
                     "correct": (
-                        cached_choice == item.answer_index
-                        if cached_choice is not None
-                        else False
+                        cached_choice == item.answer_index if cached_choice is not None else False
                     ),
                     "parse_failure": cached_choice is None,
                 },

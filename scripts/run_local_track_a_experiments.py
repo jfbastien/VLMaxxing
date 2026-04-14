@@ -969,8 +969,10 @@ def _stream_pair_summaries(
         for index, frame in enumerate(container.decode(video=0)):
             if index < start_frame:
                 continue
+            raw_image = cast(Image.Image, frame.to_image())  # type: ignore[no-untyped-call]
             current = _preprocess_frame(
-                cast(Image.Image, frame.to_image()).convert("RGB"), spec  # type: ignore[no-untyped-call]
+                raw_image.convert("RGB"),
+                spec,
             )
             seen_frames += 1
             if previous is not None:
