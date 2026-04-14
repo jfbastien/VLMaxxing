@@ -920,7 +920,7 @@ def _write_summary(
     benchmark: Literal["tomato", "mvbench"],
     requested_ids: list[str],
     output_path: Path,
-    model_path: Path,
+    environment: dict[str, Any],
     stopped_early: bool,
     groups: list[str] | None,
     per_group: int,
@@ -960,7 +960,7 @@ def _write_summary(
     ]
     summary = {
         "benchmark": benchmark,
-        "environment": _environment_record(model_path),
+        "environment": environment,
         "selection": {
             "mode": "manifest" if manifest_path is not None else "per_group",
             "manifest_path": str(manifest_path) if manifest_path is not None else None,
@@ -1017,6 +1017,7 @@ def run_benchmark(
     allow_dirty: bool,
 ) -> None:
     _ensure_clean_git_tree(allow_dirty=allow_dirty)
+    environment = _environment_record(model_path)
     selected_manifest = _load_manifest(manifest_path) if manifest_path is not None else None
     if selected_manifest is not None and selected_manifest.benchmark != benchmark:
         raise ValueError(
@@ -1070,8 +1071,10 @@ def run_benchmark(
         ]
         if max_age is not None:
             command.extend(["--max-age", str(max_age)])
-        if allow_dirty:
-            command.append("--allow-dirty")
+        # The parent run already validated the starting repo state before it
+        # writes tracked artifacts, so child chunks should inherit that
+        # provenance instead of rejecting the parent's own output files.
+        command.append("--allow-dirty")
         if manifest_path is not None:
             command.extend(["--manifest", str(manifest_path)])
         else:
@@ -1086,7 +1089,7 @@ def run_benchmark(
                 benchmark=benchmark,
                 requested_ids=requested_ids,
                 output_path=output_path,
-                model_path=model_path,
+                environment=environment,
                 stopped_early=False,
                 groups=groups,
                 per_group=per_group,
@@ -1107,7 +1110,7 @@ def run_benchmark(
             benchmark=benchmark,
             requested_ids=requested_ids,
             output_path=output_path,
-            model_path=model_path,
+            environment=environment,
             stopped_early=stopped_early,
             groups=groups,
             per_group=per_group,
