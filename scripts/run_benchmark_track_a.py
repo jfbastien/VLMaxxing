@@ -543,9 +543,7 @@ def _compute_cached_features_with_replay(
     if not use_feature_replay:
         return _compute_cached_features(model, sample), False
 
-    key = _feature_cache_key(
-        sample, model_path=model_path, model_content_hash=model_content_hash
-    )
+    key = _feature_cache_key(sample, model_path=model_path, model_content_hash=model_content_hash)
     cached = get_feature_cache(key, cache_dir=feature_cache_dir)
     current_grid = np.array(sample.extra_kwargs["image_grid_thw"].tolist(), dtype=np.int64)
     if cached is not None:
@@ -852,9 +850,7 @@ def _generate_response(
     }
 
 
-def _letter_token_ids(
-    processor: Any, candidate_letters: list[str]
-) -> list[int]:
+def _letter_token_ids(processor: Any, candidate_letters: list[str]) -> list[int]:
     """Return the single-token id for each candidate letter.
 
     Raises if a letter tokenizes to more than one token under the active
@@ -912,9 +908,7 @@ def _option_logprobs(
     }
     sorted_letters = sorted(per_letter.items(), key=lambda kv: kv[1], reverse=True)
     argmax_letter, top_logprob = sorted_letters[0]
-    top_margin = (
-        sorted_letters[0][1] - sorted_letters[1][1] if len(sorted_letters) >= 2 else 0.0
-    )
+    top_margin = sorted_letters[0][1] - sorted_letters[1][1] if len(sorted_letters) >= 2 else 0.0
     return {
         "per_letter_logprob": per_letter,
         "argmax_letter": argmax_letter,
@@ -1003,9 +997,7 @@ def _run_chunk(
         dense_choice = extract_choice(str(dense["text"]), item.candidates)
         cached_choice = extract_choice(str(cached["text"]), item.candidates)
         if log_option_logprobs:
-            candidate_letters = [
-                chr(ord("A") + index) for index in range(len(item.candidates))
-            ]
+            candidate_letters = [chr(ord("A") + index) for index in range(len(item.candidates))]
             try:
                 dense_margin = _option_logprobs(
                     model,
@@ -1023,9 +1015,7 @@ def _run_chunk(
                 )
                 correct_letter = candidate_letters[item.answer_index]
                 dense_margin["correct_letter"] = correct_letter
-                dense_margin["correct_logprob"] = dense_margin["per_letter_logprob"][
-                    correct_letter
-                ]
+                dense_margin["correct_logprob"] = dense_margin["per_letter_logprob"][correct_letter]
                 cached_margin["correct_letter"] = correct_letter
                 cached_margin["correct_logprob"] = cached_margin["per_letter_logprob"][
                     correct_letter

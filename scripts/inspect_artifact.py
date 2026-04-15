@@ -91,9 +91,7 @@ def _cmd_grid_summary(args: argparse.Namespace) -> None:
             }
         )
     rows.sort(key=lambda r: (-r["cached_acc"], r["reuse"]))
-    print(
-        f"\n{'label':<60} {'cached':>7} {'dense':>7} {'agree':>7} {'reuse':>6} {'cal':>6}"
-    )
+    print(f"\n{'label':<60} {'cached':>7} {'dense':>7} {'agree':>7} {'reuse':>6} {'cal':>6}")
     for row in rows[: args.top]:
         cal = row["cal_reuse"] if row["cal_reuse"] is not None else 0.0
         print(

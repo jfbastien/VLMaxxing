@@ -79,9 +79,7 @@ def _effective_fresh_frames(mean_active_reuse: float, total_frames: int) -> floa
     return 1.0 + (total_frames - 1) * (1.0 - mean_active_reuse)
 
 
-def _load_cached_points(
-    grid_summary_path: Path, *, total_frames: int
-) -> list[CachedPoint]:
+def _load_cached_points(grid_summary_path: Path, *, total_frames: int) -> list[CachedPoint]:
     payload = json.loads(grid_summary_path.read_text())
     points: list[CachedPoint] = []
     for result in payload["results"]:
@@ -128,18 +126,14 @@ def _load_dense_points(frame_budget_summary: Path) -> list[DensePoint]:
     elif "dense_curve" in payload:
         runs = payload["dense_curve"]
     else:
-        raise ValueError(
-            f"unrecognized dense-curve schema in {frame_budget_summary}"
-        )
+        raise ValueError(f"unrecognized dense-curve schema in {frame_budget_summary}")
     points: list[DensePoint] = []
     for run in runs:
         ci = run.get("dense_accuracy_ci95", [0.0, 1.0])
         points.append(
             DensePoint(
                 frame_count=int(run["frame_count"]),
-                dense_accuracy=float(
-                    run.get("dense_accuracy") or run.get("accuracy") or 0.0
-                ),
+                dense_accuracy=float(run.get("dense_accuracy") or run.get("accuracy") or 0.0),
                 ci95_low=float(ci[0]),
                 ci95_high=float(ci[1]),
                 n=int(run.get("count") or run.get("n") or 0),
@@ -160,9 +154,8 @@ def _dominates(dense_acc: float, dense_frames: int, cached_point: CachedPoint) -
     strictly_lower_budget = dense_frames < cached_point.effective_fresh_frames
     equal_acc = dense_acc == cached_point.cached_accuracy
     equal_budget = dense_frames == cached_point.effective_fresh_frames
-    return (
-        (strictly_higher_acc and (strictly_lower_budget or equal_budget))
-        or (equal_acc and strictly_lower_budget)
+    return (strictly_higher_acc and (strictly_lower_budget or equal_budget)) or (
+        equal_acc and strictly_lower_budget
     )
 
 
@@ -215,6 +208,7 @@ def _inter_cached_skyline(
     - Exact ties on every listed objective are treated as mutual
       non-domination so identical operating points all survive.
     """
+
     def worse_or_equal(a: float, b: float, minimize: bool) -> bool:
         return (a >= b) if minimize else (a <= b)
 
@@ -228,12 +222,8 @@ def _inter_cached_skyline(
         for b in candidates:
             if a is b:
                 continue
-            all_worse_or_equal = all(
-                worse_or_equal(a[k], b[k], k in minimize) for k in objectives
-            )
-            any_strictly_worse = any(
-                strictly_worse(a[k], b[k], k in minimize) for k in objectives
-            )
+            all_worse_or_equal = all(worse_or_equal(a[k], b[k], k in minimize) for k in objectives)
+            any_strictly_worse = any(strictly_worse(a[k], b[k], k in minimize) for k in objectives)
             if all_worse_or_equal and any_strictly_worse:
                 dominated = True
                 break
@@ -247,9 +237,7 @@ def _cmd_analyze(args: argparse.Namespace) -> None:
     dense_points = _load_dense_points(args.dense)
     winners = _find_pareto_winners(cached_points, dense_points)
     pareto_candidates = [w for w in winners if w["pareto_status"] == "candidate"]
-    pareto_candidates.sort(
-        key=lambda w: (-w["cached_accuracy"], w["effective_fresh_frames"])
-    )
+    pareto_candidates.sort(key=lambda w: (-w["cached_accuracy"], w["effective_fresh_frames"]))
     inter_cached_2d = _inter_cached_skyline(
         pareto_candidates,
         objectives=("cached_accuracy", "effective_fresh_frames"),

@@ -70,8 +70,7 @@ def _dedupe_equivalents(
             non_binding = [
                 m
                 for m in members
-                if m.get("max_age") is not None
-                and int(m["max_age"]) >= total_frames - 1
+                if m.get("max_age") is not None and int(m["max_age"]) >= total_frames - 1
             ]
             if non_binding:
                 deduped.append(min(non_binding, key=lambda m: int(m["max_age"])))

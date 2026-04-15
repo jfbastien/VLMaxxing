@@ -33,7 +33,9 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--cached", type=Path, required=True)
     parser.add_argument(
-        "--dense", type=Path, required=True,
+        "--dense",
+        type=Path,
+        required=True,
         help="Dense frame-budget jsonl (e.g. frame_4.jsonl from phase 1.9)",
     )
     parser.add_argument("--out", type=Path, required=True)

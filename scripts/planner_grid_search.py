@@ -169,9 +169,7 @@ def _letterbox_to(image: Image.Image, *, size: int) -> Image.Image:
     return canvas
 
 
-def _letterbox_active_box(
-    image: Image.Image, *, size: int
-) -> tuple[int, int, int, int]:
+def _letterbox_active_box(image: Image.Image, *, size: int) -> tuple[int, int, int, int]:
     """Return (left, top, right, bottom) for the non-padded region after letterboxing."""
     w, h = image.size
     scale = size / max(w, h)
@@ -310,9 +308,7 @@ def _decode_and_normalize(
     active_boxes: list[tuple[int, int, int, int]] = []
     for f in frames:
         active_boxes.append(_letterbox_active_box(f, size=BENCHMARK_FRAME_SIZE))
-        letterboxed.append(
-            np.array(_letterbox_to(f, size=BENCHMARK_FRAME_SIZE), dtype=np.uint8)
-        )
+        letterboxed.append(np.array(_letterbox_to(f, size=BENCHMARK_FRAME_SIZE), dtype=np.uint8))
     return letterboxed, active_boxes
 
 
@@ -370,15 +366,9 @@ def _calibrate(
                     block_size=BLOCK_SIZE,
                     config=cfg,
                 )
-                reuse_mask = flattened_reuse_mask(
-                    classification, reuse_classes=cand.reuse_classes
-                )
-                allowed_mask, ages = _apply_age_gate(
-                    reuse_mask, ages, max_age=cand.max_age
-                )
-                active_intersection = (
-                    active_masks[frame_index - 1] & active_masks[frame_index]
-                )
+                reuse_mask = flattened_reuse_mask(classification, reuse_classes=cand.reuse_classes)
+                allowed_mask, ages = _apply_age_gate(reuse_mask, ages, max_age=cand.max_age)
+                active_intersection = active_masks[frame_index - 1] & active_masks[frame_index]
                 pair_reuses.append(
                     _masked_mean(allowed_mask.astype(np.float32), active_intersection)
                 )
@@ -644,9 +634,7 @@ def _cmd_run_explicit(args: argparse.Namespace) -> None:
     elif isinstance(raw, list):
         policy_dicts = raw
     else:
-        raise ValueError(
-            f"expected a list of policies or {{'policies': [...]}} in {args.policies}"
-        )
+        raise ValueError(f"expected a list of policies or {{'policies': [...]}} in {args.policies}")
     candidates = [_candidate_from_dict(p) for p in policy_dicts]
     if not candidates:
         raise ValueError(f"no policies found in {args.policies}")

@@ -36,9 +36,7 @@ def _wilson_interval(k: int, n: int, *, z: float = 1.959963984540054) -> tuple[f
     return (center - margin, center + margin)
 
 
-def _stratify_item(
-    item: dict[str, Any], *, conf_low: float, conf_high: float
-) -> str:
+def _stratify_item(item: dict[str, Any], *, conf_low: float, conf_high: float) -> str:
     dense = item.get("dense", {})
     cached = item.get("cached", {})
     dense_lp = dense.get("option_logprobs") or {}
