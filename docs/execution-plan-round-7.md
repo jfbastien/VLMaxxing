@@ -122,6 +122,53 @@ The honest story is:
 - The "real" caching quality metric excludes items where dense itself is weak
 - Commit `phase-1_13-logprob-stratification.md`
 
+### Stage D' — Post-holdout refinement tranche (day 3–4, conditional)
+
+Added 2026-04-15 after phase 1.11 surfaced a genuinely strong MVBench dev
+winner. These phases depend on phase 1.12 holdout outcomes and are
+preregistered but not yet launched.
+
+**Phase 1.14 — MVBench `max_abs` threshold refinement** (~1.3 hrs GPU)
+- 5 neighbor thresholds around `max_abs(8,32) static+shifted noage`
+- Gates on phase 1.11 winner confirmation
+- `research/experiments/2026/2026-04-15-phase-1_14-mvbench-max-abs-threshold-refinement.md`
+
+**Phase 1.15 — TOMATO `max_abs` threshold refinement** (~1.6 hrs GPU)
+- 6 neighbor thresholds around `max_abs(8,32) static+shifted age=4`
+- Gates on phase 1.12 TOMATO winner surviving on at least one slice
+- `research/experiments/2026/2026-04-15-phase-1_15-tomato-max-abs-threshold-refinement.md`
+
+**Phase 1.16 — Cross-benchmark winner transfer** (~0.5 hrs GPU)
+- TOMATO winner evaluated on MVBench dev, and MVBench winner on TOMATO
+  dev, at identical config
+- Does NOT gate on phase 1.12 — diagnostic regardless of holdout outcome
+- `research/experiments/2026/2026-04-15-phase-1_16-cross-benchmark-winner-transfer.md`
+
+**Phase 1.17 — MVBench winner refresh-interval sweep** (~0.75 hrs GPU)
+- `refresh_interval ∈ {1, 2, 4, 0}` traces a quality-vs-reuse curve from
+  a single base policy
+- Gates on phase 1.11 winner confirmation; runs regardless of phase 1.12
+- `research/experiments/2026/2026-04-15-phase-1_17-mvbench-winner-refresh-interval-sweep.md`
+
+**Phase 1.18 — MVBench winner frame-count scaling** (~1.3 hrs GPU)
+- `frame_count ∈ {4, 8, 12, 16}` under the same policy
+- New dense-12 and dense-16 baselines built if budget allows
+- Gates on phase 1.11 winner confirmation; runs regardless of phase 1.12
+- `research/experiments/2026/2026-04-15-phase-1_18-mvbench-winner-scale-check.md`
+
+Execution order (if phase 1.12 passes on MVBench):
+
+1. Phase 1.11 sweep completes (in-flight)
+2. Phase 1.12 holdout evaluation
+3. Phase 1.13 logprob stratification
+4. Phase 1.16 cross-benchmark transfer (diagnostic, independent of 1.12)
+5. Phase 1.14 MVBench refinement (if MVBench winner survives holdout)
+6. Phase 1.17 MVBench refresh sweep
+7. Phase 1.18 MVBench frame-count scaling
+8. Phase 1.15 TOMATO refinement (if TOMATO winner survives holdout)
+
+Total post-1.11 autonomous budget: ~7–8 hrs GPU when all phases run.
+
 ### Stage E — Track B design + skipped-compute measurement (day 4+)
 
 **E1. In-memory timing harness design doc**
