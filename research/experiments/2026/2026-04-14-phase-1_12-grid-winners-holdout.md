@@ -94,15 +94,66 @@ Notes:
 
 ## Execution
 
-Pending phase 1.10 + 1.11 completion.
+Launched 2026-04-15 after phase 1.11 completion. Selection protocol:
+`select_holdout_winners.py` was run on the 30-policy phase 1.11 pareto
+output for MVBench and on the 30-policy phase 1.10 pareto output for
+TOMATO; top-5 by `(cached_accuracy, effective_fresh_frames)` was
+extracted per slice and dedupe collapsed non-binding-age equivalents.
+Launch lists are in `phase1_12_mvbench_holdout_policies.json` and
+`phase1_12_tomato_holdout_policies.json`.
+
+Protocol deviation (codex audit 2026-04-16): the top-5 MVBench list
+included three points tied at 0.733 AND two points tied at 0.667 —
+i.e. two different accuracy tiers — so the "K>1 only when tied on
+primary metric" rule (`docs/methodology/pareto-reporting.md`) was
+stretched. The holdout outcome did not inflate a positive claim
+(all five failed), so this did not affect results. Future tranches
+must separate "primary (tied at top metric)" from "diagnostic extras"
+in the launch spec.
 
 ## Result
 
-Pending.
+**MVBench motion holdout: REJECTION.** All 5 dev-selected policies
+strictly dominated by dense-N on the disjoint holdout slice. Raw
+numbers in `phase1_12_mvbench_motion_holdout_pareto.json`
+(pareto_candidate_count = 0). Each cached point's dominator:
+
+| policy | cached | effective_fresh_frames | dominated_by |
+|---|---|---|---|
+| max_abs(16,64) static+shifted noage | 0.533 | 3.27 | dense-2 (0.533 @ 2) |
+| max_abs(16,64) static+shifted age=4 | 0.600 | 3.81 | dense-3 (0.600 @ 3) |
+| max_abs(8,32) static+shifted noage | 0.600 | 4.21 | dense-3 (0.600 @ 3) |
+| top_k_mean(k=64, 4, 12) noage | 0.600 | 4.55 | dense-3 (0.600 @ 3) |
+| cpf(px8, 0.02, 0.08) noage | 0.600 | 4.67 | dense-3 (0.600 @ 3) |
+
+**TOMATO motion holdout: in-flight (2/5 complete as of 2026-04-16).**
+Committed points so far:
+
+| policy | cached | effective_fresh_frames | notes |
+|---|---|---|---|
+| max_abs(8,32) static+shifted age=4 | 0.267 | 3.39 | matches dense-6 (0.267) at lower budget |
+| mean(2,6) static+shifted age=2 | 0.267 | 3.89 | matches dense-6 at lower budget |
+
+**Important caveat**: the committed TOMATO motion holdout dense curve
+from phase 1.8 only has frames {1, 4, 6}. Dense-2, dense-3, and dense-8
+were not built there. A cached point at fresh ≈ 3.4 may be strictly
+dominated by (as-yet-unmeasured) dense-3 if dense-3 holdout is stronger
+than 0.267. Phase 1.24 preregisters the backfill; no TOMATO "pass"
+claim can be made before that backfill lands.
 
 ## Interpretation
 
-Pending.
+- MVBench dev's item-identity-to-dense-4 property at lower budget did
+  NOT generalize to holdout. The discipline gate held: a strong dev
+  signal that turned out to be an N=15 slice coincidence was cleanly
+  rejected without any dev-to-holdout tuning.
+- TOMATO holdout interpretation is deferred until phase 1.24 dense
+  backfill completes.
+- Broader framing: even if TOMATO holdout survives a proper
+  matched-budget test, the right paper claim would be content-conditioned
+  ("cached temporal reuse matches dense frame-budget on TOMATO motion at
+  a specific operating point; fails on MVBench motion holdout"),
+  not a general SOTA claim.
 
 ## Links
 

@@ -156,16 +156,46 @@ preregistered but not yet launched.
 - Gates on phase 1.11 winner confirmation; runs regardless of phase 1.12
 - `research/experiments/2026/2026-04-15-phase-1_18-mvbench-winner-scale-check.md`
 
-Execution order (if phase 1.12 passes on MVBench):
+Execution order (UPDATED 2026-04-16 after MVBench holdout rejection +
+codex audit):
 
-1. Phase 1.11 sweep completes (in-flight)
-2. Phase 1.12 holdout evaluation
-3. Phase 1.13 logprob stratification
-4. Phase 1.16 cross-benchmark transfer (diagnostic, independent of 1.12)
-5. Phase 1.14 MVBench refinement (if MVBench winner survives holdout)
-6. Phase 1.17 MVBench refresh sweep
-7. Phase 1.18 MVBench frame-count scaling
-8. Phase 1.15 TOMATO refinement (if TOMATO winner survives holdout)
+1. ✅ Phase 1.11 MVBench motion dev grid sweep complete (30/30)
+2. ✅ Phase 1.12 MVBench motion holdout: REJECTION (0 Pareto candidates;
+   all 5 dev winners strictly dominated by dense-N on holdout)
+3. 🔄 Phase 1.12 TOMATO motion holdout: IN-FLIGHT (2/5 policies complete
+   as of 2026-04-16)
+4. Phase 1.24 TOMATO holdout dense-2/3/8 backfill — NEW, required
+   before any TOMATO "pass" can be interpreted rigorously (matched
+   dense curve is currently {1, 4, 6} only)
+5. Phase 1.19 calibration-metric alignment — PROMOTED from "lowest
+   priority filler" to top-priority code-change work; holdout
+   projection missed TOMATO reuse by ~1.45 fresh frames
+6. Phase 1.16 cross-benchmark transfer (diagnostic, independent of 1.12)
+7. Phase 1.21 MVBench motion N=30 slice enlargement (corrected to
+   same-slice enlargement after codex audit flagged a different-groups
+   draft)
+8. Phase 1.20 TOMATO motion N=30 slice enlargement
+9. Phase 1.22 MVBench non-motion winner transfer
+10. Phase 1.23 FastV composition scouting (filler; low-cost contingency
+    path, not a claim-building phase)
+
+**DEMOTED to exploratory** (not paper-grade unless a specific TOMATO
+holdout survivor holds up on the full matched-budget check):
+
+- Phase 1.14 MVBench `max_abs` threshold refinement — the (8,32) and
+  (16,64) winners both failed MVBench holdout; refining around dead
+  winners has no paper value
+- Phase 1.15 TOMATO `max_abs` threshold refinement — deferred until
+  phase 1.12 TOMATO + phase 1.24 backfill resolve
+- Phase 1.17 MVBench winner refresh-interval sweep — diagnostic only;
+  no holdout survivor to map
+- Phase 1.18 MVBench winner frame-count scaling — diagnostic only;
+  no holdout survivor to scale
+
+**DEFERRED** pending a survivor: phase 1.13 logprob stratification is
+most useful on a cached policy that needs its confidence-vs-staleness
+structure characterized; with the MVBench rejection already in, it
+falls behind phase 1.24 + 1.19 + 1.21 in priority.
 
 Total post-1.11 autonomous budget: ~7–8 hrs GPU when all phases run.
 

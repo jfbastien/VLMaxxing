@@ -98,9 +98,38 @@ Calibration summary:
 
 ## Result
 
-Sweep completed 2026-04-15 (30/30 policies). The pareto_analyzer reports
-8 raw candidates, which collapse to **4 distinct operating points** under
-dedupe (age8 ≡ noage on 8-frame clips) + strict inter-cached Pareto:
+Sweep completed 2026-04-15 (30/30 policies). The `pareto_analysis.py`
+analyzer reports 8 raw candidates by its own (dense-only) rule: a cached
+point is a "candidate" iff no dense-N baseline strictly dominates it on
+`(cached_accuracy, effective_fresh_frames)`. It does NOT compute
+inter-cached Pareto. After dedupe of non-binding `age8 ≡ noage`
+equivalents, 4 candidate labels remain.
+
+Codex audit 2026-04-15 flagged that an earlier draft of this note said
+the 4 candidates were "distinct Pareto operating points under strict
+inter-cached Pareto" — that was an overclaim. In commit (this tranche),
+`pareto_analysis.py` was extended to compute a real inter-cached
+skyline. Re-running the analyzer produces:
+
+- **2-axis skyline (cached_accuracy, effective_fresh_frames)**: 1 point —
+  `max_abs(16,64) static+shifted noage` at 0.733 / 2.52. This point
+  strictly dominates every other candidate on the repo's headline axes.
+- **3-axis skyline (cached_accuracy, effective_fresh_frames,
+  agreement)**: 3 raw points that collapse to 2 distinct ones
+  post-dedupe:
+  - `max_abs(16,64) static+shifted noage` at 0.733 / 2.52 / agreement=0.667
+  - `max_abs(8,32) static+shifted noage` at 0.733 / 3.22 / agreement=0.867
+
+The 3-axis skyline matters because dense-agreement encodes
+content-level fidelity that the 2-axis headline metrics miss: (16,64)
+and (8,32) have the same accuracy on this slice but (8,32) produces
+item-identical outputs to dense-4 while (16,64) generates different
+answers that happen to score the same on 15 items. The right story is
+"at the top accuracy tier there are two distinct operating regimes —
+aggressive (2.52 fresh frames, 67% dense-agreement) and conservative
+(3.22 fresh frames, 87% dense-agreement, item-identical to dense-4)."
+The remaining phase 1.11 candidates (`top_k_mean`, `cpf`) are in neither
+skyline; they sit below the frontier on all three axes.
 
 1. **`max_abs(16, 64) static+shifted noage`** — cached_acc=0.733,
    effective_fresh_frames=**2.52**, mean_active_reuse=0.783,

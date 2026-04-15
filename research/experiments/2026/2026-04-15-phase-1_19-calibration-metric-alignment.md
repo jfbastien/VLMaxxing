@@ -29,8 +29,18 @@ Track:
 
 Gating:
 
-- runs any time; lowest priority in the queue because it does not block
-  phase 1.12 or refinement phases.
+- **PROMOTED** 2026-04-16 by codex audit. The MVBench holdout + TOMATO
+  holdout winner selection used the calibration-projected
+  effective_fresh_frames to match each cached policy to a holdout
+  dense-N reference point. Observed projection error on TOMATO holdout
+  `max_abs(8,32) age=4`: projected 1.94 fresh frames, ACTUAL 3.39 — an
+  error of ~1.45 frames, enough to flip which dense-N baseline is the
+  matched reference.
+- Phase 1.19 is now **top priority** among code-change phases because
+  the mismatch is affecting experiment *interpretation*, not just
+  caveat language.
+- Runs ahead of 1.20/1.21/1.22 unless a GPU-bound survivor claim needs
+  immediate backfill (phase 1.24).
 
 Hypotheses:
 

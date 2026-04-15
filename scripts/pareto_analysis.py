@@ -198,6 +198,50 @@ def _find_pareto_winners(
     return winners
 
 
+def _inter_cached_skyline(
+    candidates: list[dict[str, Any]],
+    *,
+    objectives: tuple[str, ...] = ("cached_accuracy", "effective_fresh_frames"),
+) -> list[dict[str, Any]]:
+    """Return the strict inter-cached Pareto skyline over the given objectives.
+
+    Semantics (assuming the caller passes candidates that are already
+    non-dominated by any dense baseline):
+
+    - "cached_accuracy" and "agreement" are maximized
+    - "effective_fresh_frames" is minimized
+    - A candidate A is dominated by B iff B is ≥ A on all objectives
+      and > A on at least one.
+    - Exact ties on every listed objective are treated as mutual
+      non-domination so identical operating points all survive.
+    """
+    def worse_or_equal(a: float, b: float, minimize: bool) -> bool:
+        return (a >= b) if minimize else (a <= b)
+
+    def strictly_worse(a: float, b: float, minimize: bool) -> bool:
+        return (a > b) if minimize else (a < b)
+
+    minimize = {"effective_fresh_frames"}
+    skyline: list[dict[str, Any]] = []
+    for a in candidates:
+        dominated = False
+        for b in candidates:
+            if a is b:
+                continue
+            all_worse_or_equal = all(
+                worse_or_equal(a[k], b[k], k in minimize) for k in objectives
+            )
+            any_strictly_worse = any(
+                strictly_worse(a[k], b[k], k in minimize) for k in objectives
+            )
+            if all_worse_or_equal and any_strictly_worse:
+                dominated = True
+                break
+        if not dominated:
+            skyline.append(a)
+    return skyline
+
+
 def _cmd_analyze(args: argparse.Namespace) -> None:
     cached_points = _load_cached_points(args.cached, total_frames=args.total_frames)
     dense_points = _load_dense_points(args.dense)
@@ -205,6 +249,14 @@ def _cmd_analyze(args: argparse.Namespace) -> None:
     pareto_candidates = [w for w in winners if w["pareto_status"] == "candidate"]
     pareto_candidates.sort(
         key=lambda w: (-w["cached_accuracy"], w["effective_fresh_frames"])
+    )
+    inter_cached_2d = _inter_cached_skyline(
+        pareto_candidates,
+        objectives=("cached_accuracy", "effective_fresh_frames"),
+    )
+    inter_cached_3d = _inter_cached_skyline(
+        pareto_candidates,
+        objectives=("cached_accuracy", "effective_fresh_frames", "agreement"),
     )
     payload = {
         "cached_source": str(args.cached),
@@ -225,19 +277,36 @@ def _cmd_analyze(args: argparse.Namespace) -> None:
         "policies": winners,
         "pareto_candidates": pareto_candidates,
         "pareto_candidate_count": len(pareto_candidates),
+        "inter_cached_skyline_2d": inter_cached_2d,
+        "inter_cached_skyline_2d_count": len(inter_cached_2d),
+        "inter_cached_skyline_3d": inter_cached_3d,
+        "inter_cached_skyline_3d_count": len(inter_cached_3d),
     }
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
     print(f"Wrote {args.out}")
     print(f"  Cached points: {len(cached_points)}")
     print(f"  Dense points: {len(dense_points)}")
-    print(f"  Pareto candidates: {len(pareto_candidates)}")
+    print(f"  Pareto candidates (vs dense): {len(pareto_candidates)}")
     for cand in pareto_candidates[:10]:
         print(
             f"  {cand['label']}: cached_acc={cand['cached_accuracy']:.3f} "
             f"fresh_frames={cand['effective_fresh_frames']:.2f} "
             f"reuse={cand['mean_active_reuse']:.3f} "
             f"agreement={cand['agreement']:.3f}"
+        )
+    print(f"  Inter-cached skyline (acc, fresh): {len(inter_cached_2d)}")
+    for cand in inter_cached_2d[:10]:
+        print(
+            f"    {cand['label']}: acc={cand['cached_accuracy']:.3f} "
+            f"fresh={cand['effective_fresh_frames']:.2f}"
+        )
+    print(f"  Inter-cached skyline (acc, fresh, agreement): {len(inter_cached_3d)}")
+    for cand in inter_cached_3d[:10]:
+        print(
+            f"    {cand['label']}: acc={cand['cached_accuracy']:.3f} "
+            f"fresh={cand['effective_fresh_frames']:.2f} "
+            f"agree={cand['agreement']:.3f}"
         )
 
 

@@ -4,10 +4,18 @@
 
 Objective:
 
-- expand MVBench motion dev from N=15 to N=30 and MVBench motion holdout
-  from N=15 to N=30 via stratified random seed=42 drawing from the
-  hosted MVBench motion-relevant groups (action_localization,
-  action_sequence, unexpected_action, action_antonym)
+- expand the EXISTING MVBench motion dev slice from N=15 to N=30
+  (same five groups as `mvbench_motion_dev_v1.toml`:
+  `action_localization`, `fine_grained_action`, `object_interaction`,
+  `moving_direction`, `moving_attribute` — 6 items per group instead of
+  3) and symmetrically expand `mvbench_motion_holdout_v1.toml` to N=30
+  with 6 per group. This is a genuine same-slice enlargement, NOT a
+  broader-slice experiment.
+
+- Codex audit 2026-04-16 caught an earlier draft that listed different
+  groups (`action_sequence`, `unexpected_action`, `action_antonym`)
+  which would have been a DIFFERENT slice, not an N=30 enlargement.
+  That draft has been corrected to use the same groups as v1.
 - re-run dense frame-budget baselines on the enlarged slices
 - re-run the MVBench motion dev winner `max_abs(8,32) static+shifted
   noage` and the CPF shoulder `cpf(px8, 0.02/0.08) static+shifted
@@ -62,10 +70,12 @@ Inconclusive:
 
 Slice build:
 
-- write `research/benchmark_manifests/mvbench_motion_dev_v2.toml` with
-  30 items stratified from hosted motion-relevant groups (seed=42)
+- write `research/benchmark_manifests/mvbench_motion_dev_v2.toml`: the
+  existing v1 15 items PLUS 15 more items stratified seed=42 from the
+  SAME five hosted groups, so dev_v2 is a superset of dev_v1
 - write `research/benchmark_manifests/mvbench_motion_holdout_v2.toml`
-  symmetrically, zero overlap with dev_v2.
+  symmetrically: v1 holdout superset, same five groups, zero overlap
+  with dev_v2 by item_id.
 
 Cells:
 
