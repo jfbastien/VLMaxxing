@@ -192,10 +192,18 @@ holdout survivor holds up on the full matched-budget check):
 - Phase 1.18 MVBench winner frame-count scaling — diagnostic only;
   no holdout survivor to scale
 
+**RE-ACTIVATED 2026-04-16 after phase 1.12.B survivor emerged**:
+
+- Phase 1.21 MVBench N=30: the phase 1.12.B transfer-discovered
+  winner (`max_abs(8,32) static+shifted age=4` on MVBench holdout
+  at 0.667 / fresh 4.59) needs N=30 to be paper-grade. Previous
+  demote rationale (assuming clean null) is obsolete.
+
 **DEFERRED** pending a survivor: phase 1.13 logprob stratification is
 most useful on a cached policy that needs its confidence-vs-staleness
-structure characterized; with the MVBench rejection already in, it
-falls behind phase 1.24 + 1.19 + 1.21 in priority.
+structure characterized; with phase 1.12.B providing a survivor, this
+is now re-activatable but still lower priority than phase 1.20/1.21
+N=30 enlargements.
 
 Total post-1.11 autonomous budget: ~7–8 hrs GPU when all phases run.
 

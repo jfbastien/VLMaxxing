@@ -15,19 +15,25 @@ features are mixed in after encode. FastV reduces compute **at the decoder
 side**: after layer K of the LLM, the lowest-attention-score vision tokens
 are dropped so subsequent layers run on a shorter sequence.
 
-These are orthogonal axes of reduction. If composition works, the expected
-token-cost arithmetic is multiplicative:
+These are orthogonal axes of reduction. A first-order cost model
+suggests they may stack, but the arithmetic is only approximate until
+measured on the same MLX path:
 
 - Temporal reuse at 0.7 active-reuse ratio cuts pre-decode vision-token
-  compute by ~30%.
+  compute by ~30% (order-of-magnitude estimate from our measured
+  `mean_active_reuse`).
 - FastV at K=2, R=50% cuts post-layer-K decoder compute by ~50% on the
-  vision-token columns only.
-- Together: ~15% of the dense-all-frames all-tokens baseline in vision
-  compute columns (with untouched text-token columns).
+  vision-token columns only (reported by the FastV paper on
+  LLaVA-1.5).
+- Together: order-of-magnitude ~15% of the dense-all-frames
+  all-tokens baseline in vision compute columns. This is NOT a
+  measured result.
 
 This is the contingency path flagged in `docs/execution-plan-round-7.md`
-Stage F — if temporal reuse alone fails holdout on both benchmarks, FastV
-composition becomes the paper-track claim.
+Stage F — if temporal reuse alone fails holdout on both benchmarks,
+FastV composition becomes a promising alternate path. If temporal
+reuse holds at N=30 on its own, FastV composition becomes optional
+rather than mandatory.
 
 ## Current repo state (encoder-side)
 

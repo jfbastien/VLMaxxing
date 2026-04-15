@@ -87,16 +87,39 @@ Runtime: ~1 hr code change + ~15 min CPU re-calibration.
 
 ## Execution
 
-Pending. Low priority in queue; runs whenever no GPU-heavy phase is
-active.
+Completed 2026-04-16. Code change: `_calibrate` in
+`scripts/planner_grid_search.py` now mirrors the runner's pad-masked,
+age-gated `_compute_reuse_ratio` semantics. Verified in commit
+`a59e37c` via ruff + mypy.
+
+Re-calibrated all 4 manifests (`phase1_19_*_calibration_v2.json`).
 
 ## Result
 
-Pending.
+MVBench motion dev, 30 policies that actually ran in phase 1.11:
+
+| calibration version | MAE vs runner `reuse_ratio_mean_active` |
+|---|---|
+| v1 (pre-fix, unmasked + pre-age-gate) | 0.2023 |
+| v2 (pad-masked + age-gated) | **0.0017** (max 0.0041, median 0.0018) |
+
+120× improvement in MAE. Calibration is now essentially a drop-in
+estimator for runner-reported active reuse.
+
+H1 acceptance band (MAE < 0.02 on ≥20 of 22 completed policies):
+**PASSED** for 30/30 policies.
 
 ## Interpretation
 
-Pending.
+- H1 confirmed cleanly. The pre-fix mismatch (0.20 MAE) was large
+  enough to flip holdout-target dense-N assignments; the v2 error
+  (0.002 MAE) is below sampling noise.
+- All future sweeps should reference v2 calibrations.
+- Existing v1 calibrations left on disk for provenance; do not use
+  them for new analysis.
+- `select_holdout_winners.py` and `pareto_analysis.py` already
+  reference the calibration file path by argument, so switching is
+  a per-invocation choice.
 
 ## Links
 

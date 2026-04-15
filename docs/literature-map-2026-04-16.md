@@ -4,13 +4,16 @@ Date: 2026-04-16
 Parent: [PLAN.md](../PLAN.md), [execution-plan-round-7.md](execution-plan-round-7.md)
 Prior map: [literature-map.md](literature-map.md) (pre-CodecSight)
 
-This document is the research-position map after CodecSight (2604.06036v3)
-and CoPE-VideoLM (2602.13191) landed on arXiv. They fill the systems and
-model slots in the video-VLM efficiency landscape that our project was
-implicitly claiming. The plan is no longer "reproduce the whitepaper";
-it is "a training-free, codec-guided temporal routing method that
-improves the quality–compute Pareto on temporal reasoning benchmarks,
-with real sparse execution."
+This document updates the research-position map after CodecSight
+(2604.06036v3) and CoPE-VideoLM (2602.13191). Whitepaper reproduction
+remains the methodological foundation. The broader **candidate paper
+slot**, if later phase work (phase 1.20 TOMATO N=30, phase 1.21 MVBench
+N=30, Stage E Track B) lands, is a training-free, codec-guided
+temporal routing method targeting a better quality–compute Pareto
+frontier on temporal-reasoning benchmarks with real measured skipped
+compute. Several axes of that claim (Track B, projector-consistent
+sparse execution, composition) are currently **target claims, not
+current evidence** — do not cite them as proven work.
 
 ## Four-axis taxonomy of video-VLM efficiency
 
@@ -119,11 +122,14 @@ phase 1.29 will prototype PyAV MV extraction.
     PerceptionTest at 1 keyframe/GOP (+5.1pp)
   - FPS coverage: 2 FPS still helps (+1.97% TempCompass, +1.87%
     MVBench); at 3 FPS both decline ~0.2pp (train/test mismatch)
-- **Our comparison point**: our TOMATO motion holdout tie at 26.7%
-  (4/15) is in the same ballpark as CoPE's TOMATO 28.3%. Achieving
-  this **training-free, on MLX locally, without a codec encoder**
-  is a credible positioning line. Caveat: N=15 vs CoPE's full
-  TOMATO ≈1,484 items — accuracy is within CoPE's noise.
+- **Our comparison point** (directional only, not a paper-facing
+  head-to-head claim): our TOMATO motion holdout result at 26.7%
+  (4/15) is numerically near CoPE's reported TOMATO 28.3%, but
+  this comparison comes from a tiny motion-focused slice vs CoPE's
+  full-benchmark number on a different model family, and should
+  not be cited as a method comparison. Audit caveat (codex,
+  2026-04-16): the benchmark scope and method family differ too
+  much for paper-grade equivalence.
 - **Training-free portability blocker**: phase 1.23 research
   confirms Δ-token construction falls apart without learned
   alignment weights. The motion/residual transformers' query
@@ -150,15 +156,17 @@ Four-axis taxonomy (for the paper's related-work table):
 
 | Method | Reduction stage | Signal source | MLX status |
 |---|---|---|---|
-| **FastV** (ECCV 2024 Oral) | Decoder-internal (layer K) | Intra-modal attention | Trivially portable logic, but mlx-vlm fused SDPA hides scores → needs fork to expose |
+| **FastV** (ECCV 2024 Oral) | Decoder-internal (layer K) | Intra-modal attention | Algorithmically orthogonal; implementation on MLX is non-trivial because fused SDPA does not currently expose attention scores (requires mlx-vlm fork) |
 | **VisionZip** (CVPR 2025) | Post-encoder | CLS-attention | torch only, Qwen2-VL port exists, Qwen2.5-VL TBD |
 | **SparseVLM** (ICML 2025) | Decoder-internal (every LLM layer) | Cross-modal (text-visual attention) | torch only (HF hooks per layer) |
 | **FastVID** | Post-encoder, spans temporal groups | Density clustering | torch only (hardwired into lmms-eval fork of `modeling_qwen2_5_vl.py`) |
 | **VScan** | Multi-stage (ViT + LLM mid-layer) | Intra-modal (ViT) + cross-modal | torch only, modifies both forward passes |
 | **VLCache** | Encoder-cache + KV-cache reuse | Cross-request similarity | SGLang only |
 
-All are training-free except FastVID's density-clustering heuristic
-which is also training-free.
+All six listed methods run as training-free inference-time policies
+on top of frozen VLMs. (FastVID adds dynamic density clustering at
+inference time; no fine-tuning is required.) Verify per-paper before
+citing in a paper table.
 
 Our slot on the same axes:
 `(Post-encoder, Pixel/frame-domain, Training-free, Cross-frame)` —
@@ -167,9 +175,11 @@ genuinely orthogonal to every method above on the signal-source axis
 orthogonal to FastV/SparseVLM/VScan/VLCache on the stage axis (we
 prune before they see tokens).
 
-Headline compute-reduction numbers (MVBench/TempCompass specific
-figures are NOT publicly reported for any of these — all evaluated
-on VideoMME, EgoSchema, LLaVA-1.5 image VQA):
+Headline compute-reduction numbers (orientation only — numbers come
+from heterogeneous model stacks and benchmarks, not a head-to-head
+comparison; MVBench/TempCompass specific figures are NOT publicly
+reported for any of these — all evaluated on VideoMME, EgoSchema,
+LLaVA-1.5 image VQA):
 
 - **FastV**: 45% FLOPs reduction on LLaVA-1.5-13B, minimal accuracy
   drop
@@ -224,28 +234,44 @@ on VideoMME, EgoSchema, LLaVA-1.5 image VQA):
   lineage. Good for historical framing in the paper intro.
 - **MPEG VCM / JPEG AI** — long-term machine-first codec framing.
 
-## Our defensible paper slot
+## Candidate paper slot (target, not current claim)
 
-> **A training-free, codec-guided temporal routing method that improves
-> the quality–compute Pareto frontier for video VLMs by combining
+> **A training-free, codec-guided temporal routing method that TARGETS
+> a better quality–compute Pareto frontier for video VLMs via
 > concentration-aware change detection, bounded staleness, and
-> projector-consistent sparse execution. Validated on TOMATO,
-> TempCompass, and MVBench motion-heavy subsets at matched fresh-token
-> budget. Composes with within-frame token reduction (FastVID /
-> VisionZip) for multiplicative gain.**
+> projector-consistent sparse execution. TempCompass and composition
+> claims remain future work until they are locally measured.**
 
-Five claims the paper must support:
+Five **target claims** (NOT yet evidence):
 
 1. codec-derived proxies are valid routing signals (pixel diff is one;
-   MV-only will be the deployable second).
+   MV-only will be the deployable second — phase 1.29 pending).
 2. naive mean-diff + no refresh is too blunt on TOMATO-style brief
-   semantically-critical change patterns.
+   semantically-critical change patterns (supported by current
+   evidence from phases 1.6, 1.7, 1.10; still requires N=30
+   hardening).
 3. sticky-dynamic + age-bounded + projector-group-complete planners
-   repair hard temporal failures.
-4. the saved budget can be spent on more frames, not just less latency
-   (CoPE framing adapted to training-free).
+   repair hard temporal failures (phases 1.26 and 1.27; currently
+   in-flight or preregistered).
+4. the saved budget can be spent on more frames, not just less
+   latency (CoPE framing adapted to training-free — phase 1.28
+   partially executed with mixed results; H1 rejected on MVBench
+   holdout at 16 frames, inconclusive on TOMATO).
 5. real sparse execution (Track B) converts the proxy gain into
-   measured speedup.
+   measured speedup. **Stage E is entirely prospective.**
+
+### Current evidence level (2026-04-16)
+
+| Claim | Status |
+|---|---|
+| Training-free temporal reuse on MLX has a held-out Pareto signal | **Credible early signal** (phase 1.12.B + phase 1.12 TOMATO) |
+| Policy family `max_abs(8,32) static+shifted age=4` beats matched dense-6 on MVBench motion holdout at 77% budget | **Real, N=15, single-shot, transfer-discovered** — needs N=30 to harden |
+| TOMATO motion holdout cached ties dense-6/8 at lower budget | **Real, N=15, low-accuracy regime, confidence-limited** |
+| Cross-benchmark policy transfer is asymmetric | **Real** (TOMATO→MVBench cell B is strong; MVBench→TOMATO is weak) |
+| Sticky-dynamic + projector-group repair failures | **Pending** (phase 1.26 running) |
+| "More frames at same budget" coverage benefit | **Rejected** on MVBench holdout (phase 1.28) |
+| Real skipped compute (wall-clock / FLOP) | **Not measured** — Track B unbuilt |
+| Composition with FastV multiplies gains | **Not measured** — mlx-vlm fork required |
 
 ## What's off-limits now
 

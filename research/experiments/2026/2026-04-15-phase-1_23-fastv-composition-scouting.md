@@ -71,15 +71,48 @@ Runtime: ~1 hr research + 30 min writing.
 
 ## Execution
 
-Pending. Runs as a filler task when GPU-bound phases are in flight.
+Completed 2026-04-16 as a research-only scouting pass. No code was
+written, no mlx-vlm fork was made. Scouting report committed to
+`docs/fastv-composition-plan.md`.
 
 ## Result
 
-Pending.
+Key findings:
+
+- **Hook site confirmed**: `Qwen2Model.__call__` layer loop in
+  `mlx_vlm/models/qwen2_5_vl/language.py` (~line 250-253)
+- **Blocker identified**: mlx-vlm does NOT expose per-layer attention
+  scores. The fused Metal SDPA kernel
+  (`mx.fast.scaled_dot_product_attention`) returns only the projected
+  output; no flag exposes softmax weights. FastV requires patching
+  the attention class to materialize attention scores at the K-th
+  layer.
+- **Effort classification**: requires an mlx-vlm fork with attention
+  API additions. Estimated ~1–2 weeks engineering including KV cache
+  bookkeeping and MRoPE (3-D position IDs) index surgery for dropped
+  tokens.
+- **No prior art**: mlx-vlm and mlx-lm issue trackers have no open
+  or closed issues about attention-score introspection or token
+  dropping. Starting from scratch.
+- **Smoke test proposed**: one-clip prefill before/after with K=2,
+  R=50%; assert answer match + prefill time reduction.
 
 ## Interpretation
 
-Pending.
+Revised from "trivially portable" earlier framing (caught by
+2026-04-16 audit):
+
+- FastV is **algorithmically orthogonal** to our encoder-side
+  temporal cached method — the two attack different compute axes
+  and compose in principle.
+- FastV is **NOT trivially portable** to MLX. The logic is simple
+  (sort tokens by attention score, mask downstream layers) but the
+  *required signal* (per-layer attention scores) is not exposed by
+  the current mlx-vlm stack.
+- Therefore phase 1.32 requires an mlx-vlm fork as a prerequisite.
+  Gate Stage F engineering on phase 1.20 N=30 confirmation first;
+  if temporal reuse has a paper claim on its own, FastV is optional
+  rather than mandatory.
 
 ## Links
 

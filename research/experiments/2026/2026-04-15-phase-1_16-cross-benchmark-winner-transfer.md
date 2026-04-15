@@ -85,11 +85,61 @@ uv run python scripts/run_benchmark_track_a.py \
 
 ## Result
 
-Pending.
+Both cells executed 2026-04-16 via `planner_grid_search.py run-explicit`.
+
+**Cell A — MVBench winner on TOMATO motion dev** (`max_abs(8,32)
+static+shifted noage`):
+
+| metric | value |
+|---|---|
+| cached_accuracy | 0.333 (5/15) |
+| same-run dense_accuracy | 0.467 (7/15) |
+| agreement | 0.800 |
+| reuse_active | 0.657 |
+| effective_fresh_frames | 3.40 |
+
+TOMATO-native winner at same budget: `max_abs(8,32) static+shifted
+age=4` gave cached=0.400 @ fresh=3.99. Transfer to TOMATO LOSES 1
+item (6.7pp accuracy) while saving ~0.6 fresh frames. Interpretation:
+TOMATO favors age-bounded staleness; the MVBench winner lacks that
+constraint.
+
+**Cell B — TOMATO winner on MVBench motion dev** (`max_abs(8,32)
+static+shifted age=4`):
+
+| metric | value |
+|---|---|
+| cached_accuracy | 0.800 (12/15) |
+| same-run dense_accuracy | 0.600 (9/15) |
+| agreement | 0.733 |
+| reuse_active | 0.603 |
+| effective_fresh_frames | 3.78 |
+
+Cached **beats same-run dense-8** on this slice (12/15 > 9/15) and
+**beats the phase 1.11 MVBench-native winner** (0.733 @ fresh=3.22).
+The combination `max_abs(8,32) static+shifted age=4` was NOT in the
+phase 1.11 grid — calibrate-then-select with per-bin=1 picked the
+noage and age=8 variants for this threshold set, leaving age=4 as a
+grid hole. This is a scientifically important negative finding about
+our search strategy.
 
 ## Interpretation
 
-Pending.
+- **Transfer is asymmetric, not uniformly weak.** TOMATO→MVBench is
+  strong (cell B); MVBench→TOMATO is a small loss (cell A).
+- **Age=4 is the critical hyperparameter** that the phase 1.11
+  MVBench grid missed. Going forward, policy search should be
+  factorized (coarse-over-statistic-and-thresholds, then fine
+  age-sweep in promising regions), not dense-grid-per-bin.
+- **Paper implication**: the cross-benchmark-discovered winner was
+  promoted to a single-shot MVBench holdout (phase 1.12.B), which
+  also passed. That defines the strongest current method signal.
+- **Audit caveat (codex, 2026-04-16)**: the phase 1.12.B holdout
+  test was *informed by* MVBench dev evidence (the cell B result
+  above), not a benchmark-blind predeclared winner. The right
+  framing is "transfer-discovered follow-up winner," NOT "clean
+  blinded holdout." This caveat is now propagated to
+  `phase-1_12b-crossbench-winner-mvbench-holdout.md`.
 
 ## Links
 

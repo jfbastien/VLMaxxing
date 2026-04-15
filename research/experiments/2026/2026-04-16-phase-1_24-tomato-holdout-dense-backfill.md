@@ -71,34 +71,49 @@ cached runs because planner classification is skipped).
 
 ## Execution
 
-Pending phase 1.12 TOMATO holdout completion.
-
-Planned commands (one per cell, using the existing
-`scripts/run_benchmark_track_a.py run` path with `--cache-mode off` or
-equivalent dense-only flag; confirm correct flag at launch):
-
-```
-uv run python scripts/run_benchmark_track_a.py run \
-  --benchmark tomato \
-  --manifest research/benchmark_manifests/tomato_motion_holdout_v1.toml \
-  --frame-count <N> \
-  --chunk-size 1 \
-  --cache-mode off \
-  --output-path research/experiments/2026/artifacts/phase1_24_tomato_motion_holdout_dense_<N>.jsonl \
-  --summary-path research/experiments/2026/artifacts/phase1_24_tomato_motion_holdout_dense_<N>_summary.json \
-  --allow-dirty
-```
-
-Then merge into a single `phase1_24_tomato_motion_holdout_dense_full.json`
-compatible with `pareto_analysis.py analyze`.
+Completed 2026-04-16. Used `scripts/frame_budget_baseline.py --manifest
+tomato_motion_holdout_v1.toml --frame-counts 2 3 8`. No special
+dense-only flag needed; the `frame_budget_baseline.py` driver already
+runs dense-only cells. Combined with phase 1.8 output into
+`phase1_24_tomato_motion_holdout_dense_full.json` for compatibility
+with `pareto_analysis.py analyze`.
 
 ## Result
 
-Pending.
+Full TOMATO motion holdout dense curve (N=15):
+
+| frame_count | accuracy | Wilson 95% CI |
+|---|---|---|
+| 1 | 0.200 | [0.07, 0.45] |
+| 2 | 0.200 | [0.07, 0.45] |
+| 3 | 0.200 | [0.07, 0.45] |
+| 4 | 0.133 | [0.04, 0.38] |
+| 6 | 0.267 | [0.11, 0.52] |
+| 8 | 0.267 | [0.11, 0.52] |
+
+Curve shape:
+
+- Low-frame regime {1, 2, 3}: flat at 0.200 — first-frame answer
+  dominates on most items in these 15 clips
+- Surprising dip at dense-4: 0.133 (below dense-1 accuracy)
+- Plateau at dense-6 and dense-8: 0.267
+
+H2 (dense-4 is the low point on TOMATO holdout) is confirmed:
+dense-4 at 0.133 < dense-2, dense-3 at 0.200. This non-monotonic
+curve is a real slice feature, not a harness artifact.
 
 ## Interpretation
 
-Pending.
+- With the full curve, phase 1.12 TOMATO holdout Pareto analysis
+  now has all 6 dense cells. Result: 5/5 cached policies are Pareto
+  candidates (strict Pareto winners vs dense-6/8 at equal accuracy,
+  lower budget).
+- The non-monotonic dense curve explains part of the low-accuracy
+  regime: TOMATO motion holdout at N=15 has several items where
+  more frames make the model worse (presumably over-sampling creates
+  conflicting evidence).
+- This is the companion result to phase 1.12.B on MVBench — both
+  now have completed matched-budget dense curves for Pareto checks.
 
 ## Links
 

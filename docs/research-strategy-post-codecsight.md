@@ -4,19 +4,20 @@ Date: 2026-04-16
 Parent: [PLAN.md](../PLAN.md), [execution-plan-round-7.md](execution-plan-round-7.md)
 Positioning: [literature-map-2026-04-16.md](literature-map-2026-04-16.md)
 
-## Thesis
+## Candidate Thesis (target, not current claim)
 
-After CodecSight (systems) and CoPE-VideoLM (model) landed, the paper we can
-now defend is:
+After CodecSight (systems) and CoPE-VideoLM (model) landed, the
+**candidate paper thesis** is:
 
-> **A training-free, codec-guided temporal routing method that improves the
-> quality–compute Pareto frontier for video VLMs on temporal-reasoning
-> benchmarks (TOMATO, TempCompass, MVBench motion) by combining
-> concentration-aware change detection, bounded staleness, and
-> projector-consistent sparse execution, with real measured skipped
-> compute on Apple Silicon MLX.**
+> **A training-free, codec-guided temporal routing method that aims to
+> improve the quality–compute Pareto frontier for video VLMs on
+> temporal-reasoning benchmarks (TOMATO, TempCompass, MVBench motion)
+> by combining concentration-aware change detection, bounded
+> staleness, and projector-consistent sparse execution. Real measured
+> skipped compute on Apple Silicon MLX remains a gating requirement,
+> not a completed claim.**
 
-Five claims in support:
+Five **target claims** to test:
 
 1. Codec-derived proxies are valid training-free routing signals.
 2. Naive mean-diff + no-refresh is too blunt on TOMATO-style brief
@@ -31,22 +32,24 @@ Five claims in support:
 
 ## Why we're in a defensible slot
 
-CodecSight validates the "codec signals are a runtime oracle" thesis
-but evaluates on UCF-Crime streaming anomaly F1, not TOMATO / TempCompass
-/ MVBench motion. CoPE-VideoLM validates the "buy more frames per
-compute" thesis but with a *trained* Δ-encoder that falls apart without
-learned alignment weights (phase 1.23 research verified). Our slot:
-training-free, temporal-reasoning benchmarks, MLX-local, real skipped
-compute.
+CodecSight validates the broader systems thesis that codec signals can
+serve as low-cost runtime oracles, but in an anomaly-streaming setting
+rather than temporal-reasoning QA. CoPE-VideoLM validates the "buy
+more frames per compute" thesis with a trained codec-aligned
+representation. Our current slot is training-free,
+temporal-reasoning-focused, MLX-local, with real skipped compute still
+pending.
 
-**Single-line differentiators**:
+**Single-line differentiators** (current evidence):
 
 - vs CodecSight: different benchmark domain, training-free planner
-  search, no NVDEC dependency (MLX-side MV extraction path).
+  search, no NVDEC dependency (MLX-side MV extraction path — phase
+  1.29 pending).
 - vs CoPE-VideoLM: training-free, no Δ-encoder pretraining.
 - vs FastV/FastVID/VisionZip/SparseVLM/VScan: different axis
   (encoder-side temporal; they are intra-frame or decoder-internal).
-  Composes multiplicatively.
+  Likely composes in principle; measured composition remains future
+  work.
 
 ## What changes in the plan
 
@@ -54,9 +57,9 @@ compute.
 
 - Phase 1.19 calibration fix: already landed (MAE 0.20 → 0.0017).
   Confirmed as critical methodology hygiene.
-- Phase 1.20 TOMATO N=30 enlargement: even more important now because
-  TOMATO 26.7% (N=15) lands near CoPE's 28.3% (full) — we need N=30
-  to harden that comparison.
+- Phase 1.20 TOMATO N=30 enlargement remains important because the
+  current N=15 result is too small for cross-paper quantitative
+  comparison.
 - Phase 1.23 FastV scouting: complete; next step is the MLX-vlm fork
   for attention-score exposure.
 - Phase 1.24 TOMATO holdout dense backfill: already landed.
@@ -68,9 +71,14 @@ compute.
   exploratory unless a specific research question arises.
 - Phase 1.13 logprob stratification: defer until at least one policy
   survives N=30 enlargement — otherwise we're stratifying noise.
-- Phase 1.21 MVBench N=30: demote from top priority. MVBench holdout
-  clean rejection is itself the scientific result; tightening CIs on
-  a confirmed null has marginal value.
+- Phase 1.21 MVBench N=30: **RE-ACTIVATED 2026-04-16** after phase
+  1.12.B surfaced a cross-benchmark-discovered MVBench holdout
+  Pareto survivor (`max_abs(8,32) static+shifted age=4` at cached
+  0.667 / fresh 4.59 / agreement 0.933). Previously demoted under
+  the assumption that MVBench holdout was a clean null; the null
+  was specific to the phase-1.11-grid-sampled winners, not the
+  (transfer-discovered) policy. N=30 now required for cross-paper
+  comparability.
 
 ### Add (phases 1.25–1.33, preregistered)
 
