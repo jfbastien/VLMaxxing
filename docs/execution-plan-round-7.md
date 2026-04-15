@@ -239,6 +239,48 @@ while the operator is away, without ever needing approvals.
 
 Total Stage D'' autonomous budget: ~9 hrs GPU + 1.5 hrs CPU/design.
 
+### Stage D''' — Post-CodecSight repositioning (2026-04-16, current)
+
+Added 2026-04-16 after CodecSight (2604.06036v3) and CoPE-VideoLM
+(2602.13191) papers landed on arXiv. They occupy the "codec metadata
+helps VLMs" systems slot and the "trained codec-native representation"
+model slot respectively. Our research repositions as *training-free,
+temporal-reasoning benchmarks, MLX-local, real skipped compute*. See
+`docs/literature-map-2026-04-16.md` and
+`docs/research-strategy-post-codecsight.md`.
+
+**Executed priority ordering** (by `probability-of-moving-paper-claim ×
+magnitude / effort`):
+
+1. ✅ Phase 1.12 holdouts (MVBench rejected, TOMATO 5/5 Pareto-ties
+   at low-accuracy regime)
+2. ✅ Phase 1.19 calibration fix (MAE 0.20 → 0.0017)
+3. ✅ Phase 1.24 TOMATO holdout dense backfill
+4. ✅ Phase 1.23 FastV scouting (blocker identified: mlx-vlm fork)
+5. Phase 1.26 sticky-dynamic planner — **next up, highest leverage**
+6. Phase 1.27 projector-group completion — composes with 1.26
+7. Phase 1.20 TOMATO N=30 enlargement — hardens N=15 tie
+8. Phase 1.28 iso-token-budget coverage — paper claim #4
+9. Phase 1.31 failure predictor — CPU-only, can run in parallel
+10. Phase 1.29 MV-only signal path — deployability
+11. Phase 1.25 TempCompass ingest — third benchmark
+12. Phase 1.30 streaming-window harness — CodecSight parity
+13. Phase 1.32 FastV composition pilot — gated on mlx-vlm fork
+14. Phase 1.33 FastVID baseline — out-of-MLX; defer to first paper draft
+
+**Demoted / retired** (after MVBench holdout rejection):
+
+- Phases 1.14, 1.15, 1.17, 1.18 — refining dead-on-holdout winners;
+  exploratory only
+- Phase 1.13 logprob stratification — deferred until an N=30
+  survivor emerges
+- Phase 1.21 MVBench N=30 — demoted (rejection is itself the result;
+  tightening CIs on a confirmed null has marginal value)
+
+Total Stage D''' autonomous budget: ~30 hrs GPU when 1.26/1.27/1.28
+/1.20/1.29/1.30 all run. Not counting phase 1.32 fork work (~1–2
+weeks) or phase 1.33 torch-side work.
+
 ### Stage E — Track B design + skipped-compute measurement (day 4+)
 
 **E1. In-memory timing harness design doc**
