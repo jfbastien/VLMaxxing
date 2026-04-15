@@ -45,9 +45,9 @@
     }
   ],
   "dense_source": "research/experiments/2026/artifacts/phase1_9_mvbench_motion_frame_budget_dev.json",
-  "n_cached": 25,
+  "n_cached": 26,
   "n_dense": 6,
-  "pareto_candidate_count": 4,
+  "pareto_candidate_count": 5,
   "pareto_candidates": [
     {
       "agreement": 0.8666666666666667,
@@ -86,6 +86,25 @@
       "shifted_threshold": 32.0,
       "static_threshold": 8.0,
       "statistic": "max_abs"
+    },
+    {
+      "agreement": 0.8666666666666667,
+      "cached_accuracy": 0.6666666666666666,
+      "dense_accuracy": 0.6,
+      "dominated_by_dense_frame": null,
+      "effective_fresh_frames": 3.7733650604883824,
+      "label": "top_k_mean-k64-4.0-12.0-static+shifted-noage",
+      "max_age": null,
+      "mean_active_reuse": 0.6038049913588025,
+      "n": 15,
+      "pareto_status": "candidate",
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "shifted_threshold": 12.0,
+      "static_threshold": 4.0,
+      "statistic": "top_k_mean"
     },
     {
       "agreement": 0.8,
@@ -549,6 +568,25 @@
       "shifted_threshold": 10.0,
       "static_threshold": 4.0,
       "statistic": "mean"
+    },
+    {
+      "agreement": 0.8666666666666667,
+      "cached_accuracy": 0.6666666666666666,
+      "dense_accuracy": 0.6,
+      "dominated_by_dense_frame": null,
+      "effective_fresh_frames": 3.7733650604883824,
+      "label": "top_k_mean-k64-4.0-12.0-static+shifted-noage",
+      "max_age": null,
+      "mean_active_reuse": 0.6038049913588025,
+      "n": 15,
+      "pareto_status": "candidate",
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "shifted_threshold": 12.0,
+      "static_threshold": 4.0,
+      "statistic": "top_k_mean"
     },
     {
       "agreement": 0.9333333333333333,
