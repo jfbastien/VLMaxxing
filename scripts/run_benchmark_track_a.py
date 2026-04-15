@@ -592,6 +592,7 @@ def _planner_payload(
     *,
     reuse_classes: tuple[BlockClass, ...],
     max_age: int | None,
+    sticky_window: int | None = None,
 ) -> dict[str, Any]:
     return {
         "statistic": planner_config.statistic.value,
@@ -601,6 +602,7 @@ def _planner_payload(
         "top_k": planner_config.top_k,
         "reuse_classes": [block_class.name.lower() for block_class in reuse_classes],
         "max_age": max_age,
+        "sticky_window": sticky_window,
     }
 
 
@@ -653,6 +655,7 @@ def _mix_qwen_features(
     planner_config: PlannerConfig,
     reuse_classes: tuple[BlockClass, ...],
     max_age: int | None,
+    sticky_window: int | None = None,
 ) -> tuple[mx.array, list[float], list[float]]:
     image_grid_thw = np.array(sample.extra_kwargs["image_grid_thw"].tolist(), dtype=np.int64)
     counts = qwen_merged_token_counts(image_grid_thw, spatial_merge_size=QWEN_SPATIAL_MERGE)
@@ -667,9 +670,16 @@ def _mix_qwen_features(
 
     mixed_segments = [dense_segments[0]]
     ages = np.zeros(dense_segments[0].shape[0], dtype=np.int32)
+    # CodecSight-style sticky-dynamic: once a block is classified as
+    # non-reusable within a reset window, it stays non-reusable for the
+    # remainder of the window. Window resets at
+    # `frame_index % sticky_window == 0` (the "I-frame equivalent").
+    dynamic_latched = np.zeros(dense_segments[0].shape[0], dtype=bool)
     raw_reused_ratios: list[float] = []
     active_reused_ratios: list[float] = []
     for frame_index in range(1, len(sample.frames)):
+        if sticky_window is not None and frame_index % sticky_window == 0:
+            dynamic_latched = np.zeros_like(dynamic_latched)
         previous = np.array(sample.frames[frame_index - 1], dtype=np.uint8)
         current = np.array(sample.frames[frame_index], dtype=np.uint8)
         classification = classify_blocks_with_planner(
@@ -684,6 +694,9 @@ def _mix_qwen_features(
                 "classification/token mismatch: "
                 f"mask={reuse_mask.size}, tokens={dense_segments[frame_index].shape[0]}"
             )
+        if sticky_window is not None:
+            dynamic_latched = dynamic_latched | ~reuse_mask
+            reuse_mask = reuse_mask & ~dynamic_latched
         allowed_mask, ages = _apply_age_gate(reuse_mask, ages, max_age=max_age)
         previous_active = active_region_block_mask(
             sample.frames[frame_index - 1].size,
@@ -723,6 +736,7 @@ def _select_cached_features(
     planner_config: PlannerConfig,
     reuse_classes: tuple[BlockClass, ...],
     max_age: int | None,
+    sticky_window: int | None = None,
 ) -> tuple[mx.array, list[float], list[float]]:
     if cache_mode == "identity":
         return features, [], []
@@ -733,6 +747,7 @@ def _select_cached_features(
             planner_config=planner_config,
             reuse_classes=reuse_classes,
             max_age=max_age,
+            sticky_window=sticky_window,
         )
 
     image_grid_thw = np.array(sample.extra_kwargs["image_grid_thw"].tolist(), dtype=np.int64)
@@ -928,6 +943,7 @@ def _run_chunk(
     planner_config: PlannerConfig,
     reuse_classes: tuple[BlockClass, ...],
     max_age: int | None,
+    sticky_window: int | None,
     use_feature_replay: bool,
     feature_cache_dir: Path,
     allow_dirty: bool,
@@ -968,6 +984,7 @@ def _run_chunk(
             planner_config=planner_config,
             reuse_classes=reuse_classes,
             max_age=max_age,
+            sticky_window=sticky_window,
         )
         dense = _generate_response(
             model,
@@ -1062,6 +1079,7 @@ def _run_chunk(
                     planner_config,
                     reuse_classes=reuse_classes,
                     max_age=max_age,
+                    sticky_window=sticky_window,
                 ),
                 "selection_mode": "manifest" if selected_manifest is not None else "per_group",
                 "manifest_path": str(manifest_path) if manifest_path is not None else None,
@@ -1113,6 +1131,7 @@ def _write_summary(
     planner_config: PlannerConfig,
     reuse_classes: tuple[BlockClass, ...],
     max_age: int | None,
+    sticky_window: int | None,
     use_feature_replay: bool,
     feature_cache_dir: Path,
 ) -> None:
@@ -1163,6 +1182,7 @@ def _write_summary(
             planner_config,
             reuse_classes=reuse_classes,
             max_age=max_age,
+            sticky_window=sticky_window,
         ),
         "requested_item_ids": requested_ids,
         "completed_item_ids": completed_ids,
@@ -1203,6 +1223,7 @@ def run_benchmark(
     planner_config: PlannerConfig,
     reuse_classes: tuple[BlockClass, ...],
     max_age: int | None,
+    sticky_window: int | None,
     use_feature_replay: bool,
     feature_cache_dir: Path,
     allow_dirty: bool,
@@ -1263,6 +1284,8 @@ def run_benchmark(
         ]
         if max_age is not None:
             command.extend(["--max-age", str(max_age)])
+        if sticky_window is not None:
+            command.extend(["--sticky-window", str(sticky_window)])
         # The parent run already validated the starting repo state before it
         # writes tracked artifacts, so child chunks should inherit that
         # provenance instead of rejecting the parent's own output files.
@@ -1297,6 +1320,7 @@ def run_benchmark(
                 planner_config=planner_config,
                 reuse_classes=reuse_classes,
                 max_age=max_age,
+                sticky_window=sticky_window,
                 use_feature_replay=use_feature_replay,
                 feature_cache_dir=feature_cache_dir,
             )
@@ -1320,6 +1344,7 @@ def run_benchmark(
             planner_config=planner_config,
             reuse_classes=reuse_classes,
             max_age=max_age,
+            sticky_window=sticky_window,
             use_feature_replay=use_feature_replay,
             feature_cache_dir=feature_cache_dir,
         )
@@ -1362,6 +1387,16 @@ def main() -> None:
     run_parser.add_argument("--top-k", type=int, default=DEFAULT_PLANNER.top_k)
     run_parser.add_argument("--reuse-classes", default="static,shifted")
     run_parser.add_argument("--max-age", type=int, default=None)
+    run_parser.add_argument(
+        "--sticky-window",
+        type=int,
+        default=None,
+        help=(
+            "CodecSight-style sticky-dynamic: once a block is marked "
+            "non-reusable, keep it non-reusable for the rest of the window "
+            "of N frames. Reset at frame_index %% N == 0."
+        ),
+    )
     run_parser.add_argument("--model-path", type=Path, default=DEFAULT_MODEL_PATH)
     run_parser.add_argument("--output-path", type=Path, default=DEFAULT_OUTPUT_PATH)
     run_parser.add_argument("--summary-path", type=Path, default=DEFAULT_SUMMARY_PATH)
@@ -1395,6 +1430,7 @@ def main() -> None:
     chunk_parser.add_argument("--top-k", type=int, required=True)
     chunk_parser.add_argument("--reuse-classes", required=True)
     chunk_parser.add_argument("--max-age", type=int, default=None)
+    chunk_parser.add_argument("--sticky-window", type=int, default=None)
     chunk_parser.add_argument("--model-path", type=Path, required=True)
     chunk_parser.add_argument("--item-id", nargs="+", required=True)
     chunk_parser.add_argument("--feature-cache-dir", type=Path, default=DEFAULT_FEATURE_CACHE_DIR)
@@ -1412,6 +1448,7 @@ def main() -> None:
     )
     reuse_classes = _parse_reuse_classes(args.reuse_classes)
     max_age = _validate_max_age(args.max_age)
+    sticky_window = args.sticky_window if args.sticky_window and args.sticky_window > 0 else None
     if args.command == "run-chunk":
         groups = args.groups.split(",") if args.groups else None
         print(
@@ -1430,6 +1467,7 @@ def main() -> None:
                     planner_config=planner_config,
                     reuse_classes=reuse_classes,
                     max_age=max_age,
+                    sticky_window=sticky_window,
                     use_feature_replay=not bool(args.no_feature_replay),
                     feature_cache_dir=args.feature_cache_dir,
                     allow_dirty=bool(args.allow_dirty),
@@ -1458,6 +1496,7 @@ def main() -> None:
         planner_config=planner_config,
         reuse_classes=reuse_classes,
         max_age=max_age,
+        sticky_window=sticky_window,
         use_feature_replay=not bool(args.no_feature_replay),
         feature_cache_dir=args.feature_cache_dir,
         allow_dirty=bool(args.allow_dirty),

@@ -74,6 +74,7 @@ class PolicyCandidate:
     top_k: int
     reuse_classes: tuple[BlockClass, ...]
     max_age: int | None = None
+    sticky_window: int | None = None
 
     def planner_config(self) -> PlannerConfig:
         return PlannerConfig(
@@ -94,6 +95,7 @@ class PolicyCandidate:
             "top_k": self.top_k,
             "reuse_classes": [cls.name.lower() for cls in self.reuse_classes],
             "max_age": self.max_age,
+            "sticky_window": self.sticky_window,
         }
 
 
@@ -510,6 +512,8 @@ def _run_sweep_policy(
     ]
     if candidate.max_age is not None:
         command.extend(["--max-age", str(candidate.max_age)])
+    if candidate.sticky_window is not None:
+        command.extend(["--sticky-window", str(candidate.sticky_window)])
     if allow_dirty:
         command.append("--allow-dirty")
     if log_option_logprobs:
@@ -690,6 +694,7 @@ def _candidate_from_dict(payload: dict[str, Any]) -> PolicyCandidate:
         top_k=int(payload["top_k"]),
         reuse_classes=reuse,
         max_age=payload.get("max_age"),
+        sticky_window=payload.get("sticky_window"),
     )
 
 
