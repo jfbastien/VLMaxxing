@@ -170,6 +170,20 @@ Current position relative to the adjacent efficiency literature tracked in
 - on quality, the current local benchmark agreement range (`0.833` to `0.870`)
   is scientifically useful but still weaker than the low-drop quality stories
   reported by stronger efficiency papers
+- **first locally-measured Track A Pareto-dominant point (DEV ONLY)**:
+  on the TOMATO motion dev slice (phase 1.10, 30-policy grid sweep),
+  `max_abs(8.0, 32.0) static+shifted age=4` achieves cached accuracy `0.400`
+  at effective fresh-token-equivalent budget `3.99`. The dense frame-budget
+  curve needs `6` frames to reach the same `0.400`. That is roughly a `33%`
+  reduction in fresh-vision-token budget at equal accuracy on this slice.
+  `25` of `30` swept policies are Pareto candidates against the dense
+  curve. N=15, point estimate; Wilson 95% CI overlaps; needs holdout
+  validation in phase 1.12 before any SOTA-citable claim.
+- **MVBench motion dev does not show a Pareto candidate so far** (sweep
+  in flight, 9 of 30 policies done): the dense-4 peak (`0.733` at `4`
+  frames) is binding. Cached must reach `> 0.733` at fresh `< 8`, or
+  `>= 0.733` at fresh `< 4`, to enter the frontier. Current best cached
+  is `0.733` at fresh `5.16` — tied accuracy but loses on budget.
 - the current best path toward a competitive paper is therefore:
   - finish honest whitepaper reproduction on this stack
   - isolate when the planner fails
