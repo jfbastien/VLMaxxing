@@ -1,0 +1,12 @@
+[
+  {
+    "label": "max_abs-8.0-32.0-static+shifted-noage",
+    "statistic": "max_abs",
+    "static_threshold": 8.0,
+    "shifted_threshold": 32.0,
+    "pixel_change_threshold": 8.0,
+    "top_k": 16,
+    "reuse_classes": ["static", "shifted"],
+    "max_age": null
+  }
+]
