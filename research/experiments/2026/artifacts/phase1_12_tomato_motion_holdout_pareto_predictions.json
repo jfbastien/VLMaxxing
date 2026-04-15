@@ -1,0 +1,1952 @@
+{
+  "best_dense_accuracy": 0.26666666666666666,
+  "calibration_path": "research/experiments/2026/artifacts/phase1_10_tomato_motion_holdout_calibration.json",
+  "dense_path": "research/experiments/2026/artifacts/phase1_8_motion_frame_budget_holdout.json",
+  "predicted": [
+    {
+      "calibrated_reuse": 0.9433571428571426,
+      "effective_fresh_frames": 1.396500000000002,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-32.0-128.0-static+shifted-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.9433571428571426,
+      "effective_fresh_frames": 1.396500000000002,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-32.0-128.0-static+shifted-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.9433571428571426,
+      "effective_fresh_frames": 1.396500000000002,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-32.0-128.0-static+shifted-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.9433571428571426,
+      "effective_fresh_frames": 1.396500000000002,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-32.0-128.0-static+shifted-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.9328333333333333,
+      "effective_fresh_frames": 1.470166666666667,
+      "headroom": 0.06666666666666665,
+      "label": "mean-5.0-12.0-static+shifted-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.9328333333333333,
+      "effective_fresh_frames": 1.470166666666667,
+      "headroom": 0.06666666666666665,
+      "label": "mean-5.0-12.0-static+shifted-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.9328333333333333,
+      "effective_fresh_frames": 1.470166666666667,
+      "headroom": 0.06666666666666665,
+      "label": "mean-5.0-12.0-static+shifted-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.9328333333333333,
+      "effective_fresh_frames": 1.470166666666667,
+      "headroom": 0.06666666666666665,
+      "label": "mean-5.0-12.0-static+shifted-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.9306904761904763,
+      "effective_fresh_frames": 1.4851666666666659,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px8.0-0.1-0.3-static+shifted-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.9306904761904763,
+      "effective_fresh_frames": 1.4851666666666659,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px8.0-0.1-0.3-static+shifted-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.9306904761904763,
+      "effective_fresh_frames": 1.4851666666666659,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px8.0-0.1-0.3-static+shifted-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.9306904761904763,
+      "effective_fresh_frames": 1.4851666666666659,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px8.0-0.1-0.3-static+shifted-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.9281904761904762,
+      "effective_fresh_frames": 1.5026666666666664,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px16.0-0.05-0.15-static+shifted-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.9281904761904762,
+      "effective_fresh_frames": 1.5026666666666664,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px16.0-0.05-0.15-static+shifted-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.9281904761904762,
+      "effective_fresh_frames": 1.5026666666666664,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px16.0-0.05-0.15-static+shifted-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.9281904761904762,
+      "effective_fresh_frames": 1.5026666666666664,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px16.0-0.05-0.15-static+shifted-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.9244047619047618,
+      "effective_fresh_frames": 1.5291666666666672,
+      "headroom": 0.06666666666666665,
+      "label": "mean-4.0-10.0-static+shifted-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.9244047619047618,
+      "effective_fresh_frames": 1.5291666666666672,
+      "headroom": 0.06666666666666665,
+      "label": "mean-4.0-10.0-static+shifted-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.9244047619047618,
+      "effective_fresh_frames": 1.5291666666666672,
+      "headroom": 0.06666666666666665,
+      "label": "mean-4.0-10.0-static+shifted-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.9244047619047618,
+      "effective_fresh_frames": 1.5291666666666672,
+      "headroom": 0.06666666666666665,
+      "label": "mean-4.0-10.0-static+shifted-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.9232380952380953,
+      "effective_fresh_frames": 1.5373333333333328,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-24.0-96.0-static+shifted-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.9232380952380953,
+      "effective_fresh_frames": 1.5373333333333328,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-24.0-96.0-static+shifted-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.9232380952380953,
+      "effective_fresh_frames": 1.5373333333333328,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-24.0-96.0-static+shifted-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.9232380952380953,
+      "effective_fresh_frames": 1.5373333333333328,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-24.0-96.0-static+shifted-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.9112857142857144,
+      "effective_fresh_frames": 1.6209999999999996,
+      "headroom": 0.06666666666666665,
+      "label": "mean-3.0-8.0-static+shifted-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.9112857142857144,
+      "effective_fresh_frames": 1.6209999999999996,
+      "headroom": 0.06666666666666665,
+      "label": "mean-3.0-8.0-static+shifted-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.9112857142857144,
+      "effective_fresh_frames": 1.6209999999999996,
+      "headroom": 0.06666666666666665,
+      "label": "mean-3.0-8.0-static+shifted-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.9112857142857144,
+      "effective_fresh_frames": 1.6209999999999996,
+      "headroom": 0.06666666666666665,
+      "label": "mean-3.0-8.0-static+shifted-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.9041190476190476,
+      "effective_fresh_frames": 1.6711666666666667,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px16.0-0.02-0.08-static+shifted-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.9041190476190476,
+      "effective_fresh_frames": 1.6711666666666667,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px16.0-0.02-0.08-static+shifted-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.9041190476190476,
+      "effective_fresh_frames": 1.6711666666666667,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px16.0-0.02-0.08-static+shifted-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.9041190476190476,
+      "effective_fresh_frames": 1.6711666666666667,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px16.0-0.02-0.08-static+shifted-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.8993571428571429,
+      "effective_fresh_frames": 1.7045,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px8.0-0.05-0.15-static+shifted-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.8993571428571429,
+      "effective_fresh_frames": 1.7045,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px8.0-0.05-0.15-static+shifted-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.8993571428571429,
+      "effective_fresh_frames": 1.7045,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px8.0-0.05-0.15-static+shifted-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.8993571428571429,
+      "effective_fresh_frames": 1.7045,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px8.0-0.05-0.15-static+shifted-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.8976428571428572,
+      "effective_fresh_frames": 1.7164999999999997,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-16.0-64.0-static+shifted-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8976428571428572,
+      "effective_fresh_frames": 1.7164999999999997,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-16.0-64.0-static+shifted-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8976428571428572,
+      "effective_fresh_frames": 1.7164999999999997,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-16.0-64.0-static+shifted-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8976428571428572,
+      "effective_fresh_frames": 1.7164999999999997,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-16.0-64.0-static+shifted-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8970238095238098,
+      "effective_fresh_frames": 1.7208333333333314,
+      "headroom": 0.06666666666666665,
+      "label": "mean-2.0-6.0-static+shifted-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.8970238095238098,
+      "effective_fresh_frames": 1.7208333333333314,
+      "headroom": 0.06666666666666665,
+      "label": "mean-2.0-6.0-static+shifted-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.8970238095238098,
+      "effective_fresh_frames": 1.7208333333333314,
+      "headroom": 0.06666666666666665,
+      "label": "mean-2.0-6.0-static+shifted-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.8970238095238098,
+      "effective_fresh_frames": 1.7208333333333314,
+      "headroom": 0.06666666666666665,
+      "label": "mean-2.0-6.0-static+shifted-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.888404761904762,
+      "effective_fresh_frames": 1.7811666666666657,
+      "headroom": 0.06666666666666665,
+      "label": "mean-5.0-12.0-static-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.888404761904762,
+      "effective_fresh_frames": 1.7811666666666657,
+      "headroom": 0.06666666666666665,
+      "label": "mean-5.0-12.0-static-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.888404761904762,
+      "effective_fresh_frames": 1.7811666666666657,
+      "headroom": 0.06666666666666665,
+      "label": "mean-5.0-12.0-static-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.888404761904762,
+      "effective_fresh_frames": 1.7811666666666657,
+      "headroom": 0.06666666666666665,
+      "label": "mean-5.0-12.0-static-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.8876428571428573,
+      "effective_fresh_frames": 1.7864999999999989,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px16.0-0.05-0.15-static-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.8876428571428573,
+      "effective_fresh_frames": 1.7864999999999989,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px16.0-0.05-0.15-static-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.8876428571428573,
+      "effective_fresh_frames": 1.7864999999999989,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px16.0-0.05-0.15-static-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.8876428571428573,
+      "effective_fresh_frames": 1.7864999999999989,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px16.0-0.05-0.15-static-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.8836190476190475,
+      "effective_fresh_frames": 1.8146666666666673,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-12.0-48.0-static+shifted-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8836190476190475,
+      "effective_fresh_frames": 1.8146666666666673,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-12.0-48.0-static+shifted-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8836190476190475,
+      "effective_fresh_frames": 1.8146666666666673,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-12.0-48.0-static+shifted-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8836190476190475,
+      "effective_fresh_frames": 1.8146666666666673,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-12.0-48.0-static+shifted-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8829285714285714,
+      "effective_fresh_frames": 1.8195000000000001,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px8.0-0.1-0.3-static-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.8829285714285714,
+      "effective_fresh_frames": 1.8195000000000001,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px8.0-0.1-0.3-static-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.8829285714285714,
+      "effective_fresh_frames": 1.8195000000000001,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px8.0-0.1-0.3-static-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.8829285714285714,
+      "effective_fresh_frames": 1.8195000000000001,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px8.0-0.1-0.3-static-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.8787380952380953,
+      "effective_fresh_frames": 1.8488333333333329,
+      "headroom": 0.06666666666666665,
+      "label": "mean-1.0-4.0-static+shifted-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.8787380952380953,
+      "effective_fresh_frames": 1.8488333333333329,
+      "headroom": 0.06666666666666665,
+      "label": "mean-1.0-4.0-static+shifted-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.8787380952380953,
+      "effective_fresh_frames": 1.8488333333333329,
+      "headroom": 0.06666666666666665,
+      "label": "mean-1.0-4.0-static+shifted-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.8787380952380953,
+      "effective_fresh_frames": 1.8488333333333329,
+      "headroom": 0.06666666666666665,
+      "label": "mean-1.0-4.0-static+shifted-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.8787380952380953,
+      "effective_fresh_frames": 1.8488333333333329,
+      "headroom": 0.06666666666666665,
+      "label": "mean-4.0-10.0-static-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.8787380952380953,
+      "effective_fresh_frames": 1.8488333333333329,
+      "headroom": 0.06666666666666665,
+      "label": "mean-4.0-10.0-static-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.8787380952380953,
+      "effective_fresh_frames": 1.8488333333333329,
+      "headroom": 0.06666666666666665,
+      "label": "mean-4.0-10.0-static-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.8787380952380953,
+      "effective_fresh_frames": 1.8488333333333329,
+      "headroom": 0.06666666666666665,
+      "label": "mean-4.0-10.0-static-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.8724285714285712,
+      "effective_fresh_frames": 1.8930000000000016,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px8.0-0.02-0.08-static+shifted-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.8724285714285712,
+      "effective_fresh_frames": 1.8930000000000016,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px8.0-0.02-0.08-static+shifted-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.8724285714285712,
+      "effective_fresh_frames": 1.8930000000000016,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px8.0-0.02-0.08-static+shifted-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.8724285714285712,
+      "effective_fresh_frames": 1.8930000000000016,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px8.0-0.02-0.08-static+shifted-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.8678809523809524,
+      "effective_fresh_frames": 1.924833333333333,
+      "headroom": 0.06666666666666665,
+      "label": "top_k_mean-k16-8.0-24.0-static+shifted-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "top_k_mean"
+    },
+    {
+      "calibrated_reuse": 0.8678809523809524,
+      "effective_fresh_frames": 1.924833333333333,
+      "headroom": 0.06666666666666665,
+      "label": "top_k_mean-k16-8.0-24.0-static+shifted-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "top_k_mean"
+    },
+    {
+      "calibrated_reuse": 0.8678809523809524,
+      "effective_fresh_frames": 1.924833333333333,
+      "headroom": 0.06666666666666665,
+      "label": "top_k_mean-k16-8.0-24.0-static+shifted-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "top_k_mean"
+    },
+    {
+      "calibrated_reuse": 0.8678809523809524,
+      "effective_fresh_frames": 1.924833333333333,
+      "headroom": 0.06666666666666665,
+      "label": "top_k_mean-k16-8.0-24.0-static+shifted-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "top_k_mean"
+    },
+    {
+      "calibrated_reuse": 0.8657142857142858,
+      "effective_fresh_frames": 1.9399999999999995,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-8.0-32.0-static+shifted-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8657142857142858,
+      "effective_fresh_frames": 1.9399999999999995,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-8.0-32.0-static+shifted-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8657142857142858,
+      "effective_fresh_frames": 1.9399999999999995,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-8.0-32.0-static+shifted-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8657142857142858,
+      "effective_fresh_frames": 1.9399999999999995,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-8.0-32.0-static+shifted-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8657142857142858,
+      "effective_fresh_frames": 1.9399999999999995,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-32.0-128.0-static-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8657142857142858,
+      "effective_fresh_frames": 1.9399999999999995,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-32.0-128.0-static-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8657142857142858,
+      "effective_fresh_frames": 1.9399999999999995,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-32.0-128.0-static-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8657142857142858,
+      "effective_fresh_frames": 1.9399999999999995,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-32.0-128.0-static-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8629285714285714,
+      "effective_fresh_frames": 1.9595000000000002,
+      "headroom": 0.06666666666666665,
+      "label": "mean-3.0-8.0-static-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.8629285714285714,
+      "effective_fresh_frames": 1.9595000000000002,
+      "headroom": 0.06666666666666665,
+      "label": "mean-3.0-8.0-static-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.8629285714285714,
+      "effective_fresh_frames": 1.9595000000000002,
+      "headroom": 0.06666666666666665,
+      "label": "mean-3.0-8.0-static-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.8629285714285714,
+      "effective_fresh_frames": 1.9595000000000002,
+      "headroom": 0.06666666666666665,
+      "label": "mean-3.0-8.0-static-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.8627857142857143,
+      "effective_fresh_frames": 1.9605000000000001,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px16.0-0.02-0.08-static-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.8627857142857143,
+      "effective_fresh_frames": 1.9605000000000001,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px16.0-0.02-0.08-static-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.8627857142857143,
+      "effective_fresh_frames": 1.9605000000000001,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px16.0-0.02-0.08-static-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.8627857142857143,
+      "effective_fresh_frames": 1.9605000000000001,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px16.0-0.02-0.08-static-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.8565714285714284,
+      "effective_fresh_frames": 2.004000000000001,
+      "headroom": 0.06666666666666665,
+      "label": "top_k_mean-k4-8.0-24.0-static+shifted-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "top_k_mean"
+    },
+    {
+      "calibrated_reuse": 0.8565714285714284,
+      "effective_fresh_frames": 2.004000000000001,
+      "headroom": 0.06666666666666665,
+      "label": "top_k_mean-k4-8.0-24.0-static+shifted-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "top_k_mean"
+    },
+    {
+      "calibrated_reuse": 0.8565714285714284,
+      "effective_fresh_frames": 2.004000000000001,
+      "headroom": 0.06666666666666665,
+      "label": "top_k_mean-k4-8.0-24.0-static+shifted-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "top_k_mean"
+    },
+    {
+      "calibrated_reuse": 0.8565714285714284,
+      "effective_fresh_frames": 2.004000000000001,
+      "headroom": 0.06666666666666665,
+      "label": "top_k_mean-k4-8.0-24.0-static+shifted-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "top_k_mean"
+    },
+    {
+      "calibrated_reuse": 0.8530952380952381,
+      "effective_fresh_frames": 2.0283333333333333,
+      "headroom": 0.06666666666666665,
+      "label": "top_k_mean-k64-4.0-12.0-static+shifted-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "top_k_mean"
+    },
+    {
+      "calibrated_reuse": 0.8530952380952381,
+      "effective_fresh_frames": 2.0283333333333333,
+      "headroom": 0.06666666666666665,
+      "label": "top_k_mean-k64-4.0-12.0-static+shifted-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "top_k_mean"
+    },
+    {
+      "calibrated_reuse": 0.8530952380952381,
+      "effective_fresh_frames": 2.0283333333333333,
+      "headroom": 0.06666666666666665,
+      "label": "top_k_mean-k64-4.0-12.0-static+shifted-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "top_k_mean"
+    },
+    {
+      "calibrated_reuse": 0.8530952380952381,
+      "effective_fresh_frames": 2.0283333333333333,
+      "headroom": 0.06666666666666665,
+      "label": "top_k_mean-k64-4.0-12.0-static+shifted-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "statistic": "top_k_mean"
+    },
+    {
+      "calibrated_reuse": 0.8527619047619048,
+      "effective_fresh_frames": 2.030666666666666,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px8.0-0.05-0.15-static-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.8527619047619048,
+      "effective_fresh_frames": 2.030666666666666,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px8.0-0.05-0.15-static-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.8527619047619048,
+      "effective_fresh_frames": 2.030666666666666,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px8.0-0.05-0.15-static-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.8527619047619048,
+      "effective_fresh_frames": 2.030666666666666,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px8.0-0.05-0.15-static-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.8499285714285713,
+      "effective_fresh_frames": 2.0505000000000013,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-24.0-96.0-static-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8499285714285713,
+      "effective_fresh_frames": 2.0505000000000013,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-24.0-96.0-static-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8499285714285713,
+      "effective_fresh_frames": 2.0505000000000013,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-24.0-96.0-static-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8499285714285713,
+      "effective_fresh_frames": 2.0505000000000013,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-24.0-96.0-static-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8364285714285714,
+      "effective_fresh_frames": 2.145,
+      "headroom": 0.06666666666666665,
+      "label": "mean-2.0-6.0-static-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.8364285714285714,
+      "effective_fresh_frames": 2.145,
+      "headroom": 0.06666666666666665,
+      "label": "mean-2.0-6.0-static-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.8364285714285714,
+      "effective_fresh_frames": 2.145,
+      "headroom": 0.06666666666666665,
+      "label": "mean-2.0-6.0-static-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.8364285714285714,
+      "effective_fresh_frames": 2.145,
+      "headroom": 0.06666666666666665,
+      "label": "mean-2.0-6.0-static-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.8249285714285715,
+      "effective_fresh_frames": 2.2255,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-16.0-64.0-static-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8249285714285715,
+      "effective_fresh_frames": 2.2255,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-16.0-64.0-static-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8249285714285715,
+      "effective_fresh_frames": 2.2255,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-16.0-64.0-static-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8249285714285715,
+      "effective_fresh_frames": 2.2255,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-16.0-64.0-static-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.822047619047619,
+      "effective_fresh_frames": 2.2456666666666667,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px8.0-0.02-0.08-static-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.822047619047619,
+      "effective_fresh_frames": 2.2456666666666667,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px8.0-0.02-0.08-static-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.822047619047619,
+      "effective_fresh_frames": 2.2456666666666667,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px8.0-0.02-0.08-static-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.822047619047619,
+      "effective_fresh_frames": 2.2456666666666667,
+      "headroom": 0.06666666666666665,
+      "label": "changed_pixel_fraction-px8.0-0.02-0.08-static-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "changed_pixel_fraction"
+    },
+    {
+      "calibrated_reuse": 0.8061428571428572,
+      "effective_fresh_frames": 2.3569999999999998,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-12.0-48.0-static-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8061428571428572,
+      "effective_fresh_frames": 2.3569999999999998,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-12.0-48.0-static-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8061428571428572,
+      "effective_fresh_frames": 2.3569999999999998,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-12.0-48.0-static-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8061428571428572,
+      "effective_fresh_frames": 2.3569999999999998,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-12.0-48.0-static-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.8036904761904762,
+      "effective_fresh_frames": 2.3741666666666665,
+      "headroom": 0.06666666666666665,
+      "label": "top_k_mean-k16-8.0-24.0-static-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "top_k_mean"
+    },
+    {
+      "calibrated_reuse": 0.8036904761904762,
+      "effective_fresh_frames": 2.3741666666666665,
+      "headroom": 0.06666666666666665,
+      "label": "top_k_mean-k16-8.0-24.0-static-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "top_k_mean"
+    },
+    {
+      "calibrated_reuse": 0.8036904761904762,
+      "effective_fresh_frames": 2.3741666666666665,
+      "headroom": 0.06666666666666665,
+      "label": "top_k_mean-k16-8.0-24.0-static-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "top_k_mean"
+    },
+    {
+      "calibrated_reuse": 0.8036904761904762,
+      "effective_fresh_frames": 2.3741666666666665,
+      "headroom": 0.06666666666666665,
+      "label": "top_k_mean-k16-8.0-24.0-static-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "top_k_mean"
+    },
+    {
+      "calibrated_reuse": 0.7896904761904762,
+      "effective_fresh_frames": 2.472166666666667,
+      "headroom": 0.06666666666666665,
+      "label": "top_k_mean-k4-8.0-24.0-static-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "top_k_mean"
+    },
+    {
+      "calibrated_reuse": 0.7896904761904762,
+      "effective_fresh_frames": 2.472166666666667,
+      "headroom": 0.06666666666666665,
+      "label": "top_k_mean-k4-8.0-24.0-static-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "top_k_mean"
+    },
+    {
+      "calibrated_reuse": 0.7896904761904762,
+      "effective_fresh_frames": 2.472166666666667,
+      "headroom": 0.06666666666666665,
+      "label": "top_k_mean-k4-8.0-24.0-static-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "top_k_mean"
+    },
+    {
+      "calibrated_reuse": 0.7896904761904762,
+      "effective_fresh_frames": 2.472166666666667,
+      "headroom": 0.06666666666666665,
+      "label": "top_k_mean-k4-8.0-24.0-static-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "top_k_mean"
+    },
+    {
+      "calibrated_reuse": 0.7810952380952382,
+      "effective_fresh_frames": 2.532333333333333,
+      "headroom": 0.06666666666666665,
+      "label": "top_k_mean-k64-4.0-12.0-static-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "top_k_mean"
+    },
+    {
+      "calibrated_reuse": 0.7810952380952382,
+      "effective_fresh_frames": 2.532333333333333,
+      "headroom": 0.06666666666666665,
+      "label": "top_k_mean-k64-4.0-12.0-static-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "top_k_mean"
+    },
+    {
+      "calibrated_reuse": 0.7810952380952382,
+      "effective_fresh_frames": 2.532333333333333,
+      "headroom": 0.06666666666666665,
+      "label": "top_k_mean-k64-4.0-12.0-static-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "top_k_mean"
+    },
+    {
+      "calibrated_reuse": 0.7810952380952382,
+      "effective_fresh_frames": 2.532333333333333,
+      "headroom": 0.06666666666666665,
+      "label": "top_k_mean-k64-4.0-12.0-static-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "top_k_mean"
+    },
+    {
+      "calibrated_reuse": 0.78,
+      "effective_fresh_frames": 2.54,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-8.0-32.0-static-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.78,
+      "effective_fresh_frames": 2.54,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-8.0-32.0-static-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.78,
+      "effective_fresh_frames": 2.54,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-8.0-32.0-static-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.78,
+      "effective_fresh_frames": 2.54,
+      "headroom": 0.06666666666666665,
+      "label": "max_abs-8.0-32.0-static-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "max_abs"
+    },
+    {
+      "calibrated_reuse": 0.7484285714285714,
+      "effective_fresh_frames": 2.761,
+      "headroom": 0.06666666666666665,
+      "label": "mean-1.0-4.0-static-noage",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": null,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.7484285714285714,
+      "effective_fresh_frames": 2.761,
+      "headroom": 0.06666666666666665,
+      "label": "mean-1.0-4.0-static-age2",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 2,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.7484285714285714,
+      "effective_fresh_frames": 2.761,
+      "headroom": 0.06666666666666665,
+      "label": "mean-1.0-4.0-static-age4",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 4,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "mean"
+    },
+    {
+      "calibrated_reuse": 0.7484285714285714,
+      "effective_fresh_frames": 2.761,
+      "headroom": 0.06666666666666665,
+      "label": "mean-1.0-4.0-static-age8",
+      "match_dense_accuracy": 0.2,
+      "match_dense_frames": 1,
+      "max_age": 8,
+      "reuse_classes": [
+        "static"
+      ],
+      "statistic": "mean"
+    }
+  ],
+  "total_frames": 8
+}

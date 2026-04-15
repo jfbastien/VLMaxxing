@@ -1,0 +1,35 @@
+{
+  "benchmark": "tomato",
+  "manifest_path": "research/benchmark_manifests/tomato_motion_holdout_v1.toml",
+  "runs": [
+    {
+      "count": 0,
+      "dense_accuracy": 0.2,
+      "dense_accuracy_ci95": [
+        0.0,
+        1.0
+      ],
+      "frame_count": 1
+    },
+    {
+      "count": 0,
+      "dense_accuracy": 0.13333333333333333,
+      "dense_accuracy_ci95": [
+        0.0,
+        1.0
+      ],
+      "frame_count": 4
+    },
+    {
+      "count": 0,
+      "dense_accuracy": 0.26666666666666666,
+      "dense_accuracy_ci95": [
+        0.0,
+        1.0
+      ],
+      "frame_count": 6
+    }
+  ],
+  "slice": "holdout",
+  "source_path": "research/experiments/2026/artifacts/phase1_8_motion_frame_budget_baselines.json"
+}
