@@ -1,0 +1,67 @@
+[
+  {
+    "label": "max_abs-16.0-64.0-static+shifted-noage",
+    "statistic": "max_abs",
+    "static_threshold": 16.0,
+    "shifted_threshold": 64.0,
+    "pixel_change_threshold": 8.0,
+    "top_k": 16,
+    "reuse_classes": [
+      "static",
+      "shifted"
+    ],
+    "max_age": null
+  },
+  {
+    "label": "max_abs-16.0-64.0-static+shifted-age4",
+    "statistic": "max_abs",
+    "static_threshold": 16.0,
+    "shifted_threshold": 64.0,
+    "pixel_change_threshold": 8.0,
+    "top_k": 16,
+    "reuse_classes": [
+      "static",
+      "shifted"
+    ],
+    "max_age": 4
+  },
+  {
+    "label": "max_abs-8.0-32.0-static+shifted-noage",
+    "statistic": "max_abs",
+    "static_threshold": 8.0,
+    "shifted_threshold": 32.0,
+    "pixel_change_threshold": 8.0,
+    "top_k": 16,
+    "reuse_classes": [
+      "static",
+      "shifted"
+    ],
+    "max_age": null
+  },
+  {
+    "label": "top_k_mean-k64-4.0-12.0-static+shifted-noage",
+    "statistic": "top_k_mean",
+    "static_threshold": 4.0,
+    "shifted_threshold": 12.0,
+    "pixel_change_threshold": 8.0,
+    "top_k": 64,
+    "reuse_classes": [
+      "static",
+      "shifted"
+    ],
+    "max_age": null
+  },
+  {
+    "label": "changed_pixel_fraction-px8.0-0.02-0.08-static+shifted-noage",
+    "statistic": "changed_pixel_fraction",
+    "static_threshold": 0.02,
+    "shifted_threshold": 0.08,
+    "pixel_change_threshold": 8.0,
+    "top_k": 16,
+    "reuse_classes": [
+      "static",
+      "shifted"
+    ],
+    "max_age": null
+  }
+]
