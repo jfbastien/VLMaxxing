@@ -98,40 +98,45 @@ Calibration summary:
 
 ## Result
 
-In-flight as of 2026-04-15 (21/30 policies fully complete; one policy at 4/15
-items). The three entries in
-`phase1_11_mvbench_motion_dev_pareto_partial.json` are **two distinct
-operating points**, not three — `max_abs(8,32) static+shifted age=8` and
-`max_abs(8,32) static+shifted noage` collapse to the same bit-identical
-behavior. Reason: with frame_count=8 there are only 7 reuse decisions, so
-`max_age=8` is never a binding gate. This fact was flagged by codex audit on
-2026-04-15. `select_holdout_winners.py` now de-duplicates across such
-non-binding-age equivalents before emitting phase 1.12 launch rows.
+Sweep completed 2026-04-15 (30/30 policies). The pareto_analyzer reports
+8 raw candidates, which collapse to **4 distinct operating points** under
+dedupe (age8 ≡ noage on 8-frame clips) + strict inter-cached Pareto:
 
-Distinct Pareto-candidate operating points on dev (partial, 21 policies):
+1. **`max_abs(16, 64) static+shifted noage`** — cached_acc=0.733,
+   effective_fresh_frames=**2.52**, mean_active_reuse=0.783,
+   agreement=**0.667**. Strict Pareto winner by budget at the top
+   accuracy tier, but the drop in dense-agreement (from 0.867 at the
+   (8,32) winner to 0.667) indicates cached is making *different*
+   answer choices than dense-N and happens to match the same 11/15
+   count. On 15 items this is indistinguishable from lucky noise; the
+   holdout evaluation is the discriminator.
+2. **`max_abs(16, 64) static+shifted age=4`** — cached_acc=0.733,
+   fresh=3.21, reuse=0.685, agreement=0.667. Same thresholds as (1)
+   with age-4 gating; budget roughly equal to the (8,32) winner's 3.22.
+   Useful because age-bound variants generalize differently on holdout.
+3. **`max_abs(8, 32) static+shifted noage`** — cached_acc=0.733,
+   fresh=3.22, reuse=0.682, agreement=**0.867**. Per-group diff vs
+   same-run dense-4 shows this policy is item-identical to dense-4 on
+   all 15 items (`phase1_11_mvbench_cached_vs_dense4.json`, zero
+   disagreements). Weaker strict-Pareto claim than (1) but stronger
+   quality claim.
+4. **`top_k_mean(k=64, 4, 12) static+shifted noage`** — cached_acc=0.667,
+   fresh=3.77, reuse=0.604, agreement=0.867. A genuinely distinct
+   statistic-family frontier point at the second accuracy tier,
+   strictly dominating the CPF shoulder.
 
-- `max_abs(8,32) static+shifted noage` — cached_acc=0.733,
-  effective_fresh_frames=3.22, mean_active_reuse=0.682, agreement=0.867.
-  Per-group diff vs same-run dense-8 + vs dense-4 shows this policy is
-  item-identical to dense-4 on all 15 MVBench motion dev items
-  (`phase1_11_mvbench_cached_vs_dense4.json`, 0 disagreements). It is
-  therefore not an accuracy breakthrough; it is an **efficiency-at-identity**
-  result: the 8-frame cached policy produces the same answers as the
-  4-frame dense run on every item, at an effective proxy budget of 3.22
-  fresh-token-equivalent frames.
-- `changed_pixel_fraction(px8, 0.02/0.08) static+shifted noage` —
-  cached_acc=0.667, effective_fresh_frames=3.94, mean_active_reuse=0.580,
-  agreement=0.800. A valid lower-accuracy shoulder on the frontier, not a
-  top-quality win. Per-group diff vs dense-3 gains 3 items; vs dense-4 loses
-  1 action_localization item.
+Additional candidates (all dominated by the four above under strict
+inter-cached Pareto):
+
+- `cpf(px8, 0.02/0.08) static+shifted noage` at 0.667/3.94 — original
+  shoulder, now dominated by top_k_mean.
 
 Caveat (calibration vs reported metric alignment): planner calibration in
 `planner_grid_search.py` still estimates reuse from unmasked pairwise
 classification before age gating, while the benchmark runner reports
-pad-masked active reuse after age gating. The MVBench winner's dev reuse
-(0.682) and calibration bin are not measurement-aligned. This is a
-documentation-only caveat for now; it does not invalidate the dense-4
-per-item identity.
+pad-masked active reuse after age gating. Phase 1.19 (preregistered) will
+fix this; the per-item-identity result for policy (3) is independent of
+calibration accuracy and stands regardless.
 
 ## Interpretation
 
@@ -151,13 +156,19 @@ per-item identity.
 
 Immediate implications for phase 1.12:
 
-- Holdout launch slots are two (post-dedupe), not three. `max_abs(8,32)
-  static+shifted noage` is the primary candidate; `cpf static+shifted
-  noage` is the shoulder.
-- Per `select_holdout_winners.py` output: MVBench holdout calibrated reuse
-  projects winner to 3.26 fresh-frame-equivalent vs dense-3 holdout
-  accuracy 0.600 — enough headroom to pass holdout if the 0.733 dev
-  accuracy is stable.
+- 5 holdout launch slots now filled (post-dedupe):
+  1. `max_abs(16,64) noage` @ 2.52 dev fresh / 2.63 holdout-projected
+     → matched dense-2 on holdout (accuracy 0.533)
+  2. `max_abs(16,64) age=4` @ 3.21 dev / 2.63 holdout → matched dense-2
+  3. `max_abs(8,32) noage` @ 3.22 dev / 3.26 holdout → matched dense-3 (0.600)
+  4. `top_k_mean(k=64, 4, 12) noage` @ 3.77 dev / 3.55 holdout → dense-3
+  5. `cpf(px8, 0.02, 0.08) noage` @ 3.94 dev / 3.65 holdout → dense-3
+- Primary holdout claim to watch: can any cached point beat matched
+  dense-N on holdout at at least one of the four distinct operating
+  budgets?
+- The item-identity-to-dense-4 property of (3) gives that point the
+  highest prior for surviving holdout; (1) has the most aggressive
+  budget but the agreement=0.667 risk profile.
 
 ## Links
 
