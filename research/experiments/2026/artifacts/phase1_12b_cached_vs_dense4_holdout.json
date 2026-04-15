@@ -1,0 +1,76 @@
+{
+  "cached_source": "research/experiments/2026/artifacts/phase1_12b_crossbench_winner_mvbench_holdout/max_abs-8.0-32.0-static+shifted-age4.jsonl",
+  "dense_source": "research/experiments/2026/artifacts/frame_budget_mvbench_motion_holdout/frame_4.jsonl",
+  "disagreements": [
+    {
+      "cached_correct": false,
+      "cached_text": "B",
+      "dense_correct": true,
+      "dense_text": "D",
+      "group": "action_localization",
+      "item_id": "mvbench:action_localization:4"
+    },
+    {
+      "cached_correct": false,
+      "cached_text": "C",
+      "dense_correct": false,
+      "dense_text": "D",
+      "group": "action_localization",
+      "item_id": "mvbench:action_localization:104"
+    },
+    {
+      "cached_correct": true,
+      "cached_text": "C",
+      "dense_correct": false,
+      "dense_text": "B",
+      "group": "action_localization",
+      "item_id": "mvbench:action_localization:172"
+    },
+    {
+      "cached_correct": true,
+      "cached_text": "A",
+      "dense_correct": false,
+      "dense_text": "B",
+      "group": "object_interaction",
+      "item_id": "mvbench:object_interaction:46"
+    }
+  ],
+  "n_disagreements": 4,
+  "per_group": {
+    "action_localization": {
+      "both_right": 0,
+      "both_wrong": 1,
+      "cached_only_right": 1,
+      "dense_only_right": 1,
+      "n": 3
+    },
+    "fine_grained_action": {
+      "both_right": 1,
+      "both_wrong": 2,
+      "cached_only_right": 0,
+      "dense_only_right": 0,
+      "n": 3
+    },
+    "moving_attribute": {
+      "both_right": 3,
+      "both_wrong": 0,
+      "cached_only_right": 0,
+      "dense_only_right": 0,
+      "n": 3
+    },
+    "moving_direction": {
+      "both_right": 2,
+      "both_wrong": 1,
+      "cached_only_right": 0,
+      "dense_only_right": 0,
+      "n": 3
+    },
+    "object_interaction": {
+      "both_right": 2,
+      "both_wrong": 0,
+      "cached_only_right": 1,
+      "dense_only_right": 0,
+      "n": 3
+    }
+  }
+}

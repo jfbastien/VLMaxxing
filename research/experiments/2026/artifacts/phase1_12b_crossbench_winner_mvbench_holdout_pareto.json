@@ -1,0 +1,138 @@
+{
+  "cached_source": "research/experiments/2026/artifacts/phase1_12b_crossbench_winner_mvbench_holdout_summary.json",
+  "dense_curve": [
+    {
+      "ci95_high": 0.5195043405598057,
+      "ci95_low": 0.10897453325692374,
+      "dense_accuracy": 0.26666666666666666,
+      "frame_count": 1,
+      "n": 15
+    },
+    {
+      "ci95_high": 0.7519046463426261,
+      "ci95_low": 0.30116980025498397,
+      "dense_accuracy": 0.5333333333333333,
+      "frame_count": 2,
+      "n": 15
+    },
+    {
+      "ci95_high": 0.8017550385865841,
+      "ci95_low": 0.357468301206246,
+      "dense_accuracy": 0.6,
+      "frame_count": 3,
+      "n": 15
+    },
+    {
+      "ci95_high": 0.8017550385865841,
+      "ci95_low": 0.357468301206246,
+      "dense_accuracy": 0.6,
+      "frame_count": 4,
+      "n": 15
+    },
+    {
+      "ci95_high": 0.8482367556028526,
+      "ci95_low": 0.41713547738519774,
+      "dense_accuracy": 0.6666666666666666,
+      "frame_count": 6,
+      "n": 15
+    },
+    {
+      "ci95_high": 0.8910254667430761,
+      "ci95_low": 0.4804956594401943,
+      "dense_accuracy": 0.7333333333333333,
+      "frame_count": 8,
+      "n": 15
+    }
+  ],
+  "dense_source": "research/experiments/2026/artifacts/phase1_9_mvbench_motion_frame_budget_holdout.json",
+  "inter_cached_skyline_2d": [
+    {
+      "agreement": 0.9333333333333333,
+      "cached_accuracy": 0.6666666666666666,
+      "dense_accuracy": 0.7333333333333333,
+      "dominated_by_dense_frame": null,
+      "effective_fresh_frames": 4.587533742267017,
+      "label": "max_abs-8.0-32.0-static+shifted-age4",
+      "max_age": 4,
+      "mean_active_reuse": 0.48749517967614037,
+      "n": 15,
+      "pareto_status": "candidate",
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "shifted_threshold": 32.0,
+      "static_threshold": 8.0,
+      "statistic": "max_abs"
+    }
+  ],
+  "inter_cached_skyline_2d_count": 1,
+  "inter_cached_skyline_3d": [
+    {
+      "agreement": 0.9333333333333333,
+      "cached_accuracy": 0.6666666666666666,
+      "dense_accuracy": 0.7333333333333333,
+      "dominated_by_dense_frame": null,
+      "effective_fresh_frames": 4.587533742267017,
+      "label": "max_abs-8.0-32.0-static+shifted-age4",
+      "max_age": 4,
+      "mean_active_reuse": 0.48749517967614037,
+      "n": 15,
+      "pareto_status": "candidate",
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "shifted_threshold": 32.0,
+      "static_threshold": 8.0,
+      "statistic": "max_abs"
+    }
+  ],
+  "inter_cached_skyline_3d_count": 1,
+  "n_cached": 1,
+  "n_dense": 6,
+  "pareto_candidate_count": 1,
+  "pareto_candidates": [
+    {
+      "agreement": 0.9333333333333333,
+      "cached_accuracy": 0.6666666666666666,
+      "dense_accuracy": 0.7333333333333333,
+      "dominated_by_dense_frame": null,
+      "effective_fresh_frames": 4.587533742267017,
+      "label": "max_abs-8.0-32.0-static+shifted-age4",
+      "max_age": 4,
+      "mean_active_reuse": 0.48749517967614037,
+      "n": 15,
+      "pareto_status": "candidate",
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "shifted_threshold": 32.0,
+      "static_threshold": 8.0,
+      "statistic": "max_abs"
+    }
+  ],
+  "policies": [
+    {
+      "agreement": 0.9333333333333333,
+      "cached_accuracy": 0.6666666666666666,
+      "dense_accuracy": 0.7333333333333333,
+      "dominated_by_dense_frame": null,
+      "effective_fresh_frames": 4.587533742267017,
+      "label": "max_abs-8.0-32.0-static+shifted-age4",
+      "max_age": 4,
+      "mean_active_reuse": 0.48749517967614037,
+      "n": 15,
+      "pareto_status": "candidate",
+      "reuse_classes": [
+        "static",
+        "shifted"
+      ],
+      "shifted_threshold": 32.0,
+      "static_threshold": 8.0,
+      "statistic": "max_abs"
+    }
+  ],
+  "total_frames": 8
+}
