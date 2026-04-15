@@ -126,20 +126,69 @@ numbers in `phase1_12_mvbench_motion_holdout_pareto.json`
 | top_k_mean(k=64, 4, 12) noage | 0.600 | 4.55 | dense-3 (0.600 @ 3) |
 | cpf(px8, 0.02, 0.08) noage | 0.600 | 4.67 | dense-3 (0.600 @ 3) |
 
-**TOMATO motion holdout: in-flight (2/5 complete as of 2026-04-16).**
-Committed points so far:
+**TOMATO motion holdout: 5/5 cached policies COMPLETE**, phase 1.24
+dense-2/3/8 backfill also complete. Full holdout dense curve (N=15,
+frames {1,2,3,4,6,8}):
 
-| policy | cached | effective_fresh_frames | notes |
+| dense-N | accuracy | Wilson 95% CI |
+|---|---|---|
+| 1 | 0.200 | [0.07, 0.45] |
+| 2 | 0.200 | [0.07, 0.45] |
+| 3 | 0.200 | [0.07, 0.45] |
+| 4 | 0.133 | [0.04, 0.38] |
+| 6 | 0.267 | [0.11, 0.52] |
+| 8 | 0.267 | [0.11, 0.52] |
+
+All 5 cached policies landed at cached_accuracy = 0.267 (4/15 correct,
+Wilson 95% CI [0.11, 0.52]). `pareto_analysis.py analyze` reports all 5
+as candidates vs dense (no dense-N strictly dominates any of them).
+
+2-axis inter-cached skyline (cached_accuracy, effective_fresh_frames):
+
+| policy | cached | fresh | agreement | observation |
+|---|---|---|---|---|
+| max_abs(8,32) static+shifted age=4 | 0.267 | 3.39 | 0.800 | sole 2-axis Pareto winner; lowest fresh-frame budget |
+
+3-axis inter-cached skyline (add `agreement`):
+
+| policy | cached | fresh | agreement |
 |---|---|---|---|
-| max_abs(8,32) static+shifted age=4 | 0.267 | 3.39 | matches dense-6 (0.267) at lower budget |
-| mean(2,6) static+shifted age=2 | 0.267 | 3.89 | matches dense-6 at lower budget |
+| max_abs(8,32) static+shifted age=4 | 0.267 | 3.39 | 0.800 |
+| mean(2,6) static+shifted age=2 | 0.267 | 3.89 | 0.867 |
 
-**Important caveat**: the committed TOMATO motion holdout dense curve
-from phase 1.8 only has frames {1, 4, 6}. Dense-2, dense-3, and dense-8
-were not built there. A cached point at fresh ≈ 3.4 may be strictly
-dominated by (as-yet-unmeasured) dense-3 if dense-3 holdout is stronger
-than 0.267. Phase 1.24 preregisters the backfill; no TOMATO "pass"
-claim can be made before that backfill lands.
+Interpretation vs dense frontier:
+
+- Cached at fresh ≈ 3.39 with acc = 0.267 strictly dominates dense-4
+  (0.133 @ 4), dense-6 (0.267 @ 6), dense-8 (0.267 @ 8). Same accuracy
+  as dense-6 and dense-8 at 43% and 58% lower fresh-frame budget
+  respectively.
+- Cached does NOT strictly dominate dense-1/2/3 — those have lower
+  accuracy AND lower budget, so they occupy a different Pareto region.
+
+**HEAVY caveats on the positive result**:
+
+1. **Low absolute accuracy regime.** 0.267 means 4/15 correct. Wilson
+   95% CI is [0.11, 0.52] — overlaps with dense-2/3 CI [0.07, 0.45].
+   This is a "confidence-limited" Pareto win: cached ties dense-6 on a
+   slice where all methods score low, so the comparison is less
+   informative than a high-accuracy Pareto win would be.
+2. **N=15 is too small to separate ties from method wins.** Phase
+   1.20 N=30 TOMATO enlargement is now top priority: if cached still
+   ties or beats dense-6 at N=30, the result hardens; if not, the N=15
+   tie was likely sampling noise.
+3. **Dirty-tree artifact per codex audit.** The 5 cached holdout
+   summaries were produced with `--allow-dirty`. For paper-grade
+   claims, rerun on a clean tree. Phase 1.25 will preregister the
+   clean rerun after a pending refactor settles.
+4. **Agreement ≠ reproduction.** `max_abs(8,32)` at agreement=0.800
+   means cached disagrees with dense on 20% of items — different 20%
+   from dense's misses. The accuracy tie masks real divergence.
+
+This is a very different story from MVBench holdout. On MVBench,
+cached policies were strictly dominated at every matched-budget cell.
+On TOMATO, they match or beat dense at matched budget — but on a
+confidence-limited 15-item slice where the signal-to-noise ratio
+is poor.
 
 ## Interpretation
 
@@ -147,13 +196,18 @@ claim can be made before that backfill lands.
   NOT generalize to holdout. The discipline gate held: a strong dev
   signal that turned out to be an N=15 slice coincidence was cleanly
   rejected without any dev-to-holdout tuning.
-- TOMATO holdout interpretation is deferred until phase 1.24 dense
-  backfill completes.
-- Broader framing: even if TOMATO holdout survives a proper
-  matched-budget test, the right paper claim would be content-conditioned
-  ("cached temporal reuse matches dense frame-budget on TOMATO motion at
-  a specific operating point; fails on MVBench motion holdout"),
-  not a general SOTA claim.
+- TOMATO holdout: 5 cached policies tied dense-6/8 accuracy (0.267) at
+  lower fresh-frame budget. Honest Pareto win at low absolute accuracy
+  and N=15 — needs phase 1.20 N=30 enlargement + clean-tree rerun before
+  it can be promoted to a paper claim.
+- Content-conditioned story so far: TOMATO motion matches cached
+  methods at low-accuracy regime; MVBench motion rejects every cached
+  policy at higher-accuracy matched-budget regime. The right paper
+  framing is "training-free temporal feature reuse matches dense
+  frame-budget quality on TOMATO motion at one operating point and on
+  a confidence-limited slice; fails on MVBench motion holdout; the
+  composition axis (temporal × token pruning, phase 1.23) is the more
+  credible path to SOTA."
 
 ## Links
 

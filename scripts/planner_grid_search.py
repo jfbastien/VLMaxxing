@@ -23,7 +23,6 @@ so a future reader can reproduce the search by rerunning the same commands.
 from __future__ import annotations
 
 import argparse
-import itertools
 import json
 import subprocess
 import sys
@@ -42,6 +41,10 @@ from codec_through.temporal import (
     BlockStatistic,
     PlannerConfig,
     classify_blocks_with_planner,
+)
+from codec_through.track_a import (
+    active_region_block_mask,
+    flattened_reuse_mask,
 )
 
 # Re-use the main benchmark runner's manifest + video lookup so path
@@ -164,19 +167,23 @@ def _letterbox_to(image: Image.Image, *, size: int) -> Image.Image:
     return canvas
 
 
-def _classify_pair_active_reuse(
-    prev_frame: np.ndarray,
-    curr_frame: np.ndarray,
-    *,
-    config: PlannerConfig,
-    reuse_classes: tuple[BlockClass, ...],
-) -> float:
-    classes = classify_blocks_with_planner(
-        prev_frame, curr_frame, block_size=BLOCK_SIZE, config=config
-    )
-    reuse_set = {int(c) for c in reuse_classes}
-    mask = np.isin(classes, list(reuse_set))
-    return float(mask.mean())
+def _letterbox_active_box(
+    image: Image.Image, *, size: int
+) -> tuple[int, int, int, int]:
+    """Return (left, top, right, bottom) for the non-padded region after letterboxing."""
+    w, h = image.size
+    scale = size / max(w, h)
+    new_w = max(1, round(w * scale))
+    new_h = max(1, round(h * scale))
+    paste_x = (size - new_w) // 2
+    paste_y = (size - new_h) // 2
+    return (paste_x, paste_y, paste_x + new_w, paste_y + new_h)
+
+
+def _masked_mean(values: np.ndarray, mask: np.ndarray) -> float:
+    if mask.sum() == 0:
+        return 0.0
+    return float((values * mask).sum() / mask.sum())
 
 
 def _build_candidate_list(
@@ -289,10 +296,22 @@ def _default_candidates() -> list[PolicyCandidate]:
 
 def _decode_and_normalize(
     video_path: Path, *, frame_count: int
-) -> list[np.ndarray]:
+) -> tuple[list[np.ndarray], list[tuple[int, int, int, int]]]:
+    """Decode + letterbox. Return (frame_arrays, active_boxes) in lock-step.
+
+    Active boxes let calibration apply the same pad mask the benchmark
+    runner applies when reporting `reuse_ratio_mean_active`, so the
+    calibration number is measurement-compatible with the runner.
+    """
     frames = _decode_uniform_frames(video_path, frame_count=frame_count)
-    letterboxed = [_letterbox_to(f, size=BENCHMARK_FRAME_SIZE) for f in frames]
-    return [np.array(f, dtype=np.uint8) for f in letterboxed]
+    letterboxed: list[np.ndarray] = []
+    active_boxes: list[tuple[int, int, int, int]] = []
+    for f in frames:
+        active_boxes.append(_letterbox_active_box(f, size=BENCHMARK_FRAME_SIZE))
+        letterboxed.append(
+            np.array(_letterbox_to(f, size=BENCHMARK_FRAME_SIZE), dtype=np.uint8)
+        )
+    return letterboxed, active_boxes
 
 
 def _calibrate(
@@ -301,10 +320,23 @@ def _calibrate(
     *,
     frame_count: int,
 ) -> list[CalibrationPoint]:
-    # decode once per item, then loop policies (cheap on CPU)
+    """Estimate the runner's pad-masked, age-gated active-reuse ratio on CPU.
+
+    Prior to phase 1.19 this function used unmasked pairwise reuse BEFORE
+    age gating, which produced mean-absolute-calibration-error of 0.245 on
+    the phase 1.11 MVBench sweep. Phase 1.19 aligns the computation with
+    `run_benchmark_track_a.py::_mix_qwen_features`: per frame, apply
+    age-gate via `_apply_age_gate`, compute the pad-masked mean via
+    intersecting previous+current active-region masks, and accumulate per
+    item. Age state resets per item (matches the runner).
+
+    This is still CPU-only; it does not need the Qwen tokenizer because
+    we fix `frame_size = BENCHMARK_FRAME_SIZE` throughout — that gives a
+    uniform block grid across frames.
+    """
     print(f"decoding {len(manifest.item_ids)} clips for calibration", file=sys.stderr)
     video_paths = _resolve_video_paths(manifest.benchmark, list(manifest.item_ids))
-    frames_by_item: dict[str, list[np.ndarray]] = {}
+    frames_by_item: dict[str, tuple[list[np.ndarray], list[tuple[int, int, int, int]]]] = {}
     for item_id in manifest.item_ids:
         frames_by_item[item_id] = _decode_and_normalize(
             video_paths[item_id], frame_count=frame_count
@@ -314,13 +346,39 @@ def _calibrate(
         per_item = []
         cfg = cand.planner_config()
         for item_id in manifest.item_ids:
-            frames = frames_by_item[item_id]
-            pair_reuses = []
-            for a, b in itertools.pairwise(frames):
+            frames, active_boxes = frames_by_item[item_id]
+            if not frames:
+                per_item.append(0.0)
+                continue
+            active_masks = [
+                active_region_block_mask(
+                    (BENCHMARK_FRAME_SIZE, BENCHMARK_FRAME_SIZE),
+                    box,
+                    block_size=BLOCK_SIZE,
+                )
+                for box in active_boxes
+            ]
+            first_grid_size = (BENCHMARK_FRAME_SIZE // BLOCK_SIZE) ** 2
+            ages = np.zeros(first_grid_size, dtype=np.int32)
+            pair_reuses: list[float] = []
+            for frame_index in range(1, len(frames)):
+                classification = classify_blocks_with_planner(
+                    frames[frame_index - 1],
+                    frames[frame_index],
+                    block_size=BLOCK_SIZE,
+                    config=cfg,
+                )
+                reuse_mask = flattened_reuse_mask(
+                    classification, reuse_classes=cand.reuse_classes
+                )
+                allowed_mask, ages = _apply_age_gate(
+                    reuse_mask, ages, max_age=cand.max_age
+                )
+                active_intersection = (
+                    active_masks[frame_index - 1] & active_masks[frame_index]
+                )
                 pair_reuses.append(
-                    _classify_pair_active_reuse(
-                        a, b, config=cfg, reuse_classes=cand.reuse_classes
-                    )
+                    _masked_mean(allowed_mask.astype(np.float32), active_intersection)
                 )
             per_item.append(float(np.mean(pair_reuses)) if pair_reuses else 0.0)
         mean_reuse = float(np.mean(per_item))
@@ -337,6 +395,20 @@ def _calibrate(
                 file=sys.stderr,
             )
     return results
+
+
+def _apply_age_gate(
+    reuse_mask: np.ndarray,
+    ages: np.ndarray,
+    *,
+    max_age: int | None,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Mirror `run_benchmark_track_a.py::_apply_age_gate` for calibration."""
+    if reuse_mask.shape != ages.shape:
+        raise ValueError("reuse_mask and ages must match")
+    allowed = reuse_mask if max_age is None else reuse_mask & (ages < max_age)
+    next_ages = np.where(allowed, ages + 1, 0).astype(np.int32)
+    return allowed, next_ages
 
 
 def _bin_candidates(
