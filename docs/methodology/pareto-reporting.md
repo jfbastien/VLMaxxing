@@ -48,9 +48,22 @@ cost; it is not a Track B win.
 If a sweep is used to choose a policy:
 
 1. search on the dev manifest
-2. choose one policy
-3. evaluate that policy once on the holdout manifest
+2. choose one policy, OR up to K tied policies (see below)
+3. evaluate each chosen policy once on the holdout manifest
 4. keep both dev and holdout numbers in the note
+5. never combine holdout evaluations across policies; always report
+   per-policy holdout separately so multiple-comparison risk is visible
+
+Top-K allowance:
+
+- preferred mode is K=1 (pick a single winner and gate on holdout)
+- K>1 is allowed when the top-K dev points are tied on the primary metric
+  (cached_accuracy) — there is no principled way to pick "the" winner
+  without implicit tuning on holdout
+- K should not exceed 5; report the rationale for the chosen K in the
+  note; acknowledge that "at least one survived" under K>1 inflates the
+  chance of a noise-driven pass and therefore requires tighter CI framing
+  in any paper-facing claim
 
 ## Forward Link
 

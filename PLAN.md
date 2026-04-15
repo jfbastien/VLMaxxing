@@ -170,20 +170,31 @@ Current position relative to the adjacent efficiency literature tracked in
 - on quality, the current local benchmark agreement range (`0.833` to `0.870`)
   is scientifically useful but still weaker than the low-drop quality stories
   reported by stronger efficiency papers
-- **first locally-measured Track A Pareto-dominant point (DEV ONLY)**:
+- **first locally-measured Track A Pareto-dominant frontier (DEV ONLY)**:
   on the TOMATO motion dev slice (phase 1.10, 30-policy grid sweep),
-  `max_abs(8.0, 32.0) static+shifted age=4` achieves cached accuracy `0.400`
-  at effective fresh-token-equivalent budget `3.99`. The dense frame-budget
-  curve needs `6` frames to reach the same `0.400`. That is roughly a `33%`
-  reduction in fresh-vision-token budget at equal accuracy on this slice.
-  `25` of `30` swept policies are Pareto candidates against the dense
-  curve. N=15, point estimate; Wilson 95% CI overlaps; needs holdout
-  validation in phase 1.12 before any SOTA-citable claim.
-- **MVBench motion dev does not show a Pareto candidate so far** (sweep
-  in flight, 9 of 30 policies done): the dense-4 peak (`0.733` at `4`
-  frames) is binding. Cached must reach `> 0.733` at fresh `< 8`, or
-  `>= 0.733` at fresh `< 4`, to enter the frontier. Current best cached
-  is `0.733` at fresh `5.16` — tied accuracy but loses on budget.
+  `7` of `30` cached policies reach `cached_accuracy >= 0.400` at lower
+  effective-fresh-frames budgets than dense-6's 6 frames. The lowest-budget
+  frontier point is `max_abs(8.0, 32.0) static+shifted age=4` at cached
+  `0.400` and fresh budget `3.99`, representing `~33%` fresh-vision-token
+  reduction vs dense-6 at equal accuracy. Note: the total Pareto-candidate
+  count of `25/30` mixes genuine frontier points with lower-accuracy
+  non-dominated policies that qualify only because the dense curve is weak
+  on this slice (dense-2 through dense-4 all sit at `0.267`). The
+  paper-citable signal is the `0.400`-accuracy frontier, not the raw count.
+  N=15, Wilson 95% CI wide, point estimate only; holdout validation in
+  phase 1.12 is the discipline gate.
+- **MVBench motion dev has a PROVISIONAL Pareto point** (sweep in flight,
+  16 of 30 policies done, dirty-tree run): `max_abs(8.0, 32.0)
+  static+shifted no-age` reaches cached `0.733` at fresh `3.22`, matching
+  dense-4's peak `0.733` at lower budget. Important caveats:
+  - in-flight partial result, not from a clean tree
+  - per-group breakdown essentially reproduces dense-4's weakness on
+    `moving_direction` (`1/3`); the planner matches dense-4's performance,
+    it does not "solve" motion reasoning
+  - N=15, overlapping Wilson CIs
+  - static+shifted + max_abs "unlocking" the frontier is a suggestive
+    correlation, not yet a causal finding — 14 more policies remaining,
+    may or may not show additional candidates
 - the current best path toward a competitive paper is therefore:
   - finish honest whitepaper reproduction on this stack
   - isolate when the planner fails

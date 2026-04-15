@@ -84,30 +84,61 @@ Artifacts:
 
 ## Result
 
-### Dev
+### Dev (N=15)
 
-_Pending completion of background run. Fill exact numbers here after the
-artifact lands._
+| frames | dense_acc | CI95 |
+|---|---|---|
+| 1 | 0.467 | [0.248, 0.699] |
+| 2 | 0.533 | [0.301, 0.752] |
+| 3 | 0.467 | [0.248, 0.699] |
+| 4 | **0.733** | [0.480, 0.891] |
+| 6 | 0.667 | [0.417, 0.848] |
+| 8 | 0.600 | [0.357, 0.802] |
 
-### Holdout
+Curve is NON-MONOTONIC: peaks at dense-4, then drops. The peak makes
+dense-4 the binding Pareto bar: any cached policy with effective fresh
+frames > 4 is strictly dominated unless cached_acc > 0.733.
 
-_Pending run — planned to start immediately after dev completes._
+### Holdout (N=15)
+
+| frames | dense_acc | CI95 |
+|---|---|---|
+| 1 | 0.267 | [0.109, 0.520] |
+| 2 | 0.533 | [0.301, 0.752] |
+| 3 | 0.600 | [0.357, 0.802] |
+| 4 | 0.600 | [0.357, 0.802] |
+| 6 | 0.667 | [0.417, 0.848] |
+| 8 | **0.733** | [0.480, 0.891] |
+
+Curve is monotonically increasing, peak at dense-8. Different shape from
+dev despite same tasks and same N — content-class distribution differs.
 
 ## Interpretation
 
-_To be completed once both runs are in._
+Same five MVBench motion task labels, disjoint clip selection, produced
+qualitatively different dense frame-budget curves. On dev the peak sits at
+4 frames; on holdout the peak sits at 8. This is a real content-level
+finding: per-task clip heterogeneity within MVBench is large enough to
+shift where the Pareto bar lives.
 
-Comparison template (to fill after runs):
+Comparison to TOMATO motion (phase 1.8):
 
 ```
-TOMATO motion dev (phase 1.8):
-  1: 0.000   2: 0.267   3: 0.267   4: 0.267   6: 0.400   8: 0.467
-TOMATO motion holdout (phase 1.8):
-  1: 0.200   4: 0.133   6: 0.267   8: 0.267
+TOMATO motion dev:     1: 0.000   2: 0.267   3: 0.267   4: 0.267   6: 0.400   8: 0.467
+TOMATO motion holdout: 1: 0.200              4: 0.133              6: 0.267   8: 0.267
 
-MVBench motion dev (this phase):   <filled from artifact>
-MVBench motion holdout (this phase): <filled from artifact>
+MVBench motion dev:    1: 0.467   2: 0.533   3: 0.467   4: 0.733   6: 0.667   8: 0.600
+MVBench motion holdout:1: 0.267   2: 0.533   3: 0.600   4: 0.600   6: 0.667   8: 0.733
 ```
+
+Observations:
+- MVBench motion is uniformly EASIER than TOMATO motion (dense baselines
+  0.467-0.733 vs 0.133-0.467). First-frame ablation in phase 1.47 already
+  suggested this: TOMATO requires more temporal content per item.
+- MVBench peaks at different frame counts dev/holdout, TOMATO is
+  monotonically increasing on dev but drops 4→6 on holdout.
+- Implication for Pareto: MVBench is a harder bar because dense-4 peak
+  (0.733) is high; TOMATO is easier because even dense-8 only reaches 0.467.
 
 Key questions to answer:
 

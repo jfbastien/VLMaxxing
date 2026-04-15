@@ -58,6 +58,25 @@ Selection protocol:
   selection
 - record the selected policy labels in this note BEFORE the holdout runs
 
+Selection-policy justification (reconciling with `docs/methodology/pareto-reporting.md`
+which reads as single-winner promotion):
+
+- Choosing top-5 rather than top-1 widens the holdout evidence but also
+  inflates the multiple-comparison risk. With 5 independent holdout
+  evaluations, the chance that at least one point survives by noise alone
+  at N=15 (Wilson 95% CI width ~0.4) is non-negligible.
+- We accept that risk explicitly because on TOMATO motion dev the top-5
+  are all tied at cached_acc=0.400 — there is no principled way to pick
+  "the" winner from {max_abs(8,32) static+shifted age=4, mean(2,6)
+  static+shifted age=2, ...} without tuning on holdout, which is forbidden.
+- Phase 1.12 will report per-policy holdout results separately and never
+  aggregate them. A single policy surviving holdout at matched budget
+  would be the citable finding; five surviving would be stronger but
+  should be reported with the explicit "selected from top-5 dev ties"
+  caveat.
+- Methodology doc will be updated to allow top-K holdout selection with
+  this explicit-tie rationale, post-commit.
+
 Pareto evaluation on holdout:
 
 - for each selected policy, run benchmark with the policy's exact

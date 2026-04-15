@@ -125,17 +125,64 @@ Calibration summary (from the committed JSON):
 
 ## Result
 
-_Pending sweep run. Will be populated with:_
+Sweep complete (30 policies, 15 items per policy).
 
-- count of policies evaluated
-- top-5 Pareto candidates by cached_accuracy at matched budget
-- per-group breakdown on the `direction` hard bucket
-- summary of the `mean + max_age = 4` dev-side baseline vs newly-found
-  policies at similar or lower fresh-token budget
+Pareto analysis against the phase 1.8 TOMATO motion dev dense curve
+(dense-2=0.267, dense-4=0.267, dense-6=0.400, dense-8=0.467):
+
+- **25 of 30 policies** are non-dominated (Pareto candidates)
+- **CAVEAT**: non-dominated ≠ "competitive policy." The TOMATO motion dev
+  dense curve is weak (peak 0.467), so many cached policies with low
+  accuracy but low fresh-budget also qualify as non-dominated without
+  meaningfully improving anything.
+- Only **7 of 25** reach cached_accuracy ≥ 0.400 (tied with dense-6's best
+  accuracy of 0.400). These are the meaningful Pareto-frontier points.
+
+Top Pareto candidates (cached_acc ≥ 0.400, sorted by fresh budget):
+
+| Policy | cached | fresh | reuse | agree |
+|---|---|---|---|---|
+| max_abs(8.0, 32.0) static+shifted age=4       | 0.400 | 3.99 | 0.573 | 0.867 |
+| mean(2.0, 6.0) static+shifted age=2           | 0.400 | 4.09 | 0.559 | 0.867 |
+| mean(5.0, 12.0) static-only age=2             | 0.400 | 4.22 | 0.540 | 0.867 |
+| mean(1.0, 4.0) static+shifted age=2           | 0.400 | 4.40 | 0.514 | 0.867 |
+| top_k_mean(k=64, 4.0, 12.0) static+shifted age=2 | 0.400 | 4.70 | 0.471 | 0.867 |
+| max_abs(8.0, 32.0) static-only age=2          | 0.400 | 5.37 | 0.375 | 0.933 |
+| top_k_mean(k=64, 4.0, 12.0) static-only age=2 | 0.400 | 5.48 | 0.360 | 0.933 |
+
+Headline: the best cached policy (max_abs(8,32) static+shifted age=4)
+achieves dense-6's 0.400 accuracy at effective fresh 3.99 — ~33%
+vision-encode budget reduction at equal accuracy on this dev slice.
 
 ## Interpretation
 
-_To be written after the sweep completes._
+What is real:
+- Multiple statistic families (mean, max_abs, top_k_mean) can reach
+  0.400 cached accuracy at fresh < 5 frames, contradicting phase 1.7's
+  earlier "statistic-only is null" interpretation. With proper grid
+  coverage (30 policies), the null was an undersampled probe, not a real
+  characteristic of the space.
+- The best fresh-frame budget for cached_acc=0.400 sits around 4 frames.
+
+What is NOT yet supported:
+- "25 of 30 Pareto candidates" is a non-domination count, not a method-win
+  count. The majority of non-dominated policies sit at cached_acc 0.267
+  or 0.333 — they Pareto-qualify only because the dense curve is weak on
+  this slice.
+- N=15, Wilson 95% CI on cached=0.400 overlaps 0.400±0.22 — point-estimate
+  result, not CI-strict domination.
+- DEV ONLY. Phase 1.12 holdout is the discipline gate.
+
+Methodology caveats (to propagate to future grid sweeps):
+- Grid calibration uses raw pairwise reuse (pre-age-gating, full-frame);
+  benchmark runner reports pad-masked active reuse after age gating.
+  Calibration-vs-reported mean absolute error on this run: 0.245 vs
+  active, 0.087 vs raw. The calibration is a useful BIN-SELECTOR but not
+  a numerical predictor of reported reuse.
+- The Pareto analysis uses actual measured active reuse from the runner,
+  so headline numbers are not affected by the calibration mismatch.
+- Future sweeps should either (a) calibrate on active reuse too, or (b)
+  stop reporting "active-reuse bin occupancy" in the calibration narrative.
 
 ## Links
 
