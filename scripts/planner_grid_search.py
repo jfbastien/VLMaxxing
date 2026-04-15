@@ -554,6 +554,59 @@ def _cmd_sweep(args: argparse.Namespace) -> None:
     print(f"wrote {args.out}", file=sys.stderr)
 
 
+def _cmd_run_explicit(args: argparse.Namespace) -> None:
+    """Run a fixed list of policies against a manifest, bypassing calibration.
+
+    Useful when a prior sweep has already identified a winning neighborhood
+    and we want to refine it with a hand-picked policy list (e.g. phase
+    1.14 threshold refinement around the MVBench winner).
+    """
+    manifest = _load_manifest(args.manifest)
+    raw = json.loads(Path(args.policies).read_text())
+    if isinstance(raw, dict) and "policies" in raw:
+        policy_dicts = raw["policies"]
+    elif isinstance(raw, list):
+        policy_dicts = raw
+    else:
+        raise ValueError(
+            f"expected a list of policies or {{'policies': [...]}} in {args.policies}"
+        )
+    candidates = [_candidate_from_dict(p) for p in policy_dicts]
+    if not candidates:
+        raise ValueError(f"no policies found in {args.policies}")
+    print(f"running {len(candidates)} explicit policies", file=sys.stderr)
+    args.output_dir.mkdir(parents=True, exist_ok=True)
+    results = []
+    for idx, cand in enumerate(candidates):
+        print(f"[{idx + 1}/{len(candidates)}] {cand.label}", file=sys.stderr)
+        try:
+            run_result = _run_sweep_policy(
+                candidate=cand,
+                manifest_path=args.manifest,
+                benchmark=manifest.benchmark,
+                frame_count=args.frame_count,
+                model_path=args.model_path,
+                output_dir=args.output_dir,
+                feature_cache_dir=args.feature_cache_dir,
+                allow_dirty=args.allow_dirty,
+                log_option_logprobs=args.log_option_logprobs,
+            )
+            results.append(run_result)
+        except subprocess.CalledProcessError as exc:
+            print(f"  FAILED: {exc}", file=sys.stderr)
+            results.append({"candidate": cand.as_dict(), "error": str(exc)})
+    payload = {
+        "manifest_path": str(args.manifest),
+        "benchmark": manifest.benchmark,
+        "frame_count": args.frame_count,
+        "policies_source": str(args.policies),
+        "results": results,
+    }
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+    print(f"wrote {args.out}", file=sys.stderr)
+
+
 def _candidate_from_dict(payload: dict[str, Any]) -> PolicyCandidate:
     reuse = tuple(_parse_reuse_class(name) for name in payload["reuse_classes"])
     return PolicyCandidate(
@@ -613,6 +666,30 @@ def main() -> None:
     sweep.add_argument("--allow-dirty", action="store_true")
     sweep.add_argument("--log-option-logprobs", action="store_true")
     sweep.set_defaults(handler=_cmd_sweep)
+
+    explicit = subparsers.add_parser(
+        "run-explicit",
+        help="run a fixed list of policies against a manifest without calibration",
+    )
+    explicit.add_argument("--manifest", type=Path, required=True)
+    explicit.add_argument(
+        "--policies",
+        type=Path,
+        required=True,
+        help="JSON file with a list of policy dicts (or {policies: [...]})",
+    )
+    explicit.add_argument("--frame-count", type=int, default=8)
+    explicit.add_argument("--output-dir", type=Path, required=True)
+    explicit.add_argument("--out", type=Path, required=True)
+    explicit.add_argument("--model-path", type=Path, default=DEFAULT_MODEL_PATH)
+    explicit.add_argument(
+        "--feature-cache-dir",
+        type=Path,
+        default=Path("research/cache/dense_features"),
+    )
+    explicit.add_argument("--allow-dirty", action="store_true")
+    explicit.add_argument("--log-option-logprobs", action="store_true")
+    explicit.set_defaults(handler=_cmd_run_explicit)
 
     args = parser.parse_args()
     args.handler(args)

@@ -75,20 +75,23 @@ Runtime estimate: 5 policies × ~16 min per policy ≈ 1.3 hrs GPU.
 
 Pending phase 1.11 completion.
 
+Policy list: `research/experiments/2026/artifacts/phase1_14_mvbench_refinement_policies.json`.
+
 Planned command:
 
 ```
-uv run python scripts/planner_grid_search.py sweep \
-  --explicit-policies research/experiments/2026/artifacts/phase1_14_mvbench_refinement_policies.json \
+uv run python scripts/planner_grid_search.py run-explicit \
+  --manifest research/benchmark_manifests/mvbench_motion_dev_v1.toml \
+  --policies research/experiments/2026/artifacts/phase1_14_mvbench_refinement_policies.json \
   --frame-count 8 \
   --output-dir research/experiments/2026/artifacts/phase1_14_mvbench_refinement \
   --out research/experiments/2026/artifacts/phase1_14_mvbench_refinement_summary.json \
   --allow-dirty
 ```
 
-(Assumes `--explicit-policies` mode exists or is added. Fallback: use
-`--max-policies` with a calibration that matches these five; confirm at
-launch time.)
+The `run-explicit` subcommand was added to `planner_grid_search.py` in the
+same commit tranche that preregisters phases 1.14–1.18, specifically so
+this phase can launch without code changes or a fallback path.
 
 ## Result
 

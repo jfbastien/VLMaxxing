@@ -169,6 +169,46 @@ Execution order (if phase 1.12 passes on MVBench):
 
 Total post-1.11 autonomous budget: ~7–8 hrs GPU when all phases run.
 
+### Stage D'' — Scaling, transfer, and methodology fixes (day 4–5)
+
+Added 2026-04-15. These phases extend the autonomous queue by another
+~9 hrs so the agent has a deep enough runway to keep making progress
+while the operator is away, without ever needing approvals.
+
+**Phase 1.19 — Calibration-metric alignment** (~1.5 hrs code + 15 min
+ CPU)
+- Fix the known mismatch between `planner_grid_search.py::_calibrate`
+  and `run_benchmark_track_a.py::_compute_reuse_ratio` so calibration
+  bins align with runner-reported active reuse
+- Low priority; runs as filler between GPU-bound phases
+- `research/experiments/2026/2026-04-15-phase-1_19-calibration-metric-alignment.md`
+
+**Phase 1.20 — TOMATO motion slice enlargement (N=15→30)** (~3 hrs)
+- New v2 manifests with seed=42 stratified random sample; rerun dense
+  curve + TOMATO winner cells
+- Tightens or weakens the TOMATO dev Pareto claim with wider CIs
+- Gates on phase 1.12 holdout resolution
+- `research/experiments/2026/2026-04-15-phase-1_20-tomato-motion-slice-enlargement.md`
+
+**Phase 1.21 — MVBench motion slice enlargement (N=15→30)** (~3.5 hrs)
+- Same design as 1.20 but for MVBench motion
+- Highest-priority N=30 phase because MVBench winner is the strongest
+  point in the repo
+- `research/experiments/2026/2026-04-15-phase-1_21-mvbench-motion-slice-enlargement.md`
+
+**Phase 1.22 — MVBench non-motion winner transfer** (~1.5 hrs)
+- Does the MVBench winner survive on non-motion MVBench slices?
+- Independent of phase 1.12
+- `research/experiments/2026/2026-04-15-phase-1_22-mvbench-non-motion-winner-transfer.md`
+
+**Phase 1.23 — FastV composition scouting** (design doc only, ~1.5 hrs)
+- Produce `docs/fastv-composition-plan.md` — hook point map, MLX API
+  touch list, engineering-effort classification
+- No benchmark runs; filler work
+- `research/experiments/2026/2026-04-15-phase-1_23-fastv-composition-scouting.md`
+
+Total Stage D'' autonomous budget: ~9 hrs GPU + 1.5 hrs CPU/design.
+
 ### Stage E — Track B design + skipped-compute measurement (day 4+)
 
 **E1. In-memory timing harness design doc**

@@ -66,11 +66,15 @@ static+shifted noage`):
 4. `frame_count=16`
 
 Each cell needs a matched-frame-count dense baseline; dense-4 and
-dense-8 exist from phase 1.9; dense-12 and dense-16 need to be built in
-this phase if budget allows, else compare to dense-8 plateau.
+dense-8 exist from phase 1.9. Dense-12 and dense-16 MUST be built
+before the cached runs in this phase — otherwise the Pareto-matching
+axis cannot be drawn at those frame counts. If dense-12 or dense-16
+fails to run (Metal-timeout or VRAM pressure on M3 Air), the
+corresponding cached cell is demoted to exploratory and the scale
+finding caps at 8 frames.
 
-Runtime estimate: 3 cached × ~16 min + 2 dense × ~12 min ≈ 1.3 hrs GPU
-(conservative; replay helps on 4- and 8-frame cells).
+Runtime estimate: 2 dense × ~12 min + 3 cached × ~16 min ≈ 1.3 hrs
+GPU (conservative; replay helps the 4- and 8-frame cells).
 
 ## Execution
 
