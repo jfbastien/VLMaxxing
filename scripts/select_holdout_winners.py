@@ -26,6 +26,60 @@ def _effective_fresh_frames(reuse: float, total_frames: int) -> float:
     return 1.0 + (total_frames - 1) * (1.0 - reuse)
 
 
+def _dedupe_equivalents(
+    candidates: list[dict[str, Any]], total_frames: int
+) -> list[dict[str, Any]]:
+    """Collapse Pareto candidates that represent the same operating point.
+
+    With frame_count=N, max_age >= N-1 cannot bind on any cached decision
+    (only N-1 reuse decisions exist). Two candidates that differ only in a
+    non-binding max_age will produce bit-identical outputs; treat them as
+    one policy.
+
+    Fingerprint each row by (statistic, static_threshold, shifted_threshold,
+    reuse_classes, empirical accuracy/reuse) and collapse by that key.
+    Prefer the canonical max_age=None form when both are present.
+    """
+    groups: dict[tuple[Any, ...], list[dict[str, Any]]] = {}
+    order: list[tuple[Any, ...]] = []
+    for cand in candidates:
+        key = (
+            cand.get("statistic"),
+            cand.get("static_threshold"),
+            cand.get("shifted_threshold"),
+            tuple(cand.get("reuse_classes") or ()),
+            round(float(cand["cached_accuracy"]), 6),
+            round(float(cand["effective_fresh_frames"]), 6),
+            round(float(cand["mean_active_reuse"]), 6),
+        )
+        if key not in groups:
+            order.append(key)
+            groups[key] = []
+        groups[key].append(cand)
+
+    deduped: list[dict[str, Any]] = []
+    for key in order:
+        members = groups[key]
+        if len(members) == 1:
+            deduped.append(members[0])
+            continue
+        noage = [m for m in members if m.get("max_age") is None]
+        if noage:
+            deduped.append(noage[0])
+        else:
+            non_binding = [
+                m
+                for m in members
+                if m.get("max_age") is not None
+                and int(m["max_age"]) >= total_frames - 1
+            ]
+            if non_binding:
+                deduped.append(min(non_binding, key=lambda m: int(m["max_age"])))
+            else:
+                deduped.append(min(members, key=lambda m: int(m.get("max_age") or 0)))
+    return deduped
+
+
 def _dense_at_budget(dense_runs: list[dict[str, Any]], budget: float) -> tuple[int, float]:
     eligible = [d for d in dense_runs if int(d["frame_count"]) <= budget]
     if not eligible:
@@ -62,6 +116,7 @@ def main() -> None:
     dev_candidates = sorted(
         dev_candidates, key=lambda c: (-c["cached_accuracy"], c["effective_fresh_frames"])
     )
+    dev_candidates = _dedupe_equivalents(dev_candidates, args.total_frames)
 
     rows = []
     missing = []
