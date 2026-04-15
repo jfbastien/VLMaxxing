@@ -1,0 +1,46 @@
+{
+  "cached_source": "research/experiments/2026/artifacts/phase1_10_tomato_motion_dev_grid/max_abs-8.0-32.0-static+shifted-age4.jsonl",
+  "dense_source": "research/experiments/2026/artifacts/phase1_10_tomato_motion_dev_grid/max_abs-8.0-32.0-static+shifted-age4.jsonl",
+  "disagreements": [
+    {
+      "cached_correct": false,
+      "cached_text": "D",
+      "dense_correct": true,
+      "dense_text": "C",
+      "group": "direction",
+      "item_id": "tomato:direction:0231-06"
+    },
+    {
+      "cached_correct": false,
+      "cached_text": "B",
+      "dense_correct": false,
+      "dense_text": "A",
+      "group": "rotation",
+      "item_id": "tomato:rotation:0216-08"
+    }
+  ],
+  "n_disagreements": 2,
+  "per_group": {
+    "direction": {
+      "both_right": 2,
+      "both_wrong": 2,
+      "cached_only_right": 0,
+      "dense_only_right": 1,
+      "n": 5
+    },
+    "rotation": {
+      "both_right": 2,
+      "both_wrong": 3,
+      "cached_only_right": 0,
+      "dense_only_right": 0,
+      "n": 5
+    },
+    "shape_trend": {
+      "both_right": 2,
+      "both_wrong": 3,
+      "cached_only_right": 0,
+      "dense_only_right": 0,
+      "n": 5
+    }
+  }
+}
