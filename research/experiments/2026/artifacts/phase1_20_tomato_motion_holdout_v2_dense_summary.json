@@ -1,0 +1,173 @@
+{
+  "benchmark": "tomato",
+  "chunk_size": 1,
+  "frame_counts": [
+    1,
+    2,
+    3,
+    4,
+    6,
+    8
+  ],
+  "manifest_path": "research/benchmark_manifests/tomato_motion_holdout_v2.toml",
+  "max_tokens": 32,
+  "model_path": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
+  "runs": [
+    {
+      "agreement": 1.0,
+      "count": 30,
+      "dense_accuracy": 0.2,
+      "dense_accuracy_ci95": [
+        0.0950510717728987,
+        0.3730569641314825
+      ],
+      "frame_count": 1,
+      "output_path": "research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_dense/frame_1.jsonl",
+      "per_group_dense_accuracy": {
+        "direction": {
+          "count": 10,
+          "dense_accuracy": 0.2
+        },
+        "rotation": {
+          "count": 10,
+          "dense_accuracy": 0.1
+        },
+        "shape_trend": {
+          "count": 10,
+          "dense_accuracy": 0.3
+        }
+      },
+      "summary_path": "research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_dense/frame_1_summary.json"
+    },
+    {
+      "agreement": 1.0,
+      "count": 30,
+      "dense_accuracy": 0.16666666666666666,
+      "dense_accuracy_ci95": [
+        0.0733654237184855,
+        0.3356435050641603
+      ],
+      "frame_count": 2,
+      "output_path": "research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_dense/frame_2.jsonl",
+      "per_group_dense_accuracy": {
+        "direction": {
+          "count": 10,
+          "dense_accuracy": 0.3
+        },
+        "rotation": {
+          "count": 10,
+          "dense_accuracy": 0.1
+        },
+        "shape_trend": {
+          "count": 10,
+          "dense_accuracy": 0.1
+        }
+      },
+      "summary_path": "research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_dense/frame_2_summary.json"
+    },
+    {
+      "agreement": 1.0,
+      "count": 30,
+      "dense_accuracy": 0.2,
+      "dense_accuracy_ci95": [
+        0.0950510717728987,
+        0.3730569641314825
+      ],
+      "frame_count": 3,
+      "output_path": "research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_dense/frame_3.jsonl",
+      "per_group_dense_accuracy": {
+        "direction": {
+          "count": 10,
+          "dense_accuracy": 0.3
+        },
+        "rotation": {
+          "count": 10,
+          "dense_accuracy": 0.2
+        },
+        "shape_trend": {
+          "count": 10,
+          "dense_accuracy": 0.1
+        }
+      },
+      "summary_path": "research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_dense/frame_3_summary.json"
+    },
+    {
+      "agreement": 1.0,
+      "count": 30,
+      "dense_accuracy": 0.13333333333333333,
+      "dense_accuracy_ci95": [
+        0.053096554840547455,
+        0.296813266820363
+      ],
+      "frame_count": 4,
+      "output_path": "research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_dense/frame_4.jsonl",
+      "per_group_dense_accuracy": {
+        "direction": {
+          "count": 10,
+          "dense_accuracy": 0.1
+        },
+        "rotation": {
+          "count": 10,
+          "dense_accuracy": 0.2
+        },
+        "shape_trend": {
+          "count": 10,
+          "dense_accuracy": 0.1
+        }
+      },
+      "summary_path": "research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_dense/frame_4_summary.json"
+    },
+    {
+      "agreement": 1.0,
+      "count": 30,
+      "dense_accuracy": 0.26666666666666666,
+      "dense_accuracy_ci95": [
+        0.14182663319596317,
+        0.4444796169518888
+      ],
+      "frame_count": 6,
+      "output_path": "research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_dense/frame_6.jsonl",
+      "per_group_dense_accuracy": {
+        "direction": {
+          "count": 10,
+          "dense_accuracy": 0.4
+        },
+        "rotation": {
+          "count": 10,
+          "dense_accuracy": 0.3
+        },
+        "shape_trend": {
+          "count": 10,
+          "dense_accuracy": 0.1
+        }
+      },
+      "summary_path": "research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_dense/frame_6_summary.json"
+    },
+    {
+      "agreement": 1.0,
+      "count": 30,
+      "dense_accuracy": 0.3333333333333333,
+      "dense_accuracy_ci95": [
+        0.19230498083676134,
+        0.5121994835545616
+      ],
+      "frame_count": 8,
+      "output_path": "research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_dense/frame_8.jsonl",
+      "per_group_dense_accuracy": {
+        "direction": {
+          "count": 10,
+          "dense_accuracy": 0.4
+        },
+        "rotation": {
+          "count": 10,
+          "dense_accuracy": 0.4
+        },
+        "shape_trend": {
+          "count": 10,
+          "dense_accuracy": 0.2
+        }
+      },
+      "summary_path": "research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_dense/frame_8_summary.json"
+    }
+  ]
+}
