@@ -57,14 +57,16 @@ is the most immediate fix.
 
 Hypotheses:
 
-- **H1 (TOMATO direction recovery)**: child-veto with `max_abs`
-  per-child at threshold ~16 (half of block-level 32) recovers the
+- **H1 (TOMATO direction recovery)**: child-veto with **CPF**
+  per-child (primary) or **MEAN** per-child (control) recovers the
   TOMATO direction item that vanilla `max_abs(8,32) age=4` misses
   on dev, because the direction cue is spatially concentrated in 1
-  of the 4 children.
+  of the 4 children. The child-CPF threshold should be calibrated
+  so that a 14×14 region with ≥ N% changed pixels triggers the veto
+  (separate threshold scale from block-level max_abs).
 - **H2 (MVBench improvement)**: child-veto on MVBench motion holdout
-  at N=15 reaches cached ≥ 0.733 (matching sticky4's result) at
-  lower budget than sticky4 (fresh < 5.10).
+  at N=30 reaches cached ≥ 0.633 (matching the base policy N=30
+  result) at comparable budget.
 - **H3 (budget cost bounded)**: child-veto adds ≤ 0.5 effective
   fresh frames compared to block-level-only routing, because only
   blocks with spatially heterogeneous content trigger the veto.
@@ -91,12 +93,16 @@ computing `reuse_mask` from `flattened_reuse_mask(classification)`:
 1. Reshape the frame pair's pixel diff to (H_blocks, W_blocks,
    block_size, block_size) = (20, 20, 28, 28).
 2. Reshape each block to (2, 14, 2, 14) children.
-3. Compute per-child MAX_ABS (or CPF).
+3. Compute per-child **CPF** (primary) or **MEAN** (control).
+   Note: child MAX_ABS is NOT useful here because
+   `ANY(child_max_abs > t) ≡ block_max_abs > t`.
 4. If any child exceeds threshold, set `reuse_mask[block] = False`.
 5. Proceed with existing age-gate and sticky logic.
 
-Add `--child-veto-threshold` CLI flag (default None = off).
-Add `child_veto_threshold` to `PolicyCandidate` and `_planner_payload`.
+Add `--child-veto-cpf-threshold` and `--child-veto-mean-threshold`
+CLI flags (default None = off). These are on DIFFERENT scales (CPF
+is a fraction 0–1; MEAN is in pixel-diff units 0–255).
+Add corresponding fields to `PolicyCandidate` and `_planner_payload`.
 
 ~30 lines of code change in the mask construction path.
 

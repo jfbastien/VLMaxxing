@@ -44,14 +44,17 @@ We claim, with current evidence:
 
 - training-free temporal feature reuse is a real, benchmark-validatable
   mechanism on our local Qwen 2.5-VL MLX stack
-- a specific policy family (`max_abs(8,32) static+shifted age=4`)
-  passes a held-out Pareto test on MVBench motion at N=15, and ties
-  dense-6 at lower budget on TOMATO motion holdout
+- the base policy family `max_abs(8,32) static+shifted age=4`
+  **passes N=30 MVBench motion holdout** (cached=0.600@4.06, Pareto
+  win vs dense-6; clean tree). A sticky_window=4 refinement reaches
+  0.633@4.49 (ties dense-8 at 56% budget; dirty-tree, supplementary)
+- the same base policy ties dense-6/8 on TOMATO motion holdout at
+  N=15 in a low-accuracy regime (0.267@3.39); TOMATO N=30 is in-flight
 - naive mean-diff + no-refresh is too blunt on temporally concentrated
   evidence; `max_abs` statistic + bounded staleness recovers ground
-- adding sticky-dynamic mask accumulation ALONE does not help on
-  TOMATO dev (phase 1.26); the explanatory variable is not "quantity
-  of refresh" but "placement of refresh in time"
+- sticky-dynamic helps on MVBench holdout (+1 item) but hurts TOMATO
+  dev; the explanatory variable is "placement of refresh in time,"
+  not quantity
 
 We do NOT claim:
 

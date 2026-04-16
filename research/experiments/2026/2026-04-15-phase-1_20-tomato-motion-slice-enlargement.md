@@ -5,8 +5,18 @@
 Objective:
 
 - expand TOMATO motion dev from N=15 to N=30 and TOMATO motion
-  holdout from N=15 to N=30, drawn with stratified random seed=42
-  from the same motion groups (direction / rotation / shape_trend)
+  holdout from N=15 to N=30.
+
+**Protocol note (2026-04-16)**: the original prereg said "stratified
+random seed=42." The actual manifests are **deterministic supersets**:
+v1 items kept, plus 5 new items per group selected from the
+earliest available corpus keys that avoid dev/holdout overlap. This
+is a protocol deviation from random stratification; the deviation is
+documented here and in the manifest descriptions. The resulting v2
+slices are still valid same-group enlargements of v1, just not
+randomly sampled.
+
+Groups: direction / rotation / shape_trend
 - re-run dense frame-budget baselines on the enlarged slices
 - re-run the TOMATO motion dev winner `max_abs(8,32) static+shifted
   age=4` and the TOMATO motion holdout winners from phase 1.12 on

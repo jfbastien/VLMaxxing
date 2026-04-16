@@ -118,19 +118,16 @@ Priority = (probability-of-moving-paper-claim × magnitude) / (effort).
 
 ### Tier A — do next (highest expected value)
 
-2. **Phase 1.36 feature-change oracle** — ~30 min CPU. Replay-cache
-   diagnostic: correlate each pixel signal (MEAN, MAX_ABS, CPF,
-   TOP_K_MEAN) against per-block ViT cosine distance. Answers "is
-   signal quality or schedule quality the bottleneck?" Runs in
-   parallel with 1.21 GPU work.
-3. **Phase 1.37 child-veto / subtoken guard** — ~4 hrs code + GPU.
-   Split each 28×28 block into 2×2 14×14 children; veto reuse if
-   any child exceeds threshold. The best overlooked near-term unlock
-   per ChatGPT review. Gated on 1.36 oracle outcome: if signal is
-   good (r ≥ 0.7), scheduling matters more; if signal is weak (r <
-   0.5), child-veto is the immediate fix.
-4. **Phase 1.20 TOMATO N=30** — ~3 hrs GPU. Hardens the low-accuracy
-   TOMATO holdout tie.
+2. **Phase 1.20 TOMATO N=30** — **IN-FLIGHT** (~3 hrs GPU). Dense
+   baselines running on holdout_v2. The second N=30 hardening gate;
+   required for TOMATO half of claim #6.
+3. **Phase 1.36 feature-change oracle** — ~30 min CPU. Can run in
+   parallel with 1.20 GPU work. Answers "signal quality or schedule
+   quality bottleneck?"
+4. **Phase 1.34 novelty-ranked dense baseline** — the strongest
+   immediate falsifier of the current Pareto story. If cached loses
+   to smart-frame-selection dense at matched budget, the method
+   claim weakens. Per codex: should run BEFORE 1.37.
 5. **Phase 1.38 temporal placement ablations** — ~3 hrs GPU. Dense-
    only frame0/middle/last/first+last/uniform4/uniform8 on TOMATO
    dev. Sharpens the budget-placement theory with causal evidence.

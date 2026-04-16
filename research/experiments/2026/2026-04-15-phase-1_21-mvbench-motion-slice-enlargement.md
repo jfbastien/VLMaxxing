@@ -12,10 +12,12 @@ Objective:
   with 6 per group. This is a genuine same-slice enlargement, NOT a
   broader-slice experiment.
 
-- Codex audit 2026-04-16 caught an earlier draft that listed different
-  groups (`action_sequence`, `unexpected_action`, `action_antonym`)
-  which would have been a DIFFERENT slice, not an N=30 enlargement.
-  That draft has been corrected to use the same groups as v1.
+**Protocol note (2026-04-16)**: the original prereg said "stratified
+random seed=42." The actual manifests are **deterministic supersets**:
+v1 items kept, plus 3 new items per group selected from sequential
+indices that avoid dev/holdout overlap. This is a protocol deviation
+from random stratification; the deviation is documented here and in
+the manifest descriptions.
 - re-run dense frame-budget baselines on the enlarged slices
 - re-run the current top cached policies on the enlarged slices.
   **UPDATED 2026-04-16**: the primary MVBench cached winner is now
