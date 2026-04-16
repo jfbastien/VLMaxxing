@@ -47,18 +47,23 @@ Gating:
   enlargement phases because the MVBench winner is the strongest
   point in the repo.
 
-Hypotheses (UPDATED 2026-04-16 to the current live winner):
+Hypotheses (UPDATED 2026-04-16 to the phase 1.26.B sticky4 winner):
 
 - H1 (holdout Pareto win survives N=30): `max_abs(8,32)
-  static+shifted age=4` on MVBench motion holdout N=30 retains
-  cached_accuracy ≥ 0.600 at effective_fresh_frames ≤ 5. At N=15
-  the result was 0.667/4.59; at N=30 Wilson CI tightens from
-  [0.41, 0.85] to roughly [0.48, 0.81].
-- H2 (agreement stability): dense-agreement remains ≥ 0.85 at
-  N=30 (was 0.933 at N=15).
-- H3 (dev-to-holdout shape): cached winner still matches dense-6
-  accuracy at lower budget on the enlarged holdout, even if
-  absolute numbers shift.
+  static+shifted age=4 sticky_window=4` on MVBench motion holdout
+  N=30 retains cached_accuracy ≥ 0.667 at effective_fresh_frames
+  ≤ 6. At N=15 the result was 0.733/5.10/agreement=1.0; at N=30
+  Wilson CI tightens from [0.48, 0.89] to roughly [0.55, 0.86].
+- H2 (agreement stability): dense-agreement remains ≥ 0.90 at
+  N=30 (was 1.000 — item-identical to dense-8 — at N=15).
+- H3 (mechanism stability): the sticky_window=4 gain over the
+  no-sticky variant (`max_abs(8,32) age=4` at cached=0.667/4.59
+  from phase 1.12.B) is preserved on the enlarged slice — i.e.,
+  sticky adds at least 1 additional correct item vs no-sticky at
+  N=30.
+- H4 (dev-to-holdout shape): the enlarged dev_v2 also shows sticky4
+  ≥ no-sticky at matched budget (tested via phase 1.26.C on the
+  v1 dev slice; N=30 extends that).
 
 Acceptance band:
 
@@ -87,19 +92,20 @@ Slice build:
   symmetrically: v1 holdout superset, same five groups, zero overlap
   with dev_v2 by item_id.
 
-Cells (updated 2026-04-16 to target the current live winner):
+Cells (UPDATED 2026-04-16 to target the phase 1.26.B sticky4 winner):
 
 1. dense at {1, 2, 3, 4, 6, 8} on mvbench_motion_dev_v2 (6 cells)
 2. dense at {1, 2, 3, 4, 6, 8} on mvbench_motion_holdout_v2 (6 cells)
-3. cached `max_abs(8,32) static+shifted age=4` (the phase 1.12.B
-   survivor, PRIMARY) on both v2 slices (2 cells)
-4. cached `max_abs(8,32) static+shifted noage` (phase 1.11 original
-   dev winner, DIAGNOSTIC comparison) on both v2 slices (2 cells)
-5. cached `cpf(px8, 0.02/0.08) static+shifted noage` (shoulder,
-   DIAGNOSTIC) on dev_v2 only (1 cell)
+3. **cached `max_abs(8,32) static+shifted age=4 sticky_window=4`**
+   (the phase 1.26.B winner, PRIMARY) on both v2 slices (2 cells)
+4. cached `max_abs(8,32) static+shifted age=4` (no-sticky variant,
+   the phase 1.12.B survivor, DIAGNOSTIC comparison) on both v2
+   slices (2 cells)
+5. cached `max_abs(8,32) static+shifted noage` (phase 1.11 original
+   dev winner, DIAGNOSTIC) on holdout_v2 only (1 cell, confirms
+   the original grid rejection holds at N=30)
 
-Total cells: 15. Runtime: ~3.5 hrs GPU (MVBench videos are shorter;
-feature replay helps if items overlap current slice corpus).
+Total cells: 17. Runtime: ~4 hrs GPU.
 
 ## Execution
 

@@ -3,7 +3,6 @@
 Date: 2026-04-16
 Parent: [PLAN.md](../PLAN.md)
 Sibling: [research-strategy-post-codecsight.md](research-strategy-post-codecsight.md)
-Historical context (superseded): [execution-plan-round-7.md](execution-plan-round-7.md)
 Prior map: [literature-map.md](literature-map.md) (pre-CodecSight)
 
 This document updates the research-position map after CodecSight

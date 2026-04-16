@@ -2,10 +2,16 @@
 
 Last updated: 2026-04-16
 
-This is the single source of truth for per-phase state. Other docs
-(PLAN.md, research-strategy-post-codecsight.md, literature-map, paper/
-framing.md) narrate and contextualize, but if any of them contradicts
-this registry, fix them — not this file.
+This is the primary source of per-phase experiment state. Other docs
+(PLAN.md, research-strategy-post-codecsight.md, literature-map,
+paper/framing.md) narrate and contextualize; if they contradict this
+registry on a phase's status or current_best_policy, fix them.
+
+Limitation: this is structured Markdown, not a real machine-parseable
+ledger. Treat YAML blocks as structured prose, not as a database.
+The maintenance rules below mitigate drift but don't eliminate it.
+A future tooling pass could promote this to actual YAML + a CI
+validator.
 
 ## Fields
 

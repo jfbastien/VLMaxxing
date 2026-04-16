@@ -1,9 +1,20 @@
 # Research Plan
 
-Last updated: 2026-04-16 (post-CodecSight repositioning; first
-credible held-out Pareto signal at phase 1.12.B pending N=30
-hardening; see `docs/research-strategy-post-codecsight.md` and
-`docs/literature-map-2026-04-16.md`)
+Last updated: 2026-04-16
+
+> **This file is the project charter and top-level router.**
+>
+> Per-phase experiment state lives in:
+> [`research/experiments/registry.md`](research/experiments/registry.md)
+> — that file is the single source of phase truth.
+>
+> Active research strategy lives in:
+> [`docs/research-strategy-post-codecsight.md`](docs/research-strategy-post-codecsight.md)
+>
+> Literature positioning lives in:
+> [`docs/literature-map-2026-04-16.md`](docs/literature-map-2026-04-16.md)
+>
+> If any other part of PLAN.md contradicts the registry, fix PLAN.md.
 
 ## Charter
 

@@ -3,7 +3,6 @@
 Date: 2026-04-16
 Parent: [PLAN.md](../PLAN.md)
 Sibling: [literature-map-2026-04-16.md](literature-map-2026-04-16.md)
-Historical context (superseded): [execution-plan-round-7.md](execution-plan-round-7.md)
 Positioning: [literature-map-2026-04-16.md](literature-map-2026-04-16.md)
 
 ## Candidate Thesis (target, not current claim)
@@ -102,36 +101,50 @@ Each phase is gated (some require code work first, some require an
 N=30 survivor, some are purely additive). Ordering in the execution
 plan.
 
-## Ordering (ordered by value, fits ~30 hrs autonomous budget)
+## Ordering (UPDATED 2026-04-16 after phase 1.26.B landed sticky4 winner)
 
 Priority = (probability-of-moving-paper-claim × magnitude) / (effort).
 
-1. **Phase 1.26 sticky-dynamic planner** — ~3 hrs GPU + ~2 hrs code.
-   Highest leverage. Directly attacks the current failure mode and
-   is the single biggest delta per CodecSight's own ablation.
-2. **Phase 1.27 projector-group completion** — ~1 hr code + ~1 hr
-   GPU. Composes with 1.26; the two together are the strongest
-   policy delta we can ship.
-3. **Phase 1.20 TOMATO N=30** — ~3 hrs GPU. Required to harden any
-   claim; without it the TOMATO tie is noise.
-4. **Phase 1.28 iso-token-budget coverage** — ~2 hrs GPU.
-   "What does the saved budget buy us?" answer — paper claim #4.
-5. **Phase 1.29 MV-only signal path** — ~4 hrs code + ~2 hrs GPU.
-   Deployability story. Option to defer behind phase 1.30 if
-   Track B timing harness lands first.
-6. **Phase 1.31 failure predictor** — ~2 hrs CPU. Mechanistic
-   understanding that can be computed on existing artifacts.
-7. **Phase 1.32 FastV composition pilot** — ~1-2 weeks (mlx-vlm
-   fork for attention-score exposure). Defer until 1.26 + 1.27 +
-   1.28 are stable.
-8. **Phase 1.33 FastVID baseline** — ~1 week (torch port; run on
-   same slices for comparison). Defer until first paper draft.
-9. **Phase 1.30 streaming-window harness** — ~1 week infra + ~2 hrs
-   eval. Needed for CodecSight-comparable operating point. Defer
-   unless Track B ships first.
-10. **Phase 1.25 TempCompass ingest** — ~1 day corpus work + ~2 hrs
-    GPU. Additional benchmark to broaden coverage; defer until TOMATO
-    / MVBench story is settled.
+1. **Phase 1.21 MVBench N=30** — ~4 hrs GPU. **TOP PRIORITY.** The
+   phase 1.26.B sticky4 winner (cached=0.733/fresh=5.10/agreement=1.0
+   at N=15) is the strongest current signal; N=30 is the gate that
+   converts it from strong exploratory evidence to stable paper
+   evidence.
+2. **Phase 1.20 TOMATO N=30** — ~3 hrs GPU. Hardens the low-accuracy
+   TOMATO holdout tie.
+3. **Phase 1.31 failure predictor** — ~2 hrs CPU. Can run while GPU
+   phases are in-flight. First consumer of the temporal-coverage
+   placement metrics.
+4. **Phase 1.34 novelty-ranked dense baseline** — ~3 hrs code + GPU.
+   Stronger matched-budget comparator. Tests whether our method beats
+   smart frame selection at same budget.
+5. **Phase 1.35 event-window oracle** — ~2 hrs annotation + code.
+   Upper-bound ceiling on method headroom.
+6. **Phase 1.25 TempCompass ingest** — ~1 day corpus + ~2 hrs GPU.
+   Third benchmark aligned with our failure mode.
+7. **Phase 1.29 MV-only signal path** — ~4 hrs code + ~2 hrs GPU.
+   Deployability story.
+8. **Phase 1.27 projector-group** — needs rescoping. On our Qwen
+   2.5-VL stack `BLOCK_SIZE=28` already matches projector input
+   granularity. Coarsening may be a no-op or a different experiment.
+9. **Phase 1.32 FastV composition** — ~1-2 weeks (mlx-vlm fork).
+   Defer until N=30 confirmation + Track B design.
+10. **Phase 1.33 FastVID baseline** — ~1 week torch-side. Defer.
+11. **Phase 1.30 streaming harness** — ~1 week infra. Defer until
+    Track B.
+12. **Phase 1.28.B true iso-budget** — ~2 hrs GPU. Calibrate tighter
+    thresholds at frame_count=16 targeting fresh ≈ 4, then compare
+    to dense-4. Deferred behind N=30.
+
+Completed or superseded (not in the active queue):
+
+- ✅ Phase 1.26 (TOMATO dev: sticky rejected)
+- ✅ Phase 1.26.B (MVBench holdout: sticky4 PASSES, new strongest result)
+- ✅ Phase 1.26.C (MVBench dev: diagnostic validation, running now)
+- ✅ Phase 1.28 (off-budget probe; see note for protocol deviation)
+- ✅ Phase 1.19 (calibration fix; MAE 0.20→0.0017)
+- ✅ Phase 1.24 (dense backfill; completed)
+- ✅ Phase 1.23 (FastV scouting; blocker identified)
 
 ## What the operator should review at review cadence
 
@@ -156,30 +169,31 @@ with sticky_window=4):
 
 ## Concrete hypotheses per new phase
 
-### Phase 1.26 — sticky-dynamic planner
+### Phase 1.26 — sticky-dynamic planner (COMPLETED)
 
-H1: Adding sticky-dynamic (once marked dynamic within a reset window,
-   stay dynamic until window end) recovers the 1 direction-item that
-   `max_abs(8,32) static+shifted age=4` misses on TOMATO dev.
+**Outcome**: benchmark-conditional mechanism.
 
-H2: On MVBench motion holdout, sticky-dynamic does NOT recover the 0.733
-   dev result because the dev-to-holdout gap was items-level, not
-   mechanism-level.
+- H1 (TOMATO dev recovery): **REJECTED**. sticky_window ∈ {4, 8}
+  lowers cached 0.400 → 0.333, raises budget. The classifier
+  misses direction motion entirely → nothing to latch.
+- H2 (MVBench holdout sticky fails): **OVERTURNED** by phase 1.26.B.
+  sticky_window=4 lifts cached 0.667 → 0.733 with agreement=1.000,
+  item-identical to dense-8 at 64% budget. The strongest current
+  holdout signal.
+- H3 (budget cost): sticky_window=4 adds ~0.3–0.5 fresh frames on
+  both TOMATO and MVBench; sticky_window=8 adds ~0.7.
 
-H3: Sticky-dynamic's main cost is extra fresh-token-equivalent budget
-   (fewer blocks marked reusable) — the trade-off is 0.05–0.15 extra
-   fresh frames on TOMATO motion dev vs the vanilla policy.
+The asymmetry is the mechanism finding: sticky works when the
+initial classifier catches motion at SOME frame (intermittent →
+latched); fails when the classifier misses motion entirely.
 
-### Phase 1.27 — projector-group completion
+### Phase 1.27 — projector-group completion (needs rescoping)
 
-H1: On Qwen 2.5-VL (2×2 spatial merge), snapping dynamic to tiles
-   before ViT eliminates the small garbage-projector-input risk
-   without a measurable Pareto shift.
-
-H2: Combined with sticky-dynamic, projector-group completion gives
-   a cleaner Pareto frontier at the same operating points (the
-   mechanism matters for deployability, not for dev accuracy on the
-   frozen manifest).
+On our Qwen 2.5-VL stack, `BLOCK_SIZE=28` already equals the
+projector-input granularity (ViT patch 14 × spatial-merge 2 = 28).
+The CodecSight rule is a no-op at this block size. A 2×2 merged-
+token coarsening experiment is a DIFFERENT question (spatial
+smoothing at 56×56 regions) and needs a separate hypothesis.
 
 ### Phase 1.28 — iso-token-budget coverage
 
