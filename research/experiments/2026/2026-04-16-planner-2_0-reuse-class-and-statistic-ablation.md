@@ -51,11 +51,46 @@ paper claim that:
   shift-locality observation translates into measurable accuracy + budget
   improvements)
 
+## Extended ablation (18 cells, 2026-04-17)
+
+### Age-bounding comparison (new)
+
+| Benchmark | Statistic | no-age | age=4 | age=2 | Δ (noage→age4) |
+|---|---|---|---|---|---|
+| MVBench | MEAN | 0.567@3.47 | **0.633@3.96** | — | +2 items |
+| MVBench | MAX_ABS | 0.567@3.58 | **0.600@4.06** | 0.600@4.69 | +1 item |
+| TOMATO | MEAN | 0.233@2.17 | **0.300@2.90** | — | +2 items |
+| TOMATO | MAX_ABS | 0.233@2.89 | **0.333@3.55** | 0.300@4.25 | +3 items |
+
+**Core finding**: without age-bounding, BOTH statistics converge to
+the same drift-limited floor on each benchmark (0.567 on MVBench,
+0.233 on TOMATO). Age=4 is the mechanism that lifts all policies
+above that floor. Age=2 wastes budget without accuracy gain.
+
+### Statistic comparison (updated with MEAN results)
+
+| Benchmark | MEAN(3,8) age=4 | MAX_ABS(8,32) age=4 | CPF age=4 | Best |
+|---|---|---|---|---|
+| MVBench | **0.633@3.96** | 0.600@4.06 | 0.600@4.46 | MEAN |
+| TOMATO | 0.300@2.90 | **0.333@3.55** | 0.300@3.44 | MAX_ABS |
+
+Statistic advantage is content-conditional. MEAN works for
+distributed motion (MVBench); MAX_ABS works for concentrated
+temporal evidence (TOMATO).
+
+### Complete cell inventory (18 cells)
+
+MVBench holdout v2 N=30: MEAN age=4, MEAN noage, MAX_ABS age=4,
+MAX_ABS age=2, MAX_ABS noage, MAX_ABS S-only, CPF age=4, sticky4.
+TOMATO holdout v2 N=30: MAX_ABS age=4, MAX_ABS age=2, MAX_ABS noage,
+MAX_ABS S-only, CPF age=4, MEAN age=4, MEAN noage.
+Plus sticky variants from earlier phases.
+
 ## Provenance
 
-All cells ran with `--allow-dirty`. For paper-facing use, the
-reuse-class finding should be rerun clean. The CPF comparison is
-informative but exploratory.
+All ablation cells ran with `--allow-dirty`. The paper-grade
+anchors are the clean-tree N=30 results from phases 1.20 and 1.21
+(both `max_abs(8,32) static+shifted age=4`).
 
 ## Links
 
