@@ -38,6 +38,8 @@ means we cite the method but have not verified the specifics we cite.
 | SparseVLM | train-free | decoder-internal every layer | cross-modal (text-visual attention) | intra-frame-token | 54% FLOP, 37% CUDA latency, 97% retained | torch + per-layer HF hooks | 2026-04-16 | [arXiv 2410.04417](https://arxiv.org/abs/2410.04417) |
 | VScan | train-free | multi-stage (ViT + LLM mid-layer) | intra-modal + cross-modal | intra-frame-token | 2.91× prefill, 10× FLOP, 95.4% retained (LLaVA-NeXT-7B) | torch; modifies both forward passes | 2026-04-16 (abstract + headline) | [arXiv 2505.22654](https://arxiv.org/abs/2505.22654) |
 | VLCache | train-free | encoder-cache + KV-cache | cross-request similarity | kv-memory | 1.2–16× TTFT, 2–5% tokens computed | SGLang only | 2026-04-16 | [arXiv 2512.12977](https://arxiv.org/abs/2512.12977) |
+| STTM | train-free | post-ViT (inside LLM layers) | spatio-temporal redundancy (directed pairwise matching) | intra-frame-token | 2× speedup at 0.5% acc drop, 50% tokens (LLaVA-Video-7B, 6 benchmarks) | torch (GitHub: HYUNJS/STTM); MLX port TBD | 2026-04-16 | [arXiv 2507.07990](https://arxiv.org/abs/2507.07990) |
+| T3S | train-free | inference wrapper (temporal sampling) | diverse subsequence packing | encoder-side-temporal | +3.1% acc, 2.04× TTFT reduction (long-video MLLMs) | model-agnostic wrapper; MLX compat likely | 2026-04-16 (abstract) | [arXiv 2511.17945](https://arxiv.org/abs/2511.17945) |
 | StreamingVLM | mixed | KV management | recency + attention fading | kv-memory | long-horizon streaming (different task) | not directly comparable | placeholder | [arXiv 2510.09608](https://arxiv.org/abs/2510.09608) |
 | Déjà Vu | trained | QKV + FFN reuse | MV + attention (Gumbel-Softmax) | encoder-side-temporal | 1.81×/2.64×/2.54× (retrieval/QA/grounding) | requires training | 2026-04-16 | [arXiv 2506.14107](https://arxiv.org/abs/2506.14107) |
 | Eventful Transformers | train-free | per-block token gating at each transformer block | frame-to-frame delta magnitude | intra-frame-token | 2–4× compute (ImageNet VID, EPIC-Kitchens) | port to MLX not attempted | 2026-04-16 | [arXiv 2308.13494](https://arxiv.org/abs/2308.13494) |
@@ -66,6 +68,8 @@ means we cite the method but have not verified the specifics we cite.
 | us × VisionZip | none (encoder vs post-encoder-intra-frame) | none | clean composition |
 | us × SparseVLM | none (encoder vs decoder) | none | clean composition |
 | us × VLCache | complementary (we encoder-side, they KV-reuse) | none | clean composition |
+| us × STTM | partial (both address temporal redundancy post-ViT) | partial (directed matching vs pixel-diff) | worth measuring; STTM handles remaining temporal redundancy we don't eliminate |
+| us × T3S | complementary (we reduce per-frame cost, T3S packs more subsequences) | none | clean; T3S is a wrapping strategy, not a model change |
 | us × StreamingVLM | complementary (short-horizon vs long-horizon) | none | clean composition |
 | us × TurboQuant | complementary (fewer entries vs fewer bits) | none | clean composition |
 

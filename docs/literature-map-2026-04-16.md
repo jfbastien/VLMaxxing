@@ -324,5 +324,8 @@ citations.
 - TOMATO: https://arxiv.org/abs/2410.23266 (original spec)
 - StreamingVLM: https://arxiv.org/abs/2510.09608
 - TurboQuant: https://arxiv.org/abs/2504.19874
+- STTM: https://arxiv.org/abs/2507.07990 (ICCV 2025, training-free post-ViT temporal merge)
+- T3S: https://arxiv.org/abs/2511.17945 (training-free temporal sampling wrapper)
+- AdaCache: https://openreview.net/forum?id=DyyLUUVXJ5 (adaptive caching for video diffusion)
 - VLCache: https://arxiv.org/abs/2512.12977
 - MPEG VCM: https://mpeg.chiariglione.org/standards/exploration/video-coding-machines.html

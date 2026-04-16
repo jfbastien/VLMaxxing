@@ -101,40 +101,80 @@ Each phase is gated (some require code work first, some require an
 N=30 survivor, some are purely additive). Ordering in the execution
 plan.
 
-## Ordering (UPDATED 2026-04-16 after phase 1.26.B landed sticky4 winner)
+## Ordering (UPDATED 2026-04-16 after weird-tricks review + ChatGPT synthesis)
 
 Priority = (probability-of-moving-paper-claim × magnitude) / (effort).
 
-1. **Phase 1.21 MVBench N=30** — ~4 hrs GPU. **TOP PRIORITY.** The
-   phase 1.26.B sticky4 winner (cached=0.733/fresh=5.10/agreement=1.0
-   at N=15) is the strongest current signal; N=30 is the gate that
-   converts it from strong exploratory evidence to stable paper
-   evidence.
-2. **Phase 1.20 TOMATO N=30** — ~3 hrs GPU. Hardens the low-accuracy
+### Tier 0 — currently in-flight
+
+1. **Phase 1.21 MVBench N=30** — **in-flight** (~4 hrs GPU). Dense
+   baselines running. After dense: cached primary cell (sticky4)
+   + diagnostic comparators. This is the SOLE gate before any
+   paper-facing MVBench claim.
+
+### Tier A — do next (highest expected value)
+
+2. **Phase 1.36 feature-change oracle** — ~30 min CPU. Replay-cache
+   diagnostic: correlate each pixel signal (MEAN, MAX_ABS, CPF,
+   TOP_K_MEAN) against per-block ViT cosine distance. Answers "is
+   signal quality or schedule quality the bottleneck?" Runs in
+   parallel with 1.21 GPU work.
+3. **Phase 1.37 child-veto / subtoken guard** — ~4 hrs code + GPU.
+   Split each 28×28 block into 2×2 14×14 children; veto reuse if
+   any child exceeds threshold. The best overlooked near-term unlock
+   per ChatGPT review. Gated on 1.36 oracle outcome: if signal is
+   good (r ≥ 0.7), scheduling matters more; if signal is weak (r <
+   0.5), child-veto is the immediate fix.
+4. **Phase 1.20 TOMATO N=30** — ~3 hrs GPU. Hardens the low-accuracy
    TOMATO holdout tie.
-3. **Phase 1.31 failure predictor** — ~2 hrs CPU. Can run while GPU
-   phases are in-flight. First consumer of the temporal-coverage
-   placement metrics.
-4. **Phase 1.34 novelty-ranked dense baseline** — ~3 hrs code + GPU.
-   Stronger matched-budget comparator. Tests whether our method beats
-   smart frame selection at same budget.
-5. **Phase 1.35 event-window oracle** — ~2 hrs annotation + code.
+5. **Phase 1.34 novelty-ranked dense baseline** — ~3 hrs code + GPU.
+   Stronger matched-budget comparator for the paper.
+6. **Phase 1.38 temporal placement ablations** — ~3 hrs GPU. Dense-
+   only frame0/middle/last/first+last/uniform4/uniform8 on TOMATO
+   dev. Sharpens the budget-placement theory with causal evidence.
+
+### Tier B — follow-up
+
+7. **Phase 1.31 failure predictor** — ~2 hrs CPU. First consumer of
+   temporal-coverage placement metrics.
+8. **Phase 1.35 event-window oracle** — ~2 hrs annotation + code.
    Upper-bound ceiling on method headroom.
-6. **Phase 1.25 TempCompass ingest** — ~1 day corpus + ~2 hrs GPU.
-   Third benchmark aligned with our failure mode.
-7. **Phase 1.29 MV-only signal path** — ~4 hrs code + ~2 hrs GPU.
-   Deployability story.
-8. **Phase 1.27 projector-group** — needs rescoping. On our Qwen
-   2.5-VL stack `BLOCK_SIZE=28` already matches projector input
-   granularity. Coarsening may be a no-op or a different experiment.
-9. **Phase 1.32 FastV composition** — ~1-2 weeks (mlx-vlm fork).
-   Defer until N=30 confirmation + Track B design.
-10. **Phase 1.33 FastVID baseline** — ~1 week torch-side. Defer.
-11. **Phase 1.30 streaming harness** — ~1 week infra. Defer until
-    Track B.
-12. **Phase 1.28.B true iso-budget** — ~2 hrs GPU. Calibrate tighter
-    thresholds at frame_count=16 targeting fresh ≈ 4, then compare
-    to dense-4. Deferred behind N=30.
+9. **Phase 1.25 TempCompass ingest** — third benchmark, aligned
+   with our failure mode.
+10. **Phase 1.29 MV-only signal path** — deployability story.
+
+### Tier C — deferred / blocked
+
+11. Phase 1.39 DCT_HF energy (OCR/screen-content focus)
+12. Phase 1.40 speculative verify / selective re-encode (after 1.13
+    logprob instrumentation)
+13. Phase 1.32 FastV composition (mlx-vlm fork, ~1-2 weeks)
+14. Phase 1.33 FastVID baseline (torch-side, ~1 week)
+15. Phase 1.30 streaming harness (Track B infrastructure)
+16. Phase 1.28.B true iso-budget (calibrated 16-frame tighter
+    thresholds)
+17. Phase 1.27 projector-group (needs rescoping — BLOCK_SIZE=28 is
+    already projector-input granularity)
+
+### Explicitly deferred to Track B / streaming
+
+- **Temporal RoPE key correction**: NOT applicable to current Track
+  A (we re-inject image features, not LLM KV states; Qwen recomputes
+  M-RoPE positions on each forward pass). Becomes relevant only for
+  selective KV-cache reuse in a streaming path. Per ChatGPT
+  2026-04-16 review.
+- **Eventful Transformers architecture**: Track B north star.
+- **STTM composition**: after standalone planner + Track B.
+
+Completed or superseded (not in active queue):
+
+- ✅ Phase 1.26 (TOMATO dev: sticky rejected)
+- ✅ Phase 1.26.B (MVBench holdout: sticky4 PASSES, strongest result)
+- ✅ Phase 1.26.C (MVBench dev: diagnostic validation)
+- ✅ Phase 1.28 (off-budget probe; protocol deviation documented)
+- ✅ Phase 1.19 (calibration fix; MAE 0.20→0.0017)
+- ✅ Phase 1.24 (dense backfill; completed)
+- ✅ Phase 1.23 (FastV scouting; blocker identified)
 
 Completed or superseded (not in the active queue):
 
