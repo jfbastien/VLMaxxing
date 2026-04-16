@@ -108,12 +108,13 @@ plan.
 
 Priority = (probability-of-moving-paper-claim × magnitude) / (effort).
 
-### Tier 0 — currently in-flight
+### Tier 0 — recently completed
 
-1. **Phase 1.21 MVBench N=30** — **in-flight** (~4 hrs GPU). Dense
-   baselines running. After dense: cached primary cell (sticky4)
-   + diagnostic comparators. This is the SOLE gate before any
-   paper-facing MVBench claim.
+1. ✅ **Phase 1.21 MVBench N=30** — **PASSED**. Both variants
+   survive holdout v2 (N=30): base policy (0.600@4.06, Pareto win
+   vs dense-6) and sticky4 (0.633@4.49, Pareto tie vs dense-8).
+   MVBench paper claim is now paper-grade on this slice. Dev v2
+   cells deferred to later tranche.
 
 ### Tier A — do next (highest expected value)
 

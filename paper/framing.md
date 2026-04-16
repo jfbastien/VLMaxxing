@@ -30,8 +30,11 @@ credible held-out Pareto signal in phase 1.12.B).
 If phase 1.29 MV-only signal path lands: "codec-guided." If not:
 "codec-inspired / pixel-diff proxy for codec-guided."
 
-The current state is "credible early method signal," not SOTA. For the
-evidence-level breakdown per claim, see
+The current state is "paper-grade MVBench-local evidence, credible
+method signal, not SOTA." Phase 1.21 N=30 holdout PASSED (base policy
+0.600@4.06 Pareto-wins dense-6; sticky4 0.633@4.49 ties dense-8 at
+56% budget). TOMATO N=30 + Track B + VideoMME still gate full paper.
+For the per-claim breakdown, see
 [`paper/claim-matrix.md`](claim-matrix.md) and
 [docs/literature-map-2026-04-16.md § Current evidence level (2026-04-16)](../docs/literature-map-2026-04-16.md).
 

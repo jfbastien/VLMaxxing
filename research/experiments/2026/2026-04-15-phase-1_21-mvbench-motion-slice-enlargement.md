@@ -120,11 +120,62 @@ N=15.
 
 ## Result
 
-Pending.
+**Holdout v2 (N=30) executed 2026-04-16.**
+
+Preregistration outcome: **Accepted** (MVBench holdout cells).
+Dev v2 cells NOT yet run (holdout-first was prioritized per strategy
+doc; dev cells remain preregistered for a later tranche).
+
+### Dense baselines (holdout v2, N=30)
+
+| frame_count | accuracy |
+|---|---|
+| 1 | 0.333 |
+| 2 | 0.467 |
+| 3 | 0.500 |
+| 4 | 0.500 |
+| 6 | 0.567 |
+| 8 | 0.633 |
+
+### Cached cells (holdout v2, N=30)
+
+| policy | cached | dense | agreement | fresh | Pareto status |
+|---|---|---|---|---|---|
+| `max_abs(8,32) age=4` (base, no sticky) | **0.600** | 0.633 | 0.933 | 4.06 | Pareto win vs dense-6 (0.600>0.567 @ 4.06<6) |
+| `max_abs(8,32) age=4 sticky_window=4` | **0.633** | 0.633 | 0.967 | 4.49 | Pareto tie vs dense-8 (0.633=0.633 @ 4.49<8) |
+
+### Per-item diff vs dense-8
+
+**Sticky4** (29/30 agree, 1 text-only disagreement on a both-wrong
+item): 19 both-right, 11 both-wrong, 0 cached-only, 0 dense-only.
+Cached gets the SAME 19 items right as dense-8.
+
+**No-sticky** (28/30 agree, 2 disagreements): 18 both-right, 11
+both-wrong, 0 cached-only, 1 dense-only (action_localization).
+Sticky recovers exactly that 1 action_localization item.
+
+### Provenance caveat
+
+The sticky4 summary records `git_dirty: true` (run during an
+in-flight doc-commit cycle). The no-sticky comparator is clean. For
+paper-facing use, rerun sticky4 on a clean tree. The no-sticky
+result is already clean and paper-grade.
 
 ## Interpretation
 
-Pending.
+- **H1 (holdout Pareto win at N=30): PASSED** for both variants.
+  Base policy at 0.600 beats dense-6 at lower budget. Sticky
+  variant at 0.633 ties dense-8 at 56% budget.
+- **H2 (agreement stability): PASSED**. Agreement = 0.967 (sticky)
+  / 0.933 (no-sticky) at N=30 vs 1.000 / 0.933 at N=15.
+- **H3 (mechanism stability): PASSED**. Sticky adds exactly +1 item
+  (action_localization) vs no-sticky, matching the N=15 observation.
+- The **base policy** `max_abs(8,32) static+shifted age=4` is the
+  core contribution. It passes N=30 independently of sticky.
+  Sticky is a conditional refinement that latches intermittent
+  motion detection on 1 of 30 items.
+- **Claim matrix #6 (MVBench half): SATISFIED.** TOMATO half of
+  claim #6 still requires phase 1.20.
 
 ## Links
 

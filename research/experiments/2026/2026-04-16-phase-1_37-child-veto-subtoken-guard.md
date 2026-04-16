@@ -5,15 +5,33 @@
 Objective:
 
 - add a 2×2 child-level guard inside each 28×28 merged-token block.
-  Divide each block into four 14×14 children. Compute the routing
-  statistic (MAX_ABS or CPF) per child. **Veto reuse of the entire
-  merged token if ANY child exceeds a (potentially tighter) change
-  threshold.**
+  Divide each block into four 14×14 children. Compute a
+  **non-max-aggregation statistic** (MEAN or CPF) per child. **Veto
+  reuse of the entire merged token if ANY child exceeds a threshold.**
+
+**RESCOPED 2026-04-16 per codex audit**: the original prereg said
+"MAX_ABS or CPF per child." Codex correctly identified that
+`ANY(child_max_abs > t) ≡ block_max_abs > t` — child-level MAX_ABS
+is mathematically identical to block-level MAX_ABS, so it adds
+nothing. The mechanism only works with a statistic where the
+child-level aggregation differs from the block-level aggregation:
+
+- **Child MEAN**: block-mean can be low even if one child has high
+  mean (diluted by the other 3 static children). Child-mean catches
+  this: if one child's mean > t, veto. This IS different from
+  block-mean because block-mean averages over 4× more pixels.
+- **Child CPF**: similarly, block CPF counts changed pixels over the
+  entire block, diluting spatially concentrated changes. Child CPF
+  catches a 14×14 region where many pixels changed even if the
+  block-wide fraction is low.
+
+So the operative statistic for child-veto is `{MEAN, CPF}`, NOT
+`{MAX_ABS, TOP_K_MEAN}` (which are already spatially sensitive at
+the block level).
+
 - this directly targets the failure mode identified across phases
   1.10–1.26: small, spatially sparse, semantically critical evidence
-  (e.g., a hand gesture, a text label, a direction cue) inside a
-  mostly-static 28×28 block. Block-level MAX_ABS can miss it if the
-  other 3 children dilute the max. Child-level MAX_ABS catches it.
+  inside a mostly-static 28×28 block.
 - per ChatGPT 2026-04-16 review: child-veto is "the highest-value
   overlooked near-term unlock."
 

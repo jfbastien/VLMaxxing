@@ -1,0 +1,60 @@
+{
+  "cached_source": "research/experiments/2026/artifacts/phase1_21_mvbench_motion_holdout_v2_cached_nosticky/max_abs-8.0-32.0-static+shifted-age4.jsonl",
+  "dense_source": "research/experiments/2026/artifacts/phase1_21_mvbench_motion_holdout_v2_dense/frame_8.jsonl",
+  "disagreements": [
+    {
+      "cached_correct": false,
+      "cached_text": "B",
+      "dense_correct": true,
+      "dense_text": "D",
+      "group": "action_localization",
+      "item_id": "mvbench:action_localization:4"
+    },
+    {
+      "cached_correct": false,
+      "cached_text": "B",
+      "dense_correct": false,
+      "dense_text": "A",
+      "group": "action_localization",
+      "item_id": "mvbench:action_localization:8"
+    }
+  ],
+  "n_disagreements": 2,
+  "per_group": {
+    "action_localization": {
+      "both_right": 3,
+      "both_wrong": 2,
+      "cached_only_right": 0,
+      "dense_only_right": 1,
+      "n": 6
+    },
+    "fine_grained_action": {
+      "both_right": 2,
+      "both_wrong": 4,
+      "cached_only_right": 0,
+      "dense_only_right": 0,
+      "n": 6
+    },
+    "moving_attribute": {
+      "both_right": 5,
+      "both_wrong": 1,
+      "cached_only_right": 0,
+      "dense_only_right": 0,
+      "n": 6
+    },
+    "moving_direction": {
+      "both_right": 4,
+      "both_wrong": 2,
+      "cached_only_right": 0,
+      "dense_only_right": 0,
+      "n": 6
+    },
+    "object_interaction": {
+      "both_right": 4,
+      "both_wrong": 2,
+      "cached_only_right": 0,
+      "dense_only_right": 0,
+      "n": 6
+    }
+  }
+}
