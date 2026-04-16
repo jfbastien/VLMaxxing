@@ -90,6 +90,27 @@ Each entry has:
   frames targeting fresh~4) is still open.
 - **link**: [phase 1.28 MVBench holdout](experiments/2026/2026-04-15-phase-1_28-iso-token-budget-coverage.md)
 
+### falsified_2026-04-16_sticky-dynamic-alone-on-tomato-motion-dev
+
+- **hypothesis** (phase 1.26 H1): adding sticky-dynamic
+  (CodecSight §3.2 GOP-style mask accumulation) to the TOMATO
+  dev winner `max_abs(8,32) static+shifted age=4` recovers the
+  direction item that the vanilla policy misses.
+- **rejected by**: phase 1.26 cells 1 and 2. Both `sticky_window=4`
+  and `sticky_window=8` reduce cached accuracy from 0.400 to
+  0.333 AND raise fresh-frame budget (from 3.99 to 4.33 or 4.65).
+- **rejection band**: cached accuracy below vanilla baseline at
+  equal-or-higher budget.
+- **scope of rejection**: rules out sticky-dynamic **alone** as a
+  repair mechanism on TOMATO motion dev at N=15. Does NOT rule
+  out sticky+projector-group-completion (phase 1.27) or
+  sticky on MVBench where the cached winner is fundamentally
+  different (phase 1.26.B in-flight). Supports the
+  "budget-placement-not-quantity" hypothesis: adding forward-
+  accumulating dynamic flags does not help if the initial
+  classifier misses the critical motion.
+- **link**: [phase 1.26](experiments/2026/2026-04-16-phase-1_26-sticky-dynamic-planner.md)
+
 ### falsified_2026-04-14_static-position-same-position-reuse-matches-whitepaper
 
 - **hypothesis**: naive same-position STATIC+SHIFTED reuse

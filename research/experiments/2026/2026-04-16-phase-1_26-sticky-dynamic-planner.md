@@ -94,16 +94,69 @@ through `_apply_age_gate`-style helper.
 
 ## Execution
 
-Pending: implement sticky_window in `PlannerConfig`, test on one
-smoke item, then launch the 6-cell sweep.
+Code change completed 2026-04-16 in commit `894c736`:
+`sticky_window` threaded through runner + planner grid search CLI.
+TOMATO motion dev cells 1 and 2 launched via
+`planner_grid_search.py run-explicit`.
 
-## Result
+## Result (TOMATO motion dev, cells 1 + 2 complete 2026-04-16)
 
-Pending.
+| policy | cached | dense | agreement | fresh |
+|---|---|---|---|---|
+| vanilla `max_abs(8,32) static+shifted age=4` (reference) | 0.400 | 0.467 | 0.867 | 3.99 |
+| + sticky_window=4 | **0.333** | 0.467 | 0.800 | 4.33 |
+| + sticky_window=8 | **0.333** | 0.467 | 0.800 | 4.65 |
+
+Both sticky variants LOSE 1 item AND consume more budget than vanilla.
+
+**H1 (sticky recovers direction item)**: REJECTED for both window
+sizes.
+
+**H2 (holdout still rejected if H1 fails on dev)**: not tested —
+sticky didn't even pass dev, so holdout would be a wasted single
+shot. Skipping.
+
+**H3 (sticky adds ~0.1–0.3 extra fresh frames)**: PARTIALLY
+CONFIRMED for sticky_window=4 (+0.34 fresh frames). sticky_window=8
+consumed +0.66 fresh frames — more than the bounded hypothesis
+predicted.
 
 ## Interpretation
 
-Pending.
+- Sticky-dynamic ALONE does not help on TOMATO motion dev. It
+  latches dynamic flags forward, but if the original classifier
+  failed to catch the critical motion (our observed failure mode
+  on direction items), sticky has no initial dynamic flag to
+  accumulate.
+- This directly supports the 2026-04-16 audit's "budget placement
+  over time" hypothesis: ADDING refresh (sticky makes more blocks
+  dynamic for longer) does NOT help if the refresh lands in the
+  wrong frames. Quantity ≠ placement.
+- Phase 1.26.B (MVBench motion holdout, launched 2026-04-16) tests
+  whether sticky is benchmark-specific. If sticky also hurts on
+  the MVBench holdout winner, the mechanism story is not
+  "sticky-dynamic alone" — it's "sticky + projector-group" (phase
+  1.27) or "better initial classifier" (e.g., phase 1.29 MV-only,
+  or finer `max_abs` thresholds).
+
+## Links to falsified entries
+
+This phase produces a new falsified hypothesis, to be recorded in
+`research/falsified-hypotheses.md`:
+
+- `falsified_2026-04-16_sticky-dynamic-alone-on-tomato-motion-dev`:
+  sticky_window ∈ {4, 8} combined with `max_abs(8,32) static+shifted
+  age=4` does not improve cached accuracy on TOMATO motion dev; it
+  strictly worsens it at higher budget.
+
+## Links
+
+- CodecSight §3.2 sticky-dynamic
+- [phase 1.10 TOMATO motion dev grid](2026-04-14-phase-1_10-planner-grid-tomato-motion-dev.md)
+- [phase 1.11 MVBench motion dev grid](2026-04-14-phase-1_11-planner-grid-mvbench-motion-dev.md)
+- [phase 1.12 holdout evaluation](2026-04-14-phase-1_12-grid-winners-holdout.md)
+- [docs/literature-map-2026-04-16.md](../../../docs/literature-map-2026-04-16.md)
+- [docs/methodology/temporal-coverage-metrics.md](../../../docs/methodology/temporal-coverage-metrics.md)
 
 ## Links
 
