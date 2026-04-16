@@ -1,7 +1,24 @@
 # Execution Plan — Round 7
 
+> **HISTORICAL — superseded 2026-04-16.**
+>
+> This document is the round-7 takeover plan (Stages A through F +
+> later addenda D' / D'' / D'''). It remains as commit-level context
+> for the phases that actually ran (1.8 through 1.28+, including the
+> phase 1.12.B cross-benchmark holdout result). Newer agents should
+> route through:
+>
+> - [`PLAN.md`](../PLAN.md) — active roadmap
+> - [`docs/research-strategy-post-codecsight.md`](research-strategy-post-codecsight.md)
+>   — active research strategy after CodecSight + CoPE-VideoLM
+> - [`docs/literature-map-2026-04-16.md`](literature-map-2026-04-16.md)
+>   — current positioning map
+>
+> Editing this file is allowed only for correcting or clarifying
+> what round-7 actually did, not for adding new future-work plans.
+
 Author: Claude (takeover from codex)
-Date: 2026-04-14
+Date: 2026-04-14 (historical)
 Parent: [PLAN.md](../PLAN.md)
 
 ## Context
