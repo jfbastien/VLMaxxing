@@ -1,7 +1,9 @@
 # Research Strategy After CodecSight & CoPE-VideoLM
 
 Date: 2026-04-16
-Parent: [PLAN.md](../PLAN.md), [execution-plan-round-7.md](execution-plan-round-7.md)
+Parent: [PLAN.md](../PLAN.md)
+Sibling: [literature-map-2026-04-16.md](literature-map-2026-04-16.md)
+Historical context (superseded): [execution-plan-round-7.md](execution-plan-round-7.md)
 Positioning: [literature-map-2026-04-16.md](literature-map-2026-04-16.md)
 
 ## Candidate Thesis (target, not current claim)
@@ -131,21 +133,26 @@ Priority = (probability-of-moving-paper-claim × magnitude) / (effort).
     GPU. Additional benchmark to broaden coverage; defer until TOMATO
     / MVBench story is settled.
 
-## What the operator needs to review before I proceed autonomously
+## What the operator should review at review cadence
 
-- The demoted/retired list above. If the user wants phase 1.21 or
-  phase 1.13 to still run, flag it.
-- The priority order. If there's a strong preference for phase 1.32
-  (FastV composition) as the showcase, I need to commit the ~1-2
-  weeks to mlx-vlm forking.
-- The thesis statement. If the user wants a different paper frame,
-  the whole execution plan rearranges around that.
-- The decision to absorb CodecSight's sticky-dynamic + projector-group
-  as borrowed mechanisms (with proper attribution). If there's a
-  concern about overlap in novelty, we need to add something
-  CodecSight doesn't have — e.g., the concentration-aware change
-  detection (our TOP_K_MEAN statistic, or a new "transient event
-  detector" family).
+**Updated 2026-04-16** (state after phase 1.12.B + 1.26.B surfaced
+a cross-benchmark-discovered MVBench holdout survivor that now PASSES
+with sticky_window=4):
+
+- Phase 1.21 and phase 1.13 are **re-activated**, not demoted.
+  Phase 1.21 MVBench N=30 is the top hardening gate for the new
+  primary cell (`max_abs(8,32) age=4 sticky_window=4`, cached=0.733
+  / fresh=5.10 / agreement=1.0 on MVBench holdout N=15).
+- Phase 1.32 FastV composition remains blocked on the ~1–2 week
+  mlx-vlm fork. If the operator wants to prioritize composition,
+  that fork must start before dev N=30 completes.
+- Thesis statement: keep current framing until an N=30 outcome
+  flips it. See `paper/framing.md` for the candidate paper slot.
+- CodecSight's sticky-dynamic and projector-group are borrowed
+  mechanisms, with attribution. Phase 1.26.B confirmed sticky is
+  benchmark-conditional (helps MVBench, hurts TOMATO direction) —
+  this is empirically our contribution on top of the borrowed
+  mechanism.
 
 ## Concrete hypotheses per new phase
 

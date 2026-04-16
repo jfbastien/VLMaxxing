@@ -10,7 +10,13 @@ Objective:
   window. Reset at a preregistered "I-frame-equivalent" cadence.
 - answer whether sticky-dynamic recovers the TOMATO direction item
   that vanilla `max_abs(8,32) static+shifted age=4` missed on dev
-- answer whether sticky-dynamic changes the MVBench holdout rejection
+- answer whether sticky-dynamic helps or harms the MVBench holdout
+  cached result (the earlier phase 1.11 grid winners were rejected
+  on holdout; at the time this prereg was written, the MVBench
+  holdout was treated as a clean null, so the original phrasing
+  here said "changes the MVBench holdout rejection" — phase 1.12.B
+  then found a transfer-discovered survivor, so the question
+  became "does sticky help or hurt the phase 1.12.B survivor?")
 
 Claim register targets:
 
@@ -123,9 +129,14 @@ Both sticky variants LOSE 1 item AND consume more budget than vanilla.
 **H1 (sticky recovers direction item)**: REJECTED for both window
 sizes.
 
-**H2 (holdout still rejected if H1 fails on dev)**: not tested —
-sticky didn't even pass dev, so holdout would be a wasted single
-shot. Skipping.
+**H2 (holdout still rejected if H1 fails on dev)**: retested in
+phase 1.26.B below with the phase-1.12.B transfer-discovered
+winner (a different policy family than the H1 target). Outcome:
+**REJECTED** — sticky PASSES on MVBench motion holdout. See the
+phase 1.26.B section for details. The original H2 framing
+("sticky fails holdout") was based on the pre-1.12.B assumption
+that MVBench holdout was a clean null; 1.12.B obsoleted that
+assumption.
 
 **H3 (sticky adds ~0.1–0.3 extra fresh frames)**: PARTIALLY
 CONFIRMED for sticky_window=4 (+0.34 fresh frames). sticky_window=8
@@ -232,13 +243,6 @@ This phase produces a new falsified hypothesis, to be recorded in
 - [phase 1.10 TOMATO motion dev grid](2026-04-14-phase-1_10-planner-grid-tomato-motion-dev.md)
 - [phase 1.11 MVBench motion dev grid](2026-04-14-phase-1_11-planner-grid-mvbench-motion-dev.md)
 - [phase 1.12 holdout evaluation](2026-04-14-phase-1_12-grid-winners-holdout.md)
+- [phase 1.12.B cross-benchmark holdout](2026-04-16-phase-1_12b-crossbench-winner-mvbench-holdout.md)
 - [docs/literature-map-2026-04-16.md](../../../docs/literature-map-2026-04-16.md)
 - [docs/methodology/temporal-coverage-metrics.md](../../../docs/methodology/temporal-coverage-metrics.md)
-
-## Links
-
-- CodecSight §3.2 sticky-dynamic
-- [phase 1.10 TOMATO motion dev grid](2026-04-14-phase-1_10-planner-grid-tomato-motion-dev.md)
-- [phase 1.11 MVBench motion dev grid](2026-04-14-phase-1_11-planner-grid-mvbench-motion-dev.md)
-- [phase 1.12 holdout evaluation](2026-04-14-phase-1_12-grid-winners-holdout.md)
-- [docs/literature-map-2026-04-16.md](../../../docs/literature-map-2026-04-16.md)

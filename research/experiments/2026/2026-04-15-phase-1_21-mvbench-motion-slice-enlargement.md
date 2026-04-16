@@ -103,7 +103,14 @@ feature replay helps if items overlap current slice corpus).
 
 ## Execution
 
-Pending phase 1.12 completion.
+**Gating updated 2026-04-16**: phase 1.12 MVBench holdout is
+complete (clean null on the original phase-1.11 winners) AND
+phase 1.12.B found a cross-benchmark-discovered survivor AND
+phase 1.26.B added sticky_window=4 on top for cached=0.733 at
+64% of dense-8's budget with agreement=1.0. This phase is now
+**pending scheduling**, not pending a gate. It is the top
+hardening priority because the live primary claim still sits at
+N=15.
 
 ## Result
 

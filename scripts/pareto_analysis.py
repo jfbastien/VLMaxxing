@@ -129,13 +129,23 @@ def _load_dense_points(frame_budget_summary: Path) -> list[DensePoint]:
         raise ValueError(f"unrecognized dense-curve schema in {frame_budget_summary}")
     points: list[DensePoint] = []
     for run in runs:
-        ci = run.get("dense_accuracy_ci95", [0.0, 1.0])
+        # Accept either `dense_accuracy_ci95: [lo, hi]` (phase 1.8/1.9 schema)
+        # or split `ci95_low` / `ci95_high` keys (phase 1.24 merged-export
+        # schema). Fall through to [0, 1] only if neither is present.
+        if "dense_accuracy_ci95" in run:
+            ci = run["dense_accuracy_ci95"]
+            ci_lo, ci_hi = float(ci[0]), float(ci[1])
+        elif "ci95_low" in run and "ci95_high" in run:
+            ci_lo = float(run["ci95_low"])
+            ci_hi = float(run["ci95_high"])
+        else:
+            ci_lo, ci_hi = 0.0, 1.0
         points.append(
             DensePoint(
                 frame_count=int(run["frame_count"]),
                 dense_accuracy=float(run.get("dense_accuracy") or run.get("accuracy") or 0.0),
-                ci95_low=float(ci[0]),
-                ci95_high=float(ci[1]),
+                ci95_low=ci_lo,
+                ci95_high=ci_hi,
                 n=int(run.get("count") or run.get("n") or 0),
             )
         )

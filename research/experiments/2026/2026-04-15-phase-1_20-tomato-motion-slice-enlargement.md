@@ -92,7 +92,12 @@ cache since items overlap the corpus; new items force fresh encodes).
 
 ## Execution
 
-Pending phase 1.12 completion.
+**Gating updated 2026-04-16**: phase 1.12 TOMATO holdout is
+complete (5/5 cached policies landed at 0.267; see phase 1.12
+note). This phase is now **pending scheduling**, not pending a
+gate. Runs when GPU budget allows, ordered after phase 1.21
+MVBench N=30 in the post-CodecSight strategy because MVBench N=30
+is the primary paper-claim hardening gate.
 
 ## Result
 

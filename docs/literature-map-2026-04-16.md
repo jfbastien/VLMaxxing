@@ -1,7 +1,9 @@
 # Literature Map — Post-CodecSight Repositioning
 
 Date: 2026-04-16
-Parent: [PLAN.md](../PLAN.md), [execution-plan-round-7.md](execution-plan-round-7.md)
+Parent: [PLAN.md](../PLAN.md)
+Sibling: [research-strategy-post-codecsight.md](research-strategy-post-codecsight.md)
+Historical context (superseded): [execution-plan-round-7.md](execution-plan-round-7.md)
 Prior map: [literature-map.md](literature-map.md) (pre-CodecSight)
 
 This document updates the research-position map after CodecSight
@@ -277,11 +279,13 @@ Five **target claims** (NOT yet evidence):
 | Claim | Status |
 |---|---|
 | Training-free temporal reuse on MLX has a held-out Pareto signal | **Credible early signal** (phase 1.12.B + phase 1.12 TOMATO) |
-| Policy family `max_abs(8,32) static+shifted age=4` beats matched dense-6 on MVBench motion holdout at 77% budget | **Real, N=15, single-shot, transfer-discovered** — needs N=30 to harden |
+| Policy family `max_abs(8,32) static+shifted age=4` beats matched dense-6 on MVBench motion holdout at 77% budget | **Real, N=15, single-shot, transfer-discovered** (phase 1.12.B) — needs N=30 to harden |
+| Adding `sticky_window=4` to that policy reaches cached=0.733 = dense-8 at 64% budget with agreement=1.0 | **Real, N=15, single-shot, transfer-discovered** (phase 1.26.B) — needs N=30 to harden |
 | TOMATO motion holdout cached ties dense-6/8 at lower budget | **Real, N=15, low-accuracy regime, confidence-limited** |
 | Cross-benchmark policy transfer is asymmetric | **Real** (TOMATO→MVBench cell B is strong; MVBench→TOMATO is weak) |
-| Sticky-dynamic + projector-group repair failures | **Pending** (phase 1.26 running) |
-| "More frames at same budget" coverage benefit | **Rejected** on MVBench holdout (phase 1.28) |
+| Sticky-dynamic is benchmark-conditional (hurts TOMATO dev, helps MVBench holdout) | **Real mechanism finding** (phase 1.26 + 1.26.B); supports budget-placement theory |
+| Projector-group completion repairs failures | **Pending** — on our Qwen 2.5-VL stack, `BLOCK_SIZE=28` is already at projector granularity, so the mechanism semantics needs rescoping |
+| "More frames at same budget" coverage benefit | **Rejected on off-budget probe** (phase 1.28 ran at higher budget than preregistered); true iso-budget test pending |
 | Real skipped compute (wall-clock / FLOP) | **Not measured** — Track B unbuilt |
 | Composition with FastV multiplies gains | **Not measured** — mlx-vlm fork required |
 
@@ -294,15 +298,17 @@ Five **target claims** (NOT yet evidence):
 - "long-horizon memory for streaming video" — StreamingVLM et al.
   own it.
 
-We claim the intersection: *training-free*, *temporal-axis*, *temporal
+We target the intersection: *training-free*, *temporal-axis*, *temporal
 reasoning benchmarks*, *Pareto frontier*, *real skipped compute*. The
 plan (phases 1.25–1.33) is the set of experiments that prove or
 reject each of the five claims above.
 
 ## References with stable URLs
 
-All links confirmed reachable; full citations pending research
-subagent returns.
+All links confirmed reachable. Per-paper verified numbers are in
+the machine-friendlier [`related-work-table.md`](related-work-table.md);
+use that file as the authoritative reference for paper-facing
+citations.
 
 - CodecSight: https://arxiv.org/abs/2604.06036
 - CoPE-VideoLM: https://arxiv.org/abs/2602.13191

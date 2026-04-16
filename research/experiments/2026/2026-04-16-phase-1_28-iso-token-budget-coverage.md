@@ -84,19 +84,76 @@ pass first (CPU) to confirm.
 
 ## Execution
 
-Pending. Plan:
-1. Run phase 1.19-style calibration at frame_count=16 on TOMATO
-   motion dev to pick the right threshold pair.
-2. Launch the 2 cached-16 and cached-32 cells.
-3. Compare to dense-4 (already on disk from phase 1.8).
+**Protocol deviation** (2026-04-16): the preregistered plan called
+for calibrating a threshold pair at frame_count=16 so
+`effective_fresh_frames ≈ 4` (iso-budget vs dense-4). That
+calibration step was NOT run. Instead, the existing
+`max_abs(8,32) static+shifted age=4` policy was launched at
+frame_count=16 **without re-tuning thresholds for iso-budget**.
+Result: the 16-frame runs landed at substantially higher than
+4 effective fresh frames.
 
-## Result
+- TOMATO motion dev @ 16 frames:
+  reuse_ratio_mean_active = 0.606 → fresh ≈ **6.90** (not 4)
+- MVBench motion holdout @ 16 frames:
+  reuse_ratio_mean_active = 0.495 → fresh ≈ **8.58** (not 4)
 
-Pending.
+So this is NOT a clean iso-budget test. It is an off-budget probe
+of "same policy at higher frame count," documented honestly below.
+
+## Result (off-budget probe, not iso-budget)
+
+**TOMATO motion dev @ 16 frames** (vs 8 frames reference):
+
+| metric | @ 8 frames (phase 1.10 winner) | @ 16 frames |
+|---|---|---|
+| cached_accuracy | 0.400 | 0.467 (+1 item on N=15) |
+| effective_fresh_frames | 3.99 | 6.90 (+73% budget) |
+| agreement | 0.867 | 0.867 |
+
+Interpretation: more frames at the same threshold policy added 1
+item of accuracy at 73% more budget. Not Pareto-better than
+dense-6 (which was 0.400 at 6 frames) at comparable budget. NOT a
+coverage win.
+
+**MVBench motion holdout @ 16 frames** (vs 8 frames reference):
+
+| metric | @ 8 frames (phase 1.12.B) | @ 16 frames |
+|---|---|---|
+| cached_accuracy | 0.667 | 0.667 (same) |
+| effective_fresh_frames | 4.59 | 8.58 (+87% budget) |
+| agreement | 0.933 | 0.933 |
+
+Interpretation: accuracy saturates at 0.667 going from 8 → 16
+frames on this slice at this policy. Pareto-dominated by dense-8
+(0.733 at 8 frames, same agreement). **REJECTION** of the
+preregistered H1 on MVBench holdout — more frames without iso-
+budget calibration did not buy additional accuracy.
 
 ## Interpretation
 
-Pending.
+**Preregistration outcome: Inconclusive (protocol deviation).**
+
+The preregistered iso-budget test (16 frames at fresh ≈ 4 via
+tighter thresholds) was not run. The 16-frame probes that DID
+run consumed roughly 2× the preregistered budget and therefore
+test a different question: "does the same policy help with more
+frames at higher budget?" Answer from the committed artifacts:
+
+- TOMATO: marginally (+1 item accuracy at +73% budget)
+- MVBench holdout: no (accuracy saturated, budget doubled)
+
+For the true iso-budget test, a follow-up cell with calibrated
+higher thresholds at frame_count=16 is still required. Tracked as
+phase 1.28.B in the todo queue.
+
+Important live-citation caveat: `paper/framing.md`,
+`docs/literature-map-2026-04-16.md`, and decision-log cite these
+16-frame numbers as evidence that "more frames at this policy does
+not help." That interpretation is still valid (and is consistent
+with the budget-placement theory). But those numbers should NOT
+be cited as "phase 1.28 iso-budget result" — they are off-budget
+probes at higher frame counts.
 
 ## Links
 

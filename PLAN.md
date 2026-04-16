@@ -242,7 +242,7 @@ Use these levels consistently.
 
 Highest trust:
 
-- primary papers and official docs listed in [docs/literature-map.md](docs/literature-map.md)
+- primary papers and official docs listed in [docs/literature-map-2026-04-16.md](docs/literature-map-2026-04-16.md) (current) and [docs/literature-map.md](docs/literature-map.md) (pre-CodecSight, historical)
 - checked-in code under `src/`
 - raw saved result artifacts that we inspected directly
 
