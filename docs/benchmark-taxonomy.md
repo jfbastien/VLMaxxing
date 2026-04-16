@@ -106,6 +106,24 @@ presence here does not imply a local result.
   dilutes failure-mode signal — its role is breadth validation,
   not mechanism diagnosis.
 
+### EgoSchema (arXiv 2308.09126) — low-reuse long egocentric robustness
+
+- **Temporal-bias controls**: 3-minute egocentric clips from Ego4D.
+  Constant camera motion (head, hands) means most frames are
+  NOVEL — the worst case for temporal caching. Functions as the
+  stress test for the opposite end of the reuse spectrum.
+- **Task format**: multiple choice.
+- **Scorer**: exact-letter match.
+- **Frame structure**: long (3-minute clips, 32 frames sampled).
+- **Why we want it**: sam WP-2.7.1 reports Qwen2.5-VL-7B achieves
+  100% byte-identical output at 29.9% avg reuse (range 20.1%–65.1%)
+  with 0.0% accuracy delta. If our planner sustains this low-reuse
+  robustness, claim #4 (budget-placement-over-quantity) gains
+  stronger evidence: caching value is not "only for high-reuse
+  content."
+- **Status**: **preregistered as phase 1.43** (post-1.41 VideoMME).
+- **Priority**: medium — executes after VideoMME lane.
+
 ## Not in scope (but occasionally referenced)
 
 - **UCF-Crime streaming anomaly**: what CodecSight evaluates.

@@ -44,12 +44,19 @@ one-off: removing SHIFTED hurts consistently, and replacing MAX_ABS
 with CPF does not improve the Pareto position. This supports the
 paper claim that:
 
-- **MAX_ABS is a better routing oracle** than CPF for temporal
-  reasoning tasks (it catches subtle single-pixel changes that CPF's
-  count threshold misses)
+- **MAX_ABS dominates CPF** on both temporal-reasoning benchmarks
+  (it catches subtle single-pixel changes that CPF's count threshold
+  misses)
 - **SHIFTED reuse is a real method contribution** (the whitepaper's
   shift-locality observation translates into measurable accuracy + budget
-  improvements)
+  improvements on both benchmarks: −0.033 accuracy, +1.0 fresh frame
+  when SHIFTED is removed)
+
+**Scope**: these are content-conditional findings on the current
+Qwen-7B-4bit-MLX stack and two temporal-reasoning slices. MAX_ABS is
+NOT universally preferred as the default — see the statistic
+comparison below, where MEAN edges MAX_ABS on MVBench dirty-tree
+ablations.
 
 ## Extended ablation (18 cells, 2026-04-17)
 

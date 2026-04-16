@@ -280,7 +280,7 @@ Five **target claims** (NOT yet evidence):
 | Training-free temporal reuse on MLX has a held-out Pareto signal | **Credible early signal** (phase 1.12.B + phase 1.12 TOMATO) |
 | Base policy `max_abs(8,32) static+shifted age=4` beats dense-6 on MVBench motion holdout at N=30 | **PASSED** (phase 1.21: cached=0.600@4.06, Pareto win vs dense-6=0.567@6; clean tree) |
 | Adding `sticky_window=4` ties dense-8 at N=30 | **PASSED** (phase 1.21: cached=0.633@4.49, 56% of dense-8 budget; dirty tree, supplementary) |
-| TOMATO motion holdout cached ties dense-6/8 at lower budget | **Real, N=15, low-accuracy regime, confidence-limited** |
+| TOMATO motion holdout cached ties dense-8 at 44% budget | **PASSED at N=30 (phase 1.20, clean tree commit 42b06eb, 0.333@3.55)** |
 | Cross-benchmark policy transfer is asymmetric | **Real** (TOMATO→MVBench cell B is strong; MVBench→TOMATO is weak) |
 | Sticky-dynamic is benchmark-conditional (hurts TOMATO dev, helps MVBench holdout) | **Real mechanism finding** (phase 1.26 + 1.26.B); supports budget-placement theory |
 | Projector-group completion repairs failures | **Pending** — on our Qwen 2.5-VL stack, `BLOCK_SIZE=28` is already at projector granularity, so the mechanism semantics needs rescoping |
@@ -311,7 +311,8 @@ citations.
 
 - CodecSight: https://arxiv.org/abs/2604.06036
 - CoPE-VideoLM: https://arxiv.org/abs/2602.13191
-- FastVID: https://openreview.net/forum?id=2xS4VtpApy
+- FastVID: https://arxiv.org/abs/2503.11187
+- FlashVID: https://openreview.net/forum?id=H6rDX4w6Al
 - FrameFusion: https://arxiv.org/abs/2501.01986
 - VScan: https://arxiv.org/abs/2505.22654
 - VisionZip: https://arxiv.org/abs/2412.04467

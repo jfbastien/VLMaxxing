@@ -112,8 +112,8 @@ clean. For paper-facing use, rerun on clean tree.
 
 ## Result
 
-Preregistration outcome: **Accepted with caveat** (holdout v2 cells;
-dirty-tree provenance).
+Preregistration outcome: **Accepted** (holdout v2 cells; clean tree
+as of commit 42b06eb, 2026-04-16).
 
 **TOMATO motion holdout v2 (N=30) dense curve:**
 
@@ -138,8 +138,13 @@ dirty-tree provenance).
 Pareto: strict win vs dense-4 and dense-6; Pareto tie vs dense-8
 (0.333 = 0.333 at 44% of dense-8's budget).
 
-**Provenance caveat**: both dense and cached runs used `--allow-dirty`.
-For paper-facing use, rerun cached on a clean tree.
+**Provenance caveat (resolved)**: the initial dense + cached runs
+used `--allow-dirty` for throughput. A clean-tree rerun of the
+cached cell (commit 42b06eb, 2026-04-16) reproduces the numbers
+exactly: cached=0.333, dense=0.333, agreement=0.800, fresh=3.55,
+`git_dirty=False`. Clean-tree artifact at
+`phase1_20_tomato_motion_holdout_v2_cached_clean/`. Claim #6 is now
+paper-grade on both MVBench and TOMATO.
 
 ## Interpretation
 

@@ -118,9 +118,9 @@ Priority = (probability-of-moving-paper-claim × magnitude) / (effort).
 
 ### Tier A — do next (highest expected value)
 
-2. ✅ **Phase 1.20 TOMATO N=30** — **POSITIVE SIGNAL** (dirty-tree).
-   Base policy ties dense-8 at 44% budget (0.333@3.55). Pending
-   clean rerun for paper-grade promotion.
+2. ✅ **Phase 1.20 TOMATO N=30** — **PASSED (clean tree, commit
+   42b06eb)**. Base policy ties dense-8 at 44% budget (0.333@3.55).
+   Claim #6 now paper-grade on both benchmarks.
 3. **Phase 1.36 feature-change oracle** — ~30 min CPU. Can run in
    parallel with 1.20 GPU work. Answers "signal quality or schedule
    quality bottleneck?"

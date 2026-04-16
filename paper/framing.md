@@ -30,10 +30,14 @@ credible held-out Pareto signal in phase 1.12.B).
 If phase 1.29 MV-only signal path lands: "codec-guided." If not:
 "codec-inspired / pixel-diff proxy for codec-guided."
 
-The current state is "paper-grade MVBench-local evidence, credible
-method signal, not SOTA." Phase 1.21 N=30 holdout PASSED (base policy
-0.600@4.06 Pareto-wins dense-6; sticky4 0.633@4.49 ties dense-8 at
-56% budget). TOMATO N=30 + Track B + VideoMME still gate full paper.
+The current state is "paper-grade evidence on two temporal-reasoning
+benchmarks (MVBench + TOMATO), credible method signal, not SOTA
+by the broader 2026 efficiency-paper definition." Phase 1.21 MVBench
+N=30 holdout PASSED (base policy 0.600@4.06 Pareto-wins dense-6;
+sticky4 0.633@4.49 ties dense-8 at 56% budget, sticky4 is dirty-tree
+supplementary). Phase 1.20 TOMATO N=30 holdout PASSED on clean tree
+(base policy 0.333@3.55 Pareto-ties dense-8 at 44% budget).
+Track B + VideoMME still gate the full paper.
 For the per-claim breakdown, see
 [`paper/claim-matrix.md`](claim-matrix.md) and
 [docs/literature-map-2026-04-16.md § Current evidence level (2026-04-16)](../docs/literature-map-2026-04-16.md).
@@ -49,8 +53,8 @@ We claim, with current evidence:
   win vs dense-6; clean tree). A sticky_window=4 refinement reaches
   0.633@4.49 (ties dense-8 at 56% budget; dirty-tree, supplementary)
 - the same base policy ties dense-8 on **TOMATO motion holdout at
-  N=30** (0.333@3.55 = dense-8 at 44% budget; dirty-tree, pending
-  clean rerun). Low-accuracy regime but Pareto relationship holds.
+  N=30** (0.333@3.55 = dense-8 at 44% budget; clean tree, commit
+  42b06eb). Low-accuracy regime but Pareto relationship holds.
 - naive mean-diff + no-refresh is too blunt on temporally concentrated
   evidence; `max_abs` statistic + bounded staleness recovers ground
 - sticky-dynamic helps on MVBench holdout (+1 item) but hurts TOMATO
@@ -72,11 +76,17 @@ We do NOT claim:
 These are the caveats a reviewer will check. Per sam's revised
 whitepaper §8 and codex 2026-04-16 review, the paper must state:
 
-1. **Architecture-dependent exactness**: on windowed-attention ViTs
-   (Qwen 2.5-VL), cached features are byte-identical to fresh. On
-   all-global-attention ViTs (Gemma 4 SigLIP), cached features are
-   approximate. Output stability is architecture-conditioned, not
-   universal. We must NOT say "exact" beyond Qwen-family models.
+1. **Architecture-conditioned reuse fidelity is a spectrum**: on
+   windowed-attention-heavy ViTs (Qwen 2.5-VL: 28 of 32 layers
+   windowed), cached features are byte-identical to fresh. On
+   some all-global ViTs (Gemma 4 SigLIP), cached features are
+   high-fidelity but non-identical. However, per sam §2.7, InternVL3
+   (also all-global) still yields 95% strict agreement and +3.3%
+   accuracy delta — so the claim is NOT a clean binary. Output
+   stability is attention-topology-conditioned on a spectrum, and
+   pretraining matters too. We must NOT say "exact" beyond
+   Qwen-family models; we also should not say "approximate
+   universally implies quality loss" for all-global encoders.
 2. **Thinking amplifies divergence**: on models with chain-of-thought
    (Gemma 4 thinking-on), small embedding differences cascade through
    reasoning chains, dropping strict agreement. This interaction is
@@ -193,8 +203,8 @@ Near-term paper path:
 - benchmark-native diagnosis of where same-position reuse fails and why
 - a stronger training-free planner: phase 1.21 MVBench N=30 **PASSED**
   (base policy 0.600@4.06 Pareto-wins dense-6; clean tree). Phase
-  1.20 TOMATO N=30 also shows positive signal (0.333@3.55 ties
-  dense-8 at 44% budget; dirty-tree, pending clean rerun).
+  1.20 TOMATO N=30 also **PASSED** (0.333@3.55 ties dense-8 at 44%
+  budget; clean tree, commit 42b06eb).
 - budget-placement instrumentation + failure predictor (phase 1.31 +
   temporal-coverage-metrics doc)
 - matched dense frame-budget baselines PLUS novelty-ranked dense (phase

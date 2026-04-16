@@ -52,9 +52,29 @@ Specific trust boundaries:
 - `WP-2.7`: VideoMME evaluation (Qwen + Gemma 4)
 - `WP-2.8`: Strict-parse audit methodology (413+ items, 0 failures)
 - `WP-2.9`: Cross-architecture generalization (windowed vs global
-  attention topology)
+  attention topology) — **scoped**: not a strict binary. Sam's
+  whitepaper §2.9 line 237 says Qwen+InternVL3 → byte-identical,
+  Gemma 4 SigLIP → approximate; but §2.7 line 171 notes InternVL3
+  is all-global with 0% byte-identical and still works. Evidence
+  supports a spectrum (windowed-mostly = byte-identical; global
+  with certain pretraining = high-fidelity approximate), not a
+  one-line law.
 - `WP-2.10`: Thinking-amplification finding
+- `WP-2.11`: InternVL3 third architecture (all-global attention,
+  95% strict agreement, +3.3% accuracy delta, 57% avg reuse)
+- `WP-2.12`: EgoSchema low-reuse robustness (29.9% avg reuse,
+  100% byte-identical, 0.0% accuracy delta on Qwen2.5-VL-7B).
+  Useful because it shows cache value is preserved EVEN when
+  most frames are NOVEL — falsifies naive "caching only helps
+  high-reuse content" counterclaim.
+- `WP-2.13`: Hard spatial token pruning on variable-token models
+  (Gemma 4): at 50% keep ratio, 3.9× prefill speedup with −1.7%
+  accuracy. Orthogonal to our temporal axis. NOT applicable to
+  fixed-token Qwen2.5-VL without post-processor surgery.
 - `WP-4.1`: Wall-clock throughput (ViT speedup, E2E speedup, FPS)
+- `WP-4.2`: Combined temporal+spatial pipeline measured E2E at
+  32/64/128 frames — 4–5× speedup sustains with frame count.
+  Relevant as an upper-bound target for our Track B work.
 - `WP-5.1`: Composition projection with TurboQuant (~175×)
 
 ### New phases to preregister
@@ -66,6 +86,16 @@ Specific trust boundaries:
   that windowed attention gives exact reuse while global attention
   gives approximate. If we can run Gemma 4 4B (edge variant) on
   M3 Air, that would be the second architecture. Priority: medium.
+  Update per sam §2.7 + §2.9: test should allow THREE cells
+  (windowed-mostly = byte-identical, global-1 high-fidelity
+  approximate, global-2 lossless) not a binary.
+- **Phase 1.43 EgoSchema low-reuse robustness** (preregister): if
+  our planner still shows benefit at low reuse (≤30%), claim #4
+  (budget-placement) is strengthened. Reuse sam's EgoSchema
+  corpus scaffolding.
+- **Phase 1.44 VideoMME scaling**: 32/64/128 frame sweep after
+  1.41 lands. Sam's WP-4.2 shows 4–5× speedup sustains; our
+  Track B harness should test the same sustain property.
 
 ### New competitors to track
 
