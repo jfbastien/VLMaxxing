@@ -1,0 +1,12 @@
+[
+  {
+    "label": "changed_pixel_fraction-px8.0-0.02-0.08-static+shifted-age4",
+    "statistic": "changed_pixel_fraction",
+    "static_threshold": 0.02,
+    "shifted_threshold": 0.08,
+    "pixel_change_threshold": 8.0,
+    "top_k": 16,
+    "reuse_classes": ["static", "shifted"],
+    "max_age": 4
+  }
+]
