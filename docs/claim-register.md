@@ -75,10 +75,19 @@ Important runtime distinction:
 | `WP-5` | Compression and speed stackup | out of scope until Track B evidence exists on this stack | explicitly gated |
 | | | | |
 | **From revised whitepaper (2026-04-16)** | | | |
+| | | | |
+| **NOTE on claim-ID stability**: our `WP-*` IDs are semantic labels | | | |
+| assigned at import time, NOT mirrors of sam's section numbers. | | | |
+| Sam's sections may renumber across revisions (e.g., sam §2.10 was | | | |
+| thinking amplification at our import date but is now hard spatial | | | |
+| pruning in the latest revision). Our IDs are frozen to the meaning | | | |
+| we registered; new sam claims get new WP-* IDs. | | | |
+| | | | |
 | `WP-2.7` | VideoMME evaluation (Qwen 100% on 300q; Gemma 4 90%/−3.3% on 60q) | local reproduction requires VideoMME lane + at minimum Qwen evaluation at 32 frames | generalized reproduction target |
-| `WP-2.8` | Strict-parse audit (413 Qwen items, 0 parse failures, byte-identical) | our local parser already shows 0 failures on our saved slices (30 TOMATO + 54 MVBench = 84 items); scaling to 413+ is the remaining step | generalized reproduction target |
-| `WP-2.9` | Cross-architecture generalization (windowed attention → exact; global attention → approximate) | requires a second architecture family (Gemma 4 4B on M3 Air is the candidate; not a direct reproduction of sam's 26B) | generalized reproduction target |
-| `WP-2.10` | Thinking-amplification finding (agreement drops from 82% → 58% with thinking enabled on Gemma 4) | requires Gemma 4 thinking-on/off comparison | deferred reproduction target |
+| `WP-2.8` | Strict-parse audit (413 Qwen items, 0 parse failures, byte-identical) | our local parser already shows 0 failures on our saved slices (84 items exact + ~60 motion items approximate); scaling to 413+ is the remaining step | generalized reproduction target |
+| `WP-2.9` | Cross-architecture generalization (windowed attention → exact; global attention → approximate) | requires a second architecture family (Gemma 4 4B on M3 Air is the candidate; not a direct reproduction of sam's 26B). Test with thinking=False first; thinking-on as supplementary stress test. | generalized reproduction target |
+| `WP-2.10` | Thinking-amplification finding (agreement drops with thinking enabled on Gemma 4) | requires Gemma 4 thinking-on/off comparison. Supplementary to WP-2.9. | deferred reproduction target |
+| `WP-2.11` | Hard spatial pruning (Gemma 4 with token reduction) | new in latest sam revision; not in our original import. Deferred behind temporal reuse mainline. | deferred |
 | `WP-4.1` | Wall-clock throughput (M5 Max: 6.0× ViT, 4.2× E2E, 130 fps on 32-frame conferencing) | NOT directly reproducible on M3 Air 16GB; a local Track B harness would produce different absolute numbers on different hardware | generalized reproduction target (hardware-conditioned) |
 | `WP-5.1` | Composition projection (~175× with TurboQuant) | projected, not measured, even by sam; explicitly marked as future work in their §5 | explicitly gated |
 

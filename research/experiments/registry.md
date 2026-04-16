@@ -206,13 +206,13 @@ authoritative in the per-phase notes under
   prereg_outcome: (pending completion)
 
 - phase_id: 1.27
-  status: proposed (needs rescoping)
+  status: superseded
   authoritative_note: research/experiments/2026/2026-04-16-phase-1_27-projector-group-completion.md
   authoritative_artifacts: []
   current_best_policy: n/a
   supersedes: []
-  paper_relevance: diagnostic (scoping note: on our Qwen 2.5-VL stack, `BLOCK_SIZE=28` is already at projector-input granularity, so the mechanism as preregistered may be a no-op; needs reinterpretation as 2×2 block coarsening)
-  prereg_outcome: (pending; needs pre-run reinterpretation)
+  paper_relevance: superseded (BLOCK_SIZE=28 is already projector-input granularity on Qwen 2.5-VL; sam's Gemma hard-spatial-pruning WP-2.11 is the better spatial follow-on if needed)
+  prereg_outcome: not run (mechanism is a no-op on current stack)
 
 - phase_id: 1.28
   status: completed (off-budget probe, NOT iso-budget)
@@ -287,6 +287,14 @@ authoritative in the per-phase notes under
   supersedes: []
   paper_relevance: primary (method headroom)
   prereg_outcome: (pending)
+- phase_id: 1.41
+  status: proposed
+  authoritative_note: research/experiments/2026/2026-04-16-phase-1_41-videomme-lane.md
+  authoritative_artifacts: []
+  current_best_policy: n/a
+  supersedes: []
+  paper_relevance: primary (VideoMME breadth gate — claim #8)
+  prereg_outcome: (pending; runs after 1.20)
 ```
 
 ## Maintenance rules

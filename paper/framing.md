@@ -66,6 +66,52 @@ We do NOT claim:
 - robotics inner-loop safety or real-time guarantees
 - AI-native codecs as a near-term deliverable
 
+## Reviewer-Facing Limitations (import from sam, tightened)
+
+These are the caveats a reviewer will check. Per sam's revised
+whitepaper §8 and codex 2026-04-16 review, the paper must state:
+
+1. **Architecture-dependent exactness**: on windowed-attention ViTs
+   (Qwen 2.5-VL), cached features are byte-identical to fresh. On
+   all-global-attention ViTs (Gemma 4 SigLIP), cached features are
+   approximate. Output stability is architecture-conditioned, not
+   universal. We must NOT say "exact" beyond Qwen-family models.
+2. **Thinking amplifies divergence**: on models with chain-of-thought
+   (Gemma 4 thinking-on), small embedding differences cascade through
+   reasoning chains, dropping strict agreement. This interaction is
+   documented, not solved.
+3. **VideoMME at 32 frames vs competitors' 64-256**: our evaluation
+   budget is lower than some adjacent work. Frame-count scaling study
+   is noted as future work.
+4. **Pixel diff is still a proxy**: we classify by pixel differencing,
+   not actual codec MV+CBF metadata. Real codec metadata would be
+   faster and more precise. Phase 1.29 (MV-only) is the bridge.
+5. **Composition remains projected**: temporal × KV-compression
+   composition ratios are projected from independent-layer
+   assumptions, not measured end-to-end.
+6. **Per-frame binary decision**: our mechanism cannot prune WITHIN
+   novel frames. On all-dynamic content, temporal caching provides
+   near-zero benefit. This is a fundamental limitation, not a
+   policy gap.
+
+## Track B Reporting Template (from sam, for future use)
+
+When Track B sparse execution lands, report:
+
+| Metric | Content types | Unit |
+|---|---|---|
+| ViT encode time | per frame, per content type | ms/frame |
+| Classifier time | per frame | ms/frame |
+| E2E pipeline time | per content type × frame count | seconds |
+| ViT-only speedup | per content type × frame count | × |
+| E2E speedup | per content type × frame count | × |
+| FPS | per content type × frame count | frames/sec |
+| Peak memory | per model size | GB |
+
+Content types: talking-head, surveillance, FPV/egomotion (matching
+sam's table structure). Report ViT-only AND E2E separately; do NOT
+use feature-replay timing as the main Track B claim.
+
 ## Emerging Mechanistic Theory (2026-04-16)
 
 The best current explanatory variable for cached-vs-dense behavior is

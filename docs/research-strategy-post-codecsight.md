@@ -167,8 +167,11 @@ Between phases 1.36/1.37, add:
 15. Phase 1.30 streaming harness (Track B infrastructure)
 16. Phase 1.28.B true iso-budget (calibrated 16-frame tighter
     thresholds)
-17. Phase 1.27 projector-group (needs rescoping — BLOCK_SIZE=28 is
-    already projector-input granularity)
+17. Phase 1.27 projector-group — **SUPERSEDED**. On our Qwen 2.5-VL
+    stack BLOCK_SIZE=28 is already projector-input granularity (no-op).
+    Sam's Gemma hard-spatial-pruning result (WP-2.11) is the better
+    spatial follow-on if needed, but it belongs off the main paper
+    critical path until after 1.20, 1.41, and Track B.
 
 ### Explicitly deferred to Track B / streaming
 
