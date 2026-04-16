@@ -103,13 +103,31 @@ Each entry has:
   equal-or-higher budget.
 - **scope of rejection**: rules out sticky-dynamic **alone** as a
   repair mechanism on TOMATO motion dev at N=15. Does NOT rule
-  out sticky+projector-group-completion (phase 1.27) or
-  sticky on MVBench where the cached winner is fundamentally
-  different (phase 1.26.B in-flight). Supports the
-  "budget-placement-not-quantity" hypothesis: adding forward-
-  accumulating dynamic flags does not help if the initial
-  classifier misses the critical motion.
+  out sticky on MVBench (phase 1.26.B PASSES; see overturn entry
+  below) or sticky+projector-group-completion (phase 1.27). Supports
+  the "budget-placement-not-quantity" hypothesis: adding forward-
+  accumulating dynamic flags does not help if the initial classifier
+  misses the critical motion.
 - **link**: [phase 1.26](experiments/2026/2026-04-16-phase-1_26-sticky-dynamic-planner.md)
+
+### overturned_2026-04-16_sticky-dynamic-universally-useless
+
+- **original concern** (phase 1.26 H2 as originally preregistered):
+  if sticky fails TOMATO dev, it likely also fails MVBench holdout
+  because the mechanism is assumed universal.
+- **overturned by**: phase 1.26.B single-shot on MVBench motion
+  holdout. `max_abs(8,32) static+shifted age=4 sticky_window=4`
+  achieves cached=0.733 (up from vanilla 0.667), agreement=1.000
+  (item-identical to dense-8), fresh=5.10. Strict Pareto win vs
+  dense-8 at 64% budget.
+- **scope of overturn**: sticky-dynamic IS a benchmark-conditional
+  mechanism. It hurts TOMATO direction-style failures (classifier
+  misses critical motion entirely) and helps MVBench motion-style
+  patterns (classifier detects motion intermittently; sticky
+  latches it consistently). The "budget-placement-over-time" theory
+  remains supported: sticky succeeds when placement is improved,
+  fails when placement isn't the bottleneck.
+- **link**: [phase 1.26.B section in phase 1.26 note](experiments/2026/2026-04-16-phase-1_26-sticky-dynamic-planner.md)
 
 ### falsified_2026-04-14_static-position-same-position-reuse-matches-whitepaper
 

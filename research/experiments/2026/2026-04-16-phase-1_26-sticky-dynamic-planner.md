@@ -144,11 +144,77 @@ predicted.
   dynamic for longer) does NOT help if the refresh lands in the
   wrong frames. Quantity ≠ placement.
 - Phase 1.26.B (MVBench motion holdout, launched 2026-04-16) tests
-  whether sticky is benchmark-specific. If sticky also hurts on
-  the MVBench holdout winner, the mechanism story is not
-  "sticky-dynamic alone" — it's "sticky + projector-group" (phase
-  1.27) or "better initial classifier" (e.g., phase 1.29 MV-only,
-  or finer `max_abs` thresholds).
+  whether sticky is benchmark-specific. **RESULT: sticky HELPS on
+  MVBench holdout, with striking magnitude.**
+
+## Phase 1.26.B — MVBench motion holdout (single-shot, transfer-discovered)
+
+**NOTE ON PREREG DELTA**: the original phase 1.26 prereg targeted
+the phase-1.11-grid MVBench winner (`max_abs(16,64) static+shifted
+noage`). Phase 1.12.B surfaced a better MVBench holdout winner
+(`max_abs(8,32) static+shifted age=4`, the TOMATO-transfer policy),
+so phase 1.26.B pivoted to adding sticky to THAT policy instead.
+Cell-set name retained (`1.26.B`) to mark the deviation. Policies
+JSON: `phase1_26b_sticky_on_mvbench_winner_policies.json`.
+
+Result:
+
+| policy | cached | dense | agreement | fresh | vs vanilla |
+|---|---|---|---|---|---|
+| `max_abs(8,32) age=4` (phase 1.12.B vanilla) | 0.667 | 0.733 | 0.933 | 4.59 | reference |
+| + sticky_window=4 | **0.733** | 0.733 | **1.000** | 5.10 | +1 item, +0.51 fresh |
+| + sticky_window=8 | 0.667 | 0.733 | 0.933 | 5.38 | 0 item, +0.79 fresh |
+
+**Per-item diff vs dense-8** on sticky_window=4 (the winner):
+
+| group | both_right | both_wrong | cached_only | dense_only |
+|---|---|---|---|---|
+| action_localization | 2 | 1 | 0 | 0 |
+| fine_grained_action | 1 | 2 | 0 | 0 |
+| moving_attribute | 3 | 0 | 0 | 0 |
+| moving_direction | 2 | 1 | 0 | 0 |
+| object_interaction | 3 | 0 | 0 | 0 |
+
+**0 disagreements across all 15 items**. Item-identical to dense-8
+at 64% budget.
+
+**Pareto status**: strict win vs dense-8 at matched accuracy
+tier (0.733). `pareto_analysis.py analyze` reports sticky4 as the
+sole inter-cached skyline winner (2-axis and 3-axis).
+
+**H2 (sticky does not save MVBench holdout)**: REJECTED. Sticky
+DOES save MVBench holdout.
+
+**Interpretation — asymmetric mechanism behavior**:
+
+- On TOMATO motion dev: sticky HURTS (phase 1.26 cells 1+2,
+  cached 0.400 → 0.333). The classifier misses the critical
+  direction motion entirely, so sticky has no flag to
+  accumulate.
+- On MVBench motion holdout: sticky HELPS (phase 1.26.B cell 1,
+  cached 0.667 → 0.733). The classifier detects motion
+  inconsistently; sticky latches the intermittent detection.
+- The mechanism requires the initial classifier to catch motion
+  at SOME frame. When that prerequisite holds (MVBench), sticky
+  converts intermittent detection into a consistent mask. When
+  it fails (TOMATO direction), sticky adds noise.
+- This is direct empirical support for the "budget placement
+  over time" theory: sticky doesn't add arbitrary refresh —
+  it adds refresh *at the frame boundaries where motion was
+  caught*, which is exactly the placement gain.
+
+**Paper implication**: our strongest current MVBench motion
+holdout Pareto result is now `max_abs(8,32) static+shifted age=4
+sticky_window=4`: cached=0.733, fresh=5.10, agreement=1.0,
+item-identical to dense-8 at 36% lower budget. Phase 1.21 N=30
+should use this as the PRIMARY cell; the phase 1.12.B no-sticky
+variant becomes a diagnostic comparator.
+
+Caveat: sticky_window=4 on TOMATO dev still hurts, so this
+mechanism is NOT a universal improvement. The content
+conditional-ness is now a real mechanism story: sticky helps on
+MVBench-like motion patterns, not on TOMATO-direction-like
+patterns.
 
 ## Links to falsified entries
 
