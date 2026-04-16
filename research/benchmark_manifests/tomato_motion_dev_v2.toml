@@ -1,0 +1,39 @@
+benchmark = "tomato"
+source = "tomato_motion_dev_v1 superset + 5 new items per group"
+description = "N=30 TOMATO motion dev slice. Superset of tomato_motion_dev_v1.toml (15 items) with 15 additional items (5 per group, keys chosen from first-20 corpus entries avoiding holdout_v1 overlap). Same three groups: direction, rotation, shape_trend."
+
+item_ids = [
+  # direction (10 items): v1 {0231-04..0234-03} + new {0221-04..0224-04}
+  "tomato:direction:0231-04",
+  "tomato:direction:0231-05",
+  "tomato:direction:0231-06",
+  "tomato:direction:0234-02",
+  "tomato:direction:0234-03",
+  "tomato:direction:0221-04",
+  "tomato:direction:0221-05",
+  "tomato:direction:0223-04",
+  "tomato:direction:0223-05",
+  "tomato:direction:0224-04",
+  # rotation (10 items): v1 {0215-06..0218-08} + new {0218-09..0621-01}
+  "tomato:rotation:0215-06",
+  "tomato:rotation:0215-07",
+  "tomato:rotation:0216-08",
+  "tomato:rotation:0216-09",
+  "tomato:rotation:0218-08",
+  "tomato:rotation:0218-09",
+  "tomato:rotation:0230-08",
+  "tomato:rotation:0230-09",
+  "tomato:rotation:0621-00",
+  "tomato:rotation:0621-01",
+  # shape_trend (10 items): v1 {0209-04..0210-05} + new {0211-04..0214-04}
+  "tomato:shape_trend:0209-04",
+  "tomato:shape_trend:0209-05",
+  "tomato:shape_trend:0231-07",
+  "tomato:shape_trend:0210-04",
+  "tomato:shape_trend:0210-05",
+  "tomato:shape_trend:0211-04",
+  "tomato:shape_trend:0211-05",
+  "tomato:shape_trend:0212-04",
+  "tomato:shape_trend:0213-04",
+  "tomato:shape_trend:0214-04",
+]
