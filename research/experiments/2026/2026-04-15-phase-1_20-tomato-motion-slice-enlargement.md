@@ -112,11 +112,49 @@ clean. For paper-facing use, rerun on clean tree.
 
 ## Result
 
-Pending.
+Preregistration outcome: **Accepted with caveat** (holdout v2 cells;
+dirty-tree provenance).
+
+**TOMATO motion holdout v2 (N=30) dense curve:**
+
+| frame_count | accuracy |
+|---|---|
+| 1 | 0.200 |
+| 2 | 0.167 |
+| 3 | 0.200 |
+| 4 | 0.133 |
+| 6 | 0.267 |
+| 8 | 0.333 |
+
+**Cached base policy** (`max_abs(8,32) static+shifted age=4`):
+
+| metric | value |
+|---|---|
+| cached_accuracy | 0.333 (10/30) |
+| same-run dense_accuracy | 0.333 (10/30) |
+| agreement | 0.800 (24/30) |
+| effective_fresh_frames | 3.55 |
+
+Pareto: strict win vs dense-4 and dense-6; Pareto tie vs dense-8
+(0.333 = 0.333 at 44% of dense-8's budget).
+
+**Provenance caveat**: both dense and cached runs used `--allow-dirty`.
+For paper-facing use, rerun cached on a clean tree.
 
 ## Interpretation
 
-Pending.
+- **H2 (holdout stability)**: the cached base policy ties dense-8
+  at N=30 (0.333 = 0.333) at 44% budget. The Pareto relationship
+  from N=15 (0.267 = 0.267) is preserved and STRENGTHENED: budget
+  ratio improved from 50% to 44%.
+- The low-accuracy regime persists: both dense-8 and cached are at
+  0.333 (10/30). This supports a scoped "hard-slice matched-budget
+  Track A" claim, not a strong "semantic preservation" headline.
+- TOMATO serves as the adversarial stress lane; MVBench provides the
+  meaningful-accuracy anchor. Together they satisfy claim #6.
+- Agreement at 0.800 (24/30) means cached disagrees with dense on
+  6 items — weaker than MVBench's 0.933 but consistent with TOMATO
+  being the harder benchmark.
 
 ## Links
 

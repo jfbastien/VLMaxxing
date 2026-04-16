@@ -123,10 +123,10 @@ authoritative in the per-phase notes under
     - research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_dense_summary.json
     - research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_cached_summary.json
     - research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_pareto.json
-  current_best_policy: "max_abs(8,32) static+shifted age=4 — cached=0.333@3.55, ties dense-8 at 44% budget"
+  current_best_policy: "max_abs(8,32) static+shifted age=4 — cached=0.333@3.55, ties dense-8 at 44% budget (DIRTY-TREE; pending clean rerun)"
   supersedes: [1.12 TOMATO holdout (N=15 → N=30)]
-  paper_relevance: primary (TOMATO N=30 holdout — claim #6 TOMATO half PASSED)
-  prereg_outcome: Accepted (holdout v2 cells)
+  paper_relevance: primary (TOMATO N=30 holdout — positive signal, dirty-tree caveat)
+  prereg_outcome: Accepted with caveat (dirty-tree provenance)
 
 - phase_id: 1.21
   status: completed (holdout v2 cells; dev v2 cells deferred)
@@ -199,7 +199,7 @@ authoritative in the per-phase notes under
   prereg_outcome: Accepted with caveat (overturns original H2 framing)
 
 - phase_id: 1.26.C
-  status: running
+  status: completed
   authoritative_note: research/experiments/2026/2026-04-16-phase-1_26-sticky-dynamic-planner.md (to be extended)
   authoritative_artifacts:
     - research/experiments/2026/artifacts/phase1_26c_sticky_on_mvbench_dev/

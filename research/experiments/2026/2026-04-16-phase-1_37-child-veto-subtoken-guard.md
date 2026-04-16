@@ -92,9 +92,12 @@ Rejection band:
 In `scripts/run_benchmark_track_a.py::_mix_qwen_features`, after
 computing `reuse_mask` from `flattened_reuse_mask(classification)`:
 
-1. Reshape the frame pair's pixel diff to (H_blocks, W_blocks,
-   block_size, block_size) = (20, 20, 28, 28).
-2. Reshape each block to (2, 14, 2, 14) children.
+1. Derive block geometry from the model config (e.g.,
+   `QWEN_BLOCK_SIZE` from `run_benchmark_track_a.py`, not hardcoded).
+   Compute `H_blocks = frame_height // block_size`,
+   `W_blocks = frame_width // block_size`.
+2. Reshape each block's pixel diff to `(2, child_h, 2, child_w)`
+   where `child_h = block_size // 2`, `child_w = block_size // 2`.
 3. Compute per-child **CPF** (primary) or **MEAN** (control).
    Note: child MAX_ABS is NOT useful here because
    `ANY(child_max_abs > t) ≡ block_max_abs > t`.
@@ -105,6 +108,10 @@ Add `--child-veto-cpf-threshold` and `--child-veto-mean-threshold`
 CLI flags (default None = off). These are on DIFFERENT scales (CPF
 is a fraction 0–1; MEAN is in pixel-diff units 0–255).
 Add corresponding fields to `PolicyCandidate` and `_planner_payload`.
+
+**Note on geometry**: do NOT hardcode `(20, 20, 28, 28)` or `14×14`
+in the implementation. Derive all dimensions from model config so the
+code works if block_size or frame_size changes.
 
 ~30 lines of code change in the mask construction path.
 

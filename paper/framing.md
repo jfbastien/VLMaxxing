@@ -48,8 +48,9 @@ We claim, with current evidence:
   **passes N=30 MVBench motion holdout** (cached=0.600@4.06, Pareto
   win vs dense-6; clean tree). A sticky_window=4 refinement reaches
   0.633@4.49 (ties dense-8 at 56% budget; dirty-tree, supplementary)
-- the same base policy ties dense-6/8 on TOMATO motion holdout at
-  N=15 in a low-accuracy regime (0.267@3.39); TOMATO N=30 is in-flight
+- the same base policy ties dense-8 on **TOMATO motion holdout at
+  N=30** (0.333@3.55 = dense-8 at 44% budget; dirty-tree, pending
+  clean rerun). Low-accuracy regime but Pareto relationship holds.
 - naive mean-diff + no-refresh is too blunt on temporally concentrated
   evidence; `max_abs` statistic + bounded staleness recovers ground
 - sticky-dynamic helps on MVBench holdout (+1 item) but hurts TOMATO
@@ -191,8 +192,9 @@ Near-term paper path:
   Apple Silicon (mostly done; see `docs/reproduction-status.md`)
 - benchmark-native diagnosis of where same-position reuse fails and why
 - a stronger training-free planner: phase 1.21 MVBench N=30 **PASSED**
-  (base policy 0.600@4.06 Pareto-wins dense-6; clean tree). TOMATO
-  N=30 is the remaining hardening gate (phase 1.20, in-flight).
+  (base policy 0.600@4.06 Pareto-wins dense-6; clean tree). Phase
+  1.20 TOMATO N=30 also shows positive signal (0.333@3.55 ties
+  dense-8 at 44% budget; dirty-tree, pending clean rerun).
 - budget-placement instrumentation + failure predictor (phase 1.31 +
   temporal-coverage-metrics doc)
 - matched dense frame-budget baselines PLUS novelty-ranked dense (phase

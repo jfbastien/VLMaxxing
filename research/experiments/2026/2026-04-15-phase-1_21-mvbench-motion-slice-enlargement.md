@@ -85,14 +85,12 @@ Inconclusive:
 
 - harness instability or sampling imbalance.
 
-Slice build:
+Slice build (protocol deviation — see note at top of Objective):
 
-- write `research/benchmark_manifests/mvbench_motion_dev_v2.toml`: the
-  existing v1 15 items PLUS 15 more items stratified seed=42 from the
-  SAME five hosted groups, so dev_v2 is a superset of dev_v1
-- write `research/benchmark_manifests/mvbench_motion_holdout_v2.toml`
-  symmetrically: v1 holdout superset, same five groups, zero overlap
-  with dev_v2 by item_id.
+- `mvbench_motion_dev_v2.toml`: v1 superset + 3 new items per group
+  from sequential indices (deterministic, not seed=42 random)
+- `mvbench_motion_holdout_v2.toml`: v1 superset + 3 new items per
+  group, zero overlap with dev_v2 by item_id.
 
 Cells (UPDATED 2026-04-16 to target the phase 1.26.B sticky4 winner):
 
