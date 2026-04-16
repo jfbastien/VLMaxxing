@@ -126,7 +126,7 @@ authoritative in the per-phase notes under
   prereg_outcome: (pending run)
 
 - phase_id: 1.21
-  status: running
+  status: running (dense complete; primary cached cell PASSED; diagnostic comparator in-flight)
   authoritative_note: research/experiments/2026/2026-04-15-phase-1_21-mvbench-motion-slice-enlargement.md
   authoritative_artifacts: []
   current_best_policy: "primary cell = max_abs(8,32) static+shifted age=4 sticky_window=4 (phase 1.26.B survivor); diagnostic comparators listed in prereg"
