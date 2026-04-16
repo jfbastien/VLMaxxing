@@ -123,10 +123,10 @@ authoritative in the per-phase notes under
     - research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_dense_summary.json
     - research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_cached_summary.json
     - research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_pareto.json
-  current_best_policy: "max_abs(8,32) static+shifted age=4 — cached=0.333@3.55, ties dense-8 at 44% budget (DIRTY-TREE; pending clean rerun)"
+  current_best_policy: "max_abs(8,32) static+shifted age=4 — cached=0.333@3.55, ties dense-8 at 44% budget (CLEAN TREE)"
   supersedes: [1.12 TOMATO holdout (N=15 → N=30)]
-  paper_relevance: primary (TOMATO N=30 holdout — positive signal, dirty-tree caveat)
-  prereg_outcome: Accepted with caveat (dirty-tree provenance)
+  paper_relevance: primary (TOMATO N=30 holdout — PAPER-GRADE, clean tree)
+  prereg_outcome: Accepted (clean-tree rerun confirmed)
 
 - phase_id: 1.21
   status: completed (holdout v2 cells; dev v2 cells deferred)
