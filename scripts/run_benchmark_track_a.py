@@ -51,6 +51,8 @@ TOMATO_DATA_DIR = Path("data/benchmarks/tomato/hf/data")
 TOMATO_VIDEO_DIR = Path("data/benchmarks/tomato/videos")
 MVBENCH_JSON_DIR = Path("data/benchmarks/mvbench/hf/json")
 MVBENCH_VIDEO_DIR = Path("data/benchmarks/mvbench/video")
+VIDEOMME_PARQUET_DIR = Path("data/benchmarks/videomme/hf")
+VIDEOMME_VIDEO_DIR = Path("data/benchmarks/videomme/videos")
 
 DEFAULT_MODEL_PATH = Path.home() / "models" / "Qwen2.5-VL-7B-Instruct-4bit"
 DEFAULT_THRESHOLDS = BlockThresholds(static_threshold=3.0, shifted_threshold=8.0)
@@ -106,7 +108,7 @@ MVBENCH_SEARCH_DIRS = [
 @dataclass(frozen=True, slots=True)
 class BenchmarkItem:
     item_id: str
-    benchmark: Literal["tomato", "mvbench"]
+    benchmark: Literal["tomato", "mvbench", "videomme"]
     group: str
     video_path: Path
     question: str
@@ -135,7 +137,7 @@ class RunControl:
 
 @dataclass(frozen=True, slots=True)
 class BenchmarkManifest:
-    benchmark: Literal["tomato", "mvbench"]
+    benchmark: Literal["tomato", "mvbench", "videomme"]
     item_ids: list[str]
     description: str | None = None
     source: str | None = None
@@ -402,23 +404,147 @@ def _load_mvbench_items_by_id(item_ids: list[str]) -> list[BenchmarkItem]:
     return items
 
 
+VIDEOMME_DURATIONS: tuple[str, ...] = ("short", "medium", "long")
+
+
+def _videomme_choice_text(raw_option: str) -> str:
+    """Strip the 'A. '/'B. '/... prefix if the parquet already included one."""
+    if len(raw_option) >= 3 and raw_option[0].isalpha() and raw_option[1:3] == ". ":
+        return raw_option[3:]
+    return raw_option
+
+
+def _find_videomme_video(video_id: str) -> Path:
+    extensions = (".mp4", ".mkv", ".webm", ".avi", ".mov")
+    for extension in extensions:
+        candidate = VIDEOMME_VIDEO_DIR / f"{video_id}{extension}"
+        if candidate.exists():
+            return candidate
+    matches: list[Path] = []
+    if VIDEOMME_VIDEO_DIR.exists():
+        for extension in extensions:
+            matches.extend(VIDEOMME_VIDEO_DIR.rglob(f"{video_id}{extension}"))
+    unique_matches = sorted({match.resolve() for match in matches})
+    if len(unique_matches) == 1:
+        return unique_matches[0]
+    if len(unique_matches) > 1:
+        raise RuntimeError(f"ambiguous VideoMME video lookup for {video_id!r}: {unique_matches}")
+    raise FileNotFoundError(
+        f"could not locate VideoMME video {video_id!r} under {VIDEOMME_VIDEO_DIR}"
+    )
+
+
+def _videomme_item_from_row(row: dict[str, Any]) -> BenchmarkItem:
+    video_id = str(row["videoID"])
+    duration = str(row["duration"])
+    question_id = str(row["question_id"])
+    raw_options = [str(option) for option in cast(list[Any], row["options"])]
+    choices = [_videomme_choice_text(option) for option in raw_options]
+    answer_letter = str(row["answer"]).strip().upper()
+    if not (answer_letter.isalpha() and len(answer_letter) == 1):
+        raise ValueError(f"invalid VideoMME answer letter: {answer_letter!r}")
+    answer_index = ord(answer_letter) - ord("A")
+    if answer_index < 0 or answer_index >= len(choices):
+        raise ValueError(
+            f"VideoMME answer letter {answer_letter!r} out of range for "
+            f"{len(choices)} options ({question_id})"
+        )
+    question_text = str(row["question"])
+    return BenchmarkItem(
+        item_id=f"videomme:{duration}:{question_id}",
+        benchmark="videomme",
+        group=duration,
+        video_path=_find_videomme_video(video_id),
+        question=_multiple_choice_prompt(question_text, choices),
+        candidates=choices,
+        answer_index=answer_index,
+    )
+
+
+def _videomme_parquet_path() -> Path:
+    candidates = sorted(VIDEOMME_PARQUET_DIR.rglob("*.parquet"))
+    if not candidates:
+        raise FileNotFoundError(
+            f"no VideoMME parquet found under {VIDEOMME_PARQUET_DIR}; "
+            f"run scripts/fetch_benchmarks.py --dataset videomme --mode metadata"
+        )
+    return candidates[0]
+
+
+def _load_videomme_rows() -> list[dict[str, Any]]:
+    import pyarrow.parquet as pq
+
+    parquet_path = _videomme_parquet_path()
+    table = pq.read_table(parquet_path)
+    records = table.to_pylist()
+    return cast(list[dict[str, Any]], records)
+
+
+def _load_videomme_items(
+    per_group: int,
+    *,
+    durations: list[str] | None = None,
+) -> list[BenchmarkItem]:
+    requested = tuple(durations) if durations else VIDEOMME_DURATIONS
+    for duration in requested:
+        if duration not in VIDEOMME_DURATIONS:
+            raise ValueError(f"unknown VideoMME duration {duration!r}")
+    rows = _load_videomme_rows()
+    bucket: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        duration = str(row.get("duration"))
+        if duration in requested:
+            bucket[duration].append(row)
+    items: list[BenchmarkItem] = []
+    for duration in requested:
+        for row in bucket[duration][:per_group]:
+            items.append(_videomme_item_from_row(row))
+    return items
+
+
+def _parse_videomme_item_id(item_id: str) -> tuple[str, str]:
+    prefix, duration, question_id = item_id.split(":", maxsplit=2)
+    if prefix != "videomme" or not duration or not question_id:
+        raise ValueError(f"invalid VideoMME item id: {item_id!r}")
+    return duration, question_id
+
+
+def _load_videomme_items_by_id(item_ids: list[str]) -> list[BenchmarkItem]:
+    parsed = [_parse_videomme_item_id(item_id) for item_id in item_ids]
+    requested_ids = {question_id for _, question_id in parsed}
+    rows = _load_videomme_rows()
+    rows_by_id: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        qid = str(row.get("question_id"))
+        if qid in requested_ids:
+            rows_by_id[qid] = row
+    missing = sorted(requested_ids - set(rows_by_id))
+    if missing:
+        raise KeyError(f"missing VideoMME questions: {missing}")
+    return [_videomme_item_from_row(rows_by_id[question_id]) for _, question_id in parsed]
+
+
 def _load_items(
-    benchmark: Literal["tomato", "mvbench"],
+    benchmark: Literal["tomato", "mvbench", "videomme"],
     *,
     per_group: int,
     groups: list[str] | None,
 ) -> list[BenchmarkItem]:
     if benchmark == "tomato":
         return _load_tomato_items(per_group, splits=groups)
+    if benchmark == "videomme":
+        return _load_videomme_items(per_group, durations=groups)
     return _load_mvbench_items(per_group, tasks=groups)
 
 
 def _load_items_by_id(
-    benchmark: Literal["tomato", "mvbench"],
+    benchmark: Literal["tomato", "mvbench", "videomme"],
     item_ids: list[str],
 ) -> list[BenchmarkItem]:
     if benchmark == "tomato":
         return _load_tomato_items_by_id(item_ids)
+    if benchmark == "videomme":
+        return _load_videomme_items_by_id(item_ids)
     return _load_mvbench_items_by_id(item_ids)
 
 
@@ -426,7 +552,7 @@ def _load_manifest(path: Path) -> BenchmarkManifest:
     payload = tomllib.loads(path.read_text())
     benchmark = payload.get("benchmark")
     item_ids = payload.get("item_ids")
-    if benchmark not in {"tomato", "mvbench"}:
+    if benchmark not in {"tomato", "mvbench", "videomme"}:
         raise ValueError(f"invalid benchmark manifest benchmark: {benchmark!r}")
     if (
         not isinstance(item_ids, list)
@@ -435,7 +561,7 @@ def _load_manifest(path: Path) -> BenchmarkManifest:
     ):
         raise ValueError(f"invalid benchmark manifest item_ids: {item_ids!r}")
     return BenchmarkManifest(
-        benchmark=cast(Literal["tomato", "mvbench"], benchmark),
+        benchmark=cast(Literal["tomato", "mvbench", "videomme"], benchmark),
         item_ids=list(cast(list[str], item_ids)),
         description=cast(str | None, payload.get("description")),
         source=cast(str | None, payload.get("source")),
@@ -925,7 +1051,7 @@ def _clear_runtime_state() -> None:
 def _run_chunk(
     item_ids: list[str],
     *,
-    benchmark: Literal["tomato", "mvbench"],
+    benchmark: Literal["tomato", "mvbench", "videomme"],
     per_group: int,
     groups: list[str] | None,
     manifest_path: Path | None,
@@ -1107,7 +1233,7 @@ def _append_results(output_path: Path, payload: list[dict[str, Any]]) -> None:
 def _write_summary(
     summary_path: Path,
     *,
-    benchmark: Literal["tomato", "mvbench"],
+    benchmark: Literal["tomato", "mvbench", "videomme"],
     requested_ids: list[str],
     output_path: Path,
     environment: dict[str, Any],
@@ -1198,7 +1324,7 @@ def _stop_requested(control: RunControl | None) -> bool:
 
 def run_benchmark(
     *,
-    benchmark: Literal["tomato", "mvbench"],
+    benchmark: Literal["tomato", "mvbench", "videomme"],
     per_group: int,
     groups: list[str] | None,
     manifest_path: Path | None,
@@ -1345,7 +1471,7 @@ def main() -> None:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     run_parser = subparsers.add_parser("run")
-    run_parser.add_argument("--benchmark", choices=["tomato", "mvbench"], required=True)
+    run_parser.add_argument("--benchmark", choices=["tomato", "mvbench", "videomme"], required=True)
     run_parser.add_argument("--per-group", type=int, default=2)
     run_parser.add_argument("--groups", default=None)
     run_parser.add_argument("--manifest", type=Path, default=None)
@@ -1401,7 +1527,9 @@ def main() -> None:
     run_parser.add_argument("--allow-dirty", action="store_true")
 
     chunk_parser = subparsers.add_parser("run-chunk")
-    chunk_parser.add_argument("--benchmark", choices=["tomato", "mvbench"], required=True)
+    chunk_parser.add_argument(
+        "--benchmark", choices=["tomato", "mvbench", "videomme"], required=True
+    )
     chunk_parser.add_argument("--per-group", type=int, default=0)
     chunk_parser.add_argument("--groups", default=None)
     chunk_parser.add_argument("--manifest", type=Path, default=None)
@@ -1445,7 +1573,7 @@ def main() -> None:
             json.dumps(
                 _run_chunk(
                     args.item_id,
-                    benchmark=cast(Literal["tomato", "mvbench"], args.benchmark),
+                    benchmark=cast(Literal["tomato", "mvbench", "videomme"], args.benchmark),
                     per_group=args.per_group,
                     groups=groups,
                     manifest_path=args.manifest,
@@ -1471,7 +1599,7 @@ def main() -> None:
     groups = args.groups.split(",") if args.groups else None
     control = RunControl(stop_file=args.stop_file, summary_path=args.summary_path)
     run_benchmark(
-        benchmark=cast(Literal["tomato", "mvbench"], args.benchmark),
+        benchmark=cast(Literal["tomato", "mvbench", "videomme"], args.benchmark),
         per_group=args.per_group,
         groups=groups,
         manifest_path=args.manifest,

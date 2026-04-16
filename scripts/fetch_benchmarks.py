@@ -18,9 +18,11 @@ TOMATO_DATASET_ID = "yale-nlp/TOMATO"
 TOMATO_DRIVE_FILE_ID = "1-dNt9bZcp6C3RXuGoAO3EBgWkAHg8NWR"
 TOMATO_FALLBACK_DATASET_ID = "ellisbrown/TOMATO"
 MVBENCH_DATASET_ID = "OpenGVLab/MVBench"
+VIDEOMME_DATASET_ID = "lmms-lab/Video-MME"
 
 TOMATO_ROOT = Path("data/benchmarks/tomato")
 MVBENCH_ROOT = Path("data/benchmarks/mvbench")
+VIDEOMME_ROOT = Path("data/benchmarks/videomme")
 
 MVBENCH_HOSTED_ZIPS = [
     "FunQA_test.zip",
@@ -423,7 +425,7 @@ def _fetch_mvbench_assets(
     _validate_mvbench(paths, metadata=False, assets=True)
 
 
-def _paths_for(dataset: Literal["tomato", "mvbench"]) -> BenchmarkPaths:
+def _paths_for(dataset: Literal["tomato", "mvbench", "videomme"]) -> BenchmarkPaths:
     if dataset == "tomato":
         root = TOMATO_ROOT
         return BenchmarkPaths(
@@ -431,6 +433,15 @@ def _paths_for(dataset: Literal["tomato", "mvbench"]) -> BenchmarkPaths:
             downloads_dir=root / "downloads",
             hf_dir=root / "hf",
             asset_dir=root,
+            source_record_path=root / "SOURCE.json",
+        )
+    if dataset == "videomme":
+        root = VIDEOMME_ROOT
+        return BenchmarkPaths(
+            root=root,
+            downloads_dir=root / "downloads",
+            hf_dir=root / "hf",
+            asset_dir=root / "videos",
             source_record_path=root / "SOURCE.json",
         )
     root = MVBENCH_ROOT
@@ -443,8 +454,58 @@ def _paths_for(dataset: Literal["tomato", "mvbench"]) -> BenchmarkPaths:
     )
 
 
+def _validate_videomme(paths: BenchmarkPaths, *, metadata: bool, assets: bool) -> None:
+    if metadata:
+        parquets = list(paths.hf_dir.rglob("*.parquet"))
+        if not parquets:
+            raise RuntimeError(
+                f"VideoMME parquet missing under {paths.hf_dir}; rerun metadata fetch"
+            )
+    if assets and not paths.asset_dir.exists():
+        raise RuntimeError(f"VideoMME videos directory missing: {paths.asset_dir}")
+
+
+def _fetch_videomme_metadata(paths: BenchmarkPaths, *, dry_run: bool) -> None:
+    allow_patterns = ["README.md", "videomme/*.parquet", "*.parquet"]
+    if dry_run:
+        print(f"[dry-run] snapshot {VIDEOMME_DATASET_ID} -> {paths.hf_dir} {allow_patterns}")
+        return
+    _, snapshot_download = _load_hf()
+    snapshot_download(
+        VIDEOMME_DATASET_ID,
+        repo_type="dataset",
+        local_dir=str(paths.hf_dir),
+        allow_patterns=allow_patterns,
+    )
+    _write_source_record(
+        paths.source_record_path,
+        {
+            "dataset": "videomme",
+            "metadata_source": f"hf://datasets/{VIDEOMME_DATASET_ID}",
+            "video_source": (
+                "videos must be sourced manually from the Video-MME official release; "
+                "the Hugging Face mirror only hosts questions, not video files"
+            ),
+        },
+    )
+    _validate_videomme(paths, metadata=True, assets=False)
+
+
+def _fetch_videomme_assets(paths: BenchmarkPaths, *, dry_run: bool) -> None:
+    del paths
+    message = (
+        "Video-MME videos are distributed outside the Hugging Face mirror. "
+        "Obtain the official video bundle per "
+        "https://video-mme.github.io/ and unpack into data/benchmarks/videomme/videos/"
+    )
+    if dry_run:
+        print(f"[dry-run] {message}")
+        return
+    raise RuntimeError(message)
+
+
 def _fetch_dataset(
-    dataset: Literal["tomato", "mvbench"],
+    dataset: Literal["tomato", "mvbench", "videomme"],
     *,
     mode: Literal["metadata", "assets", "all"],
     dry_run: bool,
@@ -463,6 +524,12 @@ def _fetch_dataset(
                 video_source=tomato_video_source,
             )
         return
+    if dataset == "videomme":
+        if mode in {"metadata", "all"}:
+            _fetch_videomme_metadata(paths, dry_run=dry_run)
+        if mode in {"assets", "all"}:
+            _fetch_videomme_assets(paths, dry_run=dry_run)
+        return
     if mode in {"metadata", "all"}:
         _fetch_mvbench_metadata(paths, dry_run=dry_run)
     if mode in {"assets", "all"}:
@@ -478,7 +545,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--dataset",
-        choices=["tomato", "mvbench", "both"],
+        choices=["tomato", "mvbench", "videomme", "both"],
         required=True,
         help="Benchmark stack to fetch.",
     )
@@ -519,7 +586,7 @@ def main() -> None:
     selected_datasets = ["tomato", "mvbench"] if args.dataset == "both" else [args.dataset]
     for dataset in selected_datasets:
         _fetch_dataset(
-            cast(Literal["tomato", "mvbench"], dataset),
+            cast(Literal["tomato", "mvbench", "videomme"], dataset),
             mode=args.mode,
             dry_run=args.dry_run,
             mvbench_profile=cast(Literal["predecessor18", "all"], args.mvbench_profile),
