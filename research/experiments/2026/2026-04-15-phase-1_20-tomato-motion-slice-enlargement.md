@@ -79,16 +79,16 @@ Rejection band:
 
 Inconclusive:
 
-- harness instability, Metal timeouts, or unreasonable slice
-  imbalance in stratified sampling.
+- harness instability, Metal timeouts, or item-load failures on
+  the new v2 items.
 
-Slice build:
+Slice build (protocol deviation from original prereg — see note at
+top of Objective):
 
-- write `research/benchmark_manifests/tomato_motion_dev_v2.toml` with 30
-  items stratified from the full TOMATO motion corpus (10 direction,
-  10 rotation, 10 shape_trend) using seed=42
-- write `research/benchmark_manifests/tomato_motion_holdout_v2.toml`
-  symmetrically, guaranteeing zero overlap with v2 dev by item_id.
+- `tomato_motion_dev_v2.toml`: v1 superset + 5 new items per group
+  from earliest available corpus keys (deterministic, not random)
+- `tomato_motion_holdout_v2.toml`: v1 superset + 5 new items per
+  group, zero overlap with dev_v2 by item_id.
 
 Cells:
 
@@ -102,12 +102,13 @@ cache since items overlap the corpus; new items force fresh encodes).
 
 ## Execution
 
-**Gating updated 2026-04-16**: phase 1.12 TOMATO holdout is
-complete (5/5 cached policies landed at 0.267; see phase 1.12
-note). This phase is now **pending scheduling**, not pending a
-gate. Runs when GPU budget allows, ordered after phase 1.21
-MVBench N=30 in the post-CodecSight strategy because MVBench N=30
-is the primary paper-claim hardening gate.
+**Launched 2026-04-16** after phase 1.21 MVBench N=30 passed.
+Dense baselines running on holdout_v2 at {1,2,3,4,6,8} frames
+via `frame_budget_baseline.py --allow-dirty`. After dense: cached
+base policy cell (`max_abs(8,32) static+shifted age=4`).
+
+Note: `--allow-dirty` means artifacts are diagnostic until rerun
+clean. For paper-facing use, rerun on clean tree.
 
 ## Result
 

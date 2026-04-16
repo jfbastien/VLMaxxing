@@ -144,9 +144,9 @@ Near-term paper path:
 - honest reproduction of the whitepaper controls and benchmark lane on
   Apple Silicon (mostly done; see `docs/reproduction-status.md`)
 - benchmark-native diagnosis of where same-position reuse fails and why
-- a stronger training-free planner that materially improves the current
-  TOMATO and MVBench holdout range (phase 1.12.B is the current best;
-  phase 1.21 N=30 is the hardening gate)
+- a stronger training-free planner: phase 1.21 MVBench N=30 **PASSED**
+  (base policy 0.600@4.06 Pareto-wins dense-6; clean tree). TOMATO
+  N=30 is the remaining hardening gate (phase 1.20, in-flight).
 - budget-placement instrumentation + failure predictor (phase 1.31 +
   temporal-coverage-metrics doc)
 - matched dense frame-budget baselines PLUS novelty-ranked dense (phase

@@ -117,16 +117,17 @@ authoritative in the per-phase notes under
   prereg_outcome: Accepted
 
 - phase_id: 1.20
-  status: proposed
+  status: running
   authoritative_note: research/experiments/2026/2026-04-15-phase-1_20-tomato-motion-slice-enlargement.md
   authoritative_artifacts: []
   current_best_policy: n/a
   supersedes: []
   paper_relevance: primary (TOMATO hardening)
-  prereg_outcome: (pending run)
+  prereg_outcome: (in-flight; dense baselines running on holdout_v2)
 
 - phase_id: 1.21
   status: completed (holdout v2 cells; dev v2 cells deferred)
+  authoritative_note: research/experiments/2026/2026-04-15-phase-1_21-mvbench-motion-slice-enlargement.md
   authoritative_artifacts:
     - research/experiments/2026/artifacts/phase1_21_mvbench_motion_holdout_v2_dense_summary.json
     - research/experiments/2026/artifacts/phase1_21_mvbench_motion_holdout_v2_cached_summary.json
@@ -136,13 +137,9 @@ authoritative in the per-phase notes under
     - research/experiments/2026/artifacts/phase1_21_sticky4_vs_dense8_holdout_v2.json
     - research/experiments/2026/artifacts/phase1_21_nosticky_vs_dense8_holdout_v2.json
   current_best_policy: "base: max_abs(8,32) static+shifted age=4 — cached=0.600@4.06 (clean tree, Pareto win vs dense-6); sticky4 refinement: cached=0.633@4.49 (dirty tree, Pareto tie vs dense-8)"
+  supersedes: [1.12.B (strengthened at N=30)]
+  paper_relevance: primary (MVBench N=30 holdout — claim #6 MVBench half PASSED)
   prereg_outcome: Accepted (holdout v2 cells; dev v2 deferred as protocol note)
-  authoritative_note: research/experiments/2026/2026-04-15-phase-1_21-mvbench-motion-slice-enlargement.md
-  authoritative_artifacts: []
-  current_best_policy: "primary cell = max_abs(8,32) static+shifted age=4 sticky_window=4 (phase 1.26.B survivor); diagnostic comparators listed in prereg"
-  supersedes: []
-  paper_relevance: primary (MVBench hardening — top priority after phase 1.26.C)
-  prereg_outcome: (pending run)
 
 - phase_id: 1.23
   status: completed

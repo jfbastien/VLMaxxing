@@ -48,12 +48,14 @@ Reproduction mode:
 
 Track: A
 
-Gating: runs after phase 1.36 feature-change oracle clarifies
-whether signal quality or schedule quality is the bottleneck. If
-signal quality is good (oracle confirms MAX_ABS r ≥ 0.7), child-veto
-may not add much and schedule improvements (sticky, age) are more
-leveraged. If signal quality is the bottleneck (r < 0.5), child-veto
-is the most immediate fix.
+Gating: runs after phase 1.36 feature-change oracle AND phase 1.34
+novelty-ranked dense baseline (which is a stronger falsifier). The
+oracle clarifies whether CPF/MEAN at child level adds localized
+signal beyond block-level routing. If the oracle shows that
+block-level MAX_ABS already correlates well with ViT feature change
+(r ≥ 0.7), child-veto's value is in catching failure cases that
+block-level misses — the oracle should also show whether child-level
+CPF/MEAN catches those specific items.
 
 Hypotheses:
 

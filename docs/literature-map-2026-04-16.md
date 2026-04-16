@@ -278,8 +278,8 @@ Five **target claims** (NOT yet evidence):
 | Claim | Status |
 |---|---|
 | Training-free temporal reuse on MLX has a held-out Pareto signal | **Credible early signal** (phase 1.12.B + phase 1.12 TOMATO) |
-| Policy family `max_abs(8,32) static+shifted age=4` beats matched dense-6 on MVBench motion holdout at 77% budget | **Real, N=15, single-shot, transfer-discovered** (phase 1.12.B) — needs N=30 to harden |
-| Adding `sticky_window=4` to that policy reaches cached=0.733 = dense-8 at 64% budget with agreement=1.0 | **Real, N=15, single-shot, transfer-discovered** (phase 1.26.B) — needs N=30 to harden |
+| Base policy `max_abs(8,32) static+shifted age=4` beats dense-6 on MVBench motion holdout at N=30 | **PASSED** (phase 1.21: cached=0.600@4.06, Pareto win vs dense-6=0.567@6; clean tree) |
+| Adding `sticky_window=4` ties dense-8 at N=30 | **PASSED** (phase 1.21: cached=0.633@4.49, 56% of dense-8 budget; dirty tree, supplementary) |
 | TOMATO motion holdout cached ties dense-6/8 at lower budget | **Real, N=15, low-accuracy regime, confidence-limited** |
 | Cross-benchmark policy transfer is asymmetric | **Real** (TOMATO→MVBench cell B is strong; MVBench→TOMATO is weak) |
 | Sticky-dynamic is benchmark-conditional (hurts TOMATO dev, helps MVBench holdout) | **Real mechanism finding** (phase 1.26 + 1.26.B); supports budget-placement theory |

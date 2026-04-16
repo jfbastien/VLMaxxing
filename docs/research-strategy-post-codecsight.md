@@ -151,14 +151,11 @@ Between phases 1.36/1.37, add:
    our failure mode than broader benchmarks because it isolates
    direction, speed, order, attribute change via conflicting-video
    design. Should run BEFORE broader generic expansion.
-8. **Phase 1.34 novelty-ranked dense baseline** — stronger
-   matched-budget comparator. Moved here from Tier A because N=30
-   is higher priority.
-9. **Phase 1.35 event-window oracle** — upper-bound ceiling on
+8. **Phase 1.35 event-window oracle** — upper-bound ceiling on
    method headroom.
-10. **Phase 1.31 failure predictor** — ~2 hrs CPU. First consumer of
-    temporal-coverage placement metrics.
-11. **Phase 1.29 MV-only signal path** — deployability story.
+9. **Phase 1.31 failure predictor** — ~2 hrs CPU. First consumer of
+   temporal-coverage placement metrics.
+10. **Phase 1.29 MV-only signal path** — deployability story.
 
 ### Tier C — deferred / blocked
 
@@ -185,20 +182,11 @@ Between phases 1.36/1.37, add:
 
 Completed or superseded (not in active queue):
 
+- ✅ Phase 1.21 (MVBench N=30 holdout: PASSED — base 0.600@4.06, sticky4 0.633@4.49)
 - ✅ Phase 1.26 (TOMATO dev: sticky rejected)
-- ✅ Phase 1.26.B (MVBench holdout: sticky4 PASSES, strongest result)
-- ✅ Phase 1.26.C (MVBench dev: diagnostic validation)
+- ✅ Phase 1.26.B (MVBench holdout N=15: sticky4 PASSES)
+- ✅ Phase 1.26.C (MVBench dev: diagnostic)
 - ✅ Phase 1.28 (off-budget probe; protocol deviation documented)
-- ✅ Phase 1.19 (calibration fix; MAE 0.20→0.0017)
-- ✅ Phase 1.24 (dense backfill; completed)
-- ✅ Phase 1.23 (FastV scouting; blocker identified)
-
-Completed or superseded (not in the active queue):
-
-- ✅ Phase 1.26 (TOMATO dev: sticky rejected)
-- ✅ Phase 1.26.B (MVBench holdout: sticky4 PASSES, new strongest result)
-- ✅ Phase 1.26.C (MVBench dev: diagnostic validation, running now)
-- ✅ Phase 1.28 (off-budget probe; see note for protocol deviation)
 - ✅ Phase 1.19 (calibration fix; MAE 0.20→0.0017)
 - ✅ Phase 1.24 (dense backfill; completed)
 - ✅ Phase 1.23 (FastV scouting; blocker identified)
