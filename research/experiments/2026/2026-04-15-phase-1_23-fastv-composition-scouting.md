@@ -77,6 +77,11 @@ written, no mlx-vlm fork was made. Scouting report committed to
 
 ## Result
 
+Preregistration outcome: **Accepted with caveat** — the scouting
+output is a clean design doc (`docs/fastv-composition-plan.md`) and
+covers all preregistered deliverables, but the `trivially portable`
+claim was too strong and had to be corrected per 2026-04-16 audit.
+
 Key findings:
 
 - **Hook site confirmed**: `Qwen2Model.__call__` layer loop in

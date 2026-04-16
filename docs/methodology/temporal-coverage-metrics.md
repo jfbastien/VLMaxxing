@@ -139,11 +139,18 @@ as candidate predictors of `disagree_with_dense`.
 
 ## Methodology rule update
 
-When reporting Pareto candidates going forward, include the 2-axis
+Once placement instrumentation (the data-logging changes above)
+lands, Pareto candidate reports **should** include the 2-axis
 skyline (acc, fresh) AND a placement summary (median longest-stale,
 coverage entropy) alongside. Policies with similar fresh budget but
 different placement profiles should be flagged; they may behave
 differently on holdout.
+
+Until instrumentation lands (pending as of 2026-04-16), this rule is
+aspirational rather than mandatory. Phase 1.31 failure predictor
+will be the first phase to cite placement metrics from new
+instrumentation; earlier phases can continue reporting the scalar
+`effective_fresh_frames` alone.
 
 ## Links
 

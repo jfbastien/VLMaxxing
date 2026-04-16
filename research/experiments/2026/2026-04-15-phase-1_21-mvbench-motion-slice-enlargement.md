@@ -17,9 +17,15 @@ Objective:
   which would have been a DIFFERENT slice, not an N=30 enlargement.
   That draft has been corrected to use the same groups as v1.
 - re-run dense frame-budget baselines on the enlarged slices
-- re-run the MVBench motion dev winner `max_abs(8,32) static+shifted
-  noage` and the CPF shoulder `cpf(px8, 0.02/0.08) static+shifted
-  noage` on the enlarged slices
+- re-run the current top cached policies on the enlarged slices.
+  **UPDATED 2026-04-16**: the primary MVBench cached winner is now
+  `max_abs(8,32) static+shifted age=4` (the transfer-discovered
+  policy from phase 1.16 cell B, holdout-confirmed in phase 1.12.B
+  at cached=0.667 / fresh=4.59 / agreement=0.933). The previous
+  `max_abs(8,32) static+shifted noage` and `cpf(px8, 0.02/0.08)
+  static+shifted noage` winners failed phase 1.12 holdout; they
+  remain diagnostic comparators but are no longer the primary
+  claims to harden.
 - tighter Wilson CIs at N=30, same justification as phase 1.20
 
 Claim register targets:
@@ -41,28 +47,32 @@ Gating:
   enlargement phases because the MVBench winner is the strongest
   point in the repo.
 
-Hypotheses:
+Hypotheses (UPDATED 2026-04-16 to the current live winner):
 
-- H1 (identity-at-N30): if the N=15 result was "cached equals
-  dense-4 item-by-item", on N=30 the per-item diff against dense-4
-  will show ≤2 disagreements out of 30.
-- H2 (shoulder stability): the CPF shoulder's accuracy holds at
-  ~0.65–0.70 on N=30 and stays above the matched dense-3 baseline.
-- H3 (budget scaling): the cached winner's effective_fresh_frames
-  stays within ±0.2 of the N=15 value (3.22) because the underlying
-  motion content is similar across the enlarged slice.
+- H1 (holdout Pareto win survives N=30): `max_abs(8,32)
+  static+shifted age=4` on MVBench motion holdout N=30 retains
+  cached_accuracy ≥ 0.600 at effective_fresh_frames ≤ 5. At N=15
+  the result was 0.667/4.59; at N=30 Wilson CI tightens from
+  [0.41, 0.85] to roughly [0.48, 0.81].
+- H2 (agreement stability): dense-agreement remains ≥ 0.85 at
+  N=30 (was 0.933 at N=15).
+- H3 (dev-to-holdout shape): cached winner still matches dense-6
+  accuracy at lower budget on the enlarged holdout, even if
+  absolute numbers shift.
 
 Acceptance band:
 
 - all new dense + cached cells evaluate cleanly
 - Wilson half-width shrinks by at least 20%
-- per-item diff against dense-4 still shows zero or near-zero
-  disagreements on the enlarged slice
+- H1 passes: cached_accuracy on `max_abs(8,32) age=4` at MVBench
+  motion holdout N=30 ≥ 0.600 at effective_fresh_frames ≤ 5
+  (strict Pareto vs holdout dense-6 which is expected near 0.667)
 
 Rejection band:
 
-- cached-vs-dense-4 disagreements rise to ≥ 5/30 → the item-identity
-  story was slice-specific, not policy-robust.
+- cached_accuracy at N=30 drops below dense-6 at matched budget
+  (i.e., phase 1.12.B win does NOT survive N=30). This would be
+  the decisive negative for the current paper claim.
 
 Inconclusive:
 
@@ -77,16 +87,18 @@ Slice build:
   symmetrically: v1 holdout superset, same five groups, zero overlap
   with dev_v2 by item_id.
 
-Cells:
+Cells (updated 2026-04-16 to target the current live winner):
 
 1. dense at {1, 2, 3, 4, 6, 8} on mvbench_motion_dev_v2 (6 cells)
 2. dense at {1, 2, 3, 4, 6, 8} on mvbench_motion_holdout_v2 (6 cells)
-3. cached `max_abs(8,32) static+shifted noage` on both v2 slices (2
-   cells)
-4. cached `cpf(px8, 0.02/0.08) static+shifted noage` on both v2 slices
-   (2 cells)
+3. cached `max_abs(8,32) static+shifted age=4` (the phase 1.12.B
+   survivor, PRIMARY) on both v2 slices (2 cells)
+4. cached `max_abs(8,32) static+shifted noage` (phase 1.11 original
+   dev winner, DIAGNOSTIC comparison) on both v2 slices (2 cells)
+5. cached `cpf(px8, 0.02/0.08) static+shifted noage` (shoulder,
+   DIAGNOSTIC) on dev_v2 only (1 cell)
 
-Total cells: 16. Runtime: ~3.5 hrs GPU (MVBench videos are shorter;
+Total cells: 15. Runtime: ~3.5 hrs GPU (MVBench videos are shorter;
 feature replay helps if items overlap current slice corpus).
 
 ## Execution

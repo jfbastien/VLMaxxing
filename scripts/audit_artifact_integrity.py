@@ -1,14 +1,21 @@
 #!/usr/bin/env python3
-"""Audit tracked artifacts for integrity + consistency with phase notes.
+"""Audit tracked artifacts for partial-snapshot integrity.
 
-Checks:
+Current scope (narrowed per 2026-04-16 audit):
 
-1. Every tracked `*_summary.json` has `completed_item_ids == requested_item_ids`
-   unless explicitly marked `stopped_early: true`.
-2. Every `*_summary.json` reports a `cached_accuracy` or `dense_accuracy`
-   consistent with its jsonl partner (rough count check).
-3. Every phase note that references a committed artifact by path exists
-   on disk.
+1. Every tracked `*_summary.json` with both `completed_item_ids` and
+   `requested_item_ids` present: flag rows where
+   `len(completed) < len(requested)` unless explicitly marked
+   `stopped_early: true`.
+2. Every `*_summary.json` with zero completed items but a non-zero
+   `cached_accuracy` / `dense_accuracy` / `agreement` is flagged
+   (sanity guard against malformed summaries).
+
+Not yet implemented (see TODOs in code):
+
+- summary/jsonl row-count cross-check
+- note-to-artifact path reference check (scan is stubbed)
+- nested wrapper schemas (e.g., phase 1.16 aggregate wrappers)
 
 Run: `uv run python scripts/audit_artifact_integrity.py`
 

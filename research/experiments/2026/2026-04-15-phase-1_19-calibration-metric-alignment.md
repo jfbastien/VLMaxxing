@@ -96,6 +96,8 @@ Re-calibrated all 4 manifests (`phase1_19_*_calibration_v2.json`).
 
 ## Result
 
+Preregistration outcome: **Accepted**.
+
 MVBench motion dev, 30 policies that actually ran in phase 1.11:
 
 | calibration version | MAE vs runner `reuse_ratio_mean_active` |

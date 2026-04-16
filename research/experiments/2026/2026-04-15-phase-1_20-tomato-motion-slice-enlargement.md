@@ -41,9 +41,15 @@ Hypotheses:
 
 - H1 (stability): dev cached accuracy on N=30 stays within ±1/30 of
   the N=15 value (0.400 ± 0.033).
-- H2 (holdout recovery): holdout cached accuracy on N=30 rises above
-  the N=15 value of 0.200, because at N=15 the holdout was flat at a
-  confidence-limited regime (dense itself was 0.267 at matched budget).
+- H2 (holdout stability): the current N=15 holdout result is
+  cached_accuracy=0.267 (4/15) tying dense-6/8 at lower budget.
+  At N=30, Wilson CI tightens from [0.11, 0.52] to roughly
+  [0.13, 0.42]. Within that tighter CI, at least one cached policy
+  still matches dense-6/8 accuracy at strictly lower fresh-frame
+  budget. (Corrected 2026-04-16: an earlier draft claimed the N=15
+  value was 0.200 — that was the dense-1/2/3 accuracy on holdout,
+  not the cached accuracy. All 5 cached policies landed at 0.267
+  per `phase1_12_tomato_motion_holdout_summary.json`.)
 - H3 (Pareto stability): the dev-side frontier shape is robust —
   dense-6 and cached winner still intersect; dense-4 still underperforms
   cached winner.

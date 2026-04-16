@@ -101,6 +101,17 @@ TOMATO motion dev cells 1 and 2 launched via
 
 ## Result (TOMATO motion dev, cells 1 + 2 complete 2026-04-16)
 
+Preregistration outcome: **Rejected** — both sticky variants on
+TOMATO motion dev strictly worsen cached accuracy AND raise the
+fresh-frame budget relative to the vanilla `max_abs(8,32)
+static+shifted age=4` baseline. H1 (sticky recovers direction item)
+is REJECTED.
+
+Phase 1.26.B (MVBench motion holdout with the same policy +
+sticky) is in-flight at the time of this note; updated outcome
+will be appended when it completes.
+
+
 | policy | cached | dense | agreement | fresh |
 |---|---|---|---|---|
 | vanilla `max_abs(8,32) static+shifted age=4` (reference) | 0.400 | 0.467 | 0.867 | 3.99 |

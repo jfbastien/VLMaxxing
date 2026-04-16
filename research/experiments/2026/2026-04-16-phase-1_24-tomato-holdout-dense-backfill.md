@@ -80,6 +80,13 @@ with `pareto_analysis.py analyze`.
 
 ## Result
 
+Preregistration outcome: **Accepted with caveat** — curve built
+successfully, H2 (dense-4 low-point) confirmed. Caveat: initial
+export of `phase1_24_tomato_motion_holdout_dense_full.json` had a
+data bug (n=0 placeholder CIs on phase-1.8-origin rows) caught by
+2026-04-16 audit; fixed in the same tranche by recomputing n from
+`per_group_dense_accuracy.*.count` and preserving the source CIs.
+
 Full TOMATO motion holdout dense curve (N=15):
 
 | frame_count | accuracy | Wilson 95% CI |

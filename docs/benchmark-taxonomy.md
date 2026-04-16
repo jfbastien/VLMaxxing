@@ -26,7 +26,9 @@ presence here does not imply a local result.
   gain, order sensitivity, and frame-information disparity. Items
   are constructed so naive single-frame or out-of-order answers fail.
 - **Task format**: multiple choice (letters A-F).
-- **Scorer**: exact-letter match with fallback parser.
+- **Scorer**: strict-choice parser on the local runner (exact letter
+  match on the first recognized choice-letter in the generation,
+  with the loose fallback parser kept as a documented backup).
 - **Frame structure**: short clips (~8 uniform frames on our stack).
 - **Current local slices**:
   - `tomato_motion_dev_v1.toml` (15 items, groups: direction,

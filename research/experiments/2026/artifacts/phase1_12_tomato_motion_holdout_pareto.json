@@ -6,18 +6,18 @@
       "ci95_low": 0.0,
       "dense_accuracy": 0.2,
       "frame_count": 1,
-      "n": 0
+      "n": 15
     },
     {
-      "ci95_high": 0.45185448715169363,
-      "ci95_low": 0.07047549346981563,
+      "ci95_high": 1.0,
+      "ci95_low": 0.0,
       "dense_accuracy": 0.2,
       "frame_count": 2,
       "n": 15
     },
     {
-      "ci95_high": 0.45185448715169363,
-      "ci95_low": 0.07047549346981563,
+      "ci95_high": 1.0,
+      "ci95_low": 0.0,
       "dense_accuracy": 0.2,
       "frame_count": 3,
       "n": 15
@@ -27,18 +27,18 @@
       "ci95_low": 0.0,
       "dense_accuracy": 0.13333333333333333,
       "frame_count": 4,
-      "n": 0
+      "n": 15
     },
     {
       "ci95_high": 1.0,
       "ci95_low": 0.0,
       "dense_accuracy": 0.26666666666666666,
       "frame_count": 6,
-      "n": 0
+      "n": 15
     },
     {
-      "ci95_high": 0.5195043405598057,
-      "ci95_low": 0.10897453325692374,
+      "ci95_high": 1.0,
+      "ci95_low": 0.0,
       "dense_accuracy": 0.26666666666666666,
       "frame_count": 8,
       "n": 15

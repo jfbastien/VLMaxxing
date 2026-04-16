@@ -3,132 +3,51 @@
   "manifest_path": "research/benchmark_manifests/tomato_motion_holdout_v1.toml",
   "runs": [
     {
-      "ci95_high": 1.0,
-      "ci95_low": 0.0,
-      "count": 0,
+      "ci95_high": 0.45185448715169363,
+      "ci95_low": 0.07047549346981563,
       "dense_accuracy": 0.2,
-      "dense_accuracy_ci95": [
-        0.0,
-        1.0
-      ],
       "frame_count": 1,
-      "n": 0
+      "n": 15
     },
     {
-      "agreement": 1.0,
       "ci95_high": 0.45185448715169363,
       "ci95_low": 0.07047549346981563,
-      "count": 15,
       "dense_accuracy": 0.2,
-      "dense_accuracy_ci95": [
-        0.07047549346981563,
-        0.45185448715169363
-      ],
       "frame_count": 2,
-      "n": 15,
-      "output_path": "research/experiments/2026/artifacts/phase1_24_tomato_motion_holdout_dense/frame_2.jsonl",
-      "per_group_dense_accuracy": {
-        "direction": {
-          "count": 5,
-          "dense_accuracy": 0.4
-        },
-        "rotation": {
-          "count": 5,
-          "dense_accuracy": 0.2
-        },
-        "shape_trend": {
-          "count": 5,
-          "dense_accuracy": 0.0
-        }
-      },
-      "summary_path": "research/experiments/2026/artifacts/phase1_24_tomato_motion_holdout_dense/frame_2_summary.json"
+      "n": 15
     },
     {
-      "agreement": 1.0,
       "ci95_high": 0.45185448715169363,
       "ci95_low": 0.07047549346981563,
-      "count": 15,
       "dense_accuracy": 0.2,
-      "dense_accuracy_ci95": [
-        0.07047549346981563,
-        0.45185448715169363
-      ],
       "frame_count": 3,
-      "n": 15,
-      "output_path": "research/experiments/2026/artifacts/phase1_24_tomato_motion_holdout_dense/frame_3.jsonl",
-      "per_group_dense_accuracy": {
-        "direction": {
-          "count": 5,
-          "dense_accuracy": 0.4
-        },
-        "rotation": {
-          "count": 5,
-          "dense_accuracy": 0.2
-        },
-        "shape_trend": {
-          "count": 5,
-          "dense_accuracy": 0.0
-        }
-      },
-      "summary_path": "research/experiments/2026/artifacts/phase1_24_tomato_motion_holdout_dense/frame_3_summary.json"
+      "n": 15
     },
     {
-      "ci95_high": 1.0,
-      "ci95_low": 0.0,
-      "count": 0,
+      "ci95_high": 0.37881982832322364,
+      "ci95_low": 0.03736125910306537,
       "dense_accuracy": 0.13333333333333333,
-      "dense_accuracy_ci95": [
-        0.0,
-        1.0
-      ],
       "frame_count": 4,
-      "n": 0
+      "n": 15
     },
     {
-      "ci95_high": 1.0,
-      "ci95_low": 0.0,
-      "count": 0,
-      "dense_accuracy": 0.26666666666666666,
-      "dense_accuracy_ci95": [
-        0.0,
-        1.0
-      ],
-      "frame_count": 6,
-      "n": 0
-    },
-    {
-      "agreement": 1.0,
       "ci95_high": 0.5195043405598057,
       "ci95_low": 0.10897453325692374,
-      "count": 15,
       "dense_accuracy": 0.26666666666666666,
-      "dense_accuracy_ci95": [
-        0.10897453325692374,
-        0.5195043405598057
-      ],
+      "frame_count": 6,
+      "n": 15
+    },
+    {
+      "ci95_high": 0.5195043405598057,
+      "ci95_low": 0.10897453325692374,
+      "dense_accuracy": 0.26666666666666666,
       "frame_count": 8,
-      "n": 15,
-      "output_path": "research/experiments/2026/artifacts/phase1_24_tomato_motion_holdout_dense/frame_8.jsonl",
-      "per_group_dense_accuracy": {
-        "direction": {
-          "count": 5,
-          "dense_accuracy": 0.4
-        },
-        "rotation": {
-          "count": 5,
-          "dense_accuracy": 0.4
-        },
-        "shape_trend": {
-          "count": 5,
-          "dense_accuracy": 0.0
-        }
-      },
-      "summary_path": "research/experiments/2026/artifacts/phase1_24_tomato_motion_holdout_dense/frame_8_summary.json"
+      "n": 15
     }
   ],
   "slice": "holdout",
   "sources": [
-    "research/experiments/2026/artifacts/phase1_8_motion_frame_budget_holdout.json",
+    "research/experiments/2026/artifacts/phase1_8_motion_frame_budget_baselines.json (holdout.dense_curve)",
     "research/experiments/2026/artifacts/phase1_24_tomato_motion_holdout_dense_summary.json"
   ]
 }

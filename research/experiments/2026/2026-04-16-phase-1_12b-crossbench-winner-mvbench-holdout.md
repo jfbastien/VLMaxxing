@@ -11,9 +11,14 @@ Objective:
   fresh=3.22). This specific policy was NOT in the phase 1.11 grid
   (which sampled noage + age=8 but not age=4 for this threshold set).
 - The policy was selected by performance on the TOMATO motion dev
-  slice, NOT by MVBench dev tuning — so there is no
-  dev-to-MVBench-holdout contamination. A single-shot MVBench holdout
-  evaluation of this policy is methodologically clean.
+  slice. However, the full phase 1.16 cell-B workflow DID inspect
+  MVBench dev accuracy before launching the holdout cell — so the
+  correct framing is **transfer-discovered follow-up winner**,
+  NOT **benchmark-blind clean holdout**. Codex audit 2026-04-16
+  flagged an earlier draft of this note for using the stronger
+  phrasing; corrected here. The result still stands as a credible
+  early method signal; it just needs honest framing about how the
+  policy got to this holdout cell.
 
 Claim register targets:
 
@@ -78,6 +83,13 @@ uv run python scripts/planner_grid_search.py run-explicit \
 ```
 
 ## Result
+
+Preregistration outcome: **Accepted with caveat** — H3 threshold
+passed (cached_accuracy ≥ 0.667 on MVBench holdout). Caveat:
+policy selection was informed by MVBench dev via phase 1.16 cell
+B before launching this holdout cell, so this is a
+"transfer-discovered follow-up" result rather than a
+"benchmark-blind clean holdout." N=15 Wilson CI is wide.
 
 **Cross-benchmark winner survives MVBench motion holdout.**
 

@@ -19,7 +19,7 @@ means we cite the method but have not verified the specifics we cite.
 | train | `train-free` or `trained` |
 | stage | reduction stage on the VLM pipeline |
 | signal | signal the method uses for its decision |
-| family | `encoder-side-temporal`, `intra-frame-token`, `kv-memory`, `systems`, or `trained-representation` |
+| family | `encoder-side-temporal`, `intra-frame-token`, `kv-memory`, `systems`, `trained-representation`, or `historical` |
 | headline_metric | representative result in a short form |
 | portability_blocker | what prevents this running on our MLX stack |
 | verified | YYYY-MM-DD of primary-source check |

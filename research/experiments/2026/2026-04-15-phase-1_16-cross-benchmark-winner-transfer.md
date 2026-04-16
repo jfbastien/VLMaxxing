@@ -85,6 +85,14 @@ uv run python scripts/run_benchmark_track_a.py \
 
 ## Result
 
+Preregistration outcome: **Accepted with caveat** — both cells ran
+cleanly; results support the preregistered hypotheses on
+asymmetric transfer. Caveat: cell B's 0.800 dev-accuracy finding
+was informed by MVBench dev artifact inspection before the holdout
+follow-up (phase 1.12.B) was launched; the correct framing is
+"transfer-discovered follow-up," not "clean blinded cross-benchmark
+holdout."
+
 Both cells executed 2026-04-16 via `planner_grid_search.py run-explicit`.
 
 **Cell A — MVBench winner on TOMATO motion dev** (`max_abs(8,32)

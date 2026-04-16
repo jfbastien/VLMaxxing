@@ -163,7 +163,14 @@ The scientific target is not merely to reproduce the imported whitepaper. The
 target is to use an honest reproduction base to build a stronger method paper.
 
 Current position relative to the adjacent efficiency literature tracked in
-[docs/literature-map.md](docs/literature-map.md):
+[docs/literature-map-2026-04-16.md](docs/literature-map-2026-04-16.md)
+(post-CodecSight map; supersedes the earlier
+[docs/literature-map.md](docs/literature-map.md) which remains as
+historical context). See also
+[docs/research-strategy-post-codecsight.md](docs/research-strategy-post-codecsight.md)
+and [docs/benchmark-taxonomy.md](docs/benchmark-taxonomy.md) and
+[docs/related-work-table.md](docs/related-work-table.md) for paper
+framing:
 
 - we now have real benchmark-native semantic evidence, which is necessary but
   not sufficient for a competitive systems or efficiency paper
@@ -186,18 +193,25 @@ Current position relative to the adjacent efficiency literature tracked in
   paper-citable signal is the `0.400`-accuracy frontier, not the raw count.
   N=15, Wilson 95% CI wide, point estimate only; holdout validation in
   phase 1.12 is the discipline gate.
-- **MVBench motion dev has a PROVISIONAL Pareto point** (sweep in flight,
-  16 of 30 policies done, dirty-tree run): `max_abs(8.0, 32.0)
-  static+shifted no-age` reaches cached `0.733` at fresh `3.22`, matching
-  dense-4's peak `0.733` at lower budget. Important caveats:
-  - in-flight partial result, not from a clean tree
-  - per-group breakdown essentially reproduces dense-4's weakness on
-    `moving_direction` (`1/3`); the planner matches dense-4's performance,
-    it does not "solve" motion reasoning
-  - N=15, overlapping Wilson CIs
-  - static+shifted + max_abs "unlocking" the frontier is a suggestive
-    correlation, not yet a causal finding — 14 more policies remaining,
-    may or may not show additional candidates
+- **UPDATED 2026-04-16: MVBench motion holdout has a STRONG EARLY
+  SIGNAL** (phase 1.12.B, N=15 transfer-discovered single-shot).
+  `max_abs(8,32) static+shifted age=4` reaches cached=0.667, fresh=4.59,
+  agreement=0.933 on MVBench motion holdout — strict Pareto win vs
+  dense-6 (0.667 @ 6 frames = 77% budget at equal accuracy).
+  **Not paper-grade SOTA**; caveats:
+  - N=15, Wilson CI [0.41, 0.85]
+  - single-shot; holdout test was a transfer-discovered follow-up,
+    not a benchmark-blind holdout — the policy was chosen on TOMATO
+    dev but selection was informed by MVBench dev via phase 1.16
+  - dirty-tree artifacts
+  - Track B compute measurement is NOT built; "speedup" claims are
+    not yet supported
+  - Phase 1.21 N=30 enlargement is the next hardening gate. See
+    `docs/research-strategy-post-codecsight.md` for ordering.
+- Phase 1.11 MVBench dev sweep completed at 30/30; the primary dev
+  winners failed phase 1.12 holdout; the current live winner is the
+  transfer-discovered age=4 variant described above (the original
+  phase 1.11 grid had a hole at this threshold × age combination).
 - the current best path toward a competitive paper is therefore:
   - finish honest whitepaper reproduction on this stack
   - isolate when the planner fails
