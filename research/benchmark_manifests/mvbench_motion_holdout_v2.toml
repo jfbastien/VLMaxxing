@@ -1,0 +1,41 @@
+benchmark = "mvbench"
+source = "mvbench_motion_holdout_v1 superset + 3 new items per group"
+description = "N=30 MVBench motion holdout slice. Superset of mvbench_motion_holdout_v1.toml (15 items) with 15 additional items (3 per group, indices chosen to avoid dev_v1 + dev_v2 overlap). Same five groups: action_localization, fine_grained_action, object_interaction, moving_direction, moving_attribute. Zero overlap with dev_v2."
+
+item_ids = [
+  # action_localization (6 items): holdout_v1 {4,104,172} + new {7,8,9}
+  "mvbench:action_localization:4",
+  "mvbench:action_localization:104",
+  "mvbench:action_localization:172",
+  "mvbench:action_localization:7",
+  "mvbench:action_localization:8",
+  "mvbench:action_localization:9",
+  # fine_grained_action (6 items): holdout_v1 {26,33,75} + new {6,7,8}
+  "mvbench:fine_grained_action:26",
+  "mvbench:fine_grained_action:33",
+  "mvbench:fine_grained_action:75",
+  "mvbench:fine_grained_action:6",
+  "mvbench:fine_grained_action:7",
+  "mvbench:fine_grained_action:8",
+  # object_interaction (6 items): holdout_v1 {46,75,96} + new {6,7,8}
+  "mvbench:object_interaction:46",
+  "mvbench:object_interaction:75",
+  "mvbench:object_interaction:96",
+  "mvbench:object_interaction:6",
+  "mvbench:object_interaction:7",
+  "mvbench:object_interaction:8",
+  # moving_direction (6 items): holdout_v1 {32,37,125} + new {6,7,8}
+  "mvbench:moving_direction:32",
+  "mvbench:moving_direction:37",
+  "mvbench:moving_direction:125",
+  "mvbench:moving_direction:6",
+  "mvbench:moving_direction:7",
+  "mvbench:moving_direction:8",
+  # moving_attribute (6 items): holdout_v1 {42,51,136} + new {6,7,8}
+  "mvbench:moving_attribute:42",
+  "mvbench:moving_attribute:51",
+  "mvbench:moving_attribute:136",
+  "mvbench:moving_attribute:6",
+  "mvbench:moving_attribute:7",
+  "mvbench:moving_attribute:8",
+]
