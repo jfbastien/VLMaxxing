@@ -152,16 +152,28 @@ phase 1.29 will prototype PyAV MV extraction.
 
 ### Intra-frame token reduction — verified 2026-04-16
 
-Four-axis taxonomy (for the paper's related-work table):
+Four-axis taxonomy (for the paper's related-work table; authoritative
+table in [related-work-table.md](related-work-table.md)):
 
 | Method | Reduction stage | Signal source | MLX status |
 |---|---|---|---|
 | **FastV** (ECCV 2024 Oral) | Decoder-internal (layer K) | Intra-modal attention | Algorithmically orthogonal; implementation on MLX is non-trivial because fused SDPA does not currently expose attention scores (requires mlx-vlm fork) |
+| **FrameFusion** (2025) | Post-encoder; video-native | Similarity + importance (two-stage) | torch; MLX port TBD. Strongest video-native comparator |
 | **VisionZip** (CVPR 2025) | Post-encoder | CLS-attention | torch only, Qwen2-VL port exists, Qwen2.5-VL TBD |
 | **SparseVLM** (ICML 2025) | Decoder-internal (every LLM layer) | Cross-modal (text-visual attention) | torch only (HF hooks per layer) |
 | **FastVID** | Post-encoder, spans temporal groups | Density clustering | torch only (hardwired into lmms-eval fork of `modeling_qwen2_5_vl.py`) |
-| **VScan** | Multi-stage (ViT + LLM mid-layer) | Intra-modal (ViT) + cross-modal | torch only, modifies both forward passes |
+| **VScan** (ICML 2025) | Two-stage: ViT token merge + LLM mid-layer prune | Intra-modal (ViT) + cross-modal | torch only, modifies both forward passes |
 | **VLCache** | Encoder-cache + KV-cache reuse | Cross-request similarity | SGLang only |
+
+**FrameFusion** (added 2026-04-16 per ChatGPT audit): the most
+directly-adjacent *video-native* within-frame reduction method. It
+combines similarity-based token merging with importance-based pruning
+and reports 70% vision-token reduction with 1.6–1.9× end-to-end
+speedup and small average performance loss across multiple LVLMs.
+Because our method also addresses temporal redundancy (across frames),
+FrameFusion partially overlaps our signal axis — we likely cannot
+claim strict orthogonality. Include in the paper's related-work
+comparison table.
 
 All six listed methods run as training-free inference-time policies
 on top of frozen VLMs. (FastVID adds dynamic density clustering at
@@ -295,6 +307,8 @@ subagent returns.
 - CodecSight: https://arxiv.org/abs/2604.06036
 - CoPE-VideoLM: https://arxiv.org/abs/2602.13191
 - FastVID: https://openreview.net/forum?id=2xS4VtpApy
+- FrameFusion: https://arxiv.org/abs/2501.01986
+- VScan: https://arxiv.org/abs/2505.22654
 - VisionZip: https://arxiv.org/abs/2412.04467
 - SparseVLM: https://arxiv.org/abs/2410.04417
 - FastV: https://arxiv.org/abs/2403.06764 (CVPR 2024)

@@ -1,75 +1,143 @@
 # Pareto Reporting
 
-This document fixes how quality-versus-reuse trade-offs should be reported once
-planner and refresh sweeps move beyond pure diagnosis.
+Last updated: 2026-04-16. Prior version preserved in git history;
+this rewrite reflects the methodology upgrade landed in phases 1.8,
+1.9, 1.10, 1.11, 1.12, 1.12.B, 1.19, 1.24, and the 2026-04-16 audit
+tranche.
 
-## Required Axes
+## What changed relative to the previous version
 
-Report trade-offs over:
+The previous rule said "until Track B lands, reuse is the primary
+x-axis." That rule served as a guardrail against mislabeling reuse
+as compute savings, but the project has since adopted a stronger
+comparison: **matched fresh-token-equivalent dense frame-budget
+baselines**. Those are the fair primary x-axis, not reuse.
 
-- quality:
-  - dense accuracy
-  - cached accuracy
-  - dense-vs-cached agreement
-- reuse:
-  - active reuse ratio
-  - raw reuse ratio
-- policy:
-  - planner statistic
-  - reuse classes
-  - max age
-  - refresh interval
-- dense baseline:
-  - matched frame-budget baselines such as dense `1/2/4/8` frames when the
-    comparison is about Track A quality at a bounded fresh-vision budget
+Reuse remains a useful descriptive axis, but it is no longer the
+primary Pareto axis.
 
-## Current Rule
+## Required axes (updated)
 
-Until Track B lands, reuse is the primary x-axis. Do not relabel reuse as
-speedup, compression, or FLOP reduction.
+### Primary axes (Pareto is computed on these)
 
-Track A plots and tables should therefore say:
+- `cached_accuracy` (maximize)
+- `effective_fresh_frames` (minimize) = `1 + (N-1) × (1 - mean_active_reuse)`
+- `dense_accuracy` at matched `frame_count` (the dense curve we
+  compare cached against)
 
-- `agreement versus active reuse`
-- `cached accuracy versus active reuse`
+### Secondary axes (report alongside; do not compute Pareto on these
+alone)
 
-and not:
+- `agreement` with same-run dense — cheap distributional check
+- `mean_active_reuse` — descriptive of mechanism, not compute cost
+- per-frame fresh-token distribution — see
+  [temporal-coverage-metrics.md](temporal-coverage-metrics.md)
 
-- `speedup`
-- `compression ratio`
+### Policy metadata (record on every cell)
 
-unless same-stack skipped-compute evidence exists.
+- planner statistic (mean / max_abs / changed_pixel_fraction / top_k_mean)
+- thresholds (static, shifted, pixel_change, top_k)
+- reuse_classes (static / static+shifted / ...)
+- max_age
+- sticky_window (since phase 1.26)
+- refresh_interval (if used)
 
-Feature replay does not change this rule. Replay reduces repeated experiment
-cost; it is not a Track B win.
+## Primary comparison rule
 
-## Holdout Rule
+A cached point is **Pareto-dominated by dense** iff there exists a
+dense-N baseline cell on the same slice with
+`dense_accuracy >= cached_accuracy` AND `dense_frame_count <=
+effective_fresh_frames` AND at least one of those is strict. This
+is the analyzer's current rule (see
+`scripts/pareto_analysis.py::_dominates`).
+
+A cached point is **inter-cached Pareto skyline**-surviving iff no
+other cached point dominates it on the chosen objective set. We
+compute two skylines by default:
+
+- 2-axis skyline `(cached_accuracy, effective_fresh_frames)`
+- 3-axis skyline adding `agreement`
+
+Both are emitted by `pareto_analysis.py::_inter_cached_skyline` and
+reported in the JSON output.
+
+## Reporting rules
+
+When a paper-facing plot or table is produced:
+
+1. The plot's x-axis MUST be `effective_fresh_frames`, not
+   `mean_active_reuse`.
+2. A dense-N curve at matching `frame_count`s MUST be on the same
+   axes (the fair baseline).
+3. Wilson 95% CI bars MUST be shown on every cell.
+4. When reporting per-group results, the CI width depends on the
+   group size; at N=15 the per-group CI bars are too wide to
+   separate adjacent groups. Flag this as a caveat.
+5. When citing a cross-benchmark-discovered result (e.g., phase
+   1.12.B), the prose MUST say "transfer-discovered follow-up,"
+   NOT "clean blinded holdout."
+6. Do not relabel reuse as speedup, compression, or FLOP reduction
+   unless same-stack Track B skipped-compute evidence exists. This
+   guardrail from the previous version is preserved.
+
+Feature replay does not change any of these rules. Replay reduces
+repeated experiment cost; it is not a Track B win.
+
+## Holdout rule (unchanged from prior version, clarified)
 
 If a sweep is used to choose a policy:
 
-1. search on the dev manifest
-2. choose one policy, OR up to K tied policies (see below)
-3. evaluate each chosen policy once on the holdout manifest
-4. keep both dev and holdout numbers in the note
-5. never combine holdout evaluations across policies; always report
-   per-policy holdout separately so multiple-comparison risk is visible
+1. Search on the dev manifest.
+2. Choose one policy, OR up to K tied policies (see below).
+3. Evaluate each chosen policy once on the holdout manifest.
+4. Keep both dev and holdout numbers in the note.
+5. Never combine holdout evaluations across policies; always report
+   per-policy holdout separately so multiple-comparison risk is
+   visible.
 
 Top-K allowance:
 
-- preferred mode is K=1 (pick a single winner and gate on holdout)
-- K>1 is allowed when the top-K dev points are tied on the primary metric
-  (cached_accuracy) — there is no principled way to pick "the" winner
-  without implicit tuning on holdout
-- K should not exceed 5; report the rationale for the chosen K in the
-  note; acknowledge that "at least one survived" under K>1 inflates the
-  chance of a noise-driven pass and therefore requires tighter CI framing
-  in any paper-facing claim
+- Preferred mode is K=1 (pick a single winner and gate on holdout).
+- K>1 is allowed when the top-K dev points are tied on the primary
+  metric (cached_accuracy) — there is no principled way to pick
+  "the" winner without implicit tuning on holdout.
+- K should not exceed 5; report the rationale for the chosen K in
+  the note.
+- Acknowledge that "at least one survived" under K>1 inflates the
+  chance of a noise-driven pass and therefore requires tighter CI
+  framing in any paper-facing claim.
 
-## Forward Link
+### Cross-benchmark-discovered winners (NEW, 2026-04-16)
 
-When Track B exists, this document can be extended to add:
+Phase 1.12.B introduced a new pattern: a dev-selected winner on
+benchmark A gets applied to benchmark B's holdout as a single-shot
+test. Rules:
 
-- latency
+- The winner's selection MUST have been dev-only on benchmark A;
+  it must NOT have been informed by B's holdout.
+- The single-shot holdout test on B is preregistered as a separate
+  phase (e.g., 1.12.B) with explicit accept/reject bands.
+- In prose, the result is framed as "transfer-discovered follow-up
+  winner," NOT "benchmark-blind holdout". The second framing is
+  stronger and we haven't earned it.
+- If both B-dev and B-holdout are passed in the same tranche, that
+  is standard holdout, not transfer.
+
+## Forward link
+
+When Track B lands, this document can be extended to add:
+
+- latency (wall-clock prefill + generation)
 - peak memory
-- fresh-token-equivalent budget
-- matched dense frame-budget baselines
+- measured vision-encode FLOP skip
+- measured cross-axis composition gain (e.g., our method × FastV)
+
+Until then, do not cite Track B numbers.
+
+## Related
+
+- [planner-sweep.md](planner-sweep.md) — how to search policies
+- [temporal-coverage-metrics.md](temporal-coverage-metrics.md) —
+  budget placement axes
+- [feature-replay.md](feature-replay.md) — why replay is not a
+  Track B substitute

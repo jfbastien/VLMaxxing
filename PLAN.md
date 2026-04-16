@@ -1,6 +1,9 @@
 # Research Plan
 
-Last updated: 2026-04-14
+Last updated: 2026-04-16 (post-CodecSight repositioning; first
+credible held-out Pareto signal at phase 1.12.B pending N=30
+hardening; see `docs/research-strategy-post-codecsight.md` and
+`docs/literature-map-2026-04-16.md`)
 
 ## Charter
 

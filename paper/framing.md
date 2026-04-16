@@ -67,6 +67,22 @@ The current local evidence now adds two useful controls:
     - `mean + max_age = 4` matches that `0.400` cached accuracy at about
       `1247` fresh-vision token-equivalent budget versus dense `6` at `2400`
     - the holdout slice does not preserve that win cleanly
+- **2026-04-16 update**: phase 1.12.B surfaced a genuine held-out
+  Pareto win on MVBench motion: `max_abs(8,32) static+shifted age=4`
+  reaches cached `0.667` at `4.59` effective fresh frames, matching
+  dense-`6` at the same accuracy at `77%` of dense-6's budget with
+  `93.3%` dense-agreement. This is a credible early method signal,
+  not a SOTA claim: it is `N=15`, single-shot, and
+  transfer-discovered (the winner came from TOMATO dev selection,
+  not MVBench dev tuning). `N=30` enlargement (phase 1.21) is the
+  gate before this number can enter a paper.
+- **Budget placement hypothesis (NEW, 2026-04-16)**: the next
+  explanatory variable is likely budget placement over time, not
+  just total fresh budget. Two policies with similar
+  effective-fresh-frames can behave very differently on temporal
+  reasoning if one spends fresh tokens around the decisive event
+  and the other spends them in the wrong part of the clip. See
+  `docs/methodology/temporal-coverage-metrics.md`.
 - `confidence-limited` and `staleness-limited` remain repo-local operational
   labels for now; the next experiment should justify them with dense option
   log-prob or answer-margin logging rather than treating them as standard

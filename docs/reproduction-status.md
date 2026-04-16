@@ -64,7 +64,28 @@ Current bottom line:
 If the goal is honest whitepaper reproduction rather than new method work, the
 highest-leverage next steps are:
 
-1. add benchmark-path identity on the Qwen `7B` TOMATO and MVBench runner
+1. ✅ ~~add benchmark-path identity on the Qwen `7B` TOMATO and MVBench runner~~
+   — done in phase 1.46 ([2026-04-14-phase-1_46-benchmark-path-controls.md](../research/experiments/2026/2026-04-14-phase-1_46-benchmark-path-controls.md))
 2. extend the real-video slice beyond endpoint scene facts so natural middle-event items are explicit
 3. compare the repaired mechanism probes on a higher-precision runtime before treating the weaker numbers as real disagreement
 4. rerun broader refresh sweeps beyond the five-item TOMATO `direction` slice before claiming a stable drift story
+
+### 2026-04-16 update
+
+The project has moved from "reproduction with diagnosis" into "early
+method discovery." The current paper-facing paths (not repro paths)
+are:
+
+- Phase 1.20 TOMATO N=30 enlargement — required to harden the N=15
+  TOMATO holdout tie
+- Phase 1.21 MVBench N=30 enlargement — required to harden the
+  phase 1.12.B cross-benchmark-discovered holdout Pareto survivor
+- Phase 1.26 sticky-dynamic planner — CodecSight-borrowed mechanism
+  aimed at the current failure mode
+- Phase 1.27 projector-group mask completion — CodecSight-borrowed
+- Stage E Track B — the gating requirement before any
+  paper-facing "real skipped compute" claim
+
+Reproduction status itself has NOT changed since this file's last
+material update; §2.5 and §2.6 are still "partial" / "weaker than
+imported."
