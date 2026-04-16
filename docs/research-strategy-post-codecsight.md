@@ -133,15 +133,33 @@ Priority = (probability-of-moving-paper-claim × magnitude) / (effort).
    only frame0/middle/last/first+last/uniform4/uniform8 on TOMATO
    dev. Sharpens the budget-placement theory with causal evidence.
 
+### Also in Tier A: explicit reuse-class comparison
+
+Between phases 1.36/1.37, add:
+
+- **STATIC-only vs STATIC+SHIFTED** comparison on the current best
+  policy family. Per ChatGPT 2026-04-16 review: this is cheap,
+  scientifically clean, and directly relevant since the imported
+  shift-locality strength is not fully settled on the local stack.
+  The combined Planner 2.0 family should be: `{MAX_ABS, CPF} ×
+  {STATIC, STATIC+SHIFTED} × {age=2, age=4} × {no-sticky, sticky4}
+  × {no-child-veto, child-veto}`.
+
 ### Tier B — follow-up
 
-7. **Phase 1.31 failure predictor** — ~2 hrs CPU. First consumer of
-   temporal-coverage placement metrics.
-8. **Phase 1.35 event-window oracle** — ~2 hrs annotation + code.
-   Upper-bound ceiling on method headroom.
-9. **Phase 1.25 TempCompass ingest** — third benchmark, aligned
-   with our failure mode.
-10. **Phase 1.29 MV-only signal path** — deployability story.
+7. **Phase 1.25 TempCompass ingest** — **PROMOTED** per ChatGPT
+   2026-04-16 and codex reviews. TempCompass is better aligned with
+   our failure mode than broader benchmarks because it isolates
+   direction, speed, order, attribute change via conflicting-video
+   design. Should run BEFORE broader generic expansion.
+8. **Phase 1.34 novelty-ranked dense baseline** — stronger
+   matched-budget comparator. Moved here from Tier A because N=30
+   is higher priority.
+9. **Phase 1.35 event-window oracle** — upper-bound ceiling on
+   method headroom.
+10. **Phase 1.31 failure predictor** — ~2 hrs CPU. First consumer of
+    temporal-coverage placement metrics.
+11. **Phase 1.29 MV-only signal path** — deployability story.
 
 ### Tier C — deferred / blocked
 

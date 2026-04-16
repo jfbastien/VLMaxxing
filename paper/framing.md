@@ -22,16 +22,17 @@ credible held-out Pareto signal in phase 1.12.B).
 
 ## Candidate Paper Slot (target, not current claim)
 
-> A training-free, codec-guided temporal routing method that TARGETS a
-> better quality–compute Pareto frontier for video VLMs on
-> temporal-reasoning benchmarks (TOMATO, TempCompass, MVBench motion) via
-> concentration-aware change detection, bounded staleness, and
-> projector-consistent sparse execution. Real measured skipped compute
-> on Apple Silicon MLX remains a gating requirement, not a completed
-> claim.
+> A training-free temporal routing method that TARGETS a better
+> quality–compute Pareto frontier for video VLMs on temporal-reasoning
+> tasks, when reuse is concentration-aware, age-bounded,
+> architecture-aware, and backed by real skipped compute.
+
+If phase 1.29 MV-only signal path lands: "codec-guided." If not:
+"codec-inspired / pixel-diff proxy for codec-guided."
 
 The current state is "credible early method signal," not SOTA. For the
 evidence-level breakdown per claim, see
+[`paper/claim-matrix.md`](claim-matrix.md) and
 [docs/literature-map-2026-04-16.md § Current evidence level (2026-04-16)](../docs/literature-map-2026-04-16.md).
 
 ## Current Narrow Claim Boundary
