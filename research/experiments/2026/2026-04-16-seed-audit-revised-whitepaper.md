@@ -98,14 +98,19 @@ Add to `docs/related-work-table.md`:
 2. **Cross-architecture testing**: two architecturally distinct VLMs.
    We have only Qwen.
 3. **Strict-parse audit at scale**: sam has 413 items with raw
-   response logging and 0 parse failures. Our exact strict-parse
-   coverage: 30 TOMATO benchmark-native items (0 parse failures,
-   `docs/reproduction-status.md` row WP-2.5) + 54 MVBench hosted
-   items (0 parse failures, row WP-2.6) = **84 saved benchmark
-   items**, all with 0 parse failures. Additionally, ~60 items across
-   motion dev/holdout slices evaluated in phases 1.10–1.12 with
-   0 parse failures. Exact total: ~144 items (not "~150"). Scaling
-   to 413+ is the remaining step.
+   response logging and 0 parse failures. Our coverage:
+   - **Exact**: 30 TOMATO benchmark-native items (0 parse failures,
+     `docs/reproduction-status.md` row WP-2.5) + 54 MVBench hosted
+     items (0 parse failures, row WP-2.6) = **84 saved benchmark
+     items**, all with 0 parse failures.
+   - **Approximate**: an additional set of motion dev/holdout items
+     evaluated in phases 1.10–1.12 (15 TOMATO dev + 15 TOMATO
+     holdout + 15 MVBench dev + 15 MVBench holdout = 60 motion-
+     slice items, all 0 parse failures). Some of these overlap with
+     the 84 saved items above (TOMATO dev v1 is a subset of
+     tomato_dev_v1), so the deduplicated total is **between 84 and
+     144 unique items** with 0 parse failures.
+   - Scaling to 413+ (matching sam) is the remaining step.
 4. **Honest weakness section**: per-frame binary can't prune within
    novel frames. We already know this from our planner work.
 

@@ -97,9 +97,14 @@ presence here does not imply a local result.
 - **Why we might use it**: once a stable Track A positive survives
   both TOMATO N=30 and MVBench N=30 holdout, Video-MME is the
   broader external-validity check.
-- **Status**: **deferred** pending Track A + Track B both landing.
+- **Status**: **deferred operationally** (after N=30 and Planner 2.0
+  complete), but the paper claim matrix
+  (`paper/claim-matrix.md` claim #8) makes it a non-negotiable
+  arXiv gate. Resolve the tension: schedule phase 1.41 after
+  the N=30 + Planner 2.0 tranche, before paper submission.
   Do not use as a diagnosis benchmark; the task heterogeneity
-  dilutes failure-mode signal.
+  dilutes failure-mode signal — its role is breadth validation,
+  not mechanism diagnosis.
 
 ## Not in scope (but occasionally referenced)
 

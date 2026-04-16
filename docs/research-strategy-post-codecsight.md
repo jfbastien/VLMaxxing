@@ -10,24 +10,27 @@ Positioning: [literature-map-2026-04-16.md](literature-map-2026-04-16.md)
 After CodecSight (systems) and CoPE-VideoLM (model) landed, the
 **candidate paper thesis** is:
 
-> **A training-free, codec-guided temporal routing method that aims to
-> improve the quality–compute Pareto frontier for video VLMs on
-> temporal-reasoning benchmarks (TOMATO, TempCompass, MVBench motion)
-> by combining concentration-aware change detection, bounded
-> staleness, and projector-consistent sparse execution. Real measured
-> skipped compute on Apple Silicon MLX remains a gating requirement,
-> not a completed claim.**
+> **A training-free temporal routing method that aims to improve the
+> quality–compute Pareto frontier for video VLMs on temporal-reasoning
+> tasks, when reuse is concentration-aware, age-bounded,
+> architecture-aware, and backed by real skipped compute.**
+
+If phase 1.29 MV-only signal path lands: "codec-guided." If not:
+"codec-inspired / pixel-diff proxy for codec-guided." See
+`paper/claim-matrix.md` for per-claim evidence gates.
 
 Five **target claims** to test:
 
-1. Codec-derived proxies are valid training-free routing signals.
+1. Pixel-diff (and optionally codec-derived) proxies are valid
+   training-free routing signals.
 2. Naive mean-diff + no-refresh is too blunt on TOMATO-style brief
-   semantically-critical change patterns (confirmed by our phase 1.10
-   negative and phase 1.11 null-on-MVBench-holdout results).
-3. Sticky-dynamic + age-bounded + projector-group-complete planners
-   repair hard temporal failures.
-4. The saved budget can be spent on more frames, not just less
-   latency. Iso-token-budget coverage beats dense frame subsampling.
+   semantically-critical change patterns.
+3. Concentration-aware routing (child-veto, sticky-dynamic,
+   age-bounded) repairs hard temporal failures. (Note:
+   projector-group completion is a no-op on our current Qwen 2.5-VL
+   stack where BLOCK_SIZE=28 already matches projector input
+   granularity; removed from the claim.)
+4. Budget placement over time matters more than scalar fresh budget.
 5. Real sparse execution converts the proxy gain into measured
    wall-clock speedup on MLX.
 
@@ -127,9 +130,7 @@ Priority = (probability-of-moving-paper-claim × magnitude) / (effort).
    0.5), child-veto is the immediate fix.
 4. **Phase 1.20 TOMATO N=30** — ~3 hrs GPU. Hardens the low-accuracy
    TOMATO holdout tie.
-5. **Phase 1.34 novelty-ranked dense baseline** — ~3 hrs code + GPU.
-   Stronger matched-budget comparator for the paper.
-6. **Phase 1.38 temporal placement ablations** — ~3 hrs GPU. Dense-
+5. **Phase 1.38 temporal placement ablations** — ~3 hrs GPU. Dense-
    only frame0/middle/last/first+last/uniform4/uniform8 on TOMATO
    dev. Sharpens the budget-placement theory with causal evidence.
 
