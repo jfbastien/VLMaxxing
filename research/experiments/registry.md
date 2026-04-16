@@ -117,13 +117,16 @@ authoritative in the per-phase notes under
   prereg_outcome: Accepted
 
 - phase_id: 1.20
-  status: running
+  status: completed (holdout v2 cells)
   authoritative_note: research/experiments/2026/2026-04-15-phase-1_20-tomato-motion-slice-enlargement.md
-  authoritative_artifacts: []
-  current_best_policy: n/a
-  supersedes: []
-  paper_relevance: primary (TOMATO hardening)
-  prereg_outcome: (in-flight; dense baselines running on holdout_v2)
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_dense_summary.json
+    - research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_cached_summary.json
+    - research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_pareto.json
+  current_best_policy: "max_abs(8,32) static+shifted age=4 — cached=0.333@3.55, ties dense-8 at 44% budget"
+  supersedes: [1.12 TOMATO holdout (N=15 → N=30)]
+  paper_relevance: primary (TOMATO N=30 holdout — claim #6 TOMATO half PASSED)
+  prereg_outcome: Accepted (holdout v2 cells)
 
 - phase_id: 1.21
   status: completed (holdout v2 cells; dev v2 cells deferred)
