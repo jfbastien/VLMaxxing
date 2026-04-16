@@ -4,11 +4,17 @@ This file tracks which imported whitepaper claims are reproduced locally on this
 repo and machine, which are only partially supported, and which remain
 imported-only.
 
-Canonical imported target:
+Canonical imported targets:
 
-- use [seed/whitepaper/whitepaper.md](../seed/whitepaper/whitepaper.md) as the
-  repo's corrected internal reference for the imported whitepaper
-- do not treat the original historical PDF wording as the source of truth
+- **Original whitepaper**: [seed/whitepaper/whitepaper.md](../seed/whitepaper/whitepaper.md)
+  — the frozen target for WP-2.1 through WP-5.
+- **Revised whitepaper (2026-04-16)**: [seed/whitepaper/whitepaper-revised-2026-04-16.md](../seed/whitepaper/whitepaper-revised-2026-04-16.md)
+  — adds VideoMME (WP-2.7), strict-parse audit (WP-2.8), cross-arch
+  (WP-2.9), thinking amplification (WP-2.10), wall-clock (WP-4.1),
+  composition (WP-5.1). See [claim-register.md](claim-register.md)
+  for the full table.
+- Do not treat either document as the source of truth for what we
+  claim locally; use this status table and the claim register.
 
 Current bottom line:
 

@@ -7,13 +7,24 @@ It exists because the imported whitepaper markdown contains internal
 inconsistencies. Without a frozen claim register, "did we reproduce the
 whitepaper?" is ambiguous.
 
-Canonical imported reference:
+Canonical imported references:
 
-- [seed/whitepaper/whitepaper.md](../seed/whitepaper/whitepaper.md)
+- **Original whitepaper**: [seed/whitepaper/whitepaper.md](../seed/whitepaper/whitepaper.md)
+  — the frozen target this repo was initially built against.
+- **Revised whitepaper (2026-04-16)**: [seed/whitepaper/whitepaper-revised-2026-04-16.md](../seed/whitepaper/whitepaper-revised-2026-04-16.md)
+  — adds VideoMME, Gemma 4 cross-arch, wall-clock, strict-parse audit,
+  and an expanded comparison table. Imported as seed provenance per
+  [research/experiments/2026/2026-04-16-seed-audit-revised-whitepaper.md](../research/experiments/2026/2026-04-16-seed-audit-revised-whitepaper.md).
+
+The repo is canonically targeting **both**: the original WP-2.1 through
+WP-5 claims remain active, PLUS the new WP-2.7 through WP-5.1 claims
+from the revised whitepaper (registered below). Claims from the revised
+whitepaper are treated with the same "useful hypotheses, not trusted
+claims" epistemics as the original.
 
 Repo rule:
 
-- use this register, not ad hoc readings of the imported whitepaper, when
+- use this register, not ad hoc readings of either whitepaper, when
   deciding whether a claim is reproduced, partially reproduced, or still
   imported-only
 
@@ -62,6 +73,14 @@ Important runtime distinction:
 | `WP-3.3` | Refresh-interval drift tolerance | imported `14`-frame tolerance remains external until local sweep exists | direct local reproduction target |
 | `WP-4` | Q-table pre-filter correlation | useful supporting reproduction target, not the first milestone | deferred reproduction target |
 | `WP-5` | Compression and speed stackup | out of scope until Track B evidence exists on this stack | explicitly gated |
+| | | | |
+| **From revised whitepaper (2026-04-16)** | | | |
+| `WP-2.7` | VideoMME evaluation (Qwen 100% on 300q; Gemma 4 90%/−3.3% on 60q) | local reproduction requires VideoMME lane + at minimum Qwen evaluation at 32 frames | generalized reproduction target |
+| `WP-2.8` | Strict-parse audit (413 Qwen items, 0 parse failures, byte-identical) | our local parser already shows 0 failures on our saved slices (30 TOMATO + 54 MVBench = 84 items); scaling to 413+ is the remaining step | generalized reproduction target |
+| `WP-2.9` | Cross-architecture generalization (windowed attention → exact; global attention → approximate) | requires a second architecture family (Gemma 4 4B on M3 Air is the candidate; not a direct reproduction of sam's 26B) | generalized reproduction target |
+| `WP-2.10` | Thinking-amplification finding (agreement drops from 82% → 58% with thinking enabled on Gemma 4) | requires Gemma 4 thinking-on/off comparison | deferred reproduction target |
+| `WP-4.1` | Wall-clock throughput (M5 Max: 6.0× ViT, 4.2× E2E, 130 fps on 32-frame conferencing) | NOT directly reproducible on M3 Air 16GB; a local Track B harness would produce different absolute numbers on different hardware | generalized reproduction target (hardware-conditioned) |
+| `WP-5.1` | Composition projection (~175× with TurboQuant) | projected, not measured, even by sam; explicitly marked as future work in their §5 | explicitly gated |
 
 ## Strict Versus Generalized Reproduction
 

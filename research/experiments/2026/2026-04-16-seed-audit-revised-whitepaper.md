@@ -97,8 +97,15 @@ Add to `docs/related-work-table.md`:
    our ~150 items across 2 benchmarks. We need VideoMME.
 2. **Cross-architecture testing**: two architecturally distinct VLMs.
    We have only Qwen.
-3. **Strict-parse audit at scale**: 413 items with raw response
-   logging. We've done 15-item slices.
+3. **Strict-parse audit at scale**: sam has 413 items with raw
+   response logging and 0 parse failures. Our exact strict-parse
+   coverage: 30 TOMATO benchmark-native items (0 parse failures,
+   `docs/reproduction-status.md` row WP-2.5) + 54 MVBench hosted
+   items (0 parse failures, row WP-2.6) = **84 saved benchmark
+   items**, all with 0 parse failures. Additionally, ~60 items across
+   motion dev/holdout slices evaluated in phases 1.10–1.12 with
+   0 parse failures. Exact total: ~144 items (not "~150"). Scaling
+   to 413+ is the remaining step.
 4. **Honest weakness section**: per-frame binary can't prune within
    novel frames. We already know this from our planner work.
 
@@ -109,8 +116,10 @@ Add to `docs/related-work-table.md`:
 2. **Matched dense frame-budget baselines**: sam compares cached vs
    dense-same-frames. We compare at matched effective fresh frames.
 3. **Content-conditioned planner search**: sam uses default
-   thresholds (STATIC < 3, SHIFTED < 8). We have 30-policy grid
-   search with MAX_ABS, CPF, sticky-dynamic, age gating.
+   thresholds (STATIC < 3, SHIFTED < 8). We ran 30-policy grid
+   sweeps across 4 statistics × thresholds × reuse classes × max_age
+   (phases 1.10–1.11) and SEPARATELY tested sticky-dynamic (phase
+   1.26) — these are distinct experimental families, not one sweep.
 4. **Pareto analysis**: we compute real Pareto frontiers; sam reports
    binary agreement.
 5. **Falsified-hypotheses ledger**: we track what doesn't work.
