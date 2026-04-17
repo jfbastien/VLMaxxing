@@ -1,0 +1,57 @@
+{
+  "artifact_dir": "research/experiments/2026/artifacts/phase1_37B_mvbench_motion_dev_v2_cached",
+  "cells_found": 9,
+  "winner": {
+    "label": "control",
+    "cached_accuracy": 0.8,
+    "dense_accuracy": 0.6666666666666666,
+    "agreement": 0.8333333333333334,
+    "reuse_ratio_mean_active": 0.562514738867148,
+    "completed_n": 30,
+    "requested_n": 30,
+    "halo": null,
+    "path": "research/experiments/2026/artifacts/phase1_37B_mvbench_motion_dev_v2_cached/control_summary.json"
+  },
+  "top_k": [
+    {
+      "label": "control",
+      "cached_accuracy": 0.8,
+      "dense_accuracy": 0.6666666666666666,
+      "agreement": 0.8333333333333334,
+      "reuse_ratio_mean_active": 0.562514738867148,
+      "completed_n": 30,
+      "requested_n": 30,
+      "halo": null,
+      "path": "research/experiments/2026/artifacts/phase1_37B_mvbench_motion_dev_v2_cached/control_summary.json"
+    },
+    {
+      "label": "p095_n1",
+      "cached_accuracy": 0.8,
+      "dense_accuracy": 0.6666666666666666,
+      "agreement": 0.8333333333333334,
+      "reuse_ratio_mean_active": 0.5266530617051536,
+      "completed_n": 30,
+      "requested_n": 30,
+      "halo": {
+        "neighborhood": 1,
+        "percentile": 0.95
+      },
+      "path": "research/experiments/2026/artifacts/phase1_37B_mvbench_motion_dev_v2_cached/p095_n1_summary.json"
+    },
+    {
+      "label": "p095_n2",
+      "cached_accuracy": 0.7666666666666667,
+      "dense_accuracy": 0.6666666666666666,
+      "agreement": 0.8666666666666667,
+      "reuse_ratio_mean_active": 0.4709217689221813,
+      "completed_n": 30,
+      "requested_n": 30,
+      "halo": {
+        "neighborhood": 2,
+        "percentile": 0.95
+      },
+      "path": "research/experiments/2026/artifacts/phase1_37B_mvbench_motion_dev_v2_cached/p095_n2_summary.json"
+    }
+  ],
+  "table_markdown": "| label | halo | cached_acc | dense_acc | agreement | reuse_active | eff_fresh | completed |\n|---|---|---:|---:|---:|---:|---:|---:|\n| control | (none) | 0.800 | 0.667 | 0.833 | 0.563 | 4.06 | 30/30 |\n| p095_n1 | p=0.95/n=1 | 0.800 | 0.667 | 0.833 | 0.527 | 4.31 | 30/30 |\n| p095_n2 | p=0.95/n=2 | 0.767 | 0.667 | 0.867 | 0.471 | 4.70 | 30/30 |\n| p090_n1 | p=0.9/n=1 | 0.733 | 0.667 | 0.900 | 0.488 | 4.58 | 30/30 |\n| p090_n2 | p=0.9/n=2 | 0.733 | 0.667 | 0.933 | 0.414 | 5.10 | 30/30 |\n| p085_n2 | p=0.85/n=2 | 0.733 | 0.667 | 0.900 | 0.366 | 5.44 | 30/30 |\n| p085_n1 | p=0.85/n=1 | 0.700 | 0.667 | 0.833 | 0.448 | 4.86 | 30/30 |\n| p075_n1 | p=0.75/n=1 | 0.700 | 0.667 | 0.867 | 0.394 | 5.24 | 30/30 |\n| p075_n2 | p=0.75/n=2 | 0.700 | 0.667 | 0.933 | 0.310 | 5.83 | 30/30 |"
+}

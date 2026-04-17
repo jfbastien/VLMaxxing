@@ -1,7 +1,7 @@
 # Phase 1.37B — Planner 2.1A prereg (parent statistic + neighbor-halo concentration guard)
 
 Date: 2026-04-17
-State: TOMATO dev NO-LIFT (2026-04-17, full 9/9 cells); MVBench dev in progress (1/9 cells); holdout gated on MVBench outcome per frozen promotion rule
+State: TOMATO dev NO-LIFT + MVBench dev NO-LIFT (2026-04-17, full 9/9 cells on both benchmarks); phase 1.37B closes as preregistered-null per "both benchmarks no-lift → full retirement" rule; no holdout run.
 Parent: `paper/claim-matrix.md` claim #3 (concentration-aware routing)
 Sibling: `research/experiments/2026/2026-04-16-phase-1_12b-crossbench-winner-mvbench-holdout.md`,
 `research/experiments/2026/2026-04-16-planner-2_0-ablation.md`
@@ -290,12 +290,36 @@ even if the metric analysis waits for phase 1.31.
   variants coincide inside one item of noise.
 - 2026-04-17 ~12:51Z: **MVBench dev 9-cell sweep auto-launched**
   after TOMATO sweep finished (control cell started 12:51:33Z).
-  MVBench dev verdict gates holdout decision: if MVBench is also
-  NO-LIFT, phase 1.37B closes as preregistered-null per rule
-  "both benchmarks no-lift → full retirement"
-  (`2026-04-17-phase-1_37B-neighbor-halo-veto-prereg.md:210-214`).
-- Paper-grade holdout run: preregistered gates above; awaits dev
-  selection.
+- 2026-04-17 18:05Z: **MVBench dev 9/9 cells complete** —
+  analyzer (`scripts/analyze_halo_dev_grid.py`) promoted control as
+  rank-1 winner (cached=0.800). Full table:
+
+  | label | halo | cached_acc | dense_acc | agreement | reuse_active | eff_fresh | completed |
+  |---|---|---:|---:|---:|---:|---:|---:|
+  | control | (none) | 0.800 | 0.667 | 0.833 | 0.563 | 4.06 | 30/30 |
+  | p095_n1 | p=0.95/n=1 | 0.800 | 0.667 | 0.833 | 0.527 | 4.31 | 30/30 |
+  | p095_n2 | p=0.95/n=2 | 0.767 | 0.667 | 0.867 | 0.471 | 4.70 | 30/30 |
+  | p090_n1 | p=0.9/n=1 | 0.733 | 0.667 | 0.900 | 0.488 | 4.58 | 30/30 |
+  | p090_n2 | p=0.9/n=2 | 0.733 | 0.667 | 0.933 | 0.414 | 5.10 | 30/30 |
+  | p085_n2 | p=0.85/n=2 | 0.733 | 0.667 | 0.900 | 0.366 | 5.44 | 30/30 |
+  | p085_n1 | p=0.85/n=1 | 0.700 | 0.667 | 0.833 | 0.448 | 4.86 | 30/30 |
+  | p075_n1 | p=0.75/n=1 | 0.700 | 0.667 | 0.867 | 0.394 | 5.24 | 30/30 |
+  | p075_n2 | p=0.75/n=2 | 0.700 | 0.667 | 0.933 | 0.310 | 5.83 | 30/30 |
+
+  Reading: halo *hurts* cached accuracy on MVBench (sole rank-1 at
+  control; 7/8 halo cells below control, the 8th tied). The
+  highest-agreement cells (p090_n2, p075_n2 at 0.933) drain the
+  most fresh frames (5.10–5.83 vs control 4.06) for a 0.067–0.100
+  accuracy loss — the opposite of the TOMATO pattern where halo
+  tied on accuracy while lifting agreement. Under the frozen
+  promotion rule (cached desc → eff_fresh asc → agreement desc),
+  control wins outright: no halo cell comes within the 0.034 lift
+  margin at lower eff_fresh. **MVBench verdict: NO-LIFT.**
+- **Combined verdict: both benchmarks NO-LIFT.** Per the
+  preregistered rule at lines 210–214, phase 1.37B closes as
+  preregistered-null. No holdout run is scheduled. The mechanism
+  remains coded (`temporal.py`) and callable but is no longer
+  promoted by the planner default.
 
 ## Artifacts
 
