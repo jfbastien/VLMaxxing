@@ -1,9 +1,9 @@
 # Pareto Reporting
 
-Last updated: 2026-04-16. Prior version preserved in git history;
+Last updated: 2026-04-17. Prior version preserved in git history;
 this rewrite reflects the methodology upgrade landed in phases 1.8,
-1.9, 1.10, 1.11, 1.12, 1.12.B, 1.19, 1.24, and the 2026-04-16 audit
-tranche.
+1.9, 1.10, 1.11, 1.12, 1.12.B, 1.19, 1.24, 1.50 (Track B dense
+baseline), and the 2026-04-16 / 2026-04-17 audit tranches.
 
 ## What changed relative to the previous version
 

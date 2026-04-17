@@ -226,11 +226,14 @@ Scope in this repo:
   token) across the pruning pass. This is directly analogous to
   our temporal STATIC classification, and the paper's related-work
   section should cite these alongside FastV.
-- When phase 1.45 (combined temporal+spatial) becomes feasible, it
-  should be framed as **empirically testing whether Sam's 4–5× E2E
-  composition** (measured on Gemma 4 26B at M5 Max) transfers to
-  Qwen 2.5-VL-7B 4-bit on M3 Air. Do not claim multiplicative
-  composition before the measurement lands.
+- When **phase 1.52 (combined temporal+spatial)** becomes feasible,
+  it should be framed as **empirically testing whether Sam's 4–5×
+  E2E composition** (measured on Gemma 4 26B at M5 Max) transfers
+  to Qwen 2.5-VL-7B 4-bit on M3 Air. Do not claim multiplicative
+  composition before the measurement lands. (NOTE: this phase
+  previously shared the ID `1.45` with the completed benchmark-
+  diagnostics phase; the combined-pipeline phase has been
+  renumbered to 1.52 to resolve the collision.)
 
 The paper's theory section should include the spatial-pruning branch
 as a "same mechanism family, orthogonal axis" reference, so

@@ -1,8 +1,9 @@
 # Planner Sweep Methodology
 
-Last updated: 2026-04-16. Prior version preserved in git history;
+Last updated: 2026-04-17. Prior version preserved in git history;
 this rewrite reflects the post-CodecSight methodology tranche
-(phases 1.10–1.12.B, 1.19, 1.26, and the 2026-04-16 audit).
+(phases 1.10–1.12.B, 1.19, 1.26, 1.36 feature-change oracle, and
+the 2026-04-16 / 2026-04-17 audits).
 
 ## Goal
 

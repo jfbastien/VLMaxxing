@@ -1,6 +1,6 @@
 # Research Plan
 
-Last updated: 2026-04-16
+Last updated: 2026-04-17
 
 > **This file is the project charter and top-level router.**
 >
@@ -114,8 +114,10 @@ narrow but useful starting point:
     at frame `0` only
   - hosted MVBench `54`-item slice drops from dense `0.630` at `8` frames to
     `0.519` at frame `0` only
-- the current TOMATO versus MVBench gap therefore looks more
-  content-conditioned than parser-conditioned on the current slices
+- the current TOMATO versus MVBench gap therefore looks more like a
+  temporal-evidence-concentration / budget-placement difference than a
+  parser issue on the current slices (see `paper/claim-matrix.md`
+  language rule: avoid "content-conditioned" as too broad)
 - targeted TOMATO `direction` refresh sweeps now show that the current failure
   is refresh-sensitive on that five-item slice rather than an obvious
   benchmark-path breakage:
