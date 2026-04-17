@@ -483,8 +483,9 @@ def _fetch_videomme_metadata(paths: BenchmarkPaths, *, dry_run: bool) -> None:
             "dataset": "videomme",
             "metadata_source": f"hf://datasets/{VIDEOMME_DATASET_ID}",
             "video_source": (
-                "videos must be sourced manually from the Video-MME official release; "
-                "the Hugging Face mirror only hosts questions, not video files"
+                f"videos are in hf://datasets/{VIDEOMME_DATASET_ID} as "
+                "videos_chunked_{01..20}.zip (~101 GB full corpus); for the "
+                "paper protocol subset use scripts/fetch_videomme_subset.py"
             ),
         },
     )
@@ -494,9 +495,13 @@ def _fetch_videomme_metadata(paths: BenchmarkPaths, *, dry_run: bool) -> None:
 def _fetch_videomme_assets(paths: BenchmarkPaths, *, dry_run: bool) -> None:
     del paths
     message = (
-        "Video-MME videos are distributed outside the Hugging Face mirror. "
-        "Obtain the official video bundle per "
-        "https://video-mme.github.io/ and unpack into data/benchmarks/videomme/videos/"
+        "Video-MME videos live on Hugging Face at "
+        f"hf://datasets/{VIDEOMME_DATASET_ID} as videos_chunked_{{01..20}}.zip "
+        "(~101 GB full corpus). For the paper protocol, only the 57-videoID "
+        "dev+holdout subset is needed — use "
+        "`scripts/fetch_videomme_subset.py --manifest research/benchmark_manifests/videomme_dev_v1.toml "
+        "[--manifest research/benchmark_manifests/videomme_holdout_v1.toml]`. "
+        "See docs/videomme-download-handoff.md."
     )
     if dry_run:
         print(f"[dry-run] {message}")

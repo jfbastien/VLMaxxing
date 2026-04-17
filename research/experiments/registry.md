@@ -342,7 +342,7 @@ authoritative in the per-phase notes under
   supersedes: []
   paper_relevance: primary (VideoMME breadth gate, claim #8)
   prereg_outcome: (pending; runs after 1.37 dev; VideoMME loader + manifest builder landed)
-  notes: VideoMME video files require manual Google Drive / OneDrive download with TOS click-through and cannot be automated; manifest builder is ready but media fetch is a user-action item
+  notes: VideoMME videos are hosted on Hugging Face at `lmms-lab/Video-MME` as 20 chunked zip archives (~101 GB full corpus); paper protocol only needs 57 unique videoIDs (dev+holdout manifests, one overlap). Use `scripts/fetch_videomme_subset.py` to walk chunks one-at-a-time and extract only wanted videoIDs (peak disk ~5 GB staging + ~3-15 GB extracted subset). See `docs/videomme-download-handoff.md` for environment gotchas (HF xet backend must be disabled; SOCKS proxy env vars must be cleared).
 
 - phase_id: 1.42
   status: prereg-only

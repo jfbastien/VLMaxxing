@@ -75,7 +75,7 @@ N=30 holdout, clean-tree provenance; projected compute-savings ceiling
 | # | Claim | Blocker | Runtime estimate |
 |---|---|---|---|
 | I | "Method delivers measured N% speedup" | Sparse-execution path does not exist. Track B measures dense; a sparse path must be written to measure the delta. | Implementation ≈ 1-2 weeks; per-run wall time ≈ 1 h for N=30 on each benchmark. |
-| J | "Validated on VideoMME (de facto benchmark)" | Phase 1.41 loader written; N=30 run not launched. | ≈ 2 h GPU wall time for N=30 at 32 frames, assuming no OOM at 32 frames on M3 Air 16 GB (prefill O(F²) grows fast; predicted fit with careful activation streaming). |
+| J | "Validated on VideoMME (de facto benchmark)" | Phase 1.41 loader written; subset downloader landed (`scripts/fetch_videomme_subset.py`) and dev+holdout pull running 2026-04-17; N=30 run not launched. | ≈ 2 h GPU wall time for N=30 at 8 frames, 560×560 on M3 Air 16 GB (cold cache). Planner 2.0 config (MAX_ABS + age=4 + static+shifted reuse + top-k=16). |
 | K | "Cross-architecture generalization (Qwen windowed ↔ Gemma/InternVL3 all-global)" | Second architecture has not been run locally. | ≈ 4-6 h GPU wall time for matched N=30 on a second 4-bit-quantized checkpoint, assuming it fits on M3 Air 16 GB. Not guaranteed: Gemma 4 SigLIP + LLM has a larger vision tower. |
 | L | "Placement ablation (phase 1.38)" | Not run. | ≈ 30 min GPU wall time on a subset. |
 
