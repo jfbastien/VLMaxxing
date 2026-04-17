@@ -1,6 +1,7 @@
 # Phase 1.36 — Feature-change oracle (pixel-diff ↔ ViT cosine distance)
 
 Date: 2026-04-17
+State: complete (45/60 item coverage on both benchmarks; r=0.23-0.50 Pearson range; claim #1 & #2 earned)
 Parent: `paper/claim-matrix.md` claim #2 (pixel-diff proxy fidelity)
 
 ## Framing note (2026-04-17 update)

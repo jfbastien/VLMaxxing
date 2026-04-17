@@ -1,8 +1,8 @@
 # Phase 1.51 — Novelty-pruning visual tokens on Gemma 4-E4B (big-numbers SOTA lane)
 
 Date: 2026-04-17
-Parent: `paper/claim-matrix.md` claim #10 (composition with within-
-frame methods is multiplicative)
+State: blocked (preregistered; requires phase 1.42 `_mix_gemma_features` integration to land; 5-arm anchor grid not yet implemented)
+Parent: `paper/claim-matrix.md` claim #11 (pruning-alone prefill reduction — new claim to be added alongside this phase) — **also a prerequisite for** claim #10 (composition) which is tested in phase 1.52
 Sibling: `research/experiments/2026/2026-04-17-phase-1_42-gemma-architecture-topology-prereg.md`
 (same model, orthogonal architecture-fidelity axis)
 
@@ -138,23 +138,24 @@ holdout N=30 on both TOMATO and MVBench. Metrics:
 
 ## Accept / reject gates (preregistered)
 
-- **Accept SOTA claim:** Single-cell holdout achieves (a) ≥ 1.8×
-  end-to-end speedup, (b) cached accuracy within 0.10 of Gemma-
-  dense-8 on at least one benchmark, (c) at least one anchor
-  variant outperforms `none` by ≥ 0.03 accuracy at matched
-  keep rate. All three conditions together earn claim #10 a
-  measured entry (not deferred).
-- **Reject SOTA claim:** Speedup < 1.3× OR accuracy drop > 0.15
-  at best cell. Either failure mode means the pruning path does
-  not deliver big numbers on M3 Air at this geometry and we
-  publish the negative result as a limitation.
+- **Accept pruning-alone claim (#11 pre-req):** Single-cell
+  holdout achieves (a) ≥ 1.8× end-to-end speedup, (b) cached
+  accuracy within 0.10 of Gemma-dense-8 on at least one benchmark,
+  (c) at least one anchor variant outperforms `none` by ≥ 0.03
+  accuracy at matched keep rate. All three conditions together
+  earn claim #11 (pruning-alone prefill reduction) a measured
+  entry. This does **not** earn claim #10 (composition) — that
+  requires phase 1.52.
+- **Reject pruning-alone claim:** Speedup < 1.3× OR accuracy drop
+  > 0.15 at best cell. Either failure mode means the pruning path
+  does not deliver big numbers on M3 Air at this geometry and we
+  publish the negative result as a limitation for claim #11.
 - **Compose with temporal reuse (phase 1.52 scope):** If this
-  phase passes, the next phase (1.52) runs Planner 2.0 temporal
-  reuse AND novelty-pruning together, measures whether the
-  speedup factor multiplies (1.8× temporal × 1.8× pruning =
-  3.2× target vs 1.5× if only additive). Do NOT claim
-  multiplicative composition in this phase's writeup — that's
-  1.52's question.
+  phase passes, phase 1.52 runs Planner 2.0 temporal reuse AND
+  novelty-pruning together, measures whether the speedup factor
+  multiplies (1.8× temporal × 1.8× pruning = 3.2× target vs 1.5×
+  if only additive). Do NOT claim multiplicative composition
+  (claim #10) in this phase's writeup — that's 1.52's question.
 
 ## Runtime estimate
 
@@ -198,19 +199,36 @@ Wall-clock only (infrastructure impl time excluded):
 
 ## Why this is THE SOTA phase
 
-Phase 1.50 empirically measured the vision-cache-only Track B
-ceiling at 20-23 % end-to-end on M3 Air at this geometry. That's
-the *maximum* temporal-reuse can contribute. For the "BIG NUMBERS"
-the paper needs, the contribution has to come from **prefill-
-token reduction**. Phase 1.51 is the one path on the queue that
-attacks prefill-token count directly.
+Phase 1.50's dense Track B baseline shows that **prefill is
+70–78 % of per-item wall time** at 8-frame × 560 × 560 geometry on
+M3 Air. That phase-share decomposition *caps* any vision-cache-
+only speedup at ≈ 20–23 % of end-to-end: the vision-encode +
+cacheable-fraction of prefill is the only budget temporal reuse
+can touch. This is a **ceiling derived from dense timing shares,
+not a measured sparse-execution result** — no sparse-execution
+path has measured an actual end-to-end speedup yet (claim #5
+remains prospective per `paper/claim-matrix.md`).
 
-If this phase passes, the matched-budget story becomes:
+For the "BIG NUMBERS" the paper needs, the contribution has to
+come from **reducing the prefill-token count itself**, not only
+from reusing vision features. Phase 1.51 is the first queued phase
+that attacks prefill token count directly by dropping visual
+tokens before the LLM sees them.
 
-- Temporal reuse alone (Qwen): 22 % end-to-end speedup at matched
-  accuracy — already earned (claim #9).
-- Novelty-pruning alone (Gemma): 50-80 % end-to-end speedup at
-  matched accuracy — this phase's hypothesis.
-- Combined (phase 1.52): multiplicative 3× target.
+If this phase passes, the matched-budget story becomes (all
+numbers pending measurement, none pre-claimed as earned):
 
-Big numbers live in prefill reduction. This phase gates that.
+- Temporal reuse alone (Qwen): ceiling ≤ 23 % end-to-end, sparse
+  execution unmeasured. Claim #5 (sparse-execution speedup)
+  remains prospective in `paper/claim-matrix.md`.
+- Novelty-pruning alone (Gemma): 50–80 % end-to-end speedup at
+  matched accuracy — this phase's hypothesis, **not** yet a
+  measurement. Success gates a new paper claim (pruning-alone
+  prefill reduction; see `paper/claim-matrix.md` claim #11 when
+  added).
+- Combined (phase 1.52): multiplicative-vs-additive-vs-interference
+  is the gate preregistered in phase 1.52; nothing is pre-claimed.
+
+Big numbers live in prefill reduction. This phase gates the
+pruning-alone branch of that; phase 1.52 gates the composition
+branch.

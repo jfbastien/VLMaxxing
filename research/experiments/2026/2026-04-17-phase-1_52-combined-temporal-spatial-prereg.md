@@ -1,6 +1,7 @@
 # Phase 1.52 — Combined temporal+spatial pipeline (multiplicative-or-additive test)
 
 Date: 2026-04-17
+State: blocked (preregistered; depends on phase 1.42 Gemma integration AND phase 1.51 novelty-pruning winner cell)
 Parent: `paper/claim-matrix.md` claim #10 (composition with within-
 frame methods is multiplicative)
 Depends on: phase 1.42 (Gemma integration), phase 1.51 (novelty-

@@ -1,6 +1,7 @@
 # Phase 1.50 — Track B dense baseline on TOMATO (n=10, mc_scoring)
 
 Date: 2026-04-17
+State: complete-dense-baseline-only (TOMATO N=10 + N=30 + MVBench N=30 dense landed; sparse-execution delta for claim #5 still prospective)
 Parent: `paper/claim-matrix.md` claim #5 (real skipped compute)
 
 ## Hypothesis

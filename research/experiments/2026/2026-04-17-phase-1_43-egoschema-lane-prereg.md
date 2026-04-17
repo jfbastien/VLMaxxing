@@ -1,8 +1,9 @@
 # Phase 1.43 — EgoSchema breadth lane (long-form egocentric)
 
 Date: 2026-04-17
-Parent: `paper/claim-matrix.md` claim #8 (cross-benchmark generality)
-Sibling: `research/experiments/2026/2026-04-16-phase-1_41-videomme-lane.md`
+State: blocked (preregistered; loader + manifest build not started)
+Parent: `paper/claim-matrix.md` claim #12 (long-form/egocentric generalization — new claim to be added; NOT claim #8, which is specifically VideoMME)
+Sibling: `research/experiments/2026/2026-04-16-phase-1_41-videomme-lane.md` (claim #8 VideoMME lane — the *specific* benchmark named in claim #8)
 
 ## Motivation
 
@@ -52,6 +53,12 @@ is the same Pareto-survival test applied to TOMATO/MVBench.
 
 ## Method
 
+**Runs on Qwen 2.5-VL-7B-Instruct-4bit** (same model as phases
+1.12.B / 1.20 / 1.21 / 1.26.B — independent of phase 1.42 Gemma
+integration). This is a cross-benchmark breadth test for the
+Qwen-branch policy (Planner 2.0 MAX_ABS static+shifted age=4);
+the Gemma-branch EgoSchema transfer is a separate future phase.
+
 **Phase A — loader** (infra, not yet written):
 
 1. Add `load_egoschema_items` to the benchmark loader stack,
@@ -91,8 +98,16 @@ is the same Pareto-survival test applied to TOMATO/MVBench.
 
 ## Status
 
-- 2026-04-17: preregistered. Loader NOT STARTED. Blocked on phase
-  1.42 Gemma integration landing first (shares loader refactor).
+- 2026-04-17: preregistered. Loader NOT STARTED.
+- Does NOT depend on phase 1.42 (Gemma). This is a Qwen-branch
+  breadth lane — the same Qwen 2.5-VL model that powers phases
+  1.12.B / 1.20 / 1.21 / 1.26.B runs here. The EgoSchema loader
+  follows the `load_mvbench_items` / `load_videomme_items` pattern
+  in `scripts/run_benchmark_track_a.py` and is independent of the
+  `_mix_gemma_features` work in phase 1.42. Codex round-16
+  (2026-04-17) flagged the earlier "blocked on 1.42" framing as
+  incorrect — it was an accidental dependency inherited during
+  authoring.
 
 ## Why this phase
 

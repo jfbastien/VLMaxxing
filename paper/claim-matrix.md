@@ -30,7 +30,25 @@ If not: "codec-inspired / pixel-diff proxy for codec-guided."
 | 7 | Architecture-conditioned reuse fidelity is a spectrum (not binary: windowed-mostly = byte-identical; all-global = high-fidelity approximate but can still be lossless depending on pretraining) | Phase 1.42 attention-topology (Qwen windowed vs Gemma global + optional InternVL3 all-global) | NOT STARTED; sam's whitepaper §2.7 + §2.9 provides hypothesis; scope note: InternVL3 is all-global yet preserves 95% strict agreement, so a binary claim is under-evidenced | Second-arch feasibility on M3 Air 16GB | Claim on ≥ 2 local architectures with different attention topologies |
 | 8 | Validated on VideoMME (de facto benchmark standard) | Phase 1.41 VideoMME lane on Qwen 7B | NOT STARTED | Corpus setup | Claim on local VideoMME evaluation |
 | 9 | Beats novelty-ranked dense at matched budget | Phase 1.34 novelty-ranked dense baseline | **COMPLETE 2026-04-17.** Full 2×3 grid N=30 landed. TOMATO: novelty N=4 ties uniform (0.133); N=6 HURTS by 0.100 (0.167 vs 0.267); N=8 HURTS by 0.100 (0.233 vs 0.333). MVBench: novelty N=4 BEATS uniform by +0.067 (0.567 vs 0.500) — sign flips at low budget; N=6 ties; N=8 LOSES by 0.067 (0.567 vs 0.633) — novelty saturates at 0.567 while uniform scales. Cached base on each benchmark (0.333@3.55 TOMATO, 0.600@4.06 MVBench) DOMINATES every novelty-ranked cell at equal-or-lower fresh-frame budget. Claim #9 fully supported. | None | Claim earned on both benchmarks |
-| 10 | Composition with within-frame methods (FastV/FlashVID) is multiplicative | Phase 1.32 FastV pilot or FlashVID comparison | NOT STARTED; blocked on mlx-vlm fork | Fork engineering | Deferred; claim only after measured |
+| 10 | Composition with within-frame methods (FastV/FlashVID) is multiplicative | Phase 1.32 FastV pilot or FlashVID comparison OR **phase 1.52 temporal+spatial on Gemma** | NOT STARTED; two paths now queued (original: mlx-vlm fork; new: phase 1.52 on Gemma) | Phase 1.52 depends on 1.42+1.51 | Deferred; claim only after measured |
+| 11 | Novelty-pruning visual tokens before LLM prefill delivers end-to-end speedup on Gemma 4 | Phase 1.51 novelty-pruning on Gemma (5 anchor arms × 5 keep rates dev tranche, single-shot holdout) | NOT STARTED; preregistered | Phase 1.42 `_mix_gemma_features` integration | Claim earned on ≥ 1.8× end-to-end speedup with accuracy within 0.10 of Gemma-dense-8 on one benchmark |
+| 12 | Method generalizes to long-form egocentric video (EgoSchema) | Phase 1.43 EgoSchema lane on Qwen 2.5-VL | NOT STARTED; preregistered | EgoSchema loader + manifest | Claim earned on N=30 holdout with agreement ≥ 0.80 and Pareto tie-or-win vs matched dense |
+
+## Arc split (round-16 clarification)
+
+The repo now has two paper programs. Keep the language distinct:
+
+**Arc A — Qwen methods paper (Pareto-frontier / routing claims).**
+- Claims 1, 2, 3, 4, 5, 6, 8, 9, 12 primarily exercise Qwen 2.5-VL.
+- Gate for a narrower arXiv methods submission: claims 1+2+3+4+6+5(partial) earned, plus breadth via 8 and/or 12.
+- Currently earned: 1, 2, 6, 9. Partial: 3 (sticky4 only; halo-veto pending), 4 (asymmetry only; placement ablations pending), 5 (dense baseline only).
+
+**Arc B — Gemma big-numbers paper (multiplicative speedup / SOTA).**
+- Claims 7, 10, 11 primarily exercise Gemma 4-E4B.
+- Gate for a broader "big numbers" submission: claims 11 (pruning-alone) + 10 (composition) + 7 (architecture fidelity) all earned with multiplicative speedup > 2× end-to-end.
+- Currently earned: none. All three are preregistered only.
+
+A single paper may absorb both arcs, but the text must not conflate arc-A-earned with arc-B-prospective. When a claim sits in both arcs (e.g., claim 5 sparse-execution delta could be measured on either Qwen or Gemma), name the architecture explicitly.
 
 ## What must land before arXiv submission
 

@@ -1,6 +1,7 @@
 # Phase 1.42 — Gemma 4 architecture-topology lane (second-architecture reuse fidelity)
 
 Date: 2026-04-17
+State: blocked (preregistered; `_mix_gemma_features` harness path not yet written — see phase A below)
 Parent: `paper/claim-matrix.md` claim #7 (architecture-conditioned
 reuse fidelity is a spectrum)
 Sibling: `research/experiments/2026/2026-04-17-phase-1_51-novelty-pruning-gemma-prereg.md`
