@@ -69,14 +69,22 @@ DEFAULT_PLANNER = PlannerConfig()
 
 
 @dataclass(frozen=True, slots=True)
-class ChildVetoConfig:
-    """Phase 1.37 Planner 2.1 child-veto concentration guard.
+class NeighborHaloVetoConfig:
+    """Phase 1.37B neighbor-halo concentration guard (Planner 2.1A).
 
-    Promotes STATIC → NOVEL when any neighbor within `neighborhood` blocks has
-    a parent-statistic score above `percentile` of the current frame-pair's
-    score distribution. Rationale: a low-score block surrounded by high-score
-    neighbors likely participates in a localized concentrated motion event
-    that the parent statistic missed by averaging.
+    Promotes STATIC → NOVEL when any neighbor within `neighborhood` *parent*
+    blocks has a parent-statistic score above `percentile` of the current
+    frame-pair's score distribution. Rationale: a low-score block surrounded
+    by high-score neighbors likely participates in a localized concentrated
+    motion event that the parent statistic missed by averaging.
+
+    This is NOT the within-block child-veto originally preregistered as
+    phase 1.37 (see `research/experiments/2026/2026-04-16-phase-1_37-child-veto-subtoken-guard.md`),
+    which subdivides each merged-token block into 2×2 spatial children and
+    vetoes reuse if any child (MEAN or CPF, NOT MAX_ABS — that would degenerate
+    to block MAX_ABS) exceeds a threshold. The child-veto is phase 1.37 and
+    remains unimplemented; the neighbor-halo variant is phase 1.37B and is
+    what `apply_neighbor_halo_veto` implements.
     """
 
     percentile: float = 0.95
@@ -245,8 +253,8 @@ def _neighborhood_max(
 
     Pure numpy; no scipy dependency. Padded with -inf so edges see only real
     neighbors. When `include_self=False`, the cell itself is excluded from
-    the max (useful for child-veto where we want to know if any NEIGHBOR is
-    hot, independent of the current cell).
+    the max (useful for neighbor-halo veto where we want to know if any
+    NEIGHBORING parent block is hot, independent of the current cell).
     """
 
     if values.ndim != 2:
@@ -272,18 +280,23 @@ def _neighborhood_max(
     return acc
 
 
-def apply_child_veto(
+def apply_neighbor_halo_veto(
     classification: npt.NDArray[np.int32],
     block_scores: npt.NDArray[np.float32],
     *,
-    config: ChildVetoConfig,
+    config: NeighborHaloVetoConfig,
 ) -> npt.NDArray[np.int32]:
-    """Promote STATIC blocks whose neighbors exceed the percentile threshold.
+    """Promote STATIC blocks whose neighbor blocks exceed the percentile threshold.
 
-    Pure function; does not mutate `classification`. SHIFTED and NOVEL blocks
-    are left unchanged — they already have a motion signal. Only STATIC
-    blocks are candidates for promotion, so child-veto can only ADD novelty,
-    never remove it.
+    Scans the (2N+1)×(2N+1) neighborhood of *parent* block scores (not
+    within-block sub-children). Pure function; does not mutate `classification`.
+    SHIFTED and NOVEL blocks are left unchanged — they already have a motion
+    signal. Only STATIC blocks are candidates for promotion, so the halo-veto
+    can only ADD novelty, never remove it.
+
+    This implements phase 1.37B. The within-block child-veto originally
+    preregistered as phase 1.37 is unimplemented — see
+    `research/experiments/2026/2026-04-16-phase-1_37-child-veto-subtoken-guard.md`.
     """
 
     if classification.shape != block_scores.shape:

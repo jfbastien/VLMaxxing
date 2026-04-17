@@ -311,16 +311,27 @@ authoritative in the per-phase notes under
   prereg_outcome: Accepted with caveat (Pearson r=0.23-0.50 caps below the r>=0.7 preregistered target; 45/60 item coverage due to cache-key rewrite; the finding reframes claim as a ranking/diagnosis study rather than a leaderboard)
 
 - phase_id: 1.37
+  status: prereg-only-unimplemented
+  authoritative_note: research/experiments/2026/2026-04-16-phase-1_37-child-veto-subtoken-guard.md
+  authoritative_artifacts: []
+  current_best_policy: n/a (mechanism not yet implemented)
+  supersedes: []
+  paper_relevance: primary (claim #3 concentration-aware routing — within-block subtoken guard half)
+  prereg_outcome: (pending; code path lives in _mix_qwen_features and has NOT been written; distinct from 1.37B)
+  notes: the 2026-04-17 "Planner 2.1" prereg that previously lived under this phase ID has been rescoped to phase 1.37B (neighbor-halo veto); this phase retains the original 2026-04-16 within-block 2x2 child-veto specification
+
+- phase_id: 1.37B
   status: code-landed-run-pending
-  authoritative_note: research/experiments/2026/2026-04-17-phase-1_37-planner-2_1-prereg.md
+  authoritative_note: research/experiments/2026/2026-04-17-phase-1_37B-neighbor-halo-veto-prereg.md
   authoritative_artifacts:
-    - src/codec_through/temporal.py (ChildVetoConfig, apply_child_veto, _neighborhood_max)
-    - tests/test_child_veto.py
-    - scripts/run_benchmark_track_a.py (--veto-percentile / --veto-neighborhood)
+    - src/codec_through/temporal.py (NeighborHaloVetoConfig, apply_neighbor_halo_veto, _neighborhood_max)
+    - tests/test_neighbor_halo_veto.py
+    - scripts/run_benchmark_track_a.py (--halo-veto-percentile / --halo-veto-neighborhood)
   current_best_policy: n/a (dev tranche not yet run)
   supersedes: []
-  paper_relevance: primary (claim #3 concentration-aware routing)
+  paper_relevance: primary (claim #3 concentration-aware routing — spatial neighbor-halo half)
   prereg_outcome: (pending; gates preregistered in note)
+  notes: originally filed as "phase 1.37 Planner 2.1"; renamed 2026-04-17 after Sam flagged that "child-veto" was the name of a distinct mechanism (within-block subtoken guard) and should not be reused for the neighbor-halo variant
 
 - phase_id: 1.41
   status: infra-landed-run-pending

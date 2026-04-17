@@ -38,9 +38,9 @@ from codec_through.temporal import (
     BlockClass,
     BlockStatistic,
     BlockThresholds,
-    ChildVetoConfig,
+    NeighborHaloVetoConfig,
     PlannerConfig,
-    apply_child_veto,
+    apply_neighbor_halo_veto,
     block_statistic_values,
     classify_blocks_with_planner,
 )
@@ -720,7 +720,7 @@ def _planner_payload(
     reuse_classes: tuple[BlockClass, ...],
     max_age: int | None,
     sticky_window: int | None = None,
-    child_veto: ChildVetoConfig | None = None,
+    halo_veto: NeighborHaloVetoConfig | None = None,
 ) -> dict[str, Any]:
     payload: dict[str, Any] = {
         "statistic": planner_config.statistic.value,
@@ -732,10 +732,10 @@ def _planner_payload(
         "max_age": max_age,
         "sticky_window": sticky_window,
     }
-    if child_veto is not None:
-        payload["child_veto"] = {
-            "percentile": child_veto.percentile,
-            "neighborhood": child_veto.neighborhood,
+    if halo_veto is not None:
+        payload["neighbor_halo_veto"] = {
+            "percentile": halo_veto.percentile,
+            "neighborhood": halo_veto.neighborhood,
         }
     return payload
 
@@ -790,7 +790,7 @@ def _mix_qwen_features(
     reuse_classes: tuple[BlockClass, ...],
     max_age: int | None,
     sticky_window: int | None = None,
-    child_veto_config: ChildVetoConfig | None = None,
+    halo_veto_config: NeighborHaloVetoConfig | None = None,
 ) -> tuple[mx.array, list[float], list[float]]:
     image_grid_thw = np.array(sample.extra_kwargs["image_grid_thw"].tolist(), dtype=np.int64)
     counts = qwen_merged_token_counts(image_grid_thw, spatial_merge_size=QWEN_SPATIAL_MERGE)
@@ -823,17 +823,17 @@ def _mix_qwen_features(
             block_size=QWEN_BLOCK_SIZE,
             config=planner_config,
         )
-        if child_veto_config is not None:
+        if halo_veto_config is not None:
             block_scores = block_statistic_values(
                 previous,
                 current,
                 block_size=QWEN_BLOCK_SIZE,
                 config=planner_config,
             )
-            classification = apply_child_veto(
+            classification = apply_neighbor_halo_veto(
                 classification,
                 block_scores,
-                config=child_veto_config,
+                config=halo_veto_config,
             )
         reuse_mask = flattened_reuse_mask(classification, reuse_classes=reuse_classes)
         if reuse_mask.size != dense_segments[frame_index].shape[0]:
@@ -884,7 +884,7 @@ def _select_cached_features(
     reuse_classes: tuple[BlockClass, ...],
     max_age: int | None,
     sticky_window: int | None = None,
-    child_veto_config: ChildVetoConfig | None = None,
+    halo_veto_config: NeighborHaloVetoConfig | None = None,
 ) -> tuple[mx.array, list[float], list[float]]:
     if cache_mode == "identity":
         return features, [], []
@@ -896,7 +896,7 @@ def _select_cached_features(
             reuse_classes=reuse_classes,
             max_age=max_age,
             sticky_window=sticky_window,
-            child_veto_config=child_veto_config,
+            halo_veto_config=halo_veto_config,
         )
 
     image_grid_thw = np.array(sample.extra_kwargs["image_grid_thw"].tolist(), dtype=np.int64)
@@ -930,17 +930,17 @@ def _select_cached_features(
             block_size=QWEN_BLOCK_SIZE,
             config=planner_config,
         )
-        if child_veto_config is not None:
+        if halo_veto_config is not None:
             block_scores = block_statistic_values(
                 previous,
                 current,
                 block_size=QWEN_BLOCK_SIZE,
                 config=planner_config,
             )
-            classification = apply_child_veto(
+            classification = apply_neighbor_halo_veto(
                 classification,
                 block_scores,
-                config=child_veto_config,
+                config=halo_veto_config,
             )
         reuse_mask = flattened_reuse_mask(classification, reuse_classes=reuse_classes)
         if reuse_mask.size != dense_segments[frame_index].shape[0]:
@@ -1105,7 +1105,7 @@ def _run_chunk(
     feature_cache_dir: Path,
     allow_dirty: bool,
     log_option_logprobs: bool = False,
-    child_veto_config: ChildVetoConfig | None = None,
+    halo_veto_config: NeighborHaloVetoConfig | None = None,
 ) -> list[dict[str, Any]]:
     _ensure_clean_git_tree(allow_dirty=allow_dirty)
     selected_manifest = _load_manifest(manifest_path) if manifest_path is not None else None
@@ -1143,7 +1143,7 @@ def _run_chunk(
             reuse_classes=reuse_classes,
             max_age=max_age,
             sticky_window=sticky_window,
-            child_veto_config=child_veto_config,
+            halo_veto_config=halo_veto_config,
         )
         dense = _generate_response(
             model,
@@ -1235,7 +1235,7 @@ def _run_chunk(
                     reuse_classes=reuse_classes,
                     max_age=max_age,
                     sticky_window=sticky_window,
-                    child_veto=child_veto_config,
+                    halo_veto=halo_veto_config,
                 ),
                 "selection_mode": "manifest" if selected_manifest is not None else "per_group",
                 "manifest_path": str(manifest_path) if manifest_path is not None else None,
@@ -1290,7 +1290,7 @@ def _write_summary(
     sticky_window: int | None,
     use_feature_replay: bool,
     feature_cache_dir: Path,
-    child_veto_config: ChildVetoConfig | None = None,
+    halo_veto_config: NeighborHaloVetoConfig | None = None,
 ) -> None:
     completed_items: list[dict[str, Any]] = []
     if output_path.exists():
@@ -1340,7 +1340,7 @@ def _write_summary(
             reuse_classes=reuse_classes,
             max_age=max_age,
             sticky_window=sticky_window,
-            child_veto=child_veto_config,
+            halo_veto=halo_veto_config,
         ),
         "requested_item_ids": requested_ids,
         "completed_item_ids": completed_ids,
@@ -1386,7 +1386,7 @@ def run_benchmark(
     feature_cache_dir: Path,
     allow_dirty: bool,
     log_option_logprobs: bool = False,
-    child_veto_config: ChildVetoConfig | None = None,
+    halo_veto_config: NeighborHaloVetoConfig | None = None,
 ) -> None:
     _ensure_clean_git_tree(allow_dirty=allow_dirty)
     environment = _environment_record(model_path)
@@ -1445,13 +1445,13 @@ def run_benchmark(
             command.extend(["--max-age", str(max_age)])
         if sticky_window is not None:
             command.extend(["--sticky-window", str(sticky_window)])
-        if child_veto_config is not None:
+        if halo_veto_config is not None:
             command.extend(
                 [
-                    "--veto-percentile",
-                    str(child_veto_config.percentile),
-                    "--veto-neighborhood",
-                    str(child_veto_config.neighborhood),
+                    "--halo-veto-percentile",
+                    str(halo_veto_config.percentile),
+                    "--halo-veto-neighborhood",
+                    str(halo_veto_config.neighborhood),
                 ]
             )
         # The parent run already validated the starting repo state before it
@@ -1491,7 +1491,7 @@ def run_benchmark(
                 sticky_window=sticky_window,
                 use_feature_replay=use_feature_replay,
                 feature_cache_dir=feature_cache_dir,
-                child_veto_config=child_veto_config,
+                halo_veto_config=halo_veto_config,
             )
 
     if _stop_requested(control):
@@ -1516,18 +1516,21 @@ def run_benchmark(
             sticky_window=sticky_window,
             use_feature_replay=use_feature_replay,
             feature_cache_dir=feature_cache_dir,
-            child_veto_config=child_veto_config,
+            halo_veto_config=halo_veto_config,
         )
 
 
-def _maybe_child_veto(percentile: float | None, neighborhood: int | None) -> ChildVetoConfig | None:
+def _maybe_halo_veto(
+    percentile: float | None, neighborhood: int | None
+) -> NeighborHaloVetoConfig | None:
     if percentile is None and neighborhood is None:
         return None
     if percentile is None or neighborhood is None:
         raise ValueError(
-            "child-veto requires both --veto-percentile and --veto-neighborhood (or neither)"
+            "neighbor-halo-veto requires both --halo-veto-percentile and "
+            "--halo-veto-neighborhood (or neither)"
         )
-    return ChildVetoConfig(percentile=percentile, neighborhood=neighborhood)
+    return NeighborHaloVetoConfig(percentile=percentile, neighborhood=neighborhood)
 
 
 def main() -> None:
@@ -1578,20 +1581,22 @@ def main() -> None:
         ),
     )
     run_parser.add_argument(
-        "--veto-percentile",
+        "--halo-veto-percentile",
         type=float,
         default=None,
         help=(
-            "Phase 1.37 Planner 2.1 child-veto: promote STATIC -> NOVEL if any "
-            "neighbor block's parent-statistic score exceeds this quantile of "
-            "the current frame-pair score distribution. Requires --veto-neighborhood."
+            "Phase 1.37B Planner 2.1A neighbor-halo veto: promote STATIC -> "
+            "NOVEL if any *parent-block neighbor's* statistic score exceeds "
+            "this quantile of the current frame-pair score distribution. "
+            "Requires --halo-veto-neighborhood. (Not the within-block "
+            "child-veto of phase 1.37, which is unimplemented.)"
         ),
     )
     run_parser.add_argument(
-        "--veto-neighborhood",
+        "--halo-veto-neighborhood",
         type=int,
         default=None,
-        help="Child-veto neighborhood radius (1 = 3x3 window, 2 = 5x5).",
+        help="Neighbor-halo radius in parent-block units (1 = 3x3 window, 2 = 5x5).",
     )
     run_parser.add_argument("--model-path", type=Path, default=DEFAULT_MODEL_PATH)
     run_parser.add_argument("--output-path", type=Path, default=DEFAULT_OUTPUT_PATH)
@@ -1629,8 +1634,8 @@ def main() -> None:
     chunk_parser.add_argument("--reuse-classes", required=True)
     chunk_parser.add_argument("--max-age", type=int, default=None)
     chunk_parser.add_argument("--sticky-window", type=int, default=None)
-    chunk_parser.add_argument("--veto-percentile", type=float, default=None)
-    chunk_parser.add_argument("--veto-neighborhood", type=int, default=None)
+    chunk_parser.add_argument("--halo-veto-percentile", type=float, default=None)
+    chunk_parser.add_argument("--halo-veto-neighborhood", type=int, default=None)
     chunk_parser.add_argument("--model-path", type=Path, required=True)
     chunk_parser.add_argument("--item-id", nargs="+", required=True)
     chunk_parser.add_argument("--feature-cache-dir", type=Path, default=DEFAULT_FEATURE_CACHE_DIR)
@@ -1649,7 +1654,7 @@ def main() -> None:
     reuse_classes = _parse_reuse_classes(args.reuse_classes)
     max_age = _validate_max_age(args.max_age)
     sticky_window = args.sticky_window if args.sticky_window and args.sticky_window > 0 else None
-    child_veto_config = _maybe_child_veto(args.veto_percentile, args.veto_neighborhood)
+    halo_veto_config = _maybe_halo_veto(args.halo_veto_percentile, args.halo_veto_neighborhood)
     if args.command == "run-chunk":
         groups = args.groups.split(",") if args.groups else None
         print(
@@ -1673,7 +1678,7 @@ def main() -> None:
                     feature_cache_dir=args.feature_cache_dir,
                     allow_dirty=bool(args.allow_dirty),
                     log_option_logprobs=bool(args.log_option_logprobs),
-                    child_veto_config=child_veto_config,
+                    halo_veto_config=halo_veto_config,
                 ),
                 sort_keys=True,
             )
@@ -1703,7 +1708,7 @@ def main() -> None:
         feature_cache_dir=args.feature_cache_dir,
         allow_dirty=bool(args.allow_dirty),
         log_option_logprobs=bool(args.log_option_logprobs),
-        child_veto_config=child_veto_config,
+        halo_veto_config=halo_veto_config,
     )
 
 
