@@ -56,16 +56,12 @@ def test_resolved_grid_shape_square_default() -> None:
 
 
 def test_resolved_grid_shape_explicit_side() -> None:
-    cfg = NoveltyPruneConfig(
-        anchor_arm="gemma_structural", keep_rate=0.5, grid_side=8
-    )
+    cfg = NoveltyPruneConfig(anchor_arm="gemma_structural", keep_rate=0.5, grid_side=8)
     assert cfg.resolved_grid_shape(64) == (8, 8)
 
 
 def test_resolved_grid_shape_rectangular_override() -> None:
-    cfg = NoveltyPruneConfig(
-        anchor_arm="gemma_structural", keep_rate=0.5, grid_shape=(14, 20)
-    )
+    cfg = NoveltyPruneConfig(anchor_arm="gemma_structural", keep_rate=0.5, grid_shape=(14, 20))
     assert cfg.resolved_grid_shape(280) == (14, 20)
 
 
@@ -76,9 +72,7 @@ def test_resolved_grid_shape_rejects_non_square_without_override() -> None:
 
 
 def test_resolved_grid_shape_rejects_mismatched_override() -> None:
-    cfg = NoveltyPruneConfig(
-        anchor_arm="gemma_structural", keep_rate=0.5, grid_shape=(4, 5)
-    )
+    cfg = NoveltyPruneConfig(anchor_arm="gemma_structural", keep_rate=0.5, grid_shape=(4, 5))
     with pytest.raises(ValueError, match="does not multiply"):
         cfg.resolved_grid_shape(25)
 
@@ -96,9 +90,7 @@ def test_compute_keep_mask_rejects_bad_keep_rate() -> None:
 
 
 def test_compute_keep_mask_requires_features_for_nuwa() -> None:
-    cfg = NoveltyPruneConfig(
-        anchor_arm="nuwa_pillar", keep_rate=0.5, grid_side=4, nuwa_cell_side=2
-    )
+    cfg = NoveltyPruneConfig(anchor_arm="nuwa_pillar", keep_rate=0.5, grid_side=4, nuwa_cell_side=2)
     with pytest.raises(ValueError, match="features"):
         compute_keep_mask(_novelty_ramp(1, 16), config=cfg)
 
@@ -335,9 +327,7 @@ def test_gemma_structural_preserves_corners_and_center() -> None:
     # keep_rate small enough that anchors fully occupy budget (k=5).
     grid = 5
     t = grid * grid
-    cfg = NoveltyPruneConfig(
-        anchor_arm="gemma_structural", keep_rate=5 / t, grid_side=grid
-    )
+    cfg = NoveltyPruneConfig(anchor_arm="gemma_structural", keep_rate=5 / t, grid_side=grid)
     novelty = np.zeros((1, t), dtype=np.float32)
     mask = compute_keep_mask(novelty, config=cfg)
     kept = set(np.nonzero(mask[0])[0].tolist())
@@ -355,7 +345,9 @@ def test_gemma_structural_fills_remainder_with_novelty() -> None:
     grid = 4
     t = grid * grid
     cfg = NoveltyPruneConfig(
-        anchor_arm="gemma_structural", keep_rate=0.5, grid_side=grid  # k = 8
+        anchor_arm="gemma_structural",
+        keep_rate=0.5,
+        grid_side=grid,  # k = 8
     )
     novelty = np.arange(t, dtype=np.float32)[None, :]
     mask = compute_keep_mask(novelty, config=cfg)
@@ -413,9 +405,7 @@ def test_reduce_features_matches_mask() -> None:
     mask[2, 2] = True
     kept, positions = reduce_features(features, mask)
     assert kept.shape == (4, 5)
-    expected_positions = np.array(
-        [0 * 4 + 1, 1 * 4 + 3, 2 * 4 + 0, 2 * 4 + 2], dtype=np.int64
-    )
+    expected_positions = np.array([0 * 4 + 1, 1 * 4 + 3, 2 * 4 + 0, 2 * 4 + 2], dtype=np.int64)
     assert np.array_equal(positions, expected_positions)
     # Row order matches frame-major / token-major traversal.
     for idx, pos in enumerate(expected_positions):
@@ -504,13 +494,9 @@ def test_compute_pixel_novelty_rejects_indivisible_grid() -> None:
 
 
 def test_compute_pixel_novelty_handles_empty_and_single_frame() -> None:
-    empty = compute_pixel_novelty(
-        np.zeros((0, 4, 4), dtype=np.float32), grid_shape=(2, 2)
-    )
+    empty = compute_pixel_novelty(np.zeros((0, 4, 4), dtype=np.float32), grid_shape=(2, 2))
     assert empty.shape == (0, 4)
-    single = compute_pixel_novelty(
-        np.ones((1, 4, 4), dtype=np.float32), grid_shape=(2, 2)
-    )
+    single = compute_pixel_novelty(np.ones((1, 4, 4), dtype=np.float32), grid_shape=(2, 2))
     assert single.shape == (1, 4)
     # No diff available → all zero.
     assert np.all(single == 0.0)

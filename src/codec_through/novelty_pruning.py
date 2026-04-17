@@ -103,9 +103,7 @@ class NoveltyPruneConfig:
         if side is None:
             side = int(round(np.sqrt(token_count)))
         if side * side != token_count:
-            raise ValueError(
-                f"token_count {token_count} is not square; pass grid_shape instead"
-            )
+            raise ValueError(f"token_count {token_count} is not square; pass grid_shape instead")
         return side, side
 
 
@@ -130,9 +128,7 @@ def _keep_top_k(scores: FloatArray, k: int) -> BoolArray:
     return mask
 
 
-def _fill_novelty(
-    keep_mask: BoolArray, novelty_scores: FloatArray, target_k: int
-) -> BoolArray:
+def _fill_novelty(keep_mask: BoolArray, novelty_scores: FloatArray, target_k: int) -> BoolArray:
     """Augment `keep_mask` with novelty-ranked tokens until `sum(mask) == target_k`.
 
     Preserves any True positions in `keep_mask` (anchor-preserved tokens) and
@@ -192,9 +188,7 @@ def _arm_nuwa_pillar_frame_mask(
     rows, cols = grid_shape
     m = config.nuwa_cell_side
     if rows % m != 0 or cols % m != 0:
-        raise ValueError(
-            f"nuwa_cell_side {m} must divide both grid dims {grid_shape}"
-        )
+        raise ValueError(f"nuwa_cell_side {m} must divide both grid dims {grid_shape}")
     cell_rows = rows // m
     cell_cols = cols // m
     key_norms = np.linalg.norm(features_frame, axis=1)  # (T,)
@@ -297,9 +291,7 @@ def compute_keep_mask(
         raise ValueError(f"anchor_arm={config.anchor_arm!r} requires features")
     if config.anchor_arm == "cls_attention" and cls_attention is None:
         raise ValueError("anchor_arm='cls_attention' requires cls_attention input")
-    if features is not None and (
-        features.ndim != 3 or features.shape[:2] != (f_count, t_count)
-    ):
+    if features is not None and (features.ndim != 3 or features.shape[:2] != (f_count, t_count)):
         raise ValueError(
             f"features must have shape (F, T, D) matching novelty; got {features.shape}"
         )
@@ -376,9 +368,7 @@ def _diff_plane(frame_a: FloatArray, frame_b: FloatArray) -> FloatArray:
     return np.asarray(diff, dtype=np.float32)
 
 
-def _aggregate_to_grid(
-    per_pixel: FloatArray, grid_shape: tuple[int, int]
-) -> FloatArray:
+def _aggregate_to_grid(per_pixel: FloatArray, grid_shape: tuple[int, int]) -> FloatArray:
     """Block-mean-pool a 2D per-pixel array into `grid_shape` cells.
 
     Requires the pixel dimensions to be exact multiples of the grid dims (the
@@ -389,9 +379,7 @@ def _aggregate_to_grid(
     rows, cols = grid_shape
     h, w = per_pixel.shape
     if h % rows != 0 or w % cols != 0:
-        raise ValueError(
-            f"frame dims {(h, w)} must be divisible by grid_shape {(rows, cols)}"
-        )
+        raise ValueError(f"frame dims {(h, w)} must be divisible by grid_shape {(rows, cols)}")
     cell_h = h // rows
     cell_w = w // cols
     reshaped = per_pixel.reshape(rows, cell_h, cols, cell_w)
@@ -425,9 +413,7 @@ def compute_pixel_novelty(
         `(F, rows * cols)` float32 novelty, higher = more pixel-level change.
     """
     if frames.ndim not in (3, 4):
-        raise ValueError(
-            f"frames must be (F, H, W) or (F, H, W, C); got shape {frames.shape}"
-        )
+        raise ValueError(f"frames must be (F, H, W) or (F, H, W, C); got shape {frames.shape}")
     f_count = frames.shape[0]
     if f_count == 0:
         return np.zeros((0, grid_shape[0] * grid_shape[1]), dtype=np.float32)

@@ -62,9 +62,7 @@ def format_markdown(rows: list[dict[str, Any]]) -> str:
     lines = [header, sep]
     for r in rows:
         halo = r.get("halo")
-        halo_str = (
-            f"p={halo['percentile']}/n={halo['neighborhood']}" if halo else "(none)"
-        )
+        halo_str = f"p={halo['percentile']}/n={halo['neighborhood']}" if halo else "(none)"
         lines.append(
             "| {label} | {halo} | {cached:.3f} | {dense:.3f} | {ag:.3f} | "
             "{reuse:.3f} | {ef:.2f} | {done}/{req} |".format(
@@ -88,10 +86,7 @@ def main() -> None:
     parser.add_argument("--out", type=Path, default=None)
     args = parser.parse_args()
 
-    rows = [
-        _cell_row(p)
-        for p in sorted(args.artifact_dir.glob("*_summary.json"))
-    ]
+    rows = [_cell_row(p) for p in sorted(args.artifact_dir.glob("*_summary.json"))]
     if not rows:
         raise SystemExit(f"no summaries under {args.artifact_dir}")
 

@@ -59,11 +59,9 @@ def _decode_uniform(video_path: Path, frame_count: int) -> np.ndarray:
     frames: list[Image.Image] = []
     with av.open(str(video_path)) as container:
         for frame in container.decode(video=0):
-            frames.append(frame.to_image().convert("RGB"))
+            frames.append(frame.to_image().convert("RGB"))  # type: ignore[no-untyped-call]
     if len(frames) < frame_count:
-        raise ValueError(
-            f"video has {len(frames)} frames but requested {frame_count}"
-        )
+        raise ValueError(f"video has {len(frames)} frames but requested {frame_count}")
     indices = np.linspace(0, len(frames) - 1, frame_count, dtype=int).tolist()
     selected = [_square_pad(frames[i], BENCHMARK_FRAME_SIZE) for i in indices]
     stack = np.stack([np.asarray(f, dtype=np.float32) for f in selected], axis=0)
@@ -98,9 +96,7 @@ def run_smoke(
     cls_attention = novelty.copy()
 
     baseline_arm: AnchorArm = "none"
-    baseline_mask = compute_keep_mask(
-        novelty, config=_make_config(baseline_arm, keep_rate)
-    )
+    baseline_mask = compute_keep_mask(novelty, config=_make_config(baseline_arm, keep_rate))
 
     per_arm: dict[str, dict[str, object]] = {}
     for arm in ANCHOR_ARMS:
@@ -160,7 +156,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    # asdict is imported for future use if the script grows a dataclass
-    # report payload; keep the import warning suppressed here.
-    _ = asdict  # pragma: no cover
     main()

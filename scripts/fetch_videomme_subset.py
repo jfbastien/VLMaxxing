@@ -74,9 +74,7 @@ def _wanted_video_ids(manifest_paths: list[Path], parquet_path: Path) -> dict[st
             if prefix != "videomme":
                 raise ValueError(f"non-VideoMME item in manifest {manifest_path}: {item_id!r}")
             if qid not in by_qid:
-                raise KeyError(
-                    f"question_id {qid!r} from {manifest_path} not found in parquet"
-                )
+                raise KeyError(f"question_id {qid!r} from {manifest_path} not found in parquet")
             row = by_qid[qid]
             wanted[str(row["videoID"])] = str(row.get("url", ""))
     return wanted
@@ -258,22 +256,19 @@ def main() -> int:
             print(f"  extracted {len(extracted)}: {sorted(extracted)}")
             remaining -= extracted
             for vid in extracted:
-                suffix = next(
-                    (videos_dir / f"{vid}{s}" for s in SUPPORTED_VIDEO_SUFFIXES),
-                    None,
-                )
                 target = next(
-                    (videos_dir / f"{vid}{s}" for s in SUPPORTED_VIDEO_SUFFIXES
-                     if (videos_dir / f"{vid}{s}").exists()),
+                    (
+                        videos_dir / f"{vid}{s}"
+                        for s in SUPPORTED_VIDEO_SUFFIXES
+                        if (videos_dir / f"{vid}{s}").exists()
+                    ),
                     None,
                 )
                 if target is None:
                     continue
                 entry: dict[str, Any] = {
                     "path": str(target.relative_to(VIDEOMME_ROOT)),
-                    "source": (
-                        f"hf://datasets/{VIDEOMME_DATASET_ID}/{chunk_name}!{vid}"
-                    ),
+                    "source": (f"hf://datasets/{VIDEOMME_DATASET_ID}/{chunk_name}!{vid}"),
                     "size_bytes": target.stat().st_size,
                 }
                 if args.record_sha256:

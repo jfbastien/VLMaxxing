@@ -499,7 +499,8 @@ def _fetch_videomme_assets(paths: BenchmarkPaths, *, dry_run: bool) -> None:
         f"hf://datasets/{VIDEOMME_DATASET_ID} as videos_chunked_{{01..20}}.zip "
         "(~101 GB full corpus). For the paper protocol, only the 57-videoID "
         "dev+holdout subset is needed — use "
-        "`scripts/fetch_videomme_subset.py --manifest research/benchmark_manifests/videomme_dev_v1.toml "
+        "`scripts/fetch_videomme_subset.py --manifest "
+        "research/benchmark_manifests/videomme_dev_v1.toml "
         "[--manifest research/benchmark_manifests/videomme_holdout_v1.toml]`. "
         "See docs/videomme-download-handoff.md."
     )
