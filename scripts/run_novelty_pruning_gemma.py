@@ -108,14 +108,26 @@ def _load_runner_module() -> Any:
 
 
 @dataclass(frozen=True, slots=True)
-class PrefillTiming:
+class StageTimings:
+    """Per-branch wall-clock breakdown in milliseconds.
+
+    ``end_to_end_ms`` is the headline: wall-clock from video-path handoff
+    through final generated text, summing all stages that actually ran on
+    this branch. Use this for the Sam-whitepaper ≥ 1.8× speedup claim;
+    ``generate_ms`` alone understates the denominator (it misses decode,
+    processor, novelty, vision, mask, prune). Reporting both lets us
+    separate "how much we save on generate" from "how much we save
+    end-to-end after paying the overhead of pruning itself."
+    """
+
     decode_ms: float
+    processor_ms: float
     novelty_ms: float
     mask_ms: float
     prune_ms: float
     vision_ms: float
     generate_ms: float
-    total_ms: float
+    end_to_end_ms: float
 
 
 @dataclass(frozen=True, slots=True)
@@ -139,8 +151,8 @@ class ItemResult:
     answer_index: int
     dense_choice: int | None
     pruned_choice: int | None
-    dense_timing: PrefillTiming
-    pruned_timing: PrefillTiming
+    dense_timing: StageTimings
+    pruned_timing: StageTimings
     metadata: dict[str, Any] = field(default_factory=dict)
 
 
@@ -260,6 +272,9 @@ def _process_one_item(
     max_tokens: int,
 ) -> ItemResult:
     # --- Stage 1: decode ---
+    # Shared: both branches pay this cost once per item (the frames are the
+    # same input stream regardless of whether we prune). Attributed to both
+    # end_to_end sums below so the headline speedup is apples-to-apples.
     t_stage = time.perf_counter_ns()
     frames, pixel_stack = _decode_uniform_frames(
         item.video_path,
@@ -269,10 +284,16 @@ def _process_one_item(
     )
     decode_ms = (time.perf_counter_ns() - t_stage) / 1_000_000
 
-    # --- Stage 2: processor → input_ids ---
+    # --- Stage 2: processor (tokenize + pixel prep) ---
+    # Shared: the processor output feeds both branches. Timing this explicitly
+    # so the dense end-to-end isn't under-reported — codex round-19 flagged
+    # that previously-untimed stages hid overhead the pruned branch actually
+    # pays.
+    t_stage = time.perf_counter_ns()
     raw = _build_prompt(
         processor, frames, runner._multiple_choice_prompt(item.question, item.candidates)
     )
+    processor_ms = (time.perf_counter_ns() - t_stage) / 1_000_000
     input_ids_np = np.asarray(raw["input_ids"], dtype=np.int64).reshape(-1)
     pixel_values = mx.array(raw["pixel_values"])
     mask = mx.array(raw["attention_mask"])
@@ -282,12 +303,12 @@ def _process_one_item(
         if k not in {"input_ids", "pixel_values", "attention_mask"}
     }
 
-    # --- Stage 3: novelty ---
+    # --- Stage 3: novelty (pruned branch only) ---
     t_stage = time.perf_counter_ns()
     novelty = compute_pixel_novelty(pixel_stack, grid_shape=GEMMA_GRID_SHAPE)
     novelty_ms = (time.perf_counter_ns() - t_stage) / 1_000_000
 
-    # --- Stage 4: vision encode (needed for both dense + feature-using arms) ---
+    # --- Stage 4: vision encode (shared; both branches need embeddings) ---
     t_stage = time.perf_counter_ns()
     vision_features = _compute_vision_features(model, pixel_values)
     vision_ms = (time.perf_counter_ns() - t_stage) / 1_000_000
@@ -297,7 +318,7 @@ def _process_one_item(
         frame_count, GEMMA_GRID_SHAPE[0] * GEMMA_GRID_SHAPE[1], hidden
     )
 
-    # --- Stage 5: keep mask ---
+    # --- Stage 5: keep mask (pruned branch only) ---
     t_stage = time.perf_counter_ns()
     cfg = NoveltyPruneConfig(
         anchor_arm=anchor_arm,
@@ -315,7 +336,7 @@ def _process_one_item(
     )
     mask_ms = (time.perf_counter_ns() - t_stage) / 1_000_000
 
-    # --- Stage 6: prune input_ids + gather features ---
+    # --- Stage 6: prune input_ids + gather features (pruned branch only) ---
     t_stage = time.perf_counter_ns()
     image_token_id = int(model.config.image_token_id)
     pruned = prune_image_placeholders(input_ids_np, keep_mask, image_token_id=image_token_id)
@@ -326,7 +347,6 @@ def _process_one_item(
 
     # --- Stage 7: dense baseline generate ---
     dense_input_ids = mx.array(raw["input_ids"])
-    t_stage = time.perf_counter_ns()
     dense_text, dense_generate_ms = _run_generate(
         model,
         processor,
@@ -337,7 +357,6 @@ def _process_one_item(
         cached_image_features=vision_features,
         max_tokens=max_tokens,
     )
-    dense_total_ms = (time.perf_counter_ns() - t_stage) / 1_000_000
 
     # --- Stage 8: pruned generate ---
     # Pruned mask: same attention_mask slots minus the dropped image positions.
@@ -352,7 +371,6 @@ def _process_one_item(
     pruned_attn = attn_np[survivor]
     pruned_mask = mx.array(pruned_attn[None, :])
 
-    t_stage = time.perf_counter_ns()
     pruned_text, pruned_generate_ms = _run_generate(
         model,
         processor,
@@ -363,7 +381,16 @@ def _process_one_item(
         cached_image_features=gathered_features,
         max_tokens=max_tokens,
     )
-    pruned_total_ms = (time.perf_counter_ns() - t_stage) / 1_000_000
+
+    # End-to-end wall-clocks. Both branches pay decode + processor + vision +
+    # generate; only the pruned branch pays novelty + mask + prune. Dense does
+    # NOT pay novelty/mask/prune, so attributing those to dense_end_to_end
+    # would inflate dense's denominator and deflate the speedup. Keep each
+    # branch's end_to_end sum restricted to stages that branch actually ran.
+    dense_end_to_end_ms = decode_ms + processor_ms + vision_ms + dense_generate_ms
+    pruned_end_to_end_ms = (
+        decode_ms + processor_ms + novelty_ms + vision_ms + mask_ms + prune_ms + pruned_generate_ms
+    )
 
     dense_choice = extract_choice(dense_text, item.candidates)
     pruned_choice = extract_choice(pruned_text, item.candidates)
@@ -392,23 +419,25 @@ def _process_one_item(
         answer_index=item.answer_index,
         dense_choice=dense_choice,
         pruned_choice=pruned_choice,
-        dense_timing=PrefillTiming(
+        dense_timing=StageTimings(
             decode_ms=decode_ms,
+            processor_ms=processor_ms,
             novelty_ms=0.0,
             mask_ms=0.0,
             prune_ms=0.0,
             vision_ms=vision_ms,
             generate_ms=dense_generate_ms,
-            total_ms=dense_total_ms,
+            end_to_end_ms=dense_end_to_end_ms,
         ),
-        pruned_timing=PrefillTiming(
+        pruned_timing=StageTimings(
             decode_ms=decode_ms,
+            processor_ms=processor_ms,
             novelty_ms=novelty_ms,
             mask_ms=mask_ms,
             prune_ms=prune_ms,
             vision_ms=vision_ms,
             generate_ms=pruned_generate_ms,
-            total_ms=pruned_total_ms,
+            end_to_end_ms=pruned_end_to_end_ms,
         ),
     )
 
@@ -422,9 +451,23 @@ def _summarize(records: list[ItemResult]) -> dict[str, Any]:
     mean_kept = float(np.mean([r.kept_tokens_total for r in records]))
     dense_generate_ms = [r.dense_timing.generate_ms for r in records]
     pruned_generate_ms = [r.pruned_timing.generate_ms for r in records]
-    speedup = (
+    dense_e2e_ms = [r.dense_timing.end_to_end_ms for r in records]
+    pruned_e2e_ms = [r.pruned_timing.end_to_end_ms for r in records]
+    generate_speedup = (
         float(np.mean(dense_generate_ms) / np.mean(pruned_generate_ms))
         if pruned_generate_ms and np.mean(pruned_generate_ms) > 0
+        else 0.0
+    )
+    # HEADLINE: end-to-end wall-clock speedup — this is the claim-#11 metric.
+    # Includes novelty + mask + prune overhead on the pruned branch so the
+    # ratio is apples-to-apples against dense's decode+processor+vision+
+    # generate. Codex round-19 flagged that the previous single "speedup"
+    # metric (now exposed as `generate_speedup_mean`) understated the pruned
+    # denominator and would over-report the headline by the ratio of generate
+    # time to end-to-end time.
+    end_to_end_speedup = (
+        float(np.mean(dense_e2e_ms) / np.mean(pruned_e2e_ms))
+        if pruned_e2e_ms and np.mean(pruned_e2e_ms) > 0
         else 0.0
     )
     return {
@@ -440,8 +483,18 @@ def _summarize(records: list[ItemResult]) -> dict[str, Any]:
         "mean_pruned_generate_ms": float(np.mean(pruned_generate_ms)),
         "median_dense_generate_ms": float(np.median(dense_generate_ms)),
         "median_pruned_generate_ms": float(np.median(pruned_generate_ms)),
-        "generate_speedup_mean": speedup,
+        "generate_speedup_mean": generate_speedup,
+        "mean_dense_end_to_end_ms": float(np.mean(dense_e2e_ms)),
+        "mean_pruned_end_to_end_ms": float(np.mean(pruned_e2e_ms)),
+        "median_dense_end_to_end_ms": float(np.median(dense_e2e_ms)),
+        "median_pruned_end_to_end_ms": float(np.median(pruned_e2e_ms)),
+        "end_to_end_speedup_mean": end_to_end_speedup,
+        "mean_decode_ms": float(np.mean([r.dense_timing.decode_ms for r in records])),
+        "mean_processor_ms": float(np.mean([r.dense_timing.processor_ms for r in records])),
         "mean_dense_vision_ms": float(np.mean([r.dense_timing.vision_ms for r in records])),
+        "mean_pruned_novelty_ms": float(np.mean([r.pruned_timing.novelty_ms for r in records])),
+        "mean_pruned_mask_ms": float(np.mean([r.pruned_timing.mask_ms for r in records])),
+        "mean_pruned_prune_ms": float(np.mean([r.pruned_timing.prune_ms for r in records])),
         "dense_parse_failures": sum(1 for r in records if r.dense_parse_failure),
         "pruned_parse_failures": sum(1 for r in records if r.pruned_parse_failure),
     }
@@ -477,18 +530,20 @@ def _record_payload(record: ItemResult) -> dict[str, Any]:
         "pruned_choice": record.pruned_choice,
         "dense_timing_ms": {
             "decode": record.dense_timing.decode_ms,
+            "processor": record.dense_timing.processor_ms,
             "vision": record.dense_timing.vision_ms,
             "generate": record.dense_timing.generate_ms,
-            "total": record.dense_timing.total_ms,
+            "end_to_end": record.dense_timing.end_to_end_ms,
         },
         "pruned_timing_ms": {
             "decode": record.pruned_timing.decode_ms,
+            "processor": record.pruned_timing.processor_ms,
             "novelty": record.pruned_timing.novelty_ms,
             "mask": record.pruned_timing.mask_ms,
             "prune": record.pruned_timing.prune_ms,
             "vision": record.pruned_timing.vision_ms,
             "generate": record.pruned_timing.generate_ms,
-            "total": record.pruned_timing.total_ms,
+            "end_to_end": record.pruned_timing.end_to_end_ms,
         },
     }
 
@@ -560,6 +615,8 @@ def main() -> int:
                 f"agree={record.agreement} "
                 f"kept={record.kept_tokens_total}/"
                 f"{record.n_frames * record.tokens_per_frame} "
+                f"dense_e2e={record.dense_timing.end_to_end_ms:.0f}ms "
+                f"pruned_e2e={record.pruned_timing.end_to_end_ms:.0f}ms "
                 f"dense_gen={record.dense_timing.generate_ms:.0f}ms "
                 f"pruned_gen={record.pruned_timing.generate_ms:.0f}ms"
             )
@@ -581,7 +638,8 @@ def main() -> int:
         f"dense_acc={summary.get('dense_accuracy', 0):.3f} "
         f"pruned_acc={summary.get('pruned_accuracy', 0):.3f} "
         f"agreement={summary.get('agreement', 0):.3f} "
-        f"generate_speedup={summary.get('generate_speedup_mean', 0):.2f}×"
+        f"end_to_end_speedup={summary.get('end_to_end_speedup_mean', 0):.2f}× "
+        f"(generate_only={summary.get('generate_speedup_mean', 0):.2f}×)"
     )
     return 0
 
