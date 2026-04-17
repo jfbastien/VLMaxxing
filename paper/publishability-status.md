@@ -4,6 +4,22 @@ One-file answer to "what can we actually claim, in what venue, with what
 numbers, today." Kept in sync with [claim-matrix.md](claim-matrix.md) but
 scoped narrower: reviewer-facing readiness and runtime-cost evidence.
 
+## Two paper arcs (round-16 clarification)
+
+The repo now runs two parallel paper programs. Keep language distinct:
+
+- **Arc A — Qwen methods paper.** Pareto-frontier / routing claims on
+  Qwen 2.5-VL-7B-4bit. Two paper-grade benchmarks (TOMATO, MVBench).
+  Claims 1/2/6/9 earned; 3/4/5 partial; 8/12 preregistered.
+- **Arc B — Gemma big-numbers paper.** Multiplicative end-to-end
+  speedup via novelty-pruning + temporal reuse on Gemma 4-E4B-4bit.
+  Claims 7/10/11 are all preregistered-only today; nothing earned.
+
+A single paper may absorb both arcs, but prose must not conflate
+arc-A-earned with arc-B-prospective. When a claim sits in both arcs
+(e.g., claim 5 sparse-execution delta on Qwen or Gemma), name the
+architecture explicitly.
+
 ## HN-style headline (honest version)
 
 > **Training-free temporal routing on Qwen 2.5-VL-7B-4bit (MLX): matches
@@ -80,7 +96,7 @@ Implementation time is out of scope for this table.
 
 | Venue | Fit today | What would need to land |
 |---|---|---|
-| **arXiv preprint** | **Ready now as positional submission.** Two clean-tree Pareto results + oracle + dense wall-clock. Framing must say "projected ceiling" for speedup. | Optional: close Codex round-13/14 cleanups (this session). |
+| **arXiv preprint** | **Ready now as positional submission.** Two clean-tree Pareto results + oracle + dense wall-clock. Framing must say "projected ceiling" for speedup. | Optional: close Codex round-16 doc drift sync (this session). |
 | **NeurIPS / ICLR / CVPR efficiency workshop** | **Within reach.** Needs one of: Track B sparse delta OR VideoMME lane OR second-architecture result. | One of {I, J, K} landed. |
 | **Main track (NeurIPS/ICML/CVPR)** | **NOT ready.** Single-architecture, two benchmarks, no measured speedup. Reviewers will flag all three. | At least two of {I, J, K} + placement ablation L. |
 | **Systems conference (MLSys/OSDI)** | **NOT ready.** No sparse execution to characterize. | I landed at minimum; K strengthens. |
@@ -118,11 +134,40 @@ Implementation time is out of scope for this table.
 
 ## Immediate next actions to extend publishability (ranked)
 
-1. **Phase 1.41 VideoMME N=30** — ≈ 2 h GPU wall time, unlocks claim J.
-2. **Phase 1.38 placement ablation** — ≈ 30 min GPU wall time, strengthens mechanism claim.
-3. **Phase 1.37 child-veto dev grid** — ≈ 2 h GPU wall time, unlocks claim 3 from claim-matrix.
-4. **Phase 1.50 Track B N=30 pair (currently running)** — cold-cache ≈ 4 h, tightens variance bands on G.
-5. **Track B sparse path** — weeks of engineering, the biggest single claim unlock.
+Arc-B (Gemma big-numbers paper) is the SOTA-directed priority; Arc-A
+follow-ons continue in parallel where they do not contend for the
+MLX queue.
+
+Arc B (multiplicative end-to-end speedup on Gemma 4-E4B-4bit):
+
+1. **Phase 1.42 Gemma `_mix_gemma_features` integration** — weeks-scale
+   implementation (LLM-side prefill-token-prune path, not windowed-ViT
+   patch reuse); unlocks claim 7 (architecture fidelity) and is a
+   prerequisite for 1.51 and 1.52.
+2. **Phase 1.51 novelty-pruning dev + holdout on Gemma** — 5 anchor
+   arms × 5 keep-rates dev, single-shot holdout; ≈ 4-6 h GPU wall time
+   behind 1.42; unlocks claim 11.
+3. **Phase 1.52 combined temporal + spatial pipeline on Gemma** —
+   depends on 1.42 + 1.51; ≈ 2-3 h GPU wall time; unlocks claim 10
+   (multiplicative composition).
+
+Arc A (Qwen methods paper) — can run during Arc-B engineering:
+
+4. **Phase 1.37B halo-veto dev tranche** — 48 cells × 2 benchmarks on
+   warm feature cache; ≈ 2 h GPU wall time; code landed (commits
+   2ebf90d + db10e12 + 0ea69fe); unlocks claim 3.
+5. **Phase 1.41 VideoMME N=30** — ≈ 2 h GPU wall time after manifest
+   ingestion; unlocks claim J (= claim 8 in matrix).
+6. **Phase 1.38 placement ablation** — ≈ 30 min GPU wall time;
+   strengthens claim 4 mechanism.
+7. **Phase 1.37 within-block child-veto (distinct mechanism from
+   1.37B)** — not yet implemented; ≈ 2 h GPU wall time after code
+   lands; orthogonal path toward claim 3.
+8. **Phase 1.43 EgoSchema N=30 on Qwen** — long-form/egocentric
+   generalization; ≈ 2-3 h GPU wall time; unlocks claim 12.
+9. **Track B sparse-execution path (Qwen or Gemma)** — weeks of
+   engineering; the biggest single claim unlock (claim 5 measured,
+   not ceiling-derived).
 
 Maintained by: research automation. Source of truth for numbers:
 [`claim-matrix.md`](claim-matrix.md) and the artifact JSONs it cites.

@@ -25,11 +25,16 @@ Five **target claims** to test:
    training-free routing signals.
 2. Naive mean-diff + no-refresh is too blunt on TOMATO-style brief
    semantically-critical change patterns.
-3. Concentration-aware routing (child-veto, sticky-dynamic,
-   age-bounded) repairs hard temporal failures. (Note:
-   projector-group completion is a no-op on our current Qwen 2.5-VL
-   stack where BLOCK_SIZE=28 already matches projector input
-   granularity; removed from the claim.)
+3. Concentration-aware routing repairs hard temporal failures. Two
+   spatial mechanisms are preregistered: phase 1.37B neighbor-halo
+   veto (landed 2026-04-17 — code in `apply_neighbor_halo_veto`) and
+   phase 1.37 within-block child-veto (subtoken guard; code not yet
+   written). Temporal mechanisms: sticky-dynamic (phase 1.26, landed)
+   and bounded staleness / age-bound (phase 1.20 ablation, essential
+   per the no-age collapse result). (Note: projector-group completion
+   is a no-op on our current Qwen 2.5-VL stack where BLOCK_SIZE=28
+   already matches projector input granularity; removed from the
+   claim.)
 4. Budget placement over time matters more than scalar fresh budget.
 5. Real sparse execution converts the proxy gain into measured
    wall-clock speedup on MLX.
@@ -188,7 +193,11 @@ Between phases 1.36/1.37, add:
   shift-locality strength is not fully settled on the local stack.
   The combined Planner 2.0 family should be: `{MAX_ABS, CPF} ×
   {STATIC, STATIC+SHIFTED} × {age=2, age=4} × {no-sticky, sticky4}
-  × {no-child-veto, child-veto}`.
+  × {no-halo-veto, halo-veto} × {no-child-veto, child-veto}`. The
+  halo-veto axis is the implemented spatial concentration guard
+  (phase 1.37B, `apply_neighbor_halo_veto`); the child-veto axis is
+  the preregistered but not-yet-implemented within-block subtoken
+  guard (phase 1.37).
 
 ### Tier B — follow-up
 
