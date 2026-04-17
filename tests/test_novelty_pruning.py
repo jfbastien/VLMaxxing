@@ -1,0 +1,438 @@
+"""Tests for phase 1.51R novelty-pruning anchor-arm policy.
+
+The module under test (`codec_through.novelty_pruning`) is pure-numpy and
+CPU-only; these tests do not require MLX or a GPU. Each anchor arm from the
+preregistration (`research/experiments/2026/2026-04-17-phase-1_51-novelty-pruning-gemma-prereg.md`)
+is covered with synthetic inputs whose expected masks are derivable by hand.
+"""
+
+from __future__ import annotations
+
+import numpy as np
+import pytest
+
+from codec_through.novelty_pruning import (
+    ANCHOR_ARMS,
+    NoveltyPruneConfig,
+    compute_keep_mask,
+    reduce_features,
+)
+
+# ---------------------------------------------------------------------------
+# Shared fixtures
+# ---------------------------------------------------------------------------
+
+
+def _novelty_ramp(f_count: int, t_count: int) -> np.ndarray:
+    """Per-frame novelty where token i has score i (highest at last token)."""
+    row = np.arange(t_count, dtype=np.float32)
+    return np.broadcast_to(row, (f_count, t_count)).copy()
+
+
+def _random_features(f_count: int, t_count: int, d: int, seed: int = 0) -> np.ndarray:
+    rng = np.random.default_rng(seed)
+    return rng.standard_normal((f_count, t_count, d)).astype(np.float32)
+
+
+# ---------------------------------------------------------------------------
+# Config validation
+# ---------------------------------------------------------------------------
+
+
+def test_anchor_arms_constant_matches_literal() -> None:
+    assert set(ANCHOR_ARMS) == {
+        "none",
+        "cls_attention",
+        "nuwa_pillar",
+        "max_min_diversity",
+        "gemma_structural",
+    }
+
+
+def test_resolved_grid_shape_square_default() -> None:
+    cfg = NoveltyPruneConfig(anchor_arm="gemma_structural", keep_rate=0.5)
+    assert cfg.resolved_grid_shape(16) == (4, 4)
+
+
+def test_resolved_grid_shape_explicit_side() -> None:
+    cfg = NoveltyPruneConfig(
+        anchor_arm="gemma_structural", keep_rate=0.5, grid_side=8
+    )
+    assert cfg.resolved_grid_shape(64) == (8, 8)
+
+
+def test_resolved_grid_shape_rectangular_override() -> None:
+    cfg = NoveltyPruneConfig(
+        anchor_arm="gemma_structural", keep_rate=0.5, grid_shape=(14, 20)
+    )
+    assert cfg.resolved_grid_shape(280) == (14, 20)
+
+
+def test_resolved_grid_shape_rejects_non_square_without_override() -> None:
+    cfg = NoveltyPruneConfig(anchor_arm="gemma_structural", keep_rate=0.5)
+    with pytest.raises(ValueError, match="not square"):
+        cfg.resolved_grid_shape(280)
+
+
+def test_resolved_grid_shape_rejects_mismatched_override() -> None:
+    cfg = NoveltyPruneConfig(
+        anchor_arm="gemma_structural", keep_rate=0.5, grid_shape=(4, 5)
+    )
+    with pytest.raises(ValueError, match="does not multiply"):
+        cfg.resolved_grid_shape(25)
+
+
+def test_compute_keep_mask_rejects_1d_novelty() -> None:
+    cfg = NoveltyPruneConfig(anchor_arm="none", keep_rate=0.5)
+    with pytest.raises(ValueError, match="2D"):
+        compute_keep_mask(np.arange(10, dtype=np.float32), config=cfg)
+
+
+def test_compute_keep_mask_rejects_bad_keep_rate() -> None:
+    cfg = NoveltyPruneConfig(anchor_arm="none", keep_rate=1.5)
+    with pytest.raises(ValueError, match="keep_rate"):
+        compute_keep_mask(_novelty_ramp(2, 4), config=cfg)
+
+
+def test_compute_keep_mask_requires_features_for_nuwa() -> None:
+    cfg = NoveltyPruneConfig(
+        anchor_arm="nuwa_pillar", keep_rate=0.5, grid_side=4, nuwa_cell_side=2
+    )
+    with pytest.raises(ValueError, match="features"):
+        compute_keep_mask(_novelty_ramp(1, 16), config=cfg)
+
+
+def test_compute_keep_mask_requires_features_for_diversity() -> None:
+    cfg = NoveltyPruneConfig(anchor_arm="max_min_diversity", keep_rate=0.5)
+    with pytest.raises(ValueError, match="features"):
+        compute_keep_mask(_novelty_ramp(1, 9), config=cfg)
+
+
+def test_compute_keep_mask_requires_cls_attention_when_selected() -> None:
+    cfg = NoveltyPruneConfig(anchor_arm="cls_attention", keep_rate=0.5)
+    with pytest.raises(ValueError, match="cls_attention"):
+        compute_keep_mask(_novelty_ramp(1, 9), config=cfg)
+
+
+def test_compute_keep_mask_rejects_feature_shape_mismatch() -> None:
+    cfg = NoveltyPruneConfig(anchor_arm="max_min_diversity", keep_rate=0.5)
+    with pytest.raises(ValueError, match="features must have shape"):
+        compute_keep_mask(
+            _novelty_ramp(2, 4),
+            config=cfg,
+            features=np.zeros((3, 4, 5), dtype=np.float32),
+        )
+
+
+def test_compute_keep_mask_rejects_cls_shape_mismatch() -> None:
+    cfg = NoveltyPruneConfig(anchor_arm="cls_attention", keep_rate=0.5)
+    with pytest.raises(ValueError, match="cls_attention must match"):
+        compute_keep_mask(
+            _novelty_ramp(2, 4),
+            config=cfg,
+            cls_attention=np.zeros((2, 5), dtype=np.float32),
+        )
+
+
+# ---------------------------------------------------------------------------
+# Arm: none (pure top-K novelty)
+# ---------------------------------------------------------------------------
+
+
+def test_none_arm_keeps_top_k_by_novelty() -> None:
+    novelty = _novelty_ramp(2, 8)  # token 7 highest on each frame
+    cfg = NoveltyPruneConfig(anchor_arm="none", keep_rate=0.5)  # k = 4
+    mask = compute_keep_mask(novelty, config=cfg)
+    assert mask.shape == (2, 8)
+    for f in range(2):
+        # Top-4 highest-novelty tokens are 4, 5, 6, 7.
+        assert mask[f].tolist() == [False] * 4 + [True] * 4
+
+
+def test_none_arm_keep_rate_1_keeps_all() -> None:
+    novelty = _novelty_ramp(1, 5)
+    cfg = NoveltyPruneConfig(anchor_arm="none", keep_rate=1.0)
+    mask = compute_keep_mask(novelty, config=cfg)
+    assert mask.all()
+
+
+def test_none_arm_keep_rate_0_keeps_minimum_one() -> None:
+    novelty = _novelty_ramp(1, 5)
+    cfg = NoveltyPruneConfig(anchor_arm="none", keep_rate=0.0)
+    mask = compute_keep_mask(novelty, config=cfg)
+    # floor(0 * 5) = 0 but the module clamps to 1 to avoid degeneracy.
+    assert mask.sum() == 1
+    # Highest-novelty token (index 4) wins the single slot.
+    assert mask[0, 4]
+
+
+def test_none_arm_ties_break_by_lower_index() -> None:
+    # All novelties equal → top-k selects lowest-index tokens first.
+    novelty = np.full((1, 6), 3.14, dtype=np.float32)
+    cfg = NoveltyPruneConfig(anchor_arm="none", keep_rate=0.5)  # k = 3
+    mask = compute_keep_mask(novelty, config=cfg)
+    assert mask[0].tolist() == [True, True, True, False, False, False]
+
+
+# ---------------------------------------------------------------------------
+# Arm: cls_attention
+# ---------------------------------------------------------------------------
+
+
+def test_cls_attention_keeps_top_k_by_attention() -> None:
+    # Novelty ramps up, attention ramps *down* — make sure we pick by attention.
+    novelty = _novelty_ramp(1, 6)
+    attention = np.array([[6.0, 5.0, 4.0, 3.0, 2.0, 1.0]], dtype=np.float32)
+    cfg = NoveltyPruneConfig(anchor_arm="cls_attention", keep_rate=0.5)  # k = 3
+    mask = compute_keep_mask(novelty, config=cfg, cls_attention=attention)
+    assert mask[0].tolist() == [True, True, True, False, False, False]
+
+
+def test_cls_attention_ignores_novelty() -> None:
+    # A sanity check: no matter what novelty looks like, result depends only on attention.
+    novelty_a = np.array([[1.0, 2.0, 3.0, 4.0]], dtype=np.float32)
+    novelty_b = np.array([[4.0, 3.0, 2.0, 1.0]], dtype=np.float32)
+    attention = np.array([[10.0, 0.0, 0.0, 10.0]], dtype=np.float32)
+    cfg = NoveltyPruneConfig(anchor_arm="cls_attention", keep_rate=0.5)  # k = 2
+    mask_a = compute_keep_mask(novelty_a, config=cfg, cls_attention=attention)
+    mask_b = compute_keep_mask(novelty_b, config=cfg, cls_attention=attention)
+    assert np.array_equal(mask_a, mask_b)
+    assert mask_a[0].tolist() == [True, False, False, True]
+
+
+# ---------------------------------------------------------------------------
+# Arm: nuwa_pillar
+# ---------------------------------------------------------------------------
+
+
+def test_nuwa_pillar_preserves_top_norm_per_cell() -> None:
+    # 4x4 grid split into 2x2 cells → 4 cells of 4 tokens each.
+    # pillar_frac = 0.25 → 1 pillar per cell (highest L2-norm).
+    # keep_rate 0.25 → k = 4 → anchors fully occupy budget; novelty fill = 0.
+    grid = 4
+    t = grid * grid
+    cfg = NoveltyPruneConfig(
+        anchor_arm="nuwa_pillar",
+        keep_rate=0.25,
+        grid_side=grid,
+        nuwa_cell_side=2,
+        nuwa_pillar_frac=0.25,
+    )
+    # Craft features so the pillar per cell is predictable: one token per cell
+    # has unit norm, the rest are zero.
+    features = np.zeros((1, t, 3), dtype=np.float32)
+    pillar_positions = [
+        (0, 0),
+        (0, 2),
+        (2, 0),
+        (2, 2),
+    ]
+    for r, c in pillar_positions:
+        features[0, r * grid + c, 0] = 1.0
+    novelty = np.zeros((1, t), dtype=np.float32)
+    mask = compute_keep_mask(novelty, config=cfg, features=features)
+    expected_indices = [r * grid + c for r, c in pillar_positions]
+    kept = np.nonzero(mask[0])[0].tolist()
+    assert sorted(kept) == sorted(expected_indices)
+
+
+def test_nuwa_pillar_fills_remainder_with_novelty() -> None:
+    grid = 4
+    t = grid * grid
+    cfg = NoveltyPruneConfig(
+        anchor_arm="nuwa_pillar",
+        keep_rate=0.5,  # k = 8, anchors = 4 → 4 novelty fills
+        grid_side=grid,
+        nuwa_cell_side=2,
+        nuwa_pillar_frac=0.25,
+    )
+    features = np.zeros((1, t, 3), dtype=np.float32)
+    pillar_positions = [(0, 0), (0, 2), (2, 0), (2, 2)]
+    for r, c in pillar_positions:
+        features[0, r * grid + c, 0] = 1.0
+    # Rank novelty so the top-4 non-pillar fills are deterministic.
+    novelty = np.arange(t, dtype=np.float32)[None, :]
+    mask = compute_keep_mask(novelty, config=cfg, features=features)
+    assert mask.sum() == 8
+    anchors = {r * grid + c for r, c in pillar_positions}
+    kept = set(np.nonzero(mask[0])[0].tolist())
+    # Anchors are always preserved.
+    assert anchors.issubset(kept)
+    # The 4 highest-novelty non-anchors fill the remainder: 12, 13, 14, 15
+    # minus any that are also anchors (none), plus preferring lower indices on ties.
+    novelty_candidates = [i for i in range(t) if i not in anchors]
+    expected_fill = sorted(novelty_candidates, key=lambda i: -novelty[0, i])[:4]
+    assert kept - anchors == set(expected_fill)
+
+
+def test_nuwa_pillar_rejects_grid_not_divisible_by_cell() -> None:
+    cfg = NoveltyPruneConfig(
+        anchor_arm="nuwa_pillar",
+        keep_rate=0.5,
+        grid_side=5,
+        nuwa_cell_side=2,
+    )
+    features = np.zeros((1, 25, 3), dtype=np.float32)
+    novelty = np.zeros((1, 25), dtype=np.float32)
+    with pytest.raises(ValueError, match="must divide"):
+        compute_keep_mask(novelty, config=cfg, features=features)
+
+
+# ---------------------------------------------------------------------------
+# Arm: max_min_diversity
+# ---------------------------------------------------------------------------
+
+
+def test_max_min_diversity_picks_distant_tokens() -> None:
+    # Craft features so two tokens are far apart and three others are clustered.
+    # max-min should pick the two far-apart tokens first.
+    features = np.array(
+        [
+            [
+                [10.0, 0.0],  # 0
+                [0.0, 0.0],  # 1
+                [0.0, 0.1],  # 2 (near 1)
+                [0.1, 0.0],  # 3 (near 1)
+                [-10.0, 0.0],  # 4
+            ]
+        ],
+        dtype=np.float32,
+    )
+    novelty = np.zeros((1, 5), dtype=np.float32)
+    cfg = NoveltyPruneConfig(anchor_arm="max_min_diversity", keep_rate=0.4)  # k = 2
+    mask = compute_keep_mask(novelty, config=cfg, features=features)
+    kept = set(np.nonzero(mask[0])[0].tolist())
+    # Seed by L1-norm: token 0 and token 4 both have L1 10 (tied); argmax picks 0.
+    # Next token maximizes min-distance from {0} → token 4 (L2 distance 20).
+    assert kept == {0, 4}
+
+
+def test_max_min_diversity_keeps_everything_when_budget_exceeds_tokens() -> None:
+    features = _random_features(1, 4, d=3, seed=7)
+    novelty = np.zeros((1, 4), dtype=np.float32)
+    cfg = NoveltyPruneConfig(anchor_arm="max_min_diversity", keep_rate=1.0)
+    mask = compute_keep_mask(novelty, config=cfg, features=features)
+    assert mask.all()
+
+
+def test_max_min_diversity_respects_k_from_keep_rate() -> None:
+    features = _random_features(2, 16, d=8, seed=11)
+    novelty = np.zeros((2, 16), dtype=np.float32)
+    cfg = NoveltyPruneConfig(anchor_arm="max_min_diversity", keep_rate=0.25)  # k = 4
+    mask = compute_keep_mask(novelty, config=cfg, features=features)
+    for f in range(2):
+        assert mask[f].sum() == 4
+
+
+# ---------------------------------------------------------------------------
+# Arm: gemma_structural
+# ---------------------------------------------------------------------------
+
+
+def test_gemma_structural_preserves_corners_and_center() -> None:
+    # 5x5 grid → corners at (0,0), (0,4), (4,0), (4,4); center at (2,2).
+    # keep_rate small enough that anchors fully occupy budget (k=5).
+    grid = 5
+    t = grid * grid
+    cfg = NoveltyPruneConfig(
+        anchor_arm="gemma_structural", keep_rate=5 / t, grid_side=grid
+    )
+    novelty = np.zeros((1, t), dtype=np.float32)
+    mask = compute_keep_mask(novelty, config=cfg)
+    kept = set(np.nonzero(mask[0])[0].tolist())
+    expected = {
+        0 * grid + 0,
+        0 * grid + 4,
+        4 * grid + 0,
+        4 * grid + 4,
+        2 * grid + 2,
+    }
+    assert kept == expected
+
+
+def test_gemma_structural_fills_remainder_with_novelty() -> None:
+    grid = 4
+    t = grid * grid
+    cfg = NoveltyPruneConfig(
+        anchor_arm="gemma_structural", keep_rate=0.5, grid_side=grid  # k = 8
+    )
+    novelty = np.arange(t, dtype=np.float32)[None, :]
+    mask = compute_keep_mask(novelty, config=cfg)
+    assert mask.sum() == 8
+    # Anchors: corners (0, 3, 12, 15) + center (4//2 * 4 + 4//2 = 10).
+    anchors = {0, 3, 12, 15, 10}
+    kept = set(np.nonzero(mask[0])[0].tolist())
+    assert anchors.issubset(kept)
+    # Fill with top-3 highest-novelty non-anchors: 14, 13, 11.
+    non_anchor_top = [i for i in (15, 14, 13, 12, 11) if i not in anchors][:3]
+    assert kept - anchors == set(non_anchor_top)
+
+
+def test_gemma_structural_rejects_non_square_without_override() -> None:
+    cfg = NoveltyPruneConfig(anchor_arm="gemma_structural", keep_rate=0.5)
+    novelty = np.zeros((1, 280), dtype=np.float32)
+    with pytest.raises(ValueError, match="not square"):
+        compute_keep_mask(novelty, config=cfg)
+
+
+def test_gemma_structural_accepts_rectangular_grid_shape() -> None:
+    # Gemma's 280 soft tokens live on a 14x20 grid (vision flattened post-pool).
+    cfg = NoveltyPruneConfig(
+        anchor_arm="gemma_structural",
+        keep_rate=0.1,  # k = 28, anchors (5) + 23 novelty fill
+        grid_shape=(14, 20),
+    )
+    novelty = np.arange(280, dtype=np.float32)[None, :]
+    mask = compute_keep_mask(novelty, config=cfg)
+    assert mask.sum() == 28
+    # Corners for (14, 20): (0,0), (0,19), (13,0), (13,19) + center (7, 10).
+    anchors = {
+        0 * 20 + 0,
+        0 * 20 + 19,
+        13 * 20 + 0,
+        13 * 20 + 19,
+        7 * 20 + 10,
+    }
+    kept = set(np.nonzero(mask[0])[0].tolist())
+    assert anchors.issubset(kept)
+
+
+# ---------------------------------------------------------------------------
+# reduce_features
+# ---------------------------------------------------------------------------
+
+
+def test_reduce_features_matches_mask() -> None:
+    features = _random_features(3, 4, d=5, seed=3)
+    mask = np.zeros((3, 4), dtype=bool)
+    # Keep tokens (0,1), (1,3), (2,0), (2,2)
+    mask[0, 1] = True
+    mask[1, 3] = True
+    mask[2, 0] = True
+    mask[2, 2] = True
+    kept, positions = reduce_features(features, mask)
+    assert kept.shape == (4, 5)
+    expected_positions = np.array(
+        [0 * 4 + 1, 1 * 4 + 3, 2 * 4 + 0, 2 * 4 + 2], dtype=np.int64
+    )
+    assert np.array_equal(positions, expected_positions)
+    # Row order matches frame-major / token-major traversal.
+    for idx, pos in enumerate(expected_positions):
+        f = pos // 4
+        tok = pos % 4
+        assert np.array_equal(kept[idx], features[f, tok])
+
+
+def test_reduce_features_rejects_shape_mismatch() -> None:
+    features = _random_features(2, 3, d=4, seed=1)
+    mask = np.zeros((2, 5), dtype=bool)
+    with pytest.raises(ValueError, match="does not match"):
+        reduce_features(features, mask)
+
+
+def test_reduce_features_handles_empty_mask() -> None:
+    features = _random_features(2, 3, d=4, seed=1)
+    mask = np.zeros((2, 3), dtype=bool)
+    kept, positions = reduce_features(features, mask)
+    assert kept.shape == (0, 4)
+    assert positions.shape == (0,)
