@@ -231,12 +231,15 @@ targeting. Both lanes converge into one manuscript.
 
 Scope in this repo:
 
-- The spatial-pruning lane blocks on (a) phase 1.41 VideoMME loader
-  finishing an N=30 Qwen pass (baseline we compare to) and (b)
-  phase 1.42 `_mix_gemma_features` integration (so temporal reuse
-  and novelty-pruning can compose on Gemma 4 4B on M3 Air). Design
-  note must land before code — Gemma token layout (280 fixed soft
-  tokens per image) is NOT a clean port of Qwen block-level reuse.
+- The spatial-pruning lane's **big-numbers claim (1.51R)** blocks
+  only on VideoMME videos unpacked + anchor/scoring code landing;
+  it does NOT gate on phase 1.42 `_mix_gemma_features` (corrected
+  round-18: novelty-pruning is a fresh LLM-prefill-drop path, not
+  a `_mix_gemma_features` consumer — see phase 1.42 design note
+  §Critical re-read at line 62). The **composition claim (1.52R)**
+  does gate on both 1.42 + 1.51R landing because stacking requires
+  both mechanisms live simultaneously. Phase 1.41 Qwen + VideoMME
+  N=30 is the baseline the Gemma numbers compare against.
 - Related work in the literature (PPE, IVC-Prune, Nüwa) all share
   the **static-anchor token preservation** principle: preserve
   tokens corresponding to layout anchors (background class, start

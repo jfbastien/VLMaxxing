@@ -149,23 +149,27 @@ for the MLX queue, and produces method content for the appendix.
 
 ### Lane B — the big-numbers path (Gemma + VideoMME, highest priority)
 
-1. **Phase 1.42 Gemma `_mix_gemma_features` integration** — design
-   note first (CPU-only, ≈ 0 h GPU), then code. The token layout is
-   NOT a clean port of Qwen block-level reuse (Gemma uses 280 fixed
-   soft tokens per image with no pixel-block correspondence), so
-   the integration needs a deliberate frame-level-vs-token-level
-   design decision. Unlocks claim 7 and is a prerequisite for 1.51 +
-   1.52. Runtime ≈ 0 h GPU for design; ≈ 2 h GPU for first smoke run.
-2. **Phase 1.41 VideoMME N=30 on Qwen** — ≈ 2 h GPU wall time once
-   the video corpus is unpacked locally. Unlocks claim 8. **Can run
-   BEFORE phase 1.42** because loader is done; this is the first
-   VideoMME number the paper cites.
-3. **Phase 1.51 novelty-pruning dev + holdout on Gemma (VideoMME)**
-   — 5 anchor arms × 5 keep-rates dev + single-shot holdout;
-   ≈ 4-6 h GPU wall time behind 1.42. **This is the headline
-   big-numbers result.** Unlocks claim 11.
-4. **Phase 1.52 combined temporal + spatial on Gemma (VideoMME)** —
-   depends on 1.42 + 1.51; ≈ 2-3 h GPU wall time. Tests whether
+**Reordered 2026-04-17 round-18:** 1.51R novelty-pruning is a fresh
+LLM-prefill code path and does NOT depend on phase 1.42's
+`_mix_gemma_features` temporal-reuse integration. See
+`research/experiments/2026/2026-04-17-phase-1_42-gemma-integration-design.md:62`
+for the explicit note. 1.42 stays in the queue as the claim-7
+enabler but is not the headline gate.
+
+1. **Phase 1.41 VideoMME N=30 on Qwen** — ≈ 2 h GPU wall time once
+   the video corpus is unpacked locally (subset download running
+   2026-04-17). Unlocks claim 8 (the benchmark the paper cites).
+2. **Phase 1.42 v0 Gemma smoke** — minimum-viable whole-frame
+   temporal-reuse integration. ~30 s on 1 item + ≈ 1.5 h N=30 dev.
+   Unlocks claim 7 partial and de-risks the Gemma data path for the
+   novelty-pruning lane. Not a prerequisite for claim 11.
+3. **Phase 1.51R Sam novelty-pruning reproduction on Gemma + VideoMME
+   N=30** — 5 anchor arms × 5 keep-rates dev + single-shot holdout;
+   ≈ 6–8 h GPU wall time. Runs **independently** of 1.42 (per design
+   note §Recommended path). **This is the headline big-numbers
+   result.** Unlocks claim 11.
+4. **Phase 1.52R combined temporal + spatial on Gemma (VideoMME)** —
+   depends on 1.42 + 1.51R; ≈ 2–3 h GPU wall time. Tests whether
    Sam's multiplicative composition transfers to local Gemma 4-E4B;
    unlocks claim 10.
 

@@ -383,8 +383,8 @@ authoritative in the per-phase notes under
   authoritative_artifacts: []
   current_best_policy: n/a (spatial-pruning lane, not yet implemented)
   supersedes: []
-  paper_relevance: primary (claim #10 composition with within-frame methods — the "big numbers" SOTA lane)
-  prereg_outcome: (pending; blocked on phase 1.42 Gemma integration landing first)
+  paper_relevance: primary (claim #11 novelty-pruning big numbers on Gemma; not claim #10 — 10 is the composition claim handled by 1.52)
+  prereg_outcome: (pending; needs VideoMME videos unpacked — NOT gated on phase 1.42; 1.51/1.51R is a fresh LLM-prefill code path that does not consume `_mix_gemma_features`)
   notes: preregistered 5 literature-grounded anchor-preservation arms (FastV, FasterVLM/HiPrune, Nüwa pillar, VLM-Pruner max-min diversity, IVC-Prune-spirit Gemma-structural); keep-rate grid {0.3..0.7}; must run on Gemma (not Qwen) because Qwen's M-RoPE-V ties token index to 2D grid position and breaks under token drop
 
 - phase_id: 1.52

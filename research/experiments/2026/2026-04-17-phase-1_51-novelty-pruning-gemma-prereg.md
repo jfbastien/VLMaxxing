@@ -1,8 +1,22 @@
 # Phase 1.51 — Novelty-pruning visual tokens on Gemma 4-E4B (big-numbers SOTA lane)
 
 Date: 2026-04-17
-State: blocked (preregistered; requires phase 1.42 `_mix_gemma_features` integration to land; 5-arm anchor grid not yet implemented)
-Parent: `paper/claim-matrix.md` claim #11 (pruning-alone prefill reduction — new claim to be added alongside this phase) — **also a prerequisite for** claim #10 (composition) which is tested in phase 1.52
+State: preregistered; unblocked (see round-18 amendment below — novelty-pruning is a FRESH LLM-prefill code path, independent of phase 1.42 `_mix_gemma_features`). Runs once VideoMME videos and anchor/scoring code land.
+Parent: `paper/claim-matrix.md` claim #11 (novelty-pruning big numbers on Gemma). Claim #10 (composition) is tested separately in phase 1.52R, which does gate on both 1.42 + 1.51R.
+
+## Round-18 amendment (2026-04-17)
+
+Prior framing said this phase was blocked on phase 1.42
+`_mix_gemma_features`. Codex round-18 caught that this framing is
+inconsistent with the phase 1.42 design note (§Critical re-read,
+line 62) which says novelty-pruning "does not require
+`_mix_gemma_features` at all" — it's a fresh per-frame
+token-drop path at the LLM prefill input. This prereg is updated
+to match. See also the Sam-reproduction lane prereg
+(`research/experiments/2026/2026-04-17-sam-reproduction-lane-prereg.md`)
+which assigns phase 1.51R the "reproduction" role; the extension
+work on TOMATO/MVBench stays under phase 1.51 (now "1.51E" for
+extension).
 Sibling: `research/experiments/2026/2026-04-17-phase-1_42-gemma-architecture-topology-prereg.md`
 (same model, orthogonal architecture-fidelity axis)
 
@@ -193,9 +207,12 @@ Wall-clock only (infrastructure impl time excluded):
   VisionZip / SparseVLM) commissioned separately (agent
   `a82bb92f2cd8d3da3` on 2026-04-17); the anchor grid above
   will be refined once that brief returns.
-- Phase A implementation: NOT STARTED. Blocked on phase 1.42
-  `_mix_gemma_features` path landing first (shared integration).
-- Phase B dev tranche: NOT STARTED. Blocked on Phase A.
+- Phase A implementation: NOT STARTED. Does NOT share integration
+  with phase 1.42; this is a fresh path at the LLM prefill input
+  (see phase 1.42 design note §Critical re-read). Can land in
+  parallel with 1.42 smoke.
+- Phase B dev tranche: NOT STARTED. Needs Phase A code + VideoMME
+  videos unpacked.
 - Phase C holdout: NOT STARTED. Blocked on Phase B.
 
 ## Why this is THE SOTA phase
