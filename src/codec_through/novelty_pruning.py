@@ -435,3 +435,104 @@ def compute_pixel_novelty(
     else:  # pragma: no cover — exhaustiveness guard
         raise ValueError(f"unknown first_frame mode {first_frame!r}")
     return novelty
+
+
+IntArray = npt.NDArray[np.integer]
+
+
+@dataclass(frozen=True, slots=True)
+class PrunedPrefill:
+    """Result of :func:`prune_image_placeholders`.
+
+    Attributes:
+        input_ids: shortened input ids, shape ``(new_seq_len,)`` with the
+            caller's original dtype preserved.
+        feature_indices: flat int64 indices into the ORIGINAL ``(F, T)``
+            visual-feature matrix that survive pruning, in the emission order
+            required by the LLM prefill (frame-major, intra-frame
+            left-to-right). Length equals the number of image-token
+            placeholders in ``input_ids``.
+        kept_per_frame: int64 count of tokens retained per frame, length ``F``.
+    """
+
+    input_ids: IntArray
+    feature_indices: npt.NDArray[np.int64]
+    kept_per_frame: npt.NDArray[np.int64]
+
+
+def prune_image_placeholders(
+    input_ids: IntArray,
+    keep_mask: BoolArray,
+    *,
+    image_token_id: int,
+) -> PrunedPrefill:
+    """Shorten ``input_ids`` by removing image-token placeholders that
+    correspond to pruned-away visual tokens.
+
+    The LLM prefill path (Gemma 4, Qwen 2.5-VL, etc.) splices visual features
+    into positions where ``input_ids == image_token_id``. The splice is
+    positional and count-sensitive: ``sum(input_ids == image_token_id)`` MUST
+    equal the number of visual feature tokens. When novelty-pruning drops
+    ``(F*T) - sum(keep_mask)`` visual tokens, we must drop the same number of
+    placeholder tokens from ``input_ids`` to keep the counts aligned.
+
+    This function walks ``input_ids`` once, keeping every non-image token and
+    every image-token whose corresponding ``keep_mask[f, t]`` is True. The
+    placeholder-to-feature binding assumes the processor emits all ``T``
+    placeholders for frame 0, then all ``T`` for frame 1, etc. (the standard
+    mlx-vlm layout — ``Gemma4Processor`` and ``Qwen2.5-VL``'s chat-template
+    both emit placeholders in frame-major order).
+
+    Args:
+        input_ids: original token IDs, shape ``(seq_len,)``. Must contain
+            exactly ``F * T`` occurrences of ``image_token_id``.
+        keep_mask: boolean mask ``(F, T)`` from :func:`compute_keep_mask`
+            indicating which visual tokens survive pruning.
+        image_token_id: the token ID used as a visual placeholder (model-
+            specific; e.g., Gemma 4's ``image_token_id`` from its config).
+
+    Returns:
+        :class:`PrunedPrefill` with the shortened ``input_ids`` and the flat
+        feature indices that should be scattered into the placeholder slots.
+        The caller uses ``feature_indices`` to gather a ``(K, D)`` feature
+        tensor from the ``(F*T, D)`` vision-tower output before calling
+        ``masked_scatter``.
+
+    Raises:
+        ValueError: if ``keep_mask.sum()`` doesn't match the placeholder count,
+            if ``input_ids`` is not 1-D, or if ``keep_mask`` is not 2-D.
+    """
+    if input_ids.ndim != 1:
+        raise ValueError(f"input_ids must be 1-D, got shape {input_ids.shape}")
+    if keep_mask.ndim != 2:
+        raise ValueError(f"keep_mask must be 2-D (F, T), got shape {keep_mask.shape}")
+    f_count, t_count = keep_mask.shape
+    expected_placeholders = f_count * t_count
+    actual_placeholders = int((input_ids == image_token_id).sum())
+    if actual_placeholders != expected_placeholders:
+        raise ValueError(
+            f"input_ids has {actual_placeholders} image-token placeholders but "
+            f"keep_mask covers {expected_placeholders} (F={f_count} * T={t_count})"
+        )
+
+    flat_keep = keep_mask.reshape(-1).astype(bool)
+    feature_indices = np.nonzero(flat_keep)[0].astype(np.int64)
+    kept_per_frame = keep_mask.sum(axis=1).astype(np.int64)
+
+    # Walk input_ids once, emitting non-image tokens unconditionally and image
+    # tokens only when the corresponding keep_mask entry is True.
+    kept_tokens: list[np.int64] = []
+    placeholder_cursor = 0
+    for tid in input_ids:
+        if tid == image_token_id:
+            if flat_keep[placeholder_cursor]:
+                kept_tokens.append(tid)
+            placeholder_cursor += 1
+        else:
+            kept_tokens.append(tid)
+    new_input_ids = np.asarray(kept_tokens, dtype=input_ids.dtype)
+    return PrunedPrefill(
+        input_ids=new_input_ids,
+        feature_indices=feature_indices,
+        kept_per_frame=kept_per_frame,
+    )

@@ -16,6 +16,7 @@ from codec_through.novelty_pruning import (
     NoveltyPruneConfig,
     compute_keep_mask,
     compute_pixel_novelty,
+    prune_image_placeholders,
     reduce_features,
 )
 
@@ -511,3 +512,102 @@ def test_compute_pixel_novelty_matches_14x20_gemma_grid() -> None:
     # Every cell should see some non-zero diff (random data).
     assert (novelty[1] > 0).all()
     assert (novelty[2] > 0).all()
+
+
+# ---------------------------------------------------------------------------
+# Prefill-shortening bridge (prune_image_placeholders)
+# ---------------------------------------------------------------------------
+
+
+def _simple_prompt(image_token_id: int, frames: int, tokens_per_frame: int) -> np.ndarray:
+    """Minimal text+image prompt: BOS + IMG×(F*T) + text_tail.
+
+    Matches the Gemma/Qwen pattern where the chat template emits all image
+    placeholders contiguously in frame-major order, bracketed by text tokens.
+    """
+    bos, text_a, text_b = np.int64(1), np.int64(2), np.int64(3)
+    img_block = np.full(frames * tokens_per_frame, image_token_id, dtype=np.int64)
+    return np.concatenate(
+        [np.array([bos, text_a], dtype=np.int64), img_block, np.array([text_b], dtype=np.int64)]
+    )
+
+
+def test_prune_image_placeholders_keep_all_is_identity() -> None:
+    input_ids = _simple_prompt(image_token_id=7, frames=2, tokens_per_frame=3)
+    keep_mask = np.ones((2, 3), dtype=bool)
+    result = prune_image_placeholders(input_ids, keep_mask, image_token_id=7)
+    np.testing.assert_array_equal(result.input_ids, input_ids)
+    np.testing.assert_array_equal(result.feature_indices, np.arange(6, dtype=np.int64))
+    np.testing.assert_array_equal(result.kept_per_frame, np.array([3, 3], dtype=np.int64))
+
+
+def test_prune_image_placeholders_keep_none_strips_all_images() -> None:
+    input_ids = _simple_prompt(image_token_id=7, frames=2, tokens_per_frame=3)
+    keep_mask = np.zeros((2, 3), dtype=bool)
+    result = prune_image_placeholders(input_ids, keep_mask, image_token_id=7)
+    # Expect: BOS + text_a + text_b, with ALL image placeholders removed.
+    expected = np.array([1, 2, 3], dtype=np.int64)
+    np.testing.assert_array_equal(result.input_ids, expected)
+    assert result.feature_indices.shape == (0,)
+    np.testing.assert_array_equal(result.kept_per_frame, np.array([0, 0], dtype=np.int64))
+
+
+def test_prune_image_placeholders_mixed_mask_preserves_frame_major_order() -> None:
+    # Frames=2, tokens_per_frame=3. Keep tokens: frame 0 -> {0, 2}, frame 1 -> {1}.
+    # Expected feature indices (flat, row-major): [0, 2, 4].
+    input_ids = _simple_prompt(image_token_id=7, frames=2, tokens_per_frame=3)
+    keep_mask = np.array([[True, False, True], [False, True, False]])
+    result = prune_image_placeholders(input_ids, keep_mask, image_token_id=7)
+    # input_ids layout: [1, 2, 7, 7, 7, 7, 7, 7, 3].
+    #                   bos ta  f0 f0 f0 f1 f1 f1 tb
+    # After pruning:    [1, 2, 7, 7, 7, 3]  (kept: f0[0], f0[2], f1[1])
+    expected = np.array([1, 2, 7, 7, 7, 3], dtype=np.int64)
+    np.testing.assert_array_equal(result.input_ids, expected)
+    np.testing.assert_array_equal(result.feature_indices, np.array([0, 2, 4], dtype=np.int64))
+    np.testing.assert_array_equal(result.kept_per_frame, np.array([2, 1], dtype=np.int64))
+
+
+def test_prune_image_placeholders_rejects_non_1d_input_ids() -> None:
+    input_ids = np.zeros((2, 3), dtype=np.int64)
+    keep_mask = np.ones((2, 3), dtype=bool)
+    with pytest.raises(ValueError, match="input_ids must be 1-D"):
+        prune_image_placeholders(input_ids, keep_mask, image_token_id=7)
+
+
+def test_prune_image_placeholders_rejects_non_2d_keep_mask() -> None:
+    input_ids = _simple_prompt(image_token_id=7, frames=2, tokens_per_frame=3)
+    keep_mask = np.ones(6, dtype=bool)
+    with pytest.raises(ValueError, match="keep_mask must be 2-D"):
+        prune_image_placeholders(input_ids, keep_mask, image_token_id=7)
+
+
+def test_prune_image_placeholders_rejects_placeholder_count_mismatch() -> None:
+    # Prompt has 2*3=6 placeholders but mask covers 3*3=9.
+    input_ids = _simple_prompt(image_token_id=7, frames=2, tokens_per_frame=3)
+    keep_mask = np.ones((3, 3), dtype=bool)
+    with pytest.raises(ValueError, match="placeholders but keep_mask"):
+        prune_image_placeholders(input_ids, keep_mask, image_token_id=7)
+
+
+def test_prune_image_placeholders_handles_uint_input_dtype() -> None:
+    input_ids = _simple_prompt(image_token_id=7, frames=1, tokens_per_frame=2).astype(np.uint32)
+    keep_mask = np.array([[True, False]])
+    result = prune_image_placeholders(input_ids, keep_mask, image_token_id=7)
+    assert result.input_ids.dtype == np.uint32
+    # Layout: [1, 2, 7, 7, 3] → keep f0[0] only → [1, 2, 7, 3].
+    np.testing.assert_array_equal(result.input_ids, np.array([1, 2, 7, 3], dtype=np.uint32))
+
+
+def test_prune_image_placeholders_feature_indices_match_keep_mask_count() -> None:
+    # Random mask; verify feature_indices length equals mask.sum() and only
+    # hits positions that are True in keep_mask.
+    rng = np.random.default_rng(0)
+    f_count, t_count = 4, 8
+    keep_mask = rng.random((f_count, t_count)) > 0.5
+    input_ids = _simple_prompt(image_token_id=7, frames=f_count, tokens_per_frame=t_count)
+    result = prune_image_placeholders(input_ids, keep_mask, image_token_id=7)
+    assert result.feature_indices.size == int(keep_mask.sum())
+    flat_mask = keep_mask.reshape(-1)
+    assert bool(flat_mask[result.feature_indices].all())
+    # Placeholder count in new input_ids must equal number of kept tokens.
+    assert int((result.input_ids == 7).sum()) == int(keep_mask.sum())
