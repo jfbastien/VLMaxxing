@@ -222,8 +222,8 @@ uv run python scripts/run_novelty_ranked_dense.py \
 - `results/novelty_ranked_dense/tomato_holdout_n6.json` (N=30, commit 8920e36)
 - `results/novelty_ranked_dense/tomato_holdout_n8.json` (N=30, commit e715cc5)
 - `results/novelty_ranked_dense/mvbench_holdout_n4.json` (N=30, commit e715cc5)
-- `results/novelty_ranked_dense/mvbench_holdout_n6.json` (N=30, commit [this])
-- `results/novelty_ranked_dense/mvbench_holdout_n8.json` (N=30, commit [this])
+- `results/novelty_ranked_dense/mvbench_holdout_n6.json` (N=30, commit 3804ee6)
+- `results/novelty_ranked_dense/mvbench_holdout_n8.json` (N=30, commit 3804ee6)
 
 TOMATO and MVBench uniform dense baselines:
 

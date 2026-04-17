@@ -82,15 +82,21 @@ The project has moved from "reproduction with diagnosis" into "early
 method discovery." The current paper-facing paths (not repro paths)
 are:
 
-- Phase 1.20 TOMATO N=30 enlargement — required to harden the N=15
-  TOMATO holdout tie
-- Phase 1.21 MVBench N=30 enlargement — required to harden the
-  phase 1.12.B cross-benchmark-discovered holdout Pareto survivor
-- Phase 1.26 sticky-dynamic planner — CodecSight-borrowed mechanism
-  aimed at the current failure mode
-- Phase 1.27 projector-group mask completion — CodecSight-borrowed
-- Stage E Track B — the gating requirement before any
-  paper-facing "real skipped compute" claim
+- Phase 1.20 TOMATO N=30 enlargement — **COMPLETED 2026-04-17**
+  (base policy 0.333 @ 3.55 effective fresh frames; ties uniform
+  dense-8 at 44 % of fresh-frame budget on clean tree)
+- Phase 1.21 MVBench N=30 enlargement — **COMPLETED 2026-04-17**
+  (base policy 0.600 @ 4.06; strict Pareto win vs dense-6 on clean
+  tree; sticky4 0.633 @ 4.49 matches dense-8 at 56 % of budget,
+  supplementary dirty-tree)
+- Phase 1.26 sticky-dynamic planner — **COMPLETED 2026-04-16**
+  (helps MVBench holdout; hurts TOMATO motion dev; explanatory
+  variable = placement, not quantity)
+- Phase 1.27 projector-group mask completion — **COMPLETED 2026-04-14**
+- Phase 1.50 Track B dense baseline — **COMPLETED 2026-04-17** (n=10
+  dev + N=30 TOMATO holdout; MVBench N=30 queued). Sparse-execution
+  path — the actual "real skipped compute" claim — still blocked
+  on implementation; see `paper/publishability-status.md` claim I.
 
 Reproduction status itself has NOT changed since this file's last
 material update; §2.5 and §2.6 are still "partial" / "weaker than

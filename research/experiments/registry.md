@@ -1,6 +1,6 @@
 # Experiment Registry (Machine-Readable)
 
-Last updated: 2026-04-16
+Last updated: 2026-04-17
 
 This is the primary source of per-phase experiment state. Other docs
 (PLAN.md, research-strategy-post-codecsight.md, literature-map,
@@ -274,13 +274,19 @@ authoritative in the per-phase notes under
   prereg_outcome: (not yet)
 
 - phase_id: 1.34
-  status: proposed
-  authoritative_note: research/experiments/2026/2026-04-16-phase-1_34-novelty-ranked-dense-baseline.md
-  authoritative_artifacts: []
+  status: completed
+  authoritative_note: research/experiments/2026/2026-04-17-phase-1_34-novelty-ranked-dense.md
+  authoritative_artifacts:
+    - results/novelty_ranked_dense/tomato_holdout_n4.json
+    - results/novelty_ranked_dense/tomato_holdout_n6.json
+    - results/novelty_ranked_dense/tomato_holdout_n8.json
+    - results/novelty_ranked_dense/mvbench_holdout_n4.json
+    - results/novelty_ranked_dense/mvbench_holdout_n6.json
+    - results/novelty_ranked_dense/mvbench_holdout_n8.json
   current_best_policy: n/a (stronger baseline, not a new policy)
   supersedes: []
-  paper_relevance: primary (stronger matched-budget comparator)
-  prereg_outcome: (pending)
+  paper_relevance: primary (stronger matched-budget comparator, claim #9)
+  prereg_outcome: Accepted (Planner 2.0 cached dominates every novelty cell at equal-or-lower budget; novelty hurts on TOMATO N>=6 and saturates on MVBench N>=6)
 
 - phase_id: 1.35
   status: proposed
@@ -290,14 +296,53 @@ authoritative in the per-phase notes under
   supersedes: []
   paper_relevance: primary (method headroom)
   prereg_outcome: (pending)
+
+- phase_id: 1.36
+  status: completed
+  authoritative_note: research/experiments/2026/2026-04-17-phase-1_36-feature-change-oracle.md
+  authoritative_artifacts:
+    - results/feature_change_oracle/tomato_n30.json
+    - results/feature_change_oracle/tomato_n30.parquet
+    - results/feature_change_oracle/mvbench_n30.json
+    - results/feature_change_oracle/mvbench_n30.parquet
+  current_best_policy: n/a (oracle/diagnostic, not a routing policy)
+  supersedes: []
+  paper_relevance: primary (claim #2 lower-bound on pixel->feature fidelity)
+  prereg_outcome: Accepted with caveat (Pearson r=0.23-0.50 caps below the r>=0.7 preregistered target; 45/60 item coverage due to cache-key rewrite; the finding reframes claim as a ranking/diagnosis study rather than a leaderboard)
+
+- phase_id: 1.37
+  status: code-landed-run-pending
+  authoritative_note: research/experiments/2026/2026-04-17-phase-1_37-planner-2_1-prereg.md
+  authoritative_artifacts:
+    - src/codec_through/temporal.py (ChildVetoConfig, apply_child_veto, _neighborhood_max)
+    - tests/test_child_veto.py
+    - scripts/run_benchmark_track_a.py (--veto-percentile / --veto-neighborhood)
+  current_best_policy: n/a (dev tranche not yet run)
+  supersedes: []
+  paper_relevance: primary (claim #3 concentration-aware routing)
+  prereg_outcome: (pending; gates preregistered in note)
+
 - phase_id: 1.41
-  status: proposed
+  status: infra-landed-run-pending
   authoritative_note: research/experiments/2026/2026-04-16-phase-1_41-videomme-lane.md
-  authoritative_artifacts: []
+  authoritative_artifacts:
+    - scripts/build_videomme_manifest.py
   current_best_policy: n/a
   supersedes: []
-  paper_relevance: primary (VideoMME breadth gate — claim #8)
-  prereg_outcome: (pending; runs after 1.20)
+  paper_relevance: primary (VideoMME breadth gate, claim #8)
+  prereg_outcome: (pending; runs after 1.37 dev; VideoMME loader + manifest builder landed)
+
+- phase_id: 1.50
+  status: completed-dense-baseline-only
+  authoritative_note: research/experiments/2026/2026-04-17-phase-1_50-track-b-dense-baseline.md
+  authoritative_artifacts:
+    - results/track_b/tomato_mc_n10.json
+    - results/track_b/tomato_mc_n30.json
+    - scripts/run_track_b.py
+  current_best_policy: n/a (wall-clock baseline, not a policy)
+  supersedes: []
+  paper_relevance: primary (claim #5 dense reference; sparse-execution half still blocked)
+  prereg_outcome: Accepted with caveat (dense baseline paper-grade on TOMATO n=10 + N=30 holdout; sparse-execution delta still not measured; MVBench N=30 queued)
 ```
 
 ## Maintenance rules

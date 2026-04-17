@@ -113,11 +113,40 @@ even if the metric analysis waits for phase 1.31.
 
 ## Status
 
-NOT STARTED. Code change required in
-`src/codec_through/planner/__init__.py`; harness flag in
-`scripts/run_benchmark_track_a.py`. Pre-req: CI green, Planner 2.0
-writeup unambiguous about parent-statistic choice (both landed
-2026-04-17).
+- 2026-04-17: code landed in commits `2ebf90d` (pure-numpy
+  `_neighborhood_max` + `apply_child_veto` + `ChildVetoConfig` in
+  `src/codec_through/temporal.py`; 10 unit tests) and `db10e12`
+  (Track A harness + `--veto-percentile` / `--veto-neighborhood`
+  CLI flags).
+- Dev tranche run: NOT STARTED (blocked on Track B n=30 GPU pair
+  currently running on the same device; will start once Track B
+  frees the MLX queue). The 48-cell dev grid is preregistered
+  above and will be executed cross-device if a second M3 frees
+  up, otherwise sequentially after Track B.
+- Paper-grade holdout run: preregistered gates above; awaits dev
+  selection.
+
+## Artifacts
+
+Placeholder — will populate when the dev grid runs. Expected
+outputs:
+
+- `research/experiments/2026/artifacts/phase1_37_tomato_motion_dev_v2_cached/*_summary.json`
+  (48 cells)
+- `research/experiments/2026/artifacts/phase1_37_mvbench_motion_dev_v2_cached/*_summary.json`
+  (48 cells)
+- `research/experiments/2026/artifacts/phase1_37_tomato_motion_holdout_v2_cached/*_summary.json`
+  (single winner)
+- `research/experiments/2026/artifacts/phase1_37_mvbench_motion_holdout_v2_cached/*_summary.json`
+  (single winner)
+
+Code-only artifacts already committed:
+
+- `src/codec_through/temporal.py` — `ChildVetoConfig`, `apply_child_veto`,
+  `_neighborhood_max` (commit 2ebf90d)
+- `tests/test_child_veto.py` — 10 unit tests (commit 2ebf90d)
+- `scripts/run_benchmark_track_a.py` — CLI flags + subprocess
+  passthrough (commit db10e12)
 
 ## Why this is the next thing, not Planner 2.2
 

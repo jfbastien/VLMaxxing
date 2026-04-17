@@ -39,12 +39,20 @@ full path but is not recorded.
 ## Dataset
 
 - Benchmark: TOMATO motion
-- Manifest: `tomato_motion_dev_v2.toml` (first 10 items, dev split)
+- Manifest (n=10 dev baseline): `tomato_motion_dev_v1.toml` (first 10
+  items, dev split) — verified via the artifact's own
+  `manifest` field. An earlier draft of this note cited `_v2.toml`;
+  the actually-run manifest was `_v1.toml` and the artifact is
+  authoritative.
+- Manifest (N=30 holdout, 2026-04-17): `tomato_motion_holdout_v2.toml`
+  (full holdout split; see Artifacts below).
 - Frame count: 8 (matches the dense-8 Pareto anchor on TOMATO)
 - Mode: `mc_scoring`
 - Warmup: one additional item run before recording
 - Hardware: M3 Air 16GB, Qwen2.5-VL-7B-Instruct-4bit (MLX 4-bit)
-- Commit: `8920e36` (dirty tree — manifest builder uncommitted at launch)
+- Commit: `8920e36` (dirty tree — manifest builder uncommitted at
+  launch for the n=10 pass; n=30 holdout was launched from
+  `b637c84` on a clean tree with sparse sandbox retries only)
 
 ## Results
 
@@ -124,16 +132,91 @@ Peak memory: 6.85 GB mean post-inference, 6.87 GB p95, 6.87 GB max.
 
 ## Reproduction
 
+n=10 dev baseline (initial):
+
 ```bash
 uv run python scripts/run_track_b.py \
-  --manifest research/benchmark_manifests/tomato_motion_dev_v2.toml \
+  --manifest research/benchmark_manifests/tomato_motion_dev_v1.toml \
   --mode mc_scoring \
   --frame-count 8 \
   --limit 10 \
   --output results/track_b/tomato_mc_n10.jsonl
 ```
 
+N=30 holdout (2026-04-17):
+
+```bash
+uv run python scripts/run_track_b.py \
+  --manifest research/benchmark_manifests/tomato_motion_holdout_v2.toml \
+  --mode mc_scoring \
+  --frame-count 8 \
+  --n-items 30 \
+  --output results/track_b/tomato_mc_n30.jsonl \
+  --summary results/track_b/tomato_mc_n30.json
+```
+
 Output schema per-item: `item_id, benchmark, group, frame_count,
 mode, decode_ms, preprocess_ms, vision_encode_ms, prefill_ms,
 generation_ms, generation_tokens, total_ms,
 peak_memory_after_vision_gb, peak_memory_after_inference_gb`.
+
+## N=30 holdout results (2026-04-17)
+
+Ran on `tomato_motion_holdout_v2.toml`, N=30 items, same frame
+count / mode / model. Variance bands are much tighter than the
+n=10 dev pass (as predicted in the Open-questions section).
+
+| Phase | mean | median | p95 | min | max |
+|---|---:|---:|---:|---:|---:|
+| decode | 4249 | 4122 | 6774 | 1128 | 7702 |
+| preprocess | 245 | 168 | 620 | 68 | 980 |
+| **vision_encode** | **13817** | **13871** | **18033** | **6984** | **20098** |
+| **prefill** | **42817** | **43442** | **48427** | **27290** | **57227** |
+| generation | 0 | 0 | 0 | 0 | 0 |
+| **total** | **61130** | **61146** | **70191** | **36281** | **80108** |
+
+Peak memory: 6.86 GB mean, 6.87 GB p95, 6.87 GB max (effectively
+identical to n=10; MLX memory allocation is not item-count
+dependent at this geometry).
+
+Key deltas vs the n=10 pass:
+- p95 drops from 71.7 s → 70.2 s (variance contracts; the n=10
+  outlier at 87 s did not replicate in the larger sample)
+- prefill p95 drops from 53.9 s → 48.4 s (tighter distribution)
+- vision encode p95 essentially unchanged (17.5 s → 18.0 s)
+- median total climbs slightly (61.2 s → 61.1 s — flat)
+
+The **22% ceiling on vision-cache-only Track B speedup still holds**:
+vision_encode / total = 13.8 / 61.1 = 22.6%. Prefill remains the
+dominant phase at 70% of end-to-end.
+
+MVBench N=30 Track B is queued next on the same device.
+
+## Artifacts
+
+- `results/track_b/tomato_mc_n10.json` — n=10 dev baseline summary
+- `results/track_b/tomato_mc_n10.jsonl` — per-item raw timings
+- `results/track_b/tomato_mc_n30.json` — N=30 holdout summary
+- `results/track_b/tomato_mc_n30.jsonl` — per-item raw timings
+- MVBench N=30: pending queue drain
+- `scripts/run_track_b.py` — driver (committed, see commit
+  `d81335f` for the initial landing and subsequent hardening)
+
+The `results/` tree is `.gitignore`d; artifacts above are local-only
+and regenerable from the reproduction commands.
+
+## State
+
+- Status: completed for TOMATO dense baseline at both n=10 dev and
+  N=30 holdout as of 2026-04-17. MVBench N=30 pending. Sparse
+  execution path is a separate workstream (claim I in
+  `paper/publishability-status.md`) and not part of this phase.
+- Clean tree: n=10 run from a dirty tree (manifest builder edits
+  uncommitted at launch); N=30 run launched from commit `b637c84`
+  on a clean tree.
+- Paper-grade: yes for the dense baseline half of claim #5. The
+  "measured speedup" half of claim #5 remains blocked on
+  sparse-execution implementation.
+- Variance: N=30 median 61.1 s with p95/median ratio 1.15; this
+  number is the reference that any sparse-execution delta must
+  subtract from.

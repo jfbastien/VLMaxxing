@@ -200,3 +200,29 @@ uv run python scripts/feature_change_oracle.py \
 
 Parquet output columns: `item_id, benchmark, group, frame_a, frame_b,
 block_row, block_col, mean, max_abs, cpf, top_k_mean, cosine_distance`.
+
+## Artifacts
+
+- `results/feature_change_oracle/tomato_n30.json` — summary (cache
+  hits 45 / misses 15; 126k blocks aggregated)
+- `results/feature_change_oracle/tomato_n30.parquet` — per-block rows
+- `results/feature_change_oracle/mvbench_n30.json` — summary
+- `results/feature_change_oracle/mvbench_n30.parquet` — per-block rows
+- `scripts/feature_change_oracle.py` — driver (commit f1f34ca and
+  subsequent refinements in 8920e36)
+
+Coverage caveat: 45 cache hits / 15 cache misses on each benchmark.
+The 15 misses are items whose cached features predate the v2
+cache-key rewrite (phase 1.32 model-content hash fix) and were not
+re-extracted for this study. Per-block correlations below are
+computed on the 45-item intersection only.
+
+## State
+
+- Status: completed (2026-04-17)
+- Clean tree: yes (commit 8920e36 at run time; note text updated in
+  subsequent research commits without changing numbers)
+- Paper-grade: yes for the lower-bound point-predictor framing;
+  claim #2 cited in `paper/claim-matrix.md`
+- Outstanding: none. Open questions are future-work seeds, not
+  blockers for the current claim.
