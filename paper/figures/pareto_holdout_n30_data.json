@@ -1,0 +1,38 @@
+{
+  "tomato": {
+    "cached_base": {
+      "cached_accuracy": 0.3333333333333333,
+      "effective_fresh_frames": 3.545619042466084
+    },
+    "uniform_dense": {
+      "4.0": 0.133,
+      "6.0": 0.267,
+      "8.0": 0.333
+    },
+    "novelty_dense": {
+      "4.0": 0.13333333333333333,
+      "6.0": 0.16666666666666666,
+      "8.0": 0.23333333333333334
+    }
+  },
+  "mvbench": {
+    "cached_base": {
+      "cached_accuracy": 0.6,
+      "effective_fresh_frames": 4.061330364931685
+    },
+    "cached_sticky4": {
+      "cached_accuracy": 0.6333333333333333,
+      "effective_fresh_frames": 4.494517855501423
+    },
+    "uniform_dense": {
+      "4.0": 0.5,
+      "6.0": 0.567,
+      "8.0": 0.633
+    },
+    "novelty_dense": {
+      "4.0": 0.5666666666666667,
+      "6.0": 0.5666666666666667,
+      "8.0": 0.5666666666666667
+    }
+  }
+}

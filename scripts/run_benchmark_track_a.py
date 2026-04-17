@@ -1520,15 +1520,12 @@ def run_benchmark(
         )
 
 
-def _maybe_child_veto(
-    percentile: float | None, neighborhood: int | None
-) -> ChildVetoConfig | None:
+def _maybe_child_veto(percentile: float | None, neighborhood: int | None) -> ChildVetoConfig | None:
     if percentile is None and neighborhood is None:
         return None
     if percentile is None or neighborhood is None:
         raise ValueError(
-            "child-veto requires both --veto-percentile and --veto-neighborhood "
-            "(or neither)"
+            "child-veto requires both --veto-percentile and --veto-neighborhood (or neither)"
         )
     return ChildVetoConfig(percentile=percentile, neighborhood=neighborhood)
 

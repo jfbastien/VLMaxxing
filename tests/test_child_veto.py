@@ -8,9 +8,9 @@ import pytest
 from codec_through.temporal import (
     BlockClass,
     ChildVetoConfig,
+    _neighborhood_max,
     apply_child_veto,
 )
-from codec_through.temporal import _neighborhood_max
 
 
 def test_neighborhood_max_excludes_self_by_default() -> None:
@@ -167,9 +167,15 @@ def test_child_veto_respects_neighborhood_radius() -> None:
     )
     flipped_2 = [(r, c) for r in range(5) for c in range(5) if out2[r, c] == int(BlockClass.NOVEL)]
     assert set(flipped_2) == {
-        (0, 0), (0, 1), (0, 2),
-        (1, 0), (1, 1), (1, 2),
-        (2, 0), (2, 1), (2, 2),
+        (0, 0),
+        (0, 1),
+        (0, 2),
+        (1, 0),
+        (1, 1),
+        (1, 2),
+        (2, 0),
+        (2, 1),
+        (2, 2),
     }
 
 
@@ -191,8 +197,6 @@ def test_child_veto_pure_function_does_not_mutate_inputs() -> None:
     classification_before = classification.copy()
     scores_before = scores.copy()
 
-    apply_child_veto(
-        classification, scores, config=ChildVetoConfig(percentile=0.5, neighborhood=1)
-    )
+    apply_child_veto(classification, scores, config=ChildVetoConfig(percentile=0.5, neighborhood=1))
     np.testing.assert_array_equal(classification, classification_before)
     np.testing.assert_array_equal(scores, scores_before)

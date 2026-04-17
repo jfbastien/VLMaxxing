@@ -57,9 +57,7 @@ def _sample_balanced(
     holdout_rows: list[dict[str, Any]] = []
 
     for duration in durations:
-        task_types_for_duration = sorted(
-            {key[1] for key in by_duration_task if key[0] == duration}
-        )
+        task_types_for_duration = sorted({key[1] for key in by_duration_task if key[0] == duration})
         dev_pool: list[dict[str, Any]] = []
         holdout_pool: list[dict[str, Any]] = []
         # One dev + one holdout from each task type until we hit
@@ -130,9 +128,7 @@ def main() -> int:
     args = parser.parse_args()
 
     rows = _collect_rows(args.parquet_dir)
-    dev_ids, holdout_ids = _sample_balanced(
-        rows, per_duration=args.per_duration, seed=args.seed
-    )
+    dev_ids, holdout_ids = _sample_balanced(rows, per_duration=args.per_duration, seed=args.seed)
     _write_manifest(
         args.dev_output,
         item_ids=dev_ids,
