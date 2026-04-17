@@ -98,9 +98,8 @@ presence here does not imply a local result.
   both TOMATO N=30 and MVBench N=30 holdout, Video-MME is the
   broader external-validity check.
 - **Status**: **deferred operationally** (after N=30 and Planner 2.0
-  complete), but the paper claim matrix
-  (`paper/claim-matrix.md` claim #8) makes it a non-negotiable
-  arXiv gate. Resolve the tension: schedule phase 1.41 after
+  complete), but required for paper venue readiness per
+  `paper/claim-matrix.md` claim #8. Schedule phase 1.41 after
   the N=30 + Planner 2.0 tranche, before paper submission.
   Do not use as a diagnosis benchmark; the task heterogeneity
   dilutes failure-mode signal — its role is breadth validation,

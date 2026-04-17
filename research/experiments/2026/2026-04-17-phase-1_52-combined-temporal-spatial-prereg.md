@@ -10,24 +10,32 @@ first.
 
 ## Motivation
 
-Phase 1.50 measured the vision-cache-only (temporal reuse) ceiling
-at **20-23 % end-to-end** on M3 Air at 8-frame × 560 × 560
-geometry because **prefill is 70-78 % of per-item wall time**.
-Phase 1.51 is hypothesized to deliver 50-80 % end-to-end speedup
-on Gemma via visual-token pruning before LLM prefill.
+Phase 1.50 measured the dense baseline; from that baseline we derive
+an **analytical ceiling of 20-23 % end-to-end** for vision-cache-only
+(temporal reuse) on M3 Air at 8-frame × 560 × 560 geometry, because
+**prefill is 70-78 % of per-item wall time** and temporal reuse only
+compresses the vision-encode and decode paths. **This 22 % is a
+ceiling, not a measured speedup; Track B sparse execution has not
+been written yet.** Phase 1.51 is hypothesized to deliver 50-80 %
+end-to-end speedup on Gemma via visual-token pruning before LLM
+prefill (this, unlike the 22 %, would be a measured number).
 
 The paper's SOTA story requires both axes to stack meaningfully.
 This phase is the **direct empirical test** of whether they do.
 
-Three possible outcomes:
+Three possible outcomes (the arithmetic below uses the 22 % temporal
+CEILING and the 50-80 % pruning target; both are projections until
+measured):
 
 1. **Multiplicative** (claim #10 accepted): combined speedup ≈
-   (1 + temporal) × (1 + pruning) − 1. E.g., 0.22 temporal × 0.70
-   pruning → 1.22 × 1.70 − 1 = 1.07 → **107 % end-to-end
-   speedup** (≈ 2× wall-clock). This is the "big numbers" story.
+   (1 + temporal) × (1 + pruning) − 1. E.g., 0.22 ceiling × 0.70
+   projected → 1.22 × 1.70 − 1 = 1.07 → **107 % end-to-end speedup
+   ceiling** (≈ 2× wall-clock). This is the "big numbers" upper
+   bound; the paper needs the MEASURED composition, not this
+   product-of-projections.
 2. **Additive** (claim #10 narrowed): combined speedup ≈ temporal
-   + pruning. 0.22 + 0.70 = 0.92 → **92 % speedup**. Still
-   meaningful but not a composition win.
+   + pruning. 0.22 ceiling + 0.70 projected = 0.92 → **92 %
+   projected speedup**. Still meaningful but not a composition win.
 3. **Sub-additive** (claim #10 rejected): the two mechanisms
    interfere. Most common reason would be: novelty-pruning removes
    the visual-token positions that temporal reuse would otherwise

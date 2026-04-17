@@ -211,7 +211,8 @@ Near-term paper path:
   1.34) and event-window oracle (phase 1.35)
 - careful Track B timing only after sparse execution exists
 
-Follow-on systems paper if evidence lands:
+Follow-on systems work (belongs in the one-paper discussion, NOT
+a separate systems paper per the round-17 reframe):
 
 - changed-window sparse execution
 - task-aware media policies

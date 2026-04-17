@@ -94,9 +94,19 @@ are:
   variable = placement, not quantity)
 - Phase 1.27 projector-group mask completion — **COMPLETED 2026-04-14**
 - Phase 1.50 Track B dense baseline — **COMPLETED 2026-04-17** (n=10
-  dev + N=30 TOMATO holdout; MVBench N=30 queued). Sparse-execution
+  dev + N=30 holdout on BOTH benchmarks: TOMATO 61.1 s/item median
+  p95 70.2 s, MVBench 56.5 s/item median p95 60.3 s). Sparse-execution
   path — the actual "real skipped compute" claim — still blocked
   on implementation; see `paper/publishability-status.md` claim I.
+- Phase 1.34 novelty-ranked dense baseline — **COMPLETED 2026-04-17**
+  (2×3 grid N=30; cached planner dominates every novelty cell).
+- Phase 1.36 feature-change oracle — **COMPLETED 2026-04-17** (best
+  pixel stat Pearson r=0.233 to r=0.504; content-conditional).
+- Phase 1.37B neighbor-halo veto — **RUNNING 2026-04-17** (9-cell
+  dev shortlist × 2 benchmarks; TOMATO → MVBench sequential;
+  ≈ 12 h wall time). Code: `NeighborHaloVetoConfig`,
+  `apply_neighbor_halo_veto` (commits 2ebf90d + db10e12 + 0ea69fe +
+  46b5d05).
 
 Reproduction status itself has NOT changed since this file's last
 material update; §2.5 and §2.6 are still "partial" / "weaker than

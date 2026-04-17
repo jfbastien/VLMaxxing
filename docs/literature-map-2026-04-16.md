@@ -247,31 +247,37 @@ LLaVA-1.5 image VQA):
   lineage. Good for historical framing in the paper intro.
 - **MPEG VCM / JPEG AI** — long-term machine-first codec framing.
 
-## Candidate paper slot (target, not current claim)
+## Candidate paper slot (target, not current claim) — round-17 reframe
 
-> **A training-free, codec-guided temporal routing method that TARGETS
-> a better quality–compute Pareto frontier for video VLMs via
-> concentration-aware change detection, bounded staleness, and
-> projector-consistent sparse execution. TempCompass and composition
-> claims remain future work until they are locally measured.**
+> **Training-free multiplicative end-to-end speedup for video VLMs
+> via temporal feature reuse composed with novelty-pruning, measured
+> on VideoMME with Gemma 4-E4B-4bit, validated on temporal-reasoning
+> benchmarks (TOMATO, MVBench) with Qwen 2.5-VL-7B-4bit. One paper,
+> co-authored with Sam, results-first with method content in an
+> appendix.**
 
-Five **target claims** (NOT yet evidence):
+The paper's SOTA-facing claim is the **multiplicative big-number
+speedup** (lane B). The routing / bounded-staleness method content
+(lane A) is supporting evidence that explains *why* the speedup
+is correct and not a content-specific lucky shot.
 
-1. codec-derived proxies are valid routing signals (pixel diff is one;
-   MV-only will be the deployable second — phase 1.29 pending).
-2. naive mean-diff + no refresh is too blunt on TOMATO-style brief
-   semantically-critical change patterns (supported by current
-   evidence from phases 1.6, 1.7, 1.10; still requires N=30
-   hardening).
-3. sticky-dynamic + age-bounded + projector-group-complete planners
-   repair hard temporal failures (phases 1.26 and 1.27; currently
-   in-flight or preregistered).
-4. the saved budget can be spent on more frames, not just less
-   latency (CoPE framing adapted to training-free — phase 1.28
-   partially executed with mixed results; H1 rejected on MVBench
-   holdout at 16 frames, inconclusive on TOMATO).
-5. real sparse execution (Track B) converts the proxy gain into
-   measured speedup. **Stage E is entirely prospective.**
+Six **target claims** (NOT yet evidence):
+
+1. Multiplicative end-to-end speedup ≥ 1.8× on VideoMME with Gemma
+   via novelty-pruning alone (phase 1.51 pending). THE headline.
+2. Multiplicative composition: temporal reuse + novelty-pruning
+   compose as measured (phase 1.52 pending). Tests whether Sam's
+   4–5× Gemma 4 26B composition transfers to Gemma 4 4B on M3 Air.
+3. Routing quality: codec-derived pixel-diff proxies are valid
+   routing signals (phase 1.36 oracle DONE — r=0.233 to r=0.504,
+   content-conditional, weak-to-moderate).
+4. Bounded-staleness + concentration-aware routing repairs
+   temporal failures on TOMATO + MVBench (phase 1.20/1.21 DONE
+   at N=30; phase 1.37B halo-veto RUNNING 2026-04-17).
+5. VideoMME validation on Qwen (phase 1.41 pending asset unpack).
+6. Real sparse execution converts the proxy gain into measured
+   speedup (Track B, claim 5 in the matrix). Prospective; the
+   one-paper-gate requires at least one wall-clock measurement.
 
 ### Current evidence level (2026-04-16)
 

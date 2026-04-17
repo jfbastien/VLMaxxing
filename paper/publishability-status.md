@@ -4,21 +4,30 @@ One-file answer to "what can we actually claim, in what venue, with what
 numbers, today." Kept in sync with [claim-matrix.md](claim-matrix.md) but
 scoped narrower: reviewer-facing readiness and runtime-cost evidence.
 
-## Two paper arcs (round-16 clarification)
+## One paper, two experimental lanes (round-17 reframe)
 
-The repo now runs two parallel paper programs. Keep language distinct:
+**The goal is one results paper, co-authored with Sam, that advances
+SOTA with big multiplicative speedups.** Method work is in service of
+that scientific goal and is welcome to land in an appendix; it is
+NOT a separate methods paper.
 
-- **Arc A — Qwen methods paper.** Pareto-frontier / routing claims on
-  Qwen 2.5-VL-7B-4bit. Two paper-grade benchmarks (TOMATO, MVBench).
-  Claims 1/2/6/9 earned; 3/4/5 partial; 8/12 preregistered.
-- **Arc B — Gemma big-numbers paper.** Multiplicative end-to-end
-  speedup via novelty-pruning + temporal reuse on Gemma 4-E4B-4bit.
-  Claims 7/10/11 are all preregistered-only today; nothing earned.
+The paper has two experimental lanes, both of which must contribute
+evidence to the final manuscript:
 
-A single paper may absorb both arcs, but prose must not conflate
-arc-A-earned with arc-B-prospective. When a claim sits in both arcs
-(e.g., claim 5 sparse-execution delta on Qwen or Gemma), name the
-architecture explicitly.
+- **Lane A — Qwen methods (TOMATO + MVBench).** Pareto-frontier /
+  routing claims on Qwen 2.5-VL-7B-4bit. Claims 1/2/6/9 earned;
+  3/4/5 partial; 8/12 preregistered. Provides scientific validity
+  for the routing / bounded-staleness mechanism, and is a natural
+  home for the appendix method content.
+- **Lane B — Gemma big-numbers (VideoMME + TOMATO + MVBench).**
+  Multiplicative end-to-end speedup via novelty-pruning + temporal
+  reuse on Gemma 4-E4B-4bit. Claims 7/10/11 all preregistered today;
+  nothing earned. **This is the SOTA-facing content** and drives
+  paper-venue readiness.
+
+Prose must never conflate lane-A-earned with lane-B-prospective.
+When a claim sits in both lanes (e.g., claim 5 sparse-execution
+delta on Qwen or Gemma), name the architecture explicitly.
 
 ## HN-style headline (honest version)
 
@@ -90,16 +99,16 @@ Implementation time is out of scope for this table.
 
 - **One full reviewer-response cycle (re-run A through F on clean tree):** warm-cache ≈ 5-7 h; cold-cache ≈ 10-14 h.
 - **N=30 motion holdout pair on a new policy:** warm-cache ≈ 60 min; cold-cache ≈ 3.5 h.
-- **Phase 1.50 Track B N=30 pair (currently running TOMATO, MVBench next):** cold-cache ≈ 2 h per benchmark.
+- **Phase 1.50 Track B N=30 pair (landed 2026-04-17, both benchmarks):** cold-cache ≈ 2 h per benchmark. TOMATO 61.1 s/item median, MVBench 56.5 s/item median.
 
 ## Venue targeting (current honest read)
 
 | Venue | Fit today | What would need to land |
 |---|---|---|
-| **arXiv preprint** | **Ready now as positional submission.** Two clean-tree Pareto results + oracle + dense wall-clock. Framing must say "projected ceiling" for speedup. | Optional: close Codex round-16 doc drift sync (this session). |
-| **NeurIPS / ICLR / CVPR efficiency workshop** | **Within reach.** Needs one of: Track B sparse delta OR VideoMME lane OR second-architecture result. | One of {I, J, K} landed. |
-| **Main track (NeurIPS/ICML/CVPR)** | **NOT ready.** Single-architecture, two benchmarks, no measured speedup. Reviewers will flag all three. | At least two of {I, J, K} + placement ablation L. |
-| **Systems conference (MLSys/OSDI)** | **NOT ready.** No sparse execution to characterize. | I landed at minimum; K strengthens. |
+| **arXiv preprint (lane-A-only positional)** | **Possible today as a narrow positional note on Qwen routing.** Would need framing as "method positioning; SOTA results forthcoming." **Not the target artifact** — the goal is one big-numbers paper, not a positional subset. | Keep Arc A claims current; do not submit until Lane B is earned. |
+| **NeurIPS / ICLR / CVPR efficiency workshop** | **Within reach** once Lane B lands one of: novelty-pruning-on-Gemma multiplicative speedup OR Gemma+VideoMME fidelity + Track B sparse delta. | Lane B phases 1.42 + 1.51 earned. |
+| **Main track (NeurIPS/ICML/CVPR)** | **NOT ready.** Single-architecture, two benchmarks, no measured speedup, no SOTA comparison. Reviewers will flag all four. | Phase 1.52 combined (multiplicative speedup measured) + claim 8 VideoMME + claim 7 second architecture. |
+| **Systems conference (MLSys/OSDI)** | **NOT ready.** No sparse execution to characterize. | Claim 5 (sparse path) + Phase 1.52 combined. |
 
 ## What is safe to say in a one-paragraph abstract TODAY
 
@@ -132,42 +141,56 @@ Implementation time is out of scope for this table.
 - "Training-free codec-guided" without qualifying "pixel-diff proxy
   for codec MV/CBF; phase 1.29 MV-only is the bridge."
 
-## Immediate next actions to extend publishability (ranked)
+## Immediate next actions to extend publishability (ranked for one-paper SOTA goal)
 
-Arc-B (Gemma big-numbers paper) is the SOTA-directed priority; Arc-A
-follow-ons continue in parallel where they do not contend for the
-MLX queue.
+Lane B (Gemma big-numbers on VideoMME) is the SOTA-facing priority.
+Lane A (Qwen routing) continues in parallel where it doesn't contend
+for the MLX queue, and produces method content for the appendix.
 
-Arc B (multiplicative end-to-end speedup on Gemma 4-E4B-4bit):
+### Lane B — the big-numbers path (Gemma + VideoMME, highest priority)
 
-1. **Phase 1.42 Gemma `_mix_gemma_features` integration** — weeks-scale
-   implementation (LLM-side prefill-token-prune path, not windowed-ViT
-   patch reuse); unlocks claim 7 (architecture fidelity) and is a
-   prerequisite for 1.51 and 1.52.
-2. **Phase 1.51 novelty-pruning dev + holdout on Gemma** — 5 anchor
-   arms × 5 keep-rates dev, single-shot holdout; ≈ 4-6 h GPU wall time
-   behind 1.42; unlocks claim 11.
-3. **Phase 1.52 combined temporal + spatial pipeline on Gemma** —
-   depends on 1.42 + 1.51; ≈ 2-3 h GPU wall time; unlocks claim 10
-   (multiplicative composition).
+1. **Phase 1.42 Gemma `_mix_gemma_features` integration** — design
+   note first (CPU-only, ≈ 0 h GPU), then code. The token layout is
+   NOT a clean port of Qwen block-level reuse (Gemma uses 280 fixed
+   soft tokens per image with no pixel-block correspondence), so
+   the integration needs a deliberate frame-level-vs-token-level
+   design decision. Unlocks claim 7 and is a prerequisite for 1.51 +
+   1.52. Runtime ≈ 0 h GPU for design; ≈ 2 h GPU for first smoke run.
+2. **Phase 1.41 VideoMME N=30 on Qwen** — ≈ 2 h GPU wall time once
+   the video corpus is unpacked locally. Unlocks claim 8. **Can run
+   BEFORE phase 1.42** because loader is done; this is the first
+   VideoMME number the paper cites.
+3. **Phase 1.51 novelty-pruning dev + holdout on Gemma (VideoMME)**
+   — 5 anchor arms × 5 keep-rates dev + single-shot holdout;
+   ≈ 4-6 h GPU wall time behind 1.42. **This is the headline
+   big-numbers result.** Unlocks claim 11.
+4. **Phase 1.52 combined temporal + spatial on Gemma (VideoMME)** —
+   depends on 1.42 + 1.51; ≈ 2-3 h GPU wall time. Tests whether
+   Sam's multiplicative composition transfers to local Gemma 4-E4B;
+   unlocks claim 10.
 
-Arc A (Qwen methods paper) — can run during Arc-B engineering:
+### Lane A — Qwen routing content (appendix-grade method evidence)
 
-4. **Phase 1.37B halo-veto dev tranche** — 48 cells × 2 benchmarks on
-   warm feature cache; ≈ 2 h GPU wall time; code landed (commits
-   2ebf90d + db10e12 + 0ea69fe); unlocks claim 3.
-5. **Phase 1.41 VideoMME N=30** — ≈ 2 h GPU wall time after manifest
-   ingestion; unlocks claim J (= claim 8 in matrix).
+5. **Phase 1.37B halo-veto dev tranche** — 9 shortlisted cells ×
+   2 benchmarks on warm feature cache; launched 2026-04-17,
+   ≈ 12 h GPU wall time (TOMATO then MVBench sequentially); code
+   landed (commits 2ebf90d + db10e12 + 0ea69fe + 46b5d05); unlocks
+   claim 3 if halo wins, retires the branch if control wins.
 6. **Phase 1.38 placement ablation** — ≈ 30 min GPU wall time;
    strengthens claim 4 mechanism.
-7. **Phase 1.37 within-block child-veto (distinct mechanism from
-   1.37B)** — not yet implemented; ≈ 2 h GPU wall time after code
-   lands; orthogonal path toward claim 3.
+7. **Phase 1.37 within-block child-veto (distinct from 1.37B)** —
+   not yet implemented; ≈ 2 h GPU wall time after code lands;
+   orthogonal path toward claim 3.
 8. **Phase 1.43 EgoSchema N=30 on Qwen** — long-form/egocentric
    generalization; ≈ 2-3 h GPU wall time; unlocks claim 12.
+
+### Track B (sparse execution, blocks claim 5 measured)
+
 9. **Track B sparse-execution path (Qwen or Gemma)** — weeks of
    engineering; the biggest single claim unlock (claim 5 measured,
-   not ceiling-derived).
+   not ceiling-derived). Currently lane B's phase 1.52 gives a
+   cheaper path to a measured end-to-end delta because novelty-
+   pruning is sparse-at-input, not sparse-in-ViT.
 
 Maintained by: research automation. Source of truth for numbers:
 [`claim-matrix.md`](claim-matrix.md) and the artifact JSONs it cites.

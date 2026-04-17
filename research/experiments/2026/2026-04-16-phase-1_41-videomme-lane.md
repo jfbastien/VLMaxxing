@@ -9,8 +9,11 @@ Objective:
   using the same benchmark runner infrastructure as TOMATO/MVBench.
 - run both dense-only baselines and the current cached winner
   (`max_abs(8,32) static+shifted age=4`) on a dev + holdout split.
-- this is claim #8 in `paper/claim-matrix.md` — a non-negotiable
-  arXiv gate per the revised whitepaper and codex reviews.
+- this is claim #8 in `paper/claim-matrix.md` — required for paper
+  venue readiness per the revised whitepaper and codex reviews. Per
+  round-17 one-paper reframe, VideoMME is also the benchmark that
+  Lane B (Gemma big-numbers, phase 1.51/1.52) targets for its
+  headline result.
 
 Claim register targets:
 

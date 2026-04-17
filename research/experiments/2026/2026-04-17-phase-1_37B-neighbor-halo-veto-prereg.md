@@ -1,7 +1,7 @@
 # Phase 1.37B — Planner 2.1A prereg (parent statistic + neighbor-halo concentration guard)
 
 Date: 2026-04-17
-State: blocked (code landed + tests pass; dev tranche 48 cells × 2 benchmarks pending)
+State: running (dev tranche 9-cell shortlist × 2 benchmarks launched 2026-04-17, TOMATO then MVBench sequentially; holdout pending dev winner)
 Parent: `paper/claim-matrix.md` claim #3 (concentration-aware routing)
 Sibling: `research/experiments/2026/2026-04-16-phase-1_12b-crossbench-winner-mvbench-holdout.md`,
 `research/experiments/2026/2026-04-16-planner-2_0-ablation.md`

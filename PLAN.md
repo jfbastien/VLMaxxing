@@ -173,7 +173,11 @@ That is the center of the project today.
 ## Current SOTA Position
 
 The scientific target is not merely to reproduce the imported whitepaper. The
-target is to use an honest reproduction base to build a stronger method paper.
+target is to use an honest reproduction base to build **one results paper,
+co-authored with Sam, that advances SOTA with measured big-number speedups.**
+Method work serves that scientific goal and may land in an appendix; it is
+not a standalone methods paper. See the round-17 reframe in
+`paper/publishability-status.md` and `paper/claim-matrix.md`.
 
 Current position relative to the adjacent efficiency literature tracked in
 [docs/literature-map-2026-04-16.md](docs/literature-map-2026-04-16.md)

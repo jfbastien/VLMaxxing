@@ -14,9 +14,10 @@ reports 4-5× end-to-end speedups on Gemma 4 26B (M5 Max) by
 dropping visual tokens from the LLM prefill based on a per-frame
 novelty score. Codex round-15 explicitly flagged that
 **absorbing this axis is where the "big numbers" the user wants
-live** — temporal reuse on Qwen caps at ~22 % end-to-end on
-M3 Air (phase 1.50); prefill-token reduction is the only path to
-multiplicative gains because **prefill is 70-78 % of per-item
+live** — temporal reuse on Qwen has a ceiling of ~22 % end-to-end
+on M3 Air (analytical bound derived from phase 1.50 dense baseline,
+NOT a measured speedup); prefill-token reduction is the only path
+to multiplicative gains because **prefill is 70-78 % of per-item
 wall time** at 8-frame × 560 × 560 geometry.
 
 **Why Gemma 4 and not Qwen for the pruning phase:** Qwen 2.5-VL

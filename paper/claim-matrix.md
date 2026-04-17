@@ -34,39 +34,45 @@ If not: "codec-inspired / pixel-diff proxy for codec-guided."
 | 11 | Novelty-pruning visual tokens before LLM prefill delivers end-to-end speedup on Gemma 4 | Phase 1.51 novelty-pruning on Gemma (5 anchor arms × 5 keep rates dev tranche, single-shot holdout) | NOT STARTED; preregistered | Phase 1.42 `_mix_gemma_features` integration | Claim earned on ≥ 1.8× end-to-end speedup with accuracy within 0.10 of Gemma-dense-8 on one benchmark |
 | 12 | Method generalizes to long-form egocentric video (EgoSchema) | Phase 1.43 EgoSchema lane on Qwen 2.5-VL | NOT STARTED; preregistered | EgoSchema loader + manifest | Claim earned on N=30 holdout with agreement ≥ 0.80 and Pareto tie-or-win vs matched dense |
 
-## Arc split (round-16 clarification)
+## One paper, two lanes (round-17 reframe)
 
-The repo now has two paper programs. Keep the language distinct:
+**The target is ONE paper, co-authored with Sam, that advances SOTA
+with measured big multiplicative speedups.** Method work serves that
+science goal and is welcome in an appendix; it is not a separate
+methods paper. Both lanes must contribute evidence.
 
-**Arc A — Qwen methods paper (Pareto-frontier / routing claims).**
+**Lane A — Qwen routing (TOMATO + MVBench).**
 - Claims 1, 2, 3, 4, 5, 6, 8, 9, 12 primarily exercise Qwen 2.5-VL.
-- Gate for a narrower arXiv methods submission: claims 1+2+3+4+6+5(partial) earned, plus breadth via 8 and/or 12.
-- Currently earned: 1, 2, 6, 9. Partial: 3 (sticky4 only; halo-veto pending), 4 (asymmetry only; placement ablations pending), 5 (dense baseline only).
+- Role in the paper: validates the routing / bounded-staleness mechanism and the "pixel-diff proxy" story. Natural home for the method appendix.
+- Currently earned: 1, 2, 6, 9. Partial: 3 (sticky4 only; halo-veto dev sweep running), 4 (asymmetry only; placement ablations pending), 5 (dense baseline only).
 
-**Arc B — Gemma big-numbers paper (multiplicative speedup / SOTA).**
-- Claims 7, 10, 11 primarily exercise Gemma 4-E4B.
-- Gate for a broader "big numbers" submission: claims 11 (pruning-alone) + 10 (composition) + 7 (architecture fidelity) all earned with multiplicative speedup > 2× end-to-end.
-- Currently earned: none. All three are preregistered only.
+**Lane B — Gemma big-numbers (VideoMME + TOMATO + MVBench).**
+- Claims 7, 10, 11 primarily exercise Gemma 4-E4B; claim 5 measured delta will likely land on Gemma too.
+- Role in the paper: **THE SOTA-facing content** that justifies venue targeting. Multiplicative speedup via novelty-pruning + temporal reuse.
+- Currently earned: none. All three preregistered only.
 
-A single paper may absorb both arcs, but the text must not conflate arc-A-earned with arc-B-prospective. When a claim sits in both arcs (e.g., claim 5 sparse-execution delta could be measured on either Qwen or Gemma), name the architecture explicitly.
+Prose must never conflate lane-A-earned with lane-B-prospective. When a claim sits in both lanes (e.g., claim 5 sparse-execution delta measured on either Qwen or Gemma), name the architecture explicitly.
 
-## What must land before arXiv submission
+## What must land before a paper submission (one-paper gate)
 
-**Non-negotiable** (codex 2026-04-16):
-- Claims 3, 4, 6 all passed (method + placement + N=30)
-- Claim 1 at least partially (oracle confirms pixel-diff signal quality)
-- Claim 5 at minimum one wall-clock measurement (Track B)
-- Claim 8 (VideoMME lane)
+**Required for the paper to make sense at all** (round-17):
+- Claim 6 earned (already done: TOMATO + MVBench paper-grade at N=30) — method is real on ≥ 2 benchmarks.
+- Claim 8 earned (VideoMME lane) — headline benchmark the community recognizes.
+- Claim 11 earned (Gemma novelty-pruning delivers end-to-end speedup ≥ 1.8× on one benchmark, preferably VideoMME) — THIS IS THE BIG-NUMBER claim.
+- Claim 7 partial (Gemma fidelity characterized at ≥ 1 benchmark) — architecture breadth.
+- Claim 5 at minimum one wall-clock measurement in a sparse-execution path — measured, not ceiling-derived.
 
-**Strongly recommended** (codex + ChatGPT):
-- Claim 7 (second architecture)
-- Claim 9 (novelty-ranked dense baseline)
-- Claim 2 (STATIC vs STATIC+SHIFTED explicit comparison)
+**Strongly recommended to strengthen the paper**:
+- Claim 10 (phase 1.52 combined temporal+spatial on Gemma) — multiplicative composition measured, not projected.
+- Claim 3 (halo-veto or within-block child-veto earned) — routing claim gets mechanism evidence.
+- Claim 1 oracle (already done) and claim 2 (STATIC vs STATIC+SHIFTED comparison).
+- Claim 9 (novelty-ranked dense baseline — done) — disqualifies the dumb strawman.
 
-**Can defer to paper discussion / future work**:
-- Claim 10 (composition)
+**Can defer to paper discussion / future work / appendix**:
+- Claim 12 (EgoSchema long-form)
 - Full codec signal path (phase 1.29 MV-only)
 - TempCompass as third benchmark
+- Claim 4 (placement ablation) — strengthens, not required.
 
 ## Language rules
 

@@ -1,6 +1,15 @@
 # Research Progress Snapshot — 2026-04-14
 
-This document is a single-file snapshot of where the project stands at the
+> **HISTORICAL — superseded 2026-04-17.**
+>
+> This file is a frozen snapshot at the end of the round-7 takeover tranche.
+> Current state lives in
+> [`reproduction-status.md`](reproduction-status.md),
+> [`../paper/publishability-status.md`](../paper/publishability-status.md), and
+> [`../paper/claim-matrix.md`](../paper/claim-matrix.md). Do not edit this
+> file for current status; it is preserved as commit-level context only.
+
+This document is a single-file snapshot of where the project stood at the
 end of the round-7 takeover tranche.
 
 ## Whitepaper Reproduction

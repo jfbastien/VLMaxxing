@@ -80,14 +80,12 @@ pending.
   exploratory unless a specific research question arises.
 - Phase 1.13 logprob stratification: defer until at least one policy
   survives N=30 enlargement — otherwise we're stratifying noise.
-- Phase 1.21 MVBench N=30: **RE-ACTIVATED 2026-04-16** after phase
-  1.12.B surfaced a cross-benchmark-discovered MVBench holdout
-  Pareto survivor (`max_abs(8,32) static+shifted age=4` at cached
-  0.667 / fresh 4.59 / agreement 0.933). Previously demoted under
-  the assumption that MVBench holdout was a clean null; the null
-  was specific to the phase-1.11-grid-sampled winners, not the
-  (transfer-discovered) policy. N=30 now required for cross-paper
-  comparability.
+- Phase 1.21 MVBench N=30: **COMPLETED 2026-04-17** (clean tree).
+  Base 0.600@4.06 (Pareto win vs dense-6) and sticky4 0.633@4.49
+  (Pareto tie vs dense-8). Previously demoted after 1.11 null;
+  re-activated 2026-04-16 following 1.12.B cross-benchmark-
+  discovered survivor; now paper-grade at N=30 and satisfies
+  claim #6 together with phase 1.20 TOMATO N=30.
 
 ### Add (phases 1.25–1.33, preregistered)
 
@@ -172,16 +170,24 @@ Priority = (probability-of-moving-paper-claim × magnitude) / (effort).
 2. ✅ **Phase 1.20 TOMATO N=30** — **PASSED (clean tree, commit
    42b06eb)**. Base policy ties dense-8 at 44% budget (0.333@3.55).
    Claim #6 now paper-grade on both benchmarks.
-3. **Phase 1.36 feature-change oracle** — ~30 min CPU. Can run in
-   parallel with 1.20 GPU work. Answers "signal quality or schedule
-   quality bottleneck?"
-4. **Phase 1.34 novelty-ranked dense baseline** — the strongest
-   immediate falsifier of the current Pareto story. If cached loses
-   to smart-frame-selection dense at matched budget, the method
-   claim weakens. Per codex: should run BEFORE 1.37.
+3. ✅ **Phase 1.36 feature-change oracle** — **DONE (commit landed
+   2026-04-17)**. Best pixel stat Pearson r=0.233 (TOMATO MEAN) to
+   r=0.504 (MVBench CPF). Content-conditional; routing-stat rank
+   differs from point-predictor rank. Claim #1 earned.
+4. ✅ **Phase 1.34 novelty-ranked dense baseline** — **DONE
+   (commit 3804ee6)**. Full 2×3 grid N=30. TOMATO novelty HURTS
+   uniform at N=6 and N=8; MVBench novelty saturates at 0.567.
+   Cached base dominates every novelty cell at equal-or-lower
+   fresh-frame budget. Claim #9 earned.
 5. **Phase 1.38 temporal placement ablations** — ~3 hrs GPU. Dense-
    only frame0/middle/last/first+last/uniform4/uniform8 on TOMATO
    dev. Sharpens the budget-placement theory with causal evidence.
+   Still pending; strengthens claim #4 if run.
+6. **Phase 1.37B neighbor-halo veto dev tranche** — **RUNNING
+   2026-04-17**. 9 shortlisted cells × 2 benchmarks on warm feature
+   cache; ≈ 12 h wall time (TOMATO → MVBench sequential). Code
+   landed 2026-04-17 (commits 2ebf90d + db10e12 + 0ea69fe + 46b5d05).
+   Holdout pending dev winner.
 
 ### Also in Tier A: explicit reuse-class comparison
 
@@ -212,23 +218,25 @@ Between phases 1.36/1.37, add:
    temporal-coverage placement metrics.
 10. **Phase 1.29 MV-only signal path** — deployability story.
 
-### Parallel branch: Gemma novelty-pruning (WP-2.11)
+### Lane B main-line: Gemma novelty-pruning (WP-2.11) — the big-numbers path
 
 Sam's revised whitepaper §2.11 introduces **hard spatial pruning**
 on Gemma 4 26B — a per-token novelty prune on top of the same
-static-anchor mechanism we use for temporal reuse. This is a
-**parallel branch** to the temporal reuse mainline, not a
-replacement. Formalized here per ChatGPT 2026-04-17 review to
-keep the main-thesis claim (temporal reuse on Qwen 2.5-VL) crisp
-while acknowledging the spatial axis as additive.
+static-anchor mechanism we use for temporal reuse. Under the
+round-17 one-paper reframe, this is **the headline lane of the
+paper**, not a parallel branch. Temporal reuse on Qwen (lane A)
+validates the routing mechanism; novelty-pruning on Gemma (lane B)
+delivers the measured multiplicative speedup that justifies venue
+targeting. Both lanes converge into one manuscript.
 
 Scope in this repo:
 
-- The spatial-pruning axis is **future work** for us until (a) the
-  temporal reuse N=30 story lands on VideoMME (phase 1.41) and (b)
-  a second architecture (Gemma 4 4B on M3 Air) is stood up
-  (phase 1.42). Without both, a spatial-pruning result would not
-  be evaluable against our existing claim structure.
+- The spatial-pruning lane blocks on (a) phase 1.41 VideoMME loader
+  finishing an N=30 Qwen pass (baseline we compare to) and (b)
+  phase 1.42 `_mix_gemma_features` integration (so temporal reuse
+  and novelty-pruning can compose on Gemma 4 4B on M3 Air). Design
+  note must land before code — Gemma token layout (280 fixed soft
+  tokens per image) is NOT a clean port of Qwen block-level reuse.
 - Related work in the literature (PPE, IVC-Prune, Nüwa) all share
   the **static-anchor token preservation** principle: preserve
   tokens corresponding to layout anchors (background class, start
