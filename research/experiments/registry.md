@@ -361,7 +361,7 @@ authoritative in the per-phase notes under
   current_best_policy: n/a
   supersedes: []
   paper_relevance: primary (EgoSchema breadth gate; long-form egocentric)
-  prereg_outcome: (pending; blocked on phase 1.42 loader refactor)
+  prereg_outcome: (pending; needs EgoSchema loader implementation + benchmark manifest build — NOT gated on phase 1.42; the 1.43 prereg explicitly scopes this lane to Qwen 2.5-VL and does not consume `_mix_gemma_features`)
   notes: Huggingface lmms-lab/EgoSchema is open-licensed (no TOS click-through unlike VideoMME); 3-min clips at 22 s inter-frame gap stress-test reuse fidelity
 
 - phase_id: 1.50
