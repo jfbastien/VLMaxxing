@@ -15,6 +15,7 @@ from codec_through.novelty_pruning import (
     ANCHOR_ARMS,
     NoveltyPruneConfig,
     compute_keep_mask,
+    compute_pixel_novelty,
     reduce_features,
 )
 
@@ -436,3 +437,91 @@ def test_reduce_features_handles_empty_mask() -> None:
     kept, positions = reduce_features(features, mask)
     assert kept.shape == (0, 4)
     assert positions.shape == (0,)
+
+
+# ---------------------------------------------------------------------------
+# compute_pixel_novelty
+# ---------------------------------------------------------------------------
+
+
+def test_compute_pixel_novelty_basic_shape_and_values() -> None:
+    # Two 4x4 grayscale frames; bottom-left 2x2 block changes by 10, rest static.
+    frames = np.zeros((2, 4, 4), dtype=np.float32)
+    frames[1, 2:4, 0:2] = 10.0
+    novelty = compute_pixel_novelty(frames, grid_shape=(2, 2))
+    assert novelty.shape == (2, 4)
+    # Grid cells of size 2x2 → bottom-left cell is token index 2 (row 1, col 0).
+    assert novelty[1, 2] == pytest.approx(10.0)
+    # Other cells see no change.
+    for idx in (0, 1, 3):
+        assert novelty[1, idx] == 0.0
+    # Default first_frame="mirror" → frame-0 equals frame-1.
+    assert np.allclose(novelty[0], novelty[1])
+
+
+def test_compute_pixel_novelty_first_frame_zero() -> None:
+    frames = np.zeros((3, 4, 4), dtype=np.float32)
+    frames[1, 2:4, 0:2] = 10.0
+    frames[2, 0:2, 2:4] = 5.0
+    novelty = compute_pixel_novelty(frames, grid_shape=(2, 2), first_frame="zero")
+    assert novelty[0].tolist() == [0.0, 0.0, 0.0, 0.0]
+    assert novelty[1, 2] == pytest.approx(10.0)
+    # Frame 2 diff vs frame 1 hits BOTH regions (top-right gains 5, bottom-left loses 10).
+    assert novelty[2, 1] == pytest.approx(5.0)
+    assert novelty[2, 2] == pytest.approx(10.0)
+
+
+def test_compute_pixel_novelty_first_frame_max() -> None:
+    frames = np.zeros((3, 4, 4), dtype=np.float32)
+    frames[1, 2:4, 0:2] = 10.0
+    frames[2, 0:2, 2:4] = 5.0
+    novelty = compute_pixel_novelty(frames, grid_shape=(2, 2), first_frame="max")
+    # max across frames 1..F-1 per token.
+    assert novelty[0, 1] == pytest.approx(5.0)
+    assert novelty[0, 2] == pytest.approx(10.0)
+
+
+def test_compute_pixel_novelty_color_frames() -> None:
+    # 3-channel: per-pixel novelty is the mean over channels, matching
+    # `codec_through.temporal._diff_plane`.
+    frames = np.zeros((2, 2, 2, 3), dtype=np.float32)
+    frames[1, 0, 0] = np.array([6.0, 0.0, 0.0], dtype=np.float32)  # mean diff = 2.0
+    novelty = compute_pixel_novelty(frames, grid_shape=(2, 2))
+    # grid matches pixel dims → each token sees exactly one pixel's diff.
+    assert novelty[1, 0] == pytest.approx(2.0)
+    assert novelty[1, 1] == 0.0
+
+
+def test_compute_pixel_novelty_rejects_bad_shape() -> None:
+    with pytest.raises(ValueError, match="F, H, W"):
+        compute_pixel_novelty(np.zeros((4, 4), dtype=np.float32), grid_shape=(2, 2))
+
+
+def test_compute_pixel_novelty_rejects_indivisible_grid() -> None:
+    frames = np.zeros((2, 5, 5), dtype=np.float32)
+    with pytest.raises(ValueError, match="must be divisible"):
+        compute_pixel_novelty(frames, grid_shape=(2, 2))
+
+
+def test_compute_pixel_novelty_handles_empty_and_single_frame() -> None:
+    empty = compute_pixel_novelty(
+        np.zeros((0, 4, 4), dtype=np.float32), grid_shape=(2, 2)
+    )
+    assert empty.shape == (0, 4)
+    single = compute_pixel_novelty(
+        np.ones((1, 4, 4), dtype=np.float32), grid_shape=(2, 2)
+    )
+    assert single.shape == (1, 4)
+    # No diff available → all zero.
+    assert np.all(single == 0.0)
+
+
+def test_compute_pixel_novelty_matches_14x20_gemma_grid() -> None:
+    # Sanity: the 560x560 → 14x20 Gemma case. 560/14 = 40, 560/20 = 28.
+    rng = np.random.default_rng(42)
+    frames = rng.standard_normal((3, 560, 560)).astype(np.float32)
+    novelty = compute_pixel_novelty(frames, grid_shape=(14, 20))
+    assert novelty.shape == (3, 280)
+    # Every cell should see some non-zero diff (random data).
+    assert (novelty[1] > 0).all()
+    assert (novelty[2] > 0).all()

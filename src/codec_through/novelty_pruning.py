@@ -360,3 +360,92 @@ def reduce_features(
     kept_features = flat_features[flat_mask]
     kept_indices = np.nonzero(flat_mask)[0].astype(np.int64)
     return kept_features, kept_indices
+
+
+def _diff_plane(frame_a: FloatArray, frame_b: FloatArray) -> FloatArray:
+    """Mean absolute channel-wise error between two frames (H, W) or (H, W, C)."""
+    if frame_a.shape != frame_b.shape:
+        raise ValueError(
+            f"frame shapes must match exactly, got {frame_a.shape} and {frame_b.shape}"
+        )
+    if frame_a.ndim not in (2, 3):
+        raise ValueError("expected 2D grayscale or 3D color frames")
+    diff = np.abs(frame_a.astype(np.float32) - frame_b.astype(np.float32))
+    if diff.ndim == 3:
+        return np.asarray(diff.mean(axis=2), dtype=np.float32)
+    return np.asarray(diff, dtype=np.float32)
+
+
+def _aggregate_to_grid(
+    per_pixel: FloatArray, grid_shape: tuple[int, int]
+) -> FloatArray:
+    """Block-mean-pool a 2D per-pixel array into `grid_shape` cells.
+
+    Requires the pixel dimensions to be exact multiples of the grid dims (the
+    typical Gemma case is 560×560 pixel frames with a 14×20 post-pool grid after
+    patch_size=16 and pooling_kernel_size=3 — we verify exact divisibility here
+    and leave any rebinning / resampling to the caller).
+    """
+    rows, cols = grid_shape
+    h, w = per_pixel.shape
+    if h % rows != 0 or w % cols != 0:
+        raise ValueError(
+            f"frame dims {(h, w)} must be divisible by grid_shape {(rows, cols)}"
+        )
+    cell_h = h // rows
+    cell_w = w // cols
+    reshaped = per_pixel.reshape(rows, cell_h, cols, cell_w)
+    return np.asarray(reshaped.mean(axis=(1, 3)), dtype=np.float32)
+
+
+FirstFrameMode = Literal["mirror", "zero", "max"]
+
+
+def compute_pixel_novelty(
+    frames: FloatArray,
+    *,
+    grid_shape: tuple[int, int],
+    first_frame: FirstFrameMode = "mirror",
+) -> FloatArray:
+    """Compute per-(frame, token) novelty via pixel-difference aggregation.
+
+    Args:
+        frames: `(F, H, W)` or `(F, H, W, C)` pixel array. Channels are averaged
+            the same way `codec_through.temporal._diff_plane` averages them, so
+            thresholds calibrated against that function transfer here.
+        grid_shape: `(rows, cols)` of the target post-pool token grid. H and W
+            must be exact multiples of `rows` and `cols` respectively.
+        first_frame: how to populate novelty for frame 0 (which has no
+            predecessor). `"mirror"` uses the diff against frame 1 (symmetric);
+            `"zero"` emits zero novelty (the arm's fallbacks then pick tokens
+            by position only); `"max"` emits per-token max of frames 1..F-1
+            novelties (treats frame 0 as maximally novel per position).
+
+    Returns:
+        `(F, rows * cols)` float32 novelty, higher = more pixel-level change.
+    """
+    if frames.ndim not in (3, 4):
+        raise ValueError(
+            f"frames must be (F, H, W) or (F, H, W, C); got shape {frames.shape}"
+        )
+    f_count = frames.shape[0]
+    if f_count == 0:
+        return np.zeros((0, grid_shape[0] * grid_shape[1]), dtype=np.float32)
+    rows, cols = grid_shape
+    t_count = rows * cols
+    novelty = np.zeros((f_count, t_count), dtype=np.float32)
+    if f_count == 1:
+        # Degenerate single-frame case: no diff available, leave zeros.
+        return novelty
+    for f in range(1, f_count):
+        per_pixel = _diff_plane(frames[f], frames[f - 1])
+        novelty[f] = _aggregate_to_grid(per_pixel, grid_shape).reshape(t_count)
+    if first_frame == "mirror":
+        novelty[0] = novelty[1]
+    elif first_frame == "zero":
+        pass  # leave zeros
+    elif first_frame == "max":
+        novelty[0] = novelty[1:].max(axis=0)
+    else:  # pragma: no cover — exhaustiveness guard
+        raise ValueError(f"unknown first_frame mode {first_frame!r}")
+    return novelty
