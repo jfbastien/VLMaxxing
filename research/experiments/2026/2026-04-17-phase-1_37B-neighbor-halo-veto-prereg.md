@@ -127,6 +127,50 @@ effective_fresh_frames, then higher agreement), then single-shot
 holdout. Top-K ≤ 3 allowed only if tied on primary metric; rationale
 recorded in the note.
 
+### Amendment 2026-04-17 — shortlisted dev grid rationale
+
+The 48-cell grid is scientifically ideal but costs ≈ 55 s/item ×
+N=30 × 48 cells × 2 benchmarks ≈ 44 h of contended MLX wall time
+on the M3 Air, which would deadlock the Gemma (Arc B) and Track B
+queues for two days. Amended dev grid for the first execution pass:
+
+- `percentile ∈ {0.75, 0.85, 0.90, 0.95}` (kept; this is the **new**
+  axis the phase is designed to test)
+- `neighborhood ∈ {1, 2}` (kept; the other **new** axis)
+- `max_age = 4` (FIXED; phase 1.20 no-age collapse established age=4
+  as the load-bearing setting — the `max_age ∈ {2, 4, 8}` sanity
+  sweep is a nice-to-have, not paper-blocking)
+- `sticky_window = None` (FIXED for first pass; phase 1.26 already
+  characterized sticky-window, and we test halo-veto orthogonally to
+  sticky-window here. If a halo-veto cell wins dev, a follow-up
+  `halo × sticky4` cross pass is preregistered below.)
+- `parent = max_abs`, `reuse_classes = static+shifted` (fixed, per
+  Planner 2.0)
+
+**Shortlisted total: 8 halo-veto cells + 1 control (no halo) per
+benchmark = 9 cells per benchmark.** At 55 s/item × N=30 × 9 ≈ 4 h
+MLX wall time per benchmark. Two benchmarks sequentially ≈ 8 h.
+
+Follow-up cross-pass (preregistered; runs only if the dev winner is
+a halo-veto cell): re-run the dev winner's `(percentile,
+neighborhood)` with `sticky_window = 4`. That tests the orthogonality
+assumption: if halo-veto and sticky-window compose additively, a
+sticky×halo cell should beat the best pure-halo cell; if they
+saturate on the same failure mode, the cross cell should tie the
+best pure-halo cell.
+
+**Scientific cost of the shortlist**: we trade the `max_age ∈ {2,
+8}` and the `sticky=4` axes. The `max_age` axis is already spoken
+for by phase 1.20 and the `sticky_window` axis by phase 1.26; their
+exclusion is a deliberate methodological economy, not a
+simplification. The follow-up cross-pass recovers the sticky axis
+information conditional on halo-veto winning dev.
+
+Artifact directories for the shortlisted pass:
+
+- `research/experiments/2026/artifacts/phase1_37B_tomato_motion_dev_v2_cached/{control,p0.75_n1,…,p0.95_n2}_summary.json`
+- `research/experiments/2026/artifacts/phase1_37B_mvbench_motion_dev_v2_cached/{control,p0.75_n1,…,p0.95_n2}_summary.json`
+
 ## Accept / reject gates (preregistered)
 
 - **TOMATO holdout N=30, accept:** cached_accuracy ≥ 0.400 at
@@ -154,14 +198,17 @@ even if the metric analysis waits for phase 1.31.
   `ChildVetoConfig` in `src/codec_through/temporal.py`; 10 unit tests)
   and `db10e12` (Track A harness + old `--veto-percentile` /
   `--veto-neighborhood` CLI flags). Mechanism-rename applied 2026-04-17
-  in commit `<pending-this-commit>`: identifiers are now
-  `NeighborHaloVetoConfig`, `apply_neighbor_halo_veto`, and CLI flags
-  are `--halo-veto-percentile` / `--halo-veto-neighborhood`.
-- Dev tranche run: NOT STARTED (blocked on Track B n=30 GPU pair
-  currently running on the same device; will start once Track B
-  frees the MLX queue). The 48-cell dev grid is preregistered
-  above and will be executed cross-device if a second M3 frees
-  up, otherwise sequentially after Track B.
+  in commit `0ea69fe`: identifiers are now `NeighborHaloVetoConfig`,
+  `apply_neighbor_halo_veto`, and CLI flags are
+  `--halo-veto-percentile` / `--halo-veto-neighborhood`.
+- 2026-04-17: smoke test on 1 item (TOMATO direction 0231-04, warm
+  feature cache) completed in 55 s wall clock; halo-veto present in
+  summary.planner payload; `reuse_ratio_mean_active` dropped from
+  0.650 raw to 0.476 after halo-veto, confirming the veto promotes
+  STATIC→NOVEL as designed.
+- 2026-04-17: **TOMATO dev shortlisted 9-cell sweep launched in
+  background** via `/tmp/claude/run_halo_dev_tomato.sh`; expected
+  wall time ≈ 4 h. MVBench dev 9-cell sweep queued sequentially.
 - Paper-grade holdout run: preregistered gates above; awaits dev
   selection.
 
