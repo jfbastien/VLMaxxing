@@ -342,6 +342,27 @@ authoritative in the per-phase notes under
   supersedes: []
   paper_relevance: primary (VideoMME breadth gate, claim #8)
   prereg_outcome: (pending; runs after 1.37 dev; VideoMME loader + manifest builder landed)
+  notes: VideoMME video files require manual Google Drive / OneDrive download with TOS click-through and cannot be automated; manifest builder is ready but media fetch is a user-action item
+
+- phase_id: 1.42
+  status: prereg-only
+  authoritative_note: research/experiments/2026/2026-04-17-phase-1_42-gemma-architecture-topology-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: n/a (second-architecture fidelity test, not a policy)
+  supersedes: []
+  paper_relevance: primary (claim #7 architecture-conditioned reuse fidelity — takes evidence from N=1 to N=2 architectures)
+  prereg_outcome: (pending; blocked on _mix_gemma_features harness integration)
+  notes: Gemma 4-E4B-IT-4bit verified to load on M3 Air 16 GB; all-global vision encoder + learned 2D positional + standard RoPE LLM is architecturally distinct from Qwen's windowed-global + M-RoPE-V
+
+- phase_id: 1.43
+  status: proposed
+  authoritative_note: (prereg pending)
+  authoritative_artifacts: []
+  current_best_policy: n/a
+  supersedes: []
+  paper_relevance: primary (EgoSchema breadth gate; long-form egocentric)
+  prereg_outcome: (not yet preregistered)
+  notes: EgoSchema lane slotted between VideoMME (1.41) and novelty-pruning (1.51) in the SOTA queue; prereg to follow after 1.42 integration lands
 
 - phase_id: 1.50
   status: completed-dense-baseline-only
@@ -349,11 +370,32 @@ authoritative in the per-phase notes under
   authoritative_artifacts:
     - results/track_b/tomato_mc_n10.json
     - results/track_b/tomato_mc_n30.json
+    - results/track_b/mvbench_mc_n30.json
     - scripts/run_track_b.py
   current_best_policy: n/a (wall-clock baseline, not a policy)
   supersedes: []
   paper_relevance: primary (claim #5 dense reference; sparse-execution half still blocked)
-  prereg_outcome: Accepted with caveat (dense baseline paper-grade on TOMATO n=10 + N=30 holdout; sparse-execution delta still not measured; MVBench N=30 queued)
+  prereg_outcome: Accepted with caveat (dense baseline paper-grade on TOMATO N=30 + MVBench N=30 holdout; cross-benchmark vision-cache ceiling 20-23% end-to-end; sparse-execution delta still not measured)
+
+- phase_id: 1.51
+  status: prereg-only
+  authoritative_note: research/experiments/2026/2026-04-17-phase-1_51-novelty-pruning-gemma-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: n/a (spatial-pruning lane, not yet implemented)
+  supersedes: []
+  paper_relevance: primary (claim #10 composition with within-frame methods — the "big numbers" SOTA lane)
+  prereg_outcome: (pending; blocked on phase 1.42 Gemma integration landing first)
+  notes: preregistered 5 literature-grounded anchor-preservation arms (FastV, FasterVLM/HiPrune, Nüwa pillar, VLM-Pruner max-min diversity, IVC-Prune-spirit Gemma-structural); keep-rate grid {0.3..0.7}; must run on Gemma (not Qwen) because Qwen's M-RoPE-V ties token index to 2D grid position and breaks under token drop
+
+- phase_id: 1.52
+  status: proposed
+  authoritative_note: (prereg pending)
+  authoritative_artifacts: []
+  current_best_policy: n/a
+  supersedes: []
+  paper_relevance: primary (multiplicative composition — temporal reuse AND novelty-pruning stacked)
+  prereg_outcome: (not yet preregistered)
+  notes: combined pipeline phase; runs only after 1.42 (Gemma integration) and 1.51 (novelty-pruning winner cell) both pass their gates; tests whether 1.8x temporal × 1.8x pruning = 3x multiplicative or merely 1.5x additive; PoRe (arxiv 2508.17807) is a candidate composable axis
 ```
 
 ## Maintenance rules
