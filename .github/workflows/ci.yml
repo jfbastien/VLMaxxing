@@ -17,7 +17,11 @@ jobs:
           python-version-file: ".python-version"
 
       - name: Sync dependencies
-        run: uv sync --group dev
+        # Tests load benchmark scripts that import av / mlx / datasets
+        # from the research/vlm/benchmark optional groups, so CI must
+        # install all runtime groups, not just dev. See round-16 CI
+        # post-mortem (commit TBD).
+        run: uv sync --group dev --group research --group benchmark --group vlm --group seed
 
       - name: Ruff format check
         run: uv run ruff format --check .
