@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.util
 import sys
 from pathlib import Path
+from types import ModuleType
 
 import pytest
 
@@ -12,7 +13,7 @@ RUNNER_PATH = Path(__file__).resolve().parents[1] / "scripts" / "run_benchmark_t
 RUNNER_MODULE_NAME = "_videomme_runner_under_test"
 
 
-def _load_runner_module():
+def _load_runner_module() -> ModuleType:
     if RUNNER_MODULE_NAME in sys.modules:
         return sys.modules[RUNNER_MODULE_NAME]
     spec = importlib.util.spec_from_file_location(RUNNER_MODULE_NAME, RUNNER_PATH)

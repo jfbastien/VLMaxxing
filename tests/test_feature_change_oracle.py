@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.util
 import sys
 from pathlib import Path
+from types import ModuleType
 
 import numpy as np
 import pytest
@@ -13,7 +14,7 @@ SCRIPT_PATH = Path(__file__).resolve().parents[1] / "scripts" / "feature_change_
 MODULE_NAME = "_feature_change_oracle_under_test"
 
 
-def _load_module():
+def _load_module() -> ModuleType:
     if MODULE_NAME in sys.modules:
         return sys.modules[MODULE_NAME]
     spec = importlib.util.spec_from_file_location(MODULE_NAME, SCRIPT_PATH)
