@@ -87,8 +87,8 @@ def run_smoke(
     f_count, t_count = novelty.shape
 
     # Attention / feature substitutes for the arms that need them:
-    # - cls_attention: use novelty itself as a proxy (correlated but ranked
-    #   independently so the arm still exercises its own code path).
+    # - cls_attention_proxy: use novelty itself as a proxy (correlated but
+    #   ranked independently so the arm still exercises its own code path).
     # - nuwa_pillar / max_min_diversity: synthesize features from pixel-mean
     #   per token block. Deterministic, no randomness.
     rng = np.random.default_rng(0)
@@ -104,7 +104,7 @@ def run_smoke(
             novelty,
             config=_make_config(arm, keep_rate),
             features=features if arm in ("nuwa_pillar", "max_min_diversity") else None,
-            cls_attention=cls_attention if arm == "cls_attention" else None,
+            cls_attention=cls_attention if arm == "cls_attention_proxy" else None,
         )
         kept_counts = mask.sum(axis=1).tolist()
         overlap_with_baseline = int((mask & baseline_mask).sum())

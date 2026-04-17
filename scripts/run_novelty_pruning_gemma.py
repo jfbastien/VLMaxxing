@@ -28,8 +28,12 @@ Anchor-arm support in v0:
 - ``gemma_structural`` (corners + center) — positional only.
 - ``nuwa_pillar`` — uses vision-tower output features.
 - ``max_min_diversity`` — uses vision-tower output features.
-- ``cls_attention`` — **NOT SUPPORTED in v0**. Requires Gemma vision-tower
-  attention instrumentation that has not been landed. Use at your own risk.
+- ``cls_attention_proxy`` — **NOT a faithful attention measurement**.
+  v0 substitutes a per-token L2-norm signal because real Gemma vision-tower
+  attention instrumentation has not landed. Results from this arm are
+  **excluded from winner promotion** (see PROMOTABLE_ARMS in
+  src/codec_through/novelty_pruning.py). Kept in the grid to anchor the
+  literature baseline and to sanity-check the proxy itself.
 
 Usage:
     uv run python scripts/run_novelty_pruning_gemma.py \\
@@ -196,7 +200,7 @@ def _build_prompt(processor: Any, frames: list[Image.Image], question: str) -> d
 def _mean_token_attention_proxy(features: np.ndarray) -> np.ndarray:
     """Proxy CLS-attention: per-token L2 norm of vision features.
 
-    Used only if the caller requests ``cls_attention`` before Gemma vision-
+    Used only if the caller requests ``cls_attention_proxy`` before Gemma vision-
     tower attention instrumentation lands. Documented as a proxy; the
     results should not be treated as a faithful cls_attention measurement.
     """
@@ -301,7 +305,7 @@ def _process_one_item(
         grid_shape=GEMMA_GRID_SHAPE,
     )
     cls_proxy = None
-    if anchor_arm == "cls_attention":
+    if anchor_arm == "cls_attention_proxy":
         cls_proxy = _mean_token_attention_proxy(per_token_features)
     keep_mask = compute_keep_mask(
         novelty,
@@ -509,11 +513,13 @@ def main() -> int:
 
     if not args.model_path.exists():
         raise SystemExit(f"model path missing: {args.model_path}")
-    if args.anchor_arm == "cls_attention":
+    if args.anchor_arm == "cls_attention_proxy":
         print(
-            "WARNING: cls_attention v0 uses a per-token L2-norm proxy; not a "
-            "faithful attention signal. Gate any promotion on Gemma attention "
-            "instrumentation landing.",
+            "WARNING: cls_attention_proxy uses a per-token L2-norm proxy, not "
+            "real first-layer attention. This arm is EXCLUDED from winner "
+            "promotion (see PROMOTABLE_ARMS in codec_through.novelty_pruning). "
+            "Re-enable promotion only after Gemma vision-tower attention "
+            "instrumentation is landed.",
             file=sys.stderr,
         )
 

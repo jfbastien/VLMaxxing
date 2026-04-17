@@ -44,7 +44,21 @@ def _random_features(f_count: int, t_count: int, d: int, seed: int = 0) -> np.nd
 def test_anchor_arms_constant_matches_literal() -> None:
     assert set(ANCHOR_ARMS) == {
         "none",
-        "cls_attention",
+        "cls_attention_proxy",
+        "nuwa_pillar",
+        "max_min_diversity",
+        "gemma_structural",
+    }
+
+
+def test_promotable_arms_excludes_proxy() -> None:
+    from codec_through.novelty_pruning import PROMOTABLE_ARMS
+
+    # The cls_attention_proxy arm is gated off winner promotion until real
+    # Gemma vision-tower attention instrumentation lands.
+    assert "cls_attention_proxy" not in PROMOTABLE_ARMS
+    assert set(PROMOTABLE_ARMS) == {
+        "none",
         "nuwa_pillar",
         "max_min_diversity",
         "gemma_structural",
@@ -103,8 +117,8 @@ def test_compute_keep_mask_requires_features_for_diversity() -> None:
 
 
 def test_compute_keep_mask_requires_cls_attention_when_selected() -> None:
-    cfg = NoveltyPruneConfig(anchor_arm="cls_attention", keep_rate=0.5)
-    with pytest.raises(ValueError, match="cls_attention"):
+    cfg = NoveltyPruneConfig(anchor_arm="cls_attention_proxy", keep_rate=0.5)
+    with pytest.raises(ValueError, match="cls_attention_proxy"):
         compute_keep_mask(_novelty_ramp(1, 9), config=cfg)
 
 
@@ -119,7 +133,7 @@ def test_compute_keep_mask_rejects_feature_shape_mismatch() -> None:
 
 
 def test_compute_keep_mask_rejects_cls_shape_mismatch() -> None:
-    cfg = NoveltyPruneConfig(anchor_arm="cls_attention", keep_rate=0.5)
+    cfg = NoveltyPruneConfig(anchor_arm="cls_attention_proxy", keep_rate=0.5)
     with pytest.raises(ValueError, match="cls_attention must match"):
         compute_keep_mask(
             _novelty_ramp(2, 4),
@@ -177,7 +191,7 @@ def test_cls_attention_keeps_top_k_by_attention() -> None:
     # Novelty ramps up, attention ramps *down* — make sure we pick by attention.
     novelty = _novelty_ramp(1, 6)
     attention = np.array([[6.0, 5.0, 4.0, 3.0, 2.0, 1.0]], dtype=np.float32)
-    cfg = NoveltyPruneConfig(anchor_arm="cls_attention", keep_rate=0.5)  # k = 3
+    cfg = NoveltyPruneConfig(anchor_arm="cls_attention_proxy", keep_rate=0.5)  # k = 3
     mask = compute_keep_mask(novelty, config=cfg, cls_attention=attention)
     assert mask[0].tolist() == [True, True, True, False, False, False]
 
@@ -187,7 +201,7 @@ def test_cls_attention_ignores_novelty() -> None:
     novelty_a = np.array([[1.0, 2.0, 3.0, 4.0]], dtype=np.float32)
     novelty_b = np.array([[4.0, 3.0, 2.0, 1.0]], dtype=np.float32)
     attention = np.array([[10.0, 0.0, 0.0, 10.0]], dtype=np.float32)
-    cfg = NoveltyPruneConfig(anchor_arm="cls_attention", keep_rate=0.5)  # k = 2
+    cfg = NoveltyPruneConfig(anchor_arm="cls_attention_proxy", keep_rate=0.5)  # k = 2
     mask_a = compute_keep_mask(novelty_a, config=cfg, cls_attention=attention)
     mask_b = compute_keep_mask(novelty_b, config=cfg, cls_attention=attention)
     assert np.array_equal(mask_a, mask_b)

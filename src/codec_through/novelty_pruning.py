@@ -4,7 +4,13 @@ Pure-numpy implementations of the five anchor-preservation arms preregistered
 in `research/experiments/2026/2026-04-17-phase-1_51-novelty-pruning-gemma-prereg.md`:
 
 - `none` — pure top-K novelty rank (FastV-style baseline).
-- `cls_attention` — top-K by CLS-attention (FasterVLM / HiPrune family).
+- `cls_attention_proxy` — top-K by a scalar proxy for CLS-attention. The
+  callsite supplies the proxy tensor (FasterVLM / HiPrune family: real
+  CLS-attention; codec-through v0: per-token L2-norm of post-pool features
+  because Gemma vision-tower attention instrumentation has not been landed
+  yet). Results from this arm are **not eligible for winner promotion** until
+  real attention is wired (see prereg §Phase B caveat). Kept in the grid to
+  preserve the literature-baseline column and sanity-check the proxy.
 - `nuwa_pillar` — partition the 2D grid into an M×M lattice; hard-preserve
   the top-25 % highest-L2-key-norm tokens per cell, fill rest by novelty
   (Nüwa pillar/collector adaptation).
@@ -22,9 +28,10 @@ harness; this module is the policy, not the plumbing.
 Design goals:
 - numpy-only so tests run on CPU without MLX (`pytest tests/`).
 - Deterministic given the same inputs (`np.random` never used).
-- Anchor arms that need attention weights (`cls_attention`) take them as
-  an explicit input rather than computing them here — the module is the
-  masking math, not the model forward.
+- Anchor arms that need per-token attention-like weights
+  (`cls_attention_proxy`) take them as an explicit input rather than
+  computing them here — the module is the masking math, not the model
+  forward.
 
 The harness supplies `novelty_scores` of shape `(F, T)` computed from the
 pixel-diff pipeline already used by `classify_blocks_with_planner`.
@@ -40,7 +47,7 @@ import numpy.typing as npt
 
 AnchorArm = Literal[
     "none",
-    "cls_attention",
+    "cls_attention_proxy",
     "nuwa_pillar",
     "max_min_diversity",
     "gemma_structural",
@@ -48,7 +55,18 @@ AnchorArm = Literal[
 
 ANCHOR_ARMS: tuple[AnchorArm, ...] = (
     "none",
-    "cls_attention",
+    "cls_attention_proxy",
+    "nuwa_pillar",
+    "max_min_diversity",
+    "gemma_structural",
+)
+
+# Arms whose result is eligible for winner promotion to the 1.51R holdout.
+# `cls_attention_proxy` is excluded because its proxy signal (per-token L2
+# norm) is not a faithful cls-attention reading on Gemma. Re-include once
+# real vision-tower attention instrumentation lands.
+PROMOTABLE_ARMS: tuple[AnchorArm, ...] = (
+    "none",
     "nuwa_pillar",
     "max_min_diversity",
     "gemma_structural",
@@ -239,7 +257,7 @@ def _arm_max_min_diversity_frame_mask(
     return mask
 
 
-def _arm_cls_attention_frame_mask(
+def _arm_cls_attention_proxy_frame_mask(
     cls_attention_frame: FloatArray,
     keep_count: int,
 ) -> BoolArray:
@@ -258,17 +276,20 @@ def compute_keep_mask(
     Args:
         novelty_scores: `(F, T)` per-token novelty score, higher = more novel.
             The `none`, `nuwa_pillar`, and `gemma_structural` arms fill budget
-            by highest novelty. `max_min_diversity` and `cls_attention` ignore
-            novelty when selecting tokens (they fully occupy the budget by
-            their own criterion).
+            by highest novelty. `max_min_diversity` and `cls_attention_proxy`
+            ignore novelty when selecting tokens (they fully occupy the
+            budget by their own criterion).
         config: pruning policy.
         features: `(F, T, D)` post-pool visual features. Required for
             `nuwa_pillar` (uses L2 key-norm per token) and
             `max_min_diversity` (uses feature-space distance + L1 key-norm).
             Optional otherwise.
-        cls_attention: `(F, T)` per-token attention received from a CLS-like
-            anchor on the first transformer block. Required for the
-            `cls_attention` arm; optional otherwise.
+        cls_attention: `(F, T)` per-token scalar used as a cls-attention
+            proxy (v0: callsite passes per-token feature L2-norm). Required
+            for the `cls_attention_proxy` arm; optional otherwise. When real
+            Gemma vision-tower attention instrumentation lands, this will
+            become the genuine first-layer attention-received-from-CLS
+            signal and the arm will become promotable.
 
     Returns:
         `(F, T)` boolean mask where True means "keep this token for LLM
@@ -289,8 +310,8 @@ def compute_keep_mask(
 
     if config.anchor_arm in ("nuwa_pillar", "max_min_diversity") and features is None:
         raise ValueError(f"anchor_arm={config.anchor_arm!r} requires features")
-    if config.anchor_arm == "cls_attention" and cls_attention is None:
-        raise ValueError("anchor_arm='cls_attention' requires cls_attention input")
+    if config.anchor_arm == "cls_attention_proxy" and cls_attention is None:
+        raise ValueError("anchor_arm='cls_attention_proxy' requires cls_attention input")
     if features is not None and (features.ndim != 3 or features.shape[:2] != (f_count, t_count)):
         raise ValueError(
             f"features must have shape (F, T, D) matching novelty; got {features.shape}"
@@ -306,9 +327,9 @@ def compute_keep_mask(
         frame_novelty = novelty_scores[f]
         if config.anchor_arm == "none":
             keep_mask[f] = _keep_top_k(frame_novelty, keep_count)
-        elif config.anchor_arm == "cls_attention":
+        elif config.anchor_arm == "cls_attention_proxy":
             assert cls_attention is not None
-            keep_mask[f] = _arm_cls_attention_frame_mask(cls_attention[f], keep_count)
+            keep_mask[f] = _arm_cls_attention_proxy_frame_mask(cls_attention[f], keep_count)
         elif config.anchor_arm == "nuwa_pillar":
             assert features is not None and grid_shape is not None
             keep_mask[f] = _arm_nuwa_pillar_frame_mask(
