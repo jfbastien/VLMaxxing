@@ -104,6 +104,52 @@ Each phase is gated (some require code work first, some require an
 N=30 survivor, some are purely additive). Ordering in the execution
 plan.
 
+## 2026-04-17 Codex review — phase additions from sam's broader surface
+
+Codex re-read sam's whitepaper and flagged four **phases we should add
+to the plan** because sam has measured results in those areas and our
+paper currently does not:
+
+- **Phase 1.43 EgoSchema low-reuse robustness** (new, Tier B). Sam
+  reports 100% byte-identical agreement on Qwen2.5-VL-7B at 29.9% mean
+  token reuse (N=100). This is the strongest counterexample to "caching
+  only helps high-reuse content" in the current literature. If our
+  planner at a matched low-reuse slice retains its quality-vs-fresh-
+  tokens Pareto, claim #4 (budget-placement, not just reuse quantity)
+  is strengthened. Runtime estimate: 2 hrs GPU at N=30 on our stack
+  after EgoSchema is standable locally.
+- **Phase 1.44 VideoMME frame-count scaling** (new, Tier B,
+  blocked-by 1.41). Sam reports reuse climbing 86.5→90.8→93.1% across
+  32/64/128 frames on conferencing content, with E2E speedup sustained
+  at 4–5×. Our paper currently has no frame-count scaling axis. Runtime
+  estimate: ~6 hrs GPU for VideoMME 30-item × {32, 64, 128} frame sweep
+  once 1.41 lands.
+- **Phase 1.45 combined temporal+spatial pipeline** (new, Tier C,
+  blocked-by 1.29). Sam's most distinctive contribution is a MEASURED
+  4–5× E2E speedup with combined temporal + spatial pruning on Gemma 4
+  26B. We don't know if the arithmetic composes on Qwen2.5-VL-7B 4-bit
+  at M3 Air. Runtime estimate: ~4 hrs GPU once hard spatial pruning
+  lands (it's Track B-adjacent).
+- **Phase 1.42 InternVL3 third architecture** (already planned, now
+  re-scoped). Sam's whitepaper is internally inconsistent on whether
+  InternVL3 is windowed or all-global (§2.7 line 171 says all-global,
+  §2.10 line 243 says windowed). If we land Gemma 4 and InternVL3 we
+  get a three-cell view of the topology spectrum without inheriting
+  sam's binary framing.
+
+Codex also verified **what we should NOT import from sam**:
+
+- "windowed = exact, global = approximate" as a theorem (sam's own
+  data shows InternVL3 between Qwen and Gemma 4 at 95% strict — this
+  is a spectrum, not a binary)
+- "mean-diff is the best classifier" (the word "mean-diff" does not
+  appear in sam's whitepaper; this was a codex-summary artifact)
+- "composition is real 175×" (sam's §5 explicitly marks it as
+  projected, not measured)
+
+See `research/experiments/2026/2026-04-16-seed-audit-revised-whitepaper.md
+§ 2026-04-17 addendum` for the full cross-check.
+
 ## Ordering (UPDATED 2026-04-16 after weird-tricks review + ChatGPT synthesis)
 
 Priority = (probability-of-moving-paper-claim × magnitude) / (effort).

@@ -121,6 +121,86 @@ Add to `docs/related-work-table.md`:
   strongest local signal.
 - Phase 1.21 N=30 is still the hardening gate.
 
+## 2026-04-17 addendum: Codex cross-check of seed whitepaper
+
+Codex re-read sam's whitepaper alongside this audit and flagged a
+**second** internal inconsistency on InternVL3 attention topology:
+
+- `whitepaper-revised-2026-04-16.md:171`: "InternVL3 uses InternViT-300M
+  (24 layers, all-global attention, learned absolute position embeddings)"
+- `whitepaper-revised-2026-04-16.md:243`: "On windowed-attention
+  architectures (Qwen2.5-VL, InternVL3), embedding caching is
+  mathematically lossless"
+
+These two lines are mutually exclusive. The earlier §2.9/§2.7
+tension (lines 171 vs 237) was already flagged; line 243 adds a third
+data point that puts InternVL3 in BOTH camps within the same
+document. Consequence for our docs:
+
+- We must NOT cite sam's "windowed = lossless, global = approximate"
+  as a validated binary. The whitepaper's own data shows InternVL3
+  (whatever its attention topology) at **95% strict agreement, not
+  byte-identical**, which is empirically between Qwen (100%
+  byte-identical) and Gemma 4 (88% byte-identical). That is a
+  spectrum, not a topology-determined binary.
+- Our `WP-2.9` remains **scoped** (not a binary; attention-topology
+  conditioned on a spectrum, pretraining matters). This is already
+  reflected in `paper/framing.md § Reviewer-Facing Limitations`.
+
+Codex also verified two **false positives** in an earlier review
+summary: (a) sam does NOT claim "mean-diff is universally best" —
+the whitepaper never ablates statistics, so there is no such claim
+to import or refute; (b) sam's combined temporal+spatial pipeline
+table (lines 264–274) IS measured end-to-end on Gemma 4 26B at
+32/64/128 frames with 4–5× speedup sustained (not projected), so
+our literature-map should cite it as a measured result (with the
+"Gemma 4, not our hardware or architecture" caveat).
+
+Over-binary language we must flag when importing:
+
+1. `whitepaper-revised-2026-04-16.md:243` "mathematically lossless —
+   a strict guarantee, not a statistical one" — valid ONLY for
+   Qwen2.5-VL's specific 28-of-32 windowed geometry, not as a
+   topology-class property. Our phrasing: "byte-identical on Qwen
+   2.5-VL with 28 of 32 windowed layers; high-fidelity but not
+   byte-identical on all-global ViTs."
+2. `whitepaper-revised-2026-04-16.md:16` (abstract) "Three
+   architectures confirm that attention pattern determines output
+   stability" — "confirm" is too strong with one cleanly windowed
+   model, one cleanly all-global model, and one self-contradicted
+   architecture.
+3. `whitepaper-revised-2026-04-16.md:241` thinking-amplification
+   "confirming these are random fluctuations" — a sign flip is
+   *consistent with* noise but does not confirm it; we should
+   report this as suggestive evidence, not a confirmed finding.
+
+### What this changes in the plan
+
+- Phase 1.42 preregistration is correct as written (three-cell
+  topology test), no edits needed.
+- Phase 1.41 VideoMME can cite sam's N=300 result as "comparable
+  setup but different hardware/model-size, not a number we
+  reproduce."
+- Phase 1.43 (new) — **EgoSchema low-reuse robustness** — is now
+  a first-class recommended phase, per codex. Sam's EgoSchema
+  N=100 result (100% byte-identical at 29.9% mean token reuse)
+  is the strongest counterexample to "caching only helps
+  high-reuse content" in the current literature; locally
+  reproducing or falsifying it at N=30 on Qwen2.5-VL-7B 4-bit
+  would close the low-reuse robustness gap our paper currently
+  has.
+- Phase 1.44 (new) — **VideoMME 64/128-frame scaling** — becomes a
+  required follow-on if phase 1.41 lands. Sam's result says reuse
+  climbs monotonically with frame count on conferencing content
+  (86.5→90.8→93.1% at 32→64→128). If the **accuracy** also climbs
+  or at least stays flat at our geometry, we gain a frame-count
+  scaling axis the paper currently doesn't have.
+- **Phase 1.45 (new)** — **Combined temporal+spatial pipeline on
+  our stack**. Sam's measured 4–5× E2E speedup is on Gemma 4 26B
+  (MoE ~4B active) at M5 Max; we don't know if the arithmetic
+  composes on Qwen2.5-VL-7B 4bit at M3 Air. This is the closest
+  direct Sam-vs-us apples-to-apples gate.
+
 ## What sam does better that we should learn from
 
 1. **Scope of benchmarking**: 1,837 items across 3 benchmarks vs
