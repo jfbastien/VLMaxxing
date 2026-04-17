@@ -355,14 +355,14 @@ authoritative in the per-phase notes under
   notes: Gemma 4-E4B-IT-4bit verified to load on M3 Air 16 GB; all-global vision encoder + learned 2D positional + standard RoPE LLM is architecturally distinct from Qwen's windowed-global + M-RoPE-V
 
 - phase_id: 1.43
-  status: proposed
-  authoritative_note: (prereg pending)
+  status: prereg-only
+  authoritative_note: research/experiments/2026/2026-04-17-phase-1_43-egoschema-lane-prereg.md
   authoritative_artifacts: []
   current_best_policy: n/a
   supersedes: []
   paper_relevance: primary (EgoSchema breadth gate; long-form egocentric)
-  prereg_outcome: (not yet preregistered)
-  notes: EgoSchema lane slotted between VideoMME (1.41) and novelty-pruning (1.51) in the SOTA queue; prereg to follow after 1.42 integration lands
+  prereg_outcome: (pending; blocked on phase 1.42 loader refactor)
+  notes: Huggingface lmms-lab/EgoSchema is open-licensed (no TOS click-through unlike VideoMME); 3-min clips at 22 s inter-frame gap stress-test reuse fidelity
 
 - phase_id: 1.50
   status: completed-dense-baseline-only
@@ -388,14 +388,14 @@ authoritative in the per-phase notes under
   notes: preregistered 5 literature-grounded anchor-preservation arms (FastV, FasterVLM/HiPrune, Nüwa pillar, VLM-Pruner max-min diversity, IVC-Prune-spirit Gemma-structural); keep-rate grid {0.3..0.7}; must run on Gemma (not Qwen) because Qwen's M-RoPE-V ties token index to 2D grid position and breaks under token drop
 
 - phase_id: 1.52
-  status: proposed
-  authoritative_note: (prereg pending)
+  status: prereg-only
+  authoritative_note: research/experiments/2026/2026-04-17-phase-1_52-combined-temporal-spatial-prereg.md
   authoritative_artifacts: []
   current_best_policy: n/a
   supersedes: []
-  paper_relevance: primary (multiplicative composition — temporal reuse AND novelty-pruning stacked)
-  prereg_outcome: (not yet preregistered)
-  notes: combined pipeline phase; runs only after 1.42 (Gemma integration) and 1.51 (novelty-pruning winner cell) both pass their gates; tests whether 1.8x temporal × 1.8x pruning = 3x multiplicative or merely 1.5x additive; PoRe (arxiv 2508.17807) is a candidate composable axis
+  paper_relevance: primary (multiplicative composition — temporal reuse AND novelty-pruning stacked — paper-table headline number)
+  prereg_outcome: (pending; blocked on 1.42 and 1.51 passes)
+  notes: three-way gate preregistered (multiplicative / additive / interference); PoRe (arxiv 2508.17807) reserved for phase 1.53 if 1.52 passes
 ```
 
 ## Maintenance rules
