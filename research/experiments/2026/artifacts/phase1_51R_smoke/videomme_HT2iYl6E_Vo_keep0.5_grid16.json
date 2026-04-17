@@ -1,0 +1,113 @@
+{
+  "video_path": "data/benchmarks/videomme/videos/HT2iYl6E_Vo.mp4",
+  "frame_count": 8,
+  "token_count_per_frame": 256,
+  "grid_shape": [
+    16,
+    16
+  ],
+  "requested_keep_rate": 0.5,
+  "baseline_arm": "none",
+  "novelty_stats": {
+    "min": 0.0,
+    "max": 227.16604614257812,
+    "mean": 46.645469665527344,
+    "per_frame_mean": [
+      31.803281784057617,
+      31.803281784057617,
+      31.389427185058594,
+      58.5716667175293,
+      79.93850708007812,
+      50.395912170410156,
+      28.840429306030273,
+      60.421268463134766
+    ]
+  },
+  "per_arm": {
+    "none": {
+      "kept_per_frame": [
+        128,
+        128,
+        128,
+        128,
+        128,
+        128,
+        128,
+        128
+      ],
+      "total_kept": 1024,
+      "total_tokens": 2048,
+      "effective_keep_rate": 0.5,
+      "overlap_with_baseline_count": 1024,
+      "overlap_with_baseline_rate": 1.0
+    },
+    "cls_attention_proxy": {
+      "kept_per_frame": [
+        128,
+        128,
+        128,
+        128,
+        128,
+        128,
+        128,
+        128
+      ],
+      "total_kept": 1024,
+      "total_tokens": 2048,
+      "effective_keep_rate": 0.5,
+      "overlap_with_baseline_count": 1024,
+      "overlap_with_baseline_rate": 1.0
+    },
+    "nuwa_pillar": {
+      "kept_per_frame": [
+        128,
+        128,
+        128,
+        128,
+        128,
+        128,
+        128,
+        128
+      ],
+      "total_kept": 1024,
+      "total_tokens": 2048,
+      "effective_keep_rate": 0.5,
+      "overlap_with_baseline_count": 759,
+      "overlap_with_baseline_rate": 0.7412109375
+    },
+    "max_min_diversity": {
+      "kept_per_frame": [
+        128,
+        128,
+        128,
+        128,
+        128,
+        128,
+        128,
+        128
+      ],
+      "total_kept": 1024,
+      "total_tokens": 2048,
+      "effective_keep_rate": 0.5,
+      "overlap_with_baseline_count": 518,
+      "overlap_with_baseline_rate": 0.505859375
+    },
+    "gemma_structural": {
+      "kept_per_frame": [
+        128,
+        128,
+        128,
+        128,
+        128,
+        128,
+        128,
+        128
+      ],
+      "total_kept": 1024,
+      "total_tokens": 2048,
+      "effective_keep_rate": 0.5,
+      "overlap_with_baseline_count": 992,
+      "overlap_with_baseline_rate": 0.96875
+    }
+  }
+}
