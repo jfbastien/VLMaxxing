@@ -184,6 +184,55 @@ Artifact directories for the shortlisted pass:
 - **MVBench holdout, reject:** cached_accuracy < 0.567 (clearly
   below Planner 2.0 base).
 
+## Dev-winner promotion rule (FROZEN before results land 2026-04-17)
+
+Written before the dev sweep completes to prevent post-hoc cell
+selection. The analyzer script at `scripts/analyze_halo_dev_grid.py`
+applies these rules mechanically.
+
+**Primary metric (from prereg):** cached_accuracy (higher better).
+**Tiebreakers in order:** effective_fresh_frames (lower better),
+then agreement (higher better).
+
+**Per-benchmark promotion decision:**
+
+1. Rank the 9 dev cells (1 control + 8 halo-veto) by
+   (cached_accuracy desc, effective_fresh_frames asc, agreement desc).
+2. If the control cell (no-halo, == Planner 2.0 base) is rank 1 OR
+   is within 0.034 (1 item/30) of rank 1 on cached_accuracy with
+   the same fresh-frame budget, declare **NO-LIFT** and retire the
+   halo-veto branch on that benchmark. No holdout.
+3. Otherwise, the rank-1 halo-veto cell is the candidate winner.
+   Run the single-shot holdout with that cell's `(percentile,
+   neighborhood)` on the same benchmark's motion_holdout_v2 manifest.
+4. Apply the §Accept/reject gates above to the holdout summary.
+
+**Both benchmarks no-lift → full retirement.** Phase 1.37B closes as
+"halo-veto does not add measurable lift over Planner 2.0 base" and
+the paper cites this as a preregistered null. Refocus on Arc B
+(Gemma novelty-pruning, phase 1.51) — the user's charter is big
+numbers, not incremental routing refinements.
+
+**One benchmark no-lift, one benchmark lift** → the lift benchmark
+goes to holdout; the no-lift benchmark is reported as such. Claim 3
+becomes "partial on one benchmark."
+
+**Cross-pass trigger (halo × sticky4):** only if the halo-veto
+winner on MVBench passes the holdout gate. Rationale: MVBench's
+sticky4 lift is the only confirmed sticky-window benefit in the
+repo (phase 1.21 sticky4 +0.033 over base at slightly higher fresh
+budget), so the sticky × halo test is meaningful only on MVBench.
+TOMATO sticky-window was demonstrated to hurt (phase 1.26), so
+sticky × halo on TOMATO is not scientifically interesting unless
+the halo mechanism fundamentally changes the sticky failure mode
+— if that emerges in analysis, add a second cross-pass post-hoc
+and label it exploratory, NOT preregistered.
+
+**If no halo-veto cell ever reaches holdout** — the phase retires
+in the "preregistered null" column of the paper's results table.
+This is a publishable outcome: a preregistered mechanism that did
+not deliver is meaningful scientific evidence.
+
 ## Placement instrumentation
 
 Because phase 1.37B directly tests the "placement > quantity"
