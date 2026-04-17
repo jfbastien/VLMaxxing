@@ -254,6 +254,15 @@ Phase 1.29 (MV-only signal path via PyAV) is the deployability bridge
 from pixel-diff proxy to real codec signals. Until that phase lands,
 paper language should keep "proxy for codec motion" explicit.
 
+Phase 1.36 (2026-04-17) quantified the pixel-diff ↔ ViT-feature
+lower bound: per-block Pearson r is **+0.233 on TOMATO (MEAN)** and
+**+0.504 on MVBench (CPF)**. The statistic ranking is
+content-dependent, and the best routing statistic from the Planner 2.0
+ablation (MAX_ABS) is NOT the best point predictor on either
+benchmark. Routing cares about ordering for top-k budget allocation;
+point prediction cares about magnitude matching. These are separate
+objectives, and the paper should not conflate them.
+
 ## Writing Discipline
 
 - every paper claim should link back to local evidence or a primary
