@@ -143,7 +143,7 @@ uv run python scripts/run_track_b.py \
   --output results/track_b/tomato_mc_n10.jsonl
 ```
 
-N=30 holdout (2026-04-17):
+TOMATO N=30 holdout (2026-04-17):
 
 ```bash
 uv run python scripts/run_track_b.py \
@@ -153,6 +153,18 @@ uv run python scripts/run_track_b.py \
   --n-items 30 \
   --output results/track_b/tomato_mc_n30.jsonl \
   --summary results/track_b/tomato_mc_n30.json
+```
+
+MVBench N=30 holdout (2026-04-17):
+
+```bash
+uv run python scripts/run_track_b.py \
+  --manifest research/benchmark_manifests/mvbench_motion_holdout_v2.toml \
+  --mode mc_scoring \
+  --frame-count 8 \
+  --n-items 30 \
+  --output results/track_b/mvbench_mc_n30.jsonl \
+  --summary results/track_b/mvbench_mc_n30.json
 ```
 
 Output schema per-item: `item_id, benchmark, group, frame_count,
@@ -190,15 +202,64 @@ The **22% ceiling on vision-cache-only Track B speedup still holds**:
 vision_encode / total = 13.8 / 61.1 = 22.6%. Prefill remains the
 dominant phase at 70% of end-to-end.
 
-MVBench N=30 Track B is queued next on the same device.
+MVBench N=30 Track B completed 2026-04-17 (see below).
+
+## MVBench N=30 holdout results (2026-04-17)
+
+Ran on `mvbench_motion_holdout_v2.toml`, N=30 items, same frame
+count / mode / model / hardware as TOMATO.
+
+| Phase | mean | median | p95 | min | max |
+|---|---:|---:|---:|---:|---:|
+| decode | 410 | 371 | 702 | 107 | 1382 |
+| preprocess | 145 | 139 | 217 | 77 | 263 |
+| **vision_encode** | **11328** | **11440** | **13197** | **9590** | **13250** |
+| **prefill** | **43709** | **44341** | **47080** | **36297** | **49039** |
+| generation | 0 | 0 | 0 | 0 | 0 |
+| **total** | **55594** | **56522** | **60340** | **46509** | **62271** |
+
+Peak memory: 6.85 GB mean post-inference, 6.87 GB p95, 6.87 GB max
+(same as TOMATO).
+
+Cross-benchmark deltas at this geometry (8 frames, 560×560, 4-bit):
+
+- **MVBench is 7.5% faster end-to-end** than TOMATO (56.5s vs
+  61.1s median). The bulk of the savings come from decode
+  (0.37s MVBench vs 4.12s TOMATO — **11× faster**); MVBench's
+  motion clips are short and reside in MP4 containers that open
+  much faster than TOMATO's longer clips. Vision_encode is
+  actually *faster* on MVBench too (11.4s vs 13.9s), likely
+  because MVBench clips have less variation in aspect ratio
+  padding and MLX's JIT warmup amortizes better.
+- **Prefill share grows from 70% (TOMATO) to 78% (MVBench).**
+  Decoupling decode means prefill dominates even more — the
+  vision-cache-only ceiling on Track B speedup is **20.2%** on
+  MVBench (11.4/56.5) vs 22.6% on TOMATO (13.9/61.1). Both
+  under a quarter, both strictly capped by the LLM prefill token
+  count at this geometry.
+- **Variance is tighter on MVBench:** p95/median=1.07 (MVBench)
+  vs 1.15 (TOMATO). The decode outliers drive the TOMATO
+  dispersion.
+
+## Paper implications — cross-benchmark
+
+- **Vision-cache-only ceiling is ~20% across both benchmarks.**
+  Any Track B claim based purely on ViT-skip reuse has a hard
+  ceiling near 20% end-to-end at this geometry. Beyond that
+  requires either prefill-token reduction (SparseVLM / FastV /
+  VisionZip / Sam's novelty-pruning) or cross-frame KV reuse
+  (CoPE-style).
+- Publish both numbers; the paper's limitations paragraph should
+  cite the 20–23% band, not a single number.
 
 ## Artifacts
 
 - `results/track_b/tomato_mc_n10.json` — n=10 dev baseline summary
 - `results/track_b/tomato_mc_n10.jsonl` — per-item raw timings
-- `results/track_b/tomato_mc_n30.json` — N=30 holdout summary
+- `results/track_b/tomato_mc_n30.json` — TOMATO N=30 holdout summary
 - `results/track_b/tomato_mc_n30.jsonl` — per-item raw timings
-- MVBench N=30: pending queue drain
+- `results/track_b/mvbench_mc_n30.json` — MVBench N=30 holdout summary
+- `results/track_b/mvbench_mc_n30.jsonl` — per-item raw timings
 - `scripts/run_track_b.py` — driver (committed, see commit
   `d81335f` for the initial landing and subsequent hardening)
 
@@ -207,16 +268,19 @@ and regenerable from the reproduction commands.
 
 ## State
 
-- Status: completed for TOMATO dense baseline at both n=10 dev and
-  N=30 holdout as of 2026-04-17. MVBench N=30 pending. Sparse
-  execution path is a separate workstream (claim I in
-  `paper/publishability-status.md`) and not part of this phase.
-- Clean tree: n=10 run from a dirty tree (manifest builder edits
-  uncommitted at launch); N=30 run launched from commit `b637c84`
-  on a clean tree.
-- Paper-grade: yes for the dense baseline half of claim #5. The
+- Status: **completed for both TOMATO and MVBench dense baselines**
+  at n=10 dev (TOMATO only) and N=30 holdout (both benchmarks) as
+  of 2026-04-17. Sparse execution path is a separate workstream
+  (claim I in `paper/publishability-status.md`) and not part of
+  this phase.
+- Clean tree: TOMATO n=10 run from a dirty tree (manifest builder
+  edits uncommitted at launch); TOMATO N=30 run launched from
+  commit `b637c84` on a clean tree; MVBench N=30 run launched from
+  a clean tree post-phase-1.37-rename (commit 0ea69fe).
+- Paper-grade: yes for both dense baseline halves of claim #5. The
   "measured speedup" half of claim #5 remains blocked on
-  sparse-execution implementation.
+  sparse-execution implementation. Cross-benchmark: vision-cache-
+  only Track B ceiling is 20–23% end-to-end at this geometry.
 - Variance: N=30 median 61.1 s with p95/median ratio 1.15; this
   number is the reference that any sparse-execution delta must
   subtract from.
