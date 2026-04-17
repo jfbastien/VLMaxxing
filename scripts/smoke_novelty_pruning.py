@@ -25,7 +25,6 @@ import argparse
 import json
 from pathlib import Path
 
-import av
 import numpy as np
 from PIL import Image
 
@@ -36,6 +35,7 @@ from codec_through.novelty_pruning import (
     compute_keep_mask,
     compute_pixel_novelty,
 )
+from codec_through.video_decode import decode_uniform_frames
 
 BENCHMARK_FRAME_SIZE = 560  # Matches scripts/run_benchmark_track_a.py.
 GEMMA_GRID_SHAPE = (14, 20)  # 280 soft tokens per image.
@@ -56,15 +56,14 @@ def _square_pad(frame: Image.Image, size: int) -> Image.Image:
 
 
 def _decode_uniform(video_path: Path, frame_count: int) -> np.ndarray:
-    frames: list[Image.Image] = []
-    with av.open(str(video_path)) as container:
-        for frame in container.decode(video=0):
-            frames.append(frame.to_image().convert("RGB"))  # type: ignore[no-untyped-call]
-    if len(frames) < frame_count:
-        raise ValueError(f"video has {len(frames)} frames but requested {frame_count}")
-    indices = np.linspace(0, len(frames) - 1, frame_count, dtype=int).tolist()
-    selected = [_square_pad(frames[i], BENCHMARK_FRAME_SIZE) for i in indices]
-    stack = np.stack([np.asarray(f, dtype=np.float32) for f in selected], axis=0)
+    """Memory-bounded uniform sample; letterbox each to BENCHMARK_FRAME_SIZE.
+
+    Replaces the previous full-clip decode that contributed to the
+    2026-04-18 OOM (see codec_through.video_decode module docstring).
+    """
+    selected = decode_uniform_frames(video_path, frame_count=frame_count)
+    padded = [_square_pad(f, BENCHMARK_FRAME_SIZE) for f in selected]
+    stack = np.stack([np.asarray(f, dtype=np.float32) for f in padded], axis=0)
     return stack
 
 

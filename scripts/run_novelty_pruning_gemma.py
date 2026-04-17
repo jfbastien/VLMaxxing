@@ -56,8 +56,10 @@ but stay independent at the code level.
 from __future__ import annotations
 
 import argparse
+import gc
 import importlib.util
 import json
+import resource
 import sys
 import time
 import tomllib
@@ -65,7 +67,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, cast
 
-import av
 import mlx.core as mx
 import numpy as np
 from mlx_vlm import generate, load  # type: ignore[import-untyped]
@@ -81,13 +82,74 @@ from codec_through.novelty_pruning import (
     compute_pixel_novelty,
     prune_image_placeholders,
 )
+from codec_through.video_decode import decode_uniform_frames
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RUNNER_PATH = REPO_ROOT / "scripts" / "run_benchmark_track_a.py"
 
 DEFAULT_MODEL_PATH = Path.home() / "models" / "gemma-4-e4b-it-4bit"
-GEMMA_IMAGE_SIZE = 224  # Gemma 4's processor hard-codes this (processor_config.json).
+# 560×560 matches the smoke path + run_benchmark_track_a.BENCHMARK_FRAME_SIZE,
+# and is the minimum square that is divisible by BOTH grid dims (14 and 20).
+# The earlier 224 constant was a documentation error — 224 % 20 = 4, so the
+# pixel-novelty grid-aggregation (src/codec_through/novelty_pruning.py:402)
+# would have raised ValueError before any science happened.
+GEMMA_IMAGE_SIZE = 560
 GEMMA_GRID_SHAPE = (14, 20)  # 14×20 = 280 soft tokens per image (image_seq_length).
+# Anchor arms that actually need per-token vision features. Others skip the
+# (1, F*280, hidden) host-float32 mirror, which saved ~1–2 GB per item on the
+# 2026-04-18 OOM repro without changing any science.
+_FEATURE_DEPENDENT_ARMS: frozenset[AnchorArm] = frozenset(
+    {"nuwa_pillar", "max_min_diversity", "cls_attention_proxy"}
+)
+
+
+def _rss_mb() -> float:
+    """Return resident-set size in MiB (macOS returns bytes; Linux kB)."""
+    usage = resource.getrusage(resource.RUSAGE_SELF)
+    raw = float(usage.ru_maxrss)
+    # macOS: bytes. Linux: kibibytes. Heuristic: anything over 10^9 is bytes.
+    return raw / (1024 * 1024) if raw > 1e9 else raw / 1024
+
+
+def _clear_runtime_state() -> None:
+    """Release MLX cache + Python GC between back-to-back generate() calls.
+
+    Observed 2026-04-18: without this, peak RSS during the second (pruned)
+    generate included prefill + kv-cache tensors from the first (dense)
+    generate still in the MLX allocator pool. Matches the cleanup pattern
+    in scripts/run_benchmark_track_a.py:1083 which this driver had been
+    missing.
+    """
+    gc.collect()
+    mx.clear_cache()
+
+
+def _log_model_weight_summary(model: Any) -> None:
+    """Print a summary of loaded weight dtypes so quantized-vs-fallback load
+    is measurable rather than guessed.
+
+    Codex round-21 post-mortem noted that the driver silently accepted
+    whatever ``mlx_vlm.load`` returned. If a path mis-names a 4-bit model
+    and load() falls back to float16, the model is ~2× larger than
+    expected and the OOM blame lands in the wrong place. A cheap dtype
+    histogram at load time lets future debugging start from evidence.
+    """
+    try:
+        from collections import Counter
+
+        dtype_counts: Counter[str] = Counter()
+        total_params = 0
+        for _, weight in model.parameters().items() if hasattr(model, "parameters") else []:
+            if isinstance(weight, mx.array):
+                dtype_counts[str(weight.dtype)] += 1
+                total_params += int(np.prod(weight.shape))
+        if dtype_counts:
+            summary = ", ".join(f"{k}={v}" for k, v in dtype_counts.most_common())
+            print(f"[model weight dtypes] {summary}; total_params={total_params:,}")
+        else:
+            print("[model weight dtypes] unavailable (model.parameters() returned empty)")
+    except Exception as exc:  # noqa: BLE001 — diagnostic-only, must never fail the run
+        print(f"[model weight dtypes] probe failed: {exc!r}")
 
 
 def _load_runner_module() -> Any:
@@ -156,45 +218,46 @@ class ItemResult:
     metadata: dict[str, Any] = field(default_factory=dict)
 
 
-def _letterbox_224(frame: Image.Image) -> Image.Image:
-    """Resize + center-pad to 224×224 (Gemma's native input size)."""
+def _letterbox_square(frame: Image.Image, size: int = GEMMA_IMAGE_SIZE) -> Image.Image:
+    """Resize + center-pad to ``size``×``size`` preserving aspect ratio."""
     width, height = frame.size
-    scale = min(GEMMA_IMAGE_SIZE / width, GEMMA_IMAGE_SIZE / height)
+    scale = min(size / width, size / height)
     resized = frame.resize(
         (max(1, round(width * scale)), max(1, round(height * scale))),
         Image.Resampling.BICUBIC,
     )
-    canvas = Image.new("RGB", (GEMMA_IMAGE_SIZE, GEMMA_IMAGE_SIZE), color=(0, 0, 0))
-    offset_x = (GEMMA_IMAGE_SIZE - resized.width) // 2
-    offset_y = (GEMMA_IMAGE_SIZE - resized.height) // 2
+    canvas = Image.new("RGB", (size, size), color=(0, 0, 0))
+    offset_x = (size - resized.width) // 2
+    offset_y = (size - resized.height) // 2
     canvas.paste(resized, (offset_x, offset_y))
     return canvas
 
 
-def _decode_uniform_frames(
+def _decode_and_letterbox(
     video_path: Path,
     *,
     frame_count: int,
     start: float | None,
     end: float | None,
 ) -> tuple[list[Image.Image], np.ndarray]:
-    """Decode the whole video, uniformly sample ``frame_count`` frames,
-    letterbox each to 224×224, and return (PIL frames, float32 pixel stack)."""
-    all_frames: list[Image.Image] = []
-    with av.open(str(video_path)) as container:
-        for frame in container.decode(video=0):
-            timestamp = float(frame.time) if frame.time is not None else None
-            if start is not None and timestamp is not None and timestamp < start:
-                continue
-            if end is not None and timestamp is not None and timestamp > end:
-                break
-            all_frames.append(frame.to_image().convert("RGB"))  # type: ignore[no-untyped-call]
-    if len(all_frames) < frame_count:
-        raise ValueError(f"video has {len(all_frames)} frames but requested {frame_count}")
-    indices = np.linspace(0, len(all_frames) - 1, frame_count, dtype=int).tolist()
-    selected = [_letterbox_224(all_frames[i]) for i in indices]
-    stack = np.stack([np.asarray(f, dtype=np.float32) for f in selected], axis=0)
-    return selected, stack
+    """Decode ``frame_count`` uniformly-spaced frames, letterbox to the Gemma
+    square, and return (PIL frames, float32 pixel stack).
+
+    Memory is O(frame_count). The previous implementation buffered every
+    decoded frame into a Python list before subsampling, which blew past
+    50 GB RSS on a 15-min VideoMME clip (2026-04-18 OOM). The shared utility
+    in :mod:`codec_through.video_decode` never materializes non-target
+    frames.
+    """
+    selected = decode_uniform_frames(
+        video_path,
+        frame_count=frame_count,
+        start_seconds=start,
+        end_seconds=end,
+    )
+    letterboxed = [_letterbox_square(f) for f in selected]
+    stack = np.stack([np.asarray(f, dtype=np.float32) for f in letterboxed], axis=0)
+    return letterboxed, stack
 
 
 def _build_prompt(processor: Any, frames: list[Image.Image], question: str) -> dict[str, Any]:
@@ -206,7 +269,7 @@ def _build_prompt(processor: Any, frames: list[Image.Image], question: str) -> d
     ]
     rendered = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
     raw = prepare_inputs(processor, images=frames, prompts=rendered)
-    return raw
+    return cast(dict[str, Any], raw)
 
 
 def _mean_token_attention_proxy(features: np.ndarray) -> np.ndarray:
@@ -217,7 +280,7 @@ def _mean_token_attention_proxy(features: np.ndarray) -> np.ndarray:
     results should not be treated as a faithful cls_attention measurement.
     """
     norms = np.linalg.norm(features, axis=-1)
-    return norms.astype(np.float32)
+    return cast(np.ndarray, norms.astype(np.float32))
 
 
 def _run_generate(
@@ -276,7 +339,7 @@ def _process_one_item(
     # same input stream regardless of whether we prune). Attributed to both
     # end_to_end sums below so the headline speedup is apples-to-apples.
     t_stage = time.perf_counter_ns()
-    frames, pixel_stack = _decode_uniform_frames(
+    frames, pixel_stack = _decode_and_letterbox(
         item.video_path,
         frame_count=frame_count,
         start=item.start_seconds,
@@ -312,22 +375,30 @@ def _process_one_item(
     t_stage = time.perf_counter_ns()
     vision_features = _compute_vision_features(model, pixel_values)
     vision_ms = (time.perf_counter_ns() - t_stage) / 1_000_000
-    vision_np = np.asarray(vision_features, dtype=np.float32)  # (1, F*280, hidden)
-    hidden = vision_np.shape[-1]
-    per_token_features = vision_np.reshape(
-        frame_count, GEMMA_GRID_SHAPE[0] * GEMMA_GRID_SHAPE[1], hidden
-    )
 
     # --- Stage 5: keep mask (pruned branch only) ---
+    # Only feature-dependent arms pay the host float32 mirror of the full
+    # (1, F*280, hidden) tensor. For ``none`` and ``gemma_structural`` the
+    # mirror is ~60 MB of wasted memory per item (Gemma 4's hidden ≈ 2560
+    # at F=8). Gating it here cost 0 information and was flagged by codex
+    # as part of the 2026-04-18 OOM post-mortem.
     t_stage = time.perf_counter_ns()
+    per_token_features: np.ndarray | None = None
+    cls_proxy = None
+    if anchor_arm in _FEATURE_DEPENDENT_ARMS:
+        vision_np = np.asarray(vision_features, dtype=np.float32)
+        hidden = vision_np.shape[-1]
+        per_token_features = vision_np.reshape(
+            frame_count, GEMMA_GRID_SHAPE[0] * GEMMA_GRID_SHAPE[1], hidden
+        )
+        del vision_np
+        if anchor_arm == "cls_attention_proxy":
+            cls_proxy = _mean_token_attention_proxy(per_token_features)
     cfg = NoveltyPruneConfig(
         anchor_arm=anchor_arm,
         keep_rate=keep_rate,
         grid_shape=GEMMA_GRID_SHAPE,
     )
-    cls_proxy = None
-    if anchor_arm == "cls_attention_proxy":
-        cls_proxy = _mean_token_attention_proxy(per_token_features)
     keep_mask = compute_keep_mask(
         novelty,
         config=cfg,
@@ -357,6 +428,10 @@ def _process_one_item(
         cached_image_features=vision_features,
         max_tokens=max_tokens,
     )
+    # Release MLX kv-cache + Python refs before the pruned pass. Without this,
+    # the 2026-04-18 pilot had both generate() branches' prefill tensors
+    # resident simultaneously on a 16 GB Mac — peak RSS exceeded 50 GB.
+    _clear_runtime_state()
 
     # --- Stage 8: pruned generate ---
     # Pruned mask: same attention_mask slots minus the dropped image positions.
@@ -504,7 +579,7 @@ def _load_manifest_items(runner: Any, manifest_path: Path) -> list[Any]:
     payload = tomllib.loads(manifest_path.read_text())
     benchmark = payload["benchmark"]
     item_ids = payload["item_ids"]
-    return runner._load_items_by_id(benchmark, item_ids)
+    return cast(list[Any], runner._load_items_by_id(benchmark, item_ids))
 
 
 def _record_payload(record: ItemResult) -> dict[str, Any]:
@@ -586,12 +661,16 @@ def main() -> int:
         items = items[: args.n_items]
 
     print(f"loading model: {args.model_path}")
+    print(f"[rss before load] {_rss_mb():.0f} MiB")
     model, processor = load(str(args.model_path))
+    _log_model_weight_summary(model)
+    print(f"[rss after load] {_rss_mb():.0f} MiB")
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     records: list[ItemResult] = []
     with args.output.open("w") as out_f:
         for idx, item in enumerate(items):
+            _clear_runtime_state()
             try:
                 record = _process_one_item(
                     model,
@@ -618,7 +697,8 @@ def main() -> int:
                 f"dense_e2e={record.dense_timing.end_to_end_ms:.0f}ms "
                 f"pruned_e2e={record.pruned_timing.end_to_end_ms:.0f}ms "
                 f"dense_gen={record.dense_timing.generate_ms:.0f}ms "
-                f"pruned_gen={record.pruned_timing.generate_ms:.0f}ms"
+                f"pruned_gen={record.pruned_timing.generate_ms:.0f}ms "
+                f"rss={_rss_mb():.0f}MiB"
             )
 
     summary = {

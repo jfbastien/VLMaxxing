@@ -15,7 +15,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal, cast
 
-import av
 import mlx.core as mx
 import numpy as np
 import numpy.typing as npt
@@ -49,6 +48,7 @@ from codec_through.track_a import (
     flattened_reuse_mask,
     qwen_merged_token_counts,
 )
+from codec_through.video_decode import decode_uniform_frames
 
 TOMATO_DATA_DIR = Path("data/benchmarks/tomato/hf/data")
 TOMATO_VIDEO_DIR = Path("data/benchmarks/tomato/videos")
@@ -210,26 +210,20 @@ def _decode_uniform_frames(
     start_seconds: float | None,
     end_seconds: float | None,
 ) -> tuple[list[Image.Image], list[tuple[int, int, int, int]]]:
-    if frame_count <= 0:
-        raise ValueError("frame_count must be positive")
-    frames: list[Image.Image] = []
-    with av.open(str(video_path)) as container:
-        for frame in container.decode(video=0):
-            timestamp = float(frame.time) if frame.time is not None else None
-            if start_seconds is not None and timestamp is not None and timestamp < start_seconds:
-                continue
-            if end_seconds is not None and timestamp is not None and timestamp > end_seconds:
-                break
-            frames.append(cast(Image.Image, frame.to_image()).convert("RGB"))  # type: ignore[no-untyped-call]
-    if len(frames) < frame_count:
-        raise ValueError(
-            f"expected at least {frame_count} frames from {video_path}, got {len(frames)}"
-        )
-    if frame_count == 1:
-        selected = [frames[0]]
-    else:
-        indices = np.linspace(0, len(frames) - 1, frame_count, dtype=int).tolist()
-        selected = [frames[index] for index in indices]
+    """Memory-bounded uniform sample, letterboxed to BENCHMARK_FRAME_SIZE.
+
+    Replaces the previous full-clip decode that was a contributing factor
+    in the 2026-04-18 Gemma 1.51R pilot OOM (50 GB RSS on 16 GB Mac).
+    Selection semantics match the legacy ``np.linspace`` index picking so
+    all existing benchmark numbers stay apples-to-apples. See
+    :mod:`codec_through.video_decode`.
+    """
+    selected = decode_uniform_frames(
+        video_path,
+        frame_count=frame_count,
+        start_seconds=start_seconds,
+        end_seconds=end_seconds,
+    )
     padded_frames: list[Image.Image] = []
     active_boxes: list[tuple[int, int, int, int]] = []
     for selected_frame in selected:
