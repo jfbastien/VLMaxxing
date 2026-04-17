@@ -17,11 +17,11 @@ jobs:
           python-version-file: ".python-version"
 
       - name: Sync dependencies
-        # Tests load benchmark scripts that import av / mlx / datasets
-        # from the research/vlm/benchmark optional groups, so CI must
-        # install all runtime groups, not just dev. See round-16 CI
-        # post-mortem (commit TBD).
-        run: uv sync --group dev --group research --group benchmark --group vlm --group seed
+        # MLX is Apple-only (libmlx.so is not distributed for Linux), so
+        # the vlm group is intentionally omitted on CI. Tests that load
+        # MLX-dependent scripts use pytest.importorskip("mlx.core") to
+        # skip cleanly on non-MLX hosts. See round-16 CI post-mortem.
+        run: uv sync --group dev --group research --group benchmark --group seed
 
       - name: Ruff format check
         run: uv run ruff format --check .

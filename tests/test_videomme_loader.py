@@ -9,6 +9,8 @@ from types import ModuleType
 
 import pytest
 
+pytest.importorskip("mlx.core", reason="mlx is Apple-only; skipping on non-MLX hosts")
+
 RUNNER_PATH = Path(__file__).resolve().parents[1] / "scripts" / "run_benchmark_track_a.py"
 RUNNER_MODULE_NAME = "_videomme_runner_under_test"
 
