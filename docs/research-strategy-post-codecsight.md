@@ -203,6 +203,40 @@ Between phases 1.36/1.37, add:
    temporal-coverage placement metrics.
 10. **Phase 1.29 MV-only signal path** — deployability story.
 
+### Parallel branch: Gemma novelty-pruning (WP-2.11)
+
+Sam's revised whitepaper §2.11 introduces **hard spatial pruning**
+on Gemma 4 26B — a per-token novelty prune on top of the same
+static-anchor mechanism we use for temporal reuse. This is a
+**parallel branch** to the temporal reuse mainline, not a
+replacement. Formalized here per ChatGPT 2026-04-17 review to
+keep the main-thesis claim (temporal reuse on Qwen 2.5-VL) crisp
+while acknowledging the spatial axis as additive.
+
+Scope in this repo:
+
+- The spatial-pruning axis is **future work** for us until (a) the
+  temporal reuse N=30 story lands on VideoMME (phase 1.41) and (b)
+  a second architecture (Gemma 4 4B on M3 Air) is stood up
+  (phase 1.42). Without both, a spatial-pruning result would not
+  be evaluable against our existing claim structure.
+- Related work in the literature (PPE, IVC-Prune, Nüwa) all share
+  the **static-anchor token preservation** principle: preserve
+  tokens corresponding to layout anchors (background class, start
+  token) across the pruning pass. This is directly analogous to
+  our temporal STATIC classification, and the paper's related-work
+  section should cite these alongside FastV.
+- When phase 1.45 (combined temporal+spatial) becomes feasible, it
+  should be framed as **empirically testing whether Sam's 4–5× E2E
+  composition** (measured on Gemma 4 26B at M5 Max) transfers to
+  Qwen 2.5-VL-7B 4-bit on M3 Air. Do not claim multiplicative
+  composition before the measurement lands.
+
+The paper's theory section should include the spatial-pruning branch
+as a "same mechanism family, orthogonal axis" reference, so
+reviewers see we're aware of the combined pipeline without
+overclaiming.
+
 ### Tier C — deferred / blocked
 
 11. Phase 1.39 DCT_HF energy (OCR/screen-content focus)

@@ -3,6 +3,28 @@
 Date: 2026-04-17
 Parent: `paper/claim-matrix.md` claim #2 (pixel-diff proxy fidelity)
 
+## Framing note (2026-04-17 update)
+
+This phase is a **ranking/diagnosis** study, not a "pick the
+statistic with the highest Pearson r" study. The main take-aways
+are structural, not leaderboard-shaped:
+
+1. Pixel→feature correlation has a **weak-to-moderate ceiling**
+   (Pearson r up to ~0.50), so pixel-space routing is an
+   approximation even on the statistic that best predicts feature
+   change. This is a lower bound, not a failure.
+2. The best **routing** statistic (MAX_ABS, per the Planner 2.0
+   ablation) is NOT the best **point predictor** on either
+   benchmark. Routing cares about ordering under a top-k budget;
+   point prediction cares about magnitude-matching. Different
+   objectives have different winners.
+3. The best point predictor is **content-dependent** (MEAN on
+   TOMATO, CPF on MVBench), matching the Planner 2.0 finding that
+   no single statistic is universal.
+
+None of these conclusions require picking a statistic; they narrow
+the paper's claim scope instead.
+
 ## Hypothesis
 
 The pixel-diff planner routes blocks into STATIC / SHIFTED / NOVEL using

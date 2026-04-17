@@ -263,6 +263,52 @@ benchmark. Routing cares about ordering for top-k budget allocation;
 point prediction cares about magnitude matching. These are separate
 objectives, and the paper should not conflate them.
 
+## Adjacent Lineage: Approximate Computing
+
+Temporal feature reuse sits in a broader tradition of *approximate
+computing* (Rinard's loop-perforation, task-skipping, precision-
+scaling) where the assumption is that end-task quality is not a
+point function of full-precision compute: it's a distribution, and
+savings are recovered by skipping work on inputs the task is robust
+to. Our mechanism is a temporal analog: for a video clip, many
+frame regions change little enough that their ViT features can be
+reused without the downstream answer changing. The paper should
+cite this lineage explicitly when framing the method — it clarifies
+that we are not claiming lossless compute reduction, we are claiming
+*answer-stability-preserving* reduction, which is the standard
+approximate-computing contract.
+
+This also constrains the claim structure: our correctness criterion
+is answer agreement with the dense baseline on a task-defined
+evaluation, NOT per-token feature identity (except on
+windowed-attention-heavy architectures where feature identity is a
+byproduct of the attention topology).
+
+## Machine-First Codec Roadmap
+
+Classical codecs (H.264/H.265, VVC, AV1) optimize for the
+human-visual-system rate-distortion objective. A growing body of
+standards work targets machine consumption instead:
+
+- **MPEG-VCM** (Video Coding for Machines): specifies a codec
+  bitstream whose decoder reconstructs a representation optimized
+  for downstream machine tasks, not human viewing.
+- **JPEG AI**: learned image codec standardization activity with
+  machine-task rate-distortion as a first-class objective.
+- **DCVC-RT** (Deep Contextual Video Compression — Real-Time): the
+  current practical SOTA for learned video codecs with fast decoding
+  on consumer GPUs.
+
+These are relevant as future-work anchors, not direct dependencies.
+Our pixel-diff proxy (phase 1.19+) and MV-only path (phase 1.29) both
+target the *existing* H.264/H.265 signal surface because that is
+what ships on device today. A machine-first codec line would lift
+the ceiling on proxy quality (see phase 1.36 Pearson lower bound)
+by letting the encoder surface task-relevant change metadata
+directly, instead of us reverse-engineering it from pixel deltas.
+The paper discussion should note this without claiming we've bridged
+the gap.
+
 ## Writing Discipline
 
 - every paper claim should link back to local evidence or a primary

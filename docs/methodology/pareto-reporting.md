@@ -107,6 +107,28 @@ Top-K allowance:
   chance of a noise-driven pass and therefore requires tighter CI
   framing in any paper-facing claim.
 
+### Integer dense-k baseline reporting (NEW, 2026-04-17)
+
+Effective-fresh-frames is the fair Pareto x-axis, but reviewers
+often parse the method against *integer* dense-k cells (dense-4,
+dense-6, dense-8) because that is what ships. Every Pareto report
+MUST therefore include BOTH representations side-by-side:
+
+1. `effective_fresh_frames` (continuous, our policy's actual cost)
+2. Nearest integer dense-k cells that bracket the policy
+
+Example (from phase 1.20 TOMATO holdout): base policy at
+`effective_fresh_frames=3.55` with `accuracy=0.333`. Report as:
+
+> Cached: 0.333 @ 3.55 fresh frames (between dense-3 at 0.267 and
+> dense-4 at 0.133). Pareto-ties dense-8 (0.333 at 8.0 fresh frames)
+> at 44% of the integer budget.
+
+This avoids the reviewer misreading a real-valued fresh-frame
+number as a floor or ceiling. The integer brackets make the
+effective-fresh-frame axis legible without losing the continuous
+comparison.
+
 ### Cross-benchmark-discovered winners (NEW, 2026-04-16)
 
 Phase 1.12.B introduced a new pattern: a dev-selected winner on
