@@ -88,13 +88,17 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 RUNNER_PATH = REPO_ROOT / "scripts" / "run_benchmark_track_a.py"
 
 DEFAULT_MODEL_PATH = Path.home() / "models" / "gemma-4-e4b-it-4bit"
-# 560×560 matches the smoke path + run_benchmark_track_a.BENCHMARK_FRAME_SIZE,
-# and is the minimum square that is divisible by BOTH grid dims (14 and 20).
-# The earlier 224 constant was a documentation error — 224 % 20 = 4, so the
-# pixel-novelty grid-aggregation (src/codec_through/novelty_pruning.py:402)
-# would have raised ValueError before any science happened.
-GEMMA_IMAGE_SIZE = 560
-GEMMA_GRID_SHAPE = (14, 20)  # 14×20 = 280 soft tokens per image (image_seq_length).
+# 512×512 is divisible by 16 (the observed post-pool grid side). The earlier
+# 224 constant was indivisible by 20 (the pre-2026-04-18 assumed grid side);
+# 560 was divisible by both 14 and 20 but not by 16, so with the now-corrected
+# grid of (16, 16) it would again fail the divisibility check in
+# compute_pixel_novelty. 2026-04-18 runtime probe on
+# mlx-community/gemma-4-e4b-it-4bit: `prepare_inputs` emits exactly 256
+# placeholders per image across two frames in two separate runs — that is 16×16,
+# not the 14×20 (= 280) that `processor.image_seq_length` reports. The attribute
+# is stale / decorative; trust the observed emission.
+GEMMA_IMAGE_SIZE = 512
+GEMMA_GRID_SHAPE = (16, 16)  # 256 soft tokens per image, runtime-verified.
 # Anchor arms that actually need per-token vision features. Others skip the
 # (1, F*280, hidden) host-float32 mirror, which saved ~1–2 GB per item on the
 # 2026-04-18 OOM repro without changing any science.
@@ -358,6 +362,19 @@ def _process_one_item(
     )
     processor_ms = (time.perf_counter_ns() - t_stage) / 1_000_000
     input_ids_np = np.asarray(raw["input_ids"], dtype=np.int64).reshape(-1)
+    image_token_id_check = int(model.config.image_token_id)
+    observed_placeholders = int((input_ids_np == image_token_id_check).sum())
+    expected_placeholders = frame_count * GEMMA_GRID_SHAPE[0] * GEMMA_GRID_SHAPE[1]
+    if observed_placeholders != expected_placeholders:
+        raise RuntimeError(
+            f"Gemma placeholder-count mismatch: processor emitted"
+            f" {observed_placeholders} image-tokens for {frame_count} frames,"
+            f" driver assumed {expected_placeholders}"
+            f" (F={frame_count} × grid {GEMMA_GRID_SHAPE[0]}×{GEMMA_GRID_SHAPE[1]}"
+            f" = {GEMMA_GRID_SHAPE[0] * GEMMA_GRID_SHAPE[1]}/frame). Adjust"
+            f" GEMMA_GRID_SHAPE to match the observed emission before running"
+            f" the pilot."
+        )
     pixel_values = mx.array(raw["pixel_values"])
     mask = mx.array(raw["attention_mask"])
     extra = {

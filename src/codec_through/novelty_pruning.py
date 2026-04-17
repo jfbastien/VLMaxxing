@@ -541,16 +541,48 @@ def prune_image_placeholders(
     kept_per_frame = keep_mask.sum(axis=1).astype(np.int64)
 
     # Walk input_ids once, emitting non-image tokens unconditionally and image
-    # tokens only when the corresponding keep_mask entry is True.
+    # tokens only when the corresponding keep_mask entry is True. Track runs
+    # of consecutive image tokens so we can validate the per-frame grid
+    # layout — the flat placeholder_cursor indexing into keep_mask.reshape(-1)
+    # is correct only if the processor emits exactly t_count placeholders per
+    # frame, frame-major. A total-count match (checked above) is necessary but
+    # not sufficient; a processor variant emitting T-1 placeholders for one
+    # frame and T+1 for another would pass the total check yet mis-bind the
+    # kept features to the wrong frame.
     kept_tokens: list[np.int64] = []
     placeholder_cursor = 0
+    run_length = 0
+    run_count = 0
     for tid in input_ids:
         if tid == image_token_id:
             if flat_keep[placeholder_cursor]:
                 kept_tokens.append(tid)
             placeholder_cursor += 1
+            run_length += 1
         else:
+            if run_length > 0:
+                if run_length != t_count:
+                    raise ValueError(
+                        f"image-token run {run_count} has length {run_length},"
+                        f" expected {t_count} (keep_mask second dim)"
+                    )
+                run_count += 1
+                run_length = 0
             kept_tokens.append(tid)
+    # Flush a trailing run if input_ids ends with image tokens (unusual but
+    # technically possible on some chat templates).
+    if run_length > 0:
+        if run_length != t_count:
+            raise ValueError(
+                f"image-token run {run_count} has length {run_length},"
+                f" expected {t_count} (keep_mask second dim)"
+            )
+        run_count += 1
+    if run_count != f_count:
+        raise ValueError(
+            f"input_ids contains {run_count} image-token runs,"
+            f" expected {f_count} (keep_mask first dim)"
+        )
     new_input_ids = np.asarray(kept_tokens, dtype=input_ids.dtype)
     return PrunedPrefill(
         input_ids=new_input_ids,

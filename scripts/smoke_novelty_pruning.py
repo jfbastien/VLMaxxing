@@ -1,8 +1,8 @@
 """CPU-only smoke test for phase 1.51R novelty-pruning on a real video.
 
 Exercises the full CPU half of the novelty-pruning pipeline end-to-end:
-PyAV video decode → uniform frame sampling → square-pad to 560×560 →
-per-token pixel novelty (14×20 post-pool grid, Gemma geometry) →
+PyAV video decode → uniform frame sampling → square-pad to 512×512 →
+per-token pixel novelty (16×16 post-pool grid, Gemma geometry) →
 per-anchor-arm keep mask. Emits a JSON report describing, per arm,
 the keep-rate, overlap with the `none` baseline, and the kept-token
 position set.
@@ -37,8 +37,9 @@ from codec_through.novelty_pruning import (
 )
 from codec_through.video_decode import decode_uniform_frames
 
-BENCHMARK_FRAME_SIZE = 560  # Matches scripts/run_benchmark_track_a.py.
-GEMMA_GRID_SHAPE = (14, 20)  # 280 soft tokens per image.
+BENCHMARK_FRAME_SIZE = 512  # Runtime-verified Gemma processor emission (2026-04-18).
+GEMMA_GRID_SHAPE = (16, 16)  # 256 placeholders/frame observed via rendered prompt probe,
+# not the 280 (14×20) that processor.image_seq_length falsely claims.
 
 
 def _square_pad(frame: Image.Image, size: int) -> Image.Image:

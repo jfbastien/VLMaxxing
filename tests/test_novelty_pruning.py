@@ -534,16 +534,23 @@ def test_compute_pixel_novelty_matches_14x20_gemma_grid() -> None:
 
 
 def _simple_prompt(image_token_id: int, frames: int, tokens_per_frame: int) -> np.ndarray:
-    """Minimal text+image prompt: BOS + IMG×(F*T) + text_tail.
+    """Minimal text+image prompt: BOS + F × (IMG×T + SEP) + text_tail.
 
-    Matches the Gemma/Qwen pattern where the chat template emits all image
-    placeholders contiguously in frame-major order, bracketed by text tokens.
+    Matches the Gemma 4 / Qwen 2.5-VL chat-template pattern where the
+    tokenizer emits one run of ``T`` image-token placeholders per frame
+    with non-image tokens (newline / end-of-image markers) separating
+    consecutive frames. A 2026-04-18 runtime probe on
+    ``mlx-community/gemma-4-e4b-it-4bit`` confirmed two frames produced
+    two separate runs of 256 placeholders each (not one contiguous run
+    of 512), so this helper must exercise the multi-run layout.
     """
-    bos, text_a, text_b = np.int64(1), np.int64(2), np.int64(3)
-    img_block = np.full(frames * tokens_per_frame, image_token_id, dtype=np.int64)
-    return np.concatenate(
-        [np.array([bos, text_a], dtype=np.int64), img_block, np.array([text_b], dtype=np.int64)]
-    )
+    bos, text_a, sep, text_b = np.int64(1), np.int64(2), np.int64(99), np.int64(3)
+    parts: list[np.ndarray] = [np.array([bos, text_a], dtype=np.int64)]
+    for _ in range(frames):
+        parts.append(np.full(tokens_per_frame, image_token_id, dtype=np.int64))
+        parts.append(np.array([sep], dtype=np.int64))
+    parts.append(np.array([text_b], dtype=np.int64))
+    return np.concatenate(parts)
 
 
 def test_prune_image_placeholders_keep_all_is_identity() -> None:
@@ -559,8 +566,10 @@ def test_prune_image_placeholders_keep_none_strips_all_images() -> None:
     input_ids = _simple_prompt(image_token_id=7, frames=2, tokens_per_frame=3)
     keep_mask = np.zeros((2, 3), dtype=bool)
     result = prune_image_placeholders(input_ids, keep_mask, image_token_id=7)
-    # Expect: BOS + text_a + text_b, with ALL image placeholders removed.
-    expected = np.array([1, 2, 3], dtype=np.int64)
+    # _simple_prompt layout (multi-run): [1, 2, 7, 7, 7, 99, 7, 7, 7, 99, 3].
+    # Keeping none → image runs drop but separators (sep=99) stay:
+    #                                    [1, 2,         99,          99, 3].
+    expected = np.array([1, 2, 99, 99, 3], dtype=np.int64)
     np.testing.assert_array_equal(result.input_ids, expected)
     assert result.feature_indices.shape == (0,)
     np.testing.assert_array_equal(result.kept_per_frame, np.array([0, 0], dtype=np.int64))
@@ -572,10 +581,10 @@ def test_prune_image_placeholders_mixed_mask_preserves_frame_major_order() -> No
     input_ids = _simple_prompt(image_token_id=7, frames=2, tokens_per_frame=3)
     keep_mask = np.array([[True, False, True], [False, True, False]])
     result = prune_image_placeholders(input_ids, keep_mask, image_token_id=7)
-    # input_ids layout: [1, 2, 7, 7, 7, 7, 7, 7, 3].
-    #                   bos ta  f0 f0 f0 f1 f1 f1 tb
-    # After pruning:    [1, 2, 7, 7, 7, 3]  (kept: f0[0], f0[2], f1[1])
-    expected = np.array([1, 2, 7, 7, 7, 3], dtype=np.int64)
+    # _simple_prompt layout: [1, 2, 7, 7, 7, 99, 7, 7, 7, 99, 3].
+    #                        bos ta  f0 f0 f0 sep f1 f1 f1 sep tb
+    # After pruning: keep f0[0], f0[2], f1[1] → [1, 2, 7, 7, 99, 7, 99, 3].
+    expected = np.array([1, 2, 7, 7, 99, 7, 99, 3], dtype=np.int64)
     np.testing.assert_array_equal(result.input_ids, expected)
     np.testing.assert_array_equal(result.feature_indices, np.array([0, 2, 4], dtype=np.int64))
     np.testing.assert_array_equal(result.kept_per_frame, np.array([2, 1], dtype=np.int64))
@@ -608,8 +617,8 @@ def test_prune_image_placeholders_handles_uint_input_dtype() -> None:
     keep_mask = np.array([[True, False]])
     result = prune_image_placeholders(input_ids, keep_mask, image_token_id=7)
     assert result.input_ids.dtype == np.uint32
-    # Layout: [1, 2, 7, 7, 3] → keep f0[0] only → [1, 2, 7, 3].
-    np.testing.assert_array_equal(result.input_ids, np.array([1, 2, 7, 3], dtype=np.uint32))
+    # _simple_prompt(F=1, T=2) → [1, 2, 7, 7, 99, 3]; keep f0[0] → [1, 2, 7, 99, 3].
+    np.testing.assert_array_equal(result.input_ids, np.array([1, 2, 7, 99, 3], dtype=np.uint32))
 
 
 def test_prune_image_placeholders_feature_indices_match_keep_mask_count() -> None:
@@ -625,3 +634,51 @@ def test_prune_image_placeholders_feature_indices_match_keep_mask_count() -> Non
     assert bool(flat_mask[result.feature_indices].all())
     # Placeholder count in new input_ids must equal number of kept tokens.
     assert int((result.input_ids == 7).sum()) == int(keep_mask.sum())
+
+
+def test_prune_image_placeholders_rejects_wrong_run_length() -> None:
+    """Total placeholder count can match while per-frame layout is wrong.
+
+    Regression for the validation gap a sub-agent flagged during the
+    2026-04-18 OOM audit: if the processor emits T-1 placeholders for
+    frame 0 and T+1 for frame 1, the total still equals F*T but the
+    placeholder_cursor → (frame, token) binding is off-by-one, silently
+    feeding frame-0 features into frame-1 slots. The function must
+    reject this layout.
+    """
+    # Build a prompt with 3 + 5 image tokens (total 8 == 2*4) but wrong runs.
+    seq = [np.int64(1), np.int64(2)]
+    seq.extend([np.int64(7)] * 3)
+    seq.append(np.int64(99))
+    seq.extend([np.int64(7)] * 5)
+    seq.append(np.int64(100))
+    input_ids = np.asarray(seq, dtype=np.int64)
+    keep_mask = np.ones((2, 4), dtype=bool)
+    with pytest.raises(ValueError, match="image-token run 0 has length 3, expected 4"):
+        prune_image_placeholders(input_ids, keep_mask, image_token_id=7)
+
+
+def test_prune_image_placeholders_rejects_wrong_run_count() -> None:
+    """Too few image-token runs: F*T placeholders live in fewer than F runs."""
+    # 8 placeholders in a single run — total matches 2*4, but only 1 frame present.
+    seq = [np.int64(1), np.int64(2)]
+    seq.extend([np.int64(7)] * 8)
+    seq.append(np.int64(100))
+    input_ids = np.asarray(seq, dtype=np.int64)
+    keep_mask = np.ones((2, 4), dtype=bool)
+    with pytest.raises(ValueError, match="image-token run 0 has length 8, expected 4"):
+        prune_image_placeholders(input_ids, keep_mask, image_token_id=7)
+
+
+def test_prune_image_placeholders_accepts_trailing_image_tokens() -> None:
+    """An input_ids that ends with image tokens (no trailing non-image) is valid."""
+    # Layout: [text, img, img, text, img, img]  — 2 runs of length 2, T=2, F=2.
+    seq = [np.int64(1)]
+    seq.extend([np.int64(7)] * 2)
+    seq.append(np.int64(2))
+    seq.extend([np.int64(7)] * 2)
+    input_ids = np.asarray(seq, dtype=np.int64)
+    keep_mask = np.ones((2, 2), dtype=bool)
+    result = prune_image_placeholders(input_ids, keep_mask, image_token_id=7)
+    # Keep-all → identity-shaped output.
+    np.testing.assert_array_equal(result.input_ids, input_ids)
