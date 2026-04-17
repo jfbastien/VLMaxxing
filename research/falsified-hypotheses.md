@@ -129,6 +129,35 @@ Each entry has:
   fails when placement isn't the bottleneck.
 - **link**: [phase 1.26.B section in phase 1.26 note](experiments/2026/2026-04-16-phase-1_26-sticky-dynamic-planner.md)
 
+### falsified_2026-04-17_novelty-magnitude-as-universal-frame-budget-axis
+
+- **hypothesis** (phase 1.34 paper claim #9 direct test): pixel-
+  novelty-magnitude frame selection is a universal drop-in
+  substitute for temporal coverage when spending a frame budget.
+  If true, cached's advantage over uniform dense could be explained
+  purely by "smart frame selection" that the cached policy does
+  implicitly.
+- **rejected by**: phase 1.34 full 2×3 grid N=30 (TOMATO +
+  MVBench motion holdout v2, N ∈ {4,6,8}). Novelty-ranked dense
+  never exceeds cached base policy at equal-or-lower effective
+  fresh-frame budget on either benchmark. On TOMATO, novelty
+  UNDER-performs uniform dense by 0.100 absolute at N=6 and N=8
+  (no-worse at N=4). On MVBench, novelty helps by +0.067 at N=4
+  but saturates at 0.567 for N≥6 while uniform climbs to 0.633 —
+  so even with MVBench's higher pixel→feature correlation, novelty
+  ranking caps the information ceiling at low-budget gain.
+- **rejection band**: per phase 1.34 prereg — "if cached still
+  beats novelty-ranked dense-N at matched N, the advantage cannot
+  be attributed to frame selection." Passed on both benchmarks.
+- **scope of rejection**: rules out "novelty-magnitude ranking
+  explains cached's edge" AND "novelty magnitude is a replacement
+  for temporal coverage at arbitrary budget." Does NOT rule out
+  "novelty ranking helps at low-budget, heterogeneous content"
+  (MVBench N=4 is direct evidence for this narrower claim). The
+  narrower claim motivates the content-class taxonomy in
+  `docs/application-taxonomy.md`.
+- **link**: [phase 1.34](experiments/2026/2026-04-17-phase-1_34-novelty-ranked-dense.md)
+
 ### falsified_2026-04-14_static-position-same-position-reuse-matches-whitepaper
 
 - **hypothesis**: naive same-position STATIC+SHIFTED reuse
