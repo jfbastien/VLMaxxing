@@ -79,14 +79,16 @@ flow.
    needed that respects Gemma's `pooling_kernel_size=3` and
    `patch_size=16`.
 2. Update `src/codec_through/track_a.py::active_region_block_mask`
-   to handle Gemma's 14×14 merged-token grid (at 224×224 images
-   with 16-px patches and pool=3, the grid is `224/16/3 = 4.67`
-   which does NOT divide evenly; the active-region mask must
-   account for non-integer pooling or the image size must be
-   chosen to divide cleanly — likely 336×336 → `336/16/3 = 7.0` or
-   384×384 → `384/16/3 = 8.0`).
+   to handle Gemma's non-square post-pool grid. The mlx-vlm Gemma
+   pipeline feeds 560×560 square-padded frames and emits a 14×20
+   post-pool grid (280 tokens/frame) — confirmed empirically in
+   `src/codec_through/novelty_pruning.py:396` and its test
+   fixtures. The 224×224/336×336 rectangular-divisibility
+   analysis below is historical (pre-driver-empirical); the
+   active-region mask accepts a rectangular `grid_shape` and
+   handles the 14×20 geometry natively.
 3. Verify `mx.get_peak_memory()` stays under 13 GB for a single
-   Gemma-4-E4B forward at 8 frames × 336×336 (the leftover 3 GB
+   Gemma-4-E4B-4bit forward at 8 frames × 560×560 (the leftover
    headroom preserves ability to run Track B dense baseline
    alongside).
 

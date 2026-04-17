@@ -62,9 +62,14 @@ Scope:
 - VideoMME test split, N=30 per duration band (short/medium/long/very-long).
 - Gemma 4-E4B-4bit dense baseline: no prune, uniform 8-frame sample.
 - Novelty-pruning cells: 5 anchor arms × 5 keep rates, same grid as
-  phase 1.51 on TOMATO/MVBench. Anchor arms: {first-frame token,
-  per-frame mean, running-mean, per-frame background-class prototype,
-  learned-static-anchor}. Keep rates: {0.9, 0.75, 0.5, 0.33, 0.25}.
+  phase 1.51 on TOMATO/MVBench. Anchor arms (matching
+  `src/codec_through/novelty_pruning.py::ANCHOR_ARMS`):
+  {`none`, `cls_attention_proxy`, `nuwa_pillar`,
+  `max_min_diversity`, `gemma_structural`}. `cls_attention_proxy`
+  is excluded from winner promotion (see `PROMOTABLE_ARMS`) since
+  Gemma's post-pool stream has no true CLS-attention signal —
+  the arm ranks by a caller-supplied proxy and runs for literature
+  comparison only. Keep rates: {0.3, 0.4, 0.5, 0.6, 0.7}.
 - Per-cell N=30 dev pass, single-shot holdout on the rank-1 cell.
 
 Runtime budget: ≈ 6-8 h GPU wall time cold-cache (Gemma features

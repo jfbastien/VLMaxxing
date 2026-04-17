@@ -60,12 +60,13 @@ speedup on TOMATO motion N=30 vs Gemma-dense-8. Target:
 at half the depth and quarter the weights; we budget conservative).
 
 H2 (quality preservation): At 50 % keep rate, cached accuracy is
-within 0.10 of Gemma-dense-8. Justification: at 8 frames × 441
-post-pool visual tokens/frame × 50 % = 1,764 visual tokens
-prefilled instead of 3,528 — prefill cost drops ~50 % (prefill
-is O(N²) attention so the drop is bigger than 50 % in FLOPs, but
-at these sizes we're compute-bound not memory-bound, so wall-
-clock gain scales closer to N).
+within 0.10 of Gemma-dense-8. Justification: at 8 frames × 280
+post-pool visual tokens/frame (14×20 grid from mlx-vlm's 560×560
+pipeline; confirmed in `novelty_pruning.py`) × 50 % = 1,120 visual
+tokens prefilled instead of 2,240 — prefill cost drops ~50 %
+(prefill is O(N²) attention so the drop is bigger than 50 % in
+FLOPs, but at these sizes we're compute-bound not memory-bound,
+so wall-clock gain scales closer to N).
 
 H3 (anchor preservation): Adding an anchor-preservation rule
 (keep the 10 % of tokens with lowest first-layer attention self-
@@ -88,9 +89,11 @@ pure novelty at matched keep rate.
 2. Novelty score per visual token: per-token pixel-diff score
    from the existing planner pipeline, aggregated over the
    spatial block that projects to each post-pool visual token.
-   (At Gemma patch=16, pool=3, image=336: one visual token ≈
-   48×48 pixel block; the existing block-classification feeds
-   straight in.)
+   (At mlx-vlm's Gemma pipeline image=560, patch=16, pool≈3:
+   one post-pool visual token covers a rectangular pixel block;
+   the 14×20 post-pool grid yields 280 tokens/frame. Existing
+   block-classification feeds straight in via `grid_shape`
+   override in `NoveltyPruneConfig`.)
 3. Keep-rule: `keep if (novelty_rank < k * keep_rate) OR
    (anchor_flag == True)`. `anchor_flag` depends on the anchor
    variant (see grid below).
@@ -104,11 +107,19 @@ citations):
 
 - `none`: no anchor preservation — pure novelty-rank keep-rate
   baseline (FastV-like; arxiv 2403.06764).
-- `cls_attention`: rank all tokens by ViT CLS-attention (with
-  Gemma-specific substitute: attention received from the
-  start-of-vision token on the first transformer block), keep
-  the top `k * keep_rate`. No hard-preserved floor; this is the
-  FasterVLM / HiPrune family (arxiv 2412.01818 / 2508.00553).
+- `cls_attention_proxy`: rank all tokens by a *proxy* for ViT
+  CLS-attention — Gemma's post-pool visual stream does not
+  expose true attention from a CLS/start-of-vision token, so in
+  the reference implementation (`src/codec_through/novelty_pruning.py`)
+  this arm accepts a caller-provided per-token score vector and
+  ranks by it (FasterVLM / HiPrune family, arxiv 2412.01818 /
+  2508.00553). Because this is a proxy, not a faithful attention
+  measurement on Gemma, the arm is *excluded from winner promotion*
+  via `PROMOTABLE_ARMS`; it runs as a literature-comparison
+  baseline only, and its cells never advance to paper-grade
+  holdout. This was formerly spelled `cls_attention`; renamed
+  2026-04-17 to prevent readers from over-interpreting the name
+  as a true CLS-attention measurement.
 - `nuwa_pillar`: partition the 2D post-pool grid into an M×M
   coarse lattice; within each cell hard-preserve the 25 %
   highest-L2-key-norm tokens as "pillars"; the remaining
