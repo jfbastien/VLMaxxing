@@ -273,7 +273,8 @@ Six **target claims** (NOT yet evidence):
    content-conditional, weak-to-moderate).
 4. Bounded-staleness + concentration-aware routing repairs
    temporal failures on TOMATO + MVBench (phase 1.20/1.21 DONE
-   at N=30; phase 1.37B halo-veto RUNNING 2026-04-17).
+   at N=30; phase 1.37B halo-veto RETIRED 2026-04-17 as
+   preregistered null — NO-LIFT on TOMATO dev, HURTS on MVBench dev).
 5. VideoMME validation on Qwen (phase 1.41 pending asset unpack).
 6. Real sparse execution converts the proxy gain into measured
    speedup (Track B, claim 5 in the matrix). Prospective; the

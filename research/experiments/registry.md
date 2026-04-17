@@ -311,30 +311,32 @@ authoritative in the per-phase notes under
   prereg_outcome: Accepted with caveat (Pearson r=0.23-0.50 caps below the r>=0.7 preregistered target; 45/60 item coverage due to cache-key rewrite; the finding reframes claim as a ranking/diagnosis study rather than a leaderboard)
 
 - phase_id: 1.37
-  status: prereg-only-unimplemented
+  status: proposed
   authoritative_note: research/experiments/2026/2026-04-16-phase-1_37-child-veto-subtoken-guard.md
   authoritative_artifacts: []
   current_best_policy: n/a (mechanism not yet implemented)
   supersedes: []
   paper_relevance: primary (claim #3 concentration-aware routing — within-block subtoken guard half)
   prereg_outcome: (pending; code path lives in _mix_qwen_features and has NOT been written; distinct from 1.37B)
-  notes: the 2026-04-17 "Planner 2.1" prereg that previously lived under this phase ID has been rescoped to phase 1.37B (neighbor-halo veto); this phase retains the original 2026-04-16 within-block 2x2 child-veto specification
+  notes: the 2026-04-17 "Planner 2.1" prereg that previously lived under this phase ID has been rescoped to phase 1.37B (neighbor-halo veto); this phase retains the original 2026-04-16 within-block 2x2 child-veto specification. Status `proposed` per registry vocab (prereg written, code unimplemented).
 
 - phase_id: 1.37B
-  status: code-landed-run-pending
+  status: completed
   authoritative_note: research/experiments/2026/2026-04-17-phase-1_37B-neighbor-halo-veto-prereg.md
   authoritative_artifacts:
     - src/codec_through/temporal.py (NeighborHaloVetoConfig, apply_neighbor_halo_veto, _neighborhood_max)
     - tests/test_neighbor_halo_veto.py
     - scripts/run_benchmark_track_a.py (--halo-veto-percentile / --halo-veto-neighborhood)
-  current_best_policy: n/a (dev tranche not yet run)
+    - research/experiments/2026/artifacts/phase1_37B_tomato_motion_dev_v2_cached/halo_analysis.json
+    - research/experiments/2026/artifacts/phase1_37B_mvbench_motion_dev_v2_cached/halo_analysis.json
+  current_best_policy: control (no halo-veto); halo-veto axis is therefore FROZEN at {no-halo-veto} for future combined sweeps
   supersedes: []
-  paper_relevance: primary (claim #3 concentration-aware routing — spatial neighbor-halo half)
-  prereg_outcome: (pending; gates preregistered in note)
-  notes: originally filed as "phase 1.37 Planner 2.1"; renamed 2026-04-17 after Sam flagged that "child-veto" was the name of a distinct mechanism (within-block subtoken guard) and should not be reused for the neighbor-halo variant
+  paper_relevance: primary (claim #3 concentration-aware routing — spatial neighbor-halo half); after 2026-04-17 retirement this claim rests on phase 1.37 within-block child-veto as the remaining mechanism path
+  prereg_outcome: Rejected (preregistered null — NO-LIFT on TOMATO, HURTS on MVBench; both dev benchmarks fail the promotion rule → full retirement, no holdout run)
+  notes: originally filed as "phase 1.37 Planner 2.1"; renamed 2026-04-17 after Sam flagged that "child-veto" was the name of a distinct mechanism (within-block subtoken guard) and should not be reused for the neighbor-halo variant. Closed 2026-04-17 as preregistered null: TOMATO control rank-1 at cached_accuracy 0.233 with all cells within 1/30 MRU; MVBench control sole rank-1 at 0.800 with 7/8 halo cells losing 0.067-0.100. Halo moves only the agreement knob on TOMATO while draining fresh-frame budget, and actively hurts accuracy on MVBench.
 
 - phase_id: 1.41
-  status: infra-landed-run-pending
+  status: proposed
   authoritative_note: research/experiments/2026/2026-04-16-phase-1_41-videomme-lane.md
   authoritative_artifacts:
     - scripts/build_videomme_manifest.py
@@ -345,7 +347,7 @@ authoritative in the per-phase notes under
   notes: VideoMME videos are hosted on Hugging Face at `lmms-lab/Video-MME` as 20 chunked zip archives (~101 GB full corpus); paper protocol only needs 57 unique videoIDs (dev+holdout manifests, one overlap). Use `scripts/fetch_videomme_subset.py` to walk chunks one-at-a-time and extract only wanted videoIDs (peak disk ~5 GB staging + ~3-15 GB extracted subset). See `docs/videomme-download-handoff.md` for environment gotchas (HF xet backend must be disabled; SOCKS proxy env vars must be cleared).
 
 - phase_id: 1.42
-  status: prereg-only
+  status: proposed
   authoritative_note: research/experiments/2026/2026-04-17-phase-1_42-gemma-architecture-topology-prereg.md
   authoritative_artifacts: []
   current_best_policy: n/a (second-architecture fidelity test, not a policy)
@@ -355,7 +357,7 @@ authoritative in the per-phase notes under
   notes: Gemma 4-E4B-IT-4bit verified to load on M3 Air 16 GB; all-global vision encoder + learned 2D positional + standard RoPE LLM is architecturally distinct from Qwen's windowed-global + M-RoPE-V
 
 - phase_id: 1.43
-  status: prereg-only
+  status: proposed
   authoritative_note: research/experiments/2026/2026-04-17-phase-1_43-egoschema-lane-prereg.md
   authoritative_artifacts: []
   current_best_policy: n/a
@@ -365,7 +367,7 @@ authoritative in the per-phase notes under
   notes: Huggingface lmms-lab/EgoSchema is open-licensed (no TOS click-through unlike VideoMME); 3-min clips at 22 s inter-frame gap stress-test reuse fidelity
 
 - phase_id: 1.50
-  status: completed-dense-baseline-only
+  status: completed
   authoritative_note: research/experiments/2026/2026-04-17-phase-1_50-track-b-dense-baseline.md
   authoritative_artifacts:
     - results/track_b/tomato_mc_n10.json
@@ -378,17 +380,23 @@ authoritative in the per-phase notes under
   prereg_outcome: Accepted with caveat (dense baseline paper-grade on TOMATO N=30 + MVBench N=30 holdout; cross-benchmark vision-cache ceiling 20-23% end-to-end; sparse-execution delta still not measured)
 
 - phase_id: 1.51
-  status: prereg-only
+  status: proposed
   authoritative_note: research/experiments/2026/2026-04-17-phase-1_51-novelty-pruning-gemma-prereg.md
-  authoritative_artifacts: []
-  current_best_policy: n/a (spatial-pruning lane, not yet implemented)
+  authoritative_artifacts:
+    - src/codec_through/novelty_pruning.py (anchor scoring + keep mask; CPU tested)
+    - src/codec_through/video_decode.py (bounded-memory uniform decode)
+    - scripts/run_novelty_pruning_gemma.py (end-to-end driver)
+    - scripts/smoke_novelty_pruning.py (CPU smoke harness)
+    - tests/test_novelty_pruning.py, tests/test_video_decode.py
+    - research/experiments/2026/artifacts/phase1_51R_smoke/ (CPU smoke output on VideoMME sample)
+  current_best_policy: n/a (spatial-pruning lane; driver landed CPU-tested, GPU pilot pending)
   supersedes: []
   paper_relevance: primary (claim #11 novelty-pruning big numbers on Gemma; not claim #10 — 10 is the composition claim handled by 1.52)
-  prereg_outcome: (pending; needs VideoMME videos unpacked — NOT gated on phase 1.42; 1.51/1.51R is a fresh LLM-prefill code path that does not consume `_mix_gemma_features`)
-  notes: preregistered 5 literature-grounded anchor-preservation arms (FastV, FasterVLM/HiPrune, Nüwa pillar, VLM-Pruner max-min diversity, IVC-Prune-spirit Gemma-structural); keep-rate grid {0.3..0.7}; must run on Gemma (not Qwen) because Qwen's M-RoPE-V ties token index to 2D grid position and breaks under token drop
+  prereg_outcome: (pending; driver landed + CPU-smoke validated 2026-04-18 after 50 GB OOM root-caused and fixed via bounded-memory decode; GPU dev sweep is the next experiment)
+  notes: phase is tracked as the "1.51R" fresh driver across other docs (R = Reproduction of Sam's novelty-pruning, fresh code path that does not consume `_mix_gemma_features`). Preregistered 5 literature-grounded anchor-preservation arms (FastV, FasterVLM/HiPrune, Nüwa pillar, VLM-Pruner max-min diversity, IVC-Prune-spirit Gemma-structural); keep-rate grid {0.3..0.7}; must run on Gemma (not Qwen) because Qwen's M-RoPE-V ties token index to 2D grid position and breaks under token drop. cls_attention_proxy arm is explicitly excluded from winner promotion (see PROMOTABLE_ARMS in novelty_pruning.py).
 
 - phase_id: 1.52
-  status: prereg-only
+  status: proposed
   authoritative_note: research/experiments/2026/2026-04-17-phase-1_52-combined-temporal-spatial-prereg.md
   authoritative_artifacts: []
   current_best_policy: n/a

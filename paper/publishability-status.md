@@ -175,11 +175,15 @@ enabler but is not the headline gate.
 
 ### Lane A — Qwen routing content (appendix-grade method evidence)
 
-5. **Phase 1.37B halo-veto dev tranche** — 9 shortlisted cells ×
-   2 benchmarks on warm feature cache; launched 2026-04-17,
-   ≈ 12 h GPU wall time (TOMATO then MVBench sequentially); code
-   landed (commits 2ebf90d + db10e12 + 0ea69fe + 46b5d05); unlocks
-   claim 3 if halo wins, retires the branch if control wins.
+5. **Phase 1.37B halo-veto dev tranche** — **RETIRED 2026-04-17**
+   as preregistered null. Full 9/9 cells × 2 benchmarks landed
+   (commits 2ebf90d + db10e12 + 0ea69fe + 46b5d05 + 2947198).
+   TOMATO NO-LIFT (control rank-1 at cached_accuracy 0.233, all cells
+   within 1/30 MRU); MVBench NO-LIFT-NEGATIVE (halo hurts: control
+   sole rank-1 at 0.800, 7/8 cells lose 0.067–0.100). Claim 3
+   (routing-mechanism evidence) now rests on phase 1.37
+   within-block child-veto (item 7 below) as the remaining path,
+   not on halo-veto.
 6. **Phase 1.38 placement ablation** — ≈ 30 min GPU wall time;
    strengthens claim 4 mechanism.
 7. **Phase 1.37 within-block child-veto (distinct from 1.37B)** —

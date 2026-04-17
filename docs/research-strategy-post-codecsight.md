@@ -26,9 +26,11 @@ Five **target claims** to test:
 2. Naive mean-diff + no-refresh is too blunt on TOMATO-style brief
    semantically-critical change patterns.
 3. Concentration-aware routing repairs hard temporal failures. Two
-   spatial mechanisms are preregistered: phase 1.37B neighbor-halo
-   veto (landed 2026-04-17 — code in `apply_neighbor_halo_veto`) and
-   phase 1.37 within-block child-veto (subtoken guard; code not yet
+   spatial mechanisms were preregistered: phase 1.37B neighbor-halo
+   veto (landed 2026-04-17 in `apply_neighbor_halo_veto`, then
+   **RETIRED 2026-04-17** as preregistered null: NO-LIFT on TOMATO,
+   HURTS on MVBench) and phase 1.37 within-block child-veto
+   (subtoken guard; code not yet
    written). Temporal mechanisms: sticky-dynamic (phase 1.26, landed)
    and bounded staleness / age-bound (phase 1.20 ablation, essential
    per the no-age collapse result). (Note: projector-group completion
@@ -183,11 +185,17 @@ Priority = (probability-of-moving-paper-claim × magnitude) / (effort).
    only frame0/middle/last/first+last/uniform4/uniform8 on TOMATO
    dev. Sharpens the budget-placement theory with causal evidence.
    Still pending; strengthens claim #4 if run.
-6. **Phase 1.37B neighbor-halo veto dev tranche** — **RUNNING
-   2026-04-17**. 9 shortlisted cells × 2 benchmarks on warm feature
-   cache; ≈ 12 h wall time (TOMATO → MVBench sequential). Code
-   landed 2026-04-17 (commits 2ebf90d + db10e12 + 0ea69fe + 46b5d05).
-   Holdout pending dev winner.
+6. **Phase 1.37B neighbor-halo veto dev tranche** — **RETIRED
+   2026-04-17** as a preregistered null. Full 9/9 cells × 2 benchmarks
+   landed (commits 2ebf90d + db10e12 + 0ea69fe + 46b5d05 + 2947198).
+   TOMATO NO-LIFT (control rank-1 at cached_accuracy 0.233, all cells
+   within 1/30 = 0.033 MRU of rank-1); MVBench NO-LIFT-NEGATIVE (halo
+   HURTS: control sole rank-1 at 0.800, 7/8 halo cells below). Under
+   the frozen rule "both benchmarks NO-LIFT → full retirement," no
+   holdout was run. Code stays behind the config gate but is no
+   longer a Planner 2.0 candidate axis — the halo-veto axis in the
+   reuse-class family below (§Also in Tier A) is therefore FROZEN at
+   {no-halo-veto} for any future combined sweep.
 
 ### Also in Tier A: explicit reuse-class comparison
 

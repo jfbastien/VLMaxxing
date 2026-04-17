@@ -170,8 +170,8 @@ scratch.
 
 ## Phase 1.41 kickoff after videos land
 
-Once the verification step above shows `missing=0` for the dev manifest,
-the halo-veto sweep has finished (or paused), and the MLX queue is free:
+Once the verification step above shows `missing=0` for the dev manifest
+and the MLX queue is free (halo-veto retired 2026-04-17 as null):
 
 ```bash
 .venv/bin/python scripts/run_benchmark_track_a.py run \

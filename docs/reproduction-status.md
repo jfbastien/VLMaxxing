@@ -102,11 +102,21 @@ are:
   (2×3 grid N=30; cached planner dominates every novelty cell).
 - Phase 1.36 feature-change oracle — **COMPLETED 2026-04-17** (best
   pixel stat Pearson r=0.233 to r=0.504; content-conditional).
-- Phase 1.37B neighbor-halo veto — **RUNNING 2026-04-17** (9-cell
-  dev shortlist × 2 benchmarks; TOMATO → MVBench sequential;
-  ≈ 12 h wall time). Code: `NeighborHaloVetoConfig`,
-  `apply_neighbor_halo_veto` (commits 2ebf90d + db10e12 + 0ea69fe +
-  46b5d05).
+- Phase 1.37B neighbor-halo veto — **RETIRED 2026-04-17** as a
+  preregistered null. Both dev benchmarks NO-LIFT under the frozen
+  promotion rule (full 9/9 cells × 2 benchmarks). On TOMATO motion
+  dev_v2 N=30, control cached_accuracy 0.233 is rank-1 and within
+  0.034 of every cell — halo-veto moves only agreement (0.833 →
+  0.867–0.933) at the cost of fresh-frame budget (3.77 → 4.20–6.58)
+  with MRU 1/30 = 0.033, so all nine cells sit inside one item of
+  noise on the primary metric. On MVBench halo HURTS accuracy:
+  control is rank-1 (0.800) and 7/8 halo cells lose 0.067–0.100 —
+  the highest-agreement cells drain most fresh frames. No holdout
+  run. Code (`NeighborHaloVetoConfig`, `apply_neighbor_halo_veto`)
+  stays in the harness behind the config gate but is no longer a
+  candidate for winner promotion. See
+  `research/experiments/2026/2026-04-17-phase-1_37B-neighbor-halo-veto-prereg.md`
+  and artifact `halo_analysis.json`.
 
 Reproduction status itself has NOT changed since this file's last
 material update; §2.5 and §2.6 are still "partial" / "weaker than

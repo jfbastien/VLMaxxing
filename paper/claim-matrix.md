@@ -44,7 +44,7 @@ methods paper. Both lanes must contribute evidence.
 **Lane A — Qwen routing (TOMATO + MVBench).**
 - Claims 1, 2, 3, 4, 5, 6, 8, 9, 12 primarily exercise Qwen 2.5-VL.
 - Role in the paper: validates the routing / bounded-staleness mechanism and the "pixel-diff proxy" story. Natural home for the method appendix.
-- Currently earned: 1, 2, 6, 9. Partial: 3 (sticky4 only; halo-veto dev sweep running), 4 (asymmetry only; placement ablations pending), 5 (dense baseline only).
+- Currently earned: 1, 2, 6, 9. Partial: 3 (sticky4 only — dirty-tree supplementary; halo-veto retired 2026-04-17 as preregistered null on TOMATO + MVBench dev, child-veto 1.37 remaining path), 4 (asymmetry only; placement ablations pending), 5 (dense baseline only).
 
 **Lane B — Gemma big-numbers (VideoMME + TOMATO + MVBench).**
 - Claims 7, 10, 11 primarily exercise Gemma 4-E4B; claim 5 measured delta will likely land on Gemma too.
