@@ -1,7 +1,7 @@
 # Phase 1.37B — Planner 2.1A prereg (parent statistic + neighbor-halo concentration guard)
 
 Date: 2026-04-17
-State: running (dev tranche 9-cell shortlist × 2 benchmarks launched 2026-04-17, TOMATO then MVBench sequentially; holdout pending dev winner)
+State: TOMATO dev NO-LIFT (2026-04-17, full 9/9 cells); MVBench dev in progress (1/9 cells); holdout gated on MVBench outcome per frozen promotion rule
 Parent: `paper/claim-matrix.md` claim #3 (concentration-aware routing)
 Sibling: `research/experiments/2026/2026-04-16-phase-1_12b-crossbench-winner-mvbench-holdout.md`,
 `research/experiments/2026/2026-04-16-planner-2_0-ablation.md`
@@ -258,6 +258,42 @@ even if the metric analysis waits for phase 1.31.
 - 2026-04-17: **TOMATO dev shortlisted 9-cell sweep launched in
   background** via `/tmp/claude/run_halo_dev_tomato.sh`; expected
   wall time ≈ 4 h. MVBench dev 9-cell sweep queued sequentially.
+- 2026-04-17 12:53Z: **TOMATO dev 9/9 complete — NO-LIFT verdict**
+  per frozen promotion rule (control is rank 1 by tiebreakers;
+  control and all 8 halo cells tie at cached_accuracy=0.233 and
+  dense_accuracy=0.267). Analyzer output pinned at
+  `research/experiments/2026/artifacts/phase1_37B_tomato_motion_dev_v2_cached/halo_analysis.json`.
+  Full ranking (1 control + 8 halo, ordered by cached_acc desc,
+  eff_fresh asc, agreement desc):
+
+  | label   | halo        | cached_acc | dense_acc | agreement | reuse_active | eff_fresh | completed |
+  |---------|-------------|-----------:|----------:|----------:|-------------:|----------:|----------:|
+  | control | (none)      |      0.233 |     0.267 |     0.833 |        0.604 |      3.77 |     30/30 |
+  | p095_n1 | p=0.95/n=1  |      0.233 |     0.267 |     0.867 |        0.543 |      4.20 |     30/30 |
+  | p090_n1 | p=0.9/n=1   |      0.233 |     0.267 |     0.900 |        0.483 |      4.62 |     30/30 |
+  | p085_n1 | p=0.85/n=1  |      0.233 |     0.267 |     0.900 |        0.437 |      4.94 |     30/30 |
+  | p095_n2 | p=0.95/n=2  |      0.233 |     0.267 |     0.933 |        0.431 |      4.98 |     30/30 |
+  | p075_n1 | p=0.75/n=1  |      0.233 |     0.267 |     0.933 |        0.341 |      5.61 |     30/30 |
+  | p090_n2 | p=0.9/n=2   |      0.233 |     0.267 |     0.900 |        0.337 |      5.64 |     30/30 |
+  | p085_n2 | p=0.85/n=2  |      0.233 |     0.267 |     0.933 |        0.281 |      6.03 |     30/30 |
+  | p075_n2 | p=0.75/n=2  |      0.233 |     0.267 |     0.933 |        0.203 |      6.58 |     30/30 |
+
+  Reading: halo-veto *only* moves the agreement knob (from 0.833
+  at control to 0.867–0.933 at halo cells) at the cost of extra
+  fresh-frame budget (3.77 → 4.20–6.58); it does NOT move the
+  cached-accuracy knob on this dev tranche. The sign pattern is
+  consistent — stronger halos (lower percentile, larger n) drain
+  more fresh frames while giving small/noisy agreement gains —
+  which matches the prereg hypothesis that halo is a
+  *concentration guard*, not an accuracy-lift mechanism. On a 30-
+  item dev tranche the cached-accuracy MRU is 1/30 = 0.033; all
+  variants coincide inside one item of noise.
+- 2026-04-17 ~12:51Z: **MVBench dev 9-cell sweep auto-launched**
+  after TOMATO sweep finished (control cell started 12:51:33Z).
+  MVBench dev verdict gates holdout decision: if MVBench is also
+  NO-LIFT, phase 1.37B closes as preregistered-null per rule
+  "both benchmarks no-lift → full retirement"
+  (`2026-04-17-phase-1_37B-neighbor-halo-veto-prereg.md:210-214`).
 - Paper-grade holdout run: preregistered gates above; awaits dev
   selection.
 
