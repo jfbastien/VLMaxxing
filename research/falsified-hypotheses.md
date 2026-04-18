@@ -158,6 +158,60 @@ Each entry has:
   `docs/application-taxonomy.md`.
 - **link**: [phase 1.34](experiments/2026/2026-04-17-phase-1_34-novelty-ranked-dense.md)
 
+### falsified_2026-04-18_nuwa-pillar-recovers-aggregate-accuracy-at-kr050
+
+- **hypothesis** (phase 1.51R Stage 5a prereg): informed anchor
+  selection using nuwa_pillar (2×2 block corners + mid-axis,
+  derived from the Nüwa paper for video token selection) preserves
+  more question-relevant tokens than plain top-k novelty, and at
+  kr=0.50 should recover the -10pp aggregate accuracy drop seen
+  at Stage 2b kr=0.10 anchor=none.
+- **rejected by**: phase 1.51R Stage 5a n=30 on VideoMME dev.
+  Aggregate Δacc=-0.167 — WORSE than kr=0.10 anchor=none's -0.10,
+  not better. Per-bucket: short -0.20, medium -0.10, long -0.20.
+  e2e 0.987× (net slower than dense).
+- **rejection band**: prereg was Δacc within -0.03pp of dense
+  AND e2e > 1.10×. Missed both.
+- **scope of rejection**: rules out nuwa's H.264-adjacent
+  pillar geometry as a working anchor for Gemma 4's pre-pooled
+  16×16 feature grid. Does NOT rule out informed anchors
+  generally — Stage 5b max_min_diversity and Stage 5c
+  gemma_structural both earn the accuracy bar at the same kr.
+  The lesson: match anchor geometry to the feature geometry you
+  actually have, not to the encoder source pixel geometry. Pillar
+  corner + mid-axis positions burn half the budget on
+  content-blind positions in a feature grid that has already
+  pooled away the pixel-block structure.
+- **link**: [Stage 5a findings](experiments/2026/2026-04-18-phase-1_51R-stage5a-nuwa-pillar-findings.md)
+
+### falsified_2026-04-18_any-anchor-arm-clears-e2e-1.1x-at-kr050
+
+- **hypothesis** (implicit in Stage 5 prereg): at least one of the
+  three informed anchor arms (nuwa_pillar, max_min_diversity,
+  gemma_structural) delivers end-to-end speedup ≥ 1.10× at
+  kr=0.50 on Gemma 4-E4B 8-frame VideoMME. The working assumption
+  was that smart anchoring would unlock the "both bars cleared"
+  operating point.
+- **rejected by**: four independent n=30 runs at kr=0.50 — Stage 1
+  (anchor=none), Stage 5a (nuwa_pillar), Stage 5b
+  (max_min_diversity), Stage 5c (gemma_structural). All four
+  aggregate e2e land in [0.963×, 1.00×]. None clear 1.00×, let
+  alone 1.10×.
+- **rejection band**: any anchor arm aggregate e2e > 1.10× at
+  kr=0.50. All four fell below 1.00×.
+- **scope of rejection**: rules out "smart anchoring lifts e2e at
+  moderate kr" as a mechanism independent of the arithmetic
+  ceiling. Confirms task #88's ceiling prediction: at kr=0.50 on
+  this geometry, fixed cost D+P+V = 71.4% of aggregate e2e, so
+  *any* G-only speedup is capped at 1.46× even with s=∞. The
+  binding constraint is not anchor smartness.
+- **implication**: the remaining e2e levers at kr=0.50 are
+  non-G: phase 1.51V (touches V) and phase 1.54 (touches D).
+  1.51R alone cannot clear 1.10× at moderate kr without regime
+  change (more frames, larger model — see Stage 6 regime-match
+  prereg).
+- **link**: [Stage 5 cross-arm synthesis](experiments/2026/2026-04-18-phase-1_51R-stage5-cross-arm-synthesis.md)
+
 ### falsified_2026-04-14_static-position-same-position-reuse-matches-whitepaper
 
 - **hypothesis**: naive same-position STATIC+SHIFTED reuse
