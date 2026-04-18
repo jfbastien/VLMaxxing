@@ -37,6 +37,21 @@ Neither 1.51R (touches G) nor 1.51V (touches V) can lift long-bucket
 e2e above the fixed-cost ceiling. Any credible long-item speedup must
 touch D.
 
+### Cross-model note — 1.54 is a Gemma-26B lever, not a Qwen-4B lever
+
+Phase 1.41 landed 2026-04-18: Qwen 2.5-VL-7B at 8-frame VideoMME
+(`videomme_dev_v1`, n=30) had median e2e **monotone DECREASING**
+short→long: 36.9 → 30.5 → 26.0 s. This is the *opposite* of Gemma's
+D-dominated long-bucket pattern. The 4-bit 7B Qwen model has a much
+smaller G than Gemma 26B, so generation does not saturate long-item
+e2e — prefill on short items dominates instead. **Implication:**
+1.54's decode-acceleration expected gain is specifically a
+Gemma-26B-at-32f lever; it does not apply to the Qwen-4-bit-at-8f
+regime. The 1.54 scope stays correctly narrow to the Stage 5/6
+gemma_structural operating point. Any attempt to generalise 1.54 to
+Qwen needs a separate regime-specific prereg that first re-derives
+the D/e2e ratio on Qwen.
+
 ## Preregistration
 
 ### Objective
