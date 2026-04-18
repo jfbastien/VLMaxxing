@@ -1,8 +1,35 @@
 # Phase 1.51 — Novelty-pruning visual tokens on Gemma 4-E4B (big-numbers SOTA lane)
 
 Date: 2026-04-17
-State: preregistered; unblocked (see round-18 amendment below — novelty-pruning is a FRESH LLM-prefill code path, independent of phase 1.42 `_mix_gemma_features`). Runs once VideoMME videos and anchor/scoring code land.
+State: **pilot landed 2026-04-18 as preregistered null** on VideoMME long
+n=1 (end-to-end 1.01× vs ≥1.8× target). Scale-up (Stage 1 n=30) running;
+see pilot-findings note below. Mechanism verified correct (agreement +
+exact kept-token count); null is due to decode + vision dominance in
+the (D, V, G) share for Gemma 4-E4B.
 Parent: `paper/claim-matrix.md` claim #11 (novelty-pruning big numbers on Gemma). Claim #10 (composition) is tested separately in phase 1.52R, which does gate on both 1.42 + 1.51R.
+
+## Pilot amendment (2026-04-18)
+
+First GPU run of the driver after the 2026-04-18 bounded-decode fix
++ Gemma geometry correction (16×16 post-pool, not 14×20) returned
+**1.01× end-to-end speedup** and **1.12× generate-only** on a single
+long-duration VideoMME item. Full analysis and per-stage timings in
+`research/experiments/2026/2026-04-18-phase-1_51R-pilot-findings.md`.
+
+Key arithmetic: end-to-end speedup is bounded above by
+`(D + V + G) / (D + V + G/s)` where `D = decode_ms`, `V = vision_ms`,
+`G = generate_ms`, and `s` is the generate-only speedup. On the pilot
+item `D = 22.8s, V = 4.9s, G = 5.1s`, so even `s = ∞` only yields
+1.18× end-to-end. The 1.8× target is **unreachable at these stage
+shares on Gemma 4-E4B + long VideoMME items**, independent of which
+anchor arm or keep rate is chosen; the mechanism cannot touch D or V.
+
+Stages 1-3 (n=30 scale-up, kr-aggressiveness sweep, max_tokens
+sensitivity) will put error bars on the null and check whether any
+subset of (duration bucket, kr, max_tokens) reaches the preregistered
+1.8× gate. Expected outcome: preregistered NO-REPRO on E4B for
+claim #11 headline, with the negative result itself publishable as
+evidence that Sam's mechanism is model-scale-sensitive.
 
 ## Round-18 amendment (2026-04-17)
 

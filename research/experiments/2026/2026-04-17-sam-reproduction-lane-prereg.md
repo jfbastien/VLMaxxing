@@ -1,6 +1,11 @@
 # Sam-reproduction lane — preregistered (2026-04-17)
 
-**State**: preregistered
+**State**: **pilot n=1 landed 2026-04-18 as preregistered null** (1.51R
+end-to-end 1.01× vs 1.8× target on `videomme:long:669-1`). Scale-up
+(Stage 1 n=30) running. See
+`research/experiments/2026/2026-04-18-phase-1_51R-pilot-findings.md`
+for the arithmetic ceiling derivation and stage-level share
+breakdown.
 **Parent**: `paper/claim-matrix.md` claims #7, #10, #11 (Gemma
 architecture fidelity, composition, and novelty-pruning speedup)
 **Depends on**: `docs/videomme-download-handoff.md` (user must unpack
