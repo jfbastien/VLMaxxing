@@ -14,20 +14,23 @@ of accelerator availability, and so unit tests can exercise it on any host.
 from __future__ import annotations
 
 import resource
+import sys
 
 
 def rss_mb() -> float:
     """Return resident-set size of the current process in MiB.
 
-    Normalizes the macOS/Linux difference for ``ru_maxrss`` (macOS returns
-    bytes, Linux returns kibibytes) by reading the magnitude: anything over
-    1 GB worth of raw units is assumed to be bytes, otherwise kibibytes.
-    That heuristic is safe as long as one of the two assumptions is true on
-    the host, which it always is for supported POSIX platforms.
+    Normalizes the macOS/Linux difference for ``ru_maxrss``: macOS returns
+    bytes, Linux returns kibibytes. Dispatched by ``sys.platform`` rather
+    than by magnitude — an earlier magnitude-based heuristic reported
+    ``437488 MiB`` during a 2026-04-18 1.51R pilot (true value ~427 MiB)
+    because a macOS RSS below 1 GiB has raw bytes below the 1e9 threshold
+    and was wrongly treated as kibibytes.
     """
-    usage = resource.getrusage(resource.RUSAGE_SELF)
-    raw = float(usage.ru_maxrss)
-    return raw / (1024 * 1024) if raw > 1e9 else raw / 1024
+    raw = float(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+    if sys.platform == "darwin":
+        return raw / (1024 * 1024)
+    return raw / 1024
 
 
 def check_rss_guard(threshold_mb: int, *, stage: str) -> None:

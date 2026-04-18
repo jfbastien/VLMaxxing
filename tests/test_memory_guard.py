@@ -15,9 +15,10 @@ from codec_through import memory_guard
 def test_rss_mb_positive() -> None:
     mb = memory_guard.rss_mb()
     assert mb > 0, "resident set size must be positive on any live process"
-    # 100 TiB is a conservative ceiling that would only be hit if we
-    # mis-scaled the unit heuristic; catches bytes-vs-kB regressions.
-    assert mb < 100 * 1024 * 1024
+    # 16 GiB is well above any sane pytest-process RSS and well below the
+    # ~400_000 MiB that the earlier magnitude heuristic produced for a
+    # 437 MiB macOS process (see memory_guard.rss_mb docstring).
+    assert mb < 16 * 1024, f"rss_mb={mb} looks mis-scaled (bytes/kB/MiB mix-up?)"
 
 
 def test_check_rss_guard_disabled_when_threshold_nonpositive() -> None:
