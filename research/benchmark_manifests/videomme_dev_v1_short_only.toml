@@ -1,0 +1,14 @@
+benchmark = "videomme"
+description = "videomme dev v1 short bucket only (10 items), for 32-frame cross-bucket ceiling validation (phase 1.51R stage 6)"
+item_ids = [
+    "videomme:short:037-2",
+    "videomme:short:100-2",
+    "videomme:short:116-3",
+    "videomme:short:120-2",
+    "videomme:short:158-3",
+    "videomme:short:160-1",
+    "videomme:short:210-2",
+    "videomme:short:264-1",
+    "videomme:short:278-3",
+    "videomme:short:282-2",
+]
