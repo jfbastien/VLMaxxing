@@ -106,7 +106,7 @@ Implementation time is out of scope for this table.
 | Venue | Fit today | What would need to land |
 |---|---|---|
 | **arXiv preprint (lane-A-only positional)** | **Possible today as a narrow positional note on Qwen routing.** Would need framing as "method positioning; SOTA results forthcoming." **Not the target artifact** — the goal is one big-numbers paper, not a positional subset. | Keep Arc A claims current; do not submit until Lane B is earned. |
-| **NeurIPS / ICLR / CVPR efficiency workshop** | **Within reach** once Lane B lands one of: novelty-pruning-on-Gemma multiplicative speedup OR Gemma+VideoMME fidelity + Track B sparse delta. | Lane B phases 1.42 + 1.51 earned. |
+| **NeurIPS / ICLR / CVPR efficiency workshop** | **Within reach** once Lane B lands one of: novelty-pruning-on-Gemma multiplicative speedup OR Gemma+VideoMME fidelity + Track B sparse delta. | Lane B phases 1.42 + 1.51R earned. |
 | **Main track (NeurIPS/ICML/CVPR)** | **NOT ready.** Single-architecture, two benchmarks, no measured speedup, no SOTA comparison. Reviewers will flag all four. | Phase 1.52 combined (multiplicative speedup measured) + claim 8 VideoMME + claim 7 second architecture. |
 | **Systems conference (MLSys/OSDI)** | **NOT ready.** No sparse execution to characterize. | Claim 5 (sparse path) + Phase 1.52 combined. |
 

@@ -379,7 +379,7 @@ authoritative in the per-phase notes under
   paper_relevance: primary (claim #5 dense reference; sparse-execution half still blocked)
   prereg_outcome: Accepted with caveat (dense baseline paper-grade on TOMATO N=30 + MVBench N=30 holdout; cross-benchmark vision-cache ceiling 20-23% end-to-end; sparse-execution delta still not measured)
 
-- phase_id: 1.51
+- phase_id: 1.51R
   status: running
   authoritative_note: research/experiments/2026/2026-04-17-phase-1_51-novelty-pruning-gemma-prereg.md
   authoritative_artifacts:
@@ -399,15 +399,15 @@ authoritative in the per-phase notes under
   prereg_outcome: (pilot n=1 NULL 2026-04-18: 1.01× e2e on videomme:long:669-1 at kr=0.5 arm=none; ceiling formula `(D+V+G)/(D+V+G/s)` predicts 1.18× max even at s=∞; Stage 1 n=30 scale-up running, Stages 2-3 queued)
   notes: phase is tracked as the "1.51R" fresh driver across other docs (R = Reproduction of Sam's novelty-pruning, fresh code path that does not consume `_mix_gemma_features`). Preregistered 5 literature-grounded anchor-preservation arms (FastV, FasterVLM/HiPrune, Nüwa pillar, VLM-Pruner max-min diversity, IVC-Prune-spirit Gemma-structural); keep-rate grid {0.3..0.7}; must run on Gemma (not Qwen) because Qwen's M-RoPE-V ties token index to 2D grid position and breaks under token drop. cls_attention_proxy arm is explicitly excluded from winner promotion (see PROMOTABLE_ARMS in novelty_pruning.py). Pilot reveals vision-tower pruning (NEW phase 1.51V, task #87) is the only mechanism that could reach Sam's ≥1.8× end-to-end on E4B; queued as follow-up.
 
-- phase_id: 1.52
+- phase_id: 1.52R
   status: proposed
   authoritative_note: research/experiments/2026/2026-04-17-phase-1_52-combined-temporal-spatial-prereg.md
   authoritative_artifacts: []
   current_best_policy: n/a
   supersedes: []
   paper_relevance: primary (multiplicative composition — temporal reuse AND novelty-pruning stacked — paper-table headline number)
-  prereg_outcome: (pending; blocked on 1.42 and 1.51 passes)
-  notes: three-way gate preregistered (multiplicative / additive / interference); PoRe (arxiv 2508.17807) reserved for phase 1.53 if 1.52 passes
+  prereg_outcome: (pending; blocked on 1.42 and 1.51R passes)
+  notes: three-way gate preregistered (multiplicative / additive / interference); PoRe (arxiv 2508.17807) reserved as a composable axis under phase 1.52R holdout (see 1.51 prereg §Composable Arm) — NOT phase 1.53 (1.53 is now the object-state delta sidecar, preregistered 2026-04-18).
 ```
 
 ## Maintenance rules
