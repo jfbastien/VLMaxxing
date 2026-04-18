@@ -1,0 +1,38 @@
+{
+  "short": {
+    "n": 10,
+    "fixed_frac_mean": 0.568,
+    "per_tok_speedup_mean": 12.518,
+    "e2e_speedup_obs_mean": 1.356,
+    "ceiling_at_observed_s_mean": 1.368,
+    "ceiling_at_infinite_s_mean": 1.761,
+    "headroom_remaining": 0.404
+  },
+  "medium": {
+    "n": 10,
+    "fixed_frac_mean": 0.663,
+    "per_tok_speedup_mean": 2.712,
+    "e2e_speedup_obs_mean": 1.267,
+    "ceiling_at_observed_s_mean": 1.268,
+    "ceiling_at_infinite_s_mean": 1.527,
+    "headroom_remaining": 0.259
+  },
+  "long": {
+    "n": 10,
+    "fixed_frac_mean": 0.912,
+    "per_tok_speedup_mean": 5.266,
+    "e2e_speedup_obs_mean": 1.062,
+    "ceiling_at_observed_s_mean": 1.002,
+    "ceiling_at_infinite_s_mean": 1.098,
+    "headroom_remaining": 0.036
+  },
+  "all": {
+    "n": 30,
+    "fixed_frac_mean": 0.714,
+    "per_tok_speedup_mean": 6.832,
+    "e2e_speedup_obs_mean": 1.229,
+    "ceiling_at_observed_s_mean": 1.213,
+    "ceiling_at_infinite_s_mean": 1.462,
+    "headroom_remaining": 0.233
+  }
+}
