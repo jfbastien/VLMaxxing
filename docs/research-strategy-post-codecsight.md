@@ -271,8 +271,28 @@ overclaiming.
 ### Tier C — deferred / blocked
 
 11. Phase 1.39 DCT_HF energy (OCR/screen-content focus)
-12. Phase 1.40 speculative verify / selective re-encode (after 1.13
-    logprob instrumentation)
+12. Phase 1.40 **calibrated selective recompute / risk-triggered retry
+    ladder** (per Codex 2026-04-18 review) — supersedes the earlier
+    "speculative verify / selective re-encode" framing, which was a
+    raw-logit-threshold trick rather than a calibration-and-policy
+    problem. New ladder: (1) cheap cached/pruned pass, (2) if calibrated
+    risk is high, rerun with more fresh budget or lower pruning,
+    (3) if still high-risk, rerun dense, (4) optionally escalate to a
+    larger model or abstain. Evaluation is selective-risk-vs-compute,
+    not just accuracy. **Blocked on phase 1.31 failure-predictor /
+    answer-margin analysis landing first** — multimodal confidence is
+    miscalibrated (ACL 2025.coling-main.208) so raw logits cannot
+    drive the retry gate. See
+    `research/experiments/2026/2026-04-16-phase-1_31-failure-predictor.md`
+    for the prerequisite prereg. Useful signals: top-2 MCQ answer
+    margin, parse instability, cheap-vs-visual disagreement, and
+    temporal-coverage features from
+    `docs/methodology/temporal-coverage-metrics.md`. References:
+    CALM (openreview id=uLYc4L3C81A), ReCoVERR
+    (ACL 2024.findings-acl.767), CAP (openreview id=DA1ELJTudh).
+    **Wording guardrail: do not say "confidence-conditioned" in paper
+    claims until calibrated risk signal + selective-risk evaluation
+    lands** — see `paper/claim-matrix.md:81`.
 13. Phase 1.32 FastV composition (mlx-vlm fork, ~1-2 weeks)
 14. Phase 1.33 FastVID baseline (torch-side, ~1 week)
 15. Phase 1.30 streaming harness (Track B infrastructure)
@@ -283,6 +303,11 @@ overclaiming.
     Sam's Gemma hard-spatial-pruning result (WP-2.11) is the better
     spatial follow-on if needed, but it belongs off the main paper
     critical path until after 1.20, 1.41, and Track B.
+18. **Phase 1.53 object/state delta sidecar (DEFERRED)** — new
+    representation-side branch per Codex 2026-04-18. See
+    `research/experiments/2026/2026-04-18-phase-1_53-object-state-delta-sidecar-prereg.md`.
+    Narrow initial target: MVBench object_interaction, moving_direction,
+    moving_attribute. Not an earned claim until local evidence lands.
 
 ### Explicitly deferred to Track B / streaming
 

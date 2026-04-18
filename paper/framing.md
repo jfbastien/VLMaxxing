@@ -228,10 +228,61 @@ Closest to current evidence:
 - compute-denial or novelty-amplification robustness evaluation
 - multi-reference and IMU-assisted stabilization
 - changed-query attention after changed-window execution
+- **training / fine-tuning acceleration via pre-LLM pruning and
+  pre-encoder temporal redundancy compression.** Our current inference-
+  time findings suggest two plausible training-time opportunities:
+  (1) pre-LLM visual token pruning, which should reduce forward,
+  backward, and activation-memory costs during multimodal fine-tuning;
+  and (2) temporal redundancy compression before the expensive
+  transformer stack. By contrast, **post-ViT feature caching does not
+  directly transfer to end-to-end training when the vision encoder is
+  trainable** because reused cached features break or approximate the
+  gradient path. A gradient-faithful training formulation for
+  temporal reuse remains open future work. Adjacent precedents:
+  Run-Length Tokenization (arxiv id=b1ggjW00NI, 30% faster fine-tuning,
+  >100% at 30 FPS in some settings), ToMe (arxiv id=JroZRaRw7Eu,
+  training-throughput gains including video), DynamicViT
+  (arxiv id=jB0Nlbwlybm), EViT (arxiv id=BjyvwnXXVn_).
+- **calibrated selective recompute / risk-triggered retry ladder.**
+  Instead of spending dense compute on every item, the system would
+  run a cheap cached or pruned pass first, estimate instance-level
+  risk from answer margin, parse-instability, cheap-vs-visual
+  disagreement, and temporal-coverage signals, and only escalate to
+  denser visual processing when predicted failure risk is high.
+  Because multimodal confidence is often miscalibrated, this must be
+  treated as a calibration-and-policy problem rather than a raw
+  logit-threshold trick. Prerequisites: phase 1.31 failure-predictor
+  analysis lands, answer-margin features are calibrated, and a
+  selective-risk-vs-compute evaluation is defined. References:
+  CALM (openreview id=uLYc4L3C81A) for early-exit language models,
+  ReCoVERR (ACL 2024.findings-acl.767) for VLM low-confidence
+  evidence-gathering, CAP (openreview id=DA1ELJTudh) for per-instance
+  abstention policy, and calibration warnings for MLLMs
+  (ACL 2025.coling-main.208, openreview id=d8WMoi571f). **Do not say
+  "confidence-conditioned" in paper claims until this evidence
+  lands — see the explicit wording guardrail in claim-matrix.md.**
 
 Medium-distance:
 
 - machine-oriented codec sidecars
+- **machine-oriented object / state delta sidecars** (phase 1.53
+  deferred prereg, below). A natural extension is a sidecar that
+  carries object/state deltas instead of dense repeated visual
+  evidence: a full I-frame establishes entities and layout, while
+  subsequent frames contribute only query-relevant changes such as
+  movement, interaction, or state transitions. Could improve both
+  efficiency and interpretability on temporal-reasoning tasks, but
+  remains unvalidated locally. Likely helpful on object-interaction,
+  moving-attribute, moving-direction, and state-change questions;
+  likely harmful or insufficient on OCR, fine texture, small-object
+  detail, or subtle appearance changes. Prompt growth can erase
+  compute gains if the sidecar is not bounded and query-aware. This
+  is a *new representation*, not a routing variant, and should not
+  be silently folded into 1.29 (which should become the real
+  codec-native classifier path instead — see below). Adjacent lines:
+  VidCtx (openreview id=KNpbR9z8OU, arxiv 2412.17415) on training-free
+  VideoQA with question-aware textual context; SG-VLM
+  (arxiv 2509.11862) on scene-graph grounding for frozen-VLM VideoQA.
 - screen-content specialization as a major branch
 
 Far-distance:
