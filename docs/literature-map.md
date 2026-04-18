@@ -121,6 +121,80 @@ What it does not tell us:
 - it is not evidence for general natural-video redundancy
 - it is not evidence for codec-motion routing or temporal reuse in natural scenes
 
+## Recent Visual-Token Pruning Competitors (2025–2026)
+
+This section tracks the 2025-2026 visual-token-pruning papers that
+set the current SOTA reference points for claim #11 (novelty-pruning
+delivers end-to-end speedup on Gemma) and claim #10 (composition with
+within-frame methods). These are the methods we must beat — or
+explicitly bound against — to have a defensible SOTA story.
+
+### FlashVID
+
+Source:
+
+- OpenReview ICLR 2026 Oral (paper ID `H6rDX4w6Al`), canonical arxiv
+  listing <https://arxiv.org/abs/2602.08024>
+
+Why it matters:
+
+- directly comparable training-free visual-token-pruning method for
+  video VLMs; reported 99.1% accuracy at 10% retention with 6.3×
+  prefill speedup on reference benchmarks
+- this is the closest 2026-era SOTA we must argue against on claim #11
+
+How it differs from 1.51R:
+
+- uses learned importance signals tied to a specific backbone, not
+  a zero-training pixel-novelty + anchor rule
+- reports prefill speedup, not end-to-end wall-clock in our
+  strict-e2e sense (important for interpreting their 6.3×)
+
+### FastVID
+
+Source:
+
+- OpenReview NeurIPS 2025 (paper ID `2xS4VtpApy`)
+
+Why it matters:
+
+- 98.0% accuracy at 7.1× prefill speedup on video QA benchmarks
+- training-free, architecture-general token pruning for video VLMs
+- second closest 2026-era SOTA point
+
+How it differs from 1.51R:
+
+- same caveat as FlashVID: measured in prefill speedup, not end-to-end
+- does not explicitly address the arithmetic-ceiling question (how
+  much of e2e is fixed cost D+V) that our task #88 analysis makes
+  central
+
+### FasterVLM
+
+Source:
+
+- <https://arxiv.org/abs/2412.01818>
+
+Why it matters:
+
+- earlier (late-2024) training-free visual-token pruning baseline
+- useful floor reference; its measured speedups are lower than
+  FlashVID/FastVID, which lets us stratify the competitor landscape
+
+### EvoPrune
+
+Source:
+
+- <https://arxiv.org/abs/2603.03681>
+
+Why it matters:
+
+- 2026 evolutionary token-pruning method; provides another
+  contemporary data point for the "how much can training-free
+  pruning buy?" question
+- differs from 1.51R by using an evolutionary search over prune
+  masks instead of a single-pass novelty + anchor computation
+
 ## Compressed-Video Lineage
 
 ### CoViAR
