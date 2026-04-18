@@ -7,10 +7,11 @@ long-bucket results force the lever to open.
 
 ## Motivation
 
-Arithmetic-ceiling analysis (task #88, 2026-04-18) decomposed 1.51R
-end-to-end latency into D (video decode), P (processor / tokenization),
-V (vision tower), and G (LLM prefill+generate). The per-bucket
-breakdown revealed:
+Arithmetic-ceiling analysis decomposed 1.51R end-to-end latency into
+D (video decode), P (processor / tokenization), V (vision tower), and
+G (LLM prefill+generate).
+
+**8-frame regime (task #88, 2026-04-18 — the original motivator):**
 
 | bucket | D / e2e | P / e2e | V / e2e | G / e2e |
 |--------|--------:|--------:|--------:|--------:|
@@ -18,9 +19,23 @@ breakdown revealed:
 | medium |   48.0% |   ~0.2% |   10.8% |   41.0% |
 | long   |   **85.7%** |  ~0.05% |   4.8% |    9.5% |
 
-**D dominates long-bucket e2e (85.7%).** Neither 1.51R (touches G)
-nor 1.51V (touches V) can lift long-bucket e2e beyond ~1.098×. Any
-credible long-item speedup must touch D.
+**32-frame regime (Stage 6 cross-bucket validation, 2026-04-18 — now
+the authoritative surface for this prereg):**
+
+| bucket | D (s) | D / e2e | V / e2e | G / e2e | fixed_frac | ceiling@∞ |
+|--------|------:|--------:|--------:|--------:|-----------:|----------:|
+| short  |  3.09 |    5.2% |   44.3% |   49.9% |      0.500 |     2.00× |
+| medium |  8.46 |   14.7% |   39.5% |   45.3% |      0.547 |     1.83× |
+| long   | 73.7  |   56.9% |   19.9% |   23.1% |      0.762 |     1.31× |
+
+Short→medium decode scaling is near-linear (2.7× for 3× duration);
+medium→long is super-linear (8.7× for 3–5× duration, seek-dominated
+on large files). **The medium/long boundary is where 1.54 pays off.**
+
+**D dominates long-bucket e2e (85.7% at 8-frame, 56.9% at 32-frame).**
+Neither 1.51R (touches G) nor 1.51V (touches V) can lift long-bucket
+e2e above the fixed-cost ceiling. Any credible long-item speedup must
+touch D.
 
 ## Preregistration
 

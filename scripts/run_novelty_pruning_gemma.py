@@ -4,10 +4,17 @@
 Drives the one end-to-end path that was not yet wired: decoded frames →
 pixel-novelty → per-anchor-arm keep mask → shortened input_ids + gathered
 visual features → mlx-vlm generate(). Because Gemma 4's vision tower runs
-in full regardless, the ~1.8× speedup claim rests entirely on LLM-prefill
-shortening (which phase 1.50 measured at 70-78% of end-to-end wall-clock
-on Qwen 2.5-VL-7B-4bit at 8 frames × 560×560; Gemma's smaller vision
-tower shifts the ratio further toward prefill-dominance).
+in full regardless, any end-to-end speedup here rests entirely on
+LLM-prefill shortening plus generate savings (phase 1.50 measured
+prefill at 70-78% of end-to-end wall-clock on Qwen 2.5-VL-7B-4bit at
+8 frames × 560×560; Gemma's smaller vision tower shifts the ratio
+further toward prefill-dominance).
+
+Note: the "~1.8× end-to-end" figure previously cited here was our
+internal preregistered reproduction *target*, not a claim from Sam's
+whitepaper. The real whitepaper numbers are 5.4× prefill (Gemma 26B,
+VideoMME 32f), 4.2× e2e (Qwen 32f talking-head), and 4-5× combined
+real-video e2e (Gemma 26B). See docs/literature-map-2026-04-16.md.
 
 Architecture:
 - Loads Gemma 4 via ``mlx_vlm.load``.
@@ -172,11 +179,13 @@ class StageTimings:
 
     ``end_to_end_ms`` is the headline: wall-clock from video-path handoff
     through final generated text, summing all stages that actually ran on
-    this branch. Use this for the Sam-whitepaper ≥ 1.8× speedup claim;
-    ``generate_ms`` alone understates the denominator (it misses decode,
-    processor, novelty, vision, mask, prune). Reporting both lets us
-    separate "how much we save on generate" from "how much we save
-    end-to-end after paying the overhead of pruning itself."
+    this branch. Use this for the preregistered reproduction target (≥
+    1.8× end-to-end on VideoMME, an internal hypothesis — NOT a number
+    quoted in Sam's whitepaper). ``generate_ms`` alone understates the
+    denominator (it misses decode, processor, novelty, vision, mask,
+    prune). Reporting both lets us separate "how much we save on generate"
+    from "how much we save end-to-end after paying the overhead of
+    pruning itself."
     """
 
     decode_ms: float

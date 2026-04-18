@@ -143,6 +143,29 @@ Implementation time is out of scope for this table.
 
 ## Immediate next actions to extend publishability (ranked for one-paper SOTA goal)
 
+**Status update 2026-04-18 (post-Stage-6 cross-bucket surface):**
+- **Claim #13 C-CEILING earned** — arithmetic-ceiling model validated
+  across 6 regime dimensions (8-frame kr sweep + 32-frame short/medium/
+  long + smoke) with median 1.6% / worst 5.2% prediction error. This
+  graduates to a standalone publishable analytical contribution
+  independent of any SOTA arm.
+- **New Pareto points at 32 frames, kr=0.10:** short 1.663×, medium
+  1.565×, long 1.234× — all at Δacc=-0.100. Strict-inside-band earn
+  on medium; favorable-direction falsification on short (1.663× above
+  pre-reg upper 1.55×); downward falsification on long (1.234× below
+  pre-reg lower 1.50×, confirming D-ceiling).
+- **8-frame kr=0.33 gemma_structural short-bucket Δacc=0 at 1.090×**
+  remains the Pareto-knee earned-win. Stage 7 (in flight) tests whether
+  this accuracy-preserving recipe generalizes to the 32-frame regime.
+- **1.8× is our internal preregistered reproduction target, NOT Sam's
+  whitepaper claim.** Sam's whitepaper reports 5.4× prefill / 4.2× e2e
+  on Gemma 26B and Qwen 32f talking-head. Our 4B-class / 8-frame regime
+  is arithmetically bounded to ≤1.46× at kr=0.10 aggregate; 32-frame
+  lifts the ceiling but introduces decode cost.
+- **32-frame cross-bucket aggregate ≈ 1.487× at Δacc=-0.100 is
+  DEV-ONLY indicative.** Holdout tranche has not been run. Per-bucket
+  numbers are the reportable results.
+
 Lane B (Gemma big-numbers on VideoMME) is the SOTA-facing priority.
 Lane A (Qwen routing) continues in parallel where it doesn't contend
 for the MLX queue, and produces method content for the appendix.

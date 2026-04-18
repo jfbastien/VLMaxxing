@@ -265,6 +265,14 @@ Six **target claims** (NOT yet evidence):
 
 1. Multiplicative end-to-end speedup ≥ 1.8× on VideoMME with Gemma
    via novelty-pruning alone (phase 1.51 pending). THE headline.
+   **[REPRODUCTION TARGET, not a Sam whitepaper claim.]** Sam's
+   whitepaper reports 5.4× prefill and 4.2× e2e (Qwen 32f talking-
+   head) on larger models / different regimes; 1.8× was our
+   internal preregistered e2e gate for "the mechanism delivers a
+   real multiplicative win on our regime." Arithmetic-ceiling
+   analysis shows 4B-class / 8-frame is bounded to ≤1.46× at
+   kr=0.10 aggregate; 32-frame lifts the ceiling (short-32 earned
+   1.663×, medium-32 1.565×, long-32 1.234× — all at Δacc=-0.10).
 2. Multiplicative composition: temporal reuse + novelty-pruning
    compose as measured (phase 1.52 pending). Tests whether Sam's
    4–5× Gemma 4 26B composition transfers to Gemma 4 4B on M3 Air.
