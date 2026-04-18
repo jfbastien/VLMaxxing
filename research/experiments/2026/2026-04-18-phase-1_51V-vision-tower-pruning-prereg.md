@@ -9,14 +9,19 @@ latency breakdown.
 
 ## Motivation
 
-The 1.51R pilot and Stages 1–3 established a clean arithmetic ceiling
-on end-to-end speedup: `e2e ≤ (D + V + G) / (D + V + G/s)` where
-`D = decode`, `V = vision-tower forward pass`, `G = LLM generate`,
-and `s = per-phase speedup`. On Gemma 4-E4B-4bit with 8-frame clips
-and VideoMME items, `V ≈ 5s, D ≈ 25s, G ≈ 5–7s`, so even an infinite
-speedup on `G` (the only phase 1.51R touches) caps e2e at roughly
-1.2×. Sam's 1.8× target on VideoMME is arithmetically unreachable at
-this geometry without also touching `V`.
+The 1.51R pilot and Stages 1–5 established a clean arithmetic ceiling
+on end-to-end speedup: `e2e ≤ (D + P + V + G) / (D + P + V + G/s)` where
+`D = decode`, `P = processor`, `V = vision-tower forward pass`,
+`G = LLM prefill+generate`, and `s = per-phase speedup`. Measured on
+Gemma 4-E4B-4bit 8-frame VideoMME dev n=30 (Stage 2b, ceiling analysis):
+fixed-fraction = 0.714 aggregate, ceiling@∞ = 1.462× aggregate. Sam's
+1.8× target is arithmetically unreachable at this 8-frame geometry
+without also touching `V` (short/medium) or `D` (long).
+
+Per-bucket fixed fractions: short 0.568, medium 0.663, long 0.912.
+1.51V attacks V, which sits at 37.7% of short-bucket e2e and 10.8% of
+medium-bucket e2e; for long-bucket V contributes only 4.8%, so 1.51V
+does not help long.
 
 Phase 1.51V tests whether vision-tower-internal pruning (SigLIP-style
 token dropping inside the encoder) can reduce `V` meaningfully and
@@ -119,10 +124,11 @@ no concurrency with 5a/5b/5c.
 - MLX on M3 Air cannot measure the V term with ≤ 5% jitter at the
   per-item scale we need for H1. Escalate to larger-n runs or move
   to a machine with a more predictable MLX kernel queue.
-- Gemma's vision tower has a token-count constraint (e.g. the
-  projector assumes exactly 280 tokens per frame). In that case,
-  pruning must be followed by a pad-to-original-length step, which
-  changes H1's arithmetic — document and re-derive H1.
+- Gemma 4-E4B's vision tower emits exactly 256 tokens per frame
+  (16×16 post-pool grid; task #66 token-geometry finding). If the
+  projector assumes a fixed token count, pruning must be followed
+  by a pad-to-original-length step, which changes H1's arithmetic —
+  document and re-derive H1 if this constraint is confirmed.
 
 ### Design notes
 
