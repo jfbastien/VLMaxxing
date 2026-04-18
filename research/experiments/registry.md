@@ -380,20 +380,24 @@ authoritative in the per-phase notes under
   prereg_outcome: Accepted with caveat (dense baseline paper-grade on TOMATO N=30 + MVBench N=30 holdout; cross-benchmark vision-cache ceiling 20-23% end-to-end; sparse-execution delta still not measured)
 
 - phase_id: 1.51
-  status: proposed
+  status: running
   authoritative_note: research/experiments/2026/2026-04-17-phase-1_51-novelty-pruning-gemma-prereg.md
   authoritative_artifacts:
     - src/codec_through/novelty_pruning.py (anchor scoring + keep mask; CPU tested)
     - src/codec_through/video_decode.py (bounded-memory uniform decode)
+    - src/codec_through/memory_guard.py (RSS guard; platform-correct 2026-04-18)
     - scripts/run_novelty_pruning_gemma.py (end-to-end driver)
     - scripts/smoke_novelty_pruning.py (CPU smoke harness)
-    - tests/test_novelty_pruning.py, tests/test_video_decode.py
+    - tests/test_novelty_pruning.py, tests/test_video_decode.py, tests/test_memory_guard.py
     - research/experiments/2026/artifacts/phase1_51R_smoke/ (CPU smoke output on VideoMME sample)
-  current_best_policy: n/a (spatial-pruning lane; driver landed CPU-tested, GPU pilot pending)
+    - research/experiments/2026/artifacts/phase1_51R_pilot/ (GPU pilot n=1 long item, arm=none kr=0.5, e2e 1.01× / gen 1.12×)
+    - research/experiments/2026/artifacts/phase1_51R_dev/ (Stage 1 n=30 scale-up; in flight)
+    - research/experiments/2026/2026-04-18-phase-1_51R-pilot-findings.md (arithmetic-ceiling derivation)
+  current_best_policy: n/a (pilot null — end-to-end 1.01× vs 1.8× prereg gate; mechanism verified correct, claim #11 magnitude is arithmetically bounded by vision+decode share on E4B)
   supersedes: []
-  paper_relevance: primary (claim #11 novelty-pruning big numbers on Gemma; not claim #10 — 10 is the composition claim handled by 1.52)
-  prereg_outcome: (pending; driver landed + CPU-smoke validated 2026-04-18 after 50 GB OOM root-caused and fixed via bounded-memory decode; GPU dev sweep is the next experiment)
-  notes: phase is tracked as the "1.51R" fresh driver across other docs (R = Reproduction of Sam's novelty-pruning, fresh code path that does not consume `_mix_gemma_features`). Preregistered 5 literature-grounded anchor-preservation arms (FastV, FasterVLM/HiPrune, Nüwa pillar, VLM-Pruner max-min diversity, IVC-Prune-spirit Gemma-structural); keep-rate grid {0.3..0.7}; must run on Gemma (not Qwen) because Qwen's M-RoPE-V ties token index to 2D grid position and breaks under token drop. cls_attention_proxy arm is explicitly excluded from winner promotion (see PROMOTABLE_ARMS in novelty_pruning.py).
+  paper_relevance: primary (claim #11 Gemma novelty-pruning; now trending toward publishable preregistered null with mechanistic explanation)
+  prereg_outcome: (pilot n=1 NULL 2026-04-18: 1.01× e2e on videomme:long:669-1 at kr=0.5 arm=none; ceiling formula `(D+V+G)/(D+V+G/s)` predicts 1.18× max even at s=∞; Stage 1 n=30 scale-up running, Stages 2-3 queued)
+  notes: phase is tracked as the "1.51R" fresh driver across other docs (R = Reproduction of Sam's novelty-pruning, fresh code path that does not consume `_mix_gemma_features`). Preregistered 5 literature-grounded anchor-preservation arms (FastV, FasterVLM/HiPrune, Nüwa pillar, VLM-Pruner max-min diversity, IVC-Prune-spirit Gemma-structural); keep-rate grid {0.3..0.7}; must run on Gemma (not Qwen) because Qwen's M-RoPE-V ties token index to 2D grid position and breaks under token drop. cls_attention_proxy arm is explicitly excluded from winner promotion (see PROMOTABLE_ARMS in novelty_pruning.py). Pilot reveals vision-tower pruning (NEW phase 1.51V, task #87) is the only mechanism that could reach Sam's ≥1.8× end-to-end on E4B; queued as follow-up.
 
 - phase_id: 1.52
   status: proposed
