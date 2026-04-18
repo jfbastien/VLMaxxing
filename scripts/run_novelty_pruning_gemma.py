@@ -212,6 +212,14 @@ class ItemResult:
     pruned_choice: int | None
     dense_timing: StageTimings
     pruned_timing: StageTimings
+    dense_prompt_tokens: int = 0
+    pruned_prompt_tokens: int = 0
+    dense_generation_tokens: int = 0
+    pruned_generation_tokens: int = 0
+    dense_prompt_tps: float = 0.0
+    pruned_prompt_tps: float = 0.0
+    dense_generation_tps: float = 0.0
+    pruned_generation_tps: float = 0.0
     metadata: dict[str, Any] = field(default_factory=dict)
 
 
@@ -280,6 +288,21 @@ def _mean_token_attention_proxy(features: np.ndarray) -> np.ndarray:
     return cast(np.ndarray, norms.astype(np.float32))
 
 
+@dataclass(frozen=True, slots=True)
+class GenerateStats:
+    """Generation metrics returned by mlx-vlm that are orthogonal to our
+    stage timings. Used to disentangle prefill-attention savings from
+    differential generation length (task #89 confound, 2026-04-18).
+    """
+
+    text: str
+    elapsed_ms: float
+    prompt_tokens: int
+    generation_tokens: int
+    prompt_tps: float
+    generation_tps: float
+
+
 def _run_generate(
     model: Any,
     processor: Any,
@@ -290,8 +313,8 @@ def _run_generate(
     extra: dict[str, mx.array],
     cached_image_features: mx.array | None,
     max_tokens: int,
-) -> tuple[str, float]:
-    """Invoke mlx-vlm ``generate`` and return (text, wall_ms)."""
+) -> GenerateStats:
+    """Invoke mlx-vlm ``generate`` and return generation stats + wall_ms."""
     t0 = time.perf_counter_ns()
     mx.random.seed(42)
     kwargs = dict(extra)
@@ -309,7 +332,14 @@ def _run_generate(
         **kwargs,
     )
     elapsed_ms = (time.perf_counter_ns() - t0) / 1_000_000
-    return str(response.text), elapsed_ms
+    return GenerateStats(
+        text=str(response.text),
+        elapsed_ms=elapsed_ms,
+        prompt_tokens=int(getattr(response, "prompt_tokens", 0)),
+        generation_tokens=int(getattr(response, "generation_tokens", 0)),
+        prompt_tps=float(getattr(response, "prompt_tps", 0.0)),
+        generation_tps=float(getattr(response, "generation_tps", 0.0)),
+    )
 
 
 def _compute_vision_features(model: Any, pixel_values: mx.array) -> mx.array:
@@ -428,7 +458,7 @@ def _process_one_item(
 
     # --- Stage 7: dense baseline generate ---
     dense_input_ids = mx.array(raw["input_ids"])
-    dense_text, dense_generate_ms = _run_generate(
+    dense_stats = _run_generate(
         model,
         processor,
         input_ids=dense_input_ids,
@@ -438,6 +468,8 @@ def _process_one_item(
         cached_image_features=vision_features,
         max_tokens=max_tokens,
     )
+    dense_text = dense_stats.text
+    dense_generate_ms = dense_stats.elapsed_ms
     # Release MLX kv-cache + Python refs before the pruned pass. Without this,
     # the 2026-04-18 pilot had both generate() branches' prefill tensors
     # resident simultaneously on a 16 GB Mac — peak RSS exceeded 50 GB.
@@ -456,7 +488,7 @@ def _process_one_item(
     pruned_attn = attn_np[survivor]
     pruned_mask = mx.array(pruned_attn[None, :])
 
-    pruned_text, pruned_generate_ms = _run_generate(
+    pruned_stats = _run_generate(
         model,
         processor,
         input_ids=pruned_input_ids,
@@ -466,6 +498,8 @@ def _process_one_item(
         cached_image_features=gathered_features,
         max_tokens=max_tokens,
     )
+    pruned_text = pruned_stats.text
+    pruned_generate_ms = pruned_stats.elapsed_ms
 
     # End-to-end wall-clocks. Both branches pay decode + processor + vision +
     # generate; only the pruned branch pays novelty + mask + prune. Dense does
@@ -524,6 +558,14 @@ def _process_one_item(
             generate_ms=pruned_generate_ms,
             end_to_end_ms=pruned_end_to_end_ms,
         ),
+        dense_prompt_tokens=dense_stats.prompt_tokens,
+        pruned_prompt_tokens=pruned_stats.prompt_tokens,
+        dense_generation_tokens=dense_stats.generation_tokens,
+        pruned_generation_tokens=pruned_stats.generation_tokens,
+        dense_prompt_tps=dense_stats.prompt_tps,
+        pruned_prompt_tps=pruned_stats.prompt_tps,
+        dense_generation_tps=dense_stats.generation_tps,
+        pruned_generation_tps=pruned_stats.generation_tps,
     )
 
 
@@ -582,7 +624,30 @@ def _summarize(records: list[ItemResult]) -> dict[str, Any]:
         "mean_pruned_prune_ms": float(np.mean([r.pruned_timing.prune_ms for r in records])),
         "dense_parse_failures": sum(1 for r in records if r.dense_parse_failure),
         "pruned_parse_failures": sum(1 for r in records if r.pruned_parse_failure),
+        "mean_dense_prompt_tokens": float(np.mean([r.dense_prompt_tokens for r in records])),
+        "mean_pruned_prompt_tokens": float(np.mean([r.pruned_prompt_tokens for r in records])),
+        "mean_dense_generation_tokens": float(np.mean([r.dense_generation_tokens for r in records])),
+        "mean_pruned_generation_tokens": float(np.mean([r.pruned_generation_tokens for r in records])),
+        "mean_dense_generation_tps": float(np.mean([r.dense_generation_tps for r in records])),
+        "mean_pruned_generation_tps": float(np.mean([r.pruned_generation_tps for r in records])),
+        # Per-token generation speedup, corrected for differential token count.
+        # Total generate wall-clock / total tokens generated, dense vs pruned.
+        # This is the "pure prefill-attention" effect — the raw generate_speedup
+        # conflates this with differential generation length (task #89 confound).
+        "per_token_generate_speedup_mean": _per_token_speedup(records),
     }
+
+
+def _per_token_speedup(records: list[ItemResult]) -> float:
+    dense_tok = float(sum(r.dense_generation_tokens for r in records))
+    pruned_tok = float(sum(r.pruned_generation_tokens for r in records))
+    dense_ms = float(sum(r.dense_timing.generate_ms for r in records))
+    pruned_ms = float(sum(r.pruned_timing.generate_ms for r in records))
+    if dense_tok <= 0 or pruned_tok <= 0 or pruned_ms <= 0:
+        return 0.0
+    dense_ms_per_tok = dense_ms / dense_tok
+    pruned_ms_per_tok = pruned_ms / pruned_tok
+    return dense_ms_per_tok / pruned_ms_per_tok if pruned_ms_per_tok > 0 else 0.0
 
 
 def _load_manifest_items(runner: Any, manifest_path: Path) -> list[Any]:
@@ -630,6 +695,14 @@ def _record_payload(record: ItemResult) -> dict[str, Any]:
             "generate": record.pruned_timing.generate_ms,
             "end_to_end": record.pruned_timing.end_to_end_ms,
         },
+        "dense_prompt_tokens": record.dense_prompt_tokens,
+        "pruned_prompt_tokens": record.pruned_prompt_tokens,
+        "dense_generation_tokens": record.dense_generation_tokens,
+        "pruned_generation_tokens": record.pruned_generation_tokens,
+        "dense_prompt_tps": record.dense_prompt_tps,
+        "pruned_prompt_tps": record.pruned_prompt_tps,
+        "dense_generation_tps": record.dense_generation_tps,
+        "pruned_generation_tps": record.pruned_generation_tps,
     }
 
 
@@ -719,6 +792,8 @@ def main() -> int:
                 f"pruned_e2e={record.pruned_timing.end_to_end_ms:.0f}ms "
                 f"dense_gen={record.dense_timing.generate_ms:.0f}ms "
                 f"pruned_gen={record.pruned_timing.generate_ms:.0f}ms "
+                f"dense_toks={record.dense_generation_tokens} "
+                f"pruned_toks={record.pruned_generation_tokens} "
                 f"rss={rss_mb():.0f}MiB"
             )
             check_rss_guard(args.rss_guard_mb, stage=f"after_item_{idx + 1}")

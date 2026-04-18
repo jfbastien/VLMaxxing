@@ -1,0 +1,5 @@
+benchmark = "videomme"
+description = "videomme dev v1 single item (videomme:short:100-2) — smoke-test manifest for driver instrumentation work"
+item_ids = [
+    "videomme:short:100-2",
+]
