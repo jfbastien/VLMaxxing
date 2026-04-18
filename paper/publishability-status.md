@@ -156,9 +156,11 @@ LLM-prefill code path and does NOT depend on phase 1.42's
 for the explicit note. 1.42 stays in the queue as the claim-7
 enabler but is not the headline gate.
 
-1. **Phase 1.41 VideoMME N=30 on Qwen** — ≈ 2 h GPU wall time once
-   the video corpus is unpacked locally (subset download running
-   2026-04-17). Unlocks claim 8 (the benchmark the paper cites).
+1. **Phase 1.41 VideoMME N=30 on Qwen** — ≈ 2 h GPU wall time. Manifest
+   subset infrastructure is in place (`videomme_dev_v1.toml`, 30 items
+   balanced across short/medium/long) and is already exercised daily
+   by 1.51R Stage 1–5 on Gemma; Qwen Track A run is a runtime-only
+   gap. Unlocks claim 8 (the benchmark the paper cites).
 2. **Phase 1.42 v0 Gemma smoke** — minimum-viable whole-frame
    temporal-reuse integration. ~30 s on 1 item + ≈ 1.5 h N=30 dev.
    Unlocks claim 7 partial and de-risks the Gemma data path for the

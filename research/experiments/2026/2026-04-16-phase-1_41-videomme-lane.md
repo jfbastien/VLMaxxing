@@ -83,12 +83,26 @@ Sam's operational path for VideoMME:
 
 ## Execution
 
-Pending phase 1.20 completion. Scheduled as the next benchmark-
-breadth phase.
+**2026-04-17: loader + manifests landed.** VideoMME integration is in
+place as part of the Gemma lane (phase 1.51R) build-out:
+`research/benchmark_manifests/videomme_dev_v1.toml` (30 items,
+10/bucket balanced short/medium/long), plus subset and single-item
+manifests. Dev corpus is exercised daily by 1.51R Stage 1–5 runs on
+Gemma 4-E4B. **Qwen 7B VideoMME N=30 still pending** — the Track A
+path is the remaining runtime-only gap for claim #8.
+
+Deferred reasons: (1) Gemma big-numbers lane is the SOTA-facing
+content per the one-paper reframe; Qwen VideoMME breadth is claim-8
+evidence but not headline. (2) Prioritized 1.51R Stage 5 anchor
+ablation and Phase 1.51V (vision-tower pruning) because they unlock
+the big-number claim (#11) that 1.41 VideoMME Qwen cannot unlock on
+its own.
 
 ## Result
 
-Pending.
+Partial: manifest infrastructure + Gemma 1.51R Stage 1–5 evidence
+(Gemma dense accuracy ~0.40 on dev n=30, matches Sam's relative band
+on 4B-class model). Qwen Track A result pending.
 
 ## Interpretation
 
