@@ -1,0 +1,9 @@
+benchmark = "videomme"
+description = "videomme dev v1 subset for 1.51R Stage 2 kr-aggressiveness sweep (2 short + 2 medium + 1 long = 5 items, duration-stratified, taken from videomme_dev_v1.toml in manifest order to match the n=30 Stage 1 run)"
+item_ids = [
+    "videomme:long:669-1",
+    "videomme:medium:320-3",
+    "videomme:medium:354-3",
+    "videomme:short:037-2",
+    "videomme:short:100-2",
+]
