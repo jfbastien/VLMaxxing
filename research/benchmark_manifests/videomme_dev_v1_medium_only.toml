@@ -1,0 +1,14 @@
+benchmark = "videomme"
+description = "videomme dev v1 medium bucket only (10 items), for 32-frame cross-bucket ceiling validation (phase 1.51R stage 6)"
+item_ids = [
+    "videomme:medium:320-3",
+    "videomme:medium:354-3",
+    "videomme:medium:364-2",
+    "videomme:medium:380-3",
+    "videomme:medium:407-1",
+    "videomme:medium:408-1",
+    "videomme:medium:426-3",
+    "videomme:medium:484-2",
+    "videomme:medium:486-2",
+    "videomme:medium:531-1",
+]
