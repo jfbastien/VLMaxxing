@@ -12,9 +12,10 @@ tower shifts the ratio further toward prefill-dominance).
 Architecture:
 - Loads Gemma 4 via ``mlx_vlm.load``.
 - For each manifest item: decodes 8 frames uniformly, runs the processor
-  to get the 280-placeholder-per-image ``input_ids`` (matches
-  Gemma4Processor.image_seq_length=280), computes pixel novelty at 14×20,
-  calls :func:`compute_keep_mask` per anchor arm, and then
+  to get the 256-placeholder-per-image ``input_ids`` (runtime-verified
+  2026-04-18 as 16×16, NOT the stale 280/14×20 that
+  ``Gemma4Processor.image_seq_length`` advertises), computes pixel novelty
+  at 16×16, calls :func:`compute_keep_mask` per anchor arm, and then
   :func:`prune_image_placeholders` to shorten the prompt.
 - Two generation paths run per item:
   * **dense baseline** — standard mlx-vlm generate() with no pruning,
@@ -59,7 +60,6 @@ import argparse
 import gc
 import importlib.util
 import json
-import resource
 import sys
 import time
 import tomllib
@@ -74,6 +74,7 @@ from mlx_vlm.utils import prepare_inputs  # type: ignore[import-untyped]
 from PIL import Image
 
 from codec_through.answers import extract_choice
+from codec_through.memory_guard import check_rss_guard, rss_mb
 from codec_through.novelty_pruning import (
     ANCHOR_ARMS,
     AnchorArm,
@@ -105,14 +106,6 @@ GEMMA_GRID_SHAPE = (16, 16)  # 256 soft tokens per image, runtime-verified.
 _FEATURE_DEPENDENT_ARMS: frozenset[AnchorArm] = frozenset(
     {"nuwa_pillar", "max_min_diversity", "cls_attention_proxy"}
 )
-
-
-def _rss_mb() -> float:
-    """Return resident-set size in MiB (macOS returns bytes; Linux kB)."""
-    usage = resource.getrusage(resource.RUSAGE_SELF)
-    raw = float(usage.ru_maxrss)
-    # macOS: bytes. Linux: kibibytes. Heuristic: anything over 10^9 is bytes.
-    return raw / (1024 * 1024) if raw > 1e9 else raw / 1024
 
 
 def _clear_runtime_state() -> None:
@@ -656,6 +649,16 @@ def main() -> int:
     parser.add_argument("--model-path", type=Path, default=DEFAULT_MODEL_PATH)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--summary", type=Path, required=True)
+    parser.add_argument(
+        "--rss-guard-mb",
+        type=int,
+        default=0,
+        help=(
+            "If non-zero, abort with a non-zero exit if resident-set size "
+            "(in MiB) exceeds this value after model load or after any item. "
+            "Safety net against a 2026-04-18-style 50GB OOM. Default 0 = off."
+        ),
+    )
     args = parser.parse_args()
 
     if not args.model_path.exists():
@@ -678,10 +681,11 @@ def main() -> int:
         items = items[: args.n_items]
 
     print(f"loading model: {args.model_path}")
-    print(f"[rss before load] {_rss_mb():.0f} MiB")
+    print(f"[rss before load] {rss_mb():.0f} MiB")
     model, processor = load(str(args.model_path))
     _log_model_weight_summary(model)
-    print(f"[rss after load] {_rss_mb():.0f} MiB")
+    print(f"[rss after load] {rss_mb():.0f} MiB")
+    check_rss_guard(args.rss_guard_mb, stage="after_model_load")
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     records: list[ItemResult] = []
@@ -715,8 +719,9 @@ def main() -> int:
                 f"pruned_e2e={record.pruned_timing.end_to_end_ms:.0f}ms "
                 f"dense_gen={record.dense_timing.generate_ms:.0f}ms "
                 f"pruned_gen={record.pruned_timing.generate_ms:.0f}ms "
-                f"rss={_rss_mb():.0f}MiB"
+                f"rss={rss_mb():.0f}MiB"
             )
+            check_rss_guard(args.rss_guard_mb, stage=f"after_item_{idx + 1}")
 
     summary = {
         "manifest": str(args.manifest),
