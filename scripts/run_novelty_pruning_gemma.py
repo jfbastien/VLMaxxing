@@ -426,7 +426,13 @@ def _process_one_item(
     per_token_features: np.ndarray | None = None
     cls_proxy = None
     if anchor_arm in _FEATURE_DEPENDENT_ARMS:
-        vision_np = np.asarray(vision_features, dtype=np.float32)
+        # Gemma vision_tower emits bfloat16 features; np.asarray trips on
+        # MLX's PEP-3118 exposure of bf16 (item_size=2, format='B'). Route
+        # through mx.float32 first — same pattern as Sam's seed code
+        # (seed/original_repo/experiments/exp_wall_clock_speedup.py:274).
+        vision_features_f32 = vision_features.astype(mx.float32)
+        mx.eval(vision_features_f32)
+        vision_np = np.array(vision_features_f32)
         hidden = vision_np.shape[-1]
         per_token_features = vision_np.reshape(
             frame_count, GEMMA_GRID_SHAPE[0] * GEMMA_GRID_SHAPE[1], hidden
