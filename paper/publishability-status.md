@@ -75,7 +75,7 @@ N=30 holdout, clean-tree provenance; projected compute-savings ceiling
 | # | Claim | Blocker | Runtime estimate |
 |---|---|---|---|
 | I | "Method delivers measured N% speedup" | Sparse-execution path does not exist. Track B measures dense; a sparse path must be written to measure the delta. | Implementation ≈ 1-2 weeks; per-run wall time ≈ 1 h for N=30 on each benchmark. |
-| J | "Validated on VideoMME (de facto benchmark)" | Phase 1.41 loader written; subset downloader landed (`scripts/fetch_videomme_subset.py`) and dev+holdout pull running 2026-04-17; N=30 run not launched. | ≈ 2 h GPU wall time for N=30 at 8 frames, 560×560 on M3 Air 16 GB (cold cache). Planner 2.0 config (MAX_ABS + age=4 + static+shifted reuse + top-k=16). |
+| J | "Validated on VideoMME (de facto benchmark)" | **EARNED 2026-04-18.** Qwen 2.5-VL-7B-4bit, videomme_dev_v1.toml n=30, 8 frames: dense_acc=0.533, parse_fail=0, agreement=1.000, RSS=6.67GB, median e2e=30.5s. All 4 pre-registered hypotheses earned. Per-bucket 0.800/0.500/0.300 confirms long-clip undersampling. | None for baseline; 16/32-frame follow-up ≈1 h each (headroom available). |
 | K | "Cross-architecture generalization (Qwen windowed ↔ Gemma/InternVL3 all-global)" | Second architecture has not been run locally. | ≈ 4-6 h GPU wall time for matched N=30 on a second 4-bit-quantized checkpoint, assuming it fits on M3 Air 16 GB. Not guaranteed: Gemma 4 SigLIP + LLM has a larger vision tower. |
 | L | "Placement ablation (phase 1.38)" | Not run. | ≈ 30 min GPU wall time on a subset. |
 
@@ -136,19 +136,30 @@ Implementation time is out of scope for this table.
 - "SOTA" on any axis.
 - "N% faster end-to-end" (no sparse path).
 - "Generalizes across architectures" (single architecture).
-- "Validated on VideoMME" (phase 1.41 not run).
+- ~~"Validated on VideoMME" (phase 1.41 not run).~~ **EARNED 2026-04-18** (Qwen 2.5-VL-7B VideoMME dev n=30, dense_accuracy 0.533).
 - "Beats CodecSight / CoPE / FastV / VisionZip" (no head-to-head).
 - "Training-free codec-guided" without qualifying "pixel-diff proxy
   for codec MV/CBF; phase 1.29 MV-only is the bridge."
 
 ## Immediate next actions to extend publishability (ranked for one-paper SOTA goal)
 
-**Status update 2026-04-18 (post-Stage-6 cross-bucket surface):**
+**Status update 2026-04-18 (post-Stage-6 cross-bucket surface + 1.41 landed):**
+- **Claim #8 VideoMME baseline EARNED** — Qwen 2.5-VL-7B-Instruct-4bit
+  on `videomme_dev_v1.toml` n=30 at 8 frames, identity cache: dense
+  accuracy 0.533 (H1 [0.40, 0.60] best-guess 0.50 earned), 0/30 parse
+  failures (H2 earned), peak RSS 6.67 GB (H3 < 8 GB earned),
+  agreement=1.000, median e2e 30.5 s (H4 [40, 90] earned faster than
+  predicted). Per-bucket monotone 0.800 (short) → 0.500 (medium) →
+  0.300 (long) confirms 8-frame undersampling hurts long clips most.
+  The 16 GB headroom means 16/32-frame follow-up is feasible without
+  OOM, should we need to put the baseline in range of public 32-frame
+  ~0.55 references.
 - **Claim #13 C-CEILING earned** — arithmetic-ceiling model validated
-  across 6 regime dimensions (8-frame kr sweep + 32-frame short/medium/
-  long + smoke) with median 1.6% / worst 5.2% prediction error. This
-  graduates to a standalone publishable analytical contribution
-  independent of any SOTA arm.
+  across 7 regime dimensions (8-frame kr sweep + 32-frame short/medium/
+  long + smoke + Stage 7 32f short × gemma_structural × kr=0.33) with
+  median 2.1% / worst 5.2% prediction error. This graduates to a
+  standalone publishable analytical contribution independent of any
+  SOTA arm.
 - **New Pareto points at 32 frames, kr=0.10:** short 1.663×, medium
   1.565×, long 1.234× — all at Δacc=-0.100. Strict-inside-band earn
   on medium; favorable-direction falsification on short (1.663× above
@@ -179,11 +190,12 @@ LLM-prefill code path and does NOT depend on phase 1.42's
 for the explicit note. 1.42 stays in the queue as the claim-7
 enabler but is not the headline gate.
 
-1. **Phase 1.41 VideoMME N=30 on Qwen** — ≈ 2 h GPU wall time. Manifest
-   subset infrastructure is in place (`videomme_dev_v1.toml`, 30 items
-   balanced across short/medium/long) and is already exercised daily
-   by 1.51R Stage 1–5 on Gemma; Qwen Track A run is a runtime-only
-   gap. Unlocks claim 8 (the benchmark the paper cites).
+1. ~~**Phase 1.41 VideoMME N=30 on Qwen**~~ — **DONE 2026-04-18** at
+   aa793d3 (prereg) + findings landing. dense_acc=0.533, agreement=1.000,
+   parse_fail=0/30, peak RSS 6.67 GB, median e2e 30.5 s. Claim 8 is
+   earned on the local VideoMME dev slice. Next incremental lift:
+   16-frame or 32-frame re-run (H3 headroom; ~1 h wall-clock each) to
+   match published 32-frame Qwen 7B numbers.
 2. **Phase 1.42 v0 Gemma smoke** — minimum-viable whole-frame
    temporal-reuse integration. ~30 s on 1 item + ≈ 1.5 h N=30 dev.
    Unlocks claim 7 partial and de-risks the Gemma data path for the
