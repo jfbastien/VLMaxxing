@@ -1,5 +1,14 @@
 # Phase 1.30: Streaming-Window Harness (Track B groundwork)
 
+> **Status update 2026-04-19 (Codex round-21 reframe).** This phase
+> is reframed from "Track-B streaming-window harness" to "composition
+> lever for Phase 1.55 (persistent KV-cache) and Phase 1.56 (VLM-
+> signaled refresh)." Priority lowered to **P2** until 1.55/1.56
+> upstream gates clear. The original Track-B framing (CodecSight-
+> comparable UCF-Crime setting) is retained as a long-term goal but
+> is no longer load-bearing for the next-round paper. See
+> `2026-04-19-codex-round-21-sam-imports.md` §1 for full rationale.
+
 ## Preregistration
 
 Objective:

@@ -182,6 +182,31 @@ Implementation time is out of scope for this table.
   aggregate (`sum(dense_e2e) / sum(pruned_e2e)` across 30 items) is
   1.389×. See `2026-04-18-phase-1_51R-stage6-32frame-medium-findings.md`
   §aggregate for the full derivation.
+- **Decode-economics scope (Codex round-21).** Our per-item
+  subprocess driver charges full H.264 decode against every
+  inference (1 session = 1 item). On a production streaming
+  deployment with session-warm ViT features, decode would amortize
+  across many turns per clip, and the decode fraction (56.9% of
+  e2e on long-32) would shrink toward zero. Our reported aggregates
+  and the Ceiling@∞ numbers they feed should be read as **upper
+  bounds on decode cost**, not fundamental ceilings; a streaming
+  client running Phase 1.55 (persistent KV-cache) could reach the
+  C-CEILING prediction at s→∞ asymptotically. We do not
+  retroactively adjust numbers — keep them as pessimistic
+  benchmarks, note the amortization in the method section. See
+  `2026-04-19-codex-round-21-sam-imports.md` §4.
+- **Attention-context drift vs PE drift (Codex round-21).** Sam's
+  whitepaper attributes the refresh requirement to attention-context
+  drift (~0.01/frame, `paper/whitepaper-revised-2026-04-16.md:234`),
+  NOT positional-encoding drift. Our 1.49 refresh sweep shows
+  *that* periodic re-encode recovers agreement but does not isolate
+  *which* drift mechanism is load-bearing. Paper framing must say
+  "attention-context drift" when citing Sam and must NOT assert a
+  PE-drift mechanism absent a local ablation (Phase 1.57, queued
+  P2). The two require different mitigations: re-encode at I-frames
+  (what we do) addresses attention drift; temporal RoPE key
+  correction would address PE drift. See
+  `2026-04-19-codex-round-21-sam-imports.md` §3.
 
 Lane B (Gemma big-numbers on VideoMME) is the SOTA-facing priority.
 Lane A (Qwen routing) continues in parallel where it doesn't contend
