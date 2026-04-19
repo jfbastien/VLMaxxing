@@ -147,10 +147,28 @@ items may have higher sensitivity to the 90% token drop.
 - The **per-token generate speedup** is NOT bucket-monotone (short: 7.16,
   medium: 5.74, long: 6.79). This is noise from n=10 samples; it could
   be smoothed by merging all 30 items into a single aggregate.
-- **Aggregate across all 30 items** (quick calc): observed e2e =
-  (10 × 1.663 + 10 × 1.565 + 10 × 1.234) / 30 = **1.487×** at Δacc =
-  -0.100 on 30-item cross-bucket surface. **This is the paper's
-  headline 32-frame aggregate number.**
+- **Aggregate across all 30 items (time-weighted, canonical):** summing
+  wall-clock across all 30 items gives `dense=2458.03s`, `pruned=1769.88s`,
+  so the true end-to-end aggregate is `2458.03 / 1769.88 = `**1.389×** at
+  Δacc = -0.100. This is the correct number to quote: it reflects the
+  wall-clock time savings you would observe running the 30-item tranche.
+- **Methodology note (Codex round-21).** An earlier revision of this
+  document reported `(10 × 1.663 + 10 × 1.565 + 10 × 1.234) / 30 =
+  1.487×` as the "headline aggregate." That formula is a mean of
+  per-bucket speedup *ratios*, not a true aggregate: it implicitly
+  assumes all three buckets contribute equal wall-clock time, when in
+  reality long-32 contributes 1294.3s (53% of the total) while
+  short-32 contributes 589.0s (24%). The ratio-average overweights
+  fast buckets and overstates the aggregate by ~7%. Per-bucket
+  numbers (1.663×, 1.565×, 1.234×) remain the primary reportable
+  results; the 1.389× time-weighted aggregate is the correct
+  single-number summary if one is needed. See
+  `publishability-status.md` §headline-claims for reporting guidance.
+- **Mean-of-per-item-ratios (for reference, not the headline):** the
+  per-item ratio mean across 30 items is 1.499×. This is closer to
+  the ratio-average but still biased upward vs. the time-weighted
+  aggregate (1.389×) because short items have larger ratios *and*
+  smaller absolute savings.
 
 ## Decision
 

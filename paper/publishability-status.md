@@ -173,9 +173,15 @@ Implementation time is out of scope for this table.
   on Gemma 26B and Qwen 32f talking-head. Our 4B-class / 8-frame regime
   is arithmetically bounded to ≤1.46× at kr=0.10 aggregate; 32-frame
   lifts the ceiling but introduces decode cost.
-- **32-frame cross-bucket aggregate ≈ 1.487× at Δacc=-0.100 is
-  DEV-ONLY indicative.** Holdout tranche has not been run. Per-bucket
-  numbers are the reportable results.
+- **32-frame cross-bucket aggregate = 1.389× time-weighted at
+  Δacc=-0.100 is DEV-ONLY indicative.** Holdout tranche has not been
+  run. Per-bucket numbers (short 1.663×, medium 1.565×, long 1.234×)
+  are the primary reportable results. *Methodology note (Codex
+  round-21):* the earlier 1.487× figure was a mean of per-bucket
+  ratios, which overweights fast buckets; the correct time-weighted
+  aggregate (`sum(dense_e2e) / sum(pruned_e2e)` across 30 items) is
+  1.389×. See `2026-04-18-phase-1_51R-stage6-32frame-medium-findings.md`
+  §aggregate for the full derivation.
 
 Lane B (Gemma big-numbers on VideoMME) is the SOTA-facing priority.
 Lane A (Qwen routing) continues in parallel where it doesn't contend
