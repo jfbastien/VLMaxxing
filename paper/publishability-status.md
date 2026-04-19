@@ -1,4 +1,4 @@
-# Publishability Status — 2026-04-17
+# Publishability Status — 2026-04-19
 
 One-file answer to "what can we actually claim, in what venue, with what
 numbers, today." Kept in sync with [claim-matrix.md](claim-matrix.md) but

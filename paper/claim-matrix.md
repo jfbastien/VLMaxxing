@@ -1,6 +1,6 @@
 # Paper Claim Matrix
 
-Last updated: 2026-04-18
+Last updated: 2026-04-19
 
 This is the single-file answer to "what must be true before we can
 make each claim in the paper?" Per codex 2026-04-16 review: keep

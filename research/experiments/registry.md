@@ -1,6 +1,6 @@
 # Experiment Registry (Machine-Readable)
 
-Last updated: 2026-04-17
+Last updated: 2026-04-19
 
 This is the primary source of per-phase experiment state. Other docs
 (PLAN.md, research-strategy-post-codecsight.md, literature-map,
@@ -411,15 +411,37 @@ authoritative in the per-phase notes under
   notes: three-way gate preregistered (multiplicative / additive / interference); PoRe (arxiv 2508.17807) reserved as a composable axis under phase 1.52R holdout (see 1.51 prereg §Composable Arm) — NOT phase 1.53 (1.53 is now the object-state delta sidecar, preregistered 2026-04-18).
 
 - phase_id: 1.55
-  status: proposed (deferred-design)
+  status: superseded
   authoritative_note: research/experiments/2026/2026-04-19-phase-1_55-persistent-kv-prereg.md
   authoritative_artifacts: []
-  current_best_policy: n/a (composition lever)
+  current_best_policy: n/a
   supersedes: []
-  paper_relevance: secondary (Codex round-21 streaming-deployment composition lever; unblocks Sam's 1.8× long-clip target when composed with 1.54 decode acceleration)
-  prereg_outcome: (pending; blocked on mlx-vlm KV handle + Phase 1.54 + Phase 1.30 streaming harness)
-  runtime_estimate: ~1.5h at 8f (100-query synthetic session) + ~3h at 32f
-  notes: Codex-round-21 hypothesis extending Sam's system (not a reproduction of a whitepaper claim). Four H: prefill speedup ≥1.5×, Δacc ≥-0.05, composes with 1.54 to >2.0× long-bucket, RoPE-key correction load-bearing for KV reuse.
+  paper_relevance: historical (split into 1.55A reproduction + 1.55B composition per Codex round-22; original provenance+gating were wrong)
+  prereg_outcome: Superseded
+  runtime_estimate: n/a (see 1.55A, 1.55B)
+  notes: Original prereg mistakenly attributed Sam's MEASURED 2.13.3 persistent-KV result as a Codex hypothesis, and gated on an mlx-vlm fork that turned out to already be upstream (PromptCacheState + find_prefix_length). Split 2026-04-19 into 1.55A (reproduction of Sam 2.13.3 on Qwen 7B/M3 Air) and 1.55B (composition with 1.54 decode accel — deferred).
+
+- phase_id: 1.55A
+  status: proposed
+  authoritative_note: research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-reproduction-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: n/a
+  supersedes: ["1.55"]
+  paper_relevance: primary (reproduces Sam whitepaper §2.13.3 on our Qwen 7B / M3 Air setup — load-bearing for streaming-deployment speedup claim)
+  prereg_outcome: (pending; runnable now — no fork blocker, no 1.54 blocker)
+  runtime_estimate: ~17min benchmark-only (7 short-bucket items × 3 queries = 21 queries on Qwen 4bit)
+  notes: Four pre-registered H: H1 median follow-up ≤3s AND speedup ≥5×, H2 Δacc ±0.05, H3 prefix coverage ≥90%, H4 peak RSS ≤13GB. Implementation uses mlx-vlm's existing PromptCacheState; new harness script scripts/run_kv_cache_session.py. Top-priority runnable experiment after 1.57 per Codex round-22.
+
+- phase_id: 1.55B
+  status: proposed (deferred)
+  authoritative_note: research/experiments/2026/2026-04-19-phase-1_55B-persistent-kv-decode-composition-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: n/a
+  supersedes: []
+  paper_relevance: secondary (composition of persistent-KV with 1.54 decode-accel toward Sam's 1.8× long-clip aggregate)
+  prereg_outcome: (deferred; blocked on 1.54 landing first)
+  runtime_estimate: ~45min composition pass + ~20min controls at 8f; ~2h composition + ~30min controls at 32f
+  notes: Composition gate — only meaningful after 1.55A reproduces and 1.54 lands. Three H: aggregate long-clip e2e ≥2.0×, no new accuracy regression, peak RSS ≤13GB.
 
 - phase_id: 1.56
   status: proposed (deferred-design)
@@ -433,15 +455,15 @@ authoritative in the per-phase notes under
   notes: Codex-round-21 hypothesis extending Sam's system. Three H: signal beats pixel-MEAN at matched compute, random-ablation rules out correlate-of-activity, signal needs lower refresh rate at matched accuracy. Paper language constrained to "VLM-signaled" until Phase 1.44 lands; no "confidence-conditioned" framing until earned.
 
 - phase_id: 1.57
-  status: proposed (deferred)
-  authoritative_note: research/experiments/2026/2026-04-19-codex-round-21-sam-imports.md
+  status: proposed
+  authoritative_note: research/experiments/2026/2026-04-19-phase-1_57-feature-drift-mechanism-prereg.md
   authoritative_artifacts: []
   current_best_policy: n/a
   supersedes: []
-  paper_relevance: secondary (Codex round-21 mechanism-isolation — distinguish attention-context drift from PE drift)
-  prereg_outcome: (deferred; full prereg pending attention-entropy logging hook in mlx-vlm)
-  runtime_estimate: ~30min at 8f (single-arm ablation on the 1.49 refresh corpus); needs attention-entropy logging hook before it can run
-  notes: Sam's whitepaper line 234 claims "~0.01/frame attention-context drift." Our 1.49 refresh sweep shows behaviorally that re-encode fixes drift but does NOT isolate mechanism. This phase would add per-layer attention-entropy logging + compare against a PE-correction-only variant. Paper language rule: cite "attention-context drift" (whitepaper-grounded) and do NOT assert PE-drift mechanism absent this ablation.
+  paper_relevance: primary (feature-drift-first mechanism isolation; directly probes Sam research_queue §14-29 STATIC cos=0.67-0.80 finding on Gemma and the parallel Qwen question; load-bearing for the 16f→32f long-bucket plateau mechanism)
+  prereg_outcome: (pending; runnable now on M3 Air with scripts/measure_feature_drift.py)
+  runtime_estimate: ~45-60min total (Gemma + Qwen, 8/16/32 frames × N items, feature-tap extraction only — no generation)
+  notes: Promoted 2026-04-19 from pointer in codex-round-21 notes to a real prereg, per Codex round-22 feedback. Re-scoped feature-drift-first (not entropy-only) per Sam research_queue. Four H: H1 Gemma STATIC cos [0.60, 0.85]; H2 Qwen STATIC cos [0.95, 1.000]; H3 drift compounds with frame count; H4 entropy correlation weaker than cosine. Now load-bearing for discriminating stride-window / saturation / drift on the long-bucket plateau seen at 32f.
 
 - phase_id: 1.58
   status: proposed (deferred)
@@ -452,7 +474,18 @@ authoritative in the per-phase notes under
   paper_relevance: secondary (quantization × long-context — one of three candidate mechanisms for the 16f long-bucket regression)
   prereg_outcome: (deferred; gated on bf16 Qwen 2.5-VL-7B checkpoint download ~15 GB + feasibility check on 16 GB Mac)
   runtime_estimate: ~50-60min bf16 8f n=30 + ~2.5-3h bf16 16f n=30 + matched 4bit re-runs if needed; total ~3.5-4h once bf16 checkpoint is local
-  notes: Tests H-C (4bit × long-context) from the 2026-04-19 16f findings. Four pre-registered H: H1 long-bucket quantization gap ≥ +0.20, H2 no short-bucket gap, H3 RSS < 14 GB, H4 prefill ~4× ratio. Discriminator for the 16f non-monotonic finding; complementary to Phase 1.57 (attention-entropy).
+  notes: Tests H-C (4bit × long-context) from the 2026-04-19 16f findings. Four pre-registered H: H1 long-bucket quantization gap ≥ +0.20, H2 no short-bucket gap, H3 RSS < 14 GB, H4 prefill ~4× ratio. Discriminator for the 16f non-monotonic finding; complementary to Phase 1.57 (feature-drift).
+
+- phase_id: 1.59
+  status: research_note (future work, no prereg)
+  authoritative_note: research/experiments/2026/2026-04-19-phase-1_59-training-acceleration-feasibility.md
+  authoritative_artifacts: []
+  current_best_policy: n/a
+  supersedes: []
+  paper_relevance: methodology (closes Codex round-22 gap on the missing "training speedup" thread; scoped as named future-work rather than a vague paragraph)
+  prereg_outcome: n/a (research note, not a prereg)
+  runtime_estimate: n/a on M3 Air (hardware-insufficient; cloud/larger-Mac microbench ~few hundred training steps × 2 variants if resources materialize)
+  notes: Articulates whether and how the codec-through mechanism could extend to training (not just inference). Scope: cache-substitute forward + gradient handling at STATIC tokens. Decision: NOT preregistering on M3 Air; paper § Future Work now names this direction with a concrete reference + cites Phase 1.57 as the gating measurement.
 ```
 
 ## Maintenance rules
@@ -476,12 +509,15 @@ implementation, debugging, analysis, and CI time. Estimates are at
 
 | phase | status | runtime at 8f | runtime at 32f | blocked on |
 |-------|--------|---------------|----------------|------------|
+| 1.57  | proposed — P1 **first** | ~45-60min (all frame counts, feature-tap only, no generation) | (same run covers 8/16/32) | scripts/measure_feature_drift.py (scaffold planned; no fork needed) |
+| 1.55A | proposed — P1 **second** | ~17min (7 items × 3 queries, 4bit Qwen) | n/a (short-bucket only) | scripts/run_kv_cache_session.py (uses existing mlx-vlm PromptCacheState) |
+| 1.56  | deferred-design — P2 **third** | ~45min | ~2h | Phase 1.44 margin logging + RefreshPolicy API |
 | 1.52R | pending | ~2-3h | ~6-8h | 1.42 + 1.51R sweep completion |
-| 1.55  | deferred-design | ~1.5h | ~3h | mlx-vlm KV handle + 1.54 + 1.30 |
-| 1.56  | deferred-design | ~45min | ~2h | Phase 1.44 margin logging + RefreshPolicy API |
-| 1.57  | deferred | ~30min | n/a | attention-entropy logging hook |
+| 1.55B | deferred | ~65min (composition + controls) | ~2.5h | 1.54 landing + 1.55A earning |
 | 1.58  | deferred | ~1h bf16 8f | ~3h bf16 16f (no 32f) | bf16 Qwen checkpoint download (~15 GB), RSS feasibility |
+| 1.59  | research_note | n/a on M3 Air | n/a on M3 Air | external hardware |
 | 1.30  | P2 | ~2h (3 clips × 3 policies) | n/a | 1.26 + 1.27 + 1.29 infra; P2 now |
+| 1.55  | superseded | — | — | — (replaced by 1.55A/1.55B) |
 
 **Bottom-line forward benchmark time**: ~7-9h at 8f, ~15-18h at
 32f, to clear the Codex round-21 + 16f-follow-up forward queue

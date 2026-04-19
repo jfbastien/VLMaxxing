@@ -17,8 +17,11 @@ It is NOT the place for raw experimental detail. Evidence lives in:
 - [research/falsified-hypotheses.md](../research/falsified-hypotheses.md) —
   what the evidence has ruled out
 
-Last material update: 2026-04-16 (post-CodecSight repositioning + first
-credible held-out Pareto signal in phase 1.12.B).
+Last material update: 2026-04-19 (Sam-provenance correction for
+persistent-KV → 1.55A reproduction lane; 1.57 rescoped feature-drift-
+first per Sam research-queue 2026-04-18; VideoMME 16f non-monotonic
+bucket finding; 32f long-bucket probe landed — plateau at 0.111,
+zero-flips paired with 16f, drift-compounds hypothesis not supported).
 
 ## Candidate Paper Slot (target, not current claim)
 
