@@ -422,8 +422,8 @@ authoritative in the per-phase notes under
   notes: Original prereg mistakenly attributed Sam's MEASURED 2.13.3 persistent-KV result as a Codex hypothesis, and gated on an mlx-vlm fork that turned out to already be upstream (PromptCacheState + find_prefix_length). Split 2026-04-19 into 1.55A (reproduction of Sam 2.13.3 on Qwen 7B/M3 Air) and 1.55B (composition with 1.54 decode accel — deferred).
 
 - phase_id: 1.55A
-  status: completed (8f + 16f + 24f + 32f frame-scaling; fidelity cliff localized between 16f and 24f)
-  authoritative_note: research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-16f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-24f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-32f-frame-scaling-findings.md
+  status: completed (8f + 16f + 20f + 24f + 32f frame-scaling; fidelity is a narrow soft threshold between 16f and 24f)
+  authoritative_note: research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-16f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-20f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-24f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-32f-frame-scaling-findings.md
   authoritative_artifacts:
     - research/experiments/2026/artifacts/loop_queue_20260419_155108/phase1_55A_persistent_kv_qwen/summary.json
     - research/experiments/2026/artifacts/loop_queue_20260419_155108/phase1_55A_persistent_kv_qwen/session_qwen7b_n7.jsonl
@@ -431,17 +431,20 @@ authoritative in the per-phase notes under
     - research/experiments/2026/artifacts/phase1_55A_16f_frame_scaling/summary.json
     - research/experiments/2026/artifacts/phase1_55A_16f_frame_scaling/session_qwen7b_n7.jsonl
     - research/experiments/2026/artifacts/phase1_55A_16f_frame_scaling/baseline_qwen7b_n7.jsonl
+    - research/experiments/2026/artifacts/phase1_55A_20f_frame_scaling/summary.json
+    - research/experiments/2026/artifacts/phase1_55A_20f_frame_scaling/session_qwen7b_n7.jsonl
+    - research/experiments/2026/artifacts/phase1_55A_20f_frame_scaling/baseline_qwen7b_n7.jsonl
     - research/experiments/2026/artifacts/phase1_55A_24f_frame_scaling/summary.json
     - research/experiments/2026/artifacts/phase1_55A_24f_frame_scaling/session_qwen7b_n7.jsonl
     - research/experiments/2026/artifacts/phase1_55A_24f_frame_scaling/baseline_qwen7b_n7.jsonl
     - research/experiments/2026/artifacts/phase1_55A_32f_frame_scaling/summary.json
     - research/experiments/2026/artifacts/phase1_55A_32f_frame_scaling/session_qwen7b_n7.jsonl
     - research/experiments/2026/artifacts/phase1_55A_32f_frame_scaling/baseline_qwen7b_n7.jsonl
-  current_best_policy: "persistent-KV session (PromptCacheState one-per-clip) — 8f: 47.2× / 815 ms / Δacc −0.048. 16f: 91.1× / 807 ms / Δacc 0.000. 24f: 121.6× / 864 ms / Δacc −0.429. 32f: 149.9× / 1008 ms / Δacc −0.429. Fidelity cliff between 16f (6.5k) and 24f (9.7k) prefill tokens."
+  current_best_policy: "persistent-KV session (PromptCacheState one-per-clip) — 8f: 47.2× / 815 ms / Δacc −0.048. 16f: 91.1× / 807 ms / Δacc 0.000. 20f: 94.4× / 905 ms / Δacc −0.381 (ramp: 10 short + 4 long-garbage + 1 correct). 24f: 121.6× / 864 ms / Δacc −0.429 (saturated). 32f: 149.9× / 1008 ms / Δacc −0.429 (saturated). Narrow soft threshold between 16f (6.5k) and 24f (9.7k) prefill tokens."
   supersedes: ["1.55"]
-  paper_relevance: primary (reproduces Sam whitepaper §2.13.3 on Qwen 7B-4bit / M3 Air; prefill-dominance mechanism confirmed on 4-point scaling curve; identifies qualitative fidelity cliff between 16f and 24f; 24f/32f failure stats numerically identical — favours threshold over accumulation mechanisms)
-  prereg_outcome: H1/H1'/H1''/H1''' all earn (speedup scales linearly 47×→91×→122×→150×). H3/H3'/H3''/H3''' all earn (prefix ≥0.98). H4/H4'/H4''/H4''' all earn (peak RSS ≤ 3.3 GB). H2/H2' earn at 8f/16f; **H2''/H2''' REJECT at 32f/24f** with identical statistics (Δacc = −0.429; 14/14 follow-ups emit literal `addCriterion` token).
-  runtime_estimate: 17 min @ 8f + 35 min @ 16f + 55 min @ 24f + 76 min @ 32f = ~3.1 h total across 4 frame counts
+  paper_relevance: primary (reproduces Sam whitepaper §2.13.3 on Qwen 7B-4bit / M3 Air; prefill-dominance mechanism confirmed on 5-point scaling curve; 20f bisection reveals the fidelity transition is a narrow soft threshold with a partial-basin-collapse edge, saturating by 24f — favours threshold mechanisms with a soft edge over pure accumulation)
+  prereg_outcome: H1/H1'/H1''/H1'''/H1'''' all earn (speedup scales linearly 47×→91×→94×→122×→150×). H3/H3'/H3''/H3'''/H3'''' all earn (prefix ≥0.98). H4/H4'/H4''/H4'''/H4'''' all earn (peak RSS ≤ 3.5 GB). H2/H2' earn at 8f/16f; **H2''/H2'''/H2'''' REJECT at 32f/24f/20f**. 20f is a mixed-basin ramp (10 short `addCriterion` + 4 long-garbage + 1 correct, Δ = −0.381); 24f/32f saturate to identical 14/14 `addCriterion` (Δ = −0.429).
+  runtime_estimate: 17 min @ 8f + 35 min @ 16f + 42 min @ 20f + 55 min @ 24f + 76 min @ 32f = ~3.8 h total across 5 frame counts
   notes: |
     **8f run (loop_queue_20260419_155108):** all four preregistered hypotheses
     earn. H1 47.23× speedup, H2 Δacc −0.048, H3 prefix 0.982, H4 peak RSS 2.81 GB.
@@ -456,15 +459,20 @@ authoritative in the per-phase notes under
     **24f bisection (phase1_55A_24f_frame_scaling):** H1''' 121.58×, H3''' 0.9940,
     H4''' 3.30 GB — BUT H2''' REJECTS with Δacc = −0.429 identical to 32f
     (same session 9/21, baseline 18/21, follow-up 2/14, 14/14 `addCriterion`).
-    **Cliff-versus-gradient verdict: cliff.** Boundary localized between 6.5k (16f)
-    and 9.7k (24f) prefill tokens, not between 16f and 32f. Cliff saturates once
-    triggered — favours threshold mechanisms (4-bit KV quantization budget,
-    M-RoPE OOD at long visual prefix) over accumulation (gradual drift, suffix-
-    length effects). Prefill-dominance speedup curve: 38.5→73.5→108.9→163.2 s
-    first-query (1.91×/1.48×/1.50×); 815→807→864→1008 ms follow-up; 47×→91×→122×→150×
+    **20f midpoint bisection (phase1_55A_20f_frame_scaling):** H1'''' 94.42×,
+    H3'''' 0.9928, H4'''' 3.51 GB — H2'''' Δacc = −0.381 with MIXED failure
+    mode: 10/14 short `addCriterion`, 4/14 longer garbage (up to 64 gen tokens
+    of Java/MyBatis hallucinations), 1/14 correct "D". Q1 6/7 (one cold flake).
+    **Cliff-versus-gradient-versus-ramp verdict: narrow soft threshold.**
+    Boundary is not a single step — at the edge (~8k tokens), decoder trajectories
+    partially collapse into the basin; by 9.7k they saturate universally.
+    Weakens pure-cliff and pure-gradient pictures; favours threshold mechanisms
+    with a soft edge (4-bit KV quantization budget near threshold, M-RoPE
+    OOD). Prefill-dominance speedup curve: 38.5→73.5→83.8→108.9→163.2 s
+    first-query; 815→807→905→864→1008 ms follow-up; 47×→91×→94×→122×→150×
     speedup. Median follow-up matches Sam's 0.8 s (Gemma 4 26B / M5 Max) to 15 ms
-    at 8f/16f. 20f bisection in flight 2026-04-19 to further localize the cliff
-    between 6.5k and 9.7k.
+    at 8f/16f. 18f bisection in flight 2026-04-19 to localize ramp onset
+    between 16f (6.5k) and 20f (8.1k) prefill tokens.
 
 - phase_id: 1.55B
   status: proposed (deferred)
