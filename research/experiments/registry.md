@@ -422,28 +422,34 @@ authoritative in the per-phase notes under
   notes: Original prereg mistakenly attributed Sam's MEASURED 2.13.3 persistent-KV result as a Codex hypothesis, and gated on an mlx-vlm fork that turned out to already be upstream (PromptCacheState + find_prefix_length). Split 2026-04-19 into 1.55A (reproduction of Sam 2.13.3 on Qwen 7B/M3 Air) and 1.55B (composition with 1.54 decode accel — deferred).
 
 - phase_id: 1.55A
-  status: completed
-  authoritative_note: research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md
+  status: completed (8f + 16f frame-scaling)
+  authoritative_note: research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-16f-frame-scaling-findings.md
   authoritative_artifacts:
     - research/experiments/2026/artifacts/loop_queue_20260419_155108/phase1_55A_persistent_kv_qwen/summary.json
     - research/experiments/2026/artifacts/loop_queue_20260419_155108/phase1_55A_persistent_kv_qwen/session_qwen7b_n7.jsonl
     - research/experiments/2026/artifacts/loop_queue_20260419_155108/phase1_55A_persistent_kv_qwen/baseline_qwen7b_n7.jsonl
-  current_best_policy: "persistent-KV session (PromptCacheState one-per-clip) — 47.2× follow-up speedup, 815 ms median, Δacc −0.048 aggregate"
+    - research/experiments/2026/artifacts/phase1_55A_16f_frame_scaling/summary.json
+    - research/experiments/2026/artifacts/phase1_55A_16f_frame_scaling/session_qwen7b_n7.jsonl
+    - research/experiments/2026/artifacts/phase1_55A_16f_frame_scaling/baseline_qwen7b_n7.jsonl
+  current_best_policy: "persistent-KV session (PromptCacheState one-per-clip) — 8f: 47.2× / 815 ms / Δacc −0.048. 16f: 91.1× / 807 ms / Δacc 0.000. Prefill-dominance mechanism confirmed on 2-point scaling curve."
   supersedes: ["1.55"]
-  paper_relevance: primary (reproduces Sam whitepaper §2.13.3 on Qwen 7B-4bit / M3 Air — follow-up latency paper claim EARNED on our hardware class)
-  prereg_outcome: Accepted with caveat (H1-H4 all earn; H2 stratified to follow-ups only shows −7pp at n=14, underpowered)
-  runtime_estimate: 17 min wall (actual: ~18 min including baseline pass)
+  paper_relevance: primary (reproduces Sam whitepaper §2.13.3 on Qwen 7B-4bit / M3 Air AND confirms prefill-dominance mechanism on 2-point scaling curve)
+  prereg_outcome: Fully earned (H1-H4 all earn at both frame counts; 16f Δacc=0 resolves 8f follow-up-stratified caveat)
+  runtime_estimate: 17 min @ 8f + 35 min @ 16f = ~52 min total across both frame counts
   notes: |
-    All four preregistered hypotheses earn. H1 47.23× speedup vs ≥5× threshold
-    (median follow-up 815 ms vs 38.5 s first-query). H2 Δacc −0.048 on 21
-    queries (16/21 session vs 17/21 baseline) — within ±0.05 envelope;
-    stratified to Q2+Q3 only, session 9/14 vs baseline 11/14 (−7pp, n=14 too
-    small for a clean verdict). H3 prefix coverage 0.982 across 14 follow-ups.
-    H4 peak RSS 2.81 GB vs 13 GB budget. Median follow-up latency matches Sam's
-    0.8 s to 15 ms — a regime-independent bound dominated by ~100-token decode.
-    Driver bug caught and fixed mid-session: initial run had state.token_ids
-    gate preventing state from ever being threaded to generate(), forcing
-    cold-start on every query. Fix at 143e782.
+    **8f run (loop_queue_20260419_155108):** all four preregistered hypotheses
+    earn. H1 47.23× speedup, H2 Δacc −0.048 (stratified follow-up −7pp at n=14
+    was underpowered), H3 prefix 0.982, H4 peak RSS 2.81 GB. Driver bug caught
+    and fixed at 143e782 (state.token_ids gate prevented state threading).
+    **16f follow-up (phase1_55A_16f_frame_scaling):** all four H' earn, and
+    prefill-dominance mechanism confirmed. H1' 91.06× speedup (inside band
+    [60×, 120×]), H2' follow-up median 807 ms (≤1.5s band ✓), H3' prefix 0.991,
+    H4' peak RSS 1.48 GB. CRITICAL: doubling prefill (3.3k→6.5k tokens) doubles
+    first-query time (1.91×) and doubles speedup (1.93×) while leaving follow-
+    up time unchanged (0.99×) — clean mechanistic signal that savings are purely
+    prefill. 16f Δacc = 0.000 (17/21 = 17/21) resolves the 8f stratified
+    caveat. Median follow-up matches Sam's 0.8 s (Gemma 4 26B / M5 Max) to
+    15 ms at both frame counts.
 
 - phase_id: 1.55B
   status: proposed (deferred)
