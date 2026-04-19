@@ -226,6 +226,49 @@ rarer and often texture-contaminated). SHIFTED share is
 higher-cos population is also a smaller fraction of long-clip
 tokens. No paper claim rides on SHIFTED alone.
 
+### Cross-reference to 1.41: drift-vs-accuracy co-saturation
+
+Aligning per-bucket drift (this doc) with per-bucket accuracy
+(`2026-04-19-phase-1_41-qwen-videomme-32f-long-findings.md`):
+
+| bucket | 8f acc | 16f acc | 32f acc | STATIC 8f | STATIC 16f | STATIC 32f |
+|--------|--------|---------|---------|-----------|------------|------------|
+| short  | ~1.000 | 0.800   | 0.800   | +0.567    | +0.618     | **+0.676** (still rising) |
+| medium | 0.400  | 0.700   | 0.700   | +0.575    | +0.620     | **+0.639** (sub-linear) |
+| long   | 0.300  | 0.100   | 0.100   | +0.545    | +0.582     | **+0.592** (saturated at 16f) |
+
+The 1.41 findings doc preregistered three mechanism-candidates
+for the long-bucket plateau: H-drift-compounds, H-stride-window,
+and H-saturation. The per-bucket drift numbers now adjudicate:
+
+- **H-drift-compounds REJECTED.** Predicts monotonic STATIC cos
+  *decline* with frame count. Observed direction is *rise* at all
+  buckets. Drift-compounds as originally framed is not the
+  mechanism.
+- **H-saturation SUPPORTED.** Predicts long-bucket signals plateau
+  at 16f. Observed: long-bucket accuracy plateaued at 16f AND
+  long-bucket STATIC drift essentially plateaued at 16f (δ16→32 =
+  +0.010). Both capacity-signals co-saturate.
+- **H-stride-window NEUTRAL.** Drift data doesn't rule it out
+  but also doesn't selectively support it over saturation.
+
+The clean empirical fact is **drift saturates at the same frame
+count where accuracy saturates, per-bucket**. Short bucket: both
+signals still have room (acc flat from 16f, but drift still rising
+at 32f — so acc ceiling is NOT drift-driven on short). Long
+bucket: both signals flat-lined at 16f. Medium: both sub-linear
+mid-saturation at 32f.
+
+**Paper-facing conclusion.** Feature-cos drift is a *co-indicator*
+of the capacity plateau, not the *binding constraint*. Short-
+bucket accuracy at 16-32f is flat despite rising drift — meaning
+the ViT still has representational headroom that the LLM-side
+reasoner can't exploit on this question distribution. The long-
+bucket "H-drift-compounds" narrative is empirically wrong in
+direction and should be retired from the mechanism-candidates
+list. Saturation (both ViT-attention-mixing and LLM-integration)
+is the surviving explanation.
+
 ## Scope of claim after v0
 
 **Earned.** Qwen-side per-class adjacent-frame ViT feature drift
