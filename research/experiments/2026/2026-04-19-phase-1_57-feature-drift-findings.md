@@ -178,6 +178,54 @@ at dense temporal sampling, and the mechanism is attention-mixing
 driven by global frame content, not a measurement artifact of
 sparse 8f sampling.
 
+### Per-bucket stratification (post-landing, 2026-04-19)
+
+Re-analyzing the same three JSONs by VideoMME duration bucket
+(short / medium / long, n=10 each) reveals that the aggregate
+"sub-linear bending" is a **mix of very different per-bucket
+trajectories**:
+
+| bucket | STATIC 8f | STATIC 16f | STATIC 32f | δ(8→16) | δ(16→32) |
+|--------|-----------|------------|------------|---------|----------|
+| short  | +0.5668   | +0.6177    | +0.6757    | +0.0509 | **+0.0580** |
+| medium | +0.5746   | +0.6200    | +0.6394    | +0.0454 | +0.0194 |
+| long   | +0.5445   | +0.5819    | +0.5920    | +0.0374 | **+0.0101** |
+
+Short-bucket STATIC cos is **still rising, and the rise is
+accelerating** (+0.058 at 16→32 vs +0.051 at 8→16). Medium bucket
+is the one with the classic sub-linear bend (+0.045 → +0.019).
+Long bucket is essentially **saturated by 16f** at cos ~0.59
+(+0.010 at 16→32). This means:
+
+- The attention-mixing ceiling is **bucket-dependent**, not a
+  single universal constant. Short clips: ceiling not yet reached
+  at 32f (likely ≥0.75). Long clips: ceiling ~0.59.
+- Rebut: "the 0.70-0.75 asymptote estimate in aggregate is wrong
+  direction for short-bucket extrapolation — short-bucket STATIC
+  at 64f could plausibly reach 0.80+, while long-bucket has
+  essentially no room left."
+- Class-share confirms this: long-bucket at 32f is still 41.9%
+  STATIC / 55.9% NOVEL, vs short-bucket 48.9% / 46.7%. Long-clip
+  adjacent frames simply have more disparate global content per
+  stride, even with denser sampling.
+
+**Paper implication.** Any per-bucket accuracy result on Qwen
+must carry a per-bucket drift caveat, not the aggregate. Long-
+bucket degradation from cache-substitute would hit a LOWER
+feature-cos floor (≤0.60) than short-bucket (≥0.68 at 32f).
+
+### Counter-intuitive SHIFTED finding: long > short at 32f
+
+At 32f, long-bucket SHIFTED cos (+0.613) is HIGHER than
+short-bucket SHIFTED cos (+0.576). The SHIFTED class captures
+translated-but-similar content; long clips with smooth camera
+motion generate more such blocks, and those blocks happen to have
+higher feature-cos than short-clip SHIFTED blocks (which are
+rarer and often texture-contaminated). SHIFTED share is
+**lower** in long bucket (2.1% vs 4.3% short at 32f), so this
+higher-cos population is also a smaller fraction of long-clip
+tokens. No paper claim rides on SHIFTED alone.
+
 ## Scope of claim after v0
 
 **Earned.** Qwen-side per-class adjacent-frame ViT feature drift
