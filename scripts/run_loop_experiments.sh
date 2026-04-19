@@ -70,36 +70,20 @@ run_step "1_55A_persistent_kv" \
 # Experiment 2 — Phase 1.57 Qwen validation re-run (smoke, n=5) at 8f
 #   Sanity check that measure_feature_drift.py still works post-refactor.
 # ---------------------------------------------------------------------------
-run_step "1_57_qwen_smoke_n5_8f" \
+mkdir -p "$QUEUE_DIR/phase1_57"
+run_step "1_57_qwen_short_8f_smoke" \
   "$PY" "$REPO/scripts/measure_feature_drift.py" \
-    --model mlx-community/Qwen2.5-VL-7B-Instruct-4bit \
+    --model qwen \
     --manifest "$REPO/research/benchmark_manifests/videomme_dev_v1.toml" \
-    --n-items 5 \
-    --frames 8 \
-    --output "$QUEUE_DIR/phase1_57/qwen_8f_smoke_n5.json"
+    --group short \
+    --frame-count 8 \
+    --output "$QUEUE_DIR/phase1_57/qwen_8f_short_smoke.json"
 
 # ---------------------------------------------------------------------------
-# Experiment 3 — Phase 1.58 bf16 smoke-feasibility check
-#   Probe: does the bf16 Qwen 2.5-VL-7B checkpoint fit in 16 GB RSS?
-#   Simply attempt to load the model; capture peak RSS + exit status.
-#   This is a pre-gate for the full 1.58 ablation; no benchmark run.
-# ---------------------------------------------------------------------------
-run_step "1_58_bf16_load_smoke" \
-  "$PY" -c "
-import time, sys, resource, os
-t0 = time.monotonic()
-try:
-    from mlx_vlm import load
-    model, processor = load('mlx-community/Qwen2.5-VL-7B-Instruct')
-    dt = time.monotonic() - t0
-    rss_kb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-    rss_gb = rss_kb / 1e9 if sys.platform == 'linux' else rss_kb / (1024 ** 3)
-    print(f'[1.58-smoke] bf16 load OK in {dt:.1f}s peak_rss={rss_gb:.2f}GB')
-except Exception as e:
-    dt = time.monotonic() - t0
-    print(f'[1.58-smoke] bf16 load FAILED in {dt:.1f}s: {type(e).__name__}: {e}')
-    sys.exit(1)
-"
+# (Dropped) Experiment 3 — 1.58 bf16 load smoke
+#   The mlx-community/Qwen2.5-VL-7B-Instruct (bf16) repo does not exist
+#   under that id, and the full 1.58 prereg already flags bf16 as DEFERRED
+#   pending a valid 15 GB checkpoint. Dropped from the queue.
 
 # ---------------------------------------------------------------------------
 # Final summary

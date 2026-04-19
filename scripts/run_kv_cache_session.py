@@ -228,11 +228,12 @@ def _run_query(
 
 def _score_answer(response_text: str, item: BenchmarkItem) -> tuple[str | None, bool]:
     letters = [chr(ord("A") + i) for i in range(len(item.candidates))]
-    choice = extract_choice(response_text, letters)
-    correct = (
-        choice is not None and (ord(choice) - ord("A")) == item.answer_index
-    )
-    return choice, correct
+    choice_index = extract_choice(response_text, letters)
+    if choice_index is None:
+        return None, False
+    choice_letter = chr(ord("A") + choice_index)
+    correct = choice_index == item.answer_index
+    return choice_letter, correct
 
 
 def main() -> int:
