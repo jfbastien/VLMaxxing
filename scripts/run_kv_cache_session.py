@@ -196,10 +196,15 @@ def _run_query(
     kwargs = dict(sample.extra_kwargs)
     prefix_hit_before = 0
     input_len = int(sample.input_ids.size)
-    if prompt_cache_state is not None and prompt_cache_state.token_ids is not None:
-        prefix_hit_before = prompt_cache_state.find_prefix_length(
-            sample.input_ids.flatten().tolist()
-        )
+    if prompt_cache_state is not None:
+        # Pass the state unconditionally so mlx-vlm populates it on the
+        # first turn. find_prefix_length is for pre-call logging only;
+        # on a fresh state it returns 0 (token_ids is None) and generate()
+        # correctly treats it as a cold start.
+        if prompt_cache_state.token_ids is not None:
+            prefix_hit_before = prompt_cache_state.find_prefix_length(
+                sample.input_ids.flatten().tolist()
+            )
         kwargs["prompt_cache_state"] = prompt_cache_state
     start_ns = time.perf_counter_ns()
     response = generate(
