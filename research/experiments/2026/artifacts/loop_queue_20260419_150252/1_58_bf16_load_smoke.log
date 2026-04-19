@@ -1,0 +1,21 @@
+cmd: /Users/jfb/s/codec-through/.venv/bin/python3 -c 
+import time, sys, resource, os
+t0 = time.monotonic()
+try:
+    from mlx_vlm import load
+    model, processor = load('mlx-community/Qwen2.5-VL-7B-Instruct')
+    dt = time.monotonic() - t0
+    rss_kb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    rss_gb = rss_kb / 1e9 if sys.platform == 'linux' else rss_kb / (1024 ** 3)
+    print(f'[1.58-smoke] bf16 load OK in {dt:.1f}s peak_rss={rss_gb:.2f}GB')
+except Exception as e:
+    dt = time.monotonic() - t0
+    print(f'[1.58-smoke] bf16 load FAILED in {dt:.1f}s: {type(e).__name__}: {e}')
+    sys.exit(1)
+
+[1.58-smoke] bf16 load FAILED in 2.7s: RepositoryNotFoundError: 404 Client Error. (Request ID: Root=1-69e4702f-15f1d0b05742137355986dab;6c54abe2-d5ca-4cef-aeb4-b86fd72dada6)
+
+Repository Not Found for url: https://huggingface.co/api/models/mlx-community/Qwen2.5-VL-7B-Instruct/revision/main.
+Please make sure you specified the correct `repo_id` and `repo_type`.
+If you are trying to access a private or gated repo, make sure you are authenticated and your token has the required permissions.
+For more details, see https://huggingface.co/docs/huggingface_hub/authentication

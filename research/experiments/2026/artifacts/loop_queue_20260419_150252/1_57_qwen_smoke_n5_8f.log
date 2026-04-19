@@ -1,0 +1,7 @@
+cmd: /Users/jfb/s/codec-through/.venv/bin/python3 /Users/jfb/s/codec-through/scripts/measure_feature_drift.py --model mlx-community/Qwen2.5-VL-7B-Instruct-4bit --manifest /Users/jfb/s/codec-through/research/benchmark_manifests/videomme_dev_v1.toml --n-items 5 --frames 8 --output /Users/jfb/s/codec-through/research/experiments/2026/artifacts/loop_queue_20260419_150252/phase1_57/qwen_8f_smoke_n5.json
+usage: measure_feature_drift.py [-h] [--model {qwen,gemma}] --manifest
+                                MANIFEST [--frame-count FRAME_COUNT]
+                                [--group {short,medium,long}]
+                                [--cache-dir CACHE_DIR]
+                                [--model-path MODEL_PATH] --output OUTPUT
+measure_feature_drift.py: error: argument --model: invalid choice: 'mlx-community/Qwen2.5-VL-7B-Instruct-4bit' (choose from qwen, gemma)

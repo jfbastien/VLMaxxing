@@ -69,6 +69,7 @@ N=30 holdout, clean-tree provenance; projected compute-savings ceiling
 | F | **Pixel-diff proxy → ViT feature-change correlation is non-trivial but content-conditional.** | Phase 1.36 feature-change oracle: best pixel stat Pearson r=0.233 (TOMATO MEAN) to r=0.504 (MVBench CPF). Ranking is content-dependent; the best routing stat (MAX_ABS) is NOT the best point predictor. | `phase1_36_feature_change_oracle/*.json`; phase 1.36 note |
 | G | **Dense wall-clock baseline captured on M3 Air 16GB.** | TOMATO n=10 mc_scoring at 8 frames, 560×560: 60.1 s/item median; prefill 72% of wall time, vision encode 22%, decode 6%; peak 6.87 GB. | `results/track_b/tomato_mc_n10.json`; phase 1.50 note |
 | H | **Hard ceiling for vision-cache-only Track B: 22% end-to-end speedup at this geometry.** | Arithmetic: vision encode is 22% of per-item wall time, so any method that only skips vision work caps at 22% end-to-end before prefill savings. | Derived from G; explicit in phase 1.50 §Paper implications |
+| O | **Persistent-KV follow-up speedup 47× (815 ms median) on Qwen 7B-4bit; reproduces Sam §2.13.3 on our regime.** | 1.55A n=21 queries across 7 short-bucket VideoMME clips × 3 Qs: session Q2/Q3 median 815 ms vs baseline cold-start median 37.9 s. Prefix coverage 0.982 across all 14 follow-ups (system+image tokens reused). Δacc −0.048 aggregate (H2 earned at ±0.05 envelope; stratified to follow-ups only: −0.07 at n=14, underpowered). Peak RSS 2.81 GB / 16 GB budget. Median matches Sam's 0.8 s to 15 ms — regime-independent bound dominated by ~100-token decode. | `research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md`; `research/experiments/2026/artifacts/loop_queue_20260419_155108/phase1_55A_persistent_kv_qwen/summary.json` |
 
 ### What remains BLOCKED before venue submission
 
@@ -104,6 +105,7 @@ is work the user is buying forever. What the user is paying for
 | J₃₂L | Phase 1.41 VideoMME long n=10 @ 32f | ≈ 28 min (1,450 s projected from 161 s/item × 9 measured) | same | Qwen 2.5-VL-7B-4bit |
 | K | Claim-11 reproduction log (1.51R Stages 1/2b/3/5/6/7) | ≈ 10-12 h total across N=30 cells on both benchmarks | n/a (incremental) | Gemma 4-E4B-4bit |
 | M | Claim-13 C-CEILING cross-validation (7 regime dimensions) | included in K | n/a | Gemma 4-E4B-4bit |
+| O | Phase 1.55A persistent-KV follow-up latency (n=21 queries) | ≈ 18 min (1057 s measured; session+baseline inline) | ≈ 18 min | Qwen 2.5-VL-7B-4bit |
 
 ### Blocked / forward queue (pre-reg runtime budget)
 
@@ -112,7 +114,7 @@ is work the user is buying forever. What the user is paying for
 | I | Sparse-execution delta (claim 5 "N% measured speedup") | ≈ 1 h per benchmark | either | sparse execution path not written |
 | L | Placement ablation (phase 1.38) | ≈ 30 min | Qwen 2.5-VL-7B-4bit | not queued |
 | N₅₇ | Phase 1.57 feature-drift measurement (Qwen landed; Gemma deferred) | **Qwen 8/16/32f: LANDED 2026-04-19** (~30 min total); Gemma path deferred (needs inline ViT encode) | both | **Qwen DONE**: STATIC cos 0.562/0.607/0.638; H2 FALSIFIED, H3 EARNED; Gemma path deferred |
-| N₅₅ₐ | Phase 1.55A persistent-KV reproduction (short bucket 7×3) | ≈ 17 min | Qwen 2.5-VL-7B-4bit | scripts/run_kv_cache_session.py (uses existing mlx-vlm PromptCacheState) |
+| N₅₅ₐ | Phase 1.55A persistent-KV reproduction (short bucket 7×3) | **LANDED 2026-04-19** (1057 s measured) | Qwen 2.5-VL-7B-4bit | H1-H4 all earn; 47.2× speedup, 815 ms median, 0.982 prefix coverage; promoted to row O in earned-now table |
 | N₅₆ | Phase 1.56 VLM-signaled refresh (3 arms × n=30 VideoMME dev) | ≈ 45 min @ 8f; ≈ 2 h @ 32f | Qwen 2.5-VL-7B-4bit | Phase 1.44 margin logging + RefreshPolicy API |
 | N₁.₅₂R | Phase 1.52R temporal+spatial composition on Gemma | ≈ 2-3 h @ 8f; ≈ 6-8 h @ 32f | Gemma 4-E4B-4bit | 1.42 + 1.51R sweep completion |
 | N₁.₅₅B | Phase 1.55B KV × decode-accel composition | ≈ 65 min @ 8f; ≈ 2.5 h @ 32f | Qwen 2.5-VL-7B-4bit | 1.54 landing + 1.55A earning |

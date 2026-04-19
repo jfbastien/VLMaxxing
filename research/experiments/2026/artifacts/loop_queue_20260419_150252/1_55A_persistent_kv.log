@@ -1,0 +1,17 @@
+cmd: /Users/jfb/s/codec-through/.venv/bin/python3 /Users/jfb/s/codec-through/scripts/run_kv_cache_session.py --mode both --output-dir /Users/jfb/s/codec-through/research/experiments/2026/artifacts/loop_queue_20260419_150252/phase1_55A_persistent_kv_qwen
+[1.55A] loading model from /Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit
+[1.55A] model loaded; video_ids=['037', '100', '116', '120', '158', '160', '210'] frames=8
+[1.55A] prepared 7 clips × 3 questions = 21 queries
+[1.55A] clip 037 duration=short
+Prefill:   0%|          | 0/3270 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3270 [00:17<00:10, 118.71tok/s]Prefill: 100%|█████████▉| 3269/3270 [00:24<00:00, 138.75tok/s]Prefill: 100%|█████████▉| 3269/3270 [00:24<00:00, 134.48tok/s]
+Traceback (most recent call last):
+  File "/Users/jfb/s/codec-through/scripts/run_kv_cache_session.py", line 510, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/Users/jfb/s/codec-through/scripts/run_kv_cache_session.py", line 321, in main
+    choice, correct = _score_answer(result["text"], item)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jfb/s/codec-through/scripts/run_kv_cache_session.py", line 233, in _score_answer
+    choice is not None and (ord(choice) - ord("A")) == item.answer_index
+                            ^^^^^^^^^^^
+TypeError: ord() expected string of length 1, but int found

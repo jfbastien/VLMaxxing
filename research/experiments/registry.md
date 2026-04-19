@@ -422,15 +422,28 @@ authoritative in the per-phase notes under
   notes: Original prereg mistakenly attributed Sam's MEASURED 2.13.3 persistent-KV result as a Codex hypothesis, and gated on an mlx-vlm fork that turned out to already be upstream (PromptCacheState + find_prefix_length). Split 2026-04-19 into 1.55A (reproduction of Sam 2.13.3 on Qwen 7B/M3 Air) and 1.55B (composition with 1.54 decode accel — deferred).
 
 - phase_id: 1.55A
-  status: proposed
-  authoritative_note: research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-reproduction-prereg.md
-  authoritative_artifacts: []
-  current_best_policy: n/a
+  status: completed
+  authoritative_note: research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/loop_queue_20260419_155108/phase1_55A_persistent_kv_qwen/summary.json
+    - research/experiments/2026/artifacts/loop_queue_20260419_155108/phase1_55A_persistent_kv_qwen/session_qwen7b_n7.jsonl
+    - research/experiments/2026/artifacts/loop_queue_20260419_155108/phase1_55A_persistent_kv_qwen/baseline_qwen7b_n7.jsonl
+  current_best_policy: "persistent-KV session (PromptCacheState one-per-clip) — 47.2× follow-up speedup, 815 ms median, Δacc −0.048 aggregate"
   supersedes: ["1.55"]
-  paper_relevance: primary (reproduces Sam whitepaper §2.13.3 on our Qwen 7B / M3 Air setup — load-bearing for streaming-deployment speedup claim)
-  prereg_outcome: (pending; runnable now — no fork blocker, no 1.54 blocker)
-  runtime_estimate: ~17min benchmark-only (7 short-bucket items × 3 queries = 21 queries on Qwen 4bit)
-  notes: Four pre-registered H: H1 median follow-up ≤3s AND speedup ≥5×, H2 Δacc ±0.05, H3 prefix coverage ≥90%, H4 peak RSS ≤13GB. Implementation uses mlx-vlm's existing PromptCacheState; new harness script scripts/run_kv_cache_session.py. Top-priority runnable experiment after 1.57 per Codex round-22.
+  paper_relevance: primary (reproduces Sam whitepaper §2.13.3 on Qwen 7B-4bit / M3 Air — follow-up latency paper claim EARNED on our hardware class)
+  prereg_outcome: Accepted with caveat (H1-H4 all earn; H2 stratified to follow-ups only shows −7pp at n=14, underpowered)
+  runtime_estimate: 17 min wall (actual: ~18 min including baseline pass)
+  notes: |
+    All four preregistered hypotheses earn. H1 47.23× speedup vs ≥5× threshold
+    (median follow-up 815 ms vs 38.5 s first-query). H2 Δacc −0.048 on 21
+    queries (16/21 session vs 17/21 baseline) — within ±0.05 envelope;
+    stratified to Q2+Q3 only, session 9/14 vs baseline 11/14 (−7pp, n=14 too
+    small for a clean verdict). H3 prefix coverage 0.982 across 14 follow-ups.
+    H4 peak RSS 2.81 GB vs 13 GB budget. Median follow-up latency matches Sam's
+    0.8 s to 15 ms — a regime-independent bound dominated by ~100-token decode.
+    Driver bug caught and fixed mid-session: initial run had state.token_ids
+    gate preventing state from ever being threaded to generate(), forcing
+    cold-start on every query. Fix at 143e782.
 
 - phase_id: 1.55B
   status: proposed (deferred)

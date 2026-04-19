@@ -1,0 +1,97 @@
+cmd: /Users/jfb/s/codec-through/.venv/bin/python3 /Users/jfb/s/codec-through/scripts/run_kv_cache_session.py --mode both --output-dir /Users/jfb/s/codec-through/research/experiments/2026/artifacts/loop_queue_20260419_150807/phase1_55A_persistent_kv_qwen
+[1.55A] loading model from /Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit
+[1.55A] model loaded; video_ids=['037', '100', '116', '120', '158', '160', '210'] frames=8
+[1.55A] prepared 7 clips × 3 questions = 21 queries
+[1.55A] clip 037 duration=short
+Prefill:   0%|          | 0/3270 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3270 [00:17<00:10, 120.45tok/s]Prefill: 100%|█████████▉| 3269/3270 [00:24<00:00, 139.61tok/s]Prefill: 100%|█████████▉| 3269/3270 [00:24<00:00, 135.56tok/s]
+   session Q1: 24973 ms prefix=0/3270 (0.00%) correct=True
+Prefill:   0%|          | 0/3295 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3295 [00:19<00:11, 106.92tok/s]Prefill: 100%|█████████▉| 3294/3295 [00:26<00:00, 128.65tok/s]Prefill: 100%|█████████▉| 3294/3295 [00:26<00:00, 123.95tok/s]
+   session Q2: 26788 ms prefix=0/3295 (0.00%) correct=True
+Prefill:   0%|          | 0/3318 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3318 [00:19<00:12, 104.86tok/s]Prefill: 100%|█████████▉| 3317/3318 [00:27<00:00, 126.16tok/s]Prefill: 100%|█████████▉| 3317/3318 [00:27<00:00, 121.58tok/s]
+   session Q3: 27497 ms prefix=0/3318 (0.00%) correct=True
+Prefill:   0%|          | 0/3270 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3270 [00:22<00:13, 90.73tok/s]Prefill: 100%|█████████▉| 3269/3270 [00:34<00:00, 96.53tok/s]Prefill: 100%|█████████▉| 3269/3270 [00:34<00:00, 95.38tok/s]
+   baseline Q1: 34489 ms correct=True
+Prefill:   0%|          | 0/3295 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3295 [00:34<00:20, 59.65tok/s]Prefill:  62%|██████▏   | 2048/3295 [00:46<00:20, 59.65tok/s]Prefill: 100%|█████████▉| 3294/3295 [00:46<00:00, 73.56tok/s]Prefill: 100%|█████████▉| 3294/3295 [00:46<00:00, 70.49tok/s]
+   baseline Q2: 46958 ms correct=True
+Prefill:   0%|          | 0/3318 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3318 [00:24<00:15, 83.51tok/s]Prefill: 100%|█████████▉| 3317/3318 [00:33<00:00, 104.09tok/s]Prefill: 100%|█████████▉| 3317/3318 [00:33<00:00, 99.54tok/s] 
+   baseline Q3: 33529 ms correct=True
+[1.55A] clip 100 duration=short
+Prefill:   0%|          | 0/3265 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3265 [00:22<00:13, 90.33tok/s]Prefill: 100%|█████████▉| 3264/3265 [00:31<00:00, 105.67tok/s]Prefill: 100%|█████████▉| 3264/3265 [00:31<00:00, 102.40tok/s]
+   session Q1: 32153 ms prefix=0/3265 (0.00%) correct=True
+Prefill:   0%|          | 0/3275 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3275 [00:25<00:15, 79.30tok/s]Prefill: 100%|█████████▉| 3274/3275 [00:36<00:00, 92.96tok/s]Prefill: 100%|█████████▉| 3274/3275 [00:36<00:00, 90.05tok/s]
+   session Q2: 36562 ms prefix=0/3275 (0.00%) correct=True
+Prefill:   0%|          | 0/3280 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3280 [00:27<00:16, 75.74tok/s]Prefill: 100%|█████████▉| 3279/3280 [00:37<00:00, 91.78tok/s]Prefill: 100%|█████████▉| 3279/3280 [00:37<00:00, 88.27tok/s]
+   session Q3: 37354 ms prefix=0/3280 (0.00%) correct=True
+Prefill:   0%|          | 0/3265 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3265 [00:25<00:15, 79.73tok/s]Prefill: 100%|█████████▉| 3264/3265 [00:35<00:00, 96.22tok/s]Prefill: 100%|█████████▉| 3264/3265 [00:35<00:00, 92.61tok/s]
+   baseline Q1: 35440 ms correct=True
+Prefill:   0%|          | 0/3275 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3275 [00:25<00:15, 80.66tok/s]Prefill: 100%|█████████▉| 3274/3275 [00:35<00:00, 94.30tok/s]Prefill: 100%|█████████▉| 3274/3275 [00:35<00:00, 91.40tok/s]
+   baseline Q2: 36045 ms correct=True
+Prefill:   0%|          | 0/3280 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3280 [00:27<00:16, 75.39tok/s]Prefill: 100%|█████████▉| 3279/3280 [00:38<00:00, 88.89tok/s]Prefill: 100%|█████████▉| 3279/3280 [00:38<00:00, 86.00tok/s]
+   baseline Q3: 38336 ms correct=True
+[1.55A] clip 116 duration=short
+Prefill:   0%|          | 0/3275 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3275 [00:27<00:16, 75.72tok/s]Prefill: 100%|█████████▉| 3274/3275 [00:37<00:00, 91.05tok/s]Prefill: 100%|█████████▉| 3274/3275 [00:37<00:00, 87.72tok/s]
+   session Q1: 37633 ms prefix=0/3275 (0.00%) correct=True
+Prefill:   0%|          | 0/3301 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3301 [00:26<00:16, 76.81tok/s]Prefill: 100%|█████████▉| 3300/3301 [00:36<00:00, 92.91tok/s]Prefill: 100%|█████████▉| 3300/3301 [00:36<00:00, 89.42tok/s]
+   session Q2: 37130 ms prefix=0/3301 (0.00%) correct=True
+Prefill:   0%|          | 0/3276 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3276 [00:27<00:16, 73.90tok/s]Prefill: 100%|█████████▉| 3275/3276 [00:38<00:00, 88.73tok/s]Prefill: 100%|█████████▉| 3275/3276 [00:38<00:00, 85.51tok/s]
+   session Q3: 38517 ms prefix=0/3276 (0.00%) correct=True
+Prefill:   0%|          | 0/3275 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3275 [00:28<00:17, 71.19tok/s]Prefill: 100%|█████████▉| 3274/3275 [00:39<00:00, 85.12tok/s]Prefill: 100%|█████████▉| 3274/3275 [00:39<00:00, 82.10tok/s]
+   baseline Q1: 40082 ms correct=True
+Prefill:   0%|          | 0/3301 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3301 [00:28<00:17, 71.02tok/s]Prefill: 100%|█████████▉| 3300/3301 [00:39<00:00, 86.23tok/s]Prefill: 100%|█████████▉| 3300/3301 [00:39<00:00, 82.92tok/s]
+   baseline Q2: 40009 ms correct=True
+Prefill:   0%|          | 0/3276 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3276 [00:27<00:16, 74.04tok/s]Prefill: 100%|█████████▉| 3275/3276 [00:38<00:00, 87.42tok/s]Prefill: 100%|█████████▉| 3275/3276 [00:38<00:00, 84.55tok/s]
+   baseline Q3: 38945 ms correct=True
+[1.55A] clip 120 duration=short
+Prefill:   0%|          | 0/3269 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3269 [00:28<00:16, 71.83tok/s]Prefill: 100%|█████████▉| 3268/3269 [00:38<00:00, 87.95tok/s]Prefill: 100%|█████████▉| 3268/3269 [00:38<00:00, 84.39tok/s]
+   session Q1: 38992 ms prefix=0/3269 (0.00%) correct=True
+Prefill:   0%|          | 0/3289 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3289 [00:28<00:16, 73.11tok/s]Prefill: 100%|█████████▉| 3288/3289 [00:38<00:00, 88.47tok/s]Prefill: 100%|█████████▉| 3288/3289 [00:38<00:00, 85.12tok/s]
+   session Q2: 38833 ms prefix=0/3289 (0.00%) correct=True
+Prefill:   0%|          | 0/3269 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3269 [00:28<00:16, 71.87tok/s]Prefill: 100%|█████████▉| 3268/3269 [00:39<00:00, 86.34tok/s]Prefill: 100%|█████████▉| 3268/3269 [00:39<00:00, 83.19tok/s]
+   session Q3: 39535 ms prefix=0/3269 (0.00%) correct=False
+Prefill:   0%|          | 0/3269 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3269 [00:29<00:17, 69.18tok/s]Prefill: 100%|█████████▉| 3268/3269 [00:40<00:00, 83.41tok/s]Prefill: 100%|█████████▉| 3268/3269 [00:40<00:00, 80.30tok/s]
+   baseline Q1: 40931 ms correct=True
+Prefill:   0%|          | 0/3289 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3289 [00:28<00:17, 71.92tok/s]Prefill: 100%|█████████▉| 3288/3289 [00:39<00:00, 86.40tok/s]Prefill: 100%|█████████▉| 3288/3289 [00:39<00:00, 83.27tok/s]
+   baseline Q2: 39706 ms correct=True
+Prefill:   0%|          | 0/3269 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3269 [00:28<00:16, 72.75tok/s]Prefill: 100%|█████████▉| 3268/3269 [00:38<00:00, 86.92tok/s]Prefill: 100%|█████████▉| 3268/3269 [00:38<00:00, 83.85tok/s]
+   baseline Q3: 39195 ms correct=False
+[1.55A] clip 158 duration=short
+Prefill:   0%|          | 0/3303 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3303 [00:29<00:18, 68.50tok/s]Prefill: 100%|█████████▉| 3302/3303 [00:40<00:00, 86.19tok/s]Prefill: 100%|█████████▉| 3302/3303 [00:40<00:00, 82.24tok/s]
+   session Q1: 40439 ms prefix=0/3303 (0.00%) correct=True
+Prefill:   0%|          | 0/3283 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3283 [00:26<00:16, 76.15tok/s]Prefill: 100%|█████████▉| 3282/3283 [00:37<00:00, 92.14tok/s]Prefill: 100%|█████████▉| 3282/3283 [00:37<00:00, 88.65tok/s]
+   session Q2: 37226 ms prefix=0/3283 (0.00%) correct=False
+Prefill:   0%|          | 0/3312 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3312 [00:28<00:17, 72.73tok/s]Prefill: 100%|█████████▉| 3311/3312 [00:39<00:00, 87.26tok/s]Prefill: 100%|█████████▉| 3311/3312 [00:39<00:00, 84.14tok/s]
+   session Q3: 39553 ms prefix=0/3312 (0.00%) correct=False
+Prefill:   0%|          | 0/3303 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3303 [00:27<00:17, 73.51tok/s]Prefill: 100%|█████████▉| 3302/3303 [00:38<00:00, 89.83tok/s]Prefill: 100%|█████████▉| 3302/3303 [00:38<00:00, 86.27tok/s]
+   baseline Q1: 38477 ms correct=True
+Prefill:   0%|          | 0/3283 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3283 [00:27<00:16, 75.70tok/s]Prefill: 100%|█████████▉| 3282/3283 [00:37<00:00, 90.18tok/s]Prefill: 100%|█████████▉| 3282/3283 [00:37<00:00, 87.06tok/s]
+   baseline Q2: 37913 ms correct=False
+Prefill:   0%|          | 0/3312 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3312 [00:27<00:17, 74.29tok/s]Prefill: 100%|█████████▉| 3311/3312 [00:38<00:00, 89.38tok/s]Prefill: 100%|█████████▉| 3311/3312 [00:38<00:00, 86.13tok/s]
+   baseline Q3: 38666 ms correct=False
+[1.55A] clip 160 duration=short
+Prefill:   0%|          | 0/3279 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3279 [00:27<00:16, 73.77tok/s]Prefill: 100%|█████████▉| 3278/3279 [00:38<00:00, 88.93tok/s]Prefill: 100%|█████████▉| 3278/3279 [00:38<00:00, 85.63tok/s]
+   session Q1: 38568 ms prefix=0/3279 (0.00%) correct=True
+Prefill:   0%|          | 0/3288 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3288 [00:28<00:16, 73.07tok/s]Prefill: 100%|█████████▉| 3287/3288 [00:38<00:00, 88.26tok/s]Prefill: 100%|█████████▉| 3287/3288 [00:38<00:00, 84.96tok/s]
+   session Q2: 38898 ms prefix=0/3288 (0.00%) correct=True
+Prefill:   0%|          | 0/3264 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3264 [00:28<00:16, 71.99tok/s]Prefill: 100%|█████████▉| 3263/3264 [00:39<00:00, 86.49tok/s]Prefill: 100%|█████████▉| 3263/3264 [00:39<00:00, 83.33tok/s]
+   session Q3: 39362 ms prefix=0/3264 (0.00%) correct=True
+Prefill:   0%|          | 0/3279 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3279 [00:28<00:17, 71.99tok/s]Prefill: 100%|█████████▉| 3278/3279 [00:39<00:00, 86.94tok/s]Prefill: 100%|█████████▉| 3278/3279 [00:39<00:00, 83.68tok/s]
+   baseline Q1: 39384 ms correct=True
+Prefill:   0%|          | 0/3288 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3288 [00:28<00:17, 72.18tok/s]Prefill: 100%|█████████▉| 3287/3288 [00:39<00:00, 87.04tok/s]Prefill: 100%|█████████▉| 3287/3288 [00:39<00:00, 83.82tok/s]
+   baseline Q2: 39436 ms correct=True
+Prefill:   0%|          | 0/3264 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3264 [00:28<00:16, 71.85tok/s]Prefill: 100%|█████████▉| 3263/3264 [00:38<00:00, 87.94tok/s]Prefill: 100%|█████████▉| 3263/3264 [00:38<00:00, 84.38tok/s]
+   baseline Q3: 38901 ms correct=True
+[1.55A] clip 210 duration=short
+Prefill:   0%|          | 0/3273 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3273 [00:22<00:13, 90.93tok/s]Prefill: 100%|█████████▉| 3272/3273 [00:30<00:00, 112.52tok/s]Prefill: 100%|█████████▉| 3272/3273 [00:30<00:00, 107.71tok/s]
+   session Q1: 30653 ms prefix=0/3273 (0.00%) correct=True
+Prefill:   0%|          | 0/3279 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3279 [00:22<00:13, 91.98tok/s]Prefill: 100%|█████████▉| 3278/3279 [00:30<00:00, 110.41tok/s]Prefill: 100%|█████████▉| 3278/3279 [00:30<00:00, 106.41tok/s]
+   session Q2: 30991 ms prefix=0/3279 (0.00%) correct=True
+Prefill:   0%|          | 0/3308 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3308 [00:25<00:15, 80.64tok/s]Prefill: 100%|█████████▉| 3307/3308 [00:35<00:00, 96.92tok/s]Prefill: 100%|█████████▉| 3307/3308 [00:35<00:00, 93.42tok/s]
+   session Q3: 35602 ms prefix=0/3308 (0.00%) correct=False
+Prefill:   0%|          | 0/3273 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3273 [00:24<00:14, 83.27tok/s]Prefill: 100%|█████████▉| 3272/3273 [00:33<00:00, 101.81tok/s]Prefill: 100%|█████████▉| 3272/3273 [00:33<00:00, 97.72tok/s] 
+   baseline Q1: 33672 ms correct=True
+Prefill:   0%|          | 0/3279 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3279 [00:23<00:14, 86.75tok/s]Prefill: 100%|█████████▉| 3278/3279 [00:32<00:00, 104.83tok/s]Prefill: 100%|█████████▉| 3278/3279 [00:32<00:00, 100.89tok/s]
+   baseline Q2: 32681 ms correct=True
+Prefill:   0%|          | 0/3308 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3308 [00:23<00:14, 86.87tok/s]Prefill: 100%|█████████▉| 3307/3308 [00:33<00:00, 103.74tok/s]Prefill: 100%|█████████▉| 3307/3308 [00:33<00:00, 100.13tok/s]
+   baseline Q3: 33226 ms correct=False
+[1.55A] done. session follow-up median 37354 ms, speedup 1.01×, prefix coverage 0.00%, Δacc 0.0
+[1.55A] wrote /Users/jfb/s/codec-through/research/experiments/2026/artifacts/loop_queue_20260419_150807/phase1_55A_persistent_kv_qwen/summary.json

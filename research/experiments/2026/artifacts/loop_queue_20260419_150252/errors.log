@@ -1,0 +1,3 @@
+  [FAIL rc=1] 1_55A_persistent_kv in 33s (see /Users/jfb/s/codec-through/research/experiments/2026/artifacts/loop_queue_20260419_150252/1_55A_persistent_kv.log)
+  [FAIL rc=2] 1_57_qwen_smoke_n5_8f in 0s (see /Users/jfb/s/codec-through/research/experiments/2026/artifacts/loop_queue_20260419_150252/1_57_qwen_smoke_n5_8f.log)
+  [FAIL rc=1] 1_58_bf16_load_smoke in 3s (see /Users/jfb/s/codec-through/research/experiments/2026/artifacts/loop_queue_20260419_150252/1_58_bf16_load_smoke.log)

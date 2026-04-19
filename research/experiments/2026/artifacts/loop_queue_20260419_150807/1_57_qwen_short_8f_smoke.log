@@ -1,0 +1,5 @@
+cmd: /Users/jfb/s/codec-through/.venv/bin/python3 /Users/jfb/s/codec-through/scripts/measure_feature_drift.py --model qwen --manifest /Users/jfb/s/codec-through/research/benchmark_manifests/videomme_dev_v1.toml --group short --frame-count 8 --output /Users/jfb/s/codec-through/research/experiments/2026/artifacts/loop_queue_20260419_150807/phase1_57/qwen_8f_short_smoke.json
+model=qwen2.5-vl-7b-4bit items_ok=10 miss=0 samples=28000
+  static   n= 12689 mean_cos=+0.5668 p05=+0.1846 p95=+0.9373
+  shifted  n=   840 mean_cos=+0.4685 p05=+0.1481 p95=+0.8520
+  novel    n= 14471 mean_cos=+0.3381 p05=+0.1036 p95=+0.7241
