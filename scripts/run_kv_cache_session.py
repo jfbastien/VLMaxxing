@@ -462,7 +462,7 @@ def main() -> int:
 
     summary = {
         "phase": "1.55A",
-        "model": "qwen2.5-vl-7b-instruct-4bit",
+        "model": args.model_path.name.lower(),
         "frame_count": args.frame_count,
         "n_clips": len(clips),
         "n_queries_per_mode": 3 * len(clips),
