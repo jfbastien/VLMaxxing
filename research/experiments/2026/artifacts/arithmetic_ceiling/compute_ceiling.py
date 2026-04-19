@@ -14,6 +14,7 @@ Outputs:
 - ceiling_summary.json: per-bucket ceiling statistics
 - ceiling_data.csv: per-item decomposition for inspection / plotting
 """
+
 from __future__ import annotations
 
 import json
@@ -50,30 +51,35 @@ def main() -> None:
         pruned_toks = it["pruned_generation_tokens"] or 1
         per_tok_dense_ms = G_dense / dense_toks
         per_tok_pruned_ms = G_pruned / pruned_toks
-        per_tok_speedup = per_tok_dense_ms / per_tok_pruned_ms if per_tok_pruned_ms > 0 else float("nan")
+        per_tok_speedup = (
+            per_tok_dense_ms / per_tok_pruned_ms if per_tok_pruned_ms > 0 else float("nan")
+        )
         # Arithmetic ceiling for this item, at s = per_tok_speedup (the
         # "true" per-phase G speedup after controlling for token-count drift):
         ceiling = (
             (fixed + G_dense) / (fixed + G_dense / per_tok_speedup)
-            if per_tok_speedup > 0 else float("nan")
+            if per_tok_speedup > 0
+            else float("nan")
         )
         # Infinite-s ceiling: what if we pruned G to zero?
         ceiling_inf = (fixed + G_dense) / fixed if fixed > 0 else float("nan")
-        rows.append({
-            "item_id": it["item_id"],
-            "group": it["group"],
-            "D_ms": round(D, 1),
-            "P_ms": round(P, 1),
-            "V_ms": round(V, 1),
-            "G_dense_ms": round(G_dense, 1),
-            "G_pruned_ms": round(G_pruned, 1),
-            "fixed_frac": round(fixed / (fixed + G_dense), 3),
-            "s_obs": round(s_obs, 3),
-            "per_tok_speedup": round(per_tok_speedup, 3),
-            "e2e_speedup_obs": round(e2e_speedup_obs, 3),
-            "ceiling_per_tok_s": round(ceiling, 3),
-            "ceiling_inf_s": round(ceiling_inf, 3),
-        })
+        rows.append(
+            {
+                "item_id": it["item_id"],
+                "group": it["group"],
+                "D_ms": round(D, 1),
+                "P_ms": round(P, 1),
+                "V_ms": round(V, 1),
+                "G_dense_ms": round(G_dense, 1),
+                "G_pruned_ms": round(G_pruned, 1),
+                "fixed_frac": round(fixed / (fixed + G_dense), 3),
+                "s_obs": round(s_obs, 3),
+                "per_tok_speedup": round(per_tok_speedup, 3),
+                "e2e_speedup_obs": round(e2e_speedup_obs, 3),
+                "ceiling_per_tok_s": round(ceiling, 3),
+                "ceiling_inf_s": round(ceiling_inf, 3),
+            }
+        )
 
     # CSV
     csv_path = ARTIFACT / "ceiling_data.csv"

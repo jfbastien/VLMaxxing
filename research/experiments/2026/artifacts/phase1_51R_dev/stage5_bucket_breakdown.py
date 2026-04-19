@@ -1,4 +1,5 @@
 """Per-bucket accuracy + speed breakdown for Stage 5 anchor arms."""
+
 from __future__ import annotations
 
 import json
@@ -10,7 +11,7 @@ DEV = Path(__file__).resolve().parent
 
 
 def breakdown(path: Path) -> None:
-    items = [json.loads(l) for l in path.read_text().splitlines() if l.strip()]
+    items = [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
     print(f"\n=== {path.name} (n={len(items)}) ===")
     buckets: dict[str, list[dict]] = {"short": [], "medium": [], "long": [], "all": []}
     for it in items:
@@ -25,18 +26,24 @@ def breakdown(path: Path) -> None:
         ag = statistics.mean(int(r["agreement"]) for r in rs)
         e2e = statistics.mean(
             r["dense_timing_ms"]["end_to_end"] / r["pruned_timing_ms"]["end_to_end"]
-            for r in rs if r["pruned_timing_ms"]["end_to_end"] > 0
+            for r in rs
+            if r["pruned_timing_ms"]["end_to_end"] > 0
         )
         gen = statistics.mean(
             r["dense_timing_ms"]["generate"] / r["pruned_timing_ms"]["generate"]
-            for r in rs if r["pruned_timing_ms"]["generate"] > 0
+            for r in rs
+            if r["pruned_timing_ms"]["generate"] > 0
         )
         per_tok = statistics.mean(
-            (r["dense_timing_ms"]["generate"] / max(1, r["dense_generation_tokens"])) /
-            (r["pruned_timing_ms"]["generate"] / max(1, r["pruned_generation_tokens"]))
-            for r in rs if r["pruned_timing_ms"]["generate"] > 0
+            (r["dense_timing_ms"]["generate"] / max(1, r["dense_generation_tokens"]))
+            / (r["pruned_timing_ms"]["generate"] / max(1, r["pruned_generation_tokens"]))
+            for r in rs
+            if r["pruned_timing_ms"]["generate"] > 0
         )
-        print(f"{g:>7}  {len(rs):>2}   {da:>6.3f}    {pa:>6.3f}    {pa-da:+.3f}  {ag:>.2f}   {e2e:>4.3f}  {gen:>4.3f}  {per_tok:>4.3f}")
+        print(
+            f"{g:>7}  {len(rs):>2}   {da:>6.3f}    {pa:>6.3f}    {pa - da:+.3f}"
+            f"  {ag:>.2f}   {e2e:>4.3f}  {gen:>4.3f}  {per_tok:>4.3f}"
+        )
 
 
 def main() -> None:

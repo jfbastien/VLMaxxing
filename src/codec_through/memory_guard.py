@@ -28,9 +28,9 @@ def rss_mb() -> float:
     and was wrongly treated as kibibytes.
     """
     raw = float(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
-    if sys.platform == "darwin":
-        return raw / (1024 * 1024)
-    return raw / 1024
+    # Darwin reports ru_maxrss in bytes; Linux/BSD in kibibytes.
+    divisor: float = (1024 * 1024) if sys.platform == "darwin" else 1024
+    return raw / divisor
 
 
 def check_rss_guard(threshold_mb: int, *, stage: str) -> None:

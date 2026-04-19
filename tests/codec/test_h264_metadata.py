@@ -58,7 +58,7 @@ def _encode_rgb_frames(
         stream.width = frames[0].shape[1]
         stream.height = frames[0].shape[0]
         stream.pix_fmt = "yuv420p"
-        opts: dict[str, str] = {}
+        opts: dict[str, object] = {}
         if gop is not None:
             opts["g"] = str(gop)
             opts["keyint_min"] = str(gop)

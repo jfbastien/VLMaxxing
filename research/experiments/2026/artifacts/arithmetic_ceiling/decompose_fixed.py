@@ -1,4 +1,5 @@
 """Per-phase breakdown of the fixed cost (D+P+V) on Stage 2b n=30."""
+
 from __future__ import annotations
 
 import json
@@ -25,7 +26,10 @@ def main() -> None:
         groups[it["group"]].append(row)
         groups["all"].append(row)
 
-    print(f"{'bucket':>7}  {'n':>2}  {'D':>7}  {'P':>6}  {'V':>6}  {'G':>6}  {'e2e':>7}  |  {'D/e2e':>6}  {'V/e2e':>6}  {'V/fixed':>7}  {'G/e2e':>6}")
+    print(
+        f"{'bucket':>7}  {'n':>2}  {'D':>7}  {'P':>6}  {'V':>6}  {'G':>6}  {'e2e':>7}"
+        f"  |  {'D/e2e':>6}  {'V/e2e':>6}  {'V/fixed':>7}  {'G/e2e':>6}"
+    )
     for g, rs in groups.items():
         if not rs:
             continue
@@ -38,8 +42,9 @@ def main() -> None:
         fixed = statistics.mean(r["fixed"] for r in rs)
         print(
             f"{g:>7}  {n:>2}  "
-            f"{D/1000:>6.2f}s  {P/1000:>5.2f}s  {V/1000:>5.2f}s  {G/1000:>5.2f}s  {e2e/1000:>6.2f}s  |  "
-            f"{D/e2e:>6.1%}  {V/e2e:>6.1%}  {V/fixed:>7.1%}  {G/e2e:>6.1%}"
+            f"{D / 1000:>6.2f}s  {P / 1000:>5.2f}s  {V / 1000:>5.2f}s"
+            f"  {G / 1000:>5.2f}s  {e2e / 1000:>6.2f}s  |  "
+            f"{D / e2e:>6.1%}  {V / e2e:>6.1%}  {V / fixed:>7.1%}  {G / e2e:>6.1%}"
         )
 
 

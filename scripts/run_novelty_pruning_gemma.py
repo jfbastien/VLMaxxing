@@ -641,8 +641,12 @@ def _summarize(records: list[ItemResult]) -> dict[str, Any]:
         "pruned_parse_failures": sum(1 for r in records if r.pruned_parse_failure),
         "mean_dense_prompt_tokens": float(np.mean([r.dense_prompt_tokens for r in records])),
         "mean_pruned_prompt_tokens": float(np.mean([r.pruned_prompt_tokens for r in records])),
-        "mean_dense_generation_tokens": float(np.mean([r.dense_generation_tokens for r in records])),
-        "mean_pruned_generation_tokens": float(np.mean([r.pruned_generation_tokens for r in records])),
+        "mean_dense_generation_tokens": float(
+            np.mean([r.dense_generation_tokens for r in records])
+        ),
+        "mean_pruned_generation_tokens": float(
+            np.mean([r.pruned_generation_tokens for r in records])
+        ),
         "mean_dense_generation_tps": float(np.mean([r.dense_generation_tps for r in records])),
         "mean_pruned_generation_tps": float(np.mean([r.pruned_generation_tps for r in records])),
         # Per-token generation speedup, corrected for differential token count.

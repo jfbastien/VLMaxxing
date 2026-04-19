@@ -11,11 +11,11 @@ for the slice-then-scatter-back rationale and pool-geometry constraint.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any, cast
 
 import mlx.core as mx
-
 
 KeepMaskFn = Callable[[mx.array, mx.array], mx.array]
 """(hidden_states [B,L,D], positions [B,L,2]) -> bool keep-mask [B,L].
@@ -38,9 +38,7 @@ class PruneConfig:
     keep_rate: float
 
 
-def magnitude_keep_mask(
-    hidden_states: mx.array, positions: mx.array, keep_rate: float
-) -> mx.array:
+def magnitude_keep_mask(hidden_states: mx.array, positions: mx.array, keep_rate: float) -> mx.array:
     """Top-k keep-mask by L2 magnitude of each token's hidden state.
 
     This is the first-pass policy: the literature (FasterVLM, EvoPrune)
@@ -58,9 +56,10 @@ def magnitude_keep_mask(
     # argsort ascending; take last k (highest magnitudes)
     order = mx.argsort(scores, axis=-1)  # [B, L]
     top_k = order[:, -k:]  # [B, k] — indices of kept tokens
-    # Build bool mask by scattering into a zero tensor via one-hot
-    one_hot = (
-        mx.expand_dims(top_k, -1) == mx.expand_dims(mx.arange(L), 0)
+    # Build bool mask by scattering into a zero tensor via one-hot.
+    # mx equality's stub returns `array | bool`; broadcasted compare is always an array.
+    one_hot = cast(
+        mx.array, mx.expand_dims(top_k, -1) == mx.expand_dims(mx.arange(L), 0)
     )  # [B, k, L]
     keep_mask = mx.any(one_hot, axis=1)  # [B, L] bool
     return keep_mask
@@ -71,9 +70,7 @@ def _slice_keep(x: mx.array, indices: mx.array, axis: int) -> mx.array:
     return mx.take(x, indices[0], axis=axis)
 
 
-def _scatter_back(
-    pruned: mx.array, indices: mx.array, length: int
-) -> mx.array:
+def _scatter_back(pruned: mx.array, indices: mx.array, length: int) -> mx.array:
     """Scatter [B, K, D] back into [B, length, D] zero-filled at pruned slots.
 
     Uses one-hot matmul to avoid mx.scatter (not yet in MLX). O(L*K*D) but
@@ -85,7 +82,9 @@ def _scatter_back(
         raise NotImplementedError("batch>1 not supported")
     # indices: [B, K] int32. Build [L, K] one-hot matrix.
     kept = indices[0]  # [K]
-    W = (mx.arange(length)[:, None] == kept[None, :]).astype(pruned.dtype)  # [L, K]
+    # mx equality stub returns `array | bool`; broadcasted compare is always an array.
+    eq = cast(mx.array, mx.arange(length)[:, None] == kept[None, :])
+    W = eq.astype(pruned.dtype)  # [L, K]
     out = W @ pruned[0]  # [L, D]
     return mx.expand_dims(out, 0)  # [1, L, D]
 
@@ -114,13 +113,9 @@ def make_pruned_encoder_call(
     layer_idx = config.layer_idx
     layers = original_encoder.layers
     if layer_idx < 0 or layer_idx >= len(layers):
-        raise ValueError(
-            f"layer_idx {layer_idx} out of range [0, {len(layers) - 1}]"
-        )
+        raise ValueError(f"layer_idx {layer_idx} out of range [0, {len(layers) - 1}]")
 
-    def _call(
-        hidden_states: mx.array, positions: mx.array, mask: mx.array
-    ) -> mx.array:
+    def _call(hidden_states: mx.array, positions: mx.array, mask: mx.array) -> mx.array:
         for i, layer in enumerate(layers):
             hidden_states = layer(hidden_states, positions, mask)
             if i == layer_idx:
@@ -164,4 +159,4 @@ def patch_vision_tower(
     encoder = model.vision_tower.encoder
     new_call = make_pruned_encoder_call(encoder, config, keep_mask_fn)
     # bind as a method on the instance
-    encoder.__call__ = new_call  # type: ignore[assignment]
+    encoder.__call__ = new_call
