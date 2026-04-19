@@ -455,15 +455,18 @@ authoritative in the per-phase notes under
   notes: Codex-round-21 hypothesis extending Sam's system. Three H: signal beats pixel-MEAN at matched compute, random-ablation rules out correlate-of-activity, signal needs lower refresh rate at matched accuracy. Paper language constrained to "VLM-signaled" until Phase 1.44 lands; no "confidence-conditioned" framing until earned.
 
 - phase_id: 1.57
-  status: proposed
-  authoritative_note: research/experiments/2026/2026-04-19-phase-1_57-feature-drift-mechanism-prereg.md
-  authoritative_artifacts: []
+  status: findings-landed (Qwen complete; Gemma path deferred)
+  authoritative_note: research/experiments/2026/2026-04-19-phase-1_57-feature-drift-findings.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_57/qwen_8f_dev30.json
+    - research/experiments/2026/artifacts/phase1_57/qwen_16f_dev30.json
+    - research/experiments/2026/artifacts/phase1_57/qwen_32f_dev30.json
   current_best_policy: n/a
   supersedes: []
-  paper_relevance: primary (feature-drift-first mechanism isolation; directly probes Sam research_queue §14-29 STATIC cos=0.67-0.80 finding on Gemma and the parallel Qwen question; load-bearing for the 16f→32f long-bucket plateau mechanism)
-  prereg_outcome: (pending; runnable now on M3 Air with scripts/measure_feature_drift.py)
+  paper_relevance: primary (feature-drift mechanism; three-frame sweep landed on Qwen 7B-4bit; adjudicates the 16f→32f long-bucket plateau via drift-accuracy co-saturation)
+  prereg_outcome: Qwen 8f/16f/32f landed on videomme_dev_v1 n=30. H2 FALSIFIED (STATIC cos 0.562/0.607/0.638, all below [0.95, 1.00] prereg band). H3 EARNED under adjacent-frame measurement (monotonic rise). Per-bucket stratification reveals attention-mixing ceiling is bucket-dependent. Cross-ref to 1.41 rejects H-drift-compounds (long-bucket), supports H-saturation. Gemma path deferred (needs inline ViT encode wiring). H1/H4 NOT TESTED.
   runtime_estimate: ~45-60min total (Gemma + Qwen, 8/16/32 frames × N items, feature-tap extraction only — no generation)
-  notes: Promoted 2026-04-19 from pointer in codex-round-21 notes to a real prereg, per Codex round-22 feedback. Re-scoped feature-drift-first (not entropy-only) per Sam research_queue. Four H: H1 Gemma STATIC cos [0.60, 0.85]; H2 Qwen STATIC cos [0.95, 1.000]; H3 drift compounds with frame count; H4 entropy correlation weaker than cosine. Now load-bearing for discriminating stride-window / saturation / drift on the long-bucket plateau seen at 32f.
+  notes: Qwen side landed 2026-04-19. Measurement methodology is adjacent-frame fresh-vs-fresh (not Sam's cache-substitute); findings doc documents the reason and the lower-bound interpretation. Per-bucket drift co-saturates with per-bucket accuracy at 16f on long bucket — empirical support for H-saturation over H-drift-compounds for the long-bucket plateau. Short-bucket drift still accelerating at 32f while short-bucket acc is flat — drift is co-indicator, not binding constraint. Gemma deferred, 1.58 (bf16) still open.
 
 - phase_id: 1.58
   status: proposed (deferred)
