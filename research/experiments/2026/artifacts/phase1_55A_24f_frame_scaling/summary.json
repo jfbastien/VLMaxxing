@@ -1,0 +1,75 @@
+{
+  "phase": "1.55A",
+  "model": "qwen2.5-vl-7b-instruct-4bit",
+  "frame_count": 24,
+  "n_clips": 7,
+  "n_queries_per_mode": 21,
+  "total_wall_ms": 3281152.990667,
+  "peak_rss_gb": 3.299229696,
+  "session": {
+    "label": "session",
+    "n": 21,
+    "n_correct": 9,
+    "accuracy": 0.42857142857142855,
+    "mean_elapsed_ms": 36935.83399785714,
+    "median_elapsed_ms": 1052.547458,
+    "p05_elapsed_ms": 790.048875,
+    "p95_elapsed_ms": 128574.551084
+  },
+  "session_first_query": {
+    "label": "session_first_query",
+    "n": 7,
+    "n_correct": 7,
+    "accuracy": 1.0,
+    "mean_elapsed_ms": 108913.04558914286,
+    "median_elapsed_ms": 105079.982083,
+    "p05_elapsed_ms": 83869.026625,
+    "p95_elapsed_ms": 131214.770333
+  },
+  "session_follow_up": {
+    "label": "session_follow_up",
+    "n": 14,
+    "n_correct": 2,
+    "accuracy": 0.14285714285714285,
+    "mean_elapsed_ms": 947.2282022142857,
+    "median_elapsed_ms": 864.292125,
+    "p05_elapsed_ms": 758.0865,
+    "p95_elapsed_ms": 1361.96175
+  },
+  "baseline": {
+    "label": "baseline",
+    "n": 21,
+    "n_correct": 18,
+    "accuracy": 0.8571428571428571,
+    "mean_elapsed_ms": 117568.35528766668,
+    "median_elapsed_ms": 117265.881667,
+    "p05_elapsed_ms": 104443.123834,
+    "p95_elapsed_ms": 135254.065167
+  },
+  "speedup_first_over_follow": 121.57924276239355,
+  "mean_follow_up_prefix_coverage": 0.9940210811971445,
+  "accuracy_delta_session_minus_baseline": -0.42857142857142855,
+  "verdicts": {
+    "H1_follow_up_speedup": {
+      "earn": true,
+      "reject": false,
+      "median_follow_up_s": 0.8642921250000001,
+      "speedup": 121.57924276239355
+    },
+    "H2_accuracy_preservation": {
+      "earn": false,
+      "reject": true,
+      "delta": -0.42857142857142855
+    },
+    "H3_prefix_coverage": {
+      "earn": true,
+      "reject": false,
+      "coverage": 0.9940210811971445
+    },
+    "H4_peak_rss": {
+      "earn": true,
+      "reject": false,
+      "peak_rss_gb": 3.299229696
+    }
+  }
+}
