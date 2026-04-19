@@ -1,17 +1,65 @@
-# Phase 1.55 — persistent LLM KV-cache for streaming deployment (PREREG, DEFERRED-DESIGN)
+# Phase 1.55 — persistent LLM KV-cache (SUPERSEDED 2026-04-19)
 
-**Status:** preregistration, 2026-04-19. Codex round-21 extension.
+**Status: SUPERSEDED.** This prereg is replaced by:
+
+- `2026-04-19-phase-1_55A-persistent-kv-reproduction-prereg.md`
+  (follow-up latency reproduction of Sam's §2.13.3 measurement)
+- `2026-04-19-phase-1_55B-persistent-kv-decode-composition-prereg.md`
+  (composition with 1.54 decode acceleration — deferred)
+
+## Why superseded
+
+Earlier drafts of this prereg framed persistent KV-cache as a
+**Codex-round-21 hypothesis**, not a reproduction of a measured
+whitepaper claim. That was wrong.
+
+Sam's current whitepaper (external repo at `~/s/codec-through-sam/
+whitepaper.md`, 638 lines, §2.13.3 at lines 410-430) reports a
+**measured** persistent-KV result on Gemma 4 26B × MLX: 20 queries,
+follow-up latency uniformly sub-2 s (median 0.8 s), 10–18× follow-
+up speedup, zero accuracy change. The mechanism is
+`PromptCacheState` + prefix matching threaded through sequential
+queries on the same video.
+
+Our local seed copy (`seed/whitepaper/whitepaper-revised-
+2026-04-16.md`, 382 lines) was frozen BEFORE §2.13.3 landed — that
+is the source of the provenance confusion in this draft. External
+review (2026-04-19 Codex round-22) flagged the mis-attribution.
+
+The original draft also had two wrong gating claims:
+
+- "mlx-vlm fork needed for KV handle" — **false**. Our local
+  mlx-vlm `0.x` has `PromptCacheState` + `find_prefix_length` in
+  `mlx_vlm.generate` (verified 2026-04-19 grep on
+  `.venv/lib/python3.12/site-packages/mlx_vlm/generate.py:346+`).
+- "Blocked on 1.54 decode acceleration" — **false**. Decode
+  composition is a separable follow-on (→ 1.55B). The latency
+  reproduction stands alone (→ 1.55A).
+
+The 1.55A follow-up-latency reproduction is the highest product-
+relevance number in the codec-through story and has no real
+gating today. It should have been landing weeks before 1.55B.
+
+## Original (INCORRECT) content — retained for provenance only
+
+Everything below this line is the pre-correction draft. Do NOT use.
+Work against 1.55A instead.
+
+---
+
+**Status (OLD):** preregistration, 2026-04-19. Codex round-21 extension.
 DEFERRED-DESIGN — implementation blocked on (a) an mlx-vlm KV-cache
 handle that survives across `generate()` calls, and (b) Phase 1.54
 video-decode acceleration so decode is not the dominant cost on
 long clips.
 
-**Provenance.** This prereg is a Codex-round-21 hypothesis extending
-Sam's whitepaper, not a reproduction of a documented whitepaper
-claim. Sam's thesis caches ViT output embeddings at unchanged-token
-granularity (`paper/whitepaper-revised-2026-04-16.md:228-230`), not
-LLM KV. Persistent LLM KV across clip boundaries is Codex's
-suggestion for a production-streaming composition lever.
+**Provenance (OLD and WRONG).** This prereg is a Codex-round-21
+hypothesis extending Sam's whitepaper, not a reproduction of a
+documented whitepaper claim. Sam's thesis caches ViT output
+embeddings at unchanged-token granularity
+(`paper/whitepaper-revised-2026-04-16.md:228-230`), not LLM KV.
+Persistent LLM KV across clip boundaries is Codex's suggestion for
+a production-streaming composition lever.
 
 ## Objective
 
