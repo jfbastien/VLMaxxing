@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/Users/jfb/s/codec-through/scripts/run_benchmark_track_a.py", line 1710, in <module>
+    main()
+  File "/Users/jfb/s/codec-through/scripts/run_benchmark_track_a.py", line 1684, in main
+    run_benchmark(
+  File "/Users/jfb/s/codec-through/scripts/run_benchmark_track_a.py", line 1466, in run_benchmark
+    completed = subprocess.run(command, check=True, capture_output=True, text=True)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jfb/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/Users/jfb/s/codec-through/.venv/bin/python3', '/Users/jfb/s/codec-through/scripts/run_benchmark_track_a.py', 'run-chunk', '--benchmark', 'videomme', '--model-path', '/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit', '--frame-count', '16', '--max-tokens', '32', '--cache-mode', 'identity', '--refresh-interval', '0', '--statistic', 'mean', '--static-threshold', '3.0', '--shifted-threshold', '8.0', '--pixel-change-threshold', '8.0', '--top-k', '16', '--reuse-classes', 'static,shifted', '--item-id', 'videomme:long:712-2', '--allow-dirty', '--feature-cache-dir', 'research/cache/dense_features', '--manifest', 'research/benchmark_manifests/videomme_dev_v1.toml']' died with <Signals.SIGABRT: 6>.

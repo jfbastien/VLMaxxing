@@ -23,11 +23,18 @@ opposite direction. Medium gets the lift; long regresses.
 | mean prompt tokens | 3,287 | 6,503 | ~2× | linear as predicted |
 | parse failures | 0 | 0 | ≤ 2 | H5 earned |
 
-Peak RSS: not captured in this summary (dense-only run; RSS-ceiling
-question rides with future 32f attempt).
+**Peak RSS (H3 earned, update 2026-04-19).** The summary-level
+rollup was omitted, but per-item `peak_memory_gb` in
+`dense_n30.jsonl` is stably ≈ **7.227 GB** across all 30 items.
+Prereg H3 band was ≤ 13 GB on 16 GB Mac. **H3 earned** with 6 GB
+headroom — 16f on the 4-bit Qwen is comfortably sub-cap and the
+32f follow-up (§ below) was feasibility-greenlit on this evidence.
 
-**Unpaired two-proportion z-test on aggregate**: z=0.26, p=0.80 —
-aggregate Δ is statistically noise at n=30.
+**Inferential note.** An unpaired two-proportion z-test on
+aggregate gives z=0.26, p=0.80 — but because the 8f and 16f runs
+were on the SAME 30 items, the paired analysis below is the
+primary inferential lens. The unpaired z is reported only for
+readers who look for it; do not cite it as the take-away stat.
 
 **Paired per-item flip table (8f → 16f, same 30 items):**
 
