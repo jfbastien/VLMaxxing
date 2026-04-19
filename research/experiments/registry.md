@@ -442,6 +442,17 @@ authoritative in the per-phase notes under
   prereg_outcome: (deferred; full prereg pending attention-entropy logging hook in mlx-vlm)
   runtime_estimate: ~30min at 8f (single-arm ablation on the 1.49 refresh corpus); needs attention-entropy logging hook before it can run
   notes: Sam's whitepaper line 234 claims "~0.01/frame attention-context drift." Our 1.49 refresh sweep shows behaviorally that re-encode fixes drift but does NOT isolate mechanism. This phase would add per-layer attention-entropy logging + compare against a PE-correction-only variant. Paper language rule: cite "attention-context drift" (whitepaper-grounded) and do NOT assert PE-drift mechanism absent this ablation.
+
+- phase_id: 1.58
+  status: proposed (deferred)
+  authoritative_note: research/experiments/2026/2026-04-19-phase-1_58-bf16-quantization-ablation-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: n/a
+  supersedes: []
+  paper_relevance: secondary (quantization × long-context — one of three candidate mechanisms for the 16f long-bucket regression)
+  prereg_outcome: (deferred; gated on bf16 Qwen 2.5-VL-7B checkpoint download ~15 GB + feasibility check on 16 GB Mac)
+  runtime_estimate: ~50-60min bf16 8f n=30 + ~2.5-3h bf16 16f n=30 + matched 4bit re-runs if needed; total ~3.5-4h once bf16 checkpoint is local
+  notes: Tests H-C (4bit × long-context) from the 2026-04-19 16f findings. Four pre-registered H: H1 long-bucket quantization gap ≥ +0.20, H2 no short-bucket gap, H3 RSS < 14 GB, H4 prefill ~4× ratio. Discriminator for the 16f non-monotonic finding; complementary to Phase 1.57 (attention-entropy).
 ```
 
 ## Maintenance rules
@@ -469,9 +480,11 @@ implementation, debugging, analysis, and CI time. Estimates are at
 | 1.55  | deferred-design | ~1.5h | ~3h | mlx-vlm KV handle + 1.54 + 1.30 |
 | 1.56  | deferred-design | ~45min | ~2h | Phase 1.44 margin logging + RefreshPolicy API |
 | 1.57  | deferred | ~30min | n/a | attention-entropy logging hook |
+| 1.58  | deferred | ~1h bf16 8f | ~3h bf16 16f (no 32f) | bf16 Qwen checkpoint download (~15 GB), RSS feasibility |
 | 1.30  | P2 | ~2h (3 clips × 3 policies) | n/a | 1.26 + 1.27 + 1.29 infra; P2 now |
 
-**Bottom-line forward benchmark time**: ~6-8h at 8f, ~12-15h at
-32f, to clear the Codex round-21 forward queue end-to-end
-(assuming all gating implementation lands first; that design work
-is NOT included here — user asked for runtime only).
+**Bottom-line forward benchmark time**: ~7-9h at 8f, ~15-18h at
+32f, to clear the Codex round-21 + 16f-follow-up forward queue
+end-to-end (assuming all gating implementation and checkpoint
+downloads land first; that work is NOT included here — user
+asked for runtime only).
