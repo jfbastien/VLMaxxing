@@ -1,17 +1,17 @@
 # Phase 1.41 — Qwen 2.5-VL-7B VideoMME 32-frame findings (long → all-buckets)
 
-**Status:** findings, 2026-04-19. Run completed n=28/30 on
+**Status:** findings, 2026-04-19. Run completed n=30/30 on
 `videomme_dev_v1` at `frame_count=32`, identity cache. Prereg:
 `2026-04-19-phase-1_41-qwen-videomme-32f-long-prereg.md`.
 
 **Scope expansion note.** The prereg scoped the probe to `--group long`
 (n=10). The driver in fact ran through the full 30-item dev manifest
-(long + medium + short). The extra ~17 min of compute yielded
-**new, unplanned cross-bucket evidence** reported in a dedicated
-section below. Interpret it as exploratory beyond the prereg's 5
-pre-registered hypotheses: the long-bucket verdicts (H1-H5) stand
-as originally preregistered; the medium/short data is an
-observational bonus we **did not** commit to a falsification band
+(long + medium + short) and completed all 30. The extra ~35 min
+of compute yielded **new, unplanned cross-bucket evidence** reported
+in a dedicated section below. Interpret it as exploratory beyond the
+prereg's 5 pre-registered hypotheses: the long-bucket verdicts
+(H1-H5) stand as originally preregistered; the medium/short data is
+an observational bonus we **did not** commit to a falsification band
 for ahead of time.
 
 ## Headline
@@ -146,20 +146,19 @@ is the bottleneck, not decode).
   H-medium-ceiling fall at a particular frame count?). The
   cross-bucket numbers below are observational, not preregistered.
 
-## Unplanned cross-bucket result (n=28, 27 items summary + 1 late jsonl)
+## Unplanned cross-bucket result (n=30 complete)
 
-The run continued past the `--group long` scope and completed
-n=10 long, n=10 medium, n=8 short (3 short items unwritten when
-the run ended; jsonl landed 1 extra late short for n=28 rows).
-Per-bucket distribution (dense = identity baseline; agreement is
-identity-cache bit-faithfulness):
+The run continued past the `--group long` scope and completed the
+full n=30 manifest (n=10 per bucket). Per-bucket distribution
+(dense = identity baseline; agreement is identity-cache
+bit-faithfulness):
 
 | bucket | n  | dense acc     | agreement | mean elapsed | peak RSS | mean pp toks |
 |--------|----|---------------|-----------|--------------|----------|--------------|
-| short  |  8 | 7/8  = 0.875  |  8/8      | 144.3 s      | 8.52 GB  | 12,933       |
+| short  | 10 | 8/10 = 0.800  | 10/10     | 152.9 s      | 8.52 GB  | ~12,940      |
 | medium | 10 | 7/10 = 0.700  | 10/10     | 155.1 s      | 8.52 GB  | 12,924       |
 | long   | 10 | 1/10 = 0.100  | 10/10     | 165.9 s      | 8.52 GB  | 12,949       |
-| **all** | 28 | **15/28 = 0.536** | **28/28** | 155.6 s | 8.52 GB | ~12,940 |
+| **all** | 30 | **16/30 = 0.533** | **30/30** | 157.9 s | 8.52 GB | ~12,940 |
 
 ### Frame-scaling across all three buckets
 
@@ -168,25 +167,25 @@ Combining with prior dense runs at 8f (n=30 aggregate) and 16f
 
 | bucket | 8f acc       | 16f acc      | 32f acc (new) | Δ(8→16) | Δ(16→32) |
 |--------|--------------|--------------|---------------|---------|----------|
-| short  | ~1.000       | 0.800        | 0.875         | -20pp   | +7.5pp   |
+| short  | ~1.000       | 0.800        | 0.800         | -20pp   |  0pp     |
 | medium | 0.400        | 0.700        | 0.700         | +30pp   |  0pp     |
 | long   | 0.300        | 0.100        | 0.100         | -20pp   |  0pp     |
-| **agg**| 0.533        | 0.567        | 0.536         | +3.4pp  | -3.1pp   |
+| **agg**| 0.533        | 0.567        | 0.533         | +3.4pp  | -3.4pp   |
 
 **Interpretation.** Doubling frames 16→32 yields **essentially no
-aggregate accuracy gain** on Qwen 2.5-VL-7B-4bit over
-VideoMME dev n=30. The aggregate moves -3.1pp which is within
-per-item noise (28-item binomial 95% CI ~ ±19pp). Per bucket:
-- **short**: partially recovers from the 8f→16f regression (+7.5pp,
-  still below the near-perfect 8f baseline by -12.5pp).
+aggregate accuracy movement** on Qwen 2.5-VL-7B-4bit over
+VideoMME dev n=30. The aggregate moves -3.4pp, exactly back to
+the 8f level (0.533), which is within 30-item binomial noise
+(~±18pp at 95% CI). Per bucket:
+- **short**: flat at 0.800 (same as 16f, below 8f's ~1.000).
 - **medium**: holds at 0.700 — the 16f lift saturates.
 - **long**: plateau at 0.100 — third data point confirms earlier
   findings.
 
 The practical implication is stark: for Qwen 7B-4bit on VideoMME
 dev, **32-frame uniform sampling is not Pareto-efficient**. It
-pays 2× prompt tokens and ~2× latency (144-166 s vs 78 s) for no
-aggregate accuracy. Either 16f is the right budget, or the
+pays 2× prompt tokens and ~2× latency (~155 s vs ~78 s) for zero
+aggregate accuracy lift. Either 16f is the right budget, or the
 bottleneck is model size (see 1.58 bf16, and larger-model lanes in
 Codex round-22 backlog).
 
@@ -205,8 +204,8 @@ measures directly.
 
 ## Artifacts
 
-- `research/experiments/2026/artifacts/phase1_41_qwen_videomme_32f_long/dense_n10.jsonl` (n=28 rows — 10 long + 10 medium + 8 short)
-- `research/experiments/2026/artifacts/phase1_41_qwen_videomme_32f_long/dense_n10_summary.json` (summary covering 27 completed_item_ids — 1 late-landing short row in jsonl)
+- `research/experiments/2026/artifacts/phase1_41_qwen_videomme_32f_long/dense_n10.jsonl` (n=30 rows — 10 long + 10 medium + 10 short)
+- `research/experiments/2026/artifacts/phase1_41_qwen_videomme_32f_long/dense_n10_summary.json` (summary covering 30 completed_item_ids)
 
 ## Cross-references
 

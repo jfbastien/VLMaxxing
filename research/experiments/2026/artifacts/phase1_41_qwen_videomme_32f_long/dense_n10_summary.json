@@ -2,7 +2,7 @@
   "agreement": 1.0,
   "benchmark": "videomme",
   "cache_mode": "identity",
-  "cached_accuracy": 0.5357142857142857,
+  "cached_accuracy": 0.5333333333333333,
   "cached_parse_failures": 0,
   "completed_item_ids": [
     "videomme:long:669-1",
@@ -32,9 +32,11 @@
     "videomme:short:158-3",
     "videomme:short:160-1",
     "videomme:short:210-2",
-    "videomme:short:264-1"
+    "videomme:short:264-1",
+    "videomme:short:278-3",
+    "videomme:short:282-2"
   ],
-  "dense_accuracy": 0.5357142857142857,
+  "dense_accuracy": 0.5333333333333333,
   "environment": {
     "datasets": "4.8.4",
     "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
@@ -48,7 +50,7 @@
   },
   "feature_cache_dir": "research/cache/dense_features",
   "feature_cache_hits": 0,
-  "feature_cache_misses": 28,
+  "feature_cache_misses": 30,
   "feature_replay_enabled": true,
   "frame_count": 32,
   "planner": {
@@ -65,10 +67,7 @@
     "top_k": 16
   },
   "refresh_interval": null,
-  "remaining_item_ids": [
-    "videomme:short:278-3",
-    "videomme:short:282-2"
-  ],
+  "remaining_item_ids": [],
   "requested_item_ids": [
     "videomme:long:669-1",
     "videomme:long:711-2",

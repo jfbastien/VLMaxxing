@@ -1,0 +1,478 @@
+{
+  "aggregate": {
+    "novel": {
+      "mean_cos": 0.3380701304085314,
+      "median_cos": 0.29761257767677307,
+      "n": 14471,
+      "p05_cos": 0.1035565510392189,
+      "p95_cos": 0.7240720093250275,
+      "std_cos": 0.1869940886072731
+    },
+    "shifted": {
+      "mean_cos": 0.46849113554205923,
+      "median_cos": 0.4498874247074127,
+      "n": 840,
+      "p05_cos": 0.14813507497310638,
+      "p95_cos": 0.8519970208406447,
+      "std_cos": 0.21936253652772753
+    },
+    "static": {
+      "mean_cos": 0.5668129290692159,
+      "median_cos": 0.5675503015518188,
+      "n": 12689,
+      "p05_cos": 0.1845554679632187,
+      "p95_cos": 0.9372977137565612,
+      "std_cos": 0.23110692472408972
+    }
+  },
+  "cache_hits": 10,
+  "cache_misses": 0,
+  "diagnostics": [
+    {
+      "blocks_total": 2800,
+      "item_id": "videomme:short:037-2",
+      "n_pairs": 7,
+      "status": "ok"
+    },
+    {
+      "blocks_total": 2800,
+      "item_id": "videomme:short:100-2",
+      "n_pairs": 7,
+      "status": "ok"
+    },
+    {
+      "blocks_total": 2800,
+      "item_id": "videomme:short:116-3",
+      "n_pairs": 7,
+      "status": "ok"
+    },
+    {
+      "blocks_total": 2800,
+      "item_id": "videomme:short:120-2",
+      "n_pairs": 7,
+      "status": "ok"
+    },
+    {
+      "blocks_total": 2800,
+      "item_id": "videomme:short:158-3",
+      "n_pairs": 7,
+      "status": "ok"
+    },
+    {
+      "blocks_total": 2800,
+      "item_id": "videomme:short:160-1",
+      "n_pairs": 7,
+      "status": "ok"
+    },
+    {
+      "blocks_total": 2800,
+      "item_id": "videomme:short:210-2",
+      "n_pairs": 7,
+      "status": "ok"
+    },
+    {
+      "blocks_total": 2800,
+      "item_id": "videomme:short:264-1",
+      "n_pairs": 7,
+      "status": "ok"
+    },
+    {
+      "blocks_total": 2800,
+      "item_id": "videomme:short:278-3",
+      "n_pairs": 7,
+      "status": "ok"
+    },
+    {
+      "blocks_total": 2800,
+      "item_id": "videomme:short:282-2",
+      "n_pairs": 7,
+      "status": "ok"
+    }
+  ],
+  "frame_count": 8,
+  "group_filter": "short",
+  "manifest": [
+    "research/benchmark_manifests/videomme_dev_v1.toml"
+  ],
+  "model": "qwen2.5-vl-7b-4bit",
+  "model_content_sha256": "c97c97c8c6d4b5e8070fe54625ca4cf566052aea9f5ddb7e2057857522b30e56",
+  "n_items": 10,
+  "n_samples": 28000,
+  "per_item": [
+    {
+      "benchmark": "videomme",
+      "class_counts": {
+        "novel": 423,
+        "shifted": 32,
+        "static": 2345
+      },
+      "group": "short",
+      "item_id": "videomme:short:037-2",
+      "n_pairs": 7,
+      "per_class_cos": {
+        "novel": {
+          "mean_cos": 0.23981336715089566,
+          "median_cos": 0.21113808453083038,
+          "n": 423,
+          "p05_cos": 0.06311913132667542,
+          "p95_cos": 0.5027221024036407,
+          "std_cos": 0.13817809117173818
+        },
+        "shifted": {
+          "mean_cos": 0.42128394078463316,
+          "median_cos": 0.312688410282135,
+          "n": 32,
+          "p05_cos": 0.09766149669885635,
+          "p95_cos": 0.9701247066259384,
+          "std_cos": 0.2982450535144762
+        },
+        "static": {
+          "mean_cos": 0.5644400602583882,
+          "median_cos": 0.5563187003135681,
+          "n": 2345,
+          "p05_cos": 0.2047976553440094,
+          "p95_cos": 0.9460379123687743,
+          "std_cos": 0.23247735839721456
+        }
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "class_counts": {
+        "novel": 1422,
+        "shifted": 131,
+        "static": 1247
+      },
+      "group": "short",
+      "item_id": "videomme:short:100-2",
+      "n_pairs": 7,
+      "per_class_cos": {
+        "novel": {
+          "mean_cos": 0.28785558366730846,
+          "median_cos": 0.26710785925388336,
+          "n": 1422,
+          "p05_cos": 0.09833662211894989,
+          "p95_cos": 0.5591820865869522,
+          "std_cos": 0.14231882435065032
+        },
+        "shifted": {
+          "mean_cos": 0.2828483586946062,
+          "median_cos": 0.2561105191707611,
+          "n": 131,
+          "p05_cos": 0.10416039451956749,
+          "p95_cos": 0.5744178891181946,
+          "std_cos": 0.14501490641405976
+        },
+        "static": {
+          "mean_cos": 0.4783991116406015,
+          "median_cos": 0.45563361048698425,
+          "n": 1247,
+          "p05_cos": 0.17931843698024752,
+          "p95_cos": 0.8620241641998293,
+          "std_cos": 0.20487181360909817
+        }
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "class_counts": {
+        "novel": 1658,
+        "shifted": 19,
+        "static": 1123
+      },
+      "group": "short",
+      "item_id": "videomme:short:116-3",
+      "n_pairs": 7,
+      "per_class_cos": {
+        "novel": {
+          "mean_cos": 0.3246918152158336,
+          "median_cos": 0.2949285954236984,
+          "n": 1658,
+          "p05_cos": 0.11302835047245026,
+          "p95_cos": 0.6721900075674055,
+          "std_cos": 0.16717083569264826
+        },
+        "shifted": {
+          "mean_cos": 0.47645326586146103,
+          "median_cos": 0.37416625022888184,
+          "n": 19,
+          "p05_cos": 0.2227768912911415,
+          "p95_cos": 0.7873412668704982,
+          "std_cos": 0.22615770874017185
+        },
+        "static": {
+          "mean_cos": 0.5853321910010633,
+          "median_cos": 0.5872313976287842,
+          "n": 1123,
+          "p05_cos": 0.2660696804523468,
+          "p95_cos": 0.9258262515068054,
+          "std_cos": 0.20241813628512048
+        }
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "class_counts": {
+        "novel": 1507,
+        "shifted": 167,
+        "static": 1126
+      },
+      "group": "short",
+      "item_id": "videomme:short:120-2",
+      "n_pairs": 7,
+      "per_class_cos": {
+        "novel": {
+          "mean_cos": 0.5211478657291259,
+          "median_cos": 0.5174310803413391,
+          "n": 1507,
+          "p05_cos": 0.19207979142665862,
+          "p95_cos": 0.8534195482730866,
+          "std_cos": 0.2085928375521885
+        },
+        "shifted": {
+          "mean_cos": 0.5777253998878473,
+          "median_cos": 0.5984250903129578,
+          "n": 167,
+          "p05_cos": 0.24660125523805618,
+          "p95_cos": 0.8853776454925536,
+          "std_cos": 0.19992304957958673
+        },
+        "static": {
+          "mean_cos": 0.7444452592047662,
+          "median_cos": 0.7691622674465179,
+          "n": 1126,
+          "p05_cos": 0.3819410130381584,
+          "p95_cos": 0.9793902635574341,
+          "std_cos": 0.1826798569624954
+        }
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "class_counts": {
+        "novel": 1627,
+        "shifted": 52,
+        "static": 1121
+      },
+      "group": "short",
+      "item_id": "videomme:short:158-3",
+      "n_pairs": 7,
+      "per_class_cos": {
+        "novel": {
+          "mean_cos": 0.30846568162452265,
+          "median_cos": 0.2765131890773773,
+          "n": 1627,
+          "p05_cos": 0.09603324234485626,
+          "p95_cos": 0.6362164378166196,
+          "std_cos": 0.1721380698786232
+        },
+        "shifted": {
+          "mean_cos": 0.4769964652279249,
+          "median_cos": 0.4634321480989456,
+          "n": 52,
+          "p05_cos": 0.13633187115192413,
+          "p95_cos": 0.8689885348081587,
+          "std_cos": 0.21710723256639064
+        },
+        "static": {
+          "mean_cos": 0.5427393877378646,
+          "median_cos": 0.519679069519043,
+          "n": 1121,
+          "p05_cos": 0.21668629348278046,
+          "p95_cos": 0.891514241695404,
+          "std_cos": 0.20422160577221354
+        }
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "class_counts": {
+        "novel": 1587,
+        "shifted": 84,
+        "static": 1129
+      },
+      "group": "short",
+      "item_id": "videomme:short:160-1",
+      "n_pairs": 7,
+      "per_class_cos": {
+        "novel": {
+          "mean_cos": 0.3324310108461777,
+          "median_cos": 0.29679614305496216,
+          "n": 1587,
+          "p05_cos": 0.10078968778252602,
+          "p95_cos": 0.6686686396598815,
+          "std_cos": 0.18058184846907127
+        },
+        "shifted": {
+          "mean_cos": 0.47511532499144477,
+          "median_cos": 0.4810250699520111,
+          "n": 84,
+          "p05_cos": 0.12665291875600815,
+          "p95_cos": 0.8843274593353271,
+          "std_cos": 0.22898789672298225
+        },
+        "static": {
+          "mean_cos": 0.5608761539572208,
+          "median_cos": 0.5475999712944031,
+          "n": 1129,
+          "p05_cos": 0.2400108188390732,
+          "p95_cos": 0.9136403679847717,
+          "std_cos": 0.20614447999566865
+        }
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "class_counts": {
+        "novel": 1671,
+        "shifted": 9,
+        "static": 1120
+      },
+      "group": "short",
+      "item_id": "videomme:short:210-2",
+      "n_pairs": 7,
+      "per_class_cos": {
+        "novel": {
+          "mean_cos": 0.2459279004483579,
+          "median_cos": 0.22697898745536804,
+          "n": 1671,
+          "p05_cos": 0.07122230902314186,
+          "p95_cos": 0.49088622629642487,
+          "std_cos": 0.12810584636992842
+        },
+        "shifted": {
+          "mean_cos": 0.6069482035107083,
+          "median_cos": 0.5887795686721802,
+          "n": 9,
+          "p05_cos": 0.3455315172672272,
+          "p95_cos": 0.8291418433189393,
+          "std_cos": 0.1817137157026378
+        },
+        "static": {
+          "mean_cos": 0.44511993826397106,
+          "median_cos": 0.45366746187210083,
+          "n": 1120,
+          "p05_cos": 0.04771443083882332,
+          "p95_cos": 0.8530075430870054,
+          "std_cos": 0.2472380244671611
+        }
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "class_counts": {
+        "novel": 1665,
+        "shifted": 15,
+        "static": 1120
+      },
+      "group": "short",
+      "item_id": "videomme:short:264-1",
+      "n_pairs": 7,
+      "per_class_cos": {
+        "novel": {
+          "mean_cos": 0.2795948076275857,
+          "median_cos": 0.24304510653018951,
+          "n": 1665,
+          "p05_cos": 0.09963303357362747,
+          "p95_cos": 0.5838977694511414,
+          "std_cos": 0.15061225469911424
+        },
+        "shifted": {
+          "mean_cos": 0.34252170423666634,
+          "median_cos": 0.3374057710170746,
+          "n": 15,
+          "p05_cos": 0.15340947210788727,
+          "p95_cos": 0.6218900978565213,
+          "std_cos": 0.17429790339429335
+        },
+        "static": {
+          "mean_cos": 0.4817475449505894,
+          "median_cos": 0.4711490720510483,
+          "n": 1120,
+          "p05_cos": 0.10929106324911117,
+          "p95_cos": 0.9200219839811326,
+          "std_cos": 0.25399653431128366
+        }
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "class_counts": {
+        "novel": 1676,
+        "shifted": 4,
+        "static": 1120
+      },
+      "group": "short",
+      "item_id": "videomme:short:278-3",
+      "n_pairs": 7,
+      "per_class_cos": {
+        "novel": {
+          "mean_cos": 0.34243923514527946,
+          "median_cos": 0.3219449520111084,
+          "n": 1676,
+          "p05_cos": 0.1248257476836443,
+          "p95_cos": 0.6422573775053024,
+          "std_cos": 0.15781652122966897
+        },
+        "shifted": {
+          "mean_cos": 0.5730863064527512,
+          "median_cos": 0.6145430207252502,
+          "n": 4,
+          "p05_cos": 0.3814920216798782,
+          "p95_cos": 0.7066411912441254,
+          "std_cos": 0.13953407090605177
+        },
+        "static": {
+          "mean_cos": 0.6060710993928037,
+          "median_cos": 0.6093883514404297,
+          "n": 1120,
+          "p05_cos": 0.2602384626865387,
+          "p95_cos": 0.9351841509342194,
+          "std_cos": 0.2096643197172087
+        }
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "class_counts": {
+        "novel": 1235,
+        "shifted": 327,
+        "static": 1238
+      },
+      "group": "short",
+      "item_id": "videomme:short:282-2",
+      "n_pairs": 7,
+      "per_class_cos": {
+        "novel": {
+          "mean_cos": 0.4679284104549511,
+          "median_cos": 0.44984665513038635,
+          "n": 1235,
+          "p05_cos": 0.16556426286697387,
+          "p95_cos": 0.8231799483299256,
+          "std_cos": 0.20046875953322124
+        },
+        "shifted": {
+          "mean_cos": 0.4888665774204862,
+          "median_cos": 0.47469794750213623,
+          "n": 327,
+          "p05_cos": 0.20190564543008804,
+          "p95_cos": 0.8202587187290191,
+          "std_cos": 0.1940164550593586
+        },
+        "static": {
+          "mean_cos": 0.660750377291335,
+          "median_cos": 0.6530151665210724,
+          "n": 1238,
+          "p05_cos": 0.3323559179902077,
+          "p95_cos": 0.951205438375473,
+          "std_cos": 0.19415936614159154
+        }
+      }
+    }
+  ],
+  "planner": {
+    "shifted_threshold": 8.0,
+    "static_threshold": 3.0,
+    "statistic": "mean"
+  }
+}
