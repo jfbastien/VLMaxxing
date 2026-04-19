@@ -422,8 +422,8 @@ authoritative in the per-phase notes under
   notes: Original prereg mistakenly attributed Sam's MEASURED 2.13.3 persistent-KV result as a Codex hypothesis, and gated on an mlx-vlm fork that turned out to already be upstream (PromptCacheState + find_prefix_length). Split 2026-04-19 into 1.55A (reproduction of Sam 2.13.3 on Qwen 7B/M3 Air) and 1.55B (composition with 1.54 decode accel — deferred).
 
 - phase_id: 1.55A
-  status: completed (8f + 16f frame-scaling)
-  authoritative_note: research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-16f-frame-scaling-findings.md
+  status: completed (8f + 16f + 32f frame-scaling; fidelity bounded to ≤16f)
+  authoritative_note: research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-16f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-32f-frame-scaling-findings.md
   authoritative_artifacts:
     - research/experiments/2026/artifacts/loop_queue_20260419_155108/phase1_55A_persistent_kv_qwen/summary.json
     - research/experiments/2026/artifacts/loop_queue_20260419_155108/phase1_55A_persistent_kv_qwen/session_qwen7b_n7.jsonl
@@ -431,11 +431,14 @@ authoritative in the per-phase notes under
     - research/experiments/2026/artifacts/phase1_55A_16f_frame_scaling/summary.json
     - research/experiments/2026/artifacts/phase1_55A_16f_frame_scaling/session_qwen7b_n7.jsonl
     - research/experiments/2026/artifacts/phase1_55A_16f_frame_scaling/baseline_qwen7b_n7.jsonl
-  current_best_policy: "persistent-KV session (PromptCacheState one-per-clip) — 8f: 47.2× / 815 ms / Δacc −0.048. 16f: 91.1× / 807 ms / Δacc 0.000. Prefill-dominance mechanism confirmed on 2-point scaling curve."
+    - research/experiments/2026/artifacts/phase1_55A_32f_frame_scaling/summary.json
+    - research/experiments/2026/artifacts/phase1_55A_32f_frame_scaling/session_qwen7b_n7.jsonl
+    - research/experiments/2026/artifacts/phase1_55A_32f_frame_scaling/baseline_qwen7b_n7.jsonl
+  current_best_policy: "persistent-KV session (PromptCacheState one-per-clip) — 8f: 47.2× / 815 ms / Δacc −0.048. 16f: 91.1× / 807 ms / Δacc 0.000. 32f: 149.9× / 1008 ms / Δacc −0.429 (fidelity REJECT — decoder-artifact failure at ~13k prefill). Safe prefill budget: ≤ ~6.5k tokens (16f)."
   supersedes: ["1.55"]
-  paper_relevance: primary (reproduces Sam whitepaper §2.13.3 on Qwen 7B-4bit / M3 Air AND confirms prefill-dominance mechanism on 2-point scaling curve)
-  prereg_outcome: Fully earned (H1-H4 all earn at both frame counts; 16f Δacc=0 resolves 8f follow-up-stratified caveat)
-  runtime_estimate: 17 min @ 8f + 35 min @ 16f = ~52 min total across both frame counts
+  paper_relevance: primary (reproduces Sam whitepaper §2.13.3 on Qwen 7B-4bit / M3 Air; prefill-dominance mechanism confirmed on 3-point scaling curve; identifies safe-prefill-budget upper bound at ~6.5k tokens)
+  prereg_outcome: H1/H1'/H1'' all earn (speedup scales linearly). H3/H3'/H3'' all earn (prefix ≥0.98). H4/H4'/H4'' all earn (peak RSS ≤ 3 GB). H2/H2' earn at 8f/16f; **H2'' REJECTS at 32f** (Δacc = −0.429; cache-path decoder artifact emits literal `addCriterion` token at 14/14 follow-ups).
+  runtime_estimate: 17 min @ 8f + 35 min @ 16f + 76 min @ 32f = ~2.2 h total across 3 frame counts
   notes: |
     **8f run (loop_queue_20260419_155108):** all four preregistered hypotheses
     earn. H1 47.23× speedup, H2 Δacc −0.048 (stratified follow-up −7pp at n=14
@@ -444,12 +447,21 @@ authoritative in the per-phase notes under
     **16f follow-up (phase1_55A_16f_frame_scaling):** all four H' earn, and
     prefill-dominance mechanism confirmed. H1' 91.06× speedup (inside band
     [60×, 120×]), H2' follow-up median 807 ms (≤1.5s band ✓), H3' prefix 0.991,
-    H4' peak RSS 1.48 GB. CRITICAL: doubling prefill (3.3k→6.5k tokens) doubles
-    first-query time (1.91×) and doubles speedup (1.93×) while leaving follow-
-    up time unchanged (0.99×) — clean mechanistic signal that savings are purely
-    prefill. 16f Δacc = 0.000 (17/21 = 17/21) resolves the 8f stratified
-    caveat. Median follow-up matches Sam's 0.8 s (Gemma 4 26B / M5 Max) to
-    15 ms at both frame counts.
+    H4' peak RSS 1.48 GB. 16f Δacc = 0.000 (17/21 = 17/21).
+    **32f third point (phase1_55A_32f_frame_scaling):** H1'' 149.88× speedup
+    (inside band [130×, 220×]), H3'' prefix 0.9955, H4'' peak RSS 2.50 GB —
+    BUT H2'' REJECTS HARD with Δacc = −0.429 (session 9/21 vs baseline 18/21).
+    Failure mode is QUALITATIVE not gradual: 14/14 cache-path follow-ups emit
+    the literal token `addCriterion` (parsed "A" by first-letter heuristic).
+    Cold-prefill Q1 accuracy 7/7 matches baseline — content understanding is
+    intact; only the cache-reuse decoder trajectory is degenerate at ~13k
+    prefill tokens. **Safe-regime boundary identified between 6.5k and 13k
+    prefill tokens on Qwen 7B-4bit.** Candidate mechanisms: 4-bit KV
+    quantization noise compounding, M-RoPE positional drift at long visual
+    prefix. Prefill-dominance speedup curve: 38.5→73.5→163.2 s first-query
+    (1.91×, 2.22×); 815→807→1008 ms follow-up; 47×→91×→150× speedup
+    (1.93×, 1.65×). Median follow-up matches Sam's 0.8 s (Gemma 4 26B /
+    M5 Max) to 15 ms at 8f/16f.
 
 - phase_id: 1.55B
   status: proposed (deferred)
