@@ -407,7 +407,41 @@ authoritative in the per-phase notes under
   supersedes: []
   paper_relevance: primary (multiplicative composition — temporal reuse AND novelty-pruning stacked — paper-table headline number)
   prereg_outcome: (pending; blocked on 1.42 and 1.51R passes)
+  runtime_estimate: ~2-3h at 8f n=30 per arm (dense+pruned); ~6-8h at 32f
   notes: three-way gate preregistered (multiplicative / additive / interference); PoRe (arxiv 2508.17807) reserved as a composable axis under phase 1.52R holdout (see 1.51 prereg §Composable Arm) — NOT phase 1.53 (1.53 is now the object-state delta sidecar, preregistered 2026-04-18).
+
+- phase_id: 1.55
+  status: proposed (deferred-design)
+  authoritative_note: research/experiments/2026/2026-04-19-phase-1_55-persistent-kv-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: n/a (composition lever)
+  supersedes: []
+  paper_relevance: secondary (Codex round-21 streaming-deployment composition lever; unblocks Sam's 1.8× long-clip target when composed with 1.54 decode acceleration)
+  prereg_outcome: (pending; blocked on mlx-vlm KV handle + Phase 1.54 + Phase 1.30 streaming harness)
+  runtime_estimate: ~1.5h at 8f (100-query synthetic session) + ~3h at 32f
+  notes: Codex-round-21 hypothesis extending Sam's system (not a reproduction of a whitepaper claim). Four H: prefill speedup ≥1.5×, Δacc ≥-0.05, composes with 1.54 to >2.0× long-bucket, RoPE-key correction load-bearing for KV reuse.
+
+- phase_id: 1.56
+  status: proposed (deferred-design)
+  authoritative_note: research/experiments/2026/2026-04-19-phase-1_56-vlm-signaled-refresh-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: n/a
+  supersedes: []
+  paper_relevance: secondary (Codex round-21 refresh-policy extension; tests whether VLM-internal signal beats pixel/structural for refresh routing)
+  prereg_outcome: (pending; blocked on Phase 1.44 answer-margin logging + RefreshPolicy API)
+  runtime_estimate: ~45min at 8f (3 arms × n=30 VideoMME dev); ~2h at 32f
+  notes: Codex-round-21 hypothesis extending Sam's system. Three H: signal beats pixel-MEAN at matched compute, random-ablation rules out correlate-of-activity, signal needs lower refresh rate at matched accuracy. Paper language constrained to "VLM-signaled" until Phase 1.44 lands; no "confidence-conditioned" framing until earned.
+
+- phase_id: 1.57
+  status: proposed (deferred)
+  authoritative_note: research/experiments/2026/2026-04-19-codex-round-21-sam-imports.md
+  authoritative_artifacts: []
+  current_best_policy: n/a
+  supersedes: []
+  paper_relevance: secondary (Codex round-21 mechanism-isolation — distinguish attention-context drift from PE drift)
+  prereg_outcome: (deferred; full prereg pending attention-entropy logging hook in mlx-vlm)
+  runtime_estimate: ~30min at 8f (single-arm ablation on the 1.49 refresh corpus); needs attention-entropy logging hook before it can run
+  notes: Sam's whitepaper line 234 claims "~0.01/frame attention-context drift." Our 1.49 refresh sweep shows behaviorally that re-encode fixes drift but does NOT isolate mechanism. This phase would add per-layer attention-entropy logging + compare against a PE-correction-only variant. Paper language rule: cite "attention-context drift" (whitepaper-grounded) and do NOT assert PE-drift mechanism absent this ablation.
 ```
 
 ## Maintenance rules
@@ -422,3 +456,22 @@ authoritative in the per-phase notes under
 - When an old roadmap document (PLAN.md, execution-plan-round-7.md)
   is updated, re-verify that its claims agree with this registry.
   If they disagree, fix the prose and cite back to this registry.
+
+## Forward-queue runtime budget (benchmark wall-clock only)
+
+Only counts dense-generate + pruned-generate passes; excludes
+implementation, debugging, analysis, and CI time. Estimates are at
+8-frame regime unless noted; scale ~4× for 32-frame.
+
+| phase | status | runtime at 8f | runtime at 32f | blocked on |
+|-------|--------|---------------|----------------|------------|
+| 1.52R | pending | ~2-3h | ~6-8h | 1.42 + 1.51R sweep completion |
+| 1.55  | deferred-design | ~1.5h | ~3h | mlx-vlm KV handle + 1.54 + 1.30 |
+| 1.56  | deferred-design | ~45min | ~2h | Phase 1.44 margin logging + RefreshPolicy API |
+| 1.57  | deferred | ~30min | n/a | attention-entropy logging hook |
+| 1.30  | P2 | ~2h (3 clips × 3 policies) | n/a | 1.26 + 1.27 + 1.29 infra; P2 now |
+
+**Bottom-line forward benchmark time**: ~6-8h at 8f, ~12-15h at
+32f, to clear the Codex round-21 forward queue end-to-end
+(assuming all gating implementation lands first; that design work
+is NOT included here — user asked for runtime only).
