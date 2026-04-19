@@ -422,8 +422,8 @@ authoritative in the per-phase notes under
   notes: Original prereg mistakenly attributed Sam's MEASURED 2.13.3 persistent-KV result as a Codex hypothesis, and gated on an mlx-vlm fork that turned out to already be upstream (PromptCacheState + find_prefix_length). Split 2026-04-19 into 1.55A (reproduction of Sam 2.13.3 on Qwen 7B/M3 Air) and 1.55B (composition with 1.54 decode accel — deferred).
 
 - phase_id: 1.55A
-  status: completed (8f + 16f + 18f + 20f + 24f + 32f frame-scaling on 7B + 3B 20f cross-arch; fidelity is a monotonic-saturating ramp on 7B between 16f and 24f; 3B at 20f shows NO ramp — ramp is 7B-specific; frame-count sweep + first mechanism falsifier both done; next → temperature probe + 3B 24f boundary-shift)
-  authoritative_note: research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-16f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-18f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-20f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-24f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-32f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-3b-crossarch-findings.md
+  status: completed (8f + 16f + 18f + 20f + 24f + 32f frame-scaling on 7B + 3B 20f matched + 3B 24f shifted-ramp; fidelity is a monotonic-saturating ramp on 7B between 16f and 24f; 3B ramp is capacity-shifted ~2-3k tokens later and has a structurally distinct failure geometry (clean-letter drift, no basin collapse); frame-count sweep + 3B cross-arch 2-point done; next → 32f 3B to map full shifted curve + temperature probe)
+  authoritative_note: research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-16f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-18f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-20f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-24f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-32f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-3b-crossarch-findings.md + research/experiments/2026/2026-04-20-phase-1_55A-3b-24f-boundary-findings.md
   authoritative_artifacts:
     - research/experiments/2026/artifacts/loop_queue_20260419_155108/phase1_55A_persistent_kv_qwen/summary.json
     - research/experiments/2026/artifacts/loop_queue_20260419_155108/phase1_55A_persistent_kv_qwen/session_qwen7b_n7.jsonl
@@ -446,11 +446,14 @@ authoritative in the per-phase notes under
     - research/experiments/2026/artifacts/phase1_55A_3b_20f_crossarch/summary.json
     - research/experiments/2026/artifacts/phase1_55A_3b_20f_crossarch/session_qwen7b_n7.jsonl
     - research/experiments/2026/artifacts/phase1_55A_3b_20f_crossarch/baseline_qwen7b_n7.jsonl
-  current_best_policy: "persistent-KV session (PromptCacheState one-per-clip) — 7B-4bit: 8f 47.2×/815ms/Δ=−0.048; 16f 91.1×/807ms/Δ=0.000; 18f 70.3×/1102ms/Δ=−0.238 (4-basin); 20f 94.4×/905ms/Δ=−0.381 (2-basin); 24f 121.6×/864ms/Δ=−0.429 (single attractor); 32f 149.9×/1008ms/Δ=−0.429 (saturated). **3B-4bit cross-arch at 20f: 136.1×/412ms/Δ=−0.048 (MATCHED envelope, NO basin collapse).** Monotonic-saturating ramp on 7B between 16f (6.5k) and 24f (9.7k) prefill tokens; pairwise Δacc decay (−0.238, −0.143, −0.048, 0); **ramp absent at 3B at same prefill → ramp is 7B-specific**."
+    - research/experiments/2026/artifacts/phase1_55A_3b_24f_boundary/summary.json
+    - research/experiments/2026/artifacts/phase1_55A_3b_24f_boundary/session_qwen7b_n7.jsonl
+    - research/experiments/2026/artifacts/phase1_55A_3b_24f_boundary/baseline_qwen7b_n7.jsonl
+  current_best_policy: "persistent-KV session (PromptCacheState one-per-clip) — 7B-4bit: 8f 47.2×/815ms/Δ=−0.048; 16f 91.1×/807ms/Δ=0.000; 18f 70.3×/1102ms/Δ=−0.238 (4-basin); 20f 94.4×/905ms/Δ=−0.381 (2-basin); 24f 121.6×/864ms/Δ=−0.429 (single attractor); 32f 149.9×/1008ms/Δ=−0.429 (saturated). **3B-4bit cross-arch: 20f 136.1×/412ms/Δ=−0.048 (MATCHED); 24f 154.2×/423ms/Δ=−0.190 (SHIFTED-RAMP; 14/14 clean 2-token letter answers — decode-choice drift, no basin collapse).** 7B: monotonic-saturating ramp 16f→24f through progressive basin collapse. 3B: ramp shifted ~2-3k prefill tokens later; failure geometry is architecture-specific (addCriterion is 7B-only)."
   supersedes: ["1.55"]
-  paper_relevance: primary (reproduces Sam whitepaper §2.13.3 on Qwen 7B-4bit / M3 Air; prefill-dominance mechanism confirmed on 6-point scaling curve; 18f+20f bisections reveal the fidelity transition is a monotonic-saturating ramp through progressive basin collapse — clean → 4-basin → 2-basin → single-attractor; 3B cross-arch at matched prefill falsifies pure prefill-length-intrinsic mechanism, supports model-capacity / depth-dependent accumulation)
-  prereg_outcome: H1/H1'/H1''/H1'''/H1''''/H1''''' all earn (speedup 47×→91×→70×→94×→122×→150×; 18f dip is median-inflation from long-garbage gen tokens, not cache-reuse failure). H3/H3'/H3''/H3'''/H3''''/H3''''' all earn (prefix ≥0.99). H4/H4'/H4''/H4'''/H4''''/H4''''' all earn (peak RSS ≤ 4.2 GB). H2/H2' earn at 8f/16f; **H2''/H2'''/H2''''/H2''''' REJECT at 32f/24f/20f/18f on 7B**. 18f is mid-ramp with 4-basin diversity (Δ = −0.238). 20f is mid-ramp with 2-basin dominance (Δ = −0.381). 24f/32f saturate to 14/14 `addCriterion` (Δ = −0.429). **3B cross-arch 20f: H1-3B/H2-3B/H3-3B/H4-3B all EARN — H2-3B.matched sub-outcome (Δ = −0.048 within ±0.05), NO addCriterion basin, NO long-garbage basin — 7B-specific ramp falsified as prefill-length-intrinsic.**
-  runtime_estimate: 17 min @ 8f + 35 min @ 16f + 38 min @ 18f + 42 min @ 20f + 55 min @ 24f + 76 min @ 32f + 27 min @ 3B-20f = ~4.8 h total across 6 frame counts + 1 cross-arch control
+  paper_relevance: primary (reproduces Sam whitepaper §2.13.3 on Qwen 7B-4bit / M3 Air; prefill-dominance mechanism confirmed on 6-point scaling curve; 18f+20f bisections reveal the 7B fidelity transition is a monotonic-saturating ramp through progressive basin collapse — clean → 4-basin → 2-basin → single-attractor; 3B cross-arch 2-point (20f matched, 24f shifted-ramp) decomposes the mechanism: **ramp is capacity-modulated threshold; basin attractor identity is architecture-specific failure geometry**)
+  prereg_outcome: H1/H1'/H1''/H1'''/H1''''/H1''''' all earn (speedup 47×→91×→70×→94×→122×→150×; 18f dip is median-inflation from long-garbage gen tokens, not cache-reuse failure). H3/H3'/H3''/H3'''/H3''''/H3''''' all earn (prefix ≥0.99). H4/H4'/H4''/H4'''/H4''''/H4''''' all earn (peak RSS ≤ 4.2 GB). H2/H2' earn at 8f/16f; **H2''/H2'''/H2''''/H2''''' REJECT at 32f/24f/20f/18f on 7B**. 18f is mid-ramp with 4-basin diversity (Δ = −0.238). 20f is mid-ramp with 2-basin dominance (Δ = −0.381). 24f/32f saturate to 14/14 `addCriterion` (Δ = −0.429). **3B cross-arch 20f: H2-3B.matched (Δ = −0.048); 3B cross-arch 24f: H2-3B-24.shifted-ramp (Δ = −0.190, inside (−0.30, −0.05)). Both 3B runs: 14/14 clean 2-token letter answers across all follow-ups — no addCriterion, no long-garbage. Ramp is capacity-modulated (shifted ~2-3k tokens later on 3B); basin attractor identity is architecture-specific.**
+  runtime_estimate: 17 min @ 8f + 35 min @ 16f + 38 min @ 18f + 42 min @ 20f + 55 min @ 24f + 76 min @ 32f + 27 min @ 3B-20f + 31 min @ 3B-24f = ~5.3 h total across 6 frame counts + 2 cross-arch points
   notes: |
     **8f run (loop_queue_20260419_155108):** all four preregistered hypotheses
     earn. H1 47.23× speedup, H2 Δacc −0.048, H3 prefix 0.982, H4 peak RSS 2.81 GB.
@@ -502,9 +505,23 @@ authoritative in the per-phase notes under
     depth-dependent accumulation OR 7B-specific decoder-distribution
     basin geometry. First mechanism-discriminating falsifier LANDED in
     one run.
-    **Next mechanism probes**: (1) 24f 3B boundary-shift test (does
-    3B have a ramp at ALL, just shifted later?), (2) 7B/20f temperature
-    probe with T>0 + min-p (greedy-commit vs distribution-collapse).
+    **3B 24f boundary-shift (phase1_55A_3b_24f_boundary, 2026-04-20):**
+    H1-3B-24 154.17× speedup (median follow-up 423 ms), H2-3B-24.shifted-ramp
+    sub-outcome EARNED with Δacc = −0.190 (inside (−0.30, −0.05)), H3-3B-24
+    prefix 0.9940, H4-3B-24 peak RSS 1.48 GB. Baseline 14/21, session 10/21.
+    First-query accuracy 4/7 identical to baseline — deficit is
+    entirely on cache-reused follow-ups (session 6/14 vs baseline 10/14,
+    Δ=−0.286). **All 14 follow-ups emit clean 2-token letter answers**
+    (no addCriterion, no long-garbage, no empty). 3B at 24f exhibits
+    **decode-choice drift**, structurally distinct from 7B's single-attractor
+    basin collapse. Cross-arch 2-point verdict: **ramp is capacity-modulated
+    (3B threshold ~2-3k prefill tokens later than 7B); basin attractor
+    identity is architecture-specific (addCriterion is 7B-only)**.
+    **Next mechanism probes**: (1) 32f 3B to map the full 3B shifted
+    curve (does 3B saturate like 7B or plateau at shallower Δacc?),
+    (2) 7B/20f temperature probe with T>0 + min-p (does greedy-commit
+    addCriterion disperse toward 3B-like letter-drift when the argmax
+    is relaxed?).
 
 - phase_id: 1.55B
   status: proposed (deferred)

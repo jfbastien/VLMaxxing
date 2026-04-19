@@ -1,0 +1,75 @@
+{
+  "phase": "1.55A",
+  "model": "qwen2.5-vl-3b-instruct-4bit",
+  "frame_count": 24,
+  "n_clips": 7,
+  "n_queries_per_mode": 21,
+  "total_wall_ms": 1830227.633375,
+  "peak_rss_gb": 1.484587008,
+  "session": {
+    "label": "session",
+    "n": 21,
+    "n_correct": 10,
+    "accuracy": 0.47619047619047616,
+    "mean_elapsed_ms": 21306.481011952383,
+    "median_elapsed_ms": 426.68625,
+    "p05_elapsed_ms": 376.990666,
+    "p95_elapsed_ms": 66669.864208
+  },
+  "session_first_query": {
+    "label": "session_first_query",
+    "n": 7,
+    "n_correct": 4,
+    "accuracy": 0.5714285714285714,
+    "mean_elapsed_ms": 63039.491160714286,
+    "median_elapsed_ms": 65175.462917,
+    "p05_elapsed_ms": 47751.795209,
+    "p95_elapsed_ms": 69099.928291
+  },
+  "session_follow_up": {
+    "label": "session_follow_up",
+    "n": 14,
+    "n_correct": 6,
+    "accuracy": 0.42857142857142855,
+    "mean_elapsed_ms": 439.9759375714286,
+    "median_elapsed_ms": 422.738041,
+    "p05_elapsed_ms": 368.36275,
+    "p95_elapsed_ms": 563.59175
+  },
+  "baseline": {
+    "label": "baseline",
+    "n": 21,
+    "n_correct": 14,
+    "accuracy": 0.6666666666666666,
+    "mean_elapsed_ms": 64388.65345828571,
+    "median_elapsed_ms": 65575.750625,
+    "p05_elapsed_ms": 51991.613667,
+    "p95_elapsed_ms": 70079.243625
+  },
+  "speedup_first_over_follow": 154.17458708666342,
+  "mean_follow_up_prefix_coverage": 0.9940210811971445,
+  "accuracy_delta_session_minus_baseline": -0.19047619047619047,
+  "verdicts": {
+    "H1_follow_up_speedup": {
+      "earn": true,
+      "reject": false,
+      "median_follow_up_s": 0.422738041,
+      "speedup": 154.17458708666342
+    },
+    "H2_accuracy_preservation": {
+      "earn": false,
+      "reject": true,
+      "delta": -0.19047619047619047
+    },
+    "H3_prefix_coverage": {
+      "earn": true,
+      "reject": false,
+      "coverage": 0.9940210811971445
+    },
+    "H4_peak_rss": {
+      "earn": true,
+      "reject": false,
+      "peak_rss_gb": 1.484587008
+    }
+  }
+}
