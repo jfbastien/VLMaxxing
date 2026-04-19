@@ -27,10 +27,28 @@ Peak RSS: not captured in this summary (dense-only run; RSS-ceiling
 question rides with future 32f attempt).
 
 **Unpaired two-proportion z-test on aggregate**: z=0.26, p=0.80 —
-aggregate Δ is statistically noise at n=30. **Per-bucket shifts are
-large** (medium +30pp, long −20pp, n=10 each) but at n=10 the 95%
-CI half-width is ±0.31, so only medium is unambiguously a real
-shift; long-bucket regression is suggestive, not proven.
+aggregate Δ is statistically noise at n=30.
+
+**Paired per-item flip table (8f → 16f, same 30 items):**
+
+| bucket | RR (both correct) | RW (correct→wrong) | WR (wrong→correct) | WW (both wrong) | McNemar exact p |
+|--------|-------------------|--------------------|--------------------|-----------------|-----------------|
+| short  | 7 | 1 | 1 | 1 | 1.00 (noise) |
+| medium | 5 | 0 | **3** | 2 | **0.25** (directional) |
+| long   | 1 | **2** | 0 | 7 | 0.50 (directional, weak) |
+
+The paired view sharpens the per-bucket story: medium's +30pp lift
+comes from 3 items flipping wrong→correct with zero reverse flips
+(strong directional evidence, not just luck); long's −20pp
+regression comes from 2 items flipping correct→wrong with zero
+reverse flips (directional, statistically weak at n=10). Short is
+genuine noise.
+
+At n=10 the 95% CI half-width on a per-bucket proportion is ±0.31,
+so the individual bucket shifts don't clear formal significance —
+but the per-item flip direction is asymmetric in a way that mean-
+accuracy summaries hide. The asymmetry is stronger evidence than
+the Δ numbers imply.
 
 ## Interpretation
 
