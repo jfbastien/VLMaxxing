@@ -81,25 +81,69 @@ N=30 holdout, clean-tree provenance; projected compute-savings ceiling
 
 ## Evidence table with RUNTIME (not implementation) time
 
-Runtime = GPU wall time to reproduce the cited number from a warm cache.
-Implementation time is out of scope for this table.
+Runtime = benchmark wall time to reproduce the cited number from a
+warm cache on an M3 Air 16 GB. Implementation time is deliberately
+out of scope for this table — it does not compose across phases and
+is work the user is buying forever. What the user is paying for
+**per re-run** is the benchmark wall-clock below.
 
-| # | Claim | Cold-cache runtime | Warm-cache runtime | Hardware |
+### Earned (paper body)
+
+| # | Claim | Cold-cache | Warm-cache | Model |
 |---|---|---|---|---|
-| A | MVBench motion holdout N=30 base | ≈ 90 min (includes feature extraction) | ≈ 25-30 min | M3 Air 16 GB, Qwen 2.5-VL-7B-4bit |
-| B | TOMATO motion holdout N=30 base | ≈ 120 min (larger videos, longer decode) | ≈ 30-40 min | same |
-| C | MVBench motion holdout N=30 sticky4 | ≈ 90 min | ≈ 25-30 min | same |
-| D | Novelty-ranked dense 2×3 grid (TOMATO+MVBench, N={4,6,8}) | ≈ 120 min total | ≈ 45-60 min | same |
-| E | TOMATO ablation cells (6 cells × 2 benchmarks × N=30) | ≈ 6-8 h | ≈ 3-4 h | same |
-| F | Phase 1.36 oracle (per-block Pearson, partial cache coverage) | ≈ 60 min | ≈ 20 min | same |
-| G | Phase 1.50 dense wall-clock baseline (TOMATO n=10) | ≈ 15 min | ≈ 12 min | same |
+| A | MVBench motion holdout N=30 base | ≈ 90 min | ≈ 25-30 min | Qwen 2.5-VL-7B-4bit |
+| B | TOMATO motion holdout N=30 base | ≈ 120 min | ≈ 30-40 min | Qwen 2.5-VL-7B-4bit |
+| C | MVBench motion holdout N=30 sticky4 | ≈ 90 min | ≈ 25-30 min | Qwen 2.5-VL-7B-4bit |
+| D | Novelty-ranked dense 2×3 grid (TOMATO+MVBench, N={4,6,8}) | ≈ 120 min | ≈ 45-60 min | Qwen 2.5-VL-7B-4bit |
+| E | TOMATO ablation cells (6 cells × 2 benchmarks × N=30) | ≈ 6-8 h | ≈ 3-4 h | Qwen 2.5-VL-7B-4bit |
+| F | Phase 1.36 oracle (per-block Pearson, partial cache coverage) | ≈ 60 min | ≈ 20 min | Qwen 2.5-VL-7B-4bit |
+| G | Phase 1.50 Track B dense wall-clock baseline N=30 pair | ≈ 2 h per benchmark (cold) | ≈ 2 h (cold; no cache win) | Qwen 2.5-VL-7B-4bit |
 | H | Derived from G, zero runtime | — | — | — |
+| J₈ | Phase 1.41 VideoMME dev n=30 @ 8f | ≈ 16 min (931 s measured) | ≈ 16 min (no feature cache) | Qwen 2.5-VL-7B-4bit |
+| J₁₆ | Phase 1.41 VideoMME dev n=30 @ 16f | ≈ 38 min (2,257 s measured) | ≈ 38 min | Qwen 2.5-VL-7B-4bit |
+| J₃₂L | Phase 1.41 VideoMME long n=10 @ 32f | ≈ 28 min (1,450 s projected from 161 s/item × 9 measured) | same | Qwen 2.5-VL-7B-4bit |
+| K | Claim-11 reproduction log (1.51R Stages 1/2b/3/5/6/7) | ≈ 10-12 h total across N=30 cells on both benchmarks | n/a (incremental) | Gemma 4-E4B-4bit |
+| M | Claim-13 C-CEILING cross-validation (7 regime dimensions) | included in K | n/a | Gemma 4-E4B-4bit |
+
+### Blocked / forward queue (pre-reg runtime budget)
+
+| # | Claim / phase | Benchmark runtime | Model | Blocker |
+|---|---|---|---|---|
+| I | Sparse-execution delta (claim 5 "N% measured speedup") | ≈ 1 h per benchmark | either | sparse execution path not written |
+| L | Placement ablation (phase 1.38) | ≈ 30 min | Qwen 2.5-VL-7B-4bit | not queued |
+| N₅₇ | Phase 1.57 feature-drift measurement (Gemma + Qwen, 8/16/32f) | ≈ 45-60 min total (feature-tap only, no generation) | both | scripts/measure_feature_drift.py scaffold |
+| N₅₅ₐ | Phase 1.55A persistent-KV reproduction (short bucket 7×3) | ≈ 17 min | Qwen 2.5-VL-7B-4bit | scripts/run_kv_cache_session.py (uses existing mlx-vlm PromptCacheState) |
+| N₅₆ | Phase 1.56 VLM-signaled refresh (3 arms × n=30 VideoMME dev) | ≈ 45 min @ 8f; ≈ 2 h @ 32f | Qwen 2.5-VL-7B-4bit | Phase 1.44 margin logging + RefreshPolicy API |
+| N₁.₅₂R | Phase 1.52R temporal+spatial composition on Gemma | ≈ 2-3 h @ 8f; ≈ 6-8 h @ 32f | Gemma 4-E4B-4bit | 1.42 + 1.51R sweep completion |
+| N₁.₅₅B | Phase 1.55B KV × decode-accel composition | ≈ 65 min @ 8f; ≈ 2.5 h @ 32f | Qwen 2.5-VL-7B-4bit | 1.54 landing + 1.55A earning |
+| N₁.₅₈ | Phase 1.58 bf16 × long-context quantization ablation | ≈ 1 h bf16 8f; ≈ 3 h bf16 16f | Qwen 2.5-VL bf16 (15 GB download) | bf16 checkpoint + RSS feasibility check |
+| N₁.₄₂ | Phase 1.42 Gemma architecture-topology lane | ≈ 2 h @ 8f; ≈ 6 h @ 32f | Gemma 4-E4B-4bit | _mix_gemma_features integration |
+| N₁.₄₃ | Phase 1.43 EgoSchema lane | ≈ 2 h @ 8f | Qwen 2.5-VL-7B-4bit | EgoSchema loader + manifest |
 
 ### Runtime cost summary
 
-- **One full reviewer-response cycle (re-run A through F on clean tree):** warm-cache ≈ 5-7 h; cold-cache ≈ 10-14 h.
-- **N=30 motion holdout pair on a new policy:** warm-cache ≈ 60 min; cold-cache ≈ 3.5 h.
-- **Phase 1.50 Track B N=30 pair (landed 2026-04-17, both benchmarks):** cold-cache ≈ 2 h per benchmark. TOMATO 61.1 s/item median, MVBench 56.5 s/item median.
+**Already spent** (benchmark wall-clock, cumulative approx over project):
+- Lane A (TOMATO + MVBench routing, Qwen): ~25-30 h (A+B+C+D+E+F+G, measured across many N=30 passes)
+- Lane B (Gemma 1.51R + ceiling validation): ~10-12 h (K+M)
+- VideoMME lane (claim 8 earned + strengthened): ~82 min (J₈ 16 min + J₁₆ 38 min + J₃₂L 28 min)
+- **Total benchmark wall-clock already spent: ~36-43 h**
+
+**Forward queue** (blocked + runnable-now, benchmark wall-clock only):
+- **Runnable now**: 1.57 ~60 min + 1.55A ~17 min = **~1.3 h**
+- **Short blockers** (1.54 decode + 1.44 margin land first): 1.55B ~65 min + 1.56 ~45 min = **~1.8 h @ 8f, ~4.5 h @ 32f**
+- **Larger blockers** (Gemma harness + bf16 download + EgoSchema loader): 1.42 ~2 h + 1.58 ~4 h + 1.43 ~2 h + 1.52R ~3 h = **~11 h @ 8f, ~25 h @ 32f**
+- **One full reviewer-response cycle** (re-run A through F, warm-cache): **~5-7 h**
+- **Sparse execution delta** (claim 5 — unblocks "measured speedup"): **~2 h** benchmark-only after ~1-2 wk implementation
+
+**Aggregate forward cost to clear the full queue**:
+- At 8f: ~14 h benchmark-only (excludes implementation of gating infra)
+- At 32f: ~30 h benchmark-only
+- Earned-claims reviewer rerun: additional ~5-7 h warm-cache
+
+All estimates exclude implementation, debugging, and CI — they
+describe only the wall-clock the user would burn re-running
+already-landed experiments or clearing the currently-blocked
+queue once infra is in place.
 
 ## Venue targeting (current honest read)
 
