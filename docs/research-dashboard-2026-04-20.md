@@ -39,8 +39,9 @@ when phases close or expand, not the registry (registry is the ledger).
 | Pair                          | V_red  | E2E×  | Dec Δ | Acc Δ  | Thermal          | Verdict                         |
 |-------------------------------|--------|-------|-------|--------|------------------|---------------------------------|
 | EXP01/02 VideoMME 8f kr=0.50  | +39.0% | 1.08× | -2.8% | -0.067 | cooler (favorable) | **H1 CONFIRMED** (back-to-back) |
+| EXP01/03 VideoMME 8f kr=0.25  | +62.1% | 1.09× | +0.8% | -0.067 | clean              | **Pareto-dominates kr=0.50** — same E2E, same acc, more V_red |
 
-V_share unpatched = 15.2% → theoretical ceiling at V_red=100% is 1.18×. Observed 1.08× at V_red=39% matches the model. Decode Δ is negative (patched cooler), so 39% is a conservative lower bound for V-only reduction.
+V_share unpatched = 15.2% → theoretical ceiling at V_red=100% is 1.18×. Observed 1.08× at kr=0.50 (V_red=39%) and 1.09× at kr=0.25 (V_red=62%) both saturate against the architectural cap; E2E is kr-insensitive at 8f, so the tighter kr=0.25 point is the new dominant Pareto policy pending kr=0.75 (EXP04).
 
 ## Open SOTA advancement paths
 
