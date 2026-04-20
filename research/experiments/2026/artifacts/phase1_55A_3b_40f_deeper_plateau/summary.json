@@ -1,0 +1,81 @@
+{
+  "phase": "1.55A",
+  "model": "qwen2.5-vl-3b-instruct-4bit",
+  "frame_count": 40,
+  "n_clips": 7,
+  "n_queries_per_mode": 21,
+  "total_wall_ms": 3537875.619416,
+  "peak_rss_gb": 3.154378752,
+  "sampling": {
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "min_p": 0.0,
+    "seed": 42
+  },
+  "session": {
+    "label": "session",
+    "n": 21,
+    "n_correct": 8,
+    "accuracy": 0.38095238095238093,
+    "mean_elapsed_ms": 40845.99241861905,
+    "median_elapsed_ms": 722.342209,
+    "p05_elapsed_ms": 473.737542,
+    "p95_elapsed_ms": 137248.318167
+  },
+  "session_first_query": {
+    "label": "session_first_query",
+    "n": 7,
+    "n_correct": 4,
+    "accuracy": 0.5714285714285714,
+    "mean_elapsed_ms": 121123.23681557142,
+    "median_elapsed_ms": 115231.337083,
+    "p05_elapsed_ms": 107871.137917,
+    "p95_elapsed_ms": 141282.3885
+  },
+  "session_follow_up": {
+    "label": "session_follow_up",
+    "n": 14,
+    "n_correct": 4,
+    "accuracy": 0.2857142857142857,
+    "mean_elapsed_ms": 707.3702201428571,
+    "median_elapsed_ms": 602.833792,
+    "p05_elapsed_ms": 470.501625,
+    "p95_elapsed_ms": 1478.876083
+  },
+  "baseline": {
+    "label": "baseline",
+    "n": 21,
+    "n_correct": 13,
+    "accuracy": 0.6190476190476191,
+    "mean_elapsed_ms": 125565.85741866667,
+    "median_elapsed_ms": 116160.18875,
+    "p05_elapsed_ms": 114385.706334,
+    "p95_elapsed_ms": 143774.044541
+  },
+  "speedup_first_over_follow": 191.1494322518005,
+  "mean_follow_up_prefix_coverage": 0.9964013059454422,
+  "accuracy_delta_session_minus_baseline": -0.23809523809523814,
+  "verdicts": {
+    "H1_follow_up_speedup": {
+      "earn": true,
+      "reject": false,
+      "median_follow_up_s": 0.602833792,
+      "speedup": 191.1494322518005
+    },
+    "H2_accuracy_preservation": {
+      "earn": false,
+      "reject": true,
+      "delta": -0.23809523809523814
+    },
+    "H3_prefix_coverage": {
+      "earn": true,
+      "reject": false,
+      "coverage": 0.9964013059454422
+    },
+    "H4_peak_rss": {
+      "earn": true,
+      "reject": false,
+      "peak_rss_gb": 3.154378752
+    }
+  }
+}
