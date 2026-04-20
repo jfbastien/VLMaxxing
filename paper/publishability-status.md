@@ -106,6 +106,8 @@ is work the user is buying forever. What the user is paying for
 | K | Claim-11 reproduction log (1.51R Stages 1/2b/3/5/6/7) | ≈ 10-12 h total across N=30 cells on both benchmarks | n/a (incremental) | Gemma 4-E4B-4bit |
 | M | Claim-13 C-CEILING cross-validation (7 regime dimensions) | included in K | n/a | Gemma 4-E4B-4bit |
 | O | Phase 1.55A persistent-KV follow-up latency (n=21 queries × 6 frame counts + 3B cross-arch 3-point + 7B/20f temperature probe + 3B/20f temperature probe) | ≈ 18 min at 8f (1057 s) + ≈ 35 min at 16f (2095 s) + ≈ 38 min at 18f (2302 s) + ≈ 42 min at 20f (2506 s) + ≈ 55 min at 24f (3281 s) + ≈ 76 min at 32f (4573 s) + ≈ 27 min at 3B-20f (1595 s) + ≈ 31 min at 3B-24f (1830 s) + ≈ 50 min at 3B-32f (2972 s) + ≈ 48 min at 7B-20f-temp (2862 s) + ≈ 24 min at 3B-20f-temp (1427 s) = ≈ 7.3 h | ≈ 7.3 h | Qwen 2.5-VL-7B-4bit + 2.5-VL-3B-4bit |
+| P | Phase 1.51V expansion (12 exps — Tier 0 confirm + Tier 1 Pareto + Tier 2 cross-bench + Tier 3 stack + Tier 4 16f scale) | 15,621 s measured = **4.34 h** (EXP01–12; runtime per-exp 606–2155 s, dense+pruned both reported) | 4.34 h | Gemma 4-E4B-4bit |
+| Q | Phase 1.51V 32f probe (EXP13 unpatched + EXP14 L=2 kr=0.50, n=30 each) | 7,167 s measured = **1.99 h** (EXP13 3415 s + EXP14 3752 s; thermal confounder documented) | 1.99 h | Gemma 4-E4B-4bit |
 
 ### Blocked / forward queue (pre-reg runtime budget)
 
@@ -127,8 +129,10 @@ is work the user is buying forever. What the user is paying for
 **Already spent** (benchmark wall-clock, cumulative approx over project):
 - Lane A (TOMATO + MVBench routing, Qwen): ~25-30 h (A+B+C+D+E+F+G, measured across many N=30 passes)
 - Lane B (Gemma 1.51R + ceiling validation): ~10-12 h (K+M)
+- Lane B (Gemma 1.51V expansion + 32f probe): ~6.3 h (P 4.34 h + Q 1.99 h measured)
 - VideoMME lane (claim 8 earned + strengthened): ~82 min (J₈ 16 min + J₁₆ 38 min + J₃₂L 28 min)
-- **Total benchmark wall-clock already spent: ~36-43 h**
+- Persistent-KV lane (claim 14): ~7.3 h (O)
+- **Total benchmark wall-clock already spent: ~50-57 h**
 
 **Forward queue** (blocked + runnable-now, benchmark wall-clock only):
 - **Runnable now**: 1.57 ~60 min + 1.55A ~17 min = **~1.3 h**
