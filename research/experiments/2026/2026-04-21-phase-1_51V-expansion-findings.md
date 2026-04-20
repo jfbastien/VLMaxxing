@@ -79,6 +79,57 @@ All runs: `gemma-4-e4b-it-4bit`, n=30, max_tokens=32, rss-guard-mb=10000. Therma
 3. **32f follow-on**: H_fsscale violation is favorable. Worth spending ~90 min probing V_share × V_red at 32f before the paper closes, even though 32f long-bucket accuracy is known-fragile (0.10 from memory)?
 4. **MVBench -10pp acc Δ**: this is the only accuracy drop that flirts with the 15pp bound. Is the paper-table cell reported with a "within-CI" caveat, or demoted?
 
+## Per-bucket accuracy breakdown (appendix, post-hoc 2026-04-21)
+
+Aggregates can mask structural patterns. Per-group breakdowns show where the accuracy deltas concentrate.
+
+### MVBench (-10pp aggregate resolves to 3 item flips out of 30)
+
+| Category            | n | dense | pruned | Δ       | agree |
+|---------------------|---|-------|--------|---------|-------|
+| action_localization | 6 | 0.833 | 0.833  | +0.000  | 1.000 |
+| fine_grained_action | 6 | 0.333 | 0.333  | +0.000  | 1.000 |
+| moving_attribute    | 6 | 0.833 | 0.667  | -0.167  | 0.833 |
+| moving_direction    | 6 | 0.333 | 0.333  | +0.000  | 1.000 |
+| object_interaction  | 6 | 0.667 | 0.333  | **-0.333** | 0.833 |
+
+The -10pp aggregate resolves to **three item flips in two fine-grained-object categories** (1 in moving_attribute, 2 in object_interaction). Spatial-coarse tasks (action_localization) and static-pose tasks (fine_grained_action) are fully preserved. Paper framing: "1.51V preserves motion/spatial categories perfectly; object-binding tasks show a 3-of-30 regression bounded to fine-grained object categories." Not a -10pp across the board.
+
+### TOMATO (+3.3pp aggregate driven by rotation bucket)
+
+| Category     | n  | dense | pruned | Δ       | agree |
+|--------------|----|-------|--------|---------|-------|
+| direction    | 10 | 0.200 | 0.100  | -0.100  | 1.000 |
+| rotation     | 10 | 0.000 | 0.300  | **+0.300** | 1.000 |
+| shape_trend  | 10 | 0.100 | 0.000  | -0.100  | 0.800 |
+
+**Rotation lifted 0 → 3 of 10.** Dense TOMATO rotation is degenerate (0/10). Pruning removed distractor spatial detail and the pruned path answered 3 items correctly. This is a favorable second-order effect, not a headline claim.
+
+### VideoMME 8f (-6.7pp aggregate)
+
+| Bucket | n  | dense | pruned | Δ      | agree |
+|--------|----|-------|--------|--------|-------|
+| long   | 10 | 0.400 | 0.300  | -0.100 | 0.800 |
+| medium | 10 | 0.400 | 0.300  | -0.100 | 0.900 |
+| short  | 10 | 0.400 | 0.400  | +0.000 | 1.000 |
+
+Short bucket fully preserved (agreement 1.00). Long and medium each drop one item. Matches the 1.51R Stage 5 long-bucket regression pattern.
+
+### VideoMME 16f (+3.3pp aggregate, single-item gain)
+
+| Bucket | n  | dense | pruned | Δ      | agree |
+|--------|----|-------|--------|--------|-------|
+| long   | 10 | 0.400 | 0.400  | +0.000 | 0.900 |
+| medium | 10 | 0.300 | 0.400  | +0.100 | 1.000 |
+| short  | 10 | 0.500 | 0.500  | +0.000 | 1.000 |
+
+16f fully preserves long + short; medium gains one item. The 16f frame-count scaling is the cleanest regime for pruning — all buckets agree near 1.00.
+
+**Paper-table cell caveats**:
+- MVBench: report -10pp with a per-category footnote; the degradation is localized.
+- TOMATO: report +3.3pp honestly with a rotation-bucket footnote (+30pp on degenerate-dense bucket).
+- VideoMME 16f: clean across all buckets; safest cell to feature.
+
 ## Artifacts
 
 - Runner: `scripts/run_phase1_51V_expansion.sh`

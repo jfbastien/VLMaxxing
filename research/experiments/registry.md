@@ -380,8 +380,8 @@ authoritative in the per-phase notes under
   prereg_outcome: Accepted with caveat (dense baseline paper-grade on TOMATO N=30 + MVBench N=30 holdout; cross-benchmark vision-cache ceiling 20-23% end-to-end; sparse-execution delta still not measured)
 
 - phase_id: 1.51R
-  status: running
-  authoritative_note: research/experiments/2026/2026-04-17-phase-1_51-novelty-pruning-gemma-prereg.md
+  status: CLOSED 2026-04-21 null on own axis — Stage 5 anchor sweep (2026-04-18) showed all three anchor arms at kr=0.50 on VideoMME dev n=30 bounded by the arithmetic E2E ceiling (<1.10× at s=∞); gemma_structural and max_min_diversity earn acc bar (-3.3pp), nuwa_pillar fails (-16.7pp). Post-1.51V composition re-runs (EXP09/EXP10 from 1.51V expansion 2026-04-21): EXP09 (gemma_structural kr=0.5) replicates own-axis null (own-pair E2E 0.990×, acc -6.7pp, agree 0.50); EXP10 (anchor=none kr=0.3) shows +4.7pp own-pair E2E lift over V-alone with agg acc preserved BUT agreement drops 0.90→0.63 ("noisy preserve"). EXP10 cell flagged as n=60 follow-up lane with promotion rule: ≥4pp lift AND agreement ≥0.75 AND acc within -0.067.
+  authoritative_note: research/experiments/2026/2026-04-17-phase-1_51-novelty-pruning-gemma-prereg.md + research/experiments/2026/2026-04-18-phase-1_51R-stage5-cross-arm-synthesis.md + research/experiments/2026/2026-04-21-phase-1_51R-closure-post-1_51V.md
   authoritative_artifacts:
     - src/codec_through/novelty_pruning.py (anchor scoring + keep mask; CPU tested)
     - src/codec_through/video_decode.py (bounded-memory uniform decode)
@@ -393,10 +393,10 @@ authoritative in the per-phase notes under
     - research/experiments/2026/artifacts/phase1_51R_pilot/ (GPU pilot n=1 long item, arm=none kr=0.5, e2e 1.01× / gen 1.12×)
     - research/experiments/2026/artifacts/phase1_51R_dev/ (Stage 1 n=30 scale-up; in flight)
     - research/experiments/2026/2026-04-18-phase-1_51R-pilot-findings.md (arithmetic-ceiling derivation)
-  current_best_policy: n/a (pilot null — end-to-end 1.01× vs 1.8× prereg gate; mechanism verified correct, claim #11 magnitude is arithmetically bounded by vision+decode share on E4B)
+  current_best_policy: n/a — own-axis null confirmed at n=30 across 3 anchor arms at kr=0.50 on VideoMME dev (Stage 5 2026-04-18); ceiling binds anchor-invariantly. Composition with 1.51V at EXP10 cell (anchor=none kr=0.3) pending n=60 promotion gate.
   supersedes: []
-  paper_relevance: primary (claim #11 Gemma novelty-pruning; now trending toward publishable preregistered null with mechanistic explanation)
-  prereg_outcome: (pilot n=1 NULL 2026-04-18: 1.01× e2e on videomme:long:669-1 at kr=0.5 arm=none; ceiling formula `(D+V+G)/(D+V+G/s)` predicts 1.18× max even at s=∞; Stage 1 n=30 scale-up running, Stages 2-3 queued)
+  paper_relevance: primary (claim #11 Gemma novelty-pruning — publishable preregistered null with mechanistic explanation; composition with 1.51V pending one targeted follow-up before paper-table inclusion)
+  prereg_outcome: NULL on own axis (Stage 5 n=30 cross-arm synthesis 2026-04-18 + post-1.51V composition closure 2026-04-21); EXP10 cell n=60 follow-up OPEN
   notes: phase is tracked as the "1.51R" fresh driver across other docs (R = Reproduction of Sam's novelty-pruning, fresh code path that does not consume `_mix_gemma_features`). Preregistered 5 literature-grounded anchor-preservation arms (FastV, FasterVLM/HiPrune, Nüwa pillar, VLM-Pruner max-min diversity, IVC-Prune-spirit Gemma-structural); keep-rate grid {0.3..0.7}; must run on Gemma (not Qwen) because Qwen's M-RoPE-V ties token index to 2D grid position and breaks under token drop. cls_attention_proxy arm is explicitly excluded from winner promotion (see PROMOTABLE_ARMS in novelty_pruning.py). Pilot reveals vision-tower pruning (NEW phase 1.51V, task #87) is the only mechanism that could reach Sam's ≥1.8× end-to-end on E4B; queued as follow-up.
 
 - phase_id: 1.51V
