@@ -32,7 +32,15 @@ when phases close or expand, not the registry (registry is the ledger).
 
 ## Running work
 
-- **1.51V expansion** (this session, task #143) — started 2026-04-20 12:07 UTC. Runner: `scripts/run_phase1_51V_expansion.sh`. Monitor: `br5cbbnuv`. ETA 7.7h ± model-load overhead. Each experiment commits incrementally after analyst validation (via `scripts/analyze_phase1_51V_expansion.py`).
+- **1.51V expansion** (this session, task #143) — started 2026-04-20 12:07 UTC. Runner: `scripts/run_phase1_51V_expansion.sh`. Monitor: `b9ute7uca`. ETA 7.7h ± model-load overhead. Each experiment commits incrementally after analyst validation (via `scripts/analyze_phase1_51V_expansion.py`).
+
+### Incremental verdicts (updated per paired completion)
+
+| Pair                          | V_red  | E2E×  | Dec Δ | Acc Δ  | Thermal          | Verdict                         |
+|-------------------------------|--------|-------|-------|--------|------------------|---------------------------------|
+| EXP01/02 VideoMME 8f kr=0.50  | +39.0% | 1.08× | -2.8% | -0.067 | cooler (favorable) | **H1 CONFIRMED** (back-to-back) |
+
+V_share unpatched = 15.2% → theoretical ceiling at V_red=100% is 1.18×. Observed 1.08× at V_red=39% matches the model. Decode Δ is negative (patched cooler), so 39% is a conservative lower bound for V-only reduction.
 
 ## Open SOTA advancement paths
 
