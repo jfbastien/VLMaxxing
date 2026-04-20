@@ -41,8 +41,9 @@ when phases close or expand, not the registry (registry is the ledger).
 | EXP01/02 VideoMME 8f kr=0.50  | +39.0% | 1.08× | -2.8% | -0.067 | cooler (favorable) | **H1 CONFIRMED** (back-to-back) |
 | EXP01/03 VideoMME 8f kr=0.25  | +62.1% | 1.09× | +0.8% | -0.067 | clean              | **Pareto-dominates kr=0.50** — same E2E, same acc, more V_red |
 | EXP01/04 VideoMME 8f kr=0.75  | +19.5% | 1.06× | -5.1% | -0.033 | cooler (stronger drift) | Conservative anchor within preregistered [15%, 25%] band |
+| EXP05/06 **MVBench** 8f kr=0.50 | +40.0% | **1.21×** | +3.2% | -0.100 | slightly hotter | **H_transfer EARNED**: vision-dominated benchmark (V_share=47.8%) realizes much bigger E2E gain from same V_red |
 
-V_share unpatched = 15.2% → theoretical ceiling at V_red=100% is 1.18×. At 8f E2E saturates 1.06×–1.09× across the full kr sweep (monotonic V_red, flat E2E), confirming the architectural cap is keep-rate insensitive. **kr=0.25 is the dominant policy for 8f**: same E2E as kr=0.50, same accuracy, 23pp more V_red. EXP04's -5.1% decode drift makes its 1.06× E2E a slight over-estimate relative to the ceiling model (pure-V prediction ~1.03×), but does not affect the V_red measurement which uses vision_ms only.
+VideoMME V_share=15.2% → ceiling 1.18×; MVBench V_share=47.8% → ceiling 1.91×. Same 1.51V policy (L=2 kr=0.50) hits +40% V_red on both benchmarks, but E2E differs by regime: 1.08× on VideoMME (decode-dominated), 1.21× on MVBench (vision-dominated). This reframes 1.51V from "VideoMME-only modest win" to "regime-dependent, with substantial gains where vision tower dominates E2E." MVBench accuracy Δ = -0.100 is the tightest drop observed; does not hit the preregistered demote threshold (-0.150) but is flagged for paper framing.
 
 ## Open SOTA advancement paths
 

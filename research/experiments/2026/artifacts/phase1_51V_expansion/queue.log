@@ -8,3 +8,7 @@
 [2026-04-20T13:22:15Z] START exp04_videomme_8f_L2_kr075
 [2026-04-20T13:47:09Z] DONE  exp04_videomme_8f_L2_kr075 (1494s)
 [2026-04-20T13:47:09Z] START exp05_mvbench_8f_unpatched
+[2026-04-20T13:58:21Z] DONE  exp05_mvbench_8f_unpatched (672s)
+[2026-04-20T13:58:21Z] START exp06_mvbench_8f_L2_kr050
+[2026-04-20T14:08:27Z] DONE  exp06_mvbench_8f_L2_kr050 (606s)
+[2026-04-20T14:08:27Z] START exp07_tomato_8f_unpatched
