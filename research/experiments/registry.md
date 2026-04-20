@@ -600,24 +600,26 @@ authoritative in the per-phase notes under
     **Phase 1.55A closes.** Both temperature probes demonstrate
     sampler-side intervention cannot escape either architecture's
     ceiling; fidelity recovery must be upstream of decoding. No
-    further mechanism probes queued in-phase. Next priorities shift
-    to fidelity-recovery (1.55D selective re-prefill of last-K
-    frames targeting Δacc ≤ −0.15 at 7B-20f with ≥10× speedup
-    retained — preregistered 2026-04-20). **1.55C Gemma cross-family
-    is INFRASTRUCTURE-FALSIFIED 2026-04-20** (see 1.55C block
-    below): mlx-vlm's `PromptCacheState` prefix-truncation is
-    incompatible with Gemma 4's sliding-window `RotatingKVCache`
-    at realistic video prefill depths (>512 tokens); driver fork
-    required before the scientific probe can run. 1.55D is now
-    the sole remaining in-phase priority. Reopen conditions: (a)
-    1.55D finds that recovery requires sampler-side intervention
-    (would imply sampler CAN escape the basin given different prefix
-    conditioning — already falsified by the 7B temperature probe),
-    (b) deeper-prefill 7B runs (48f+) exhibit novel attractors not
-    in the current set, (c) deeper-prefill 3B runs (40f+, ~16k
-    tokens) expose a latent basin that 20/24/32f does not, (d) a
-    mlx-vlm fork lands with cache-type-aware prefix truncation,
-    unblocking 1.55C.
+    further mechanism probes queued in-phase. **Both downstream
+    follow-ups are now INFRASTRUCTURE-FALSIFIED at the mlx-vlm
+    prefix-reuse contract boundary (2026-04-20):** 1.55C by sliding-
+    window `RotatingKVCache` incompatibility with naive prefix
+    truncation, and 1.55D by mlx-vlm's `generate` path not co-
+    slicing `pixel_values`/`image_grid_thw`/`attention_mask` when
+    shared-prefix ends inside an image block (v1 driver crashes
+    deterministically on Q2 `get_rope_index` broadcast mismatch).
+    See 1.55C and 1.55D blocks below. No further in-phase
+    experiments are immediately runnable; next priorities pivot
+    to 1.51V vision-tower pruning and 1.51R focused dev sweep.
+    Reopen conditions: (a) a mlx-vlm fork with cache-type-aware
+    prefix truncation (unblocks 1.55C); (b) a mlx-vlm fork with
+    auxiliary-tensor co-slicing for partial image-block reuse
+    (unblocks 1.55D); (c) a rescope of 1.55D to text-only
+    selective re-prefill (shared prefix ends cleanly past image
+    block — existing infra supports); (d) rescope of 1.55C to
+    Gemma 2 (non-sliding) as cross-family target; (e) deeper-
+    prefill 7B runs (48f+) exhibit novel attractors; (f) deeper-
+    prefill 3B runs (40f+, ~16k tokens) expose a latent basin.
 
 - phase_id: 1.55C
   status: infrastructure-falsified (driver blocker; prereg retained for re-run after fork)
@@ -629,6 +631,17 @@ authoritative in the per-phase notes under
   prereg_outcome: Gate #2 of the prereg ("verify PromptCacheState + find_prefix_length work with Gemma's attention") FALSIFIED at realistic video prefill. Gemma 4 uses RotatingKVCache(max_size=512, keep=0) on 4/5 layers per sliding_window_pattern=5; 20-frame prefill = 5120 image tokens rotates sliding layers ~10×; mlx-vlm/generate.py:689-697 performs naive physical-position truncation (c.keys[:, :, :prefix_len, :]) that silently corrupts post-rotation KV. H1-H4 UNTESTED (cannot be tested correctly with current driver).
   runtime_estimate: 0h executed; ~2-4h fork + smoke test to unblock (Option A in findings doc); ~30-60min run once driver is correctness-preserving
   notes: Discovered during pre-run driver verification 2026-04-20. The prereg's assumption of drop-in mlx-vlm compatibility was wrong — Gemma 4's sliding-window attention architecture is fundamentally incompatible with linear-cache prefix truncation. Three options documented (A: cache-type-aware fork with RotatingKVCache.is_trimmable() guard, B: partial-layer cache reuse losing most speedup, C: prefix ≤ 512 tokens = non-starter for video). Recommended disposition: DO NOT run with current driver (would produce plausible-looking garbage on silent-wrong-answer path); defer behind 1.55D (Qwen-only, known-compatible); revisit after 1.55D or rescope to Gemma 2 (non-sliding) as cross-family target. Paper Claim #14 (3-D decomposition) remains Qwen-family-only this draft; cross-family generalization declared an open question with explicit mlx-vlm sliding-window caveat.
+
+- phase_id: 1.55D
+  status: infrastructure-falsified (v1 driver; prereg retained for re-run after fork or rescope)
+  authoritative_note: research/experiments/2026/2026-04-20-phase-1_55D-selective-reprefill-v1-driver-findings.md
+  authoritative_artifacts: []
+  current_best_policy: n/a
+  supersedes: []
+  paper_relevance: deferred (fidelity-recovery lever remains open; claim matrix declares as open infrastructure question)
+  prereg_outcome: v1 driver (`scripts/run_kv_selective_reprefill.py`) runs Q1 cold-start correctly (68.5s prefill on 8094 tokens, correct=True on clip 037) but crashes deterministically on Q2 in `mlx_vlm/models/qwen2_5_vl/language.py:296` with `ValueError: [broadcast_shapes] Shapes (8119) and (1672) cannot be broadcast`. Root cause: mlx-vlm's generate path does not co-slice `pixel_values`/`image_grid_thw`/`attention_mask` when `PromptCacheState.find_prefix_length` trims `input_ids` to a tail that still contains image tokens (partial image-block reuse). 1.55A avoided this because its shared prefix always included the full image block (triggering `pixel_values = None`). H1/H2/H3/H4 UNTESTED.
+  runtime_estimate: 0h experimentally meaningful executed; ~3-5h Option A fork (mlx-vlm multimodal auxiliary co-slicing + smoke test); ~30min Option C rescope (text-only selective re-prefill prereg variant); ~1h run once driver correctness-preserving
+  notes: Discovered 2026-04-20 on K=4 pilot. Parallel infrastructure finding to 1.55C: both 1.55C and 1.55D surface distinct limitations of mlx-vlm's multimodal prefix-cache reuse path (1.55C: RotatingKVCache type-blindness; 1.55D: auxiliary-tensor co-slicing gap). Three paths to actionability documented: Option A (faithful fork, ~3-5h), Option B (manual cache injection, untested may still hit broadcast), Option C (text-only selective re-prefill as scientifically weaker variant). Recommended disposition: defer behind 1.51V vision-tower pruning and 1.51R focused dev sweep (independent code paths, not blocked by mlx-vlm prefix-reuse contract); 1.55D returns via Option A fork or Option C rescope. Paper impact: fidelity-recovery lever declared as open infrastructure question with explicit mlx-vlm multimodal prefix-reuse caveat alongside 1.55C's sliding-window caveat.
 
 - phase_id: 1.55B
   status: proposed (deferred)

@@ -1,0 +1,33 @@
+[1.55D] loading model from /Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit
+[1.55D] loaded; video_ids=['037', '100', '116', '120', '158', '160', '210'] frames=20 reprefill_k=4
+[1.55D] image_token_id=151655
+[1.55D] clip 037 duration=short
+   trunc_idx=6447 (input_len=8094; reprefill tail = last 4 frames + question)
+Prefill:   0%|          | 0/8094 [00:00<?, ?tok/s]Prefill:  25%|██▌       | 2048/8094 [00:29<01:26, 70.20tok/s]Prefill:  25%|██▌       | 2048/8094 [00:40<01:26, 70.20tok/s]Prefill:  51%|█████     | 4096/8094 [00:41<00:37, 106.47tok/s]Prefill:  76%|███████▌  | 6144/8094 [00:54<00:15, 125.50tok/s]Prefill: 100%|█████████▉| 8093/8094 [01:07<00:00, 133.01tok/s]Prefill: 100%|█████████▉| 8093/8094 [01:07<00:00, 119.82tok/s]
+   session Q1: 68505 ms prefix=0/8094 (0.00%) correct=True resp='D'
+Traceback (most recent call last):
+  File "/Users/jfb/s/codec-through/scripts/run_kv_selective_reprefill.py", line 597, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/Users/jfb/s/codec-through/scripts/run_kv_selective_reprefill.py", line 402, in main
+    result = _run_query(
+             ^^^^^^^^^^^
+  File "/Users/jfb/s/codec-through/scripts/run_kv_selective_reprefill.py", line 248, in _run_query
+    response = generate(
+               ^^^^^^^^^
+  File "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/generate.py", line 856, in generate
+    for response in stream_generate(model, processor, prompt, image, audio, **kwargs):
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/generate.py", line 735, in stream_generate
+    for n, (token, logprobs) in enumerate(gen):
+                                ^^^^^^^^^^^^^^
+  File "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/generate.py", line 514, in generate_step
+    embedding_output = model.get_input_embeddings(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/models/qwen2_5_vl/qwen2_5_vl.py", line 64, in get_input_embeddings
+    position_ids, rope_deltas = self.language_model.get_rope_index(
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/models/qwen2_5_vl/language.py", line 296, in get_rope_index
+    input_ids = mx.where(
+                ^^^^^^^^^
+ValueError: [broadcast_shapes] Shapes (8119) and (1672) cannot be broadcast.

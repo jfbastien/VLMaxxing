@@ -1,0 +1,1 @@
+{"mode": "session", "video_id": "037", "duration": "short", "item_id": "videomme:short:037-1", "q_index": 0, "prompt_tokens": 8094, "generation_tokens": 2, "elapsed_ms": 68504.598875, "peak_memory_gb": 7.545942328, "prefix_hit": 0, "input_len": 8094, "prefix_coverage": 0.0, "trunc_idx": 6447, "reprefill_k": 4, "response": "D", "choice": "D", "correct": true}
