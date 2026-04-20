@@ -19,10 +19,10 @@ All 12 preregistered experiments landed back-to-back under a single approved san
 | H_confirm (thermally-paired V_red ∈ [35%, 50%]) | **CONFIRMED** — EXP01/02 V_red=39.0%, decode Δ=-2.8% (cooler, favorable) |
 | H_pareto (kr=0.25 aggressive; kr=0.75 conservative) | **EARNED** — kr=0.25 Pareto-dominates kr=0.50 on VideoMME (same E2E, same acc, +23pp V_red) |
 | H_transfer (V_red ≥ 30% on MVBench + TOMATO) | **EARNED on both** — MVBench 40.0%/1.21× E2E, TOMATO 42.7%/1.24× E2E |
-| H_stack (composition ≤ 1.15× OR new signal) | **PARTIAL REOPENER** — EXP10 (anchor=none kr_novelty=0.3) reaches 1.17× cross-session (+5.7% over V-alone), but agreement=0.63 flags internal disagreement |
+| H_stack (composition ≤ 1.15× OR new signal) | **PARTIAL REOPENER — holdout replicates at smaller magnitude** — EXP10 dev 1.11× within-run, 1.17× cross-session (dirty), agreement=0.63. EXP16 holdout (n=30 disjoint) 1.064× within-run (clean), 1.127× cross-session (dirty), agreement=0.667. Direction replicates; magnitude V_share-bound (8.6% holdout vs 15.2% dev) |
 | H_fsscale (V_share within 5pp at 16f; E2E ≤ 1.20×) | **FAVORABLE VIOLATION** — V_share grows 15.2% → 24.3% at 16f (+9.1pp); E2E 1.12× (predicted 1.105× by ceiling) re-opens 32f regime interest |
 
-**Headline SOTA numbers for the paper**: VideoMME 1.08× (V_share-limited), MVBench **1.21×**, TOMATO **1.24×**, at constant L=2 kr_V=0.50 with V_red≈40% across all three benchmarks. Accuracy preserved within n=30 CI on TOMATO (+0.033) and 16f VideoMME (+0.033); -0.10 on MVBench; -0.067 on 8f VideoMME.
+**Headline SOTA numbers (DEV SLICE — paper-grade promotion gated on holdout EXP15/16 replication; do not cite as paper-grade until holdout lands)**: VideoMME 1.08× (V_share-limited), MVBench **1.21×**, TOMATO **1.24×**, at constant L=2 kr_V=0.50 with V_red≈40% across all three benchmarks. Accuracy preserved within n=30 CI on TOMATO (+0.033) and 16f VideoMME (+0.033); -0.10 on MVBench (localized to object-binding categories — see per-category breakdown below); -0.067 on 8f VideoMME.
 
 ## Full result table
 
@@ -63,7 +63,7 @@ All runs: `gemma-4-e4b-it-4bit`, n=30, max_tokens=32, rss-guard-mb=10000. Therma
 
 **Advances to SOTA (vision-tower pruning at fixed L=2 kr=0.50, n=30 each, thermally paired):**
 
-- TOMATO motion dev: **1.24× E2E** with +3.3pp accuracy improvement (pruned acc 0.167 vs dense 0.133). This is our cleanest paper-grade cell.
+- TOMATO motion dev: **1.24× E2E** with +3.3pp accuracy improvement (pruned acc 0.167 vs dense 0.133). This is our cleanest dev-slice cell; paper-grade promotion is gated on holdout EXP15/16 (in flight 2026-04-21).
 - MVBench motion dev: **1.21× E2E** at -10pp accuracy (within n=30 CI tolerance).
 - VideoMME dev: 1.08× at 8f, 1.12× at 16f. Small speedup because V_share is low; matches ceiling model.
 - Pareto: kr=0.25 is the new Pareto point on VideoMME (62% V_red at 1.09× E2E, same accuracy as kr=0.50).
@@ -151,5 +151,5 @@ Short bucket fully preserved (agreement 1.00). Long and medium each drop one ite
 - P1: 32f VideoMME probe at L=2 kr=0.50 (H_fsscale follow-on; ~45 min).
 - P1: 1.51R closure verdict (task #82) given EXP09/10 results.
 - P2: Different V-layers L ∈ {3, 4} at kr=0.25 to widen Pareto.
-- P2: Holdout confirmation (VideoMME holdout n=30 at L=2 kr=0.50).
+- P2: Holdout confirmation (VideoMME holdout n=30 at L=2 kr=0.50). **UPDATE 2026-04-21**: EXP15/16 ran (V-patched baseline + V+novelty stack); see `2026-04-21-phase-1_51V-holdout-findings.md`. V-only unpatched-vs-patched holdout NOT RUN; V+novelty stacks replicate at 1.064× (ceiling-matched, partial confirmation).
 - P3: Post-pool token merging prototype (H3 re-opener) — impl-blocked.

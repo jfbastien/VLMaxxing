@@ -1,0 +1,10 @@
+[2026-04-20T21:03:13Z] === Phase 1.51V session 2 queue start ===
+[2026-04-20T21:03:13Z] START exp13_videomme_32f_unpatched
+[2026-04-20T22:00:08Z] DONE  exp13_videomme_32f_unpatched (3415s)
+[2026-04-20T22:00:08Z] START exp14_videomme_32f_L2_kr050
+[2026-04-20T23:02:40Z] DONE  exp14_videomme_32f_L2_kr050 (3752s)
+[2026-04-20T23:02:40Z] START exp15_videomme_holdout_8f_L2_kr050
+[2026-04-20T23:26:25Z] DONE  exp15_videomme_holdout_8f_L2_kr050 (1425s)
+[2026-04-20T23:26:25Z] START exp16_videomme_holdout_8f_L2_kr050_novelty030_none
+[2026-04-20T23:47:46Z] DONE  exp16_videomme_holdout_8f_L2_kr050_novelty030_none (1281s)
+[2026-04-20T23:47:46Z] === Phase 1.51V session 2 queue COMPLETE ===
