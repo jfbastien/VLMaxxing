@@ -422,8 +422,8 @@ authoritative in the per-phase notes under
   notes: Original prereg mistakenly attributed Sam's MEASURED 2.13.3 persistent-KV result as a Codex hypothesis, and gated on an mlx-vlm fork that turned out to already be upstream (PromptCacheState + find_prefix_length). Split 2026-04-19 into 1.55A (reproduction of Sam 2.13.3 on Qwen 7B/M3 Air) and 1.55B (composition with 1.54 decode accel — deferred).
 
 - phase_id: 1.55A
-  status: completed/CLOSED (8f + 16f + 18f + 20f + 24f + 32f frame-scaling on 7B + 3B 20f matched + 3B 24f shifted-ramp + 3B 32f plateau-candidate + 3B 40f LATENT BASIN EARNED + **7B 40f BASIN-SYMMETRY EARNED** + 7B/20f temperature probe EARNED H-distribution-collapse + 3B/20f temperature probe EARNED H2-3B-temp.null-robust; three-dimensional mechanism decomposition REVISED 2026-04-20 from saturation-ceiling to shifted-onset-same-basin AND **SYMMETRICALLY CONFIRMED** 2026-04-20 on 7B at 2× basin-onset depth: threshold onset capacity-modulated, **basin-onset depth architecture-dependent** (7B ~8k tokens; 3B ~16k tokens, ~1.6× scaling), **basin geometry cross-architectural AND depth-invariant** at distribution level; phase closes; reopen condition (f) RETIRED with EARNED outcome)
-  authoritative_note: research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-16f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-18f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-20f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-24f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-32f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-3b-crossarch-findings.md + research/experiments/2026/2026-04-20-phase-1_55A-3b-24f-boundary-findings.md + research/experiments/2026/2026-04-20-phase-1_55A-3b-32f-saturation-findings.md + research/experiments/2026/2026-04-20-phase-1_55A-7b-20f-temperature-findings.md + research/experiments/2026/2026-04-20-phase-1_55A-3b-20f-temperature-findings.md + research/experiments/2026/2026-04-20-phase-1_55A-3b-40f-deeper-plateau-findings.md + research/experiments/2026/2026-04-20-phase-1_55A-7b-40f-symmetry-findings.md
+  status: completed/CLOSED (8f + 16f + 18f + 20f + 24f + 32f frame-scaling on 7B + 3B 20f matched + 3B 24f shifted-ramp + 3B 32f plateau-candidate + 3B 36f PRE-BASIN PLATEAU EXTENDED + 3B 40f LATENT BASIN EARNED + **7B 40f BASIN-SYMMETRY EARNED** + 7B/20f temperature probe EARNED H-distribution-collapse + 3B/20f temperature probe EARNED H2-3B-temp.null-robust; three-dimensional mechanism decomposition REVISED 2026-04-20 from saturation-ceiling to shifted-onset-same-basin AND **SYMMETRICALLY CONFIRMED** 2026-04-20 on 7B at 2× basin-onset depth: threshold onset capacity-modulated, **basin-onset depth architecture-dependent** (7B ~8k tokens; 3B ~16k tokens, ~1.6× scaling), **basin geometry cross-architectural AND depth-invariant** at distribution level; phase closes; reopen condition (f) RETIRED with EARNED outcome)
+  authoritative_note: research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-16f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-18f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-20f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-24f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-32f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-3b-crossarch-findings.md + research/experiments/2026/2026-04-20-phase-1_55A-3b-24f-boundary-findings.md + research/experiments/2026/2026-04-20-phase-1_55A-3b-32f-saturation-findings.md + research/experiments/2026/2026-04-20-phase-1_55A-7b-20f-temperature-findings.md + research/experiments/2026/2026-04-20-phase-1_55A-3b-20f-temperature-findings.md + research/experiments/2026/2026-04-20-phase-1_55A-3b-40f-deeper-plateau-findings.md + research/experiments/2026/2026-04-20-phase-1_55A-7b-40f-symmetry-findings.md + research/experiments/2026/2026-04-20-phase-1_55A-3b-36f-interpolation-findings.md
   authoritative_artifacts:
     - research/experiments/2026/artifacts/loop_queue_20260419_155108/phase1_55A_persistent_kv_qwen/summary.json
     - research/experiments/2026/artifacts/loop_queue_20260419_155108/phase1_55A_persistent_kv_qwen/session_qwen7b_n7.jsonl
@@ -464,6 +464,9 @@ authoritative in the per-phase notes under
     - research/experiments/2026/artifacts/phase1_55A_7b_40f_symmetry/summary.json
     - research/experiments/2026/artifacts/phase1_55A_7b_40f_symmetry/session_qwen7b_n7.jsonl
     - research/experiments/2026/artifacts/phase1_55A_7b_40f_symmetry/baseline_qwen7b_n7.jsonl
+    - research/experiments/2026/artifacts/phase1_55A_3b_36f_interpolation/summary.json
+    - research/experiments/2026/artifacts/phase1_55A_3b_36f_interpolation/session_qwen7b_n7.jsonl
+    - research/experiments/2026/artifacts/phase1_55A_3b_36f_interpolation/baseline_qwen7b_n7.jsonl
   current_best_policy: "persistent-KV session (PromptCacheState one-per-clip) — 7B-4bit: 8f 47.2×/815ms/Δ=−0.048; 16f 91.1×/807ms/Δ=0.000; 18f 70.3×/1102ms/Δ=−0.238 (4-basin); 20f 94.4×/905ms/Δ=−0.381 (2-basin); 24f 121.6×/864ms/Δ=−0.429 (single attractor); 32f 149.9×/1008ms/Δ=−0.429 (saturated). **7B/20f temperature probe (T=0.7, top_p=1.0, min_p=0.05, seed=42): 117.0×/907ms/Δ=−0.429 — Δacc temperature-invariant within 1/21 noise floor (greedy −0.381, temp −0.429; diff 0.048); basin prevalence 13/14→8/14 but clean-drift share stayed 1/14 (dispersed mass landed in novel `自动生成` Chinese attractor, NOT in clean letters); H-distribution-collapse EARNED on both prereg conditions (Δacc≤−0.35 AND basin≥0.50). 7B basin is distribution-level, not sampler-level.** **3B-4bit cross-arch 3-point: 20f 136.1×/412ms/Δ=−0.048 (MATCHED); 24f 154.2×/423ms/Δ=−0.190 (SHIFTED-RAMP); 32f 213.0×/484ms/Δ=−0.190 (PLATEAUED — identical Δacc to 24f, 3B saturated at a ~2.3× shallower ceiling than 7B). 28/28 3B follow-ups emit clean 2-token letter answers — no basin collapse at any 3B prefill.** **3B/20f temperature probe (T=0.7, top_p=1.0, min_p=0.05, seed=42): 130.8×/385ms/Δ=−0.095 — H2-3B-temp.null-robust EARNED (Δacc inside envelope [−0.15, +0.05] AND 14/14 clean-letter follow-ups); Δacc shifts by exactly 1/21 vs greedy 3B/20f (−0.048 → −0.095), identical noise-floor signature to 7B temperature probe (−0.381 → −0.429, 1/21 shift). Sampler-invariance verified at BOTH ceilings.** 7B: monotonic-saturating ramp 16f→24f through progressive basin collapse, Δacc ceiling −0.43 (distribution-level). 3B: ramp shifted ~2-3k tokens later, Δacc ceiling −0.19 (architecture-specific), failure geometry is clean-letter drift (architecture-specific)."
   supersedes: ["1.55"]
   paper_relevance: primary (reproduces Sam whitepaper §2.13.3 on Qwen 7B-4bit / M3 Air; prefill-dominance mechanism confirmed on 6-point scaling curve; 18f+20f bisections reveal the 7B fidelity transition is a monotonic-saturating ramp through progressive basin collapse — clean → 4-basin → 2-basin → single-attractor; 3B cross-arch 3-point (20f matched, 24f shifted-ramp, 32f plateaued) decomposes the mechanism into **three orthogonal architectural dimensions: threshold onset (capacity-modulated), saturation ceiling (architecture-specific −0.43 vs −0.19), failure geometry (architecture-specific basin collapse vs clean-letter drift)**)
@@ -645,6 +648,25 @@ authoritative in the per-phase notes under
     claimed. Basin-identity claim now has two independent
     datapoints (3B 40f + 7B 40f) supporting the unified
     mechanism.
+    **3B 36f basin-onset interpolation probe
+    (phase1_55A_3b_36f_interpolation, 2026-04-20):** H1-wide-
+    transition EARNS; H1-sharp-onset FAILS; H1-intermediate
+    FAILS. H2-3B-36 speedup 215.2× / median follow-up 562 ms
+    (fastest follow-up on 3B to date), H3 prefix 0.9960, H4
+    peak RSS 2.35 GB. Session 8/21, baseline 12/21,
+    **Δacc = −0.190 — numerically identical to 3B 24f and 3B
+    32f (three-point pre-basin plateau).** **0/14 session
+    follow-ups emit novel content; all 14 are clean 2-token
+    letter responses.** The 3B basin onset is therefore
+    bounded to **(36f, 40f] = (14.5k, 16.1k] prefill tokens**,
+    a ~1.6k-token (~11%) transition window. Basin onset on 3B
+    is SHARP, consistent with a threshold mechanism (KV
+    quantization budget edge or M-RoPE OOD). Pre-basin plateau
+    at Δacc = −0.19 across 24f/32f/36f argues that the pre-
+    basin regime is a depth-saturated noise floor (scrambled-
+    letter noise, not basin), not a capacity ceiling — only
+    basin emergence changes Δacc. Reopen condition (g) CLOSED
+    with EARNED outcome.
     **Phase 1.55A closes.** Both temperature probes and the 3B
     40f probe demonstrate that sampler-side intervention cannot
     escape the basin; fidelity recovery must be upstream of
@@ -659,7 +681,8 @@ authoritative in the per-phase notes under
     on Q2 `get_rope_index` broadcast mismatch). See 1.55C and
     1.55D blocks below. Next priorities pivot to 1.51V vision-
     tower pruning and 1.51R focused dev sweep. Reopen
-    conditions: (a) a mlx-vlm fork with cache-type-aware
+    conditions (3B 36f CLOSED 2026-04-20 with EARNED wide-
+    transition outcome): (a) a mlx-vlm fork with cache-type-aware
     prefix truncation (unblocks 1.55C); (b) a mlx-vlm fork
     with auxiliary-tensor co-slicing for partial image-block
     reuse (unblocks 1.55D); (c) a rescope of 1.55D to text-
