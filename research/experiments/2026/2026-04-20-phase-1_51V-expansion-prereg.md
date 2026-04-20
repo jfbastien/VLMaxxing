@@ -12,7 +12,7 @@ status: running (autonomous batch 2026-04-20)
 
 ## Motivation
 
-1.51V at L=2 kr=0.50 closed with H1 EARNED (V_red=42.2% thermally normalized) and H3 VIOLATED (architectural cap 1.16×). Three open questions remain before the paper narrative is complete:
+1.51V at L=2 kr=0.50 closed with H1 EARNED (V_red=42.2% cross-session thermal-normalized — **later refined to 39.0% under strict within-session EXP01/02 pairing and standardized as the paper-facing number; see 2026-04-21 expansion findings**) and H3 VIOLATED (architectural cap 1.16×). Three open questions remain before the paper narrative is complete:
 
 1. **Is the 42% V-reduction stable under matched thermal conditions?** The closing measurement relied on a composition-run dense arm as thermal proxy. A back-to-back unpatched-vs-patched pair removes that indirection.
 2. **Does 1.51V transfer to other benchmarks or other frame counts?** VideoMME dev is our only data point. MVBench motion dev + TOMATO motion dev are paper-grade, and 16f frame scaling probes whether V_share is ratio-bounded in a decode-dominant regime.

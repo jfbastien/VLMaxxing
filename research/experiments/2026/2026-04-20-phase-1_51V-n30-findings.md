@@ -3,10 +3,17 @@ phase: 1.51V
 date: 2026-04-20
 parent: research/experiments/2026/2026-04-18-phase-1_51V-vision-tower-pruning-prereg.md
 prior: research/experiments/2026/2026-04-20-phase-1_51V-dev-tranche-findings.md
-status: findings (REVISED 2026-04-20 after thermal-drift diagnosis; H1 verdict upgraded from REJECTED → EARNED)
+superseded_by: research/experiments/2026/2026-04-21-phase-1_51V-expansion-findings.md
+status: findings (superseded 2026-04-21 — paired EXP01/02 gives V_red=39.0%, see §Revision 2026-04-21)
 ---
 
 # 1.51V n=30 at L=2 kr=0.50 — V-reduction EARNED (thermal-normalized), H3 architecturally blocked
+
+## Revision note (2026-04-21, Codex round-22)
+
+The paper-facing V_red is now **39.0%**, from within-session thermal pairing on EXP01 (unpatched) and EXP02 (L=2 kr=0.50) in the 2026-04-21 expansion batch. Decode drift across the paired runs was < 2% — strictest pairing the batch can produce. The 42.2% number below came from normalizing against a composition-run dense arm across sessions (decode +0.2% vs a *prior* session's control); valid mechanism evidence, but not the tightest pairing. 3.2pp delta is inside the thermal-drift bracket so both measurements attest the same effect. Per Codex, standardize on 39.0% paired across docs.
+
+See `research/experiments/2026/2026-04-21-phase-1_51V-expansion-findings.md` §Reproduction-of-prior-claim for the reconciliation and the per-benchmark V_share × V_red → E2E ceiling predictions.
 
 ## Revision note (2026-04-20)
 
