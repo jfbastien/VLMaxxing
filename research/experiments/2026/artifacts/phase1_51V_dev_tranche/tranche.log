@@ -1,0 +1,21 @@
+=== [18:53:58] Running control_nopatch ===
+    done control_nopatch
+=== [18:56:06] Running L1_kr025 ===
+    done L1_kr025
+=== [18:58:05] Running L1_kr050 ===
+    done L1_kr050
+=== [19:00:19] Running L1_kr075 ===
+    done L1_kr075
+=== [19:02:42] Running L6_kr025 ===
+    done L6_kr025
+=== [19:05:04] Running L6_kr050 ===
+    done L6_kr050
+=== [19:07:29] Running L6_kr075 ===
+    done L6_kr075
+=== [19:10:00] Running L12_kr025 ===
+    done L12_kr025
+=== [19:12:28] Running L12_kr050 ===
+    done L12_kr050
+=== [19:14:54] Running L12_kr075 ===
+    done L12_kr075
+=== All cells done at 19:17:24 ===

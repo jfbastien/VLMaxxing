@@ -399,6 +399,19 @@ authoritative in the per-phase notes under
   prereg_outcome: (pilot n=1 NULL 2026-04-18: 1.01× e2e on videomme:long:669-1 at kr=0.5 arm=none; ceiling formula `(D+V+G)/(D+V+G/s)` predicts 1.18× max even at s=∞; Stage 1 n=30 scale-up running, Stages 2-3 queued)
   notes: phase is tracked as the "1.51R" fresh driver across other docs (R = Reproduction of Sam's novelty-pruning, fresh code path that does not consume `_mix_gemma_features`). Preregistered 5 literature-grounded anchor-preservation arms (FastV, FasterVLM/HiPrune, Nüwa pillar, VLM-Pruner max-min diversity, IVC-Prune-spirit Gemma-structural); keep-rate grid {0.3..0.7}; must run on Gemma (not Qwen) because Qwen's M-RoPE-V ties token index to 2D grid position and breaks under token drop. cls_attention_proxy arm is explicitly excluded from winner promotion (see PROMOTABLE_ARMS in novelty_pruning.py). Pilot reveals vision-tower pruning (NEW phase 1.51V, task #87) is the only mechanism that could reach Sam's ≥1.8× end-to-end on E4B; queued as follow-up.
 
+- phase_id: 1.51V
+  status: dev-tranche CLOSED 2026-04-20 (H1 EARNED at L=1 kr=0.50 V_red=41%, H3 ARCHITECTURALLY BLOCKED on 1.51V-alone at E2E ≤ 1.11× due to scatter-back preserving LM prompt length, H4 VIOLATED at L=1 with acc 0.40→0.20 on n=5; knee search L∈{2,3,4} at kr=0.50 queued)
+  authoritative_note: research/experiments/2026/2026-04-18-phase-1_51V-vision-tower-pruning-prereg.md + research/experiments/2026/2026-04-20-phase-1_51V-dev-tranche-findings.md
+  authoritative_artifacts:
+    - src/codec_through/pruned_vision_tower.py (patch_vision_tower + magnitude_keep_mask + slice-then-scatter-back, B>1 generalized 2026-04-20)
+    - research/experiments/2026/artifacts/phase1_51V_pilot/ (single-item pilot; control vs patched L=1 kr=0.50; V-reduction 36% flagged)
+    - research/experiments/2026/artifacts/phase1_51V_dev_tranche/ (control + 9-cell layer×kr grid on 5-item subset)
+  current_best_policy: pending knee search (L∈{2,3,4} at kr=0.50); current Pareto: L=1 kr=0.50 (V_red=41%, acc loss ~20pp) vs L=6 kr=0.25 (V_red=28%, acc preserved but below H1 threshold)
+  supersedes: []
+  paper_relevance: secondary (was queued as "only mechanism for ≥1.8× on E4B"; dev tranche reveals architectural cap at ~1.15× E2E due to scatter-back's preservation of LM prompt length; reframing to "vision-tower-time reduction isolated" or pivot to post-pool token reduction)
+  prereg_outcome: (dev tranche 9 cells × 5 items 2026-04-20: H1 earned at L=1; H3 blocked architecturally; H4 violated at L=1; knee search ongoing)
+  notes: Critical implementation bug found and fixed 2026-04-20 — Python `__call__` is looked up on the type, not the instance, so `encoder.__call__ = new_call` is silently a no-op. Fixed with `_PrunedEncoderWrapper` class-level `__call__`. Second bug: helpers assumed B=1 but Gemma-4 vision tower batches frames in leading dim (B=N_frames). Generalized to per-frame pruning via `mx.take_along_axis` and batched one-hot matmul. **Architectural ceiling** (see findings §"Scatter-back ceiling"): because pruned tokens are scattered back to original length to preserve pooler geometry, the LM prompt token count is unchanged (2157 tokens in all runs), so LM prefill + generate get zero speedup. E2E upper bound = `1 / (1 - V_share × V_red)` = 1.15× at best. Reaching H3's 1.5× requires either (a) post-pool token merging that cuts LM prompt, (b) bypass scatter-back with new pooler, or (c) composition with persistent-KV (CLOSED on 1.55 lane) or 1.51R (marginal).
+
 - phase_id: 1.52R
   status: proposed
   authoritative_note: research/experiments/2026/2026-04-17-phase-1_52-combined-temporal-spatial-prereg.md

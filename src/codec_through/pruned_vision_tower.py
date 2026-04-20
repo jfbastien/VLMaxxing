@@ -41,23 +41,18 @@ class PruneConfig:
 def magnitude_keep_mask(hidden_states: mx.array, positions: mx.array, keep_rate: float) -> mx.array:
     """Top-k keep-mask by L2 magnitude of each token's hidden state.
 
-    This is the first-pass policy: the literature (FasterVLM, EvoPrune)
-    suggests layer-wise activation norm correlates with downstream utility.
-    Later versions can replace this with the pixel-novelty signal 1.51R
-    already computes (frame-level gate), intersected with magnitude
-    (patch-level gate within kept frames).
+    Per-frame independent pruning: for each batch row (frame), keep the top-k
+    tokens by L2 norm of hidden state. K is identical across frames (derived
+    from keep_rate * L), so the compact sequence post-prune is [B, K, D].
     """
     del positions  # unused in magnitude policy
     B, L, _ = hidden_states.shape
-    if B != 1:
-        raise NotImplementedError("batch>1 not supported; Gemma VLM uses B=1")
     scores = mx.linalg.norm(hidden_states.astype(mx.float32), axis=-1)  # [B, L]
     k = max(1, int(L * keep_rate))
-    # argsort ascending; take last k (highest magnitudes)
+    # Per-row argsort ascending; take last k (highest magnitudes per frame)
     order = mx.argsort(scores, axis=-1)  # [B, L]
-    top_k = order[:, -k:]  # [B, k] — indices of kept tokens
-    # Build bool mask by scattering into a zero tensor via one-hot.
-    # mx equality's stub returns `array | bool`; broadcasted compare is always an array.
+    top_k = order[:, -k:]  # [B, k] — indices of kept tokens per frame
+    # Build bool mask [B, L] via broadcast equality: [B, k, 1] == [1, 1, L] -> [B, k, L]
     one_hot = cast(
         mx.array, mx.expand_dims(top_k, -1) == mx.expand_dims(mx.arange(L), 0)
     )  # [B, k, L]
@@ -66,39 +61,47 @@ def magnitude_keep_mask(hidden_states: mx.array, positions: mx.array, keep_rate:
 
 
 def _slice_keep(x: mx.array, indices: mx.array, axis: int) -> mx.array:
-    """Slice tokens along `axis` using integer indices [B, K]. Assumes B=1."""
-    return mx.take(x, indices[0], axis=axis)
+    """Per-row gather along `axis` using integer indices [B, K].
+
+    Supports B>=1. `indices[b, :]` selects K entries along `axis` from `x[b, ...]`.
+    """
+    if axis < 0:
+        axis = x.ndim + axis
+    B, K = indices.shape
+    # Reshape indices to [B, 1, ..., K, ..., 1] with K at `axis`
+    idx_shape = [1] * x.ndim
+    idx_shape[0] = B
+    idx_shape[axis] = K
+    idx_reshaped = indices.reshape(idx_shape)
+    broadcast_shape = list(x.shape)
+    broadcast_shape[axis] = K
+    idx_broadcast = mx.broadcast_to(idx_reshaped, broadcast_shape)
+    return mx.take_along_axis(x, idx_broadcast, axis=axis)
 
 
 def _scatter_back(pruned: mx.array, indices: mx.array, length: int) -> mx.array:
     """Scatter [B, K, D] back into [B, length, D] zero-filled at pruned slots.
 
-    Uses one-hot matmul to avoid mx.scatter (not yet in MLX). O(L*K*D) but
-    negligible vs transformer layers (~L*K*D*4 flops in matmul approach,
-    vs per-layer ~L*D^2 FLOPs ≈ L*3M for Gemma-4 vision).
+    Per-frame one-hot matmul. Uses batched matmul to avoid mx.scatter
+    (not yet in MLX). Cost: O(B*L*K*D) — negligible vs transformer layers.
     """
-    B, K, D = pruned.shape
-    if B != 1:
-        raise NotImplementedError("batch>1 not supported")
-    # indices: [B, K] int32. Build [L, K] one-hot matrix.
-    kept = indices[0]  # [K]
-    # mx equality stub returns `array | bool`; broadcasted compare is always an array.
-    eq = cast(mx.array, mx.arange(length)[:, None] == kept[None, :])
-    W = eq.astype(pruned.dtype)  # [L, K]
-    out = W @ pruned[0]  # [L, D]
-    return mx.expand_dims(out, 0)  # [1, L, D]
+    # indices: [B, K] int32. Build [B, L, K] one-hot then batched matmul.
+    # arange(L)[None, :, None]: [1, L, 1]; indices[:, None, :]: [B, 1, K]
+    eq = cast(mx.array, mx.arange(length)[None, :, None] == indices[:, None, :])  # [B, L, K]
+    W = eq.astype(pruned.dtype)  # [B, L, K]
+    out = W @ pruned  # [B, L, D]
+    return out
 
 
 def _keep_indices(keep_mask: mx.array) -> mx.array:
-    """Convert bool mask [B, L] to int indices [B, K]. B=1, K fixed per call."""
+    """Convert bool mask [B, L] to int indices [B, K]. K must be uniform across rows."""
     B, L = keep_mask.shape
-    if B != 1:
-        raise NotImplementedError("batch>1 not supported")
-    # mx lacks `nonzero`; compute via argsort on bool (True=1 sorts last).
-    order = mx.argsort(keep_mask[0].astype(mx.int32))
+    # Per-row argsort on bool (True=1 sorts last).
+    order = mx.argsort(keep_mask.astype(mx.int32), axis=-1)  # [B, L]
+    # K derived from row-0 sum; per-row K is identical by construction (top-k).
     k = int(keep_mask[0].astype(mx.int32).sum().item())
-    idx = order[-k:]
-    return mx.expand_dims(idx, 0)
+    idx = order[:, -k:]  # [B, K]
+    return idx
 
 
 def make_pruned_encoder_call(
@@ -146,17 +149,39 @@ def make_pruned_encoder_call(
     return _call
 
 
+class _PrunedEncoderWrapper:
+    """Call-operator wrapper around a VisionTransformerModel.
+
+    Python looks up `__call__` on the TYPE, not the instance, so assigning
+    `encoder.__call__ = new_call` is silently a no-op. This wrapper class
+    defines `__call__` at class-scope, so replacing the encoder attribute
+    with an instance of this wrapper actually routes calls through our
+    replacement. Other attribute access forwards to the wrapped encoder.
+    """
+
+    def __init__(self, wrapped: Any, new_call: Callable[..., mx.array]) -> None:
+        object.__setattr__(self, "_wrapped", wrapped)
+        object.__setattr__(self, "_new_call", new_call)
+
+    def __call__(self, *args: Any, **kwargs: Any) -> mx.array:
+        return self._new_call(*args, **kwargs)
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._wrapped, name)
+
+
 def patch_vision_tower(
     model: Any, config: PruneConfig, keep_mask_fn: KeepMaskFn | None = None
 ) -> None:
-    """Monkey-patch `model.vision_tower.encoder.__call__` in place.
+    """Replace `model.vision_tower.encoder` with a call-wrapper.
 
-    Call once after load. No-op if already patched for the same config.
+    Call once after load. Instance-level `__call__` assignment does NOT
+    work in Python (magic methods are looked up on the type), so we swap
+    the encoder attribute for a wrapper whose class defines `__call__`.
     """
     if keep_mask_fn is None:
         kr = config.keep_rate
         keep_mask_fn = lambda h, p: magnitude_keep_mask(h, p, kr)  # noqa: E731
     encoder = model.vision_tower.encoder
     new_call = make_pruned_encoder_call(encoder, config, keep_mask_fn)
-    # bind as a method on the instance
-    encoder.__call__ = new_call
+    model.vision_tower.encoder = _PrunedEncoderWrapper(encoder, new_call)

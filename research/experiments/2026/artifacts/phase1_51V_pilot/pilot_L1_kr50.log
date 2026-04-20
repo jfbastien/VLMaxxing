@@ -1,0 +1,10 @@
+loading model: /Users/jfb/models/gemma-4-e4b-it-4bit
+[rss before load] 428 MiB
+[model weight dtypes] unavailable (model.parameters() returned empty)
+[rss after load] 2334 MiB
+[1.51V] vision-tower patched: layer=1 keep_rate=0.5
+Prefill:   0%|          | 0/2157 [00:00<?, ?tok/s]Prefill:  95%|█████████▍| 2048/2157 [00:03<00:00, 529.26tok/s]Prefill: 100%|█████████▉| 2156/2157 [00:04<00:00, 521.61tok/s]Prefill: 100%|█████████▉| 2156/2157 [00:04<00:00, 523.74tok/s]
+Prefill:   0%|          | 0/2157 [00:00<?, ?tok/s]Prefill:  95%|█████████▍| 2048/2157 [00:03<00:00, 532.34tok/s]Prefill: 100%|█████████▉| 2156/2157 [00:04<00:00, 525.82tok/s]Prefill: 100%|█████████▉| 2156/2157 [00:04<00:00, 527.64tok/s]
+[  1/1] videomme:short:100-2                     dense=True pruned=True agree=True kept=2048/2048 dense_e2e=13004ms pruned_e2e=11072ms dense_gen=6147ms pruned_gen=4197ms dense_toks=2 pruned_toks=2 rss=2334MiB
+
+=== 1.51R none keep_rate=1.0 dense_acc=1.000 pruned_acc=1.000 agreement=1.000 end_to_end_speedup=1.17× (generate_only=1.46×)

@@ -1,0 +1,22 @@
+loading model: /Users/jfb/models/gemma-4-e4b-it-4bit
+[rss before load] 428 MiB
+[model weight dtypes] unavailable (model.parameters() returned empty)
+[rss after load] 5556 MiB
+[1.51V] vision-tower patched: layer=4 keep_rate=0.5
+Prefill:   0%|          | 0/2225 [00:00<?, ?tok/s]Prefill:  92%|█████████▏| 2048/2225 [00:05<00:00, 400.83tok/s]Prefill: 100%|█████████▉| 2224/2225 [00:05<00:00, 397.77tok/s]Prefill: 100%|█████████▉| 2224/2225 [00:05<00:00, 398.59tok/s]
+Prefill:   0%|          | 0/2225 [00:00<?, ?tok/s]Prefill:  92%|█████████▏| 2048/2225 [00:05<00:00, 397.52tok/s]Prefill: 100%|█████████▉| 2224/2225 [00:05<00:00, 394.32tok/s]Prefill: 100%|█████████▉| 2224/2225 [00:05<00:00, 395.18tok/s]
+[  1/5] videomme:long:669-1                      dense=True pruned=True agree=True kept=2048/2048 dense_e2e=36294ms pruned_e2e=35331ms dense_gen=6725ms pruned_gen=5744ms dense_toks=2 pruned_toks=2 rss=5556MiB
+Prefill:   0%|          | 0/2148 [00:00<?, ?tok/s]Prefill:  95%|█████████▌| 2048/2148 [00:05<00:00, 392.92tok/s]Prefill: 100%|█████████▉| 2147/2148 [00:05<00:00, 383.40tok/s]Prefill: 100%|█████████▉| 2147/2148 [00:05<00:00, 386.05tok/s]
+Prefill:   0%|          | 0/2148 [00:00<?, ?tok/s]Prefill:  95%|█████████▌| 2048/2148 [00:05<00:00, 351.87tok/s]Prefill: 100%|█████████▉| 2147/2148 [00:06<00:00, 346.23tok/s]Prefill: 100%|█████████▉| 2147/2148 [00:06<00:00, 347.81tok/s]
+[  2/5] videomme:medium:320-3                    dense=False pruned=False agree=False kept=2048/2048 dense_e2e=18762ms pruned_e2e=18535ms dense_gen=7615ms pruned_gen=7372ms dense_toks=32 pruned_toks=32 rss=5556MiB
+Prefill:   0%|          | 0/2148 [00:00<?, ?tok/s]Prefill:  95%|█████████▌| 2048/2148 [00:06<00:00, 318.32tok/s]Prefill: 100%|█████████▉| 2147/2148 [00:06<00:00, 307.17tok/s]Prefill: 100%|█████████▉| 2147/2148 [00:06<00:00, 310.26tok/s]
+Prefill:   0%|          | 0/2148 [00:00<?, ?tok/s]Prefill:  95%|█████████▌| 2048/2148 [00:06<00:00, 306.57tok/s]Prefill: 100%|█████████▉| 2147/2148 [00:07<00:00, 303.87tok/s]Prefill: 100%|█████████▉| 2147/2148 [00:07<00:00, 304.62tok/s]
+[  3/5] videomme:medium:354-3                    dense=False pruned=False agree=True kept=2048/2048 dense_e2e=23789ms pruned_e2e=23920ms dense_gen=8216ms pruned_gen=8332ms dense_toks=32 pruned_toks=32 rss=5556MiB
+Prefill:   0%|          | 0/2189 [00:00<?, ?tok/s]Prefill:  94%|█████████▎| 2048/2189 [00:06<00:00, 323.99tok/s]Prefill: 100%|█████████▉| 2188/2189 [00:06<00:00, 319.63tok/s]Prefill: 100%|█████████▉| 2188/2189 [00:06<00:00, 320.83tok/s]
+Prefill:   0%|          | 0/2189 [00:00<?, ?tok/s]Prefill:  94%|█████████▎| 2048/2189 [00:06<00:00, 317.51tok/s]Prefill: 100%|█████████▉| 2188/2189 [00:06<00:00, 316.76tok/s]Prefill: 100%|█████████▉| 2188/2189 [00:06<00:00, 316.96tok/s]
+[  4/5] videomme:short:037-2                     dense=False pruned=False agree=True kept=2048/2048 dense_e2e=14369ms pruned_e2e=14369ms dense_gen=7038ms pruned_gen=7022ms dense_toks=2 pruned_toks=2 rss=5556MiB
+Prefill:   0%|          | 0/2157 [00:00<?, ?tok/s]Prefill:  95%|█████████▍| 2048/2157 [00:06<00:00, 312.27tok/s]Prefill: 100%|█████████▉| 2156/2157 [00:06<00:00, 308.70tok/s]Prefill: 100%|█████████▉| 2156/2157 [00:06<00:00, 309.69tok/s]
+Prefill:   0%|          | 0/2157 [00:00<?, ?tok/s]Prefill:  95%|█████████▍| 2048/2157 [00:07<00:00, 286.57tok/s]Prefill: 100%|█████████▉| 2156/2157 [00:07<00:00, 285.93tok/s]Prefill: 100%|█████████▉| 2156/2157 [00:07<00:00, 286.10tok/s]
+[  5/5] videomme:short:100-2                     dense=True pruned=True agree=True kept=2048/2048 dense_e2e=16348ms pruned_e2e=16279ms dense_gen=9111ms pruned_gen=9022ms dense_toks=32 pruned_toks=32 rss=5556MiB
+
+=== 1.51R none keep_rate=1.0 dense_acc=0.400 pruned_acc=0.400 agreement=0.800 end_to_end_speedup=1.01× (generate_only=1.03×)
