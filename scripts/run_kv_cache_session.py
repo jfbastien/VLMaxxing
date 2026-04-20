@@ -191,6 +191,9 @@ def _run_query(
     *,
     max_tokens: int,
     prompt_cache_state: PromptCacheState | None,
+    temperature: float = 0.0,
+    top_p: float = 1.0,
+    min_p: float = 0.0,
 ) -> dict[str, Any]:
     mx.random.seed(42)
     kwargs = dict(sample.extra_kwargs)
@@ -215,7 +218,9 @@ def _run_query(
         pixel_values=sample.pixel_values,
         mask=sample.mask,
         max_tokens=max_tokens,
-        temperature=0.0,
+        temperature=temperature,
+        top_p=top_p,
+        min_p=min_p,
         **kwargs,
     )
     elapsed_ms = (time.perf_counter_ns() - start_ns) / 1e6
@@ -267,6 +272,14 @@ def main() -> int:
         default="both",
         help="session = cache-threading; baseline = cold-start; both = run each clip twice",
     )
+    parser.add_argument(
+        "--temperature",
+        type=float,
+        default=0.0,
+        help="Sampling temperature (0.0 = greedy; default). Seed is fixed so T>0 is still deterministic.",
+    )
+    parser.add_argument("--top-p", type=float, default=1.0)
+    parser.add_argument("--min-p", type=float, default=0.0)
     args = parser.parse_args()
 
     video_ids = [vid.strip() for vid in args.video_ids.split(",") if vid.strip()]
@@ -323,6 +336,9 @@ def main() -> int:
                         sample,
                         max_tokens=args.max_tokens,
                         prompt_cache_state=state,
+                        temperature=args.temperature,
+                        top_p=args.top_p,
+                        min_p=args.min_p,
                     )
                     choice, correct = _score_answer(result["text"], item)
                     row = {
@@ -368,6 +384,9 @@ def main() -> int:
                         sample,
                         max_tokens=args.max_tokens,
                         prompt_cache_state=None,
+                        temperature=args.temperature,
+                        top_p=args.top_p,
+                        min_p=args.min_p,
                     )
                     choice, correct = _score_answer(result["text"], item)
                     row = {
@@ -468,6 +487,12 @@ def main() -> int:
         "n_queries_per_mode": 3 * len(clips),
         "total_wall_ms": total_wall_ms,
         "peak_rss_gb": peak_rss_gb,
+        "sampling": {
+            "temperature": args.temperature,
+            "top_p": args.top_p,
+            "min_p": args.min_p,
+            "seed": 42,
+        },
         "session": session_summary,
         "session_first_query": first_summary,
         "session_follow_up": follow_summary,

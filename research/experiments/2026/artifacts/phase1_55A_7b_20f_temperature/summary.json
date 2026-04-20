@@ -1,0 +1,81 @@
+{
+  "phase": "1.55A",
+  "model": "qwen2.5-vl-7b-instruct-4bit",
+  "frame_count": 20,
+  "n_clips": 7,
+  "n_queries_per_mode": 21,
+  "total_wall_ms": 2862366.444417,
+  "peak_rss_gb": 1.607794688,
+  "sampling": {
+    "temperature": 0.7,
+    "top_p": 1.0,
+    "min_p": 0.05,
+    "seed": 42
+  },
+  "session": {
+    "label": "session",
+    "n": 21,
+    "n_correct": 9,
+    "accuracy": 0.42857142857142855,
+    "mean_elapsed_ms": 33407.64217666667,
+    "median_elapsed_ms": 1366.165459,
+    "p05_elapsed_ms": 691.831292,
+    "p95_elapsed_ms": 108453.083583
+  },
+  "session_first_query": {
+    "label": "session_first_query",
+    "n": 7,
+    "n_correct": 7,
+    "accuracy": 1.0,
+    "mean_elapsed_ms": 97765.43548228571,
+    "median_elapsed_ms": 106159.570583,
+    "p05_elapsed_ms": 65316.219167,
+    "p95_elapsed_ms": 108907.494292
+  },
+  "session_follow_up": {
+    "label": "session_follow_up",
+    "n": 14,
+    "n_correct": 2,
+    "accuracy": 0.14285714285714285,
+    "mean_elapsed_ms": 1228.7455238571426,
+    "median_elapsed_ms": 907.130542,
+    "p05_elapsed_ms": 682.349584,
+    "p95_elapsed_ms": 2599.198542
+  },
+  "baseline": {
+    "label": "baseline",
+    "n": 21,
+    "n_correct": 18,
+    "accuracy": 0.8571428571428571,
+    "mean_elapsed_ms": 101240.26973028571,
+    "median_elapsed_ms": 104647.976166,
+    "p05_elapsed_ms": 90434.030417,
+    "p95_elapsed_ms": 111035.278042
+  },
+  "speedup_first_over_follow": 117.0278870215793,
+  "mean_follow_up_prefix_coverage": 0.9928365843428038,
+  "accuracy_delta_session_minus_baseline": -0.42857142857142855,
+  "verdicts": {
+    "H1_follow_up_speedup": {
+      "earn": true,
+      "reject": false,
+      "median_follow_up_s": 0.907130542,
+      "speedup": 117.0278870215793
+    },
+    "H2_accuracy_preservation": {
+      "earn": false,
+      "reject": true,
+      "delta": -0.42857142857142855
+    },
+    "H3_prefix_coverage": {
+      "earn": true,
+      "reject": false,
+      "coverage": 0.9928365843428038
+    },
+    "H4_peak_rss": {
+      "earn": true,
+      "reject": false,
+      "peak_rss_gb": 1.607794688
+    }
+  }
+}
