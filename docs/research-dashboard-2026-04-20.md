@@ -42,8 +42,17 @@ when phases close or expand, not the registry (registry is the ledger).
 | EXP01/03 VideoMME 8f kr=0.25  | +62.1% | 1.09× | +0.8% | -0.067 | clean              | **Pareto-dominates kr=0.50** — same E2E, same acc, more V_red |
 | EXP01/04 VideoMME 8f kr=0.75  | +19.5% | 1.06× | -5.1% | -0.033 | cooler (stronger drift) | Conservative anchor within preregistered [15%, 25%] band |
 | EXP05/06 **MVBench** 8f kr=0.50 | +40.0% | **1.21×** | +3.2% | -0.100 | slightly hotter | **H_transfer EARNED**: vision-dominated benchmark (V_share=47.8%) realizes much bigger E2E gain from same V_red |
+| EXP07/08 **TOMATO** 8f kr=0.50 | +42.7% | **1.24×** | -4.9% | +0.033 | cooler (favorable)   | **H_transfer EARNED** (third benchmark); accuracy actually drifts +3pp |
 
-VideoMME V_share=15.2% → ceiling 1.18×; MVBench V_share=47.8% → ceiling 1.91×. Same 1.51V policy (L=2 kr=0.50) hits +40% V_red on both benchmarks, but E2E differs by regime: 1.08× on VideoMME (decode-dominated), 1.21× on MVBench (vision-dominated). This reframes 1.51V from "VideoMME-only modest win" to "regime-dependent, with substantial gains where vision tower dominates E2E." MVBench accuracy Δ = -0.100 is the tightest drop observed; does not hit the preregistered demote threshold (-0.150) but is flagged for paper framing.
+Three-benchmark summary (all at L=2 kr=0.50, 8f, n=30 each, thermally paired):
+
+| Benchmark | V_share | Ceiling | V_red | E2E× | Acc Δ  |
+|-----------|---------|---------|-------|------|--------|
+| VideoMME  | 15.2%   | 1.18×   | 39%   | 1.08× | -0.067 |
+| MVBench   | 47.8%   | 1.91×   | 40%   | 1.21× | -0.100 |
+| TOMATO    | 40.7%   | 1.69×   | 43%   | 1.24× | +0.033 |
+
+**V_red is benchmark-invariant (~40% at kr=0.50)**; E2E scales with V_share as the architectural ceiling model predicts. 1.51V is a regime-conditional speedup: the mechanism generalizes, the headline number depends on whether vision tower dominates E2E. On the two vision-dominated benchmarks (TOMATO, MVBench) 1.51V delivers >1.2× E2E at ~40% V_red.
 
 ## Open SOTA advancement paths
 
