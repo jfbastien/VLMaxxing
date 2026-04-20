@@ -164,7 +164,8 @@ class _PrunedEncoderWrapper:
         object.__setattr__(self, "_new_call", new_call)
 
     def __call__(self, *args: Any, **kwargs: Any) -> mx.array:
-        return self._new_call(*args, **kwargs)
+        result: mx.array = self._new_call(*args, **kwargs)
+        return result
 
     def __getattr__(self, name: str) -> Any:
         return getattr(self._wrapped, name)

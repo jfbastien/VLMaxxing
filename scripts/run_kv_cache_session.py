@@ -17,6 +17,7 @@ import argparse
 import gc
 import json
 import resource
+import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -28,26 +29,23 @@ from mlx_vlm.generate import PromptCacheState
 from mlx_vlm.utils import prepare_inputs
 from PIL import Image
 
-import sys
-
 # Reuse helpers from Track A to avoid duplication.
 _SCRIPT_DIR = Path(__file__).resolve().parent
 if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
 from run_benchmark_track_a import (  # noqa: E402
-    BenchmarkItem,
-    BENCHMARK_FRAME_SIZE,
     DEFAULT_MODEL_PATH,
+    BenchmarkItem,
     PreparedSample,
     _decode_uniform_frames,
+    _find_videomme_video,
     _load_videomme_rows,
     _multiple_choice_prompt,
     _videomme_choice_text,
-    _find_videomme_video,
 )
-from codec_through.answers import extract_choice  # noqa: E402
 
+from codec_through.answers import extract_choice  # noqa: E402
 
 DEFAULT_SHORT_VIDEO_IDS: tuple[str, ...] = (
     "037",
@@ -59,9 +57,7 @@ DEFAULT_SHORT_VIDEO_IDS: tuple[str, ...] = (
     "210",
 )
 
-DEFAULT_OUTPUT_DIR = Path(
-    "research/experiments/2026/artifacts/phase1_55A_persistent_kv_qwen"
-)
+DEFAULT_OUTPUT_DIR = Path("research/experiments/2026/artifacts/phase1_55A_persistent_kv_qwen")
 
 
 @dataclass(frozen=True, slots=True)
@@ -85,9 +81,8 @@ def _questions_for_video_id(
         if str(row.get("video_id")) == video_id or str(row.get("videoID")) == video_id
     ]
     if len(matching) < 3:
-        raise ValueError(
-            f"expected ≥3 questions for video_id {video_id!r}, got {len(matching)}"
-        )
+        raise ValueError(f"expected ≥3 questions for video_id {video_id!r}, got {len(matching)}")
+
     # Questions are numbered :1 :2 :3 via trailing suffix on question_id.
     def _q_suffix(row: dict[str, Any]) -> int:
         qid = str(row["question_id"])
@@ -276,7 +271,7 @@ def main() -> int:
         "--temperature",
         type=float,
         default=0.0,
-        help="Sampling temperature (0.0 = greedy; default). Seed is fixed so T>0 is still deterministic.",
+        help="Sampling temperature (0.0=greedy; default). Seed fixed so T>0 is deterministic.",
     )
     parser.add_argument("--top-p", type=float, default=1.0)
     parser.add_argument("--min-p", type=float, default=0.0)
@@ -313,9 +308,9 @@ def main() -> int:
 
     try:
         if args.mode in ("session", "both"):
-            sf = open(session_path, "w")
+            sf = open(session_path, "w")  # noqa: SIM115
         if args.mode in ("baseline", "both"):
-            bf = open(baseline_path, "w")
+            bf = open(baseline_path, "w")  # noqa: SIM115
 
         for clip in clips:
             print(f"[1.55A] clip {clip.video_id} duration={clip.duration}")
@@ -362,7 +357,7 @@ def main() -> int:
                     sf.write(json.dumps(row) + "\n")
                     sf.flush()
                     print(
-                        f"   session Q{q_index+1}: {result['elapsed_ms']:.0f} ms "
+                        f"   session Q{q_index + 1}: {result['elapsed_ms']:.0f} ms "
                         f"prefix={result['prefix_hit']}/{result['input_len']} "
                         f"({result['prefix_coverage']:.2%}) correct={correct}"
                     )
@@ -407,7 +402,7 @@ def main() -> int:
                     bf.write(json.dumps(row) + "\n")
                     bf.flush()
                     print(
-                        f"   baseline Q{q_index+1}: {result['elapsed_ms']:.0f} ms "
+                        f"   baseline Q{q_index + 1}: {result['elapsed_ms']:.0f} ms "
                         f"correct={correct}"
                     )
             gc.collect()
@@ -451,9 +446,7 @@ def main() -> int:
         speedup = first_summary["median_elapsed_ms"] / follow_summary["median_elapsed_ms"]
 
     prefix_coverages = [r["prefix_coverage"] for r in session_follow]
-    mean_prefix_cov = (
-        sum(prefix_coverages) / len(prefix_coverages) if prefix_coverages else 0.0
-    )
+    mean_prefix_cov = sum(prefix_coverages) / len(prefix_coverages) if prefix_coverages else 0.0
 
     acc_delta = None
     if session_summary and baseline_summary:
@@ -468,9 +461,8 @@ def main() -> int:
         and h1_median_follow_s <= 3.0
         and speedup >= 5.0
     )
-    h1_reject = (
-        h1_median_follow_s is not None
-        and (h1_median_follow_s >= 5.0 or (speedup is not None and speedup <= 2.0))
+    h1_reject = h1_median_follow_s is not None and (
+        h1_median_follow_s >= 5.0 or (speedup is not None and speedup <= 2.0)
     )
     h2_earn = acc_delta is not None and abs(acc_delta) <= 0.05
     h2_reject = acc_delta is not None and abs(acc_delta) > 0.10

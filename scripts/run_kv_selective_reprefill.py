@@ -39,27 +39,31 @@ if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
 from run_benchmark_track_a import (  # noqa: E402
-    BenchmarkItem,
     DEFAULT_MODEL_PATH,
+    BenchmarkItem,
     PreparedSample,
     _decode_uniform_frames,
+    _find_videomme_video,
     _load_videomme_rows,
     _multiple_choice_prompt,
     _videomme_choice_text,
-    _find_videomme_video,
 )
+
 from codec_through.answers import extract_choice  # noqa: E402
 
-
 DEFAULT_SHORT_VIDEO_IDS: tuple[str, ...] = (
-    "037", "100", "116", "120", "158", "160", "210",
+    "037",
+    "100",
+    "116",
+    "120",
+    "158",
+    "160",
+    "210",
 )
 
 QWEN_IMAGE_TOKEN_ID = 151655  # <|image_pad|> in Qwen 2.5-VL-Instruct
 
-DEFAULT_OUTPUT_DIR = Path(
-    "research/experiments/2026/artifacts/phase1_55D_selective_reprefill"
-)
+DEFAULT_OUTPUT_DIR = Path("research/experiments/2026/artifacts/phase1_55D_selective_reprefill")
 
 
 @dataclass(frozen=True, slots=True)
@@ -69,18 +73,14 @@ class SessionClip:
     questions: list[BenchmarkItem]
 
 
-def _questions_for_video_id(
-    video_id: str, rows: list[dict[str, Any]]
-) -> list[BenchmarkItem]:
+def _questions_for_video_id(video_id: str, rows: list[dict[str, Any]]) -> list[BenchmarkItem]:
     matching = [
         row
         for row in rows
         if str(row.get("video_id")) == video_id or str(row.get("videoID")) == video_id
     ]
     if len(matching) < 3:
-        raise ValueError(
-            f"expected ≥3 questions for video_id {video_id!r}, got {len(matching)}"
-        )
+        raise ValueError(f"expected ≥3 questions for video_id {video_id!r}, got {len(matching)}")
 
     def _q_suffix(row: dict[str, Any]) -> int:
         qid = str(row["question_id"])
@@ -187,9 +187,7 @@ def _compute_trunc_idx(
     if reprefill_k <= 0:
         raise ValueError("reprefill_k must be > 0")
     if reprefill_k >= n_frames:
-        raise ValueError(
-            f"reprefill_k={reprefill_k} must be < n_frames={n_frames}"
-        )
+        raise ValueError(f"reprefill_k={reprefill_k} must be < n_frames={n_frames}")
     ids_list = input_ids.flatten().tolist()
     image_positions = [i for i, t in enumerate(ids_list) if t == image_token_id]
     total_image_tokens = len(image_positions)
@@ -282,9 +280,7 @@ def _score_answer(response_text: str, item: BenchmarkItem) -> tuple[str | None, 
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="1.55D selective re-prefill session driver"
-    )
+    parser = argparse.ArgumentParser(description="1.55D selective re-prefill session driver")
     parser.add_argument(
         "--video-ids",
         type=str,
@@ -361,9 +357,9 @@ def main() -> int:
 
     try:
         if args.mode in ("session", "both"):
-            sf = open(session_path, "w")
+            sf = open(session_path, "w")  # noqa: SIM115
         if args.mode in ("baseline", "both"):
-            bf = open(baseline_path, "w")
+            bf = open(baseline_path, "w")  # noqa: SIM115
 
         for clip in clips:
             print(f"[1.55D] clip {clip.video_id} duration={clip.duration}")
@@ -433,7 +429,7 @@ def main() -> int:
                     sf.write(json.dumps(row) + "\n")
                     sf.flush()
                     print(
-                        f"   session Q{q_index+1}: {result['elapsed_ms']:.0f} ms "
+                        f"   session Q{q_index + 1}: {result['elapsed_ms']:.0f} ms "
                         f"prefix={result['prefix_hit']}/{result['input_len']} "
                         f"({result['prefix_coverage']:.2%}) correct={correct} "
                         f"resp={result['text'].strip()[:40]!r}"
@@ -478,7 +474,7 @@ def main() -> int:
                     bf.write(json.dumps(row) + "\n")
                     bf.flush()
                     print(
-                        f"   baseline Q{q_index+1}: {result['elapsed_ms']:.0f} ms "
+                        f"   baseline Q{q_index + 1}: {result['elapsed_ms']:.0f} ms "
                         f"correct={correct}"
                     )
             gc.collect()
@@ -517,13 +513,9 @@ def main() -> int:
 
     speedup = None
     if first_summary and follow_summary and follow_summary["median_elapsed_ms"] > 0:
-        speedup = (
-            first_summary["median_elapsed_ms"] / follow_summary["median_elapsed_ms"]
-        )
+        speedup = first_summary["median_elapsed_ms"] / follow_summary["median_elapsed_ms"]
     prefix_coverages = [r["prefix_coverage"] for r in session_follow]
-    mean_prefix_cov = (
-        sum(prefix_coverages) / len(prefix_coverages) if prefix_coverages else 0.0
-    )
+    mean_prefix_cov = sum(prefix_coverages) / len(prefix_coverages) if prefix_coverages else 0.0
     acc_delta = None
     if session_summary and baseline_summary:
         acc_delta = session_summary["accuracy"] - baseline_summary["accuracy"]
@@ -531,17 +523,14 @@ def main() -> int:
     # H verdicts per 1.55D prereg
     h1_target_15 = acc_delta is not None and acc_delta >= -0.15
     h1_target_25 = acc_delta is not None and acc_delta >= -0.25
-    h2_follow_s = (
-        follow_summary["median_elapsed_ms"] / 1000 if follow_summary else None
-    )
+    h2_follow_s = follow_summary["median_elapsed_ms"] / 1000 if follow_summary else None
     h2_speedup_10 = speedup is not None and speedup >= 10.0
     # Basin dispersal counted as: fraction of follow-ups with any pathological-
     # attractor-set token. Cheap proxy: look for 'addCriterion' or 自动 substring.
     basin_hits = sum(
         1
         for r in session_follow
-        if "addCriterion" in r.get("response", "")
-        or "自动" in r.get("response", "")
+        if "addCriterion" in r.get("response", "") or "自动" in r.get("response", "")
     )
     h3_basin_drop = basin_hits <= 4
     h4_rss = peak_rss_gb <= 5.0

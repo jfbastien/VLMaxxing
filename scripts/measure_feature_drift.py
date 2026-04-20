@@ -170,9 +170,7 @@ def _features_per_frame_qwen(
         per_frame.append(block.reshape(tokens_h, tokens_w, -1))
         cursor += count
     if cursor != features.shape[0]:
-        raise RuntimeError(
-            f"feature tokens consumed ({cursor}) != total ({features.shape[0]})"
-        )
+        raise RuntimeError(f"feature tokens consumed ({cursor}) != total ({features.shape[0]})")
     return per_frame
 
 
