@@ -90,6 +90,7 @@ from codec_through.novelty_pruning import (
     compute_pixel_novelty,
     prune_image_placeholders,
 )
+from codec_through.pruned_vision_tower import PruneConfig, patch_vision_tower
 from codec_through.video_decode import decode_uniform_frames
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -751,6 +752,25 @@ def main() -> int:
             "Safety net against a 2026-04-18-style 50GB OOM. Default 0 = off."
         ),
     )
+    parser.add_argument(
+        "--vision-tower-layer",
+        type=int,
+        default=1,
+        help=(
+            "Phase 1.51V: apply vision-tower keep mask AFTER this layer index "
+            "(0..N-1). Only active when --vision-tower-keep-rate < 1.0."
+        ),
+    )
+    parser.add_argument(
+        "--vision-tower-keep-rate",
+        type=float,
+        default=1.0,
+        help=(
+            "Phase 1.51V: fraction of vision-tower tokens to retain past "
+            "--vision-tower-layer. 1.0 (default) = no patch. Cross-run "
+            "comparison: run at 1.0 for dense baseline, then at <1.0."
+        ),
+    )
     args = parser.parse_args()
 
     if not args.model_path.exists():
@@ -778,6 +798,24 @@ def main() -> int:
     _log_model_weight_summary(model)
     print(f"[rss after load] {rss_mb():.0f} MiB")
     check_rss_guard(args.rss_guard_mb, stage="after_model_load")
+
+    vt_patched = args.vision_tower_keep_rate < 1.0
+    if vt_patched:
+        if not (0.0 < args.vision_tower_keep_rate < 1.0):
+            raise SystemExit(
+                f"--vision-tower-keep-rate must be in (0, 1); got {args.vision_tower_keep_rate}"
+            )
+        patch_vision_tower(
+            model,
+            PruneConfig(
+                layer_idx=args.vision_tower_layer,
+                keep_rate=args.vision_tower_keep_rate,
+            ),
+        )
+        print(
+            f"[1.51V] vision-tower patched: layer={args.vision_tower_layer} "
+            f"keep_rate={args.vision_tower_keep_rate}"
+        )
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     records: list[ItemResult] = []
@@ -824,6 +862,9 @@ def main() -> int:
         "keep_rate": args.keep_rate,
         "frame_count": args.frame_count,
         "max_tokens": args.max_tokens,
+        "vision_tower_patched": vt_patched,
+        "vision_tower_layer": args.vision_tower_layer if vt_patched else None,
+        "vision_tower_keep_rate": args.vision_tower_keep_rate if vt_patched else None,
         **_summarize(records),
     }
     args.summary.parent.mkdir(parents=True, exist_ok=True)
