@@ -20,3 +20,7 @@
 [2026-04-20T14:55:49Z] START exp10_videomme_8f_L2_kr050_novelty030_none
 [2026-04-20T15:18:33Z] DONE  exp10_videomme_8f_L2_kr050_novelty030_none (1364s)
 [2026-04-20T15:18:33Z] START exp11_videomme_16f_unpatched
+[2026-04-20T15:54:28Z] DONE  exp11_videomme_16f_unpatched (2155s)
+[2026-04-20T15:54:28Z] START exp12_videomme_16f_L2_kr050
+[2026-04-20T16:27:41Z] DONE  exp12_videomme_16f_L2_kr050 (1993s)
+[2026-04-20T16:27:41Z] === Phase 1.51V expansion queue COMPLETE ===
