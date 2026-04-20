@@ -603,21 +603,32 @@ authoritative in the per-phase notes under
     further mechanism probes queued in-phase. Next priorities shift
     to fidelity-recovery (1.55D selective re-prefill of last-K
     frames targeting Δacc ≤ −0.15 at 7B-20f with ≥10× speedup
-    retained — preregistered 2026-04-20) and cross-family (1.55C
-    Gemma 4-E4B-4bit — final architecture parametrization of the
-    3-D decomposition, preregistered 2026-04-20). 1.55D has higher
-    priority than 1.55C because both temperature probes confirmed
-    sampler-side recovery is impossible at the 7B ceiling, making
-    upstream intervention the only remaining fidelity-recovery
-    lever. Reopen conditions: (a) 1.55C reveals a Gemma-specific
-    failure geometry outside the {pathological-basin, clean-letter}
-    pair, (b) 1.55D finds that recovery requires sampler-side
-    intervention (would imply sampler CAN escape the basin given
-    different prefix conditioning — already falsified by the 7B
-    temperature probe), (c) deeper-prefill 7B runs (48f+) exhibit
-    novel attractors not in the current set, (d) deeper-prefill 3B
-    runs (40f+, ~16k tokens) expose a latent basin that 20/24/32f
-    does not.
+    retained — preregistered 2026-04-20). **1.55C Gemma cross-family
+    is INFRASTRUCTURE-FALSIFIED 2026-04-20** (see 1.55C block
+    below): mlx-vlm's `PromptCacheState` prefix-truncation is
+    incompatible with Gemma 4's sliding-window `RotatingKVCache`
+    at realistic video prefill depths (>512 tokens); driver fork
+    required before the scientific probe can run. 1.55D is now
+    the sole remaining in-phase priority. Reopen conditions: (a)
+    1.55D finds that recovery requires sampler-side intervention
+    (would imply sampler CAN escape the basin given different prefix
+    conditioning — already falsified by the 7B temperature probe),
+    (b) deeper-prefill 7B runs (48f+) exhibit novel attractors not
+    in the current set, (c) deeper-prefill 3B runs (40f+, ~16k
+    tokens) expose a latent basin that 20/24/32f does not, (d) a
+    mlx-vlm fork lands with cache-type-aware prefix truncation,
+    unblocking 1.55C.
+
+- phase_id: 1.55C
+  status: infrastructure-falsified (driver blocker; prereg retained for re-run after fork)
+  authoritative_note: research/experiments/2026/2026-04-20-phase-1_55C-gemma-cross-family-findings.md
+  authoritative_artifacts: []
+  current_best_policy: n/a
+  supersedes: []
+  paper_relevance: deferred (cross-family generalization of 3-D decomposition remains open; claim matrix now declares this an open question)
+  prereg_outcome: Gate #2 of the prereg ("verify PromptCacheState + find_prefix_length work with Gemma's attention") FALSIFIED at realistic video prefill. Gemma 4 uses RotatingKVCache(max_size=512, keep=0) on 4/5 layers per sliding_window_pattern=5; 20-frame prefill = 5120 image tokens rotates sliding layers ~10×; mlx-vlm/generate.py:689-697 performs naive physical-position truncation (c.keys[:, :, :prefix_len, :]) that silently corrupts post-rotation KV. H1-H4 UNTESTED (cannot be tested correctly with current driver).
+  runtime_estimate: 0h executed; ~2-4h fork + smoke test to unblock (Option A in findings doc); ~30-60min run once driver is correctness-preserving
+  notes: Discovered during pre-run driver verification 2026-04-20. The prereg's assumption of drop-in mlx-vlm compatibility was wrong — Gemma 4's sliding-window attention architecture is fundamentally incompatible with linear-cache prefix truncation. Three options documented (A: cache-type-aware fork with RotatingKVCache.is_trimmable() guard, B: partial-layer cache reuse losing most speedup, C: prefix ≤ 512 tokens = non-starter for video). Recommended disposition: DO NOT run with current driver (would produce plausible-looking garbage on silent-wrong-answer path); defer behind 1.55D (Qwen-only, known-compatible); revisit after 1.55D or rescope to Gemma 2 (non-sliding) as cross-family target. Paper Claim #14 (3-D decomposition) remains Qwen-family-only this draft; cross-family generalization declared an open question with explicit mlx-vlm sliding-window caveat.
 
 - phase_id: 1.55B
   status: proposed (deferred)
