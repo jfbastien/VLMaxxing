@@ -44,6 +44,9 @@ when phases close or expand, not the registry (registry is the ledger).
 | EXP05/06 **MVBench** 8f kr=0.50 | +40.0% | **1.21×** | +3.2% | -0.100 | slightly hotter | **H_transfer EARNED**: vision-dominated benchmark (V_share=47.8%) realizes much bigger E2E gain from same V_red |
 | EXP07/08 **TOMATO** 8f kr=0.50 | +42.7% | **1.24×** | -4.9% | +0.033 | cooler (favorable)   | **H_transfer EARNED** (third benchmark); accuracy actually drifts +3pp |
 | EXP01/09 1.51V × 1.51R (gemma_structural kr=0.5) | +42.8% | 1.11× | -4.7% | -0.067 | cooler | **H_stack null CONFIRMED**: composition vs V-alone is 1% slower + -6.7pp accuracy + 0.50 agreement |
+| EXP01/10 1.51V × 1.51R (none kr=0.3) | +42.0% | 1.11×/1.17×* | -4.5% | -0.067 | cooler | **H_stack PARTIAL VIOLATION**: own-pair composition = +5.7% E2E over V-alone, aggregate accuracy preserved, but agreement=0.63 |
+
+*1.11× uses V-alone dense arm as baseline (clean thermal); 1.17× includes composition (cross-session, thermal-inflated).
 
 Three-benchmark summary (all at L=2 kr=0.50, 8f, n=30 each, thermally paired):
 
