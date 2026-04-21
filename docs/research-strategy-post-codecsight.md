@@ -1,14 +1,25 @@
 # Research Strategy After CodecSight & CoPE-VideoLM
 
-Date: 2026-04-16
+Date: 2026-04-16 (last structural rewrite)
 Parent: [PLAN.md](../PLAN.md)
 Sibling: [literature-map-2026-04-16.md](literature-map-2026-04-16.md)
 Positioning: [literature-map-2026-04-16.md](literature-map-2026-04-16.md)
 
-## Candidate Thesis (target, not current claim)
+> **Router note (2026-04-21):** the paper spine has since restructured
+> around three contributions — **C-CEILING**, **C-PERSIST**, **C-VISION** —
+> with the temporal-routing program below demoted to the
+> *mechanism-validation backbone*. The current paper-facing spine lives
+> in [`paper/abstract.md`](../paper/abstract.md),
+> [`paper/intro.md`](../paper/intro.md),
+> [`paper/framing.md`](../paper/framing.md), and
+> [`paper/priority.md`](../paper/priority.md). The content below remains
+> correct for the temporal-routing lane; it is **no longer the headline
+> thesis**.
+
+## Candidate Thesis (historical — 2026-04-16; now the mechanism-validation backbone, not the headline)
 
 After CodecSight (systems) and CoPE-VideoLM (model) landed, the
-**candidate paper thesis** is:
+**candidate paper thesis** (as of 2026-04-16) was:
 
 > **A training-free temporal routing method that aims to improve the
 > quality–compute Pareto frontier for video VLMs on temporal-reasoning

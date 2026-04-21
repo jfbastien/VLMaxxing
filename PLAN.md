@@ -1,20 +1,31 @@
 # Research Plan
 
-Last updated: 2026-04-17
+Last updated: 2026-04-21
 
 > **This file is the project charter and top-level router.**
+>
+> **Paper spine (2026-04-21, round-26):** three contributions —
+> **C-CEILING**, **C-PERSIST**, **C-VISION** — with Qwen routing as the
+> **mechanism-validation backbone** and codec-through-sam as
+> **deployment-scale evidence**. The paper-facing spine lives in:
+> [`paper/abstract.md`](paper/abstract.md),
+> [`paper/intro.md`](paper/intro.md),
+> [`paper/framing.md`](paper/framing.md), and
+> [`paper/priority.md`](paper/priority.md).
 >
 > Per-phase experiment state lives in:
 > [`research/experiments/registry.md`](research/experiments/registry.md)
 > — that file is the single source of phase truth.
 >
-> Active research strategy lives in:
+> Lane A / temporal-routing research strategy (now the
+> mechanism-validation backbone, not the headline) lives in:
 > [`docs/research-strategy-post-codecsight.md`](docs/research-strategy-post-codecsight.md)
 >
 > Literature positioning lives in:
 > [`docs/literature-map-2026-04-16.md`](docs/literature-map-2026-04-16.md)
 >
-> If any other part of PLAN.md contradicts the registry, fix PLAN.md.
+> If any other part of PLAN.md contradicts the registry or paper spine,
+> fix PLAN.md.
 
 ## Charter
 
