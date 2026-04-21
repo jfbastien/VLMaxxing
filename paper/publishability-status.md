@@ -226,21 +226,8 @@ is work the user is buying forever. What the user is paying for
 | S | Phase 1.51V session 3 (EXP17 VideoMME unpatched holdout + EXP18 V-patched kr=0.5, n=30) | ~0.8 h (sum decode + generate across 60 items; thermally paired at decode Δ 1.53%) | 0.8 h | Gemma 4-E4B-4bit |
 | T | Phase 1.51V session 4 (EXP19/20 MVBench holdout pair + EXP21/22 TOMATO holdout pair, run 2) | ~2.0 h (queue.log elapsed across 4 exps; run 1 memory-contaminated and quarantined to run1_confounded/) | 2.0 h | Gemma 4-E4B-4bit |
 | U | Phase 1.51V session 5 (EXP23/24 TOMATO holdout pair rerun after session 4 thermal confound) | 1735 s measured = **0.48 h** (EXP23 886 s + EXP24 849 s; favorable-direction 119 ms decode Δ; EARNED-ADVISORY on primary E2E gate) | 0.48 h | Gemma 4-E4B-4bit |
-
-### Blocked / forward queue (pre-reg runtime budget)
-
-| # | Claim / phase | Benchmark runtime | Model | Blocker |
-|---|---|---|---|---|
-| I | Sparse-execution delta (claim 5 "N% measured speedup") | ≈ 1 h per benchmark | either | sparse execution path not written |
-| L | Placement ablation (phase 1.38) | ≈ 30 min | Qwen 2.5-VL-7B-4bit | not queued |
-| N₅₇ | Phase 1.57 feature-drift measurement (Qwen landed; Gemma deferred) — **lower-bound proxy via adjacent fresh-vs-fresh cosine**, NOT a direct cache-substitute error measurement (the 1.45/1.46 oracle is the direct measurement path). | **Qwen 8/16/32f: LANDED 2026-04-19** (~30 min total); Gemma path deferred (needs inline ViT encode) | both | **Qwen DONE**: STATIC cos 0.562/0.607/0.638; H2 FALSIFIED, H3 EARNED (monotonic-rise with frame count); Gemma path deferred |
-| N₅₅ₐ | Phase 1.55A persistent-KV reproduction (short bucket 7×3, 8f+16f+20f+24f+32f) | **LANDED 2026-04-19** (1057 s at 8f + 2095 s at 16f + 2506 s at 20f + 3281 s at 24f + 4573 s at 32f = 13 512 s total) | Qwen 2.5-VL-7B-4bit | 8f and 16f earn all 4 H; 20f/24f/32f earn H1/H3/H4 but REJECT H2. 5-point speedup curve (47×→91×→94×→122×→150×) confirms prefill-dominance. Fidelity transition is a **narrow soft threshold, not a clean cliff**: clean at 6.5k (16f, Δacc=0), partial-basin-collapse at 8.1k (20f, Δacc=−0.38, mixed 10 short `addCriterion` + 4 long-garbage + 1 correct), saturated single-token attractor at 9.7k (24f, Δacc=−0.43) persisting through 12.9k (32f). Favours threshold mechanisms with a soft edge (4-bit KV quantization budget, M-RoPE OOD) over pure accumulation. 18f bisection in flight 2026-04-19 to localize ramp onset. Promoted to row O with safe-prefill-budget caveat |
-| N₅₆ | Phase 1.56 VLM-signaled refresh (3 arms × n=30 VideoMME dev) | ≈ 45 min @ 8f; ≈ 2 h @ 32f | Qwen 2.5-VL-7B-4bit | Phase 1.44 margin logging + RefreshPolicy API |
-| N₁.₅₂R | Phase 1.52R temporal+spatial composition on Gemma | ≈ 2-3 h @ 8f; ≈ 6-8 h @ 32f | Gemma 4-E4B-4bit | 1.42 + 1.51R sweep completion |
-| N₁.₅₅B | Phase 1.55B KV × decode-accel composition | ≈ 65 min @ 8f; ≈ 2.5 h @ 32f | Qwen 2.5-VL-7B-4bit | 1.54 landing + 1.55A earning |
-| N₁.₅₈ | Phase 1.58 bf16 × long-context quantization ablation | ≈ 1 h bf16 8f; ≈ 3 h bf16 16f | Qwen 2.5-VL bf16 (15 GB download) | bf16 checkpoint + RSS feasibility check |
-| N₁.₄₂ | Phase 1.42 Gemma architecture-topology lane | ≈ 2 h @ 8f; ≈ 6 h @ 32f | Gemma 4-E4B-4bit | _mix_gemma_features integration |
-| N₁.₄₃ | Phase 1.43 EgoSchema lane | ≈ 2 h @ 8f | Qwen 2.5-VL-7B-4bit | EgoSchema loader + manifest |
+| J₁₆ₕ | Phase 1.41 Qwen 16f VideoMME **holdout** n=30 (H2 falsification run, task #160) | ~38 min (same per-item cost as dev 16f; aggregate 0.700, H2 FALSIFIES the dev-only long-bucket −20pp observation — holdout long 0.900 vs dev 0.100) | 0.63 h | Qwen 2.5-VL-7B-4bit |
+| V | Phase 1.51V EXP10 n=60 pooled H_stack re-check (VideoMME dev+holdout combined, task #152 CLOSED-NULL) | ~3.0 h measured (pooled n=60; lift 2.6pp FAILS ≥4pp gate, agreement 0.65 FAILS 0.75; ceiling model reproduces to 0.2pp at pooled fixed_frac = 0.875) | 3.0 h | Gemma 4-E4B-4bit |
 
 ### Runtime cost summary
 
@@ -248,21 +235,35 @@ is work the user is buying forever. What the user is paying for
 - Lane A (TOMATO + MVBench routing, Qwen): ~25-30 h (A+B+C+D+E+F+G, measured across many N=30 passes)
 - Lane B (Gemma 1.51R + ceiling validation): ~10-12 h (K+M)
 - Lane B (Gemma 1.51V expansion + 32f probe + holdout sessions 2-5): ~10.4 h (P 4.34 h + Q 1.99 h + R 0.75 h + S 0.8 h + T 2.0 h + U 0.48 h measured)
-- VideoMME lane (claim 8 earned + strengthened): ~82 min (J₈ 16 min + J₁₆ 38 min + J₃₂L 28 min)
+- Lane B (Gemma 1.51V EXP10 n=60 pooled H_stack, 2026-04-21): ~3.0 h (V)
+- VideoMME lane (claim 8 earned + strengthened + **holdout**): ~120 min (J₈ 16 min + J₁₆ 38 min + J₃₂L 28 min + **J₁₆ₕ 38 min** 2026-04-21)
 - Persistent-KV lane (claim 14): ~7.3 h (O)
-- **Total benchmark wall-clock already spent: ~54-61 h**
+- **Total benchmark wall-clock already spent: ~58-65 h**
 
-**Forward queue** (blocked + runnable-now, benchmark wall-clock only):
-- **Runnable now**: 1.57 ~60 min + 1.55A ~17 min = **~1.3 h**
-- **Short blockers** (1.54 decode + 1.44 margin land first): 1.55B ~65 min + 1.56 ~45 min = **~1.8 h @ 8f, ~4.5 h @ 32f**
-- **Larger blockers** (Gemma harness + bf16 download + EgoSchema loader): 1.42 ~2 h + 1.58 ~4 h + 1.43 ~2 h + 1.52R ~3 h = **~11 h @ 8f, ~25 h @ 32f**
-- **One full reviewer-response cycle** (re-run A through F, warm-cache): **~5-7 h**
-- **Sparse execution delta** (claim 5 — unblocks "measured speedup"): **~2 h** benchmark-only after ~1-2 wk implementation
+**Forward queue** — priority order per `paper/priority.md` round-26, benchmark
+wall-clock only. Blocker column is honest about what's actually
+runnable tonight vs. impl-gated.
 
-**Aggregate forward cost to clear the full queue**:
-- At 8f: ~14 h benchmark-only (excludes implementation of gating infra)
-- At 32f: ~30 h benchmark-only
-- Earned-claims reviewer rerun: additional ~5-7 h warm-cache
+| Prio | Phase | Runtime | Model | Blocker status |
+|------|-------|---------|-------|----------------|
+| should-do #3 | **1.51V Qwen cross-arch probe** (L=2, kr=0.50, VideoMME 8f n=30 thermally paired, 2 arms) | ~60-90 min | Qwen 2.5-VL-7B-4bit | **impl-blocked** — `pruned_vision_tower.py` is Gemma-only; Qwen vision-tower keep-mask plumbing unwritten (est. 4-6 h impl) |
+| should-do #4 | Local paired streaming-protocol reproduction (1.30, Sam N=60 line analog, 60 items × 2 arms) | ~90 min | Gemma 4-E4B-4bit | **prereg-open** — needs reproduction prereg; code path reuses 1.51V driver |
+| should-do #5 | **1.55B selective re-prefill v2** (mlx-vlm fork; recover Δacc at 20f) | N/A benchmark-only | Qwen 2.5-VL-7B-4bit | **impl-blocked** — ~3-5 h pixel_values/image_grid_thw/attention_mask co-slicing impl |
+| should-do #6 | **1.58 bf16 KV control at 20f** (discriminate quantization vs attention-OOD) | ~3.5-4 h (bf16 8f n=30 + bf16 16f n=30) | Qwen 2.5-VL-7B bf16 | **user approval** — 15 GB checkpoint download + RSS feasibility on 16 GB M3 |
+| should-do #8 | **1.29 codec-native benchmark slice** (TOMATO N=30 holdout with `CODEC_NATIVE_MV_MAGNITUDE`) | ~45 min benchmark (pilot 2 min + dev 15 min + holdout 30 min) | Qwen 2.5-VL-7B-4bit | **impl-blocked** — Stage A (sample cache) + Stage B (planner dispatch) + Stage C (CLI wire-up) = ~5 h; extractor already ported |
+| future | **1.60 scroll/pan subset** (20 items stratified by scroll intensity, L=2 kr=0.50 paired) | ~70-90 min | Gemma 4-E4B-4bit | **manifest-blocked** — `scroll_pan_subset_v1.toml` needs building from VideoMME pixel-diff dominance axis (est. 1-2 h curation) |
+| diagnostic | **Qwen 8f holdout `videomme_holdout_v1.toml` n=30** (parallel to already-done 16f holdout) | ~8 min (cold) | Qwen 2.5-VL-7B-4bit | **runnable-now** — driver exists, manifest exists |
+| blocked | 1.42 Gemma topology lane | ~2-6 h | Gemma 4-E4B-4bit | `_mix_gemma_features` impl (task #62) |
+| blocked | 1.43 EgoSchema breadth gate | ~2 h | Qwen 2.5-VL-7B-4bit | loader + manifest unwritten |
+| blocked | 1.52R composition (1.42 × 1.51R) | ~3 h | Gemma 4-E4B-4bit | 1.42 landing + 1.51R V-patched re-run |
+| future | Claim-5 sparse-execution delta | ~2 h | either | sparse backend unwritten (1-2 wk impl) |
+
+**Runnable-without-approval tonight**: only the Qwen 8f holdout
+diagnostic (~8 min). Every should-do item needs either implementation
+or user approval first.
+
+**Aggregate forward cost once blockers clear**: ~20 h benchmark-only
+@ 8f (excludes implementation); ~40 h @ 32f.
 
 All estimates exclude implementation, debugging, and CI — they
 describe only the wall-clock the user would burn re-running
