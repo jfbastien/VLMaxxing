@@ -170,6 +170,23 @@ whitepaper §8 and codex 2026-04-16 review, the paper must state:
    novel frames. On all-dynamic content, temporal caching provides
    near-zero benefit. This is a fundamental limitation, not a
    policy gap.
+7. **Drift language discipline — attention-propagation drift, not
+   PE drift.** Sam's whitepaper §234 attributes the refresh requirement
+   to *attention-context* drift (attention weights at a given key
+   position evolve ~0.01/frame as the query set shifts), NOT
+   positional-encoding drift. Our phase 1.49 refresh sweep shows that
+   periodic re-encode *recovers* agreement but does not *isolate* which
+   drift mechanism is load-bearing. Phase 1.57 (adjacent-frame ViT
+   cosine) is a **lower-bound proxy** on the cache-substitute error via
+   fresh-vs-fresh cosine — NOT a direct cache-substitute measurement;
+   the 1.45/1.46 identity controls are the direct path. The paper must
+   say "attention-propagation drift" (or "attention-context drift") when
+   citing Sam and must NOT assert a positional-encoding mechanism absent
+   a local PE-ablation. Re-encode at I-frames (what we do) addresses
+   attention-propagation drift; temporal-RoPE key correction would
+   address PE drift — they require different mitigations. See
+   [`publishability-status.md`](publishability-status.md) §Attention-
+   context-drift-vs-PE-drift for the Codex round-21 reconciliation.
 
 ## Track B Reporting Template (from sam, for future use)
 

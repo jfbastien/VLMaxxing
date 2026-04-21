@@ -9,6 +9,31 @@
 > is no longer load-bearing for the next-round paper. See
 > `2026-04-19-codex-round-21-sam-imports.md` §1 for full rationale.
 
+> **Status update 2026-04-21 (Codex round-24 rescope pending).**
+> Round-24 codex review calls for this phase to be rewritten against
+> **Sam's actual streaming/deployment protocol** rather than the
+> abstract infrastructure harness below. Target protocol from Sam's
+> whitepaper §2.13.3 + §5 (deployment): (1) pre-prefill queue —
+> frames arrive into a rolling buffer; (2) persistent KV-cache reuse
+> across consecutive queries on the same clip; (3) selective re-
+> prefill only at attention-context-drift boundaries (NOT every
+> frame); (4) decoder co-location with the client to avoid the
+> frame-upload round-trip. The paper narrative wants **a local
+> reproduction of Sam's N=60 streaming line** (biggest bridge gap
+> round-24 identified). Design changes from the original harness:
+> - Drop UCF-Crime entirely — use VideoMME dev+holdout 60-item
+>   aggregation paired with persistent-KV replay, to match the
+>   benchmark we already report on.
+> - Preregister the same "clean / mixed / degenerate" bucket
+>   structure Sam uses so the reproduction is side-by-side comparable.
+> - Runtime target: ~90 min at 8f L=2 kr_V=0.50 (C-VISION best cell)
+>   with persistent-KV reuse, thermally paired unpatched baseline.
+> The rewrite is deferred to a separate prereg
+> `2026-04-2?-phase-1_30-streaming-sam-reproduction-prereg.md` rather
+> than an in-place edit, so this file stays as the historical
+> Track-B-streaming lineage. See `paper/priority.md` should-do #4 for
+> paper-time prioritization.
+
 ## Preregistration
 
 Objective:
