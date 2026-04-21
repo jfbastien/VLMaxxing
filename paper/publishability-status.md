@@ -4,42 +4,70 @@ One-file answer to "what can we actually claim, in what venue, with what
 numbers, today." Kept in sync with [claim-matrix.md](claim-matrix.md) but
 scoped narrower: reviewer-facing readiness and runtime-cost evidence.
 
-## One paper, two experimental lanes (round-17 reframe)
+## Three first-class contributions (round-25/26 reframe)
 
 **The goal is one results paper, co-authored with Sam, that advances
-SOTA with big multiplicative speedups.** Method work is in service of
-that scientific goal and is welcome to land in an appendix; it is
-NOT a separate methods paper.
+SOTA across three independent axes.** Codex rounds 25–26 retired the
+earlier "one big multiplicative number via claim 11" framing: the
+paper spine is now three already-earned, independently-evaluable
+contributions (all landed before Codex round-26 2026-04-21):
 
-The paper has two experimental lanes, both of which must contribute
-evidence to the final manuscript:
+- **C-CEILING — arithmetic end-to-end ceiling** (claim 13).
+  `E2E ≤ 1/(fixed + (1−fixed)/s)` validated across 7 independent
+  regime dimensions (8-frame kr-sweep + 32-frame short/medium/long +
+  smoke + Stage 7 short × gemma_structural × kr=0.33) at median
+  2.1% / worst 5.2% prediction error. A standalone analytical
+  contribution independent of any specific SOTA arm.
+- **C-PERSIST — persistent-KV safe-deployment envelope** (claim 14).
+  6-point speedup curve (47×→91×→70×→94×→122×→150× at 8/16/18/20/24/32f
+  on Qwen 7B-4bit) + 3-point cross-arch scaling on Qwen 3B-4bit +
+  4-regime temperature matrix. Mechanism decomposes into three
+  independently-varying axes (threshold onset × saturation ceiling ×
+  basin-attractor identity), scaling relation ~1.6× basin-onset depth
+  across architectures. Deployment-facing envelope: 7B ≤ ~8k prefill,
+  3B ≤ ~16k prefill for ≤ ±0.05 Δacc.
+- **C-VISION — vision-tower pruning with scatter-back ceiling**
+  (claim 15). `E2E ≤ 1/(1 − V_share × V_red)` on Gemma 4-E4B-4bit
+  validated across **7 regime cells** (4 dev + 3 holdout); V_red
+  benchmark-invariant at 39–43% at L=2 kr_V=0.50. **Three-benchmark
+  holdout trifecta CLOSED 2026-04-21** (VideoMME 8f CLEAN,
+  MVBench 8f CLOSED-ADVISORY on thermal-calibration footnote,
+  TOMATO 8f EARNED-ADVISORY on favorable-drift footnote).
 
-- **Lane A — Qwen methods (TOMATO + MVBench).** Pareto-frontier /
-  routing claims on Qwen 2.5-VL-7B-4bit. Claims 1/2/6/9 earned;
-  3/4/5 partial; 8/12 preregistered. Provides scientific validity
-  for the routing / bounded-staleness mechanism, and is a natural
-  home for the appendix method content.
-- **Lane B — Gemma big-numbers (VideoMME + TOMATO + MVBench).**
-  Multiplicative end-to-end speedup via novelty-pruning + temporal
-  reuse on Gemma 4-E4B-4bit. Claims 7/10/11 all preregistered today;
-  nothing earned. **This is the SOTA-facing content** and drives
-  paper-venue readiness.
+**Mechanism-validation backbone (NOT the headline).** Qwen routing
+work (claims 1/2/6/9 earned, 3/4/5 partial, 8/12 preregistered on
+TOMATO + MVBench) is the negative-result discipline lane: it shows
+what works AND what doesn't (preserved nulls on naive mean-diff,
+sticky-dynamic on TOMATO, PE-only correction, 1.51R VideoMME null,
+1.55D infra-falsified, VideoMME non-monotonic frame scaling, halo-veto
+retired 1.37B). Frame as methodology appendix + null ledger, not as
+the headline.
 
-Prose must never conflate lane-A-earned with lane-B-prospective.
-When a claim sits in both lanes (e.g., claim 5 sparse-execution
-delta on Qwen or Gemma), name the architecture explicitly.
+**Sam as deployment-scale evidence (NOT applications/support).**
+The Sam stack (26B-class, real streaming, full end-to-end pipeline)
+runs on a deliberately disjoint regime from codec-through (4B-class,
+sparse benchmark, mechanism isolation): 4.2–4.5× real-video, 13× ViT,
+~50× dominant-pipeline, 0.8 s median follow-up, 5–300× live-camera ViT.
+Shared frame with codec-through: C-CEILING arithmetic + attention-
+propagation drift (NOT PE drift). Paper claims are the **evidence
+union** across both repos with regime labels attached. Weak streaming
+case-study claims without paired baselines stay appendix-bound.
 
-## HN-style headline (honest version)
+1.51R novelty-pruning does NOT carry the headline. It appears as
+(a) the EXP10 n=60 composition-appendix gate (≥4 pp E2E lift over
+V-alone AND agreement ≥0.75 AND acc Δ within −0.067), and (b) the
+Stage 5 anchor-arm comparison that establishes `gemma_structural`
+as the in-repo default (secondary methodology content). Claim 11 is
+duration-conditional partial reproduction, arithmetically bounded to
+≤1.46× at 8f kr=0.10 per C-CEILING.
 
-> **Training-free temporal routing on Qwen 2.5-VL-7B-4bit (MLX): matches
-> 8-frame uniform-dense accuracy on MVBench motion holdout while using
-> 56% of the fresh-frame budget (4.49 vs 8.0 effective fresh frames) —
-> no training, no architecture change, one percentile pass + a bounded
-> staleness counter.**
+See `paper/framing.md`, `paper/abstract.md`, `paper/intro.md`, and
+`paper/priority.md` for the authoritative three-contribution
+narrative.
 
-**Secondary headline (1.51V vision-tower pruning, three-benchmark
-C-VISION holdout trifecta CLOSED 2026-04-21 with differentiated advisory
-strength):**
+## HN-style headlines (honest version, three-contribution ordering)
+
+**Primary — C-VISION (three-benchmark holdout trifecta):**
 
 > **Vision-tower pruning at L=2 kr_V=0.50 on Gemma 4-E4B-4bit (MLX):
 > VideoMME 8f holdout-earned at 1.113× E2E (EXP17/18 session 3 2026-04-21,
@@ -57,6 +85,39 @@ strength):**
 > thermal correction). Governed by an architectural ceiling
 > E2E ≤ 1/(1 − V_share × V_red) validated on 4 dev regimes + 3 holdout
 > regimes (VideoMME + MVBench + TOMATO, three-benchmark trifecta).**
+
+**Secondary — C-PERSIST (persistent-KV safe-deployment envelope):**
+
+> **Persistent KV-cache follow-up queries on Qwen 2.5-VL (MLX) deliver
+> 47×→150× speedups along an 8/16/18/20/24/32-frame curve on 7B-4bit
+> (prefill-dominated) and 136×→213× on 3B-4bit (decode-dominated).
+> Safe deployment envelope is architecture-specific: 7B ≤ ~8k prefill
+> holds Δacc within ±0.05; 3B ≤ ~16k prefill. Fidelity degradation
+> decomposes into three independently-varying axes (threshold onset,
+> saturation ceiling, basin-attractor identity), with a ~1.6× basin-
+> onset depth scaling across architectures. Sampler-invariance at both
+> architecture ceilings is cross-architectural, not a 7B idiosyncrasy.**
+
+**Tertiary — C-CEILING (arithmetic analytical contribution):**
+
+> **An architectural speedup ceiling E2E ≤ 1/(fixed + (1−fixed)/s)
+> explains observed end-to-end multipliers within median 2.1% / worst
+> 5.2% across 7 independent regime dimensions on Gemma 4-E4B-4bit
+> (Qwen 7B-4bit composition ceiling also matches observed to 0.1pp).
+> Bounds the measurable sparse-execution delta analytically before the
+> code is written; a standalone analytical contribution independent of
+> any specific SOTA arm.**
+
+**Quaternary — Qwen routing (mechanism-validation backbone):**
+
+> **Training-free temporal routing on Qwen 2.5-VL-7B-4bit (MLX): matches
+> 8-frame uniform-dense accuracy on MVBench motion holdout while using
+> 56% of the fresh-frame budget (4.49 vs 8.0 effective fresh frames) —
+> no training, no architecture change, one percentile pass + a bounded
+> staleness counter. Reported alongside an explicit null ledger
+> (halo-veto 1.37B retired; sticky-dynamic TOMATO no-lift; PE-only
+> correction refused by 1.49; 1.51R VideoMME duration-conditional
+> partial reproduction; 1.55D infra-falsified).**
 
 What we CANNOT yet honestly say in HN-headline form:
 
@@ -181,10 +242,10 @@ queue once infra is in place.
 
 | Venue | Fit today | What would need to land |
 |---|---|---|
-| **arXiv preprint (lane-A-only positional)** | **Possible today as a narrow positional note on Qwen routing.** Would need framing as "method positioning; SOTA results forthcoming." **Not the target artifact** — the goal is one big-numbers paper, not a positional subset. | Keep Arc A claims current; do not submit until Lane B is earned. |
-| **NeurIPS / ICLR / CVPR efficiency workshop** | **Within reach** once Lane B lands one of: novelty-pruning-on-Gemma multiplicative speedup OR Gemma+VideoMME fidelity + Track B sparse delta. | Lane B phases 1.42 + 1.51R earned. |
-| **Main track (NeurIPS/ICML/CVPR)** | **NOT ready.** Single-architecture, two benchmarks, no measured speedup, no SOTA comparison. Reviewers will flag all four. | Phase 1.52 combined (multiplicative speedup measured) + claim 8 VideoMME + claim 7 second architecture. |
-| **Systems conference (MLSys/OSDI)** | **NOT ready.** No sparse execution to characterize. | Claim 5 (sparse path) + Phase 1.52 combined. |
+| **arXiv preprint (three-contribution submission)** | **Ready today** on C-CEILING + C-PERSIST + C-VISION. Abstract and intro landed 2026-04-21 foreground the three contributions in parallel; claim-matrix rows 13/14/15 all earned; C-VISION holdout trifecta closed with differentiated advisory strength. Reviewer-facing limitations list in `framing.md` §RFL covers thermal-calibration and regime-boundary caveats. | No gates. Submission-blocker is narrative polish + figure work (`priority.md` should-do #9: C-PERSIST safe-budget table + V_share ceiling plot), not new experiments. |
+| **NeurIPS / ICLR / CVPR efficiency workshop** | **Defensible today** on the three-contribution narrative. C-VISION trifecta (three benchmarks) + C-CEILING analytical contribution + C-PERSIST safe-deployment envelope clear the bar without further experiments. EXP10 n=60 H_stack gate (currently running) tightens the composition-appendix claim from ±0.05 CI to ±0.03 CI. | (optional) EXP10 n=60 result to tighten composition CI; (optional) cross-arch C-VISION Qwen cell to turn C-VISION from single-arch-mechanism into mechanism-class. |
+| **Main track (NeurIPS/ICML/CVPR)** | **Within reach** once the "should-do" lifts from `priority.md` land. The three contributions already satisfy the minimum publishability bar; the gap to main-track defensibility is cross-architecture evidence + a codec-native benchmark data point + scroll/pan regime boundary. | Cross-arch C-VISION on Qwen (should-do #3) + 1.29 local codec-native slice (should-do #8, biggest missing Sam bridge) + phase 1.60 scroll/pan regime probe (queued future list). Claim 5 measured-sparse delta is deferable to post-submission discussion — C-CEILING already bounds it analytically. |
+| **Systems conference (MLSys/OSDI)** | **Within reach** with the cross-arch C-VISION probe + EXP10 n=60 + 1.29 codec-native evidence. C-CEILING gives the analytical upper bound on any sparse-execution delta; C-PERSIST's safe-deployment envelope is inherently systems-flavored. | Same as main-track row. A measured sparse-execution path (claim 5 measured, not ceiling-derived) remains the biggest single unlock and is the same engineering investment as before. |
 
 ## What is safe to say in a one-paragraph abstract TODAY
 
@@ -380,65 +441,75 @@ queue once infra is in place.
   correction would address PE drift. See
   `2026-04-19-codex-round-21-sam-imports.md` §3.
 
-Lane B (Gemma big-numbers on VideoMME) is the SOTA-facing priority.
-Lane A (Qwen routing) continues in parallel where it doesn't contend
-for the MLX queue, and produces method content for the appendix.
+**Priority ordering now lives in `paper/priority.md`** (codex round-26
+2026-04-21 designated priority.md as the authoritative venue-readiness
+/ submission-gate doc). This section is a short mirror + the retired
+items that priority.md does not carry. For the current ordering see
+`paper/priority.md` (must-do / should-do / future sections).
 
-### Lane B — the big-numbers path (Gemma + VideoMME, highest priority)
+### Current queue mirror (priority.md §Should-do, in rank order)
 
-**Reordered 2026-04-17 round-18:** 1.51R novelty-pruning is a fresh
-LLM-prefill code path and does NOT depend on phase 1.42's
-`_mix_gemma_features` temporal-reuse integration. See
-`research/experiments/2026/2026-04-17-phase-1_42-gemma-integration-design.md:62`
-for the explicit note. 1.42 stays in the queue as the claim-7
-enabler but is not the headline gate.
+1. **EXP10 n=60 H_stack re-check** — tightens the composition-appendix
+   CI from ±0.05 to ±0.03 (n=30 → n=60). In flight 2026-04-21; runtime
+   ~60-90 min per arm × 2 arms. **Not** a paper-spine gate; tightens a
+   secondary claim.
+2. ~~**1.51V MVBench and TOMATO holdout V-only pairs**~~ — **CLOSED
+   2026-04-21** (three-benchmark C-VISION trifecta). No further rerun
+   required to support paper-grade C-VISION claims.
+3. **1.51V cross-architecture transfer probe on Qwen 2.5-VL-4bit** —
+   extends the scatter-back ceiling from one architecture to two;
+   turns C-VISION from single-arch-mechanism into mechanism-class.
+   ~60-90 min wall; blocker is Qwen-side vision-tower pruning wire-up.
+4. **Local paired streaming-protocol reproduction of Sam's N=60 line**
+   (codex round-24 "missing piece for a breakthrough"). ~90 min wall
+   + prereg doc.
+5. **1.55B selective re-prefill v2** — mlx-vlm fork for
+   pixel_values / image_grid_thw / attention_mask co-slicing; ~3-5h
+   implementation; would reopen C-PERSIST as a fidelity contribution.
+6. **1.58 bf16 KV control at 20f** — isolates quantization as the
+   C-PERSIST basin driver; ~2-4h wall.
+7. **1.41 Qwen 16f holdout** — third data point for C-VISION V_share
+   trajectory; ~30 min wall.
+8. **1.29 local codec-native benchmark slice** — biggest missing Sam
+   bridge per codex round-26 (promoted from future). ~1-2 h wall;
+   blocker is harness wire-up (prereg landed task #98 2026-04-20).
+9. **Paper figures: C-PERSIST safe-budget table + V_share ceiling
+   plot** — figure work from already-landed data; 0 benchmark hours.
 
-1. ~~**Phase 1.41 VideoMME N=30 on Qwen**~~ — **DONE 2026-04-18** at
-   aa793d3 (prereg) + findings landing. dense_acc=0.533, agreement=1.000,
-   parse_fail=0/30, peak RSS 6.67 GB, median e2e 30.5 s. Claim 8 is
-   earned on the local VideoMME dev slice. Next incremental lift:
-   16-frame or 32-frame re-run (H3 headroom; ~1 h wall-clock each) to
-   match published 32-frame Qwen 7B numbers.
-2. **Phase 1.42 v0 Gemma smoke** — minimum-viable whole-frame
-   temporal-reuse integration. ~30 s on 1 item + ≈ 1.5 h N=30 dev.
-   Unlocks claim 7 partial and de-risks the Gemma data path for the
-   novelty-pruning lane. Not a prerequisite for claim 11.
-3. **Phase 1.51R Sam novelty-pruning reproduction on Gemma + VideoMME
-   N=30** — 5 anchor arms × 5 keep-rates dev + single-shot holdout;
-   ≈ 6–8 h GPU wall time. Runs **independently** of 1.42 (per design
-   note §Recommended path). **This is the headline big-numbers
-   result.** Unlocks claim 11.
-4. **Phase 1.52R combined temporal + spatial on Gemma (VideoMME)** —
-   depends on 1.42 + 1.51R; ≈ 2–3 h GPU wall time. Tests whether
-   Sam's multiplicative composition transfers to local Gemma 4-E4B;
-   unlocks claim 10.
+### Mechanism-validation backbone (Qwen routing, NOT the headline)
 
-### Lane A — Qwen routing content (appendix-grade method evidence)
+Documented here as appendix-grade method evidence. These are the null
+/ partial results that the paper's negative-result discipline rests on:
 
-5. **Phase 1.37B halo-veto dev tranche** — **RETIRED 2026-04-17**
-   as preregistered null. Full 9/9 cells × 2 benchmarks landed
-   (commits 2ebf90d + db10e12 + 0ea69fe + 46b5d05 + 2947198).
-   TOMATO NO-LIFT (control rank-1 at cached_accuracy 0.233, all cells
-   within 1/30 MRU); MVBench NO-LIFT-NEGATIVE (halo hurts: control
-   sole rank-1 at 0.800, 7/8 cells lose 0.067–0.100). Claim 3
-   (routing-mechanism evidence) now rests on phase 1.37
-   within-block child-veto (item 7 below) as the remaining path,
-   not on halo-veto.
-6. **Phase 1.38 placement ablation** — ≈ 30 min GPU wall time;
-   strengthens claim 4 mechanism.
-7. **Phase 1.37 within-block child-veto (distinct from 1.37B)** —
-   not yet implemented; ≈ 2 h GPU wall time after code lands;
-   orthogonal path toward claim 3.
-8. **Phase 1.43 EgoSchema N=30 on Qwen** — long-form/egocentric
-   generalization; ≈ 2-3 h GPU wall time; unlocks claim 12.
+- **Phase 1.37B halo-veto dev tranche** — **RETIRED 2026-04-17** as
+  preregistered null. 9/9 cells × 2 benchmarks landed (commits
+  2ebf90d + db10e12 + 0ea69fe + 46b5d05 + 2947198). TOMATO NO-LIFT;
+  MVBench NO-LIFT-NEGATIVE (halo hurts). Claim 3 rests on phase 1.37
+  within-block child-veto as the remaining open path.
+- **Phase 1.38 placement ablation** — ≈30 min wall; strengthens claim
+  4 mechanism. Not queued.
+- **Phase 1.37 within-block child-veto** — not yet implemented;
+  ≈2 h wall after code lands; orthogonal path to claim 3.
+- **Phase 1.43 EgoSchema N=30 on Qwen** — long-form/egocentric
+  generalization; ≈2-3 h wall; claim 12 enabler.
+- **Track B sparse-execution path** — biggest single claim-5 unlock,
+  weeks of engineering. Deferable to post-submission discussion —
+  C-CEILING already bounds the measurable delta analytically.
 
-### Track B (sparse execution, blocks claim 5 measured)
+### Retired framing (do not reintroduce)
 
-9. **Track B sparse-execution path (Qwen or Gemma)** — weeks of
-   engineering; the biggest single claim unlock (claim 5 measured,
-   not ceiling-derived). Currently lane B's phase 1.52 gives a
-   cheaper path to a measured end-to-end delta because novelty-
-   pruning is sparse-at-input, not sparse-in-ViT.
+- **"Lane B big-numbers gate via claim 11"** — retired 2026-04-21
+  per codex round-26. Claim 11 is duration-conditional partial
+  reproduction, arithmetically bounded to ≤1.46× at 8f kr=0.10 per
+  C-CEILING. Stage 5 anchor comparison lands `gemma_structural` as
+  default (secondary methodology content). The paper spine is the
+  three first-class contributions (claims 13, 14, 15), not claim 11.
+- **"Phase 1.51R novelty-pruning is the headline big-numbers result"**
+  — retired. 1.51R is the EXP10 n=60 gate + Stage-5 anchor default.
+- **"1.42 gates 1.51R"** — reaffirmed NOT a dependency. 1.51R is a
+  fresh LLM-prefill code path; 1.42 is a claim-7 enabler
+  independently. 1.42 stays in the future list per priority.md.
 
-Maintained by: research automation. Source of truth for numbers:
+Maintained by: research automation. Source of truth for submission
+gates: [`priority.md`](priority.md). Source of truth for numbers:
 [`claim-matrix.md`](claim-matrix.md) and the artifact JSONs it cites.

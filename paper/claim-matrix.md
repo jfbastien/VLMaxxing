@@ -92,24 +92,79 @@ Prose must never conflate lane-A-earned with lane-B-prospective. When a claim si
 
 ## What must land before a paper submission (one-paper gate)
 
-**Required for the paper to make sense at all** (round-17):
-- Claim 6 earned (already done: TOMATO + MVBench paper-grade at N=30) — method is real on ≥ 2 benchmarks.
-- Claim 8 earned (VideoMME lane) — headline benchmark the community recognizes.
-- Claim 11 earned (Gemma novelty-pruning delivers end-to-end speedup ≥ 1.8× on one benchmark, preferably VideoMME) — THIS IS THE BIG-NUMBER claim. **1.8× is our internal preregistered reproduction target, not a number from Sam's whitepaper.** Sam's whitepaper reports 5.4× prefill and 4.2× e2e (Qwen 32f talking-head) on larger models / different regimes; our 4B-class / 8-frame regime is bounded by arithmetic ceiling to ≤1.46× at kr=0.10 aggregate (see C-CEILING below). The 1.8× gate should be read as "prove the mechanism delivers a multiplicative e2e win, big enough to matter."
-- Claim 7 partial (Gemma fidelity characterized at ≥ 1 benchmark) — architecture breadth.
-- Claim 5 at minimum one wall-clock measurement in a sparse-execution path — measured, not ceiling-derived.
+**Source-of-truth note (codex round-26 2026-04-21):** the authoritative
+venue-readiness / submission-gate doc is `paper/priority.md`. This
+section conforms to it. The round-17 "claim 11 must be earned as the
+big-number gate" framing has been **retired** — the paper spine is now
+the three first-class contributions (claims 13, 14, 15), with claim 11
+providing composition-appendix evidence conditional on EXP10 n=60.
 
-**Strongly recommended to strengthen the paper**:
-- Claim 10 (phase 1.52 combined temporal+spatial on Gemma) — multiplicative composition measured, not projected.
-- Claim 3 (halo-veto or within-block child-veto earned) — routing claim gets mechanism evidence.
-- Claim 1 oracle (already done) and claim 2 (STATIC vs STATIC+SHIFTED comparison).
-- Claim 9 (novelty-ranked dense baseline — done) — disqualifies the dumb strawman.
+**Required for the paper to make sense at all** (round-26, three
+first-class contributions structure):
+
+- **Claim 13 earned (C-CEILING).** Already satisfied: 7 independent
+  regime dimensions cross-validate the arithmetic ceiling at median
+  2.1% / worst 5.2% error. Standalone analytical contribution
+  independent of any specific SOTA arm.
+- **Claim 14 earned (C-PERSIST).** Already satisfied: 6-point speedup
+  curve (47×→150×) + 4-regime temperature matrix + 1.6× cross-arch
+  basin-onset scaling relation. Deployment-facing safe-budget
+  envelope (7B ≤ ~8k prefill, 3B ≤ ~16k prefill) is reviewer-ready.
+- **Claim 15 earned (C-VISION).** Already satisfied on dev n=30 across
+  three benchmarks + **holdout trifecta CLOSED 2026-04-21 with
+  differentiated advisory strength**: VideoMME 8f CLEAN (EXP17/18
+  session 3), MVBench 8f CLOSED-ADVISORY on thermal-calibration
+  footnote (EXP19/20 session 4), TOMATO 8f EARNED-ADVISORY on
+  favorable-drift footnote (EXP23/24 session 5). Scatter-back ceiling
+  `E2E ≤ 1/(1 − V_share × V_red)` predictive across all dev + holdout
+  cells.
+- **Claim 8 earned (VideoMME lane).** Already done at 8f / 16f / 32f
+  on Qwen 7B-4bit, with per-bucket scaling surface mapped and
+  mechanism co-saturation evidence (phase 1.57).
+- **Claim 6 earned (method on ≥ 2 temporal benchmarks).** Already done
+  (TOMATO + MVBench paper-grade N=30).
+
+**Strongly recommended to strengthen the paper** (`priority.md`
+should-do tier):
+
+- **EXP10 n=60 H_stack gate.** Gates the 1.51V × 1.51R composition
+  *appendix* claim (NOT a headline). Three promotion thresholds
+  (≥ 4 pp E2E lift AND agreement ≥ 0.75 AND acc Δ within −0.067).
+  Currently in flight 2026-04-21; partial signal at n=30 was 1.17×
+  cross-session E2E at agreement=0.63.
+- **Cross-arch C-VISION probe on Qwen.** Turns C-VISION from
+  single-arch-mechanism into mechanism-class across two architectures.
+- **1.29 local codec-native benchmark slice.** Biggest missing Sam
+  bridge; elevates the codec-through thesis from "analog
+  implementation" to "codec-native with local benchmark evidence"
+  (promoted to `priority.md` should-do #8 per codex round-26).
+- **1.51V scroll/pan regime-boundary probe (phase 1.60).** Characterizes
+  where C-VISION breaks and whether it degrades gracefully.
+- **Claim 3 routing-mechanism evidence** (within-block child-veto or
+  halo-veto earned). Currently null on halo-veto (1.37B retired).
+- **Claim 9 novelty-ranked-dense disqualifier (done).**
+
+**Claim 11 (Gemma novelty-pruning ≥ 1.8× own-axis e2e) — RETIRED as
+a headline gate.** Status: duration-conditional partial reproduction
+with preregistered null at Sam's kr; 32f cross-bucket dev aggregate
+1.389× (not 1.8×); the 4B-class / 8-frame regime is arithmetically
+bounded to ≤1.46× at kr=0.10 (C-CEILING). Stage 5 anchor comparison
+lands `gemma_structural` as a paper-default (secondary methodology
+content). The scientifically honest framing is "Gemma 4B / 8f
+constitutes a preregistered duration-conditional partial reproduction
+of Sam's 26B / 32f novelty-pruning result; the arithmetic-ceiling
+model quantifies why the absolute multiplier differs across
+regimes". 1.51V's `E2E ≤ 1/(1 − V_share × V_red)` is the local
+big-number mechanism (now claim 15).
 
 **Can defer to paper discussion / future work / appendix**:
 - Claim 12 (EgoSchema long-form)
-- Full codec signal path (phase 1.29 MV-only)
 - TempCompass as third benchmark
-- Claim 4 (placement ablation) — strengthens, not required.
+- Claim 4 (placement ablation) — strengthens, not required
+- Claim 5 measured sparse-execution delta — described as future work
+  with the ceiling upper bound already analytically characterized
+  (claim 13 C-CEILING). Keep as post-submission work; not a blocker
+  for the three-contribution submission.
 
 ## Language rules
 

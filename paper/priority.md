@@ -7,11 +7,16 @@ status: living priority doc — updated each codex round + each session recap
 # Paper Priority: must-do / should-do / future
 
 Triage of outstanding work against the paper submission bar. Updated per
-Codex round-25 (2026-04-21 session 4, then structural-framing session
-post-compaction). See `paper/framing.md` for the three major
-contributions (C-CEILING, C-PERSIST, C-VISION) these priorities map to,
-and `paper/abstract.md` + `paper/intro.md` for the paper-facing
-three-contributions narrative (landed 2026-04-21).
+Codex round-26 (2026-04-21, ledger-contradiction sweep: elevate 1.29 in
+should-do, drop "currently dev-only" phrasing from reviewer-path §,
+re-confirm 1.51V as primary local Gemma story and 1.51R as the EXP10
+n=60 gate plus Stage-5 anchor default). Priority.md is now the
+authoritative venue-readiness / submission-gate doc; claim-matrix.md
+and publishability-status.md are expected to conform to this file.
+See `paper/framing.md` for the three major contributions (C-CEILING,
+C-PERSIST, C-VISION) these priorities map to, and `paper/abstract.md`
++ `paper/intro.md` for the paper-facing three-contributions narrative
+(landed 2026-04-21).
 
 Round-25 status: must-do #1 (VideoMME 8f V-only holdout pair) CLOSED;
 should-do #2 (MVBench + TOMATO V-only holdout pairs) **three-benchmark
@@ -163,17 +168,32 @@ in its own dimension.
    C-VISION's V_share trajectory (now only measured on dev). Runtime
    ~30 min.
 
+8. **1.29 local codec-native benchmark slice.** **Promoted from future
+   per codex round-26** — this is the biggest single missing Sam bridge.
+   Sam's H.264-metadata pipeline already exists in-repo (task #114
+   `h264_metadata.py` port landed); the remaining gap is running it on
+   a 30-clip subset and measuring MV/CBF agreement vs our pixel-diff
+   baseline. Closing this elevates the paper's codec-through thesis
+   from "analog implementation" to "codec-native implementation with
+   local benchmark evidence". Runtime ~1-2 h benchmark-only; blocker is
+   harness wire-up (not a prereg — prereg landed task #98 2026-04-20).
+
+9. **Paper figures: C-PERSIST safe-deployment table + V_share-governs-
+   C-VISION-gains plot.** Codex rounds 24–26: two reviewer-friendly
+   figures would materially raise defensibility. **(a)** C-PERSIST
+   safe-budget table: 7B / 3B × 8f → 40f, rows are frame counts,
+   columns are {follow-up speedup ×, Δacc, basin-attractor tally,
+   safe-deploy ✓/✗}, derived from claim-matrix row 14 data. **(b)**
+   V_share × V_red → predicted-E2E surface plot with the 7 regime
+   dimensions plotted against the ceiling curve (dev 4 cells + holdout
+   3 cells), validating the ceiling visually. Both are figure work
+   from already-landed experimental data; no new runs. Runtime 0
+   benchmark-hours; paper-draft work only.
+
 ## Future / documented (scope for subsequent draft)
 
 Capture ideas as we find them; park until paper draft is submitted OR
 a must-do slot opens.
-
-- **1.29 local codec-native benchmark slice.** Sam's H.264-metadata
-  pipeline exists in-repo (task #114 h264_metadata.py port landed);
-  the remaining gap is running it on a 30-clip subset and measuring
-  MV/CBF vs pixel-diff agreement. Biggest bridge to Sam's
-  "codec-through" thesis that we have not yet realized locally.
-  Runtime ~1-2h; requires harness wire-up.
 
 - **1.30 streaming-protocol rewrite around Sam's actual protocol.**
   Current prereg frames 1.30 around abstract infrastructure;
@@ -227,7 +247,11 @@ edits:
 
 1. **Abstract → headline cells.** Reviewer looks for a single-table
    summary. C-VISION 1.08–1.24× × three benchmarks is the top cell;
-   must cite holdout V-only when EXP17/18 land. Currently dev-only.
+   **holdout V-only trifecta CLOSED 2026-04-21** with differentiated
+   advisory strength (VideoMME 8f CLEAN, MVBench 8f advisory on
+   thermal-calibration footnote, TOMATO 8f advisory on favorable-drift
+   footnote). Dev-only phrasing should no longer survive anywhere in
+   the manuscript for the three-benchmark cells.
 2. **Limitations.** Reviewer looks for the six-point limitations list
    (Reviewer-Facing Limitations in `framing.md`). Round-24 added §7
    on attention-propagation-drift discipline.
