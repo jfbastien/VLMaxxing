@@ -61,8 +61,12 @@ placement in the paper narrative:
    vision-axis analog `1/(1 − V_share × V_red)`.
 
 2. **C-PERSIST (claim 14): Cross-architectural persistent-KV
-   safe-deployment envelope.** 7B Qwen 2.5-VL-4bit clean at ≤16f / ≤6.5k
-   prefill tokens (Δacc=0); 3B clean at ≤36f / ≤14.5k prefill
+   safe-deployment envelope.** All persistent-KV claims in this paper
+   are **after-ingest / follow-up-query** numbers: the user pays the
+   full first-query prefill once, subsequent questions on the *same
+   video* reuse the KV and return in sub-second time. These are not
+   "any-fresh-video" latencies. 7B Qwen 2.5-VL-4bit clean at ≤16f /
+   ≤6.5k prefill tokens (Δacc=0); 3B clean at ≤36f / ≤14.5k prefill
    (Δacc=−0.19 plateau). Basin-onset depth scales ~1.6× with parameter
    count; basin geometry (non-letter attractor emergence) is
    cross-architectural; sampler-side intervention is
