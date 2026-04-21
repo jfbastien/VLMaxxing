@@ -336,15 +336,25 @@ authoritative in the per-phase notes under
   notes: originally filed as "phase 1.37 Planner 2.1"; renamed 2026-04-17 after Sam flagged that "child-veto" was the name of a distinct mechanism (within-block subtoken guard) and should not be reused for the neighbor-halo variant. Closed 2026-04-17 as preregistered null: TOMATO control rank-1 at cached_accuracy 0.233 with all cells within 1/30 MRU; MVBench control sole rank-1 at 0.800 with 7/8 halo cells losing 0.067-0.100. Halo moves only the agreement knob on TOMATO while draining fresh-frame budget, and actively hurts accuracy on MVBench.
 
 - phase_id: 1.41
-  status: proposed
-  authoritative_note: research/experiments/2026/2026-04-16-phase-1_41-videomme-lane.md
+  status: EARNED 2026-04-18 (8f); strengthened 2026-04-19 (16f, 32f) — Qwen 2.5-VL-7B-Instruct-4bit dense on `videomme_dev_v1.toml` n=30, parse_failures=0, agreement=1.000 at all three frame counts. Claim 8 (VideoMME breadth gate) satisfied; paper-grade without caveats for the local-evaluation scope. Phase 1.57 feature-drift mechanism landed 2026-04-19 (adjacent-frame ViT cos lower-bound proxy): H-drift-compounds REJECTED, H-saturation SUPPORTED at 16f co-saturation on long bucket. 32f adds prompt-length 2× and latency 2× for zero aggregate acc lift over 16f — NOT Pareto-efficient at this model/benchmark.
+  authoritative_note: research/experiments/2026/2026-04-16-phase-1_41-videomme-lane.md + research/experiments/2026/2026-04-19-phase-1_41-qwen-videomme-16f-prereg.md + research/experiments/2026/2026-04-19-phase-1_41-qwen-videomme-32f-long-prereg.md + research/experiments/2026/2026-04-19-phase-1_57-feature-drift-mechanism-prereg.md
   authoritative_artifacts:
     - scripts/build_videomme_manifest.py
-  current_best_policy: n/a
+    - scripts/fetch_videomme_subset.py
+    - research/benchmark_manifests/videomme_dev_v1.toml
+    - research/benchmark_manifests/videomme_holdout_v1.toml
+    - research/experiments/2026/artifacts/phase1_41_qwen_videomme_8f/ (dense baseline)
+    - research/experiments/2026/artifacts/phase1_41_qwen_videomme_16f/ (16f follow-up)
+    - research/experiments/2026/artifacts/phase1_41_qwen_videomme_32f_long/ (32f long-bucket third data point)
+    - research/experiments/2026/artifacts/phase1_57_feature_drift/ (STATIC-class drift mechanism; adjacent-frame ViT cos)
+    - research/experiments/2026/2026-04-19-phase-1_41-qwen-videomme-16f-findings.md
+    - research/experiments/2026/2026-04-19-phase-1_41-qwen-videomme-32f-long-findings.md
+    - research/experiments/2026/2026-04-19-phase-1_57-feature-drift-findings.md
+  current_best_policy: Qwen 2.5-VL-7B-4bit dense at 16f is the paper-reporting default on VideoMME dev (best per-bucket accuracy at Pareto-efficient frame count: short 0.800 / medium 0.700 / long 0.100, agg 0.567). 32f is NOT recommended for paper reporting (flat aggregate, 2× latency).
   supersedes: []
-  paper_relevance: primary (VideoMME breadth gate, claim #8)
-  prereg_outcome: (pending; runs after 1.37 dev; VideoMME loader + manifest builder landed)
-  notes: VideoMME videos are hosted on Hugging Face at `lmms-lab/Video-MME` as 20 chunked zip archives (~101 GB full corpus); paper protocol only needs 57 unique videoIDs (dev+holdout manifests, one overlap). Use `scripts/fetch_videomme_subset.py` to walk chunks one-at-a-time and extract only wanted videoIDs (peak disk ~5 GB staging + ~3-15 GB extracted subset). See `docs/videomme-download-handoff.md` for environment gotchas (HF xet backend must be disabled; SOCKS proxy env vars must be cleared).
+  paper_relevance: primary (claim #8 VideoMME breadth gate; also feeds claim #15 C-VISION frame-count sweep denominator via V_share measurements at 8f/16f/32f)
+  prereg_outcome: EARNED at 8f (2026-04-18); STRENGTHENED at 16f+32f (2026-04-19). Three-frame-count per-bucket surface mapped. Mechanism (1.57 feature-drift as lower-bound proxy): drift rises sub-linearly 8f→32f, co-saturates with accuracy at 16f on long bucket — drift is a co-indicator of capacity plateau, not the binding constraint.
+  notes: VideoMME videos hosted on HF `lmms-lab/Video-MME` as 20 chunked zip archives (~101 GB full corpus); paper protocol uses 57 unique videoIDs (dev+holdout manifests, one overlap). `scripts/fetch_videomme_subset.py` walks chunks one-at-a-time (peak disk ~5 GB staging + ~3-15 GB extracted subset). See `docs/videomme-download-handoff.md` for env gotchas (HF xet backend must be disabled; SOCKS proxy env vars must be cleared). Phase 1.58 (bf16 quantization ablation) is the remaining open mechanism question for 32f plateau — deferred pending 1.51V primary axis.
 
 - phase_id: 1.42
   status: proposed
