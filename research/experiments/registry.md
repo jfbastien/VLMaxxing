@@ -405,8 +405,8 @@ authoritative in the per-phase notes under
     - research/experiments/2026/2026-04-18-phase-1_51R-pilot-findings.md (arithmetic-ceiling derivation)
   current_best_policy: n/a — own-axis null confirmed at n=30 across 3 anchor arms at kr=0.50 on VideoMME dev (Stage 5 2026-04-18); ceiling binds anchor-invariantly. Composition with 1.51V at EXP10 cell (anchor=none kr=0.3) pending n=60 promotion gate.
   supersedes: []
-  paper_relevance: primary (claim #11 Gemma novelty-pruning — publishable preregistered null with mechanistic explanation; composition with 1.51V pending one targeted follow-up before paper-table inclusion)
-  prereg_outcome: NULL on own axis (Stage 5 n=30 cross-arm synthesis 2026-04-18 + post-1.51V composition closure 2026-04-21); EXP10 cell n=60 follow-up OPEN
+  paper_relevance: secondary (demoted from primary per codex round-25 and paper/priority.md must-do #5: 1.51V is the primary local Gemma story, not 1.51R; 1.51R contributes (i) the EXP10 n=60 H_stack composition gate on VideoMME holdout and (ii) the Stage 5 gemma_structural anchor default as secondary methodology content; publishable preregistered null with mechanistic explanation; composition with 1.51V pending EXP10 n=60 outcome)
+  prereg_outcome: NULL on own axis (Stage 5 n=30 cross-arm synthesis 2026-04-18 + post-1.51V composition closure 2026-04-21); EXP10 cell n=60 follow-up IN FLIGHT 2026-04-21 (task #152)
   notes: phase is tracked as the "1.51R" fresh driver across other docs (R = Reproduction of Sam's novelty-pruning, fresh code path that does not consume `_mix_gemma_features`). Preregistered 5 literature-grounded anchor-preservation arms (FastV, FasterVLM/HiPrune, Nüwa pillar, VLM-Pruner max-min diversity, IVC-Prune-spirit Gemma-structural); keep-rate grid {0.3..0.7}; must run on Gemma (not Qwen) because Qwen's M-RoPE-V ties token index to 2D grid position and breaks under token drop. cls_attention_proxy arm is explicitly excluded from winner promotion (see PROMOTABLE_ARMS in novelty_pruning.py). Pilot reveals vision-tower pruning (NEW phase 1.51V, task #87) is the only mechanism that could reach Sam's ≥1.8× end-to-end on E4B; queued as follow-up.
 
 - phase_id: 1.51V
@@ -848,6 +848,17 @@ authoritative in the per-phase notes under
   prereg_outcome: n/a (research note, not a prereg)
   runtime_estimate: n/a on M3 Air (hardware-insufficient; cloud/larger-Mac microbench ~few hundred training steps × 2 variants if resources materialize)
   notes: Articulates whether and how the codec-through mechanism could extend to training (not just inference). Scope: cache-substitute forward + gradient handling at STATIC tokens. Decision: NOT preregistering on M3 Air; paper § Future Work now names this direction with a concrete reference + cites Phase 1.57 as the gating measurement.
+
+- phase_id: 1.60
+  status: proposed (preregistered 2026-04-21; queued after EXP10 n=60 + cross-arch Qwen C-VISION probe)
+  authoritative_note: research/experiments/2026/2026-04-21-phase-1_60-scroll-pan-subset-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: n/a (regime-boundary probe, not a policy selection)
+  supersedes: []
+  paper_relevance: secondary (closes the codex round-24/25 "where does C-VISION break" gap; graceful-degradation branch is paper-body-bound; broken-deployment branch gates scroll-detection bail-out policy 1.60c)
+  prereg_outcome: (pending; four hypotheses — H_vision_scroll_breaks, H_vision_scroll_v_red_drops, H_vision_scroll_acc_holds, H_vision_scroll_ceiling_holds — with three promotion branches: CLEAN FAILURE CLAIM / BROKEN DEPLOYMENT CLAIM / SHIFTED-DOES-NOT-BREAK)
+  runtime_estimate: ~70 min point (~90 min upper bound): 20 items × 8 f × 2 arms, Gemma 4-E4B-4bit, medium-duration content to avoid long-bucket blowout
+  notes: Subset construction: 20 items stratified 7 light / 7 medium / 6 heavy scroll intensity, drawn from VideoMME (existing pixel-diff statistic), augmented with synthesized constant-velocity-crop clips if natural items are insufficient. Reuses scripts/run_novelty_pruning_gemma.py with $VT_FLAGS (L=2, kr_V=0.50); no driver changes. Thermal gate same as sessions 3–5: |decode Δ| < max(0.02 × decode_ms, 100 ms). Future follow-ups: 1.60b (egomotion/FPV subset), 1.60c (scroll-detection bail-out policy if BROKEN DEPLOYMENT branch earns), 1.60d (cross-architecture scroll/pan on Qwen).
 ```
 
 ## Maintenance rules
