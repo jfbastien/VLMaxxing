@@ -7,8 +7,11 @@ status: living priority doc — updated each codex round + each session recap
 # Paper Priority: must-do / should-do / future
 
 Triage of outstanding work against the paper submission bar. Updated per
-Codex round-25 (2026-04-21 session 4). See `paper/framing.md` for the three major
-contributions (C-CEILING, C-PERSIST, C-VISION) these priorities map to.
+Codex round-25 (2026-04-21 session 4, then structural-framing session
+post-compaction). See `paper/framing.md` for the three major
+contributions (C-CEILING, C-PERSIST, C-VISION) these priorities map to,
+and `paper/abstract.md` + `paper/intro.md` for the paper-facing
+three-contributions narrative (landed 2026-04-21).
 
 Round-25 status: must-do #1 (VideoMME 8f V-only holdout pair) CLOSED;
 should-do #2 (MVBench + TOMATO V-only holdout pairs) **three-benchmark
@@ -191,11 +194,18 @@ a must-do slot opens.
 - **1.52R composition (temporal × spatial).** Depends on 1.42 landing
   AND 1.51R re-run on V-patched.
 
-- **Scroll/pan subset as deliberate local phase.** Codex round-24:
-  scroll/pan is a failure mode for token-merging; a small
-  synthesised-scroll-pan subset (10-20 clips) would let us claim
-  where C-VISION breaks. Design note only for now; deferred to
-  `paper/priority-future-phases.md` until primary C-VISION cells land.
+- **Phase 1.60 scroll/pan subset** (PREREG LANDED 2026-04-21).
+  Codex rounds 24–25: scroll/pan is a failure mode for token-merging;
+  a 20-item subset probes where C-VISION breaks. Preregistered in
+  `research/experiments/2026/2026-04-21-phase-1_60-scroll-pan-subset-prereg.md`
+  with four hypotheses (H_vision_scroll_breaks, _v_red_drops,
+  _acc_holds, _ceiling_holds) and three promotion-rule branches
+  (CLEAN FAILURE CLAIM / BROKEN DEPLOYMENT CLAIM /
+  SHIFTED-DOES-NOT-BREAK). Runtime ~70 min (upper bound ~90 min).
+  Queued after EXP10 n=60 lands and (optionally) after the cross-arch
+  C-VISION Qwen probe (should-do #3). Graceful-degradation branch is
+  paper-body-bound; broken-deployment branch gates a scroll-detection
+  bail-out policy (1.60c follow-up).
 
 - **1.59 training microbench scaffold.** Training-side throughput
   claim has been entirely projection-based. Round-24 suggests a
