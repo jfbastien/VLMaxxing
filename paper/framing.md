@@ -17,11 +17,12 @@ It is NOT the place for raw experimental detail. Evidence lives in:
 - [research/falsified-hypotheses.md](../research/falsified-hypotheses.md) —
   what the evidence has ruled out
 
-Last material update: 2026-04-19 (Sam-provenance correction for
-persistent-KV → 1.55A reproduction lane; 1.57 rescoped feature-drift-
-first per Sam research-queue 2026-04-18; VideoMME 16f non-monotonic
-bucket finding; 32f long-bucket probe landed — plateau at 0.111,
-zero-flips paired with 16f, drift-compounds hypothesis not supported).
+Last material update: 2026-04-21 (1.51V vision-tower pruning expansion
+12/12 dev cells landed; 32f frame-scaling probe H_32f_vshare EARNED
+but H_32f_e2e REJECTED on thermal grounds; holdout H_stack partial
+replication at 1.064× ceiling-matched; C-VISION promoted to claim 15
+with V_share-governs ceiling validation across 5 regimes; Safe
+Deployment Regime and V_share-Governs tables added to claim-matrix).
 
 ## Candidate Paper Slot (target, not current claim)
 
@@ -44,6 +45,64 @@ Track B + VideoMME still gate the full paper.
 For the per-claim breakdown, see
 [`paper/claim-matrix.md`](claim-matrix.md) and
 [docs/literature-map-2026-04-16.md § Current evidence level (2026-04-16)](../docs/literature-map-2026-04-16.md).
+
+## Three Major Contributions (2026-04-21 status)
+
+Beyond the Lane A routing story (claims 1/2/6/9 earned on Qwen routing),
+three major analytical contributions have landed and warrant prominent
+placement in the paper narrative:
+
+1. **C-CEILING (claim 13): Arithmetic ceiling model for token-pruning
+   wall-clock speedup.** Predicts E2E speedup within ≤5.2% across 7
+   regime dimensions on Gemma 4-E4B-4bit (8/32 frame counts × benchmark
+   × keep-rate × anchor arm). Formula: `e2e ≤ 1/(fixed_frac + (1 −
+   fixed_frac)/s)`. Standalone analytical contribution; validated in the
+   1.51R reproduction lane and further extended by 1.51V to a
+   vision-axis analog `1/(1 − V_share × V_red)`.
+
+2. **C-PERSIST (claim 14): Cross-architectural persistent-KV
+   safe-deployment envelope.** 7B Qwen 2.5-VL-4bit clean at ≤16f / ≤6.5k
+   prefill tokens (Δacc=0); 3B clean at ≤36f / ≤14.5k prefill
+   (Δacc=−0.19 plateau). Basin-onset depth scales ~1.6× with parameter
+   count; basin geometry (non-letter attractor emergence) is
+   cross-architectural; sampler-side intervention is
+   architecture-conditional (insufficient at 7B basin at 20f AND 40f;
+   partial-only at 3B basin at 40f — disperses to pre-basin plateau,
+   not to baseline). Safe-Deployment Regime table in
+   [`paper/claim-matrix.md`](claim-matrix.md) provides paper-grade
+   practitioner guidance; safety-boundary result in its own right.
+
+3. **C-VISION (claim 15): Vision-tower pruning transfers at L=2
+   kr_V=0.50 with benchmark-invariant V_red on Gemma 4-E4B-4bit.**
+   V_red=39–43% across VideoMME 8f/16f, MVBench 8f, TOMATO 8f (n=30
+   each, thermally paired). Scatter-back ceiling `1/(1 − V_share ×
+   V_red)` predictive within 2.7pp on all 4 vision-axis cells + 1
+   LLM-decode-axis cell (holdout H_stack 1.064× matches observed to
+   0.1pp — fifth ceiling regime). **Dev n=30 headlines**: TOMATO
+   **1.24×**, MVBench **1.21×**, VideoMME 1.08× (8f) / 1.12× (16f).
+   **Dev-only caveat:** holdout V-only unpatched-vs-patched pair NOT YET
+   RUN (EXP17/18 queueable at ~40 min). V+novelty stacking replicates
+   on holdout at 1.064× (ceiling-matched partial confirmation;
+   regime-conditional on V_share).
+
+These three claims align on a common analytical frame: **share ×
+reduction → `1/(1 − share × reduction)` ceiling**, with
+architecture-specific and regime-specific bounds characterized. The
+paper presents these as three independent instantiations of a unified
+efficiency-ceiling theory: C-CEILING (LLM-generate axis), C-VISION
+(vision-tower axis), and the LLM-side analog for H_stack. C-PERSIST
+adds the orthogonal fidelity-floor axis (where the ceiling falls apart
+entirely under cache reuse).
+
+**Venue targeting implication:** the combination of C-PERSIST (safety
+boundary, cross-architectural) + C-VISION (three-benchmark 1.20–1.24×
+E2E dev) + C-CEILING (analytical framework) is paper-grade for an
+efficiency-focused venue (NeurIPS / ICML efficiency workshop, ICLR
+Tiny Papers, or a systems venue like MLSys). Main-track readiness
+(NeurIPS / ICML / CVPR) still gated on (a) holdout V-only
+unpatched-vs-patched pair, (b) cross-architecture 1.51V transfer
+(Qwen 2.5-VL at L=? kr=?), (c) measured end-to-end delta in a sparse
+execution path (claim 5).
 
 ## Current Narrow Claim Boundary
 
