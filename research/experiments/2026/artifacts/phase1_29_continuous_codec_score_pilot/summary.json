@@ -1,0 +1,136 @@
+{
+  "pilot_items": [
+    "videomme:short:037-2",
+    "videomme:short:210-2",
+    "videomme:short:282-2",
+    "videomme:short:120-2",
+    "videomme:short:158-3"
+  ],
+  "static_t": 0.09514552354812622,
+  "shifted_t": 0.11063218116760254,
+  "per_item": [
+    {
+      "item_id": "videomme:short:037-2",
+      "total_frames": 3116,
+      "extract_s": 23.84,
+      "pix_share": {
+        "STATIC": 0.8375,
+        "SHIFTED": 0.011428571428571429,
+        "NOVEL": 0.15107142857142858
+      },
+      "codec_share": {
+        "STATIC": 1.0,
+        "SHIFTED": 0.0,
+        "NOVEL": 0.0
+      },
+      "delta": {
+        "STATIC": 0.16249999999999998,
+        "SHIFTED": -0.011428571428571429,
+        "NOVEL": -0.15107142857142858
+      }
+    },
+    {
+      "item_id": "videomme:short:210-2",
+      "total_frames": 2669,
+      "extract_s": 21.3,
+      "pix_share": {
+        "STATIC": 0.4,
+        "SHIFTED": 0.0032142857142857142,
+        "NOVEL": 0.5967857142857143
+      },
+      "codec_share": {
+        "STATIC": 0.534984126984127,
+        "SHIFTED": 0.044444444444444446,
+        "NOVEL": 0.4205714285714286
+      },
+      "delta": {
+        "STATIC": 0.13498412698412698,
+        "SHIFTED": 0.041230158730158735,
+        "NOVEL": -0.17621428571428566
+      }
+    },
+    {
+      "item_id": "videomme:short:282-2",
+      "total_frames": 2438,
+      "extract_s": 21.7,
+      "pix_share": {
+        "STATIC": 0.4421428571428571,
+        "SHIFTED": 0.11678571428571428,
+        "NOVEL": 0.44107142857142856
+      },
+      "codec_share": {
+        "STATIC": 0.2763174603174603,
+        "SHIFTED": 0.03453968253968254,
+        "NOVEL": 0.6891428571428572
+      },
+      "delta": {
+        "STATIC": -0.16582539682539682,
+        "SHIFTED": -0.08224603174603175,
+        "NOVEL": 0.2480714285714286
+      }
+    },
+    {
+      "item_id": "videomme:short:120-2",
+      "total_frames": 1541,
+      "extract_s": 13.36,
+      "pix_share": {
+        "STATIC": 0.40214285714285714,
+        "SHIFTED": 0.05964285714285714,
+        "NOVEL": 0.5382142857142858
+      },
+      "codec_share": {
+        "STATIC": 0.20318936877076413,
+        "SHIFTED": 0.025116279069767444,
+        "NOVEL": 0.7716943521594685
+      },
+      "delta": {
+        "STATIC": -0.198953488372093,
+        "SHIFTED": -0.0345265780730897,
+        "NOVEL": 0.2334800664451827
+      }
+    },
+    {
+      "item_id": "videomme:short:158-3",
+      "total_frames": 1986,
+      "extract_s": 16.37,
+      "pix_share": {
+        "STATIC": 0.40035714285714286,
+        "SHIFTED": 0.018571428571428572,
+        "NOVEL": 0.5810714285714286
+      },
+      "codec_share": {
+        "STATIC": 0.1551746031746032,
+        "SHIFTED": 0.025396825396825397,
+        "NOVEL": 0.8194285714285714
+      },
+      "delta": {
+        "STATIC": -0.24518253968253967,
+        "SHIFTED": 0.006825396825396825,
+        "NOVEL": 0.23835714285714282
+      }
+    }
+  ],
+  "aggregate": {
+    "n_items": 5,
+    "pix_mean": {
+      "STATIC": 0.49642857142857133,
+      "SHIFTED": 0.041928571428571426,
+      "NOVEL": 0.46164285714285713
+    },
+    "codec_mean": {
+      "STATIC": 0.43393311184939093,
+      "SHIFTED": 0.025899446290143967,
+      "NOVEL": 0.5401674418604652
+    },
+    "delta_mean": {
+      "STATIC": -0.0624954595791804,
+      "SHIFTED": -0.01602912513842746,
+      "NOVEL": 0.07852458471760804
+    },
+    "max_abs_delta": 0.07852458471760804,
+    "spearman_static": {
+      "rho": 0.39999999999999997,
+      "n": 5
+    }
+  }
+}
