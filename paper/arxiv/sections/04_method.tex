@@ -1,0 +1,96 @@
+\section{Method}
+
+\subsection{Problem Setting}
+
+We study three forms of temporal reuse on frozen video-VLM stacks:
+
+\begin{itemize}[leftmargin=1.5em]
+\item \textbf{First-pass visual pruning:} skip or reduce vision-tower work
+before the rest of the model pays for it.
+\item \textbf{After-ingest follow-up reuse:} keep the expensive prefix from the
+first query and ask the next question against the same video.
+\item \textbf{Routing under a fixed dense backend:} substitute cached visual
+state to test whether answer quality survives, even when the benchmark path has
+not yet been rewritten into a sparse wall-clock implementation.
+\end{itemize}
+
+These are related, but they are not interchangeable. They are kept
+analytically separate because they measure different kinds of reuse.
+
+\subsection{Temporal Planner}
+
+For adjacent frames, the routing path computes a per-block statistic on the RGB
+difference plane. The implementation supports mean difference, max-absolute
+difference, changed-pixel fraction, and top-$k$ mean over the block. In the
+best current clean-tree Qwen policy, the statistic is \texttt{max\_abs}. Fixed
+thresholds partition blocks into \emph{static}, \emph{shifted}, and
+\emph{novel} regions. These names are historical planner labels, not literal
+codec semantics: today they mean low, medium, and high pixel-domain change.
+
+The block geometry is derived from the model's vision configuration rather than
+hard-coded. On Qwen2.5-VL, planner decisions line up with the merged-token
+spatial grid so cached features can be substituted back into the dense path at
+the same geometry the benchmark runner already understands.
+
+\subsection{Bounded Staleness}
+
+Reuse without age control drifts. The planner therefore carries a
+bounded-staleness counter: even a block that continues to look reusable must be
+refreshed after its age exceeds a configured limit. The clean-tree policy used
+in the paper sets that limit to four frame steps. That choice is not cosmetic.
+It is the main reason the planner survives TOMATO, where temporally concentrated
+evidence punishes policies that keep trusting a stale region simply because the
+local pixel difference remains small.
+
+We summarize routing budget by converting block-level reuse into an effective
+fresh-frame count,
+\[
+f_{\mathrm{eff}} = 1 + (N - 1)(1 - r_{\mathrm{reuse}}),
+\]
+where $r_{\mathrm{reuse}}$ is the mean active-region reuse ratio. This gives
+the Qwen routing results a common x-axis with dense-$N$ baselines: how much
+fresh visual budget the policy effectively spent.
+
+\subsection{Vision-Tower Pruning and Persistent-KV}
+
+The other two mechanisms operate at different points in the stack.
+
+The Gemma path patches the vision tower after an internal layer, keeps only a
+fraction of the tokens, and scatters the result back so downstream geometry is
+unchanged. The resulting first-pass speedup is constrained by how much of total
+wall-clock the vision tower owns. That is why the paper reports the
+scatter-back ceiling
+\[
+\mathrm{E2E} \le \frac{1}{1 - V_{\mathrm{share}} V_{\mathrm{red}}},
+\]
+where $V_{\mathrm{share}}$ is the dense vision share and $V_{\mathrm{red}}$ is
+the observed reduction in vision time.
+
+The persistent-KV path answers a different question. Here the user has already
+paid for the first query on a video. The next question about that same video
+reuses the prompt cache and only appends a short textual suffix. The result can
+be dramatically faster, but it is explicitly an \emph{after-ingest} claim. It
+is not a claim about faster first-pass understanding of fresh videos.
+
+\subsection{What Is Actually Skipped}
+
+The paper keeps semantic substitution and wall-clock skipping separate. The
+Qwen routing runner can replay or substitute cached features to test whether the
+answer survives. That is enough to study the quality--compute frontier. It is
+not enough to claim an end-to-end speedup until the backend itself skips timed
+work. The Gemma and persistent-KV lanes do change measured wall-clock and
+therefore support speedup claims. The Qwen routing lane does not yet. That
+choice is deliberate.
+
+\begin{sectiontodo}{Add the overview figure and final algorithm box}
+The prose now matches the paper's current scope, but the final manuscript still
+needs a compact visual that makes three distinctions obvious: first-pass
+pruning, after-ingest prompt reuse, and Qwen routing as mechanism validation
+rather than measured sparse execution.
+
+\textcolor{todoBorder}{Source pointers: \path{src/codec_through/temporal.py},
+\path{src/codec_through/novelty_pruning.py},
+\path{src/codec_through/pruned_vision_tower.py},
+\path{scripts/run_kv_cache_session.py},
+\path{paper/claim-matrix.md}.}
+\end{sectiontodo}

@@ -1,4 +1,6 @@
-.PHONY: fmt lint test typecheck check
+.PHONY: fmt lint test typecheck check paper-doctor paper-sync paper-build paper-bundle
+
+PAPER_PYTHON ?= ./.venv/bin/python
 
 fmt:
 	uv run ruff format .
@@ -17,3 +19,15 @@ check:
 	uv run ruff check .
 	uv run mypy src tests
 	uv run pytest
+
+paper-doctor:
+	$(PAPER_PYTHON) paper/arxiv/scripts/doctor.py
+
+paper-sync:
+	$(PAPER_PYTHON) paper/arxiv/scripts/sync_sources.py
+
+paper-build:
+	$(PAPER_PYTHON) paper/arxiv/scripts/build.py
+
+paper-bundle:
+	$(PAPER_PYTHON) paper/arxiv/scripts/build.py --skip-pdf --bundle

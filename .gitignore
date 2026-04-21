@@ -21,4 +21,7 @@ data/
 results/
 runs/
 tmp/
+.tmp/
 research/cache/
+paper/arxiv/build/
+paper/arxiv/dist/

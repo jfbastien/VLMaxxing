@@ -34,3 +34,33 @@ jobs:
 
       - name: Pytest
         run: uv run pytest
+
+  paper:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: ".python-version"
+
+      - name: Sync dependencies
+        run: uv sync --group dev --group research --group benchmark --group seed
+
+      - name: Generate manuscript assets
+        run: uv run --group seed python paper/arxiv/scripts/sync_sources.py
+
+      - name: Build paper PDF
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: main.tex
+          working_directory: paper/arxiv
+          args: -pdf -interaction=nonstopmode -halt-on-error -file-line-error -outdir=build
+
+      - name: Upload paper PDF
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-pdf
+          path: paper/arxiv/build/main.pdf

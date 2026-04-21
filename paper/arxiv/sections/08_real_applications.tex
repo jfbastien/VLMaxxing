@@ -1,0 +1,83 @@
+\section{Streaming and Real Applications}
+
+The most dramatic gains appear when the model keeps revisiting nearly the same
+visual state. Deployment-scale evaluations on a larger Gemma 4 26B stack
+report 0.8\,s median same-video follow-up latency at 10--18$\times$ speedup,
+paired Streaming VideoMME results with 13$\times$ fewer ViT calls and
+\mbox{$\sim$50$\times$} less dominant-pipeline compute, and selected
+real-video regimes with 4.2--4.5$\times$ end-to-end speedups. A separate
+large-$N$ exactness result shows byte-identical Qwen outputs across 1,937
+sparse benchmark items when unchanged regions are reused instead of being
+re-encoded. Live-camera measurements then show the same regime dependence in
+the wild: ViT savings range from 5$\times$ to 300$\times$ with scene activity,
+and the post-fix RTSP demo still reduces ViT calls by 14.3$\times$ over an
+active 60\,s window.
+
+The smaller-$N$ UI and live-demo studies matter because they expose the same
+regime in more legible form. On current screen-recording case studies,
+piecewise cache-shift preserves 75--88\% fresh-oracle judged answers while
+reusing 87--99\% of the cache. The live RTSP demo v2 shows the same principle
+on an active scene rather than an idle one. Over a 60\,s stovetop-cleaning
+window, the pipeline decoded 701 frames, marked 34\% as novel, issued only 49
+ViT calls, and therefore achieved 14.3$\times$ fewer ViT invocations than a
+dense per-frame path. Across 11 queries, the output trajectory tracked the
+physical sequence from pan pickup to cloth cleaning to spray-bottle use and
+finally moving a pot back onto the stove; this is qualitative evidence and it
+is labeled that way.
+
+\begin{table}[H]
+\centering
+\caption{Deployment-scale and case-study evidence for the streaming regime.
+These rows are intentionally labeled by evidence class rather than folded into
+the local benchmark table.}
+\label{tab:real-apps}
+\footnotesize
+\renewcommand{\arraystretch}{1.08}
+\begin{tabularx}{\linewidth}{@{}
+  >{\raggedright\arraybackslash}p{0.20\linewidth}
+  >{\raggedright\arraybackslash}p{0.19\linewidth}
+  >{\raggedright\arraybackslash}X
+  >{\raggedright\arraybackslash}p{0.16\linewidth}
+@{}}
+\toprule
+Setting & Work avoided & Outcome & Evidence class \\
+\midrule
+Streaming VideoMME (Gemma 26B) & 13$\times$ fewer ViT calls; $\sim$50$\times$ less dominant-pipeline compute & paired N=60 results: 58.3/60.0/61.7\% (stream/token-prune/dense), all within the reported $\pm$12 pp 95\% CI & deployment-scale stream benchmark \\
+Gemma 26B same-video follow-up & 10--18$\times$ faster than cold prefill & 0.8\,s median follow-up; no accuracy loss & deployment-scale benchmark \\
+Exact Qwen caching benchmark & reusing unchanged regions instead of re-encoding them & byte-identical outputs on 1,937 sparse benchmark items & large-$N$ exactness \\
+Sectional scroll case studies & 87--99\% cache reuse & 75--88\% judged agreement with fresh oracle & small-$N$ UI case study \\
+Live RTSP demo v2 & 14.3$\times$ fewer ViT calls on an active 60\,s window & 11-query scene trajectory consistent with the physical sequence (qualitative) & live-demo case study \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \IfFileExists{generated/figures/streaming_snapshot_contact_sheet.png}{
+    \includegraphics[width=\linewidth]{generated/figures/streaming_snapshot_contact_sheet.png}
+  }{
+    \fbox{\parbox{0.9\linewidth}{Run \texttt{make paper-sync} to generate the streaming/UI contact sheet or a placeholder.}}
+  }
+  \caption{Representative imagery from the post-fix RTSP demo. These snapshots
+  are qualitative only; they show that the same anti-recomputation loop remains
+  coherent once the system is live.}
+  \label{fig:streaming-contact-sheet}
+\end{figure}
+
+The current streaming evidence does not yet close a full systems-reviewer
+checklist. The paper still lacks the screenshot-polling baseline, broader UI
+diversity, and a dedicated event-detection benchmark. What it already does show
+is deployment relevance: the same anti-recomputation principle continues to
+matter when the input is an actual stream rather than a frozen evaluation
+slice.
+
+\begin{sectiontodo}{Keep the Sam lane sharp and reviewer-safe}
+The next useful additions are a screenshot-polling baseline, a wider UI set,
+and one concrete failure case where stale-cache decisions break trust. Keep the
+section vivid, but keep it tied to the same anti-recomputation thesis instead
+of turning it into a generic demo gallery.
+
+\textcolor{todoBorder}{Source pointers: \path{codec-through-sam/paper/publishability-status.md},
+\path{codec-through-sam/live_demo_v2_writeup.md},
+\path{codec-through-sam/diagrams/live_demo_v2/}.}
+\end{sectiontodo}

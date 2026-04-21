@@ -8,7 +8,7 @@ Paper-facing drafts (what a reviewer will actually read):
   abstract (C-CEILING / C-PERSIST / C-VISION first-class;
   Lane A as mechanism backbone; Sam as deployment-scale evidence)
 - [`paper/intro.md`](intro.md) — paper-facing introduction with the
-  same structure, per Codex round-25 structural request
+  same structure
 
 It is NOT the place for raw experimental detail. Evidence lives in:
 
@@ -26,30 +26,52 @@ It is NOT the place for raw experimental detail. Evidence lives in:
   what the evidence has ruled out
 
 Last material update: 2026-04-21 (1.51V vision-tower pruning expansion
-12/12 dev cells landed; 32f frame-scaling probe H_32f_vshare EARNED
-but H_32f_e2e REJECTED on thermal grounds; holdout H_stack partial
+12/12 dev cells landed; VideoMME and MVBench 8f holdout pairs landed;
+TOMATO 8f session-5 rerun upgraded the cell to advisory-holdout status
+in the upstream queue; 32f frame-scaling probe H_32f_vshare EARNED but
+H_32f_e2e REJECTED on thermal grounds; holdout H_stack partial
 replication at 1.064× ceiling-matched; C-VISION promoted to claim 15
 with V_share-governs ceiling validation across 5 regimes; Safe
 Deployment Regime and V_share-Governs tables added to claim-matrix).
 
-## Candidate Paper Slot (target, not current claim)
+## Current Manuscript Position (2026-04-21)
 
-> A training-free temporal routing method that TARGETS a better
-> quality–compute Pareto frontier for video VLMs on temporal-reasoning
-> tasks, when reuse is concentration-aware, age-bounded,
-> architecture-aware, and backed by real skipped compute.
+The manuscript should be centered on one anti-recomputation story with three
+explicit regimes:
 
-If phase 1.29 MV-only signal path lands: "codec-guided." If not:
-"codec-inspired / pixel-diff proxy for codec-guided."
+- **C-VISION** for measured first-pass gains on fresh videos
+- **C-PERSIST** for the much larger after-ingest follow-up-query wins
+- **Qwen routing** for mechanism and boundary evidence
 
-The current state is "paper-grade evidence on two temporal-reasoning
-benchmarks (MVBench + TOMATO), credible method signal, not SOTA
-by the broader 2026 efficiency-paper definition." Phase 1.21 MVBench
-N=30 holdout PASSED (base policy 0.600@4.06 Pareto-wins dense-6;
-sticky4 0.633@4.49 ties dense-8 at 56% budget, sticky4 is dirty-tree
-supplementary). Phase 1.20 TOMATO N=30 holdout PASSED on clean tree
-(base policy 0.333@3.55 Pareto-ties dense-8 at 44% budget).
-Track B + VideoMME still gate the full paper.
+Those regimes matter for different reasons. C-VISION shows that frozen
+first-pass pruning already buys real wall-clock savings, but only in proportion
+to the vision share that the dense path actually owns. C-PERSIST is where the
+largest local multipliers live, because once a video has already been ingested,
+the next question can reuse the expensive prefix instead of rebuilding it.
+Qwen routing is the cleanest evidence for why any of this works: novelty
+magnitude alone is not enough, temporal placement of fresh compute matters, and
+semantic-substitution claims must stay separate from sparse-path speedup
+claims.
+
+When this file disagrees with [`paper/priority.md`](priority.md) on what the
+paper should lead with, prefer `priority.md`.
+
+## Candidate Paper Slot
+
+> A training-free anti-recomputation paper for video VLMs that shows
+> three linked facts: first-pass gains are bounded by the share of
+> runtime that vision actually owns, same-video follow-up can collapse
+> to sub-second latency once the expensive prefix has been paid, and
+> temporal placement of fresh compute matters more than novelty
+> magnitude alone.
+
+If the codec-native bridge lands cleanly, the mechanism wording can move toward
+``codec-guided.'' Until then, keep the wording more careful: codec-inspired or
+pixel-diff proxy for codec-guided.
+
+The paper-grade story is training-free anti-recomputation with measured
+first-pass Gemma gains, large after-ingest follow-up wins, and Qwen routing
+evidence that explains the mechanism boundary.
 For the per-claim breakdown, see
 [`paper/claim-matrix.md`](claim-matrix.md) and
 [docs/literature-map-2026-04-16.md § Current evidence level (2026-04-16)](../docs/literature-map-2026-04-16.md).
@@ -86,28 +108,18 @@ duration-conditional partial reproduction + 1.55D infra-falsified):
    [`paper/claim-matrix.md`](claim-matrix.md) provides paper-grade
    practitioner guidance; safety-boundary result in its own right.
 
-3. **C-VISION (claim 15): Vision-tower pruning transfers at L=2
-   kr_V=0.50 with benchmark-invariant V_red on Gemma 4-E4B-4bit.**
-   V_red=39–43% across VideoMME 8f/16f, MVBench 8f, TOMATO 8f (n=30
-   each, thermally paired). Scatter-back ceiling `1/(1 − V_share ×
-   V_red)` predictive within 2.7pp on 4 vision-axis dev cells + 3
-   holdout cells + 1 LLM-decode-axis cell (holdout H_stack 1.064×
-   matches observed to 0.1pp — fifth ceiling regime). **Dev n=30
-   headlines**: TOMATO **1.24×**, MVBench **1.21×**, VideoMME 1.08×
-   (8f) / 1.12× (16f). **Three-benchmark holdout V-only trifecta
-   CLOSED 2026-04-21** with differentiated advisory strength:
-   VideoMME 8f CLEAN (EXP17/18 session 3, E2E 1.113×, V_red 0.413,
-   decode Δ 1.53%, acc Δ 0.000); MVBench 8f CLOSED-ADVISORY (EXP19/20
-   session 4, E2E 1.407× far exceeds dev 1.21×, V_red 0.471, acc Δ
-   −0.033; thermal-calibration footnote on OS-jitter-scale drift
-   prompting revised gate `|decode Δ| < max(0.02 × decode_ms, 100 ms)`);
-   TOMATO 8f EARNED-ADVISORY (EXP23/24 session 5, sum-ratio E2E 1.194×
-   median 1.232×, V_red 0.350, acc Δ −0.067; favorable-drift footnote —
-   patched arm ran cooler than reference, observed speedup
-   conservatively under-stated; scatter-back ceiling predicts 1.155×
-   consistent with ceiling + friendly thermal correction). V+novelty
-   stacking replicates on holdout at 1.064× (ceiling-matched partial
-   confirmation; regime-conditional on V_share).
+3. **C-VISION (claim 15): Vision-tower pruning transfers at `L=2`
+   `kr_V=0.50` on Gemma 4-E4B-4bit, with first-pass gains governed by
+   the scatter-back ceiling `1/(1 − V_share × V_red)`.**
+   Dev n=30 headlines are TOMATO **1.24×**, MVBench **1.21×**, and
+   VideoMME **1.08×** (8f) / **1.12×** (16f). Holdout status is now
+   differentiated rather than missing: VideoMME 8f is **clean** at
+   **1.113×** with zero aggregate accuracy delta; MVBench 8f is
+   **advisory** at **1.407×** with a scheduler-scale decode note; and
+   TOMATO 8f is **earned-advisory** at **1.194×** from the upstream
+   session-5 rerun. The mechanism is stable; the exact magnitude remains
+   regime-dependent because `V_share` and `V_red` are benchmark- and
+   protocol-sensitive.
 
 These three claims align on a common analytical frame: **share ×
 reduction → `1/(1 − share × reduction)` ceiling**, with
@@ -120,20 +132,17 @@ entirely under cache reuse).
 
 **Venue targeting implication:** the combination of C-PERSIST (safety
 boundary, cross-architectural) + C-VISION (three-benchmark 1.20–1.24×
-E2E dev + holdout trifecta closed 2026-04-21) + C-CEILING (analytical
-framework) is paper-grade for an efficiency-focused venue
-(NeurIPS / ICML efficiency workshop, ICLR Tiny Papers, or a systems
-venue like MLSys), defensible today. Main-track readiness
-(NeurIPS / ICML / CVPR) is within reach after three should-do lifts
-from `paper/priority.md` land: (a) cross-architecture 1.51V transfer
-(Qwen 2.5-VL at L=? kr=?) — turns C-VISION from single-arch-mechanism
-into mechanism-class; (b) phase 1.29 local codec-native benchmark
-slice — biggest missing Sam bridge per codex round-26, elevates the
-codec-through thesis from "analog" to "codec-native"; (c) phase 1.60
-scroll/pan regime probe — characterizes where C-VISION breaks and
-whether it degrades gracefully. Measured end-to-end sparse-execution
-delta (claim 5) is deferable to post-submission discussion —
-C-CEILING already bounds the measurable delta analytically.
+E2E dev plus differentiated holdout status) + C-CEILING (analytical
+framework) is paper-grade for an efficiency-focused venue (NeurIPS /
+ICML efficiency workshop or ICLR Tiny Papers). The systems angle is
+real, but a systems venue like MLSys still wants more: a measured sparse
+backend, a clean systems baseline such as screenshot polling, and a
+broader streaming evaluation. Main-track readiness now depends less on
+closing the V-only holdout pair and more on broader asks: (a) one
+cross-architecture 1.51V transfer probe on Qwen, (b) one measured
+sparse-path end-to-end delta, (c) a cleaner local bridge into the
+streaming / deployment regime, (d) a 1.29 local codec-native benchmark
+slice, and (e) a 1.60 scroll/pan regime-boundary probe.
 
 ## Current Narrow Claim Boundary
 
@@ -166,10 +175,9 @@ We do NOT claim:
 
 ## Sam as deployment-scale evidence (not "applications / support")
 
-Codex round-25 structural ask: **stop framing codec-through-sam as
-"applications / support". Foreground it as deployment-scale evidence
-for C-PERSIST and C-VISION.** The two repos occupy disjoint regimes
-*by design*:
+Treat codec-through-sam as deployment-scale evidence for C-PERSIST and
+C-VISION, not as decorative applications support. The two repos occupy disjoint
+regimes by design:
 
 | Axis                  | codec-through (this paper)                 | codec-through-sam                                          |
 |-----------------------|--------------------------------------------|------------------------------------------------------------|

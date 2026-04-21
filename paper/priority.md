@@ -246,12 +246,13 @@ Rough mental model of reviewer paths through the paper, to prioritize
 edits:
 
 1. **Abstract → headline cells.** Reviewer looks for a single-table
-   summary. C-VISION 1.08–1.24× × three benchmarks is the top cell;
-   **holdout V-only trifecta CLOSED 2026-04-21** with differentiated
-   advisory strength (VideoMME 8f CLEAN, MVBench 8f advisory on
-   thermal-calibration footnote, TOMATO 8f advisory on favorable-drift
-   footnote). Dev-only phrasing should no longer survive anywhere in
-   the manuscript for the three-benchmark cells.
+   summary. C-VISION remains the top first-pass cell. The holdout V-only
+   trifecta is closed with differentiated status and should be cited
+   that way everywhere: VideoMME 8f clean, MVBench 8f advisory on the
+   thermal-calibration footnote, TOMATO 8f earned-advisory on the
+   favorable-direction drift footnote. Dev-only phrasing should no
+   longer survive anywhere in the manuscript for the three-benchmark
+   cells.
 2. **Limitations.** Reviewer looks for the six-point limitations list
    (Reviewer-Facing Limitations in `framing.md`). Round-24 added §7
    on attention-propagation-drift discipline.

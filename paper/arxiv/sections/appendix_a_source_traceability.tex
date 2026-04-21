@@ -1,0 +1,38 @@
+\section{Source Traceability and Provenance}
+
+The manuscript uses four evidence classes and labels them differently in the
+text. \emph{Reproduced-here evidence} comes from \texttt{codec-through-2} and
+backs the automated headline assets, the persistent-KV curve, and the Qwen
+routing section. \emph{Imported upstream evidence} comes from the sibling
+\texttt{codec-through} tree when the local manuscript is intentionally tracking
+a fresher rerun that has not yet been copied back here. \emph{Imported
+companion evidence} comes from \texttt{codec-through-sam} and is restricted to
+the streaming and real-application section. \emph{Hypotheses or moving results}
+may be discussed for context, but they are not allowed into the default
+automated manuscript snapshot.
+
+This appendix is where that distinction becomes audit-friendly. The repo
+provenance table below records the current commit pins used by the manuscript
+sync. Within the main text, numbers are written so they can be traced back to
+one phase note and one artifact family. When a result is excluded on
+provenance grounds, the paper says so explicitly. The best current example is
+the MVBench \texttt{sticky4} refinement: it is scientifically interesting, but
+the artifact is still dirty-tree, so it stays supplementary until rerun clean.
+
+\begin{sectiontodo}{Replace narrative traceability with a frozen artifact manifest}
+Before submission, this appendix should include a final claim-to-artifact map
+for every table and figure in the paper, not just the repo-level provenance
+table. The right end state is a reviewer-readable manifest, not a general prose
+description.
+
+\textcolor{todoBorder}{Source pointers: \path{paper/claim-matrix.md},
+\path{docs/reproduction-status.md},
+\path{paper/publishability-status.md},
+\path{paper/arxiv/generated/tables/repo_provenance.tex}.}
+\end{sectiontodo}
+
+\IfFileExists{generated/tables/repo_provenance.tex}{
+\input{generated/tables/repo_provenance.tex}
+}{
+\draftnote{Run \texttt{make paper-sync} to generate the repo provenance table.}
+}

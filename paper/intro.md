@@ -95,8 +95,9 @@ first-query latency on any fresh video.
 ### 2.3  C-VISION — training-free vision-tower pruning with a transferable operating point
 
 Pruning the vision-tower's token stream at `L = 2` with keep-rate
-`0.50` on Gemma 4-E4B-4bit yields a vision-reduction of **39–43 %**
-that is benchmark-invariant and frame-invariant across
+`0.50` on Gemma 4-E4B-4bit yields a vision-reduction that clusters in
+the **39–43 %** range on the dev tranche, while the holdout spread is
+wider and should be described more softly than “benchmark-invariant,” across
 
 - VideoMME 8-frame and 16-frame dev (n = 30 each)
 - MVBench 8-frame dev (n = 30)

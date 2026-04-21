@@ -1,0 +1,95 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+
+\definecolor{todoBorder}{HTML}{9B2226}
+\definecolor{todoBg}{HTML}{FFF4F4}
+\definecolor{accentBlue}{HTML}{1D3557}
+\definecolor{accentGold}{HTML}{B08900}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=accentBlue,
+  citecolor=accentBlue,
+  urlcolor=accentBlue
+}
+
+\IfFileExists{generated/tex/build_meta.tex}{\input{generated/tex/build_meta.tex}}{
+  \newcommand{\PrimaryRepoSHA}{TODO}
+  \newcommand{\PrimaryRepoCommitDate}{TODO}
+  \newcommand{\UpstreamRepoSHA}{TODO}
+  \newcommand{\UpstreamRepoCommitDate}{TODO}
+  \newcommand{\SamRepoSHA}{TODO}
+  \newcommand{\SamRepoCommitDate}{TODO}
+}
+
+\newenvironment{sectiontodo}[1]
+{
+  \par\medskip
+  \noindent{\color{todoBorder}\rule{\linewidth}{0.8pt}}\par
+  \noindent{\color{todoBorder}\bfseries TODO: #1}\par\smallskip
+  \begingroup\small\raggedright\color{black}
+}
+{
+  \par\endgroup
+  \noindent{\color{todoBorder}\rule{\linewidth}{0.8pt}}\par\medskip
+}
+
+\newcommand{\draftnote}[1]{%
+  \par\medskip\noindent{\small\color{accentBlue}\textbf{Draft note.} #1}\par\medskip
+}
+
+\title{VLMaxxing through FrameMogging\thanks{Look, they said attention was all you needed, well we got your attention with this title.}\\Training-Free Anti-Recomputation for Video Vision-Language Models}
+\author{
+  JF Bastien\\
+  \texttt{paper@jfbastien.com}
+  \and
+  Sam D'Amico\\
+  \texttt{sam@impulselabs.com}
+}
+\date{Draft manuscript}
+
+\begin{document}
+\maketitle
+
+\draftnote{This is a paper draft built from current repo evidence, not a
+submission-frozen manuscript. Visible TODO boxes mark places where the text,
+citations, or figure selection still need author review as the science
+continues. The default automated snapshot is intentionally limited to
+clean-tree artifact summaries; supplementary or imported evidence is labeled as
+such in the text.}
+
+\begin{abstract}
+\input{sections/01_abstract}
+\end{abstract}
+
+\input{sections/02_introduction}
+\input{sections/03_related_work}
+\input{sections/04_method}
+\input{sections/05_experimental_setup}
+\input{sections/07_results_cross_architecture}
+\input{sections/06_results_qwen_routing}
+\input{sections/08_real_applications}
+\input{sections/09_limitations_reproducibility}
+\input{sections/10_conclusion}
+\input{sections/90_references}
+
+\appendix
+\input{appendix}
+
+\end{document}

@@ -13,12 +13,16 @@ Read these before changing anything substantial:
 2. [docs/claim-register.md](docs/claim-register.md)
 3. [docs/reproduction-status.md](docs/reproduction-status.md)
 4. [PLAN.md](PLAN.md)
-5. [docs/README.md](docs/README.md)
-6. [docs/methodology/performance.md](docs/methodology/performance.md)
-7. [docs/methodology/preprocessing.md](docs/methodology/preprocessing.md)
-8. [research/README.md](research/README.md)
-9. [research/decision-log.md](research/decision-log.md)
-10. [paper/framing.md](paper/framing.md)
+5. [paper/README.md](paper/README.md)
+6. [paper/priority.md](paper/priority.md)
+7. [paper/claim-matrix.md](paper/claim-matrix.md)
+8. [paper/publishability-status.md](paper/publishability-status.md)
+9. [paper/framing.md](paper/framing.md)
+10. [docs/README.md](docs/README.md)
+11. [docs/methodology/performance.md](docs/methodology/performance.md)
+12. [docs/methodology/preprocessing.md](docs/methodology/preprocessing.md)
+13. [research/README.md](research/README.md)
+14. [research/decision-log.md](research/decision-log.md)
 
 Use that order for repo-wide orientation.
 
@@ -56,8 +60,13 @@ current task.
   [scripts/generate_synthetic_corpus.py](scripts/generate_synthetic_corpus.py)
 - For versioned prompts and answer keys:
   [research/prompt_bank](research/prompt_bank/)
-- For paper contribution boundaries and future-work framing:
-  [paper/framing.md](paper/framing.md)
+- For paper positioning, submission triage, and manuscript mechanics:
+  [paper/AGENTS.md](paper/AGENTS.md),
+  [paper/priority.md](paper/priority.md),
+  [paper/claim-matrix.md](paper/claim-matrix.md),
+  [paper/publishability-status.md](paper/publishability-status.md),
+  [paper/framing.md](paper/framing.md), and
+  [paper/arxiv/README.md](paper/arxiv/README.md)
 - For imported provenance artifacts:
   `seed/`
 
@@ -113,7 +122,7 @@ Durable homes:
 - `PLAN.md`: active roadmap and phase order
 - `docs/`: stable methodology, provenance, literature, external-review validation
 - `research/`: experiment notes and decision ledger
-- `paper/`: claim framing and paper-story notes
+- `paper/`: manuscript source, claim framing, and paper-story notes
 - `seed/`: imported provenance only
 
 ## Model And Runtime Notes

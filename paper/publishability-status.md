@@ -4,7 +4,32 @@ One-file answer to "what can we actually claim, in what venue, with what
 numbers, today." Kept in sync with [claim-matrix.md](claim-matrix.md) but
 scoped narrower: reviewer-facing readiness and runtime-cost evidence.
 
-## Three first-class contributions (round-25/26 reframe)
+For paper triage, prefer [priority.md](priority.md) and
+[claim-matrix.md](claim-matrix.md) over this file when they disagree. The
+current headline is the anti-recomputation story summarized next. Detailed
+runtime inventories lower in this file are retained for provenance, but the
+current narrative interpretation should come from `priority.md` and the claim
+matrix.
+
+## Current Manuscript Position (2026-04-21)
+
+The draft should lead with three linked claims, not with a Qwen-only routing
+note:
+
+- **C-VISION**: Gemma vision-tower pruning now has paper-grade first-pass
+  speedup evidence on clean and advisory holdout cells.
+- **C-PERSIST**: persistent-KV reuse already delivers the largest local
+  deployment numbers in the repo on same-video follow-up queries.
+- **Qwen routing**: mechanism and boundary evidence showing why placement of
+  fresh computation matters more than novelty magnitude alone.
+
+Sam's streaming lane is not decorative support. It is deployment-scale evidence
+for the same anti-recomputation thesis. Its benchmarking style is different, so
+the manuscript should label those results as deployment-scale or case-study
+evidence rather than flattening them into the same table cell as the local
+Gemma holdouts.
+
+## One paper, multiple evidence regimes
 
 **The goal is one results paper, co-authored with Sam, that advances
 SOTA across three independent axes.** Codex rounds 25–26 retired the
@@ -34,14 +59,21 @@ contributions (all landed before Codex round-26 2026-04-21):
   MVBench 8f CLOSED-ADVISORY on thermal-calibration footnote,
   TOMATO 8f EARNED-ADVISORY on favorable-drift footnote).
 
+- **First-pass measured gains (Gemma / C-VISION).** This is the main
+  reviewer-facing result today: measured end-to-end speedups on VideoMME,
+  MVBench, and TOMATO, with clean versus advisory status stated explicitly.
+- **After-ingest follow-up gains (Qwen / C-PERSIST).** This is where the
+  largest local speedups live today: same-video follow-up queries collapse to
+  sub-second latency when the expensive prefix is reused.
+- **Mechanism and boundary evidence (Qwen routing).** This is where the paper
+  explains why anti-recomputation works, where it fails, and why sparse-path
+  claims must stay separate from semantic-substitution claims.
+
 **Mechanism-validation backbone (NOT the headline).** Qwen routing
 work (claims 1/2/6/9 earned, 3/4/5 partial, 8/12 preregistered on
 TOMATO + MVBench) is the negative-result discipline lane: it shows
-what works AND what doesn't (preserved nulls on naive mean-diff,
-sticky-dynamic on TOMATO, PE-only correction, 1.51R VideoMME null,
-1.55D infra-falsified, VideoMME non-monotonic frame scaling, halo-veto
-retired 1.37B). Frame as methodology appendix + null ledger, not as
-the headline.
+what works and what does not, and it belongs in the paper as mechanism
+and boundary evidence rather than as the headline result.
 
 **Sam as deployment-scale evidence (NOT applications/support).**
 The Sam stack (26B-class, real streaming, full end-to-end pipeline)
@@ -65,26 +97,25 @@ See `paper/framing.md`, `paper/abstract.md`, `paper/intro.md`, and
 `paper/priority.md` for the authoritative three-contribution
 narrative.
 
-## HN-style headlines (honest version, three-contribution ordering)
+> **Training-free anti-recomputation for video VLMs: measured first-pass
+> speedups on Gemma, sub-second same-video follow-up queries on Qwen, and
+> routing evidence showing that fresh-compute placement matters more than
+> novelty magnitude.**
 
-**Primary — C-VISION (three-benchmark holdout trifecta):**
+**Concrete headline cells today:**
 
-> **Vision-tower pruning at L=2 kr_V=0.50 on Gemma 4-E4B-4bit (MLX):
-> VideoMME 8f holdout-earned at 1.113× E2E (EXP17/18 session 3 2026-04-21,
-> n=30, thermally paired at decode Δ 1.53%, acc Δ 0.000); MVBench 8f
-> holdout-earned-advisory at 1.407× E2E (EXP19/20 session 4 2026-04-21,
-> n=30, V_red 0.471, acc Δ −0.033; advisory on thermal gate — 50 ms
-> absolute decode Δ on 432 ms window is OS-jitter-scale, prompting a
-> calibration revision `|decode Δ| < max(0.02 × decode_ms, 100 ms)`);
-> TOMATO 8f holdout-earned-advisory at 1.194× E2E sum-ratio mean, median
-> 1.232× (EXP23/24 session 5 2026-04-21, n=30, V_red 0.350, acc Δ −0.067;
-> advisory on thermal gate — decode Δ 119.7 ms in FAVORABLE direction
-> means patched arm ran cooler than reference, observed speedup is
-> conservatively under-stated, not inflated; scatter-back ceiling
-> predicts 1.155×, observed is consistent with ceiling + small friendly
-> thermal correction). Governed by an architectural ceiling
-> E2E ≤ 1/(1 − V_share × V_red) validated on 4 dev regimes + 3 holdout
-> regimes (VideoMME + MVBench + TOMATO, three-benchmark trifecta).**
+- **Gemma first-pass vision pruning:** VideoMME 8f holdout **1.113×** clean,
+  MVBench 8f holdout **1.407×** advisory, TOMATO 8f holdout **1.194×**
+  earned-advisory from the freshly pulled upstream session-5 rerun.
+- **Qwen persistent-KV:** **47.2×** speedup and **815 ms** median follow-up at
+  8f, rising to **91.1×** and **807 ms** at 16f inside the clean envelope.
+- **Sam deployment-scale evidence:** **13×** streaming ViT reduction,
+  **~50×** dominant-pipeline reduction, **4.2–4.5×** real-video end-to-end
+  speedups in selected regimes, and **0.8 s** same-video follow-up latency on
+  Gemma 4 26B.
+- **Qwen routing:** clean-tree Pareto win/tie on MVBench and TOMATO holdouts
+  at much lower effective fresh-frame budgets, with the mechanism lesson that
+  fresh-compute placement matters more than novelty magnitude alone.
 
 **Secondary — C-PERSIST (persistent-KV safe-deployment envelope):**
 
@@ -151,7 +182,7 @@ N=30 holdout, clean-tree provenance; projected compute-savings ceiling
 | F | **Pixel-diff proxy → ViT feature-change correlation is non-trivial but content-conditional.** | Phase 1.36 feature-change oracle: best pixel stat Pearson r=0.233 (TOMATO MEAN) to r=0.504 (MVBench CPF). Ranking is content-dependent; the best routing stat (MAX_ABS) is NOT the best point predictor. | `phase1_36_feature_change_oracle/*.json`; phase 1.36 note |
 | G | **Dense wall-clock baseline captured on M3 Air 16GB.** | TOMATO n=10 mc_scoring at 8 frames, 560×560: 60.1 s/item median; prefill 72% of wall time, vision encode 22%, decode 6%; peak 6.87 GB. | `results/track_b/tomato_mc_n10.json`; phase 1.50 note |
 | H | **Hard ceiling for vision-cache-only Track B: 22% end-to-end speedup at this geometry.** | Arithmetic: vision encode is 22% of per-item wall time, so any method that only skips vision work caps at 22% end-to-end before prefill savings. | Derived from G; explicit in phase 1.50 §Paper implications |
-| R | **1.51V vision-tower pruning on Gemma 4-E4B-4bit (MLX), dev n=30 at L=2 kr_V=0.50 thermally paired:** VideoMME 1.08× (8f) / 1.12× (16f), MVBench **1.21×**, TOMATO **1.24×**; V_red benchmark-invariant at ~40% across all three benchmarks; acc Δ +3.3pp (TOMATO) / -10pp MVBench (localized to object-binding, 3 item flips) / -6.7pp (VideoMME 8f, long+medium) / +3.3pp (VideoMME 16f). Scatter-back ceiling `1/(1 − V_share × V_red)` predicts E2E within 2pp on 4 cells. **32f frame-scaling probe:** V_share = 31.0% at 32f (continues 15.2% → 24.3% → 31.0% monotone), but thermal pairing FAILS on M3 16 GB at 32f (decode Δ = +7.6%); observed cross-run 0.94× is thermally confounded; charitable ceiling prediction 1.14×, sub-threshold. **Holdout replication (EXP15/16, VideoMME holdout v1 n=30 disjoint):** H_stack partial confirmation — V+novelty kr=0.3 on V-patched baseline stacks at 1.064× within-run (thermally clean), 1.127× cross-session (dirty), agreement=0.667, acc Δ=-0.033. LLM-side ceiling `1/(1 − generate_share × generate_reduction) = 1.064×` matches observed to 0.1pp (fifth ceiling regime). V_share on holdout = 15.45% (corrected 2026-04-21 from earlier 8.6% estimate) explains smaller magnitude — regime-conditional, not noise. **V-only UNPATCHED-vs-PATCHED holdout pair: VideoMME 8f CLOSED 2026-04-21 (EXP17/18, all four preregistered hypotheses pass; E2E 1.113×, V_red 0.413, decode Δ 1.53%, acc Δ 0.000); MVBench + TOMATO holdout pairs session 4 in flight (EXP19–22).** | `research/experiments/2026/2026-04-21-phase-1_51V-expansion-findings.md`; `2026-04-21-phase-1_51V-32f-probe-findings.md`; `2026-04-21-phase-1_51V-holdout-findings.md`; `artifacts/phase1_51V_expansion/exp{01..12}_*_summary.json`; `artifacts/phase1_51V_session2/exp{13..16}_*_summary.json` |
+| R | **1.51V vision-tower pruning on Gemma 4-E4B-4bit (MLX), dev n=30 at L=2 kr_V=0.50 thermally paired:** VideoMME 1.08× (8f) / 1.12× (16f), MVBench **1.21×**, TOMATO **1.24×**; dev V-red lands around 40% across the three benchmarks, but holdout spread is wider and should be described more softly in the manuscript. Scatter-back ceiling `1/(1 − V_share × V_red)` predicts E2E within 2pp on the main dev cells. **32f frame-scaling probe:** V_share = 31.0% at 32f (continues 15.2% → 24.3% → 31.0% monotone), but thermal pairing FAILS on M3 16 GB at 32f (decode Δ = +7.6%); observed cross-run 0.94× is thermally confounded; charitable ceiling prediction 1.14×, sub-threshold. **Holdout replication (EXP15/16, VideoMME holdout v1 n=30 disjoint):** H-stack partial confirmation — V+novelty kr=0.3 on V-patched baseline stacks at 1.064× within-run (thermally clean), 1.127× cross-session (dirty), agreement=0.667, acc Δ=-0.033. LLM-side ceiling `1/(1 − generate_share × generate_reduction) = 1.064×` matches observed to 0.1pp (fifth ceiling regime). **V-only UNPATCHED-vs-PATCHED holdout status:** VideoMME 8f **clean** at 1.113× (EXP17/18); MVBench 8f **advisory** at 1.407× (EXP19/20); TOMATO 8f **earned-advisory** at 1.194× from the session-5 rerun (EXP23/24). | `research/experiments/2026/2026-04-21-phase-1_51V-expansion-findings.md`; `2026-04-21-phase-1_51V-32f-probe-findings.md`; `2026-04-21-phase-1_51V-holdout-findings.md`; `artifacts/phase1_51V_expansion/exp{01..12}_*_summary.json`; `artifacts/phase1_51V_session2/exp{13..16}_*_summary.json`; `codec-through/research/experiments/2026/2026-04-21-phase-1_51V-session5-findings.md` |
 | O | **Persistent-KV follow-up speedup 47×/91×/70×/94×/122×/150× at 8f/16f/18f/20f/24f/32f on Qwen 7B-4bit; reproduces Sam §2.13.3 AND confirms prefill-dominance on a six-point scaling curve. Fidelity preservation is bounded by a MONOTONIC-SATURATING RAMP — clean at ≤ ~6.5k tokens (16f, Δacc=0); 4-basin mixed-attractor degeneracy at ~7.3k (18f, Δacc=−0.24); 2-basin dominance at ~8.1k (20f, Δacc=−0.38); single-token attractor by ~9.7k (24f, Δacc=−0.43). Pairwise Δacc increments decay (−0.238, −0.143, −0.048, 0). Cross-architecture 3-point probe on Qwen 2.5-VL-3B-4bit: 20f Δacc=−0.048 (matched); 24f Δacc=−0.190 (shifted-ramp); 32f Δacc=−0.190 (PLATEAUED — numerically identical to 24f at 60% deeper prefill). 3B saturates at a ~2.3× SHALLOWER CEILING than 7B (−0.19 vs −0.43), and all 28/28 3B follow-ups across 20f/24f/32f emit clean 2-token letter answers (zero basin collapse). Cache-reuse damage decomposes into three independently-varying architectural dimensions: (1) threshold onset is capacity-modulated (7B ramps at ~7.3k; 3B ramps at ~9.7k), (2) saturation ceiling is architecture-specific (−0.43 vs −0.19), (3) failure geometry is architecture-specific (basin collapse to `addCriterion` vs clean-letter drift). **Temperature probe on 7B/20f (T=0.7 + min_p=0.05 + seed=42): Δacc = −0.429 — numerically temperature-invariant (greedy −0.381; diff 0.048 ≈ 1/21 noise floor). H2-temp.distribution-collapse EARNED; H-greedy-commit FALSIFIED. Basin mass redistributed to a NOVEL pathological attractor (`自动生成` Chinese "auto-generate", 5/14) NOT to clean decoding (clean share unchanged at 1/14). The pathological distribution is intrinsic to cache-reused 7B logits, not a greedy-argmax artifact. Failure geometry is architecture-specific AT THE DISTRIBUTION LEVEL on 7B — not sampler-level.** **Temperature mirror on 3B/20f (same sampler): Δacc = −0.095 (greedy −0.048 → temp −0.095, shifts by 1/21 noise floor); 14/14 clean 2-token letter follow-ups; 0 pathological-attractor emergence; H2-3B-temp.null-robust EARNED on both preregistered conditions; H2-3B-temp.hidden-basin FALSIFIED. Sampler-invariance now verified at BOTH architecture ceilings — distribution-level fidelity-loss vs distribution-level clean-drift is cross-architectural, not a 7B idiosyncrasy. Paper corollary: practitioner cannot recover fidelity via temperature + min-p at either ceiling; fidelity recovery requires upstream intervention (Phase 1.55D selective re-prefill preregistered 2026-04-20).** | 1.55A 8f: n=21, follow-up median 815 ms, Δacc −0.048, prefix 0.982, peak RSS 2.81 GB. 1.55A 16f: n=21, follow-up median 807 ms, **Δacc 0.000**, prefix 0.991, peak RSS 1.48 GB. 1.55A 18f: n=21, follow-up median 1102 ms, **Δacc −0.238 (ramp; 4/14 clean-correct + 3/14 clean-wrong-choice + 3/14 long-garbage + 2/14 empty + 2/14 saturated-`addCriterion`; richest basin diversity in the sweep)**, prefix 0.9920, peak RSS 4.19 GB. 1.55A 20f: n=21, follow-up median 905 ms, **Δacc −0.381 (ramp; 9/14 short `addCriterion` + 4/14 long garbage + 1/14 clean-correct)**, prefix 0.9928, peak RSS 3.51 GB. 1.55A 24f: n=21, follow-up median 864 ms, **Δacc −0.429 (saturated)**, prefix 0.9940, peak RSS 3.30 GB. 1.55A 32f: n=21, follow-up median 1008 ms, **Δacc −0.429 (saturated)**, prefix 0.9955, peak RSS 2.50 GB. **1.55A-3B 20f cross-arch (2026-04-19): Qwen 2.5-VL-3B-Instruct-4bit, same 7 clips × 3 Qs, same driver, same prefill ~8.1k → follow-up median 412 ms, speedup 136.07×, Δacc = −0.0476 (INSIDE ±0.05 envelope), prefix 0.9928, peak RSS 3.93 GB, 7/14 follow-up correct. All 14 follow-ups emit 2-token clean letter answers — NO addCriterion basin, NO long-garbage basin. 1.55A-3B 24f boundary-shift (2026-04-20): same 7 clips, 24 frames (~9.7k prefill) → follow-up median 423 ms, speedup 154.17×, Δacc = −0.190 (H2-3B-24.shifted-ramp EARNED, band (−0.30, −0.05)), prefix 0.9940, 6/14 follow-up correct. First-query accuracy 4/7 identical to baseline; follow-up Δacc = −0.286 concentrated on cache-reused queries. Basin structure: 14/14 clean 2-token letter answers (no addCriterion, no long-garbage) — 3B degrades via decode-choice drift, not basin collapse. 1.55A-3B 32f saturation (2026-04-20): same 7 clips, 32 frames (~12.9k prefill) → follow-up median 484 ms, speedup 213.01× (exceeds 7B 32f's 150×), **Δacc = −0.190 (H2-3B-32.plateaued EARNED, band (−0.25, −0.10] — most-surprising pre-registered sub-outcome)**, prefix 0.9955, peak RSS 4.58 GB, 5/14 follow-up correct. **Δacc is numerically identical to 3B 24f** (same 10/21 session, same 14/21 baseline) — 3B has saturated at a ~2.3× shallower ceiling than 7B. First-query 5/7 both modes. All 14 follow-ups remain clean 2-token letter answers at 12.9k prefill — no basin collapse emerges on 3B at deeper prefill than 7B saturation. Cross-arch 3-point: the cache-reuse damage decomposes into three orthogonal dimensions — threshold onset (capacity-modulated), saturation ceiling (architecture-specific), failure geometry (architecture-specific).** 24f and 32f failure statistics are numerically identical (both session 9/21, baseline 18/21, 14/14 follow-ups emit literal `addCriterion` token) — single-attractor collapse. **Basin-structure evolution across ramp on 7B**: clean (16f) → 4-basin diversity (18f) → 2-basin dominance (20f) → single attractor (24f+). This progressive collapse favours threshold mechanisms with a soft edge over pure gradient and over pure cliff. **Mechanism discrimination (cross-arch 2-point): the ramp at 3B is shifted, not absent** — 3B 20f Δacc=−0.048 → 3B 24f Δacc=−0.190 → ramp onset is capacity-modulated with an architecture-specific threshold. **Basin attractor identity is architecture-specific:** 7B saturates to `addCriterion`; 3B stays in the 2-token letter distribution even while accuracy drops. Rules out "pure prefill-length-intrinsic" as a complete mechanism and rules out "shared-tokenizer-space basin" as the locus of the attractor; supports "model-capacity / depth-dependent accumulation". Cold-prefill Q1 accuracy: 7/7 at 18f/24f/32f, 6/7 at 20f (one cold flake), matches baseline — content understanding is intact; only the cache-reuse path is. Speedup scaling (47×→91×→70×→94×→122×→150×) and first-query scaling (38.5→73.5→77.5→83.8→108.9→163.2 s) form a 6-point prefill-dominance curve (18f dip is median-inflated by long-garbage gen tokens, not cache-coupled). 3B 20f speedup 136× exceeds 7B 20f 94× — prefill-dominance ratio is HIGHER at 3B because decode is comparatively faster. Median follow-up matches Sam's 0.8 s (Gemma 4 26B / M5 Max) across 8f/16f. | `research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md`; `.../2026-04-19-phase-1_55A-{16,18,20,24,32}f-frame-scaling-findings.md`; `.../2026-04-19-phase-1_55A-3b-crossarch-findings.md`; `.../artifacts/loop_queue_20260419_155108/phase1_55A_persistent_kv_qwen/summary.json`; `.../artifacts/phase1_55A_{16,18,20,24,32}f_frame_scaling/summary.json`; `.../artifacts/phase1_55A_3b_20f_crossarch/summary.json`; `.../2026-04-20-phase-1_55A-3b-24f-boundary-findings.md`; `.../artifacts/phase1_55A_3b_24f_boundary/summary.json`; `.../2026-04-20-phase-1_55A-3b-32f-saturation-findings.md`; `.../artifacts/phase1_55A_3b_32f_saturation/summary.json`; `.../2026-04-20-phase-1_55A-7b-20f-temperature-findings.md`; `.../artifacts/phase1_55A_7b_20f_temperature/summary.json`; `.../2026-04-20-phase-1_55A-3b-20f-temperature-findings.md`; `.../artifacts/phase1_55A_3b_20f_temperature/summary.json` |
 
 ### What remains BLOCKED before venue submission
@@ -242,31 +273,30 @@ queue once infra is in place.
 
 | Venue | Fit today | What would need to land |
 |---|---|---|
-| **arXiv preprint (three-contribution submission)** | **Ready today** on C-CEILING + C-PERSIST + C-VISION. Abstract and intro landed 2026-04-21 foreground the three contributions in parallel; claim-matrix rows 13/14/15 all earned; C-VISION holdout trifecta closed with differentiated advisory strength. Reviewer-facing limitations list in `framing.md` §RFL covers thermal-calibration and regime-boundary caveats. | No gates. Submission-blocker is narrative polish + figure work (`priority.md` should-do #9: C-PERSIST safe-budget table + V_share ceiling plot), not new experiments. |
-| **NeurIPS / ICLR / CVPR efficiency workshop** | **Defensible today** on the three-contribution narrative. C-VISION trifecta (three benchmarks) + C-CEILING analytical contribution + C-PERSIST safe-deployment envelope clear the bar without further experiments. EXP10 n=60 H_stack gate (currently running) tightens the composition-appendix claim from ±0.05 CI to ±0.03 CI. | (optional) EXP10 n=60 result to tighten composition CI; (optional) cross-arch C-VISION Qwen cell to turn C-VISION from single-arch-mechanism into mechanism-class. |
-| **Main track (NeurIPS/ICML/CVPR)** | **Within reach** once the "should-do" lifts from `priority.md` land. The three contributions already satisfy the minimum publishability bar; the gap to main-track defensibility is cross-architecture evidence + a codec-native benchmark data point + scroll/pan regime boundary. | Cross-arch C-VISION on Qwen (should-do #3) + 1.29 local codec-native slice (should-do #8, biggest missing Sam bridge) + phase 1.60 scroll/pan regime probe (queued future list). Claim 5 measured-sparse delta is deferable to post-submission discussion — C-CEILING already bounds it analytically. |
-| **Systems conference (MLSys/OSDI)** | **Within reach** with the cross-arch C-VISION probe + EXP10 n=60 + 1.29 codec-native evidence. C-CEILING gives the analytical upper bound on any sparse-execution delta; C-PERSIST's safe-deployment envelope is inherently systems-flavored. | Same as main-track row. A measured sparse-execution path (claim 5 measured, not ceiling-derived) remains the biggest single unlock and is the same engineering investment as before. |
+| **arXiv preprint (current anti-recomputation draft)** | **Ready today** as a multi-regime anti-recomputation paper with clean versus advisory status stated explicitly and deployment-scale evidence labeled by source class. | No new science gate. Keep provenance tight, finalize manuscript framing, and keep the paper honest about which rows are local clean, local advisory, upstream imported, or deployment-scale imported evidence. |
+| **NeurIPS / ICLR / CVPR efficiency workshop** | **Defensible today** as the current anti-recomputation paper if the provenance remains tight and the manuscript keeps clean, advisory, imported, and deployment-scale rows visibly distinct. | Stronger with one measured sparse-path delta, one additional cross-architecture C-VISION probe, and a cleaner local streaming bridge. |
+| **Main track (NeurIPS/ICML/CVPR)** | **Not ready yet.** The paper now has a better three-regime story than the old venue rows implied, but it still lacks one measured sparse-path delta, broader apples-to-apples comparison against adjacent methods, and a cleaner bridge from local benchmark evidence into deployment-style streaming evaluation. | One measured sparse-path delta, one additional cross-architecture first-pass probe, a 1.29 local codec-native slice, a 1.60 scroll/pan regime probe, and tighter head-to-head positioning against the closest trained and training-free baselines. |
+| **Systems conference (MLSys/OSDI)** | **Not ready yet.** The deployment evidence is interesting, but the current paper still does not characterize a full sparse backend or benchmark the streaming path against a clean systems baseline such as screenshot polling. | Sparse execution characterization, screenshot-polling baseline, broader streaming or event-detection evaluation, and ideally local codec-native bridge evidence. |
 
 ## What is safe to say in a one-paragraph abstract TODAY
 
-> We study training-free temporal feature reuse for video VLMs on a
-> Qwen 2.5-VL-7B-4bit MLX deployment, using a bounded-staleness,
-> concentration-aware pixel-diff planner over spatial blocks. On the
-> TOMATO motion holdout (N=30), our planner matches uniform-dense
-> 8-frame accuracy (0.333) at 44% of the fresh-frame budget (3.55
-> effective fresh frames). On the MVBench motion holdout (N=30), a
-> sticky-window refinement matches uniform-dense 8-frame accuracy
-> (0.633) at 56% of the fresh-frame budget (4.49 effective fresh
-> frames), while the base policy strictly dominates uniform dense-6
-> (0.600 > 0.567 at fewer fresh frames). A feature-change oracle
-> (phase 1.36) establishes that pixel-diff statistics correlate with
-> ViT feature change at Pearson r up to 0.504 on MVBench, and that
-> the best routing statistic (MAX_ABS) is not the best point predictor
-> — routing cares about ordering, not magnitude matching. We report
-> a dense wall-clock baseline of 60.1 s/item on M3 Air 16 GB at
-> 8 frames (prefill 72% of end-to-end), giving a 22% ceiling on any
-> vision-cache-only Track B speedup before the prefill path is also
-> compressed. Sparse-execution measurement is left as follow-up work.
+> We study training-free anti-recomputation for video VLMs across three
+> reuse regimes: first-pass vision pruning on fresh videos, after-ingest
+> follow-up questions on the same video, and routing under a fixed dense
+> backend. On Gemma 4-E4B-4bit, mid-layer vision-tower pruning yields
+> measured first-pass gains from **1.113×** to **1.407×** on clean or
+> advisory holdout cells, with magnitude predicted by a simple
+> share×reduction ceiling. On Qwen2.5-VL-7B-4bit, persistent-KV reuse
+> cuts same-video follow-up latency to **815 ms** median at **47.2×**
+> speedup at 8 frames and **807 ms** at **91.1×** speedup at 16 frames.
+> Routing holdouts on TOMATO and MVBench then show the mechanism
+> boundary: a bounded-staleness planner preserves the quality-compute
+> frontier, beats novelty-ranked dense selection, and shows that
+> fresh-compute placement matters more than novelty magnitude alone.
+> Deployment-scale streaming evaluations add **13×** ViT reduction,
+> **~50×** dominant-pipeline reduction, **4.2–4.5×** end-to-end
+> speedups in selected real-video regimes, and **0.8 s** same-video
+> follow-up latency on Gemma 4 26B.
 
 ## What is NOT safe to say today
 

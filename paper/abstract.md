@@ -39,8 +39,9 @@ deployment.
 
 *C-VISION*: training-free vision-tower pruning at the same operating
 point (`L = 2`, keep-rate = 0.50 on Gemma 4-E4B-4bit) delivers
-**benchmark-invariant V-reduction of 39–43 %** across VideoMME
-(8 f / 16 f), MVBench (8 f), and TOMATO (8 f). End-to-end speedups
+roughly **0.35–0.47 V-reduction depending on benchmark and protocol**,
+with the dev tranche clustering in the **39–43 %** range across
+VideoMME (8 f / 16 f), MVBench (8 f), and TOMATO (8 f). End-to-end speedups
 follow the vision-axis analog of C-CEILING,
 `E2E ≤ 1 / (1 − V_share × V_red)`, predictive within 2.7 pp of observed
 across four vision-axis cells plus a fifth (H-stack with

@@ -1,0 +1,53 @@
+\section{Related Work}
+
+The closest systems neighbor is CodecSight \cite{codecsight}, which also tries
+to avoid unnecessary visual processing by using compressed-video structure
+before the rest of the model consumes the content. The difference is both in
+signal and in target. CodecSight uses decoder-native motion vectors and
+residuals and is evaluated on streaming anomaly detection; our current local
+implementation uses a pixel-domain proxy because that is what our MLX stack can
+exercise today, and our main benchmark evaluations target temporal-reasoning QA
+on TOMATO \cite{tomato} and MVBench \cite{mvbench}.
+
+Trained codec-native approaches answer a different question. CoPE-VideoLM
+\cite{copevideolm}, Deja Vu \cite{dejavu}, and older compressed-video pipelines
+such as CoViAR \cite{coviar} learn how motion, residual, or reused
+representations should enter the model. That is valuable prior art, but it does
+not settle the deployment question we care about here: how much redundancy a
+frozen stack can exploit before retraining or representation learning enters
+the picture.
+
+Another family reduces visual cost after tokens already exist. FastV
+\cite{fastv}, FastVID \cite{fastvid}, FlashVID \cite{flashvid}, VisionZip
+\cite{visionzip}, SparseVLM \cite{sparsevlm}, VScan \cite{vscan}, and STTM
+\cite{sttm} prune or merge visual tokens using attention-derived, density, or
+feature-similarity signals. Those methods are adjacent but not identical to our
+setting. Their signal usually lives after visual tokens exist. Our routing lane
+asks an earlier question: can we decide where fresh computation should land in
+time before the full dense backend pays for every frame again?
+
+Long-horizon reuse and systems co-design are also relevant. QuickVideo
+\cite{quickvideo} explicitly co-designs decode and prefill. ReKV \cite{rekv},
+VLCache \cite{vlcache}, and StreamingVLM \cite{streamingvlm} study how cached
+visual or KV state can be reused across requests or over long contexts. That
+line of work is especially relevant to our persistent-KV contribution: the
+paper's largest local speedups do not come from a better frame selector, but
+from refusing to repay the same prefix when the next question is about the same
+video.
+
+Our position is therefore narrower and more explicit than a generic
+``efficient-video-VLM'' claim. We study training-free anti-recomputation for
+frozen video VLMs, separating first-pass reuse, after-ingest reuse, and
+mechanism-validation routing. The paper is not a claim that pixel differencing
+is the final signal. It is a claim that careful temporal reuse is already worth
+studying before the full codec-native path lands.
+
+\begin{sectiontodo}{Freeze the final comparison table against the primary papers}
+The mechanism families are now in the right buckets, but a submission version
+still needs a tighter final comparison table with exact titles, venues, and one
+checked headline metric per cited method.
+
+\textcolor{todoBorder}{Source pointers: \path{docs/related-work-table.md},
+\path{docs/literature-map-2026-04-16.md},
+\path{paper/framing.md}.}
+\end{sectiontodo}

@@ -1,0 +1,17 @@
+\begin{table}[H]
+\centering
+\caption{Headline anti-recomputation results by regime.}
+\label{tab:headline-results}
+\small
+\begin{tabularx}{\linewidth}{l X c X l}
+\toprule
+Regime & Setting & Gain & Fidelity & Status \\
+\midrule
+After-ingest & Qwen same-video follow-up, 16f & 91.1$\times$ & 0.807\,s median; $\Delta$acc +0.000 & clean \\
+After-ingest & Qwen same-video follow-up, 8f & 47.2$\times$ & 0.815\,s median; $\Delta$acc -0.048 & clean \\
+First-pass & Gemma MVBench 8f holdout & 1.407$\times$ & $\Delta$acc -0.033 & advisory \\
+First-pass & Gemma VideoMME 8f holdout & 1.113$\times$ & $\Delta$acc +0.000 & clean \\
+First-pass & Gemma TOMATO 8f holdout & 1.194$\times$ & $\Delta$acc -0.067 & imported adv. \\
+\bottomrule
+\end{tabularx}
+\end{table}

@@ -10,7 +10,7 @@ This repo starts from an imported whitepaper, imported ChatGPT seed artifacts, a
 - Imported ChatGPT material lives under `seed/chatgpt/`.
 - Selected reference material from the original `codec-through-sam` repo lives under `seed/original_repo/`.
 - Clean rewritten utilities for frame probing, block classification, and strict answer parsing live under `src/codec_through/`.
-- The current research plan, experiment ledger, and paper framing live in `PLAN.md`, `research/`, and `paper/`.
+- The current research plan, experiment ledger, and paper workspace live in `PLAN.md`, `research/`, and `paper/`.
 
 ## Research Principles
 
@@ -59,6 +59,10 @@ uv run python scripts/generate_synthetic_corpus.py
 - [docs/clip-policy.md](docs/clip-policy.md): local-only clip and corpus policy
 - [docs/benchmark-setup.md](docs/benchmark-setup.md): benchmark-native TOMATO and MVBench asset setup
 - [research/README.md](research/README.md): experiment-note and decision-log workflow
+- [paper/README.md](paper/README.md): paper workspace overview
+- [paper/priority.md](paper/priority.md): current paper-triage order
+- [paper/claim-matrix.md](paper/claim-matrix.md): paper claim truth table
+- [paper/publishability-status.md](paper/publishability-status.md): reviewer-facing paper status
 - [paper/framing.md](paper/framing.md): current paper story, anti-claims, and future horizons
 - [docs/chatgpt-review-packet.md](docs/chatgpt-review-packet.md): focused next-pass external review questions
 - [docs/original-repo-audit.md](docs/original-repo-audit.md): what the original repo actually proved
@@ -92,7 +96,13 @@ uv run python scripts/generate_synthetic_corpus.py
 │   └── corpus/
 │       └── manifest.toml
 ├── paper/
-│   └── framing.md
+│   ├── AGENTS.md
+│   ├── README.md
+│   ├── arxiv/
+│   ├── claim-matrix.md
+│   ├── framing.md
+│   ├── priority.md
+│   └── publishability-status.md
 ├── research/
 │   ├── README.md
 │   ├── decision-log.md

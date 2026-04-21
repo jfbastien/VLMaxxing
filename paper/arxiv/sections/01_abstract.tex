@@ -1,0 +1,20 @@
+Video VLMs keep paying to understand pixels they have already understood. In
+the most favorable reuse regimes, the savings are already large: same-video
+follow-up questions drop to 815\,ms median with 47.2$\times$ speedup at 8
+frames and 91.1$\times$ at 16 frames; deployment-scale streaming evidence
+reaches 13$\times$ streaming ViT reduction, \mbox{$\sim$50$\times$}
+dominant-pipeline reduction, and 4.2--4.5$\times$ end-to-end speedups on real
+video. We study this training-free anti-recomputation problem on frozen
+video-VLM stacks and keep three regimes separate: first-pass vision pruning,
+after-ingest follow-up queries on the same video, and benchmarked routing
+under a fixed dense backend. On Gemma 4-E4B-4bit, mid-layer vision-tower
+pruning at $L=2$ and $kr_V=0.50$ yields measured first-pass gains from
+1.113$\times$ to 1.407$\times$ on clean or advisory holdout cells, with
+magnitude explained by a share$\times$reduction ceiling
+$1 / (1 - V_{\mathrm{share}} V_{\mathrm{red}})$. Qwen routing experiments on
+TOMATO and MVBench then supply the mechanism boundary: a simple
+bounded-staleness planner preserves the quality--compute frontier, beats
+novelty-ranked dense selection, and shows that fresh-compute placement matters
+more than novelty magnitude alone. Together these results make
+anti-recomputation a practical, regime-dependent systems strategy for video
+VLMs.
