@@ -99,8 +99,8 @@ duration-conditional partial reproduction + 1.55D infra-falsified):
    full first-query prefill once, subsequent questions on the *same
    video* reuse the KV and return in sub-second time. These are not
    "any-fresh-video" latencies. 7B Qwen 2.5-VL-4bit clean at ≤16f /
-   ≤6.5k prefill tokens (Δacc=0); 3B clean at ≤36f / ≤14.5k prefill
-   (Δacc=−0.19 plateau). Basin-onset depth scales ~1.6× with parameter
+   ≤6.5k prefill tokens (Δacc=0); 3B at ≤36f / ≤14.5k prefill sits on
+   a tolerated Δacc=−0.19 plateau (not clean, bounded). Basin-onset depth scales ~1.6× with parameter
    count; basin geometry (non-letter attractor emergence) is
    cross-architectural; sampler-side intervention is
    architecture-conditional (insufficient at 7B basin at 20f AND 40f;

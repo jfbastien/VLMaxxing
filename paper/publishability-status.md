@@ -49,12 +49,13 @@ contributions (all landed before Codex round-26 2026-04-21):
   4-regime temperature matrix. Mechanism decomposes into three
   independently-varying axes (threshold onset × saturation ceiling ×
   basin-attractor identity), scaling relation ~1.6× basin-onset depth
-  across architectures. Deployment-facing envelope: 7B ≤ ~8k prefill,
-  3B ≤ ~16k prefill for ≤ ±0.05 Δacc.
+  across architectures. Deployment-facing envelope: 7B ≤ ~8k prefill
+  at Δacc=0 (clean); 3B ≤ ~16k prefill at Δacc=−0.19 plateau
+  (tolerated, not clean).
 - **C-VISION — vision-tower pruning with scatter-back ceiling**
   (claim 15). `E2E ≤ 1/(1 − V_share × V_red)` on Gemma 4-E4B-4bit
-  validated across **7 regime cells** (4 dev + 3 holdout); V_red
-  benchmark-invariant at 39–43% at L=2 kr_V=0.50. **Three-benchmark
+  validated across **8 regime cells** (4 dev + 3 holdout + 1 pooled
+  EXP10 n=60); V_red benchmark-invariant at 39–43% at L=2 kr_V=0.50. **Three-benchmark
   holdout trifecta CLOSED 2026-04-21** (VideoMME 8f CLEAN,
   MVBench 8f CLOSED-ADVISORY on thermal-calibration footnote,
   TOMATO 8f EARNED-ADVISORY on favorable-drift footnote).
@@ -123,7 +124,8 @@ narrative.
 > 47×→150× speedups along an 8/16/18/20/24/32-frame curve on 7B-4bit
 > (prefill-dominated) and 136×→213× on 3B-4bit (decode-dominated).
 > Safe deployment envelope is architecture-specific: 7B ≤ ~8k prefill
-> holds Δacc within ±0.05; 3B ≤ ~16k prefill. Fidelity degradation
+> at Δacc=0 (clean); 3B ≤ ~16k prefill sits on a tolerated Δacc=−0.19
+> plateau (bounded, not clean). Fidelity degradation
 > decomposes into three independently-varying axes (threshold onset,
 > saturation ceiling, basin-attractor identity), with a ~1.6× basin-
 > onset depth scaling across architectures. Sampler-invariance at both

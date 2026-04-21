@@ -77,11 +77,12 @@ envelope is architecturally bounded and characterized:
   single-token attractor at ≤ 24 frames. The basin is
   sampler-invariant at both 20 f and 40 f; sampler intervention does
   not rescue it at 7 B.
-- **Qwen 2.5-VL-3B-4bit**: clean at ≤ 36 frames / ≤ 14.5 k prefill
-  (Δacc = −0.19 plateau). Basin onset at ~40 frames. At 3 B-40 f
-  the basin is sampler-dispersible (4/14 → 1/14) but returns only to
-  the pre-basin plateau, not to baseline — sampler-invariance is an
-  architecture-conditional property, not a universal rescue.
+- **Qwen 2.5-VL-3B-4bit**: tolerated Δacc = −0.19 plateau at ≤ 36
+  frames / ≤ 14.5 k prefill — **not clean**, bounded. Basin onset at
+  ~40 frames. At 3 B-40 f the basin is sampler-dispersible (4/14
+  → 1/14) but returns only to the pre-basin plateau, not to baseline
+  — sampler-invariance is an architecture-conditional property, not
+  a universal rescue.
 - **Basin-onset depth scales ~1.6× with parameter count** (7 B onset
   ~16–20 f; 3 B onset ~36–40 f). The basin geometry — non-letter
   attractor emergence, not a random letter flip — is cross-
