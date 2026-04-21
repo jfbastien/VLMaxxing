@@ -1,4 +1,4 @@
-# Publishability Status — 2026-04-19
+# Publishability Status — 2026-04-21
 
 One-file answer to "what can we actually claim, in what venue, with what
 numbers, today." Kept in sync with [claim-matrix.md](claim-matrix.md) but
@@ -37,6 +37,15 @@ delta on Qwen or Gemma), name the architecture explicitly.
 > no training, no architecture change, one percentile pass + a bounded
 > staleness counter.**
 
+**Secondary headline (1.51V vision-tower pruning, dev n=30 only; holdout
+unpatched pair not yet run):**
+
+> **Vision-tower pruning at L=2 kr_V=0.50 on Gemma 4-E4B-4bit (MLX):
+> 1.24× end-to-end on TOMATO and 1.21× on MVBench motion dev n=30,
+> thermally paired, at −0.10pp / +3.3pp accuracy delta. Governed by an
+> architectural ceiling E2E ≤ 1/(1 − V_share × V_red) validated on 4
+> regimes (vision axis) + 1 regime (LLM-decode axis).**
+
 What we CANNOT yet honestly say in HN-headline form:
 
 - "**N%** faster" — Track B sparse execution path is not written; only
@@ -69,6 +78,7 @@ N=30 holdout, clean-tree provenance; projected compute-savings ceiling
 | F | **Pixel-diff proxy → ViT feature-change correlation is non-trivial but content-conditional.** | Phase 1.36 feature-change oracle: best pixel stat Pearson r=0.233 (TOMATO MEAN) to r=0.504 (MVBench CPF). Ranking is content-dependent; the best routing stat (MAX_ABS) is NOT the best point predictor. | `phase1_36_feature_change_oracle/*.json`; phase 1.36 note |
 | G | **Dense wall-clock baseline captured on M3 Air 16GB.** | TOMATO n=10 mc_scoring at 8 frames, 560×560: 60.1 s/item median; prefill 72% of wall time, vision encode 22%, decode 6%; peak 6.87 GB. | `results/track_b/tomato_mc_n10.json`; phase 1.50 note |
 | H | **Hard ceiling for vision-cache-only Track B: 22% end-to-end speedup at this geometry.** | Arithmetic: vision encode is 22% of per-item wall time, so any method that only skips vision work caps at 22% end-to-end before prefill savings. | Derived from G; explicit in phase 1.50 §Paper implications |
+| R | **1.51V vision-tower pruning on Gemma 4-E4B-4bit (MLX), dev n=30 at L=2 kr_V=0.50 thermally paired:** VideoMME 1.08× (8f) / 1.12× (16f), MVBench **1.21×**, TOMATO **1.24×**; V_red benchmark-invariant at ~40% across all three benchmarks; acc Δ +3.3pp (TOMATO) / -10pp MVBench (localized to object-binding, 3 item flips) / -6.7pp (VideoMME 8f, long+medium) / +3.3pp (VideoMME 16f). Scatter-back ceiling `1/(1 − V_share × V_red)` predicts E2E within 2pp on 4 cells. **32f frame-scaling probe:** V_share = 31.0% at 32f (continues 15.2% → 24.3% → 31.0% monotone), but thermal pairing FAILS on M3 16 GB at 32f (decode Δ = +7.6%); observed cross-run 0.94× is thermally confounded; charitable ceiling prediction 1.14×, sub-threshold. **Holdout replication (EXP15/16, VideoMME holdout v1 n=30 disjoint):** H_stack partial confirmation — V+novelty kr=0.3 on V-patched baseline stacks at 1.064× within-run (thermally clean), 1.127× cross-session (dirty), agreement=0.667, acc Δ=-0.033. LLM-side ceiling `1/(1 − generate_share × generate_reduction) = 1.064×` matches observed to 0.1pp (fifth ceiling regime). V_share on holdout = 8.6% (vs dev 15.2%) explains smaller magnitude — regime-conditional, not noise. **V-only UNPATCHED-vs-PATCHED holdout pair NOT YET RUN** — TOMATO/MVBench/VideoMME V-only cells remain dev-only headlines until EXP17/18 lands (~40 min). | `research/experiments/2026/2026-04-21-phase-1_51V-expansion-findings.md`; `2026-04-21-phase-1_51V-32f-probe-findings.md`; `2026-04-21-phase-1_51V-holdout-findings.md`; `artifacts/phase1_51V_expansion/exp{01..12}_*_summary.json`; `artifacts/phase1_51V_session2/exp{13..16}_*_summary.json` |
 | O | **Persistent-KV follow-up speedup 47×/91×/70×/94×/122×/150× at 8f/16f/18f/20f/24f/32f on Qwen 7B-4bit; reproduces Sam §2.13.3 AND confirms prefill-dominance on a six-point scaling curve. Fidelity preservation is bounded by a MONOTONIC-SATURATING RAMP — clean at ≤ ~6.5k tokens (16f, Δacc=0); 4-basin mixed-attractor degeneracy at ~7.3k (18f, Δacc=−0.24); 2-basin dominance at ~8.1k (20f, Δacc=−0.38); single-token attractor by ~9.7k (24f, Δacc=−0.43). Pairwise Δacc increments decay (−0.238, −0.143, −0.048, 0). Cross-architecture 3-point probe on Qwen 2.5-VL-3B-4bit: 20f Δacc=−0.048 (matched); 24f Δacc=−0.190 (shifted-ramp); 32f Δacc=−0.190 (PLATEAUED — numerically identical to 24f at 60% deeper prefill). 3B saturates at a ~2.3× SHALLOWER CEILING than 7B (−0.19 vs −0.43), and all 28/28 3B follow-ups across 20f/24f/32f emit clean 2-token letter answers (zero basin collapse). Cache-reuse damage decomposes into three independently-varying architectural dimensions: (1) threshold onset is capacity-modulated (7B ramps at ~7.3k; 3B ramps at ~9.7k), (2) saturation ceiling is architecture-specific (−0.43 vs −0.19), (3) failure geometry is architecture-specific (basin collapse to `addCriterion` vs clean-letter drift). **Temperature probe on 7B/20f (T=0.7 + min_p=0.05 + seed=42): Δacc = −0.429 — numerically temperature-invariant (greedy −0.381; diff 0.048 ≈ 1/21 noise floor). H2-temp.distribution-collapse EARNED; H-greedy-commit FALSIFIED. Basin mass redistributed to a NOVEL pathological attractor (`自动生成` Chinese "auto-generate", 5/14) NOT to clean decoding (clean share unchanged at 1/14). The pathological distribution is intrinsic to cache-reused 7B logits, not a greedy-argmax artifact. Failure geometry is architecture-specific AT THE DISTRIBUTION LEVEL on 7B — not sampler-level.** **Temperature mirror on 3B/20f (same sampler): Δacc = −0.095 (greedy −0.048 → temp −0.095, shifts by 1/21 noise floor); 14/14 clean 2-token letter follow-ups; 0 pathological-attractor emergence; H2-3B-temp.null-robust EARNED on both preregistered conditions; H2-3B-temp.hidden-basin FALSIFIED. Sampler-invariance now verified at BOTH architecture ceilings — distribution-level fidelity-loss vs distribution-level clean-drift is cross-architectural, not a 7B idiosyncrasy. Paper corollary: practitioner cannot recover fidelity via temperature + min-p at either ceiling; fidelity recovery requires upstream intervention (Phase 1.55D selective re-prefill preregistered 2026-04-20).** | 1.55A 8f: n=21, follow-up median 815 ms, Δacc −0.048, prefix 0.982, peak RSS 2.81 GB. 1.55A 16f: n=21, follow-up median 807 ms, **Δacc 0.000**, prefix 0.991, peak RSS 1.48 GB. 1.55A 18f: n=21, follow-up median 1102 ms, **Δacc −0.238 (ramp; 4/14 clean-correct + 3/14 clean-wrong-choice + 3/14 long-garbage + 2/14 empty + 2/14 saturated-`addCriterion`; richest basin diversity in the sweep)**, prefix 0.9920, peak RSS 4.19 GB. 1.55A 20f: n=21, follow-up median 905 ms, **Δacc −0.381 (ramp; 9/14 short `addCriterion` + 4/14 long garbage + 1/14 clean-correct)**, prefix 0.9928, peak RSS 3.51 GB. 1.55A 24f: n=21, follow-up median 864 ms, **Δacc −0.429 (saturated)**, prefix 0.9940, peak RSS 3.30 GB. 1.55A 32f: n=21, follow-up median 1008 ms, **Δacc −0.429 (saturated)**, prefix 0.9955, peak RSS 2.50 GB. **1.55A-3B 20f cross-arch (2026-04-19): Qwen 2.5-VL-3B-Instruct-4bit, same 7 clips × 3 Qs, same driver, same prefill ~8.1k → follow-up median 412 ms, speedup 136.07×, Δacc = −0.0476 (INSIDE ±0.05 envelope), prefix 0.9928, peak RSS 3.93 GB, 7/14 follow-up correct. All 14 follow-ups emit 2-token clean letter answers — NO addCriterion basin, NO long-garbage basin. 1.55A-3B 24f boundary-shift (2026-04-20): same 7 clips, 24 frames (~9.7k prefill) → follow-up median 423 ms, speedup 154.17×, Δacc = −0.190 (H2-3B-24.shifted-ramp EARNED, band (−0.30, −0.05)), prefix 0.9940, 6/14 follow-up correct. First-query accuracy 4/7 identical to baseline; follow-up Δacc = −0.286 concentrated on cache-reused queries. Basin structure: 14/14 clean 2-token letter answers (no addCriterion, no long-garbage) — 3B degrades via decode-choice drift, not basin collapse. 1.55A-3B 32f saturation (2026-04-20): same 7 clips, 32 frames (~12.9k prefill) → follow-up median 484 ms, speedup 213.01× (exceeds 7B 32f's 150×), **Δacc = −0.190 (H2-3B-32.plateaued EARNED, band (−0.25, −0.10] — most-surprising pre-registered sub-outcome)**, prefix 0.9955, peak RSS 4.58 GB, 5/14 follow-up correct. **Δacc is numerically identical to 3B 24f** (same 10/21 session, same 14/21 baseline) — 3B has saturated at a ~2.3× shallower ceiling than 7B. First-query 5/7 both modes. All 14 follow-ups remain clean 2-token letter answers at 12.9k prefill — no basin collapse emerges on 3B at deeper prefill than 7B saturation. Cross-arch 3-point: the cache-reuse damage decomposes into three orthogonal dimensions — threshold onset (capacity-modulated), saturation ceiling (architecture-specific), failure geometry (architecture-specific).** 24f and 32f failure statistics are numerically identical (both session 9/21, baseline 18/21, 14/14 follow-ups emit literal `addCriterion` token) — single-attractor collapse. **Basin-structure evolution across ramp on 7B**: clean (16f) → 4-basin diversity (18f) → 2-basin dominance (20f) → single attractor (24f+). This progressive collapse favours threshold mechanisms with a soft edge over pure gradient and over pure cliff. **Mechanism discrimination (cross-arch 2-point): the ramp at 3B is shifted, not absent** — 3B 20f Δacc=−0.048 → 3B 24f Δacc=−0.190 → ramp onset is capacity-modulated with an architecture-specific threshold. **Basin attractor identity is architecture-specific:** 7B saturates to `addCriterion`; 3B stays in the 2-token letter distribution even while accuracy drops. Rules out "pure prefill-length-intrinsic" as a complete mechanism and rules out "shared-tokenizer-space basin" as the locus of the attractor; supports "model-capacity / depth-dependent accumulation". Cold-prefill Q1 accuracy: 7/7 at 18f/24f/32f, 6/7 at 20f (one cold flake), matches baseline — content understanding is intact; only the cache-reuse path is. Speedup scaling (47×→91×→70×→94×→122×→150×) and first-query scaling (38.5→73.5→77.5→83.8→108.9→163.2 s) form a 6-point prefill-dominance curve (18f dip is median-inflated by long-garbage gen tokens, not cache-coupled). 3B 20f speedup 136× exceeds 7B 20f 94× — prefill-dominance ratio is HIGHER at 3B because decode is comparatively faster. Median follow-up matches Sam's 0.8 s (Gemma 4 26B / M5 Max) across 8f/16f. | `research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md`; `.../2026-04-19-phase-1_55A-{16,18,20,24,32}f-frame-scaling-findings.md`; `.../2026-04-19-phase-1_55A-3b-crossarch-findings.md`; `.../artifacts/loop_queue_20260419_155108/phase1_55A_persistent_kv_qwen/summary.json`; `.../artifacts/phase1_55A_{16,18,20,24,32}f_frame_scaling/summary.json`; `.../artifacts/phase1_55A_3b_20f_crossarch/summary.json`; `.../2026-04-20-phase-1_55A-3b-24f-boundary-findings.md`; `.../artifacts/phase1_55A_3b_24f_boundary/summary.json`; `.../2026-04-20-phase-1_55A-3b-32f-saturation-findings.md`; `.../artifacts/phase1_55A_3b_32f_saturation/summary.json`; `.../2026-04-20-phase-1_55A-7b-20f-temperature-findings.md`; `.../artifacts/phase1_55A_7b_20f_temperature/summary.json`; `.../2026-04-20-phase-1_55A-3b-20f-temperature-findings.md`; `.../artifacts/phase1_55A_3b_20f_temperature/summary.json` |
 
 ### What remains BLOCKED before venue submission
@@ -108,6 +118,7 @@ is work the user is buying forever. What the user is paying for
 | O | Phase 1.55A persistent-KV follow-up latency (n=21 queries × 6 frame counts + 3B cross-arch 3-point + 7B/20f temperature probe + 3B/20f temperature probe) | ≈ 18 min at 8f (1057 s) + ≈ 35 min at 16f (2095 s) + ≈ 38 min at 18f (2302 s) + ≈ 42 min at 20f (2506 s) + ≈ 55 min at 24f (3281 s) + ≈ 76 min at 32f (4573 s) + ≈ 27 min at 3B-20f (1595 s) + ≈ 31 min at 3B-24f (1830 s) + ≈ 50 min at 3B-32f (2972 s) + ≈ 48 min at 7B-20f-temp (2862 s) + ≈ 24 min at 3B-20f-temp (1427 s) = ≈ 7.3 h | ≈ 7.3 h | Qwen 2.5-VL-7B-4bit + 2.5-VL-3B-4bit |
 | P | Phase 1.51V expansion (12 exps — Tier 0 confirm + Tier 1 Pareto + Tier 2 cross-bench + Tier 3 stack + Tier 4 16f scale) | 15,621 s measured = **4.34 h** (EXP01–12; runtime per-exp 606–2155 s, dense+pruned both reported) | 4.34 h | Gemma 4-E4B-4bit |
 | Q | Phase 1.51V 32f probe (EXP13 unpatched + EXP14 L=2 kr=0.50, n=30 each) | 7,167 s measured = **1.99 h** (EXP13 3415 s + EXP14 3752 s; thermal confounder documented) | 1.99 h | Gemma 4-E4B-4bit |
+| R | Phase 1.51V holdout session 2 (EXP15 V-patched baseline + EXP16 V+novelty kr=0.3, n=30 VideoMME holdout v1) | 2,706 s measured = **0.75 h** (EXP15 1425 s + EXP16 1281 s; thermal pairing dirty -7.8% decode Δ; within-run pairing CLEAN) | 0.75 h | Gemma 4-E4B-4bit |
 
 ### Blocked / forward queue (pre-reg runtime budget)
 
@@ -115,7 +126,7 @@ is work the user is buying forever. What the user is paying for
 |---|---|---|---|---|
 | I | Sparse-execution delta (claim 5 "N% measured speedup") | ≈ 1 h per benchmark | either | sparse execution path not written |
 | L | Placement ablation (phase 1.38) | ≈ 30 min | Qwen 2.5-VL-7B-4bit | not queued |
-| N₅₇ | Phase 1.57 feature-drift measurement (Qwen landed; Gemma deferred) | **Qwen 8/16/32f: LANDED 2026-04-19** (~30 min total); Gemma path deferred (needs inline ViT encode) | both | **Qwen DONE**: STATIC cos 0.562/0.607/0.638; H2 FALSIFIED, H3 EARNED; Gemma path deferred |
+| N₅₇ | Phase 1.57 feature-drift measurement (Qwen landed; Gemma deferred) — **lower-bound proxy via adjacent fresh-vs-fresh cosine**, NOT a direct cache-substitute error measurement (the 1.45/1.46 oracle is the direct measurement path). | **Qwen 8/16/32f: LANDED 2026-04-19** (~30 min total); Gemma path deferred (needs inline ViT encode) | both | **Qwen DONE**: STATIC cos 0.562/0.607/0.638; H2 FALSIFIED, H3 EARNED (monotonic-rise with frame count); Gemma path deferred |
 | N₅₅ₐ | Phase 1.55A persistent-KV reproduction (short bucket 7×3, 8f+16f+20f+24f+32f) | **LANDED 2026-04-19** (1057 s at 8f + 2095 s at 16f + 2506 s at 20f + 3281 s at 24f + 4573 s at 32f = 13 512 s total) | Qwen 2.5-VL-7B-4bit | 8f and 16f earn all 4 H; 20f/24f/32f earn H1/H3/H4 but REJECT H2. 5-point speedup curve (47×→91×→94×→122×→150×) confirms prefill-dominance. Fidelity transition is a **narrow soft threshold, not a clean cliff**: clean at 6.5k (16f, Δacc=0), partial-basin-collapse at 8.1k (20f, Δacc=−0.38, mixed 10 short `addCriterion` + 4 long-garbage + 1 correct), saturated single-token attractor at 9.7k (24f, Δacc=−0.43) persisting through 12.9k (32f). Favours threshold mechanisms with a soft edge (4-bit KV quantization budget, M-RoPE OOD) over pure accumulation. 18f bisection in flight 2026-04-19 to localize ramp onset. Promoted to row O with safe-prefill-budget caveat |
 | N₅₆ | Phase 1.56 VLM-signaled refresh (3 arms × n=30 VideoMME dev) | ≈ 45 min @ 8f; ≈ 2 h @ 32f | Qwen 2.5-VL-7B-4bit | Phase 1.44 margin logging + RefreshPolicy API |
 | N₁.₅₂R | Phase 1.52R temporal+spatial composition on Gemma | ≈ 2-3 h @ 8f; ≈ 6-8 h @ 32f | Gemma 4-E4B-4bit | 1.42 + 1.51R sweep completion |
@@ -129,10 +140,10 @@ is work the user is buying forever. What the user is paying for
 **Already spent** (benchmark wall-clock, cumulative approx over project):
 - Lane A (TOMATO + MVBench routing, Qwen): ~25-30 h (A+B+C+D+E+F+G, measured across many N=30 passes)
 - Lane B (Gemma 1.51R + ceiling validation): ~10-12 h (K+M)
-- Lane B (Gemma 1.51V expansion + 32f probe): ~6.3 h (P 4.34 h + Q 1.99 h measured)
+- Lane B (Gemma 1.51V expansion + 32f probe + holdout session 2): ~7.1 h (P 4.34 h + Q 1.99 h + R 0.75 h measured)
 - VideoMME lane (claim 8 earned + strengthened): ~82 min (J₈ 16 min + J₁₆ 38 min + J₃₂L 28 min)
 - Persistent-KV lane (claim 14): ~7.3 h (O)
-- **Total benchmark wall-clock already spent: ~50-57 h**
+- **Total benchmark wall-clock already spent: ~51-58 h**
 
 **Forward queue** (blocked + runnable-now, benchmark wall-clock only):
 - **Runnable now**: 1.57 ~60 min + 1.55A ~17 min = **~1.3 h**
@@ -192,6 +203,30 @@ queue once infra is in place.
   for codec MV/CBF; phase 1.29 MV-only is the bridge."
 
 ## Immediate next actions to extend publishability (ranked for one-paper SOTA goal)
+
+**Status update 2026-04-21 (1.51V expansion + 32f probe + holdout session 2 landed):**
+- **1.51V V-tower pruning (Gemma 4-E4B-4bit, dev n=30):** 12/12 expansion
+  experiments closed at L=2 kr_V=0.50, thermally paired. VideoMME 1.08×
+  (8f) / 1.12× (16f) / 0.94× (32f, thermal-confounded); MVBench **1.21×**;
+  TOMATO **1.24×**. V_red benchmark-invariant at 39–43%. Scatter-back
+  ceiling `1/(1 − V_share × V_red)` predictive within 2pp on 4 cells.
+  **32f probe:** V_share continues monotone (15.2% → 24.3% → 31.0%), but
+  M3 16 GB thermal pairing breaks at 32f (decode Δ=+7.6%); H_32f_e2e
+  REJECTED on both observed (0.94×) and charitable-ceiling (1.14×)
+  grounds.
+- **1.51V holdout session 2 (n=30 disjoint VideoMME items):** H_stack
+  PARTIAL confirmation — V+novelty kr=0.3 stacks at 1.064× within-run
+  (thermally clean) / 1.127× cross-session (dirty, decode Δ=-7.8%);
+  agreement 0.667; acc Δ=-0.033. V_share on holdout = 8.6% (vs dev
+  15.2%); LLM-side ceiling `1/(1 − generate_share × generate_reduction)
+  = 1.064×` matches observed to 0.1pp. Fifth ceiling-model regime.
+- **V-only holdout UNPATCHED-vs-PATCHED pair NOT RUN.** EXP15 is a
+  V-patched reference point (novelty=1.0, not an unpatched baseline).
+  The four dev headlines above stay "dev n=30" until an EXP17/18 holdout
+  unpatched pair lands (~40 min runtime, one sandbox cycle).
+- **Thermal pairing runner gate recommended.** Three of four 1.51V pairs
+  violate decode-Δ<2% (only EXP11/12 clears). Codifying auto-retry at
+  the runner level would prevent future thermal confound.
 
 **Status update 2026-04-18 (post-Stage-6 cross-bucket surface + 1.41 landed):**
 - **Claim #8 VideoMME baseline EARNED** — Qwen 2.5-VL-7B-Instruct-4bit
