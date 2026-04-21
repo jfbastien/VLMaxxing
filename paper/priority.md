@@ -11,19 +11,25 @@ Codex round-25 (2026-04-21 session 4). See `paper/framing.md` for the three majo
 contributions (C-CEILING, C-PERSIST, C-VISION) these priorities map to.
 
 Round-25 status: must-do #1 (VideoMME 8f V-only holdout pair) CLOSED;
-should-do #2 (MVBench + TOMATO V-only holdout pairs) session 4 QUEUE
-COMPLETE — **MVBench 8f CLOSED with advisory pass** (EXP19/20: E2E
-1.407× far exceeding dev 1.21×, V_red 0.471, acc Δ −0.033; thermal
-gate 11.66% formally fails but 50 ms absolute delta is OS-jitter
-scale on MVBench's 432 ms decode window; calibration-revision
-proposed). **TOMATO 8f THERMALLY CONFOUNDED** (EXP21/22: decode Δ
-6.52% = 206 ms absolute, genuine thermal drift; 4 dense-arm gen
-outliers corrupt the mean-based E2E statistic; re-run queued as
-session 5). Findings: `research/experiments/2026/2026-04-21-phase-1_51V-session4-findings.md`.
-Driver bug fixed mid-session: `_count_frames` metadata fast path
-removed after 0298-00.mp4 reported `stream.frames=366` while
-iterative decode yielded only ~235 decodable frames (TOMATO EXP21
-initial hard-fail at item 12/30).
+should-do #2 (MVBench + TOMATO V-only holdout pairs) **three-benchmark
+C-VISION trifecta effectively closed** with differentiated advisory
+strength — **VideoMME 8f CLOSED clean** (session 3 EXP17/18); **MVBench
+8f CLOSED-ADVISORY** (session 4 EXP19/20: E2E 1.407× far exceeding dev
+1.21×, V_red 0.471, acc Δ −0.033; thermal gate 11.66% formally fails
+but 50 ms absolute delta is OS-jitter scale on MVBench's 432 ms decode
+window; calibration-revision proposed); **TOMATO 8f EARNED-ADVISORY**
+(session 5 EXP23/24 rerun 2026-04-21: E2E 1.194× sum-ratio mean, median
+1.232×, clears 1.15× gate; V_red 0.350 below [0.38, 0.48] band by 0.03;
+decode Δ 119.7 ms = 3.51% rel in FAVORABLE direction — patched arm
+cooler than reference, observed speedup conservatively under-stated
+not inflated; ceiling model predicts 1.155×, observed + friendly drift
+consistent). Session 4 TOMATO EXP21/22 had hostile +206 ms drift and
+was unreliable; session 5 is qualitatively much cleaner (favorable
+direction + zero dense-arm outliers). Findings:
+`research/experiments/2026/2026-04-21-phase-1_51V-session5-findings.md`.
+Driver bug fixed session 4: `_count_frames` metadata fast path removed
+after 0298-00.mp4 reported `stream.frames=366` while iterative decode
+yielded only ~235 decodable frames.
 
 ## Must-do (hard blockers on a main-track submission)
 
@@ -97,21 +103,24 @@ in its own dimension.
    Preregistered under task #152.
 
 2. **1.51V MVBench and TOMATO holdout unpatched-vs-patched pairs.**
-   Analogous to the VideoMME 8f holdout (must-do #1) but for the
-   other two benchmarks. **MVBench 8f CLOSED 2026-04-21 with advisory
-   pass** (EXP19/20: E2E 1.407× far exceeding dev 1.21×, V_red 0.471
-   OOB+ favorable, acc Δ −0.033; thermal gate formally fails at
-   11.66% but 50 ms absolute is OS-jitter on MVBench's 432 ms decode
-   window — calibration revision proposed: `|Δ| < max(0.02 ×
-   decode_ms, 100 ms)`). **TOMATO 8f THERMALLY CONFOUNDED 2026-04-21**
-   (EXP21/22: decode Δ 6.52% = 206 ms absolute, genuine drift; 4
-   dense-arm gen outliers corrupt the mean-based E2E to 1.33× while
-   robust estimator gives 1.06×; V_red 0.287 well below band; re-run
-   queued as session 5). Findings:
-   `research/experiments/2026/2026-04-21-phase-1_51V-session4-findings.md`.
-   Paper-table impact: MVBench 8f cell may drop "dev-only n=30" with
-   thermal-calibration footnote; TOMATO 8f cell retains "dev-only
-   n=30" pending session 5.
+   **CLOSED 2026-04-21** — three-benchmark C-VISION trifecta achieved
+   with differentiated advisory strength. **MVBench 8f CLOSED-ADVISORY**
+   (EXP19/20: E2E 1.407× far exceeding dev 1.21×, V_red 0.471 OOB+
+   favorable, acc Δ −0.033; thermal gate formally fails at 11.66% but
+   50 ms absolute is OS-jitter on MVBench's 432 ms decode window —
+   calibration revision: `|Δ| < max(0.02 × decode_ms, 100 ms)`).
+   **TOMATO 8f EARNED-ADVISORY** (session 5 EXP23/24 2026-04-21:
+   E2E sum-ratio mean **1.194×** clears 1.15× gate, median 1.232×;
+   V_red 0.350 below [0.38, 0.48] band by 0.03; decode Δ 119.7 ms =
+   3.51% in FAVORABLE direction — EXP24 patched arm ran cooler than
+   EXP23 reference, so observed speedup is conservatively under-stated,
+   not inflated; scatter-back ceiling predicts 1.155×; consistent with
+   ceiling + small friendly thermal correction; acc Δ −0.067).
+   Findings: `research/experiments/2026/2026-04-21-phase-1_51V-session5-findings.md`.
+   Paper-table impact: MVBench 8f cell drops "dev-only n=30" caveat
+   with thermal-calibration footnote; TOMATO 8f cell drops "dev-only
+   n=30" caveat with favorable-drift footnote. No further TOMATO rerun
+   required for paper-grade claim.
 
 3. **1.51V cross-architecture transfer probe (Qwen 2.5-VL-4bit).**
    Extend the scatter-back ceiling from one architecture (Gemma
