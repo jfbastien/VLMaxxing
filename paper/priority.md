@@ -18,6 +18,14 @@ C-PERSIST, C-VISION) these priorities map to, and `paper/abstract.md`
 + `paper/intro.md` for the paper-facing three-contributions narrative
 (landed 2026-04-21).
 
+Autonomous session 2026-04-21 status: EXP10 n=60 H_stack composition
+re-check (should-do #1) **CLOSED-NULL** (task #152). Pooled n=60
+E2E 1.042× / lift 2.6pp / agreement 0.65; ceiling model reproduces
+observation to within 0.2pp — pooled fixed_frac = 0.875 is decode-
+dominated, arithmetic ceiling at per-token speedup 1.446× is 1.041×.
+Composition-appendix claim does not land; three-contribution spine
+unchanged. See `research/experiments/2026/2026-04-21-phase-1_51V-exp10-n60-findings.md`.
+
 Round-25 status: must-do #1 (VideoMME 8f V-only holdout pair) CLOSED;
 should-do #2 (MVBench + TOMATO V-only holdout pairs) **three-benchmark
 C-VISION trifecta effectively closed** with differentiated advisory
@@ -103,12 +111,22 @@ These are not blockers, but any one of them individually raises the
 submission tier from "efficiency workshop" to "main-track defensible"
 in its own dimension.
 
-1. **EXP10 n=60 H_stack thermally-paired re-check.** Tightens the
-   H_stack CI from ±0.05 to ±0.03, makes the "stacking composes,
-   ceiling-bounded" secondary claim defensible on n=60 rather than
-   n=30. Runtime ~60-90 min. Prereq: thermal-pairing runner-level gate
-   (codex round-23 P3) to avoid a fourth decode-Δ ≥ 2% pair.
-   Preregistered under task #152.
+1. **EXP10 n=60 H_stack thermally-paired re-check.** **CLOSED-NULL
+   2026-04-21 (task #152).** Pooled n=60 arm B (V+novelty kr=0.30)
+   E2E = **1.0420×**, V-only reference arm A = **1.0159×**; lift
+   2.6pp FAILS the ≥4pp gate AND agreement 0.650 FAILS the ≥0.75
+   gate (acc Δ −0.017 passes the −0.067 gate). Prereg primary 1.10×
+   gate FAILS (below 1.08× partial-confirm by 3.8pp); thermal gate
+   FAILS (decode Δ +2040 ms / 3.07% rel, adverse direction); thermal-
+   correction does not cross 1.08×. Ceiling model reproduces observed
+   1.042× to within 0.2pp: pooled fixed_frac = 0.875 (V_share dropped
+   to 6.26% vs dev's 15.2% — pooled session concentrated long-decode
+   items / warm-decoder state), so arithmetic ceiling at the observed
+   per-token generate speedup (1.446×) is 1.041×. Mechanism intact;
+   regime binds. **Composition appendix claim does NOT land**; the
+   paper's three-contribution spine is unchanged. Remove from
+   should-do queue. Findings:
+   `research/experiments/2026/2026-04-21-phase-1_51V-exp10-n60-findings.md`.
 
 2. **1.51V MVBench and TOMATO holdout unpatched-vs-patched pairs.**
    **CLOSED 2026-04-21** — three-benchmark C-VISION trifecta achieved

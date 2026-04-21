@@ -1,0 +1,6 @@
+[2026-04-21T06:00:24Z] === Phase 1.51V EXP10 n=60 H_stack composition re-check queue start ===
+[2026-04-21T06:00:24Z] START exp10n60_a_vonly_ref
+[2026-04-21T07:32:09Z] DONE  exp10n60_a_vonly_ref (5505s)
+[2026-04-21T07:32:09Z] START exp10n60_b_vplus_novelty030
+[2026-04-21T09:01:14Z] DONE  exp10n60_b_vplus_novelty030 (5345s)
+[2026-04-21T09:01:14Z] === Phase 1.51V EXP10 n=60 queue COMPLETE ===
