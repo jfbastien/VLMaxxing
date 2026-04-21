@@ -182,9 +182,19 @@ in its own dimension.
    quantization-induced" or "the basin is attention-OOD" — currently
    we cannot discriminate.
 
-7. **1.41 Qwen 16f holdout.** Third-frame-count third-data-point for
-   C-VISION's V_share trajectory (now only measured on dev). Runtime
-   ~30 min.
+7. **1.41 Qwen 16f holdout.** **LANDED 2026-04-21 (autonomous session,
+   task #160).** Ran n=30 on `videomme_holdout_v1.toml`, identity cache,
+   16f. **H1 pass (edge)** — aggregate 0.700 (21/30) at upper bound of
+   [0.50, 0.70]; **H2 FALSIFIES** — long-bucket regression at 16f is
+   dev-only (holdout 16f long **0.900** vs dev 16f long 0.100 / dev 8f
+   long 0.300; non-monotone shape did NOT replicate). H3/H4/H5 pass;
+   parse_failures=0, agreement=1.000, peak RSS 7.23 GB. **Paper impact:**
+   the "16f long-bucket regresses by 20pp" claim must soften to
+   "dev-split observation; does not replicate on disjoint holdout";
+   1.57 attention-mixing co-saturation framing stays intact but is
+   local to dev. Claim 8 (VideoMME breadth gate) now covers dev+holdout.
+   No C-VISION / C-PERSIST / C-CEILING cells move. Findings:
+   `research/experiments/2026/2026-04-21-phase-1_41-qwen-videomme-16f-holdout-findings.md`.
 
 8. **1.29 local codec-native benchmark slice.** **Promoted from future
    per codex round-26** — this is the biggest single missing Sam bridge.
