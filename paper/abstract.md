@@ -7,11 +7,10 @@ status: paper-facing draft abstract — three-contributions structure (C-CEILING
 # Abstract (codec-through-2, draft)
 
 Token-level and frame-level compression methods for video VLMs advertise
-multiplicative speedups, but the gains that translate to end-to-end wall
-clock are regime-dependent and often overstated. We make the
-relationship between compression and wall-clock precise, then
-instantiate it in three independent efficiency settings on commodity
-hardware.
+multiplicative speedups, but the gains that translate to end-to-end
+wall-clock are regime-dependent and usually overstated. We pin down the
+compression-to-wall-clock relationship arithmetically, then instantiate
+it in three independent efficiency settings on commodity hardware.
 
 **Three contributions.**
 
@@ -52,8 +51,8 @@ novelty-pruning) at 1.064×. Dev-n=30 headline cells are
 with a held-out VideoMME 8 f paired measurement at 1.113× confirming
 the dev signal.
 
-**Scope and evidence mix.** Qwen routing (our original "Lane A") serves
-as the mechanism-validation backbone: a bounded-staleness,
+**Scope and evidence mix.** A Qwen-side routing lane serves as the
+mechanism-validation backbone: a bounded-staleness,
 concentration-aware pixel-diff planner matches dense-8 on MVBench
 motion holdout (0.600 @ 4.06 fresh frames) and ties dense-8 on TOMATO
 motion holdout (0.333 @ 3.55 fresh frames), and six intuitive

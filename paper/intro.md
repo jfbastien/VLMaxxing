@@ -6,13 +6,15 @@ status: paper-facing draft introduction — three-contributions structure with S
 
 # Introduction (codec-through-2, draft)
 
-This intro is the paper-facing narrative counterpart to `framing.md`
-(which is internal planning) and `abstract.md` (which is the
-paper-opening). It operationalizes the structural request from Codex
-round 25: **stop foregrounding Lane A as the center of gravity; make
-C-CEILING, C-PERSIST, and C-VISION first-class; keep Qwen routing as
-mechanism-validation backbone; move Sam from "applications/support" to
-deployment-scale evidence.**
+<!--
+Internal: this intro is the paper-facing narrative counterpart to
+`framing.md` (internal planning) and `abstract.md` (paper-opening). It
+operationalizes the structural request from Codex round 25: stop
+foregrounding Lane A as the center of gravity; make C-CEILING,
+C-PERSIST, and C-VISION first-class; keep Qwen routing as
+mechanism-validation backbone; move Sam from "applications/support"
+to deployment-scale evidence.
+-->
 
 ## 1. Setting: what the efficiency papers are quietly overstating
 
@@ -55,8 +57,8 @@ vision-axis analog,
 governs C-VISION (below) and matches observed speedups within 2.7 pp
 across four vision-axis cells plus a fifth stacked cell.
 
-This is the paper's analytical contribution in its own right. It is
-also a diagnostic: when a reported end-to-end gain exceeds the
+This is the paper's analytical contribution. It is also a diagnostic:
+when a reported end-to-end gain exceeds the
 fixed-stage ceiling, the denominator is wrong (usually thermal drift,
 decode-path conflation, or unreported prefill caching).
 
