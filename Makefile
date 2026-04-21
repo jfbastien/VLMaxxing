@@ -26,7 +26,7 @@ paper-doctor:
 paper-sync:
 	$(PAPER_PYTHON) paper/arxiv/scripts/sync_sources.py
 
-paper-build:
+paper-build: paper-doctor
 	$(PAPER_PYTHON) paper/arxiv/scripts/build.py
 
 paper-bundle:

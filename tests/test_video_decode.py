@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from pathlib import Path
+from typing import cast
 
 import av
 import numpy as np
@@ -142,7 +143,7 @@ def test_memory_is_bounded_via_wrapper(tmp_path: Path, monkeypatch: pytest.Monke
 
     def counting_to_image(self: av.VideoFrame, *args: object, **kwargs: object) -> Image.Image:
         materialized[0] += 1
-        return original(self, *args, **kwargs)  # type: ignore[no-untyped-call, no-any-return]
+        return cast(Image.Image, original(self, *args, **kwargs))  # type: ignore[no-untyped-call]
 
     monkeypatch.setattr(av.VideoFrame, "to_image", counting_to_image)
     frames = decode_uniform_frames(path, frame_count=4)

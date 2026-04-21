@@ -23,10 +23,15 @@ comparisons stay exact.
 from __future__ import annotations
 
 from pathlib import Path
+from typing import cast
 
 import av
 import numpy as np
 from PIL import Image
+
+
+def _to_rgb_image(frame: av.VideoFrame) -> Image.Image:
+    return cast(Image.Image, frame.to_image().convert("RGB"))  # type: ignore[no-untyped-call]
 
 
 def decode_uniform_frames(
@@ -81,7 +86,7 @@ def decode_uniform_frames(
             if end_seconds is not None and ts is not None and ts > end_seconds:
                 break
             if idx in target_indices:
-                selected.append(frame.to_image().convert("RGB"))  # type: ignore[no-untyped-call]
+                selected.append(_to_rgb_image(frame))
                 if len(selected) == frame_count:
                     break
             idx += 1

@@ -47,6 +47,21 @@ Current verified local path:
 - the paper bundle can be generated locally with `make paper-bundle`
 - CI can still use a fuller TeX Live action independently of the local setup
 
+Install commands on macOS:
+
+- preferred lightweight path:
+
+```bash
+brew install tectonic
+```
+
+- fuller TeX Live path:
+
+```bash
+brew install --cask mactex-no-gui
+eval "$(/usr/libexec/path_helper)"
+```
+
 Current caveat:
 
 - `make paper-build` is still flaky with the Homebrew `tectonic` binary on this

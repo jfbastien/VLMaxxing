@@ -49,6 +49,23 @@ uv run python scripts/fetch_corpus.py --tier primary --encode
 uv run python scripts/generate_synthetic_corpus.py
 ```
 
+If you want to build the paper draft locally:
+
+```bash
+uv sync --group dev --group research --group benchmark --group seed
+brew install tectonic
+make paper-doctor
+make paper-sync
+make paper-build
+```
+
+If you prefer a fuller TeX stack instead of `tectonic`:
+
+```bash
+brew install --cask mactex-no-gui
+eval "$(/usr/libexec/path_helper)"
+```
+
 ## Where To Read First
 
 - [AGENTS.md](AGENTS.md): canonical coding-agent guidance

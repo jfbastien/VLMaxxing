@@ -21,12 +21,12 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[3]
 os.environ.setdefault("MPLCONFIGDIR", str(REPO_ROOT / ".tmp" / "matplotlib"))
 
-import matplotlib
-from PIL import Image, ImageDraw
+import matplotlib  # noqa: E402
+from PIL import Image, ImageDraw  # noqa: E402
 
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
+import matplotlib.patches as mpatches  # noqa: E402
+import matplotlib.pyplot as plt  # noqa: E402
 
 MANUSCRIPT_ROOT = REPO_ROOT / "paper" / "arxiv"
 GENERATED = MANUSCRIPT_ROOT / "generated"
@@ -208,7 +208,7 @@ def _render_lane_a_figure(snapshot: dict) -> None:
 
     for ax, (title, payload, note, note_x) in zip(axes, panels, strict=True):
         dense = payload["uniform_dense"]
-        dense_x = [float(x) for x in dense.keys()]
+        dense_x = [float(x) for x in dense]
         dense_y = list(dense.values())
 
         ax.plot(
@@ -326,7 +326,9 @@ def _paired_pruning_snapshot(
     v_red = (
         float(reference["mean_dense_vision_ms"]) - float(patched["mean_dense_vision_ms"])
     ) / float(reference["mean_dense_vision_ms"])
-    v_share = float(reference["mean_dense_vision_ms"]) / float(reference["mean_dense_end_to_end_ms"])
+    v_share = float(reference["mean_dense_vision_ms"]) / float(
+        reference["mean_dense_end_to_end_ms"]
+    )
     predicted_e2e = 1.0 / (1.0 - v_share * v_red)
     acc_delta = float(patched["pruned_accuracy"]) - float(reference["dense_accuracy"])
     decode_delta_ms = float(patched["mean_decode_ms"]) - float(reference["mean_decode_ms"])
@@ -367,7 +369,9 @@ def _c_vision_snapshot(upstream_root: Path) -> dict[str, object]:
         ),
     ]
 
-    upstream_session5 = upstream_root / "research" / "experiments" / "2026" / "artifacts" / "phase1_51V_session5"
+    upstream_session5 = (
+        upstream_root / "research" / "experiments" / "2026" / "artifacts" / "phase1_51V_session5"
+    )
     if upstream_session5.exists():
         rows.append(
             _paired_pruning_snapshot(
@@ -390,7 +394,10 @@ def _c_vision_snapshot(upstream_root: Path) -> dict[str, object]:
                 benchmark="TOMATO",
                 frame_count=8,
                 status="dev-only",
-                advisory_note="Local tree lacks the session-5 advisory holdout rerun; using the dev cell for now.",
+                advisory_note=(
+                    "Local tree lacks the session-5 advisory holdout rerun; "
+                    "using the dev cell for now."
+                ),
             )
         )
 
@@ -399,7 +406,12 @@ def _c_vision_snapshot(upstream_root: Path) -> dict[str, object]:
 
 def _persistent_kv_snapshot() -> dict[str, object]:
     summary_paths = {
-        8: ARTIFACTS / "loop_queue_20260419_155108" / "phase1_55A_persistent_kv_qwen" / "summary.json",
+        8: (
+            ARTIFACTS
+            / "loop_queue_20260419_155108"
+            / "phase1_55A_persistent_kv_qwen"
+            / "summary.json"
+        ),
         16: ARTIFACTS / "phase1_55A_16f_frame_scaling" / "summary.json",
         18: ARTIFACTS / "phase1_55A_18f_frame_scaling" / "summary.json",
         20: ARTIFACTS / "phase1_55A_20f_frame_scaling" / "summary.json",
@@ -414,7 +426,9 @@ def _persistent_kv_snapshot() -> dict[str, object]:
             {
                 "frame_count": frame_count,
                 "speedup": float(payload["speedup_first_over_follow"]),
-                "follow_up_median_s": float(payload["session_follow_up"]["median_elapsed_ms"]) / 1000.0,
+                "follow_up_median_s": (
+                    float(payload["session_follow_up"]["median_elapsed_ms"]) / 1000.0
+                ),
                 "accuracy_delta": float(payload["accuracy_delta_session_minus_baseline"]),
                 "prefix_coverage": float(payload["mean_follow_up_prefix_coverage"]),
                 "source": _source_path_label(path),
@@ -548,8 +562,20 @@ def _render_deployment_scale_figure(snapshot: dict) -> None:
     ax.set_title("Deployment-scale anti-recomputation ranges")
     ax.legend(
         handles=[
-            plt.Line2D([0], [0], color=colors["benchmark"], lw=2.4, label="deployment-scale benchmark"),
-            plt.Line2D([0], [0], color=colors["live"], lw=2.4, label="live or scene-dependent range"),
+            plt.Line2D(
+                [0],
+                [0],
+                color=colors["benchmark"],
+                lw=2.4,
+                label="deployment-scale benchmark",
+            ),
+            plt.Line2D(
+                [0],
+                [0],
+                color=colors["live"],
+                lw=2.4,
+                label="live or scene-dependent range",
+            ),
         ],
         frameon=False,
         loc="lower right",
@@ -738,25 +764,37 @@ def _write_headline_table(snapshot: dict) -> None:
         r"Regime & Setting & Gain & Fidelity & Status \\",
         r"\midrule",
         (
-            f"After-ingest & Qwen same-video follow-up, 16f & {kv_by_frame[16]['speedup']:.1f}$\\times$ "
-            f"& {kv_by_frame[16]['follow_up_median_s']:.3f}\\,s median; $\\Delta$acc {kv_by_frame[16]['accuracy_delta']:+.3f} & clean \\\\"
+            "After-ingest & Qwen same-video follow-up, 16f & "
+            f"{kv_by_frame[16]['speedup']:.1f}$\\times$ & "
+            f"{kv_by_frame[16]['follow_up_median_s']:.3f}\\,s median; "
+            f"$\\Delta$acc {kv_by_frame[16]['accuracy_delta']:+.3f} & clean \\\\"
         ),
         (
-            f"After-ingest & Qwen same-video follow-up, 8f & {kv_by_frame[8]['speedup']:.1f}$\\times$ "
-            f"& {kv_by_frame[8]['follow_up_median_s']:.3f}\\,s median; $\\Delta$acc {kv_by_frame[8]['accuracy_delta']:+.3f} & clean \\\\"
+            "After-ingest & Qwen same-video follow-up, 8f & "
+            f"{kv_by_frame[8]['speedup']:.1f}$\\times$ & "
+            f"{kv_by_frame[8]['follow_up_median_s']:.3f}\\,s median; "
+            f"$\\Delta$acc {kv_by_frame[8]['accuracy_delta']:+.3f} & clean \\\\"
         ),
         (
-            f"First-pass & Gemma MVBench 8f holdout & {cvision_rows[1]['observed_e2e']:.3f}$\\times$ "
+            "First-pass & Gemma MVBench 8f holdout & "
+            f"{cvision_rows[1]['observed_e2e']:.3f}$\\times$ "
             f"& $\\Delta$acc {cvision_rows[1]['acc_delta']:+.3f} & advisory \\\\"
         ),
         (
-            f"First-pass & Gemma VideoMME 8f holdout & {cvision_rows[0]['observed_e2e']:.3f}$\\times$ "
+            "First-pass & Gemma VideoMME 8f holdout & "
+            f"{cvision_rows[0]['observed_e2e']:.3f}$\\times$ "
             f"& $\\Delta$acc {cvision_rows[0]['acc_delta']:+.3f} & clean \\\\"
         ),
         (
-            f"First-pass & Gemma TOMATO 8f {'holdout' if 'holdout' in tomato_row['status'] else 'dev'} "
-            f"& {tomato_row['observed_e2e']:.3f}$\\times$ & $\\Delta$acc {tomato_row['acc_delta']:+.3f} "
-            f"& {'imported adv.' if tomato_row['status'] == 'advisory-holdout-imported' else 'dev-only'} \\\\"
+            "First-pass & Gemma TOMATO 8f "
+            f"{'holdout' if 'holdout' in tomato_row['status'] else 'dev'} & "
+            f"{tomato_row['observed_e2e']:.3f}$\\times$ & "
+            f"$\\Delta$acc {tomato_row['acc_delta']:+.3f} & "
+            + (
+                "imported adv. \\\\"
+                if tomato_row["status"] == "advisory-holdout-imported"
+                else "dev-only \\\\"
+            )
         ),
         r"\bottomrule",
         r"\end{tabularx}",
@@ -765,13 +803,23 @@ def _write_headline_table(snapshot: dict) -> None:
     (GENERATED / "tables" / "headline_results.tex").write_text("\n".join(lines) + "\n")
 
 
-def _write_build_meta(primary: dict[str, str], upstream: dict[str, str], sam: dict[str, str]) -> None:
+def _write_build_meta(
+    primary: dict[str, str], upstream: dict[str, str], sam: dict[str, str]
+) -> None:
     lines = [
         f"\\newcommand{{\\PrimaryRepoSHA}}{{{primary['sha'][:12]}}}",
         f"\\newcommand{{\\PrimaryRepoCommitDate}}{{{primary['commit_date']}}}",
-        f"\\newcommand{{\\UpstreamRepoSHA}}{{{upstream['sha'][:12] if upstream['sha'] != 'missing' else 'missing'}}}",
+        (
+            "\\newcommand{\\UpstreamRepoSHA}{"
+            f"{upstream['sha'][:12] if upstream['sha'] != 'missing' else 'missing'}"
+            "}"
+        ),
         f"\\newcommand{{\\UpstreamRepoCommitDate}}{{{upstream['commit_date']}}}",
-        f"\\newcommand{{\\SamRepoSHA}}{{{sam['sha'][:12] if sam['sha'] != 'missing' else 'missing'}}}",
+        (
+            "\\newcommand{\\SamRepoSHA}{"
+            f"{sam['sha'][:12] if sam['sha'] != 'missing' else 'missing'}"
+            "}"
+        ),
         f"\\newcommand{{\\SamRepoCommitDate}}{{{sam['commit_date']}}}",
     ]
     (GENERATED / "tex" / "build_meta.tex").write_text("\n".join(lines) + "\n")

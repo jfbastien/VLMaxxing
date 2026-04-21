@@ -9,7 +9,6 @@ import shutil
 import sys
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[3]
 os.environ.setdefault("MPLCONFIGDIR", str(REPO_ROOT / ".tmp" / "matplotlib"))
 
@@ -48,7 +47,14 @@ def main() -> int:
     if not has_tex:
         print()
         print("No TeX engine found. `make paper-sync` will work, but `make paper-build`")
-        print("needs either `latexmk` + `pdflatex` or `tectonic`.")
+        print("needs either `tectonic` or `latexmk` + `pdflatex`.")
+        print()
+        print("Recommended lightweight install on macOS:")
+        print("  brew install tectonic")
+        print()
+        print("Fuller TeX Live install if you need it:")
+        print("  brew install --cask mactex-no-gui")
+        print('  eval "$(/usr/libexec/path_helper)"')
         return 1
     return 0
 

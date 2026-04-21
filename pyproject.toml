@@ -81,5 +81,5 @@ warn_redundant_casts = true
 warn_unreachable = true
 
 [[tool.mypy.overrides]]
-module = ["mlx", "mlx.*"]
+module = ["mlx", "mlx.*", "av"]
 ignore_missing_imports = true

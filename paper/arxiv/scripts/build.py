@@ -10,7 +10,6 @@ import sys
 import tarfile
 from pathlib import Path
 
-
 MANUSCRIPT_ROOT = Path(__file__).resolve().parents[1]
 BUILD_DIR = MANUSCRIPT_ROOT / "build"
 DIST_DIR = MANUSCRIPT_ROOT / "dist"
@@ -60,8 +59,14 @@ def _build_pdf() -> None:
             _run(online_cmd, cwd=MANUSCRIPT_ROOT)
         return
     raise SystemExit(
-        "No TeX engine found. Install `latexmk` + `pdflatex` or `tectonic`, "
-        "or run `make paper-sync` to generate manuscript assets without a PDF build."
+        "No TeX engine found.\n"
+        "Install one of:\n"
+        "  brew install tectonic\n"
+        "  brew install --cask mactex-no-gui\n"
+        "If you install MacTeX, restart the shell or run:\n"
+        '  eval "$(/usr/libexec/path_helper)"\n'
+        "You can still run `make paper-sync` without a TeX engine.\n"
+        "For a preflight check, run `make paper-doctor`."
     )
 
 
@@ -90,8 +95,16 @@ def _bundle() -> Path:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--skip-pdf", action="store_true", help="Only sync assets and optionally bundle.")
-    parser.add_argument("--bundle", action="store_true", help="Create an arXiv-style source tarball.")
+    parser.add_argument(
+        "--skip-pdf",
+        action="store_true",
+        help="Only sync assets and optionally bundle.",
+    )
+    parser.add_argument(
+        "--bundle",
+        action="store_true",
+        help="Create an arXiv-style source tarball.",
+    )
     args = parser.parse_args()
 
     _sync()
