@@ -1,0 +1,7 @@
+[2026-04-21T01:40:46Z] === Phase 1.51V session 4 queue start ===
+[2026-04-21T01:40:46Z] START exp19_mvbench_holdout_8f_unpatched
+[2026-04-21T01:53:45Z] DONE  exp19_mvbench_holdout_8f_unpatched (779s)
+[2026-04-21T01:53:45Z] START exp20_mvbench_holdout_8f_L2_kr050
+[2026-04-21T02:09:23Z] DONE  exp20_mvbench_holdout_8f_L2_kr050 (938s)
+[2026-04-21T02:09:23Z] START exp21_tomato_holdout_8f_unpatched
+[2026-04-21T02:10:36Z] FAIL  exp21_tomato_holdout_8f_unpatched (exit=143, see research/experiments/2026/artifacts/phase1_51V_session4/exp21_tomato_holdout_8f_unpatched.log)

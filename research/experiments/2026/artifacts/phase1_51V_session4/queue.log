@@ -1,0 +1,8 @@
+[2026-04-21T04:01:37Z] === Phase 1.51V session 4 queue start ===
+[2026-04-21T04:01:37Z] SKIP  exp19_mvbench_holdout_8f_unpatched (already done)
+[2026-04-21T04:01:37Z] SKIP  exp20_mvbench_holdout_8f_L2_kr050 (already done)
+[2026-04-21T04:01:37Z] START exp21_tomato_holdout_8f_unpatched
+[2026-04-21T04:15:59Z] DONE  exp21_tomato_holdout_8f_unpatched (862s)
+[2026-04-21T04:15:59Z] START exp22_tomato_holdout_8f_L2_kr050
+[2026-04-21T04:28:51Z] DONE  exp22_tomato_holdout_8f_L2_kr050 (772s)
+[2026-04-21T04:28:51Z] === Phase 1.51V session 4 queue COMPLETE ===

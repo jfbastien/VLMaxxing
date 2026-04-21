@@ -11,10 +11,19 @@ Codex round-25 (2026-04-21 session 4). See `paper/framing.md` for the three majo
 contributions (C-CEILING, C-PERSIST, C-VISION) these priorities map to.
 
 Round-25 status: must-do #1 (VideoMME 8f V-only holdout pair) CLOSED;
-should-do #2 (MVBench + TOMATO V-only holdout pairs) PROMOTED from
-conditional to active session 4 queue, in flight at time of writing
-(EXP19 unpatched baseline landed 02:27:40Z; EXP20 V-patched arm
-running; EXP21/22 TOMATO pair queued idempotently).
+should-do #2 (MVBench + TOMATO V-only holdout pairs) session 4 QUEUE
+COMPLETE — **MVBench 8f CLOSED with advisory pass** (EXP19/20: E2E
+1.407× far exceeding dev 1.21×, V_red 0.471, acc Δ −0.033; thermal
+gate 11.66% formally fails but 50 ms absolute delta is OS-jitter
+scale on MVBench's 432 ms decode window; calibration-revision
+proposed). **TOMATO 8f THERMALLY CONFOUNDED** (EXP21/22: decode Δ
+6.52% = 206 ms absolute, genuine thermal drift; 4 dense-arm gen
+outliers corrupt the mean-based E2E statistic; re-run queued as
+session 5). Findings: `research/experiments/2026/2026-04-21-phase-1_51V-session4-findings.md`.
+Driver bug fixed mid-session: `_count_frames` metadata fast path
+removed after 0298-00.mp4 reported `stream.frames=366` while
+iterative decode yielded only ~235 decodable frames (TOMATO EXP21
+initial hard-fail at item 12/30).
 
 ## Must-do (hard blockers on a main-track submission)
 
@@ -89,16 +98,20 @@ in its own dimension.
 
 2. **1.51V MVBench and TOMATO holdout unpatched-vs-patched pairs.**
    Analogous to the VideoMME 8f holdout (must-do #1) but for the
-   other two benchmarks, so the V-only headlines can drop "dev n=30"
-   on all three. Runtime ~45 min each. **ACTIVE 2026-04-21 session 4**
-   (not conditional: EXP17/18 landed at ceiling so the re-frame
-   branch was not taken). Queue `scripts/run_phase1_51V_session4.sh`:
-   EXP19 MVBench unpatched → EXP20 MVBench L=2 kr=0.50 →
-   EXP21 TOMATO unpatched → EXP22 TOMATO L=2 kr=0.50. Run 1
-   confounded by concurrent 7-GB python (see
-   `artifacts/phase1_51V_session4/run1_confounded/README.md`);
-   run 2 relaunched 02:15:32Z clean. 8 preregistered hypotheses
-   (4 per benchmark) adjudicated on queue completion.
+   other two benchmarks. **MVBench 8f CLOSED 2026-04-21 with advisory
+   pass** (EXP19/20: E2E 1.407× far exceeding dev 1.21×, V_red 0.471
+   OOB+ favorable, acc Δ −0.033; thermal gate formally fails at
+   11.66% but 50 ms absolute is OS-jitter on MVBench's 432 ms decode
+   window — calibration revision proposed: `|Δ| < max(0.02 ×
+   decode_ms, 100 ms)`). **TOMATO 8f THERMALLY CONFOUNDED 2026-04-21**
+   (EXP21/22: decode Δ 6.52% = 206 ms absolute, genuine drift; 4
+   dense-arm gen outliers corrupt the mean-based E2E to 1.33× while
+   robust estimator gives 1.06×; V_red 0.287 well below band; re-run
+   queued as session 5). Findings:
+   `research/experiments/2026/2026-04-21-phase-1_51V-session4-findings.md`.
+   Paper-table impact: MVBench 8f cell may drop "dev-only n=30" with
+   thermal-calibration footnote; TOMATO 8f cell retains "dev-only
+   n=30" pending session 5.
 
 3. **1.51V cross-architecture transfer probe (Qwen 2.5-VL-4bit).**
    Extend the scatter-back ceiling from one architecture (Gemma
