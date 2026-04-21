@@ -205,6 +205,14 @@ in its own dimension.
    from "analog implementation" to "codec-native implementation with
    local benchmark evidence". Runtime ~1-2 h benchmark-only; blocker is
    harness wire-up (not a prereg — prereg landed task #98 2026-04-20).
+   **PRE-INTEGRATION AUDIT 2026-04-22**: full-bucket pilot (5 items
+   stratified short/medium/long) exceeded session compute budget; native-
+   rate H.264 extract over long-bucket VideoMME clips dominates runtime.
+   Semantic gap between native-rate codec labels and sparse-8f pixel-diff
+   unverified. Actionable unblock: **short-bucket-only pilot** (~30-60 min
+   compute; ~15 min scripting) produces the codec-vs-pixel Δ numbers
+   needed to gate Stages A/B/C implementation. See
+   `research/experiments/2026/2026-04-22-phase-1_29-codec-native-integration-audit.md`.
 
 9. **Paper figures: C-PERSIST safe-deployment table + V_share-governs-
    C-VISION-gains plot.** **LANDED 2026-04-21 (autonomous session).**
@@ -247,18 +255,26 @@ a must-do slot opens.
 - **1.52R composition (temporal × spatial).** Depends on 1.42 landing
   AND 1.51R re-run on V-patched.
 
-- **Phase 1.60 scroll/pan subset** (PREREG LANDED 2026-04-21).
-  Codex rounds 24–25: scroll/pan is a failure mode for token-merging;
-  a 20-item subset probes where C-VISION breaks. Preregistered in
+- **Phase 1.60 scroll/pan subset** (PREREG LANDED 2026-04-21;
+  **CURATION-BLOCKED 2026-04-22**). Codex rounds 24–25: scroll/pan is a
+  failure mode for token-merging; a 20-item subset probes where C-VISION
+  breaks. Preregistered in
   `research/experiments/2026/2026-04-21-phase-1_60-scroll-pan-subset-prereg.md`
   with four hypotheses (H_vision_scroll_breaks, _v_red_drops,
   _acc_holds, _ceiling_holds) and three promotion-rule branches
   (CLEAN FAILURE CLAIM / BROKEN DEPLOYMENT CLAIM /
-  SHIFTED-DOES-NOT-BREAK). Runtime ~70 min (upper bound ~90 min).
-  Queued after EXP10 n=60 lands and (optionally) after the cross-arch
-  C-VISION Qwen probe (should-do #3). Graceful-degradation branch is
-  paper-body-bound; broken-deployment branch gates a scroll-detection
-  bail-out policy (1.60c follow-up).
+  SHIFTED-DOES-NOT-BREAK). **Natural-corpus audit 2026-04-22**: VideoMME
+  dev-30 max per-item shifted_fraction = **0.108** (prereg gate ≥ 0.60);
+  zero qualifying items at either the heavy (0.60) or broader camera-
+  moving proxy (0.20) threshold. Synthesis fallback (5 still items × 2-s
+  pan = 10 synthetic clips) requires MCQ-question generation (no teacher
+  VLM in the local stack). Runtime envelope (~70-90 min) is irrelevant
+  until curation unblocks. Three unblock paths: (A) wider VideoMME sweep
+  over 200+ items; (B) egomotion benchmark integration (EgoSchema,
+  EPIC-Kitchens, Ego4D); (C) hand-labeled 20-item synthetic corpus. See
+  `research/experiments/2026/2026-04-22-phase-1_60-scroll-pan-curation-audit.md`.
+  Reviewer-facing framing stays "scroll/pan deferred to future work"
+  per `paper/framing.md`.
 
 - **1.59 training microbench scaffold.** Training-side throughput
   claim has been entirely projection-based. Round-24 suggests a
