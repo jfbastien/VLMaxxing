@@ -7,8 +7,14 @@ status: living priority doc — updated each codex round + each session recap
 # Paper Priority: must-do / should-do / future
 
 Triage of outstanding work against the paper submission bar. Updated per
-Codex round-24 (2026-04-21). See `paper/framing.md` for the three major
+Codex round-25 (2026-04-21 session 4). See `paper/framing.md` for the three major
 contributions (C-CEILING, C-PERSIST, C-VISION) these priorities map to.
+
+Round-25 status: must-do #1 (VideoMME 8f V-only holdout pair) CLOSED;
+should-do #2 (MVBench + TOMATO V-only holdout pairs) PROMOTED from
+conditional to active session 4 queue, in flight at time of writing
+(EXP19 unpatched baseline landed 02:27:40Z; EXP20 V-patched arm
+running; EXP21/22 TOMATO pair queued idempotently).
 
 ## Must-do (hard blockers on a main-track submission)
 
@@ -84,9 +90,15 @@ in its own dimension.
 2. **1.51V MVBench and TOMATO holdout unpatched-vs-patched pairs.**
    Analogous to the VideoMME 8f holdout (must-do #1) but for the
    other two benchmarks, so the V-only headlines can drop "dev n=30"
-   on all three. Runtime ~45 min each; conditional on EXP17/18
-   verdict (if holdout V-only is below ceiling on VideoMME we reframe
-   as regime-conditional and these become lower priority).
+   on all three. Runtime ~45 min each. **ACTIVE 2026-04-21 session 4**
+   (not conditional: EXP17/18 landed at ceiling so the re-frame
+   branch was not taken). Queue `scripts/run_phase1_51V_session4.sh`:
+   EXP19 MVBench unpatched → EXP20 MVBench L=2 kr=0.50 →
+   EXP21 TOMATO unpatched → EXP22 TOMATO L=2 kr=0.50. Run 1
+   confounded by concurrent 7-GB python (see
+   `artifacts/phase1_51V_session4/run1_confounded/README.md`);
+   run 2 relaunched 02:15:32Z clean. 8 preregistered hypotheses
+   (4 per benchmark) adjudicated on queue completion.
 
 3. **1.51V cross-architecture transfer probe (Qwen 2.5-VL-4bit).**
    Extend the scatter-back ceiling from one architecture (Gemma
