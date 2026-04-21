@@ -61,7 +61,12 @@ companion `..._data.json`). Cross-architectural safe-prefill envelope from Phase
 
 Rendered as `paper/figures/v_share_v_red_ceiling.png` (data JSON
 companion `..._data.json`). Scatter-back ceiling
-`E2E ≤ 1/(1 − share × reduction)` validated across 5 regimes at n=30 each, Gemma 4-E4B-4bit thermally paired:
+`E2E ≤ 1/(1 − share × reduction)` validated across **5 scatter-back
+points** at n=30 each, Gemma 4-E4B-4bit thermally paired (4 C-VISION
+vision-axis dev cells + 1 H_stack LLM-axis cell). The rendered figure
+adds 3 holdout cells (VideoMME/MVBench/TOMATO 8f) and 1 pooled EXP10
+n=60 cell for **8 scatter points total**; the table below is the n=30
+core:
 
 | Regime                        | V_share (dense) | V_red observed | Predicted E2E | Observed E2E | Δ (obs − pred) |
 |-------------------------------|-----------------|-----------------|----------------|---------------|-----------------|
@@ -71,7 +76,16 @@ companion `..._data.json`). Scatter-back ceiling
 | TOMATO 8f dev                 | 40.7%           | 42.7%           | 1.214×         | **1.24×**     | +2.6pp          |
 | VideoMME holdout 8f (V+novelty, LLM-side) | 18.0% (G_share) | 33.4% (G_red) | 1.064×    | 1.064×        | +0.0pp          |
 
-**Formula predicts within 2.7pp across 5 regimes.** Mechanism generalizes across vision-axis (4 cells) AND LLM-decode axis (holdout H_stack). Headline magnitude is regime-conditional on share-term: vision-dominated benchmarks (TOMATO, MVBench) deliver >1.20× E2E; VideoMME at 8f caps at 1.18× even with perfect V_red — and at 32f the ceiling arithmetic says 1.14× is the max even with thermal-perfect pairing.
+**Formula predicts within 2.7pp across the 5 n=30 scatter points** (max
+|Δ| 2.7pp on MVBench 8f dev). Mechanism generalizes across vision-axis
+(4 cells) AND LLM-decode axis (holdout H_stack). On the full 8-point
+figure (adding 3 holdout + 1 pooled EXP10 n=60), dev median |Δ| = 2.2pp
+and holdout max = 11.6pp (MVBench 8f holdout; thermal-inflated +50ms,
+advisory per session 4 findings). Headline magnitude is regime-
+conditional on share-term: vision-dominated benchmarks (TOMATO,
+MVBench) deliver >1.20× E2E; VideoMME at 8f caps at 1.18× even with
+perfect V_red — and at 32f the ceiling arithmetic says 1.14× is the
+max even with thermal-perfect pairing.
 
 **Architectural implication:** to break through the 1.20× barrier on VideoMME, the path is (a) move to vision-dominated benchmarks (TOMATO, MVBench — done, 1.21–1.24×), (b) raise V_share via longer frames (limited by decode thermals on M3), or (c) stack with LLM-side pruning (novelty, H_stack partial confirmation on holdout at +0.064× within the share-bound ceiling).
 

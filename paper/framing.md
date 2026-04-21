@@ -31,8 +31,9 @@ TOMATO 8f session-5 rerun upgraded the cell to advisory-holdout status
 in the upstream queue; 32f frame-scaling probe H_32f_vshare EARNED but
 H_32f_e2e REJECTED on thermal grounds; holdout H_stack partial
 replication at 1.064× ceiling-matched; C-VISION promoted to claim 15
-with V_share-governs ceiling validation across 5 regimes; Safe
-Deployment Regime and V_share-Governs tables added to claim-matrix).
+with V_share-governs ceiling validation across **5 scatter-back points**
+(4 C-VISION dev cells + 1 H_stack LLM-axis cell); Safe Deployment
+Regime and V_share-Governs tables added to claim-matrix).
 
 ## Current Manuscript Position (2026-04-21)
 

@@ -156,9 +156,13 @@ matched conditions:
   infrastructure-falsified by mlx-vlm's image-block reuse contract,
   not experimentally falsified.
 - VideoMME frame-count scaling is non-monotonic on Qwen 2.5-VL at
-  4-bit: medium buckets improve from 8 f → 16 f by ≈ +30 pp, long
-  buckets collapse by ≈ −20 pp, and 32 f does not recover. "More
-  frames is better" is false on this model at this quantization.
+  4-bit: on the dev split, medium buckets improve from 8 f → 16 f by
+  ≈ +30 pp and 32 f does not recover the aggregate. The 16 f long-
+  bucket regression of ≈ −20 pp on dev **does not replicate on the
+  disjoint holdout** (holdout 16 f long 0.900 vs dev 0.100, n = 30
+  each); we treat the long-bucket shape as item-draw-dependent and
+  dev-only. The broader point — "more frames is better" is false on
+  this model at this quantization — survives.
 
 Preserving these nulls is the work Lane A does for the paper.
 

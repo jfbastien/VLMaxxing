@@ -290,9 +290,14 @@ edits:
    (Reviewer-Facing Limitations in `framing.md`). Round-24 added §7
    on attention-propagation-drift discipline.
 3. **Ceiling model.** Reviewer cross-references C-CEILING predictions
-   against observed e2e; the 5-regime validation table needs to be
-   complete and predictive within ≤ 5.2%. Already satisfied per
-   claim-matrix row 13.
+   against observed E2E. Two counts appear in the paper and both must
+   be self-consistent: the C-CEILING **7 regime dimensions** on Gemma
+   (8/32-frame × benchmark × keep-rate × anchor arm, median 2.1% /
+   worst 5.2% error) and the C-VISION **5 scatter-back points** in the
+   n=30 ceiling-validation table (4 vision-axis cells + 1 H_stack
+   LLM-axis cell, predictive within 2.7 pp). The rendered figure adds
+   3 holdout cells + 1 pooled EXP10 n=60 for 8 scatter points total.
+   Already satisfied per claim-matrix row 13 and row 15.
 4. **Safe-deployment table.** Reviewer checks the C-PERSIST 7B/3B
    envelope table. Round-23 added the "after-ingest" framing;
    currently self-consistent.

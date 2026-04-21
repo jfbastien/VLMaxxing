@@ -26,16 +26,18 @@ why per-token wins on large models frequently fail to survive on small
 models, and why decode-heavy regimes resist prefill acceleration.
 
 *C-PERSIST*: under persistent-KV reuse on commodity 4-bit quantized
-checkpoints, after the first-query prefill is paid, subsequent questions
-on the same video return in sub-second time with zero accuracy loss
-inside a **safe-deployment envelope** (Qwen 2.5-VL-7B-4bit ≤ 16 frames
-/ 6.5 k prefill tokens; 3B-4bit ≤ 36 frames / 14.5 k prefill tokens).
-Outside this envelope, a narrow soft transition exits into a
-non-letter-attractor basin; basin-onset depth scales ~1.6× with
-parameter count and sampler-side intervention is
-architecture-conditional. Paired follow-up-query latency, not
-first-query latency, is the right reporting unit for conversational
-deployment.
+checkpoints, once the first-query prefill is paid, subsequent questions
+on the same video return in sub-second time inside a
+**safe-deployment envelope** that is architecture-specific: Qwen
+2.5-VL-7B-4bit at ≤ 16 frames / 6.5 k prefill tokens with Δacc = 0
+(clean), and 3B-4bit at ≤ 36 frames / 14.5 k prefill tokens at a
+Δacc = −0.19 pre-basin plateau. Outside the envelope, a narrow soft
+transition exits into a non-letter-attractor basin; basin-onset depth
+scales ~1.6× with parameter count and sampler-side intervention is
+architecture-conditional (sampler-invariant at 7 B; sampler-dispersible
+at 3 B only back to the pre-basin plateau). Paired follow-up-query
+latency, not first-query latency, is the right reporting unit for
+conversational deployment.
 
 *C-VISION*: training-free vision-tower pruning at the same operating
 point (`L = 2`, keep-rate = 0.50 on Gemma 4-E4B-4bit) delivers
@@ -85,7 +87,10 @@ outstanding. Measured end-to-end gain in a sparse-execution path
 (claim 5) remains unmeasured at local scale; the sparse-path evidence
 lives in codec-through-sam. Our frame-count operating point (≤ 32 f
 locally) is lower than some adjacent work (64–256 f), and VideoMME
-frame-scaling is non-monotonic and bucket-dependent on Qwen 2.5-VL: at
-16 f medium buckets gain ≈ +30 pp, long buckets collapse by ≈ −20 pp,
-and 32 f does not recover. Frame-count scaling is not a linear
-quality knob on the models we study.
+frame-scaling is non-monotonic on Qwen 2.5-VL at 4-bit: on dev, 16 f
+medium buckets gain ≈ +30 pp and 32 f does not recover the aggregate.
+The 16 f long-bucket regression of ≈ −20 pp seen on dev **does not
+replicate on a disjoint n = 30 holdout** (holdout 16 f long 0.900 vs
+dev 0.100); we treat the long-bucket shape as a dev-split
+observation. The broader point — frame-count scaling is not a linear
+quality knob on the models we study — survives.
