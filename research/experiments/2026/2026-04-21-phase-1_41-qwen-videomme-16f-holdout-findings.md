@@ -77,18 +77,19 @@ Failure pattern: **B is the dominant wrong-answer token in medium-bucket**; the 
 ## Reproduction
 
 ```
-uv run python scripts/run_baseline.py \
+uv run python scripts/run_benchmark_track_a.py run \
   --benchmark videomme \
   --manifest research/benchmark_manifests/videomme_holdout_v1.toml \
   --model-path /Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit \
   --frame-count 16 \
   --cache-mode identity \
   --max-tokens 32 \
-  --output research/experiments/2026/artifacts/phase1_41_qwen_videomme_16f_holdout/dense_n30.jsonl \
-  --summary research/experiments/2026/artifacts/phase1_41_qwen_videomme_16f_holdout/dense_n30_summary.json
+  --allow-dirty \
+  --output-path research/experiments/2026/artifacts/phase1_41_qwen_videomme_16f_holdout/dense_n30.jsonl \
+  --summary-path research/experiments/2026/artifacts/phase1_41_qwen_videomme_16f_holdout/dense_n30_summary.json
 ```
 
-Env: `mlx-vlm 0.4.0` / `mlx 0.30.0` / macOS Darwin 25.3.0 / M3 16 GB. Git SHA `09b65be` at run-time (dirty — uncommitted doc edits / figures from the same autonomous session, all non-interfering with `run_baseline.py`).
+Env: `mlx-vlm 0.4.0` / `mlx 0.30.0` / macOS Darwin 25.3.0 / M3 16 GB. Git SHA `09b65be` at run-time (dirty — uncommitted doc edits / figures from the same autonomous session, all non-interfering with `run_benchmark_track_a.py`).
 
 ## Non-goals (not done, not required)
 
