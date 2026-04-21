@@ -56,9 +56,11 @@ For the per-claim breakdown, see
 
 ## Three Major Contributions (2026-04-21 status)
 
-Beyond the Lane A routing story (claims 1/2/6/9 earned on Qwen routing),
-three major analytical contributions have landed and warrant prominent
-placement in the paper narrative:
+Per Codex rounds 25–26 (2026-04-21), the paper spine is these three
+first-class contributions — ordered ahead of the Qwen routing lane,
+which is reframed as the mechanism-validation backbone + null ledger
+(claims 1/2/6/9 earned + halo-veto 1.37B retired + 1.51R VideoMME
+duration-conditional partial reproduction + 1.55D infra-falsified):
 
 1. **C-CEILING (claim 13): Arithmetic ceiling model for token-pruning
    wall-clock speedup.** Predicts E2E speedup within ≤5.2% across 7
@@ -88,14 +90,24 @@ placement in the paper narrative:
    kr_V=0.50 with benchmark-invariant V_red on Gemma 4-E4B-4bit.**
    V_red=39–43% across VideoMME 8f/16f, MVBench 8f, TOMATO 8f (n=30
    each, thermally paired). Scatter-back ceiling `1/(1 − V_share ×
-   V_red)` predictive within 2.7pp on all 4 vision-axis cells + 1
-   LLM-decode-axis cell (holdout H_stack 1.064× matches observed to
-   0.1pp — fifth ceiling regime). **Dev n=30 headlines**: TOMATO
-   **1.24×**, MVBench **1.21×**, VideoMME 1.08× (8f) / 1.12× (16f).
-   **Dev-only caveat:** holdout V-only unpatched-vs-patched pair NOT YET
-   RUN (EXP17/18 queueable at ~40 min). V+novelty stacking replicates
-   on holdout at 1.064× (ceiling-matched partial confirmation;
-   regime-conditional on V_share).
+   V_red)` predictive within 2.7pp on 4 vision-axis dev cells + 3
+   holdout cells + 1 LLM-decode-axis cell (holdout H_stack 1.064×
+   matches observed to 0.1pp — fifth ceiling regime). **Dev n=30
+   headlines**: TOMATO **1.24×**, MVBench **1.21×**, VideoMME 1.08×
+   (8f) / 1.12× (16f). **Three-benchmark holdout V-only trifecta
+   CLOSED 2026-04-21** with differentiated advisory strength:
+   VideoMME 8f CLEAN (EXP17/18 session 3, E2E 1.113×, V_red 0.413,
+   decode Δ 1.53%, acc Δ 0.000); MVBench 8f CLOSED-ADVISORY (EXP19/20
+   session 4, E2E 1.407× far exceeds dev 1.21×, V_red 0.471, acc Δ
+   −0.033; thermal-calibration footnote on OS-jitter-scale drift
+   prompting revised gate `|decode Δ| < max(0.02 × decode_ms, 100 ms)`);
+   TOMATO 8f EARNED-ADVISORY (EXP23/24 session 5, sum-ratio E2E 1.194×
+   median 1.232×, V_red 0.350, acc Δ −0.067; favorable-drift footnote —
+   patched arm ran cooler than reference, observed speedup
+   conservatively under-stated; scatter-back ceiling predicts 1.155×
+   consistent with ceiling + friendly thermal correction). V+novelty
+   stacking replicates on holdout at 1.064× (ceiling-matched partial
+   confirmation; regime-conditional on V_share).
 
 These three claims align on a common analytical frame: **share ×
 reduction → `1/(1 − share × reduction)` ceiling**, with
@@ -108,13 +120,20 @@ entirely under cache reuse).
 
 **Venue targeting implication:** the combination of C-PERSIST (safety
 boundary, cross-architectural) + C-VISION (three-benchmark 1.20–1.24×
-E2E dev) + C-CEILING (analytical framework) is paper-grade for an
-efficiency-focused venue (NeurIPS / ICML efficiency workshop, ICLR
-Tiny Papers, or a systems venue like MLSys). Main-track readiness
-(NeurIPS / ICML / CVPR) still gated on (a) holdout V-only
-unpatched-vs-patched pair, (b) cross-architecture 1.51V transfer
-(Qwen 2.5-VL at L=? kr=?), (c) measured end-to-end delta in a sparse
-execution path (claim 5).
+E2E dev + holdout trifecta closed 2026-04-21) + C-CEILING (analytical
+framework) is paper-grade for an efficiency-focused venue
+(NeurIPS / ICML efficiency workshop, ICLR Tiny Papers, or a systems
+venue like MLSys), defensible today. Main-track readiness
+(NeurIPS / ICML / CVPR) is within reach after three should-do lifts
+from `paper/priority.md` land: (a) cross-architecture 1.51V transfer
+(Qwen 2.5-VL at L=? kr=?) — turns C-VISION from single-arch-mechanism
+into mechanism-class; (b) phase 1.29 local codec-native benchmark
+slice — biggest missing Sam bridge per codex round-26, elevates the
+codec-through thesis from "analog" to "codec-native"; (c) phase 1.60
+scroll/pan regime probe — characterizes where C-VISION breaks and
+whether it degrades gracefully. Measured end-to-end sparse-execution
+delta (claim 5) is deferable to post-submission discussion —
+C-CEILING already bounds the measurable delta analytically.
 
 ## Current Narrow Claim Boundary
 
