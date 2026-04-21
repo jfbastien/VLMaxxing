@@ -131,6 +131,19 @@ drops 3 items (n = 30), all concentrated in object-binding categories
 (2 object_interaction + 1 moving_attribute); spatial/motion categories
 preserve 1.000 agreement. We footnote rather than wave away.
 
+### What stacks and what doesn't
+
+The three contributions do *not* compose as a naive product. C-CEILING
+bounds every token-pruning speedup from above, and C-VISION's
+`V_share × V_red` term shares the same vision budget: you cannot spend
+it twice. C-VISION and C-PERSIST stack across *queries* — C-VISION
+saves first-pass prefill, C-PERSIST makes follow-up queries sub-second
+— not inside a single query. Our 1.064 × H_stack cell (n = 60) is
+ceiling-matched, a preregistered NULL on "stacking beats the ceiling"
+and a positive on the ceiling law itself. The paper reports composed
+numbers against their ceiling bound, never as a bare product of
+independent multipliers.
+
 ## 3. What Qwen routing contributes: a mechanism-validation backbone
 
 Our original Qwen 2.5-VL-7B-4bit routing lane ("Lane A") is not the
@@ -196,6 +209,14 @@ where users actually deploy this class of model: mostly static
 surveillance, talking-head conferencing, FPV/egomotion, and repeated
 querying over the same stream.
 
+Two categories of Sam numbers, carrying different evidential weight.
+**Deployment-scale** — the bullets above — have paired baselines,
+named protocols, and corpus sizes stated. They stand as main-body
+evidence. **Case-study** — piecewise-reuse single-cell illustrations,
+streaming anecdotes lacking a matched wall-clock comparison — are
+appendix-bound. A case-study multiplier is not evidence for a
+deployment-scale claim, and the paper does not mix the two.
+
 The two repos run on disjoint axes by design. codec-through is
 stricter and more reductionist — smaller local models, sparse-sampled
 benchmark regimes, careful end-to-end accounting, pixel-diff proxy
@@ -207,6 +228,40 @@ queries, temporal + spatial composition. Bridging between the two
 repos is ongoing work: a local streaming-protocol reproduction of
 Sam's N = 60 line (phase 1.30) is the largest remaining bridge
 experiment on the codec-through side.
+
+## 4.5. What the evidence has ruled out
+
+A reviewer who believes only the positive claims has not read the paper.
+The following nulls and boundaries shape the claim boundary as much as
+the positives:
+
+- **1.51R at Sam's reference `kr=0.50`:** own-axis null on Gemma
+  4-E4B-4bit VideoMME 8 f dev (e2e = 1.00 ×, gen = 1.01 ×). The 1.51R
+  numbers in the body come from `kr=0.10` with a different aggregate-
+  accuracy story.
+- **EXP10 n = 60 H_stack composition: preregistered NULL** on
+  "stacking beats the ceiling." The 1.064 × is ceiling-matched, which
+  is a positive result on the ceiling law and a null on stack-beats-
+  ceiling.
+- **1.29 codec-native sparse retrofit** at 8 f after-ingest: HARD-
+  FALSIFIED under MAX-over-span aggregation (mean |Δ| = 53.8 pp vs
+  pixel-diff, 2026-04-22). A continuous-score redesign passes the
+  10 pp aggregate gate at 7.9 pp but fails per-item at 16–25 pp; off
+  the critical path unless reframed to continuous-planner-signal or
+  native-rate streaming.
+- **1.55D v1 selective re-prefill: INFRASTRUCTURE-FALSIFIED.** An
+  mlx-vlm image-block-reuse contract the harness does not respect;
+  v2 reopens the experiment behind an in-repo monkey-patch, not yet
+  landed.
+- **1.60 scroll/pan regime-boundary probe:** curation-blocked; prereg
+  landed, run deferred.
+- **Cross-architecture C-VISION probe on Qwen 2.5-VL:**
+  implementation-blocked on Qwen-side vision-tower pruning plumbing
+  (prereg 2026-04-22). Claim 15 currently single-architecture.
+
+These are boundaries, not failures of the contributions. Where a
+mechanism *does not* generalize we say so; where it does, we cite the
+evidence inline.
 
 ## 5. Where we are on SOTA, honestly
 
