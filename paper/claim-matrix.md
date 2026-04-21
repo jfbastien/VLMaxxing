@@ -41,7 +41,8 @@ If not: "codec-inspired / pixel-diff proxy for codec-guided."
 
 ## Safe Deployment Regime (claim 14, practitioner summary)
 
-Cross-architectural safe-prefill envelope from Phase 1.55A four-regime probe (Qwen 2.5-VL, n=21 per cell):
+Rendered as `paper/figures/c_persist_safe_budget.png` (data JSON
+companion `..._data.json`). Cross-architectural safe-prefill envelope from Phase 1.55A four-regime probe (Qwen 2.5-VL, n=21 per cell):
 
 | Model               | Safe prefill tokens  | Safe frame count (VideoMME short prompts) | Observed speedup | Accuracy floor at safe edge |
 |---------------------|----------------------|--------------------------------------------|-------------------|-------------------------------|
@@ -58,7 +59,9 @@ Cross-architectural safe-prefill envelope from Phase 1.55A four-regime probe (Qw
 
 ## V_share Governs 1.51V Gains (claim 15, ceiling validation)
 
-Scatter-back ceiling `E2E ≤ 1/(1 − share × reduction)` validated across 5 regimes at n=30 each, Gemma 4-E4B-4bit thermally paired:
+Rendered as `paper/figures/v_share_v_red_ceiling.png` (data JSON
+companion `..._data.json`). Scatter-back ceiling
+`E2E ≤ 1/(1 − share × reduction)` validated across 5 regimes at n=30 each, Gemma 4-E4B-4bit thermally paired:
 
 | Regime                        | V_share (dense) | V_red observed | Predicted E2E | Observed E2E | Δ (obs − pred) |
 |-------------------------------|-----------------|-----------------|----------------|---------------|-----------------|

@@ -1,0 +1,90 @@
+{
+  "dev_cells": [
+    {
+      "label": "VideoMME 8f dev",
+      "split": "dev",
+      "v_share": 0.152,
+      "v_red": 0.39,
+      "predicted_e2e": 1.062,
+      "observed_e2e": 1.08,
+      "error_pp": 1.8,
+      "product": 0.0593
+    },
+    {
+      "label": "VideoMME 16f dev",
+      "split": "dev",
+      "v_share": 0.243,
+      "v_red": 0.39,
+      "predicted_e2e": 1.105,
+      "observed_e2e": 1.12,
+      "error_pp": 1.5,
+      "product": 0.0948
+    },
+    {
+      "label": "MVBench 8f dev",
+      "split": "dev",
+      "v_share": 0.478,
+      "v_red": 0.4,
+      "predicted_e2e": 1.237,
+      "observed_e2e": 1.21,
+      "error_pp": -2.7,
+      "product": 0.1912
+    },
+    {
+      "label": "TOMATO 8f dev",
+      "split": "dev",
+      "v_share": 0.407,
+      "v_red": 0.427,
+      "predicted_e2e": 1.214,
+      "observed_e2e": 1.24,
+      "error_pp": 2.6,
+      "product": 0.1738
+    }
+  ],
+  "holdout_cells": [
+    {
+      "label": "VideoMME 8f holdout",
+      "split": "holdout",
+      "v_share": 0.1545,
+      "v_red": 0.413,
+      "predicted_e2e": 1.0681575297361703,
+      "observed_e2e": 1.113,
+      "error_pp": 4.48,
+      "product": 0.0638
+    },
+    {
+      "label": "MVBench 8f holdout",
+      "split": "holdout",
+      "v_share": 0.478,
+      "v_red": 0.471,
+      "predicted_e2e": 1.2905523822306422,
+      "observed_e2e": 1.407,
+      "error_pp": 11.64,
+      "product": 0.2251
+    },
+    {
+      "label": "TOMATO 8f holdout",
+      "split": "holdout",
+      "v_share": 0.407,
+      "v_red": 0.35,
+      "predicted_e2e": 1.166112763104192,
+      "observed_e2e": 1.194,
+      "error_pp": 2.79,
+      "product": 0.1424
+    }
+  ],
+  "pooled_cells": [
+    {
+      "label": "VideoMME pooled n=60 (H_stack arm B)",
+      "split": "pooled",
+      "v_share": 0.0626,
+      "v_red": 0.43,
+      "predicted_e2e": 1.027662622471693,
+      "observed_e2e": 1.042,
+      "error_pp": 1.43,
+      "product": 0.0269
+    }
+  ],
+  "worst_abs_error_pp": 11.64,
+  "median_abs_error_pp": 2.65
+}

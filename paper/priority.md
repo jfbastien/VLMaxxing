@@ -197,16 +197,21 @@ in its own dimension.
    harness wire-up (not a prereg — prereg landed task #98 2026-04-20).
 
 9. **Paper figures: C-PERSIST safe-deployment table + V_share-governs-
-   C-VISION-gains plot.** Codex rounds 24–26: two reviewer-friendly
-   figures would materially raise defensibility. **(a)** C-PERSIST
-   safe-budget table: 7B / 3B × 8f → 40f, rows are frame counts,
-   columns are {follow-up speedup ×, Δacc, basin-attractor tally,
-   safe-deploy ✓/✗}, derived from claim-matrix row 14 data. **(b)**
-   V_share × V_red → predicted-E2E surface plot with the 7 regime
-   dimensions plotted against the ceiling curve (dev 4 cells + holdout
-   3 cells), validating the ceiling visually. Both are figure work
-   from already-landed experimental data; no new runs. Runtime 0
-   benchmark-hours; paper-draft work only.
+   C-VISION-gains plot.** **LANDED 2026-04-21 (autonomous session).**
+   Both figures rendered from already-landed experimental data via
+   `scripts/plot_c_persist_safe_budget.py` and
+   `scripts/plot_v_share_v_red_ceiling.py`. Artifacts:
+   `paper/figures/c_persist_safe_budget.{png,_data.json}` — two-panel
+   Δacc vs frames + follow-up speedup vs frames, 7B/3B overlaid with
+   safe-deploy shading; threshold scaling ratio 14500/8100 ≈ 1.79
+   matches the ~1.6× basin-onset-depth-scaling claim. And
+   `paper/figures/v_share_v_red_ceiling.{png,_data.json}` — 8 regimes
+   scatter (4 dev + 3 holdout + 1 pooled EXP10 n=60) against the
+   `1/(1 − V_share × V_red)` curve; dev median |Δ| = 2.2pp, holdout
+   max 11.6pp (MVBench 8f, thermal-inflated and advisory per Session 4
+   findings). Pooled n=60 cell sits at product 0.027 / E2E 1.042× —
+   the CLOSED-NULL data-point visible at the bottom-left of the curve.
+   No new runs; paper-draft work only. Commit: follow-up.
 
 ## Future / documented (scope for subsequent draft)
 
