@@ -51,6 +51,8 @@ from pathlib import Path
 import av
 import numpy as np
 
+from codec_through.codec._pyav_util import robust_reformat
+
 AV_CODEC_FLAG2_EXPORT_MVS = 1 << 28
 
 PTYPE_MAP = {1: "I", 2: "P", 3: "B"}
@@ -217,7 +219,7 @@ class H264MetadataExtractor:
             for i, frame in enumerate(container.decode(stream)):
                 if self.max_frames is not None and i >= self.max_frames:
                     break
-                y = None if self.mv_only else frame.to_ndarray(format="gray")
+                y = None if self.mv_only else robust_reformat(frame, format="gray")
                 mv_arr = self._extract_mv_ndarray(frame)
                 buf.append((i, int(frame.pict_type), y, mv_arr))
 

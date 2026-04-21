@@ -18,7 +18,6 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from pathlib import Path
-from typing import cast
 
 import av
 import numpy as np
@@ -128,31 +127,31 @@ def test_memory_is_bounded_via_wrapper(tmp_path: Path, monkeypatch: pytest.Monke
 
     The bug we are preventing is the legacy pattern
     ``all_frames.append(frame.to_image())`` executed for *every* decoded
-    frame before subsampling. We wrap ``PIL.Image.Image.__init__`` and
-    assert the live-count stays bounded.
-
-    We count materialized PIL images via ``frame.to_image()`` by patching
-    ``av.VideoFrame.to_image`` to bump a counter for every call AFTER the
-    count pass.
+    frame before subsampling. We count the reformat path
+    (``frame.to_ndarray(format='rgb24')`` via ``robust_reformat``) after
+    the count pass; the count pass itself does not materialize pixels.
     """
     path = tmp_path / "memtest.mp4"
     _write_synth_video(path, frame_count=200)
     materialized: list[int] = [0]
 
-    original = av.VideoFrame.to_image
+    original = av.VideoFrame.to_ndarray
 
-    def counting_to_image(self: av.VideoFrame, *args: object, **kwargs: object) -> Image.Image:
-        materialized[0] += 1
-        return cast(Image.Image, original(self, *args, **kwargs))  # type: ignore[no-untyped-call]
+    def counting_to_ndarray(
+        self: av.VideoFrame, *args: object, **kwargs: object
+    ) -> object:
+        if kwargs.get("format") == "rgb24":
+            materialized[0] += 1
+        return original(self, *args, **kwargs)  # type: ignore[no-untyped-call]
 
-    monkeypatch.setattr(av.VideoFrame, "to_image", counting_to_image)
+    monkeypatch.setattr(av.VideoFrame, "to_ndarray", counting_to_ndarray)
     frames = decode_uniform_frames(path, frame_count=4)
     assert len(frames) == 4
-    # The count pass does NOT call to_image (frames are decoded but not
-    # materialized as PIL). Only the selection pass calls to_image, and
+    # The count pass does NOT reformat (frames are decoded but not
+    # materialized as arrays). Only the selection pass reformats, and
     # only for the 4 target frames.
     assert materialized[0] == 4, (
-        f"expected exactly 4 PIL materializations (one per target frame),"
+        f"expected exactly 4 rgb24 reformats (one per target frame),"
         f" got {materialized[0]} — memory bound broken"
     )
 

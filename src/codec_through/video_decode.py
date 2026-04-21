@@ -23,15 +23,19 @@ comparisons stay exact.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import cast
 
 import av
 import numpy as np
 from PIL import Image
 
+from codec_through.codec._pyav_util import robust_reformat
+
 
 def _to_rgb_image(frame: av.VideoFrame) -> Image.Image:
-    return cast(Image.Image, frame.to_image().convert("RGB"))  # type: ignore[no-untyped-call]
+    # robust_reformat handles the EAGAIN-under-Metal-pressure case that
+    # frame.to_image() does not; see codec/_pyav_util.py.
+    arr = robust_reformat(frame, format="rgb24")
+    return Image.fromarray(arr)
 
 
 def decode_uniform_frames(
