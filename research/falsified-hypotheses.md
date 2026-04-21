@@ -226,6 +226,36 @@ Each entry has:
   path).
 - **link**: [phase 1.5](experiments/2026/2026-04-13-phase-1_5-mvbench-benchmark-subset.md)
 
+### falsified_2026-04-22_codec-or-aggregate-matches-pixel-diff
+
+- **hypothesis**: codec-native H.264 macroblock labels (STATIC /
+  SHIFTED / NOVEL from skip / intra|cbf / else), max-OR-aggregated
+  across the native-rate span between each pair of sparse-sampled
+  8 frames and resampled to Qwen's 28px token grid, agree with
+  Phase 1.57 pixel-diff class shares to within max |Δ| < 10pp per
+  class — i.e., codec labels are a drop-in replacement for pixel-
+  diff in the Track A planner path.
+- **rejected by**: phase 1.29 short-bucket pilot (n=5 short-bucket
+  VideoMME items, 2026-04-22) — **100% NOVEL on every sparse pair
+  of every item**; mean aggregate Δ vs 1.57 pixel-diff reference
+  = −0.496 / −0.042 / +**0.538** (STATIC / SHIFTED / NOVEL).
+  max|Δ| = **0.538**, five times the gate.
+- **rejection band**: mean-aggregate max|Δ| < 0.10 across n≥5.
+  Observed 0.538.
+- **scope of rejection**: rules out **MAX-over-span aggregation**
+  as the reduction rule for codec→sparse-frame label mapping. Root
+  cause: at 30 fps short clips, ~250-400 native frames per sparse-
+  pair span contain many I-frames, so every macroblock position
+  accumulates at least one `intra_flag`/CBF bit, locking the max
+  to NOVEL. Does NOT rule out (a) threshold-fraction aggregation
+  rules, (b) continuous codec-score with planner re-thresholding,
+  (c) native-rate codec-through per Sam-streaming protocol (task
+  #155 prereg). The upstream `H264MetadataExtractor` and
+  `classify_blocks_h264` are correct at native rate (task #114
+  regression tests pass); the falsification is an aggregation-
+  design choice, not an extractor bug.
+- **link**: [1.29 short-bucket pilot findings](experiments/2026/2026-04-22-phase-1_29-codec-native-short-bucket-pilot-findings.md)
+
 ## Additions process
 
 When a new phase registers a rejection:

@@ -208,11 +208,21 @@ in its own dimension.
    **PRE-INTEGRATION AUDIT 2026-04-22**: full-bucket pilot (5 items
    stratified short/medium/long) exceeded session compute budget; native-
    rate H.264 extract over long-bucket VideoMME clips dominates runtime.
-   Semantic gap between native-rate codec labels and sparse-8f pixel-diff
-   unverified. Actionable unblock: **short-bucket-only pilot** (~30-60 min
-   compute; ~15 min scripting) produces the codec-vs-pixel Δ numbers
-   needed to gate Stages A/B/C implementation. See
-   `research/experiments/2026/2026-04-22-phase-1_29-codec-native-integration-audit.md`.
+   Short-bucket-only follow-up pilot (5 short items, ~100s compute)
+   **HARD-FALSIFIED 2026-04-22**: codec OR-aggregated class shares
+   degenerate to **100% NOVEL on every sparse pair of every item**; mean
+   |Δ| vs pixel-diff = **53.8pp** (gate: 10pp). Root cause: at sparse 8f
+   sampling, ~250-400 native-rate frames per pair-span include ~30-60
+   I-frames; MAX-over-span locks every MB to NOVEL. **Redesign required**
+   before Stages A/B/C: either (a) switch aggregation from MAX to
+   threshold-fraction vote, or (b) emit a continuous codec-score and
+   rethreshold via existing `static_threshold`/`shifted_threshold`
+   planner machinery (design-note §Stage B alternative), or (c) abandon
+   sparse retrofit and run codec-native at native rate per Sam-streaming
+   (should-do #4). See
+   `research/experiments/2026/2026-04-22-phase-1_29-codec-native-integration-audit.md`
+   and
+   `research/experiments/2026/2026-04-22-phase-1_29-codec-native-short-bucket-pilot-findings.md`.
 
 9. **Paper figures: C-PERSIST safe-deployment table + V_share-governs-
    C-VISION-gains plot.** **LANDED 2026-04-21 (autonomous session).**
