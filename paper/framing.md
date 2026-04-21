@@ -2,6 +2,14 @@
 
 This file tracks the paper story, contribution boundary, and anti-claims.
 
+Paper-facing drafts (what a reviewer will actually read):
+
+- [`paper/abstract.md`](abstract.md) — one-page three-contributions
+  abstract (C-CEILING / C-PERSIST / C-VISION first-class;
+  Lane A as mechanism backbone; Sam as deployment-scale evidence)
+- [`paper/intro.md`](intro.md) — paper-facing introduction with the
+  same structure, per Codex round-25 structural request
+
 It is NOT the place for raw experimental detail. Evidence lives in:
 
 - [docs/reproduction-status.md](../docs/reproduction-status.md) — per-claim
@@ -137,7 +145,53 @@ We do NOT claim:
 - robotics inner-loop safety or real-time guarantees
 - AI-native codecs as a near-term deliverable
 
-## Reviewer-Facing Limitations (import from sam, tightened)
+## Sam as deployment-scale evidence (not "applications / support")
+
+Codex round-25 structural ask: **stop framing codec-through-sam as
+"applications / support". Foreground it as deployment-scale evidence
+for C-PERSIST and C-VISION.** The two repos occupy disjoint regimes
+*by design*:
+
+| Axis                  | codec-through (this paper)                 | codec-through-sam                                          |
+|-----------------------|--------------------------------------------|------------------------------------------------------------|
+| Model size            | 4 B-class, 4-bit quantized                 | 26 B-class                                                  |
+| Protocol              | sparse-sampled benchmark                   | real streaming / deployment                                 |
+| Eval regime           | N = 30 / 60 holdout, paired, thermally controlled | 1,937 items, live decode in loop                    |
+| Classifier            | pixel-diff proxy (scoped future: 1.29 MV-only) | codec-native MV + CBF                                   |
+| Focus                 | mechanism isolation, prereg falsification  | full stack, composition, measured end-to-end multipliers    |
+| Strongest numbers     | 1.08–1.24× E2E dev; 1.113× VideoMME 8 f holdout; sub-second follow-up inside safe envelope | 4.2–4.5× real-video E2E; 13× ViT; ~50× streaming dominant-pipeline; median 0.8 s follow-up; 5–300× live ViT |
+
+The shared frame is **C-CEILING** (`1/(fixed + (1−fixed)/s)` on any
+stage-bounded acceleration, including the vision-axis analog
+`1/(1 − V_share × V_red)`) and a shared definition of
+**attention-propagation drift** as the fidelity mechanism — NOT
+positional-encoding drift. codec-through proves the mechanism at
+small scale under strict prereg/falsification discipline; Sam proves
+that the same mechanism, instantiated on the full stack in the right
+regime, delivers product-scale multiplicative wins. The paper
+reports the **evidence union** under a single analytical theory, with
+honest accounting of where each number came from.
+
+Weak streaming case-study claims without matched baselines (e.g.
+single-cell streaming anecdotes) are **appendix-bound** — they do not
+appear in the main body unless the paired baseline is also reported.
+
+Bridge experiments we explicitly do NOT claim as landed in
+codec-through locally:
+
+- streaming-protocol reproduction of Sam's N = 60 line (phase 1.30
+  preregistered, deferred pending EXP17/18 landing)
+- codec-native benchmark evidence from 1.29 (H.264 extractor ported;
+  benchmark slice not yet run)
+- sparse-execution measured delta for claim 5 (Track B infra exists
+  on dense; sparse path unwritten)
+- cross-architecture C-VISION transfer (Qwen 2.5-VL at matched
+  `L=?, kr=?`)
+
+These are the four largest outstanding bridges between the repos; the
+three contributions above stand *without* them.
+
+## Reviewer-Facing Limitations (shared fidelity vocabulary with codec-through-sam)
 
 These are the caveats a reviewer will check. Per sam's revised
 whitepaper §8 and codex 2026-04-16 review, the paper must state:
