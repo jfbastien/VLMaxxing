@@ -213,16 +213,24 @@ in its own dimension.
    degenerate to **100% NOVEL on every sparse pair of every item**; mean
    |Δ| vs pixel-diff = **53.8pp** (gate: 10pp). Root cause: at sparse 8f
    sampling, ~250-400 native-rate frames per pair-span include ~30-60
-   I-frames; MAX-over-span locks every MB to NOVEL. **Redesign required**
-   before Stages A/B/C: either (a) switch aggregation from MAX to
-   threshold-fraction vote, or (b) emit a continuous codec-score and
-   rethreshold via existing `static_threshold`/`shifted_threshold`
-   planner machinery (design-note §Stage B alternative), or (c) abandon
-   sparse retrofit and run codec-native at native rate per Sam-streaming
-   (should-do #4). See
-   `research/experiments/2026/2026-04-22-phase-1_29-codec-native-integration-audit.md`
-   and
-   `research/experiments/2026/2026-04-22-phase-1_29-codec-native-short-bucket-pilot-findings.md`.
+   I-frames; MAX-over-span locks every MB to NOVEL.
+   **CONTINUOUS-SCORE PARTIAL PASS 2026-04-22**: redesign option (b)
+   implemented as
+   `scripts/pilot_1_29_continuous_codec_score.py` — continuous per-MB
+   `fraction_of_native_frames_with_intra_or_cbf` + global quantile
+   calibration to match pixel-diff aggregate. On the same 5 short items:
+   aggregate max|Δ| = **7.9pp (PASSES 10pp gate)** but per-item
+   max|Δ| = **16-25pp (FAILS per-item gate)**; Spearman ρ(pix_STATIC,
+   codec_STATIC) = +0.40 (n=5, not significant at α=0.05). Two failure
+   modes: extreme-STATIC items saturate (037-2 → 100% STATIC) and
+   moderately-dynamic items over-predict NOVEL. **Per Codex round-27,
+   1.29 is OFF the critical path for the paper body** unless reframed
+   to (i) continuous-planner-signal with per-item calibration *and* a
+   planner-accuracy probe, or (ii) native-rate streaming retrofit
+   (should-do #4). Findings:
+   `research/experiments/2026/2026-04-22-phase-1_29-codec-native-integration-audit.md`,
+   `research/experiments/2026/2026-04-22-phase-1_29-codec-native-short-bucket-pilot-findings.md`,
+   `research/experiments/2026/2026-04-22-phase-1_29-continuous-codec-score-pilot-findings.md`.
 
 9. **Paper figures: C-PERSIST safe-deployment table + V_share-governs-
    C-VISION-gains plot.** **LANDED 2026-04-21 (autonomous session).**
