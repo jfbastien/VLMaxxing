@@ -18,15 +18,16 @@ others).
 
 1. **1.51V V-only holdout unpatched-vs-patched pair (EXP17/EXP18).**
    Why: three paper-table cells (TOMATO **1.24×**, MVBench **1.21×**,
-   VideoMME 8f/16f 1.08×/1.12×) are currently dev-only. Without a
-   holdout unpatched baseline on at least VideoMME 8f, the C-VISION
-   headline cells carry a "dev-only n=30" footnote a reviewer will cut.
-   Status: **IN PROGRESS** — session 3 runner queued 2026-04-21, EXP17
-   at 17/30 at time of writing.
-   Runtime: ~45 min total (EXP17 ~30 min + EXP18 ~15 min after thermal
-   pair).
-   Promotion gate: H_holdout_vonly_e2e ≥ 1.05× AND H_holdout_vred ∈
-   [0.35, 0.45] AND decode-Δ thermal-pair passes.
+   VideoMME 8f/16f 1.08×/1.12×) were dev-only. Without a holdout
+   unpatched baseline on at least VideoMME 8f, the C-VISION headline
+   cells carried a "dev-only n=30" footnote a reviewer would cut.
+   Status: **CLOSED 2026-04-21** — all four preregistered hypotheses
+   pass. H_holdout_vonly_e2e = 1.113× (gate ≥ 1.05×); H_holdout_vred =
+   0.413 (gate [0.35, 0.45]); H_holdout_thermal = 1.53% (gate < 2%);
+   H_holdout_accuracy = 0.000 (gate [−0.05, +0.05]). Holdout V_share
+   corrected to 15.45% (prior memory note 8.6% was stale / wrong).
+   Paper-table VideoMME 8f cell may drop the "dev-only" caveat.
+   Findings: `research/experiments/2026/2026-04-21-phase-1_51V-session3-findings.md`.
 
 2. **Ledger consistency across registry ↔ claim-matrix ↔
    publishability-status ↔ research-dashboard.** Claim-matrix has been

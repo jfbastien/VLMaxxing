@@ -32,7 +32,8 @@ when phases close or expand, not the registry (registry is the ledger).
 
 ## Running work
 
-- **1.51V session 3** (task #153, in_progress 2026-04-21) — EXP17/18 V-only holdout unpatched-vs-patched pair on VideoMME holdout v1 8f, thermally paired. Runner: `scripts/run_phase1_51V_session3.sh`. Preregistered 2026-04-21: `2026-04-21-phase-1_51V-session3-prereg.md`. H_holdout_vonly_e2e ≥ 1.05× (ceiling model predicts 1.034× at V_share 8.6% × V_red 39%); H_holdout_vred ∈ [0.35, 0.45]; H_holdout_thermal decode-Δ < 2%. Closes the round-24 "V-only holdout unpatched baseline missing" gap; if EXP17/18 passes, C-VISION paper-table cells drop the dev-only caveat.
+- *(No experiments currently running.)*
+- **Prior — 1.51V session 3** (task #153, CLOSED 2026-04-21) — EXP17/18 V-only holdout pair on VideoMME holdout v1 8f. **All four hypotheses CONFIRMED**: H_holdout_vonly_e2e=1.113× (gate ≥1.05×), H_holdout_vred=0.413 (gate [0.35, 0.45]), H_holdout_thermal=1.53% (gate <2%), H_holdout_accuracy=0.000 (gate [−0.05, +0.05]). Holdout V_share corrected to 15.45% (prior memory note 8.6% was wrong). Paper-table C-VISION VideoMME 8f cell now holdout-earned — drops the "dev-only" caveat. Findings: `2026-04-21-phase-1_51V-session3-findings.md`.
 - **Prior — 1.51V session 2** (task #144, closed 2026-04-21) — 32f probe (EXP13/14: H_32f_vshare confirmed, H_32f_e2e rejected on thermal-broken pair) + VideoMME holdout replication (EXP15/16: H_stack partial confirmation, within-run 1.064× paired).
 - **Prior — 1.51V expansion** (task #143, closed 2026-04-21) — 12/12 experiments DONE. Findings: `2026-04-21-phase-1_51V-expansion-findings.md`.
 
@@ -48,6 +49,7 @@ when phases close or expand, not the registry (registry is the ledger).
 | EXP01/09 1.51V × 1.51R (gemma_structural kr=0.5) | +42.8% | 1.11× | -4.7% | -0.067 | cooler | **H_stack null CONFIRMED**: composition vs V-alone is 1% slower + -6.7pp accuracy + 0.50 agreement |
 | EXP01/10 1.51V × 1.51R (none kr=0.3) | +42.0% | 1.11×/1.17×* | -4.5% | -0.067 | cooler | **H_stack PARTIAL VIOLATION**: own-pair composition = +5.7% E2E over V-alone, aggregate accuracy preserved, but agreement=0.63 |
 | EXP11/12 VideoMME **16f** kr=0.50  | +39.0% | 1.12× | -0.1% | +0.033 | cleanest pair in queue | **H_fsscale CONFIRMED**: V_red invariant to frame count; E2E matches ceiling model (V_share 24.3% × V_red 39.0% → pred 1.11×, obs 1.12×) |
+| EXP17/18 VideoMME **holdout** 8f kr=0.50 | +41.3% | **1.113×** (dense→pruned) / 1.096× (dense→dense) | +1.5% | 0.000 | clean, first-attempt gate pass | **H_holdout_vonly_e2e CONFIRMED + H_holdout_vred CONFIRMED**: V_share holdout = 15.45% (equal to dev); paper-table drops "dev-only" caveat. Observed exceeds V-only ceiling 1.068× due to generate-side TPS lift (28.5→32.9). |
 
 *1.11× uses V-alone dense arm as baseline (clean thermal); 1.17× includes composition (cross-session, thermal-inflated).
 
@@ -59,7 +61,8 @@ All rows below at L=2 kr=0.50, n=30, thermally paired unless noted:
 
 | Benchmark | Frames | V_share | Ceiling | V_red   | E2E× obs | Pred    | Acc Δ  | Pairing |
 |-----------|--------|---------|---------|---------|----------|---------|--------|---------|
-| VideoMME  | 8      | 15.2%   | 1.18×   | 39.0%   | 1.08×    | 1.062×  | -0.067 | clean   |
+| VideoMME  | 8 (dev) | 15.2%  | 1.18×   | 39.0%   | 1.08×    | 1.062×  | -0.067 | clean   |
+| VideoMME  | 8 (holdout) | 15.45% | 1.19× | 41.3%   | **1.113×** | 1.068× | 0.000 | clean (session 3) |
 | VideoMME  | 16     | 24.3%   | 1.32×   | 39.0%   | 1.12×    | 1.105×  | +0.033 | cleanest |
 | VideoMME  | 32     | 31.0%   | 1.45×   | ~26%*   | 0.94×**  | ≤1.14×  | -0.033 | **broke (decode +7.6%)** |
 | MVBench   | 8      | 47.8%   | 1.91×   | 40.0%   | **1.21×** | 1.237× | -0.100 | slightly hotter |
