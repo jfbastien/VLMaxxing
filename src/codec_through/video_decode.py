@@ -104,17 +104,16 @@ def _count_frames(
 ) -> int:
     """Count frames in the requested window without retaining them.
 
-    Fast path: if no time window is requested and ``stream.frames`` is
-    non-zero, trust the container metadata. Otherwise iterate and count;
-    each decoded frame is discarded immediately (PIL image is never
-    materialized), so memory stays O(1).
+    Always iterates the stream. The previously-used ``stream.frames`` fast
+    path has been removed: on 2026-04-21 it was observed to report 366
+    frames for ``tomato/videos/object/0298-00.mp4`` while the underlying
+    stream only yields ~235 decodable frames, producing a
+    ``decode_uniform_frames`` target-index mismatch that hard-fails the
+    whole benchmark. Iteration is O(1) memory (each decoded frame is
+    discarded immediately) and adds ~0.2-0.8s per 8-second clip on M3
+    hardware — acceptable overhead for decode-correctness on corrupted
+    or mis-indexed MP4 containers.
     """
-    if start_seconds is None and end_seconds is None:
-        with av.open(str(video_path)) as container:
-            stream = container.streams.video[0]
-            declared = int(stream.frames or 0)
-            if declared > 0:
-                return declared
     count = 0
     with av.open(str(video_path)) as container:
         stream = container.streams.video[0]

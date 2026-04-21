@@ -154,3 +154,29 @@ def test_memory_is_bounded_via_wrapper(tmp_path: Path, monkeypatch: pytest.Monke
         f"expected exactly 4 PIL materializations (one per target frame),"
         f" got {materialized[0]} — memory bound broken"
     )
+
+
+def test_count_frames_is_iterative_not_metadata_based(synth_video: Path) -> None:
+    """Regression: _count_frames always iterates the stream.
+
+    On 2026-04-21 the TOMATO clip ``object/0298-00.mp4`` was observed
+    to declare ``stream.frames = 366`` while the decoder only yielded
+    ~235 frames; the prior fast-path trusted the container metadata and
+    caused ``decode_uniform_frames`` to generate target indices > 234
+    that never matched, hard-failing the whole benchmark. We pin the
+    decision-to-iterate by opening a synth clip and confirming that
+    ``_count_frames`` returns the actual iteration count (60) — a
+    fast-path regression reading ``stream.frames`` would still work on
+    healthy synth clips, but this test documents the constraint
+    explicitly and catches any regression where ``_count_frames``
+    becomes metadata-dependent (e.g., by returning a non-zero value for
+    a malformed stream whose decode iterator is empty).
+    """
+    from codec_through.video_decode import _count_frames
+
+    count = _count_frames(synth_video, start_seconds=None, end_seconds=None)
+    assert count == 60, (
+        f"expected iterated count of 60 on synth 60-frame clip, got {count}"
+        f" — if this fails with a different number, a fast-path has"
+        f" likely been reintroduced into _count_frames"
+    )
