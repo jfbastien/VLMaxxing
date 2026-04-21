@@ -479,10 +479,15 @@ items that priority.md does not carry. For the current ordering see
 
 ### Current queue mirror (priority.md §Should-do, in rank order)
 
-1. **EXP10 n=60 H_stack re-check** — tightens the composition-appendix
-   CI from ±0.05 to ±0.03 (n=30 → n=60). In flight 2026-04-21; runtime
-   ~60-90 min per arm × 2 arms. **Not** a paper-spine gate; tightens a
-   secondary claim.
+1. ~~**EXP10 n=60 H_stack re-check**~~ — **CLOSED-NULL 2026-04-21
+   (autonomous session, task #152).** Pooled n=60 arm B V+novelty E2E
+   1.0420× / V-only ref arm A 1.0159×; lift 2.6pp FAILS ≥4pp gate;
+   agreement 0.650 FAILS ≥0.75; acc Δ −0.017 PASSES. Ceiling model
+   reproduces observation to 0.2pp: pooled fixed_frac 0.875 (V_share
+   collapsed to 6.26% vs dev 15.2%), per-token speedup 1.446× gives
+   arithmetic ceiling 1.041×. Composition appendix does NOT land; the
+   paper's three-contribution spine is unchanged. Findings:
+   `research/experiments/2026/2026-04-21-phase-1_51V-exp10-n60-findings.md`.
 2. ~~**1.51V MVBench and TOMATO holdout V-only pairs**~~ — **CLOSED
    2026-04-21** (three-benchmark C-VISION trifecta). No further rerun
    required to support paper-grade C-VISION claims.
@@ -503,8 +508,15 @@ items that priority.md does not carry. For the current ordering see
 8. **1.29 local codec-native benchmark slice** — biggest missing Sam
    bridge per codex round-26 (promoted from future). ~1-2 h wall;
    blocker is harness wire-up (prereg landed task #98 2026-04-20).
-9. **Paper figures: C-PERSIST safe-budget table + V_share ceiling
-   plot** — figure work from already-landed data; 0 benchmark hours.
+9. ~~**Paper figures: C-PERSIST safe-budget table + V_share ceiling
+   plot**~~ — **LANDED 2026-04-21 (autonomous session, task #161).**
+   Scripts `scripts/plot_c_persist_safe_budget.py` +
+   `scripts/plot_v_share_v_red_ceiling.py`; artifacts
+   `paper/figures/c_persist_safe_budget.{png,_data.json}` and
+   `paper/figures/v_share_v_red_ceiling.{png,_data.json}`. V_share ×
+   V_red figure shows 8 regimes (4 dev + 3 holdout + 1 pooled
+   CLOSED-NULL); dev median |Δ| 2.2pp, MVBench 8f holdout sits 11.6pp
+   above the ceiling (thermal-inflated, matches session-4 advisory).
 
 ### Mechanism-validation backbone (Qwen routing, NOT the headline)
 
