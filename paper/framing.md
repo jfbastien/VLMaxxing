@@ -145,6 +145,112 @@ sparse-path end-to-end delta, (c) a cleaner local bridge into the
 streaming / deployment regime, (d) a 1.29 local codec-native benchmark
 slice, and (e) a 1.60 scroll/pan regime-boundary probe.
 
+## Protocol matters — three non-interchangeable evaluation regimes
+
+Every number in this paper lives inside one of three protocols, and the
+protocols are not mutually substitutable. Conflating them is the easiest
+way to overclaim.
+
+1. **Sparse after-ingest QA.** The VideoMME / MVBench / TOMATO
+   benchmarks as we run them: decode N frames once, ask a question,
+   score. This is what C-VISION and the 1.51R partial reproduction
+   measure. It is *not* streaming, and it is *not* live camera.
+2. **Native-rate streaming.** Frames arrive at source rate; the model
+   must keep up. Sam's 4.2–4.5× E2E and ~50× streaming-dominant
+   multipliers live here. The fixed fraction of the pipeline that is
+   decode + ingest is much larger, so the ceiling law
+   `1/(fixed + (1−fixed)/s)` bites differently than in (1).
+3. **After-ingest persistent-KV reuse.** Same video, follow-up
+   question. The first query pays full prefill; subsequent queries reuse
+   the KV and return in sub-second wall-clock. This is what C-PERSIST
+   characterizes, and it is the regime with the largest single
+   multipliers in this paper — but only for *same-video* reuse.
+
+A sparse-after-ingest speedup is not a streaming speedup. A persistent-KV
+latency is not a first-query latency. When the paper gives a number,
+it names the protocol it was measured under, in the same sentence.
+
+## What stacks and what doesn't
+
+Multiplicative stacking requires axis-orthogonality in compute. In
+practice our three contributions do *not* compose as a naive product of
+their independent speedups:
+
+- **C-CEILING bounds everything from above.** Pruning tokens that are
+  outside the ceiling's fixed-fraction term can't push E2E past
+  `1/fixed_frac`. 1.51V + 1.51R running together on short-bucket
+  VideoMME 8 f cannot exceed the short-bucket ceiling of ~1.76 ×, no
+  matter how aggressive the kr.
+- **C-VISION × C-PERSIST do not multiply.** Vision-tower pruning
+  changes *first-pass* latency; persistent-KV reuse changes
+  *follow-up* latency. The first pays prefill, the second skips it.
+  They stack across *queries*, not inside a single query.
+- **C-CEILING × C-VISION shares the vision axis.** The V_share term
+  in `1/(1 − V_share × V_red)` is the *same V* as the V in the general
+  ceiling. Stacking re-uses the same budget — you can't spend it twice.
+- **The EXP10 n=60 H_stack result sits at the ceiling, not above it.**
+  Composition of 1.51R prefill-pruning × 1.51V vision-pruning lands at
+  1.064 × E2E, ceiling-matched to the predicted H_stack bound — a
+  preregistered NULL on "stacking beats the ceiling" and an
+  EARNED on the ceiling law itself.
+
+The honest framing: we have three contributions that each characterize a
+*different* bound, and those bounds share terms. The product of their
+best-case multipliers is not an achievable target; the ceiling that uses
+their combined V_share / V_red / fixed-fraction terms *is*.
+
+## Negative results and boundaries (visible, not buried)
+
+A reviewer who believes only the positive claims has not read the paper.
+These are the nulls and boundaries we have earned; they shape the claim
+boundary as much as the positives:
+
+- **1.51R own-axis null at Sam's reference kr.** At `kr_R=0.50` on
+  Gemma 4-E4B-4bit VideoMME 8 f dev n=30, prefill-pruning alone yields
+  `e2e=1.00×`, `gen=1.01×`. The 1.51R speedup in the main body comes
+  from `kr=0.10` with a different aggregate-accuracy story.
+- **EXP10 n=60 H_stack composition: preregistered NULL** on "stacking
+  beats the ceiling." The observed 1.064 × E2E is ceiling-matched, not
+  super-ceiling. (This is a positive result on the *ceiling law*, and a
+  null on stack-beats-ceiling.)
+- **1.29 codec-native sparse retrofit: HARD-FALSIFIED (MAX-aggregation)
+  → PARTIAL PASS (continuous-score, aggregate only).** Sparse 8-frame
+  after-ingest classification from native-rate H.264 metadata degenerates
+  to 100 % NOVEL on every pair when aggregated by MAX (pilot
+  2026-04-22, mean |Δ| = 53.8 pp vs pixel-diff proxy). The continuous-score
+  redesign passes the 10 pp aggregate gate at 7.9 pp but fails the
+  per-item gate at 16–25 pp; codec and pixel-diff disagree on *where*
+  motion lives within an item, not just on *how much*. Off the paper's
+  critical path unless reframed.
+- **1.60 scroll/pan regime-boundary probe: curation-blocked.** The
+  scroll/pan subset requires hand-curation we have not completed; prereg
+  landed, run deferred.
+- **Sam axis #2b: mixed / null** on a subset of streaming cells. Not
+  all of Sam's multipliers generalize to every content type; the
+  mixed/null cells are reported alongside the positive ones, not
+  averaged away.
+- **Sam piecewise reuse: no matched wall-clock baseline.** The
+  piecewise-reuse case study in codec-through-sam is a single-cell
+  illustration, not a deployment-scale result. Appendix-bound; does not
+  contribute to the headline multipliers.
+
+## Sam: case-study vs deployment-scale (not interchangeable)
+
+Within codec-through-sam the numbers fall into two categories and they
+carry different evidential weight:
+
+**Deployment-scale** (main-body multipliers, paired baselines,
+1,937-item corpus where applicable): streaming E2E 4.2–4.5 ×; ViT-only
+13 ×; streaming-dominant-pipeline ~50 ×; live-camera ViT 5–300 ×;
+persistent-KV follow-up median 0.8 s. These stay in the main body,
+clearly attributed to Sam, with their regime explicitly named.
+
+**Case-study** (single-cell illustrations, no paired baseline, or no
+matched wall-clock): piecewise reuse; individual streaming anecdotes
+without the paired sparse-benchmark comparison. These are appendix-bound
+and do not contribute to the headline — the paper does not present a
+case-study multiplier as evidence for a deployment-scale claim.
+
 ## Current Narrow Claim Boundary
 
 We claim, with current evidence:
