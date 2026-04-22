@@ -85,12 +85,8 @@ def resample_mean(
 
 
 def main() -> None:
-    ref = {
-        it["item_id"]: it
-        for it in json.load(
-            open("research/experiments/2026/artifacts/phase1_57/qwen_8f_dev30.json")
-        )["per_item"]
-    }
+    with open("research/experiments/2026/artifacts/phase1_57/qwen_8f_dev30.json") as f:
+        ref = {it["item_id"]: it for it in json.load(f)["per_item"]}
     df = pd.read_parquet("data/benchmarks/videomme/hf/videomme/test-00000-of-00001.parquet")
 
     # Pass 1: compute continuous codec scores per pair per token block
@@ -130,8 +126,11 @@ def main() -> None:
             stk = np.stack(per_frame_novel_flag[lo : hi + 1], axis=0).astype(np.float32)
             f_novel = stk.mean(axis=0)  # (MB_H, MB_W) in [0, 1]
             tok = resample_mean(
-                f_novel, src_px=ext.mb_size, dst_px=QWEN_TOKEN_BLOCK,
-                height=ext.height, width=ext.width,
+                f_novel,
+                src_px=ext.mb_size,
+                dst_px=QWEN_TOKEN_BLOCK,
+                height=ext.height,
+                width=ext.width,
             )
             scores_per_pair.append(tok)
             all_scores.append(tok.ravel())
@@ -152,11 +151,13 @@ def main() -> None:
     shifted_t = float(np.quantile(pooled, PIX_AGG_STATIC + PIX_AGG_SHIFTED))
     print(
         f"pooled score stats: min={pooled.min():.3f} p10={np.quantile(pooled, 0.10):.3f} "
-        f"p43.6={static_t:.3f} p46.2={shifted_t:.3f} p90={np.quantile(pooled, 0.90):.3f} max={pooled.max():.3f}"
+        f"p43.6={static_t:.3f} p46.2={shifted_t:.3f} "
+        f"p90={np.quantile(pooled, 0.90):.3f} max={pooled.max():.3f}"
     )
     print(
-        f"calibrated thresholds (to match pixel-diff aggregate dist S/X/N={PIX_AGG_STATIC:.3f}/"
-        f"{PIX_AGG_SHIFTED:.3f}/{PIX_AGG_NOVEL:.3f}): static_t={static_t:.3f} shifted_t={shifted_t:.3f}"
+        f"calibrated thresholds (to match pixel-diff aggregate dist "
+        f"S/X/N={PIX_AGG_STATIC:.3f}/{PIX_AGG_SHIFTED:.3f}/{PIX_AGG_NOVEL:.3f}): "
+        f"static_t={static_t:.3f} shifted_t={shifted_t:.3f}"
     )
     print()
 
@@ -190,9 +191,21 @@ def main() -> None:
                 "item_id": iid,
                 "total_frames": meta["total_frames"],
                 "extract_s": meta["extract_s"],
-                "pix_share": {"STATIC": float(pix_share[0]), "SHIFTED": float(pix_share[1]), "NOVEL": float(pix_share[2])},
-                "codec_share": {"STATIC": float(codec_share[0]), "SHIFTED": float(codec_share[1]), "NOVEL": float(codec_share[2])},
-                "delta": {"STATIC": float(delta[0]), "SHIFTED": float(delta[1]), "NOVEL": float(delta[2])},
+                "pix_share": {
+                    "STATIC": float(pix_share[0]),
+                    "SHIFTED": float(pix_share[1]),
+                    "NOVEL": float(pix_share[2]),
+                },
+                "codec_share": {
+                    "STATIC": float(codec_share[0]),
+                    "SHIFTED": float(codec_share[1]),
+                    "NOVEL": float(codec_share[2]),
+                },
+                "delta": {
+                    "STATIC": float(delta[0]),
+                    "SHIFTED": float(delta[1]),
+                    "NOVEL": float(delta[2]),
+                },
             }
         )
         rows.append({"pix": pix_share, "codec": codec_share})
@@ -208,18 +221,27 @@ def main() -> None:
         agg_delta = codec_mean - pix_mean
         out["aggregate"] = {
             "n_items": len(rows),
-            "pix_mean": {"STATIC": float(pix_mean[0]), "SHIFTED": float(pix_mean[1]), "NOVEL": float(pix_mean[2])},
-            "codec_mean": {"STATIC": float(codec_mean[0]), "SHIFTED": float(codec_mean[1]), "NOVEL": float(codec_mean[2])},
-            "delta_mean": {"STATIC": float(agg_delta[0]), "SHIFTED": float(agg_delta[1]), "NOVEL": float(agg_delta[2])},
+            "pix_mean": {
+                "STATIC": float(pix_mean[0]),
+                "SHIFTED": float(pix_mean[1]),
+                "NOVEL": float(pix_mean[2]),
+            },
+            "codec_mean": {
+                "STATIC": float(codec_mean[0]),
+                "SHIFTED": float(codec_mean[1]),
+                "NOVEL": float(codec_mean[2]),
+            },
+            "delta_mean": {
+                "STATIC": float(agg_delta[0]),
+                "SHIFTED": float(agg_delta[1]),
+                "NOVEL": float(agg_delta[2]),
+            },
             "max_abs_delta": float(np.abs(agg_delta).max()),
         }
 
         # Rank correlation across items (STATIC share — the most semantically
         # loaded class). If the codec signal preserves item-level ordering
         # of how-static-the-clip-is, it is usable as a continuous signal.
-        pix_static_order = np.argsort([r["pix"][0] for r in rows])
-        codec_static_order = np.argsort([r["codec"][0] for r in rows])
-        rank_match = (pix_static_order == codec_static_order).sum() / len(rows)
         # Spearman via numpy rankdata (avoid scipy dep)
         pix_static = np.array([r["pix"][0] for r in rows])
         codec_static = np.array([r["codec"][0] for r in rows])
@@ -232,13 +254,11 @@ def main() -> None:
         out["aggregate"]["spearman_static"] = {"rho": rho, "n": len(rows)}
 
         print(
-            "\nAGGREGATE (n={}): pix mean S/X/N={:.3f}/{:.3f}/{:.3f}  codec mean S/X/N={:.3f}/{:.3f}/{:.3f}  Δ={:+.3f}/{:+.3f}/{:+.3f}  max|Δ|={:.3f}".format(
-                len(rows),
-                pix_mean[0], pix_mean[1], pix_mean[2],
-                codec_mean[0], codec_mean[1], codec_mean[2],
-                agg_delta[0], agg_delta[1], agg_delta[2],
-                np.abs(agg_delta).max(),
-            )
+            f"\nAGGREGATE (n={len(rows)}): "
+            f"pix mean S/X/N={pix_mean[0]:.3f}/{pix_mean[1]:.3f}/{pix_mean[2]:.3f}  "
+            f"codec mean S/X/N={codec_mean[0]:.3f}/{codec_mean[1]:.3f}/{codec_mean[2]:.3f}  "
+            f"Δ={agg_delta[0]:+.3f}/{agg_delta[1]:+.3f}/{agg_delta[2]:+.3f}  "
+            f"max|Δ|={np.abs(agg_delta).max():.3f}"
         )
         print(f"Spearman(pix_STATIC_share, codec_STATIC_share) ρ={rho:+.3f} (n={len(rows)})")
         print(

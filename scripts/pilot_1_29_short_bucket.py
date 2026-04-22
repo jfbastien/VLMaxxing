@@ -52,12 +52,8 @@ def pick_video(item_id: str, df: pd.DataFrame) -> str | None:
 
 
 def main() -> None:
-    ref = {
-        it["item_id"]: it
-        for it in json.load(
-            open("research/experiments/2026/artifacts/phase1_57/qwen_8f_dev30.json")
-        )["per_item"]
-    }
+    with open("research/experiments/2026/artifacts/phase1_57/qwen_8f_dev30.json") as f:
+        ref = {it["item_id"]: it for it in json.load(f)["per_item"]}
     df = pd.read_parquet("data/benchmarks/videomme/hf/videomme/test-00000-of-00001.parquet")
 
     rows: list[dict[str, object]] = []
@@ -121,16 +117,30 @@ def main() -> None:
                 "total_frames": int(total),
                 "count_frames_s": round(count_s, 2),
                 "extract_s": round(extract_s, 2),
-                "pix_share": {"STATIC": float(pix_share[STATIC]), "SHIFTED": float(pix_share[SHIFTED]), "NOVEL": float(pix_share[NOVEL])},
-                "codec_share": {"STATIC": float(codec_share[STATIC]), "SHIFTED": float(codec_share[SHIFTED]), "NOVEL": float(codec_share[NOVEL])},
-                "delta": {"STATIC": float(delta[STATIC]), "SHIFTED": float(delta[SHIFTED]), "NOVEL": float(delta[NOVEL])},
+                "pix_share": {
+                    "STATIC": float(pix_share[STATIC]),
+                    "SHIFTED": float(pix_share[SHIFTED]),
+                    "NOVEL": float(pix_share[NOVEL]),
+                },
+                "codec_share": {
+                    "STATIC": float(codec_share[STATIC]),
+                    "SHIFTED": float(codec_share[SHIFTED]),
+                    "NOVEL": float(codec_share[NOVEL]),
+                },
+                "delta": {
+                    "STATIC": float(delta[STATIC]),
+                    "SHIFTED": float(delta[SHIFTED]),
+                    "NOVEL": float(delta[NOVEL]),
+                },
             }
         )
         rows.append({"pix": pix_share, "codec": codec_share})
         print(
             f"{iid:24s} fr={total:5d} count={count_s:5.1f}s ext={extract_s:5.1f}s  "
-            f"pix S/X/N={pix_share[STATIC]:.3f}/{pix_share[SHIFTED]:.3f}/{pix_share[NOVEL]:.3f}  "
-            f"codec S/X/N={codec_share[STATIC]:.3f}/{codec_share[SHIFTED]:.3f}/{codec_share[NOVEL]:.3f}  "
+            f"pix S/X/N={pix_share[STATIC]:.3f}/{pix_share[SHIFTED]:.3f}/"
+            f"{pix_share[NOVEL]:.3f}  "
+            f"codec S/X/N={codec_share[STATIC]:.3f}/{codec_share[SHIFTED]:.3f}/"
+            f"{codec_share[NOVEL]:.3f}  "
             f"Δ={delta[STATIC]:+.3f}/{delta[SHIFTED]:+.3f}/{delta[NOVEL]:+.3f}"
         )
 
@@ -140,23 +150,40 @@ def main() -> None:
         agg_delta = codec_mean - pix_mean
         out["aggregate"] = {
             "n_items": len(rows),
-            "pix_mean": {"STATIC": float(pix_mean[STATIC]), "SHIFTED": float(pix_mean[SHIFTED]), "NOVEL": float(pix_mean[NOVEL])},
-            "codec_mean": {"STATIC": float(codec_mean[STATIC]), "SHIFTED": float(codec_mean[SHIFTED]), "NOVEL": float(codec_mean[NOVEL])},
-            "delta_mean": {"STATIC": float(agg_delta[STATIC]), "SHIFTED": float(agg_delta[SHIFTED]), "NOVEL": float(agg_delta[NOVEL])},
+            "pix_mean": {
+                "STATIC": float(pix_mean[STATIC]),
+                "SHIFTED": float(pix_mean[SHIFTED]),
+                "NOVEL": float(pix_mean[NOVEL]),
+            },
+            "codec_mean": {
+                "STATIC": float(codec_mean[STATIC]),
+                "SHIFTED": float(codec_mean[SHIFTED]),
+                "NOVEL": float(codec_mean[NOVEL]),
+            },
+            "delta_mean": {
+                "STATIC": float(agg_delta[STATIC]),
+                "SHIFTED": float(agg_delta[SHIFTED]),
+                "NOVEL": float(agg_delta[NOVEL]),
+            },
             "max_abs_delta": float(np.abs(agg_delta).max()),
         }
         print(
-            "\nAGGREGATE (n={}): pix mean S/X/N={:.3f}/{:.3f}/{:.3f}  codec mean S/X/N={:.3f}/{:.3f}/{:.3f}  Δ={:+.3f}/{:+.3f}/{:+.3f}  max|Δ|={:.3f}".format(
-                len(rows),
-                pix_mean[STATIC], pix_mean[SHIFTED], pix_mean[NOVEL],
-                codec_mean[STATIC], codec_mean[SHIFTED], codec_mean[NOVEL],
-                agg_delta[STATIC], agg_delta[SHIFTED], agg_delta[NOVEL],
-                np.abs(agg_delta).max(),
-            )
+            f"\nAGGREGATE (n={len(rows)}): "
+            f"pix mean S/X/N={pix_mean[STATIC]:.3f}/{pix_mean[SHIFTED]:.3f}/"
+            f"{pix_mean[NOVEL]:.3f}  "
+            f"codec mean S/X/N={codec_mean[STATIC]:.3f}/{codec_mean[SHIFTED]:.3f}/"
+            f"{codec_mean[NOVEL]:.3f}  "
+            f"Δ={agg_delta[STATIC]:+.3f}/{agg_delta[SHIFTED]:+.3f}/"
+            f"{agg_delta[NOVEL]:+.3f}  "
+            f"max|Δ|={np.abs(agg_delta).max():.3f}"
         )
         print(
             "GATE: 10pp max|Δ| threshold → "
-            + ("PROCEED with 1.29 Stages A/B/C" if np.abs(agg_delta).max() < 0.10 else "REDESIGN codec→class mapping")
+            + (
+                "PROCEED with 1.29 Stages A/B/C"
+                if np.abs(agg_delta).max() < 0.10
+                else "REDESIGN codec→class mapping"
+            )
         )
 
     out_path = Path("research/experiments/2026/artifacts/phase1_29_short_bucket_pilot")

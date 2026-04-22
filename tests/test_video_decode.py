@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from pathlib import Path
+from typing import Any
 
 import av
 import numpy as np
@@ -137,12 +138,10 @@ def test_memory_is_bounded_via_wrapper(tmp_path: Path, monkeypatch: pytest.Monke
 
     original = av.VideoFrame.to_ndarray
 
-    def counting_to_ndarray(
-        self: av.VideoFrame, *args: object, **kwargs: object
-    ) -> object:
+    def counting_to_ndarray(self: av.VideoFrame, *args: Any, **kwargs: Any) -> Any:
         if kwargs.get("format") == "rgb24":
             materialized[0] += 1
-        return original(self, *args, **kwargs)  # type: ignore[no-untyped-call]
+        return original(self, *args, **kwargs)
 
     monkeypatch.setattr(av.VideoFrame, "to_ndarray", counting_to_ndarray)
     frames = decode_uniform_frames(path, frame_count=4)

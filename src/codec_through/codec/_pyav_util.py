@@ -28,7 +28,7 @@ _MAX_ATTEMPTS = 8
 _BASE_BACKOFF_S = 0.02
 
 
-def robust_reformat(frame: "VideoFrame", *, format: str) -> np.ndarray:
+def robust_reformat(frame: VideoFrame, *, format: str) -> np.ndarray:
     """Call `frame.to_ndarray(format=...)` with EAGAIN-tolerant retry.
 
     Retries up to 8 times with linear back-off (20 ms → 160 ms) and a
@@ -38,7 +38,7 @@ def robust_reformat(frame: "VideoFrame", *, format: str) -> np.ndarray:
     last_err: av.error.BlockingIOError | None = None
     for attempt in range(_MAX_ATTEMPTS):
         try:
-            return frame.to_ndarray(format=format)  # type: ignore[no-any-return]
+            return frame.to_ndarray(format=format)
         except av.error.BlockingIOError as exc:
             last_err = exc
             gc.collect()
