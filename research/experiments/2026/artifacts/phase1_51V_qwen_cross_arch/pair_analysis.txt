@@ -1,0 +1,8 @@
+unpatched: research/experiments/2026/artifacts/phase1_51V_qwen_cross_arch/videomme_dev30_8f_unpatched_summary.json
+patched:   research/experiments/2026/artifacts/phase1_51V_qwen_cross_arch/videomme_dev30_8f_L2_kr050_summary.json
+V_red:            +0.3978
+E2E speedup:      1.0437x
+Decode drift:     +0.4501%
+Accuracy delta:   -0.0333
+V_share (dense):  +0.1029
+Ceiling@V_red:    1.0427x
