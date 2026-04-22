@@ -229,22 +229,24 @@ authoritative in the per-phase notes under
   prereg_outcome: Inconclusive (protocol deviation)
 
 - phase_id: 1.29
-  status: proposed
+  status: proposed (planner-accuracy probe wired; pending run)
   authoritative_note: research/experiments/2026/2026-04-16-phase-1_29-mv-only-signal-path.md
   authoritative_artifacts: []
   current_best_policy: n/a
   supersedes: []
   paper_relevance: primary (deployability)
-  prereg_outcome: (pending)
+  prereg_outcome: MAX-over-span sparse retrofit falsified; continuous-score redesign partial-pass at aggregate level; downstream planner-accuracy still pending
+  notes: 2026-04-22 infrastructure status — short-bucket continuous-score pilot landed (`scripts/pilot_1_29_continuous_codec_score.py`) and the standalone planner-accuracy probe is now wired in `src/codec_through/codec/continuous_score.py`, `scripts/run_phase1_29_planner_accuracy_probe.py`, and `scripts/run_phase1_29_planner_accuracy_probe.sh`. The live question is no longer "can we wire codec-native into the harness?" but "does the reframed planner retain downstream accuracy on a benchmark slice?"
 
 - phase_id: 1.30
-  status: deferred
+  status: proposed (session harness landed; reproduction prereg pending)
   authoritative_note: research/experiments/2026/2026-04-16-phase-1_30-streaming-window-harness.md
   authoritative_artifacts: []
   current_best_policy: n/a
   supersedes: []
   paper_relevance: historical / infra (deferred behind Track B)
   prereg_outcome: (not yet)
+  notes: 2026-04-22 implementation status — the local session / streaming harness now exists in `scripts/run_phase1_30_sam_streaming.py`, `scripts/analyze_phase1_30_sam_streaming_pair.py`, and `scripts/run_phase1_30_sam_streaming.sh`. Remaining work is protocol-specific prereg + run selection, not harness wire-up.
 
 - phase_id: 1.31
   status: proposed
@@ -838,7 +840,7 @@ authoritative in the per-phase notes under
   paper_relevance: secondary (quantization × long-context — one of three candidate mechanisms for the 16f long-bucket regression)
   prereg_outcome: (deferred; gated on bf16 Qwen 2.5-VL-7B checkpoint download ~15 GB + feasibility check on 16 GB Mac)
   runtime_estimate: ~50-60min bf16 8f n=30 + ~2.5-3h bf16 16f n=30 + matched 4bit re-runs if needed; total ~3.5-4h once bf16 checkpoint is local
-  notes: Tests H-C (4bit × long-context) from the 2026-04-19 16f findings. Four pre-registered H: H1 long-bucket quantization gap ≥ +0.20, H2 no short-bucket gap, H3 RSS < 14 GB, H4 prefill ~4× ratio. Discriminator for the 16f non-monotonic finding; complementary to Phase 1.57 (feature-drift).
+  notes: Tests H-C (4bit × long-context) from the 2026-04-19 16f findings. Four pre-registered H: H1 long-bucket quantization gap ≥ +0.20, H2 no short-bucket gap, H3 RSS < 14 GB, H4 prefill ~4× ratio. Discriminator for the 16f non-monotonic finding; complementary to Phase 1.57 (feature-drift). Wrapper + analyzer landed 2026-04-22 in `scripts/run_phase1_58_bf16_control.sh` and `scripts/analyze_phase1_58_bf16_control.py`; remaining blockers are checkpoint availability and RSS feasibility.
 
 - phase_id: 1.59
   status: research_note (future work, no prereg)
@@ -860,7 +862,7 @@ authoritative in the per-phase notes under
   paper_relevance: secondary (closes the codex round-24/25 "where does C-VISION break" gap; graceful-degradation branch is paper-body-bound; broken-deployment branch gates scroll-detection bail-out policy 1.60c)
   prereg_outcome: (pending; four hypotheses — H_vision_scroll_breaks, H_vision_scroll_v_red_drops, H_vision_scroll_acc_holds, H_vision_scroll_ceiling_holds — with three promotion branches: CLEAN FAILURE CLAIM / BROKEN DEPLOYMENT CLAIM / SHIFTED-DOES-NOT-BREAK)
   runtime_estimate: ~70 min point (~90 min upper bound): 20 items × 8 f × 2 arms, Gemma 4-E4B-4bit, medium-duration content to avoid long-bucket blowout
-  notes: Subset construction: 20 items stratified 7 light / 7 medium / 6 heavy scroll intensity, drawn from VideoMME (existing pixel-diff statistic), augmented with synthesized constant-velocity-crop clips if natural items are insufficient. Reuses scripts/run_novelty_pruning_gemma.py with $VT_FLAGS (L=2, kr_V=0.50); no driver changes. Thermal gate same as sessions 3–5: |decode Δ| < max(0.02 × decode_ms, 100 ms). Future follow-ups: 1.60b (egomotion/FPV subset), 1.60c (scroll-detection bail-out policy if BROKEN DEPLOYMENT branch earns), 1.60d (cross-architecture scroll/pan on Qwen).
+  notes: Subset construction: 20 items stratified 7 light / 7 medium / 6 heavy scroll intensity, drawn from VideoMME (existing pixel-diff statistic), augmented with synthesized constant-velocity-crop clips if natural items are insufficient. Reuses scripts/run_novelty_pruning_gemma.py with $VT_FLAGS (L=2, kr_V=0.50); no driver changes. Thermal gate same as sessions 3–5: |decode Δ| < max(0.02 × decode_ms, 100 ms). 2026-04-22 curation tooling landed in `scripts/run_phase1_60_curation_audit.sh` and `scripts/build_phase1_60_scroll_pan_candidates.py`; remaining blocker is choosing the actual subset, not writing the ranking path. Future follow-ups: 1.60b (egomotion/FPV subset), 1.60c (scroll-detection bail-out policy if BROKEN DEPLOYMENT branch earns), 1.60d (cross-architecture scroll/pan on Qwen).
 ```
 
 ## Maintenance rules

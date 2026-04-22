@@ -178,7 +178,7 @@ Priority = (probability-of-moving-paper-claim × magnitude) / (effort).
    MVBench paper claim is now paper-grade on this slice. Dev v2
    cells deferred to later tranche.
 
-### Tier A — do next (highest expected value)
+### Tier A — historical 2026-04-16 queue (reference only)
 
 2. ✅ **Phase 1.20 TOMATO N=30** — **PASSED (clean tree, commit
    42b06eb)**. Base policy ties dense-8 at 44% budget (0.333@3.55).

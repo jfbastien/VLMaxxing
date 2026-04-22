@@ -183,6 +183,12 @@ That is the center of the project today.
 
 ## Current SOTA Position
 
+Historical router note: the live SOTA / publishability ordering now
+lives in [`paper/priority.md`](paper/priority.md) and
+[`paper/publishability-status.md`](paper/publishability-status.md).
+The detail below is preserved as background on how the project got
+here; do not treat it as the active execution queue.
+
 The scientific target is not merely to reproduce the imported whitepaper. The
 target is to use an honest reproduction base to build **one results paper,
 co-authored with Sam, that advances SOTA with measured big-number speedups.**

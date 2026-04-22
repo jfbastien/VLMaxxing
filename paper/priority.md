@@ -155,9 +155,11 @@ in its own dimension.
    (L, kr) point would turn the contribution from "single-arch
    mechanism" to "mechanism-class". Design: pick L ∈ {2, mid-ViT}
    and kr ∈ {0.5} matching the best Gemma cell; run on VideoMME 8f
-   dev n=30 thermally paired. Runtime ~60-90 min. Blocker: needs
-   Qwen-side vision-tower pruning wired (1.51V is currently
-   Gemma-only per `src/codec_through/vision_tower_pruning.py`).
+   dev n=30 thermally paired. Runtime ~60-90 min. **Implementation
+   landed 2026-04-22** via `src/codec_through/qwen_pruned_vision_tower.py`,
+   `scripts/run_phase1_51V.py`, and
+   `scripts/run_phase1_51V_qwen_cross_arch.sh`; the remaining blocker
+   is execution, not keep-mask wiring.
 
 4. **Local paired streaming-protocol reproduction of Sam's N=60 line.**
    Codex round-24: this is "the missing piece for a breakthrough". The
@@ -166,21 +168,31 @@ in its own dimension.
    isolated phase experiments). Proposed: 60 VideoMME items
    (dev+holdout), 8f, 1.51V L=2 kr=0.50 patched vs unpatched, thermal
    pair, report the same "clean / mixed / degenerate" bucket structure
-   Sam uses. Runtime ~90 min; needs a prereg doc (deferred to
-   priority-2 phase, see future list).
+   Sam uses. Runtime ~90 min; **session harness landed 2026-04-22**
+   via `scripts/run_phase1_30_sam_streaming.py` and
+   `scripts/run_phase1_30_sam_streaming.sh`. Remaining work is the
+   reproduction-specific prereg and the paired run.
 
-5. **1.55B fidelity recovery (selective re-prefill v2).** The 1.55D v1
+5. **1.55D v2 selective re-prefill (fidelity recovery).** The 1.55D v1
    driver is infra-falsified on partial image-block reuse; v2 with
    `pixel_values` / `image_grid_thw` / `attention_mask` co-slicing in a
-   mlx-vlm fork is ~3-5h implementation. Recovery of Δacc from −0.38
-   at 20f to ≤ −0.15 would reopen C-PERSIST as a **fidelity**
-   contribution, not just a safety-boundary contribution.
+   mlx-vlm fork is ~3-5h implementation. Qwen-only v2 driver scaffolding
+   landed 2026-04-22 in `scripts/run_kv_selective_reprefill_v2.py` and
+   `scripts/run_phase1_55D_v2.sh`; what remains is the auxiliary-tensor
+   co-slicing work inside mlx-vlm. Recovery of Δacc from −0.38 at 20f
+   to ≤ −0.15 would reopen C-PERSIST as a **fidelity** contribution,
+   not just a safety-boundary contribution. **Do not confuse this with
+   1.55B**, which is the later persistent-KV × decode-acceleration
+   composition phase and still depends on 1.54 landing first.
 
 6. **1.58 bf16 KV control at 20f.** Isolates quantization as a
    causal driver of the 7B basin collapse. Runtime ~2-4h; one clean
    experiment would let C-PERSIST narrative say "the basin is
    quantization-induced" or "the basin is attention-OOD" — currently
-   we cannot discriminate.
+   we cannot discriminate. Wrapper + analyzer landed 2026-04-22 in
+   `scripts/run_phase1_58_bf16_control.sh` and
+   `scripts/analyze_phase1_58_bf16_control.py`; remaining blockers are
+   the bf16 checkpoint and 16 GB RSS feasibility.
 
 7. **1.41 Qwen 16f holdout.** **LANDED 2026-04-21 (autonomous session,
    task #160).** Ran n=30 on `videomme_holdout_v1.toml`, identity cache,
@@ -227,7 +239,12 @@ in its own dimension.
    1.29 is OFF the critical path for the paper body** unless reframed
    to (i) continuous-planner-signal with per-item calibration *and* a
    planner-accuracy probe, or (ii) native-rate streaming retrofit
-   (should-do #4). Findings:
+   (should-do #4). **Probe wiring landed 2026-04-22** in
+   `src/codec_through/codec/continuous_score.py`,
+   `scripts/run_phase1_29_planner_accuracy_probe.py`, and
+   `scripts/run_phase1_29_planner_accuracy_probe.sh`, with support for
+   pooled or per-item calibration against live-pixel or artifact
+   targets. Findings:
    `research/experiments/2026/2026-04-22-phase-1_29-codec-native-integration-audit.md`,
    `research/experiments/2026/2026-04-22-phase-1_29-codec-native-short-bucket-pilot-findings.md`,
    `research/experiments/2026/2026-04-22-phase-1_29-continuous-codec-score-pilot-findings.md`.
@@ -291,6 +308,10 @@ a must-do slot opens.
   over 200+ items; (B) egomotion benchmark integration (EgoSchema,
   EPIC-Kitchens, Ego4D); (C) hand-labeled 20-item synthetic corpus. See
   `research/experiments/2026/2026-04-22-phase-1_60-scroll-pan-curation-audit.md`.
+  Ranking / manifest tooling landed 2026-04-22 in
+  `scripts/run_phase1_60_curation_audit.sh` and
+  `scripts/build_phase1_60_scroll_pan_candidates.py`; the blocker is
+  subset selection, not audit code.
   Reviewer-facing framing stays "scroll/pan deferred to future work"
   per `paper/framing.md`.
 
