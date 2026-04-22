@@ -1003,6 +1003,8 @@ def _generate_response(
         "elapsed_ms": elapsed_ms,
         "prompt_tokens": response.prompt_tokens,
         "generation_tokens": response.generation_tokens,
+        "prompt_tps": float(getattr(response, "prompt_tps", 0.0)),
+        "generation_tps": float(getattr(response, "generation_tps", 0.0)),
         "peak_memory_gb": response.peak_memory,
     }
 
