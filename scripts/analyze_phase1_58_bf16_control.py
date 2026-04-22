@@ -171,7 +171,9 @@ def _compare_pair(
             else float(bf16["accuracy"]) - float(fourbit["accuracy"])
         ),
         "elapsed_ratio_fourbit_over_bf16": (
-            None if not ref_elapsed or not test_elapsed else float(ref_elapsed) / float(test_elapsed)
+            None
+            if not ref_elapsed or not test_elapsed
+            else float(ref_elapsed) / float(test_elapsed)
         ),
         "prompt_time_ratio_bf16_over_fourbit": (
             None if not ref_prompt or not test_prompt else float(test_prompt) / float(ref_prompt)
@@ -203,16 +205,14 @@ def main() -> None:
 
     sixteen_groups = payload["16f"]["per_group"]
     long_delta = sixteen_groups.get("long", {}).get("accuracy_delta_bf16_minus_fourbit")
-    short_delta_8f = payload["8f"]["per_group"].get("short", {}).get(
-        "accuracy_delta_bf16_minus_fourbit"
+    short_delta_8f = (
+        payload["8f"]["per_group"].get("short", {}).get("accuracy_delta_bf16_minus_fourbit")
     )
     short_delta_16f = sixteen_groups.get("short", {}).get("accuracy_delta_bf16_minus_fourbit")
     peak_rss = payload["16f"]["bf16"].get("max_peak_memory_gb")
     prompt_ratio = payload["16f"].get("prompt_time_ratio_bf16_over_fourbit")
     payload["prereg_checks"] = {
-        "h1_long_bucket_gap_ge_0p20": (
-            long_delta is not None and float(long_delta) >= 0.20
-        ),
+        "h1_long_bucket_gap_ge_0p20": (long_delta is not None and float(long_delta) >= 0.20),
         "h2_short_bucket_within_0p10": (
             short_delta_8f is not None
             and short_delta_16f is not None

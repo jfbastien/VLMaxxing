@@ -28,7 +28,7 @@ def sparse_sample_indices(total_frames: int, frame_count: int) -> list[int]:
         raise ValueError("frame_count must be positive")
     if total_frames < frame_count:
         raise ValueError("total_frames must be >= frame_count")
-    return np.linspace(0, total_frames - 1, frame_count, dtype=int).tolist()
+    return [int(index) for index in np.linspace(0, total_frames - 1, frame_count, dtype=int)]
 
 
 def sparse_pair_spans(indices: list[int]) -> list[tuple[int, int]]:
@@ -161,8 +161,7 @@ def classify_score_grid(
     classes = np.full(score_grid.shape, BlockClass.NOVEL, dtype=np.int32)
     classes[score_grid < thresholds.static_threshold] = BlockClass.STATIC
     classes[
-        (score_grid >= thresholds.static_threshold)
-        & (score_grid < thresholds.shifted_threshold)
+        (score_grid >= thresholds.static_threshold) & (score_grid < thresholds.shifted_threshold)
     ] = BlockClass.SHIFTED
     return classes
 

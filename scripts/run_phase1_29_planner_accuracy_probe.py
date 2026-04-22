@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Phase 1.29 planner-accuracy probe for continuous codec scores on Qwen."""
+# ruff: noqa: E402
 
 from __future__ import annotations
 
@@ -31,7 +32,11 @@ from codec_through.codec.continuous_score import (  # noqa: E402
 )
 from codec_through.codec.h264_metadata import H264MetadataExtractor  # noqa: E402
 from codec_through.temporal import PlannerConfig, classify_blocks_with_planner  # noqa: E402
-from codec_through.track_a import active_region_block_mask, flattened_reuse_mask, qwen_merged_token_counts  # noqa: E402
+from codec_through.track_a import (
+    active_region_block_mask,
+    flattened_reuse_mask,
+    qwen_merged_token_counts,
+)  # noqa: E402
 from codec_through.video_decode import _count_frames  # noqa: E402
 
 DEFAULT_OUTPUT_PATH = Path(
@@ -164,7 +169,9 @@ def _precompute_items(
             start_seconds=item.start_seconds,
             end_seconds=item.end_seconds,
         )
-        pixel_classifications = _compute_pixel_classifications(frames, planner_config=planner_config)
+        pixel_classifications = _compute_pixel_classifications(
+            frames, planner_config=planner_config
+        )
         codec_score_pairs, total_frames, codec_extract_s = _score_pair_from_video(
             item,
             frame_count=frame_count,
@@ -180,7 +187,9 @@ def _precompute_items(
         else:
             if reference_map is None or item.item_id not in reference_map:
                 raise KeyError(f"missing reference item for {item.item_id}")
-            target_shares = _reference_share_vector_from_counts(reference_map[item.item_id]["class_counts"])
+            target_shares = _reference_share_vector_from_counts(
+                reference_map[item.item_id]["class_counts"]
+            )
         payload.append(
             PrecomputedProbeItem(
                 item=item,
@@ -213,7 +222,9 @@ def _thresholds_by_item(
         return {item.item.item_id: thresholds for item in items}
     return {
         item.item.item_id: calibrate_score_thresholds(
-            np.concatenate([score.reshape(-1) for score in item.codec_score_pairs]).astype(np.float32),
+            np.concatenate([score.reshape(-1) for score in item.codec_score_pairs]).astype(
+                np.float32
+            ),
             static_share=float(item.target_shares[0]),
             shifted_share=float(item.target_shares[1]),
         )
@@ -280,7 +291,9 @@ def _mix_features_from_classifications(
             )
         )
         raw_reused_ratios.append(float(allowed_mask.mean()))
-        active_reused_ratios.append(runner._masked_mean(allowed_mask.astype(np.float32), active_mask))
+        active_reused_ratios.append(
+            runner._masked_mean(allowed_mask.astype(np.float32), active_mask)
+        )
         allowed_masks.append(allowed_mask.copy())
         active_masks.append(active_mask.copy())
 
@@ -428,8 +441,12 @@ def main() -> None:
         choices=[statistic.value for statistic in runner.BlockStatistic],
         default=runner.DEFAULT_PLANNER.statistic.value,
     )
-    parser.add_argument("--static-threshold", type=float, default=runner.DEFAULT_PLANNER.static_threshold)
-    parser.add_argument("--shifted-threshold", type=float, default=runner.DEFAULT_PLANNER.shifted_threshold)
+    parser.add_argument(
+        "--static-threshold", type=float, default=runner.DEFAULT_PLANNER.static_threshold
+    )
+    parser.add_argument(
+        "--shifted-threshold", type=float, default=runner.DEFAULT_PLANNER.shifted_threshold
+    )
     parser.add_argument(
         "--pixel-change-threshold",
         type=float,
@@ -448,7 +465,9 @@ def main() -> None:
     runner._ensure_clean_git_tree(allow_dirty=bool(args.allow_dirty))
     manifest = runner._load_manifest(args.manifest)
     if manifest.benchmark != "videomme":
-        raise ValueError(f"Phase 1.29 probe supports VideoMME manifests only, got {manifest.benchmark!r}")
+        raise ValueError(
+            f"Phase 1.29 probe supports VideoMME manifests only, got {manifest.benchmark!r}"
+        )
 
     planner_config = PlannerConfig(
         statistic=runner.BlockStatistic(args.statistic),
@@ -460,7 +479,9 @@ def main() -> None:
     reuse_classes = runner._parse_reuse_classes(args.reuse_classes)
     max_age = runner._validate_max_age(args.max_age)
     reference_map = (
-        _load_reference_map(args.reference_summary) if args.calibration_source == "artifact" else None
+        _load_reference_map(args.reference_summary)
+        if args.calibration_source == "artifact"
+        else None
     )
 
     items = runner._load_items_by_id("videomme", item_ids=manifest.item_ids)
@@ -479,7 +500,9 @@ def main() -> None:
 
     rows: list[dict[str, Any]] = []
     for prepared in precomputed:
-        sample = runner._prepare_sample(model, processor, prepared.item, frame_count=args.frame_count)
+        sample = runner._prepare_sample(
+            model, processor, prepared.item, frame_count=args.frame_count
+        )
         if sample.active_boxes != prepared.active_boxes:
             raise ValueError(f"active-box mismatch on {prepared.item.item_id}")
         features, feature_cache_hit = runner._compute_cached_features_with_replay(
@@ -569,32 +592,48 @@ def main() -> None:
                 "dense": {
                     **dense,
                     "choice_index": dense_choice,
-                    "correct": dense_choice == prepared.item.answer_index if dense_choice is not None else False,
+                    "correct": dense_choice == prepared.item.answer_index
+                    if dense_choice is not None
+                    else False,
                     "parse_failure": dense_choice is None,
                 },
                 "pixel_cached": {
                     **pixel_cached,
                     "choice_index": pixel_choice,
-                    "correct": pixel_choice == prepared.item.answer_index if pixel_choice is not None else False,
+                    "correct": pixel_choice == prepared.item.answer_index
+                    if pixel_choice is not None
+                    else False,
                     "parse_failure": pixel_choice is None,
                 },
                 "codec_cached": {
                     **codec_cached,
                     "choice_index": codec_choice,
-                    "correct": codec_choice == prepared.item.answer_index if codec_choice is not None else False,
+                    "correct": codec_choice == prepared.item.answer_index
+                    if codec_choice is not None
+                    else False,
                     "parse_failure": codec_choice is None,
                 },
                 "pixel_matches_dense": (
-                    pixel_choice == dense_choice if pixel_choice is not None and dense_choice is not None else False
+                    pixel_choice == dense_choice
+                    if pixel_choice is not None and dense_choice is not None
+                    else False
                 ),
                 "codec_matches_dense": (
-                    codec_choice == dense_choice if codec_choice is not None and dense_choice is not None else False
+                    codec_choice == dense_choice
+                    if codec_choice is not None and dense_choice is not None
+                    else False
                 ),
                 "codec_matches_pixel": (
-                    codec_choice == pixel_choice if codec_choice is not None and pixel_choice is not None else False
+                    codec_choice == pixel_choice
+                    if codec_choice is not None and pixel_choice is not None
+                    else False
                 ),
-                "pixel_reuse_ratio_mean_active": _mean_or_none(pixel_selection.active_reused_ratios),
-                "codec_reuse_ratio_mean_active": _mean_or_none(codec_selection.active_reused_ratios),
+                "pixel_reuse_ratio_mean_active": _mean_or_none(
+                    pixel_selection.active_reused_ratios
+                ),
+                "codec_reuse_ratio_mean_active": _mean_or_none(
+                    codec_selection.active_reused_ratios
+                ),
                 "pixel_reuse_ratio_mean_raw": _mean_or_none(pixel_selection.raw_reused_ratios),
                 "codec_reuse_ratio_mean_raw": _mean_or_none(codec_selection.raw_reused_ratios),
                 "pair_selection_jaccard_mean": _mean_or_none(jaccards),

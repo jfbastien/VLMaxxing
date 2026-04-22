@@ -60,7 +60,9 @@ def _group_scores(group_hidden_states: mx.array) -> np.ndarray:
     return np.asarray(scores, dtype=np.float32)
 
 
-def _scatter_groups(compact_groups: mx.array, keep_indices: mx.array, total_groups: int) -> mx.array:
+def _scatter_groups(
+    compact_groups: mx.array, keep_indices: mx.array, total_groups: int
+) -> mx.array:
     """Scatter compact group tensor [K, U, D] back to [G, U, D]."""
 
     if total_groups <= 0:
@@ -69,9 +71,8 @@ def _scatter_groups(compact_groups: mx.array, keep_indices: mx.array, total_grou
         raise ValueError("compact_groups must be rank 3")
     unit = int(compact_groups.shape[1])
     hidden = int(compact_groups.shape[2])
-    one_hot = (mx.arange(total_groups)[:, None] == keep_indices[None, :]).astype(
-        compact_groups.dtype
-    )
+    keep_mask = mx.equal(mx.arange(total_groups)[:, None], keep_indices[None, :])
+    one_hot = keep_mask.astype(compact_groups.dtype)
     compact_flat = compact_groups.reshape(compact_groups.shape[0], unit * hidden)
     scattered = one_hot @ compact_flat
     return scattered.reshape(total_groups, unit, hidden)
@@ -88,6 +89,8 @@ def _dedup_cu_window_seqlens(cu_window_seqlens: mx.array) -> mx.array:
 
 
 class _QwenPrunedVisionWrapper:
+    _last_prune_info: dict[str, Any] | None
+
     def __init__(self, wrapped: Any, config: QwenVisionPruneConfig) -> None:
         object.__setattr__(self, "_wrapped", wrapped)
         object.__setattr__(self, "_config", config)
@@ -123,7 +126,9 @@ class _QwenPrunedVisionWrapper:
         seq_len, hidden = hidden_states.shape
         if seq_len % model.spatial_merge_unit != 0:
             raise ValueError(
-                f"seq_len {seq_len} must be divisible by spatial_merge_unit {model.spatial_merge_unit}"
+                "seq_len "
+                f"{seq_len} must be divisible by spatial_merge_unit "
+                f"{model.spatial_merge_unit}"
             )
         total_groups = seq_len // model.spatial_merge_unit
 
@@ -140,20 +145,25 @@ class _QwenPrunedVisionWrapper:
         kept_frame_counts: tuple[int, ...] | None = None
         kept_window_counts: tuple[int, ...] | None = None
 
-        if output_hidden_states:
-            encoder_states = (hidden_states,)
-        else:
-            encoder_states = None
+        encoder_states: tuple[mx.array, ...] | None = (
+            (hidden_states,) if output_hidden_states else None
+        )
 
         for layer_num, blk in enumerate(model.blocks):
-            cu_seqlens_now = cu_seqlens if layer_num in model.fullatt_block_indexes else cu_window_seqlens
+            cu_seqlens_now = (
+                cu_seqlens if layer_num in model.fullatt_block_indexes else cu_window_seqlens
+            )
             hidden_states = blk(
                 hidden_states,
                 cu_seqlens=cu_seqlens_now,
                 rotary_pos_emb=rotary_pos_emb,
             )
             if output_hidden_states:
-                encoder_states = encoder_states + (hidden_states,)  # type: ignore[operator]
+                if encoder_states is None:
+                    raise RuntimeError(
+                        "encoder_states unexpectedly missing with output_hidden_states=True"
+                    )
+                encoder_states = encoder_states + (hidden_states,)
 
             if layer_num == config.layer_idx and config.keep_rate < 1.0:
                 group_hidden_states = hidden_states.reshape(

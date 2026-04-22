@@ -123,7 +123,9 @@ def _prepare_item(
     return raw, decode_ms, processor_ms
 
 
-def _compute_qwen_features(model: Any, raw: dict[str, Any]) -> tuple[mx.array, float, dict[str, Any] | None]:
+def _compute_qwen_features(
+    model: Any, raw: dict[str, Any]
+) -> tuple[mx.array, float, dict[str, Any] | None]:
     image_grid_thw = mx.array(raw["image_grid_thw"])
     pixel_values = mx.array(raw["pixel_values"])
     dtype = model.vision_tower.patch_embed.proj.weight.dtype
@@ -251,9 +253,7 @@ def _summarize(records: list[ItemResult]) -> dict[str, Any]:
             np.mean([record.generation_tokens for record in records])
         ),
         "mean_dense_prompt_tps": float(np.mean([record.prompt_tps for record in records])),
-        "mean_dense_generation_tps": float(
-            np.mean([record.generation_tps for record in records])
-        ),
+        "mean_dense_generation_tps": float(np.mean([record.generation_tps for record in records])),
         "mean_peak_memory_gb": float(np.mean([record.peak_memory_gb for record in records])),
         "mean_kept_groups": float(np.mean([record.kept_groups for record in records])),
         "mean_total_groups": float(np.mean([record.total_groups for record in records])),
@@ -327,9 +327,7 @@ def main() -> int:
             choice_index = extract_choice(stats.text, item.candidates)
             parse_failure = choice_index is None
             grid = np.asarray(raw["image_grid_thw"], dtype=np.int64)
-            total_groups = sum(
-                qwen_groups_per_frame(grid, spatial_merge_size=2)
-            )
+            total_groups = sum(qwen_groups_per_frame(grid, spatial_merge_size=2))
             kept_groups = int(prune_info["kept_groups"]) if prune_info is not None else total_groups
             kept_groups_per_frame = (
                 list(prune_info["kept_groups_per_frame"])

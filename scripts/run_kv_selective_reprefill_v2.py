@@ -126,7 +126,10 @@ def _prepare_sample(
     messages = [
         {
             "role": "user",
-            "content": [*({"type": "image"} for _ in frames), {"type": "text", "text": item.question}],
+            "content": [
+                *({"type": "image"} for _ in frames),
+                {"type": "text", "text": item.question},
+            ],
         }
     ]
     rendered_prompt = processor.apply_chat_template(
@@ -198,12 +201,16 @@ def main() -> int:
     args.output_dir.mkdir(parents=True, exist_ok=True)
     rows = _load_videomme_rows()
     clips = [
-        SessionClip(video_id=vid.strip(), duration="", questions=_questions_for_video_id(vid.strip(), rows))
+        SessionClip(
+            video_id=vid.strip(), duration="", questions=_questions_for_video_id(vid.strip(), rows)
+        )
         for vid in args.video_ids.split(",")
         if vid.strip()
     ]
     clips = [
-        SessionClip(video_id=clip.video_id, duration=clip.questions[0].group, questions=clip.questions)
+        SessionClip(
+            video_id=clip.video_id, duration=clip.questions[0].group, questions=clip.questions
+        )
         for clip in clips
     ]
 
@@ -365,7 +372,9 @@ def main() -> int:
                         "item_id": item.item_id,
                         "q_index": q_index,
                         "prompt_tokens": int(result["prompt_tokens"]),
-                        "tail_prompt_tokens": int(result.get("tail_prompt_tokens", result["prompt_tokens"])),
+                        "tail_prompt_tokens": int(
+                            result.get("tail_prompt_tokens", result["prompt_tokens"])
+                        ),
                         "generation_tokens": generation_tokens,
                         "elapsed_ms": float(result["elapsed_ms"]),
                         "peak_memory_gb": float(result["peak_memory_gb"]),

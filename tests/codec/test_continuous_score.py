@@ -3,7 +3,6 @@ from __future__ import annotations
 import numpy as np
 
 from codec_through.codec.continuous_score import (
-    ScoreThresholds,
     calibrate_score_thresholds,
     class_share_vector,
     classify_score_grid,

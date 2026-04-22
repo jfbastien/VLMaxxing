@@ -71,7 +71,11 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    loaded = [(_label(summary, path.stem), summary) for path in args.summary for summary in [_load_summary(path)]]
+    loaded = [
+        (_label(summary, path.stem), summary)
+        for path in args.summary
+        for summary in [_load_summary(path)]
+    ]
     if len(loaded) < 2:
         raise SystemExit("need at least two --summary inputs to compare")
 

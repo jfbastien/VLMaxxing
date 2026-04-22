@@ -163,7 +163,10 @@ def _prepare_sample_timed(
     messages = [
         {
             "role": "user",
-            "content": [*({"type": "image"} for _ in frames), {"type": "text", "text": item.question}],
+            "content": [
+                *({"type": "image"} for _ in frames),
+                {"type": "text", "text": item.question},
+            ],
         }
     ]
     t1 = time.perf_counter_ns()
@@ -453,12 +456,16 @@ def main() -> int:
         "total_wall_ms": total_wall_ms,
         "peak_rss_gb": _peak_rss_gb(),
         "all_queries": _summarize(records, "all_queries"),
-        "first_queries": _summarize([row for row in records if row["q_index"] == 0], "first_queries"),
+        "first_queries": _summarize(
+            [row for row in records if row["q_index"] == 0], "first_queries"
+        ),
         "follow_ups": _summarize([row for row in records if row["q_index"] > 0], "follow_ups"),
         "degenerate_queries": sum(1 for row in records if row["degenerate"]),
         "parse_failures": sum(1 for row in records if row["parse_failure"]),
         "refresh_events": len(refresh_trace),
-        "refresh_trace_path": args.summary.with_name(args.summary.stem + "_refresh_trace.json").as_posix(),
+        "refresh_trace_path": args.summary.with_name(
+            args.summary.stem + "_refresh_trace.json"
+        ).as_posix(),
     }
     args.summary.write_text(json.dumps(summary, indent=2) + "\n")
     refresh_trace_path = Path(summary["refresh_trace_path"])

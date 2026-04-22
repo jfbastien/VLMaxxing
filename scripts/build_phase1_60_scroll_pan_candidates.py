@@ -82,9 +82,9 @@ def main() -> None:
     metric_key = (
         "max_shifted_fraction" if args.selection_metric == "max" else "mean_shifted_fraction"
     )
-    selected = [
-        row for row in rows if float(row[metric_key]) >= float(args.min_shifted_fraction)
-    ][: args.top_k]
+    selected = [row for row in rows if float(row[metric_key]) >= float(args.min_shifted_fraction)][
+        : args.top_k
+    ]
 
     payload = {
         "phase": "1.60",

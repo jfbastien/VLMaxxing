@@ -13,7 +13,7 @@ These helpers keep the policy explicit and testable:
 
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 DEFAULT_DEGENERATE_MARKERS: tuple[str, ...] = (
     "addCriterion",

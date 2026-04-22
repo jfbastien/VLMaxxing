@@ -9,13 +9,14 @@ geometry and cache math explicit and reusable.
 from __future__ import annotations
 
 import time
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Sequence
+from typing import Any, cast
 
 import mlx.core as mx
 import numpy as np
 from mlx_lm.models.cache import trim_prompt_cache
-from mlx_vlm.models.cache import make_prompt_cache
+from mlx_vlm.models.cache import make_prompt_cache  # type: ignore[import-untyped]
 
 
 @dataclass(frozen=True, slots=True)
@@ -60,9 +61,7 @@ def qwen_image_tokens_per_frame(
     for t, h, w in grid.tolist():
         prod = int(t) * int(h) * int(w)
         if prod % merge_area != 0:
-            raise ValueError(
-                f"grid product {prod} is not divisible by merge area {merge_area}"
-            )
+            raise ValueError(f"grid product {prod} is not divisible by merge area {merge_area}")
         tokens.append(prod // merge_area)
     return tuple(tokens)
 
@@ -162,7 +161,7 @@ def compute_qwen_position_ids(
         None,
         mask,
     )
-    return position_ids
+    return cast(mx.array, position_ids)
 
 
 def make_qwen_prefix_cache(
