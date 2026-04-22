@@ -34,6 +34,7 @@ run_arm() {
     --rss-guard-mb "$RSS_GUARD_MB" \
     --output "$OUT/${name}.jsonl" \
     --summary "$OUT/${name}_summary.json" \
+    --allow-dirty \
     "$@"
 }
 
