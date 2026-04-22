@@ -9,57 +9,92 @@ scene remains stable for long stretches. The interesting question is no longer
 whether redundancy exists. It does. The question is where that redundancy can
 be removed without breaking the answer.
 
-That sounds like one problem, but it is really three. First-pass inference is
-limited by whatever share of wall-clock the vision tower actually owns.
-After-ingest follow-up queries on the same video are a different regime: once
-the prefix has been paid, prompt reuse can dominate. Benchmark routing under a
-fixed dense backend is different again: it tells us whether a training-free
-policy preserves quality, not whether the backend has already been rewritten to
-skip wall-clock work. Reuse is not one knob. It is three different regimes
-with three different ceilings.
+The literature often treats that waste as if it were one knob. It is not. The
+fresh-video pass is bounded by whatever share of wall-clock the vision tower
+actually owns. After-ingest follow-up queries on the same video are a
+different regime: once the prefix has been paid, prompt reuse can dominate.
+Routing under a fixed dense backend is different again: it tells us whether a
+training-free policy preserves answer quality, not whether the backend has
+already been rewritten to skip timed work. Reuse is three regimes with three
+different ceilings, not one multiplier that can be copied from paper to paper.
 
-We therefore center a broader anti-recomputation story. The fresh-video
-headline is Gemma vision-tower pruning: measured end-to-end gains on VideoMME,
-MVBench, and TOMATO, with magnitude governed by a simple
-share$\times$reduction ceiling. The largest local multipliers come from
-persistent-KV reuse on Qwen, where follow-up questions about the same video
-drop to sub-second latency. The routing lane then explains the boundary: why
-temporal placement of fresh computation matters more than novelty magnitude,
-and why semantic-substitution claims must stay separate from sparse-path
-speedup claims.
+That distinction changes what the paper is about. The first contribution is
+\emph{C-CEILING}: an arithmetic bound on how much of a local speedup can
+survive to end-to-end wall-clock. The second is \emph{C-PERSIST}: the
+after-ingest same-video regime where the biggest local multipliers already
+exist. The third is \emph{C-VISION}: measured first-pass gains on fresh videos
+via training-free vision-tower pruning. Qwen routing then plays a different
+role: it is the mechanism-validation backbone and the negative-result ledger
+that explains why fresh-compute placement matters more than novelty magnitude
+alone.
 
-The same thesis also survives contact with deployment-style workloads. In the
-deployment-scale streaming evaluation, same-video follow-up latency is 0.8\,s
-on Gemma 4 26B, streaming VideoMME reports 13$\times$ ViT reduction and
-\mbox{$\sim$50$\times$} dominant-pipeline reduction, selected real-video
-regimes report 4.2--4.5$\times$ end-to-end speedups, and an active-scene RTSP
-demo still cuts ViT calls by 14.3$\times$ over a 60\,s window. Those numbers
-come from a different protocol and stay labeled that way in the paper. They
-matter because they show that the benchmark story survives operational
-settings.
+The story also survives contact with operational workloads. On a larger Gemma
+4 26B streaming stack, same-video follow-up latency is 0.8\,s, paired
+Streaming VideoMME reports 13$\times$ fewer ViT calls and
+\mbox{$\sim$50$\times$} less dominant-pipeline compute, and selected real-video
+regimes reach 4.2--4.5$\times$ end-to-end speedups. Those numbers come from a
+different protocol and stay labeled that way in the paper. They matter because
+they show that the same reuse structure survives operational settings.
+
+\begin{table}[H]
+\centering
+\caption{The three reuse regimes that carry the paper. Routing under a fixed
+dense backend is reported separately because it is mechanism-validation
+evidence rather than a sparse wall-clock claim.}
+\label{tab:three-regimes}
+\small
+\begin{tabularx}{\linewidth}{@{}
+  >{\raggedright\arraybackslash}p{0.18\linewidth}
+  >{\raggedright\arraybackslash}p{0.23\linewidth}
+  >{\raggedright\arraybackslash}p{0.19\linewidth}
+  >{\raggedright\arraybackslash}X
+@{}}
+\toprule
+Regime & Reused work & Reporting unit & Headline evidence \\
+\midrule
+Fresh-video first pass & vision-tower work inside the first query & first-query end-to-end speedup & Gemma first-pass gains from 1.113$\times$ to 1.407$\times$ across clean and advisory holdout cells \\
+After-ingest follow-up & prompt / KV prefix for later questions on the same video & follow-up latency and speedup vs first query & Qwen persistent-KV reaches 47.2$\times$ at 8f and 91.1$\times$ at 16f; 7B is clean through 16f while 3B holds a bounded plateau through 36f \\
+Streaming / deployment & repeated visual state in a native-rate or live pipeline & paired ViT, pipeline, or end-to-end reduction & Gemma 26B reports 13$\times$ fewer ViT calls, \mbox{$\sim$50$\times$} dominant-pipeline reduction, 4.2--4.5$\times$ real-video E2E, and 5--300$\times$ live-camera ViT savings \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
 We make three contributions:
 \begin{itemize}[leftmargin=1.5em]
-\item We show that training-free mid-layer vision-tower pruning yields measured
-first-pass end-to-end gains on frozen Gemma video-VLM runs, and that those
-gains are predicted surprisingly well by a simple ceiling law,
-$1 / (1 - V_{\mathrm{share}} V_{\mathrm{red}})$.
-\item We show that after-ingest follow-up queries are a much larger reuse
-opportunity: persistent-KV reuse on Qwen2.5-VL-7B-4bit reduces same-video
-follow-up latency to roughly conversational timescales, with 47.2$\times$
-speedup at 8 frames and a clean safe envelope through 16 frames.
-\item We provide mechanism and boundary evidence for why these gains are
-regime-dependent. On clean-tree Qwen holdouts, a bounded-staleness routing
-planner preserves the quality--compute frontier, beats novelty-ranked dense
-selection, and shows that fresh-compute placement over time matters more than
-novelty magnitude alone.
+\item We derive and validate \textbf{C-CEILING}: a stage-share ceiling for
+end-to-end gain. The same arithmetic explains both the modest first-pass
+multipliers and the pooled n=60 composition null, where the observed
+1.042$\times$ stacked result lands almost exactly where the ceiling predicts.
+\item We characterize \textbf{C-PERSIST}: after-ingest persistent-KV reuse on
+Qwen collapses follow-up latency to roughly conversational timescales, with a
+clean 7B envelope through 16 frames / 6.5k prefill tokens and a wider but
+bounded 3B plateau through 36 frames / 14.5k prefill tokens.
+\item We establish \textbf{C-VISION}: training-free mid-layer vision-tower
+pruning yields measured first-pass end-to-end gains on frozen Gemma video-VLM
+runs, from 1.113$\times$ to 1.407$\times$ across clean and advisory holdout
+cells, with magnitude governed by the vision-share ceiling rather than wishful
+component-wise multiplication.
 \end{itemize}
+
+Those three contributions do not compose as a naive product. C-VISION changes
+first-pass latency. C-PERSIST changes follow-up latency on later queries about
+the same video. C-CEILING says shared stage budgets cannot be spent twice. The
+paper therefore reports composition against measured ceilings, not against
+headline multiplication.
+
+Qwen routing and its preserved nulls are what keep that framing honest. The
+holdout planner results show a real quality--compute frontier under a frozen
+dense backend, novelty-ranked dense baselines show that quantity alone is the
+wrong variable, and the VideoMME frame-count probes show that ``more frames''
+is not a linear quality knob on the local Qwen stack. The dev-split 16-frame
+long-bucket regression does \emph{not} replicate on disjoint holdout; that is
+exactly the kind of boundary the paper keeps instead of smoothing away.
 
 \begin{sectiontodo}{Tighten the opening once the final venue and title settle}
 The scientific structure is now the right one, but the opening still needs a
 last pass for voice and compression after the final venue template lands. Keep
-the dry precision; do not let this turn back into either a Qwen-only methods
-note or a second streaming paper.
+the dry precision; do not let this drift back into either a Qwen-only methods
+note or a vague ``everything stacks'' efficiency story.
 
 \textcolor{todoBorder}{Source pointers: \path{paper/priority.md},
 \path{paper/claim-matrix.md},

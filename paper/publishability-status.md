@@ -252,7 +252,7 @@ runnable tonight vs. impl-gated.
 | should-do #4 | Local paired streaming-protocol reproduction (1.30, Sam N=60 line analog, 60 items × 2 arms) | ~90 min | Gemma 4-E4B-4bit | **prereg-open** — needs reproduction prereg; code path reuses 1.51V driver |
 | should-do #5 | **1.55B selective re-prefill v2** (mlx-vlm fork; recover Δacc at 20f) | N/A benchmark-only | Qwen 2.5-VL-7B-4bit | **impl-blocked** — ~3-5 h pixel_values/image_grid_thw/attention_mask co-slicing impl |
 | should-do #6 | **1.58 bf16 KV control at 20f** (discriminate quantization vs attention-OOD) | ~3.5-4 h (bf16 8f n=30 + bf16 16f n=30) | Qwen 2.5-VL-7B bf16 | **user approval** — 15 GB checkpoint download + RSS feasibility on 16 GB M3 |
-| should-do #8 | **1.29 codec-native benchmark slice** (TOMATO N=30 holdout with `CODEC_NATIVE_MV_MAGNITUDE`) | ~45 min benchmark (pilot 2 min + dev 15 min + holdout 30 min) | Qwen 2.5-VL-7B-4bit | **impl-blocked** — Stage A (sample cache) + Stage B (planner dispatch) + Stage C (CLI wire-up) = ~5 h; extractor already ported |
+| should-do #8 | **1.29 codec-native bridge (reframed)** | runtime now depends on reframing path | Qwen 2.5-VL-7B-4bit | **mixed pilot landed** — MAX-over-span sparse sampling is HARD-FALSIFIED; continuous-score redesign is an aggregate-only PARTIAL PASS; off the paper's critical path unless reframed to planner-signal validation or native-rate streaming reproduction |
 | future | **1.60 scroll/pan subset** (20 items stratified by scroll intensity, L=2 kr=0.50 paired) | ~70-90 min | Gemma 4-E4B-4bit | **manifest-blocked** — `scroll_pan_subset_v1.toml` needs building from VideoMME pixel-diff dominance axis (est. 1-2 h curation) |
 | diagnostic | **Qwen 8f holdout `videomme_holdout_v1.toml` n=30** (parallel to already-done 16f holdout) | ~8 min (cold) | Qwen 2.5-VL-7B-4bit | **runnable-now** — driver exists, manifest exists |
 | blocked | 1.42 Gemma topology lane | ~2-6 h | Gemma 4-E4B-4bit | `_mix_gemma_features` impl (task #62) |
@@ -508,9 +508,13 @@ items that priority.md does not carry. For the current ordering see
    C-PERSIST basin driver; ~2-4h wall.
 7. **1.41 Qwen 16f holdout** — third data point for C-VISION V_share
    trajectory; ~30 min wall.
-8. **1.29 local codec-native benchmark slice** — biggest missing Sam
-   bridge per codex round-26 (promoted from future). ~1-2 h wall;
-   blocker is harness wire-up (prereg landed task #98 2026-04-20).
+8. **1.29 codec-native bridge (reframed)** — still scientifically
+   interesting, but no longer the obvious next paper win. The pilot has
+   already changed the claim boundary: MAX-over-span sparse sampling is
+   hard-falsified and the continuous-score redesign is only an
+   aggregate-level partial pass, so this lane is off the paper's critical
+   path unless reframed to planner-signal validation or native-rate
+   streaming.
 9. ~~**Paper figures: C-PERSIST safe-budget table + V_share ceiling
    plot**~~ — **LANDED 2026-04-21 (autonomous session, task #161).**
    Scripts `scripts/plot_c_persist_safe_budget.py` +

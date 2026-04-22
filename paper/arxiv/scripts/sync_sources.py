@@ -66,6 +66,17 @@ def _ensure_dirs() -> None:
         path.mkdir(parents=True, exist_ok=True)
 
 
+def _sync_curated_paper_figures() -> None:
+    figure_stems = ["v_share_v_red_ceiling", "c_persist_safe_budget"]
+    for stem in figure_stems:
+        source_png = REPO_ROOT / "paper" / "figures" / f"{stem}.png"
+        if source_png.exists():
+            (GENERATED / "figures" / source_png.name).write_bytes(source_png.read_bytes())
+        source_json = REPO_ROOT / "paper" / "figures" / f"{stem}_data.json"
+        if source_json.exists():
+            (GENERATED / "data" / source_json.name).write_text(source_json.read_text())
+
+
 def _load_json(path: Path) -> dict:
     return json.loads(path.read_text())
 
@@ -949,6 +960,7 @@ def main() -> int:
     _write_headline_table(headline_snapshot)
     deployment_snapshot = _deployment_scale_snapshot(sam_root)
     _render_deployment_scale_figure(deployment_snapshot)
+    _sync_curated_paper_figures()
     primary = _git_info(REPO_ROOT)
     upstream = _git_info(upstream_root)
     sam = _git_info(sam_root)

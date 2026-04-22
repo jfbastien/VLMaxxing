@@ -8,31 +8,44 @@ results section, but not every cell is equally clean. VideoMME is clean.
 MVBench and TOMATO are advisory because the measured gains survive, but the
 thermal caveats are still visible and should remain visible in the text.
 Architecture breadth is also still limited: the first-pass measured speedup
-story is Gemma-first today.
+story is Gemma-first today. The pooled n=60 H\_stack result also closes one
+tempting overclaim: composition does not outrun the ceiling. The local stacked
+cell is ceiling-matched, which is useful evidence for the arithmetic and a
+null on super-ceiling composition.
 
 For persistent-KV, the numbers are much larger, but the regime is narrower.
 These are \emph{after-ingest} claims: the first query on the video still pays
 full freight, and the gain only appears when subsequent questions concern that
 same video. The safe envelope is also finite. Through 16 frames the local curve
-is clean. Beyond that, fidelity degrades quickly.
+is clean at 7B. Beyond that, fidelity degrades quickly. The 3B story is wider
+but weaker: it holds a tolerated $-0.19$ plateau through 36 frames / 14.5k
+prefill tokens rather than preserving the clean 7B envelope.
 
 For Qwen routing, the opposite caveat applies. The holdout evidence is clean
 and useful, but it is still a quality--compute frontier result under a fixed
 dense backend. It should not be inflated into a measured sparse-execution
-speedup claim until the backend actually skips timed work.
+speedup claim until the backend actually skips timed work. The same caution now
+applies to the Qwen VideoMME frame-count story: the dev-split 16f long-bucket
+regression does not replicate on disjoint holdout, so the manuscript treats it
+as a dev-only shape rather than a universal scaling law.
 
 The streaming lane is the smallest-$N$ evidence class in the paper. It is
 there because it shows the practical regime where redundancy becomes large, not
 because it already closes the full systems-reviewer checklist. The paper still
 needs a screenshot-polling baseline, broader UI coverage, and a cleaner local
-codec-native bridge if that lane is going to carry more of the headline later.
+streaming bridge if that lane is going to carry more of the headline later. A
+related local codec-native bridge remains scientifically interesting, but the
+latest 1.29 pilots show that it is not yet main-text support:
+MAX-over-span sparse sampling is hard-falsified, and continuous-score codec
+signals are only an aggregate-level partial pass so far.
 
 The paper is nevertheless being built to be reproducible. Automated main-text
-figures and tables are generated from checked-in artifact summaries, the
-appendix records the repo commits used for the sync, and imported or advisory
-evidence is labeled as such instead of being silently promoted into the
-headline figures. The paper builds locally with the checked-in
-\texttt{make paper-*} targets plus `tectonic` or a fuller TeX stack.
+figures and tables are generated from checked-in artifact summaries or from
+checked-in paper figures, the appendix records the repo commits used for the
+sync, and imported or advisory evidence is labeled as such instead of being
+silently promoted into the headline figures. The paper builds locally with the
+checked-in \texttt{make paper-*} targets plus `tectonic` or a fuller TeX
+stack.
 
 \begin{sectiontodo}{Freeze the public artifact and release language}
 Before submission, this section still needs the final public-release sentence,

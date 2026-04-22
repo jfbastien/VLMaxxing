@@ -1,9 +1,11 @@
-\section{Measured Anti-Recomputation Gains}
+\section{Ceilings and Measured Anti-Recomputation Gains}
 
 The strongest measured results in this paper appear when the reused stage
-actually owns meaningful wall-clock. Those gains are not one number. They are
-regime-dependent, and the figure below is designed to make that obvious rather
-than hide it.
+actually owns meaningful wall-clock. That sounds obvious, but it is the part
+efficiency papers most often blur. C-CEILING is the paper's arithmetic sanity
+check: local multipliers only survive to end-to-end wall-clock in proportion to
+the share of time the accelerated stage actually owns. The gains below are
+therefore not one number. They are regime-dependent by construction.
 
 \IfFileExists{generated/tables/headline_results.tex}{
 \input{generated/tables/headline_results.tex}
@@ -11,30 +13,7 @@ than hide it.
 \draftnote{Run \texttt{make paper-sync} to generate the headline results table.}
 }
 
-\begin{figure}[H]
-  \centering
-  \IfFileExists{generated/figures/headline_results.pdf}{
-    \includegraphics[width=\linewidth]{generated/figures/headline_results}
-  }{
-    \fbox{\parbox{0.9\linewidth}{Run \texttt{make paper-sync} to generate the headline results figure.}}
-  }
-  \caption{Headline anti-recomputation results by regime. Left: first-pass
-  Gemma vision-pruning speedups with scatter-back ceiling predictions. Right:
-  Qwen persistent-KV follow-up speedups versus frame count, with accuracy delta
-  tracked separately. Hatched bars indicate advisory or dev-only status rather
-  than clean holdout.}
-  \label{fig:headline-results}
-\end{figure}
-
-\subsection{Orders Of Magnitude For Reuse, Modest Multipliers For Fresh Video}
-
-The largest multipliers here belong to after-ingest reuse: 47.2$\times$ at 8
-frames and 91.1$\times$ at 16 frames, both with sub-second follow-up latency.
-That is not a contradiction with the smaller first-pass numbers. It is the
-expected consequence of reusing an already-paid prefix instead of pruning only
-one stage of a fresh-video pass.
-
-\subsection{First-Pass Gains Are Real, But Share-Limited}
+\subsection{C-VISION: First-Pass Gains Are Real, But Share-Limited}
 
 Fresh-video first-pass gains are smaller because they are share-limited. Gemma
 vision-tower pruning still produces measured end-to-end gains before any
@@ -42,8 +21,8 @@ same-video caching trick enters the picture. VideoMME 8f is clean at
 1.113$\times$ with zero aggregate accuracy delta. MVBench 8f is stronger still
 at 1.407$\times$, with a small accuracy loss and an advisory thermal note
 because the short decode window makes the old relative gate too strict for
-scheduler-scale jitter. TOMATO 8f is advisory as well: the freshly pulled
-upstream rerun reports 1.194$\times$ with a favorable-direction 19\,ms thermal
+scheduler-scale jitter. TOMATO 8f is advisory as well: the current holdout
+rerun reports 1.194$\times$ with a favorable-direction 19\,ms thermal
 miss.
 
 Their magnitude tracks the dense share owned by the vision tower. The same
@@ -51,7 +30,28 @@ pruning mechanism gives smaller gains on VideoMME than on MVBench because
 VideoMME is less vision-dominated at this geometry. That is exactly what the
 ceiling law predicts.
 
-\subsection{After-Ingest Reuse Is The Big-Number Regime}
+\begin{figure}[H]
+  \centering
+  \IfFileExists{generated/figures/v_share_v_red_ceiling.png}{
+    \includegraphics[width=0.97\linewidth]{generated/figures/v_share_v_red_ceiling.png}
+  }{
+    \fbox{\parbox{0.9\linewidth}{Run \texttt{make paper-sync} to sync the C-VISION ceiling figure.}}
+  }
+  \caption{C-VISION ceiling validation. The rendered paper-facing figure shows
+  four dev cells, three holdout cells, and the pooled n=60 H\_stack point. The
+  pooled point matters because it closes the intuitive ``stacking should
+  multiply'' story in the opposite direction: the observed 1.042$\times$
+  result sits where the measured share terms say it should.}
+  \label{fig:vshare-ceiling}
+\end{figure}
+
+Across the rendered eight-cell view, the ceiling stays predictive enough to be
+useful and honest. The holdout spread is wider than the first dev tranche made
+it look, which is why the paper describes benchmark- and
+protocol-sensitive magnitude rather than benchmark-invariant first-pass gain.
+That softening is not a retreat. It is what the holdouts earned.
+
+\subsection{C-PERSIST: After-Ingest Reuse Is The Big-Number Regime}
 
 Persistent-KV answers a different question: once the first query on a video has
 already paid the full prompt cost, how cheap can the next question become? On
@@ -60,11 +60,30 @@ follow-up latency drops to 815\,ms median with 47.2$\times$ speedup and
 $-0.048$ aggregate accuracy delta. At 16 frames the speedup rises to
 91.1$\times$ while the accuracy delta returns to 0. Within the current
 $\leq$16f envelope, the result is both fast and empirically clean. Past that
-point the curve keeps rising, but the fidelity boundary appears. That is a
-useful result in its own right. The big numbers are tied to a concrete
-after-ingest regime with a measurable safe envelope.
+point the curve keeps rising, but the fidelity boundary appears.
 
-\subsection{The Story Is Stronger Because The Regimes Are Separate}
+\begin{figure}[H]
+  \centering
+  \IfFileExists{generated/figures/c_persist_safe_budget.png}{
+    \includegraphics[width=0.97\linewidth]{generated/figures/c_persist_safe_budget.png}
+  }{
+    \fbox{\parbox{0.9\linewidth}{Run \texttt{make paper-sync} to sync the C-PERSIST safe-budget figure.}}
+  }
+  \caption{C-PERSIST safe-deployment envelope. The local result is not one
+  persistent-KV curve but two different architectural stories: 7B is clean
+  through 16 frames / 6.5k prefill tokens, while 3B trades exactness for a
+  much wider tolerated plateau through 36 frames / 14.5k prefill tokens before
+  the basin opens.}
+  \label{fig:c-persist-safe-budget}
+\end{figure}
+
+The 7B and 3B stories are therefore not interchangeable. 7B gives the clean
+sub-second envelope. 3B does not. What 3B gives instead is a wider tolerated
+plateau: $\Delta$acc holds at $-0.19$ through 24f, 32f, and 36f before basin
+onset appears beyond 14.5k prefill tokens. That is a useful deployment
+boundary, not an embarrassment to be hidden under the 7B line.
+
+\subsection{What Stacks and What Does Not}
 
 The measured first-pass gains and the after-ingest gains complement rather than
 compete with each other. First-pass pruning says there is real work to skip on
@@ -73,14 +92,24 @@ video has already been ingested, the next question is a much larger reuse
 opportunity. The Qwen routing section that follows explains why: temporal
 placement of fresh compute decides whether the answer survives.
 
+The key compositional result is negative and useful: the pooled n=60 H\_stack
+experiment is a ceiling-matched null, not a
+super-ceiling win. The observed 1.042$\times$ pooled result lands where the
+measured fixed-fraction terms place it. That closes the naive
+``multiply-the-headlines'' interpretation. C-VISION and C-PERSIST matter, but
+they matter on different queries and under different ceilings.
+
 \begin{sectiontodo}{Lock the final promotion boundary for advisory cells}
-The current figure and table are accurate, but the manuscript still needs a
-final venue-facing decision on how aggressively to surface advisory rows in the
-main text versus the appendix. VideoMME is clean. MVBench and TOMATO are
-strong, but they should keep their caveats visible.
+The current table, ceiling figure, and safe-budget figure are accurate, but
+the manuscript still needs a final venue-facing decision on how aggressively to
+surface advisory rows in the main text versus the appendix. VideoMME is clean.
+MVBench and TOMATO are strong, but they should keep their caveats visible.
 
 \textcolor{todoBorder}{Source pointers: \path{paper/priority.md},
 \path{paper/claim-matrix.md},
+\path{paper/figures/v_share_v_red_ceiling_data.json},
+\path{paper/figures/c_persist_safe_budget_data.json},
+\path{research/experiments/2026/2026-04-21-phase-1_51V-exp10-n60-findings.md},
 \path{research/experiments/2026/2026-04-21-phase-1_51V-session3-findings.md},
 \path{research/experiments/2026/2026-04-21-phase-1_51V-session4-findings.md},
 \path{research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md},

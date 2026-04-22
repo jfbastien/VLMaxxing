@@ -58,8 +58,14 @@ The other two mechanisms operate at different points in the stack.
 The Gemma path patches the vision tower after an internal layer, keeps only a
 fraction of the tokens, and scatters the result back so downstream geometry is
 unchanged. The resulting first-pass speedup is constrained by how much of total
-wall-clock the vision tower owns. That is why the paper reports the
-scatter-back ceiling
+wall-clock the vision tower owns. More generally, if a method accelerates only
+one stage of a pipeline by a factor $s$, the end-to-end gain is bounded by
+\[
+\mathrm{E2E} \le \frac{1}{f_{\mathrm{fixed}} + (1 - f_{\mathrm{fixed}}) / s},
+\]
+where $f_{\mathrm{fixed}}$ is the dense wall-clock fraction left untouched.
+That is the paper's C-CEILING contribution. For vision-tower pruning, the same
+logic reduces to the scatter-back ceiling
 \[
 \mathrm{E2E} \le \frac{1}{1 - V_{\mathrm{share}} V_{\mathrm{red}}},
 \]

@@ -25,15 +25,13 @@ It is NOT the place for raw experimental detail. Evidence lives in:
 - [research/falsified-hypotheses.md](../research/falsified-hypotheses.md) —
   what the evidence has ruled out
 
-Last material update: 2026-04-21 (1.51V vision-tower pruning expansion
-12/12 dev cells landed; VideoMME and MVBench 8f holdout pairs landed;
-TOMATO 8f session-5 rerun upgraded the cell to advisory-holdout status
-in the upstream queue; 32f frame-scaling probe H_32f_vshare EARNED but
-H_32f_e2e REJECTED on thermal grounds; holdout H_stack partial
-replication at 1.064× ceiling-matched; C-VISION promoted to claim 15
-with V_share-governs ceiling validation across **5 scatter-back points**
-(4 C-VISION dev cells + 1 H_stack LLM-axis cell); Safe Deployment
-Regime and V_share-Governs tables added to claim-matrix).
+Last material update: 2026-04-22 (EXP10 pooled n=60 H\_stack closed as
+ceiling-matched NULL; Qwen 16f holdout falsified long-bucket replication on a
+disjoint split; 1.29 MAX-over-span codec-native pilot hard-falsified and the
+continuous-score redesign landed as an aggregate-only partial pass, moving that
+lane off the paper's critical path unless reframed; C-VISION now reads as 5
+core n=30 scatter-back points with 8 rendered points total once holdouts and
+the pooled null are included).
 
 ## Current Manuscript Position (2026-04-21)
 
@@ -315,8 +313,10 @@ codec-through locally:
 
 - streaming-protocol reproduction of Sam's N = 60 line (phase 1.30
   preregistered, deferred pending EXP17/18 landing)
-- codec-native benchmark evidence from 1.29 (H.264 extractor ported;
-  benchmark slice not yet run)
+- codec-native benchmark evidence from 1.29 as a paper-grade local
+  bridge; the pilots now exist, but MAX-over-span sparse sampling is
+  hard-falsified and the continuous-score redesign is only an
+  aggregate-level partial pass
 - sparse-execution measured delta for claim 5 (Track B infra exists
   on dense; sparse path unwritten)
 - cross-architecture C-VISION transfer (Qwen 2.5-VL at matched
@@ -349,8 +349,11 @@ whitepaper §8 and codex 2026-04-16 review, the paper must state:
    budget is lower than some adjacent work. Frame-count scaling study
    is noted as future work.
 4. **Pixel diff is still a proxy**: we classify by pixel differencing,
-   not actual codec MV+CBF metadata. Real codec metadata would be
-   faster and more precise. Phase 1.29 (MV-only) is the bridge.
+   not actual codec MV+CBF metadata. The latest 1.29 pilots show why
+   that bridge is hard: MAX-over-span sparse sampling degenerates to
+   all-NOVEL, and continuous codec scores currently earn only an
+   aggregate-level partial pass. Real codec metadata remains a future
+   bridge, not current paper support.
 5. **Composition remains projected**: temporal × KV-compression
    composition ratios are projected from independent-layer
    assumptions, not measured end-to-end.
@@ -573,8 +576,11 @@ The current training-free planner is a proxy chain:
 - codec-side motion and residual semantics are standing in for
   latent-feature reuse decisions
 
-Phase 1.29 (MV-only signal path via PyAV) is the deployability bridge
-from pixel-diff proxy to real codec signals. Until that phase lands,
+Phase 1.29 (MV-only signal path via PyAV) was the intended bridge from
+pixel-diff proxy to real codec signals. The current evidence is mixed:
+MAX-over-span sparse aggregation is hard-falsified and the
+continuous-score redesign is only an aggregate-level partial pass.
+Until a planner-facing or native-rate streaming version lands cleanly,
 paper language should keep "proxy for codec motion" explicit.
 
 Phase 1.36 (2026-04-17) quantified the pixel-diff ↔ ViT-feature

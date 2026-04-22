@@ -23,28 +23,33 @@ If those files disagree, prefer them in that order.
 
 ## Current Paper Position
 
-As of 2026-04-21, the manuscript should be centered on a single
-anti-recomputation story with three linked contributions:
+As of 2026-04-22, the manuscript should be centered on a single
+anti-recomputation story with three first-class contributions plus one
+mechanism-validation backbone:
 
-1. **C-VISION** is the current first-pass headline:
+1. **C-CEILING** is the arithmetic frame:
+   component wins survive to end-to-end wall-clock only in proportion to the
+   dense share they actually own.
+2. **C-PERSIST** is the big-number after-ingest regime:
+   same-video follow-up queries can collapse to sub-second latency with large,
+   architecture-specific speedups.
+3. **C-VISION** is the first-pass headline:
    training-free mid-layer vision-tower pruning on Gemma produces measured
-   end-to-end speedups, with magnitude governed by a `share × reduction`
-   ceiling.
-2. **C-PERSIST** is the current big-number deployment result:
-   after-ingest follow-up queries on the same video can collapse to
-   sub-second latency with large speedups.
-3. **Qwen routing** is mechanism and boundary evidence:
-   it explains where temporal reuse preserves answers and why placement of
-   fresh computation matters more than novelty magnitude alone.
+   end-to-end speedups on fresh videos, again bounded by share × reduction.
+4. **Qwen routing** is mechanism and boundary evidence, not the headline:
+   it explains where temporal reuse preserves answers, why placement of fresh
+   computation matters more than novelty magnitude alone, and which intuitive
+   fixes do not survive matched conditions.
 
-The Sam lane remains important. Use it for:
+The Sam lane remains important, but it is not just decoration. Use it for:
 
-- real-application case studies
+- deployment-scale main-body evidence when the protocol and baseline are named
 - streaming / deployment motivation
-- supplementary or companion evidence
+- bounded case studies when the evidence is qualitative or lacks a matched
+  wall-clock baseline
 
-Do not let the paper drift back to a Qwen-only routing note unless the paper
-docs explicitly re-promote that position.
+Do not let the paper drift back to a Qwen-only routing note, and do not let it
+flatten Sam into generic demo material.
 
 ## Evidence Hygiene
 

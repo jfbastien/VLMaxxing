@@ -1,20 +1,22 @@
-Video VLMs keep paying to understand pixels they have already understood. In
-the most favorable reuse regimes, the savings are already large: same-video
-follow-up questions drop to 815\,ms median with 47.2$\times$ speedup at 8
-frames and 91.1$\times$ at 16 frames; deployment-scale streaming evidence
-reaches 13$\times$ streaming ViT reduction, \mbox{$\sim$50$\times$}
-dominant-pipeline reduction, and 4.2--4.5$\times$ end-to-end speedups on real
-video. We study this training-free anti-recomputation problem on frozen
-video-VLM stacks and keep three regimes separate: first-pass vision pruning,
-after-ingest follow-up queries on the same video, and benchmarked routing
-under a fixed dense backend. On Gemma 4-E4B-4bit, mid-layer vision-tower
-pruning at $L=2$ and $kr_V=0.50$ yields measured first-pass gains from
-1.113$\times$ to 1.407$\times$ on clean or advisory holdout cells, with
-magnitude explained by a share$\times$reduction ceiling
-$1 / (1 - V_{\mathrm{share}} V_{\mathrm{red}})$. Qwen routing experiments on
-TOMATO and MVBench then supply the mechanism boundary: a simple
-bounded-staleness planner preserves the quality--compute frontier, beats
-novelty-ranked dense selection, and shows that fresh-compute placement matters
-more than novelty magnitude alone. Together these results make
-anti-recomputation a practical, regime-dependent systems strategy for video
-VLMs.
+Video VLMs keep paying to understand pixels they have already understood, and
+efficiency papers routinely overstate how much of a component-level win
+survives to end-to-end wall-clock. We study this training-free
+anti-recomputation problem across three non-interchangeable regimes:
+first-pass vision pruning on fresh videos, after-ingest follow-up queries on
+the same video, and routing under a fixed dense backend. First, we derive and
+validate an arithmetic ceiling: stage-local speedups only survive in
+proportion to the wall-clock share the accelerated stage actually owns; on
+Gemma 4-E4B-4bit, the vision-axis analog explains first-pass gains from
+1.113$\times$ to 1.407$\times$ across clean and advisory holdout cells and
+correctly predicts the pooled n=60 composition null. Second, persistent-KV
+reuse is the big-number regime: on Qwen2.5-VL-7B-4bit, same-video follow-up
+questions drop to 815\,ms median at 47.2$\times$ speedup at 8 frames and
+807\,ms at 91.1$\times$ at 16 frames inside a clean 7B envelope, while 3B
+holds a wider but bounded $\Delta$acc $=-0.19$ plateau through 36 frames /
+14.5k prefill tokens. Third, routing and deployment-scale streaming evidence
+show why the numbers differ: fresh-compute placement matters more than novelty
+magnitude alone, and the largest practical multipliers appear when the
+expensive prefix or vision pass is being revisited. On a larger Gemma 26B
+streaming stack, the same thesis yields 13$\times$ fewer ViT calls,
+\mbox{$\sim$50$\times$} dominant-pipeline reduction, and 4.2--4.5$\times$
+end-to-end speedups in real-video regimes.

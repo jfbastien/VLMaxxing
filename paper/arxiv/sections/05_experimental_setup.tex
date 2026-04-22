@@ -3,22 +3,22 @@
 \subsection{Benchmarks and Workloads}
 
 The paper uses three workload families, because the contribution is not a
-single benchmark trick.
+single benchmark trick and the protocols are not interchangeable.
 
-The routing mechanism is evaluated on two temporal-reasoning holdouts: TOMATO
+The routing mechanism is evaluated on sparse after-ingest QA holdouts: TOMATO
 \cite{tomato} and a frozen motion-heavy MVBench slice \cite{mvbench}. These
 are the cleanest settings for testing whether training-free temporal reuse
 preserves answers at lower effective fresh-frame budgets.
 
 The first-pass speedup story uses Gemma 4-E4B-4bit on Video-MME
 \cite{videomme}, MVBench, and TOMATO at 8-frame settings, plus dev-expansion
-cells and deeper frame-count probes. The after-ingest speedup story uses
+cells and deeper frame-count probes. The after-ingest persistent-KV story uses
 repeated follow-up questions on short Video-MME clips, where the same video is
 queried multiple times and prompt reuse is therefore meaningful.
 
-The streaming and UI case studies are kept separate from those benchmark
-claims. They are deployment-style evidence, not replacements for the main
-evaluation.
+The streaming and UI studies are kept separate from those benchmark claims.
+They are native-rate or deployment-style evidence, not replacements for the
+main evaluation.
 
 \subsection{Models, Hardware, and Preprocessing}
 
