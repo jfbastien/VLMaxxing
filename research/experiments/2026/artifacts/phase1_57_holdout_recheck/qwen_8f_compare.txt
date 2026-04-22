@@ -1,0 +1,28 @@
+Compared 2 summaries
+
+STATIC
+metric        qwen2.5-vl-7b-4bit / videomme_dev_v1 / 8f  qwen2.5-vl-7b-4bit / videomme_holdout_v1 / 8f  max_span    
+mean_cos      +0.5623                                    +0.5510                                        +0.0112     
+median_cos    +0.5596                                    +0.5377                                        +0.0219     
+p05_cos       +0.1774                                    +0.1903                                        +0.0129     
+p95_cos       +0.9368                                    +0.9391                                        +0.0023     
+
+SHIFTED
+metric        qwen2.5-vl-7b-4bit / videomme_dev_v1 / 8f  qwen2.5-vl-7b-4bit / videomme_holdout_v1 / 8f  max_span    
+mean_cos      +0.4680                                    +0.4877                                        +0.0197     
+median_cos    +0.4349                                    +0.4522                                        +0.0173     
+p05_cos       +0.1429                                    +0.1492                                        +0.0063     
+p95_cos       +0.8965                                    +0.9261                                        +0.0296     
+
+NOVEL
+metric        qwen2.5-vl-7b-4bit / videomme_dev_v1 / 8f  qwen2.5-vl-7b-4bit / videomme_holdout_v1 / 8f  max_span    
+mean_cos      +0.3215                                    +0.3120                                        +0.0095     
+median_cos    +0.2823                                    +0.2799                                        +0.0024     
+p05_cos       +0.0950                                    +0.0892                                        +0.0058     
+p95_cos       +0.7017                                    +0.6515                                        +0.0502     
+
+Delta vs baseline: qwen2.5-vl-7b-4bit / videomme_dev_v1 / 8f -> qwen2.5-vl-7b-4bit / videomme_holdout_v1 / 8f
+  static   mean_cos Δ=-0.0112
+  shifted  mean_cos Δ=+0.0197
+  novel    mean_cos Δ=-0.0095
+

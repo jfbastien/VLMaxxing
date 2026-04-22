@@ -1,0 +1,28 @@
+Compared 2 summaries
+
+STATIC
+metric        qwen2.5-vl-7b-4bit / videomme_dev_v1 / 16f  qwen2.5-vl-7b-4bit / videomme_holdout_v1 / 16f  max_span    
+mean_cos      +0.6072                                     +0.5904                                         +0.0168     
+median_cos    +0.6076                                     +0.5765                                         +0.0311     
+p05_cos       +0.2250                                     +0.2228                                         +0.0022     
+p95_cos       +0.9578                                     +0.9716                                         +0.0139     
+
+SHIFTED
+metric        qwen2.5-vl-7b-4bit / videomme_dev_v1 / 16f  qwen2.5-vl-7b-4bit / videomme_holdout_v1 / 16f  max_span    
+mean_cos      +0.5342                                     +0.4867                                         +0.0474     
+median_cos    +0.5132                                     +0.4497                                         +0.0635     
+p05_cos       +0.1706                                     +0.1457                                         +0.0249     
+p95_cos       +0.9304                                     +0.9319                                         +0.0015     
+
+NOVEL
+metric        qwen2.5-vl-7b-4bit / videomme_dev_v1 / 16f  qwen2.5-vl-7b-4bit / videomme_holdout_v1 / 16f  max_span    
+mean_cos      +0.3410                                     +0.3311                                         +0.0099     
+median_cos    +0.2994                                     +0.2967                                         +0.0027     
+p05_cos       +0.1019                                     +0.1003                                         +0.0016     
+p95_cos       +0.7420                                     +0.6890                                         +0.0529     
+
+Delta vs baseline: qwen2.5-vl-7b-4bit / videomme_dev_v1 / 16f -> qwen2.5-vl-7b-4bit / videomme_holdout_v1 / 16f
+  static   mean_cos Δ=-0.0168
+  shifted  mean_cos Δ=-0.0474
+  novel    mean_cos Δ=-0.0099
+
