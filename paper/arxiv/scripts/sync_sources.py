@@ -721,7 +721,7 @@ def _render_headline_figure(snapshot: dict) -> None:
     right.set_title("Same-video follow-up reuse")
     right.grid(True, axis="y", alpha=0.22, linewidth=0.8)
     right.axvspan(7.5, 16.5, color="#8ecae6", alpha=0.12, lw=0)
-    right.text(8.2, 18, "clean regime\n(<=16f)", color="#1d3557", fontsize=8.7)
+    right.text(8.2, 18, "safe regime\n(<=16f)", color="#1d3557", fontsize=8.7)
 
     right_twin = right.twinx()
     right_twin.plot(
@@ -784,7 +784,7 @@ def _write_headline_table(snapshot: dict) -> None:
             "After-ingest & Qwen same-video follow-up, 8f & "
             f"{kv_by_frame[8]['speedup']:.1f}$\\times$ & "
             f"{kv_by_frame[8]['follow_up_median_s']:.3f}\\,s median; "
-            f"$\\Delta$acc {kv_by_frame[8]['accuracy_delta']:+.3f} & clean \\\\"
+            f"$\\Delta$acc {kv_by_frame[8]['accuracy_delta']:+.3f} & safe \\\\"
         ),
         (
             "First-pass & Gemma MVBench 8f holdout & "
@@ -802,7 +802,7 @@ def _write_headline_table(snapshot: dict) -> None:
             f"{tomato_row['observed_e2e']:.3f}$\\times$ & "
             f"$\\Delta$acc {tomato_row['acc_delta']:+.3f} & "
             + (
-                "imported adv. \\\\"
+                "imported advisory \\\\"
                 if tomato_row["status"] == "advisory-holdout-imported"
                 else "dev-only \\\\"
             )
@@ -818,17 +818,17 @@ def _write_build_meta(
     primary: dict[str, str], upstream: dict[str, str], sam: dict[str, str]
 ) -> None:
     lines = [
-        f"\\newcommand{{\\PrimaryRepoSHA}}{{{primary['sha'][:12]}}}",
+        f"\\newcommand{{\\PrimaryRepoSHA}}{{{primary['sha'][:7]}}}",
         f"\\newcommand{{\\PrimaryRepoCommitDate}}{{{primary['commit_date']}}}",
         (
             "\\newcommand{\\UpstreamRepoSHA}{"
-            f"{upstream['sha'][:12] if upstream['sha'] != 'missing' else 'missing'}"
+            f"{upstream['sha'][:7] if upstream['sha'] != 'missing' else 'missing'}"
             "}"
         ),
         f"\\newcommand{{\\UpstreamRepoCommitDate}}{{{upstream['commit_date']}}}",
         (
             "\\newcommand{\\SamRepoSHA}{"
-            f"{sam['sha'][:12] if sam['sha'] != 'missing' else 'missing'}"
+            f"{sam['sha'][:7] if sam['sha'] != 'missing' else 'missing'}"
             "}"
         ),
         f"\\newcommand{{\\SamRepoCommitDate}}{{{sam['commit_date']}}}",

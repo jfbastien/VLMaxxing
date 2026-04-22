@@ -35,6 +35,18 @@ paper's largest local speedups do not come from a better frame selector, but
 from refusing to repay the same prefix when the next question is about the same
 video.
 
+SimpleStream \cite{simplestream} is also an important streaming baseline
+because it argues that a strong recent-frame window can match or outperform
+heavier streaming-memory systems on modern benchmarks. That critique matters
+directly for our streaming lane: any cache or memory mechanism has to beat a
+strong recency baseline under matched budget, not just beat a strawman.
+
+More conceptually, our framing is adjacent to approximate computing
+\cite{rinardapprox}: skipping work under an explicit quality budget. The
+difference is that the skipped work here is temporal visual recomputation, and
+the guardrail is benchmark fidelity rather than an application-specific numeric
+tolerance.
+
 Our position is therefore narrower and more explicit than a generic
 ``efficient-video-VLM'' claim. We study training-free anti-recomputation for
 frozen video VLMs, separating first-pass reuse, after-ingest reuse, and

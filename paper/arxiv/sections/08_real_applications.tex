@@ -6,20 +6,19 @@ report 0.8\,s median same-video follow-up latency at 10--18$\times$ speedup,
 paired Streaming VideoMME results with 13$\times$ fewer ViT calls and
 \mbox{$\sim$50$\times$} less dominant-pipeline compute, and selected
 real-video regimes with 4.2--4.5$\times$ end-to-end speedups. A separate
-large-$N$ exactness result shows byte-identical Qwen outputs across 1,937
-sparse benchmark items when unchanged regions are reused instead of being
-re-encoded. Live-camera measurements then show the same regime dependence in
-the wild: ViT savings range from 5$\times$ to 300$\times$ with scene activity,
-and the post-fix RTSP demo still reduces ViT calls by 14.3$\times$ over an
-active 60\,s window. This is the operational regime where the thesis matters
-most.
+imported companion exactness result reports byte-identical Qwen outputs across
+1,937 sparse benchmark items under a separate sparse-sampled QA protocol when
+unchanged regions are reused instead of being re-encoded. Live-camera
+measurements then show the same regime dependence in the wild: ViT savings
+range from 5$\times$ to 300$\times$ with scene activity, and the post-fix RTSP
+demo still reduces ViT calls by 14.3$\times$ over an active 60\,s window. This
+is the operational regime where the thesis matters most.
 
-Smaller-$N$ UI studies are still useful as illustrations, but they are not
-asked to carry the main deployment claim. The sectional-scroll and RTSP demos
-therefore stay explicitly weaker than the paired streaming and real-video
-measurements above: they show the same anti-recomputation loop behaving
-coherently on active content, but the main-body evidence is the deployment
-table below.
+Smaller-$N$ UI studies stay strictly illustrative, not headline-bearing. The
+sectional-scroll case studies remain explicitly weaker than the paired
+streaming and real-video measurements above, and the contact-sheet imagery
+below is qualitative rather than quantitative. The main-body evidence for this
+section is the deployment table below.
 
 \begin{table}[H]
 \centering
@@ -42,7 +41,7 @@ Streaming VideoMME (Gemma 26B) & 13$\times$ fewer ViT calls; $\sim$50$\times$ le
 Real-video paired regimes (Gemma 26B) & 4.2--4.5$\times$ end-to-end speedup & talking-head and surveillance-style real-video measurements & deployment-scale real-video benchmark \\
 Gemma 26B same-video follow-up & 10--18$\times$ faster than cold prefill & 0.8\,s median follow-up; no accuracy loss & deployment-scale follow-up benchmark \\
 Live-camera pipeline & 5--300$\times$ fewer ViT calls; 14.3$\times$ on one active 60\,s RTSP window & scene-dependent live-camera savings; 45 fps perception throughput on one M5 Max report & live deployment measurement \\
-Exact Qwen caching benchmark & reusing unchanged regions instead of re-encoding them & byte-identical outputs on 1,937 sparse benchmark items & large-$N$ exactness \\
+Exact Qwen caching benchmark & sparse-sampled unchanged-region reuse & reported byte-identical Qwen outputs on 1,937 sparse benchmark items & imported companion exactness \\
 \bottomrule
 \end{tabularx}
 \end{table}

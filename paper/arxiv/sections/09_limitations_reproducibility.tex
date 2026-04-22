@@ -17,9 +17,10 @@ For persistent-KV, the numbers are much larger, but the regime is narrower.
 These are \emph{after-ingest} claims: the first query on the video still pays
 full freight, and the gain only appears when subsequent questions concern that
 same video. The safe envelope is also finite. Through 16 frames the local curve
-is clean at 7B. Beyond that, fidelity degrades quickly. The 3B story is wider
-but weaker: it holds a tolerated $-0.19$ plateau through 36 frames / 14.5k
-prefill tokens rather than preserving the clean 7B envelope.
+stays inside the current 7B safe envelope, with a clean 16f point and a
+smaller-but-still-safe 8f point. Beyond that, fidelity degrades quickly. The
+3B story is wider but weaker: it holds a tolerated $-0.19$ plateau through 36f
+/ 14.5k prefill tokens rather than preserving the clean 7B envelope.
 
 For Qwen routing, the opposite caveat applies. The holdout evidence is clean
 and useful, but it is still a quality--compute frontier result under a fixed

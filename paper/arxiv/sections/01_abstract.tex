@@ -11,12 +11,15 @@ Gemma 4-E4B-4bit, the vision-axis analog explains first-pass gains from
 correctly predicts the pooled n=60 composition null. Second, persistent-KV
 reuse is the big-number regime: on Qwen2.5-VL-7B-4bit, same-video follow-up
 questions drop to 815\,ms median at 47.2$\times$ speedup at 8 frames and
-807\,ms at 91.1$\times$ at 16 frames inside a clean 7B envelope, while 3B
+807\,ms at 91.1$\times$ at 16 frames inside the current 7B safe envelope,
+with the 16f point clean and the 8f point still inside the current
+safe-deployment criterion, while 3B
 holds a wider but bounded $\Delta$acc $=-0.19$ plateau through 36 frames /
 14.5k prefill tokens. Third, routing and deployment-scale streaming evidence
 show why the numbers differ: fresh-compute placement matters more than novelty
 magnitude alone, and the largest practical multipliers appear when the
-expensive prefix or vision pass is being revisited. On a larger Gemma 26B
-streaming stack, the same thesis yields 13$\times$ fewer ViT calls,
+expensive prefix or vision pass is being revisited. In companion
+deployment-scale streaming experiments on a larger Gemma 26B stack, the same
+thesis yields 13$\times$ fewer ViT calls,
 \mbox{$\sim$50$\times$} dominant-pipeline reduction, and 4.2--4.5$\times$
 end-to-end speedups in real-video regimes.

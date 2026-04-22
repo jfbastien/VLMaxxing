@@ -19,11 +19,38 @@ provenance grounds, the paper says so explicitly. The best current example is
 the MVBench \texttt{sticky4} refinement: it is scientifically interesting, but
 the artifact is still dirty-tree, so it stays supplementary until rerun clean.
 
-\begin{sectiontodo}{Replace narrative traceability with a frozen artifact manifest}
-Before submission, this appendix should include a final claim-to-artifact map
-for every table and figure in the paper, not just the repo-level provenance
-table. The right end state is a reviewer-readable manifest, not a general prose
-description.
+\begin{table}[H]
+\centering
+\caption{Claim/protocol/evidence manifest for the main quantitative assets.}
+\label{tab:claim-protocol-manifest}
+\scriptsize
+\renewcommand{\arraystretch}{1.08}
+\begin{tabularx}{\linewidth}{@{}
+  >{\raggedright\arraybackslash}p{0.11\linewidth}
+  >{\raggedright\arraybackslash}p{0.13\linewidth}
+  >{\raggedright\arraybackslash}p{0.12\linewidth}
+  >{\raggedright\arraybackslash}p{0.13\linewidth}
+  >{\raggedright\arraybackslash}p{0.12\linewidth}
+  >{\raggedright\arraybackslash}X
+@{}}
+\toprule
+Asset & Claim & Protocol & Evidence class & Repo @ commit & Source / hardware \\
+\midrule
+Table~\ref{tab:headline-results} & C-VISION headline cells & paired sparse holdout & local + imported upstream & \texttt{ct2}@\PrimaryRepoSHA\newline \texttt{ct}@\UpstreamRepoSHA & phase1\_51V session3/session4 artifacts + upstream session5 findings; Gemma 4-E4B-4bit, MLX / M3 Air 16 GB \\
+Figure~\ref{fig:vshare-ceiling} & C-CEILING / C-VISION scatter-back validation & sparse holdout + pooled H\_stack & local + imported upstream & \texttt{ct2}@\PrimaryRepoSHA\newline \texttt{ct}@\UpstreamRepoSHA & \texttt{v\_share\_v\_red\_ceiling\_data.json}; same local Gemma stack plus imported TOMATO rerun \\
+Figure~\ref{fig:c-persist-safe-budget} & C-PERSIST safe envelope & after-ingest same-video follow-up & local & \texttt{ct2}@\PrimaryRepoSHA & phase1\_55A artifact families; Qwen2.5-VL-7B/3B-4bit, MLX / M3 Air 16 GB \\
+Figure~\ref{fig:lane-a-pareto} & routing frontier & sparse routing under dense backend & local & \texttt{ct2}@\PrimaryRepoSHA & phase1\_20, phase1\_21, phase1\_34, and phase1\_36 notes / artifacts; Qwen2.5-VL-7B-4bit, MLX \\
+Table~\ref{tab:real-apps} (stream / follow-up / live) & deployment-scale reuse & native-rate streaming + same-video follow-up & imported companion & \texttt{sam}@\SamRepoSHA & \texttt{whitepaper.md}, \texttt{publishability-status.md}, \texttt{live\_demo\_v2\_writeup.md}; Gemma 4 26B / M5 Max \\
+Table~\ref{tab:real-apps} (exactness row) & large-\(N\) sparse exactness & sparse-sampled QA & imported companion exactness & \texttt{sam}@\SamRepoSHA & strict exactness claim from \texttt{whitepaper.md}; Qwen2.5-VL-7B suite; not re-audited artifact-by-artifact here \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{sectiontodo}{Freeze this provisional manifest into a submission artifact map}
+Before submission, this appendix should expand the provisional manifest above
+into a frozen claim-to-artifact map for every table and figure in the paper,
+including final hardware strings, exact artifact bundle paths, and any rows
+that still move between main text and appendix.
 
 \textcolor{todoBorder}{Source pointers: \path{paper/claim-matrix.md},
 \path{docs/reproduction-status.md},

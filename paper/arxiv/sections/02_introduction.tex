@@ -28,9 +28,10 @@ role: it is the mechanism-validation backbone and the negative-result ledger
 that explains why fresh-compute placement matters more than novelty magnitude
 alone.
 
-The story also survives contact with operational workloads. On a larger Gemma
-4 26B streaming stack, same-video follow-up latency is 0.8\,s, paired
-Streaming VideoMME reports 13$\times$ fewer ViT calls and
+The story also survives contact with operational workloads. In companion
+deployment-scale experiments on a larger Gemma 4 26B streaming stack,
+same-video follow-up latency is 0.8\,s, paired Streaming VideoMME reports
+13$\times$ fewer ViT calls and
 \mbox{$\sim$50$\times$} less dominant-pipeline compute, and selected real-video
 regimes reach 4.2--4.5$\times$ end-to-end speedups. Those numbers come from a
 different protocol and stay labeled that way in the paper. They matter because
@@ -53,8 +54,8 @@ evidence rather than a sparse wall-clock claim.}
 Regime & Reused work & Reporting unit & Headline evidence \\
 \midrule
 Fresh-video first pass & vision-tower work inside the first query & first-query end-to-end speedup & Gemma first-pass gains from 1.113$\times$ to 1.407$\times$ across clean and advisory holdout cells \\
-After-ingest follow-up & prompt / KV prefix for later questions on the same video & follow-up latency and speedup vs first query & Qwen persistent-KV reaches 47.2$\times$ at 8f and 91.1$\times$ at 16f; 7B is clean through 16f while 3B holds a bounded plateau through 36f \\
-Streaming / deployment & repeated visual state in a native-rate or live pipeline & paired ViT, pipeline, or end-to-end reduction & Gemma 26B reports 13$\times$ fewer ViT calls, \mbox{$\sim$50$\times$} dominant-pipeline reduction, 4.2--4.5$\times$ real-video E2E, and 5--300$\times$ live-camera ViT savings \\
+After-ingest follow-up & prompt / KV prefix for later questions on the same video & follow-up latency and speedup vs first query & Qwen persistent-KV reaches 47.2$\times$ at 8f and 91.1$\times$ at 16f; 7B stays inside the current safe envelope through 16f while 3B holds a bounded plateau through 36f \\
+Streaming / deployment & repeated visual state in a native-rate or live pipeline & paired ViT, pipeline, or end-to-end reduction & Gemma 26B companion evidence reports 13$\times$ fewer ViT calls, \mbox{$\sim$50$\times$} dominant-pipeline reduction, 4.2--4.5$\times$ real-video E2E, and 5--300$\times$ live-camera ViT savings \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -67,8 +68,8 @@ multipliers and the pooled n=60 composition null, where the observed
 1.042$\times$ stacked result lands almost exactly where the ceiling predicts.
 \item We characterize \textbf{C-PERSIST}: after-ingest persistent-KV reuse on
 Qwen collapses follow-up latency to roughly conversational timescales, with a
-clean 7B envelope through 16 frames / 6.5k prefill tokens and a wider but
-bounded 3B plateau through 36 frames / 14.5k prefill tokens.
+7B safe envelope through 16 frames / 6.5k prefill tokens, a clean 16f point,
+and a wider but bounded 3B plateau through 36 frames / 14.5k prefill tokens.
 \item We establish \textbf{C-VISION}: training-free mid-layer vision-tower
 pruning yields measured first-pass end-to-end gains on frozen Gemma video-VLM
 runs, from 1.113$\times$ to 1.407$\times$ across clean and advisory holdout

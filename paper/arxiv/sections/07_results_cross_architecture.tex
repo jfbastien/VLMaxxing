@@ -59,8 +59,10 @@ Qwen2.5-VL-7B-4bit, the answer is already large enough to matter. At 8 frames,
 follow-up latency drops to 815\,ms median with 47.2$\times$ speedup and
 $-0.048$ aggregate accuracy delta. At 16 frames the speedup rises to
 91.1$\times$ while the accuracy delta returns to 0. Within the current
-$\leq$16f envelope, the result is both fast and empirically clean. Past that
-point the curve keeps rising, but the fidelity boundary appears.
+$\leq$16f safe envelope, the regime is fast and empirically bounded: the 16f
+point is clean, and the 8f point still stays inside the current
+safe-deployment criterion. Past that point the curve keeps rising, but the
+fidelity boundary appears.
 
 \begin{figure}[H]
   \centering
@@ -70,18 +72,20 @@ point the curve keeps rising, but the fidelity boundary appears.
     \fbox{\parbox{0.9\linewidth}{Run \texttt{make paper-sync} to sync the C-PERSIST safe-budget figure.}}
   }
   \caption{C-PERSIST safe-deployment envelope. The local result is not one
-  persistent-KV curve but two different architectural stories: 7B is clean
-  through 16 frames / 6.5k prefill tokens, while 3B trades exactness for a
+  persistent-KV curve but two different architectural stories: 7B stays inside
+  the current safe envelope through 16 frames / 6.5k prefill tokens, while 3B
+  trades exactness for a
   much wider tolerated plateau through 36 frames / 14.5k prefill tokens before
   the basin opens.}
   \label{fig:c-persist-safe-budget}
 \end{figure}
 
 The 7B and 3B stories are therefore not interchangeable. 7B gives the clean
-sub-second envelope. 3B does not. What 3B gives instead is a wider tolerated
-plateau: $\Delta$acc holds at $-0.19$ through 24f, 32f, and 36f before basin
-onset appears beyond 14.5k prefill tokens. That is a useful deployment
-boundary, not an embarrassment to be hidden under the 7B line.
+sub-second 16f point and a safe envelope through 16f. 3B does not. What 3B
+gives instead is a wider tolerated plateau: $\Delta$acc holds at $-0.19$
+through 24f, 32f, and 36f before basin onset appears beyond 14.5k prefill
+tokens. That is a useful deployment boundary, not an embarrassment to be
+hidden under the 7B line.
 
 \subsection{What Stacks and What Does Not}
 
