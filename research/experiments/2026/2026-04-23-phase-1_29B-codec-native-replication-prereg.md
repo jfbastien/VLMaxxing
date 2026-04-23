@@ -401,3 +401,46 @@ Comparison to the direct per-item cached run on the same manifest:
    with live-pixel target shares. The remaining scientifically relevant
    dependence is the **target-share source** itself: live-pixel versus
    externally supplied artifact counts.
+
+## Calibration-source ablation — external artifact counts
+
+The next ablation swaps the target-share source while keeping the manifest,
+frame count, planner, and answer extraction fixed:
+
+```bash
+uv run python scripts/run_phase1_29_planner_accuracy_probe.py \
+  --manifest research/benchmark_manifests/videomme_short_dev_holdout_v1_n20.toml \
+  --calibration-source artifact \
+  --reference-summary research/experiments/2026/artifacts/phase1_60_curation_audit/qwen_8f_combined.json \
+  --precompute-cache-path research/experiments/2026/artifacts/phase1_29B_short_n20_calibration_20260423/precompute_artifact_phase160.json \
+  --output-path research/experiments/2026/artifacts/phase1_29B_short_n20_calibration_20260423/artifact_results.jsonl \
+  --summary-path research/experiments/2026/artifacts/phase1_29B_short_n20_calibration_20260423/artifact_summary.json
+```
+
+Artifacts:
+
+- `research/experiments/2026/artifacts/phase1_29B_short_n20_calibration_20260423/precompute_artifact_phase160.json`
+- `research/experiments/2026/artifacts/phase1_29B_short_n20_calibration_20260423/artifact_results.jsonl`
+- `research/experiments/2026/artifacts/phase1_29B_short_n20_calibration_20260423/artifact_summary.json`
+
+Results:
+
+- dense accuracy: 0.75
+- pixel accuracy: 0.70
+- codec accuracy: 0.75
+- codec-dense agreement: 1.00
+- codec-pixel agreement: 0.95
+- parse failures: 0
+
+Comparison to the live-pixel per-item cached run on the same manifest:
+
+1. **Answer-level outcomes are again identical.** Dense, pixel, and codec
+   choices match item-for-item across the live-pixel and artifact-source runs.
+2. The external class-count source from
+   `phase1_60_curation_audit/qwen_8f_combined.json` therefore reproduces the
+   same short-bundle answer row as live-pixel calibration.
+3. Interpretation: on short VideoMME n=20, the current Phase 1.29 result does
+   **not** depend on live-pixel calibration. Both calibration-mode and
+   calibration-source ablations are neutral on answer-level outcomes. The
+   remaining open question is breadth: whether this remains true on the
+   all-duration dev n=30 slice where offline extraction is expensive.
