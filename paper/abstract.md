@@ -90,7 +90,10 @@ Measured end-to-end gain in a sparse-execution path (claim 5) remains
 unmeasured at local scale; the sparse-path evidence lives in
 codec-through-sam. A local Qwen session/streaming bridge reproduces the
 speedup side of stacked deployment but falsifies the fidelity gate, so
-root-cause decomposition is pending. Our frame-count operating point (≤ 32 f
+the bridge now depends on a safer/adaptive V-leg policy: the completed
+root-cause scout localizes the loss primarily to Q0 vision pruning at
+`L=2`, `kr_V=0.50`, not to a non-additive V+K collapse. Our frame-count
+operating point (≤ 32 f
 locally) is lower than some adjacent work (64–256 f), and VideoMME
 frame-scaling is non-monotonic on Qwen 2.5-VL at 4-bit: on dev, 16 f
 medium buckets gain ≈ +30 pp and 32 f does not recover the aggregate.

@@ -1,0 +1,37 @@
+
+== Raw summary ==
+arm                         all     q0    q23   wall_s  parse  degen
+--------------------------------------------------------------------
+cold_dense                0.733  0.900  0.650   1288.9      0      0
+cold_pruned               0.400  0.500  0.350   1203.1      0      0
+streaming_dense_off       0.667  0.900  0.550    408.1      0      0
+streaming_pruned_off      0.300  0.500  0.200    409.6      1      1
+streaming_dense_reset     0.733  0.900  0.650   1522.0      0      0
+streaming_pruned_reset    0.400  0.500  0.350   1046.8      0      0
+
+== Accuracy deltas vs cold_dense (paired 95% CI) ==
+cold_pruned              all -0.333 [-0.533,-0.100] n=30  q0 -0.400 [-0.800,+0.000] n=10  q23 -0.300 [-0.550,-0.050] n=20
+streaming_dense_off      all -0.067 [-0.233,+0.100] n=30  q0 +0.000 [+0.000,+0.000] n=10  q23 -0.100 [-0.350,+0.150] n=20
+streaming_pruned_off     all -0.433 [-0.633,-0.200] n=30  q0 -0.400 [-0.800,+0.000] n=10  q23 -0.450 [-0.700,-0.200] n=20
+streaming_dense_reset    all +0.000 [+0.000,+0.000] n=30  q0 +0.000 [+0.000,+0.000] n=10  q23 +0.000 [+0.000,+0.000] n=20
+streaming_pruned_reset   all -0.333 [-0.533,-0.133] n=30  q0 -0.400 [-0.800,+0.000] n=10  q23 -0.300 [-0.550,-0.050] n=20
+
+== Composition decomposition (all_queries) ==
+V-only    (cold_pruned            − cold_dense): -0.333 [-0.533, -0.100] n=30
+K-only    (streaming_dense_off    − cold_dense): -0.067 [-0.233, +0.100] n=30
+Combined  (streaming_pruned_off   − cold_dense): -0.433 [-0.633, -0.200] n=30
+Interaction (combined − V − K):     -0.033 [-0.267, +0.200] n=30
+  → interaction CI includes 0; point term is NOT larger than max(|V|,|K|)
+
+== Preregistered gate summary ==
+H_V (V-only dominates, all_queries): |V|=0.333 vs 0.5×|combined|=0.217  → PASS
+H_K (K-only dominates, follow_ups):  |K_q23|=0.100 vs 0.5×|combined_q23|=0.225  → FAIL
+H_interaction (non-additive, point, all_queries): |interact|=0.033 vs max(|V|,|K|)=0.333  → FAIL
+
+== Hard-reset recovery: dense streaming ==
+q23 acc off=0.550  reset=0.650  delta=+0.100  recovered_frac=1.000 (H_reset PASS if ≥ 0.50)
+q0  acc off=0.900  reset=0.900  delta=+0.000
+
+== Hard-reset recovery: pruned streaming ==
+q23 acc off=0.200  reset=0.350  delta=+0.150
+q0  acc off=0.500  reset=0.500  delta=+0.000

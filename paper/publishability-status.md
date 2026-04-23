@@ -264,7 +264,7 @@ runnable tonight vs. impl-gated.
 | Prio | Phase | Runtime | Model | Blocker status |
 |------|-------|---------|-------|----------------|
 | should-do #3 | **1.51V Qwen cross-arch probe** (L=2, kr=0.50, VideoMME 8f n=30 thermally paired, 2 arms) | **CLOSED 2026-04-23** | Qwen 2.5-VL-7B-4bit | **landed** — `V_red = 0.398`, `E2E = 1.044× observed vs 1.043× predicted`, aggregate `Δacc = −0.033`; C-VISION upgrades to two-architecture mechanism evidence |
-| should-do #4 | Local paired streaming-protocol reproduction (1.30) + root-cause decomposition | paired-run CLOSED 2026-04-23 (≈5h3m dev+holdout union n=57/171); Phase A short scout ~75 min queued; Phase B ~10 min; Phase C conditional ~6h | Qwen 2.5-VL-7B-Instruct-4bit (driver hard-fails on non-Qwen at `run_phase1_30_sam_streaming.py:303-308`) | **paired-run landed, decomposition prereg'd** — paired cold 0.561 / streaming 0.368 (Δacc = −0.193 FALSIFIES ±0.05) / 3.326× speedup PASS; the composition negative is real but the mechanism attribution is pending `research/experiments/2026/2026-04-23-phase-1_30-rootcause-prereg.md` (5 preregistered hypotheses H_V / H_K / H_interaction / H_reset / H_path across 6 arms + Q0 parity). Gemma port (#191) and adjacent-cos refresh policy (#192) deferred behind Phase A |
+| should-do #4 | Local paired streaming-protocol reproduction (1.30) + root-cause decomposition | CLOSED-SCOUT 2026-04-23 | Qwen 2.5-VL-7B-Instruct-4bit (driver hard-fails on non-Qwen at `run_phase1_30_sam_streaming.py:303-308`) | **paired-run speedup landed, accuracy falsified, root-cause localized** — paired cold 0.561 / streaming 0.368 (Δacc = −0.193 FALSIFIES ±0.05) / 3.326× speedup PASS; Phase A+B short scout gives H_V PASS, H_K FAIL, H_interaction FAIL, H_reset PASS, H_path PASS. Loss is primarily the V-only Q0 pruning leg at L=2, kr_V=0.50 on this slice, not a non-additive V+K collapse. Phase C is not triggered; next useful work is a safer/adaptive V-leg policy. |
 | should-do #5 | **1.55D v2 selective re-prefill** (mlx-vlm fork; recover Δacc at 20f) | N/A benchmark-only | Qwen 2.5-VL-7B-4bit | **impl-partial** — Qwen-only v2 driver exists, but mlx-vlm still needs `pixel_values`/`image_grid_thw`/`attention_mask` co-slicing; note that **1.55B** remains the separate persistent-KV × 1.54 composition phase |
 | should-do #6 | **1.58 bf16 KV control at 20f** (discriminate quantization vs attention-OOD) | ~3.5-4 h (bf16 8f n=30 + bf16 16f n=30) | Qwen 2.5-VL-7B bf16 | **wrapper-landed; run still gated** — `scripts/run_phase1_58_bf16_control.sh` + analyzer landed, but checkpoint download and RSS feasibility remain user/environment constraints |
 | should-do #8 | **1.29 codec-native bridge (reframed)** | runtime now depends on reframing path | Qwen 2.5-VL-7B-4bit | **first-point landed** — MAX-over-span sparse sampling is HARD-FALSIFIED; continuous-score + per-item live-pixel calibration reaches 10/10 dense agreement on short-bucket n=10, but this is planner-signal geometry, not latency, and remains off the paper's critical path pending n=30, medium/long, and calibration ablation |
@@ -518,9 +518,11 @@ items that priority.md does not carry. For the current ordering see
    — **SPEEDUP PASS / FIDELITY FALSIFIED 2026-04-23.** The Qwen
    7B 8f dev+holdout-union bridge lands 3.326× paired amortized
    speedup but loses 19.3 pp accuracy, so the paper-promotion gate does
-   not trigger. The next paper-relevant work is the preregistered
-   H_V / H_K / H_interaction / H_reset / H_path root-cause
-   decomposition, not another unqualified promotion of the stack.
+   not trigger. The root-cause scout now localizes the loss primarily
+   to the V-only Q0 pruning leg (H_V PASS; H_K and H_interaction FAIL;
+   H_path PASS), so the next paper-relevant work is a safer/adaptive
+   V-leg admission policy, not another unqualified promotion of the
+   stack.
 5. **1.55B selective re-prefill v2** — mlx-vlm fork for
    pixel_values / image_grid_thw / attention_mask co-slicing; ~3-5h
    implementation; would reopen C-PERSIST as a fidelity contribution.

@@ -1,0 +1,162 @@
+[
+  {
+    "seed_item_id": "videomme:short:037-2",
+    "video_id": "037",
+    "item_id": "videomme:short:037-2",
+    "q_index": 1,
+    "reason": "hard-reset",
+    "threshold": 0.0
+  },
+  {
+    "seed_item_id": "videomme:short:037-2",
+    "video_id": "037",
+    "item_id": "videomme:short:037-3",
+    "q_index": 2,
+    "reason": "hard-reset",
+    "threshold": 0.0
+  },
+  {
+    "seed_item_id": "videomme:short:100-2",
+    "video_id": "100",
+    "item_id": "videomme:short:100-2",
+    "q_index": 1,
+    "reason": "hard-reset",
+    "threshold": 0.0
+  },
+  {
+    "seed_item_id": "videomme:short:100-2",
+    "video_id": "100",
+    "item_id": "videomme:short:100-3",
+    "q_index": 2,
+    "reason": "hard-reset",
+    "threshold": 0.0
+  },
+  {
+    "seed_item_id": "videomme:short:116-3",
+    "video_id": "116",
+    "item_id": "videomme:short:116-2",
+    "q_index": 1,
+    "reason": "hard-reset",
+    "threshold": 0.0
+  },
+  {
+    "seed_item_id": "videomme:short:116-3",
+    "video_id": "116",
+    "item_id": "videomme:short:116-3",
+    "q_index": 2,
+    "reason": "hard-reset",
+    "threshold": 0.0
+  },
+  {
+    "seed_item_id": "videomme:short:120-2",
+    "video_id": "120",
+    "item_id": "videomme:short:120-2",
+    "q_index": 1,
+    "reason": "hard-reset",
+    "threshold": 0.0
+  },
+  {
+    "seed_item_id": "videomme:short:120-2",
+    "video_id": "120",
+    "item_id": "videomme:short:120-3",
+    "q_index": 2,
+    "reason": "hard-reset",
+    "threshold": 0.0
+  },
+  {
+    "seed_item_id": "videomme:short:158-3",
+    "video_id": "158",
+    "item_id": "videomme:short:158-2",
+    "q_index": 1,
+    "reason": "hard-reset",
+    "threshold": 0.0
+  },
+  {
+    "seed_item_id": "videomme:short:158-3",
+    "video_id": "158",
+    "item_id": "videomme:short:158-3",
+    "q_index": 2,
+    "reason": "hard-reset",
+    "threshold": 0.0
+  },
+  {
+    "seed_item_id": "videomme:short:160-1",
+    "video_id": "160",
+    "item_id": "videomme:short:160-2",
+    "q_index": 1,
+    "reason": "hard-reset",
+    "threshold": 0.0
+  },
+  {
+    "seed_item_id": "videomme:short:160-1",
+    "video_id": "160",
+    "item_id": "videomme:short:160-3",
+    "q_index": 2,
+    "reason": "hard-reset",
+    "threshold": 0.0
+  },
+  {
+    "seed_item_id": "videomme:short:210-2",
+    "video_id": "210",
+    "item_id": "videomme:short:210-2",
+    "q_index": 1,
+    "reason": "hard-reset",
+    "threshold": 0.0
+  },
+  {
+    "seed_item_id": "videomme:short:210-2",
+    "video_id": "210",
+    "item_id": "videomme:short:210-3",
+    "q_index": 2,
+    "reason": "hard-reset",
+    "threshold": 0.0
+  },
+  {
+    "seed_item_id": "videomme:short:264-1",
+    "video_id": "264",
+    "item_id": "videomme:short:264-2",
+    "q_index": 1,
+    "reason": "hard-reset",
+    "threshold": 0.0
+  },
+  {
+    "seed_item_id": "videomme:short:264-1",
+    "video_id": "264",
+    "item_id": "videomme:short:264-3",
+    "q_index": 2,
+    "reason": "hard-reset",
+    "threshold": 0.0
+  },
+  {
+    "seed_item_id": "videomme:short:278-3",
+    "video_id": "278",
+    "item_id": "videomme:short:278-2",
+    "q_index": 1,
+    "reason": "hard-reset",
+    "threshold": 0.0
+  },
+  {
+    "seed_item_id": "videomme:short:278-3",
+    "video_id": "278",
+    "item_id": "videomme:short:278-3",
+    "q_index": 2,
+    "reason": "hard-reset",
+    "threshold": 0.0
+  },
+  {
+    "seed_item_id": "videomme:short:282-2",
+    "video_id": "282",
+    "item_id": "videomme:short:282-2",
+    "q_index": 1,
+    "reason": "hard-reset",
+    "threshold": 0.0
+  },
+  {
+    "seed_item_id": "videomme:short:282-2",
+    "video_id": "282",
+    "item_id": "videomme:short:282-3",
+    "q_index": 2,
+    "reason": "hard-reset",
+    "threshold": 0.0
+  }
+]

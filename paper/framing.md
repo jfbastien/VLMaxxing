@@ -333,8 +333,10 @@ codec-through locally:
 
 - streaming-protocol fidelity reproduction of Sam's N = 60 line: phase
   1.30 speedup landed locally on Qwen, but fidelity falsified the
-  preregistered gate; the bridge now depends on root-cause decomposition,
-  not initial reproduction
+  preregistered gate; root-cause decomposition now localizes the
+  short-scout loss primarily to the V-only Q0 pruning leg, so the bridge
+  depends on a safer/adaptive V admission policy rather than another
+  blind stack run
 - codec-native benchmark evidence from 1.29 as a paper-grade local
   bridge; the pilots now exist, but MAX-over-span sparse sampling is
   hard-falsified and the positive continuous-score result is only an

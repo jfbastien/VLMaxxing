@@ -40,8 +40,10 @@ because it already closes the full systems-reviewer checklist. The paper still
 needs a screenshot-polling baseline and broader UI coverage if that lane is
 going to carry more of the headline later. The local Qwen session/streaming
 bridge now exists and is useful precisely because it is negative: it reproduces
-speedup but loses accuracy, so the mechanism is pending the preregistered
-root-cause decomposition. A related local codec-native bridge remains
+speedup but loses accuracy. The completed root-cause scout localizes the
+short-scout loss primarily to the Q0 vision-pruning leg, not to a
+non-additive V+K collapse, so the remaining bridge is an adaptive V-leg
+admission policy. A related local codec-native bridge remains
 scientifically interesting, but the latest 1.29 pilots show that it is still
 not main-text support: MAX-over-span sparse sampling is hard-falsified, while
 continuous-score codec signals with per-item live-pixel calibration have only a

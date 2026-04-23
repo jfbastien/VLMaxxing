@@ -143,11 +143,12 @@ at 40f with dense V. Our 1.30 session-streaming stack attempted the
 across-queries composition (C-VISION on Q0 prefill, C-PERSIST on Q1–Q3
 follow-ups) at 8f on Qwen 2.5-VL-7B-4bit and measured Δacc = −0.193
 — paired amortized 3.326× speedup, but a preregistered accuracy-band
-FALSIFY. The paper therefore treats the three contributions as
+FALSIFY. The follow-up decomposition localizes the short-scout loss to
+the V-only Q0 pruning leg (H_V PASS; H_K and H_interaction FAIL; H_path
+PASS against 1.51V), with hard-reset recovering the small dense-K
+follow-up term. The paper therefore treats the three contributions as
 **separately-auditable safety envelopes**, not a stack whose union is
-claimed without evidence; a root-cause decomposition (H_V / H_K /
-H_interaction / H_reset) is preregistered to adjudicate which
-mechanism or interaction owns the composition loss. Our 1.042 × pooled
+claimed without evidence. Our 1.042 × pooled
 H_stack cell (n = 60) is ceiling-matched, a preregistered NULL on
 "stacking beats the ceiling" and a positive on the ceiling law itself.
 The paper reports composed numbers against their ceiling bound, never
@@ -237,11 +238,10 @@ queries, temporal + spatial composition. Bridging between the two
 repos is ongoing work: phase 1.30 reproduced Sam's session-streaming
 protocol at 4 B-class scale (dev+holdout union n = 57 sessions / 171
 queries, paired amortized 3.326× speedup, Δacc = −0.193 FALSIFIES
-the preregistered ±0.05 accuracy band). The remaining bridge
-experiment is therefore no longer the initial reproduction but the
-root-cause decomposition (preregistered 2026-04-23, 6-arm Phase A
-scout plus Q0 parity against 1.51V) that attributes the composition
-loss to V-only, K-only, interaction, or a harness regression.
+the preregistered ±0.05 accuracy band). The follow-up root-cause
+decomposition has now landed: short-scout Phase A plus Q0 parity against
+1.51V attributes the loss primarily to the V-only Q0 pruning leg, not to
+K-only reuse, not to a V+K interaction, and not to a harness regression.
 
 ## 4.5. What the evidence has ruled out
 

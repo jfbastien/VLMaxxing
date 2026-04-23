@@ -118,8 +118,11 @@ side: 3.326$\times$ amortized end-to-end speedup, with follow-ups reaching
 to 0.368, a \(-0.193\) delta against a preregistered \(\pm 0.05\) budget.
 The outputs are mostly well-formed, and first queries already lose 10.5 pp, so
 the result is not just a follow-up KV-collapse story. We therefore report it as
-boundary evidence and leave the H\_V / H\_K / H\_interaction / H\_reset /
-H\_path decomposition to the preregistered root-cause run.
+boundary evidence. The completed root-cause scout localizes the short-scout
+loss primarily to V-only Q0 pruning: H\_V passes, H\_K and H\_interaction fail,
+hard-reset recovers the smaller dense-K term, and H\_path passes against the
+matched 1.51V Q0 path. The practical composition bridge therefore needs a
+safer/adaptive V leg rather than another blind stack run.
 
 The key compositional result is negative and useful: the pooled n=60 H\_stack
 experiment is a ceiling-matched null, not a

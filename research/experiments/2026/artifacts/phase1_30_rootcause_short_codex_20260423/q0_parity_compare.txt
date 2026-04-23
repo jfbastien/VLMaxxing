@@ -1,0 +1,14 @@
+videomme:short:037-1  phase130 choice=B(B) correct=False  phase151v choice_index=1(B) correct=False  AGREE
+videomme:short:100-1  phase130 choice=D(D) correct=True  phase151v choice_index=3(D) correct=True  AGREE
+videomme:short:116-1  phase130 choice=B(B) correct=True  phase151v choice_index=1(B) correct=True  AGREE
+videomme:short:120-1  phase130 choice=D(D) correct=False  phase151v choice_index=3(D) correct=False  AGREE
+videomme:short:158-1  phase130 choice=B(B) correct=False  phase151v choice_index=1(B) correct=False  AGREE
+videomme:short:160-1  phase130 choice=C(C) correct=True  phase151v choice_index=2(C) correct=True  AGREE
+videomme:short:210-1  phase130 choice=C(C) correct=False  phase151v choice_index=2(C) correct=False  AGREE
+videomme:short:264-1  phase130 choice=D(D) correct=True  phase151v choice_index=3(D) correct=True  AGREE
+videomme:short:278-1  phase130 choice=A(A) correct=False  phase151v choice_index=0(A) correct=False  AGREE
+videomme:short:282-1  phase130 choice=D(D) correct=True  phase151v choice_index=3(D) correct=True  AGREE
+
+n=10
+choice agreement:  10/10 = 1.000
+correct agreement: 10/10 = 1.000

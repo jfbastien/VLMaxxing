@@ -265,7 +265,7 @@ Capture ideas as we find them; park until paper draft is submitted OR
 a must-do slot opens.
 
 - **1.30 Sam session/streaming bridge — NEGATIVE RESULT + root-cause
-  decomposition in flight 2026-04-23.** The reproduction landed (1ecfeb9
+  decomposition landed 2026-04-23.** The reproduction landed (1ecfeb9
   / e9d1223) as a paired cold-vs-streaming Qwen 2.5-VL-7B-4bit VideoMME
   8f **dev+holdout union n=57 sessions / 171 queries**: cold 0.561 /
   streaming 0.368 → **3.326× paired amortized speedup PASS, Δacc =
@@ -278,17 +278,17 @@ a must-do slot opens.
   A 2×2 decomposition prereg (commit 92350ad) factorizes the stack into
   V-only (kr_V=0.50 vision pruning) × K-only (persistent-KV reuse) plus
   two hard-reset controls and a Q0 parity check against the mechanism-
-  grade 1.51V pipeline. Five hypotheses (H_V / H_K / H_interaction /
-  H_reset / H_path) with quantitative gates and interpretation rules.
-  Runtime: Phase A short scout ~75 min (6 arms × short-only dev),
-  Phase B Q0 parity ~10 min, Phase C conditional full ~6h (dev+holdout
-  union). Gemma port (driver hard-fails on non-Qwen, lines 303-308) and
-  adjacent-cos refresh policy (threshold branch hard-fails as not-
-  implemented, lines 286-290) explicitly deferred behind Phase A
-  adjudication. Prereg:
-  `research/experiments/2026/2026-04-23-phase-1_30-rootcause-prereg.md`.
-  Findings (pre-decomposition):
-  `research/experiments/2026/2026-04-23-phase-1_30-sam-streaming-findings.md`.
+  grade 1.51V pipeline. Phase A+B completed in the Codex takeover run:
+  **H_V PASS**, **H_K FAIL**, **H_interaction FAIL**, **H_reset PASS**,
+  and **H_path PASS** (1.30 cold-pruned Q0 agrees 10/10 with 1.51V
+  pruned Q0; dense Q0 also agrees 10/10 with 1.51V dense). The root
+  cause is primarily V-only Q0 pruning at L=2, kr_V=0.50 on this
+  short-scout slice, with a smaller K-only follow-up term and no
+  evidence of non-additive V+K collapse. Phase C is not triggered by the
+  preregistered rule. Findings:
+  `research/experiments/2026/2026-04-23-phase-1_30-rootcause-findings.md`.
+  Next paper-relevant move is a safer/adaptive V-leg policy, not another
+  blind composition run.
 
 - **1.42 Gemma temporal-reuse (`_mix_gemma_features`).** Second-arch
   fidelity test for claim #7 (architecture-conditioned reuse). Blocked
