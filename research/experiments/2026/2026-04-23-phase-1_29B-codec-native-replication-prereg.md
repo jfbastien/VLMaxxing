@@ -289,3 +289,33 @@ planner-substitution evidence", with two strict caveats:
 2. Offline native-rate extraction is too slow for a systems headline. The
    systems path must be streaming/decoder-integrated or cached, not this
    after-the-fact sparse-sampling retrofit.
+
+## Operational follow-up — cache/checkpoint support
+
+The all-duration run exposed a harness problem before the next calibration
+ablation: the H.264 metadata precompute took 7290 s and originally produced no
+checkpoint until model execution began. The runner now has
+`--precompute-cache-path` and `--refresh-precompute-cache` options in
+`scripts/run_phase1_29_planner_accuracy_probe.py`.
+
+The cache records decoded active boxes, pixel planner classifications, codec
+score grids, target shares, frame counts, and extraction timings after each
+item. Cache reuse is hard-gated on exact metadata equality: manifest path, item
+order, frame count, calibration source, reference summary, planner thresholds,
+and Qwen geometry. Metadata mismatch fails closed instead of silently reusing
+incompatible codec scores.
+
+Recommended calibration-ablation pattern:
+
+```bash
+uv run python scripts/run_phase1_29_planner_accuracy_probe.py \
+  --manifest research/benchmark_manifests/videomme_dev_v1.toml \
+  --precompute-cache-path research/experiments/2026/artifacts/phase1_29B_dev30_duration_20260423/precompute_live_pixel.json \
+  --output-path research/experiments/2026/artifacts/phase1_29B_dev30_duration_20260423/per_item_cached_results.jsonl \
+  --summary-path research/experiments/2026/artifacts/phase1_29B_dev30_duration_20260423/per_item_cached_summary.json
+```
+
+Then reuse the same precompute cache for threshold-only ablations that keep the
+same live-pixel target shares, such as `--calibration-mode pooled`. Artifact
+calibration uses a different target-share source and must use a separate cache
+because the metadata intentionally differs.

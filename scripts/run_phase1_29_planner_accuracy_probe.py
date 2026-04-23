@@ -10,7 +10,7 @@ import json
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import mlx.core as mx
 import numpy as np
@@ -31,6 +31,12 @@ from codec_through.codec.continuous_score import (  # noqa: E402
     sparse_sample_indices,
 )
 from codec_through.codec.h264_metadata import H264MetadataExtractor  # noqa: E402
+from codec_through.precompute_cache import (  # noqa: E402
+    decode_array,
+    encode_array,
+    read_json_cache,
+    write_json_cache_atomic,
+)
 from codec_through.temporal import PlannerConfig, classify_blocks_with_planner  # noqa: E402
 from codec_through.track_a import (
     active_region_block_mask,
@@ -46,6 +52,7 @@ DEFAULT_SUMMARY_PATH = Path(
     "research/experiments/2026/artifacts/phase1_29_planner_accuracy_probe/summary.json"
 )
 DEFAULT_MANIFEST_PATH = Path("research/benchmark_manifests/videomme_dev_v1_short_only.toml")
+PRECOMPUTE_CACHE_VERSION = 1
 
 
 @dataclass(frozen=True, slots=True)
@@ -153,16 +160,194 @@ def _compute_pixel_classifications(
     return classifications
 
 
-def _precompute_items(
+def _planner_cache_payload(planner_config: PlannerConfig) -> dict[str, Any]:
+    return {
+        "statistic": planner_config.statistic.value,
+        "static_threshold": planner_config.static_threshold,
+        "shifted_threshold": planner_config.shifted_threshold,
+        "pixel_change_threshold": planner_config.pixel_change_threshold,
+        "top_k": planner_config.top_k,
+    }
+
+
+def _precompute_cache_metadata(
     *,
-    items: list[runner.BenchmarkItem],
+    manifest_path: Path,
+    item_ids: list[str],
     frame_count: int,
     planner_config: PlannerConfig,
     calibration_source: str,
+    reference_summary: Path | None,
+) -> dict[str, Any]:
+    return {
+        "schema": "phase1_29_planner_precompute",
+        "version": PRECOMPUTE_CACHE_VERSION,
+        "manifest_path": str(manifest_path),
+        "item_ids": item_ids,
+        "frame_count": frame_count,
+        "calibration_source": calibration_source,
+        "reference_summary": str(reference_summary) if reference_summary is not None else None,
+        "planner_config": _planner_cache_payload(planner_config),
+        "benchmark_frame_size": runner.BENCHMARK_FRAME_SIZE,
+        "qwen_block_size": runner.QWEN_BLOCK_SIZE,
+    }
+
+
+def _precomputed_item_to_cache_payload(item: PrecomputedProbeItem) -> dict[str, Any]:
+    return {
+        "item_id": item.item.item_id,
+        "active_boxes": [list(box) for box in item.active_boxes],
+        "pixel_classifications": [
+            encode_array(np.asarray(classification, dtype=np.int32))
+            for classification in item.pixel_classifications
+        ],
+        "codec_score_pairs": [
+            encode_array(np.asarray(score_pair, dtype=np.float32))
+            for score_pair in item.codec_score_pairs
+        ],
+        "target_shares": encode_array(np.asarray(item.target_shares, dtype=np.float64)),
+        "codec_extract_s": float(item.codec_extract_s),
+        "total_frames": int(item.total_frames),
+    }
+
+
+def _precomputed_item_from_cache_payload(
+    payload: dict[str, Any],
+    *,
+    item_by_id: dict[str, runner.BenchmarkItem],
+) -> PrecomputedProbeItem:
+    item_id = str(payload["item_id"])
+    if item_id not in item_by_id:
+        raise KeyError(f"precompute cache contains unexpected item_id {item_id!r}")
+    active_boxes: list[tuple[int, int, int, int]] = []
+    for box in payload["active_boxes"]:
+        if len(box) != 4:
+            raise ValueError(f"active box for {item_id!r} must have four coordinates")
+        active_boxes.append(cast(tuple[int, int, int, int], tuple(int(value) for value in box)))
+    return PrecomputedProbeItem(
+        item=item_by_id[item_id],
+        active_boxes=active_boxes,
+        pixel_classifications=[
+            np.asarray(decode_array(classification), dtype=np.int32)
+            for classification in payload["pixel_classifications"]
+        ],
+        codec_score_pairs=[
+            np.asarray(decode_array(score_pair), dtype=np.float32)
+            for score_pair in payload["codec_score_pairs"]
+        ],
+        target_shares=np.asarray(decode_array(payload["target_shares"]), dtype=np.float64),
+        codec_extract_s=float(payload["codec_extract_s"]),
+        total_frames=int(payload["total_frames"]),
+    )
+
+
+def _load_precompute_cache(
+    path: Path,
+    *,
+    expected_metadata: dict[str, Any],
+    item_by_id: dict[str, runner.BenchmarkItem],
+) -> dict[str, PrecomputedProbeItem]:
+    payload = read_json_cache(path)
+    if int(payload.get("version", -1)) != PRECOMPUTE_CACHE_VERSION:
+        raise ValueError(
+            f"precompute cache {path} has version {payload.get('version')!r}, "
+            f"expected {PRECOMPUTE_CACHE_VERSION}"
+        )
+    if payload.get("metadata") != expected_metadata:
+        raise ValueError(
+            f"precompute cache {path} metadata does not match this run; "
+            "rerun with --refresh-precompute-cache to rebuild it"
+        )
+
+    cached: dict[str, PrecomputedProbeItem] = {}
+    for entry in payload.get("items", []):
+        item = _precomputed_item_from_cache_payload(entry, item_by_id=item_by_id)
+        if item.item.item_id in cached:
+            raise ValueError(f"duplicate item_id {item.item.item_id!r} in precompute cache")
+        cached[item.item.item_id] = item
+    return cached
+
+
+def _write_precompute_cache(
+    path: Path,
+    *,
+    metadata: dict[str, Any],
+    cached_items: dict[str, PrecomputedProbeItem],
+) -> None:
+    item_ids = list(metadata["item_ids"])
+    payload = {
+        "version": PRECOMPUTE_CACHE_VERSION,
+        "metadata": metadata,
+        "items": [
+            _precomputed_item_to_cache_payload(cached_items[item_id])
+            for item_id in item_ids
+            if item_id in cached_items
+        ],
+    }
+    write_json_cache_atomic(path, payload)
+
+
+def _precompute_items(
+    *,
+    items: list[runner.BenchmarkItem],
+    manifest_path: Path,
+    frame_count: int,
+    planner_config: PlannerConfig,
+    calibration_source: str,
+    reference_summary: Path | None,
     reference_map: dict[str, dict[str, Any]] | None,
+    precompute_cache_path: Path | None,
+    refresh_precompute_cache: bool,
 ) -> list[PrecomputedProbeItem]:
+    item_by_id = {item.item_id: item for item in items}
+    if len(item_by_id) != len(items):
+        raise ValueError("duplicate item_id in manifest items")
+
+    cache_metadata = _precompute_cache_metadata(
+        manifest_path=manifest_path,
+        item_ids=[item.item_id for item in items],
+        frame_count=frame_count,
+        planner_config=planner_config,
+        calibration_source=calibration_source,
+        reference_summary=None if calibration_source == "live-pixel" else reference_summary,
+    )
+    cached_items: dict[str, PrecomputedProbeItem] = {}
+    if precompute_cache_path is not None and precompute_cache_path.exists():
+        if refresh_precompute_cache:
+            print(
+                f"[precompute] rebuilding cache {precompute_cache_path}",
+                file=sys.stderr,
+                flush=True,
+            )
+        else:
+            cached_items = _load_precompute_cache(
+                precompute_cache_path,
+                expected_metadata=cache_metadata,
+                item_by_id=item_by_id,
+            )
+            print(
+                f"[precompute] loaded {len(cached_items)}/{len(items)} cached items "
+                f"from {precompute_cache_path}",
+                file=sys.stderr,
+                flush=True,
+            )
+
     payload: list[PrecomputedProbeItem] = []
-    for item in items:
+    for item_index, item in enumerate(items, start=1):
+        if item.item_id in cached_items:
+            print(
+                f"[precompute] {item_index}/{len(items)} {item.item_id} cache-hit",
+                file=sys.stderr,
+                flush=True,
+            )
+            payload.append(cached_items[item.item_id])
+            continue
+
+        print(
+            f"[precompute] {item_index}/{len(items)} {item.item_id} computing",
+            file=sys.stderr,
+            flush=True,
+        )
         frames, active_boxes = runner._decode_uniform_frames(
             item.video_path,
             frame_count=frame_count,
@@ -190,17 +375,29 @@ def _precompute_items(
             target_shares = _reference_share_vector_from_counts(
                 reference_map[item.item_id]["class_counts"]
             )
-        payload.append(
-            PrecomputedProbeItem(
-                item=item,
-                active_boxes=active_boxes,
-                pixel_classifications=pixel_classifications,
-                codec_score_pairs=codec_score_pairs,
-                target_shares=target_shares,
-                codec_extract_s=codec_extract_s,
-                total_frames=total_frames,
-            )
+        precomputed = PrecomputedProbeItem(
+            item=item,
+            active_boxes=active_boxes,
+            pixel_classifications=pixel_classifications,
+            codec_score_pairs=codec_score_pairs,
+            target_shares=target_shares,
+            codec_extract_s=codec_extract_s,
+            total_frames=total_frames,
         )
+        payload.append(precomputed)
+        cached_items[item.item_id] = precomputed
+        if precompute_cache_path is not None:
+            _write_precompute_cache(
+                precompute_cache_path,
+                metadata=cache_metadata,
+                cached_items=cached_items,
+            )
+            print(
+                f"[precompute] cached {len(cached_items)}/{len(items)} items "
+                f"to {precompute_cache_path}",
+                file=sys.stderr,
+                flush=True,
+            )
     return payload
 
 
@@ -339,6 +536,7 @@ def _write_summary(
     frame_count: int,
     calibration_mode: str,
     calibration_source: str,
+    precompute_cache_path: Path | None,
     planner_config: PlannerConfig,
     reuse_classes: tuple[Any, ...],
     max_age: int | None,
@@ -353,6 +551,7 @@ def _write_summary(
         "frame_count": frame_count,
         "calibration_mode": calibration_mode,
         "calibration_source": calibration_source,
+        "precompute_cache_path": str(precompute_cache_path) if precompute_cache_path else None,
         "planner": runner._planner_payload(
             planner_config,
             reuse_classes=reuse_classes,
@@ -458,6 +657,17 @@ def main() -> None:
     parser.add_argument("--output-path", type=Path, default=DEFAULT_OUTPUT_PATH)
     parser.add_argument("--summary-path", type=Path, default=DEFAULT_SUMMARY_PATH)
     parser.add_argument("--feature-cache-dir", type=Path, default=runner.DEFAULT_FEATURE_CACHE_DIR)
+    parser.add_argument(
+        "--precompute-cache-path",
+        type=Path,
+        default=None,
+        help="Optional JSON cache for decoded pixel classes and codec score grids.",
+    )
+    parser.add_argument(
+        "--refresh-precompute-cache",
+        action="store_true",
+        help="Rebuild --precompute-cache-path instead of loading existing cached items.",
+    )
     parser.add_argument("--no-feature-replay", action="store_true")
     parser.add_argument("--allow-dirty", action="store_true")
     args = parser.parse_args()
@@ -487,10 +697,14 @@ def main() -> None:
     items = runner._load_items_by_id("videomme", item_ids=manifest.item_ids)
     precomputed = _precompute_items(
         items=items,
+        manifest_path=args.manifest,
         frame_count=args.frame_count,
         planner_config=planner_config,
         calibration_source=args.calibration_source,
+        reference_summary=args.reference_summary,
         reference_map=reference_map,
+        precompute_cache_path=args.precompute_cache_path,
+        refresh_precompute_cache=bool(args.refresh_precompute_cache),
     )
     thresholds_by_item = _thresholds_by_item(precomputed, calibration_mode=args.calibration_mode)
 
@@ -654,6 +868,7 @@ def main() -> None:
         frame_count=args.frame_count,
         calibration_mode=args.calibration_mode,
         calibration_source=args.calibration_source,
+        precompute_cache_path=args.precompute_cache_path,
         planner_config=planner_config,
         reuse_classes=reuse_classes,
         max_age=max_age,
