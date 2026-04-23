@@ -146,8 +146,9 @@ measured sparse backend, a clean systems baseline such as screenshot
 polling, and a broader streaming evaluation. Main-track readiness now
 depends on broader asks: (a) one measured sparse-path end-to-end delta,
 (b) a cleaner local bridge into the streaming / deployment regime,
-(c) a 1.29 local codec-native benchmark slice, and (d) a 1.60 scroll/pan
-regime-boundary probe.
+(c) a 1.29 local codec-native benchmark slice, and (d) a scroll/pan or
+egomotion regime-boundary probe on a corpus that actually contains that
+motion regime.
 
 ## Protocol matters — three non-interchangeable evaluation regimes
 
@@ -226,9 +227,13 @@ boundary as much as the positives:
   per-item gate at 16–25 pp; codec and pixel-diff disagree on *where*
   motion lives within an item, not just on *how much*. Off the paper's
   critical path unless reframed.
-- **1.60 scroll/pan regime-boundary probe: curation-blocked.** The
-  scroll/pan subset requires hand-curation we have not completed; prereg
-  landed, run deferred.
+- **1.60 scroll/pan regime-boundary probe: closed as a VideoMME corpus
+  limitation.** We re-audited the natural corpus on a 60-item VideoMME
+  stratification across 8f/16f/32f and found 0/60 items above the relaxed
+  `shifted_fraction >= 0.30` gate (max 0.125). The result does not say
+  C-VISION is safe on scroll/pan; it says VideoMME does not contain that
+  regime at measurable scale. A scroll/pan characterization now requires
+  EgoSchema/EPIC-Kitchens/Ego4D or a labeled synthetic set.
 - **Sam axis #2b: mixed / null** on a subset of streaming cells. Not
   all of Sam's multipliers generalize to every content type; the
   mixed/null cells are reported alongside the positive ones, not

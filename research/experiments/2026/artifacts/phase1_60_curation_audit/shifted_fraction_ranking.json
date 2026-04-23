@@ -1,0 +1,706 @@
+{
+  "min_shifted_fraction": 0.3,
+  "n_ranked": 60,
+  "n_selected": 0,
+  "phase": "1.60",
+  "rows": [
+    {
+      "benchmark": "videomme",
+      "group": "long",
+      "item_id": "videomme:long:669-1",
+      "max_shifted_fraction": 0.125,
+      "mean_shifted_fraction": 0.09909754224270355,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.125,
+        "32": 0.11193548387096774,
+        "8": 0.06035714285714286
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "medium",
+      "item_id": "videomme:medium:407-1",
+      "max_shifted_fraction": 0.1185,
+      "mean_shifted_fraction": 0.10836712749615975,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.1185,
+        "32": 0.10838709677419354,
+        "8": 0.09821428571428571
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "short",
+      "item_id": "videomme:short:293-1",
+      "max_shifted_fraction": 0.11783333333333333,
+      "mean_shifted_fraction": 0.07784523809523809,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.11783333333333333,
+        "8": 0.03785714285714286
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "short",
+      "item_id": "videomme:short:282-2",
+      "max_shifted_fraction": 0.11678571428571428,
+      "mean_shifted_fraction": 0.09844828469022017,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.09533333333333334,
+        "32": 0.0832258064516129,
+        "8": 0.11678571428571428
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "short",
+      "item_id": "videomme:short:158-3",
+      "max_shifted_fraction": 0.09451612903225806,
+      "mean_shifted_fraction": 0.0530847414234511,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.04616666666666667,
+        "32": 0.09451612903225806,
+        "8": 0.018571428571428572
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "long",
+      "item_id": "videomme:long:751-2",
+      "max_shifted_fraction": 0.09321428571428571,
+      "mean_shifted_fraction": 0.07135714285714286,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.0495,
+        "8": 0.09321428571428571
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "long",
+      "item_id": "videomme:long:783-2",
+      "max_shifted_fraction": 0.09016666666666667,
+      "mean_shifted_fraction": 0.08847619047619049,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.09016666666666667,
+        "8": 0.08678571428571429
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "short",
+      "item_id": "videomme:short:074-3",
+      "max_shifted_fraction": 0.08892857142857143,
+      "mean_shifted_fraction": 0.07721428571428571,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.0655,
+        "8": 0.08892857142857143
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "short",
+      "item_id": "videomme:short:120-2",
+      "max_shifted_fraction": 0.08733870967741936,
+      "mean_shifted_fraction": 0.07554941116231438,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.07966666666666666,
+        "32": 0.08733870967741936,
+        "8": 0.05964285714285714
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "medium",
+      "item_id": "videomme:medium:484-2",
+      "max_shifted_fraction": 0.07338709677419354,
+      "mean_shifted_fraction": 0.07036712749615975,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.072,
+        "32": 0.07338709677419354,
+        "8": 0.06571428571428571
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "medium",
+      "item_id": "videomme:medium:486-2",
+      "max_shifted_fraction": 0.07129032258064516,
+      "mean_shifted_fraction": 0.05708090117767537,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.050666666666666665,
+        "32": 0.07129032258064516,
+        "8": 0.04928571428571429
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "medium",
+      "item_id": "videomme:medium:350-2",
+      "max_shifted_fraction": 0.06892857142857142,
+      "mean_shifted_fraction": 0.03971428571428571,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.0105,
+        "8": 0.06892857142857142
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "short",
+      "item_id": "videomme:short:160-1",
+      "max_shifted_fraction": 0.058225806451612905,
+      "mean_shifted_fraction": 0.041019713261648744,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.034833333333333334,
+        "32": 0.058225806451612905,
+        "8": 0.03
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "long",
+      "item_id": "videomme:long:650-3",
+      "max_shifted_fraction": 0.05678571428571429,
+      "mean_shifted_fraction": 0.053226190476190476,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.049666666666666665,
+        "8": 0.05678571428571429
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "medium",
+      "item_id": "videomme:medium:380-3",
+      "max_shifted_fraction": 0.05451612903225807,
+      "mean_shifted_fraction": 0.04769585253456221,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.0425,
+        "32": 0.05451612903225807,
+        "8": 0.04607142857142857
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "short",
+      "item_id": "videomme:short:100-2",
+      "max_shifted_fraction": 0.046785714285714285,
+      "mean_shifted_fraction": 0.027367639528929854,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.014833333333333334,
+        "32": 0.020483870967741936,
+        "8": 0.046785714285714285
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "short",
+      "item_id": "videomme:short:066-3",
+      "max_shifted_fraction": 0.03883333333333333,
+      "mean_shifted_fraction": 0.03138095238095238,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.03883333333333333,
+        "8": 0.023928571428571428
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "medium",
+      "item_id": "videomme:medium:426-3",
+      "max_shifted_fraction": 0.03596774193548387,
+      "mean_shifted_fraction": 0.019005120327700974,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.010333333333333333,
+        "32": 0.03596774193548387,
+        "8": 0.010714285714285714
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "short",
+      "item_id": "videomme:short:210-2",
+      "max_shifted_fraction": 0.034435483870967745,
+      "mean_shifted_fraction": 0.023661034306195598,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.03333333333333333,
+        "32": 0.034435483870967745,
+        "8": 0.0032142857142857142
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "long",
+      "item_id": "videomme:long:847-2",
+      "max_shifted_fraction": 0.0335,
+      "mean_shifted_fraction": 0.017285714285714286,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.0335,
+        "8": 0.0010714285714285715
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "long",
+      "item_id": "videomme:long:847-3",
+      "max_shifted_fraction": 0.0335,
+      "mean_shifted_fraction": 0.018970046082949308,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.0335,
+        "32": 0.022338709677419355,
+        "8": 0.0010714285714285715
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "long",
+      "item_id": "videomme:long:885-1",
+      "max_shifted_fraction": 0.0325,
+      "mean_shifted_fraction": 0.025535714285714287,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.0325,
+        "8": 0.018571428571428572
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "medium",
+      "item_id": "videomme:medium:513-1",
+      "max_shifted_fraction": 0.03166666666666667,
+      "mean_shifted_fraction": 0.016726190476190478,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.03166666666666667,
+        "8": 0.0017857142857142857
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "short",
+      "item_id": "videomme:short:116-3",
+      "max_shifted_fraction": 0.029758064516129033,
+      "mean_shifted_fraction": 0.014403481822836663,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.006666666666666667,
+        "32": 0.029758064516129033,
+        "8": 0.0067857142857142855
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "medium",
+      "item_id": "videomme:medium:531-1",
+      "max_shifted_fraction": 0.02959677419354839,
+      "mean_shifted_fraction": 0.025992575524833594,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.025166666666666667,
+        "32": 0.02959677419354839,
+        "8": 0.023214285714285715
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "long",
+      "item_id": "videomme:long:758-3",
+      "max_shifted_fraction": 0.02857142857142857,
+      "mean_shifted_fraction": 0.01816359447004608,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.0085,
+        "32": 0.017419354838709676,
+        "8": 0.02857142857142857
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "short",
+      "item_id": "videomme:short:126-1",
+      "max_shifted_fraction": 0.025666666666666667,
+      "mean_shifted_fraction": 0.014261904761904762,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.025666666666666667,
+        "8": 0.002857142857142857
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "short",
+      "item_id": "videomme:short:126-2",
+      "max_shifted_fraction": 0.025666666666666667,
+      "mean_shifted_fraction": 0.014261904761904762,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.025666666666666667,
+        "8": 0.002857142857142857
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "long",
+      "item_id": "videomme:long:794-1",
+      "max_shifted_fraction": 0.0255,
+      "mean_shifted_fraction": 0.016714285714285713,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.0255,
+        "32": 0.015,
+        "8": 0.009642857142857142
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "medium",
+      "item_id": "videomme:medium:408-1",
+      "max_shifted_fraction": 0.0255,
+      "mean_shifted_fraction": 0.023722734254992318,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.0255,
+        "32": 0.024596774193548387,
+        "8": 0.02107142857142857
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "long",
+      "item_id": "videomme:long:756-2",
+      "max_shifted_fraction": 0.0245,
+      "mean_shifted_fraction": 0.015148233486943163,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.0245,
+        "32": 0.009516129032258064,
+        "8": 0.011428571428571429
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "medium",
+      "item_id": "videomme:medium:449-2",
+      "max_shifted_fraction": 0.019642857142857142,
+      "mean_shifted_fraction": 0.018654761904761903,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.017666666666666667,
+        "8": 0.019642857142857142
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "medium",
+      "item_id": "videomme:medium:364-2",
+      "max_shifted_fraction": 0.019193548387096773,
+      "mean_shifted_fraction": 0.012516897081413209,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.008,
+        "32": 0.019193548387096773,
+        "8": 0.010357142857142856
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "short",
+      "item_id": "videomme:short:037-2",
+      "max_shifted_fraction": 0.017666666666666667,
+      "mean_shifted_fraction": 0.014429595494111623,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.017666666666666667,
+        "32": 0.014193548387096775,
+        "8": 0.011428571428571429
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "medium",
+      "item_id": "videomme:medium:320-3",
+      "max_shifted_fraction": 0.016785714285714286,
+      "mean_shifted_fraction": 0.007543266769073221,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.0036666666666666666,
+        "32": 0.0021774193548387095,
+        "8": 0.016785714285714286
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "medium",
+      "item_id": "videomme:medium:377-2",
+      "max_shifted_fraction": 0.0165,
+      "mean_shifted_fraction": 0.011821428571428571,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.0165,
+        "8": 0.007142857142857143
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "short",
+      "item_id": "videomme:short:136-3",
+      "max_shifted_fraction": 0.01633333333333333,
+      "mean_shifted_fraction": 0.01513095238095238,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.01633333333333333,
+        "8": 0.013928571428571429
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "short",
+      "item_id": "videomme:short:070-3",
+      "max_shifted_fraction": 0.015833333333333335,
+      "mean_shifted_fraction": 0.00898809523809524,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.015833333333333335,
+        "8": 0.002142857142857143
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "medium",
+      "item_id": "videomme:medium:441-1",
+      "max_shifted_fraction": 0.014833333333333334,
+      "mean_shifted_fraction": 0.008845238095238095,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.014833333333333334,
+        "8": 0.002857142857142857
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "long",
+      "item_id": "videomme:long:712-2",
+      "max_shifted_fraction": 0.013928571428571429,
+      "mean_shifted_fraction": 0.008605222734254993,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.006,
+        "32": 0.005887096774193548,
+        "8": 0.013928571428571429
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "long",
+      "item_id": "videomme:long:712-3",
+      "max_shifted_fraction": 0.013928571428571429,
+      "mean_shifted_fraction": 0.008605222734254993,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.006,
+        "32": 0.005887096774193548,
+        "8": 0.013928571428571429
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "long",
+      "item_id": "videomme:long:711-2",
+      "max_shifted_fraction": 0.013870967741935483,
+      "mean_shifted_fraction": 0.006663338453661034,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.004333333333333333,
+        "32": 0.013870967741935483,
+        "8": 0.0017857142857142857
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "long",
+      "item_id": "videomme:long:782-1",
+      "max_shifted_fraction": 0.013833333333333333,
+      "mean_shifted_fraction": 0.01155952380952381,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.013833333333333333,
+        "8": 0.009285714285714286
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "long",
+      "item_id": "videomme:long:709-1",
+      "max_shifted_fraction": 0.012166666666666666,
+      "mean_shifted_fraction": 0.010011904761904762,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.012166666666666666,
+        "8": 0.007857142857142858
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "medium",
+      "item_id": "videomme:medium:342-2",
+      "max_shifted_fraction": 0.011,
+      "mean_shifted_fraction": 0.009607142857142856,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.011,
+        "8": 0.008214285714285714
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "short",
+      "item_id": "videomme:short:280-3",
+      "max_shifted_fraction": 0.009642857142857142,
+      "mean_shifted_fraction": 0.008071428571428571,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.0065,
+        "8": 0.009642857142857142
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "short",
+      "item_id": "videomme:short:264-1",
+      "max_shifted_fraction": 0.008870967741935484,
+      "mean_shifted_fraction": 0.006076036866359447,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.004,
+        "32": 0.008870967741935484,
+        "8": 0.005357142857142857
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "long",
+      "item_id": "videomme:long:892-1",
+      "max_shifted_fraction": 0.007666666666666666,
+      "mean_shifted_fraction": 0.00512083973374296,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.007666666666666666,
+        "32": 0.007338709677419355,
+        "8": 0.00035714285714285714
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "medium",
+      "item_id": "videomme:medium:354-3",
+      "max_shifted_fraction": 0.0055,
+      "mean_shifted_fraction": 0.005089861751152073,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.0055,
+        "32": 0.005483870967741935,
+        "8": 0.004285714285714286
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "long",
+      "item_id": "videomme:long:840-1",
+      "max_shifted_fraction": 0.005357142857142857,
+      "mean_shifted_fraction": 0.004928571428571428,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.0045,
+        "8": 0.005357142857142857
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "medium",
+      "item_id": "videomme:medium:516-2",
+      "max_shifted_fraction": 0.0045,
+      "mean_shifted_fraction": 0.002964285714285714,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.0045,
+        "8": 0.0014285714285714286
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "short",
+      "item_id": "videomme:short:062-3",
+      "max_shifted_fraction": 0.004166666666666667,
+      "mean_shifted_fraction": 0.002619047619047619,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.004166666666666667,
+        "8": 0.0010714285714285715
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "medium",
+      "item_id": "videomme:medium:562-1",
+      "max_shifted_fraction": 0.004,
+      "mean_shifted_fraction": 0.0028928571428571428,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.004,
+        "8": 0.0017857142857142857
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "long",
+      "item_id": "videomme:long:737-3",
+      "max_shifted_fraction": 0.0036666666666666666,
+      "mean_shifted_fraction": 0.0028927291346646186,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.0036666666666666666,
+        "32": 0.0032258064516129032,
+        "8": 0.0017857142857142857
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "long",
+      "item_id": "videomme:long:851-3",
+      "max_shifted_fraction": 0.0036666666666666666,
+      "mean_shifted_fraction": 0.0034404761904761904,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.0036666666666666666,
+        "8": 0.0032142857142857142
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "short",
+      "item_id": "videomme:short:267-2",
+      "max_shifted_fraction": 0.0032142857142857142,
+      "mean_shifted_fraction": 0.0020238095238095236,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.0008333333333333334,
+        "8": 0.0032142857142857142
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "short",
+      "item_id": "videomme:short:278-3",
+      "max_shifted_fraction": 0.0027419354838709676,
+      "mean_shifted_fraction": 0.0018901689708141322,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.0015,
+        "32": 0.0027419354838709676,
+        "8": 0.0014285714285714286
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "long",
+      "item_id": "videomme:long:846-1",
+      "max_shifted_fraction": 0.0014285714285714286,
+      "mean_shifted_fraction": 0.001380952380952381,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.0013333333333333333,
+        "8": 0.0014285714285714286
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "medium",
+      "item_id": "videomme:medium:569-1",
+      "max_shifted_fraction": 0.00035714285714285714,
+      "mean_shifted_fraction": 0.00034523809523809523,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.0003333333333333333,
+        "8": 0.00035714285714285714
+      }
+    },
+    {
+      "benchmark": "videomme",
+      "group": "medium",
+      "item_id": "videomme:medium:415-3",
+      "max_shifted_fraction": 0.0003333333333333333,
+      "mean_shifted_fraction": 0.00016666666666666666,
+      "shifted_fraction_by_frame_count": {
+        "16": 0.0003333333333333333,
+        "8": 0.0
+      }
+    }
+  ],
+  "selected_item_ids": [],
+  "selection_metric": "max",
+  "source_summaries": [
+    "research/experiments/2026/artifacts/phase1_60_curation_audit/qwen_8f_combined.json",
+    "research/experiments/2026/artifacts/phase1_60_curation_audit/qwen_16f_combined.json",
+    "research/experiments/2026/artifacts/phase1_60_curation_audit/qwen_32f_combined.json"
+  ],
+  "top_k": 20
+}

@@ -266,11 +266,15 @@ the positives:
   mlx-vlm image-block-reuse contract the harness does not respect;
   v2 reopens the experiment behind an in-repo monkey-patch, not yet
   landed.
-- **1.60 scroll/pan regime-boundary probe:** curation-blocked; prereg
-  landed, run deferred.
-- **Cross-architecture C-VISION probe on Qwen 2.5-VL:**
-  implementation-blocked on Qwen-side vision-tower pruning plumbing
-  (prereg 2026-04-22). Claim 15 currently single-architecture.
+- **1.60 scroll/pan regime-boundary probe:** closed as a natural-
+  VideoMME corpus limitation. The wider 60-item audit found 0/60 items
+  above `shifted_fraction >= 0.30` (max 0.125), so the scroll/pan
+  boundary requires an egomotion/scroll corpus rather than more VideoMME
+  mining.
+- **Cross-architecture C-VISION probe on Qwen 2.5-VL:** landed on
+  2026-04-23 at matched L=2, kr=0.50; Claim 15 is now two-architecture
+  mechanism evidence, with broader Qwen benchmark coverage optional
+  rather than a missing gate.
 
 These are boundaries, not failures of the contributions. Where a
 mechanism *does not* generalize we say so; where it does, we cite the

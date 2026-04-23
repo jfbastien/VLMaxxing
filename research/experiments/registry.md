@@ -860,15 +860,19 @@ authoritative in the per-phase notes under
   notes: Articulates whether and how the codec-through mechanism could extend to training (not just inference). Scope: cache-substitute forward + gradient handling at STATIC tokens. Decision: NOT preregistering on M3 Air; paper § Future Work now names this direction with a concrete reference + cites Phase 1.57 as the gating measurement.
 
 - phase_id: 1.60
-  status: proposed (preregistered 2026-04-21; queued after EXP10 n=60 + cross-arch Qwen C-VISION probe)
-  authoritative_note: research/experiments/2026/2026-04-21-phase-1_60-scroll-pan-subset-prereg.md
-  authoritative_artifacts: []
+  status: CLOSED — CORPUS LIMITATION 2026-04-23
+  authoritative_note: research/experiments/2026/2026-04-23-phase-1_60-corpus-limitation-findings.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_60_curation_audit/qwen_8f_combined.json
+    - research/experiments/2026/artifacts/phase1_60_curation_audit/qwen_16f_combined.json
+    - research/experiments/2026/artifacts/phase1_60_curation_audit/qwen_32f_combined.json
+    - research/experiments/2026/artifacts/phase1_60_curation_audit/shifted_fraction_ranking.json
   current_best_policy: n/a (regime-boundary probe, not a policy selection)
   supersedes: []
-  paper_relevance: secondary (closes the codex round-24/25 "where does C-VISION break" gap; graceful-degradation branch is paper-body-bound; broken-deployment branch gates scroll-detection bail-out policy 1.60c)
-  prereg_outcome: (pending; four hypotheses — H_vision_scroll_breaks, H_vision_scroll_v_red_drops, H_vision_scroll_acc_holds, H_vision_scroll_ceiling_holds — with three promotion branches: CLEAN FAILURE CLAIM / BROKEN DEPLOYMENT CLAIM / SHIFTED-DOES-NOT-BREAK)
-  runtime_estimate: ~70 min point (~90 min upper bound): 20 items × 8 f × 2 arms, Gemma 4-E4B-4bit, medium-duration content to avoid long-bucket blowout
-  notes: Subset construction: 20 items stratified 7 light / 7 medium / 6 heavy scroll intensity, drawn from VideoMME (existing pixel-diff statistic), augmented with synthesized constant-velocity-crop clips if natural items are insufficient. Reuses scripts/run_novelty_pruning_gemma.py with $VT_FLAGS (L=2, kr_V=0.50); no driver changes. Thermal gate same as sessions 3–5: |decode Δ| < max(0.02 × decode_ms, 100 ms). 2026-04-22 curation tooling landed in `scripts/run_phase1_60_curation_audit.sh` and `scripts/build_phase1_60_scroll_pan_candidates.py`; remaining blocker is choosing the actual subset, not writing the ranking path. Future follow-ups: 1.60b (egomotion/FPV subset), 1.60c (scroll-detection bail-out policy if BROKEN DEPLOYMENT branch earns), 1.60d (cross-architecture scroll/pan on Qwen).
+  paper_relevance: secondary corpus-boundary result; closes the VideoMME path and keeps scroll/pan as future work on an egomotion/scroll corpus rather than as an unresolved local blocker
+  prereg_outcome: natural-VideoMME subset construction failed for corpus reasons, not model reasons; wider 60-item scan selected 0/60 at shifted_fraction >= 0.30, max 0.125
+  runtime_estimate: n/a on natural VideoMME; future egomotion/synthetic reopen would need a new prereg and subset
+  notes: Path A (wider VideoMME scan) executed on 60 items stratified 20 short / 20 medium / 20 long across 8f, 16f, and 32f. The observed shifted-fraction ceiling is far below the relaxed gate, so VideoMME lacks the sustained scroll/pan regime. Do not describe this as C-VISION failing on scroll/pan. Reopen only via EgoSchema/EPIC-Kitchens/Ego4D or a labeled synthetic scroll/pan set.
 ```
 
 ## Maintenance rules
@@ -900,7 +904,7 @@ implementation, debugging, analysis, and CI time. Estimates are at
 | 1.58  | deferred | ~1h bf16 8f | ~3h bf16 16f (no 32f) | bf16 Qwen checkpoint download (~15 GB), RSS feasibility |
 | 1.59  | research_note | n/a on M3 Air | n/a on M3 Air | external hardware |
 | 1.30  | negative-result (2026-04-23 dev+holdout union n=57/171) | complete | n/a | — (root-cause decomp queued) |
-| 1.30-rootcause-A | prereg'd — P0 | ~75 min (6 arms × short-only dev) | n/a | 1.60 completion (MLX serial on M3 16GB) |
+| 1.30-rootcause-A | prereg'd — P0 | ~75 min (6 arms × short-only dev) | n/a | unblocked; 1.60 closed as corpus limitation |
 | 1.30-rootcause-B | prereg'd — P0 | ~10 min (1.51V Q0 parity) | n/a | Phase A arm #2 (cold_pruned.jsonl) |
 | 1.30-rootcause-C | conditional — P1 | ~6h (dev+holdout union, 6 arms) | n/a | Phase A H_interaction PASS or ambiguous |
 | 1.55  | superseded | — | — | — (replaced by 1.55A/1.55B) |

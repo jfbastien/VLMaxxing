@@ -168,8 +168,10 @@ should-do tier):
   bridge; elevates the codec-through thesis from analog proxy to
   codec-native local benchmark evidence.
 - **1.51V scroll/pan regime-boundary probe (phase 1.60).**
-  Characterizes where C-VISION breaks and whether it degrades
-  gracefully.
+  CLOSED 2026-04-23 as a natural-VideoMME corpus limitation: wider
+  60-item scan found 0/60 items above `shifted_fraction >= 0.30`
+  (max 0.125), so scroll/pan characterization requires a different
+  egomotion/scroll corpus or labeled synthetic set.
 - **Claim 10 (phase 1.52 combined temporal+spatial on Gemma).**
   Measures composition rather than projecting it.
 - **Claim 3 routing-mechanism evidence** (within-block child-veto or

@@ -304,30 +304,22 @@ a must-do slot opens.
 - **1.52R composition (temporal × spatial).** Depends on 1.42 landing
   AND 1.51R re-run on V-patched.
 
-- **Phase 1.60 scroll/pan subset** (PREREG LANDED 2026-04-21;
-  **CURATION-BLOCKED 2026-04-22**). Codex rounds 24–25: scroll/pan is a
-  failure mode for token-merging; a 20-item subset probes where C-VISION
-  breaks. Preregistered in
-  `research/experiments/2026/2026-04-21-phase-1_60-scroll-pan-subset-prereg.md`
-  with four hypotheses (H_vision_scroll_breaks, _v_red_drops,
-  _acc_holds, _ceiling_holds) and three promotion-rule branches
-  (CLEAN FAILURE CLAIM / BROKEN DEPLOYMENT CLAIM /
-  SHIFTED-DOES-NOT-BREAK). **Natural-corpus audit 2026-04-22**: VideoMME
-  dev-30 max per-item shifted_fraction = **0.108** (prereg gate ≥ 0.60);
-  zero qualifying items at either the heavy (0.60) or broader camera-
-  moving proxy (0.20) threshold. Synthesis fallback (5 still items × 2-s
-  pan = 10 synthetic clips) requires MCQ-question generation (no teacher
-  VLM in the local stack). Runtime envelope (~70-90 min) is irrelevant
-  until curation unblocks. Three unblock paths: (A) wider VideoMME sweep
-  over 200+ items; (B) egomotion benchmark integration (EgoSchema,
-  EPIC-Kitchens, Ego4D); (C) hand-labeled 20-item synthetic corpus. See
-  `research/experiments/2026/2026-04-22-phase-1_60-scroll-pan-curation-audit.md`.
-  Ranking / manifest tooling landed 2026-04-22 in
-  `scripts/run_phase1_60_curation_audit.sh` and
-  `scripts/build_phase1_60_scroll_pan_candidates.py`; the blocker is
-  subset selection, not audit code.
-  Reviewer-facing framing stays "scroll/pan deferred to future work"
-  per `paper/framing.md`.
+- **Phase 1.60 scroll/pan subset** (CLOSED 2026-04-23 as a VideoMME
+  corpus limitation). Codex rounds 24-25 identified scroll/pan as a
+  plausible C-VISION boundary, and the preregistration landed in
+  `research/experiments/2026/2026-04-21-phase-1_60-scroll-pan-subset-prereg.md`.
+  The wider Path-A VideoMME audit scanned 60 natural items stratified
+  20 short / 20 medium / 20 long across 8f, 16f, and 32f feature-drift
+  passes. Result: **0/60** items cleared the relaxed
+  `shifted_fraction >= 0.30` gate; the maximum observed shifted fraction
+  was **0.125** (`videomme:long:669-1` at 16f), far below both the
+  relaxed gate and the original 0.60 prereg threshold. This is not a
+  C-VISION model failure; it says natural VideoMME is montage/cut-heavy
+  and lacks the sustained egomotion/scroll regime needed for this probe.
+  Source note:
+  `research/experiments/2026/2026-04-23-phase-1_60-corpus-limitation-findings.md`.
+  Reopen only with a different corpus (EgoSchema, EPIC-Kitchens, Ego4D)
+  or a clearly-labeled synthetic/hand-labeled scroll/pan set.
 
 - **1.59 training microbench scaffold.** Training-side throughput
   claim has been entirely projection-based. Round-24 suggests a

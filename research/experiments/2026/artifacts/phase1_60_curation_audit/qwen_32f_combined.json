@@ -1,0 +1,9 @@
+benchmark = "videomme"
+description = "Phase 1.60 scroll/pan candidate manifest (0 items from shifted-fraction ranking)"
+item_ids = [
+]
+
+# source summaries:
+# - research/experiments/2026/artifacts/phase1_60_curation_audit/qwen_8f_combined.json
+# - research/experiments/2026/artifacts/phase1_60_curation_audit/qwen_16f_combined.json
+# - research/experiments/2026/artifacts/phase1_60_curation_audit/qwen_32f_combined.json
