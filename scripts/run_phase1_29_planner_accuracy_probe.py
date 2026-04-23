@@ -678,6 +678,7 @@ def main() -> None:
         raise ValueError(
             f"Phase 1.29 probe supports VideoMME manifests only, got {manifest.benchmark!r}"
         )
+    environment = runner._environment_record(args.model_path)
 
     planner_config = PlannerConfig(
         statistic=runner.BlockStatistic(args.statistic),
@@ -709,7 +710,6 @@ def main() -> None:
     thresholds_by_item = _thresholds_by_item(precomputed, calibration_mode=args.calibration_mode)
 
     model, processor = runner._load_model(args.model_path)
-    environment = runner._environment_record(args.model_path)
     model_content_hash = runner.model_content_sha256(args.model_path)
 
     rows: list[dict[str, Any]] = []
