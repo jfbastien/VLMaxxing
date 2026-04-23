@@ -73,7 +73,10 @@ where each delta is against `cold_dense` on `all_queries`.
 pruned KVs reused across queries degrade worse than either alone would
 predict. Implication: the paper claim becomes a **bounded anti-claim**:
 "these two tricks do not compose naively on Qwen at this operating
-point; deploying either alone is safe."
+point; each mechanism in its individually-validated regime
+(C-VISION single-query at kr_V=0.50 L=2; C-PERSIST at 40f with dense
+V) remains within its own safety envelope, but those envelopes do not
+transitively license V+K composition in streaming multi-query contexts."
 
 **H_reset (hard-reset recovers K-only loss).**
 Hard-reset recovers ≥ 50% of the `streaming_dense_off` follow-up loss:
