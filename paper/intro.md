@@ -262,10 +262,11 @@ the positives:
   FALSIFIED under MAX-over-span aggregation (mean |Δ| = 53.8 pp vs
   pixel-diff, 2026-04-22). A continuous-score redesign passes the
   10 pp aggregate gate at 7.9 pp but fails per-item at 16–25 pp; the
-  reframed planner-accuracy probe now has a short-bucket \(n=10\)
-  first-point confirmation with 10/10 dense agreement, but it remains
-  off the critical path until n=30, medium/long buckets, and calibration
-  ablations land.
+  reframed planner-accuracy probe now has all-duration VideoMME dev
+  \(n=30\) planner-substitution evidence with 30/30 dense-choice agreement
+  and no accuracy loss. This is codec-native semantic evidence, not a
+  systems-speed result: offline extraction took 7290 s, and calibration
+  ablations remain open.
 - **1.55D v1 selective re-prefill: INFRASTRUCTURE-FALSIFIED.** An
   mlx-vlm image-block-reuse contract the harness does not respect;
   v2 reopens the experiment behind an in-repo monkey-patch, not yet

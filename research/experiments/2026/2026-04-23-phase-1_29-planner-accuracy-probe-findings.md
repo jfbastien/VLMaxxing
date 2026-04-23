@@ -7,6 +7,7 @@ prior:
   - research/experiments/2026/2026-04-22-phase-1_29-continuous-codec-score-pilot-findings.md
 status: findings 2026-04-23. Continuous-codec-score planner with per-item live-pixel calibration REPRODUCES pixel-diff planner decisions at no accuracy cost on short-bucket Qwen 8f n=10. Upgrades from "HARD-FALSIFIED (MAX-over-span)" to "FIRST-POINT CONFIRMED (continuous-score + per-item calibration)".
 tracking: autonomous AFK session 2026-04-22/23
+successor: research/experiments/2026/2026-04-23-phase-1_29B-codec-native-replication-prereg.md
 ---
 
 # 1.29 Planner-accuracy probe — findings (continuous-score + per-item calibration)
@@ -226,6 +227,12 @@ Outputs:
 - `research/experiments/2026/artifacts/phase1_29_planner_accuracy_probe/summary.json`
 
 ## Next steps
+
+**Superseded 2026-04-23 by phase 1.29B.** The "n=30 short-bucket" wording
+below was not executable from fixed manifests; the corrected follow-up used
+dev-short n=10 + holdout-short n=10 and all-duration dev n=30. Phase 1.29B
+passes semantically (codec-dense 30/30 on dev n=30) and leaves calibration
+ablation plus streaming decoder integration as the next gates.
 
 1. **n=30 short-bucket** (queued P1): tighten CIs on the agreement claim.
 2. **Calibration ablation** (queued P2): compare per-item live-pixel vs

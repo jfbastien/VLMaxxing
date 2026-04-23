@@ -199,10 +199,13 @@ Priority follow-ups from this finding:
    `kr_V in {0.67, 0.75}` did not recover the Q0 accuracy gate; future 1.30
    composition work should use adaptive admission/no-prune-on-risky-Q0 rather
    than another blind fixed-kr sweep.
-2. **1.29 planner-accuracy n=30 short replication.** Phase A no longer blocks
-   it; this remains the highest-value codec-native bridge if it replicates.
-3. **Medium/long 1.29 and calibration ablation.** Run only after the n=30 short
-   replication confirms that the first-point pass was not small-sample luck.
-4. **Selective re-prefill / safer K policy.** Lower priority for this specific
+2. **1.29 codec-native planner-substitution follow-up.** Completed after this
+   note: the impossible "n=30 short" wording was corrected to short
+   dev+holdout n=20 plus all-duration dev n=30. Both pass under
+   continuous-score + per-item live-pixel calibration; see
+   `2026-04-23-phase-1_29B-codec-native-replication-prereg.md`.
+   Remaining work is calibration ablation and streaming decoder integration,
+   not medium/long survival.
+3. **Selective re-prefill / safer K policy.** Lower priority for this specific
    1.30 failure because K-only is not dominant here, but still important for
    broader C-PERSIST deployment.

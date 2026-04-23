@@ -43,12 +43,13 @@ bridge now exists and is useful precisely because it is negative: it reproduces
 speedup but loses accuracy. The completed root-cause scout localizes the
 short-scout loss primarily to the Q0 vision-pruning leg, not to a
 non-additive V+K collapse, so the remaining bridge is an adaptive V-leg
-admission policy. A related local codec-native bridge remains
-scientifically interesting, but the latest 1.29 pilots show that it is still
-not main-text support: MAX-over-span sparse sampling is hard-falsified, while
-continuous-score codec signals with per-item live-pixel calibration have only a
-short-bucket \(n=10\) first-point confirmation. That is geometry-matching
-evidence, not a latency win.
+admission policy. A related local codec-native bridge remains scientifically
+interesting, and the latest 1.29 results now provide semantic
+planner-substitution evidence: MAX-over-span sparse sampling is hard-falsified,
+but continuous-score codec signals with per-item live-pixel calibration match
+dense choices on VideoMME dev all-duration \(n=30\). This remains a calibrated
+planner result, not a latency win; the offline extraction path took 7290 s and
+the deployment path needs streaming decoder integration.
 
 The current benchmark mix also under-samples scroll and pan regimes. We audited
 this directly on a 60-item VideoMME stratification across 8f/16f/32f and found
