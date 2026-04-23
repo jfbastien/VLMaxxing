@@ -233,9 +233,14 @@ preregistered falsification. codec-through-sam is the full stack in
 the right regime — 26 B-class model, real streaming protocol,
 codec-native classifier, live decode in loop, persistent KV across
 queries, temporal + spatial composition. Bridging between the two
-repos is ongoing work: a local streaming-protocol reproduction of
-Sam's N = 60 line (phase 1.30) is the largest remaining bridge
-experiment on the codec-through side.
+repos is ongoing work: phase 1.30 reproduced Sam's session-streaming
+protocol at 4 B-class scale (dev+holdout union n = 57 sessions / 171
+queries, paired amortized 3.326× speedup, Δacc = −0.193 FALSIFIES
+the preregistered ±0.05 accuracy band). The remaining bridge
+experiment is therefore no longer the initial reproduction but the
+root-cause decomposition (preregistered 2026-04-23, 6-arm Phase A
+scout plus Q0 parity against 1.51V) that attributes the composition
+loss to V-only, K-only, interaction, or a harness regression.
 
 ## 4.5. What the evidence has ruled out
 
