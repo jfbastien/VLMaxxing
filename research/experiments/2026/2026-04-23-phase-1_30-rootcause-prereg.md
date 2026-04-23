@@ -86,13 +86,23 @@ window, etc.) is worth implementing.
 or any time-thresholded refresh won't help.
 
 **H_path (1.30 Q0 matches 1.51V Q0 under matched pruning).**
-On the same Q0 item set, `correct` flags agree between
-`cold_pruned` (1.30) and the 1.51V pruned run at ≥ 0.90 rate.
+On the same Q0 item set, the **chosen option index** agrees between
+`cold_pruned` (1.30) and the 1.51V pruned run at ≥ 0.90 rate
+(primary criterion). Correctness-flag agreement is reported as a
+secondary diagnostic only.
+**Rationale for choice over correctness:** two harnesses that both
+answer wrong with *different* wrong options would score 100% on
+correctness-agreement but reveal that the model is taking different
+logit paths through the two drivers — which is exactly the kind of
+harness divergence this gate exists to catch. Choice agreement
+directly tests path parity; correctness agreement can hide it.
 **Interpretation if PASS:** the Q0 degradation in 1.30 is a real
 mechanism cost at kr_V=0.50 on Qwen, not a harness regression.
 **Interpretation if FAIL:** 1.30 has a first-query code-path regression
 (possibly in its session harness or refresh gating) that must be fixed
-before any mechanism conclusion can be drawn.
+before any mechanism conclusion can be drawn. The compare script at
+`scripts/phase1_30_rootcause_q0_compare.py` already prints both
+statistics; the gate reads the choice-agreement row.
 
 ## Arms (Phase A short scout)
 
@@ -143,7 +153,10 @@ against the same Q0 items at matched kr_V=0.50 / L=2:
   research/experiments/2026/artifacts/phase1_30_rootcause_short/q0_151V_pruned.jsonl
 ```
 
-Gate: `correct` agreement ≥ 0.90.
+Gate: **choice agreement ≥ 0.90** (the `choice agreement` line the
+compare script prints). Correct-flag agreement is printed as a
+diagnostic only, since two drivers can match on correctness while
+routing logits through different paths to different wrong answers.
 
 ## Phase C: full 57-seed confirmation (conditional)
 
