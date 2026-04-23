@@ -50,11 +50,15 @@ Context that makes the Qwen execution defensible:
    compose" follow-up.
 2. Cold arm took 4.3h wall; re-running on Gemma is ~another 8h wall for
    a paired result. The Qwen result is complete and the verdict is
-   unambiguous; a Gemma re-run can be queued as follow-up.
+   unambiguous.
 
-The findings below report what the run measured. A Gemma replication is
-added to the P1 queue (new task) to verify whether the accuracy loss is
-Qwen-specific or whether Sam's protocol reproduces cleanly on Gemma.
+The findings below report what the run measured. Gemma replication is
+**not** a next step as written, because the current
+`scripts/run_phase1_30_sam_streaming.py` hard-fails on any model_type
+that isn't `qwen2_5_vl` (see `scripts/run_phase1_30_sam_streaming.py:303-308`).
+Porting 1.30's session harness to Gemma is a separate engineering phase
+whose value depends on what root-cause decomposition says about Qwen
+(see `research/experiments/2026/2026-04-23-phase-1_30-rootcause-prereg.md`).
 
 ## Results
 
@@ -237,31 +241,45 @@ Outputs (all produced by this run):
 - `research/experiments/2026/artifacts/phase1_30_sam_streaming/paired_queries.jsonl`
 - `research/experiments/2026/artifacts/phase1_30_sam_streaming/per_clip_bucket_tally.json`
 
-To re-run a Gemma replication (matches prereg model exactly):
+Re-running this arm unchanged requires only the existing wrapper:
 ```bash
-PHASE1_30_MODEL_PATH=$HOME/models/gemma-4-e4b-it-4bit \
-  bash scripts/run_phase1_30_sam_streaming.sh
+bash scripts/run_phase1_30_sam_streaming.sh
 ```
+For **root-cause decomposition** (not replication), see the new prereg
+at `research/experiments/2026/2026-04-23-phase-1_30-rootcause-prereg.md`.
 
 ## Next steps
 
-1. **Gemma replication (queued P1).** The prereg specified Gemma; a Qwen-
-   run verdict does not close the preregistered hypothesis on its
-   original arm. Expected cost: another 4–5h autonomous. This is the
-   single most useful follow-up — it disambiguates "the stack fails
-   on Qwen specifically" from "the stack fails as an idea".
+1. **Root-cause decomposition (queued P1, supersedes prior next-step list).**
+   Codex round-28 review called the prior next-step list incomplete — the
+   findings attributed the loss primarily to follow-up KV-cross-contamination
+   but the Q0 drop (0.596 → 0.491) alone violates the ±0.05 budget, so
+   KV-reuse cannot be the whole story. The right next move is a 6-arm 2×2
+   decomposition (cold vs streaming × dense vs pruned, plus two hard-reset
+   controls) on the short-only manifest, followed by a Q0 parity check
+   against 1.51V. Full plan, hypotheses, and gates in
+   `research/experiments/2026/2026-04-23-phase-1_30-rootcause-prereg.md`.
+   Runtime estimate ~85 min (Phase A+B).
 
-2. **Drift-refresh ON replication (queued P2).** Run the same stack
-   with `--drift-refresh-policy adjacent_cos --drift-refresh-threshold 0.95`
-   to test H_sam_drift_refresh directly. If refresh recovers ≥50% of the
-   degenerate-bucket mass at ≤30% refresh rate, a Sam-adjacent variant
-   reopens the deployment-grade framing.
+2. **Gemma replication (deferred).** The 1.30 driver hard-fails on
+   non-Qwen models (`scripts/run_phase1_30_sam_streaming.py:303-308`),
+   so a Gemma rerun requires a harness port first. Whether it is worth
+   doing depends on the root-cause decomposition — if the Qwen failure
+   is V-only-dominated at kr_V=0.50, the Gemma question becomes "does
+   Gemma have the same V-only cost," which is partly answered by 1.51V.
 
-3. **Paper-pass: no C-VISION upgrade this round.** The abstract + intro +
+3. **Adjacent-cos refresh implementation (deferred).** The
+   `--drift-refresh-policy threshold` CLI value is already plumbed but
+   hard-fails today (`scripts/run_phase1_30_sam_streaming.py:286-290`).
+   Implementing an adjacent-cos drift detector only makes sense if the
+   root-cause decomposition shows hard-reset recovers most of the loss
+   (H_reset PASS); otherwise a smarter refresh policy won't help either.
+
+4. **Paper-pass: no C-VISION upgrade this round.** The abstract + intro +
    claim-matrix do NOT need editing from this finding; the 1.30 row
    either stays absent or gets a single "protocol-reproduces-speedup-
-   not-fidelity" line in the appendix. Queue a codex round for a
-   one-paragraph paper addition when JF is back.
+   not-fidelity" line in the appendix. Final paper wording waits on
+   root-cause decomposition.
 
 ## Artifacts
 
