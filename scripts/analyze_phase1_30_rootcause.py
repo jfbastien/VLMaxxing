@@ -267,17 +267,23 @@ def main() -> int:
                     f"{label:9s} ({arm_name:22s} − cold_dense): "
                     f"{delta:+.3f} [{lo:+.3f}, {hi:+.3f}] n={n}"
                 )
-            # interaction: bootstrap the linearity residual with paired keys
+            # interaction: bootstrap the linearity residual with paired keys.
+            # NB: `keys` must be a sequence (not a set) so that bootstrap
+            # resamples with replacement preserve duplicate draws — the
+            # whole point of the bootstrap is to let items be re-picked.
+            # Coercing to a set collapsed duplicates and destroyed the
+            # variance estimate (Codex round-30 regression; fixed here).
             def _interaction_stat(
                 pruned: dict[tuple[str, int], int],
                 dense_off: dict[tuple[str, int], int],
                 pruned_off: dict[tuple[str, int], int],
                 baseline: dict[tuple[str, int], int],
-                keys: set[tuple[str, int]],
+                keys: list[tuple[str, int]],
             ) -> float:
-                v = sum(pruned[k] - baseline[k] for k in keys) / len(keys)
-                k_ = sum(dense_off[k] - baseline[k] for k in keys) / len(keys)
-                c = sum(pruned_off[k] - baseline[k] for k in keys) / len(keys)
+                m = len(keys)
+                v = sum(pruned[k] - baseline[k] for k in keys) / m
+                k_ = sum(dense_off[k] - baseline[k] for k in keys) / m
+                c = sum(pruned_off[k] - baseline[k] for k in keys) / m
                 return c - (v + k_)
 
             keys = [
@@ -290,15 +296,18 @@ def main() -> int:
             ]
             if keys:
                 n = len(keys)
+                # Point estimate: unique paired items (one draw per key).
                 point = _interaction_stat(
                     correct_by_arm["cold_pruned"],
                     correct_by_arm["streaming_dense_off"],
                     correct_by_arm["streaming_pruned_off"],
                     base_correct,
-                    set(keys),
+                    keys,
                 )
                 stats_samples: list[float] = []
                 for _ in range(args.n_resamples):
+                    # Sample WITH replacement; pass the resampled list
+                    # (duplicates intact) to the statistic.
                     resampled = [keys[rng.randrange(n)] for _ in range(n)]
                     stats_samples.append(
                         _interaction_stat(
@@ -306,7 +315,7 @@ def main() -> int:
                             correct_by_arm["streaming_dense_off"],
                             correct_by_arm["streaming_pruned_off"],
                             base_correct,
-                            set(resampled),
+                            resampled,
                         )
                     )
                 stats_samples.sort()
