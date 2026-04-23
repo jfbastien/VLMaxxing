@@ -319,3 +319,45 @@ Then reuse the same precompute cache for threshold-only ablations that keep the
 same live-pixel target shares, such as `--calibration-mode pooled`. Artifact
 calibration uses a different target-share source and must use a separate cache
 because the metadata intentionally differs.
+
+## Operational smoke — direct short n=20 cached run
+
+To validate the new checkpoint path on a real bundle before any calibration
+ablation, the runner was executed directly on
+`videomme_short_dev_holdout_v1_n20.toml` with per-item live-pixel calibration
+and a repo-local precompute cache:
+
+```bash
+uv run python scripts/run_phase1_29_planner_accuracy_probe.py \
+  --manifest research/benchmark_manifests/videomme_short_dev_holdout_v1_n20.toml \
+  --precompute-cache-path research/experiments/2026/artifacts/phase1_29B_short_n20_calibration_20260423/precompute_live_pixel.json \
+  --output-path research/experiments/2026/artifacts/phase1_29B_short_n20_calibration_20260423/per_item_results.jsonl \
+  --summary-path research/experiments/2026/artifacts/phase1_29B_short_n20_calibration_20260423/per_item_summary.json
+```
+
+Artifacts:
+
+- `research/experiments/2026/artifacts/phase1_29B_short_n20_calibration_20260423/precompute_live_pixel.json`
+- `research/experiments/2026/artifacts/phase1_29B_short_n20_calibration_20260423/per_item_results.jsonl`
+- `research/experiments/2026/artifacts/phase1_29B_short_n20_calibration_20260423/per_item_summary.json`
+
+Operational findings:
+
+1. Checkpointing worked as designed: the runner wrote one cache payload per item
+   through all 20 short clips before model execution began, eliminating the old
+   all-or-nothing silent precompute block.
+2. The direct 20-item execution is **not numerically identical** to the earlier
+   post-hoc pooled short evidence from two separate runs. The difference
+   localizes to one holdout item, `videomme:short:066-3`: in the original clean
+   holdout run, dense chose `2` and was correct; in the direct n=20 process,
+   dense chose `3` and was wrong. Codec followed the same choice in both runs,
+   so the direct n=20 summary lands at dense = codec = 0.75, pixel = 0.70,
+   codec-dense agreement = 1.00.
+3. Interpretation: keep the paper-side short-bucket evidence anchored to the
+   earlier dev-short + holdout-short pair of clean runs. Treat this direct n=20
+   execution as an **operational cache/calibration baseline**, not as a claim-
+   replacing reproduction row.
+4. Provenance note: this specific smoke summary reports `git_dirty: true`
+   because it was generated before the follow-up provenance fix that snapshots
+   the environment record before cache writes. Subsequent runs should use the
+   same runner after commit `4f836be`, which corrects that bookkeeping error.
