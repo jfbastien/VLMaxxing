@@ -98,4 +98,9 @@ run_arm streaming_pruned_reset \
   --vision-tower-keep-rate 0.50
 
 echo
-echo "PHASE1_30_ROOTCAUSE_${MODE^^}_DONE"
+if [[ "$MODE" == "short" ]]; then
+  DONE_MODE="SHORT"
+else
+  DONE_MODE="FULL"
+fi
+echo "PHASE1_30_ROOTCAUSE_${DONE_MODE}_DONE"

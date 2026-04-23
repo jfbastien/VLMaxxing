@@ -107,9 +107,10 @@ def _paired_bootstrap_delta_ci(
     effective n is returned. Resampling is done over the paired (t_i, c_i)
     tuples, which is the right unit when two arms ran the same queries.
     """
+    ordered_keys = sorted(keys)
     pairs = [
         (treatment[k], control[k])
-        for k in keys
+        for k in ordered_keys
         if k in treatment and k in control
     ]
     n = len(pairs)
@@ -288,7 +289,7 @@ def main() -> int:
 
             keys = [
                 k
-                for k in all_keys
+                for k in sorted(all_keys)
                 if k in correct_by_arm["cold_pruned"]
                 and k in correct_by_arm["streaming_dense_off"]
                 and k in correct_by_arm["streaming_pruned_off"]
