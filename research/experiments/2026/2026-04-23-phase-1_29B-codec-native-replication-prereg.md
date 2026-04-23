@@ -2,7 +2,7 @@
 phase: 1.29B
 date: 2026-04-23
 parent: research/experiments/2026/2026-04-23-phase-1_29-planner-accuracy-probe-findings.md
-status: preregistered
+status: short-holdout findings appended; duration-breadth pending
 tracking: codex AFK continuation 2026-04-23
 ---
 
@@ -119,3 +119,88 @@ Planned:
 - `research/experiments/2026/artifacts/phase1_29B_short_holdout_20260423/summary.json`
 - `research/experiments/2026/artifacts/phase1_29B_dev30_duration_20260423/results.jsonl`
 - `research/experiments/2026/artifacts/phase1_29B_dev30_duration_20260423/summary.json`
+
+## Execution — short holdout
+
+Run command:
+
+```bash
+uv run python scripts/run_phase1_29_planner_accuracy_probe.py \
+  --manifest research/benchmark_manifests/videomme_holdout_v1_short_only.toml \
+  --output-path research/experiments/2026/artifacts/phase1_29B_short_holdout_20260423/results.jsonl \
+  --summary-path research/experiments/2026/artifacts/phase1_29B_short_holdout_20260423/summary.json
+```
+
+Environment record: clean tree at git SHA
+`21d3721a5dcaadda9a842c653796e4c131480965`.
+
+Artifacts:
+
+- `research/experiments/2026/artifacts/phase1_29B_short_holdout_20260423/results.jsonl`
+- `research/experiments/2026/artifacts/phase1_29B_short_holdout_20260423/summary.json`
+
+## Results — short holdout
+
+| Metric | Value | Gate | Verdict |
+|--------|-------|------|---------|
+| n items | 10 | 10 | PASS |
+| Dense accuracy | 0.800 (8/10) | reference | — |
+| Pixel accuracy | 0.700 (7/10) | reference | — |
+| Codec accuracy | 0.700 (7/10) | dense loss >= -0.05 | MIXED |
+| Codec minus dense accuracy | -0.100 | >= -0.05 | FAIL by one item |
+| Codec-dense agreement | 0.900 (9/10) | >= 0.90 | PASS |
+| Codec-pixel agreement | 1.000 (10/10) | >= 0.80 | PASS |
+| Pixel-dense agreement | 0.900 (9/10) | reference | — |
+| Pixel active reuse | 0.080 | reference | — |
+| Codec active reuse | 0.074 | abs gap <= 0.05 | PASS |
+| Pair-selection Jaccard | 0.506 | diagnostic | — |
+| Parse failures | 0 dense / 0 pixel / 0 codec | 0 | PASS |
+
+Per-item result:
+
+| item | dense | pixel | codec | codec/pixel choice | Jaccard |
+|------|-------|-------|-------|--------------------|---------|
+| `videomme:short:062-3` | correct | correct | correct | 2 / 2 | 0.857 |
+| `videomme:short:066-3` | correct | wrong | wrong | 3 / 3 | 0.294 |
+| `videomme:short:070-3` | correct | correct | correct | 2 / 2 | 0.712 |
+| `videomme:short:074-3` | correct | correct | correct | 1 / 1 | 0.215 |
+| `videomme:short:126-1` | correct | correct | correct | 3 / 3 | 0.571 |
+| `videomme:short:126-2` | correct | correct | correct | 1 / 1 | 0.571 |
+| `videomme:short:136-3` | wrong | wrong | wrong | 1 / 1 | 0.479 |
+| `videomme:short:267-2` | correct | correct | correct | 3 / 3 | 0.714 |
+| `videomme:short:280-3` | correct | correct | correct | 3 / 3 | 0.499 |
+| `videomme:short:293-1` | wrong | wrong | wrong | 3 / 3 | 0.143 |
+
+## Combined short-bucket evidence
+
+Pooling the original dev-short first point with the disjoint short-holdout run:
+
+| Metric | Value | Gate | Verdict |
+|--------|-------|------|---------|
+| n items | 20 | 20 | PASS |
+| Dense accuracy | 0.800 (16/20) | reference | — |
+| Pixel accuracy | 0.700 (14/20) | reference | — |
+| Codec accuracy | 0.750 (15/20) | dense loss >= -0.05 | PASS on boundary |
+| Codec minus dense accuracy | -0.050 | >= -0.05 | PASS on boundary |
+| Codec-dense agreement | 0.950 (19/20) | >= 0.90 | PASS |
+| Codec-pixel agreement | 0.950 (19/20) | >= 0.80 | PASS |
+| Pixel-dense agreement | 0.900 (18/20) | reference | — |
+| Pixel active reuse | 0.103 | reference | — |
+| Codec active reuse | 0.096 | abs gap <= 0.05 | PASS |
+
+## Interpretation after short replication
+
+`H_short_replicates` is **MIXED-positive**: codec loses exactly one dense-correct
+item (`videomme:short:066-3`) but matches pixel on all 10 items and preserves
+the reuse-ratio geometry. This is not a clean standalone holdout pass because
+the accuracy-loss gate misses by one item.
+
+`H_short_bundle` is **PASS on the preregistered boundary**. The combined short
+n=20 evidence keeps C-CODEC alive as a planner-substitution candidate, but the
+margin is thin: the paper cannot claim codec-native is better than pixel, only
+that continuous codec scores with per-item live-pixel calibration reproduce
+pixel/dense planner behavior on short VideoMME within the preregistered band.
+
+Per the preregistration, this result is not clearly falsifying, so the next
+step is the all-duration dev n=30 breadth run. If that breadth run fails, the
+claim should be scoped to short/static-ish clips and kept out of the headline.
