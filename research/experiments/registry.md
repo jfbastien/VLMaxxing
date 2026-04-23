@@ -236,7 +236,7 @@ authoritative in the per-phase notes under
     - research/experiments/2026/artifacts/phase1_29_planner_accuracy_probe/summary.json
   current_best_policy: "VideoMME 8f short n=10 Qwen 2.5-VL-7B-4bit: codec_dense_agreement 1.00 (10/10), codec_accuracy=dense_accuracy=0.80, codec-minus-pixel=+0.10, reuse-ratio parity within 1pp. Planner-substitution gate PASSES at first-point; preregistered accuracy clause is within the decision band but holdout-blind."
   supersedes: []
-  paper_relevance: primary (deployability — C-CODEC)
+  paper_relevance: reopening (first-point PASS on n=10 short; paper-body promotion requires wider replication + medium/long-bucket survival)
   prereg_outcome: MAX-over-span sparse retrofit falsified; continuous-score redesign partial-pass at aggregate level; planner-accuracy probe first-point-confirmed on n=10 short (2026-04-23)
   notes: 2026-04-23 run lands at 495a57b. Continuous-score + per-item live-pixel calibration substitutes 1:1 for dense planner on the short pilot (10/10 agreement) and beats pixel oracle by +0.10. Wider replication — medium/long buckets, n=30 short/medium, and a calibration ablation (ratio-only vs RD-like) — is queued behind Phase A of 1.30 root-cause.
 
@@ -246,8 +246,9 @@ authoritative in the per-phase notes under
   authoritative_artifacts:
     - research/experiments/2026/artifacts/phase1_30_sam_streaming/cold_summary.json
     - research/experiments/2026/artifacts/phase1_30_sam_streaming/streaming_summary.json
-    - research/experiments/2026/artifacts/phase1_30_sam_streaming/pair_summary.md
-  current_best_policy: "Qwen 2.5-VL-7B-4bit VideoMME 8f dev n=19: cold 0.578 / streaming 0.339 (Δacc = −0.193, FALSIFIES ±0.05 budget); 3.326× speedup (PASS). Paper-promotion rule for deployment-grade C-VISION composition does NOT trigger on this stack."
+    - research/experiments/2026/artifacts/phase1_30_sam_streaming/pair_summary.json
+    - research/experiments/2026/artifacts/phase1_30_sam_streaming/paired_queries.jsonl
+  current_best_policy: "Qwen 2.5-VL-7B-4bit VideoMME 8f dev+holdout union n=57 sessions / 171 queries: cold 0.561 (96/171) / streaming 0.368 (63/171) → Δacc = −0.193, FALSIFIES ±0.05 budget; paired amortized 3.326× speedup PASSES. Paper-promotion rule for deployment-grade C-VISION composition does NOT trigger on this stack; root-cause decomposition prereg'd 2026-04-23."
   supersedes: []
   paper_relevance: negative-result (composition-anti-claim candidate pending root-cause)
   prereg_outcome: H_sam_e2e accuracy-FALSIFIED, speedup-PASSED; root-cause decomposition (H_V / H_K / H_interaction / H_reset / H_path) preregistered 2026-04-23 at research/experiments/2026/2026-04-23-phase-1_30-rootcause-prereg.md
@@ -898,7 +899,7 @@ implementation, debugging, analysis, and CI time. Estimates are at
 | 1.55B | deferred | ~65min (composition + controls) | ~2.5h | 1.54 landing + 1.55A earning |
 | 1.58  | deferred | ~1h bf16 8f | ~3h bf16 16f (no 32f) | bf16 Qwen checkpoint download (~15 GB), RSS feasibility |
 | 1.59  | research_note | n/a on M3 Air | n/a on M3 Air | external hardware |
-| 1.30  | negative-result (2026-04-23 dev n=19) | complete | n/a | — (root-cause decomp queued) |
+| 1.30  | negative-result (2026-04-23 dev+holdout union n=57/171) | complete | n/a | — (root-cause decomp queued) |
 | 1.30-rootcause-A | prereg'd — P0 | ~75 min (6 arms × short-only dev) | n/a | 1.60 completion (MLX serial on M3 16GB) |
 | 1.30-rootcause-B | prereg'd — P0 | ~10 min (1.51V Q0 parity) | n/a | Phase A arm #2 (cold_pruned.jsonl) |
 | 1.30-rootcause-C | conditional — P1 | ~6h (dev+holdout union, 6 arms) | n/a | Phase A H_interaction PASS or ambiguous |

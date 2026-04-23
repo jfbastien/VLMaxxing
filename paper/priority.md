@@ -269,12 +269,14 @@ a must-do slot opens.
 - **1.30 Sam session/streaming bridge — NEGATIVE RESULT + root-cause
   decomposition in flight 2026-04-23.** The reproduction landed (1ecfeb9
   / e9d1223) as a paired cold-vs-streaming Qwen 2.5-VL-7B-4bit VideoMME
-  8f dev n=19 run: **3.326× speedup PASS, Δacc = −0.193 FALSIFIES the
-  ±0.05 preregistered budget**; the deployment-grade C-VISION
-  composition promotion rule does NOT trigger. Codex round-28 observed
-  the paired data: Q0 (first query) alone drops 0.596 → 0.491
-  (Δ = −0.105), violating the budget before any KV reuse — so the
-  negative cannot be attributed purely to follow-up KV-contamination.
+  8f **dev+holdout union n=57 sessions / 171 queries**: cold 0.561 /
+  streaming 0.368 → **3.326× paired amortized speedup PASS, Δacc =
+  −0.193 FALSIFIES the ±0.05 preregistered budget**; the deployment-
+  grade C-VISION composition promotion rule does NOT trigger. Codex
+  round-28 observed the paired data: Q0 (first query) alone drops
+  0.596 → 0.491 (Δ = −0.105), violating the budget before any KV reuse —
+  so the negative cannot be attributed purely to follow-up KV-
+  contamination.
   A 2×2 decomposition prereg (commit 92350ad) factorizes the stack into
   V-only (kr_V=0.50 vision pruning) × K-only (persistent-KV reuse) plus
   two hard-reset controls and a Q0 parity check against the mechanism-
