@@ -15,6 +15,9 @@ from pathlib import Path
 from typing import Any
 
 
+CHOICE_LETTERS = ("A", "B", "C", "D")
+
+
 def _load_jsonl(path: Path) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     with path.open() as handle:
@@ -33,6 +36,27 @@ def _phase130_choice(row: dict[str, Any]) -> Any:
 def _phase151V_choice(row: dict[str, Any]) -> Any:
     # 1.51V writes `choice_index` in its per-item jsonl.
     return row.get("choice_index", row.get("choice"))
+
+
+def _normalize_choice(choice: Any) -> str | None:
+    if choice is None:
+        return None
+    if isinstance(choice, bool):
+        return None
+    if isinstance(choice, int):
+        if 0 <= choice < len(CHOICE_LETTERS):
+            return CHOICE_LETTERS[choice]
+        return None
+    text = str(choice).strip().upper()
+    if text in CHOICE_LETTERS:
+        return text
+    try:
+        index = int(text)
+    except ValueError:
+        return None
+    if 0 <= index < len(CHOICE_LETTERS):
+        return CHOICE_LETTERS[index]
+    return None
 
 
 def main() -> int:
@@ -59,14 +83,16 @@ def main() -> int:
         b = phase151v[key]
         c130 = _phase130_choice(a)
         c51v = _phase151V_choice(b)
-        same_choice = c130 == c51v
+        norm130 = _normalize_choice(c130)
+        norm51v = _normalize_choice(c51v)
+        same_choice = norm130 == norm51v
         same_correct = bool(a["correct"]) == bool(b["correct"])
         agree_choice += int(same_choice)
         agree_correct += int(same_correct)
         print(
             f"{key}  "
-            f"phase130 choice={c130} correct={a['correct']}  "
-            f"phase151v choice_index={c51v} correct={b['correct']}  "
+            f"phase130 choice={c130}({norm130}) correct={a['correct']}  "
+            f"phase151v choice_index={c51v}({norm51v}) correct={b['correct']}  "
             f"{'AGREE' if same_choice else 'DIFFER'}"
         )
 
