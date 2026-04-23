@@ -159,16 +159,13 @@ in its own dimension.
    benchmark coverage on Qwen, not proof-of-transfer.
 
 4. **Local paired streaming-protocol reproduction of Sam's N=60 line.**
-   Codex round-24: this is "the missing piece for a breakthrough". The
-   Sam bridge we don't yet have is a local codec-through run that
-   mirrors his streaming / deployment-style protocol (as opposed to
-   isolated phase experiments). Proposed: 60 VideoMME items
-   (dev+holdout), 8f, 1.51V L=2 kr=0.50 patched vs unpatched, thermal
-   pair, report the same "clean / mixed / degenerate" bucket structure
-   Sam uses. Runtime ~90 min; **session harness landed 2026-04-22**
-   via `scripts/run_phase1_30_sam_streaming.py` and
-   `scripts/run_phase1_30_sam_streaming.sh`. Remaining work is the
-   reproduction-specific prereg and the paired run.
+   **SPEEDUP PASS / FIDELITY FALSIFIED 2026-04-23.** The local Qwen
+   7B 8f dev+holdout-union bridge mirrors the session/streaming
+   composition enough to test the paper-promotion rule: paired
+   amortized speedup lands at 3.326×, but accuracy drops by 19.3 pp and
+   fails the preregistered ±0.05 budget. The next work is root-cause
+   decomposition (H_V / H_K / H_interaction / H_reset / H_path), not
+   unqualified promotion of the stacked result.
 
 5. **1.55D v2 selective re-prefill (fidelity recovery).** The 1.55D v1
    driver is infra-falsified on partial image-block reuse; v2 with
@@ -253,8 +250,9 @@ in its own dimension.
    Δacc vs frames + follow-up speedup vs frames, 7B/3B overlaid with
    safe-deploy shading; threshold scaling ratio 14500/8100 ≈ 1.79
    matches the ~1.6× basin-onset-depth-scaling claim. And
-   `paper/figures/v_share_v_red_ceiling.{png,_data.json}` — 8 regimes
-   scatter (4 dev + 3 holdout + 1 pooled EXP10 n=60) against the
+   `paper/figures/v_share_v_red_ceiling.{png,_data.json}` — 9 rendered
+   regimes (4 Gemma dev + 3 Gemma holdout + 1 matched Qwen dev +
+   1 pooled EXP10 n=60) against the
    `1/(1 − V_share × V_red)` curve; dev median |Δ| = 2.2pp, holdout
    max 11.6pp (MVBench 8f, thermal-inflated and advisory per Session 4
    findings). Pooled n=60 cell sits at product 0.027 / E2E 1.042× —

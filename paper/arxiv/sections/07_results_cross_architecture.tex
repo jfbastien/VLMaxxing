@@ -1,8 +1,9 @@
 \section{Ceilings and Measured Anti-Recomputation Gains}
+\label{sec:results-cross-architecture}
 
 The strongest measured results in this paper appear when the reused stage
 actually owns meaningful wall-clock. That sounds obvious, but it is the part
-efficiency papers most often blur. C-CEILING is the paper's arithmetic sanity
+component-level reporting can blur. C-CEILING is the paper's arithmetic sanity
 check: local multipliers only survive to end-to-end wall-clock in proportion to
 the share of time the accelerated stage actually owns. The gains below are
 therefore not one number. They are regime-dependent by construction.
@@ -108,6 +109,18 @@ video has already been ingested, the next question is a much larger reuse
 opportunity. The Qwen routing section that follows explains why: temporal
 placement of fresh compute decides whether the answer survives.
 
+The newest local bridge makes the same warning concrete. On Qwen2.5-VL-7B-4bit
+at 8 frames, a session/streaming stack that combines \(L=2\),
+\(kr_V=0.50\) vision pruning with persistent-KV reuse over a VideoMME
+dev+holdout union (\(n=57\) sessions, 171 queries) reproduces the speedup
+side: 3.326$\times$ amortized end-to-end speedup, with follow-ups reaching
+75.6$\times$. It fails the fidelity side: aggregate accuracy moves from 0.561
+to 0.368, a \(-0.193\) delta against a preregistered \(\pm 0.05\) budget.
+The outputs are mostly well-formed, and first queries already lose 10.5 pp, so
+the result is not just a follow-up KV-collapse story. We therefore report it as
+boundary evidence and leave the H\_V / H\_K / H\_interaction / H\_reset /
+H\_path decomposition to the preregistered root-cause run.
+
 The key compositional result is negative and useful: the pooled n=60 H\_stack
 experiment is a ceiling-matched null, not a
 super-ceiling win. The observed 1.042$\times$ pooled result lands where the
@@ -126,6 +139,8 @@ MVBench and TOMATO are strong, but they should keep their caveats visible.
 \path{paper/figures/v_share_v_red_ceiling_data.json},
 \path{paper/figures/c_persist_safe_budget_data.json},
 \path{research/experiments/2026/2026-04-21-phase-1_51V-exp10-n60-findings.md},
+\path{research/experiments/2026/2026-04-23-phase-1_30-sam-streaming-findings.md},
+\path{research/experiments/2026/2026-04-23-phase-1_30-rootcause-prereg.md},
 \path{research/experiments/2026/2026-04-23-phase-1_51V-qwen-cross-arch-findings.md},
 \path{research/experiments/2026/2026-04-21-phase-1_51V-session3-findings.md},
 \path{research/experiments/2026/2026-04-21-phase-1_51V-session4-findings.md},

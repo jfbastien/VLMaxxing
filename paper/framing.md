@@ -30,10 +30,12 @@ at matched \(L=2\), \(kr_V=0.50\), upgrading C-VISION from
 single-architecture to two-architecture mechanism evidence; 1.57
 feature-drift geometry reproduced on holdout at 8f/16f; EXP10 pooled n=60
 H\_stack remains a ceiling-matched NULL; 1.29 MAX-over-span codec-native pilot
-remains hard-falsified and the continuous-score redesign remains aggregate-only
-partial pass, off the paper's critical path unless reframed; C-VISION now
-reads as 6 core ceiling scatter points with 9 rendered points total once the
-3 holdouts, the pooled null, and the matched Qwen point are included).
+remains hard-falsified, while the continuous-score + per-item-calibrated
+planner has a short-bucket \(n=10\) first-point confirmation; 1.30 local
+Qwen session/streaming composition reproduces speedup but falsifies fidelity;
+C-VISION now reads as 6 core ceiling scatter points with 9 rendered points
+total once the 3 holdouts, the pooled null, and the matched Qwen point are
+included).
 
 ## Current Manuscript Position (2026-04-23)
 
@@ -195,7 +197,7 @@ their independent speedups:
   ceiling. Stacking re-uses the same budget — you can't spend it twice.
 - **The EXP10 n=60 H_stack result sits at the ceiling, not above it.**
   Composition of 1.51R prefill-pruning × 1.51V vision-pruning lands at
-  1.064 × E2E, ceiling-matched to the predicted H_stack bound — a
+  1.042 × E2E, ceiling-matched to the predicted H_stack bound — a
   preregistered NULL on "stacking beats the ceiling" and an
   EARNED on the ceiling law itself.
 
@@ -215,18 +217,25 @@ boundary as much as the positives:
   `e2e=1.00×`, `gen=1.01×`. The 1.51R speedup in the main body comes
   from `kr=0.10` with a different aggregate-accuracy story.
 - **EXP10 n=60 H_stack composition: preregistered NULL** on "stacking
-  beats the ceiling." The observed 1.064 × E2E is ceiling-matched, not
+  beats the ceiling." The observed 1.042 × E2E is ceiling-matched, not
   super-ceiling. (This is a positive result on the *ceiling law*, and a
   null on stack-beats-ceiling.)
 - **1.29 codec-native sparse retrofit: HARD-FALSIFIED (MAX-aggregation)
-  → PARTIAL PASS (continuous-score, aggregate only).** Sparse 8-frame
+  → FIRST-POINT CONFIRMED (continuous-score + per-item calibration).** Sparse 8-frame
   after-ingest classification from native-rate H.264 metadata degenerates
   to 100 % NOVEL on every pair when aggregated by MAX (pilot
   2026-04-22, mean |Δ| = 53.8 pp vs pixel-diff proxy). The continuous-score
   redesign passes the 10 pp aggregate gate at 7.9 pp but fails the
-  per-item gate at 16–25 pp; codec and pixel-diff disagree on *where*
-  motion lives within an item, not just on *how much*. Off the paper's
-  critical path unless reframed.
+  per-item gate at 16–25 pp. Reframed with per-item live-pixel
+  calibration, the planner-accuracy probe matches dense on 10/10 short
+  VideoMME Qwen items with codec accuracy equal to dense accuracy. That is a
+  planner-signal first point, not a latency win or paper-body row yet.
+- **1.30 Qwen session/streaming composition: SPEEDUP PASS, FIDELITY
+  FALSIFIED.** The local bridge to Sam's stacked regime lands 3.326×
+  amortized speedup on Qwen 7B 8f dev+holdout union, but accuracy drops
+  by 19.3 pp. It is boundary evidence: single-mechanism safety does not
+  automatically license stacked deployment. Root-cause decomposition is
+  preregistered.
 - **1.60 scroll/pan regime-boundary probe: closed as a VideoMME corpus
   limitation.** We re-audited the natural corpus on a 60-item VideoMME
   stratification across 8f/16f/32f and found 0/60 items above the relaxed
@@ -322,16 +331,18 @@ appear in the main body unless the paired baseline is also reported.
 Bridge experiments we explicitly do NOT claim as landed in
 codec-through locally:
 
-- streaming-protocol reproduction of Sam's N = 60 line (phase 1.30
-  preregistered, deferred pending EXP17/18 landing)
+- streaming-protocol fidelity reproduction of Sam's N = 60 line: phase
+  1.30 speedup landed locally on Qwen, but fidelity falsified the
+  preregistered gate; the bridge now depends on root-cause decomposition,
+  not initial reproduction
 - codec-native benchmark evidence from 1.29 as a paper-grade local
   bridge; the pilots now exist, but MAX-over-span sparse sampling is
-  hard-falsified and the continuous-score redesign is only an
-  aggregate-level partial pass
+  hard-falsified and the positive continuous-score result is only an
+  \(n=10\) short-bucket planner-signal first point
 - sparse-execution measured delta for claim 5 (Track B infra exists
   on dense; sparse path unwritten)
-- cross-architecture C-VISION transfer (Qwen 2.5-VL at matched
-  `L=?, kr=?`)
+- broader cross-architecture C-VISION coverage beyond the matched Qwen
+  VideoMME point
 
 These are the four largest outstanding bridges between the repos; the
 three contributions above stand *without* them.
@@ -362,9 +373,10 @@ whitepaper §8 and codex 2026-04-16 review, the paper must state:
 4. **Pixel diff is still a proxy**: we classify by pixel differencing,
    not actual codec MV+CBF metadata. The latest 1.29 pilots show why
    that bridge is hard: MAX-over-span sparse sampling degenerates to
-   all-NOVEL, and continuous codec scores currently earn only an
-   aggregate-level partial pass. Real codec metadata remains a future
-   bridge, not current paper support.
+   all-NOVEL, while continuous codec scores with per-item live-pixel
+   calibration have only a short-bucket \(n=10\) planner-accuracy first
+   point. Real codec metadata remains a future bridge, not current paper
+   support.
 5. **Composition remains projected**: temporal × KV-compression
    composition ratios are projected from independent-layer
    assumptions, not measured end-to-end.
@@ -590,9 +602,10 @@ The current training-free planner is a proxy chain:
 Phase 1.29 (MV-only signal path via PyAV) was the intended bridge from
 pixel-diff proxy to real codec signals. The current evidence is mixed:
 MAX-over-span sparse aggregation is hard-falsified and the
-continuous-score redesign is only an aggregate-level partial pass.
-Until a planner-facing or native-rate streaming version lands cleanly,
-paper language should keep "proxy for codec motion" explicit.
+continuous-score + per-item-calibrated planner has a short-bucket
+\(n=10\) first-point confirmation. Until the result expands to \(n=30\),
+medium/long buckets, and calibration ablations, paper language should keep
+"proxy for codec motion" explicit and should not cite 1.29 as a latency win.
 
 Phase 1.36 (2026-04-17) quantified the pixel-diff ↔ ViT-feature
 lower bound: per-block Pearson r is **+0.233 on TOMATO (MEAN)** and

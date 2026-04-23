@@ -1,6 +1,6 @@
 Video VLMs keep paying to understand pixels they have already understood, and
-efficiency papers routinely overstate how much of a component-level win
-survives to end-to-end wall-clock. We study this training-free
+component-level efficiency wins are easy to misread as end-to-end wall-clock
+wins unless the accelerated stage's share is reported. We study this training-free
 anti-recomputation problem across three non-interchangeable regimes:
 first-pass vision pruning on fresh videos, after-ingest follow-up queries on
 the same video, and routing under a fixed dense backend. First, we derive and
@@ -24,4 +24,5 @@ expensive prefix or vision pass is being revisited. In companion
 deployment-scale streaming experiments on a larger Gemma 26B stack, the same
 thesis yields 13$\times$ fewer ViT calls,
 \mbox{$\sim$50$\times$} dominant-pipeline reduction, and 4.2--4.5$\times$
-end-to-end speedups in real-video regimes.
+end-to-end speedups in real-video regimes. These numbers are different
+regimes, not one speedup curve, and they should not be multiplied.

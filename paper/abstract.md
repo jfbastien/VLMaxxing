@@ -7,8 +7,9 @@ status: paper-facing draft abstract — three-contributions structure (C-CEILING
 # Abstract (codec-through-2, draft)
 
 Token-level and frame-level compression methods for video VLMs advertise
-multiplicative speedups, but the gains that translate to end-to-end
-wall-clock are regime-dependent and usually overstated. We pin down the
+component-level speedups, but the gains that translate to end-to-end
+wall-clock are regime-dependent and easy to misread unless stage share is
+reported. We pin down the
 compression-to-wall-clock relationship arithmetically, then instantiate
 it in three independent efficiency settings on commodity hardware.
 
@@ -28,9 +29,11 @@ models, and why decode-heavy regimes resist prefill acceleration.
 checkpoints, once the first-query prefill is paid, subsequent questions
 on the same video return in sub-second time inside a
 **safe-deployment envelope** that is architecture-specific: Qwen
-2.5-VL-7B-4bit at ≤ 16 frames / 6.5 k prefill tokens with Δacc = 0
-(clean), and 3B-4bit at ≤ 36 frames / 14.5 k prefill tokens at a
-Δacc = −0.19 pre-basin plateau. Outside the envelope, a narrow soft
+2.5-VL-7B-4bit stays inside the safe envelope through 16 frames /
+6.5 k prefill tokens, with a clean 16 f point and a slightly worse but
+still safe 8 f point; 3B-4bit stays bounded through 36 frames /
+14.5 k prefill tokens at a Δacc = −0.19 pre-basin plateau. Outside the
+envelope, a narrow soft
 transition exits into a non-letter-attractor basin; basin-onset depth
 scales ~1.6× with parameter count and sampler-side intervention is
 architecture-conditional (sampler-invariant at 7 B; sampler-dispersible
@@ -45,8 +48,9 @@ with the dev tranche clustering in the **39–43 %** range across
 VideoMME (8 f / 16 f), MVBench (8 f), and TOMATO (8 f). End-to-end speedups
 follow the vision-axis analog of C-CEILING,
 `E2E ≤ 1 / (1 − V_share × V_red)`, predictive within 2.7 pp of observed
-across four vision-axis cells plus a fifth (H-stack with
-novelty-pruning) at 1.064×. Dev-n=30 headline cells are
+across four vision-axis cells plus a pooled H-stack null at 1.042×,
+and a matched Qwen VideoMME 8 f point lands
+at 1.044× observed versus 1.043× predicted. Dev-n=30 headline cells are
 **TOMATO 1.24×, MVBench 1.21×, VideoMME 1.12× @ 16 f / 1.08× @ 8 f**,
 with a held-out VideoMME 8 f paired measurement at 1.113× confirming
 the dev signal.
@@ -79,12 +83,14 @@ VideoMME; 1.55D partial image-block re-prefill is infrastructure-
 falsified by mlx-vlm's image-block contract. These set hard limits on
 what training-free temporal reuse is and is not.
 
-**Limitations.** All C-VISION E2E cells above come from Gemma 4-E4B-4bit
-with on-device Metal execution; a cross-architecture transfer of the
-`L=2, kr=0.50` operating point (Qwen 2.5-VL at a matched point) is
-outstanding. Measured end-to-end gain in a sparse-execution path
-(claim 5) remains unmeasured at local scale; the sparse-path evidence
-lives in codec-through-sam. Our frame-count operating point (≤ 32 f
+**Limitations.** C-VISION is no longer single-architecture, but the
+first-pass headline cells remain Gemma-heavy: one matched Qwen point
+supports the ceiling mechanism, not broad architecture generalization.
+Measured end-to-end gain in a sparse-execution path (claim 5) remains
+unmeasured at local scale; the sparse-path evidence lives in
+codec-through-sam. A local Qwen session/streaming bridge reproduces the
+speedup side of stacked deployment but falsifies the fidelity gate, so
+root-cause decomposition is pending. Our frame-count operating point (≤ 32 f
 locally) is lower than some adjacent work (64–256 f), and VideoMME
 frame-scaling is non-monotonic on Qwen 2.5-VL at 4-bit: on dev, 16 f
 medium buckets gain ≈ +30 pp and 32 f does not recover the aggregate.

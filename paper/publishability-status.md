@@ -121,7 +121,8 @@ narrative.
   `L=2`, `kr_V=0.50` lands **1.044×** observed vs **1.043×** predicted, with
   `V_red = 0.398` and aggregate `Δacc = −0.033`.
 - **Qwen persistent-KV:** **47.2×** speedup and **815 ms** median follow-up at
-  8f, rising to **91.1×** and **807 ms** at 16f inside the clean envelope.
+  8f, rising to **91.1×** and **807 ms** at 16f inside the safe envelope
+  (16f clean; 8f slightly worse but still inside the criterion).
 - **Sam deployment-scale evidence:** **13×** streaming ViT reduction,
   **~50×** dominant-pipeline reduction, **4.2–4.5×** real-video end-to-end
   speedups in selected regimes, and **0.8 s** same-video follow-up latency on
@@ -266,7 +267,7 @@ runnable tonight vs. impl-gated.
 | should-do #4 | Local paired streaming-protocol reproduction (1.30) + root-cause decomposition | paired-run CLOSED 2026-04-23 (≈5h3m dev+holdout union n=57/171); Phase A short scout ~75 min queued; Phase B ~10 min; Phase C conditional ~6h | Qwen 2.5-VL-7B-Instruct-4bit (driver hard-fails on non-Qwen at `run_phase1_30_sam_streaming.py:303-308`) | **paired-run landed, decomposition prereg'd** — paired cold 0.561 / streaming 0.368 (Δacc = −0.193 FALSIFIES ±0.05) / 3.326× speedup PASS; the composition negative is real but the mechanism attribution is pending `research/experiments/2026/2026-04-23-phase-1_30-rootcause-prereg.md` (5 preregistered hypotheses H_V / H_K / H_interaction / H_reset / H_path across 6 arms + Q0 parity). Gemma port (#191) and adjacent-cos refresh policy (#192) deferred behind Phase A |
 | should-do #5 | **1.55D v2 selective re-prefill** (mlx-vlm fork; recover Δacc at 20f) | N/A benchmark-only | Qwen 2.5-VL-7B-4bit | **impl-partial** — Qwen-only v2 driver exists, but mlx-vlm still needs `pixel_values`/`image_grid_thw`/`attention_mask` co-slicing; note that **1.55B** remains the separate persistent-KV × 1.54 composition phase |
 | should-do #6 | **1.58 bf16 KV control at 20f** (discriminate quantization vs attention-OOD) | ~3.5-4 h (bf16 8f n=30 + bf16 16f n=30) | Qwen 2.5-VL-7B bf16 | **wrapper-landed; run still gated** — `scripts/run_phase1_58_bf16_control.sh` + analyzer landed, but checkpoint download and RSS feasibility remain user/environment constraints |
-| should-do #8 | **1.29 codec-native bridge (reframed)** | runtime now depends on reframing path | Qwen 2.5-VL-7B-4bit | **probe-landed** — MAX-over-span sparse sampling is HARD-FALSIFIED; continuous-score redesign is an aggregate-only PARTIAL PASS; planner-accuracy probe now exists for the reframed path, but it remains off the paper's critical path unless that run is positive |
+| should-do #8 | **1.29 codec-native bridge (reframed)** | runtime now depends on reframing path | Qwen 2.5-VL-7B-4bit | **first-point landed** — MAX-over-span sparse sampling is HARD-FALSIFIED; continuous-score + per-item live-pixel calibration reaches 10/10 dense agreement on short-bucket n=10, but this is planner-signal geometry, not latency, and remains off the paper's critical path pending n=30, medium/long, and calibration ablation |
 | future | **1.60 scroll/pan subset** (20 items stratified by scroll intensity, L=2 kr=0.50 paired) | n/a on VideoMME; ~70-90 min after a real subset exists | Gemma 4-E4B-4bit or matched C-VISION stack | **closed as natural-VideoMME corpus limitation** — wider 60-item VideoMME scan found 0/60 items above `shifted_fraction >= 0.30` (max 0.125), so this only reopens with EgoSchema/EPIC-Kitchens/Ego4D or a labeled synthetic scroll/pan set |
 | diagnostic | **Qwen 8f holdout `videomme_holdout_v1.toml` n=30** (parallel to already-done 16f holdout) | ~8 min (cold) | Qwen 2.5-VL-7B-4bit | **runnable-now** — driver exists, manifest exists |
 | blocked | 1.42 Gemma topology lane | ~2-6 h | Gemma 4-E4B-4bit | `_mix_gemma_features` impl (task #62) |
@@ -514,8 +515,12 @@ items that priority.md does not carry. For the current ordering see
    `V_red = 0.398`, `E2E = 1.044×` observed vs `1.043×` predicted,
    aggregate `Δacc = −0.033`.
 4. **Local paired streaming-protocol reproduction of Sam's N=60 line**
-   (codex round-24 "missing piece for a breakthrough"). ~90 min wall
-   + prereg doc.
+   — **SPEEDUP PASS / FIDELITY FALSIFIED 2026-04-23.** The Qwen
+   7B 8f dev+holdout-union bridge lands 3.326× paired amortized
+   speedup but loses 19.3 pp accuracy, so the paper-promotion gate does
+   not trigger. The next paper-relevant work is the preregistered
+   H_V / H_K / H_interaction / H_reset / H_path root-cause
+   decomposition, not another unqualified promotion of the stack.
 5. **1.55B selective re-prefill v2** — mlx-vlm fork for
    pixel_values / image_grid_thw / attention_mask co-slicing; ~3-5h
    implementation; would reopen C-PERSIST as a fidelity contribution.
@@ -526,10 +531,10 @@ items that priority.md does not carry. For the current ordering see
 8. **1.29 codec-native bridge (reframed)** — still scientifically
    interesting, but no longer the obvious next paper win. The pilot has
    already changed the claim boundary: MAX-over-span sparse sampling is
-   hard-falsified and the continuous-score redesign is only an
-   aggregate-level partial pass, so this lane is off the paper's critical
-   path unless reframed to planner-signal validation or native-rate
-   streaming.
+   hard-falsified, while continuous-score + per-item calibration has a
+   short-bucket n=10 planner-accuracy first point. This lane is off the
+   paper's critical path until n=30, medium/long buckets, and calibration
+   ablations turn it into a stable planner-signal claim.
 9. ~~**Paper figures: C-PERSIST safe-budget table + V_share ceiling
    plot**~~ — **LANDED 2026-04-21 (autonomous session, task #161).**
    Scripts `scripts/plot_c_persist_safe_budget.py` +

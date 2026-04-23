@@ -46,6 +46,13 @@ Exact Qwen caching benchmark & sparse-sampled unchanged-region reuse & reported 
 \end{tabularx}
 \end{table}
 
+The local Qwen bridge does not yet reproduce the companion Gemma deployment
+story as a fidelity-preserving stack. It reproduces the speedup side but fails
+the accuracy budget, with a semantic rather than syntactic failure profile.
+That is why Table~\ref{tab:real-apps} stays labeled as deployment-scale
+companion evidence rather than being folded into the local C-VISION or
+C-PERSIST headline rows.
+
 \begin{figure}[H]
   \centering
   \IfFileExists{generated/figures/streaming_snapshot_contact_sheet.png}{

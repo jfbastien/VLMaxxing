@@ -37,12 +37,24 @@ transfer was the downstream long-bucket accuracy shape, not the drift signal.
 The streaming lane is the smallest-$N$ evidence class in the paper. It is
 there because it shows the practical regime where redundancy becomes large, not
 because it already closes the full systems-reviewer checklist. The paper still
-needs a screenshot-polling baseline, broader UI coverage, and a cleaner local
-streaming bridge if that lane is going to carry more of the headline later. A
-related local codec-native bridge remains scientifically interesting, but the
-latest 1.29 pilots show that it is not yet main-text support:
-MAX-over-span sparse sampling is hard-falsified, and continuous-score codec
-signals are only an aggregate-level partial pass so far.
+needs a screenshot-polling baseline and broader UI coverage if that lane is
+going to carry more of the headline later. The local Qwen session/streaming
+bridge now exists and is useful precisely because it is negative: it reproduces
+speedup but loses accuracy, so the mechanism is pending the preregistered
+root-cause decomposition. A related local codec-native bridge remains
+scientifically interesting, but the latest 1.29 pilots show that it is still
+not main-text support: MAX-over-span sparse sampling is hard-falsified, while
+continuous-score codec signals with per-item live-pixel calibration have only a
+short-bucket \(n=10\) first-point confirmation. That is geometry-matching
+evidence, not a latency win.
+
+The current benchmark mix also under-samples scroll and pan regimes. We audited
+this directly on a 60-item VideoMME stratification across 8f/16f/32f and found
+0/60 items above a relaxed \texttt{shifted\_fraction} \(\geq 0.30\) gate, with
+max shifted fraction 0.125. That does not show C-VISION is safe on sustained
+egomotion or scrolling content; it shows VideoMME is the wrong corpus for that
+question. A scroll/pan characterization now requires EgoSchema, EPIC-Kitchens,
+Ego4D, or a labeled synthetic set.
 
 The paper is nevertheless being built to be reproducible. Automated main-text
 figures and tables are generated from checked-in artifact summaries or from
@@ -61,5 +73,6 @@ main text versus move to the appendix.
 \path{paper/claim-matrix.md},
 \path{docs/reproduction-status.md},
 \path{docs/methodology/performance.md},
-\path{docs/clip-policy.md}.}
+\path{docs/clip-policy.md},
+\path{research/experiments/2026/2026-04-23-phase-1_60-corpus-limitation-findings.md}.}
 \end{sectiontodo}

@@ -19,9 +19,9 @@ to deployment-scale evidence.
 ## 1. Setting: what the efficiency papers are quietly overstating
 
 Token-pruning, frame-routing, and KV-cache reuse methods for video VLMs
-routinely report multiplicative speedups on one component. Readers then
-compound those numbers in their heads: "2× here, 1.5× there, about 3×
-end-to-end." Those mental compositions are usually wrong, because
+often report speedups on one component. Readers then compound those numbers
+in their heads: "2× here, 1.5× there, about 3× end-to-end." Those mental
+compositions are usually wrong, because
 
 1. they ignore what fraction of wall-clock the accelerated stage
    actually owns on the model-size and frame-count regime that users
@@ -54,8 +54,8 @@ vision-axis analog,
 
 > E2E ≤ 1 / (1 − V_share × V_red),
 
-governs C-VISION (below) and matches observed speedups within 2.7 pp
-across four vision-axis cells plus a fifth stacked cell.
+governs C-VISION (below) and matches observed speedups within a few
+percentage points across the clean dev cells plus the pooled H-stack null.
 
 This is the paper's analytical contribution. It is also a diagnostic:
 when a reported end-to-end gain exceeds the
@@ -68,11 +68,12 @@ Reusing the first-query KV across subsequent questions on the *same*
 video collapses follow-up latency into a conversational regime on
 commodity hardware: after the first-query prefill is paid (cold), the
 second and later questions on Qwen 2.5-VL-7B-4bit at ≤ 16 frames return
-in sub-second time, zero accuracy loss, across 21 queries. The
-envelope is architecturally bounded and characterized:
+in sub-second time inside the current safe envelope. The envelope is
+architecturally bounded and characterized:
 
-- **Qwen 2.5-VL-7B-4bit**: clean at ≤ 16 frames / ≤ 6.5 k prefill
-  tokens (Δacc = 0). Soft transition at 18–20 frames into a
+- **Qwen 2.5-VL-7B-4bit**: safe through 16 frames / ≤ 6.5 k prefill
+  tokens, with a clean 16 f point (Δacc = 0) and a slightly worse but
+  still safe 8 f point (Δacc = −0.048). Soft transition at 18–20 frames into a
   non-letter-attractor basin (mixed `addCriterion` + garbage); saturated
   single-token attractor at ≤ 24 frames. The basin is
   sampler-invariant at both 20 f and 40 f; sampler intervention does
@@ -107,8 +108,8 @@ wider and should be described more softly than “benchmark-invariant,” across
 - TOMATO 8-frame dev (n = 30)
 
 with the vision-axis ceiling predicting observed E2E within 2.7 pp on
-all four, plus a fifth cell at 1.064× where we stack novelty-pruning
-on top (H-stack, ceiling-matched). Dev-n=30 headline cells are
+all four, plus a pooled H-stack null at 1.042× where we stack
+novelty-pruning on top and remain ceiling-matched. Dev-n=30 headline cells are
 
 | Benchmark        | E2E speedup | V_red observed | V_share (dense) |
 |------------------|-------------|----------------|-----------------|
@@ -146,7 +147,7 @@ FALSIFY. The paper therefore treats the three contributions as
 **separately-auditable safety envelopes**, not a stack whose union is
 claimed without evidence; a root-cause decomposition (H_V / H_K /
 H_interaction / H_reset) is preregistered to adjudicate which
-mechanism or interaction owns the composition loss. Our 1.064 ×
+mechanism or interaction owns the composition loss. Our 1.042 × pooled
 H_stack cell (n = 60) is ceiling-matched, a preregistered NULL on
 "stacking beats the ceiling" and a positive on the ceiling law itself.
 The paper reports composed numbers against their ceiling bound, never
@@ -253,15 +254,18 @@ the positives:
   numbers in the body come from `kr=0.10` with a different aggregate-
   accuracy story.
 - **EXP10 n = 60 H_stack composition: preregistered NULL** on
-  "stacking beats the ceiling." The 1.064 × is ceiling-matched, which
+  "stacking beats the ceiling." The 1.042 × pooled result is
+  ceiling-matched, which
   is a positive result on the ceiling law and a null on stack-beats-
   ceiling.
 - **1.29 codec-native sparse retrofit** at 8 f after-ingest: HARD-
   FALSIFIED under MAX-over-span aggregation (mean |Δ| = 53.8 pp vs
   pixel-diff, 2026-04-22). A continuous-score redesign passes the
-  10 pp aggregate gate at 7.9 pp but fails per-item at 16–25 pp; off
-  the critical path unless reframed to continuous-planner-signal or
-  native-rate streaming.
+  10 pp aggregate gate at 7.9 pp but fails per-item at 16–25 pp; the
+  reframed planner-accuracy probe now has a short-bucket \(n=10\)
+  first-point confirmation with 10/10 dense agreement, but it remains
+  off the critical path until n=30, medium/long buckets, and calibration
+  ablations land.
 - **1.55D v1 selective re-prefill: INFRASTRUCTURE-FALSIFIED.** An
   mlx-vlm image-block-reuse contract the harness does not respect;
   v2 reopens the experiment behind an in-repo monkey-patch, not yet
@@ -293,13 +297,13 @@ two systems. The paper is the evidence union, not either part alone.
 ## 6. Roadmap
 
 § 2 develops C-CEILING formally and cross-validates it across the
-seven regime dimensions. § 3 characterizes the C-PERSIST
+measured regime dimensions. § 3 characterizes the C-PERSIST
 safe-deployment envelope and its onset-depth scaling. § 4 presents
 C-VISION's operating point, V-reduction invariance, and three-
 benchmark transfer. § 5 gives Lane A's matched-conditions
 mechanism-validation evidence (what works, what doesn't). § 6
 presents deployment-scale evidence from codec-through-sam. § 7
-discusses limitations, a cross-architecture probe on Qwen for
-C-VISION, the outstanding sparse-execution delta for claim 5, and the
+discusses limitations, the landed but narrow Qwen C-VISION transfer
+point, the outstanding sparse-execution delta for claim 5, and the
 future phases documented in `paper/priority.md`. Weak streaming case
 studies without matched baselines are bounded to the appendix.

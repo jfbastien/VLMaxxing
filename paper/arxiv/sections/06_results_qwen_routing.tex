@@ -9,10 +9,12 @@ stops.
 
 On TOMATO motion, the clean base policy matches dense-8 accuracy while spending
 only 3.55 effective fresh frames instead of 8.0. On MVBench motion, the same
-clean base policy reaches 0.600 accuracy at 4.06 effective fresh frames, which
-strictly dominates dense-6 at 0.567 and 6.0 fresh frames. Those are not
-wall-clock claims. They are benchmarked statements about preserved answer
-quality at lower effective visual budget.
+clean base policy reaches a higher point estimate than dense-6 while spending
+less visual refresh: 0.600 accuracy at 4.06 effective fresh frames versus
+0.567 at 6.0 fresh frames. At \(n=30\), that is a pointwise Pareto frontier
+observation, not a statistical victory lap. Those are not wall-clock claims.
+They are benchmarked statements about preserved answer quality at lower
+effective visual budget.
 
 \subsection{Automated Snapshot}
 

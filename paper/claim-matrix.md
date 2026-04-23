@@ -164,9 +164,11 @@ should-do tier):
   C-VISION is now two-architecture mechanism evidence at matched
   \(L=2\), \(kr_V=0.50\); broader benchmark coverage on the second
   architecture remains optional strengthening, not a missing gate.
-- **1.29 local codec-native benchmark slice.** Biggest missing Sam
-  bridge; elevates the codec-through thesis from analog proxy to
-  codec-native local benchmark evidence.
+- **1.29 local codec-native benchmark slice.** First-point planner-signal
+  evidence landed at n=10 short-bucket with continuous-score + per-item
+  calibration, but paper-grade local codec-native evidence still needs n=30,
+  medium/long buckets, and calibration ablations. This can elevate the thesis
+  from analog proxy to codec-native local evidence, but it is not there yet.
 - **1.51V scroll/pan regime-boundary probe (phase 1.60).**
   CLOSED 2026-04-23 as a natural-VideoMME corpus limitation: wider
   60-item scan found 0/60 items above `shifted_fraction >= 0.30`

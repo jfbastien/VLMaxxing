@@ -293,7 +293,7 @@ def _write_lane_a_table(snapshot: dict) -> None:
             "dense-6",
             snapshot["mvbench"]["uniform_dense"]["6.0"],
             6.0,
-            "strict win",
+            "frontier",
         ),
     ]
 

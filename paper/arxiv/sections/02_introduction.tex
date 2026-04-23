@@ -36,6 +36,10 @@ same-video follow-up latency is 0.8\,s, paired Streaming VideoMME reports
 regimes reach 4.2--4.5$\times$ end-to-end speedups. Those numbers come from a
 different protocol and stay labeled that way in the paper. They matter because
 they show that the same reuse structure survives operational settings.
+A local Qwen session/streaming bridge now makes the boundary sharper:
+the stacked protocol reproduces the speedup side but not the fidelity side, so
+we treat deployment composition as a regime to explain rather than a multiplier
+to inherit.
 
 \begin{table}[H]
 \centering
