@@ -1,0 +1,14 @@
+benchmark = "videomme"
+description = "videomme holdout v1 short bucket only (10 items), disjoint short-bucket replication for phase 1.29 codec-native planner"
+item_ids = [
+    "videomme:short:062-3",
+    "videomme:short:066-3",
+    "videomme:short:070-3",
+    "videomme:short:074-3",
+    "videomme:short:126-1",
+    "videomme:short:126-2",
+    "videomme:short:136-3",
+    "videomme:short:267-2",
+    "videomme:short:280-3",
+    "videomme:short:293-1",
+]

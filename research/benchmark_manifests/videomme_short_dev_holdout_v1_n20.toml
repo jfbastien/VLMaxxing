@@ -1,0 +1,24 @@
+benchmark = "videomme"
+description = "videomme dev+holdout v1 short bucket union (20 items), disjoint short-bucket evidence bundle for phase 1.29 codec-native planner"
+item_ids = [
+    "videomme:short:037-2",
+    "videomme:short:100-2",
+    "videomme:short:116-3",
+    "videomme:short:120-2",
+    "videomme:short:158-3",
+    "videomme:short:160-1",
+    "videomme:short:210-2",
+    "videomme:short:264-1",
+    "videomme:short:278-3",
+    "videomme:short:282-2",
+    "videomme:short:062-3",
+    "videomme:short:066-3",
+    "videomme:short:070-3",
+    "videomme:short:074-3",
+    "videomme:short:126-1",
+    "videomme:short:126-2",
+    "videomme:short:136-3",
+    "videomme:short:267-2",
+    "videomme:short:280-3",
+    "videomme:short:293-1",
+]
