@@ -26,6 +26,7 @@ mkdir -p "$OUT_DIR"
   --n-seeds "$N_SEEDS" \
   --rss-guard-mb "$RSS_GUARD_MB" \
   --drift-refresh-policy "$DRIFT_REFRESH_POLICY" \
+  --allow-dirty \
   --output "$OUT_DIR/cold.jsonl" \
   --summary "$OUT_DIR/cold_summary.json"
 
@@ -41,6 +42,7 @@ mkdir -p "$OUT_DIR"
   --vision-tower-layer "$VISION_TOWER_LAYER" \
   --vision-tower-keep-rate "$VISION_TOWER_KEEP_RATE" \
   --drift-refresh-policy "$DRIFT_REFRESH_POLICY" \
+  --allow-dirty \
   --output "$OUT_DIR/streaming.jsonl" \
   --summary "$OUT_DIR/streaming_summary.json"
 
