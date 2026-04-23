@@ -340,15 +340,40 @@ def main() -> int:
             print(f"Combined (streaming_pruned_off − cold_dense): {combined_pt:+.3f}")
             print(f"Interaction term (combined − V − K):          {interaction_pt:+.3f}")
 
-        # H_V / H_K adjudication (preregistered gates)
+        # Preregistered gate adjudication.
+        # H_V is defined against all_queries in the prereg; H_K is defined
+        # against follow_ups (q23). Using all_queries for H_K (as earlier
+        # revisions did) inflates K-only with the Q0 bleed that H_V is
+        # supposed to capture and can flip the scientific conclusion.
+        k_only_q23_pt = (
+            _acc(summaries["streaming_dense_off"], "follow_ups")
+            - _acc(base, "follow_ups")
+        )
+        combined_q23_pt = (
+            _acc(summaries["streaming_pruned_off"], "follow_ups")
+            - _acc(base, "follow_ups")
+        )
         print("\n== Preregistered gate summary ==")
         abs_combined = abs(combined_pt)
+        abs_combined_q23 = abs(combined_q23_pt)
         h_v = abs(v_only_pt) >= 0.5 * abs_combined
-        h_k = abs(k_only_pt) >= 0.5 * abs_combined
+        h_k_q23 = abs(k_only_q23_pt) >= 0.5 * abs_combined_q23
         h_interaction_point = abs(interaction_pt) > max(abs(v_only_pt), abs(k_only_pt))
-        print(f"H_V (V-only dominates): |V|={abs(v_only_pt):.3f} vs 0.5×|combined|={0.5*abs_combined:.3f}  → {'PASS' if h_v else 'FAIL'}")
-        print(f"H_K (K-only dominates): |K|={abs(k_only_pt):.3f} vs 0.5×|combined|={0.5*abs_combined:.3f}  → {'PASS' if h_k else 'FAIL'}")
-        print(f"H_interaction (non-additive, point): |interact|={abs(interaction_pt):.3f} vs max(|V|,|K|)={max(abs(v_only_pt), abs(k_only_pt)):.3f}  → {'PASS' if h_interaction_point else 'FAIL'}")
+        print(
+            f"H_V (V-only dominates, all_queries): "
+            f"|V|={abs(v_only_pt):.3f} vs 0.5×|combined|={0.5*abs_combined:.3f}  "
+            f"→ {'PASS' if h_v else 'FAIL'}"
+        )
+        print(
+            f"H_K (K-only dominates, follow_ups):  "
+            f"|K_q23|={abs(k_only_q23_pt):.3f} vs 0.5×|combined_q23|={0.5*abs_combined_q23:.3f}  "
+            f"→ {'PASS' if h_k_q23 else 'FAIL'}"
+        )
+        print(
+            f"H_interaction (non-additive, point, all_queries): "
+            f"|interact|={abs(interaction_pt):.3f} vs max(|V|,|K|)={max(abs(v_only_pt), abs(k_only_pt)):.3f}  "
+            f"→ {'PASS' if h_interaction_point else 'FAIL'}"
+        )
 
     if {"streaming_dense_off", "streaming_dense_reset"}.issubset(summaries):
         off = summaries["streaming_dense_off"]
