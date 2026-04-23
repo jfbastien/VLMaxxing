@@ -2,7 +2,7 @@
 phase: 1.29B
 date: 2026-04-23
 parent: research/experiments/2026/2026-04-23-phase-1_29-planner-accuracy-probe-findings.md
-status: short-holdout findings appended; duration-breadth pending
+status: findings appended; H_short_bundle PASS-boundary; H_duration_breadth PASS
 tracking: codex AFK continuation 2026-04-23
 ---
 
@@ -204,3 +204,88 @@ pixel/dense planner behavior on short VideoMME within the preregistered band.
 Per the preregistration, this result is not clearly falsifying, so the next
 step is the all-duration dev n=30 breadth run. If that breadth run fails, the
 claim should be scoped to short/static-ish clips and kept out of the headline.
+
+## Execution — all-duration dev breadth
+
+Run command:
+
+```bash
+uv run python scripts/run_phase1_29_planner_accuracy_probe.py \
+  --manifest research/benchmark_manifests/videomme_dev_v1.toml \
+  --output-path research/experiments/2026/artifacts/phase1_29B_dev30_duration_20260423/results.jsonl \
+  --summary-path research/experiments/2026/artifacts/phase1_29B_dev30_duration_20260423/summary.json
+```
+
+Environment record: clean tree at git SHA
+`f9e4653d0914240b926d4d46c790d61cfc27ee52`.
+
+Artifacts:
+
+- `research/experiments/2026/artifacts/phase1_29B_dev30_duration_20260423/results.jsonl`
+- `research/experiments/2026/artifacts/phase1_29B_dev30_duration_20260423/summary.json`
+
+## Results — all-duration dev n=30
+
+| Metric | Value | Gate | Verdict |
+|--------|-------|------|---------|
+| n items | 30 | 30 | PASS |
+| Dense accuracy | 0.533 (16/30) | reference | — |
+| Pixel accuracy | 0.533 (16/30) | reference | — |
+| Codec accuracy | 0.533 (16/30) | dense loss >= -0.10 | PASS |
+| Codec minus dense accuracy | 0.000 | >= -0.10 | PASS |
+| Codec-dense agreement | 1.000 (30/30) | >= 0.85 | PASS |
+| Codec-pixel agreement | 0.933 (28/30) | >= 0.75 | PASS |
+| Pixel-dense agreement | 0.933 (28/30) | reference | — |
+| Pixel active reuse | 0.105 | reference | — |
+| Codec active reuse | 0.089 | abs gap <= 0.10 | PASS |
+| Pair-selection Jaccard | 0.525 | diagnostic | — |
+| Parse failures | 0 dense / 0 pixel / 0 codec | 0 | PASS |
+
+Per-duration breakdown:
+
+| Duration | Dense acc | Pixel acc | Codec acc | Codec-dense | Codec-pixel | Reuse gap | Jaccard | Mean codec extract |
+|----------|-----------|-----------|-----------|-------------|-------------|-----------|---------|--------------------|
+| long | 0.300 | 0.300 | 0.300 | 1.000 | 1.000 | 0.017 | 0.667 | 615.2 s |
+| medium | 0.500 | 0.600 | 0.500 | 1.000 | 0.900 | 0.023 | 0.293 | 92.6 s |
+| short | 0.800 | 0.700 | 0.800 | 1.000 | 0.900 | 0.008 | 0.614 | 21.3 s |
+
+Only two items differ between pixel and codec; codec equals dense on both:
+
+| item | dense | pixel | codec | interpretation |
+|------|-------|-------|-------|----------------|
+| `videomme:medium:531-1` | choice 1, wrong | choice 2, correct | choice 1, wrong | pixel diverges from dense; codec preserves dense |
+| `videomme:short:037-2` | choice 2, correct | choice 0, wrong | choice 2, correct | codec preserves dense and gold; pixel loses |
+
+Offline extraction cost:
+
+| Bucket | Sum codec extract | Mean | Min | Max |
+|--------|-------------------|------|-----|-----|
+| long | 6151.6 s | 615.2 s | 353.1 s | 904.0 s |
+| medium | 925.7 s | 92.6 s | 25.4 s | 175.1 s |
+| short | 213.0 s | 21.3 s | 10.5 s | 29.6 s |
+| total | 7290.3 s | 243.0 s | — | — |
+
+The run remained silent for roughly the native-rate extraction phase before
+entering Qwen prefill. This is a methodology and tooling finding: future
+medium/long codec-native sweeps need progress logging and per-item
+checkpointing. It is also a paper-positioning constraint: this offline
+sparse-sampling harness validates codec scores as a **semantic planner
+substitution**, but it is not a systems speedup path. A speed claim still
+requires codec metadata to be available from a streaming decoder path.
+
+## Verdict
+
+`H_duration_breadth` **PASSES**. Continuous H.264-derived codec scores with
+per-item live-pixel calibration exactly preserve dense choices on VideoMME
+dev all-duration n=30, with zero accuracy loss, zero parse failures, and
+codec-pixel agreement 28/30.
+
+C-CODEC can now move from "short first point" to "local codec-native
+planner-substitution evidence", with two strict caveats:
+
+1. The calibration is still per-item live-pixel calibrated. This is not a
+   codec-only deployment recipe yet; calibration ablations remain the next
+   scientific gate.
+2. Offline native-rate extraction is too slow for a systems headline. The
+   systems path must be streaming/decoder-integrated or cached, not this
+   after-the-fact sparse-sampling retrofit.

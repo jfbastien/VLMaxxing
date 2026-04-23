@@ -229,18 +229,20 @@ authoritative in the per-phase notes under
   prereg_outcome: Inconclusive (protocol deviation)
 
 - phase_id: 1.29
-  status: short-bucket replicated (n=20 bundle passes on boundary; duration breadth pending)
+  status: duration-breadth passed (n=30 dev all-duration; calibration ablation pending)
   authoritative_note: research/experiments/2026/2026-04-23-phase-1_29B-codec-native-replication-prereg.md
   authoritative_artifacts:
     - research/experiments/2026/artifacts/phase1_29_planner_accuracy_probe/results.jsonl
     - research/experiments/2026/artifacts/phase1_29_planner_accuracy_probe/summary.json
     - research/experiments/2026/artifacts/phase1_29B_short_holdout_20260423/results.jsonl
     - research/experiments/2026/artifacts/phase1_29B_short_holdout_20260423/summary.json
-  current_best_policy: "VideoMME 8f short n=20 (dev+holdout) Qwen 2.5-VL-7B-4bit: codec_dense_agreement 0.950 (19/20), codec_accuracy 0.750 vs dense 0.800 (loss exactly -0.050), codec_pixel_agreement 0.950, reuse-ratio gap 0.7pp. Planner-substitution gate PASSES on boundary for short clips; all-duration dev n=30 breadth remains pending before paper-body promotion."
+    - research/experiments/2026/artifacts/phase1_29B_dev30_duration_20260423/results.jsonl
+    - research/experiments/2026/artifacts/phase1_29B_dev30_duration_20260423/summary.json
+  current_best_policy: "VideoMME 8f dev all-duration n=30 Qwen 2.5-VL-7B-4bit: codec_dense_agreement 1.000 (30/30), codec_accuracy=dense_accuracy=0.533, codec_pixel_agreement 0.933, reuse-ratio gap 1.6pp, parse failures 0. Short dev+holdout n=20 also passes on the -5pp accuracy-loss boundary. This is local codec-native planner-substitution evidence, not a latency win: offline codec extraction totals 7290s (long mean 615s/item)."
   supersedes: []
-  paper_relevance: candidate (short-bucket dev+holdout n=20 passes on boundary; paper-body promotion requires medium/long-bucket survival and calibration ablation)
-  prereg_outcome: MAX-over-span sparse retrofit falsified; continuous-score redesign partial-pass at aggregate level; planner-accuracy probe first-point-confirmed on n=10 short (2026-04-23); short-holdout replication MIXED-positive and combined short n=20 PASS on boundary (2026-04-23)
-  notes: 2026-04-23 first-point run lands at 495a57b. Continuous-score + per-item live-pixel calibration substitutes 1:1 for dense planner on the dev-short pilot (10/10 agreement) and beats pixel oracle by +0.10. Codex takeover corrected the impossible "n=30 short" follow-up: fixed manifests provide dev-short n=10 + holdout-short n=10, not short n=30. Holdout short lands codec_dense_agreement 0.900, codec_pixel_agreement 1.000, codec_accuracy 0.700 vs dense 0.800. Pooled short n=20 passes exactly at the -5pp accuracy-loss boundary. Next gate is all-duration dev n=30; if it fails, C-CODEC remains a short-clip boundary result rather than a headline.
+  paper_relevance: candidate body row with caveats (local codec-native planner-substitution evidence now spans short/medium/long dev n=30; calibration ablation and streaming integration remain needed before deployment/system-speed claims)
+  prereg_outcome: MAX-over-span sparse retrofit falsified; continuous-score redesign partial-pass at aggregate level; planner-accuracy probe first-point-confirmed on n=10 short (2026-04-23); short-holdout replication MIXED-positive and combined short n=20 PASS on boundary (2026-04-23); all-duration dev n=30 H_duration_breadth PASS (2026-04-23)
+  notes: 2026-04-23 first-point run lands at 495a57b. Continuous-score + per-item live-pixel calibration substitutes 1:1 for dense planner on the dev-short pilot (10/10 agreement) and beats pixel oracle by +0.10. Codex takeover corrected the impossible "n=30 short" follow-up: fixed manifests provide dev-short n=10 + holdout-short n=10, not short n=30. Holdout short lands codec_dense_agreement 0.900, codec_pixel_agreement 1.000, codec_accuracy 0.700 vs dense 0.800. Pooled short n=20 passes exactly at the -5pp accuracy-loss boundary. The all-duration dev n=30 run then passes strongly: codec equals dense on 30/30 choices across long/medium/short. Operational caveat is severe: offline codec extraction totals 121.5 min, so this is not a systems speedup route without streaming decoder integration or a cache/checkpointed pipeline.
 
 - phase_id: 1.30
   status: CLOSED-SCOUT (speedup PASS, accuracy FALSIFIED; root-cause localized to V-only Q0 pruning on short-scout slice)

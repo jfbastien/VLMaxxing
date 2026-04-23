@@ -164,11 +164,14 @@ should-do tier):
   C-VISION is now two-architecture mechanism evidence at matched
   \(L=2\), \(kr_V=0.50\); broader benchmark coverage on the second
   architecture remains optional strengthening, not a missing gate.
-- **1.29 local codec-native benchmark slice.** First-point planner-signal
-  evidence landed at n=10 short-bucket with continuous-score + per-item
-  calibration, but paper-grade local codec-native evidence still needs n=30,
-  medium/long buckets, and calibration ablations. This can elevate the thesis
-  from analog proxy to codec-native local evidence, but it is not there yet.
+- **1.29 local codec-native benchmark slice.** **LANDED as planner-substitution
+  evidence, not latency evidence.** Continuous H.264-derived codec scores with
+  per-item live-pixel calibration match dense choices on VideoMME dev
+  all-duration n=30 (codec-dense agreement 1.000, codec accuracy = dense
+  accuracy = 0.533, parse failures 0) and short dev+holdout n=20 passes on the
+  -5pp boundary. Calibration ablation remains the next gate before calling this
+  a codec-only deployment recipe; offline extraction totals 7290s, so systems
+  speed requires streaming decoder integration.
 - **1.51V scroll/pan regime-boundary probe (phase 1.60).**
   CLOSED 2026-04-23 as a natural-VideoMME corpus limitation: wider
   60-item scan found 0/60 items above `shifted_fraction >= 0.30`

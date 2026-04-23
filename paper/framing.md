@@ -31,7 +31,7 @@ single-architecture to two-architecture mechanism evidence; 1.57
 feature-drift geometry reproduced on holdout at 8f/16f; EXP10 pooled n=60
 H\_stack remains a ceiling-matched NULL; 1.29 MAX-over-span codec-native pilot
 remains hard-falsified, while the continuous-score + per-item-calibrated
-planner has a short-bucket \(n=10\) first-point confirmation; 1.30 local
+planner now matches dense on VideoMME dev all-duration \(n=30\); 1.30 local
 Qwen session/streaming composition reproduces speedup but falsifies fidelity;
 C-VISION now reads as 6 core ceiling scatter points with 9 rendered points
 total once the 3 holdouts, the pooled null, and the matched Qwen point are
@@ -221,15 +221,17 @@ boundary as much as the positives:
   super-ceiling. (This is a positive result on the *ceiling law*, and a
   null on stack-beats-ceiling.)
 - **1.29 codec-native sparse retrofit: HARD-FALSIFIED (MAX-aggregation)
-  → FIRST-POINT CONFIRMED (continuous-score + per-item calibration).** Sparse 8-frame
+  → PLANNER-SUBSTITUTION LANDED (continuous-score + per-item calibration).** Sparse 8-frame
   after-ingest classification from native-rate H.264 metadata degenerates
   to 100 % NOVEL on every pair when aggregated by MAX (pilot
   2026-04-22, mean |Δ| = 53.8 pp vs pixel-diff proxy). The continuous-score
   redesign passes the 10 pp aggregate gate at 7.9 pp but fails the
   per-item gate at 16–25 pp. Reframed with per-item live-pixel
-  calibration, the planner-accuracy probe matches dense on 10/10 short
-  VideoMME Qwen items with codec accuracy equal to dense accuracy. That is a
-  planner-signal first point, not a latency win or paper-body row yet.
+  calibration, the planner-accuracy probe matches dense on 30/30 VideoMME
+  dev all-duration Qwen items with codec accuracy equal to dense accuracy
+  (0.533) and zero parse failures; short dev+holdout n=20 also passes on the
+  -5pp accuracy-loss boundary. This is local codec-native planner-substitution
+  evidence, not a latency win: offline codec extraction totals 7290s.
 - **1.30 Qwen session/streaming composition: SPEEDUP PASS, FIDELITY
   FALSIFIED.** The local bridge to Sam's stacked regime lands 3.326×
   amortized speedup on Qwen 7B 8f dev+holdout union, but accuracy drops
@@ -337,10 +339,9 @@ codec-through locally:
   short-scout loss primarily to the V-only Q0 pruning leg, so the bridge
   depends on a safer/adaptive V admission policy rather than another
   blind stack run
-- codec-native benchmark evidence from 1.29 as a paper-grade local
-  bridge; the pilots now exist, but MAX-over-span sparse sampling is
-  hard-falsified and the positive continuous-score result is only an
-  \(n=10\) short-bucket planner-signal first point
+- codec-native calibration ablation for 1.29; the local planner-substitution
+  bridge now exists at VideoMME dev n=30, but it still uses per-item
+  live-pixel calibration and the offline extraction path is not a systems win
 - sparse-execution measured delta for claim 5 (Track B infra exists
   on dense; sparse path unwritten)
 - broader cross-architecture C-VISION coverage beyond the matched Qwen
@@ -372,13 +373,14 @@ whitepaper §8 and codex 2026-04-16 review, the paper must state:
 3. **VideoMME at 32 frames vs competitors' 64-256**: our evaluation
    budget is lower than some adjacent work. Frame-count scaling study
    is noted as future work.
-4. **Pixel diff is still a proxy**: we classify by pixel differencing,
-   not actual codec MV+CBF metadata. The latest 1.29 pilots show why
-   that bridge is hard: MAX-over-span sparse sampling degenerates to
-   all-NOVEL, while continuous codec scores with per-item live-pixel
-   calibration have only a short-bucket \(n=10\) planner-accuracy first
-   point. Real codec metadata remains a future bridge, not current paper
-   support.
+4. **Pixel diff is still the default proxy, but codec-native evidence now
+   exists with calibration caveats**: the latest 1.29 results show why the
+   bridge is hard. MAX-over-span sparse sampling degenerates to all-NOVEL,
+   but continuous codec scores with per-item live-pixel calibration match
+   dense choices on VideoMME dev all-duration \(n=30\). This supports a
+   codec-native planner-substitution row; it does not yet remove live-pixel
+   calibration dependence and does not support a latency claim because offline
+   extraction is too slow.
 5. **Composition remains projected**: temporal × KV-compression
    composition ratios are projected from independent-layer
    assumptions, not measured end-to-end.
@@ -601,13 +603,15 @@ The current training-free planner is a proxy chain:
 - codec-side motion and residual semantics are standing in for
   latent-feature reuse decisions
 
-Phase 1.29 (MV-only signal path via PyAV) was the intended bridge from
-pixel-diff proxy to real codec signals. The current evidence is mixed:
-MAX-over-span sparse aggregation is hard-falsified and the
-continuous-score + per-item-calibrated planner has a short-bucket
-\(n=10\) first-point confirmation. Until the result expands to \(n=30\),
-medium/long buckets, and calibration ablations, paper language should keep
-"proxy for codec motion" explicit and should not cite 1.29 as a latency win.
+Phase 1.29 (MV/CBF-derived signal path via PyAV/FFmpeg metadata) is the
+current bridge from pixel-diff proxy to real codec signals. The current
+evidence is split by aggregation rule: MAX-over-span sparse aggregation is
+hard-falsified, while continuous codec scores with per-item live-pixel
+calibration match dense choices on VideoMME dev all-duration \(n=30\).
+Paper language can now cite 1.29 as **local codec-native planner-substitution
+evidence**, but it should keep the calibration caveat explicit and should not
+cite 1.29 as a latency win. The offline extraction path took 7290s on dev n=30;
+speed requires streaming decoder integration or cached metadata.
 
 Phase 1.36 (2026-04-17) quantified the pixel-diff ↔ ViT-feature
 lower bound: per-block Pearson r is **+0.233 on TOMATO (MEAN)** and

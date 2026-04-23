@@ -236,10 +236,17 @@ in its own dimension.
    agreement 1.00 (10/10)**, codec-accuracy = dense-accuracy = 0.80,
    codec-minus-pixel = +0.10 pp, reuse-ratio parity within 1pp. The
    preregistered accuracy-within-decision-band clause PASSES at first-
-   point but is holdout-blind at this n. Next: n=30 short replication,
-   medium/long bucket extension, and a calibration-mode ablation
-   (ratio-only vs RD-like). Findings doc:
-   `research/experiments/2026/2026-04-23-phase-1_29-planner-accuracy-probe-findings.md`.
+   point but is holdout-blind at this n. **REPLICATION/BREADTH 2026-04-23**
+   (Codex continuation): corrected the impossible "n=30 short" follow-up to
+   dev-short n=10 + holdout-short n=10 + all-duration dev n=30. Short
+   dev+holdout n=20 passes on the -5pp boundary; all-duration dev n=30
+   passes strongly with codec-dense agreement **1.000 (30/30)**,
+   codec-accuracy = dense-accuracy = **0.533**, codec-pixel agreement 0.933,
+   reuse gap 1.6pp, parse failures 0. This is now a local codec-native
+   planner-substitution row, not a systems speed row: offline codec extraction
+   took 7290s on dev n=30. Next: calibration-mode ablation and streaming
+   decoder integration. Findings doc:
+   `research/experiments/2026/2026-04-23-phase-1_29B-codec-native-replication-prereg.md`.
 
 9. **Paper figures: C-PERSIST safe-deployment table + V_share-governs-
    C-VISION-gains plot.** **LANDED 2026-04-21 (autonomous session).**
