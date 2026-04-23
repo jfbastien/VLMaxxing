@@ -25,15 +25,17 @@ It is NOT the place for raw experimental detail. Evidence lives in:
 - [research/falsified-hypotheses.md](../research/falsified-hypotheses.md) —
   what the evidence has ruled out
 
-Last material update: 2026-04-22 (EXP10 pooled n=60 H\_stack closed as
-ceiling-matched NULL; Qwen 16f holdout falsified long-bucket replication on a
-disjoint split; 1.29 MAX-over-span codec-native pilot hard-falsified and the
-continuous-score redesign landed as an aggregate-only partial pass, moving that
-lane off the paper's critical path unless reframed; C-VISION now reads as 5
-core n=30 scatter-back points with 8 rendered points total once holdouts and
-the pooled null are included).
+Last material update: 2026-04-23 (Qwen 1.51V cross-architecture probe passed
+at matched \(L=2\), \(kr_V=0.50\), upgrading C-VISION from
+single-architecture to two-architecture mechanism evidence; 1.57
+feature-drift geometry reproduced on holdout at 8f/16f; EXP10 pooled n=60
+H\_stack remains a ceiling-matched NULL; 1.29 MAX-over-span codec-native pilot
+remains hard-falsified and the continuous-score redesign remains aggregate-only
+partial pass, off the paper's critical path unless reframed; C-VISION now
+reads as 6 core ceiling scatter points with 9 rendered points total once the
+3 holdouts, the pooled null, and the matched Qwen point are included).
 
-## Current Manuscript Position (2026-04-21)
+## Current Manuscript Position (2026-04-23)
 
 The manuscript should be centered on one anti-recomputation story with three
 explicit regimes:
@@ -75,7 +77,7 @@ For the per-claim breakdown, see
 [`paper/claim-matrix.md`](claim-matrix.md) and
 [docs/literature-map-2026-04-16.md § Current evidence level (2026-04-16)](../docs/literature-map-2026-04-16.md).
 
-## Three Major Contributions (2026-04-21 status)
+## Three Major Contributions (2026-04-23 status)
 
 Per Codex rounds 25–26 (2026-04-21), the paper spine is these three
 first-class contributions — ordered ahead of the Qwen routing lane,
@@ -96,9 +98,11 @@ duration-conditional partial reproduction + 1.55D infra-falsified):
    are **after-ingest / follow-up-query** numbers: the user pays the
    full first-query prefill once, subsequent questions on the *same
    video* reuse the KV and return in sub-second time. These are not
-   "any-fresh-video" latencies. 7B Qwen 2.5-VL-4bit clean at ≤16f /
-   ≤6.5k prefill tokens (Δacc=0); 3B at ≤36f / ≤14.5k prefill sits on
-   a tolerated Δacc=−0.19 plateau (not clean, bounded). Basin-onset depth scales ~1.6× with parameter
+   "any-fresh-video" latencies. 7B Qwen 2.5-VL-4bit stays inside the
+   safe envelope through ≤16f / ≤6.5k prefill tokens, with a clean 16f
+   point (Δacc=0) and a slightly worse but still safe 8f point
+   (Δacc=−0.048); 3B at ≤36f / ≤14.5k prefill sits on a tolerated
+   Δacc=−0.19 plateau (not clean, bounded). Basin-onset depth scales ~1.6× with parameter
    count; basin geometry (non-letter attractor emergence) is
    cross-architectural; sampler-side intervention is
    architecture-conditional (insufficient at 7B basin at 20f AND 40f;
@@ -108,17 +112,20 @@ duration-conditional partial reproduction + 1.55D infra-falsified):
    practitioner guidance; safety-boundary result in its own right.
 
 3. **C-VISION (claim 15): Vision-tower pruning transfers at `L=2`
-   `kr_V=0.50` on Gemma 4-E4B-4bit, with first-pass gains governed by
-   the scatter-back ceiling `1/(1 − V_share × V_red)`.**
+   `kr_V=0.50` across Gemma 4-E4B-4bit and Qwen 2.5-VL-7B-4bit, with
+   first-pass gains governed by the scatter-back ceiling
+   `1/(1 − V_share × V_red)`.**
    Dev n=30 headlines are TOMATO **1.24×**, MVBench **1.21×**, and
    VideoMME **1.08×** (8f) / **1.12×** (16f). Holdout status is now
    differentiated rather than missing: VideoMME 8f is **clean** at
    **1.113×** with zero aggregate accuracy delta; MVBench 8f is
    **advisory** at **1.407×** with a scheduler-scale decode note; and
    TOMATO 8f is **earned-advisory** at **1.194×** from the upstream
-   session-5 rerun. The mechanism is stable; the exact magnitude remains
-   regime-dependent because `V_share` and `V_red` are benchmark- and
-   protocol-sensitive.
+   session-5 rerun. The matched Qwen VideoMME 8f cross-arch point lands
+   at **1.044× observed vs 1.043× predicted**, with smaller absolute lift
+   because Qwen's dense vision share is only ~10\%. The mechanism is
+   stable; the exact magnitude remains regime-dependent because `V_share`
+   and `V_red` are benchmark-, architecture-, and protocol-sensitive.
 
 These three claims align on a common analytical frame: **share ×
 reduction → `1/(1 − share × reduction)` ceiling**, with
@@ -130,18 +137,17 @@ adds the orthogonal fidelity-floor axis (where the ceiling falls apart
 entirely under cache reuse).
 
 **Venue targeting implication:** the combination of C-PERSIST (safety
-boundary, cross-architectural) + C-VISION (three-benchmark 1.20–1.24×
-E2E dev plus differentiated holdout status) + C-CEILING (analytical
-framework) is paper-grade for an efficiency-focused venue (NeurIPS /
-ICML efficiency workshop or ICLR Tiny Papers). The systems angle is
-real, but a systems venue like MLSys still wants more: a measured sparse
-backend, a clean systems baseline such as screenshot polling, and a
-broader streaming evaluation. Main-track readiness now depends less on
-closing the V-only holdout pair and more on broader asks: (a) one
-cross-architecture 1.51V transfer probe on Qwen, (b) one measured
-sparse-path end-to-end delta, (c) a cleaner local bridge into the
-streaming / deployment regime, (d) a 1.29 local codec-native benchmark
-slice, and (e) a 1.60 scroll/pan regime-boundary probe.
+boundary, cross-architectural) + C-VISION (three-benchmark Gemma
+headline cells plus a matched Qwen transfer point) + C-CEILING
+(analytical framework) is paper-grade for an efficiency-focused venue
+(NeurIPS / ICML efficiency workshop or ICLR Tiny Papers). The systems
+angle is real, but a systems venue like MLSys still wants more: a
+measured sparse backend, a clean systems baseline such as screenshot
+polling, and a broader streaming evaluation. Main-track readiness now
+depends on broader asks: (a) one measured sparse-path end-to-end delta,
+(b) a cleaner local bridge into the streaming / deployment regime,
+(c) a 1.29 local codec-native benchmark slice, and (d) a 1.60 scroll/pan
+regime-boundary probe.
 
 ## Protocol matters — three non-interchangeable evaluation regimes
 

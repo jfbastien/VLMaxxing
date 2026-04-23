@@ -71,6 +71,11 @@ HOLDOUT_CELLS = [
     CeilingCell("TOMATO 8f holdout", "holdout", 0.407, 0.350, ceiling(0.407 * 0.350), 1.194),
 ]
 
+# Cross-architecture C-VISION transfer point (Qwen 2.5-VL-7B, VideoMME 8f).
+CROSS_ARCH_CELLS = [
+    CeilingCell("Qwen VideoMME 8f dev", "cross-arch", 0.103, 0.398, 1.043, 1.044),
+]
+
 # Pooled-regime cell (H_stack EXP10 n=60 CLOSED-NULL).
 POOLED_CELLS = [
     # Arm B V+novelty on pooled VideoMME n=60: V_share collapsed to 0.0626,
@@ -87,7 +92,7 @@ POOLED_CELLS = [
 
 
 def plot() -> None:
-    all_cells = DEV_CELLS + HOLDOUT_CELLS + POOLED_CELLS
+    all_cells = DEV_CELLS + HOLDOUT_CELLS + CROSS_ARCH_CELLS + POOLED_CELLS
 
     fig, ax = plt.subplots(figsize=(9.5, 6.2))
 
@@ -119,14 +124,15 @@ def plot() -> None:
 
     _scatter(DEV_CELLS, "o", "tab:blue", "dev (n=30 thermally paired)")
     _scatter(HOLDOUT_CELLS, "s", "tab:orange", "holdout (V-only pairs)")
+    _scatter(CROSS_ARCH_CELLS, "^", "tab:green", "Qwen cross-arch (n=30, matched point)")
     _scatter(POOLED_CELLS, "D", "tab:red", "pooled n=60 (H_stack CLOSED-NULL)")
 
     ax.set_xlabel("V_share × V_red  (share-weighted vision-tower pruning)")
     ax.set_ylabel("end-to-end speedup ×")
     ax.set_title(
         "C-VISION scatter-back ceiling validation\n"
-        "8 regimes (4 dev + 3 holdout + 1 pooled); dev median |Δ| = 2.2pp; "
-        "holdout max 11.6pp (MVBench, thermal-inflated)"
+        "9 regimes (4 Gemma dev + 3 holdout + 1 Qwen + 1 pooled); "
+        "Qwen lands at +0.1pp; holdout max 11.6pp (MVBench, thermal-inflated)"
     )
     ax.grid(True, alpha=0.3)
     ax.set_xlim(0.0, 0.30)
@@ -147,6 +153,10 @@ def plot() -> None:
         "holdout_cells": [
             {**asdict(c), "error_pp": round(c.error_pp, 2), "product": round(c.product, 4)}
             for c in HOLDOUT_CELLS
+        ],
+        "cross_arch_cells": [
+            {**asdict(c), "error_pp": round(c.error_pp, 2), "product": round(c.product, 4)}
+            for c in CROSS_ARCH_CELLS
         ],
         "pooled_cells": [
             {**asdict(c), "error_pp": round(c.error_pp, 2), "product": round(c.product, 4)}

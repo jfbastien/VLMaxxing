@@ -30,6 +30,14 @@ pruning mechanism gives smaller gains on VideoMME than on MVBench because
 VideoMME is less vision-dominated at this geometry. That is exactly what the
 ceiling law predicts.
 
+That prediction is no longer Gemma-only. A matched Qwen2.5-VL-7B VideoMME
+8f cross-architecture probe at the same \(L=2\), \(kr_V=0.50\) operating
+point lands at 1.044$\times$ observed versus 1.043$\times$ predicted, with
+aggregate accuracy delta $-0.033$ on \(n=30\) dev. The absolute lift is
+smaller because Qwen's dense \(V\_share\) at this geometry is only about 10\%.
+What transfers is the share-weighted ceiling, not a benchmark-independent
+multiplier.
+
 \begin{figure}[H]
   \centering
   \IfFileExists{generated/figures/v_share_v_red_ceiling.png}{
@@ -38,18 +46,22 @@ ceiling law predicts.
     \fbox{\parbox{0.9\linewidth}{Run \texttt{make paper-sync} to sync the C-VISION ceiling figure.}}
   }
   \caption{C-VISION ceiling validation. The rendered paper-facing figure shows
-  four dev cells, three holdout cells, and the pooled n=60 H\_stack point. The
-  pooled point matters because it closes the intuitive ``stacking should
-  multiply'' story in the opposite direction: the observed 1.042$\times$
-  result sits where the measured share terms say it should.}
+  four Gemma dev cells, three Gemma holdout cells, one matched Qwen
+  cross-architecture point, and the pooled n=60 H\_stack point. The pooled
+  point matters because it closes the intuitive ``stacking should multiply''
+  story in the opposite direction: the observed 1.042$\times$ result sits
+  where the measured share terms say it should, and the low-share Qwen point
+  shows the same ceiling binding on a second architecture.}
   \label{fig:vshare-ceiling}
 \end{figure}
 
-Across the rendered eight-cell view, the ceiling stays predictive enough to be
+Across the rendered nine-cell view, the ceiling stays predictive enough to be
 useful and honest. The holdout spread is wider than the first dev tranche made
-it look, which is why the paper describes benchmark- and
+it look, and the matched Qwen point sits low-left where its smaller \(V\_share\)
+says it should. That is why the paper describes benchmark-, architecture-, and
 protocol-sensitive magnitude rather than benchmark-invariant first-pass gain.
-That softening is not a retreat. It is what the holdouts earned.
+That softening is not a retreat. It is what the holdouts and the cross-arch
+probe earned.
 
 \subsection{C-PERSIST: After-Ingest Reuse Is The Big-Number Regime}
 
@@ -59,10 +71,10 @@ Qwen2.5-VL-7B-4bit, the answer is already large enough to matter. At 8 frames,
 follow-up latency drops to 815\,ms median with 47.2$\times$ speedup and
 $-0.048$ aggregate accuracy delta. At 16 frames the speedup rises to
 91.1$\times$ while the accuracy delta returns to 0. Within the current
-$\leq$16f safe envelope, the regime is fast and empirically bounded: the 16f
-point is clean, and the 8f point still stays inside the current
-safe-deployment criterion. Past that point the curve keeps rising, but the
-fidelity boundary appears.
+$\leq$16f safe envelope, the regime is fast and empirically bounded: the safe
+region contains one clean point at 16f and one slightly worse but still safe
+point at 8f. Past that point the curve keeps rising, but the fidelity boundary
+appears.
 
 \begin{figure}[H]
   \centering
@@ -114,6 +126,7 @@ MVBench and TOMATO are strong, but they should keep their caveats visible.
 \path{paper/figures/v_share_v_red_ceiling_data.json},
 \path{paper/figures/c_persist_safe_budget_data.json},
 \path{research/experiments/2026/2026-04-21-phase-1_51V-exp10-n60-findings.md},
+\path{research/experiments/2026/2026-04-23-phase-1_51V-qwen-cross-arch-findings.md},
 \path{research/experiments/2026/2026-04-21-phase-1_51V-session3-findings.md},
 \path{research/experiments/2026/2026-04-21-phase-1_51V-session4-findings.md},
 \path{research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md},

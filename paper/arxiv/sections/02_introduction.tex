@@ -74,7 +74,8 @@ and a wider but bounded 3B plateau through 36 frames / 14.5k prefill tokens.
 pruning yields measured first-pass end-to-end gains on frozen Gemma video-VLM
 runs, from 1.113$\times$ to 1.407$\times$ across clean and advisory holdout
 cells, with magnitude governed by the vision-share ceiling rather than wishful
-component-wise multiplication.
+component-wise multiplication; a matched Qwen VideoMME probe lands on that
+same ceiling at smaller absolute lift because its dense vision share is lower.
 \end{itemize}
 
 Those three contributions do not compose as a naive product. C-VISION changes

@@ -73,6 +73,18 @@
       "product": 0.1424
     }
   ],
+  "cross_arch_cells": [
+    {
+      "label": "Qwen VideoMME 8f dev",
+      "split": "cross-arch",
+      "v_share": 0.103,
+      "v_red": 0.398,
+      "predicted_e2e": 1.043,
+      "observed_e2e": 1.044,
+      "error_pp": 0.1,
+      "product": 0.041
+    }
+  ],
   "pooled_cells": [
     {
       "label": "VideoMME pooled n=60 (H_stack arm B)",
@@ -86,5 +98,5 @@
     }
   ],
   "worst_abs_error_pp": 11.64,
-  "median_abs_error_pp": 2.65
+  "median_abs_error_pp": 2.6
 }

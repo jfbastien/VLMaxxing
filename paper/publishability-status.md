@@ -1,4 +1,4 @@
-# Publishability Status — 2026-04-21
+# Publishability Status — 2026-04-23
 
 One-file answer to "what can we actually claim, in what venue, with what
 numbers, today." Kept in sync with [claim-matrix.md](claim-matrix.md) but
@@ -11,13 +11,14 @@ runtime inventories lower in this file are retained for provenance, but the
 current narrative interpretation should come from `priority.md` and the claim
 matrix.
 
-## Current Manuscript Position (2026-04-21)
+## Current Manuscript Position (2026-04-23)
 
 The draft should lead with three linked claims, not with a Qwen-only routing
 note:
 
 - **C-VISION**: Gemma vision-tower pruning now has paper-grade first-pass
-  speedup evidence on clean and advisory holdout cells.
+  speedup evidence on clean and advisory holdout cells, and the same
+  scatter-back ceiling now transfers to a matched Qwen VideoMME probe.
 - **C-PERSIST**: persistent-KV reuse already delivers the largest local
   deployment numbers in the repo on same-video follow-up queries.
 - **Qwen routing**: mechanism and boundary evidence showing why placement of
@@ -49,13 +50,17 @@ contributions (all landed before Codex round-26 2026-04-21):
   4-regime temperature matrix. Mechanism decomposes into three
   independently-varying axes (threshold onset × saturation ceiling ×
   basin-attractor identity), scaling relation ~1.6× basin-onset depth
-  across architectures. Deployment-facing envelope: 7B ≤ ~8k prefill
-  at Δacc=0 (clean); 3B ≤ ~16k prefill at Δacc=−0.19 plateau
-  (tolerated, not clean).
+  across architectures. Deployment-facing envelope: 7B stays inside the
+  safe region through 16f / ~6.5k prefill, with a clean 16f point and a
+  slightly worse but still safe 8f point; 3B stays inside the bounded
+  region through 36f / ~14.5k prefill at a tolerated Δacc=−0.19 plateau
+  (not clean).
 - **C-VISION — vision-tower pruning with scatter-back ceiling**
   (claim 15). `E2E ≤ 1/(1 − V_share × V_red)` on Gemma 4-E4B-4bit
-  validated across **8 regime cells** (4 dev + 3 holdout + 1 pooled
-  EXP10 n=60); V_red benchmark-invariant at 39–43% at L=2 kr_V=0.50. **Three-benchmark
+  validated across **6 core scatter points** (4 Gemma dev + 1 matched
+  Qwen dev + 1 pooled EXP10 n=60), with **9 rendered points total** once
+  the 3 Gemma holdout cells are included; V_red benchmark-invariant at
+  39–43% at L=2 kr_V=0.50 on the first dev tranche. **Three-benchmark
   holdout trifecta CLOSED 2026-04-21** (VideoMME 8f CLEAN,
   MVBench 8f CLOSED-ADVISORY on thermal-calibration footnote,
   TOMATO 8f EARNED-ADVISORY on favorable-drift footnote).
@@ -63,6 +68,10 @@ contributions (all landed before Codex round-26 2026-04-21):
 - **First-pass measured gains (Gemma / C-VISION).** This is the main
   reviewer-facing result today: measured end-to-end speedups on VideoMME,
   MVBench, and TOMATO, with clean versus advisory status stated explicitly.
+- **Cross-architecture C-VISION transfer (Qwen).** The same
+  `1/(1 − V_share × V_red)` ceiling now binds on a matched Qwen
+  VideoMME point at 1.044× observed versus 1.043× predicted. This
+  strengthens the mechanism claim, not the headline magnitude.
 - **After-ingest follow-up gains (Qwen / C-PERSIST).** This is where the
   largest local speedups live today: same-video follow-up queries collapse to
   sub-second latency when the expensive prefix is reused.
@@ -108,6 +117,9 @@ narrative.
 - **Gemma first-pass vision pruning:** VideoMME 8f holdout **1.113×** clean,
   MVBench 8f holdout **1.407×** advisory, TOMATO 8f holdout **1.194×**
   earned-advisory from the freshly pulled upstream session-5 rerun.
+- **Qwen cross-architecture C-VISION transfer:** VideoMME 8f dev at matched
+  `L=2`, `kr_V=0.50` lands **1.044×** observed vs **1.043×** predicted, with
+  `V_red = 0.398` and aggregate `Δacc = −0.033`.
 - **Qwen persistent-KV:** **47.2×** speedup and **815 ms** median follow-up at
   8f, rising to **91.1×** and **807 ms** at 16f inside the clean envelope.
 - **Sam deployment-scale evidence:** **13×** streaming ViT reduction,
@@ -123,9 +135,11 @@ narrative.
 > **Persistent KV-cache follow-up queries on Qwen 2.5-VL (MLX) deliver
 > 47×→150× speedups along an 8/16/18/20/24/32-frame curve on 7B-4bit
 > (prefill-dominated) and 136×→213× on 3B-4bit (decode-dominated).
-> Safe deployment envelope is architecture-specific: 7B ≤ ~8k prefill
-> at Δacc=0 (clean); 3B ≤ ~16k prefill sits on a tolerated Δacc=−0.19
-> plateau (bounded, not clean). Fidelity degradation
+> Safe deployment envelope is architecture-specific: 7B stays inside the
+> safe regime through 16f / ~6.5k prefill, with a clean 16f point and a
+> slightly worse but still safe 8f point; 3B stays inside the bounded
+> regime through 36f / ~14.5k prefill on a tolerated Δacc=−0.19 plateau
+> (not clean). Fidelity degradation
 > decomposes into three independently-varying axes (threshold onset,
 > saturation ceiling, basin-attractor identity), with a ~1.6× basin-
 > onset depth scaling across architectures. Sampler-invariance at both
@@ -248,7 +262,7 @@ runnable tonight vs. impl-gated.
 
 | Prio | Phase | Runtime | Model | Blocker status |
 |------|-------|---------|-------|----------------|
-| should-do #3 | **1.51V Qwen cross-arch probe** (L=2, kr=0.50, VideoMME 8f n=30 thermally paired, 2 arms) | ~60-90 min | Qwen 2.5-VL-7B-4bit | **runnable after review** — Qwen keep-mask plumbing landed in `src/codec_through/qwen_pruned_vision_tower.py`, `scripts/run_phase1_51V.py`, and `scripts/run_phase1_51V_qwen_cross_arch.sh` |
+| should-do #3 | **1.51V Qwen cross-arch probe** (L=2, kr=0.50, VideoMME 8f n=30 thermally paired, 2 arms) | **CLOSED 2026-04-23** | Qwen 2.5-VL-7B-4bit | **landed** — `V_red = 0.398`, `E2E = 1.044× observed vs 1.043× predicted`, aggregate `Δacc = −0.033`; C-VISION upgrades to two-architecture mechanism evidence |
 | should-do #4 | Local paired streaming-protocol reproduction (1.30, Sam N=60 line analog, 60 items × 2 arms) | ~90 min | Gemma 4-E4B-4bit | **harness-landed, prereg-open** — session driver exists in `scripts/run_phase1_30_sam_streaming.py`; remaining work is reproduction-specific prereg + paired run |
 | should-do #5 | **1.55D v2 selective re-prefill** (mlx-vlm fork; recover Δacc at 20f) | N/A benchmark-only | Qwen 2.5-VL-7B-4bit | **impl-partial** — Qwen-only v2 driver exists, but mlx-vlm still needs `pixel_values`/`image_grid_thw`/`attention_mask` co-slicing; note that **1.55B** remains the separate persistent-KV × 1.54 composition phase |
 | should-do #6 | **1.58 bf16 KV control at 20f** (discriminate quantization vs attention-OOD) | ~3.5-4 h (bf16 8f n=30 + bf16 16f n=30) | Qwen 2.5-VL-7B bf16 | **wrapper-landed; run still gated** — `scripts/run_phase1_58_bf16_control.sh` + analyzer landed, but checkpoint download and RSS feasibility remain user/environment constraints |
@@ -277,8 +291,8 @@ queue once infra is in place.
 | Venue | Fit today | What would need to land |
 |---|---|---|
 | **arXiv preprint (current anti-recomputation draft)** | **Ready today** as a multi-regime anti-recomputation paper with clean versus advisory status stated explicitly and deployment-scale evidence labeled by source class. | No new science gate. Keep provenance tight, finalize manuscript framing, and keep the paper honest about which rows are local clean, local advisory, upstream imported, or deployment-scale imported evidence. |
-| **NeurIPS / ICLR / CVPR efficiency workshop** | **Defensible today** as the current anti-recomputation paper if the provenance remains tight and the manuscript keeps clean, advisory, imported, and deployment-scale rows visibly distinct. | Stronger with one measured sparse-path delta, one additional cross-architecture C-VISION probe, and a cleaner local streaming bridge. |
-| **Main track (NeurIPS/ICML/CVPR)** | **Not ready yet.** The paper now has a better three-regime story than the old venue rows implied, but it still lacks one measured sparse-path delta, broader apples-to-apples comparison against adjacent methods, and a cleaner bridge from local benchmark evidence into deployment-style streaming evaluation. | One measured sparse-path delta, one additional cross-architecture first-pass probe, a 1.29 local codec-native slice, a 1.60 scroll/pan regime probe, and tighter head-to-head positioning against the closest trained and training-free baselines. |
+| **NeurIPS / ICLR / CVPR efficiency workshop** | **Defensible today** as the current anti-recomputation paper if the provenance remains tight and the manuscript keeps clean, advisory, imported, and deployment-scale rows visibly distinct. | Stronger with one measured sparse-path delta and a cleaner local streaming bridge. |
+| **Main track (NeurIPS/ICML/CVPR)** | **Not ready yet.** The paper now has a better three-regime story than the old venue rows implied, but it still lacks one measured sparse-path delta, broader apples-to-apples comparison against adjacent methods, and a cleaner bridge from local benchmark evidence into deployment-style streaming evaluation. | One measured sparse-path delta, broader first-pass coverage on the second architecture, a 1.29 local codec-native slice, a 1.60 scroll/pan regime probe, and tighter head-to-head positioning against the closest trained and training-free baselines. |
 | **Systems conference (MLSys/OSDI)** | **Not ready yet.** The deployment evidence is interesting, but the current paper still does not characterize a full sparse backend or benchmark the streaming path against a clean systems baseline such as screenshot polling. | Sparse execution characterization, screenshot-polling baseline, broader streaming or event-detection evaluation, and ideally local codec-native bridge evidence. |
 
 ## What is safe to say in a one-paragraph abstract TODAY
@@ -305,7 +319,7 @@ queue once infra is in place.
 
 - "SOTA" on any axis.
 - "N% faster end-to-end" (no sparse path).
-- "Generalizes across architectures" (single architecture).
+- "Generalizes broadly across architectures" (one matched second-architecture point is now landed, but broad transfer is still too strong).
 - ~~"Validated on VideoMME" (phase 1.41 not run).~~ **EARNED 2026-04-18** (Qwen 2.5-VL-7B VideoMME dev n=30, dense_accuracy 0.533).
 - "Beats CodecSight / CoPE / FastV / VisionZip" (no head-to-head).
 - "Training-free codec-guided" without qualifying "pixel-diff proxy
@@ -313,7 +327,7 @@ queue once infra is in place.
 
 ## Immediate next actions to extend publishability (ranked for one-paper SOTA goal)
 
-**Status update 2026-04-21 (session 5 — TOMATO holdout EARNED-ADVISORY, three-benchmark C-VISION trifecta effectively closed):**
+**Status update 2026-04-23 (Qwen cross-arch probe landed; three-benchmark C-VISION trifecta already closed):**
 - **TOMATO 8f holdout EARNED-ADVISORY** — EXP23/24 rerun after session 4
   confound. Paired sum-ratio E2E **1.194×** (mean), median **1.232×**;
   V_red 0.350; acc Δ −0.067. Decode Δ 119.7 ms abs (3.51% rel) — fails
@@ -494,10 +508,11 @@ items that priority.md does not carry. For the current ordering see
 2. ~~**1.51V MVBench and TOMATO holdout V-only pairs**~~ — **CLOSED
    2026-04-21** (three-benchmark C-VISION trifecta). No further rerun
    required to support paper-grade C-VISION claims.
-3. **1.51V cross-architecture transfer probe on Qwen 2.5-VL-4bit** —
-   extends the scatter-back ceiling from one architecture to two;
-   turns C-VISION from single-arch-mechanism into mechanism-class.
-   ~60-90 min wall; blocker is Qwen-side vision-tower pruning wire-up.
+3. ~~**1.51V cross-architecture transfer probe on Qwen 2.5-VL-4bit**~~ —
+   **CLOSED 2026-04-23.** Turns C-VISION from single-arch mechanism into
+   two-architecture mechanism evidence at matched `L=2`, `kr_V=0.50`:
+   `V_red = 0.398`, `E2E = 1.044×` observed vs `1.043×` predicted,
+   aggregate `Δacc = −0.033`.
 4. **Local paired streaming-protocol reproduction of Sam's N=60 line**
    (codex round-24 "missing piece for a breakthrough"). ~90 min wall
    + prereg doc.

@@ -1,5 +1,5 @@
 ---
-date: 2026-04-21
+date: 2026-04-23
 parent: paper/framing.md
 status: living priority doc — updated each codex round + each session recap
 ---
@@ -149,17 +149,14 @@ in its own dimension.
    required for paper-grade claim.
 
 3. **1.51V cross-architecture transfer probe (Qwen 2.5-VL-4bit).**
-   Extend the scatter-back ceiling from one architecture (Gemma
-   4-E4B-4bit) to two. The C-VISION ceiling `1/(1 − V_share × V_red)`
-   is architecturally agnostic in principle; a Qwen cell at one
-   (L, kr) point would turn the contribution from "single-arch
-   mechanism" to "mechanism-class". Design: pick L ∈ {2, mid-ViT}
-   and kr ∈ {0.5} matching the best Gemma cell; run on VideoMME 8f
-   dev n=30 thermally paired. Runtime ~60-90 min. **Implementation
-   landed 2026-04-22** via `src/codec_through/qwen_pruned_vision_tower.py`,
-   `scripts/run_phase1_51V.py`, and
-   `scripts/run_phase1_51V_qwen_cross_arch.sh`; the remaining blocker
-   is execution, not keep-mask wiring.
+   **CLOSED 2026-04-23.** The scatter-back ceiling now transfers from
+   Gemma 4-E4B-4bit to Qwen 2.5-VL-7B-4bit at matched
+   \(L=2\), \(kr_V=0.50\) on VideoMME 8f dev n=30. All preregistered
+   gates passed: `V_red = 0.398`, `E2E = 1.044× observed vs 1.043×
+   predicted`, aggregate `Δacc = −0.033`. **Paper impact:** C-VISION
+   upgrades from single-architecture mechanism to two-architecture
+   mechanism evidence. The remaining optional follow-up is broader
+   benchmark coverage on Qwen, not proof-of-transfer.
 
 4. **Local paired streaming-protocol reproduction of Sam's N=60 line.**
    Codex round-24: this is "the missing piece for a breakthrough". The

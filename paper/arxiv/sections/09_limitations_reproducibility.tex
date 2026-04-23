@@ -7,8 +7,10 @@ For first-pass Gemma pruning, the evidence is now good enough for a main
 results section, but not every cell is equally clean. VideoMME is clean.
 MVBench and TOMATO are advisory because the measured gains survive, but the
 thermal caveats are still visible and should remain visible in the text.
-Architecture breadth is also still limited: the first-pass measured speedup
-story is Gemma-first today. The pooled n=60 H\_stack result also closes one
+Architecture breadth is still asymmetric, but no longer Gemma-only. The
+first-pass measured headline cells are still Gemma-first today, while a
+matched Qwen cross-architecture probe now shows the same ceiling binding at a
+smaller absolute lift. The pooled n=60 H\_stack result also closes one
 tempting overclaim: composition does not outrun the ceiling. The local stacked
 cell is ceiling-matched, which is useful evidence for the arithmetic and a
 null on super-ceiling composition.
@@ -28,7 +30,9 @@ dense backend. It should not be inflated into a measured sparse-execution
 speedup claim until the backend actually skips timed work. The same caution now
 applies to the Qwen VideoMME frame-count story: the dev-split 16f long-bucket
 regression does not replicate on disjoint holdout, so the manuscript treats it
-as a dev-only shape rather than a universal scaling law.
+as a dev-only shape rather than a universal scaling law. The 1.57 feature-drift
+geometry itself now reproduces on holdout at 8f and 16f; what failed to
+transfer was the downstream long-bucket accuracy shape, not the drift signal.
 
 The streaming lane is the smallest-$N$ evidence class in the paper. It is
 there because it shows the practical regime where redundancy becomes large, not
