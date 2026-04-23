@@ -232,19 +232,17 @@ in its own dimension.
    max|Δ| = **16-25pp (FAILS per-item gate)**; Spearman ρ(pix_STATIC,
    codec_STATIC) = +0.40 (n=5, not significant at α=0.05). Two failure
    modes: extreme-STATIC items saturate (037-2 → 100% STATIC) and
-   moderately-dynamic items over-predict NOVEL. **Per Codex round-27,
-   1.29 is OFF the critical path for the paper body** unless reframed
-   to (i) continuous-planner-signal with per-item calibration *and* a
-   planner-accuracy probe, or (ii) native-rate streaming retrofit
-   (should-do #4). **Probe wiring landed 2026-04-22** in
-   `src/codec_through/codec/continuous_score.py`,
-   `scripts/run_phase1_29_planner_accuracy_probe.py`, and
-   `scripts/run_phase1_29_planner_accuracy_probe.sh`, with support for
-   pooled or per-item calibration against live-pixel or artifact
-   targets. Findings:
-   `research/experiments/2026/2026-04-22-phase-1_29-codec-native-integration-audit.md`,
-   `research/experiments/2026/2026-04-22-phase-1_29-codec-native-short-bucket-pilot-findings.md`,
-   `research/experiments/2026/2026-04-22-phase-1_29-continuous-codec-score-pilot-findings.md`.
+   moderately-dynamic items over-predict NOVEL. **PLANNER-ACCURACY
+   PROBE FIRST-POINT CONFIRMED 2026-04-23** (commit 495a57b): n=10
+   short-bucket VideoMME Qwen 2.5-VL-7B-4bit paired run of codec-
+   planner + per-item live-pixel calibration vs dense — **codec-dense
+   agreement 1.00 (10/10)**, codec-accuracy = dense-accuracy = 0.80,
+   codec-minus-pixel = +0.10 pp, reuse-ratio parity within 1pp. The
+   preregistered accuracy-within-decision-band clause PASSES at first-
+   point but is holdout-blind at this n. Next: n=30 short replication,
+   medium/long bucket extension, and a calibration-mode ablation
+   (ratio-only vs RD-like). Findings doc:
+   `research/experiments/2026/2026-04-23-phase-1_29-planner-accuracy-probe-findings.md`.
 
 9. **Paper figures: C-PERSIST safe-deployment table + V_share-governs-
    C-VISION-gains plot.** **LANDED 2026-04-21 (autonomous session).**
@@ -268,12 +266,29 @@ in its own dimension.
 Capture ideas as we find them; park until paper draft is submitted OR
 a must-do slot opens.
 
-- **1.30 streaming-protocol rewrite around Sam's actual protocol.**
-  Current prereg frames 1.30 around abstract infrastructure;
-  round-24 codex: rewrite against Sam's streaming/deployment protocol
-  (pre-prefill queue, KV-cache reuse across frames, rolling-window
-  client, decoder co-location) and preregister a local reproduction.
-  Doc work only; ~1h.
+- **1.30 Sam session/streaming bridge — NEGATIVE RESULT + root-cause
+  decomposition in flight 2026-04-23.** The reproduction landed (1ecfeb9
+  / e9d1223) as a paired cold-vs-streaming Qwen 2.5-VL-7B-4bit VideoMME
+  8f dev n=19 run: **3.326× speedup PASS, Δacc = −0.193 FALSIFIES the
+  ±0.05 preregistered budget**; the deployment-grade C-VISION
+  composition promotion rule does NOT trigger. Codex round-28 observed
+  the paired data: Q0 (first query) alone drops 0.596 → 0.491
+  (Δ = −0.105), violating the budget before any KV reuse — so the
+  negative cannot be attributed purely to follow-up KV-contamination.
+  A 2×2 decomposition prereg (commit 92350ad) factorizes the stack into
+  V-only (kr_V=0.50 vision pruning) × K-only (persistent-KV reuse) plus
+  two hard-reset controls and a Q0 parity check against the mechanism-
+  grade 1.51V pipeline. Five hypotheses (H_V / H_K / H_interaction /
+  H_reset / H_path) with quantitative gates and interpretation rules.
+  Runtime: Phase A short scout ~75 min (6 arms × short-only dev),
+  Phase B Q0 parity ~10 min, Phase C conditional full ~6h (dev+holdout
+  union). Gemma port (driver hard-fails on non-Qwen, lines 303-308) and
+  adjacent-cos refresh policy (threshold branch hard-fails as not-
+  implemented, lines 286-290) explicitly deferred behind Phase A
+  adjudication. Prereg:
+  `research/experiments/2026/2026-04-23-phase-1_30-rootcause-prereg.md`.
+  Findings (pre-decomposition):
+  `research/experiments/2026/2026-04-23-phase-1_30-sam-streaming-findings.md`.
 
 - **1.42 Gemma temporal-reuse (`_mix_gemma_features`).** Second-arch
   fidelity test for claim #7 (architecture-conditioned reuse). Blocked
