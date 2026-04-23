@@ -136,13 +136,21 @@ preserve 1.000 agreement. We footnote rather than wave away.
 The three contributions do *not* compose as a naive product. C-CEILING
 bounds every token-pruning speedup from above, and C-VISION's
 `V_share × V_red` term shares the same vision budget: you cannot spend
-it twice. C-VISION and C-PERSIST stack across *queries* — C-VISION
-saves first-pass prefill, C-PERSIST makes follow-up queries sub-second
-— not inside a single query. Our 1.064 × H_stack cell (n = 60) is
-ceiling-matched, a preregistered NULL on "stacking beats the ceiling"
-and a positive on the ceiling law itself. The paper reports composed
-numbers against their ceiling bound, never as a bare product of
-independent multipliers.
+it twice. Each mechanism earns its safety envelope only in the regime
+where we audited it: C-VISION at single-query kr_V=0.50 L=2, C-PERSIST
+at 40f with dense V. Our 1.30 session-streaming stack attempted the
+across-queries composition (C-VISION on Q0 prefill, C-PERSIST on Q1–Q3
+follow-ups) at 8f on Qwen 2.5-VL-7B-4bit and measured Δacc = −0.193
+— paired amortized 3.326× speedup, but a preregistered accuracy-band
+FALSIFY. The paper therefore treats the three contributions as
+**separately-auditable safety envelopes**, not a stack whose union is
+claimed without evidence; a root-cause decomposition (H_V / H_K /
+H_interaction / H_reset) is preregistered to adjudicate which
+mechanism or interaction owns the composition loss. Our 1.064 ×
+H_stack cell (n = 60) is ceiling-matched, a preregistered NULL on
+"stacking beats the ceiling" and a positive on the ceiling law itself.
+The paper reports composed numbers against their ceiling bound, never
+as a bare product of independent multipliers.
 
 ## 3. What Qwen routing contributes: a mechanism-validation backbone
 
