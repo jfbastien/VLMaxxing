@@ -111,9 +111,11 @@ difficulty spectrum.
 Streaming degrades on 45 items cold got right, and rescues only 12 items
 cold got wrong. Net: cold has a **33-item deterministic advantage**
 concentrated on cold-correct items the streaming stack then mis-answers.
-This is consistent with KV-reuse cross-contamination (the cached KV
-anchors attention on Q1's content, biasing Q2/Q3 toward Q1-adjacent
-answers) rather than with random-noise differences.
+The asymmetry is semantic (not a random-noise bucket shuffle), but the
+overlap matrix alone does not distinguish between: (a) pruned vision
+features starving Q0 of evidence, (b) reused KV contaminating Q2/Q3, or
+(c) non-additive composition of both. The `2026-04-23-phase-1_30-
+rootcause-prereg.md` decomposition is the adjudicating experiment.
 
 ### Response-bucket distribution (n=171 streaming queries)
 
@@ -153,30 +155,84 @@ paper-matrix entry for this row.
 ## Interpretation
 
 The streaming protocol gives Sam's preregistered speedup (3.3× amortized,
-75.6× on follow-ups) but sacrifices semantic fidelity. The mechanism
-behind the accuracy loss, inferred from per-stratum and overlap structure:
+75.6× on follow-ups) but sacrifices semantic fidelity. What the paired
+data support vs. what the data do **not** yet determine:
 
-1. **First-query regression is 1.51V-consistent.** The −10.5pp on first
-   queries (0.596 → 0.491) is larger than 1.51V's Qwen dev n=30 Δ of
-   −3.3pp but within noise at n=57 (binomial SE ≈ 6.5pp at p=0.5).
-   The cross-manifest composition (dev+holdout union) may also pick up
-   the known Qwen long-bucket collapse.
+1. **Semantic (not syntactic) failure.** Response-bucket PASSES and
+   parse-failures are low; the streaming stack produces well-formed
+   answer-letter outputs. The loss is *wrong answers confidently*, not
+   token collapse. This rules out a tokenization or decode bug.
 
-2. **Follow-up regression is the main signal.** −23.7pp is not
-   recoverable as noise. Mechanism: the persistent-KV cache on Q1 carries
-   Q1's question-specific attention mass (the suffix tokens that gave Q1
-   its answer). When Q2/Q3 replace the suffix but reuse the prefix, the
-   cached cross-attention between prefix tokens and Q1's suffix is now
-   mis-specified for Q2/Q3. The model sees "prefix that previously
-   attended to Q1-relevant frames" and generates a Q1-biased answer.
-   This is the KV-reuse cross-contamination pattern Sam warns about in
-   §5 as the *reason* for drift-triggered re-prefill.
+2. **First-query cost exists and is not a side-effect of KV reuse.**
+   Q0 drops 0.596 → 0.491 (−10.5pp). Since Q0 runs against a freshly
+   prefilled session with no prior queries, this cost cannot come from
+   cross-query KV contamination. It must come from the vision-pruning
+   path (kr_V=0.50 composes with a ViT-feature-based L=2 policy that
+   can lose task-critical tokens on harder items), from thermal /
+   sampling drift, or from a first-query code-path regression specific
+   to 1.30 that the mechanism-grade 1.51V pipeline does not share.
+
+3. **Follow-up cost is strictly larger** (−23.7pp vs −10.5pp). The
+   gap between Q0 and Q2/Q3 losses is the part that *could* be
+   attributable to persistent-KV drift, cumulative KV contamination
+   across semantically different queries, or a non-additive composition
+   of vision-pruning cost with KV-reuse cost. The overlap matrix is
+   consistent with more than one of these stories.
+
+The paired data do not yet tell us which of these mechanisms dominates.
+The `2026-04-23-phase-1_30-rootcause-prereg.md` decomposition — V-only
+× K-only factorization plus hard-reset controls plus a Q0 parity check
+against 1.51V — is structured to adjudicate between these explanations.
+Prior wording in this section attributed the follow-up loss to a
+specific "Q1 answer anchors Q2/Q3 attention" mechanism; that claim was
+stronger than the n=57 paired data support and has been retracted here
+pending the decomposition. (Retained in the commit history at e9d1223
+for provenance.)
 
 3. **We ran with drift-refresh off.** The preregistered H_sam_drift_refresh
-   was not tested because the run used `--drift-refresh-policy off`. A
-   follow-up run with the 1.49 adjacent-frame ViT cos ≥ 0.95 threshold
-   would directly test whether refresh recovers accuracy at an acceptable
-   cost. The current data point establishes the *no-refresh* floor.
+   was not tested because the run used `--drift-refresh-policy off`. The
+   1.30 driver CLI currently accepts only `off` and `hard-reset`; the
+   `threshold` branch hard-fails as not-implemented. Hard-reset is
+   arm #5 / #6 of the decomposition prereg and is the strongest refresh
+   we have in-repo today. Adjacent-cos (the 1.49-style drift refresh) is
+   a separate implementation task deferred behind the H_reset verdict.
+   The current data point establishes the *no-refresh* floor.
+
+### Reconciliation with positive results on the same architecture
+
+The composition negative must be reconciled with the positive mechanism
+evidence already landed on Qwen 2.5-VL-7B-4bit:
+
+- **1.51V Qwen cross-arch (2026-04-23):** at L=2, kr_V=0.50, n=30 paired
+  VideoMME 8f dev, the V-only path observes Δacc = −0.033 (inside ±0.05
+  budget) and E2E 1.044× observed vs 1.043× predicted — C-VISION earned
+  at single-query granularity.
+- **1.55A Qwen persistent-KV (2026-04-20):** basin-onset at 40f with
+  1/21 sampler-invariant signature on all probes, threshold 14500
+  tokens; the K-only path is deployment-safe within a bounded frame-
+  count envelope.
+- **This run (1.30, 2026-04-23):** the V+K composition at 8f with no
+  refresh FALSIFIES the ±0.05 budget at n=57/171 dev+holdout union.
+
+These are not mutually inconsistent. The simplest reconciliation
+compatible with all three is that **single-mechanism safety does not
+imply composition safety**: V-only is safe because Q0 runs with a fresh
+cache (no K contamination) and the pruning cost absorbs into the paired
+accuracy budget at this operating point; K-only is safe because Q0
+cache is dense (no V degradation) and KV-reuse drift stays below
+threshold within the 40f basin; the naive V+K stack with no refresh
+compounds both costs (plus any non-additive interaction) on every
+follow-up, breaking the tolerance. This reconciliation is testable —
+it predicts Phase A of the decomposition will show non-zero V-only,
+non-zero K-only, and a hard-reset arm that recovers most of the K-only
+loss but not the V-only loss. The prereg's H_V / H_K / H_interaction /
+H_reset are designed to confirm or falsify that story quantitatively.
+
+If Phase A instead finds H_path FAILS (1.30 cold-pruned Q0 disagrees
+with 1.51V Q0 at kr_V=0.50), the negative is a harness regression in
+the 1.30 driver's first-query code path, not a scientific boundary on
+composition, and the paper framing retracts from "anti-claim" to
+"pending-harness-bug".
 
 4. **Bucket-health is preserved.** Clean 55.6% / degenerate 5.3% means
    the stack is not breaking the model's output grammar; it's just
