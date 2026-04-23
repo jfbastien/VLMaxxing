@@ -1,0 +1,345 @@
+{
+  "calibration_mode": "pooled",
+  "calibration_source": "live-pixel",
+  "codec_accuracy": 0.75,
+  "codec_dense_agreement": 1.0,
+  "codec_minus_pixel_accuracy": 0.05,
+  "codec_pixel_agreement": 0.95,
+  "codec_reuse_ratio_mean_active": 0.10042857144560133,
+  "dense_accuracy": 0.75,
+  "environment": {
+    "datasets": "4.8.4",
+    "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "git_dirty": false,
+    "git_sha": "4f7603237f88ac096afdb5123a8a754b8e59f1bb",
+    "huggingface_hub": "1.10.1",
+    "mlx_vlm_module": "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
+    "model_path": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
+    "platform": "darwin",
+    "python": "3.12.12"
+  },
+  "frame_count": 8,
+  "items": [
+    {
+      "codec_choice_index": 2,
+      "codec_correct": true,
+      "codec_extract_s": 23.987992791,
+      "codec_thresholds": {
+        "shifted": 0.01785413548350334,
+        "static": 0.010391711257398129
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:037-2",
+      "pair_selection_jaccard_mean": 0.6516552056551023,
+      "pixel_choice_index": 0,
+      "pixel_correct": false
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 9.098093709,
+      "codec_thresholds": {
+        "shifted": 0.01785413548350334,
+        "static": 0.010391711257398129
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:100-2",
+      "pair_selection_jaccard_mean": 0.42857142857142855,
+      "pixel_choice_index": 1,
+      "pixel_correct": true
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 18.860618041,
+      "codec_thresholds": {
+        "shifted": 0.01785413548350334,
+        "static": 0.010391711257398129
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:116-3",
+      "pair_selection_jaccard_mean": 0.7142857142857143,
+      "pixel_choice_index": 1,
+      "pixel_correct": true
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 13.343307083,
+      "codec_thresholds": {
+        "shifted": 0.01785413548350334,
+        "static": 0.010391711257398129
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:120-2",
+      "pair_selection_jaccard_mean": 0.3278816550543663,
+      "pixel_choice_index": 3,
+      "pixel_correct": true
+    },
+    {
+      "codec_choice_index": 2,
+      "codec_correct": false,
+      "codec_extract_s": 16.685431625,
+      "codec_thresholds": {
+        "shifted": 0.01785413548350334,
+        "static": 0.010391711257398129
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:158-3",
+      "pair_selection_jaccard_mean": 0.5714285714285714,
+      "pixel_choice_index": 2,
+      "pixel_correct": false
+    },
+    {
+      "codec_choice_index": 2,
+      "codec_correct": true,
+      "codec_extract_s": 12.915311708,
+      "codec_thresholds": {
+        "shifted": 0.01785413548350334,
+        "static": 0.010391711257398129
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:160-1",
+      "pair_selection_jaccard_mean": 0.6028257456828886,
+      "pixel_choice_index": 2,
+      "pixel_correct": true
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 21.625465917,
+      "codec_thresholds": {
+        "shifted": 0.01785413548350334,
+        "static": 0.010391711257398129
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:210-2",
+      "pair_selection_jaccard_mean": 0.42857142857142855,
+      "pixel_choice_index": 1,
+      "pixel_correct": true
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 15.625889125,
+      "codec_thresholds": {
+        "shifted": 0.01785413548350334,
+        "static": 0.010391711257398129
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:264-1",
+      "pair_selection_jaccard_mean": 0.7142857142857143,
+      "pixel_choice_index": 3,
+      "pixel_correct": true
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 19.69944775,
+      "codec_thresholds": {
+        "shifted": 0.01785413548350334,
+        "static": 0.010391711257398129
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:278-3",
+      "pair_selection_jaccard_mean": 0.8571428571428571,
+      "pixel_choice_index": 3,
+      "pixel_correct": true
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": false,
+      "codec_extract_s": 22.339207125,
+      "codec_thresholds": {
+        "shifted": 0.01785413548350334,
+        "static": 0.010391711257398129
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:282-2",
+      "pair_selection_jaccard_mean": 0.1786669906057661,
+      "pixel_choice_index": 3,
+      "pixel_correct": false
+    },
+    {
+      "codec_choice_index": 2,
+      "codec_correct": true,
+      "codec_extract_s": 20.045516792,
+      "codec_thresholds": {
+        "shifted": 0.01785413548350334,
+        "static": 0.010391711257398129
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:062-3",
+      "pair_selection_jaccard_mean": 0.8571428571428571,
+      "pixel_choice_index": 2,
+      "pixel_correct": true
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": false,
+      "codec_extract_s": 21.430090625,
+      "codec_thresholds": {
+        "shifted": 0.01785413548350334,
+        "static": 0.010391711257398129
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:066-3",
+      "pair_selection_jaccard_mean": 0.15306122448979592,
+      "pixel_choice_index": 3,
+      "pixel_correct": false
+    },
+    {
+      "codec_choice_index": 2,
+      "codec_correct": true,
+      "codec_extract_s": 20.881677666,
+      "codec_thresholds": {
+        "shifted": 0.01785413548350334,
+        "static": 0.010391711257398129
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:070-3",
+      "pair_selection_jaccard_mean": 0.4016047875782403,
+      "pixel_choice_index": 2,
+      "pixel_correct": true
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 19.556469333,
+      "codec_thresholds": {
+        "shifted": 0.01785413548350334,
+        "static": 0.010391711257398129
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:074-3",
+      "pair_selection_jaccard_mean": 0.224127202081029,
+      "pixel_choice_index": 1,
+      "pixel_correct": true
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 6.80332675,
+      "codec_thresholds": {
+        "shifted": 0.01785413548350334,
+        "static": 0.010391711257398129
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:126-1",
+      "pair_selection_jaccard_mean": 0.5714285714285714,
+      "pixel_choice_index": 3,
+      "pixel_correct": true
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 6.476123375,
+      "codec_thresholds": {
+        "shifted": 0.01785413548350334,
+        "static": 0.010391711257398129
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:126-2",
+      "pair_selection_jaccard_mean": 0.5714285714285714,
+      "pixel_choice_index": 1,
+      "pixel_correct": true
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": false,
+      "codec_extract_s": 11.11785625,
+      "codec_thresholds": {
+        "shifted": 0.01785413548350334,
+        "static": 0.010391711257398129
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:136-3",
+      "pair_selection_jaccard_mean": 0.42857142857142855,
+      "pixel_choice_index": 1,
+      "pixel_correct": false
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 22.327738083,
+      "codec_thresholds": {
+        "shifted": 0.01785413548350334,
+        "static": 0.010391711257398129
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:267-2",
+      "pair_selection_jaccard_mean": 0.7142857142857143,
+      "pixel_choice_index": 3,
+      "pixel_correct": true
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 19.48254325,
+      "codec_thresholds": {
+        "shifted": 0.01785413548350334,
+        "static": 0.010391711257398129
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:280-3",
+      "pair_selection_jaccard_mean": 0.6364819151704397,
+      "pixel_choice_index": 3,
+      "pixel_correct": true
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": false,
+      "codec_extract_s": 27.245338833,
+      "codec_thresholds": {
+        "shifted": 0.01785413548350334,
+        "static": 0.010391711257398129
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:293-1",
+      "pair_selection_jaccard_mean": 0.2857142857142857,
+      "pixel_choice_index": 3,
+      "pixel_correct": false
+    }
+  ],
+  "manifest_path": "research/benchmark_manifests/videomme_short_dev_holdout_v1_n20.toml",
+  "n_items": 20,
+  "pair_selection_jaccard_mean": 0.5159580934587387,
+  "phase": "1.29",
+  "pixel_accuracy": 0.7,
+  "pixel_dense_agreement": 0.95,
+  "pixel_reuse_ratio_mean_active": 0.10260714279886866,
+  "planner": {
+    "max_age": null,
+    "pixel_change_threshold": 8.0,
+    "reuse_classes": [
+      "static",
+      "shifted"
+    ],
+    "shifted_threshold": 8.0,
+    "static_threshold": 3.0,
+    "statistic": "mean",
+    "sticky_window": null,
+    "top_k": 16
+  },
+  "precompute_cache_path": "research/experiments/2026/artifacts/phase1_29B_short_n20_calibration_20260423/precompute_live_pixel.json"
+}

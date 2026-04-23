@@ -361,3 +361,43 @@ Operational findings:
    because it was generated before the follow-up provenance fix that snapshots
    the environment record before cache writes. Subsequent runs should use the
    same runner after commit `4f836be`, which corrects that bookkeeping error.
+
+## Calibration-mode ablation — pooled vs per-item
+
+With the checkpoint cache in place, the first cheap calibration ablation is the
+threshold-fitting mode itself while keeping the target-share source fixed:
+
+```bash
+uv run python scripts/run_phase1_29_planner_accuracy_probe.py \
+  --manifest research/benchmark_manifests/videomme_short_dev_holdout_v1_n20.toml \
+  --calibration-mode pooled \
+  --precompute-cache-path research/experiments/2026/artifacts/phase1_29B_short_n20_calibration_20260423/precompute_live_pixel.json \
+  --output-path research/experiments/2026/artifacts/phase1_29B_short_n20_calibration_20260423/pooled_results.jsonl \
+  --summary-path research/experiments/2026/artifacts/phase1_29B_short_n20_calibration_20260423/pooled_summary.json
+```
+
+Artifacts:
+
+- `research/experiments/2026/artifacts/phase1_29B_short_n20_calibration_20260423/pooled_results.jsonl`
+- `research/experiments/2026/artifacts/phase1_29B_short_n20_calibration_20260423/pooled_summary.json`
+
+Results:
+
+- dense accuracy: 0.75
+- pixel accuracy: 0.70
+- codec accuracy: 0.75
+- codec-dense agreement: 1.00
+- codec-pixel agreement: 0.95
+- parse failures: 0
+
+Comparison to the direct per-item cached run on the same manifest:
+
+1. **Answer-level outcomes are identical.** Dense, pixel, and codec choices
+   match item-for-item across the pooled and per-item runs.
+2. **Threshold mode changes only the internal threshold values and selection
+   overlap diagnostics**, not the answer-level behavior on this short bundle.
+3. Interpretation: the currently observed calibration dependence is **not**
+   about pooled-versus-per-item threshold fitting, at least on short VideoMME
+   with live-pixel target shares. The remaining scientifically relevant
+   dependence is the **target-share source** itself: live-pixel versus
+   externally supplied artifact counts.
