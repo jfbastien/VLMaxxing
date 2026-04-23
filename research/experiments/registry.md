@@ -255,7 +255,22 @@ authoritative in the per-phase notes under
   supersedes: []
   paper_relevance: negative-result with mechanism attribution; composition bridge requires safer/adaptive V admission before deployment-grade framing
   prereg_outcome: H_sam_e2e accuracy-FALSIFIED, speedup-PASSED; root-cause Phase A/B landed 2026-04-23: H_V PASS, H_K FAIL, H_interaction FAIL, H_reset PASS, H_path PASS; Phase C not triggered
-  notes: 2026-04-23 paired-data analysis (codex round-28) showed Q0 alone drops −0.105, violating the ±0.05 budget before any KV reuse. Codex takeover reran the preregistered 6-arm short scout in a fresh artifact directory after the Claude run was interrupted. Results: cold_dense 0.733, cold_pruned 0.400, streaming_dense_off 0.667, streaming_pruned_off 0.300, streaming_dense_reset 0.733, streaming_pruned_reset 0.400. Q0 parity against 1.51V passes 10/10 for pruned and dense paths after normalizing letter-vs-index choice encodings. The next high-value 1.30 follow-up is a conservative/adaptive V-leg sweep, not Phase C.
+  notes: 2026-04-23 paired-data analysis (codex round-28) showed Q0 alone drops −0.105, violating the ±0.05 budget before any KV reuse. Codex takeover reran the preregistered 6-arm short scout in a fresh artifact directory after the Claude run was interrupted. Results: cold_dense 0.733, cold_pruned 0.400, streaming_dense_off 0.667, streaming_pruned_off 0.300, streaming_dense_reset 0.733, streaming_pruned_reset 0.400. Q0 parity against 1.51V passes 10/10 for pruned and dense paths after normalizing letter-vs-index choice encodings. Phase 1.30V then tested fixed kr=0.67/0.75 rescue and failed the Q0 accuracy gate, so the next 1.30 composition path requires an adaptive admission/no-prune policy rather than Phase C or another blind fixed-rate run.
+
+- phase_id: 1.30V
+  status: CLOSED-NEGATIVE 2026-04-23
+  authoritative_note: research/experiments/2026/2026-04-23-phase-1_30V-adaptive-vleg-findings.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_30V_adaptive_vleg_q0_20260423/q0_151V_L2_kr067_summary.json
+    - research/experiments/2026/artifacts/phase1_30V_adaptive_vleg_q0_20260423/q0_151V_L2_kr075_summary.json
+    - research/experiments/2026/artifacts/phase1_30V_adaptive_vleg_q0_20260423/q0_kr067_vs_dense_compare.txt
+    - research/experiments/2026/artifacts/phase1_30V_adaptive_vleg_q0_20260423/q0_kr075_vs_dense_compare.txt
+  current_best_policy: n/a; fixed-rate Q0 rescue failed on the short-scout items
+  supersedes: []
+  paper_relevance: negative follow-up to 1.30 root-cause; rules out a simple fixed-kr rescue of the deployment composition bridge
+  prereg_outcome: H_recover FAIL for kr_V=0.67 and kr_V=0.75. kr=0.75 reaches dense-choice agreement 0.800 but Q0 accuracy remains 0.700 < 0.800 gate.
+  runtime_estimate: complete
+  notes: Same ten Q0 items as 1.30 root-cause Phase A. Dense reference accuracy 0.900; L2 kr=0.50 accuracy 0.500; L2 kr=0.67 accuracy 0.700, dense-choice agreement 0.600, effective keep-rate 0.688; L2 kr=0.75 accuracy 0.700, dense-choice agreement 0.800, effective keep-rate 0.750. Future 1.30 composition work should be adaptive admission/no-prune-on-risky-Q0, not another blind fixed-rate sweep.
 
 - phase_id: 1.31
   status: proposed
@@ -906,7 +921,8 @@ implementation, debugging, analysis, and CI time. Estimates are at
 | 1.55B | deferred | ~65min (composition + controls) | ~2.5h | 1.54 landing + 1.55A earning |
 | 1.58  | deferred | ~1h bf16 8f | ~3h bf16 16f (no 32f) | bf16 Qwen checkpoint download (~15 GB), RSS feasibility |
 | 1.59  | research_note | n/a on M3 Air | n/a on M3 Air | external hardware |
-| 1.30  | closed-scout (2026-04-23 dev+holdout paired run negative; short root-cause localized to V-only Q0 pruning) | complete | n/a | next: adaptive V-leg sweep if pursuing deployment composition |
+| 1.30  | closed-scout (2026-04-23 dev+holdout paired run negative; short root-cause localized to V-only Q0 pruning) | complete | n/a | fixed-rate adaptive V-leg rescue failed in 1.30V; next composition path requires admission policy |
+| 1.30V | closed-negative | complete | n/a | adaptive/no-prune admission design needed before more 1.30 composition runs |
 | 1.30-rootcause-A | complete 2026-04-23 | ~1h40m observed for six arms? see artifact wall_s per arm | n/a | — |
 | 1.30-rootcause-B | complete 2026-04-23 | ~7min observed | n/a | H_path PASS 10/10 |
 | 1.30-rootcause-C | not triggered | n/a | n/a | H_interaction FAIL and margins not ambiguous |

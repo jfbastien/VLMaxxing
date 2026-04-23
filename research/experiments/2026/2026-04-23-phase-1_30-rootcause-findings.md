@@ -194,10 +194,11 @@ the bridge from local C-VISION/C-PERSIST to Sam-style deployment breaks.
 
 Priority follow-ups from this finding:
 
-1. **1.30V adaptive V-leg sweep on the same short-scout Q0 set.** Test
-   `kr_V in {0.67, 0.75}` and possibly adjacent layer choices. Goal: recover
-   Q0 accuracy while retaining measurable V reduction. This is the fastest path
-   to a composable deployment policy.
+1. **1.30V adaptive V-leg sweep on the same short-scout Q0 set.** DONE as
+   `2026-04-23-phase-1_30V-adaptive-vleg-findings.md`. Fixed-rate
+   `kr_V in {0.67, 0.75}` did not recover the Q0 accuracy gate; future 1.30
+   composition work should use adaptive admission/no-prune-on-risky-Q0 rather
+   than another blind fixed-kr sweep.
 2. **1.29 planner-accuracy n=30 short replication.** Phase A no longer blocks
    it; this remains the highest-value codec-native bridge if it replicates.
 3. **Medium/long 1.29 and calibration ablation.** Run only after the n=30 short

@@ -287,8 +287,10 @@ a must-do slot opens.
   evidence of non-additive V+K collapse. Phase C is not triggered by the
   preregistered rule. Findings:
   `research/experiments/2026/2026-04-23-phase-1_30-rootcause-findings.md`.
-  Next paper-relevant move is a safer/adaptive V-leg policy, not another
-  blind composition run.
+  Immediate fixed-rate rescue also fails: 1.30V Q0 scout at kr=0.67 and
+  kr=0.75 still lands at 0.70 accuracy on the same Q0 items, so the next
+  paper-relevant move is an admission policy (skip pruning on risky Q0),
+  not another blind fixed-kr composition run.
 
 - **1.42 Gemma temporal-reuse (`_mix_gemma_features`).** Second-arch
   fidelity test for claim #7 (architecture-conditioned reuse). Blocked
