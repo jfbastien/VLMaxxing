@@ -292,6 +292,18 @@ authoritative in the per-phase notes under
   runtime_estimate: complete
   notes: This full rerun materially improves the original 1.30 negative (`Δacc = −0.193`) without reopening the preregistered bridge. The decisive mechanistic result is that dense Q0 fully fixes the first-query leg: Q0 accuracy is numerically identical in every `duration × split` cell. All remaining loss is follow-up-only, with the strongest deficits in long dev (`follow-up delta = −0.125`), short dev (`−0.10`), short holdout (`−0.1111`), and medium holdout (`−0.10`); medium dev and long holdout follow-ups match cold exactly. The speed miss is structural under the current 3-query protocol: dense Q0 alone consumes `5.249M ms`, while the full run would need to fit inside `4.981M ms` to earn `3.0×`; even zero-cost follow-ups would still miss by `268.7k ms`. If 1.30 continues, the next meaningful work is either a safe cheaper-Q0 policy or a longer-session protocol, not another same-protocol follow-up-only keep-rate tweak.
 
+- phase_id: 1.30X
+  status: partial (speed/accuracy rescue reopened offline; no format-clean point in the current endpoint family)
+  authoritative_note: research/experiments/2026/2026-04-24-phase-1_30X-q0-admission-frontier-findings.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_30X_q0_admission_frontier/analysis.json
+  current_best_policy: "Deployable duration-gated replay: dense_on_medium_short on VideoMME 8f dev+holdout union n=57 sessions / 171 queries yields cold 0.561 (96/171) / streaming 0.480 (82/171) → Δacc = −0.0819 at 3.0168×, but still leaves 2 parse failures / degenerates. Exact per-session frontier upper bound reaches Δacc = 0.0000 at 3.0781×."
+  supersedes: []
+  paper_relevance: active reopening analysis for the streaming bridge; shows same-protocol admission is viable on speed/accuracy but still blocked on format hygiene
+  prereg_outcome: H1 FALSIFIED on the preregistered speed/accuracy rescue criterion because `dense_on_medium_short` passes `Δacc >= −0.10` and `speedup >= 3.0×`. H2 EARNED strongly: the exact frontier contains a `Δacc = 0.0000`, `3.0781×` point. But `best_strict_with_format` and `best_rescue_with_format` are both null within the current 1.30 / 1.30W endpoint family.
+  runtime_estimate: complete
+  notes: This offline frontier replay uses only landed session-level outputs from 1.30 and 1.30W; no synthetic within-session timings or answer edits are allowed. The decisive new result is that the current 3-query protocol is no longer closed on speed/accuracy: a simple duration policy (`dense_on_medium_short`) already passes the rescue band. The remaining full-promotion gap is entirely format hygiene. Under that deployable policy, the residual bad sessions are `videomme:long:783-2` and `videomme:long:847-3`. The exact frontier proves that the lane is not dead in principle, but also proves the current 2-endpoint family is insufficient for a format-clean reopening. If 1.30 continues, the next move should target those long-session format failures explicitly or introduce a third endpoint family, not rerun another global policy.
+
 - phase_id: 1.31
   status: proposed
   authoritative_note: research/experiments/2026/2026-04-16-phase-1_31-failure-predictor.md

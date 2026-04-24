@@ -181,8 +181,10 @@ matched conditions:
   reproduction is a secondary composition appendix result, not a
   headline.
 - Selective re-prefill of the last-K frames (1.55D) is
-  infrastructure-falsified by mlx-vlm's image-block reuse contract,
-  not experimentally falsified.
+  no longer infrastructure-falsified: repo-local v2 runs the intended
+  multimodal tail-reprefill regime and maps a real fixed-K frontier,
+  with exact paired recovery at K=4/K=2/K=1 and the best fixed point
+  landing just below the deployment-speed crossover.
 - VideoMME frame-count scaling is non-monotonic on Qwen 2.5-VL at
   4-bit: on the dev split, medium buckets improve from 8 f → 16 f by
   ≈ +30 pp and 32 f does not recover the aggregate. The 16 f long-

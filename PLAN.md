@@ -953,12 +953,14 @@ Near-term order:
    planner-substitution evidence is landed and calibration-mode/source
    ablations are neutral; the remaining bridge is decoder-integrated
    streaming/native-rate systems evidence
-3. treat phase 1.30W as the new 1.30 reference point: dense Q0 solves the
-   first-query leg exactly, so every remaining miss is follow-up-only
-4. do not spend more time on same-protocol follow-up-only tweaks for phase
-   1.30: the dense-Q0 3-query protocol is structurally capped below the
-   preregistered `3.0×` rescue floor even with free follow-ups. Reopen 1.30
-   only with a cheaper safe-Q0 policy or a longer-session protocol
+3. treat phase 1.30W as the mechanistic reference point and phase 1.30X as
+   the new routing reference point: dense Q0 solves the first-query leg
+   exactly, and a simple duration-gated admission policy already reopens the
+   speed/accuracy rescue band
+4. do not spend more time on blind global 1.30 reruns or same-protocol
+   follow-up-only tweaks: phase 1.30X shows the live gap is now format
+   hygiene in two remaining long sessions (`783-2`, `847-3`). Reopen 1.30
+   only with a targeted fix for those failures or a third endpoint family
 5. treat phase 1.55D v2 selective re-prefill as an active, landed fixed-policy
    frontier: K=4/K=2/K=1 now all run end-to-end with exact paired recovery, so
    the next useful move is adaptive refresh policy rather than waiting on the

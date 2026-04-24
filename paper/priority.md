@@ -159,22 +159,20 @@ in its own dimension.
    benchmark coverage on Qwen, not proof-of-transfer.
 
 4. **Local paired streaming-protocol reproduction of Sam's N=60 line.**
-   **BOUNDARY NEAR-MISS 2026-04-24 after the dense-Q0 rerun.** The
+   **REOPENED AS A BOUNDED ADMISSION-POLICY LANE 2026-04-24.** The
    original 1.30 stack was a hard negative; the successor 1.30W policy
-   ("Q0 dense, Q2/Q3 pruned") materially improves fidelity on the same
-   Qwen 7B 8f dev+holdout-union bridge: cold `0.561` vs streaming
-   `0.503` (`Δacc = −0.0585`) at `2.7869×` paired amortized speedup,
-   with `0` parse failures and `0` degenerates. The important mechanistic
-   result is exact Q0 parity (`34/57` in both arms): every remaining
-   miss is follow-up-only. H_strict fails and H_rescue also fails because
-   the speed remains below `3.0×`. More importantly, the speed miss is
-   **structural under this 3-query protocol**: dense Q0 alone already
-   costs `5.249M ms`, while the full run would need to fit inside
-   `4.981M ms` to earn `3.0×`; even free follow-ups would still miss.
-   So the next paper-relevant work is **not** another follow-up-only
-   keep-rate tweak. It is either a safer cheaper-Q0 policy on selected
-   regimes, or a longer-session protocol where the dense-Q0 cost can be
-   amortized honestly.
+   ("Q0 dense, Q2/Q3 pruned") improved it to cold `0.561` vs streaming
+   `0.503` (`Δacc = −0.0585`) at `2.7869×`, with exact Q0 parity and
+   clean format, but still below the `3.0×` rescue floor. The new
+   `1.30X` frontier replay changes the next-step logic: a simple
+   deployable duration policy (`dense_on_medium_short`) already passes
+   the rescue band on speed/accuracy at `Δacc = −0.0819`, `3.0168×`, so
+   same-protocol admission is viable. However, that policy still leaves
+   `2` long-session parse failures, and the exact per-session frontier
+   shows there is **no** format-clean rescue point within the current
+   1.30 / 1.30W endpoint family. So the next paper-relevant work is a
+   targeted fix for those remaining long-session format failures or a
+   third endpoint family, not another blind global rerun.
 
 5. **1.55D selective re-prefill frontier (fidelity recovery).** The v1
    driver was infra-falsified, but that is no longer the live state.

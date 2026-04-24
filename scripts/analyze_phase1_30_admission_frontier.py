@@ -33,6 +33,7 @@ def main() -> None:
         dense_streaming_jsonl=args.dense_dir / "streaming_q0_dense_followup_pruned_off.jsonl",
         dense_cold_jsonl=args.dense_dir / "cold_dense.jsonl",
     )
+    args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(analysis, indent=2) + "\n")
 
     print(f"[1.30X] wrote {args.output}")

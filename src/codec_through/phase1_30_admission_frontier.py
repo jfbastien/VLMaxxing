@@ -121,6 +121,9 @@ class FrontierPoint:
     stream_total_ms: float
     cold_total_ms: float
     dense_sessions: tuple[str, ...]
+    parse_failures: int
+    degenerates: int
+    format_pass: bool
     strict_pass: bool
     rescue_pass: bool
 
@@ -133,6 +136,9 @@ class FrontierPoint:
             "stream_total_ms": self.stream_total_ms,
             "cold_total_ms": self.cold_total_ms,
             "dense_sessions": list(self.dense_sessions),
+            "parse_failures": self.parse_failures,
+            "degenerates": self.degenerates,
+            "format_pass": self.format_pass,
             "strict_pass": self.strict_pass,
             "rescue_pass": self.rescue_pass,
         }
@@ -357,6 +363,8 @@ def _frontier_point_from_choices(
     cold_total_ms = 0.0
     delta_correct = 0
     dense_sessions: list[str] = []
+    parse_failures = 0
+    degenerates = 0
     for session_id in sorted(session_pairs):
         pair = session_pairs[session_id]
         arm_name = chosen_arms[session_id]
@@ -366,6 +374,8 @@ def _frontier_point_from_choices(
         stream_total_ms += arm.stream_total_ms
         cold_total_ms += arm.cold_total_ms
         delta_correct += arm.delta_correct
+        parse_failures += arm.parse_failures
+        degenerates += arm.degenerates
 
     n_queries = 3 * len(session_pairs)
     speedup = cold_total_ms / stream_total_ms
@@ -380,6 +390,9 @@ def _frontier_point_from_choices(
         stream_total_ms=stream_total_ms,
         cold_total_ms=cold_total_ms,
         dense_sessions=tuple(dense_sessions),
+        parse_failures=parse_failures,
+        degenerates=degenerates,
+        format_pass=parse_failures == 0 and degenerates == 0,
         strict_pass=strict_pass,
         rescue_pass=rescue_pass,
     )
@@ -424,9 +437,25 @@ def compute_exact_frontier(
     rescue_candidates = [
         point for point in frontier_by_delta.values() if point.rescue_pass
     ]
+    strict_format_candidates = [
+        point for point in frontier_by_delta.values() if point.strict_pass and point.format_pass
+    ]
+    rescue_format_candidates = [
+        point for point in frontier_by_delta.values() if point.rescue_pass and point.format_pass
+    ]
     return {
         "best_strict": max(strict_candidates, key=lambda point: point.accuracy_delta, default=None),
         "best_rescue": max(rescue_candidates, key=lambda point: point.accuracy_delta, default=None),
+        "best_strict_with_format": max(
+            strict_format_candidates,
+            key=lambda point: point.accuracy_delta,
+            default=None,
+        ),
+        "best_rescue_with_format": max(
+            rescue_format_candidates,
+            key=lambda point: point.accuracy_delta,
+            default=None,
+        ),
         "best_speed_at_or_above_rescue_floor": max(
             (
                 point
