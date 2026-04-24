@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Phase 1.30 / claim #5 Track B wall-clock harness.
 
-Times the dense Qwen 2.5-VL path with phase-level granularity. Two modes:
+Times the dense local VLM path with phase-level granularity. Two modes:
 
   --mode mc_scoring   (default)   decode | preprocess | vision | prefill
   --mode full_generation          decode | preprocess | vision | generation
@@ -102,12 +102,7 @@ def _now_ms(start_ns: int) -> float:
 
 def _warmup(model: Any, processor: Any, runner: Any, warm_item: Any, frame_count: int) -> None:
     sample = runner._prepare_sample(model, processor, warm_item, frame_count=frame_count)
-    dtype = model.vision_tower.patch_embed.proj.weight.dtype
-    features = model.vision_tower(
-        sample.pixel_values.astype(dtype),
-        sample.extra_kwargs["image_grid_thw"],
-        output_hidden_states=False,
-    )
+    features = runner._compute_cached_features(model, sample)
     mx.eval(features)
     # Dry-run prefill so the mlx-vlm generate path hits a compiled code
     # path on the first measured item.
@@ -170,15 +165,20 @@ def _time_one_item(
     mx.eval(input_ids, pixel_values, mask)
     preprocess_ms = _now_ms(t0)
 
+    sample = runner.PreparedSample(
+        item=item,
+        frames=frames,
+        active_boxes=active_boxes,
+        input_ids=input_ids,
+        pixel_values=pixel_values,
+        mask=mask,
+        extra_kwargs=extra_kwargs,
+    )
+
     # --- Vision encode ------------------------------------------------
     mx.reset_peak_memory()
     t0 = time.perf_counter_ns()
-    dtype = model.vision_tower.patch_embed.proj.weight.dtype
-    features = model.vision_tower(
-        pixel_values.astype(dtype),
-        extra_kwargs["image_grid_thw"],
-        output_hidden_states=False,
-    )
+    features = runner._compute_cached_features(model, sample)
     mx.eval(features)
     vision_encode_ms = _now_ms(t0)
     peak_after_vision = _bytes_to_gb(mx.get_peak_memory())
