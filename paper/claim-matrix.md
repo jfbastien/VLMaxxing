@@ -57,7 +57,7 @@ companion `..._data.json`). Cross-architectural safe-prefill envelope from Phase
 - **3B basin onset bracketed to (36f, 40f] ≈ (14,500, 16,100] prefill tokens** — ~11% depth window, SHARP. Sampler-dispersible at 40f, but only to the pre-basin plateau noise floor (Δacc=−0.19), NOT to baseline.
 - **Failure geometry is cross-architectural:** non-letter attractor emergence on both models once basin is entered (7B `addCriterion`; 3B empty/"The").
 
-**Safe-deployment recommendation:** deploy 7B persistent-KV reuse at ≤16f / ≤6.5k prefill for clean fidelity; 3B at ≤36f / ≤14.5k prefill with Δacc=−0.19 tolerance. Fidelity recovery inside the basin requires **upstream intervention** — and that path is now locally real, not hypothetical: Phase 1.55D v2 selective re-prefill lands exact recovery at 20f on the 7-clip tranche with `K=2` (`Δacc = 0.0`, paired diffs `0/21`, `0/14` pathological follow-up attractors) at a paired follow-up median `15.27 s` and `6.72×` vs cold. The remaining gap is deployment-grade speed, not runnability.
+**Safe-deployment recommendation:** deploy 7B persistent-KV reuse at ≤16f / ≤6.5k prefill for clean fidelity; 3B at ≤36f / ≤14.5k prefill with Δacc=−0.19 tolerance. Fidelity recovery inside the basin requires **upstream intervention** — and that path is now locally real, not hypothetical: Phase 1.55D v2 selective re-prefill lands exact recovery at 20f on the 7-clip tranche with `K=1` (`Δacc = 0.0`, paired diffs `0/21`, `0/14` pathological follow-up attractors) at a paired follow-up median `10.14 s` and `9.71×` vs cold. The remaining gap is a narrow deployment-speed miss, not runnability.
 
 ## V_share Governs 1.51V Gains (claim 15, ceiling validation)
 

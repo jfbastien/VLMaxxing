@@ -170,16 +170,16 @@ in its own dimension.
 5. **1.55D selective re-prefill frontier (fidelity recovery).** The v1
    driver was infra-falsified, but that is no longer the live state.
    Repo-local v2 now runs the intended multimodal tail-reprefill regime.
-   **K=2 LANDED 2026-04-24** on the full 7-clip 20f short tranche and
-   is now the best local operating point: `Δacc = 0.0` (`17/21` vs
+   **K=1 LANDED 2026-04-24** on the full 7-clip 20f short tranche and
+   is now the best fixed operating point: `Δacc = 0.0` (`17/21` vs
    `17/21`), paired diffs `0/21`, pathological attractors `0/14`,
-   paired follow-up median `15.27 s`, cold median `102.63 s`
-   (`6.72×`), peak RSS `3.305 GB`. K=4 remains useful as the higher-tail
-   comparison point (`3.66×`, RSS narrow fail), but K=2 shows the lane
-   is now a real **speed/fidelity frontier**, not an infrastructure
-   problem. It still misses the deployment-grade H2 gate (`<=15 s` and
-   `>=10×`), so the live question is whether an even lighter or adaptive
-   policy can cross that line without giving back fidelity. **Do not
+   paired follow-up median `10.14 s`, cold median `98.43 s`
+   (`9.71×`), peak RSS `4.886 GB`. K=2 and K=4 remain useful lower-speed
+   comparison points (`6.72×` and `3.66×`), but K=1 shows the fixed-K
+   lane is now a real **mapped speed/fidelity frontier**. It still
+   misses the formal deployment-grade H2 gate narrowly, so the live
+   question is no longer "does fixed selective re-prefill work?" but
+   "does an adaptive refresh policy clear the last gap?" **Do not
    confuse this with 1.55B**, which is the later persistent-KV ×
    decode-acceleration composition phase and still depends on 1.54
    landing first.

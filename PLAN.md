@@ -958,9 +958,10 @@ Near-term order:
 4. keep phase 1.30 closed at the current scout conclusion until that adaptive
    admission policy exists; do not promote the local streaming bridge on speed
    alone
-5. treat phase 1.55D v2 selective re-prefill as the highest-upside fidelity-
-   recovery implementation lane once mlx-vlm auxiliary-tensor co-slicing is in
-   place
+5. treat phase 1.55D v2 selective re-prefill as an active, landed fixed-policy
+   frontier: K=4/K=2/K=1 now all run end-to-end with exact paired recovery, so
+   the next useful move is adaptive refresh policy rather than waiting on the
+   old co-slicing blocker or running another blind fixed-K sweep
 6. treat phase 1.58 bf16 KV control as the cleanest mechanism discriminator for
    the persistent-KV basin when checkpoint and RSS constraints permit
 7. keep Track B sparse-path work separate: semantic-substitution rows are not
