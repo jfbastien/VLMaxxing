@@ -861,6 +861,20 @@ authoritative in the per-phase notes under
   runtime_estimate: ~65min per K for n=7 paired tranche on M3 Air; K=1, K=2, and K=4 are now completed, and further blind K sweeps are lower-value than adaptive refresh/admission policies
   notes: v2 uses repo-local explicit tail slicing, explicit position IDs, prefix-cache materialization, and manual rewind rather than mlx-vlm's partial-image `PromptCacheState` path. A repo-local return-type bug in the first v2 smoke (Qwen `LanguageModelOutput` vs raw tensor) was fixed in commit `d6f9354`; after that, the smoke and full K=4, K=2, and K=1 tranches completed. The open question is no longer basic runnability or whether fixed-K selective re-prefill works; it is whether an adaptive policy can clear the `>=10×` line without sacrificing the paired-fidelity result.
 
+- phase_id: 1.55E
+  status: CLOSED-NEGATIVE 2026-04-24
+  authoritative_note: research/experiments/2026/2026-04-24-phase-1_55E-q2-mandatory-q3-optional-findings.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_55E_adaptive_reprefill_q2_k1_q3_k0/summary_k1_n7.json
+    - research/experiments/2026/artifacts/phase1_55E_adaptive_reprefill_q2_k1_q3_k0/session_k1_n7.jsonl
+    - research/experiments/2026/artifacts/phase1_55E_adaptive_reprefill_q2_k1_q3_k0/baseline_k1_n7.jsonl
+  current_best_policy: none; the simplest adaptive omission (`Q2=K1`, `Q3=K0`) is a bounded negative
+  supersedes: []
+  paper_relevance: negative boundary on adaptive refresh for C-PERSIST deployment
+  prereg_outcome: H1 FALSIFIED (`Δacc = -0.0952`, paired correctness diffs `4/21`, paired choice diffs `6/21`), H2 FALSIFIED (paired follow-up median speedup `7.38×` < `10×`), H3 FALSIFIED strongly (`Q3` pathological-like outputs `7/7`, follow-up parse failures `2/14`), H4 EARNED (`peak_rss_gb = 4.555`).
+  runtime_estimate: complete (~62min paired tranche on M3 Air)
+  notes: This run answers the simplest adaptive question cleanly: `Q2` remains the real rescue point (`7/7` correct, `0/7` pathological-like outputs), but `Q3` is not safely dispensable under the retained-full-cache path (`2/7` correct, `7/7` pathological-like outputs). The lane should not spend more time on blind query-index omission variants. If 1.55 continues, the next adaptive move must change the post-Q2 state itself or add an explicit risk signal for Q3. Cross-run caveat: compared with the earlier 1.55D K=1 baseline, one false item (`videomme:short:120-3`) flipped wrong-answer choice while remaining incorrect; the prereg verdict is therefore anchored to the matched baseline rerun inside the 1.55E artifact directory.
+
 - phase_id: 1.55B
   status: proposed (deferred)
   authoritative_note: research/experiments/2026/2026-04-19-phase-1_55B-persistent-kv-decode-composition-prereg.md

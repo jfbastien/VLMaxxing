@@ -182,14 +182,15 @@ in its own dimension.
    `17/21`), paired diffs `0/21`, pathological attractors `0/14`,
    paired follow-up median `10.14 s`, cold median `98.43 s`
    (`9.71×`), peak RSS `4.886 GB`. K=2 and K=4 remain useful lower-speed
-   comparison points (`6.72×` and `3.66×`), but K=1 shows the fixed-K
-   lane is now a real **mapped speed/fidelity frontier**. It still
-   misses the formal deployment-grade H2 gate narrowly, so the live
-   question is no longer "does fixed selective re-prefill work?" but
-   "does an adaptive refresh policy clear the last gap?" **Do not
-   confuse this with 1.55B**, which is the later persistent-KV ×
-   decode-acceleration composition phase and still depends on 1.54
-   landing first.
+   comparison points (`6.72×` and `3.66×`). The first adaptive follow-up
+   is now also closed: **1.55E (`Q2=K1`, `Q3=K0`) FALSIFIES cleanly**
+   with `Δacc = -0.0952`, paired correctness diffs `4/21`, and
+   pathological-like outputs on `7/7` third queries. So the live
+   question is no longer "does adaptive refresh help at all?" It is
+   "can a richer Q3 state-construction or risk-gated admission policy
+   clear the last gap?" **Do not confuse this with 1.55B**, which is
+   the later persistent-KV × decode-acceleration composition phase and
+   still depends on 1.54 landing first.
 
 6. **1.58 bf16 KV control at 20f.** Isolates quantization as a
    causal driver of the 7B basin collapse. Runtime ~2-4h; one clean
