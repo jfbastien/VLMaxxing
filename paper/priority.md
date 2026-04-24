@@ -300,9 +300,12 @@ a must-do slot opens.
   not another blind fixed-kr composition run.
 
 - **1.42 Gemma temporal-reuse (`_mix_gemma_features`).** Second-arch
-  fidelity test for claim #7 (architecture-conditioned reuse). Blocked
-  on task #62 (_mix_gemma_features implementation). Runtime ~30 min
-  n=30 8f VideoMME after impl.
+  fidelity test for claim #7 (architecture-conditioned reuse).
+  **Infrastructure is now landed**: the Track A Gemma mixing path,
+  cached-feature extraction, and checked launchers are in `main`
+  (2026-04-24). The remaining work is execution and interpretation,
+  not harness implementation. Runtime remains ~30 min per n=30 8f
+  holdout slice, plus any follow-on dense Track B baselines.
 
 - **1.43 EgoSchema breadth gate.** Long-form egocentric. Blocked on
   loader + manifest build. Runtime unknown (3-min clips at 22 s
