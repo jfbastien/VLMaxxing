@@ -1,34 +1,35 @@
 # Phase 1.42 — Gemma integration design note (pre-code)
 
 Date: 2026-04-17
-State: design (CPU-only; no MLX runs during halo sweep)
+State: historical design note; implementation landed 2026-04-24 with pooled-token grouping
 Parent: `paper/claim-matrix.md` claim #7 (architecture-conditioned reuse fidelity)
 Depends on: nothing; this is a pre-coding design gate
 Unlocks: phase 1.51 (novelty-pruning, **big-numbers headline**), phase 1.52 (combined temporal + spatial)
 
-**2026-04-24 correction:** the live Gemma MLX path used in this repo emits
-`256` visual tokens per frame on a `16×16` grid for the 560×560 benchmark
-frames. Earlier `280` / `14×20` notes in this design sketch came from stale
-metadata and are retained below only where explicitly labeled historical.
+**2026-04-24 correction:** for the cached-feature Track A path used in this
+repo, the live Gemma MLX `encode_image(...)` call emits **133 pooled cached
+tokens per 560×560 frame** by pooling a 35×35 patch grid with
+`pooling_kernel_size=3`. Earlier `256` / `16×16` and `280` / `14×20` notes in
+this design sketch were wrong for this path or referred to different Gemma
+routes, and are retained below only where explicitly labeled historical.
 
 ## Why this note exists
 
 Codex flagged that we should **not** start coding `_mix_gemma_features` without a deliberate design pass. Gemma 4's token layout is NOT a clean port of Qwen's block-level reuse:
 
 - **Qwen 2.5-VL**: windowed patch embedding; `qwen_merged_token_counts` gives per-frame token counts tied to 2D patch positions; `active_region_block_mask` is a pixel → block map; `_mix_qwen_features` operates on 28×28 blocks with clean pixel correspondence.
-- **Gemma 4-E4B**: the current driver path produces **256 fixed soft tokens per
-  image** on a `16×16` grid. The post-vision tokens have learned 2D positional
-  structure before they enter the projector / LLM stack. Pixel correspondence
-  is therefore coarser than Qwen's merged-patch path, but for our benchmark
-  pipeline it is still meaningful to work with a `35 px` block multiple on the
-  square-padded 560×560 frames.
+- **Gemma 4-E4B**: the current cached-feature driver path produces **133 pooled
+  cached tokens per image** by grouping a 35×35 patch grid through the vision
+  pooler. The post-vision tokens still have learned 2D positional structure
+  before they enter the projector / LLM stack, but the spatial footprint is a
+  pooled, non-square layout rather than a clean square token grid.
 
 This means every concept in `_mix_qwen_features` needs a deliberate Gemma analog decision, not a port:
 
 | Qwen concept | Maps to (Gemma candidate) | Decision needed |
 |---|---|---|
-| `qwen_merged_token_counts` → per-frame token counts | Fixed 256 per frame (already known) | None; constant across frames |
-| `active_region_block_mask` (pixel→block) | **No direct analog** — requires: approximate (pixel-to-post-pool mapping), or drop (no active masking) | Drop for v0; revisit if bounds-gated loss hurts |
+| `qwen_merged_token_counts` → per-frame token counts | Fixed 133 cached tokens per frame on 560×560 benchmark inputs | None; constant across frames on the current benchmark path |
+| `active_region_block_mask` (pixel→block) | Approximate pooled-token grouping from the 35×35 patch grid | Implement the grouped-mask analog, not a square-grid port |
 | `classify_blocks_with_planner` on pixel blocks | Option A: run on pixel blocks and aggregate to post-pool tokens; Option B: run per-frame at whole-frame level (binary reuse); Option C: run on post-pool token vectors directly (feature-space novelty) | Pick one for v0 — see §Design options |
 | 28×28 pixel block granularity | Does not generalize — post-pool token footprint is irregular | Abandon block-size parameter for Gemma |
 
@@ -144,7 +145,7 @@ When phase 1.42 v0 runs (post-halo-sweep + post-Gemma-smoke):
 
 ## Related memories / references
 
-- `~/models/gemma-4-e4b-it-4bit/config.json`: `patch_size=16`, `pooling_kernel_size=3`; use the driver-measured 256-token / 16×16 geometry rather than stale metadata fields.
+- `~/models/gemma-4-e4b-it-4bit/config.json`: `patch_size=16`, `pooling_kernel_size=3`; use the live cached-feature geometry (35×35 patches pooled to 133 cached tokens) rather than stale metadata fields.
 - `.venv/lib/python3.12/site-packages/mlx_vlm/models/gemma4/gemma4.py:100-106`: `cached_image_features` kwarg supported.
 - Sam's whitepaper §2.7: "architecture-conditioned reuse fidelity is a spectrum, not a binary (windowed-exact vs all-global-approximate)."
 - Phase 1.51 prereg (novelty-pruning on Gemma): `research/experiments/2026/2026-04-17-phase-1_51-novelty-pruning-gemma-prereg.md`.

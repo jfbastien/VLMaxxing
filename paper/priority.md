@@ -307,9 +307,14 @@ a must-do slot opens.
   fidelity test for claim #7 (architecture-conditioned reuse).
   **Infrastructure is now landed**: the Track A Gemma mixing path,
   cached-feature extraction, and checked launchers are in `main`
-  (2026-04-24). The remaining work is execution and interpretation,
-  not harness implementation. Runtime remains ~30 min per n=30 8f
-  holdout slice, plus any follow-on dense Track B baselines.
+  (2026-04-24). **Mechanism lane 1.57 Gemma also landed 2026-04-24**
+  on VideoMME dev-long n=10 with the corrected pooled cached-feature
+  geometry (`133` cached tokens/frame): STATIC cosine rises
+  `0.769 → 0.794 → 0.807` across 8f / 16f / 32f and is materially
+  above Qwen long-bucket values at matched frame counts. The remaining
+  work is execution and interpretation, not harness implementation.
+  Runtime remains ~30 min per n=30 8f holdout slice, plus any follow-on
+  dense Track B baselines.
 
 - **1.43 EgoSchema breadth gate.** Long-form egocentric. Blocked on
   loader + manifest build. Runtime unknown (3-min clips at 22 s

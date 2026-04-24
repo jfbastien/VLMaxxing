@@ -399,8 +399,13 @@ whitepaper §8 and codex 2026-04-16 review, the paper must state:
    drift mechanism is load-bearing. Phase 1.57 (adjacent-frame ViT
    cosine) is a **lower-bound proxy** on the cache-substitute error via
    fresh-vs-fresh cosine — NOT a direct cache-substitute measurement;
-   the 1.45/1.46 identity controls are the direct path. The paper must
-   say "attention-propagation drift" (or "attention-context drift") when
+   the 1.45/1.46 identity controls are the direct path. The new Gemma
+   1.57 lane lands the **same directional result** on VideoMME long dev,
+   but at much higher absolute STATIC cosine than Qwen
+   (`0.769 → 0.807` vs Qwen long `0.545 → 0.592` at 8f → 32f). The
+   paper must therefore frame drift as **architecture-conditioned**
+   rather than as a universal collapse law, and must still say
+   "attention-propagation drift" (or "attention-context drift") when
    citing Sam and must NOT assert a positional-encoding mechanism absent
    a local PE-ablation. Re-encode at I-frames (what we do) addresses
    attention-propagation drift; temporal-RoPE key correction would

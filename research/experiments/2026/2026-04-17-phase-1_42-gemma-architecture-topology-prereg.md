@@ -81,10 +81,12 @@ historical prereg target):
    `patch_size=16`.
 2. Update `src/codec_through/track_a.py::active_region_block_mask`
    for Gemma's validated driver geometry. The current MLX path
-   feeds 560×560 square-padded frames and yields a 16×16 visual
-   token grid (256 tokens/frame, 35 px/block). Earlier 14×20 /
-   280-token notes were based on stale metadata and should not be
-   reused for execution planning.
+   feeds 560×560 square-padded frames and, on the live
+   `encode_image(...)` cached-feature path, yields **133 pooled
+   cached tokens per frame** from a 35×35 patch grid via
+   `pooling_kernel_size=3`. Earlier 16×16 / 256-token and 14×20 /
+   280-token notes were stale or referred to different Gemma paths
+   and should not be reused for execution planning.
 3. Verify `mx.get_peak_memory()` stays under 13 GB for a single
    Gemma-4-E4B-4bit forward at 8 frames × 560×560 (the leftover
    headroom preserves ability to run Track B dense baseline
