@@ -170,17 +170,19 @@ in its own dimension.
 5. **1.55D selective re-prefill frontier (fidelity recovery).** The v1
    driver was infra-falsified, but that is no longer the live state.
    Repo-local v2 now runs the intended multimodal tail-reprefill regime.
-   **K=4 LANDED 2026-04-24** on the full 7-clip 20f short tranche:
-   `Δacc = 0.0` (`17/21` vs `17/21`), pathological attractors
-   `0/14`, follow-up median `28.98 s`, cold median `105.93 s`
-   (`3.66×`), peak RSS `5.040 GB`. So selective re-prefill is now a
-   real **fidelity-recovery** result, but not yet a deployment-grade
-   speed result. The next useful point is **K=2**, not K=8: K=4 already
-   proves the mechanism works, and the missing information is whether a
-   lighter tail can preserve most of the recovery while lifting the
-   speedup meaningfully. **Do not confuse this with 1.55B**, which is
-   the later persistent-KV × decode-acceleration composition phase and
-   still depends on 1.54 landing first.
+   **K=2 LANDED 2026-04-24** on the full 7-clip 20f short tranche and
+   is now the best local operating point: `Δacc = 0.0` (`17/21` vs
+   `17/21`), paired diffs `0/21`, pathological attractors `0/14`,
+   paired follow-up median `15.27 s`, cold median `102.63 s`
+   (`6.72×`), peak RSS `3.305 GB`. K=4 remains useful as the higher-tail
+   comparison point (`3.66×`, RSS narrow fail), but K=2 shows the lane
+   is now a real **speed/fidelity frontier**, not an infrastructure
+   problem. It still misses the deployment-grade H2 gate (`<=15 s` and
+   `>=10×`), so the live question is whether an even lighter or adaptive
+   policy can cross that line without giving back fidelity. **Do not
+   confuse this with 1.55B**, which is the later persistent-KV ×
+   decode-acceleration composition phase and still depends on 1.54
+   landing first.
 
 6. **1.58 bf16 KV control at 20f.** Isolates quantization as a
    causal driver of the 7B basin collapse. Runtime ~2-4h; one clean

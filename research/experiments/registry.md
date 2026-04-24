@@ -813,19 +813,22 @@ authoritative in the per-phase notes under
   notes: Discovered during pre-run driver verification 2026-04-20. The prereg's assumption of drop-in mlx-vlm compatibility was wrong — Gemma 4's sliding-window attention architecture is fundamentally incompatible with linear-cache prefix truncation. Three options documented (A: cache-type-aware fork with RotatingKVCache.is_trimmable() guard, B: partial-layer cache reuse losing most speedup, C: prefix ≤ 512 tokens = non-starter for video). Recommended disposition: DO NOT run with current driver (would produce plausible-looking garbage on silent-wrong-answer path); defer behind 1.55D (Qwen-only, known-compatible); revisit after 1.55D or rescope to Gemma 2 (non-sliding) as cross-family target. Paper Claim #14 (3-D decomposition) remains Qwen-family-only this draft; cross-family generalization declared an open question with explicit mlx-vlm sliding-window caveat.
 
 - phase_id: 1.55D
-  status: partial (v2 K=4 earns fidelity recovery, fails speed floor)
-  authoritative_note: research/experiments/2026/2026-04-24-phase-1_55D-selective-reprefill-v2-k4-findings.md
+  status: partial (v2 K=2 earns exact recovery and stronger speed, but still misses the deployment floor)
+  authoritative_note: research/experiments/2026/2026-04-24-phase-1_55D-selective-reprefill-v2-k2-findings.md
   authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_55D_selective_reprefill_v2/summary_k2_n7.json
+    - research/experiments/2026/artifacts/phase1_55D_selective_reprefill_v2/session_k2_n7.jsonl
+    - research/experiments/2026/artifacts/phase1_55D_selective_reprefill_v2/baseline_k2_n7.jsonl
     - research/experiments/2026/artifacts/phase1_55D_selective_reprefill_v2/summary_k4_n7.json
     - research/experiments/2026/artifacts/phase1_55D_selective_reprefill_v2/session_k4_n7.jsonl
     - research/experiments/2026/artifacts/phase1_55D_selective_reprefill_v2/baseline_k4_n7.jsonl
-  current_best_policy: K=4 selective re-prefill (20f short-bucket, Qwen 7B)
+  current_best_policy: K=2 selective re-prefill (20f short-bucket, Qwen 7B)
   supersedes:
     - research/experiments/2026/2026-04-20-phase-1_55D-selective-reprefill-v1-driver-findings.md
-  paper_relevance: active (fidelity-recovery frontier now real, but not yet a deployment-grade lever)
-  prereg_outcome: K=4 on the full 7-clip tranche earns H1 (session accuracy `17/21`, baseline accuracy `17/21`, `Δacc = 0.0`) and H3 (pathological attractors `0/14` on follow-ups), but falsifies H2 (follow-up median `28.98 s`, only `3.66×` vs cold median `105.93 s`, below `>=10×`) and narrowly misses H4 (`peak_rss_gb = 5.040` vs `<=5.0`). The old v1 infrastructure blocker is resolved in the repo-local v2 path; the remaining open question is frontier shape (K=2 or other lighter tails), not basic runnability.
-  runtime_estimate: ~66min for K=4 n=7 paired tranche on M3 Air; K=2 expected similar wall-clock, K=8 longer and lower-value because K=4 already restores baseline fidelity
-  notes: v2 uses repo-local explicit tail slicing, explicit position IDs, prefix-cache materialization, and manual rewind rather than mlx-vlm's partial-image `PromptCacheState` path. A repo-local return-type bug in the first v2 smoke (Qwen `LanguageModelOutput` vs raw tensor) was fixed in commit `d6f9354`; after that, the smoke and full K=4 tranche completed. Current priority is K=2 as the speed/fidelity frontier point; K=8 is deprioritized unless K=2 materially degrades fidelity.
+  paper_relevance: active (working fidelity-recovery frontier; deployment-grade speed still open)
+  prereg_outcome: K=2 on the full 7-clip tranche earns H1 exactly (session accuracy `17/21`, baseline accuracy `17/21`, `Δacc = 0.0` with paired diffs `0/21`), earns H3 strongly (pathological attractors `0/14` on follow-ups), and earns H4 (`peak_rss_gb = 3.305` vs `<=5.0`). H2 still falsifies: paired follow-up median `15.27 s` narrowly misses the `<=15 s` gate and the speedup is only `6.72×` vs the preregistered `>=10×` floor. K=4 remains useful as the higher-tail comparison point (`3.66×`, RSS narrow fail), but K=2 is the new frontier best.
+  runtime_estimate: ~65min per K for n=7 paired tranche on M3 Air; K=2 and K=4 now completed, K=8 lower-value because K=2 already preserves fidelity with materially better latency
+  notes: v2 uses repo-local explicit tail slicing, explicit position IDs, prefix-cache materialization, and manual rewind rather than mlx-vlm's partial-image `PromptCacheState` path. A repo-local return-type bug in the first v2 smoke (Qwen `LanguageModelOutput` vs raw tensor) was fixed in commit `d6f9354`; after that, the smoke and full K=4 and K=2 tranches completed. The open question is no longer basic runnability; it is whether any lighter or adaptive tail can push the frontier past the `<=15 s` / `>=10×` deployment line.
 
 - phase_id: 1.55B
   status: proposed (deferred)
