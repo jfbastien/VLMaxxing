@@ -304,6 +304,21 @@ authoritative in the per-phase notes under
   runtime_estimate: complete
   notes: This offline frontier replay uses only landed session-level outputs from 1.30 and 1.30W; no synthetic within-session timings or answer edits are allowed. The decisive new result is that the current 3-query protocol is no longer closed on speed/accuracy: a simple duration policy (`dense_on_medium_short`) already passes the rescue band. The remaining full-promotion gap is entirely format hygiene. Under that deployable policy, the residual bad sessions are `videomme:long:783-2` and `videomme:long:847-3`. The exact frontier proves that the lane is not dead in principle, but also proves the current 2-endpoint family is insufficient for a format-clean reopening. If 1.30 continues, the next move should target those long-session format failures explicitly or introduce a third endpoint family, not rerun another global policy.
 
+- phase_id: 1.30Y
+  status: SCOUT COMPLETE 2026-04-24 (`kr_Q0 = 0.67` promoted, `kr_Q0 = 0.75` rejected)
+  authoritative_note: research/experiments/2026/2026-04-24-phase-1_30Y-residual-long-q0-keep-rate-findings.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_30Y_residual_long_q0_keep_rate_20260424/cold_dense_summary.json
+    - research/experiments/2026/artifacts/phase1_30Y_residual_long_q0_keep_rate_20260424/streaming_q0_kr100_followup_kr050_summary.json
+    - research/experiments/2026/artifacts/phase1_30Y_residual_long_q0_keep_rate_20260424/streaming_q0_kr075_followup_kr050_summary.json
+    - research/experiments/2026/artifacts/phase1_30Y_residual_long_q0_keep_rate_20260424/streaming_q0_kr067_followup_kr050_summary.json
+  current_best_policy: residual-pair scout only; `kr_Q0 = 0.67`, `kr_followup = 0.50` is the promoted long-bucket candidate
+  supersedes: []
+  paper_relevance: active bridge-repair scout for the 1.30 streaming composition lane
+  prereg_outcome: `kr_Q0 = 0.75` fails the key format gate (degenerate `847-2`); `kr_Q0 = 0.67` earns the scout format gate (`0` parse, `0` degenerate) and improves the residual pair from `4/6` to `5/6` versus the dense-Q0 reference.
+  runtime_estimate: complete (~35 min benchmark-only on the residual pair)
+  notes: The purpose of this scout is deliberately narrow: after 1.30X, the only remaining format failures under the deployable `dense_on_medium_short` policy are `videomme:long:783-2` and `videomme:long:847-3`, and forcing those two sessions onto the dense-Q0 family misses the full-policy `3.0×` line by only `0.006×`. The scout shows that a cheaper long-session Q0 regime is still viable: `kr_Q0 = 0.67` stays clean on both binding sessions and improves the pair to `5/6`, while `kr_Q0 = 0.75` reintroduces a degenerate follow-up. A splice against the landed medium/short dense-Q0 results yields an approximate `Δacc = -0.0702`, `3.0023×`, format-clean full policy, which is sufficient to justify a full long-bucket continuation but not yet a promotion-ready paper number because the splice mixes thermals across runs.
+
 - phase_id: 1.31
   status: proposed
   authoritative_note: research/experiments/2026/2026-04-16-phase-1_31-failure-predictor.md
