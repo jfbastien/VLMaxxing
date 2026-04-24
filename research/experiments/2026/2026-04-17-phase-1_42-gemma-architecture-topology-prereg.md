@@ -102,6 +102,12 @@ historical prereg target):
 2. Metrics: cached_accuracy, dense_accuracy, strict agreement,
    effective_fresh_frames, per-pair reuse class histogram,
    per-pair longest-stale-run.
+3. **2026-04-24 execution note:** Gemma's free-form generation path is
+   not a stable one-letter evaluator on the local smoke item even when
+   dense and cached prefill logits match exactly. Phase 1.42 therefore
+   runs with explicit MC scoring (`--answer-mode option_logprobs`) so
+   the benchmark measures reuse fidelity rather than output-format
+   obedience.
 
 **Phase C — Track B on Gemma** (if Phase B passes):
 

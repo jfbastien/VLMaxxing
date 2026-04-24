@@ -1244,7 +1244,7 @@ def _option_logprobs(
     logits = outputs.logits[0, -1, :]
     logprobs = logits - mx.logsumexp(logits, keepdims=True)
     mx.eval(logprobs)
-    logprobs_np = np.array(logprobs)
+    logprobs_np = np.array(logprobs.tolist(), dtype=np.float32)
 
     letter_ids = _letter_token_ids(processor, candidate_letters)
     per_letter = {
@@ -1259,6 +1259,42 @@ def _option_logprobs(
         "argmax_letter": argmax_letter,
         "argmax_logprob": top_logprob,
         "top_margin": float(top_margin),
+    }
+
+
+def _score_response_by_options(
+    model: Any,
+    processor: Any,
+    sample: PreparedSample,
+    *,
+    candidate_letters: list[str],
+    cached_features: mx.array | None,
+) -> dict[str, Any]:
+    mx.reset_peak_memory()
+    start_ns = time.perf_counter_ns()
+    margin = _option_logprobs(
+        model,
+        processor,
+        sample,
+        candidate_letters=candidate_letters,
+        cached_features=cached_features,
+    )
+    elapsed_ms = (time.perf_counter_ns() - start_ns) / 1_000_000
+    choice_index = candidate_letters.index(margin["argmax_letter"])
+    prompt_tokens = int(sample.input_ids.shape[-1])
+    prompt_tps = prompt_tokens / (elapsed_ms / 1000.0) if elapsed_ms > 0 else 0.0
+    return {
+        "text": margin["argmax_letter"],
+        "elapsed_ms": elapsed_ms,
+        "prompt_tokens": prompt_tokens,
+        "generation_tokens": 1,
+        "prompt_tps": prompt_tps,
+        "generation_tps": 0.0,
+        "peak_memory_gb": mx.get_peak_memory() / (1024**3),
+        "option_logprobs": margin,
+        "choice_index": choice_index,
+        "correct": False,
+        "parse_failure": False,
     }
 
 
@@ -1278,6 +1314,7 @@ def _run_chunk(
     frame_count: int,
     max_tokens: int,
     cache_mode: Literal["default", "identity"],
+    answer_mode: Literal["generation", "option_logprobs"],
     refresh_interval: int | None,
     planner_config: PlannerConfig,
     reuse_classes: tuple[BlockClass, ...],
@@ -1329,24 +1366,45 @@ def _run_chunk(
             sticky_window=sticky_window,
             halo_veto_config=halo_veto_config,
         )
-        dense = _generate_response(
-            model,
-            processor,
-            sample,
-            cached_features=None,
-            max_tokens=max_tokens,
-        )
-        cached = _generate_response(
-            model,
-            processor,
-            sample,
-            cached_features=cached_features,
-            max_tokens=max_tokens,
-        )
-        dense_choice = extract_choice(str(dense["text"]), item.candidates)
-        cached_choice = extract_choice(str(cached["text"]), item.candidates)
-        if log_option_logprobs:
-            candidate_letters = [chr(ord("A") + index) for index in range(len(item.candidates))]
+        candidate_letters = [chr(ord("A") + index) for index in range(len(item.candidates))]
+        if answer_mode == "generation":
+            dense = _generate_response(
+                model,
+                processor,
+                sample,
+                cached_features=None,
+                max_tokens=max_tokens,
+            )
+            cached = _generate_response(
+                model,
+                processor,
+                sample,
+                cached_features=cached_features,
+                max_tokens=max_tokens,
+            )
+            dense_choice = extract_choice(str(dense["text"]), item.candidates)
+            cached_choice = extract_choice(str(cached["text"]), item.candidates)
+        elif answer_mode == "option_logprobs":
+            dense = _score_response_by_options(
+                model,
+                processor,
+                sample,
+                candidate_letters=candidate_letters,
+                cached_features=None,
+            )
+            cached = _score_response_by_options(
+                model,
+                processor,
+                sample,
+                candidate_letters=candidate_letters,
+                cached_features=cached_features,
+            )
+            dense_choice = int(dense["choice_index"])
+            cached_choice = int(cached["choice_index"])
+        else:
+            raise ValueError(f"unknown answer_mode: {answer_mode!r}")
+
+        if log_option_logprobs and answer_mode == "generation":
             try:
                 dense_margin = _option_logprobs(
                     model,
@@ -1410,6 +1468,7 @@ def _run_chunk(
                 "reuse_ratio_mean_active": _mean_or_none(active_reused_ratios),
                 "reuse_ratio_mean_raw": _mean_or_none(raw_reused_ratios),
                 "frame_count": frame_count,
+                "answer_mode": answer_mode,
                 "thresholds": {
                     "static": planner_config.static_threshold,
                     "shifted": planner_config.shifted_threshold,
@@ -1466,6 +1525,7 @@ def _write_summary(
     per_group: int,
     frame_count: int,
     cache_mode: Literal["default", "identity"],
+    answer_mode: Literal["generation", "option_logprobs"],
     refresh_interval: int | None,
     manifest_path: Path | None,
     planner_config: PlannerConfig,
@@ -1514,6 +1574,7 @@ def _write_summary(
         },
         "frame_count": frame_count,
         "cache_mode": cache_mode,
+        "answer_mode": answer_mode,
         "refresh_interval": refresh_interval,
         "feature_replay_enabled": use_feature_replay,
         "feature_cache_dir": str(feature_cache_dir),
@@ -1561,6 +1622,7 @@ def run_benchmark(
     output_path: Path,
     control: RunControl | None,
     cache_mode: Literal["default", "identity"],
+    answer_mode: Literal["generation", "option_logprobs"],
     refresh_interval: int | None,
     planner_config: PlannerConfig,
     reuse_classes: tuple[BlockClass, ...],
@@ -1608,6 +1670,8 @@ def run_benchmark(
             str(max_tokens),
             "--cache-mode",
             cache_mode,
+            "--answer-mode",
+            answer_mode,
             "--refresh-interval",
             str(refresh_interval) if refresh_interval is not None else "0",
             "--statistic",
@@ -1667,6 +1731,7 @@ def run_benchmark(
                 per_group=per_group,
                 frame_count=frame_count,
                 cache_mode=cache_mode,
+                answer_mode=answer_mode,
                 refresh_interval=refresh_interval,
                 manifest_path=manifest_path,
                 planner_config=planner_config,
@@ -1690,9 +1755,10 @@ def run_benchmark(
             stopped_early=stopped_early,
             groups=groups,
             per_group=per_group,
-            frame_count=frame_count,
-            cache_mode=cache_mode,
-            refresh_interval=refresh_interval,
+        frame_count=frame_count,
+        cache_mode=cache_mode,
+        answer_mode=answer_mode,
+        refresh_interval=refresh_interval,
             manifest_path=manifest_path,
             planner_config=planner_config,
             reuse_classes=reuse_classes,
@@ -1730,6 +1796,15 @@ def main() -> None:
     run_parser.add_argument("--frame-count", type=int, default=8)
     run_parser.add_argument("--max-tokens", type=int, default=32)
     run_parser.add_argument("--cache-mode", choices=["default", "identity"], default="default")
+    run_parser.add_argument(
+        "--answer-mode",
+        choices=["generation", "option_logprobs"],
+        default="generation",
+        help=(
+            "generation = free-form decode then parse a choice; "
+            "option_logprobs = score the answer letters directly from the prefill logits."
+        ),
+    )
     run_parser.add_argument("--refresh-interval", type=int, default=0)
     run_parser.add_argument(
         "--statistic",
@@ -1805,6 +1880,11 @@ def main() -> None:
     chunk_parser.add_argument("--frame-count", type=int, required=True)
     chunk_parser.add_argument("--max-tokens", type=int, required=True)
     chunk_parser.add_argument("--cache-mode", choices=["default", "identity"], required=True)
+    chunk_parser.add_argument(
+        "--answer-mode",
+        choices=["generation", "option_logprobs"],
+        required=True,
+    )
     chunk_parser.add_argument("--refresh-interval", type=int, required=True)
     chunk_parser.add_argument(
         "--statistic",
@@ -1853,6 +1933,9 @@ def main() -> None:
                     frame_count=args.frame_count,
                     max_tokens=args.max_tokens,
                     cache_mode=cast(Literal["default", "identity"], args.cache_mode),
+                    answer_mode=cast(
+                        Literal["generation", "option_logprobs"], args.answer_mode
+                    ),
                     refresh_interval=args.refresh_interval if args.refresh_interval > 0 else None,
                     planner_config=planner_config,
                     reuse_classes=reuse_classes,
@@ -1883,6 +1966,7 @@ def main() -> None:
         output_path=args.output_path,
         control=control,
         cache_mode=cast(Literal["default", "identity"], args.cache_mode),
+        answer_mode=cast(Literal["generation", "option_logprobs"], args.answer_mode),
         refresh_interval=args.refresh_interval if args.refresh_interval > 0 else None,
         planner_config=planner_config,
         reuse_classes=reuse_classes,

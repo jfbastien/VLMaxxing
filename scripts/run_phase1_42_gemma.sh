@@ -5,6 +5,11 @@
 #  1. a single-item VideoMME smoke to catch geometry/generate regressions
 #  2. TOMATO motion holdout N=30 with Planner 2.0 base
 #  3. MVBench motion holdout N=30 with Planner 2.0 base
+#
+# Gemma uses explicit MC scoring (`--answer-mode option_logprobs`) here rather
+# than free-form generation parsing. The smoke diagnostic on 2026-04-24 showed
+# identical dense/cached prefill logits but unstable free-form formatting, so
+# MC scoring is the stable fidelity measure for this lane.
 
 set -euo pipefail
 
@@ -32,6 +37,7 @@ run_cached() {
     --frame-count 8 \
     --max-tokens 32 \
     --cache-mode default \
+    --answer-mode option_logprobs \
     --statistic max_abs \
     --static-threshold 8 \
     --shifted-threshold 32 \
@@ -47,16 +53,16 @@ echo "[1.42] smoke"
 run_cached \
   videomme \
   "$SMOKE_MANIFEST" \
-  "$OUT_ROOT/phase1_42_gemma_smoke"
+  "$OUT_ROOT/phase1_42_gemma_smoke_mc"
 
 echo "[1.42] TOMATO motion holdout"
 run_cached \
   tomato \
   research/benchmark_manifests/tomato_motion_holdout_v2.toml \
-  "$OUT_ROOT/phase1_42_gemma_tomato_motion_holdout_v2_cached"
+  "$OUT_ROOT/phase1_42_gemma_tomato_motion_holdout_v2_mc_cached"
 
 echo "[1.42] MVBench motion holdout"
 run_cached \
   mvbench \
   research/benchmark_manifests/mvbench_motion_holdout_v2.toml \
-  "$OUT_ROOT/phase1_42_gemma_mvbench_motion_holdout_v2_cached"
+  "$OUT_ROOT/phase1_42_gemma_mvbench_motion_holdout_v2_mc_cached"
