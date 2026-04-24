@@ -47,6 +47,7 @@ from codec_through.track_a import (
     active_region_block_mask,
     flattened_reuse_mask,
     qwen_merged_token_counts,
+    square_grid_shape_from_token_count,
 )
 from codec_through.video_decode import decode_uniform_frames
 
@@ -70,6 +71,10 @@ DEFAULT_SUMMARY_PATH = Path("results/benchmark_track_a_summary.json")
 BENCHMARK_FRAME_SIZE = 560
 QWEN_BLOCK_SIZE = 28
 QWEN_SPATIAL_MERGE = 2
+GEMMA_MODEL_TYPE = "gemma4"
+GEMMA_TOKENS_PER_FRAME = 256
+GEMMA_GRID_SHAPE = square_grid_shape_from_token_count(GEMMA_TOKENS_PER_FRAME)
+GEMMA_BLOCK_SIZE = BENCHMARK_FRAME_SIZE // GEMMA_GRID_SHAPE[0]
 
 PREDECESSOR_MVBENCH_TASKS = [
     "action_antonym",
@@ -144,6 +149,15 @@ class BenchmarkManifest:
     item_ids: list[str]
     description: str | None = None
     source: str | None = None
+
+
+def _model_family(model: Any) -> Literal["qwen", "gemma"]:
+    model_type = str(getattr(model.config, "model_type", "")).lower()
+    if model_type == "qwen2_5_vl":
+        return "qwen"
+    if model_type == GEMMA_MODEL_TYPE:
+        return "gemma"
+    raise ValueError(f"unsupported model_type for Track A benchmark: {model_type!r}")
 
 
 def _run(command: list[str]) -> str:
@@ -623,6 +637,12 @@ def _prepare_sample(
 
 
 def _compute_cached_features(model: Any, sample: PreparedSample) -> mx.array:
+    family = _model_family(model)
+    if family == "gemma":
+        features = model.encode_image(sample.pixel_values)
+        mx.eval(features)
+        return cast(mx.array, features)
+
     image_grid_thw = sample.extra_kwargs["image_grid_thw"]
     dtype = model.vision_tower.patch_embed.proj.weight.dtype
     features = model.vision_tower(
@@ -668,7 +688,14 @@ def _compute_cached_features_with_replay(
 
     key = _feature_cache_key(sample, model_path=model_path, model_content_hash=model_content_hash)
     cached = get_feature_cache(key, cache_dir=feature_cache_dir)
-    current_grid = np.array(sample.extra_kwargs["image_grid_thw"].tolist(), dtype=np.int64)
+    family = _model_family(model)
+    if family == "qwen":
+        current_grid = np.array(sample.extra_kwargs["image_grid_thw"].tolist(), dtype=np.int64)
+    else:
+        current_grid = np.tile(
+            np.array([[1, *GEMMA_GRID_SHAPE]], dtype=np.int64),
+            (len(sample.frames), 1),
+        )
     if cached is not None:
         cached_features_np, cached_grid, _meta = cached
         if not np.array_equal(cached_grid, current_grid):
@@ -776,52 +803,102 @@ def _apply_age_gate(
     return allowed, next_ages
 
 
-def _mix_qwen_features(
-    sample: PreparedSample,
-    features: mx.array,
-    *,
-    planner_config: PlannerConfig,
-    reuse_classes: tuple[BlockClass, ...],
-    max_age: int | None,
-    sticky_window: int | None = None,
-    halo_veto_config: NeighborHaloVetoConfig | None = None,
-) -> tuple[mx.array, list[float], list[float]]:
+def _split_qwen_dense_segments(
+    sample: PreparedSample, features: mx.array
+) -> tuple[list[mx.array], bool]:
     image_grid_thw = np.array(sample.extra_kwargs["image_grid_thw"].tolist(), dtype=np.int64)
     counts = qwen_merged_token_counts(image_grid_thw, spatial_merge_size=QWEN_SPATIAL_MERGE)
     if len(counts) != len(sample.frames):
         raise ValueError("frame count and Qwen grid count mismatch")
-
     dense_segments: list[mx.array] = []
     offset = 0
     for count in counts:
         dense_segments.append(features[offset : offset + count])
         offset += count
+    return dense_segments, False
 
+
+def _split_gemma_dense_segments(
+    sample: PreparedSample, features: mx.array
+) -> tuple[list[mx.array], bool]:
+    if features.ndim == 3:
+        if int(features.shape[0]) != 1:
+            raise ValueError(
+                "expected Gemma cached-image batch dimension of 1, "
+                f"got {features.shape}"
+            )
+        flat_features = features[0]
+        restore_batch_dim = True
+    elif features.ndim == 2:
+        flat_features = features
+        restore_batch_dim = False
+    else:
+        raise ValueError(f"unexpected Gemma feature shape {features.shape}")
+
+    expected_tokens = len(sample.frames) * GEMMA_TOKENS_PER_FRAME
+    if int(flat_features.shape[0]) != expected_tokens:
+        raise ValueError(
+            "Gemma feature/token mismatch: "
+            f"expected {expected_tokens} tokens for {len(sample.frames)} frames "
+            f"({GEMMA_GRID_SHAPE[0]}x{GEMMA_GRID_SHAPE[1]}/frame), "
+            f"got {int(flat_features.shape[0])}"
+        )
+    dense_segments: list[mx.array] = []
+    offset = 0
+    for _ in sample.frames:
+        dense_segments.append(flat_features[offset : offset + GEMMA_TOKENS_PER_FRAME])
+        offset += GEMMA_TOKENS_PER_FRAME
+    return dense_segments, restore_batch_dim
+
+
+def _mix_dense_segments(
+    sample: PreparedSample,
+    dense_segments: list[mx.array],
+    *,
+    block_size: int,
+    planner_config: PlannerConfig,
+    reuse_classes: tuple[BlockClass, ...],
+    max_age: int | None,
+    sticky_window: int | None = None,
+    halo_veto_config: NeighborHaloVetoConfig | None = None,
+    refresh_interval: int | None = None,
+    restore_batch_dim: bool = False,
+) -> tuple[mx.array, list[float], list[float]]:
     mixed_segments = [dense_segments[0]]
     ages = np.zeros(dense_segments[0].shape[0], dtype=np.int32)
-    # CodecSight-style sticky-dynamic: once a block is classified as
-    # non-reusable within a reset window, it stays non-reusable for the
-    # remainder of the window. Window resets at
-    # `frame_index % sticky_window == 0` (the "I-frame equivalent").
     dynamic_latched = np.zeros(dense_segments[0].shape[0], dtype=bool)
     raw_reused_ratios: list[float] = []
     active_reused_ratios: list[float] = []
+
     for frame_index in range(1, len(sample.frames)):
+        if (
+            refresh_interval is not None
+            and refresh_interval > 0
+            and frame_index % refresh_interval == 0
+        ):
+            mixed_segments.append(dense_segments[frame_index])
+            ages = np.zeros(dense_segments[frame_index].shape[0], dtype=np.int32)
+            dynamic_latched = np.zeros(dense_segments[frame_index].shape[0], dtype=bool)
+            raw_reused_ratios.append(0.0)
+            active_reused_ratios.append(0.0)
+            continue
+
         if sticky_window is not None and frame_index % sticky_window == 0:
             dynamic_latched = np.zeros_like(dynamic_latched)
+
         previous = np.array(sample.frames[frame_index - 1], dtype=np.uint8)
         current = np.array(sample.frames[frame_index], dtype=np.uint8)
         classification = classify_blocks_with_planner(
             previous,
             current,
-            block_size=QWEN_BLOCK_SIZE,
+            block_size=block_size,
             config=planner_config,
         )
         if halo_veto_config is not None:
             block_scores = block_statistic_values(
                 previous,
                 current,
-                block_size=QWEN_BLOCK_SIZE,
+                block_size=block_size,
                 config=planner_config,
             )
             classification = apply_neighbor_halo_veto(
@@ -842,12 +919,12 @@ def _mix_qwen_features(
         previous_active = active_region_block_mask(
             sample.frames[frame_index - 1].size,
             sample.active_boxes[frame_index - 1],
-            block_size=QWEN_BLOCK_SIZE,
+            block_size=block_size,
         )
         current_active = active_region_block_mask(
             sample.frames[frame_index].size,
             sample.active_boxes[frame_index],
-            block_size=QWEN_BLOCK_SIZE,
+            block_size=block_size,
         )
         active_mask = previous_active & current_active
         if active_mask.size != reuse_mask.size:
@@ -863,12 +940,64 @@ def _mix_qwen_features(
         )
         raw_reused_ratios.append(float(allowed_mask.mean()))
         active_reused_ratios.append(_masked_mean(allowed_mask.astype(np.float32), active_mask))
+
     mixed = mx.concatenate(mixed_segments, axis=0)
+    if restore_batch_dim:
+        mixed = mx.expand_dims(mixed, axis=0)
     mx.eval(mixed)
     return mixed, raw_reused_ratios, active_reused_ratios
 
 
+def _mix_qwen_features(
+    sample: PreparedSample,
+    features: mx.array,
+    *,
+    planner_config: PlannerConfig,
+    reuse_classes: tuple[BlockClass, ...],
+    max_age: int | None,
+    sticky_window: int | None = None,
+    halo_veto_config: NeighborHaloVetoConfig | None = None,
+) -> tuple[mx.array, list[float], list[float]]:
+    dense_segments, restore_batch_dim = _split_qwen_dense_segments(sample, features)
+    return _mix_dense_segments(
+        sample,
+        dense_segments,
+        block_size=QWEN_BLOCK_SIZE,
+        planner_config=planner_config,
+        reuse_classes=reuse_classes,
+        max_age=max_age,
+        sticky_window=sticky_window,
+        halo_veto_config=halo_veto_config,
+        restore_batch_dim=restore_batch_dim,
+    )
+
+
+def _mix_gemma_features(
+    sample: PreparedSample,
+    features: mx.array,
+    *,
+    planner_config: PlannerConfig,
+    reuse_classes: tuple[BlockClass, ...],
+    max_age: int | None,
+    sticky_window: int | None = None,
+    halo_veto_config: NeighborHaloVetoConfig | None = None,
+) -> tuple[mx.array, list[float], list[float]]:
+    dense_segments, restore_batch_dim = _split_gemma_dense_segments(sample, features)
+    return _mix_dense_segments(
+        sample,
+        dense_segments,
+        block_size=GEMMA_BLOCK_SIZE,
+        planner_config=planner_config,
+        reuse_classes=reuse_classes,
+        max_age=max_age,
+        sticky_window=sticky_window,
+        halo_veto_config=halo_veto_config,
+        restore_batch_dim=restore_batch_dim,
+    )
+
+
 def _select_cached_features(
+    model_family: Literal["qwen", "gemma"],
     sample: PreparedSample,
     features: mx.array,
     *,
@@ -883,7 +1012,17 @@ def _select_cached_features(
     if cache_mode == "identity":
         return features, [], []
     if refresh_interval is None or refresh_interval <= 0:
-        return _mix_qwen_features(
+        if model_family == "qwen":
+            return _mix_qwen_features(
+                sample,
+                features,
+                planner_config=planner_config,
+                reuse_classes=reuse_classes,
+                max_age=max_age,
+                sticky_window=sticky_window,
+                halo_veto_config=halo_veto_config,
+            )
+        return _mix_gemma_features(
             sample,
             features,
             planner_config=planner_config,
@@ -893,84 +1032,24 @@ def _select_cached_features(
             halo_veto_config=halo_veto_config,
         )
 
-    image_grid_thw = np.array(sample.extra_kwargs["image_grid_thw"].tolist(), dtype=np.int64)
-    counts = qwen_merged_token_counts(image_grid_thw, spatial_merge_size=QWEN_SPATIAL_MERGE)
-    if len(counts) != len(sample.frames):
-        raise ValueError("frame count and Qwen grid count mismatch")
+    if model_family == "qwen":
+        dense_segments, restore_batch_dim = _split_qwen_dense_segments(sample, features)
+        block_size = QWEN_BLOCK_SIZE
+    else:
+        dense_segments, restore_batch_dim = _split_gemma_dense_segments(sample, features)
+        block_size = GEMMA_BLOCK_SIZE
 
-    dense_segments: list[mx.array] = []
-    offset = 0
-    for count in counts:
-        dense_segments.append(features[offset : offset + count])
-        offset += count
-
-    mixed_segments = [dense_segments[0]]
-    ages = np.zeros(dense_segments[0].shape[0], dtype=np.int32)
-    raw_reused_ratios: list[float] = []
-    active_reused_ratios: list[float] = []
-    for frame_index in range(1, len(sample.frames)):
-        if frame_index % refresh_interval == 0:
-            mixed_segments.append(dense_segments[frame_index])
-            ages = np.zeros(dense_segments[frame_index].shape[0], dtype=np.int32)
-            raw_reused_ratios.append(0.0)
-            active_reused_ratios.append(0.0)
-            continue
-
-        previous = np.array(sample.frames[frame_index - 1], dtype=np.uint8)
-        current = np.array(sample.frames[frame_index], dtype=np.uint8)
-        classification = classify_blocks_with_planner(
-            previous,
-            current,
-            block_size=QWEN_BLOCK_SIZE,
-            config=planner_config,
-        )
-        if halo_veto_config is not None:
-            block_scores = block_statistic_values(
-                previous,
-                current,
-                block_size=QWEN_BLOCK_SIZE,
-                config=planner_config,
-            )
-            classification = apply_neighbor_halo_veto(
-                classification,
-                block_scores,
-                config=halo_veto_config,
-            )
-        reuse_mask = flattened_reuse_mask(classification, reuse_classes=reuse_classes)
-        if reuse_mask.size != dense_segments[frame_index].shape[0]:
-            raise ValueError(
-                "classification/token mismatch: "
-                f"mask={reuse_mask.size}, tokens={dense_segments[frame_index].shape[0]}"
-            )
-        allowed_mask, ages = _apply_age_gate(reuse_mask, ages, max_age=max_age)
-        previous_active = active_region_block_mask(
-            sample.frames[frame_index - 1].size,
-            sample.active_boxes[frame_index - 1],
-            block_size=QWEN_BLOCK_SIZE,
-        )
-        current_active = active_region_block_mask(
-            sample.frames[frame_index].size,
-            sample.active_boxes[frame_index],
-            block_size=QWEN_BLOCK_SIZE,
-        )
-        active_mask = previous_active & current_active
-        if active_mask.size != reuse_mask.size:
-            raise ValueError(
-                f"active-region/token mismatch: mask={active_mask.size}, tokens={reuse_mask.size}"
-            )
-        mixed_segments.append(
-            mx.where(
-                mx.array(allowed_mask[:, None]),
-                mixed_segments[-1],
-                dense_segments[frame_index],
-            )
-        )
-        raw_reused_ratios.append(float(allowed_mask.mean()))
-        active_reused_ratios.append(_masked_mean(allowed_mask.astype(np.float32), active_mask))
-
-    mixed = mx.concatenate(mixed_segments, axis=0)
-    mx.eval(mixed)
-    return mixed, raw_reused_ratios, active_reused_ratios
+    return _mix_dense_segments(
+        sample,
+        dense_segments,
+        block_size=block_size,
+        planner_config=planner_config,
+        reuse_classes=reuse_classes,
+        max_age=max_age,
+        refresh_interval=refresh_interval,
+        halo_veto_config=halo_veto_config,
+        restore_batch_dim=restore_batch_dim,
+    )
 
 
 def _generate_response(
@@ -1118,6 +1197,7 @@ def _run_chunk(
     registry = {item.item_id: item for item in registry_source}
     selected_items = [registry[item_id] for item_id in item_ids]
     model, processor = _load_model(model_path)
+    model_family = _model_family(model)
     model_content_hash = model_content_sha256(model_path)
     results: list[dict[str, Any]] = []
     for item in selected_items:
@@ -1131,6 +1211,7 @@ def _run_chunk(
             feature_cache_dir=feature_cache_dir,
         )
         cached_features, raw_reused_ratios, active_reused_ratios = _select_cached_features(
+            model_family,
             sample,
             features,
             cache_mode=cache_mode,

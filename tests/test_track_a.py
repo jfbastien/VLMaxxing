@@ -9,6 +9,7 @@ from codec_through.track_a import (
     qwen_merged_grid_shapes,
     qwen_merged_token_counts,
     resized_dimensions_for_block_multiple,
+    square_grid_shape_from_token_count,
 )
 
 
@@ -34,6 +35,10 @@ def test_qwen_merged_token_counts_match_merge_geometry() -> None:
 def test_qwen_merged_grid_shapes_match_merge_geometry() -> None:
     image_grid_thw = np.array([[1, 18, 24], [1, 18, 24]], dtype=np.int64)
     assert qwen_merged_grid_shapes(image_grid_thw, spatial_merge_size=2) == [(9, 12), (9, 12)]
+
+
+def test_square_grid_shape_from_token_count() -> None:
+    assert square_grid_shape_from_token_count(256) == (16, 16)
 
 
 def test_flattened_reuse_mask_marks_requested_classes() -> None:
@@ -70,3 +75,16 @@ def test_active_region_block_mask_excludes_padded_border_blocks() -> None:
         True,
         False,
     ]
+
+
+def test_active_region_block_mask_handles_gemma_soft_grid() -> None:
+    mask = active_region_block_mask(
+        (560, 560),
+        (70, 35, 490, 525),
+        block_size=35,
+    ).reshape(16, 16)
+    assert mask.shape == (16, 16)
+    assert mask[0, 0] == 0
+    assert mask[1, 2] == 1
+    assert mask[14, 13] == 1
+    assert mask[15, 15] == 0

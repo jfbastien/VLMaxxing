@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from collections.abc import Iterable
 
 import numpy as np
@@ -86,6 +87,17 @@ def qwen_merged_grid_shapes(
             )
         shapes.append((height // spatial_merge_size, width // spatial_merge_size))
     return shapes
+
+
+def square_grid_shape_from_token_count(token_count: int) -> tuple[int, int]:
+    """Return a square token grid shape for a perfect-square token count."""
+
+    if token_count <= 0:
+        raise ValueError("token_count must be positive")
+    side = math.isqrt(token_count)
+    if side * side != token_count:
+        raise ValueError(f"token_count must be a perfect square, got {token_count}")
+    return side, side
 
 
 def flattened_reuse_mask(
