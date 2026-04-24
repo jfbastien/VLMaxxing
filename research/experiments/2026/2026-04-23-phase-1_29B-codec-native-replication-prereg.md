@@ -444,3 +444,66 @@ Comparison to the live-pixel per-item cached run on the same manifest:
    calibration-source ablations are neutral on answer-level outcomes. The
    remaining open question is breadth: whether this remains true on the
    all-duration dev n=30 slice where offline extraction is expensive.
+
+## Calibration-source breadth ablation — all-duration dev n=30
+
+To close the remaining breadth caveat, the all-duration dev manifest was rerun
+with artifact-sourced target shares while reusing the cached pixel/codec
+precompute from the long run:
+
+```bash
+uv run python scripts/run_phase1_29_planner_accuracy_probe.py \
+  --manifest research/benchmark_manifests/videomme_dev_v1.toml \
+  --calibration-source artifact \
+  --reference-summary research/experiments/2026/artifacts/phase1_57/qwen_8f_dev30.json \
+  --precompute-cache-path /tmp/phase1_29B_dev30_artifact_20260424/precompute_artifact_phase157_dev30.json \
+  --output-path research/experiments/2026/artifacts/phase1_29B_dev30_artifact_20260424/artifact_results.jsonl \
+  --summary-path research/experiments/2026/artifacts/phase1_29B_dev30_artifact_20260424/artifact_summary.json
+```
+
+Environment record: clean tree at git SHA
+`fe3f346c7d92b0d1788ffbdcc1fd7d8629ff5ede`.
+
+Artifacts:
+
+- `research/experiments/2026/artifacts/phase1_29B_dev30_artifact_20260424/artifact_results.jsonl`
+- `research/experiments/2026/artifacts/phase1_29B_dev30_artifact_20260424/artifact_summary.json`
+
+Results:
+
+- dense accuracy: 0.533
+- pixel accuracy: 0.533
+- codec accuracy: 0.533
+- codec-dense agreement: 1.000
+- codec-pixel agreement: 0.933
+- pixel-dense agreement: 0.933
+- pixel active reuse: 0.105
+- codec active reuse: 0.089
+- pair-selection Jaccard: 0.525
+- parse failures: 0
+
+Comparison to the original live-pixel all-duration dev run on the same
+manifest:
+
+1. **Exact answer-level identity.** Dense correctness, pixel choices, and
+   codec choices match item-for-item across all 30 items.
+2. **Exact aggregate identity on the reported metrics.** Every headline metric
+   above is numerically unchanged between the live-pixel and artifact-source
+   breadth runs.
+3. Interpretation: on the current local VideoMME slices, the codec-native
+   planner-substitution result is **not** dependent on live-pixel calibration.
+   The remaining caveat is systems-side, not semantic-side: offline extraction
+   is still far too slow for a deployment or latency claim.
+
+## Final status after calibration ablations
+
+Phase 1.29 now supports a narrower but cleaner paper sentence:
+
+- **Semantic claim earned locally:** continuous H.264-derived codec scores can
+  substitute for the pixel-diff planner signal on VideoMME dev n=30 without
+  changing dense answer choices, and this survives both calibration-mode
+  (pooled vs per-item) and target-share source (live-pixel vs artifact)
+  ablations on the slices we ran.
+- **Systems claim still blocked:** the current implementation is an offline
+  extraction retrofit, not a streaming-decoder path. The runtime remains far
+  too slow for a speed headline.

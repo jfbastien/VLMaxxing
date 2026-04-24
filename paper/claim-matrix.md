@@ -166,12 +166,13 @@ should-do tier):
   architecture remains optional strengthening, not a missing gate.
 - **1.29 local codec-native benchmark slice.** **LANDED as planner-substitution
   evidence, not latency evidence.** Continuous H.264-derived codec scores with
-  per-item live-pixel calibration match dense choices on VideoMME dev
-  all-duration n=30 (codec-dense agreement 1.000, codec accuracy = dense
-  accuracy = 0.533, parse failures 0) and short dev+holdout n=20 passes on the
-  -5pp boundary. Calibration ablation remains the next gate before calling this
-  a codec-only deployment recipe; offline extraction totals 7290s, so systems
-  speed requires streaming decoder integration.
+  dense choices on VideoMME dev all-duration n=30 (codec-dense agreement 1.000,
+  codec accuracy = dense accuracy = 0.533, parse failures 0) and short
+  dev+holdout n=20 passes on the -5pp boundary. Subsequent calibration-mode and
+  calibration-source ablations are answer-level identical on the local slices
+  we ran, so the remaining blocker is systems-side rather than semantic-side:
+  offline extraction totals 7290s, and any speed claim still requires
+  streaming decoder integration.
 - **1.51V scroll/pan regime-boundary probe (phase 1.60).**
   CLOSED 2026-04-23 as a natural-VideoMME corpus limitation: wider
   60-item scan found 0/60 items above `shifted_fraction >= 0.30`

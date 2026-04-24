@@ -339,9 +339,10 @@ codec-through locally:
   short-scout loss primarily to the V-only Q0 pruning leg, so the bridge
   depends on a safer/adaptive V admission policy rather than another
   blind stack run
-- codec-native calibration ablation for 1.29; the local planner-substitution
-  bridge now exists at VideoMME dev n=30, but it still uses per-item
-  live-pixel calibration and the offline extraction path is not a systems win
+- codec-native streaming-decoder integration for 1.29; the local
+  planner-substitution bridge now survives both calibration-mode and
+  calibration-source ablations, but the offline extraction path is still not a
+  systems win
 - sparse-execution measured delta for claim 5 (Track B infra exists
   on dense; sparse path unwritten)
 - broader cross-architecture C-VISION coverage beyond the matched Qwen
@@ -374,13 +375,14 @@ whitepaper §8 and codex 2026-04-16 review, the paper must state:
    budget is lower than some adjacent work. Frame-count scaling study
    is noted as future work.
 4. **Pixel diff is still the default proxy, but codec-native evidence now
-   exists with calibration caveats**: the latest 1.29 results show why the
-   bridge is hard. MAX-over-span sparse sampling degenerates to all-NOVEL,
-   but continuous codec scores with per-item live-pixel calibration match
-   dense choices on VideoMME dev all-duration \(n=30\). This supports a
-   codec-native planner-substitution row; it does not yet remove live-pixel
-   calibration dependence and does not support a latency claim because offline
-   extraction is too slow.
+   exists without a calibration caveat on the local slices we ran**: the
+   latest 1.29 results show why the bridge is hard. MAX-over-span sparse
+   sampling degenerates to all-NOVEL, but continuous codec scores match dense
+   choices on VideoMME dev all-duration \(n=30\), and that row is unchanged
+   under both pooled/per-item threshold fitting and live-pixel/artifact
+   target-share calibration ablations. This supports a codec-native
+   planner-substitution row; it still does **not** support a latency claim
+   because the current extraction path is offline and too slow.
 5. **Composition remains projected**: temporal × KV-compression
    composition ratios are projected from independent-layer
    assumptions, not measured end-to-end.
@@ -606,12 +608,12 @@ The current training-free planner is a proxy chain:
 Phase 1.29 (MV/CBF-derived signal path via PyAV/FFmpeg metadata) is the
 current bridge from pixel-diff proxy to real codec signals. The current
 evidence is split by aggregation rule: MAX-over-span sparse aggregation is
-hard-falsified, while continuous codec scores with per-item live-pixel
-calibration match dense choices on VideoMME dev all-duration \(n=30\).
-Paper language can now cite 1.29 as **local codec-native planner-substitution
-evidence**, but it should keep the calibration caveat explicit and should not
-cite 1.29 as a latency win. The offline extraction path took 7290s on dev n=30;
-speed requires streaming decoder integration or cached metadata.
+hard-falsified, while continuous codec scores match dense choices on VideoMME
+dev all-duration \(n=30\) and survive both calibration-mode and
+calibration-source ablations on the local slices we ran. Paper language can
+now cite 1.29 as **local codec-native planner-substitution evidence**, but it
+should not cite 1.29 as a latency win. The offline extraction path took 7290s
+on dev n=30; speed requires streaming decoder integration or cached metadata.
 
 Phase 1.36 (2026-04-17) quantified the pixel-diff ↔ ViT-feature
 lower bound: per-block Pearson r is **+0.233 on TOMATO (MEAN)** and

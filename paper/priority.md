@@ -244,8 +244,12 @@ in its own dimension.
    codec-accuracy = dense-accuracy = **0.533**, codec-pixel agreement 0.933,
    reuse gap 1.6pp, parse failures 0. This is now a local codec-native
    planner-substitution row, not a systems speed row: offline codec extraction
-   took 7290s on dev n=30. Next: calibration-mode ablation and streaming
-   decoder integration. Findings doc:
+   took 7290s on dev n=30. **CALIBRATION ABLATIONS CLOSED 2026-04-24**:
+   short n=20 pooled/per-item and live-pixel/artifact runs were answer-level
+   identical, and the all-duration dev n=30 artifact-source rerun exactly
+   reproduced the live-pixel breadth row (all headline metrics unchanged,
+   answer-level diffs = 0). The remaining gate is streaming-decoder
+   integration, not semantic calibration. Findings doc:
    `research/experiments/2026/2026-04-23-phase-1_29B-codec-native-replication-prereg.md`.
 
 9. **Paper figures: C-PERSIST safe-deployment table + V_share-governs-
