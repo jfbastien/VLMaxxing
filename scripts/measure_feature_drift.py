@@ -96,9 +96,13 @@ from codec_through.temporal import (
     BlockClass,
     BlockStatistic,
     PlannerConfig,
+    block_statistic_values,
     classify_blocks_with_planner,
 )
-from codec_through.track_a import square_grid_shape_from_token_count
+from codec_through.track_a import (
+    gemma_cached_token_index_grid,
+    gemma_grouped_mean,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RUNNER_PATH = REPO_ROOT / "scripts" / "run_benchmark_track_a.py"
@@ -109,9 +113,9 @@ QWEN_FRAME_SIZE = 560
 QWEN_SPATIAL_MERGE = 2
 DEFAULT_QWEN_MODEL = Path.home() / "models" / "Qwen2.5-VL-7B-Instruct-4bit"
 DEFAULT_GEMMA_MODEL = Path.home() / "models" / "gemma-4-e4b-it-4bit"
-GEMMA_TOKENS_PER_FRAME = 256
-GEMMA_GRID_SHAPE = square_grid_shape_from_token_count(GEMMA_TOKENS_PER_FRAME)
-GEMMA_BLOCK_SIZE = 560 // GEMMA_GRID_SHAPE[0]
+GEMMA_PATCH_SIZE = 16
+GEMMA_POOLING_KERNEL_SIZE = 3
+GEMMA_OUTPUT_LENGTH = 280
 
 CLASS_KEYS = ("static", "shifted", "novel")
 CLASS_ENUM_TO_KEY = {
@@ -185,7 +189,7 @@ def _pairwise_cosine_sim(
     a: npt.NDArray[np.float32],
     b: npt.NDArray[np.float32],
 ) -> npt.NDArray[np.float32]:
-    """Per-block cosine SIMILARITY between two [H, W, D] feature grids."""
+    """Per-token cosine SIMILARITY between aligned feature tensors."""
     if a.shape != b.shape:
         raise RuntimeError(f"feature grid shapes differ: {a.shape} vs {b.shape}")
     norm_a = np.linalg.norm(a, axis=-1)
@@ -200,32 +204,46 @@ def _features_per_frame_gemma(
     *,
     frame_count: int,
 ) -> list[npt.NDArray[np.float32]]:
+    # MLX arrays from Gemma's encode_image path may expose dtypes that NumPy's
+    # direct buffer bridge rejects. Materialize through Python objects first so
+    # the measurement path is dtype-stable across MLX releases.
     if features.ndim == 3:
         if int(features.shape[0]) != 1:
             raise RuntimeError(
                 f"expected Gemma feature batch dimension 1, got {features.shape}"
             )
-        flat = np.asarray(features[0], dtype=np.float32)
+        flat = np.array(features[0].tolist(), dtype=np.float32)
     elif features.ndim == 2:
-        flat = np.asarray(features, dtype=np.float32)
+        flat = np.array(features.tolist(), dtype=np.float32)
     else:
         raise RuntimeError(f"unexpected Gemma feature shape: {features.shape}")
 
-    expected_tokens = frame_count * GEMMA_TOKENS_PER_FRAME
-    if flat.shape[0] != expected_tokens:
+    total_tokens = int(flat.shape[0])
+    if total_tokens % frame_count != 0:
         raise RuntimeError(
             "Gemma feature/token mismatch: "
-            f"expected {expected_tokens} tokens for {frame_count} frames, "
-            f"got {flat.shape[0]}"
+            f"{total_tokens} tokens for {frame_count} frames is not divisible"
         )
+    tokens_per_frame = total_tokens // frame_count
 
     per_frame: list[npt.NDArray[np.float32]] = []
     offset = 0
     for _ in range(frame_count):
-        block = flat[offset : offset + GEMMA_TOKENS_PER_FRAME]
-        per_frame.append(block.reshape(GEMMA_GRID_SHAPE[0], GEMMA_GRID_SHAPE[1], -1))
-        offset += GEMMA_TOKENS_PER_FRAME
+        per_frame.append(flat[offset : offset + tokens_per_frame])
+        offset += tokens_per_frame
     return per_frame
+
+
+def _classify_scores(
+    values: npt.NDArray[np.float32],
+    *,
+    planner: PlannerConfig,
+) -> npt.NDArray[np.int32]:
+    classes = np.full(values.shape, BlockClass.NOVEL, dtype=np.int32)
+    classes[values < planner.static_threshold] = BlockClass.STATIC
+    shifted = (values >= planner.static_threshold) & (values < planner.shifted_threshold)
+    classes[shifted] = BlockClass.SHIFTED
+    return classes
 
 
 def _process_qwen_item(
@@ -452,14 +470,32 @@ def _process_gemma_item(
     frames_np = _frames_to_numpy(sample.frames, expected_size=QWEN_FRAME_SIZE)
     features = runner._compute_cached_features(model, sample)
     per_frame_features = _features_per_frame_gemma(features, frame_count=len(sample.frames))
+    token_index_grid = gemma_cached_token_index_grid(
+        sample.frames[0].size,
+        patch_size=GEMMA_PATCH_SIZE,
+        pooling_kernel_size=GEMMA_POOLING_KERNEL_SIZE,
+        output_length=GEMMA_OUTPUT_LENGTH,
+    )
+    token_count = int(token_index_grid.max()) + 1
+    if per_frame_features[0].shape[0] != token_count:
+        raise RuntimeError(
+            "Gemma cached-feature/token mismatch: "
+            f"layout has {token_count} tokens per frame, "
+            f"features have {per_frame_features[0].shape[0]}"
+        )
+    token_stride = sample.frames[0].size[0] // GEMMA_PATCH_SIZE // GEMMA_POOLING_KERNEL_SIZE
 
     samples: list[DriftSample] = []
     for pair_idx in range(len(frames_np) - 1):
-        classes = classify_blocks_with_planner(
+        patch_scores = block_statistic_values(
             frames_np[pair_idx],
             frames_np[pair_idx + 1],
-            block_size=GEMMA_BLOCK_SIZE,
+            block_size=GEMMA_PATCH_SIZE,
             config=planner,
+        )
+        classes = _classify_scores(
+            gemma_grouped_mean(patch_scores, token_index_grid),
+            planner=planner,
         )
         cos = _pairwise_cosine_sim(
             per_frame_features[pair_idx],
@@ -467,24 +503,22 @@ def _process_gemma_item(
         )
         if cos.shape != classes.shape:
             raise RuntimeError(
-                f"block-grid mismatch: classes={classes.shape}, feats={cos.shape} "
+                f"token-grid mismatch: classes={classes.shape}, feats={cos.shape} "
                 f"on item {item.item_id}"
             )
-        blocks_h, blocks_w = cos.shape
-        for r in range(blocks_h):
-            for c in range(blocks_w):
-                samples.append(
-                    DriftSample(
-                        item_id=item.item_id,
-                        benchmark=item.benchmark,
-                        group=item.group,
-                        frame_pair=(pair_idx, pair_idx + 1),
-                        block_row=r,
-                        block_col=c,
-                        block_class=int(classes[r, c]),
-                        cosine_sim=float(cos[r, c]),
-                    )
+        for token_idx in range(cos.shape[0]):
+            samples.append(
+                DriftSample(
+                    item_id=item.item_id,
+                    benchmark=item.benchmark,
+                    group=item.group,
+                    frame_pair=(pair_idx, pair_idx + 1),
+                    block_row=token_idx // token_stride,
+                    block_col=token_idx % token_stride,
+                    block_class=int(classes[token_idx]),
+                    cosine_sim=float(cos[token_idx]),
                 )
+            )
 
     del features
     mx.clear_cache()

@@ -46,8 +46,10 @@ from codec_through.temporal import (
 from codec_through.track_a import (
     active_region_block_mask,
     flattened_reuse_mask,
+    gemma_cached_token_index_grid,
+    gemma_grouped_all,
+    gemma_grouped_mean,
     qwen_merged_token_counts,
-    square_grid_shape_from_token_count,
 )
 from codec_through.video_decode import decode_uniform_frames
 
@@ -72,9 +74,9 @@ BENCHMARK_FRAME_SIZE = 560
 QWEN_BLOCK_SIZE = 28
 QWEN_SPATIAL_MERGE = 2
 GEMMA_MODEL_TYPE = "gemma4"
-GEMMA_TOKENS_PER_FRAME = 256
-GEMMA_GRID_SHAPE = square_grid_shape_from_token_count(GEMMA_TOKENS_PER_FRAME)
-GEMMA_BLOCK_SIZE = BENCHMARK_FRAME_SIZE // GEMMA_GRID_SHAPE[0]
+GEMMA_PATCH_SIZE = 16
+GEMMA_POOLING_KERNEL_SIZE = 3
+GEMMA_OUTPUT_LENGTH = 280
 
 PREDECESSOR_MVBENCH_TASKS = [
     "action_antonym",
@@ -692,15 +694,18 @@ def _compute_cached_features_with_replay(
     if family == "qwen":
         current_grid = np.array(sample.extra_kwargs["image_grid_thw"].tolist(), dtype=np.int64)
     else:
+        patch_rows = sample.frames[0].size[1] // GEMMA_PATCH_SIZE
+        patch_cols = sample.frames[0].size[0] // GEMMA_PATCH_SIZE
         current_grid = np.tile(
-            np.array([[1, *GEMMA_GRID_SHAPE]], dtype=np.int64),
+            np.array([[1, patch_rows, patch_cols]], dtype=np.int64),
             (len(sample.frames), 1),
         )
     if cached is not None:
         cached_features_np, cached_grid, _meta = cached
         if not np.array_equal(cached_grid, current_grid):
             raise ValueError(
-                f"feature replay cache hit had mismatched image_grid_thw for {sample.item.item_id}"
+                "feature replay cache hit had mismatched geometry metadata "
+                f"for {sample.item.item_id}"
             )
         cached_features = mx.array(cached_features_np)
         mx.eval(cached_features)
@@ -835,20 +840,34 @@ def _split_gemma_dense_segments(
     else:
         raise ValueError(f"unexpected Gemma feature shape {features.shape}")
 
-    expected_tokens = len(sample.frames) * GEMMA_TOKENS_PER_FRAME
-    if int(flat_features.shape[0]) != expected_tokens:
+    total_tokens = int(flat_features.shape[0])
+    frame_count = len(sample.frames)
+    if total_tokens % frame_count != 0:
         raise ValueError(
             "Gemma feature/token mismatch: "
-            f"expected {expected_tokens} tokens for {len(sample.frames)} frames "
-            f"({GEMMA_GRID_SHAPE[0]}x{GEMMA_GRID_SHAPE[1]}/frame), "
-            f"got {int(flat_features.shape[0])}"
+            f"{total_tokens} tokens for {frame_count} frames is not divisible"
         )
+    tokens_per_frame = total_tokens // frame_count
     dense_segments: list[mx.array] = []
     offset = 0
     for _ in sample.frames:
-        dense_segments.append(flat_features[offset : offset + GEMMA_TOKENS_PER_FRAME])
-        offset += GEMMA_TOKENS_PER_FRAME
+        dense_segments.append(flat_features[offset : offset + tokens_per_frame])
+        offset += tokens_per_frame
     return dense_segments, restore_batch_dim
+
+
+def _classify_token_scores(
+    values: npt.NDArray[np.float32],
+    *,
+    planner_config: PlannerConfig,
+) -> npt.NDArray[np.int32]:
+    classes = np.full(values.shape, BlockClass.NOVEL, dtype=np.int32)
+    classes[values < planner_config.static_threshold] = BlockClass.STATIC
+    shifted = (values >= planner_config.static_threshold) & (
+        values < planner_config.shifted_threshold
+    )
+    classes[shifted] = BlockClass.SHIFTED
+    return classes
 
 
 def _mix_dense_segments(
@@ -979,21 +998,101 @@ def _mix_gemma_features(
     planner_config: PlannerConfig,
     reuse_classes: tuple[BlockClass, ...],
     max_age: int | None,
+    refresh_interval: int | None = None,
     sticky_window: int | None = None,
     halo_veto_config: NeighborHaloVetoConfig | None = None,
 ) -> tuple[mx.array, list[float], list[float]]:
+    if halo_veto_config is not None:
+        raise ValueError(
+            "Gemma cached-feature path does not support neighbor-halo veto; "
+            "the current pooled-token geometry is non-square."
+        )
+
     dense_segments, restore_batch_dim = _split_gemma_dense_segments(sample, features)
-    return _mix_dense_segments(
-        sample,
-        dense_segments,
-        block_size=GEMMA_BLOCK_SIZE,
-        planner_config=planner_config,
-        reuse_classes=reuse_classes,
-        max_age=max_age,
-        sticky_window=sticky_window,
-        halo_veto_config=halo_veto_config,
-        restore_batch_dim=restore_batch_dim,
+    token_index_grid = gemma_cached_token_index_grid(
+        sample.frames[0].size,
+        patch_size=GEMMA_PATCH_SIZE,
+        pooling_kernel_size=GEMMA_POOLING_KERNEL_SIZE,
+        output_length=GEMMA_OUTPUT_LENGTH,
     )
+    token_count = int(token_index_grid.max()) + 1
+    if dense_segments[0].shape[0] != token_count:
+        raise ValueError(
+            "Gemma cached-feature/token mismatch: "
+            f"layout has {token_count} tokens per frame, "
+            f"features have {dense_segments[0].shape[0]}"
+        )
+
+    mixed_segments = [dense_segments[0]]
+    ages = np.zeros(dense_segments[0].shape[0], dtype=np.int32)
+    dynamic_latched = np.zeros(dense_segments[0].shape[0], dtype=bool)
+    raw_reused_ratios: list[float] = []
+    active_reused_ratios: list[float] = []
+
+    for frame_index in range(1, len(sample.frames)):
+        if (
+            refresh_interval is not None
+            and refresh_interval > 0
+            and frame_index % refresh_interval == 0
+        ):
+            mixed_segments.append(dense_segments[frame_index])
+            ages = np.zeros(dense_segments[frame_index].shape[0], dtype=np.int32)
+            dynamic_latched = np.zeros(dense_segments[frame_index].shape[0], dtype=bool)
+            raw_reused_ratios.append(0.0)
+            active_reused_ratios.append(0.0)
+            continue
+
+        if sticky_window is not None and frame_index % sticky_window == 0:
+            dynamic_latched = np.zeros_like(dynamic_latched)
+
+        previous = np.array(sample.frames[frame_index - 1], dtype=np.uint8)
+        current = np.array(sample.frames[frame_index], dtype=np.uint8)
+        patch_scores = block_statistic_values(
+            previous,
+            current,
+            block_size=GEMMA_PATCH_SIZE,
+            config=planner_config,
+        )
+        token_scores = gemma_grouped_mean(patch_scores, token_index_grid)
+        token_classes = _classify_token_scores(token_scores, planner_config=planner_config)
+        reuse_mask = np.isin(token_classes, [int(value) for value in reuse_classes])
+        if sticky_window is not None:
+            dynamic_latched = dynamic_latched | ~reuse_mask
+            reuse_mask = reuse_mask & ~dynamic_latched
+
+        allowed_mask, ages = _apply_age_gate(reuse_mask, ages, max_age=max_age)
+
+        previous_active = active_region_block_mask(
+            sample.frames[frame_index - 1].size,
+            sample.active_boxes[frame_index - 1],
+            block_size=GEMMA_PATCH_SIZE,
+        ).reshape(token_index_grid.shape)
+        current_active = active_region_block_mask(
+            sample.frames[frame_index].size,
+            sample.active_boxes[frame_index],
+            block_size=GEMMA_PATCH_SIZE,
+        ).reshape(token_index_grid.shape)
+        active_mask = gemma_grouped_all(previous_active & current_active, token_index_grid)
+        if active_mask.size != reuse_mask.size:
+            raise ValueError(
+                f"active-region/token mismatch: mask={active_mask.size}, tokens={reuse_mask.size}"
+            )
+
+        mixed_segments.append(
+            mx.where(
+                mx.array(allowed_mask[:, None]),
+                mixed_segments[-1],
+                dense_segments[frame_index],
+            )
+        )
+        raw_reused_ratios.append(float(allowed_mask.mean()))
+        active_reused_ratios.append(_masked_mean(allowed_mask.astype(np.float32), active_mask))
+
+    mixed = mx.concatenate(mixed_segments, axis=0)
+    if restore_batch_dim:
+        mixed = mx.expand_dims(mixed, axis=0)
+    mx.eval(mixed)
+    return mixed, raw_reused_ratios, active_reused_ratios
 
 
 def _select_cached_features(
@@ -1028,6 +1127,7 @@ def _select_cached_features(
             planner_config=planner_config,
             reuse_classes=reuse_classes,
             max_age=max_age,
+            refresh_interval=refresh_interval,
             sticky_window=sticky_window,
             halo_veto_config=halo_veto_config,
         )
@@ -1035,20 +1135,27 @@ def _select_cached_features(
     if model_family == "qwen":
         dense_segments, restore_batch_dim = _split_qwen_dense_segments(sample, features)
         block_size = QWEN_BLOCK_SIZE
-    else:
-        dense_segments, restore_batch_dim = _split_gemma_dense_segments(sample, features)
-        block_size = GEMMA_BLOCK_SIZE
+        return _mix_dense_segments(
+            sample,
+            dense_segments,
+            block_size=block_size,
+            planner_config=planner_config,
+            reuse_classes=reuse_classes,
+            max_age=max_age,
+            refresh_interval=refresh_interval,
+            halo_veto_config=halo_veto_config,
+            restore_batch_dim=restore_batch_dim,
+        )
 
-    return _mix_dense_segments(
+    return _mix_gemma_features(
         sample,
-        dense_segments,
-        block_size=block_size,
+        features,
         planner_config=planner_config,
         reuse_classes=reuse_classes,
         max_age=max_age,
         refresh_interval=refresh_interval,
+        sticky_window=sticky_window,
         halo_veto_config=halo_veto_config,
-        restore_batch_dim=restore_batch_dim,
     )
 
 

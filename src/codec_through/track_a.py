@@ -100,6 +100,97 @@ def square_grid_shape_from_token_count(token_count: int) -> tuple[int, int]:
     return side, side
 
 
+def gemma_cached_token_index_grid(
+    frame_size: tuple[int, int],
+    *,
+    patch_size: int,
+    pooling_kernel_size: int,
+    output_length: int,
+) -> npt.NDArray[np.int32]:
+    """Return the Gemma cached-feature token index for each patch cell.
+
+    This matches the current ``mlx-vlm`` Gemma4 ``encode_image`` path, which
+    pools a patch grid into a compact cached-feature sequence before those
+    features are scattered into the language model. It is intentionally
+    distinct from the separate novelty-pruning path, which operates on a
+    different token geometry.
+    """
+
+    width, height = frame_size
+    if width <= 0 or height <= 0:
+        raise ValueError("frame dimensions must be positive")
+    if patch_size <= 0:
+        raise ValueError("patch_size must be positive")
+    if pooling_kernel_size <= 0:
+        raise ValueError("pooling_kernel_size must be positive")
+    if output_length <= 0:
+        raise ValueError("output_length must be positive")
+    if width % patch_size != 0 or height % patch_size != 0:
+        raise ValueError("frame dimensions must be multiples of patch_size")
+
+    patch_cols = width // patch_size
+    patch_rows = height // patch_size
+    token_stride = patch_cols // pooling_kernel_size
+    if token_stride <= 0:
+        raise ValueError("resolved Gemma token stride must be positive")
+
+    grid_x = (np.arange(patch_cols, dtype=np.int32) // pooling_kernel_size)[None, :]
+    grid_y = (np.arange(patch_rows, dtype=np.int32) // pooling_kernel_size)[:, None]
+    token_index_grid = grid_x + token_stride * grid_y
+
+    token_count = int(token_index_grid.max()) + 1
+    if token_count > output_length:
+        raise ValueError(
+            "Gemma cached token count exceeds configured output length: "
+            f"{token_count} > {output_length}"
+        )
+    return token_index_grid.astype(np.int32, copy=False)
+
+
+def gemma_grouped_mean(
+    values: npt.NDArray[np.floating],
+    token_index_grid: npt.NDArray[np.integer],
+) -> npt.NDArray[np.float32]:
+    """Mean-reduce a patch-grid tensor into Gemma cached-token order."""
+
+    if values.shape != token_index_grid.shape:
+        raise ValueError(
+            f"values/token_index_grid shape mismatch: {values.shape} vs {token_index_grid.shape}"
+        )
+    flat_idx = np.asarray(token_index_grid, dtype=np.int32).reshape(-1)
+    flat_values = np.asarray(values, dtype=np.float32).reshape(-1)
+    token_count = int(flat_idx.max()) + 1
+    sums = np.bincount(flat_idx, weights=flat_values, minlength=token_count)
+    counts = np.bincount(flat_idx, minlength=token_count)
+    if np.any(counts == 0):
+        raise ValueError("Gemma cached-token grouping produced an empty token bucket")
+    return np.asarray(sums / counts, dtype=np.float32)
+
+
+def gemma_grouped_all(
+    mask: npt.NDArray[np.bool_],
+    token_index_grid: npt.NDArray[np.integer],
+) -> npt.NDArray[np.bool_]:
+    """Return True only when every patch assigned to a token is active."""
+
+    if mask.shape != token_index_grid.shape:
+        raise ValueError(
+            f"mask/token_index_grid shape mismatch: {mask.shape} vs {token_index_grid.shape}"
+        )
+    flat_idx = np.asarray(token_index_grid, dtype=np.int32).reshape(-1)
+    flat_mask = np.asarray(mask, dtype=np.bool_).reshape(-1)
+    token_count = int(flat_idx.max()) + 1
+    counts = np.bincount(flat_idx, minlength=token_count)
+    true_counts = np.bincount(
+        flat_idx,
+        weights=flat_mask.astype(np.int32),
+        minlength=token_count,
+    )
+    if np.any(counts == 0):
+        raise ValueError("Gemma cached-token grouping produced an empty token bucket")
+    return np.asarray(true_counts == counts, dtype=np.bool_)
+
+
 def flattened_reuse_mask(
     classification: npt.NDArray[np.integer],
     *,
