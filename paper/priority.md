@@ -159,13 +159,22 @@ in its own dimension.
    benchmark coverage on Qwen, not proof-of-transfer.
 
 4. **Local paired streaming-protocol reproduction of Sam's N=60 line.**
-   **SPEEDUP PASS / FIDELITY FALSIFIED 2026-04-23.** The local Qwen
-   7B 8f dev+holdout-union bridge mirrors the session/streaming
-   composition enough to test the paper-promotion rule: paired
-   amortized speedup lands at 3.326×, but accuracy drops by 19.3 pp and
-   fails the preregistered ±0.05 budget. The next work is root-cause
-   decomposition (H_V / H_K / H_interaction / H_reset / H_path), not
-   unqualified promotion of the stacked result.
+   **BOUNDARY NEAR-MISS 2026-04-24 after the dense-Q0 rerun.** The
+   original 1.30 stack was a hard negative; the successor 1.30W policy
+   ("Q0 dense, Q2/Q3 pruned") materially improves fidelity on the same
+   Qwen 7B 8f dev+holdout-union bridge: cold `0.561` vs streaming
+   `0.503` (`Δacc = −0.0585`) at `2.7869×` paired amortized speedup,
+   with `0` parse failures and `0` degenerates. The important mechanistic
+   result is exact Q0 parity (`34/57` in both arms): every remaining
+   miss is follow-up-only. H_strict fails and H_rescue also fails because
+   the speed remains below `3.0×`. More importantly, the speed miss is
+   **structural under this 3-query protocol**: dense Q0 alone already
+   costs `5.249M ms`, while the full run would need to fit inside
+   `4.981M ms` to earn `3.0×`; even free follow-ups would still miss.
+   So the next paper-relevant work is **not** another follow-up-only
+   keep-rate tweak. It is either a safer cheaper-Q0 policy on selected
+   regimes, or a longer-session protocol where the dense-Q0 cost can be
+   amortized honestly.
 
 5. **1.55D selective re-prefill frontier (fidelity recovery).** The v1
    driver was infra-falsified, but that is no longer the live state.
@@ -280,29 +289,27 @@ in its own dimension.
 Capture ideas as we find them; park until paper draft is submitted OR
 a must-do slot opens.
 
-- **1.30 Sam session/streaming bridge — NEGATIVE RESULT + root-cause
-  decomposition landed 2026-04-23.** The reproduction landed (1ecfeb9
-  / e9d1223) as a paired cold-vs-streaming Qwen 2.5-VL-7B-4bit VideoMME
-  8f **dev+holdout union n=57 sessions / 171 queries**: cold 0.561 /
-  streaming 0.368 → **3.326× paired amortized speedup PASS, Δacc =
-  −0.193 FALSIFIES the ±0.05 preregistered budget**; the deployment-
-  grade C-VISION composition promotion rule does NOT trigger. Codex
-  round-28 observed the paired data: Q0 (first query) alone drops
-  0.596 → 0.491 (Δ = −0.105), violating the budget before any KV reuse —
-  so the negative cannot be attributed purely to follow-up KV-
-  contamination.
-  A 2×2 decomposition prereg (commit 92350ad) factorizes the stack into
-  V-only (kr_V=0.50 vision pruning) × K-only (persistent-KV reuse) plus
-  two hard-reset controls and a Q0 parity check against the mechanism-
-  grade 1.51V pipeline. Phase A+B completed in the Codex takeover run:
-  **H_V PASS**, **H_K FAIL**, **H_interaction FAIL**, **H_reset PASS**,
-  and **H_path PASS** (1.30 cold-pruned Q0 agrees 10/10 with 1.51V
-  pruned Q0; dense Q0 also agrees 10/10 with 1.51V dense). The root
-  cause is primarily V-only Q0 pruning at L=2, kr_V=0.50 on this
-  short-scout slice, with a smaller K-only follow-up term and no
-  evidence of non-additive V+K collapse. Phase C is not triggered by the
-  preregistered rule. Findings:
-  `research/experiments/2026/2026-04-23-phase-1_30-rootcause-findings.md`.
+- **1.30 Sam session/streaming bridge — INITIAL NEGATIVE, THEN 1.30W
+  NEAR-MISS 2026-04-24.** The original reproduction landed as a paired
+  cold-vs-streaming Qwen 2.5-VL-7B-4bit VideoMME 8f **dev+holdout union
+  n=57 sessions / 171 queries**: cold 0.561 / streaming 0.368 →
+  **3.326× paired amortized speedup PASS, Δacc = −0.193 FALSIFIES the
+  ±0.05 preregistered budget**. Codex round-28 then decomposed the stack
+  and showed the dominant error is V-only Q0 pruning (H_V PASS; H_K and
+  H_interaction FAIL; H_reset PASS; H_path PASS against 1.51V), which
+  motivated the dense-Q0 rerun. The successor `1.30W` policy ("Q0 dense,
+  Q2/Q3 pruned") substantially improves fidelity: cold 0.561 /
+  streaming 0.503 → **Δacc = −0.0585**, paired speedup **2.7869×**,
+  `0` parse failures, `0` degenerates. Q0 is solved exactly
+  (`34/57` in both arms); every remaining miss is follow-up-only. But
+  the preregistered rescue gate still fails because speed remains below
+  `3.0×`, and that miss is structural under the 3-query protocol: dense
+  Q0 alone already exceeds the `3.0×` target even if follow-ups were
+  free. The next meaningful continuation is therefore **not** another
+  same-protocol follow-up tweak; it is either a cheaper safe-Q0 policy
+  or a longer-session protocol that can honestly amortize dense Q0.
+  Findings:
+  `research/experiments/2026/2026-04-24-phase-1_30W-q0-dense-followup-pruned-full-findings.md`.
   Immediate fixed-rate rescue also fails: 1.30V Q0 scout at kr=0.67 and
   kr=0.75 still lands at 0.70 accuracy on the same Q0 items, so the next
   paper-relevant move is an admission policy (skip pruning on risky Q0),

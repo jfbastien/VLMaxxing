@@ -234,12 +234,18 @@ boundary as much as the positives:
   (0.533) and zero parse failures; short dev+holdout n=20 also passes on the
   -5pp accuracy-loss boundary. This is local codec-native planner-substitution
   evidence, not a latency win: offline codec extraction totals 7290s.
-- **1.30 Qwen session/streaming composition: SPEEDUP PASS, FIDELITY
-  FALSIFIED.** The local bridge to Sam's stacked regime lands 3.326×
-  amortized speedup on Qwen 7B 8f dev+holdout union, but accuracy drops
-  by 19.3 pp. It is boundary evidence: single-mechanism safety does not
-  automatically license stacked deployment. Root-cause decomposition is
-  preregistered.
+- **1.30 Qwen session/streaming composition: BOUNDARY NEAR-MISS
+  2026-04-24.** The original bridge was a hard negative, but the
+  dense-Q0 successor `1.30W` materially improves it: paired cold
+  `0.561` / streaming `0.503` (`Δacc = −0.0585`) at `2.7869×`, with
+  exact Q0 parity (`34/57` in both arms), `0` parse failures, and `0`
+  degenerates. The composition is still not promoted: every remaining
+  loss is follow-up-only, and the `>=3.0×` rescue floor is structurally
+  unreachable under the current 3-query protocol because dense Q0 alone
+  already exceeds the target wall-clock budget. Root-cause decomposition
+  remains valid, but the next meaningful continuation is a cheaper
+  safe-Q0 policy or a longer-session protocol, not another same-protocol
+  follow-up tweak.
 - **1.60 scroll/pan regime-boundary probe: closed as a VideoMME corpus
   limitation.** We re-audited the natural corpus on a 60-item VideoMME
   stratification across 8f/16f/32f and found 0/60 items above the relaxed

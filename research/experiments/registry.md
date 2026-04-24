@@ -276,6 +276,22 @@ authoritative in the per-phase notes under
   runtime_estimate: complete
   notes: Same ten Q0 items as 1.30 root-cause Phase A. Dense reference accuracy 0.900; L2 kr=0.50 accuracy 0.500; L2 kr=0.67 accuracy 0.700, dense-choice agreement 0.600, effective keep-rate 0.688; L2 kr=0.75 accuracy 0.700, dense-choice agreement 0.800, effective keep-rate 0.750. Future 1.30 composition work should be adaptive admission/no-prune-on-risky-Q0, not another blind fixed-rate sweep.
 
+- phase_id: 1.30W
+  status: partial (exact Q0 parity; bounded near-miss on the full-session bridge)
+  authoritative_note: research/experiments/2026/2026-04-24-phase-1_30W-q0-dense-followup-pruned-full-findings.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_30W_q0_dense_followup_pruned_full/cold_dense_summary.json
+    - research/experiments/2026/artifacts/phase1_30W_q0_dense_followup_pruned_full/streaming_q0_dense_followup_pruned_off_summary.json
+    - research/experiments/2026/artifacts/phase1_30W_q0_dense_followup_pruned_full/pair_summary.json
+    - research/experiments/2026/artifacts/phase1_30W_q0_dense_followup_pruned_full/per_clip_buckets.json
+    - research/experiments/2026/artifacts/phase1_30W_q0_dense_followup_pruned_full/paired_queries.jsonl
+  current_best_policy: "Qwen 2.5-VL-7B-4bit VideoMME 8f dev+holdout union n=57 sessions / 171 queries: cold 0.561 (96/171) / streaming 0.503 (86/171) → Δacc = −0.0585 and paired 2.7869× speedup. Q0 is exact (34/57 in both arms); all residual loss is follow-up-only."
+  supersedes: []
+  paper_relevance: active near-miss / boundary cell; strongest local composition bridge so far, but still below the preregistered deployment-speed floor
+  prereg_outcome: H_q0 PASS exactly (`34/57` in both arms) and H_format PASS (`0` parse failures, `0` degenerates). H_strict FAIL (`Δacc = −0.0585`, speedup `2.7869×`). H_rescue also FAILS because speed remains below the `>=3.0×` floor even though accuracy stays inside the `>=−0.10` rescue band.
+  runtime_estimate: complete
+  notes: This full rerun materially improves the original 1.30 negative (`Δacc = −0.193`) without reopening the preregistered bridge. The decisive mechanistic result is that dense Q0 fully fixes the first-query leg: Q0 accuracy is numerically identical in every `duration × split` cell. All remaining loss is follow-up-only, with the strongest deficits in long dev (`follow-up delta = −0.125`), short dev (`−0.10`), short holdout (`−0.1111`), and medium holdout (`−0.10`); medium dev and long holdout follow-ups match cold exactly. The speed miss is structural under the current 3-query protocol: dense Q0 alone consumes `5.249M ms`, while the full run would need to fit inside `4.981M ms` to earn `3.0×`; even zero-cost follow-ups would still miss by `268.7k ms`. If 1.30 continues, the next meaningful work is either a safe cheaper-Q0 policy or a longer-session protocol, not another same-protocol follow-up-only keep-rate tweak.
+
 - phase_id: 1.31
   status: proposed
   authoritative_note: research/experiments/2026/2026-04-16-phase-1_31-failure-predictor.md

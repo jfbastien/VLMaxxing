@@ -267,7 +267,7 @@ runnable tonight vs. impl-gated.
 | Prio | Phase | Runtime | Model | Blocker status |
 |------|-------|---------|-------|----------------|
 | should-do #3 | **1.51V Qwen cross-arch probe** (L=2, kr=0.50, VideoMME 8f n=30 thermally paired, 2 arms) | **CLOSED 2026-04-23** | Qwen 2.5-VL-7B-4bit | **landed** — `V_red = 0.398`, `E2E = 1.044× observed vs 1.043× predicted`, aggregate `Δacc = −0.033`; C-VISION upgrades to two-architecture mechanism evidence |
-| should-do #4 | Local paired streaming-protocol reproduction (1.30) + root-cause decomposition | CLOSED-SCOUT 2026-04-23 | Qwen 2.5-VL-7B-Instruct-4bit (driver hard-fails on non-Qwen at `run_phase1_30_sam_streaming.py:303-308`) | **paired-run speedup landed, accuracy falsified, root-cause localized** — paired cold 0.561 / streaming 0.368 (Δacc = −0.193 FALSIFIES ±0.05) / 3.326× speedup PASS; Phase A+B short scout gives H_V PASS, H_K FAIL, H_interaction FAIL, H_reset PASS, H_path PASS. Loss is primarily the V-only Q0 pruning leg at L=2, kr_V=0.50 on this slice, not a non-additive V+K collapse. Fixed-rate rescue at kr=0.67/0.75 also fails the Q0 accuracy gate; next useful work is admission/no-prune policy design. |
+| should-do #4 | Local paired streaming-protocol reproduction (1.30) + root-cause decomposition | BOUNDARY NEAR-MISS 2026-04-24 | Qwen 2.5-VL-7B-Instruct-4bit (driver hard-fails on non-Qwen at `run_phase1_30_sam_streaming.py:303-308`) | **dense-Q0 rerun materially improves the bridge but does not reopen it** — paired cold 0.561 / streaming 0.503 (Δacc = −0.0585) / 2.7869× speedup, with exact Q0 parity (`34/57` in both arms), `0` parse failures, and `0` degenerates. The root-cause scout remains valid: the original loss was dominated by the V-only Q0 pruning leg at L=2, kr_V=0.50 on this slice, not by a non-additive V+K collapse. The remaining miss is follow-up-only, and the speed miss is structural under the current 3-query protocol because dense Q0 alone already consumes more wall-clock than the `3.0×` rescue gate permits. Next useful work is therefore a cheaper safe-Q0 policy or a longer-session protocol, not another same-protocol follow-up-only tweak. |
 | should-do #5 | **1.55D selective re-prefill frontier** (recover Δacc at 20f while clawing back speed) | ~60-70 min per K on the 7-clip tranche | Qwen 2.5-VL-7B-4bit | **K=1 landed 2026-04-24 and is now the best fixed point** — repo-local v2 holds exact paired fidelity (`Δacc = 0.0`, paired diffs `0/21`, attractors `0/14`) while improving to a paired follow-up median `10.14 s` vs cold `98.43 s` (`9.71×`) at `4.886 GB` RSS. That is materially stronger than K=2/K=4 and leaves a narrow last-mile speed gap, so the next question is adaptive refresh/admission policy rather than more blind fixed-K sweeps. **1.55B** remains the separate persistent-KV × 1.54 composition phase. |
 | should-do #6 | **1.58 bf16 KV control at 20f** (discriminate quantization vs attention-OOD) | ~3.5-4 h (bf16 8f n=30 + bf16 16f n=30) | Qwen 2.5-VL-7B bf16 | **wrapper-landed; run still gated** — `scripts/run_phase1_58_bf16_control.sh` + analyzer landed, but checkpoint download and RSS feasibility remain user/environment constraints |
 | should-do #8 | **1.29 codec-native bridge (reframed)** | landed semantically; slow offline extraction | Qwen 2.5-VL-7B-4bit | **planner-substitution evidence landed** — MAX-over-span sparse sampling is HARD-FALSIFIED, while the continuous-score redesign reaches codec-dense agreement 1.000 on VideoMME dev all-duration n=30 with no accuracy loss and zero parse failures. Later calibration-mode and calibration-source ablations are neutral on the local slices we ran. This is not a latency claim: offline codec extraction totals 7290s; the remaining gate is streaming decoder integration / native-rate systems evaluation. |
@@ -521,15 +521,19 @@ items that priority.md does not carry. For the current ordering see
    `V_red = 0.398`, `E2E = 1.044×` observed vs `1.043×` predicted,
    aggregate `Δacc = −0.033`.
 4. **Local paired streaming-protocol reproduction of Sam's N=60 line**
-   — **SPEEDUP PASS / FIDELITY FALSIFIED 2026-04-23.** The Qwen
-   7B 8f dev+holdout-union bridge lands 3.326× paired amortized
-   speedup but loses 19.3 pp accuracy, so the paper-promotion gate does
-   not trigger. The root-cause scout now localizes the loss primarily
-   to the V-only Q0 pruning leg (H_V PASS; H_K and H_interaction FAIL;
-   H_path PASS), so the next paper-relevant work is a safer/adaptive
-   V-leg admission policy, not another unqualified promotion of the
-   stack.
-5. **1.55B selective re-prefill v2** — mlx-vlm fork for
+   — **BOUNDARY NEAR-MISS 2026-04-24 after the dense-Q0 rerun.** The
+   original bridge was a hard negative; the successor `1.30W` policy
+   ("Q0 dense, Q2/Q3 pruned") improves the same Qwen 7B 8f
+   dev+holdout-union bridge to cold `0.561` / streaming `0.503`
+   (`Δacc = −0.0585`) at `2.7869×` paired amortized speedup, with exact
+   Q0 parity (`34/57` in both arms), `0` parse failures, and `0`
+   degenerates. The paper-promotion gate still does not trigger: every
+   remaining miss is follow-up-only, and the `>=3.0×` rescue floor is
+   structurally unreachable under the current 3-query protocol because
+   dense Q0 alone already dominates the wall-clock budget. The next
+   paper-relevant work is a cheaper safe-Q0 policy or a longer-session
+   protocol, not another same-protocol follow-up tweak.
+5. **1.55D selective re-prefill v2** — mlx-vlm fork for
    pixel_values / image_grid_thw / attention_mask co-slicing; ~3-5h
    implementation; would reopen C-PERSIST as a fidelity contribution.
 6. **1.58 bf16 KV control at 20f** — isolates quantization as the

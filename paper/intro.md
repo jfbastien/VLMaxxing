@@ -141,12 +141,14 @@ it twice. Each mechanism earns its safety envelope only in the regime
 where we audited it: C-VISION at single-query kr_V=0.50 L=2, C-PERSIST
 at 40f with dense V. Our 1.30 session-streaming stack attempted the
 across-queries composition (C-VISION on Q0 prefill, C-PERSIST on Q1–Q3
-follow-ups) at 8f on Qwen 2.5-VL-7B-4bit and measured Δacc = −0.193
-— paired amortized 3.326× speedup, but a preregistered accuracy-band
-FALSIFY. The follow-up decomposition localizes the short-scout loss to
-the V-only Q0 pruning leg (H_V PASS; H_K and H_interaction FAIL; H_path
-PASS against 1.51V), with hard-reset recovering the small dense-K
-follow-up term. The paper therefore treats the three contributions as
+follow-ups) at 8f on Qwen 2.5-VL-7B-4bit. The original run was a hard
+negative; the dense-Q0 successor `1.30W` improves it to paired cold
+`0.561` / streaming `0.503` (`Δacc = −0.0585`) at `2.7869×`, with exact
+Q0 parity and `0` parse failures. That is still a preregistered
+boundary miss, not a promotion: every remaining deficit is follow-up-only,
+and the `>=3.0×` rescue floor is structurally unreachable under the
+current 3-query protocol because dense Q0 alone already exceeds the
+target total wall-clock budget. The paper therefore treats the three contributions as
 **separately-auditable safety envelopes**, not a stack whose union is
 claimed without evidence. Our 1.042 × pooled
 H_stack cell (n = 60) is ceiling-matched, a preregistered NULL on
@@ -240,13 +242,18 @@ proxy on sparse benchmark QA, live decode in loop, persistent KV
 across queries, temporal + spatial composition. That regime split
 matters: sparse-sampled QA keeps pixel diff by design, while native-rate
 streaming keeps codec metadata by design. Bridging between the two
-repos is ongoing work: phase 1.30 reproduced Sam's session-streaming
-protocol at 4 B-class scale (dev+holdout union n = 57 sessions / 171
-queries, paired amortized 3.326× speedup, Δacc = −0.193 FALSIFIES
-the preregistered ±0.05 accuracy band). The follow-up root-cause
-decomposition has now landed: short-scout Phase A plus Q0 parity against
-1.51V attributes the loss primarily to the V-only Q0 pruning leg, not to
-K-only reuse, not to a V+K interaction, and not to a harness regression.
+repos is ongoing work: the original phase 1.30 session-streaming
+reproduction was a hard negative, but the dense-Q0 successor `1.30W`
+is a much tighter boundary result on the same dev+holdout union
+(n = 57 sessions / 171 queries): paired cold `0.561` / streaming
+`0.503` (`Δacc = −0.0585`) at `2.7869×`, with exact Q0 parity
+(`34/57` in both arms), `0` parse failures, and `0` degenerates. The
+root-cause decomposition remains the same: the original loss was driven
+primarily by the V-only Q0 pruning leg, not by K-only reuse, not by a
+V+K interaction, and not by a harness regression. What remains is a
+follow-up-only loss plus a structural speed ceiling under the current
+3-query protocol, so the next bridge experiment has to change the Q0
+cost or the session geometry.
 
 ## 4.5. What the evidence has ruled out
 
