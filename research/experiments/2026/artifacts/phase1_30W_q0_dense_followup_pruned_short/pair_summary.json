@@ -1,0 +1,24 @@
+{
+  "phase": "1.30",
+  "n_paired_queries": 30,
+  "cold_accuracy": 0.7333333333333333,
+  "streaming_accuracy": 0.6666666666666666,
+  "accuracy_delta_streaming_minus_cold": -0.06666666666666665,
+  "cold_total_end_to_end_ms": 1218030.104338,
+  "streaming_total_end_to_end_ms": 398116.648034,
+  "amortized_speedup_cold_over_streaming": 3.0594804571799212,
+  "response_bucket_counts": {
+    "clean": 20,
+    "mixed": 10,
+    "degenerate": 0
+  },
+  "overlap_bucket_counts": {
+    "both_correct": 18,
+    "cold_only_correct": 4,
+    "streaming_only_correct": 2,
+    "both_wrong": 6
+  },
+  "clean_fraction": 0.6666666666666666,
+  "degenerate_fraction": 0.0,
+  "refresh_events": 0
+}

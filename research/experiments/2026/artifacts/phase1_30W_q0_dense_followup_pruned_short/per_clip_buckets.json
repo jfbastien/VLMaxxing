@@ -1,0 +1,512 @@
+{
+  "videomme:short:037-2": {
+    "video_id": "037",
+    "duration": "short",
+    "split": "dev",
+    "source_manifests": [
+      "research/benchmark_manifests/videomme_dev_v1_short_only.toml"
+    ],
+    "bucket_tally": {
+      "clean": 2,
+      "mixed": 1,
+      "degenerate": 0
+    },
+    "overlap_tally": {
+      "both_correct": 2,
+      "cold_only_correct": 1,
+      "streaming_only_correct": 0,
+      "both_wrong": 0
+    },
+    "queries": [
+      {
+        "q_index": 0,
+        "item_id": "videomme:short:037-1",
+        "response_bucket": "clean",
+        "overlap_bucket": "both_correct",
+        "cold_correct": true,
+        "streaming_correct": true,
+        "cold_choice": "D",
+        "streaming_choice": "D"
+      },
+      {
+        "q_index": 1,
+        "item_id": "videomme:short:037-2",
+        "response_bucket": "mixed",
+        "overlap_bucket": "cold_only_correct",
+        "cold_correct": true,
+        "streaming_correct": false,
+        "cold_choice": "C",
+        "streaming_choice": "D"
+      },
+      {
+        "q_index": 2,
+        "item_id": "videomme:short:037-3",
+        "response_bucket": "clean",
+        "overlap_bucket": "both_correct",
+        "cold_correct": true,
+        "streaming_correct": true,
+        "cold_choice": "D",
+        "streaming_choice": "D"
+      }
+    ]
+  },
+  "videomme:short:100-2": {
+    "video_id": "100",
+    "duration": "short",
+    "split": "dev",
+    "source_manifests": [
+      "research/benchmark_manifests/videomme_dev_v1_short_only.toml"
+    ],
+    "bucket_tally": {
+      "clean": 1,
+      "mixed": 2,
+      "degenerate": 0
+    },
+    "overlap_tally": {
+      "both_correct": 1,
+      "cold_only_correct": 2,
+      "streaming_only_correct": 0,
+      "both_wrong": 0
+    },
+    "queries": [
+      {
+        "q_index": 0,
+        "item_id": "videomme:short:100-1",
+        "response_bucket": "clean",
+        "overlap_bucket": "both_correct",
+        "cold_correct": true,
+        "streaming_correct": true,
+        "cold_choice": "D",
+        "streaming_choice": "D"
+      },
+      {
+        "q_index": 1,
+        "item_id": "videomme:short:100-2",
+        "response_bucket": "mixed",
+        "overlap_bucket": "cold_only_correct",
+        "cold_correct": true,
+        "streaming_correct": false,
+        "cold_choice": "B",
+        "streaming_choice": "A"
+      },
+      {
+        "q_index": 2,
+        "item_id": "videomme:short:100-3",
+        "response_bucket": "mixed",
+        "overlap_bucket": "cold_only_correct",
+        "cold_correct": true,
+        "streaming_correct": false,
+        "cold_choice": "A",
+        "streaming_choice": "C"
+      }
+    ]
+  },
+  "videomme:short:116-3": {
+    "video_id": "116",
+    "duration": "short",
+    "split": "dev",
+    "source_manifests": [
+      "research/benchmark_manifests/videomme_dev_v1_short_only.toml"
+    ],
+    "bucket_tally": {
+      "clean": 3,
+      "mixed": 0,
+      "degenerate": 0
+    },
+    "overlap_tally": {
+      "both_correct": 3,
+      "cold_only_correct": 0,
+      "streaming_only_correct": 0,
+      "both_wrong": 0
+    },
+    "queries": [
+      {
+        "q_index": 0,
+        "item_id": "videomme:short:116-1",
+        "response_bucket": "clean",
+        "overlap_bucket": "both_correct",
+        "cold_correct": true,
+        "streaming_correct": true,
+        "cold_choice": "B",
+        "streaming_choice": "B"
+      },
+      {
+        "q_index": 1,
+        "item_id": "videomme:short:116-2",
+        "response_bucket": "clean",
+        "overlap_bucket": "both_correct",
+        "cold_correct": true,
+        "streaming_correct": true,
+        "cold_choice": "D",
+        "streaming_choice": "D"
+      },
+      {
+        "q_index": 2,
+        "item_id": "videomme:short:116-3",
+        "response_bucket": "clean",
+        "overlap_bucket": "both_correct",
+        "cold_correct": true,
+        "streaming_correct": true,
+        "cold_choice": "B",
+        "streaming_choice": "B"
+      }
+    ]
+  },
+  "videomme:short:120-2": {
+    "video_id": "120",
+    "duration": "short",
+    "split": "dev",
+    "source_manifests": [
+      "research/benchmark_manifests/videomme_dev_v1_short_only.toml"
+    ],
+    "bucket_tally": {
+      "clean": 2,
+      "mixed": 1,
+      "degenerate": 0
+    },
+    "overlap_tally": {
+      "both_correct": 2,
+      "cold_only_correct": 0,
+      "streaming_only_correct": 0,
+      "both_wrong": 1
+    },
+    "queries": [
+      {
+        "q_index": 0,
+        "item_id": "videomme:short:120-1",
+        "response_bucket": "clean",
+        "overlap_bucket": "both_correct",
+        "cold_correct": true,
+        "streaming_correct": true,
+        "cold_choice": "B",
+        "streaming_choice": "B"
+      },
+      {
+        "q_index": 1,
+        "item_id": "videomme:short:120-2",
+        "response_bucket": "clean",
+        "overlap_bucket": "both_correct",
+        "cold_correct": true,
+        "streaming_correct": true,
+        "cold_choice": "D",
+        "streaming_choice": "D"
+      },
+      {
+        "q_index": 2,
+        "item_id": "videomme:short:120-3",
+        "response_bucket": "mixed",
+        "overlap_bucket": "both_wrong",
+        "cold_correct": false,
+        "streaming_correct": false,
+        "cold_choice": "D",
+        "streaming_choice": "A"
+      }
+    ]
+  },
+  "videomme:short:158-3": {
+    "video_id": "158",
+    "duration": "short",
+    "split": "dev",
+    "source_manifests": [
+      "research/benchmark_manifests/videomme_dev_v1_short_only.toml"
+    ],
+    "bucket_tally": {
+      "clean": 1,
+      "mixed": 2,
+      "degenerate": 0
+    },
+    "overlap_tally": {
+      "both_correct": 1,
+      "cold_only_correct": 0,
+      "streaming_only_correct": 2,
+      "both_wrong": 0
+    },
+    "queries": [
+      {
+        "q_index": 0,
+        "item_id": "videomme:short:158-1",
+        "response_bucket": "clean",
+        "overlap_bucket": "both_correct",
+        "cold_correct": true,
+        "streaming_correct": true,
+        "cold_choice": "A",
+        "streaming_choice": "A"
+      },
+      {
+        "q_index": 1,
+        "item_id": "videomme:short:158-2",
+        "response_bucket": "mixed",
+        "overlap_bucket": "streaming_only_correct",
+        "cold_correct": false,
+        "streaming_correct": true,
+        "cold_choice": "B",
+        "streaming_choice": "D"
+      },
+      {
+        "q_index": 2,
+        "item_id": "videomme:short:158-3",
+        "response_bucket": "mixed",
+        "overlap_bucket": "streaming_only_correct",
+        "cold_correct": false,
+        "streaming_correct": true,
+        "cold_choice": "C",
+        "streaming_choice": "B"
+      }
+    ]
+  },
+  "videomme:short:160-1": {
+    "video_id": "160",
+    "duration": "short",
+    "split": "dev",
+    "source_manifests": [
+      "research/benchmark_manifests/videomme_dev_v1_short_only.toml"
+    ],
+    "bucket_tally": {
+      "clean": 3,
+      "mixed": 0,
+      "degenerate": 0
+    },
+    "overlap_tally": {
+      "both_correct": 3,
+      "cold_only_correct": 0,
+      "streaming_only_correct": 0,
+      "both_wrong": 0
+    },
+    "queries": [
+      {
+        "q_index": 0,
+        "item_id": "videomme:short:160-1",
+        "response_bucket": "clean",
+        "overlap_bucket": "both_correct",
+        "cold_correct": true,
+        "streaming_correct": true,
+        "cold_choice": "C",
+        "streaming_choice": "C"
+      },
+      {
+        "q_index": 1,
+        "item_id": "videomme:short:160-2",
+        "response_bucket": "clean",
+        "overlap_bucket": "both_correct",
+        "cold_correct": true,
+        "streaming_correct": true,
+        "cold_choice": "D",
+        "streaming_choice": "D"
+      },
+      {
+        "q_index": 2,
+        "item_id": "videomme:short:160-3",
+        "response_bucket": "clean",
+        "overlap_bucket": "both_correct",
+        "cold_correct": true,
+        "streaming_correct": true,
+        "cold_choice": "B",
+        "streaming_choice": "B"
+      }
+    ]
+  },
+  "videomme:short:210-2": {
+    "video_id": "210",
+    "duration": "short",
+    "split": "dev",
+    "source_manifests": [
+      "research/benchmark_manifests/videomme_dev_v1_short_only.toml"
+    ],
+    "bucket_tally": {
+      "clean": 2,
+      "mixed": 1,
+      "degenerate": 0
+    },
+    "overlap_tally": {
+      "both_correct": 2,
+      "cold_only_correct": 0,
+      "streaming_only_correct": 0,
+      "both_wrong": 1
+    },
+    "queries": [
+      {
+        "q_index": 0,
+        "item_id": "videomme:short:210-1",
+        "response_bucket": "clean",
+        "overlap_bucket": "both_correct",
+        "cold_correct": true,
+        "streaming_correct": true,
+        "cold_choice": "B",
+        "streaming_choice": "B"
+      },
+      {
+        "q_index": 1,
+        "item_id": "videomme:short:210-2",
+        "response_bucket": "clean",
+        "overlap_bucket": "both_correct",
+        "cold_correct": true,
+        "streaming_correct": true,
+        "cold_choice": "B",
+        "streaming_choice": "B"
+      },
+      {
+        "q_index": 2,
+        "item_id": "videomme:short:210-3",
+        "response_bucket": "mixed",
+        "overlap_bucket": "both_wrong",
+        "cold_correct": false,
+        "streaming_correct": false,
+        "cold_choice": "B",
+        "streaming_choice": "C"
+      }
+    ]
+  },
+  "videomme:short:264-1": {
+    "video_id": "264",
+    "duration": "short",
+    "split": "dev",
+    "source_manifests": [
+      "research/benchmark_manifests/videomme_dev_v1_short_only.toml"
+    ],
+    "bucket_tally": {
+      "clean": 3,
+      "mixed": 0,
+      "degenerate": 0
+    },
+    "overlap_tally": {
+      "both_correct": 2,
+      "cold_only_correct": 0,
+      "streaming_only_correct": 0,
+      "both_wrong": 1
+    },
+    "queries": [
+      {
+        "q_index": 0,
+        "item_id": "videomme:short:264-1",
+        "response_bucket": "clean",
+        "overlap_bucket": "both_correct",
+        "cold_correct": true,
+        "streaming_correct": true,
+        "cold_choice": "D",
+        "streaming_choice": "D"
+      },
+      {
+        "q_index": 1,
+        "item_id": "videomme:short:264-2",
+        "response_bucket": "clean",
+        "overlap_bucket": "both_correct",
+        "cold_correct": true,
+        "streaming_correct": true,
+        "cold_choice": "A",
+        "streaming_choice": "A"
+      },
+      {
+        "q_index": 2,
+        "item_id": "videomme:short:264-3",
+        "response_bucket": "clean",
+        "overlap_bucket": "both_wrong",
+        "cold_correct": false,
+        "streaming_correct": false,
+        "cold_choice": "D",
+        "streaming_choice": "D"
+      }
+    ]
+  },
+  "videomme:short:278-3": {
+    "video_id": "278",
+    "duration": "short",
+    "split": "dev",
+    "source_manifests": [
+      "research/benchmark_manifests/videomme_dev_v1_short_only.toml"
+    ],
+    "bucket_tally": {
+      "clean": 2,
+      "mixed": 1,
+      "degenerate": 0
+    },
+    "overlap_tally": {
+      "both_correct": 2,
+      "cold_only_correct": 1,
+      "streaming_only_correct": 0,
+      "both_wrong": 0
+    },
+    "queries": [
+      {
+        "q_index": 0,
+        "item_id": "videomme:short:278-1",
+        "response_bucket": "clean",
+        "overlap_bucket": "both_correct",
+        "cold_correct": true,
+        "streaming_correct": true,
+        "cold_choice": "B",
+        "streaming_choice": "B"
+      },
+      {
+        "q_index": 1,
+        "item_id": "videomme:short:278-2",
+        "response_bucket": "clean",
+        "overlap_bucket": "both_correct",
+        "cold_correct": true,
+        "streaming_correct": true,
+        "cold_choice": "D",
+        "streaming_choice": "D"
+      },
+      {
+        "q_index": 2,
+        "item_id": "videomme:short:278-3",
+        "response_bucket": "mixed",
+        "overlap_bucket": "cold_only_correct",
+        "cold_correct": true,
+        "streaming_correct": false,
+        "cold_choice": "D",
+        "streaming_choice": "B"
+      }
+    ]
+  },
+  "videomme:short:282-2": {
+    "video_id": "282",
+    "duration": "short",
+    "split": "dev",
+    "source_manifests": [
+      "research/benchmark_manifests/videomme_dev_v1_short_only.toml"
+    ],
+    "bucket_tally": {
+      "clean": 1,
+      "mixed": 2,
+      "degenerate": 0
+    },
+    "overlap_tally": {
+      "both_correct": 0,
+      "cold_only_correct": 0,
+      "streaming_only_correct": 0,
+      "both_wrong": 3
+    },
+    "queries": [
+      {
+        "q_index": 0,
+        "item_id": "videomme:short:282-1",
+        "response_bucket": "clean",
+        "overlap_bucket": "both_wrong",
+        "cold_correct": false,
+        "streaming_correct": false,
+        "cold_choice": "C",
+        "streaming_choice": "C"
+      },
+      {
+        "q_index": 1,
+        "item_id": "videomme:short:282-2",
+        "response_bucket": "mixed",
+        "overlap_bucket": "both_wrong",
+        "cold_correct": false,
+        "streaming_correct": false,
+        "cold_choice": "D",
+        "streaming_choice": "C"
+      },
+      {
+        "q_index": 2,
+        "item_id": "videomme:short:282-3",
+        "response_bucket": "mixed",
+        "overlap_bucket": "both_wrong",
+        "cold_correct": false,
+        "streaming_correct": false,
+        "cold_choice": "B",
+        "streaming_choice": "D"
+      }
+    ]
+  }
+}
