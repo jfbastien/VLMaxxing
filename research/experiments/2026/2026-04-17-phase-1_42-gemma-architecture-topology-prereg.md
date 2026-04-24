@@ -1,7 +1,7 @@
 # Phase 1.42 — Gemma 4 architecture-topology lane (second-architecture reuse fidelity)
 
 Date: 2026-04-17
-State: preregistered; Phase A harness landed 2026-04-24, benchmark execution pending
+State: preregistered; Phase A harness landed 2026-04-24, MC-scoring smoke preflight passed 2026-04-24, holdout execution pending
 Parent: `paper/claim-matrix.md` claim #7 (architecture-conditioned
 reuse fidelity is a spectrum)
 Sibling: `research/experiments/2026/2026-04-17-phase-1_51-novelty-pruning-gemma-prereg.md`
@@ -184,6 +184,11 @@ instruction):
 - Phase A integration: LANDED 2026-04-24 via
   `_mix_gemma_features`, Gemma-family cached-feature extraction,
   and checked launcher scripts. Benchmark execution still pending.
+- 2026-04-24 smoke preflight: `videomme:short:100-2` rerun with
+  explicit MC scoring produced dense/cached agreement `1.0` with
+  both paths selecting the same incorrect option. This does not
+  establish accuracy, but it validates the evaluation mode and
+  removes the earlier free-generation parse-path confound.
 - Phase B single-shot: NOT STARTED. Blocked on Phase A.
 - Phase C Track B: NOT STARTED. Blocked on Phase B pass gate.
 
