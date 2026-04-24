@@ -1,7 +1,7 @@
 # Phase 1.42 — Gemma 4 architecture-topology lane (second-architecture reuse fidelity)
 
 Date: 2026-04-17
-State: preregistered; Phase A harness landed 2026-04-24, MC-scoring smoke preflight passed 2026-04-24, holdout execution pending
+State: preregistered; Phase A harness landed 2026-04-24, MC-scoring smoke preflight passed 2026-04-24, TOMATO holdout passed 2026-04-24, MVBench execution pending
 Parent: `paper/claim-matrix.md` claim #7 (architecture-conditioned
 reuse fidelity is a spectrum)
 Sibling: `research/experiments/2026/2026-04-17-phase-1_51-novelty-pruning-gemma-prereg.md`
@@ -189,6 +189,13 @@ instruction):
   both paths selecting the same incorrect option. This does not
   establish accuracy, but it validates the evaluation mode and
   removes the earlier free-generation parse-path confound.
+- 2026-04-24 TOMATO motion holdout N=30: **PASS** on the
+  preregistered TOMATO fidelity gate. Dense and cached accuracy
+  both finished at `0.2667` (`8/30`), strict agreement was
+  `0.9333` (`28/30`), and there were zero parse failures under
+  MC scoring. The only answer mismatches were
+  `tomato:direction:0224-05` and `tomato:direction:0227-04`,
+  both within the direction subgroup.
 - Phase B single-shot: NOT STARTED. Blocked on Phase A.
 - Phase C Track B: NOT STARTED. Blocked on Phase B pass gate.
 
