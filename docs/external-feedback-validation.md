@@ -516,3 +516,47 @@ Action:
 
 - current semantic reruns are now being kept single-worker and sequential
 - root-cause work remains queued before the benchmark-native reproduction tranche
+
+### 26. "Sam switched from pixel diff to H.264 metadata"
+
+Verdict:
+
+- VALID (with scope limit)
+
+Evidence:
+
+- `/Users/jfb/s/codec-through-sam/whitepaper.md:347-349` states the regime split
+  explicitly: pixel diff is the right default for sparse-sampled benchmark QA,
+  while MV / codec metadata is the right default for native-rate streaming
+- this repo already reflected part of that in `paper/framing.md` and
+  `paper/claim-matrix.md`, but stale copies remained in `paper/intro.md`,
+  `paper/publishability-status.md`, `research/experiments/registry.md`, and
+  the manuscript sections on limitations and source traceability
+
+Action:
+
+- synced the paper routers and manuscript so the regime split is now explicit
+- updated 1.29 language to say the semantic bridge is landed locally, while the
+  remaining bridge is decoder-integrated streaming/native-rate systems evidence
+
+### 27. "Sam evidence classes and exactness counts need sharper traceability"
+
+Verdict:
+
+- VALID
+
+Evidence:
+
+- `/Users/jfb/s/codec-through-sam/whitepaper.md` is internally inconsistent on
+  the sparse exactness count: the abstract and summary use `1,937`, while the
+  comparison-table and "unique contribution" prose use `1,837`
+- this repo's appendix had been too coarse, collapsing Sam's streaming,
+  follow-up, and live-camera rows into one traceability row
+- one intro bullet and one framing-table row also over-compressed sparse
+  exactness into the streaming lane
+
+Action:
+
+- split the manuscript traceability rows by evidence class
+- separated sparse exactness from streaming/live deployment wording in the
+  paper-facing docs

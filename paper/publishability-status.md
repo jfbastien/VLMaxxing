@@ -90,6 +90,9 @@ The Sam stack (26B-class, real streaming, full end-to-end pipeline)
 runs on a deliberately disjoint regime from codec-through (4B-class,
 sparse benchmark, mechanism isolation): 4.2–4.5× real-video, 13× ViT,
 ~50× dominant-pipeline, 0.8 s median follow-up, 5–300× live-camera ViT.
+Its sparse exactness rows and streaming rows do not use one uniform
+classifier: sparse-sampled QA stays pixel-diff by design, while native-rate
+streaming uses H.264 metadata by design.
 Shared frame with codec-through: C-CEILING arithmetic + attention-
 propagation drift (NOT PE drift). Paper claims are the **evidence
 union** across both repos with regime labels attached. Weak streaming
@@ -267,7 +270,7 @@ runnable tonight vs. impl-gated.
 | should-do #4 | Local paired streaming-protocol reproduction (1.30) + root-cause decomposition | CLOSED-SCOUT 2026-04-23 | Qwen 2.5-VL-7B-Instruct-4bit (driver hard-fails on non-Qwen at `run_phase1_30_sam_streaming.py:303-308`) | **paired-run speedup landed, accuracy falsified, root-cause localized** — paired cold 0.561 / streaming 0.368 (Δacc = −0.193 FALSIFIES ±0.05) / 3.326× speedup PASS; Phase A+B short scout gives H_V PASS, H_K FAIL, H_interaction FAIL, H_reset PASS, H_path PASS. Loss is primarily the V-only Q0 pruning leg at L=2, kr_V=0.50 on this slice, not a non-additive V+K collapse. Fixed-rate rescue at kr=0.67/0.75 also fails the Q0 accuracy gate; next useful work is admission/no-prune policy design. |
 | should-do #5 | **1.55D selective re-prefill frontier** (recover Δacc at 20f while clawing back speed) | ~60-70 min per K on the 7-clip tranche | Qwen 2.5-VL-7B-4bit | **K=4 landed 2026-04-24** — repo-local v2 runs end-to-end, `Δacc = 0.0`, attractors `0/14`, but follow-up median `28.98 s` vs cold `105.93 s` is only `3.66×`, so the frontier is now scientific rather than infrastructural. Next informative point: K=2. **1.55B** remains the separate persistent-KV × 1.54 composition phase. |
 | should-do #6 | **1.58 bf16 KV control at 20f** (discriminate quantization vs attention-OOD) | ~3.5-4 h (bf16 8f n=30 + bf16 16f n=30) | Qwen 2.5-VL-7B bf16 | **wrapper-landed; run still gated** — `scripts/run_phase1_58_bf16_control.sh` + analyzer landed, but checkpoint download and RSS feasibility remain user/environment constraints |
-| should-do #8 | **1.29 codec-native bridge (reframed)** | landed semantically; slow offline extraction | Qwen 2.5-VL-7B-4bit | **planner-substitution evidence landed** — MAX-over-span sparse sampling is HARD-FALSIFIED, but continuous-score + per-item live-pixel calibration reaches codec-dense agreement 1.000 on VideoMME dev all-duration n=30 with no accuracy loss and zero parse failures. This is not a latency claim: offline codec extraction totals 7290s; calibration ablation and streaming decoder integration remain open. |
+| should-do #8 | **1.29 codec-native bridge (reframed)** | landed semantically; slow offline extraction | Qwen 2.5-VL-7B-4bit | **planner-substitution evidence landed** — MAX-over-span sparse sampling is HARD-FALSIFIED, while the continuous-score redesign reaches codec-dense agreement 1.000 on VideoMME dev all-duration n=30 with no accuracy loss and zero parse failures. Later calibration-mode and calibration-source ablations are neutral on the local slices we ran. This is not a latency claim: offline codec extraction totals 7290s; the remaining gate is streaming decoder integration / native-rate systems evaluation. |
 | future | **1.60 scroll/pan subset** (20 items stratified by scroll intensity, L=2 kr=0.50 paired) | n/a on VideoMME; ~70-90 min after a real subset exists | Gemma 4-E4B-4bit or matched C-VISION stack | **closed as natural-VideoMME corpus limitation** — wider 60-item VideoMME scan found 0/60 items above `shifted_fraction >= 0.30` (max 0.125), so this only reopens with EgoSchema/EPIC-Kitchens/Ego4D or a labeled synthetic scroll/pan set |
 | diagnostic | **Qwen 8f holdout `videomme_holdout_v1.toml` n=30** (parallel to already-done 16f holdout) | ~8 min (cold) | Qwen 2.5-VL-7B-4bit | **runnable-now** — driver exists, manifest exists |
 | split-landed | 1.42 Gemma topology lane | complete on the preregistered N=30 pair | Gemma 4-E4B-4bit | landed 2026-04-24: TOMATO pass (`agreement=0.933`, `dense_acc=cached_acc=0.267`), MVBench strict-agreement fail (`agreement=0.733`, `dense_acc=cached_acc=0.200`); further work is interpretation or third-architecture breadth, not implementation |
@@ -294,8 +297,8 @@ queue once infra is in place.
 |---|---|---|
 | **arXiv preprint (current anti-recomputation draft)** | **Ready today** as a multi-regime anti-recomputation paper with clean versus advisory status stated explicitly and deployment-scale evidence labeled by source class. | No new science gate. Keep provenance tight, finalize manuscript framing, and keep the paper honest about which rows are local clean, local advisory, upstream imported, or deployment-scale imported evidence. |
 | **NeurIPS / ICLR / CVPR efficiency workshop** | **Defensible today** as the current anti-recomputation paper if the provenance remains tight and the manuscript keeps clean, advisory, imported, and deployment-scale rows visibly distinct. | Stronger with one measured sparse-path delta and a cleaner local streaming bridge. |
-| **Main track (NeurIPS/ICML/CVPR)** | **Not ready yet.** The paper now has a better three-regime story than the old venue rows implied, but it still lacks one measured sparse-path delta, broader apples-to-apples comparison against adjacent methods, and a cleaner bridge from local benchmark evidence into deployment-style streaming evaluation. | One measured sparse-path delta, broader first-pass coverage on the second architecture, a 1.29 local codec-native slice, a scroll/pan/egomotion probe on a corpus that actually contains that regime, and tighter head-to-head positioning against the closest trained and training-free baselines. |
-| **Systems conference (MLSys/OSDI)** | **Not ready yet.** The deployment evidence is interesting, but the current paper still does not characterize a full sparse backend or benchmark the streaming path against a clean systems baseline such as screenshot polling. | Sparse execution characterization, screenshot-polling baseline, broader streaming or event-detection evaluation, and ideally local codec-native bridge evidence. |
+| **Main track (NeurIPS/ICML/CVPR)** | **Not ready yet.** The paper now has a better three-regime story than the old venue rows implied, but it still lacks one measured sparse-path delta, broader apples-to-apples comparison against adjacent methods, and a cleaner bridge from local benchmark evidence into deployment-style streaming evaluation. | One measured sparse-path delta, broader first-pass coverage on the second architecture, a decoder-integrated codec-native / native-rate systems bridge, a scroll/pan/egomotion probe on a corpus that actually contains that regime, and tighter head-to-head positioning against the closest trained and training-free baselines. |
+| **Systems conference (MLSys/OSDI)** | **Not ready yet.** The deployment evidence is interesting, but the current paper still does not characterize a full sparse backend or benchmark the streaming path against a clean systems baseline such as screenshot polling. | Sparse execution characterization, screenshot-polling baseline, broader streaming or event-detection evaluation, and ideally a decoder-integrated codec-native streaming bridge. |
 
 ## What is safe to say in a one-paragraph abstract TODAY
 
@@ -324,8 +327,10 @@ queue once infra is in place.
 - "Generalizes broadly across architectures" (one matched second-architecture point is now landed, but broad transfer is still too strong).
 - ~~"Validated on VideoMME" (phase 1.41 not run).~~ **EARNED 2026-04-18** (Qwen 2.5-VL-7B VideoMME dev n=30, dense_accuracy 0.533).
 - "Beats CodecSight / CoPE / FastV / VisionZip" (no head-to-head).
-- "Training-free codec-guided" without qualifying "pixel-diff proxy
-  for codec MV/CBF; phase 1.29 MV-only is the bridge."
+- "Training-free codec-guided" without qualifying the regime split:
+  sparse-sampled QA is still pixel-diff by design, native-rate streaming is
+  codec-metadata by design, and the local 1.29 bridge is semantic rather than
+  latency evidence.
 
 ## Immediate next actions to extend publishability (ranked for one-paper SOTA goal)
 
@@ -533,10 +538,11 @@ items that priority.md does not carry. For the current ordering see
    trajectory; ~30 min wall.
 8. **1.29 codec-native bridge (reframed)** — now a local
    planner-substitution result, not a speed result. MAX-over-span sparse
-   sampling is hard-falsified, while continuous-score + per-item calibration
-   matches dense on VideoMME dev all-duration n=30. The remaining paper risk
-   is calibration dependence and deployment integration, not medium/long
-   semantic survival.
+   sampling is hard-falsified, while the continuous-score redesign matches
+   dense on VideoMME dev all-duration n=30 and later calibration-mode/source
+   ablations are neutral on the local slices we ran. The remaining paper risk
+   is deployment integration, not medium/long semantic survival or calibration
+   dependence.
 9. ~~**Paper figures: C-PERSIST safe-budget table + V_share ceiling
    plot**~~ — **LANDED 2026-04-21 (autonomous session, task #161).**
    Scripts `scripts/plot_c_persist_safe_budget.py` +

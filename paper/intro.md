@@ -200,13 +200,15 @@ quantization and sparse benchmark protocols. The sibling system
 streaming stack at a different regime and supplies the deployment-scale
 evidence C-PERSIST and C-VISION predict:
 
-- **~50× dominant-pipeline compute reduction** on streaming VideoMME
-  with exact Qwen caching across 1,937 sparse-sampled items.
+- **~50× dominant-pipeline compute reduction** on paired Streaming
+  VideoMME.
 - **13× ViT reduction** on a real streaming protocol.
 - **5.4× prefill speedup** on Gemma novelty-pruning.
 - **4.2–4.5× real-video end-to-end speedups** in selected regimes.
 - **Median 0.8 s follow-up latency** with persistent KV.
 - **5–300× live-camera ViT savings** depending on scene activity.
+- **reported 1,937-item sparse exactness** on Qwen under a separate
+  sparse-sampled QA protocol.
 
 We do not claim these as codec-through numbers; we claim them as
 deployment-scale evidence from a shared ceiling theory and a shared
@@ -230,11 +232,14 @@ deployment-scale claim, and the paper does not mix the two.
 The two repos run on disjoint axes by design. codec-through is
 stricter and more reductionist — smaller local models, sparse-sampled
 benchmark regimes, careful end-to-end accounting, pixel-diff proxy
-science before full codec-native deployment, mechanism isolation, and
-preregistered falsification. codec-through-sam is the full stack in
-the right regime — 26 B-class model, real streaming protocol,
-codec-native classifier, live decode in loop, persistent KV across
-queries, temporal + spatial composition. Bridging between the two
+science in sparse QA before full codec-native deployment, mechanism
+isolation, and preregistered falsification. codec-through-sam is the
+full stack in the right regime — 26 B-class model, real streaming
+protocol, H.264 metadata at native rate for streaming, pixel-diff
+proxy on sparse benchmark QA, live decode in loop, persistent KV
+across queries, temporal + spatial composition. That regime split
+matters: sparse-sampled QA keeps pixel diff by design, while native-rate
+streaming keeps codec metadata by design. Bridging between the two
 repos is ongoing work: phase 1.30 reproduced Sam's session-streaming
 protocol at 4 B-class scale (dev+holdout union n = 57 sessions / 171
 queries, paired amortized 3.326× speedup, Δacc = −0.193 FALSIFIES
@@ -265,8 +270,10 @@ the positives:
   reframed planner-accuracy probe now has all-duration VideoMME dev
   \(n=30\) planner-substitution evidence with 30/30 dense-choice agreement
   and no accuracy loss. This is codec-native semantic evidence, not a
-  systems-speed result: offline extraction took 7290 s, and calibration
-  ablations remain open.
+  systems-speed result: offline extraction took 7290 s, later
+  calibration-mode and calibration-source ablations were exactly neutral
+  on the local slices we ran, and the remaining bridge is streaming-decoder
+  integration rather than more semantic calibration.
 - **1.55D v1 selective re-prefill: INFRASTRUCTURE-FALSIFIED.** An
   mlx-vlm image-block-reuse contract the harness does not respect;
   v2 reopens the experiment behind an in-repo monkey-patch, not yet

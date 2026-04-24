@@ -26,9 +26,10 @@ After CodecSight (systems) and CoPE-VideoLM (model) landed, the
 > tasks, when reuse is concentration-aware, age-bounded,
 > architecture-aware, and backed by real skipped compute.**
 
-If phase 1.29 MV-only signal path lands: "codec-guided." If not:
-"codec-inspired / pixel-diff proxy for codec-guided." See
-`paper/claim-matrix.md` for per-claim evidence gates.
+Phase 1.29 now lands as a local codec-native planner-substitution bridge, not a
+systems-speed bridge. Treat the routing lane as pixel-diff proxy work in
+sparse-sampled QA, with codec-guided wording reserved for the narrow local 1.29
+semantic-planner row. See `paper/claim-matrix.md` for per-claim evidence gates.
 
 Five **target claims** to test:
 

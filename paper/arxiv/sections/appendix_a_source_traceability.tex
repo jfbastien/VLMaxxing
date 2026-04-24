@@ -42,8 +42,11 @@ Figure~\ref{fig:vshare-ceiling} & C-CEILING / C-VISION scatter-back validation &
 Figure~\ref{fig:c-persist-safe-budget} & C-PERSIST safe envelope & after-ingest same-video follow-up & local & \texttt{ct2}@\PrimaryRepoSHA & phase1\_55A artifacts; Qwen 7B/3B-4bit, MLX / M3 Air 16 GB \\
 Figure~\ref{fig:lane-a-pareto} & routing frontier & sparse routing under dense backend & local & \texttt{ct2}@\PrimaryRepoSHA & phase1\_20/21/34/36 notes; Qwen 7B-4bit, MLX \\
 Sec.~\ref{sec:results-cross-architecture} & Qwen stacked-regime boundary & session/streaming composition & local negative / boundary & \texttt{ct2}@\PrimaryRepoSHA & phase1\_30 artifacts; Qwen 7B-4bit, VideoMME dev+holdout, MLX / M3 Air \\
-Table~\ref{tab:real-apps} (stream / follow-up / live) & deployment-scale reuse & native-rate streaming + same-video follow-up & imported companion & \texttt{sam}@\SamRepoSHA & Sam whitepaper/status/live-demo docs; Gemma 4 26B / M5 Max \\
-Table~\ref{tab:real-apps} (exactness row) & large-\(N\) sparse exactness & sparse-sampled QA & imported companion exactness & \texttt{sam}@\SamRepoSHA & strict exactness claim from Sam whitepaper; Qwen 7B suite; not re-audited here \\
+Table~\ref{tab:real-apps} (streaming row) & deployment-scale reuse & native-rate streaming paired N=60 & imported companion & \texttt{sam}@\SamRepoSHA & Sam whitepaper \S2.13.2 / status docs; Gemma 4 26B / M5 Max \\
+Table~\ref{tab:real-apps} (real-video row) & deployment-scale reuse & paired real-video regimes & imported companion & \texttt{sam}@\SamRepoSHA & Sam whitepaper \S2.8 real-video timings; Gemma 4 26B / M5 Max \\
+Table~\ref{tab:real-apps} (follow-up row) & deployment-scale follow-up & after-ingest same-video follow-up & imported companion & \texttt{sam}@\SamRepoSHA & Sam whitepaper \S2.13.3; Gemma 4 26B / M5 Max \\
+Table~\ref{tab:real-apps} (live-camera row) & deployment-scale live deployment & native-rate live camera & imported companion & \texttt{sam}@\SamRepoSHA & Sam whitepaper \S2.13.1 / live-demo docs; Gemma 4 26B / M5 Max \\
+Table~\ref{tab:real-apps} (exactness row) & large-\(N\) sparse exactness & sparse-sampled QA & imported companion exactness & \texttt{sam}@\SamRepoSHA & reported sparse exactness claim from Sam whitepaper; Qwen 7B suite; not re-audited here and kept separate from streaming/live rows \\
 \bottomrule
 \end{tabularx}
 \end{table}

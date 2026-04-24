@@ -68,9 +68,11 @@ paper should lead with, prefer `priority.md`.
 > temporal placement of fresh compute matters more than novelty
 > magnitude alone.
 
-If the codec-native bridge lands cleanly, the mechanism wording can move toward
-``codec-guided.'' Until then, keep the wording more careful: codec-inspired or
-pixel-diff proxy for codec-guided.
+The semantic codec-native bridge has now landed locally, but the systems bridge
+has not. Keep the wording precise: sparse-sampled QA is still pixel-diff by
+design, native-rate streaming is codec-metadata by design, and any
+``codec-guided'' wording should stay attached to the protocol it actually
+describes.
 
 The paper-grade story is training-free anti-recomputation with measured
 first-pass Gemma gains, large after-ingest follow-up wins, and Qwen routing
@@ -148,9 +150,9 @@ measured sparse backend, a clean systems baseline such as screenshot
 polling, and a broader streaming evaluation. Main-track readiness now
 depends on broader asks: (a) one measured sparse-path end-to-end delta,
 (b) a cleaner local bridge into the streaming / deployment regime,
-(c) a 1.29 local codec-native benchmark slice, and (d) a scroll/pan or
-egomotion regime-boundary probe on a corpus that actually contains that
-motion regime.
+(c) a decoder-integrated codec-native / native-rate systems bridge, and
+(d) a scroll/pan or egomotion regime-boundary probe on a corpus that
+actually contains that motion regime.
 
 ## Protocol matters — three non-interchangeable evaluation regimes
 
@@ -245,10 +247,11 @@ boundary as much as the positives:
   C-VISION is safe on scroll/pan; it says VideoMME does not contain that
   regime at measurable scale. A scroll/pan characterization now requires
   EgoSchema/EPIC-Kitchens/Ego4D or a labeled synthetic set.
-- **Sam axis #2b: mixed / null** on a subset of streaming cells. Not
-  all of Sam's multipliers generalize to every content type; the
-  mixed/null cells are reported alongside the positive ones, not
-  averaged away.
+- **Sam axis #2b: regime-dependent negative evidence, not a vague caveat.**
+  The paired affine-cache-warp ablation shows a short-regime positive, a
+  medium-duration null, near-zero dose-response on VideoMME, and a clean
+  reconciliation with local phase 1.60: VideoMME mostly lacks the sustained
+  pan/scroll regime the mechanism was designed for.
 - **Sam piecewise reuse: no matched wall-clock baseline.** The
   piecewise-reuse case study in codec-through-sam is a single-cell
   illustration, not a deployment-scale result. Appendix-bound; does not
@@ -259,11 +262,17 @@ boundary as much as the positives:
 Within codec-through-sam the numbers fall into two categories and they
 carry different evidential weight:
 
-**Deployment-scale** (main-body multipliers, paired baselines,
-1,937-item corpus where applicable): streaming E2E 4.2–4.5 ×; ViT-only
-13 ×; streaming-dominant-pipeline ~50 ×; live-camera ViT 5–300 ×;
-persistent-KV follow-up median 0.8 s. These stay in the main body,
-clearly attributed to Sam, with their regime explicitly named.
+**Deployment-scale** (main-body multipliers, paired baselines):
+streaming E2E 4.2–4.5 ×; ViT-only 13 ×; streaming-dominant-pipeline
+~50 ×; live-camera ViT 5–300 ×; persistent-KV follow-up median
+0.8 s. These stay in the main body, clearly attributed to Sam, with
+their regime explicitly named.
+
+**Sparse exactness** is a separate imported-companion row, not part of
+the deployment-multiplier bucket. The current Sam whitepaper reports
+1,937 sparse exactness items in the abstract, but other prose still says
+1,837; this paper therefore keeps that row explicitly reported and not
+re-audited here.
 
 **Case-study** (single-cell illustrations, no paired baseline, or no
 matched wall-clock): piecewise reuse; individual streaming anecdotes
@@ -309,9 +318,9 @@ regimes by design:
 | Axis                  | codec-through (this paper)                 | codec-through-sam                                          |
 |-----------------------|--------------------------------------------|------------------------------------------------------------|
 | Model size            | 4 B-class, 4-bit quantized                 | 26 B-class                                                  |
-| Protocol              | sparse-sampled benchmark                   | real streaming / deployment                                 |
-| Eval regime           | N = 30 / 60 holdout, paired, thermally controlled | 1,937 items, live decode in loop                    |
-| Classifier            | pixel-diff proxy (scoped future: 1.29 MV-only) | codec-native MV + CBF                                   |
+| Protocol              | sparse-sampled benchmark QA                | mixed companion evidence: native-rate streaming, sparse exactness, live deployment |
+| Eval regime           | N = 30 / 60 holdout, paired, thermally controlled | streaming paired N = 60; sparse exactness N = 1,937; live decode in loop / real-video case studies |
+| Classifier            | pixel-diff proxy on sampled decoded frames | pixel-diff on sparse exactness; codec-native MV + residual at native rate for streaming/live |
 | Focus                 | mechanism isolation, prereg falsification  | full stack, composition, measured end-to-end multipliers    |
 | Strongest numbers     | 1.08–1.24× E2E dev; 1.113× VideoMME 8 f holdout; sub-second follow-up inside safe envelope | 4.2–4.5× real-video E2E; 13× ViT; ~50× streaming dominant-pipeline; median 0.8 s follow-up; 5–300× live ViT |
 
@@ -670,7 +679,7 @@ standards work targets machine consumption instead:
   on consumer GPUs.
 
 These are relevant as future-work anchors, not direct dependencies.
-Our pixel-diff proxy (phase 1.19+) and MV-only path (phase 1.29) both
+Our pixel-diff proxy (phase 1.19+) and codec-native MV/residual path (phase 1.29) both
 target the *existing* H.264/H.265 signal surface because that is
 what ships on device today. A machine-first codec line would lift
 the ceiling on proxy quality (see phase 1.36 Pearson lower bound)

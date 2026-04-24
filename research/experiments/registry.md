@@ -229,7 +229,7 @@ authoritative in the per-phase notes under
   prereg_outcome: Inconclusive (protocol deviation)
 
 - phase_id: 1.29
-  status: duration-breadth passed (n=30 dev all-duration; calibration ablation pending)
+  status: semantic breadth passed; calibration-mode/source ablations closed neutral; systems integration pending
   authoritative_note: research/experiments/2026/2026-04-23-phase-1_29B-codec-native-replication-prereg.md
   authoritative_artifacts:
     - research/experiments/2026/artifacts/phase1_29_planner_accuracy_probe/results.jsonl
@@ -240,9 +240,9 @@ authoritative in the per-phase notes under
     - research/experiments/2026/artifacts/phase1_29B_dev30_duration_20260423/summary.json
   current_best_policy: "VideoMME 8f dev all-duration n=30 Qwen 2.5-VL-7B-4bit: codec_dense_agreement 1.000 (30/30), codec_accuracy=dense_accuracy=0.533, codec_pixel_agreement 0.933, reuse-ratio gap 1.6pp, parse failures 0. Short dev+holdout n=20 also passes on the -5pp accuracy-loss boundary. This is local codec-native planner-substitution evidence, not a latency win: offline codec extraction totals 7290s (long mean 615s/item)."
   supersedes: []
-  paper_relevance: candidate body row with caveats (local codec-native planner-substitution evidence now spans short/medium/long dev n=30; calibration ablation and streaming integration remain needed before deployment/system-speed claims)
+  paper_relevance: candidate body row with caveats (local codec-native planner-substitution evidence now spans short/medium/long dev n=30; calibration-mode/source ablations are closed neutral; streaming integration remains needed before deployment/system-speed claims)
   prereg_outcome: MAX-over-span sparse retrofit falsified; continuous-score redesign partial-pass at aggregate level; planner-accuracy probe first-point-confirmed on n=10 short (2026-04-23); short-holdout replication MIXED-positive and combined short n=20 PASS on boundary (2026-04-23); all-duration dev n=30 H_duration_breadth PASS (2026-04-23)
-  notes: 2026-04-23 first-point run lands at 495a57b. Continuous-score + per-item live-pixel calibration substitutes 1:1 for dense planner on the dev-short pilot (10/10 agreement) and beats pixel oracle by +0.10. Codex takeover corrected the impossible "n=30 short" follow-up: fixed manifests provide dev-short n=10 + holdout-short n=10, not short n=30. Holdout short lands codec_dense_agreement 0.900, codec_pixel_agreement 1.000, codec_accuracy 0.700 vs dense 0.800. Pooled short n=20 passes exactly at the -5pp accuracy-loss boundary. The all-duration dev n=30 run then passes strongly: codec equals dense on 30/30 choices across long/medium/short. Operational caveat is severe: offline codec extraction totals 121.5 min, so this is not a systems speedup route without streaming decoder integration or a cache/checkpointed pipeline.
+  notes: 2026-04-23 first-point run lands at 495a57b. Continuous-score + per-item live-pixel calibration substitutes 1:1 for dense planner on the dev-short pilot (10/10 agreement) and beats pixel oracle by +0.10. Codex takeover corrected the impossible "n=30 short" follow-up: fixed manifests provide dev-short n=10 + holdout-short n=10, not short n=30. Holdout short lands codec_dense_agreement 0.900, codec_pixel_agreement 1.000, codec_accuracy 0.700 vs dense 0.800. Pooled short n=20 passes exactly at the -5pp accuracy-loss boundary. The all-duration dev n=30 run then passes strongly: codec equals dense on 30/30 choices across long/medium/short. 2026-04-24 follow-up runs then closed both calibration axes neutral on the local slices we ran: pooled/per-item and live-pixel/artifact source changes produce identical answer-level outcomes. Operational caveat is severe: offline codec extraction totals 121.5 min, so this is not a systems speedup route without streaming decoder integration or a cache/checkpointed pipeline.
 
 - phase_id: 1.30
   status: CLOSED-SCOUT (speedup PASS, accuracy FALSIFIED; root-cause localized to V-only Q0 pruning on short-scout slice)

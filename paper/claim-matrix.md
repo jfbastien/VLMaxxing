@@ -15,8 +15,10 @@ research program.
 > frozen dense backend. The paper's job is to keep those regimes
 > separate, quantify them honestly, and explain when each one matters.
 
-If the codec signal path (phase 1.29) lands: "codec-guided."
-If not: "codec-inspired / pixel-diff proxy for codec-guided."
+Phase 1.29 now lands as a local codec-native planner-substitution bridge, not a
+systems-speed bridge. Paper wording should therefore stay protocol-qualified:
+sparse-QA routing remains pixel-diff proxy, while the narrow local 1.29 row can
+be called codec-guided in the semantic-planner sense.
 
 ## Claim matrix
 

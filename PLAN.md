@@ -1,6 +1,6 @@
 # Research Plan
 
-Last updated: 2026-04-21
+Last updated: 2026-04-24
 
 > **This file is the project charter and top-level router.**
 >
@@ -945,16 +945,29 @@ Implications:
 
 Near-term order:
 
-1. keep the evidence boundary explicit with prereg outcomes and generalized-versus-strict reproduction labels
-2. treat benchmark-native TOMATO setup as complete on this stack, with the `6`-item smoke run and resumable local execution rules already in place
-3. treat the first `30`-item TOMATO subset as completed and currently weaker than the imported benchmark story on this stack
-4. treat the hosted `54`-item MVBench subset as the current strongest benchmark-native local evidence and keep its generalized caveat explicit
-5. return to TOMATO with the cross-benchmark contrast in mind: decide between a higher-precision follow-up, a different documented subset, or a targeted planner/statistic diagnosis
-6. extend the real-video slice beyond endpoint scene facts so natural middle-event items exist before broad threshold sweeps
-7. compare the repaired mechanism probes on a higher-precision local runtime before treating the locality gap as conceptual disagreement
-8. run threshold sweeps on the discrimination-safe synthetic subset plus the real-video slice
-9. run refresh-interval drift on the hard natural buckets
-10. only then move deeper into Track B timing and sparse execution
+1. keep the protocol split explicit in every paper-facing doc:
+   sparse-sampled QA uses pixel diff by design, native-rate streaming uses
+   codec metadata by design, and after-ingest follow-up is a separate reuse
+   regime again
+2. treat phase 1.29 as semantically closed on the local slices we ran:
+   planner-substitution evidence is landed and calibration-mode/source
+   ablations are neutral; the remaining bridge is decoder-integrated
+   streaming/native-rate systems evidence
+3. make phase 1.31 the next targeted 1.30 lane: admission/no-prune policy for
+   risky Q0 items, not another blind fixed-rate rescue or full session rerun
+4. keep phase 1.30 closed at the current scout conclusion until that adaptive
+   admission policy exists; do not promote the local streaming bridge on speed
+   alone
+5. treat phase 1.55D v2 selective re-prefill as the highest-upside fidelity-
+   recovery implementation lane once mlx-vlm auxiliary-tensor co-slicing is in
+   place
+6. treat phase 1.58 bf16 KV control as the cleanest mechanism discriminator for
+   the persistent-KV basin when checkpoint and RSS constraints permit
+7. keep Track B sparse-path work separate: semantic-substitution rows are not
+   speed claims until the backend itself skips measured work
+8. keep scroll/pan work off VideoMME: phase 1.60 closed that corpus as the
+   wrong regime, so future work needs EgoSchema, Ego4D, EPIC-Kitchens, or a
+   labeled synthetic set
 
 ## Future Horizons
 
