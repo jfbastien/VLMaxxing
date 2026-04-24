@@ -392,10 +392,11 @@ def _diff_plane(frame_a: FloatArray, frame_b: FloatArray) -> FloatArray:
 def _aggregate_to_grid(per_pixel: FloatArray, grid_shape: tuple[int, int]) -> FloatArray:
     """Block-mean-pool a 2D per-pixel array into `grid_shape` cells.
 
-    Requires the pixel dimensions to be exact multiples of the grid dims (the
-    typical Gemma case is 560×560 pixel frames with a 14×20 post-pool grid after
-    patch_size=16 and pooling_kernel_size=3 — we verify exact divisibility here
-    and leave any rebinning / resampling to the caller).
+    Requires the pixel dimensions to be exact multiples of the grid dims. For
+    the current Gemma MLX path the validated case is 560×560 pixel frames with
+    a 16×16 soft-token grid (256 tokens/frame); older 14×20 / 280-token notes
+    in prereg drafts came from a stale metadata attribute and are incorrect for
+    the driver path we actually run.
     """
     rows, cols = grid_shape
     h, w = per_pixel.shape

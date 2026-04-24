@@ -6,18 +6,28 @@ Parent: `paper/claim-matrix.md` claim #7 (architecture-conditioned reuse fidelit
 Depends on: nothing; this is a pre-coding design gate
 Unlocks: phase 1.51 (novelty-pruning, **big-numbers headline**), phase 1.52 (combined temporal + spatial)
 
+**2026-04-24 correction:** the live Gemma MLX path used in this repo emits
+`256` visual tokens per frame on a `16×16` grid for the 560×560 benchmark
+frames. Earlier `280` / `14×20` notes in this design sketch came from stale
+metadata and are retained below only where explicitly labeled historical.
+
 ## Why this note exists
 
 Codex flagged that we should **not** start coding `_mix_gemma_features` without a deliberate design pass. Gemma 4's token layout is NOT a clean port of Qwen's block-level reuse:
 
 - **Qwen 2.5-VL**: windowed patch embedding; `qwen_merged_token_counts` gives per-frame token counts tied to 2D patch positions; `active_region_block_mask` is a pixel → block map; `_mix_qwen_features` operates on 28×28 blocks with clean pixel correspondence.
-- **Gemma 4-E4B**: vision tower produces **280 fixed soft tokens per image** after avg-pool (`pooling_kernel_size=3` over a 16×16 patch grid → 280 post-pool tokens). The post-pool tokens have learned 2D positional embeddings that were trained jointly with the projector and LLM. **There is NO direct pixel-block correspondence at the token level** — a post-pool token is a weighted mix of ~9 pre-pool patches whose exact spatial footprint depends on the learned pool weights.
+- **Gemma 4-E4B**: the current driver path produces **256 fixed soft tokens per
+  image** on a `16×16` grid. The post-vision tokens have learned 2D positional
+  structure before they enter the projector / LLM stack. Pixel correspondence
+  is therefore coarser than Qwen's merged-patch path, but for our benchmark
+  pipeline it is still meaningful to work with a `35 px` block multiple on the
+  square-padded 560×560 frames.
 
 This means every concept in `_mix_qwen_features` needs a deliberate Gemma analog decision, not a port:
 
 | Qwen concept | Maps to (Gemma candidate) | Decision needed |
 |---|---|---|
-| `qwen_merged_token_counts` → per-frame token counts | Fixed 280 per frame (already known) | None; constant across frames |
+| `qwen_merged_token_counts` → per-frame token counts | Fixed 256 per frame (already known) | None; constant across frames |
 | `active_region_block_mask` (pixel→block) | **No direct analog** — requires: approximate (pixel-to-post-pool mapping), or drop (no active masking) | Drop for v0; revisit if bounds-gated loss hurts |
 | `classify_blocks_with_planner` on pixel blocks | Option A: run on pixel blocks and aggregate to post-pool tokens; Option B: run per-frame at whole-frame level (binary reuse); Option C: run on post-pool token vectors directly (feature-space novelty) | Pick one for v0 — see §Design options |
 | 28×28 pixel block granularity | Does not generalize — post-pool token footprint is irregular | Abandon block-size parameter for Gemma |
@@ -26,7 +36,7 @@ This means every concept in `_mix_qwen_features` needs a deliberate Gemma analog
 
 ### Option A — whole-frame-or-nothing reuse (simplest v0)
 
-**Decision**: reuse the entire 280-token vector from a prior frame when the pair passes a threshold; otherwise recompute all 280.
+**Decision**: reuse the entire 256-token vector from a prior frame when the pair passes a threshold; otherwise recompute all 256.
 
 - **Pro**: smallest code change (wraps `model.vision_tower` with a frame-level memoizer). Clean semantics. No spatial-footprint bookkeeping.
 - **Pro**: maps cleanly to Sam's whitepaper §2.7 framing (architecture-conditioned fidelity tested at the frame boundary).
@@ -92,9 +102,9 @@ File: `tests/test_gemma_track_a_smoke.py` (importorskip MLX):
 
 1. Load `~/models/gemma-4-e4b-it-4bit`.
 2. Call `_compute_cached_features` on 2 frames of a small TOMATO video.
-3. Assert features shape is `(2 * 280, hidden_size)` (or whatever the per-item Gemma token count × hidden_size is; expected 280×hidden_size from the config).
+3. Assert features shape is `(2 * 256, hidden_size)` (or whatever the per-item Gemma token count × hidden_size is; the validated current path is 256×hidden_size).
 4. Call `_mix_gemma_features` with whole-frame threshold that should trigger full reuse on near-identical frames.
-5. Assert `mixed` has the same shape as `features` and the per-token distance between `mixed[0:280]` and `mixed[280:560]` is exactly 0 (byte-identical reuse).
+5. Assert `mixed` has the same shape as `features` and the per-token distance between `mixed[0:256]` and `mixed[256:512]` is exactly 0 (byte-identical reuse).
 6. Repeat with divergent frames; assert reuse_ratio = 0 and mixed equals features (no reuse).
 
 ### Runtime cost for phase 1.42 v0 after code lands
@@ -134,7 +144,7 @@ When phase 1.42 v0 runs (post-halo-sweep + post-Gemma-smoke):
 
 ## Related memories / references
 
-- `~/models/gemma-4-e4b-it-4bit/config.json`: `vision_soft_tokens_per_image=280`, `patch_size=16`, `pooling_kernel_size=3`.
+- `~/models/gemma-4-e4b-it-4bit/config.json`: `patch_size=16`, `pooling_kernel_size=3`; use the driver-measured 256-token / 16×16 geometry rather than stale metadata fields.
 - `.venv/lib/python3.12/site-packages/mlx_vlm/models/gemma4/gemma4.py:100-106`: `cached_image_features` kwarg supported.
 - Sam's whitepaper §2.7: "architecture-conditioned reuse fidelity is a spectrum, not a binary (windowed-exact vs all-global-approximate)."
 - Phase 1.51 prereg (novelty-pruning on Gemma): `research/experiments/2026/2026-04-17-phase-1_51-novelty-pruning-gemma-prereg.md`.

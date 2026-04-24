@@ -1,7 +1,7 @@
 # Phase 1.42 — Gemma 4 architecture-topology lane (second-architecture reuse fidelity)
 
 Date: 2026-04-17
-State: blocked (preregistered; `_mix_gemma_features` harness path not yet written — see phase A below)
+State: preregistered; Phase A harness landed 2026-04-24, benchmark execution pending
 Parent: `paper/claim-matrix.md` claim #7 (architecture-conditioned
 reuse fidelity is a spectrum)
 Sibling: `research/experiments/2026/2026-04-17-phase-1_51-novelty-pruning-gemma-prereg.md`
@@ -70,7 +70,8 @@ flow.
 
 ## Method
 
-**Phase A — model integration** (infrastructure, not yet written):
+**Phase A — model integration** (landed 2026-04-24; keep this section as the
+historical prereg target):
 
 1. Extend `scripts/run_benchmark_track_a.py` to accept
    `--model-path` pointing at Gemma 4; the script currently
@@ -79,14 +80,11 @@ flow.
    needed that respects Gemma's `pooling_kernel_size=3` and
    `patch_size=16`.
 2. Update `src/codec_through/track_a.py::active_region_block_mask`
-   to handle Gemma's non-square post-pool grid. The mlx-vlm Gemma
-   pipeline feeds 560×560 square-padded frames and emits a 14×20
-   post-pool grid (280 tokens/frame) — confirmed empirically in
-   `src/codec_through/novelty_pruning.py:396` and its test
-   fixtures. The 224×224/336×336 rectangular-divisibility
-   analysis below is historical (pre-driver-empirical); the
-   active-region mask accepts a rectangular `grid_shape` and
-   handles the 14×20 geometry natively.
+   for Gemma's validated driver geometry. The current MLX path
+   feeds 560×560 square-padded frames and yields a 16×16 visual
+   token grid (256 tokens/frame, 35 px/block). Earlier 14×20 /
+   280-token notes were based on stale metadata and should not be
+   reused for execution planning.
 3. Verify `mx.get_peak_memory()` stays under 13 GB for a single
    Gemma-4-E4B-4bit forward at 8 frames × 560×560 (the leftover
    headroom preserves ability to run Track B dense baseline
@@ -175,8 +173,9 @@ instruction):
   `mlx-vlm==0.4.4` on M3 Air 16 GB (patch_size=16,
   pooling_kernel_size=3, 16 vision layers, hidden=768). Registry
   entry follows.
-- Phase A integration: NOT STARTED. Blocked on
-  `_mix_gemma_features` implementation in the Track A harness.
+- Phase A integration: LANDED 2026-04-24 via
+  `_mix_gemma_features`, Gemma-family cached-feature extraction,
+  and checked launcher scripts. Benchmark execution still pending.
 - Phase B single-shot: NOT STARTED. Blocked on Phase A.
 - Phase C Track B: NOT STARTED. Blocked on Phase B pass gate.
 

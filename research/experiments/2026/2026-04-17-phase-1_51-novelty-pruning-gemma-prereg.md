@@ -87,10 +87,10 @@ speedup on TOMATO motion N=30 vs Gemma-dense-8. Target:
 at half the depth and quarter the weights; we budget conservative).
 
 H2 (quality preservation): At 50 % keep rate, cached accuracy is
-within 0.10 of Gemma-dense-8. Justification: at 8 frames × 280
-post-pool visual tokens/frame (14×20 grid from mlx-vlm's 560×560
-pipeline; confirmed in `novelty_pruning.py`) × 50 % = 1,120 visual
-tokens prefilled instead of 2,240 — prefill cost drops ~50 %
+within 0.10 of Gemma-dense-8. Justification: at 8 frames × 256
+visual tokens/frame (validated 16×16 grid on the current MLX
+driver path) × 50 % = 1,024 visual tokens prefilled instead of
+2,048 — prefill cost drops ~50 %
 (prefill is O(N²) attention so the drop is bigger than 50 % in
 FLOPs, but at these sizes we're compute-bound not memory-bound,
 so wall-clock gain scales closer to N).
@@ -116,11 +116,11 @@ pure novelty at matched keep rate.
 2. Novelty score per visual token: per-token pixel-diff score
    from the existing planner pipeline, aggregated over the
    spatial block that projects to each post-pool visual token.
-   (At mlx-vlm's Gemma pipeline image=560, patch=16, pool≈3:
-   one post-pool visual token covers a rectangular pixel block;
-   the 14×20 post-pool grid yields 280 tokens/frame. Existing
-   block-classification feeds straight in via `grid_shape`
-   override in `NoveltyPruneConfig`.)
+   (At the current Gemma benchmark path, 560×560 square-padded
+   frames map to a validated 16×16 token grid, so each token
+   aligns to a 35×35 block for the novelty-grid projection.
+   Earlier 14×20 / 280-token notes were stale metadata and are
+   not used by the runner.)
 3. Keep-rule: `keep if (novelty_rank < k * keep_rate) OR
    (anchor_flag == True)`. `anchor_flag` depends on the anchor
    variant (see grid below).
