@@ -1,7 +1,7 @@
 # Phase 1.42 — Gemma 4 architecture-topology lane (second-architecture reuse fidelity)
 
 Date: 2026-04-17
-State: preregistered; Phase A harness landed 2026-04-24, MC-scoring smoke preflight passed 2026-04-24, TOMATO holdout passed 2026-04-24, MVBench execution pending
+State: preregistered; Phase A harness landed 2026-04-24, MC-scoring smoke preflight passed 2026-04-24, TOMATO holdout passed 2026-04-24, MVBench holdout failed the strict-agreement gate 2026-04-24
 Parent: `paper/claim-matrix.md` claim #7 (architecture-conditioned
 reuse fidelity is a spectrum)
 Sibling: `research/experiments/2026/2026-04-17-phase-1_51-novelty-pruning-gemma-prereg.md`
@@ -183,7 +183,8 @@ instruction):
   entry follows.
 - Phase A integration: LANDED 2026-04-24 via
   `_mix_gemma_features`, Gemma-family cached-feature extraction,
-  and checked launcher scripts. Benchmark execution still pending.
+  and checked launcher scripts. Benchmark execution is now complete on
+  the preregistered TOMATO + MVBench holdout pair.
 - 2026-04-24 smoke preflight: `videomme:short:100-2` rerun with
   explicit MC scoring produced dense/cached agreement `1.0` with
   both paths selecting the same incorrect option. This does not
@@ -196,8 +197,18 @@ instruction):
   MC scoring. The only answer mismatches were
   `tomato:direction:0224-05` and `tomato:direction:0227-04`,
   both within the direction subgroup.
-- Phase B single-shot: NOT STARTED. Blocked on Phase A.
-- Phase C Track B: NOT STARTED. Blocked on Phase B pass gate.
+- 2026-04-24 MVBench motion holdout N=30: **FAIL** on the
+  preregistered MVBench fidelity gate. Dense and cached accuracy
+  both finished at `0.2000` (`6/30`), but strict agreement was
+  only `0.7333` (`22/30`) with zero parse failures. The 8 answer
+  mismatches were spread across `action_localization`,
+  `fine_grained_action`, `object_interaction`, and
+  `moving_direction`, so this is not a single-subgroup artifact.
+- Phase B single-shot: COMPLETE with a split result (TOMATO pass,
+  MVBench fidelity fail, no aggregate accuracy gap on either).
+- Phase C Track B: DEFERRED. The preregistered promotion rule was "if
+  Phase B passes"; after the split result, Gemma Track B is exploratory
+  only and is no longer the primary next step.
 
 ## Why Gemma and not InternVL3 — a methodological note
 

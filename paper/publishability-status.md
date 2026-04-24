@@ -270,7 +270,7 @@ runnable tonight vs. impl-gated.
 | should-do #8 | **1.29 codec-native bridge (reframed)** | landed semantically; slow offline extraction | Qwen 2.5-VL-7B-4bit | **planner-substitution evidence landed** — MAX-over-span sparse sampling is HARD-FALSIFIED, but continuous-score + per-item live-pixel calibration reaches codec-dense agreement 1.000 on VideoMME dev all-duration n=30 with no accuracy loss and zero parse failures. This is not a latency claim: offline codec extraction totals 7290s; calibration ablation and streaming decoder integration remain open. |
 | future | **1.60 scroll/pan subset** (20 items stratified by scroll intensity, L=2 kr=0.50 paired) | n/a on VideoMME; ~70-90 min after a real subset exists | Gemma 4-E4B-4bit or matched C-VISION stack | **closed as natural-VideoMME corpus limitation** — wider 60-item VideoMME scan found 0/60 items above `shifted_fraction >= 0.30` (max 0.125), so this only reopens with EgoSchema/EPIC-Kitchens/Ego4D or a labeled synthetic scroll/pan set |
 | diagnostic | **Qwen 8f holdout `videomme_holdout_v1.toml` n=30** (parallel to already-done 16f holdout) | ~8 min (cold) | Qwen 2.5-VL-7B-4bit | **runnable-now** — driver exists, manifest exists |
-| blocked | 1.42 Gemma topology lane | ~2-6 h | Gemma 4-E4B-4bit | `_mix_gemma_features` impl (task #62) |
+| split-landed | 1.42 Gemma topology lane | complete on the preregistered N=30 pair | Gemma 4-E4B-4bit | landed 2026-04-24: TOMATO pass (`agreement=0.933`, `dense_acc=cached_acc=0.267`), MVBench strict-agreement fail (`agreement=0.733`, `dense_acc=cached_acc=0.200`); further work is interpretation or third-architecture breadth, not implementation |
 | blocked | 1.43 EgoSchema breadth gate | ~2 h | Qwen 2.5-VL-7B-4bit | loader + manifest unwritten |
 | blocked | 1.52R composition (1.42 × 1.51R) | ~3 h | Gemma 4-E4B-4bit | 1.42 landing + 1.51R V-patched re-run |
 | future | Claim-5 sparse-execution delta | ~2 h | either | sparse backend unwritten (1-2 wk impl) |
@@ -578,7 +578,9 @@ Documented here as appendix-grade method evidence. These are the null
   — retired. 1.51R is the EXP10 n=60 gate + Stage-5 anchor default.
 - **"1.42 gates 1.51R"** — reaffirmed NOT a dependency. 1.51R is a
   fresh LLM-prefill code path; 1.42 is a claim-7 enabler
-  independently. 1.42 stays in the future list per priority.md.
+  independently. 1.42 is now landed as a split result (TOMATO pass,
+  MVBench fidelity fail) and no longer belongs in the future-list
+  blocker bucket.
 
 Maintained by: research automation. Source of truth for submission
 gates: [`priority.md`](priority.md). Source of truth for numbers:

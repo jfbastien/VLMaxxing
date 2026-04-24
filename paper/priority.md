@@ -305,16 +305,19 @@ a must-do slot opens.
 
 - **1.42 Gemma temporal-reuse (`_mix_gemma_features`).** Second-arch
   fidelity test for claim #7 (architecture-conditioned reuse).
-  **Infrastructure is now landed**: the Track A Gemma mixing path,
-  cached-feature extraction, and checked launchers are in `main`
-  (2026-04-24). **Mechanism lane 1.57 Gemma also landed 2026-04-24**
-  on VideoMME dev-long n=10 with the corrected pooled cached-feature
-  geometry (`133` cached tokens/frame): STATIC cosine rises
-  `0.769 → 0.794 → 0.807` across 8f / 16f / 32f and is materially
-  above Qwen long-bucket values at matched frame counts. The remaining
-  work is execution and interpretation, not harness implementation.
-  Runtime remains ~30 min per n=30 8f holdout slice, plus any follow-on
-  dense Track B baselines.
+  **LANDED 2026-04-24 as a split result.** Infrastructure and mechanism
+  work are both complete: the Track A Gemma mixing path, cached-feature
+  extraction, checked launchers, and the 1.57 mechanism lane are now in
+  `main`. The second-architecture holdout pair now says something
+  concrete: **TOMATO motion N=30 passes** (`agreement=0.933`,
+  `dense_acc=cached_acc=0.267`), but **MVBench motion N=30 fails the
+  strict-agreement gate** (`agreement=0.733`,
+  `dense_acc=cached_acc=0.200`) while preserving aggregate accuracy
+  exactly. This means claim #7 is no longer blocked on execution; it is
+  blocked only if we want to upgrade it beyond a benchmark-conditional
+  spectrum story. Gemma Track B baselines are now exploratory rather
+  than claim-bearing because the prereg promotion rule required both
+  holdout cells to pass.
 
 - **1.43 EgoSchema breadth gate.** Long-form egocentric. Blocked on
   loader + manifest build. Runtime unknown (3-min clips at 22 s

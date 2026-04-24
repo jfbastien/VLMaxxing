@@ -358,15 +358,19 @@ whitepaper §8 and codex 2026-04-16 review, the paper must state:
 
 1. **Architecture-conditioned reuse fidelity is a spectrum**: on
    windowed-attention-heavy ViTs (Qwen 2.5-VL: 28 of 32 layers
-   windowed), cached features are byte-identical to fresh. On
-   some all-global ViTs (Gemma 4 SigLIP), cached features are
-   high-fidelity but non-identical. However, per sam §2.7, InternVL3
-   (also all-global) still yields 95% strict agreement and +3.3%
-   accuracy delta — so the claim is NOT a clean binary. Output
-   stability is attention-topology-conditioned on a spectrum, and
-   pretraining matters too. We must NOT say "exact" beyond
-   Qwen-family models; we also should not say "approximate
-   universally implies quality loss" for all-global encoders.
+   windowed), cached features are byte-identical to fresh on the
+   local identity controls and high-stability on the transferred
+   Planner 2.0 cells. On Gemma 4 SigLIP (all-global), the local
+   second-architecture holdout is now **benchmark-conditional**:
+   TOMATO motion N=30 lands at `0.933` strict agreement with no
+   accuracy gap, while MVBench motion N=30 lands at only `0.733`
+   strict agreement with the same `0.200` dense/cached accuracy.
+   However, per sam §2.7, InternVL3 (also all-global) still yields
+   95% strict agreement and +3.3% accuracy delta — so the claim is
+   NOT a clean binary. Output stability is conditioned by attention
+   topology, benchmark/query manifold, and pretraining. We must NOT
+   say "exact" beyond Qwen-family models, and we also should not say
+   "all-global universally implies quality loss."
 2. **Thinking amplifies divergence**: on models with chain-of-thought
    (Gemma 4 thinking-on), small embedding differences cascade through
    reasoning chains, dropping strict agreement. This interaction is
