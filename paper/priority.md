@@ -167,17 +167,20 @@ in its own dimension.
    decomposition (H_V / H_K / H_interaction / H_reset / H_path), not
    unqualified promotion of the stacked result.
 
-5. **1.55D v2 selective re-prefill (fidelity recovery).** The 1.55D v1
-   driver is infra-falsified on partial image-block reuse; v2 with
-   `pixel_values` / `image_grid_thw` / `attention_mask` co-slicing in a
-   mlx-vlm fork is ~3-5h implementation. Qwen-only v2 driver scaffolding
-   landed 2026-04-22 in `scripts/run_kv_selective_reprefill_v2.py` and
-   `scripts/run_phase1_55D_v2.sh`; what remains is the auxiliary-tensor
-   co-slicing work inside mlx-vlm. Recovery of Δacc from −0.38 at 20f
-   to ≤ −0.15 would reopen C-PERSIST as a **fidelity** contribution,
-   not just a safety-boundary contribution. **Do not confuse this with
-   1.55B**, which is the later persistent-KV × decode-acceleration
-   composition phase and still depends on 1.54 landing first.
+5. **1.55D selective re-prefill frontier (fidelity recovery).** The v1
+   driver was infra-falsified, but that is no longer the live state.
+   Repo-local v2 now runs the intended multimodal tail-reprefill regime.
+   **K=4 LANDED 2026-04-24** on the full 7-clip 20f short tranche:
+   `Δacc = 0.0` (`17/21` vs `17/21`), pathological attractors
+   `0/14`, follow-up median `28.98 s`, cold median `105.93 s`
+   (`3.66×`), peak RSS `5.040 GB`. So selective re-prefill is now a
+   real **fidelity-recovery** result, but not yet a deployment-grade
+   speed result. The next useful point is **K=2**, not K=8: K=4 already
+   proves the mechanism works, and the missing information is whether a
+   lighter tail can preserve most of the recovery while lifting the
+   speedup meaningfully. **Do not confuse this with 1.55B**, which is
+   the later persistent-KV × decode-acceleration composition phase and
+   still depends on 1.54 landing first.
 
 6. **1.58 bf16 KV control at 20f.** Isolates quantization as a
    causal driver of the 7B basin collapse. Runtime ~2-4h; one clean

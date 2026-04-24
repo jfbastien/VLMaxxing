@@ -813,15 +813,19 @@ authoritative in the per-phase notes under
   notes: Discovered during pre-run driver verification 2026-04-20. The prereg's assumption of drop-in mlx-vlm compatibility was wrong — Gemma 4's sliding-window attention architecture is fundamentally incompatible with linear-cache prefix truncation. Three options documented (A: cache-type-aware fork with RotatingKVCache.is_trimmable() guard, B: partial-layer cache reuse losing most speedup, C: prefix ≤ 512 tokens = non-starter for video). Recommended disposition: DO NOT run with current driver (would produce plausible-looking garbage on silent-wrong-answer path); defer behind 1.55D (Qwen-only, known-compatible); revisit after 1.55D or rescope to Gemma 2 (non-sliding) as cross-family target. Paper Claim #14 (3-D decomposition) remains Qwen-family-only this draft; cross-family generalization declared an open question with explicit mlx-vlm sliding-window caveat.
 
 - phase_id: 1.55D
-  status: infrastructure-falsified (v1 driver; prereg retained for re-run after fork or rescope)
-  authoritative_note: research/experiments/2026/2026-04-20-phase-1_55D-selective-reprefill-v1-driver-findings.md
-  authoritative_artifacts: []
-  current_best_policy: n/a
-  supersedes: []
-  paper_relevance: deferred (fidelity-recovery lever remains open; claim matrix declares as open infrastructure question)
-  prereg_outcome: v1 driver (`scripts/run_kv_selective_reprefill.py`) runs Q1 cold-start correctly (68.5s prefill on 8094 tokens, correct=True on clip 037) but crashes deterministically on Q2 in `mlx_vlm/models/qwen2_5_vl/language.py:296` with `ValueError: [broadcast_shapes] Shapes (8119) and (1672) cannot be broadcast`. Root cause: mlx-vlm's generate path does not co-slice `pixel_values`/`image_grid_thw`/`attention_mask` when `PromptCacheState.find_prefix_length` trims `input_ids` to a tail that still contains image tokens (partial image-block reuse). 1.55A avoided this because its shared prefix always included the full image block (triggering `pixel_values = None`). H1/H2/H3/H4 UNTESTED.
-  runtime_estimate: 0h experimentally meaningful executed; ~3-5h Option A fork (mlx-vlm multimodal auxiliary co-slicing + smoke test); ~30min Option C rescope (text-only selective re-prefill prereg variant); ~1h run once driver correctness-preserving
-  notes: Discovered 2026-04-20 on K=4 pilot. Parallel infrastructure finding to 1.55C: both 1.55C and 1.55D surface distinct limitations of mlx-vlm's multimodal prefix-cache reuse path (1.55C: RotatingKVCache type-blindness; 1.55D: auxiliary-tensor co-slicing gap). Three paths to actionability documented: Option A (faithful fork, ~3-5h), Option B (manual cache injection, untested may still hit broadcast), Option C (text-only selective re-prefill as scientifically weaker variant). Recommended disposition: defer behind 1.51V vision-tower pruning and 1.51R focused dev sweep (independent code paths, not blocked by mlx-vlm prefix-reuse contract); 1.55D returns via Option A fork or Option C rescope. Paper impact: fidelity-recovery lever declared as open infrastructure question with explicit mlx-vlm multimodal prefix-reuse caveat alongside 1.55C's sliding-window caveat.
+  status: partial (v2 K=4 earns fidelity recovery, fails speed floor)
+  authoritative_note: research/experiments/2026/2026-04-24-phase-1_55D-selective-reprefill-v2-k4-findings.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_55D_selective_reprefill_v2/summary_k4_n7.json
+    - research/experiments/2026/artifacts/phase1_55D_selective_reprefill_v2/session_k4_n7.jsonl
+    - research/experiments/2026/artifacts/phase1_55D_selective_reprefill_v2/baseline_k4_n7.jsonl
+  current_best_policy: K=4 selective re-prefill (20f short-bucket, Qwen 7B)
+  supersedes:
+    - research/experiments/2026/2026-04-20-phase-1_55D-selective-reprefill-v1-driver-findings.md
+  paper_relevance: active (fidelity-recovery frontier now real, but not yet a deployment-grade lever)
+  prereg_outcome: K=4 on the full 7-clip tranche earns H1 (session accuracy `17/21`, baseline accuracy `17/21`, `Δacc = 0.0`) and H3 (pathological attractors `0/14` on follow-ups), but falsifies H2 (follow-up median `28.98 s`, only `3.66×` vs cold median `105.93 s`, below `>=10×`) and narrowly misses H4 (`peak_rss_gb = 5.040` vs `<=5.0`). The old v1 infrastructure blocker is resolved in the repo-local v2 path; the remaining open question is frontier shape (K=2 or other lighter tails), not basic runnability.
+  runtime_estimate: ~66min for K=4 n=7 paired tranche on M3 Air; K=2 expected similar wall-clock, K=8 longer and lower-value because K=4 already restores baseline fidelity
+  notes: v2 uses repo-local explicit tail slicing, explicit position IDs, prefix-cache materialization, and manual rewind rather than mlx-vlm's partial-image `PromptCacheState` path. A repo-local return-type bug in the first v2 smoke (Qwen `LanguageModelOutput` vs raw tensor) was fixed in commit `d6f9354`; after that, the smoke and full K=4 tranche completed. Current priority is K=2 as the speed/fidelity frontier point; K=8 is deprioritized unless K=2 materially degrades fidelity.
 
 - phase_id: 1.55B
   status: proposed (deferred)
