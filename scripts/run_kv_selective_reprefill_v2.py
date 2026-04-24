@@ -15,6 +15,7 @@ from typing import Any
 import mlx.core as mx
 import numpy as np
 from mlx_vlm import load
+from mlx_vlm.generate import PromptCacheState
 from mlx_vlm.utils import prepare_inputs
 
 from codec_through.answers import extract_choice
@@ -26,6 +27,7 @@ from codec_through.qwen_selective_reprefill import (
     rewind_qwen_prefix_cache,
     slice_qwen_prompt_for_reprefill,
 )
+from codec_through.selective_reprefill_policy import reprefill_k_for_query
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
@@ -189,6 +191,8 @@ def main() -> int:
     parser.add_argument("--frame-count", type=int, default=20)
     parser.add_argument("--max-tokens", type=int, default=64)
     parser.add_argument("--reprefill-k", type=int, required=True)
+    parser.add_argument("--reprefill-k-q2", type=int, default=None)
+    parser.add_argument("--reprefill-k-q3", type=int, default=None)
     parser.add_argument("--model-path", type=Path, default=DEFAULT_MODEL_PATH)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--mode", choices=("session", "baseline", "both"), default="both")
@@ -197,6 +201,13 @@ def main() -> int:
 
     if args.reprefill_k <= 0:
         raise SystemExit("--reprefill-k must be > 0")
+    for name, value in (("q2", args.reprefill_k_q2), ("q3", args.reprefill_k_q3)):
+        if value is not None and value < 0:
+            raise SystemExit(f"--reprefill-k-{name} must be >= 0")
+        if value is not None and value >= args.frame_count:
+            raise SystemExit(
+                f"--reprefill-k-{name}={value} must be < frame_count={args.frame_count}"
+            )
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     rows = _load_videomme_rows()
@@ -241,11 +252,12 @@ def main() -> int:
         for clip in clips:
             print(f"[1.55D v2] clip {clip.video_id} duration={clip.duration}")
             if args.mode in ("session", "both"):
-                base_cache = None
-                base_cache_build_ms = None
-                base_plan = None
-                base_prefix_ids = None
-                base_prefix_grid = None
+                full_state = PromptCacheState()
+                base_cache_by_k: dict[int, list[Any]] = {}
+                base_cache_build_ms_by_k: dict[int, float] = {}
+                base_plan_by_k: dict[int, Any] = {}
+                base_prefix_ids_by_k: dict[int, np.ndarray] = {}
+                base_prefix_grid_by_k: dict[int, np.ndarray] = {}
                 for q_index, item in enumerate(clip.questions):
                     sample = _prepare_sample(
                         processor,
@@ -260,7 +272,7 @@ def main() -> int:
                             processor,
                             sample,
                             max_tokens=args.max_tokens,
-                            prompt_cache_state=None,
+                            prompt_cache_state=full_state,
                             temperature=args.temperature,
                         )
                         full_position_ids = compute_qwen_position_ids(
@@ -269,100 +281,144 @@ def main() -> int:
                             image_grid_thw=sample.extra_kwargs["image_grid_thw"],
                             mask=sample.mask,
                         )
-                        plan = compute_qwen_reprefill_plan(
-                            input_ids=sample.input_ids.flatten().tolist(),
-                            image_grid_thw=np.asarray(
-                                sample.extra_kwargs["image_grid_thw"].tolist(),
+                        needed_reprefill_ks = sorted(
+                            {
+                                reprefill_k_for_query(
+                                    q_index=follow_q_index,
+                                    default_reprefill_k=args.reprefill_k,
+                                    q2_reprefill_k=args.reprefill_k_q2,
+                                    q3_reprefill_k=args.reprefill_k_q3,
+                                )
+                                for follow_q_index in (1, 2)
+                            }
+                            - {0}
+                        )
+                        for reprefill_k in needed_reprefill_ks:
+                            plan = compute_qwen_reprefill_plan(
+                                input_ids=sample.input_ids.flatten().tolist(),
+                                image_grid_thw=np.asarray(
+                                    sample.extra_kwargs["image_grid_thw"].tolist(),
+                                    dtype=np.int64,
+                                ),
+                                reprefill_k=reprefill_k,
+                                image_token_id=image_token_id,
+                                spatial_merge_size=spatial_merge_size,
+                            )
+                            prefix, _tail = slice_qwen_prompt_for_reprefill(
+                                input_ids=sample.input_ids,
+                                mask=sample.mask,
+                                pixel_values=sample.pixel_values,
+                                image_grid_thw=sample.extra_kwargs["image_grid_thw"],
+                                position_ids=full_position_ids,
+                                plan=plan,
+                            )
+                            full_prompt_tokens = int(sample.input_ids.shape[1])
+                            base_cache, base_cache_build_ms = make_qwen_prefix_cache(
+                                model=model,
+                                prefix=prefix,
+                            )
+                            base_cache_by_k[reprefill_k] = base_cache
+                            base_cache_build_ms_by_k[reprefill_k] = base_cache_build_ms
+                            base_plan_by_k[reprefill_k] = plan
+                            base_prefix_ids_by_k[reprefill_k] = np.asarray(
+                                prefix.input_ids.tolist(),
                                 dtype=np.int64,
-                            ),
-                            reprefill_k=args.reprefill_k,
-                            image_token_id=image_token_id,
-                            spatial_merge_size=spatial_merge_size,
-                        )
-                        prefix, tail = slice_qwen_prompt_for_reprefill(
-                            input_ids=sample.input_ids,
-                            mask=sample.mask,
-                            pixel_values=sample.pixel_values,
-                            image_grid_thw=sample.extra_kwargs["image_grid_thw"],
-                            position_ids=full_position_ids,
-                            plan=plan,
-                        )
-                        full_prompt_tokens = int(sample.input_ids.shape[1])
-                        base_cache, base_cache_build_ms = make_qwen_prefix_cache(
-                            model=model,
-                            prefix=prefix,
-                        )
-                        base_plan = plan
-                        base_prefix_ids = np.asarray(prefix.input_ids.tolist(), dtype=np.int64)
-                        base_prefix_grid = np.asarray(
-                            prefix.image_grid_thw.tolist(),
-                            dtype=np.int64,
-                        )
+                            )
+                            base_prefix_grid_by_k[reprefill_k] = np.asarray(
+                                prefix.image_grid_thw.tolist(),
+                                dtype=np.int64,
+                            )
                         generation_tokens = int(result["generation_tokens"])
+                        effective_k = 0
+                        base_cache_build_ms = None
+                        plan = None
                     else:
-                        assert base_cache is not None
-                        assert base_plan is not None
-                        assert base_prefix_ids is not None
-                        assert base_prefix_grid is not None
-                        full_position_ids = compute_qwen_position_ids(
-                            model=model,
-                            input_ids=sample.input_ids,
-                            image_grid_thw=sample.extra_kwargs["image_grid_thw"],
-                            mask=sample.mask,
+                        effective_k = reprefill_k_for_query(
+                            q_index=q_index,
+                            default_reprefill_k=args.reprefill_k,
+                            q2_reprefill_k=args.reprefill_k_q2,
+                            q3_reprefill_k=args.reprefill_k_q3,
                         )
-                        plan = compute_qwen_reprefill_plan(
-                            input_ids=sample.input_ids.flatten().tolist(),
-                            image_grid_thw=np.asarray(
-                                sample.extra_kwargs["image_grid_thw"].tolist(),
-                                dtype=np.int64,
-                            ),
-                            reprefill_k=args.reprefill_k,
-                            image_token_id=image_token_id,
-                            spatial_merge_size=spatial_merge_size,
-                        )
-                        prefix, tail = slice_qwen_prompt_for_reprefill(
-                            input_ids=sample.input_ids,
-                            mask=sample.mask,
-                            pixel_values=sample.pixel_values,
-                            image_grid_thw=sample.extra_kwargs["image_grid_thw"],
-                            position_ids=full_position_ids,
-                            plan=plan,
-                        )
-                        prefix_ids = np.asarray(prefix.input_ids.tolist(), dtype=np.int64)
-                        prefix_grid = np.asarray(prefix.image_grid_thw.tolist(), dtype=np.int64)
-                        if plan.trunc_token_idx != base_plan.trunc_token_idx:
-                            raise RuntimeError(
-                                "selective re-prefill truncation moved across follow-up "
-                                f"queries for video_id={clip.video_id}: "
-                                f"{plan.trunc_token_idx} != {base_plan.trunc_token_idx}"
+                        if effective_k == 0:
+                            result = _run_query(
+                                model,
+                                processor,
+                                sample,
+                                max_tokens=args.max_tokens,
+                                prompt_cache_state=full_state,
+                                temperature=args.temperature,
                             )
-                        if not np.array_equal(prefix_ids, base_prefix_ids):
-                            raise RuntimeError(
-                                "shared Qwen prefix differs across follow-up queries for "
-                                f"video_id={clip.video_id}; refusing to reuse an "
-                                "incompatible prefix cache"
+                            generation_tokens = int(result["generation_tokens"])
+                            base_cache_build_ms = None
+                            plan = None
+                        else:
+                            if effective_k not in base_cache_by_k:
+                                raise RuntimeError(
+                                    f"missing base selective re-prefill cache for K={effective_k}"
+                                )
+                            full_position_ids = compute_qwen_position_ids(
+                                model=model,
+                                input_ids=sample.input_ids,
+                                image_grid_thw=sample.extra_kwargs["image_grid_thw"],
+                                mask=sample.mask,
                             )
-                        if not np.array_equal(prefix_grid, base_prefix_grid):
-                            raise RuntimeError(
-                                "shared Qwen image-grid prefix differs across follow-up "
-                                f"queries for video_id={clip.video_id}"
+                            plan = compute_qwen_reprefill_plan(
+                                input_ids=sample.input_ids.flatten().tolist(),
+                                image_grid_thw=np.asarray(
+                                    sample.extra_kwargs["image_grid_thw"].tolist(),
+                                    dtype=np.int64,
+                                ),
+                                reprefill_k=effective_k,
+                                image_token_id=image_token_id,
+                                spatial_merge_size=spatial_merge_size,
                             )
-                        full_prompt_tokens = int(sample.input_ids.shape[1])
-                        result = generate_qwen_tail_with_explicit_positions(
-                            model=model,
-                            processor=processor,
-                            prompt_cache=base_cache,
-                            tail=tail,
-                            full_prompt_tokens=full_prompt_tokens,
-                            max_tokens=args.max_tokens,
-                            temperature=args.temperature,
-                        )
-                        generation_tokens = int(result["generation_tokens"])
-                        rewind_qwen_prefix_cache(
-                            prompt_cache=base_cache,
-                            appended_prompt_tokens=plan.tail_prompt_tokens,
-                            appended_generation_tokens=generation_tokens,
-                        )
+                            prefix, tail = slice_qwen_prompt_for_reprefill(
+                                input_ids=sample.input_ids,
+                                mask=sample.mask,
+                                pixel_values=sample.pixel_values,
+                                image_grid_thw=sample.extra_kwargs["image_grid_thw"],
+                                position_ids=full_position_ids,
+                                plan=plan,
+                            )
+                            prefix_ids = np.asarray(prefix.input_ids.tolist(), dtype=np.int64)
+                            prefix_grid = np.asarray(prefix.image_grid_thw.tolist(), dtype=np.int64)
+                            base_plan = base_plan_by_k[effective_k]
+                            base_prefix_ids = base_prefix_ids_by_k[effective_k]
+                            base_prefix_grid = base_prefix_grid_by_k[effective_k]
+                            if plan.trunc_token_idx != base_plan.trunc_token_idx:
+                                raise RuntimeError(
+                                    "selective re-prefill truncation moved across follow-up "
+                                    f"queries for video_id={clip.video_id}: "
+                                    f"{plan.trunc_token_idx} != {base_plan.trunc_token_idx}"
+                                )
+                            if not np.array_equal(prefix_ids, base_prefix_ids):
+                                raise RuntimeError(
+                                    "shared Qwen prefix differs across follow-up queries for "
+                                    f"video_id={clip.video_id}; refusing to reuse an "
+                                    "incompatible prefix cache"
+                                )
+                            if not np.array_equal(prefix_grid, base_prefix_grid):
+                                raise RuntimeError(
+                                    "shared Qwen image-grid prefix differs across follow-up "
+                                    f"queries for video_id={clip.video_id}"
+                                )
+                            full_prompt_tokens = int(sample.input_ids.shape[1])
+                            result = generate_qwen_tail_with_explicit_positions(
+                                model=model,
+                                processor=processor,
+                                prompt_cache=base_cache_by_k[effective_k],
+                                tail=tail,
+                                full_prompt_tokens=full_prompt_tokens,
+                                max_tokens=args.max_tokens,
+                                temperature=args.temperature,
+                            )
+                            generation_tokens = int(result["generation_tokens"])
+                            rewind_qwen_prefix_cache(
+                                prompt_cache=base_cache_by_k[effective_k],
+                                appended_prompt_tokens=plan.tail_prompt_tokens,
+                                appended_generation_tokens=generation_tokens,
+                            )
+                            base_cache_build_ms = base_cache_build_ms_by_k[effective_k]
 
                     choice, correct = _score_answer(result["text"], item)
                     row = {
@@ -383,7 +439,9 @@ def main() -> int:
                         "prefix_coverage": float(result["prefix_coverage"]),
                         "base_cache_build_ms": base_cache_build_ms if q_index == 0 else None,
                         "trunc_idx": plan.trunc_token_idx if plan is not None else None,
-                        "reprefill_k": args.reprefill_k,
+                        "reprefill_k": effective_k,
+                        "reprefill_k_q2": args.reprefill_k_q2,
+                        "reprefill_k_q3": args.reprefill_k_q3,
                         "response": str(result["text"]).strip()[:400],
                         "choice": choice,
                         "correct": correct,
@@ -393,9 +451,10 @@ def main() -> int:
                     sf.flush()
                     print(
                         f"   session Q{q_index + 1}: {row['elapsed_ms']:.0f} ms "
-                        f"prefix={row['prefix_coverage']:.2%} correct={correct}"
+                        f"prefix={row['prefix_coverage']:.2%} K={effective_k} "
+                        f"correct={correct}"
                     )
-                del base_cache
+                del full_state
                 gc.collect()
 
             if args.mode in ("baseline", "both"):
@@ -446,6 +505,8 @@ def main() -> int:
         "model": args.model_path.name.lower(),
         "frame_count": args.frame_count,
         "reprefill_k": args.reprefill_k,
+        "reprefill_k_q2": args.reprefill_k_q2,
+        "reprefill_k_q3": args.reprefill_k_q3,
         "n_clips": len(clips),
         "n_queries_per_mode": 3 * len(clips),
         "total_wall_ms": total_wall_ms,
