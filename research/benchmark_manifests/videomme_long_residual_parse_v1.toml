@@ -1,0 +1,6 @@
+benchmark = "videomme"
+description = "VideoMME residual long-session format failures from phase 1.30X (videos 783 and 847)"
+item_ids = [
+    "videomme:long:783-2",
+    "videomme:long:847-3",
+]
