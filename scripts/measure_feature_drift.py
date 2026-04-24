@@ -79,8 +79,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import mlx.core as mx
 import numpy as np
 import numpy.typing as npt
+from mlx_vlm import load  # type: ignore[import-untyped]
 
 from codec_through.feature_cache import (
     DEFAULT_FEATURE_CACHE_DIR,
@@ -96,6 +98,7 @@ from codec_through.temporal import (
     PlannerConfig,
     classify_blocks_with_planner,
 )
+from codec_through.track_a import square_grid_shape_from_token_count
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RUNNER_PATH = REPO_ROOT / "scripts" / "run_benchmark_track_a.py"
@@ -105,6 +108,10 @@ QWEN_BLOCK_SIZE = 28
 QWEN_FRAME_SIZE = 560
 QWEN_SPATIAL_MERGE = 2
 DEFAULT_QWEN_MODEL = Path.home() / "models" / "Qwen2.5-VL-7B-Instruct-4bit"
+DEFAULT_GEMMA_MODEL = Path.home() / "models" / "gemma-4-e4b-it-4bit"
+GEMMA_TOKENS_PER_FRAME = 256
+GEMMA_GRID_SHAPE = square_grid_shape_from_token_count(GEMMA_TOKENS_PER_FRAME)
+GEMMA_BLOCK_SIZE = 560 // GEMMA_GRID_SHAPE[0]
 
 CLASS_KEYS = ("static", "shifted", "novel")
 CLASS_ENUM_TO_KEY = {
@@ -186,6 +193,39 @@ def _pairwise_cosine_sim(
     denom = np.clip(norm_a * norm_b, 1e-8, None)
     sim = np.sum(a * b, axis=-1) / denom
     return np.asarray(sim, dtype=np.float32)
+
+
+def _features_per_frame_gemma(
+    features: mx.array,
+    *,
+    frame_count: int,
+) -> list[npt.NDArray[np.float32]]:
+    if features.ndim == 3:
+        if int(features.shape[0]) != 1:
+            raise RuntimeError(
+                f"expected Gemma feature batch dimension 1, got {features.shape}"
+            )
+        flat = np.asarray(features[0], dtype=np.float32)
+    elif features.ndim == 2:
+        flat = np.asarray(features, dtype=np.float32)
+    else:
+        raise RuntimeError(f"unexpected Gemma feature shape: {features.shape}")
+
+    expected_tokens = frame_count * GEMMA_TOKENS_PER_FRAME
+    if flat.shape[0] != expected_tokens:
+        raise RuntimeError(
+            "Gemma feature/token mismatch: "
+            f"expected {expected_tokens} tokens for {frame_count} frames, "
+            f"got {flat.shape[0]}"
+        )
+
+    per_frame: list[npt.NDArray[np.float32]] = []
+    offset = 0
+    for _ in range(frame_count):
+        block = flat[offset : offset + GEMMA_TOKENS_PER_FRAME]
+        per_frame.append(block.reshape(GEMMA_GRID_SHAPE[0], GEMMA_GRID_SHAPE[1], -1))
+        offset += GEMMA_TOKENS_PER_FRAME
+    return per_frame
 
 
 def _process_qwen_item(
@@ -399,19 +439,114 @@ def _run_qwen(
     }
 
 
+def _process_gemma_item(
+    runner: Any,
+    model: Any,
+    processor: Any,
+    item: Any,
+    *,
+    frame_count: int,
+    planner: PlannerConfig,
+) -> tuple[list[DriftSample], dict[str, Any]]:
+    sample = runner._prepare_sample(model, processor, item, frame_count=frame_count)
+    frames_np = _frames_to_numpy(sample.frames, expected_size=QWEN_FRAME_SIZE)
+    features = runner._compute_cached_features(model, sample)
+    per_frame_features = _features_per_frame_gemma(features, frame_count=len(sample.frames))
+
+    samples: list[DriftSample] = []
+    for pair_idx in range(len(frames_np) - 1):
+        classes = classify_blocks_with_planner(
+            frames_np[pair_idx],
+            frames_np[pair_idx + 1],
+            block_size=GEMMA_BLOCK_SIZE,
+            config=planner,
+        )
+        cos = _pairwise_cosine_sim(
+            per_frame_features[pair_idx],
+            per_frame_features[pair_idx + 1],
+        )
+        if cos.shape != classes.shape:
+            raise RuntimeError(
+                f"block-grid mismatch: classes={classes.shape}, feats={cos.shape} "
+                f"on item {item.item_id}"
+            )
+        blocks_h, blocks_w = cos.shape
+        for r in range(blocks_h):
+            for c in range(blocks_w):
+                samples.append(
+                    DriftSample(
+                        item_id=item.item_id,
+                        benchmark=item.benchmark,
+                        group=item.group,
+                        frame_pair=(pair_idx, pair_idx + 1),
+                        block_row=r,
+                        block_col=c,
+                        block_class=int(classes[r, c]),
+                        cosine_sim=float(cos[r, c]),
+                    )
+                )
+
+    del features
+    mx.clear_cache()
+    return samples, {
+        "item_id": item.item_id,
+        "status": "ok",
+        "n_pairs": len(frames_np) - 1,
+        "blocks_total": len(samples),
+    }
+
+
 def _run_gemma(
     args: argparse.Namespace,
     items: list[Any],
 ) -> dict[str, Any]:
-    raise NotImplementedError(
-        "Gemma 4 path not yet wired. This scaffold reuses the Qwen feature cache "
-        "(research/cache/dense_features/), which has no Gemma entries (different "
-        "grid: 16×16 post-pool vs Qwen's 40×40 patches → 20×20 merged tokens). "
-        "Gemma drift measurement requires inline ViT encode per frame via "
-        "`model.vision_tower` + `model.embed_vision` (see run_novelty_pruning_gemma.py "
-        "`_compute_vision_features`). Add that path as --model gemma support "
-        "when ready to burn MLX compute."
-    )
+    runner = _load_runner_module()
+    if not args.model_path.exists():
+        raise SystemExit(f"model path missing: {args.model_path}")
+    model_hash = model_content_sha256(args.model_path)
+    planner = _default_planner()
+    model, processor = load(str(args.model_path))
+
+    all_samples: list[DriftSample] = []
+    samples_by_item: dict[str, list[DriftSample]] = {}
+    diagnostics: list[dict[str, Any]] = []
+    processed = 0
+    for item in items:
+        samples, diag = _process_gemma_item(
+            runner,
+            model,
+            processor,
+            item,
+            frame_count=args.frame_count,
+            planner=planner,
+        )
+        diagnostics.append(diag)
+        processed += 1
+        all_samples.extend(samples)
+        samples_by_item[item.item_id] = samples
+
+    aggregate = _aggregate_by_class(all_samples)
+    per_item = _per_item_summary(samples_by_item)
+
+    return {
+        "model": "gemma-4-e4b-it-4bit",
+        "model_content_sha256": model_hash,
+        "manifest": [str(p) for p in args.manifest],
+        "group_filter": args.group,
+        "frame_count": args.frame_count,
+        "planner": {
+            "statistic": planner.statistic.value,
+            "static_threshold": planner.static_threshold,
+            "shifted_threshold": planner.shifted_threshold,
+        },
+        "cache_hits": processed,
+        "cache_misses": 0,
+        "n_items": len(items),
+        "n_samples": len(all_samples),
+        "per_item": per_item,
+        "aggregate": aggregate,
+        "diagnostics": diagnostics,
+    }
 
 
 def main() -> int:
@@ -446,10 +581,13 @@ def main() -> int:
         "--model-path",
         type=Path,
         default=DEFAULT_QWEN_MODEL,
-        help="MLX model directory (used for content hash; no weights loaded in Qwen path)",
+        help="MLX model directory (used for content hash; loaded on the Gemma path)",
     )
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
+
+    if args.model == "gemma" and args.model_path == DEFAULT_QWEN_MODEL:
+        args.model_path = DEFAULT_GEMMA_MODEL
 
     runner = _load_runner_module()
     items = _filter_group(_load_manifests(runner, list(args.manifest)), args.group)
