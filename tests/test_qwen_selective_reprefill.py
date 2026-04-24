@@ -1,8 +1,12 @@
+from types import SimpleNamespace
+
+import mlx.core as mx
 import numpy as np
 
 from codec_through.qwen_selective_reprefill import (
     compute_qwen_reprefill_plan,
     qwen_image_tokens_per_frame,
+    qwen_language_model_logits,
     qwen_pixel_rows_per_frame,
 )
 
@@ -38,3 +42,10 @@ def test_compute_qwen_reprefill_plan() -> None:
     assert plan.tail_pixel_rows == 16
     assert plan.prefix_prompt_tokens == 5
     assert plan.tail_prompt_tokens == len(input_ids) - 5
+
+
+def test_qwen_language_model_logits_accepts_wrapper_or_tensor() -> None:
+    logits = mx.array([[[1.0, 2.0]]], dtype=mx.float32)
+    wrapped = SimpleNamespace(logits=logits)
+    assert qwen_language_model_logits(wrapped).tolist() == logits.tolist()
+    assert qwen_language_model_logits(logits).tolist() == logits.tolist()

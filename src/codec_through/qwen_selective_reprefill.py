@@ -41,6 +41,13 @@ class QwenPromptSlice:
     position_ids: mx.array
 
 
+def qwen_language_model_logits(output: Any) -> mx.array:
+    """Normalize mlx-vlm Qwen language-model returns to a logits tensor."""
+    if hasattr(output, "logits"):
+        return cast(mx.array, output.logits)
+    return cast(mx.array, output)
+
+
 def _as_int_array(values: Sequence[Sequence[int]] | np.ndarray) -> np.ndarray:
     array = np.asarray(values, dtype=np.int64)
     if array.ndim != 2 or array.shape[1] != 3:
@@ -177,12 +184,14 @@ def make_qwen_prefix_cache(
         mask=prefix.mask,
         image_grid_thw=prefix.image_grid_thw,
     )
-    logits = model.language_model(
+    logits = qwen_language_model_logits(
+        model.language_model(
         prefix.input_ids,
         inputs_embeds=embeddings.inputs_embeds,
         mask=prefix.mask,
         cache=prompt_cache,
         position_ids=prefix.position_ids,
+        )
     )
     mx.eval(logits)
     elapsed_ms = (time.perf_counter_ns() - t0) / 1_000_000
@@ -224,12 +233,14 @@ def generate_qwen_tail_with_explicit_positions(
         mask=tail.mask,
         image_grid_thw=tail.image_grid_thw,
     )
-    prefill_outputs = model.language_model(
-        tail.input_ids,
-        inputs_embeds=embeddings.inputs_embeds,
-        mask=tail.mask,
-        cache=prompt_cache,
-        position_ids=tail.position_ids,
+    prefill_outputs = qwen_language_model_logits(
+        model.language_model(
+            tail.input_ids,
+            inputs_embeds=embeddings.inputs_embeds,
+            mask=tail.mask,
+            cache=prompt_cache,
+            position_ids=tail.position_ids,
+        )
     )
     next_token = mx.argmax(prefill_outputs[:, -1, :], axis=-1)
     mx.eval(next_token)
@@ -244,10 +255,12 @@ def generate_qwen_tail_with_explicit_positions(
             break
         generated.append(token)
         step_position_ids = last_position_ids + len(generated)
-        logits = model.language_model(
-            mx.array([[token]], dtype=tail.input_ids.dtype),
-            cache=prompt_cache,
-            position_ids=step_position_ids,
+        logits = qwen_language_model_logits(
+            model.language_model(
+                mx.array([[token]], dtype=tail.input_ids.dtype),
+                cache=prompt_cache,
+                position_ids=step_position_ids,
+            )
         )
         next_token = mx.argmax(logits[:, -1, :], axis=-1)
         mx.eval(next_token)
