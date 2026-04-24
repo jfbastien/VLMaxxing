@@ -30,9 +30,10 @@ from mlx_vlm.utils import prepare_inputs
 from codec_through.memory_guard import check_rss_guard
 from codec_through.qwen_pruned_vision_tower import (
     QwenVisionPruneConfig,
-    patch_qwen_vision_tower,
+    set_qwen_vision_tower_config,
 )
 from codec_through.session_bucketing import is_degenerate_response
+from codec_through.session_prune_policy import keep_rate_for_query
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RUNNER_PATH = REPO_ROOT / "scripts" / "run_benchmark_track_a.py"
@@ -270,6 +271,18 @@ def main() -> int:
     parser.add_argument("--vision-tower-layer", type=int, default=2)
     parser.add_argument("--vision-tower-keep-rate", type=float, default=1.0)
     parser.add_argument(
+        "--vision-tower-keep-rate-first-query",
+        type=float,
+        default=None,
+        help="Optional Q0 override for position-conditioned pruning policies.",
+    )
+    parser.add_argument(
+        "--vision-tower-keep-rate-follow-ups",
+        type=float,
+        default=None,
+        help="Optional Q1/Q2 override for position-conditioned pruning policies.",
+    )
+    parser.add_argument(
         "--drift-refresh-policy",
         choices=("off", "hard-reset", "threshold"),
         default="off",
@@ -306,12 +319,25 @@ def main() -> int:
             f"Phase 1.30 harness currently supports qwen2_5_vl only; got "
             f"{getattr(model.config, 'model_type', None)!r}"
         )
-    if args.vision_tower_keep_rate < 1.0:
-        patch_qwen_vision_tower(
+    candidate_keep_rates = [
+        args.vision_tower_keep_rate,
+        args.vision_tower_keep_rate_first_query,
+        args.vision_tower_keep_rate_follow_ups,
+    ]
+    use_positioned_policy = any(rate is not None for rate in candidate_keep_rates[1:])
+    vt_patched_any = any((rate is not None and rate < 1.0) for rate in candidate_keep_rates)
+    if vt_patched_any or use_positioned_policy:
+        initial_keep_rate = keep_rate_for_query(
+            q_index=0,
+            default_keep_rate=args.vision_tower_keep_rate,
+            first_query_keep_rate=args.vision_tower_keep_rate_first_query,
+            follow_up_keep_rate=args.vision_tower_keep_rate_follow_ups,
+        )
+        set_qwen_vision_tower_config(
             model,
             QwenVisionPruneConfig(
                 layer_idx=args.vision_tower_layer,
-                keep_rate=args.vision_tower_keep_rate,
+                keep_rate=initial_keep_rate,
             ),
         )
 
@@ -336,6 +362,20 @@ def main() -> int:
                 frame_cache.clear()
 
             for q_index, item in enumerate(seed.questions):
+                query_keep_rate = keep_rate_for_query(
+                    q_index=q_index,
+                    default_keep_rate=args.vision_tower_keep_rate,
+                    first_query_keep_rate=args.vision_tower_keep_rate_first_query,
+                    follow_up_keep_rate=args.vision_tower_keep_rate_follow_ups,
+                )
+                if vt_patched_any or use_positioned_policy:
+                    set_qwen_vision_tower_config(
+                        model,
+                        QwenVisionPruneConfig(
+                            layer_idx=args.vision_tower_layer,
+                            keep_rate=query_keep_rate,
+                        ),
+                    )
                 refresh_before_query = False
                 refresh_reason = None
                 if args.stack == "streaming" and _should_refresh(
@@ -418,8 +458,11 @@ def main() -> int:
                     "refresh_policy": args.drift_refresh_policy,
                     "refresh_reason": refresh_reason,
                     "refresh_threshold": args.drift_refresh_threshold,
-                    "vision_tower_patched": args.vision_tower_keep_rate < 1.0,
-                    "vision_tower_keep_rate": args.vision_tower_keep_rate,
+                    "vision_tower_patched": query_keep_rate < 1.0,
+                    "vision_tower_keep_rate": query_keep_rate,
+                    "vision_tower_keep_rate_default": args.vision_tower_keep_rate,
+                    "vision_tower_keep_rate_first_query": args.vision_tower_keep_rate_first_query,
+                    "vision_tower_keep_rate_follow_ups": args.vision_tower_keep_rate_follow_ups,
                     "vision_tower_layer": args.vision_tower_layer,
                 }
                 records.append(row)
@@ -450,6 +493,8 @@ def main() -> int:
         "n_queries": len(records),
         "source_manifests": [path.as_posix() for path in args.manifest],
         "vision_tower_keep_rate": args.vision_tower_keep_rate,
+        "vision_tower_keep_rate_first_query": args.vision_tower_keep_rate_first_query,
+        "vision_tower_keep_rate_follow_ups": args.vision_tower_keep_rate_follow_ups,
         "vision_tower_layer": args.vision_tower_layer,
         "drift_refresh_policy": args.drift_refresh_policy,
         "drift_refresh_threshold": args.drift_refresh_threshold,

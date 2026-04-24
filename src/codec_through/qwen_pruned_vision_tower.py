@@ -256,3 +256,22 @@ def patch_qwen_vision_tower(model: Any, config: QwenVisionPruneConfig) -> None:
             f"got {getattr(model.config, 'model_type', None)!r}"
         )
     model.vision_tower = _QwenPrunedVisionWrapper(model.vision_tower, config)
+
+
+def set_qwen_vision_tower_config(model: Any, config: QwenVisionPruneConfig) -> None:
+    """Install or update the Qwen vision-tower pruning wrapper.
+
+    This is used by position-conditioned session policies that need
+    dense Q0 and pruned follow-ups without reloading the model.
+    """
+
+    if getattr(model.config, "model_type", None) != "qwen2_5_vl":
+        raise ValueError(
+            "set_qwen_vision_tower_config only supports qwen2_5_vl models; "
+            f"got {getattr(model.config, 'model_type', None)!r}"
+        )
+    wrapper = model.vision_tower
+    if isinstance(wrapper, _QwenPrunedVisionWrapper):
+        object.__setattr__(wrapper, "_config", config)
+        return
+    patch_qwen_vision_tower(model, config)
