@@ -1,0 +1,68 @@
+{
+  "phase": "1.61",
+  "title": "Per-item drift summary",
+  "panels": [
+    {
+      "label": "1.30 Phase A V-only Q0",
+      "n": 10,
+      "choice_changed": 6,
+      "choice_change_rate": 0.6,
+      "correctness_changed": 6,
+      "correctness_change_rate": 0.6,
+      "note": "Q0-only slice of the short root-cause decomposition (cold_dense vs cold_pruned)."
+    },
+    {
+      "label": "1.42 Gemma MVBench holdout",
+      "n": 30,
+      "choice_changed": 8,
+      "choice_change_rate": 0.26666666666666666,
+      "correctness_changed": 4,
+      "correctness_change_rate": 0.13333333333333333,
+      "dense_accuracy": 0.2,
+      "cached_accuracy": 0.2,
+      "changed_by_group": {
+        "action_localization": 2,
+        "fine_grained_action": 2,
+        "object_interaction": 2,
+        "moving_direction": 2
+      },
+      "note": "Aggregate accuracy is preserved while answer identity drifts across four MVBench motion subgroups."
+    },
+    {
+      "label": "1.55A persistent-KV 20f",
+      "n": 21,
+      "choice_changed": 11,
+      "choice_change_rate": 0.5238095238095238,
+      "correctness_changed": 10,
+      "correctness_change_rate": 0.47619047619047616,
+      "pathological_like": 13,
+      "pathological_like_rate": 0.6190476190476191,
+      "empty_response": 0,
+      "empty_response_rate": 0.0,
+      "q_index_breakdown": {
+        "q1": {
+          "n": 7,
+          "pathological_like": 0,
+          "empty_response": 0,
+          "choice_changed": 0,
+          "correctness_changed": 0
+        },
+        "q2": {
+          "n": 7,
+          "pathological_like": 6,
+          "empty_response": 0,
+          "choice_changed": 6,
+          "correctness_changed": 6
+        },
+        "q3": {
+          "n": 7,
+          "pathological_like": 7,
+          "empty_response": 0,
+          "choice_changed": 5,
+          "correctness_changed": 4
+        }
+      },
+      "note": "Persistent-KV failure at 20f is not just a scalar accuracy drop; it is a distributional drift into pathological attractors concentrated on follow-ups."
+    }
+  ]
+}
