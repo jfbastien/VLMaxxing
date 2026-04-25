@@ -1,11 +1,27 @@
 {
-  "label": "phase1_55G_k1_medium_replication",
+  "label": "phase1_55G_k1",
   "n_pairs": 30,
+  "n_sessions": 10,
   "n_follow_up_pairs": 20,
   "paired_correctness_diffs": 0,
   "paired_choice_diffs": 0,
   "pathological_follow_up_hits": 0,
   "pathological_q3_hits": 0,
+  "accuracy_delta_session_minus_baseline": 0.0,
+  "accuracy_delta_session_minus_baseline_ci95": [
+    0.0,
+    0.0
+  ],
+  "follow_up_accuracy_delta_session_minus_baseline": 0.0,
+  "follow_up_accuracy_delta_session_minus_baseline_ci95": [
+    0.0,
+    0.0
+  ],
+  "q3_accuracy_delta_session_minus_baseline": 0.0,
+  "q3_accuracy_delta_session_minus_baseline_ci95": [
+    0.0,
+    0.0
+  ],
   "session_follow_up_median_ms": 7837.2663545,
   "baseline_follow_up_median_ms": 84345.4409995,
   "baseline_all_query_median_ms": 85037.88399999999,

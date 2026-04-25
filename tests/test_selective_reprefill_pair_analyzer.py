@@ -16,6 +16,7 @@ def test_selective_reprefill_pair_analyzer_surfaces_pathology_and_speed(tmp_path
     session_jsonl = tmp_path / "session.jsonl"
     baseline_jsonl = tmp_path / "baseline.jsonl"
     output = tmp_path / "pair_metrics.json"
+    paired_queries = tmp_path / "paired_queries.jsonl"
 
     session_rows = [
         {
@@ -82,17 +83,43 @@ def test_selective_reprefill_pair_analyzer_surfaces_pathology_and_speed(tmp_path
             str(baseline_jsonl),
             "--output",
             str(output),
+            "--paired-queries",
+            str(paired_queries),
             "--label",
             "toy",
+            "--n-resamples",
+            "200",
+            "--seed",
+            "0",
         ],
         check=True,
     )
 
     metrics = json.loads(output.read_text())
+    paired_rows = [
+        json.loads(line) for line in paired_queries.read_text().splitlines() if line.strip()
+    ]
+    assert len(paired_rows) == 3
+    assert metrics["n_sessions"] == 1
     assert metrics["paired_correctness_diffs"] == 1
     assert metrics["paired_choice_diffs"] == 1
     assert metrics["pathological_follow_up_hits"] == 2
     assert metrics["pathological_q3_hits"] == 1
+    assert (
+        metrics["accuracy_delta_session_minus_baseline_ci95"][0]
+        <= metrics["accuracy_delta_session_minus_baseline"]
+        <= metrics["accuracy_delta_session_minus_baseline_ci95"][1]
+    )
+    assert (
+        metrics["follow_up_accuracy_delta_session_minus_baseline_ci95"][0]
+        <= metrics["follow_up_accuracy_delta_session_minus_baseline"]
+        <= metrics["follow_up_accuracy_delta_session_minus_baseline_ci95"][1]
+    )
+    assert (
+        metrics["q3_accuracy_delta_session_minus_baseline_ci95"][0]
+        <= metrics["q3_accuracy_delta_session_minus_baseline"]
+        <= metrics["q3_accuracy_delta_session_minus_baseline_ci95"][1]
+    )
     assert metrics["session_follow_up_median_ms"] == 225.0
     assert metrics["baseline_follow_up_median_ms"] == 950.0
     assert metrics["baseline_all_query_median_ms"] == 1000.0

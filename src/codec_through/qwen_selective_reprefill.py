@@ -54,8 +54,7 @@ def _qwen_slice_has_images(*, model: Any, prompt: QwenPromptSlice) -> bool:
     if image_rows == 0:
         if pixel_rows != 0:
             raise ValueError(
-                "text-only Qwen prompt slice must not carry pixel rows when "
-                "image_grid_thw is empty"
+                "text-only Qwen prompt slice must not carry pixel rows when image_grid_thw is empty"
             )
         prompt_ids = np.asarray(prompt.input_ids.tolist(), dtype=np.int64).reshape(-1)
         for token_name in ("image_token_id", "video_token_id"):
@@ -66,9 +65,7 @@ def _qwen_slice_has_images(*, model: Any, prompt: QwenPromptSlice) -> bool:
                 )
         return False
     if pixel_rows == 0:
-        raise ValueError(
-            "Qwen prompt slice has image_grid_thw entries but no pixel rows"
-        )
+        raise ValueError("Qwen prompt slice has image_grid_thw entries but no pixel rows")
     return True
 
 

@@ -153,12 +153,12 @@ class _FakeLanguageModel:
                 "inputs_embeds_shape": None
                 if inputs_embeds is None
                 else tuple(inputs_embeds.shape),
-                "position_shape": None
-                if position_ids is None
-                else tuple(position_ids.shape),
+                "position_shape": None if position_ids is None else tuple(position_ids.shape),
             }
         )
-        seq_len = int(inputs_embeds.shape[1]) if inputs_embeds is not None else int(input_ids.shape[1])
+        seq_len = (
+            int(inputs_embeds.shape[1]) if inputs_embeds is not None else int(input_ids.shape[1])
+        )
         logits = np.zeros((1, seq_len, 4), dtype=np.float32)
         logits[0, -1, 2] = 1.0
         return mx.array(logits)

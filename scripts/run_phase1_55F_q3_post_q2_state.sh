@@ -26,6 +26,9 @@ mkdir -p "$OUT_DIR"
 if [[ -f "$OUT_DIR/session_k1_n7.jsonl" && -f "$OUT_DIR/baseline_k1_n7.jsonl" && -f "$OUT_DIR/summary_k1_n7.json" ]]; then
   echo "[1.55F] reusing existing run outputs in $OUT_DIR"
 else
+  if [[ -f "$OUT_DIR/session_k1_n7.jsonl" || -f "$OUT_DIR/baseline_k1_n7.jsonl" || -f "$OUT_DIR/summary_k1_n7.json" ]]; then
+    echo "[1.55F] incomplete prior outputs detected in $OUT_DIR; rerunning and overwriting partial artifacts"
+  fi
   "$PY" scripts/run_kv_selective_reprefill_v2.py \
     --mode both \
     --video-ids "$VIDEO_IDS" \
@@ -44,4 +47,5 @@ fi
   --session-jsonl "$OUT_DIR/session_k1_n7.jsonl" \
   --baseline-jsonl "$OUT_DIR/baseline_k1_n7.jsonl" \
   --output "$OUT_DIR/pair_metrics_k1_n7.json" \
+  --paired-queries "$OUT_DIR/paired_queries_k1_n7.jsonl" \
   --label phase1_55F_q3_post_q2_state
