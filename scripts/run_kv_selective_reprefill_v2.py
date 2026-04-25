@@ -20,8 +20,10 @@ from mlx_vlm.utils import prepare_inputs
 
 from codec_through.answers import extract_choice
 from codec_through.qwen_selective_reprefill import (
+    common_prefix_token_count,
     compute_qwen_position_ids,
     compute_qwen_reprefill_plan,
+    compute_qwen_token_cut_plan,
     generate_qwen_tail_with_explicit_positions,
     make_qwen_prefix_cache,
     rewind_qwen_prefix_cache,
@@ -63,6 +65,11 @@ class SessionClip:
     video_id: str
     duration: str
     questions: list[BenchmarkItem]
+
+
+def _is_pathological_like_response(text: str | None) -> bool:
+    rendered = str(text or "")
+    return "addCriterion" in rendered or "自动" in rendered
 
 
 def _questions_for_video_id(video_id: str, rows: list[dict[str, Any]]) -> list[BenchmarkItem]:
@@ -193,6 +200,16 @@ def main() -> int:
     parser.add_argument("--reprefill-k", type=int, required=True)
     parser.add_argument("--reprefill-k-q2", type=int, default=None)
     parser.add_argument("--reprefill-k-q3", type=int, default=None)
+    parser.add_argument(
+        "--q3-cache-source",
+        choices=("full_q1_cache", "post_q2_repaired"),
+        default="full_q1_cache",
+        help=(
+            "How a K=0 Q3 should source its cache state. full_q1_cache reproduces 1.55E. "
+            "post_q2_repaired keeps the repaired Q2 visual state and trims only the "
+            "Q2-specific suffix before Q3."
+        ),
+    )
     parser.add_argument("--model-path", type=Path, default=DEFAULT_MODEL_PATH)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--mode", choices=("session", "baseline", "both"), default="both")
@@ -208,6 +225,10 @@ def main() -> int:
             raise SystemExit(
                 f"--reprefill-k-{name}={value} must be < frame_count={args.frame_count}"
             )
+    if args.q3_cache_source != "full_q1_cache" and (args.reprefill_k_q3 or 0) != 0:
+        raise SystemExit(
+            "--q3-cache-source only applies when Q3 reuses K=0; set --reprefill-k-q3 0"
+        )
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     rows = _load_videomme_rows()
@@ -258,6 +279,10 @@ def main() -> int:
                 base_plan_by_k: dict[int, Any] = {}
                 base_prefix_ids_by_k: dict[int, np.ndarray] = {}
                 base_prefix_grid_by_k: dict[int, np.ndarray] = {}
+                q2_repaired_cache: list[Any] | None = None
+                q2_repaired_input_ids: np.ndarray | None = None
+                q2_repaired_prompt_tokens: int | None = None
+                q2_repaired_generation_tokens: int | None = None
                 for q_index, item in enumerate(clip.questions):
                     sample = _prepare_sample(
                         processor,
@@ -332,6 +357,8 @@ def main() -> int:
                         effective_k = 0
                         base_cache_build_ms = None
                         plan = None
+                        cache_source = "cold_q1"
+                        shared_prefix_tokens = None
                     else:
                         effective_k = reprefill_k_for_query(
                             q_index=q_index,
@@ -340,17 +367,88 @@ def main() -> int:
                             q3_reprefill_k=args.reprefill_k_q3,
                         )
                         if effective_k == 0:
-                            result = _run_query(
-                                model,
-                                processor,
-                                sample,
-                                max_tokens=args.max_tokens,
-                                prompt_cache_state=full_state,
-                                temperature=args.temperature,
-                            )
-                            generation_tokens = int(result["generation_tokens"])
-                            base_cache_build_ms = None
-                            plan = None
+                            if q_index == 2 and args.q3_cache_source == "post_q2_repaired":
+                                if (
+                                    q2_repaired_cache is None
+                                    or q2_repaired_input_ids is None
+                                    or q2_repaired_prompt_tokens is None
+                                    or q2_repaired_generation_tokens is None
+                                ):
+                                    raise RuntimeError(
+                                        "requested post_q2_repaired cache for Q3 but no "
+                                        "repaired Q2 state was captured"
+                                    )
+                                full_position_ids = compute_qwen_position_ids(
+                                    model=model,
+                                    input_ids=sample.input_ids,
+                                    image_grid_thw=sample.extra_kwargs["image_grid_thw"],
+                                    mask=sample.mask,
+                                )
+                                current_input_ids = np.asarray(
+                                    sample.input_ids.tolist(),
+                                    dtype=np.int64,
+                                ).reshape(-1)
+                                shared_prefix_tokens = common_prefix_token_count(
+                                    q2_repaired_input_ids,
+                                    current_input_ids,
+                                )
+                                if shared_prefix_tokens <= 0:
+                                    raise RuntimeError(
+                                        "Q2→Q3 shared prefix is empty; refusing to reuse "
+                                        "the repaired Q2 cache"
+                                    )
+                                plan = compute_qwen_token_cut_plan(
+                                    input_ids=current_input_ids,
+                                    image_grid_thw=np.asarray(
+                                        sample.extra_kwargs["image_grid_thw"].tolist(),
+                                        dtype=np.int64,
+                                    ),
+                                    trunc_token_idx=shared_prefix_tokens,
+                                    image_token_id=image_token_id,
+                                    spatial_merge_size=spatial_merge_size,
+                                )
+                                _prefix, tail = slice_qwen_prompt_for_reprefill(
+                                    input_ids=sample.input_ids,
+                                    mask=sample.mask,
+                                    pixel_values=sample.pixel_values,
+                                    image_grid_thw=sample.extra_kwargs["image_grid_thw"],
+                                    position_ids=full_position_ids,
+                                    plan=plan,
+                                )
+                                rewind_qwen_prefix_cache(
+                                    prompt_cache=q2_repaired_cache,
+                                    appended_prompt_tokens=(
+                                        q2_repaired_prompt_tokens - shared_prefix_tokens
+                                    ),
+                                    appended_generation_tokens=q2_repaired_generation_tokens,
+                                )
+                                full_prompt_tokens = int(sample.input_ids.shape[1])
+                                result = generate_qwen_tail_with_explicit_positions(
+                                    model=model,
+                                    processor=processor,
+                                    prompt_cache=q2_repaired_cache,
+                                    tail=tail,
+                                    full_prompt_tokens=full_prompt_tokens,
+                                    max_tokens=args.max_tokens,
+                                    temperature=args.temperature,
+                                )
+                                generation_tokens = int(result["generation_tokens"])
+                                base_cache_build_ms = None
+                                cache_source = args.q3_cache_source
+                            else:
+                                result = _run_query(
+                                    model,
+                                    processor,
+                                    sample,
+                                    max_tokens=args.max_tokens,
+                                    prompt_cache_state=full_state,
+                                    temperature=args.temperature,
+                                )
+                                generation_tokens = int(result["generation_tokens"])
+                                base_cache_build_ms = None
+                                plan = None
+                                cache_source = "full_q1_cache"
+                                shared_prefix_tokens = None
                         else:
                             if effective_k not in base_cache_by_k:
                                 raise RuntimeError(
@@ -413,12 +511,23 @@ def main() -> int:
                                 temperature=args.temperature,
                             )
                             generation_tokens = int(result["generation_tokens"])
-                            rewind_qwen_prefix_cache(
-                                prompt_cache=base_cache_by_k[effective_k],
-                                appended_prompt_tokens=plan.tail_prompt_tokens,
-                                appended_generation_tokens=generation_tokens,
-                            )
+                            if q_index == 1 and args.q3_cache_source == "post_q2_repaired":
+                                q2_repaired_cache = base_cache_by_k[effective_k]
+                                q2_repaired_input_ids = np.asarray(
+                                    sample.input_ids.tolist(),
+                                    dtype=np.int64,
+                                ).reshape(-1)
+                                q2_repaired_prompt_tokens = full_prompt_tokens
+                                q2_repaired_generation_tokens = generation_tokens
+                            else:
+                                rewind_qwen_prefix_cache(
+                                    prompt_cache=base_cache_by_k[effective_k],
+                                    appended_prompt_tokens=plan.tail_prompt_tokens,
+                                    appended_generation_tokens=generation_tokens,
+                                )
                             base_cache_build_ms = base_cache_build_ms_by_k[effective_k]
+                            cache_source = f"reprefill_k={effective_k}"
+                            shared_prefix_tokens = None
 
                     choice, correct = _score_answer(result["text"], item)
                     row = {
@@ -442,6 +551,9 @@ def main() -> int:
                         "reprefill_k": effective_k,
                         "reprefill_k_q2": args.reprefill_k_q2,
                         "reprefill_k_q3": args.reprefill_k_q3,
+                        "q3_cache_source": args.q3_cache_source,
+                        "cache_source": cache_source,
+                        "shared_prefix_tokens": shared_prefix_tokens,
                         "response": str(result["text"]).strip()[:400],
                         "choice": choice,
                         "correct": correct,
@@ -499,7 +611,14 @@ def main() -> int:
 
     total_wall_ms = (time.perf_counter_ns() - t_wall_start) / 1_000_000
     session_follow = [row for row in session_rows if row["q_index"] > 0]
+    session_q3 = [row for row in session_rows if row["q_index"] == 2]
     follow_prefix = [float(row["prefix_coverage"]) for row in session_follow]
+    pathological_follow_up_hits = sum(
+        1 for row in session_follow if _is_pathological_like_response(row.get("response"))
+    )
+    pathological_q3_hits = sum(
+        1 for row in session_q3 if _is_pathological_like_response(row.get("response"))
+    )
     summary = {
         "phase": "1.55D_v2",
         "model": args.model_path.name.lower(),
@@ -511,6 +630,10 @@ def main() -> int:
         "n_queries_per_mode": 3 * len(clips),
         "total_wall_ms": total_wall_ms,
         "peak_rss_gb": _peak_rss_gb(),
+        "pathological_follow_up_hits": pathological_follow_up_hits,
+        "pathological_follow_up_total": len(session_follow),
+        "pathological_q3_hits": pathological_q3_hits,
+        "pathological_q3_total": len(session_q3),
         "session": _summarise(session_rows, "session"),
         "session_follow_up": _summarise(session_follow, "session_follow_up"),
         "baseline": _summarise(baseline_rows, "baseline"),

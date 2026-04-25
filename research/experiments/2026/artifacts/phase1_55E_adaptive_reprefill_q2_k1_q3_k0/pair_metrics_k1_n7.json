@@ -1,0 +1,84 @@
+{
+  "label": "phase1_55E_q2_k1_q3_k0_n7",
+  "n_pairs": 21,
+  "n_follow_up_pairs": 14,
+  "paired_correctness_diffs": 4,
+  "paired_choice_diffs": 6,
+  "pathological_follow_up_hits": 7,
+  "pathological_q3_hits": 7,
+  "session_follow_up_median_ms": 13472.2823335,
+  "baseline_follow_up_median_ms": 97214.6466455,
+  "baseline_all_query_median_ms": 97264.365041,
+  "speedup_follow_up_median_cold_over_session": 7.215900338116233,
+  "speedup_all_query_median_cold_over_session_follow_up": 7.219590759254184,
+  "q_index_breakdown": {
+    "q1": {
+      "n": 7,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    },
+    "q2": {
+      "n": 7,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    },
+    "q3": {
+      "n": 7,
+      "correctness_diffs": 4,
+      "choice_diffs": 6,
+      "pathological_hits": 7
+    }
+  },
+  "mismatches": [
+    {
+      "item_id": "videomme:short:037-3",
+      "q_index": 2,
+      "session_choice": "A",
+      "baseline_choice": "D",
+      "session_correct": false,
+      "baseline_correct": true
+    },
+    {
+      "item_id": "videomme:short:116-3",
+      "q_index": 2,
+      "session_choice": "A",
+      "baseline_choice": "B",
+      "session_correct": false,
+      "baseline_correct": true
+    },
+    {
+      "item_id": "videomme:short:120-3",
+      "q_index": 2,
+      "session_choice": "A",
+      "baseline_choice": "D",
+      "session_correct": false,
+      "baseline_correct": false
+    },
+    {
+      "item_id": "videomme:short:158-3",
+      "q_index": 2,
+      "session_choice": null,
+      "baseline_choice": "C",
+      "session_correct": false,
+      "baseline_correct": false
+    },
+    {
+      "item_id": "videomme:short:160-3",
+      "q_index": 2,
+      "session_choice": null,
+      "baseline_choice": "B",
+      "session_correct": false,
+      "baseline_correct": true
+    },
+    {
+      "item_id": "videomme:short:210-3",
+      "q_index": 2,
+      "session_choice": "A",
+      "baseline_choice": "B",
+      "session_correct": true,
+      "baseline_correct": false
+    }
+  ]
+}

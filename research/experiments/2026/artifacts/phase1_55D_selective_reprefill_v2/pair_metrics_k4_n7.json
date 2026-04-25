@@ -1,0 +1,44 @@
+{
+  "label": "phase1_55D_k4_n7",
+  "n_pairs": 21,
+  "n_follow_up_pairs": 14,
+  "paired_correctness_diffs": 0,
+  "paired_choice_diffs": 1,
+  "pathological_follow_up_hits": 0,
+  "pathological_q3_hits": 0,
+  "session_follow_up_median_ms": 28320.1524995,
+  "baseline_follow_up_median_ms": 94428.590875,
+  "baseline_all_query_median_ms": 105932.667583,
+  "speedup_follow_up_median_cold_over_session": 3.33432494322434,
+  "speedup_all_query_median_cold_over_session_follow_up": 3.74054015368986,
+  "q_index_breakdown": {
+    "q1": {
+      "n": 7,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    },
+    "q2": {
+      "n": 7,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    },
+    "q3": {
+      "n": 7,
+      "correctness_diffs": 0,
+      "choice_diffs": 1,
+      "pathological_hits": 0
+    }
+  },
+  "mismatches": [
+    {
+      "item_id": "videomme:short:120-3",
+      "q_index": 2,
+      "session_choice": "D",
+      "baseline_choice": "A",
+      "session_correct": false,
+      "baseline_correct": false
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "label": "phase1_55D_k1_n7",
+  "n_pairs": 21,
+  "n_follow_up_pairs": 14,
+  "paired_correctness_diffs": 0,
+  "paired_choice_diffs": 0,
+  "pathological_follow_up_hits": 0,
+  "pathological_q3_hits": 0,
+  "session_follow_up_median_ms": 10135.5433955,
+  "baseline_follow_up_median_ms": 96094.58675,
+  "baseline_all_query_median_ms": 98432.581125,
+  "speedup_follow_up_median_cold_over_session": 9.48095065062464,
+  "speedup_all_query_median_cold_over_session_follow_up": 9.711623470400442,
+  "q_index_breakdown": {
+    "q1": {
+      "n": 7,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    },
+    "q2": {
+      "n": 7,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    },
+    "q3": {
+      "n": 7,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    }
+  },
+  "mismatches": []
+}

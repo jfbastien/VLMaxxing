@@ -33,7 +33,7 @@ from codec_through.qwen_pruned_vision_tower import (
     set_qwen_vision_tower_config,
 )
 from codec_through.session_bucketing import is_degenerate_response
-from codec_through.session_prune_policy import keep_rate_for_query
+from codec_through.session_prune_policy import keep_rate_for_session_query
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RUNNER_PATH = REPO_ROOT / "scripts" / "run_benchmark_track_a.py"
@@ -208,7 +208,23 @@ def _summarize(rows: list[dict[str, Any]], label: str) -> dict[str, Any]:
     decode = [float(row["decode_ms"]) for row in rows]
     processor = [float(row["processor_ms"]) for row in rows]
     query = [float(row["query_ms"]) for row in rows]
-    prefix_coverages = [float(row["prefix_coverage"]) for row in rows if row["q_index"] > 0]
+    follow_up_rows = [row for row in rows if int(row["q_index"]) > 0]
+    prefix_coverages = [float(row["prefix_coverage"]) for row in follow_up_rows]
+    image_tokens_recomputed = [
+        int(row["image_tokens_recomputed"])
+        for row in follow_up_rows
+        if row.get("image_tokens_recomputed") is not None
+    ]
+    vision_pruning_active_count = sum(
+        1 for row in follow_up_rows if bool(row.get("vision_pruning_active", False))
+    )
+    fully_reused_images_count = sum(
+        1
+        for row in follow_up_rows
+        if row.get("image_token_count") is not None
+        and int(row["image_token_count"]) > 0
+        and int(row["image_tokens_recomputed"]) == 0
+    )
     n_correct = sum(1 for row in rows if row["correct"])
     n_parse_fail = sum(1 for row in rows if row["parse_failure"])
     return {
@@ -226,6 +242,17 @@ def _summarize(rows: list[dict[str, Any]], label: str) -> dict[str, Any]:
         "mean_query_ms": sum(query) / len(query),
         "mean_prefix_coverage_follow_up": (
             sum(prefix_coverages) / len(prefix_coverages) if prefix_coverages else 0.0
+        ),
+        "mean_image_tokens_recomputed": (
+            sum(image_tokens_recomputed) / len(image_tokens_recomputed)
+            if image_tokens_recomputed
+            else None
+        ),
+        "vision_pruning_active_fraction_follow_up": (
+            vision_pruning_active_count / len(follow_up_rows) if follow_up_rows else None
+        ),
+        "image_tokens_fully_reused_fraction_follow_up": (
+            fully_reused_images_count / len(follow_up_rows) if follow_up_rows else None
         ),
     }
 
@@ -283,6 +310,24 @@ def main() -> int:
         help="Optional Q1/Q2 override for position-conditioned pruning policies.",
     )
     parser.add_argument(
+        "--vision-tower-keep-rate-first-query-short",
+        type=float,
+        default=None,
+        help="Optional short-duration Q0 override for duration-conditioned policies.",
+    )
+    parser.add_argument(
+        "--vision-tower-keep-rate-first-query-medium",
+        type=float,
+        default=None,
+        help="Optional medium-duration Q0 override for duration-conditioned policies.",
+    )
+    parser.add_argument(
+        "--vision-tower-keep-rate-first-query-long",
+        type=float,
+        default=None,
+        help="Optional long-duration Q0 override for duration-conditioned policies.",
+    )
+    parser.add_argument(
         "--drift-refresh-policy",
         choices=("off", "hard-reset", "threshold"),
         default="off",
@@ -319,19 +364,27 @@ def main() -> int:
             f"Phase 1.30 harness currently supports qwen2_5_vl only; got "
             f"{getattr(model.config, 'model_type', None)!r}"
         )
+    image_token_id = int(getattr(model.config, "image_token_id", 151655))
     candidate_keep_rates = [
         args.vision_tower_keep_rate,
         args.vision_tower_keep_rate_first_query,
         args.vision_tower_keep_rate_follow_ups,
+        args.vision_tower_keep_rate_first_query_short,
+        args.vision_tower_keep_rate_first_query_medium,
+        args.vision_tower_keep_rate_first_query_long,
     ]
     use_positioned_policy = any(rate is not None for rate in candidate_keep_rates[1:])
     vt_patched_any = any((rate is not None and rate < 1.0) for rate in candidate_keep_rates)
     if vt_patched_any or use_positioned_policy:
-        initial_keep_rate = keep_rate_for_query(
+        initial_keep_rate = keep_rate_for_session_query(
             q_index=0,
+            duration=seeds[0].duration,
             default_keep_rate=args.vision_tower_keep_rate,
             first_query_keep_rate=args.vision_tower_keep_rate_first_query,
             follow_up_keep_rate=args.vision_tower_keep_rate_follow_ups,
+            first_query_keep_rate_short=args.vision_tower_keep_rate_first_query_short,
+            first_query_keep_rate_medium=args.vision_tower_keep_rate_first_query_medium,
+            first_query_keep_rate_long=args.vision_tower_keep_rate_first_query_long,
         )
         set_qwen_vision_tower_config(
             model,
@@ -362,11 +415,15 @@ def main() -> int:
                 frame_cache.clear()
 
             for q_index, item in enumerate(seed.questions):
-                query_keep_rate = keep_rate_for_query(
+                query_keep_rate = keep_rate_for_session_query(
                     q_index=q_index,
+                    duration=seed.duration,
                     default_keep_rate=args.vision_tower_keep_rate,
                     first_query_keep_rate=args.vision_tower_keep_rate_first_query,
                     follow_up_keep_rate=args.vision_tower_keep_rate_follow_ups,
+                    first_query_keep_rate_short=args.vision_tower_keep_rate_first_query_short,
+                    first_query_keep_rate_medium=args.vision_tower_keep_rate_first_query_medium,
+                    first_query_keep_rate_long=args.vision_tower_keep_rate_first_query_long,
                 )
                 if vt_patched_any or use_positioned_policy:
                     set_qwen_vision_tower_config(
@@ -419,6 +476,18 @@ def main() -> int:
                     text=result["text"],
                     parse_failure=parse_failure,
                 )
+                input_tokens = [
+                    int(token) for row_tokens in sample.input_ids.tolist() for token in row_tokens
+                ]
+                image_token_positions = [
+                    index for index, token in enumerate(input_tokens) if token == image_token_id
+                ]
+                image_token_count = len(image_token_positions)
+                prefix_hit = int(result["prefix_hit"])
+                image_token_prefix_hit = sum(
+                    1 for index in image_token_positions if index < prefix_hit
+                )
+                image_tokens_recomputed = image_token_count - image_token_prefix_hit
                 end_to_end_ms = decode_ms + processor_ms + float(result["elapsed_ms"])
                 row = {
                     "phase": "1.30",
@@ -449,6 +518,12 @@ def main() -> int:
                     "prefix_hit": int(result["prefix_hit"]),
                     "input_len": int(result["input_len"]),
                     "prefix_coverage": float(result["prefix_coverage"]),
+                    "image_token_count": image_token_count,
+                    "image_token_prefix_hit": image_token_prefix_hit,
+                    "image_tokens_recomputed": image_tokens_recomputed,
+                    "vision_pruning_active": (
+                        query_keep_rate < 1.0 and image_tokens_recomputed > 0
+                    ),
                     "response": result["text"].strip()[:400],
                     "choice": choice,
                     "correct": correct,
@@ -463,6 +538,15 @@ def main() -> int:
                     "vision_tower_keep_rate_default": args.vision_tower_keep_rate,
                     "vision_tower_keep_rate_first_query": args.vision_tower_keep_rate_first_query,
                     "vision_tower_keep_rate_follow_ups": args.vision_tower_keep_rate_follow_ups,
+                    "vision_tower_keep_rate_first_query_short": (
+                        args.vision_tower_keep_rate_first_query_short
+                    ),
+                    "vision_tower_keep_rate_first_query_medium": (
+                        args.vision_tower_keep_rate_first_query_medium
+                    ),
+                    "vision_tower_keep_rate_first_query_long": (
+                        args.vision_tower_keep_rate_first_query_long
+                    ),
                     "vision_tower_layer": args.vision_tower_layer,
                 }
                 records.append(row)
@@ -495,6 +579,9 @@ def main() -> int:
         "vision_tower_keep_rate": args.vision_tower_keep_rate,
         "vision_tower_keep_rate_first_query": args.vision_tower_keep_rate_first_query,
         "vision_tower_keep_rate_follow_ups": args.vision_tower_keep_rate_follow_ups,
+        "vision_tower_keep_rate_first_query_short": args.vision_tower_keep_rate_first_query_short,
+        "vision_tower_keep_rate_first_query_medium": args.vision_tower_keep_rate_first_query_medium,
+        "vision_tower_keep_rate_first_query_long": args.vision_tower_keep_rate_first_query_long,
         "vision_tower_layer": args.vision_tower_layer,
         "drift_refresh_policy": args.drift_refresh_policy,
         "drift_refresh_threshold": args.drift_refresh_threshold,

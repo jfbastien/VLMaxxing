@@ -19,6 +19,18 @@
     "both_wrong": 6
   },
   "clean_fraction": 0.6666666666666666,
+  "streaming_degenerate_count": 0,
   "degenerate_fraction": 0.0,
-  "refresh_events": 0
+  "cold_parse_failures": 0,
+  "streaming_parse_failures": 0,
+  "streaming_parse_failure_fraction": 0.0,
+  "refresh_events": 0,
+  "streaming_follow_up_n": 20,
+  "streaming_follow_up_pruning_instrumented_n": 0,
+  "streaming_follow_up_image_token_instrumented_n": 0,
+  "streaming_follow_up_mean_image_tokens_recomputed": null,
+  "streaming_follow_up_vision_pruning_active_count": 0,
+  "streaming_follow_up_vision_pruning_active_fraction": null,
+  "streaming_follow_up_all_image_tokens_reused_count": 0,
+  "streaming_follow_up_all_image_tokens_reused_fraction": null
 }

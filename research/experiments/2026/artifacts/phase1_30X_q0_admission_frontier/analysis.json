@@ -6,7 +6,7 @@
     {
       "name": "all_pruned_q0",
       "deployable": true,
-      "description": "Original 1.30 streaming stack: pruned Q0 and pruned follow-ups.",
+      "description": "Original 1.30 streaming stack: Q0 at kr=0.50 with the same session-reuse follow-up path.",
       "dense_sessions": [],
       "n_sessions": 57,
       "n_queries": 171,
@@ -34,7 +34,7 @@
     {
       "name": "all_dense_q0",
       "deployable": true,
-      "description": "1.30W boundary policy: dense Q0, pruned follow-ups.",
+      "description": "1.30W boundary policy: Q0 at kr=1.0 with the same session-reuse follow-up path.",
       "dense_sessions": [
         "videomme:long:650-3",
         "videomme:long:669-1",

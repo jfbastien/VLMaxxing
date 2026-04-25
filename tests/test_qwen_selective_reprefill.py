@@ -2,9 +2,12 @@ from types import SimpleNamespace
 
 import mlx.core as mx
 import numpy as np
+import pytest
 
 from codec_through.qwen_selective_reprefill import (
+    common_prefix_token_count,
     compute_qwen_reprefill_plan,
+    compute_qwen_token_cut_plan,
     qwen_image_tokens_per_frame,
     qwen_language_model_logits,
     qwen_pixel_rows_per_frame,
@@ -49,3 +52,45 @@ def test_qwen_language_model_logits_accepts_wrapper_or_tensor() -> None:
     wrapped = SimpleNamespace(logits=logits)
     assert qwen_language_model_logits(wrapped).tolist() == logits.tolist()
     assert qwen_language_model_logits(logits).tolist() == logits.tolist()
+
+
+def test_common_prefix_token_count_stops_at_first_difference() -> None:
+    assert common_prefix_token_count([1, 2, 3, 4], [1, 2, 9, 4]) == 2
+    assert common_prefix_token_count([1, 2], [1, 2, 3]) == 2
+
+
+def test_compute_qwen_token_cut_plan_after_full_image_block() -> None:
+    image_token_id = 99
+    input_ids = [1, image_token_id, image_token_id, image_token_id, image_token_id]
+    input_ids += [image_token_id, image_token_id, image_token_id, image_token_id, 2, 3]
+    grid = np.array([[1, 4, 4], [1, 4, 4]])
+    plan = compute_qwen_token_cut_plan(
+        input_ids=input_ids,
+        image_grid_thw=grid,
+        trunc_token_idx=9,
+        image_token_id=image_token_id,
+        spatial_merge_size=2,
+    )
+    assert plan.prefix_image_count == 2
+    assert plan.tail_image_count == 0
+    assert plan.prefix_image_tokens == 8
+    assert plan.tail_image_tokens == 0
+    assert plan.prefix_pixel_rows == 32
+    assert plan.tail_pixel_rows == 0
+    assert plan.prefix_prompt_tokens == 9
+    assert plan.tail_prompt_tokens == 2
+
+
+def test_compute_qwen_token_cut_plan_rejects_mid_frame_cut() -> None:
+    image_token_id = 99
+    input_ids = [1, image_token_id, image_token_id, image_token_id, image_token_id]
+    input_ids += [image_token_id, image_token_id, image_token_id, image_token_id, 2, 3]
+    grid = np.array([[1, 4, 4], [1, 4, 4]])
+    with pytest.raises(ValueError, match="splits an image-frame token block"):
+        compute_qwen_token_cut_plan(
+            input_ids=input_ids,
+            image_grid_thw=grid,
+            trunc_token_idx=7,
+            image_token_id=image_token_id,
+            spatial_merge_size=2,
+        )

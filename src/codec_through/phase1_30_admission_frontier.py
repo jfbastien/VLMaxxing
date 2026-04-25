@@ -233,8 +233,7 @@ def load_session_pairs(
     )
     if set(pruned) != set(dense):
         raise ValueError(
-            "pruned and dense session ids differ: "
-            f"{sorted(set(pruned) ^ set(dense))[:5]}"
+            f"pruned and dense session ids differ: {sorted(set(pruned) ^ set(dense))[:5]}"
         )
 
     session_pairs: dict[str, SessionPair] = {}
@@ -411,10 +410,11 @@ def compute_exact_frontier(
         pair = session_pairs[session_id]
         next_best: dict[int, State] = {}
         for delta_so_far, state in best.items():
-            for arm_name, arm in (
+            arm_pairs: tuple[tuple[ArmName, SessionArmMetrics], ...] = (
                 ("pruned_q0", pair.pruned_q0),
                 ("dense_q0", pair.dense_q0),
-            ):
+            )
+            for arm_name, arm in arm_pairs:
                 delta = delta_so_far + arm.delta_correct
                 slack_ms = state.slack_ms + arm.slack_vs_3x_ms
                 existing = next_best.get(delta)
@@ -431,12 +431,8 @@ def compute_exact_frontier(
             chosen_arms=state.choices,
         )
 
-    strict_candidates = [
-        point for point in frontier_by_delta.values() if point.strict_pass
-    ]
-    rescue_candidates = [
-        point for point in frontier_by_delta.values() if point.rescue_pass
-    ]
+    strict_candidates = [point for point in frontier_by_delta.values() if point.strict_pass]
+    rescue_candidates = [point for point in frontier_by_delta.values() if point.rescue_pass]
     strict_format_candidates = [
         point for point in frontier_by_delta.values() if point.strict_pass and point.format_pass
     ]
@@ -457,11 +453,7 @@ def compute_exact_frontier(
             default=None,
         ),
         "best_speed_at_or_above_rescue_floor": max(
-            (
-                point
-                for point in frontier_by_delta.values()
-                if point.accuracy_delta >= -0.10
-            ),
+            (point for point in frontier_by_delta.values() if point.accuracy_delta >= -0.10),
             key=lambda point: point.speedup_cold_over_stream,
             default=None,
         ),
@@ -483,14 +475,19 @@ def build_policy_suite(session_pairs: dict[str, SessionPair]) -> list[PolicyResu
             session_pairs=session_pairs,
             name="all_pruned_q0",
             deployable=True,
-            description="Original 1.30 streaming stack: pruned Q0 and pruned follow-ups.",
+            description=(
+                "Original 1.30 streaming stack: Q0 at kr=0.50 with the "
+                "same session-reuse follow-up path."
+            ),
             choose_arm=lambda pair: "pruned_q0",
         ),
         evaluate_policy(
             session_pairs=session_pairs,
             name="all_dense_q0",
             deployable=True,
-            description="1.30W boundary policy: dense Q0, pruned follow-ups.",
+            description=(
+                "1.30W boundary policy: Q0 at kr=1.0 with the same session-reuse follow-up path."
+            ),
             choose_arm=lambda pair: "dense_q0",
         ),
     ]
@@ -565,7 +562,6 @@ def analyze_admission_frontier(
         "n_queries": 3 * len(session_pairs),
         "policy_results": [result.to_dict() for result in policies],
         "exact_frontier": {
-            key: (point.to_dict() if point is not None else None)
-            for key, point in frontier.items()
+            key: (point.to_dict() if point is not None else None) for key, point in frontier.items()
         },
     }

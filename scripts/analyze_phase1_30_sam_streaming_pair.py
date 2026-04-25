@@ -24,6 +24,16 @@ def _index(rows: list[dict]) -> dict[tuple[str, int], dict]:
     return {(str(row["seed_item_id"]), int(row["q_index"])): row for row in rows}
 
 
+def _mean(values: list[float]) -> float | None:
+    return sum(values) / len(values) if values else None
+
+
+def _fraction(numerator: int, denominator: int) -> float | None:
+    if denominator <= 0:
+        return None
+    return numerator / denominator
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cold-jsonl", type=Path, required=True)
@@ -134,6 +144,33 @@ def main() -> int:
 
     cold_total_ms = sum(float(row["end_to_end_ms"]) for row in cold_rows)
     streaming_total_ms = sum(float(row["end_to_end_ms"]) for row in streaming_rows)
+    follow_up_streaming_rows = [row for row in streaming_rows if int(row["q_index"]) > 0]
+    follow_up_pruning_instrumented_rows = [
+        row for row in follow_up_streaming_rows if "vision_pruning_active" in row
+    ]
+    follow_up_image_token_rows = [
+        row
+        for row in follow_up_streaming_rows
+        if row.get("image_token_count") is not None
+        and row.get("image_tokens_recomputed") is not None
+    ]
+    follow_up_recomputed = [
+        float(row["image_tokens_recomputed"])
+        for row in follow_up_image_token_rows
+        if row.get("image_tokens_recomputed") is not None
+    ]
+    follow_up_pruning_active_count = sum(
+        1
+        for row in follow_up_pruning_instrumented_rows
+        if bool(row.get("vision_pruning_active", False))
+    )
+    follow_up_fully_reused_count = sum(
+        1
+        for row in follow_up_image_token_rows
+        if row.get("image_token_count") is not None
+        and int(row["image_token_count"]) > 0
+        and int(row["image_tokens_recomputed"]) == 0
+    )
     pair_summary = {
         "phase": "1.30",
         "n_paired_queries": len(keys),
@@ -150,8 +187,33 @@ def main() -> int:
         "response_bucket_counts": bucket_counts,
         "overlap_bucket_counts": overlap_counts,
         "clean_fraction": bucket_counts["clean"] / len(keys),
+        "streaming_degenerate_count": bucket_counts["degenerate"],
         "degenerate_fraction": bucket_counts["degenerate"] / len(keys),
+        "cold_parse_failures": int(cold_summary.get("parse_failures", 0)),
+        "streaming_parse_failures": int(streaming_summary.get("parse_failures", 0)),
+        "streaming_parse_failure_fraction": _fraction(
+            int(streaming_summary.get("parse_failures", 0)),
+            len(streaming_rows),
+        ),
         "refresh_events": int(streaming_summary.get("refresh_events", 0)),
+        "streaming_follow_up_n": len(follow_up_streaming_rows),
+        "streaming_follow_up_pruning_instrumented_n": len(follow_up_pruning_instrumented_rows),
+        "streaming_follow_up_image_token_instrumented_n": len(follow_up_image_token_rows),
+        "streaming_follow_up_mean_image_tokens_recomputed": _mean(follow_up_recomputed),
+        "streaming_follow_up_vision_pruning_active_count": follow_up_pruning_active_count,
+        "streaming_follow_up_vision_pruning_active_fraction": (
+            _fraction(
+                follow_up_pruning_active_count,
+                len(follow_up_pruning_instrumented_rows),
+            )
+        ),
+        "streaming_follow_up_all_image_tokens_reused_count": follow_up_fully_reused_count,
+        "streaming_follow_up_all_image_tokens_reused_fraction": (
+            _fraction(
+                follow_up_fully_reused_count,
+                len(follow_up_image_token_rows),
+            )
+        ),
     }
 
     args.pair_summary.parent.mkdir(parents=True, exist_ok=True)

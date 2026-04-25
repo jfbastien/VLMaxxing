@@ -55,6 +55,10 @@ def _as_int_array(values: Sequence[Sequence[int]] | np.ndarray) -> np.ndarray:
     return array
 
 
+def _as_int_vector(values: Sequence[int] | np.ndarray) -> np.ndarray:
+    return np.asarray(values, dtype=np.int64).reshape(-1)
+
+
 def qwen_image_tokens_per_frame(
     grid_thw: Sequence[Sequence[int]] | np.ndarray,
     *,
@@ -129,6 +133,82 @@ def compute_qwen_reprefill_plan(
     )
 
 
+def common_prefix_token_count(
+    left_input_ids: Sequence[int] | np.ndarray,
+    right_input_ids: Sequence[int] | np.ndarray,
+) -> int:
+    left = _as_int_vector(left_input_ids)
+    right = _as_int_vector(right_input_ids)
+    shared = min(left.size, right.size)
+    index = 0
+    while index < shared and int(left[index]) == int(right[index]):
+        index += 1
+    return int(index)
+
+
+def compute_qwen_token_cut_plan(
+    *,
+    input_ids: Sequence[int] | np.ndarray,
+    image_grid_thw: Sequence[Sequence[int]] | np.ndarray,
+    trunc_token_idx: int,
+    image_token_id: int,
+    spatial_merge_size: int,
+) -> QwenReprefillPlan:
+    """Build a reusable prompt-slice plan from an arbitrary token cut.
+
+    This is stricter than a raw token trim: if the cut falls inside an image
+    frame's token block, we hard-fail. That keeps cache reuse geometry explicit
+    for follow-up experiments like 1.55F where Q3 should reuse the repaired
+    Q2 visual state without silently bisecting the multimodal image segment.
+    """
+
+    ids = _as_int_vector(input_ids)
+    if trunc_token_idx < 0 or trunc_token_idx > int(ids.size):
+        raise ValueError(f"trunc_token_idx must be in [0, {ids.size}], got {trunc_token_idx}")
+
+    per_frame_tokens = qwen_image_tokens_per_frame(
+        image_grid_thw,
+        spatial_merge_size=spatial_merge_size,
+    )
+    per_frame_pixels = qwen_pixel_rows_per_frame(image_grid_thw)
+    image_positions = np.flatnonzero(ids == int(image_token_id))
+    total_image_tokens = int(sum(per_frame_tokens))
+    if len(image_positions) != total_image_tokens:
+        raise ValueError(
+            f"image token count mismatch: found {len(image_positions)} markers but "
+            f"grid implies {total_image_tokens}"
+        )
+
+    prefix_image_tokens = int(sum(1 for pos in image_positions if int(pos) < trunc_token_idx))
+    cumulative_tokens = 0
+    prefix_image_count = 0
+    for frame_tokens in per_frame_tokens:
+        if cumulative_tokens + int(frame_tokens) <= prefix_image_tokens:
+            cumulative_tokens += int(frame_tokens)
+            prefix_image_count += 1
+            continue
+        break
+    if cumulative_tokens != prefix_image_tokens:
+        raise ValueError(
+            "trunc_token_idx splits an image-frame token block; "
+            f"prefix_image_tokens={prefix_image_tokens} does not align to "
+            f"whole-frame boundaries {per_frame_tokens}"
+        )
+
+    prefix_pixel_rows = int(sum(per_frame_pixels[:prefix_image_count]))
+    return QwenReprefillPlan(
+        trunc_token_idx=int(trunc_token_idx),
+        prefix_image_count=prefix_image_count,
+        tail_image_count=len(per_frame_tokens) - prefix_image_count,
+        prefix_image_tokens=prefix_image_tokens,
+        tail_image_tokens=total_image_tokens - prefix_image_tokens,
+        prefix_pixel_rows=prefix_pixel_rows,
+        tail_pixel_rows=int(sum(per_frame_pixels[prefix_image_count:])),
+        prefix_prompt_tokens=int(trunc_token_idx),
+        tail_prompt_tokens=int(ids.size - trunc_token_idx),
+    )
+
+
 def slice_qwen_prompt_for_reprefill(
     *,
     input_ids: mx.array,
@@ -186,11 +266,11 @@ def make_qwen_prefix_cache(
     )
     logits = qwen_language_model_logits(
         model.language_model(
-        prefix.input_ids,
-        inputs_embeds=embeddings.inputs_embeds,
-        mask=prefix.mask,
-        cache=prompt_cache,
-        position_ids=prefix.position_ids,
+            prefix.input_ids,
+            inputs_embeds=embeddings.inputs_embeds,
+            mask=prefix.mask,
+            cache=prompt_cache,
+            position_ids=prefix.position_ids,
         )
     )
     mx.eval(logits)
