@@ -1,9 +1,26 @@
 {
   "phase": "1.30",
   "n_paired_queries": 30,
+  "n_paired_sessions": 10,
   "cold_accuracy": 0.7333333333333333,
   "streaming_accuracy": 0.6666666666666666,
   "accuracy_delta_streaming_minus_cold": -0.06666666666666665,
+  "accuracy_delta_streaming_minus_cold_ci95": [
+    -0.26666666666666666,
+    0.13333333333333333
+  ],
+  "q0_accuracy_delta_streaming_minus_cold": 0.0,
+  "q0_accuracy_delta_streaming_minus_cold_ci95": [
+    0.0,
+    0.0
+  ],
+  "q0_n_paired_queries": 10,
+  "follow_up_accuracy_delta_streaming_minus_cold": -0.1,
+  "follow_up_accuracy_delta_streaming_minus_cold_ci95": [
+    -0.4,
+    0.2
+  ],
+  "follow_up_n_paired_queries": 20,
   "cold_total_end_to_end_ms": 1218030.104338,
   "streaming_total_end_to_end_ms": 398116.648034,
   "amortized_speedup_cold_over_streaming": 3.0594804571799212,

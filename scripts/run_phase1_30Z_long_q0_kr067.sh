@@ -18,12 +18,16 @@ cd "$(dirname "$0")/.."
 
 PY="${PYTHON:-./.venv/bin/python}"
 MODEL_PATH="${MODEL_PATH:-$HOME/models/Qwen2.5-VL-7B-Instruct-4bit}"
-RSS_GUARD_MB="${RSS_GUARD_MB:-10000}"
+RSS_GUARD_MB="${RSS_GUARD_MB:-9000}"
 OUT="${OUT:-research/experiments/2026/artifacts/phase1_30Z_long_q0_kr067_20260424}"
 
 mkdir -p "$OUT"
 
 if [[ -f "$OUT/cold_dense_long.jsonl" && -f "$OUT/cold_dense_long_summary.json" ]]; then
+  # The committed cold control predates follow-up image-token instrumentation.
+  # That is acceptable here because the pair analyzer reads follow-up activity
+  # from the streaming rows only; rerunning cold would cost hours without
+  # changing the mechanistic interpretation.
   echo "[1.30Z] reusing existing cold arm in $OUT"
 else
   "$PY" scripts/run_phase1_30_sam_streaming.py \

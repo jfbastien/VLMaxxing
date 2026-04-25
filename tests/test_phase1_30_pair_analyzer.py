@@ -113,11 +113,29 @@ def test_phase1_30_pair_analyzer_reports_follow_up_activity(tmp_path: Path) -> N
             str(per_clip_buckets),
             "--paired-queries",
             str(paired_queries),
+            "--n-resamples",
+            "200",
+            "--seed",
+            "0",
         ],
         check=True,
     )
 
     summary = json.loads(pair_summary.read_text())
+    assert summary["n_paired_sessions"] == 1
+    assert (
+        summary["accuracy_delta_streaming_minus_cold_ci95"][0]
+        <= summary["accuracy_delta_streaming_minus_cold"]
+        <= summary["accuracy_delta_streaming_minus_cold_ci95"][1]
+    )
+    assert summary["q0_accuracy_delta_streaming_minus_cold"] == 0.0
+    assert summary["q0_n_paired_queries"] == 1
+    assert summary["follow_up_n_paired_queries"] == 2
+    assert (
+        summary["follow_up_accuracy_delta_streaming_minus_cold_ci95"][0]
+        <= summary["follow_up_accuracy_delta_streaming_minus_cold"]
+        <= summary["follow_up_accuracy_delta_streaming_minus_cold_ci95"][1]
+    )
     assert summary["streaming_follow_up_n"] == 2
     assert summary["streaming_parse_failures"] == 1
     assert summary["streaming_parse_failure_fraction"] == 1 / 3

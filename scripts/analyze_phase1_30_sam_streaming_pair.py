@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import random
+from collections.abc import Callable
 from pathlib import Path
 
 from codec_through.session_bucketing import classify_streaming_pair
@@ -34,6 +36,50 @@ def _fraction(numerator: int, denominator: int) -> float | None:
     return numerator / denominator
 
 
+def _paired_bootstrap_delta_ci(
+    rows: list[dict],
+    *,
+    predicate: Callable[[dict], bool] | None,
+    n_resamples: int,
+    rng: random.Random,
+) -> tuple[float | None, list[float] | None, int, int]:
+    filtered = [row for row in rows if predicate is None or predicate(row)]
+    if not filtered:
+        return (None, None, 0, 0)
+
+    by_session: dict[str, list[dict]] = {}
+    for row in filtered:
+        by_session.setdefault(str(row["session_id"]), []).append(row)
+    session_ids = sorted(by_session)
+    if not session_ids:
+        return (None, None, 0, 0)
+
+    point = sum(
+        (1.0 if row["streaming_correct"] else 0.0) - (1.0 if row["cold_correct"] else 0.0)
+        for row in filtered
+    ) / len(filtered)
+    n_sessions = len(session_ids)
+    deltas: list[float] = []
+    for _ in range(n_resamples):
+        sampled_rows: list[dict] = []
+        for _ in range(n_sessions):
+            sampled_rows.extend(by_session[session_ids[rng.randrange(n_sessions)]])
+        deltas.append(
+            sum(
+                (1.0 if row["streaming_correct"] else 0.0) - (1.0 if row["cold_correct"] else 0.0)
+                for row in sampled_rows
+            )
+            / len(sampled_rows)
+        )
+    deltas.sort()
+    return (
+        point,
+        [deltas[int(0.025 * n_resamples)], deltas[int(0.975 * n_resamples) - 1]],
+        n_sessions,
+        len(filtered),
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cold-jsonl", type=Path, required=True)
@@ -43,6 +89,8 @@ def main() -> int:
     parser.add_argument("--pair-summary", type=Path, required=True)
     parser.add_argument("--per-clip-buckets", type=Path, required=True)
     parser.add_argument("--paired-queries", type=Path, required=True)
+    parser.add_argument("--n-resamples", type=int, default=5000)
+    parser.add_argument("--seed", type=int, default=0)
     args = parser.parse_args()
 
     cold_rows = _load_jsonl(args.cold_jsonl)
@@ -144,6 +192,25 @@ def main() -> int:
 
     cold_total_ms = sum(float(row["end_to_end_ms"]) for row in cold_rows)
     streaming_total_ms = sum(float(row["end_to_end_ms"]) for row in streaming_rows)
+    rng = random.Random(args.seed)
+    all_delta, all_ci, n_sessions, _n_all = _paired_bootstrap_delta_ci(
+        paired_rows,
+        predicate=None,
+        n_resamples=args.n_resamples,
+        rng=rng,
+    )
+    q0_delta, q0_ci, _q0_sessions, q0_n = _paired_bootstrap_delta_ci(
+        paired_rows,
+        predicate=lambda row: int(row["q_index"]) == 0,
+        n_resamples=args.n_resamples,
+        rng=rng,
+    )
+    follow_delta, follow_ci, _follow_sessions, follow_n = _paired_bootstrap_delta_ci(
+        paired_rows,
+        predicate=lambda row: int(row["q_index"]) > 0,
+        n_resamples=args.n_resamples,
+        rng=rng,
+    )
     follow_up_streaming_rows = [row for row in streaming_rows if int(row["q_index"]) > 0]
     follow_up_pruning_instrumented_rows = [
         row for row in follow_up_streaming_rows if "vision_pruning_active" in row
@@ -174,11 +241,19 @@ def main() -> int:
     pair_summary = {
         "phase": "1.30",
         "n_paired_queries": len(keys),
+        "n_paired_sessions": n_sessions,
         "cold_accuracy": cold_summary["all_queries"]["accuracy"],
         "streaming_accuracy": streaming_summary["all_queries"]["accuracy"],
         "accuracy_delta_streaming_minus_cold": (
             streaming_summary["all_queries"]["accuracy"] - cold_summary["all_queries"]["accuracy"]
         ),
+        "accuracy_delta_streaming_minus_cold_ci95": all_ci,
+        "q0_accuracy_delta_streaming_minus_cold": q0_delta,
+        "q0_accuracy_delta_streaming_minus_cold_ci95": q0_ci,
+        "q0_n_paired_queries": q0_n,
+        "follow_up_accuracy_delta_streaming_minus_cold": follow_delta,
+        "follow_up_accuracy_delta_streaming_minus_cold_ci95": follow_ci,
+        "follow_up_n_paired_queries": follow_n,
         "cold_total_end_to_end_ms": cold_total_ms,
         "streaming_total_end_to_end_ms": streaming_total_ms,
         "amortized_speedup_cold_over_streaming": (

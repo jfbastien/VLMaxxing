@@ -1,9 +1,26 @@
 {
   "phase": "1.30",
   "n_paired_queries": 171,
+  "n_paired_sessions": 57,
   "cold_accuracy": 0.5614035087719298,
   "streaming_accuracy": 0.5029239766081871,
   "accuracy_delta_streaming_minus_cold": -0.05847953216374269,
+  "accuracy_delta_streaming_minus_cold_ci95": [
+    -0.11695906432748537,
+    0.0
+  ],
+  "q0_accuracy_delta_streaming_minus_cold": 0.0,
+  "q0_accuracy_delta_streaming_minus_cold_ci95": [
+    0.0,
+    0.0
+  ],
+  "q0_n_paired_queries": 57,
+  "follow_up_accuracy_delta_streaming_minus_cold": -0.08771929824561403,
+  "follow_up_accuracy_delta_streaming_minus_cold_ci95": [
+    -0.17543859649122806,
+    0.0
+  ],
+  "follow_up_n_paired_queries": 114,
   "cold_total_end_to_end_ms": 14941704.472162,
   "streaming_total_end_to_end_ms": 5361417.194674,
   "amortized_speedup_cold_over_streaming": 2.78689457089909,

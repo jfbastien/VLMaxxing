@@ -21,7 +21,7 @@ cd "$(dirname "$0")/.."
 
 PY="${PYTHON:-./.venv/bin/python}"
 MODEL_PATH="${MODEL_PATH:-$HOME/models/Qwen2.5-VL-7B-Instruct-4bit}"
-RSS_GUARD_MB="${RSS_GUARD_MB:-10000}"
+RSS_GUARD_MB="${RSS_GUARD_MB:-9000}"
 OUT="${OUT:-research/experiments/2026/artifacts/phase1_30AA_duration_conditioned_union}"
 
 mkdir -p "$OUT"

@@ -19,6 +19,7 @@ from mlx_vlm.generate import PromptCacheState
 from mlx_vlm.utils import prepare_inputs
 
 from codec_through.answers import extract_choice
+from codec_through.memory_guard import check_rss_guard
 from codec_through.qwen_selective_reprefill import (
     common_prefix_token_count,
     compute_qwen_position_ids,
@@ -214,6 +215,7 @@ def main() -> int:
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--mode", choices=("session", "baseline", "both"), default="both")
     parser.add_argument("--temperature", type=float, default=0.0)
+    parser.add_argument("--rss-guard-mb", type=int, default=0)
     args = parser.parse_args()
 
     if args.reprefill_k <= 0:
@@ -247,6 +249,7 @@ def main() -> int:
     ]
 
     model, processor = load(str(args.model_path))
+    check_rss_guard(args.rss_guard_mb, stage="post_model_load")
     if getattr(model.config, "model_type", None) != "qwen2_5_vl":
         raise SystemExit(
             f"run_kv_selective_reprefill_v2.py currently supports qwen2_5_vl only; got "
@@ -603,6 +606,7 @@ def main() -> int:
                     baseline_rows.append(row)
                     bf.write(json.dumps(row) + "\n")
                     bf.flush()
+            check_rss_guard(args.rss_guard_mb, stage=f"post_clip:{clip.video_id}")
     finally:
         if args.mode in ("session", "both"):
             sf.close()

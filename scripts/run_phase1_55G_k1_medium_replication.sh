@@ -18,6 +18,7 @@ PY="${PYTHON:-./.venv/bin/python}"
 MODEL_PATH="${PHASE1_55G_MODEL_PATH:-$HOME/models/Qwen2.5-VL-7B-Instruct-4bit}"
 OUT_DIR="${PHASE1_55G_OUT_DIR:-research/experiments/2026/artifacts/phase1_55G_k1_medium_replication}"
 VIDEO_IDS="${PHASE1_55G_VIDEO_IDS:-320,354,364,380,407,408,426,484,486,531}"
+RSS_GUARD_MB="${RSS_GUARD_MB:-9000}"
 
 mkdir -p "$OUT_DIR"
 
@@ -31,6 +32,7 @@ else
     --max-tokens 32 \
     --reprefill-k 1 \
     --model-path "$MODEL_PATH" \
+    --rss-guard-mb "$RSS_GUARD_MB" \
     --output-dir "$OUT_DIR"
 fi
 

@@ -19,6 +19,7 @@ PY="${PYTHON:-./.venv/bin/python}"
 MODEL_PATH="${PHASE1_55F_MODEL_PATH:-$HOME/models/Qwen2.5-VL-7B-Instruct-4bit}"
 OUT_DIR="${PHASE1_55F_OUT_DIR:-research/experiments/2026/artifacts/phase1_55F_q3_post_q2_state}"
 VIDEO_IDS="${PHASE1_55F_VIDEO_IDS:-037,100,116,120,158,160,210}"
+RSS_GUARD_MB="${RSS_GUARD_MB:-9000}"
 
 mkdir -p "$OUT_DIR"
 
@@ -35,6 +36,7 @@ else
     --reprefill-k-q3 0 \
     --q3-cache-source post_q2_repaired \
     --model-path "$MODEL_PATH" \
+    --rss-guard-mb "$RSS_GUARD_MB" \
     --output-dir "$OUT_DIR"
 fi
 

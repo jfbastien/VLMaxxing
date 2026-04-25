@@ -100,10 +100,24 @@ def main() -> int:
         type=Path,
         default=Path("research/experiments/2026/artifacts/paper_closeout_preflight.json"),
     )
+    parser.add_argument(
+        "--max-safe-rss-gb",
+        type=float,
+        default=10.0,
+        help="Operator memory ceiling for autonomous runs on the 16 GB laptop.",
+    )
     args = parser.parse_args()
 
     rows = _load_videomme_rows()
     payload: dict[str, Any] = {
+        "machine_policy": {
+            "max_safe_rss_gb": args.max_safe_rss_gb,
+            "note": (
+                "The closeout queue is planned for a 16 GB unified-memory laptop. "
+                "Treat experiments expected to exceed the operator ceiling as blocked "
+                "even if weights exist locally."
+            ),
+        },
         "models": {
             "qwen_4bit": _status(args.qwen_4bit_model.exists(), detail=str(args.qwen_4bit_model)),
             "qwen_bf16": _status(args.qwen_bf16_model.exists(), detail=str(args.qwen_bf16_model)),
@@ -170,9 +184,26 @@ def main() -> int:
             qwen_4bit_ready and medium_ready,
             detail="K=1 medium-bucket replication",
         ),
+        "1.55H": _status(
+            qwen_4bit_ready and short_ready,
+            detail="K=1 short-bucket 32f boundary probe",
+        ),
         "1.58": _status(
-            qwen_4bit_ready and qwen_bf16_ready,
-            detail="bf16 quantization control",
+            qwen_4bit_ready and qwen_bf16_ready and args.max_safe_rss_gb >= 14.0,
+            detail={
+                "phase": "bf16 quantization control",
+                "bf16_checkpoint_present": qwen_bf16_ready,
+                "required_safe_rss_gb": 14.0,
+                "configured_safe_rss_gb": args.max_safe_rss_gb,
+                "blocked_reason": (
+                    None
+                    if qwen_bf16_ready and args.max_safe_rss_gb >= 14.0
+                    else (
+                        "bf16 path exceeds the current local memory policy "
+                        "and/or weights are absent"
+                    )
+                ),
+            },
         ),
     }
 
