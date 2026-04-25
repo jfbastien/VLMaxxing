@@ -131,6 +131,7 @@ def _gate_phase_155(
     correctness_limit: int,
     choice_limit: int,
     q3_pathological_limit: int,
+    follow_up_pathological_limit: int | None = None,
     max_rss_gb: float,
     min_speedup: float | None = None,
     max_session_follow_up_median_ms: float | None = None,
@@ -140,6 +141,7 @@ def _gate_phase_155(
 ) -> dict[str, Any]:
     paired_correctness_diffs = int(pair_metrics["paired_correctness_diffs"])
     paired_choice_diffs = int(pair_metrics["paired_choice_diffs"])
+    pathological_follow_up_hits = int(pair_metrics.get("pathological_follow_up_hits", 0))
     pathological_q3_hits = int(pair_metrics.get("pathological_q3_hits", 0))
     speedup = pair_metrics.get("speedup_all_query_median_cold_over_session_follow_up")
     session_follow_up_median_ms = pair_metrics.get("session_follow_up_median_ms")
@@ -168,9 +170,14 @@ def _gate_phase_155(
             baseline_accuracy is not None and float(baseline_accuracy) >= baseline_accuracy_floor
         )
 
+    pass_follow_up_pathology = None
+    if follow_up_pathological_limit is not None:
+        pass_follow_up_pathology = pathological_follow_up_hits <= follow_up_pathological_limit
+
     return {
         "paired_correctness_diffs": paired_correctness_diffs,
         "paired_choice_diffs": paired_choice_diffs,
+        "pathological_follow_up_hits": pathological_follow_up_hits,
         "pathological_q3_hits": pathological_q3_hits,
         "speedup_all_query_median_cold_over_session_follow_up": speedup,
         "session_follow_up_median_ms": session_follow_up_median_ms,
@@ -180,6 +187,7 @@ def _gate_phase_155(
             paired_correctness_diffs <= correctness_limit and paired_choice_diffs <= choice_limit
         ),
         "pass_exact_match": pass_exact_match,
+        "pass_follow_up_pathology": pass_follow_up_pathology,
         "pass_q3_pathology": pathological_q3_hits <= q3_pathological_limit,
         "pass_speed": pass_speed,
         "pass_memory": peak_rss_gb <= max_rss_gb,
@@ -305,9 +313,21 @@ def _commit_message(step: QueueStep, record: dict[str, Any]) -> str:
     return f"{subject}\n\n{body}"
 
 
-def _commit_step(step: QueueStep, *, queue_status_json: Path, record: dict[str, Any]) -> None:
+def _commit_step(
+    step: QueueStep,
+    *,
+    preflight_json: Path,
+    queue_status_json: Path,
+    record: dict[str, Any],
+) -> None:
     subprocess.run(
-        ["git", "add", step.artifact_dir.as_posix(), queue_status_json.as_posix()],
+        [
+            "git",
+            "add",
+            step.artifact_dir.as_posix(),
+            preflight_json.as_posix(),
+            queue_status_json.as_posix(),
+        ],
         cwd=REPO_ROOT,
         check=True,
     )
@@ -536,13 +556,20 @@ def main() -> int:
         if args.auto_commit and not args.dry_run:
             record["auto_commit"] = (
                 "committed"
-                if _paths_have_changes((step.artifact_dir, args.queue_status_json))
+                if _paths_have_changes(
+                    (step.artifact_dir, args.preflight_json, args.queue_status_json)
+                )
                 else "no-changes"
             )
         status["steps"].append(record)
         _write_status(args.queue_status_json, status, dry_run=args.dry_run)
         if args.auto_commit and not args.dry_run and record["auto_commit"] == "committed":
-            _commit_step(step, queue_status_json=args.queue_status_json, record=record)
+            _commit_step(
+                step,
+                preflight_json=args.preflight_json,
+                queue_status_json=args.queue_status_json,
+                record=record,
+            )
 
     if args.dry_run:
         print(json.dumps(status, indent=2))

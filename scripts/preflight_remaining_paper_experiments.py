@@ -29,8 +29,20 @@ DEFAULT_MEDIUM_VIDEO_IDS = (
     "486",
     "531",
 )
+DEFAULT_LONG_VIDEO_IDS = (
+    "669",
+    "711",
+    "712",
+    "737",
+    "756",
+    "758",
+    "794",
+)
 VIDEOMME_PARQUET_DIR = Path("data/benchmarks/videomme/hf")
 VIDEOMME_VIDEO_DIR = Path("data/benchmarks/videomme/videos")
+PHASE130_LONG_COLD_REFERENCE_DIR = Path(
+    "research/experiments/2026/artifacts/phase1_30Z_long_q0_kr067_20260424"
+)
 
 
 def _videomme_parquet_path() -> Path:
@@ -151,6 +163,13 @@ def main() -> int:
                 )
                 for video_id in DEFAULT_MEDIUM_VIDEO_IDS
             },
+            "phase1_55I_long": {
+                video_id: _status(
+                    _video_ready(rows, video_id)[0],
+                    detail=_video_ready(rows, video_id)[1],
+                )
+                for video_id in DEFAULT_LONG_VIDEO_IDS
+            },
         },
         "experiments": {},
     }
@@ -161,9 +180,14 @@ def main() -> int:
     medium_ready = all(
         entry["ready"] for entry in payload["video_sets"]["phase1_55G_medium"].values()
     )
+    long_ready = all(entry["ready"] for entry in payload["video_sets"]["phase1_55I_long"].values())
     qwen_4bit_ready = payload["models"]["qwen_4bit"]["ready"]
     qwen_bf16_ready = payload["models"]["qwen_bf16"]["ready"]
     manifests = payload["manifests"]
+    long_cold_ready = (
+        PHASE130_LONG_COLD_REFERENCE_DIR.joinpath("cold_dense_long.jsonl").exists()
+        and PHASE130_LONG_COLD_REFERENCE_DIR.joinpath("cold_dense_long_summary.json").exists()
+    )
 
     payload["experiments"] = {
         "1.30Z": _status(
@@ -187,6 +211,26 @@ def main() -> int:
         "1.55H": _status(
             qwen_4bit_ready and short_ready,
             detail="K=1 short-bucket 32f boundary probe",
+        ),
+        "1.55I": _status(
+            qwen_4bit_ready and long_ready,
+            detail="K=1 long-bucket replication",
+        ),
+        "1.30AB": _status(
+            qwen_4bit_ready
+            and manifests["videomme_long_dev_holdout_v1"]["ready"]
+            and long_cold_ready,
+            detail={
+                "phase": "long-bucket Q0 keep-rate boundary sweep",
+                "reference_cold_dir": PHASE130_LONG_COLD_REFERENCE_DIR.as_posix(),
+                "reference_cold_ready": long_cold_ready,
+            },
+        ),
+        "1.30AE": _status(
+            qwen_4bit_ready
+            and manifests["videomme_dev_v1"]["ready"]
+            and manifests["videomme_holdout_v1"]["ready"],
+            detail="duration-conditioned full-union rerun with sweep-selected long keep-rate",
         ),
         "1.58": _status(
             qwen_4bit_ready and qwen_bf16_ready and args.max_safe_rss_gb >= 14.0,

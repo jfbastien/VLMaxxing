@@ -1,0 +1,182 @@
+{
+  "machine_policy": {
+    "max_safe_rss_gb": 10.0,
+    "note": "The closeout queue is planned for a 16 GB unified-memory laptop. Treat experiments expected to exceed the operator ceiling as blocked even if weights exist locally."
+  },
+  "models": {
+    "qwen_4bit": {
+      "ready": true,
+      "detail": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit"
+    },
+    "qwen_bf16": {
+      "ready": false,
+      "detail": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct"
+    }
+  },
+  "manifests": {
+    "videomme_dev_v1": {
+      "ready": true,
+      "detail": "research/benchmark_manifests/videomme_dev_v1.toml"
+    },
+    "videomme_holdout_v1": {
+      "ready": true,
+      "detail": "research/benchmark_manifests/videomme_holdout_v1.toml"
+    },
+    "videomme_long_dev_holdout_v1": {
+      "ready": true,
+      "detail": "research/benchmark_manifests/videomme_long_dev_holdout_v1.toml"
+    }
+  },
+  "video_sets": {
+    "phase1_55F_short": {
+      "037": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/EQ-67udZEeg.mp4"
+      },
+      "100": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/56yT3H_DjVE.mp4"
+      },
+      "116": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/qK4G2KpmqFU.mp4"
+      },
+      "120": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/s50vvwTystA.mp4"
+      },
+      "158": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/uJFbOrNrL3w.mp4"
+      },
+      "160": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/njc90ODIbLc.mp4"
+      },
+      "210": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/XS6ysDFTbLU.mp4"
+      }
+    },
+    "phase1_55G_medium": {
+      "320": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/z2APU5ob9Og.mp4"
+      },
+      "354": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/HooZ84rpovQ.mp4"
+      },
+      "364": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/3fQxvz4ENDg.mp4"
+      },
+      "380": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/2Bns2m5Bg4M.mp4"
+      },
+      "407": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/QxYHkKLaFmY.mp4"
+      },
+      "408": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/weOrNMHcDTI.mp4"
+      },
+      "426": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/vv6ATRPUjrI.mp4"
+      },
+      "484": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/PSyedQl9IiQ.mp4"
+      },
+      "486": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/WO86oRJt8lM.mp4"
+      },
+      "531": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/xk8PdL_PdSo.mp4"
+      }
+    },
+    "phase1_55I_long": {
+      "669": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/g1VFfVsZt7w.mp4"
+      },
+      "711": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/XOfeqRgaF1A.mp4"
+      },
+      "712": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/GDzuMTvHnJE.mp4"
+      },
+      "737": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/HT2iYl6E_Vo.mp4"
+      },
+      "756": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/i1p5PAgNvR0.mp4"
+      },
+      "758": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/rhDdA-7gEhs.mp4"
+      },
+      "794": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/XDq08lk5GnQ.mp4"
+      }
+    }
+  },
+  "experiments": {
+    "1.30Z": {
+      "ready": true,
+      "detail": "long-bucket kr_Q0=0.67 continuation"
+    },
+    "1.30AA": {
+      "ready": true,
+      "detail": "duration-conditioned full-union rerun"
+    },
+    "1.55F": {
+      "ready": true,
+      "detail": "Q3 from repaired post-Q2 state"
+    },
+    "1.55G": {
+      "ready": true,
+      "detail": "K=1 medium-bucket replication"
+    },
+    "1.55H": {
+      "ready": true,
+      "detail": "K=1 short-bucket 32f boundary probe"
+    },
+    "1.55I": {
+      "ready": true,
+      "detail": "K=1 long-bucket replication"
+    },
+    "1.30AB": {
+      "ready": true,
+      "detail": {
+        "phase": "long-bucket Q0 keep-rate boundary sweep",
+        "reference_cold_dir": "research/experiments/2026/artifacts/phase1_30Z_long_q0_kr067_20260424",
+        "reference_cold_ready": true
+      }
+    },
+    "1.30AE": {
+      "ready": true,
+      "detail": "duration-conditioned full-union rerun with sweep-selected long keep-rate"
+    },
+    "1.58": {
+      "ready": false,
+      "detail": {
+        "phase": "bf16 quantization control",
+        "bf16_checkpoint_present": false,
+        "required_safe_rss_gb": 14.0,
+        "configured_safe_rss_gb": 10.0,
+        "blocked_reason": "bf16 path exceeds the current local memory policy and/or weights are absent"
+      }
+    }
+  }
+}
