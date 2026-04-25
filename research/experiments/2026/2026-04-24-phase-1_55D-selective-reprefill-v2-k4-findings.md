@@ -42,9 +42,11 @@ From `summary_k4_n7.json`:
 - `baseline_accuracy = 17/21 = 0.8095`
 - `accuracy_delta_session_minus_baseline = 0.0`
 - `session_follow_up_accuracy = 11/14 = 0.7857`
-- `session_follow_up_median = 28.976 s`
-- `baseline_median = 105.933 s`
-- median speedup vs cold baseline `= 3.66×`
+- `session_follow_up_median (= paired session-follow-up median) = 28.320 s`
+- paired cold-follow-up median `= 94.429 s`
+- paired all-query cold median `= 105.933 s`
+- paired cold-follow-up / session-follow-up speedup `= 3.33×`
+- paired all-query cold / session-follow-up speedup `= 3.74×`
 - mean follow-up prefix coverage `= 0.7947`
 - `peak_rss_gb = 5.040`
 
@@ -77,8 +79,9 @@ The preregistered target was follow-up median `<= 15 s` and speedup
 
 Observed:
 
-- follow-up median `= 28.976 s`
-- speedup `= 3.66×`
+- follow-up median `= 28.320 s`
+- paired cold-follow-up / session-follow-up speedup `= 3.33×`
+- paired all-query cold / session-follow-up speedup `= 3.74×`
 
 So K=4 is a fidelity-recovery lever, but not yet a deployment-grade
 speedup lever on this local Qwen 7B regime.
@@ -144,5 +147,5 @@ Reason:
   improving speed.
 
 If K=2 keeps `Δacc` within the preregistered partial-recovery band while
-lifting the speedup substantially above `3.66×`, then 1.55D becomes a
+lifting the speedup substantially above `3.74×`, then 1.55D becomes a
 genuine recovery-speed frontier instead of a single-point rescue.

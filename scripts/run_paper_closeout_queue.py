@@ -17,7 +17,9 @@ ARTIFACT_ROOT = REPO_ROOT / "research/experiments/2026/artifacts"
 PREFLIGHT_SCRIPT = REPO_ROOT / "scripts/preflight_remaining_paper_experiments.py"
 PREFLIGHT_JSON = ARTIFACT_ROOT / "paper_closeout_preflight.json"
 QUEUE_STATUS_JSON = ARTIFACT_ROOT / "paper_closeout_queue_status.json"
-PHASE155D_K1_PAIR_METRICS = ARTIFACT_ROOT / "phase1_55D_selective_reprefill_v2/pair_metrics_k1_n7.json"
+PHASE155D_K1_PAIR_METRICS = (
+    ARTIFACT_ROOT / "phase1_55D_selective_reprefill_v2/pair_metrics_k1_n7.json"
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -118,10 +120,7 @@ def _load_phase155d_k1_reference_follow_up_median_ms() -> float:
     pair_metrics = _load_json(PHASE155D_K1_PAIR_METRICS)
     value = pair_metrics.get("session_follow_up_median_ms")
     if value is None:
-        raise SystemExit(
-            "missing session_follow_up_median_ms in "
-            f"{PHASE155D_K1_PAIR_METRICS}"
-        )
+        raise SystemExit(f"missing session_follow_up_median_ms in {PHASE155D_K1_PAIR_METRICS}")
     return float(value)
 
 

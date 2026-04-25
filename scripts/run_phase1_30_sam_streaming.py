@@ -15,6 +15,7 @@ import argparse
 import gc
 import importlib.util
 import json
+import statistics
 import sys
 import time
 import tomllib
@@ -234,7 +235,7 @@ def _summarize(rows: list[dict[str, Any]], label: str) -> dict[str, Any]:
         "accuracy": n_correct / len(rows),
         "n_parse_failures": n_parse_fail,
         "mean_end_to_end_ms": sum(elapsed) / len(elapsed),
-        "median_end_to_end_ms": elapsed[len(elapsed) // 2],
+        "median_end_to_end_ms": float(statistics.median(elapsed)),
         "p05_end_to_end_ms": elapsed[int(0.05 * (len(elapsed) - 1))],
         "p95_end_to_end_ms": elapsed[int(0.95 * (len(elapsed) - 1))],
         "mean_decode_ms": sum(decode) / len(decode),

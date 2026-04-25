@@ -22,6 +22,7 @@ import argparse
 import gc
 import json
 import resource
+import statistics
 import sys
 import time
 from dataclasses import dataclass
@@ -491,7 +492,6 @@ def main() -> int:
         if not rows:
             return {}
         elapsed = sorted(r["elapsed_ms"] for r in rows)
-        median = elapsed[len(elapsed) // 2]
         n_correct = sum(1 for r in rows if r["correct"])
         return {
             "label": key,
@@ -499,7 +499,7 @@ def main() -> int:
             "n_correct": n_correct,
             "accuracy": n_correct / len(rows),
             "mean_elapsed_ms": sum(elapsed) / len(elapsed),
-            "median_elapsed_ms": median,
+            "median_elapsed_ms": float(statistics.median(elapsed)),
             "p05_elapsed_ms": elapsed[int(0.05 * len(elapsed))],
             "p95_elapsed_ms": elapsed[int(0.95 * len(elapsed))],
         }

@@ -40,9 +40,13 @@ baseline in the same artifact directory:
 - `accuracy_delta_session_minus_baseline = -0.0952`
 - `session_follow_up_accuracy = 9/14 = 0.6429`
 - `baseline_follow_up_accuracy = 11/14 = 0.7857`
+- `session_follow_up_median (= paired session-follow-up median) = 13.472 s`
+- paired cold-follow-up median `= 97.215 s`
+- paired all-query cold median `= 97.264 s`
 - paired correctness diffs `= 4/21`
 - paired answer-choice diffs `= 6/21`
-- paired follow-up median speedup `= 7.38×`
+- paired cold-follow-up / session-follow-up speedup `= 7.22×`
+- paired all-query cold / session-follow-up speedup `= 7.22×`
 - `peak_rss_gb = 4.555`
 
 Query-index split:
@@ -83,7 +87,8 @@ Observed:
 
 Observed:
 
-- paired follow-up median speedup `= 7.38×`
+- paired cold-follow-up / session-follow-up speedup `= 7.22×`
+- paired all-query cold / session-follow-up speedup `= 7.22×`
 
 This is faster than fixed `K=1` on the dropped-`Q3` queries, but still
 well below the preregistered `>= 10×` gate.

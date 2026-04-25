@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import gc
 import json
+import statistics
 import sys
 import time
 from dataclasses import dataclass
@@ -187,7 +188,7 @@ def _summarise(rows: list[dict[str, Any]], key: str) -> dict[str, Any]:
         "n_correct": n_correct,
         "accuracy": n_correct / len(rows),
         "mean_elapsed_ms": sum(elapsed) / len(elapsed),
-        "median_elapsed_ms": elapsed[len(elapsed) // 2],
+        "median_elapsed_ms": float(statistics.median(elapsed)),
         "p05_elapsed_ms": elapsed[int(0.05 * (len(elapsed) - 1))],
         "p95_elapsed_ms": elapsed[int(0.95 * (len(elapsed) - 1))],
     }

@@ -31,10 +31,11 @@ From `summary_k2_n7.json` plus the paired row analysis:
 - `baseline_accuracy = 17/21 = 0.8095`
 - `accuracy_delta_session_minus_baseline = 0.0`
 - `session_follow_up_accuracy = 11/14 = 0.7857`
-- `session_follow_up_median = 16.006 s`
-- paired follow-up median `= 15.272 s`
-- cold baseline median `= 102.627 s`
-- median speedup vs cold baseline `= 6.72×`
+- `session_follow_up_median (= paired session-follow-up median) = 15.272 s`
+- paired cold-follow-up median `= 95.183 s`
+- paired all-query cold median `= 102.627 s`
+- paired cold-follow-up / session-follow-up speedup `= 6.23×`
+- paired all-query cold / session-follow-up speedup `= 6.72×`
 - mean follow-up prefix coverage `= 0.8938`
 - `peak_rss_gb = 3.305`
 
@@ -69,7 +70,8 @@ The preregistered target was follow-up median `<= 15 s` and speedup
 Observed:
 
 - paired follow-up median `= 15.272 s`
-- speedup `= 6.72×`
+- paired cold-follow-up / session-follow-up speedup `= 6.23×`
+- paired all-query cold / session-follow-up speedup `= 6.72×`
 
 So K=2 misses the median gate by only ~0.27 s, but still falls well
 short of the `10×` multiplier gate.
@@ -108,7 +110,8 @@ The scientific picture after K=2 is:
 K=2 therefore upgrades 1.55D from a single rescue point to a real
 **speed/fidelity frontier**:
 
-- K=4: no observed paired drift on n=21, `3.66×`, RSS miss
+- K=4: no observed paired drift on n=21, `3.74×` all-query / `3.33×`
+  same-class follow-up, RSS miss
 - K=2: no observed paired drift on n=21, `6.72×`, RSS pass
 
 That still does not earn the preregistered deployment claim, but it is

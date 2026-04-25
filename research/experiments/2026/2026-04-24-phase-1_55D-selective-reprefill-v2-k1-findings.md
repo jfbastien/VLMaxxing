@@ -30,12 +30,13 @@ From `summary_k1_n7.json` plus the paired row analysis:
 - `baseline_accuracy = 17/21 = 0.8095`
 - `accuracy_delta_session_minus_baseline = 0.0`
 - `session_follow_up_accuracy = 11/14 = 0.7857`
-- `session_follow_up_median = 11.527 s`
-- paired follow-up median `= 10.136 s`
+- `session_follow_up_median (= paired session-follow-up median) = 10.136 s`
 - paired cold-follow-up median `= 96.095 s`
 - paired all-query cold median `= 98.433 s`
-- paired cold-follow-up median over session-follow-up median `= 9.48×`
-- paired all-query cold median over session-follow-up median `= 9.71×`
+- paired cold-follow-up median over session-follow-up median
+  `= 9.48× = 96.095 / 10.136`
+- paired all-query cold median over session-follow-up median
+  `= 9.71× = 98.433 / 10.136`
 - mean follow-up prefix coverage `= 0.9434`
 - `peak_rss_gb = 4.886`
 
@@ -70,11 +71,13 @@ preregistered partial-recovery target, but it should still be written as
 Observed:
 
 - paired follow-up median `= 10.136 s`
-- speedup `= 9.71×`
+- paired cold-follow-up / session-follow-up speedup `= 9.48×`
+- paired all-query cold / session-follow-up speedup `= 9.71×`
 
 So K=1 misses the intended deployment crossover by a narrow but real
 margin. It earns the latency side (`10.136 s <= 10.5 s`) but misses the
-headline multiplier (`9.71× < 10×`). The result is close enough to
+headline multiplier (`9.71× < 10×` on the all-query denominator; `9.48×`
+on the same-class follow-up denominator). The result is close enough to
 matter scientifically, but it does not earn the `>= 10×` paper-grade
 fixed-policy claim.
 
@@ -98,10 +101,11 @@ Observed:
 
 K=1 is now the **best fixed policy** in the 1.55D lane:
 
-- K=4: no observed paired drift on n=21, `3.66×`, RSS narrow fail
+- K=4: no observed paired drift on n=21, `3.74×` all-query / `3.33×`
+  same-class follow-up, RSS narrow fail
 - K=2: no observed paired drift on n=21, `6.72×`, RSS pass
 - K=1: no observed paired drift on n=21, `9.71×` all-query / `9.48×`
-  follow-up, RSS pass
+  same-class follow-up, RSS pass
 
 That gives a clean scientific conclusion:
 

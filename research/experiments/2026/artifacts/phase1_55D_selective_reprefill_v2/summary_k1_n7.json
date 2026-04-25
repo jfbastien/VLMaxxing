@@ -23,7 +23,7 @@
     "n_correct": 11,
     "accuracy": 0.7857142857142857,
     "mean_elapsed_ms": 13905.159818642858,
-    "median_elapsed_ms": 11527.443875,
+    "median_elapsed_ms": 10135.5433955,
     "p05_elapsed_ms": 4202.792084,
     "p95_elapsed_ms": 34975.396167
   },
