@@ -1,0 +1,35 @@
+{
+  "label": "phase1_55G_k1_medium_replication",
+  "n_pairs": 30,
+  "n_follow_up_pairs": 20,
+  "paired_correctness_diffs": 0,
+  "paired_choice_diffs": 0,
+  "pathological_follow_up_hits": 0,
+  "pathological_q3_hits": 0,
+  "session_follow_up_median_ms": 7837.2663545,
+  "baseline_follow_up_median_ms": 84345.4409995,
+  "baseline_all_query_median_ms": 85037.88399999999,
+  "speedup_follow_up_median_cold_over_session": 10.762099587322378,
+  "speedup_all_query_median_cold_over_session_follow_up": 10.850452205337255,
+  "q_index_breakdown": {
+    "q1": {
+      "n": 10,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    },
+    "q2": {
+      "n": 10,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    },
+    "q3": {
+      "n": 10,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    }
+  },
+  "mismatches": []
+}

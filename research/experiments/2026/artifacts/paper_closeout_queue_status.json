@@ -36,7 +36,66 @@
         "follow_up_pruning_materially_active": false
       },
       "auto_commit": "committed"
+    },
+    {
+      "phase": "1.30AA",
+      "runtime_estimate": "~5.5-7.5 h",
+      "rationale": "Replace the 1.30Y splice with a fully measured, duration-conditioned no-splice union rerun.",
+      "ready": true,
+      "command": [
+        "bash",
+        "/Users/jfb/s/codec-through/scripts/run_phase1_30AA_duration_conditioned_union.sh"
+      ],
+      "timeout_seconds": 40500,
+      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_30AA_duration_conditioned_union",
+      "status": "skipped-by-1.30Z-gate"
+    },
+    {
+      "phase": "1.55F",
+      "runtime_estimate": "~60-75 min",
+      "rationale": "Test whether the 1.55E Q3 collapse is caused by falling back to the unrepaired Q1 cache instead of reusing the repaired Q2 state.",
+      "ready": true,
+      "command": [
+        "bash",
+        "/Users/jfb/s/codec-through/scripts/run_phase1_55F_q3_post_q2_state.sh"
+      ],
+      "timeout_seconds": 7200,
+      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_55F_q3_post_q2_state",
+      "status": "failed-command",
+      "error": {
+        "type": "CalledProcessError",
+        "returncode": 1
+      }
+    },
+    {
+      "phase": "1.55G",
+      "runtime_estimate": "~1.7-2.2 h",
+      "rationale": "Replicate the 1.55D K=1 no-observed-drift point on the fixed medium-bucket tranche.",
+      "ready": true,
+      "command": [
+        "bash",
+        "/Users/jfb/s/codec-through/scripts/run_phase1_55G_k1_medium_replication.sh"
+      ],
+      "timeout_seconds": 12600,
+      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_55G_k1_medium_replication",
+      "status": "completed",
+      "gate": {
+        "paired_correctness_diffs": 0,
+        "paired_choice_diffs": 0,
+        "pathological_q3_hits": 0,
+        "speedup_all_query_median_cold_over_session_follow_up": 10.850452205337255,
+        "session_follow_up_median_ms": 7837.2663545,
+        "peak_rss_gb": 6.096961536,
+        "baseline_accuracy": 0.5333333333333333,
+        "pass_fidelity": true,
+        "pass_exact_match": null,
+        "pass_q3_pathology": true,
+        "pass_speed": true,
+        "pass_memory": false,
+        "pass_signal_floor": true
+      },
+      "auto_commit": "committed"
     }
   ],
-  "updated_at": "2026-04-25T03:55:20+00:00"
+  "updated_at": "2026-04-25T05:17:27+00:00"
 }
