@@ -16,7 +16,7 @@ from typing import Any, cast
 import mlx.core as mx
 import numpy as np
 from mlx_lm.models.cache import trim_prompt_cache
-from mlx_vlm.models.cache import make_prompt_cache  # type: ignore[import-untyped]
+from mlx_vlm.models.cache import make_prompt_cache
 
 
 @dataclass(frozen=True, slots=True)
