@@ -103,11 +103,16 @@ Failure:
 
 Acceptance:
 
-- `peak_rss_gb <= 5.0`
+- `peak_rss_gb <= 5.5`
 
 Failure:
 
-- `peak_rss_gb > 5.0`
+- `peak_rss_gb > 5.5`
+
+This was raised from `5.0` after `1.55G` measured `6.10 GB` on the analogous
+medium tranche. `5.5` is still tight against `1.55D K=1`'s landed `4.886 GB`
+but admits the small extra cache state kept alive by
+`q3_cache_source=post_q2_repaired`.
 
 ## Decision rules
 

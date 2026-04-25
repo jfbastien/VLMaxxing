@@ -129,7 +129,7 @@ def _steps() -> list[QueueStep]:
             ),
             command=(),
             timeout_seconds=40_500,
-            artifact_dir=ARTIFACT_ROOT / "phase1_30AE_duration_conditioned_union_kr000",
+            artifact_dir=ARTIFACT_ROOT / "phase1_30AE_duration_conditioned_union_pending",
             readiness_key="1.30AE",
         )
     )
@@ -421,6 +421,7 @@ def main() -> int:
             if args.dry_run:
                 record["gate"] = "pending"
             else:
+                assert selected_130ab_rate is not None  # narrowed by skip at line ~376
                 record["gate"] = _phase130_gate_from_artifact(
                     _130ae_gate_path(selected_130ab_rate),
                     expected_queries=171,
@@ -440,7 +441,7 @@ def main() -> int:
                         choice_limit=2,
                         q3_pathological_limit=2,
                         follow_up_pathological_limit=2,
-                        max_rss_gb=5.0,
+                        max_rss_gb=5.5,
                         max_session_follow_up_median_ms=_load_phase155d_k1_reference_follow_up_median_ms(),
                         strict_correctness_limit=0,
                         strict_choice_limit=0,
