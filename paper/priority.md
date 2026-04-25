@@ -167,64 +167,91 @@ in its own dimension.
    benchmark coverage on Qwen, not proof-of-transfer.
 
 4. **Local paired streaming-protocol reproduction of Sam's N=60 line.**
-   **REOPENED AS A BOUNDED ADMISSION-POLICY LANE 2026-04-24, with a
-   concrete closeout queue 2026-04-25.** The original 1.30 stack was a
-   hard negative; the successor 1.30W policy improves it to cold
-   `0.561` vs streaming `0.503` (`Δacc = −0.0585`) at `2.7869×`, with
-   exact Q0 parity and clean format, but still below the `3.0×` rescue
-   floor. Wording discipline: 1.30W should be described as **dense-Q0
-   admission plus the existing session-reuse follow-up path**, not as
-   proven "pruned follow-ups", until the new image-token activity logs
-   show how much follow-up vision pruning is actually active.
+   **CLOSEOUT QUEUE EXECUTED 2026-04-25; THE `kr_Q0 = 0.67` LONG-BUCKET
+   CANDIDATE IS FALSIFIED.** The 1.30Z generalization test on the full
+   long bucket (n=18 sessions / 54 paired queries) returned
+   `Δacc = −0.130`, well past the `−0.10` rescue threshold (CI95
+   `[−0.278, +0.019]`, speedup `3.12×`, format clean). The duration-
+   conditioned admission policy at `kr_Q0=0.67 + kr_followup=0.50` is
+   closed in this configuration. The closeout queue's
+   `should_launch_130aa = pass_rescue and pass_format` gate correctly
+   skipped 1.30AA (saved ~6 hours of MLX compute on a doomed-by-policy
+   run). The 1.30Y residual-pair scout was indeed selection-biased.
 
-   The right next steps are now explicit and pre-registered:
+   The 1.30Z run also produced the first quantitative measurement that
+   the `kr_followup = 0.50` config is mechanically a no-op under prompt-
+   cache reuse: `streaming_follow_up_vision_pruning_active_fraction = 0.0`
+   exactly across all 36 long-bucket follow-up rows, with
+   `streaming_follow_up_all_image_tokens_reused_fraction = 1.0`. **All
+   1.30 lane wording must say "Q0 admission + K-cache reuse," never
+   "follow-up vision pruning."** This is now empirical, not inferred.
 
-   - **1.30Z** — full long-bucket continuation of the promoted
-     `kr_Q0 = 0.67` candidate (`~3.5–5 h`). This is the required
-     generalization test for the selection-biased `1.30Y` scout.
-   - **1.30AA** — fresh duration-conditioned full-union rerun
-     (`~5.5–7.5 h`) with short/medium Q0 dense, long Q0 `0.67`, and
-     follow-ups `0.50`. This is the first no-splice paper-grade bridge
-     candidate in the lane. Both runs now emit paired bootstrap CIs for
-     `Δacc`, and follow-up vision activity is interpreted with an explicit
-     threshold: `< 0.10` means the family is written as dense-Q0 admission +
-     K-cache reuse rather than "pruned follow-ups."
+   The lane reverts to its pre-`1.30Y` state: the best landed bridge
+   result remains `1.30W` (full-union dense Q0, n=171, `Δacc = −0.0585`,
+   `2.79×`) — a "bounded near-miss" against the `3.0×` rescue floor.
+
+   Pending follow-ups (not auto-runnable; require pre-registration plus
+   either compute or small driver work):
+
+   - **1.30AB** — finer-grained long-Q0 sweep at
+     `kr_Q0 ∈ {0.75, 0.80, 0.85, 0.90}` (~4h compute). Locates the
+     keep-rate boundary where the rescue band returns. Required if we
+     want any "deployable duration-conditioned admission policy" claim.
+   - **1.30AC** — true V-only follow-ups by forcing cache invalidation
+     between queries (~3-4h compute + small driver change). Only path
+     to a legitimate "follow-up vision pruning" claim, since the current
+     prompt-cache reuse path mechanically suppresses the V-pruning.
 
    1.30X remains important, but its `Δacc = 0.0000`, `3.0781×` point is
-   an **oracle upper bound**, not a deployable policy. The lane is not
-   "rescued" yet; it is reopened and now has a clean measured queue to
-   settle it.
+   an **oracle upper bound**, not a deployable policy. The lane is no
+   longer reopened against a measured target — it is closed at the
+   currently-tested keep-rates pending a finer sweep or a cache-
+   invalidation variant.
 
 5. **1.55D selective re-prefill frontier (fidelity recovery).** The v1
    driver was infra-falsified, but that is no longer the live state.
    Repo-local v2 now runs the intended multimodal tail-reprefill regime.
    **K=1 LANDED 2026-04-24** on the full 7-clip 20f short tranche and
-   is now the best fixed operating point: `Δacc = 0.0` (`17/21` vs
-   `17/21`), **no observed paired correctness or choice drift on n=21**,
-   pathological attractors `0/14`, paired all-query cold median over
-   session-follow-up median `9.71×`, paired cold-follow-up median over
-   session-follow-up median `9.48×`, peak RSS `4.886 GB`. K=2 and K=4
-   remain useful lower-speed comparison points (`6.72×` and `3.66×`).
+   **EXTENDED TO MEDIUM 2026-04-25** as `1.55G`. Combined picture:
 
-   The first adaptive follow-up is now also closed:
+   | run | regime | n_paired | paired diffs | speedup (same-class) | pathology | RSS |
+   | --- | --- | --- | --- | --- | --- | --- |
+   | 1.55D K=1 | 20f short, 7 clips | 21 | 0/21 / 0/21 | 9.48× | 0/14 follow-up, 0/7 Q3 | 4.886 GB |
+   | 1.55G K=1 | 20f medium, 10 clips | 30 | 0/30 / 0/30 | 10.76× | 0/20 follow-up, 0/10 Q3 | 6.097 GB |
+   | **combined** | 20f short+medium | **51** | **0/51 / 0/51** | 9.48-10.76× | **0/41** | 4.9-6.1 GB |
+
+   K=2 and K=4 remain useful lower-speed comparison points (`6.72×`
+   and `3.66×`). With n=51 zero observed paired drift, the upper one-
+   sided 95% CI on the diff rate is ≈ 5.7% (rule-of-three on n=51); the
+   paper claim should remain "no observed paired drift" but the regime
+   scope is now multi-bucket, not short-only.
+
+   The Q3 adaptive follow-up is now also partly closed and partly
+   blocked:
    **1.55E (`Q2=K1`, `Q3=K0`) FALSIFIES cleanly** with
    `Δacc = -0.0952`, paired correctness diffs `4/21`, paired choice
    diffs `6/21`, and pathological-like outputs on `7/7` third queries.
+   **1.55F (`Q2=K1`, `Q3=K0` with `q3_cache_source=post_q2_repaired`)
+   IS BLOCKED** by a runner crash: `generate_qwen_tail_with_explicit_positions`
+   does not handle the empty-`grid_thw` case that the `K=0` text-only
+   tail produces, and `mx.concatenate` hard-errors inside the upstream
+   Qwen `vision_tower.rot_pos_emb`. Recovery is ~30 min of code work
+   plus a CPU smoke test plus the original ~60-75 min experiment rerun.
 
-   The next two paper-relevant follow-ups are now explicit and ready:
+   Pending follow-ups, in order of paper leverage:
 
-   - **1.55F** — Q3 from the repaired post-Q2 state (`~60–75 min`):
-     tests whether the Q3 catastrophe was caused by reverting to the
-     wrong cache source rather than by adaptive reuse itself. The prereg now
-     distinguishes a loose mechanistic pass from the stricter `0/0` exact-match
-     bar against `1.55D K=1`.
-   - **1.55G** — medium-bucket replication of the landed K=1 point
-     (`~1.7–2.2 h`): tests whether the current strongest recovery point
-     is short-only or multi-regime, with an explicit baseline-accuracy floor so
-     a low-signal slice cannot be over-interpreted.
-   - **1.55H** — short-bucket `32f` K=1 boundary probe (`~1.5–2.0 h`,
-     post-primary/P2): asks whether the repaired K=1 path survives after the
-     7B lane crosses into the known long-context basin depth.
+   - **1.55F** — Q3 from the repaired post-Q2 state (~60–75 min once
+     the bug is fixed). Tests whether the Q3 catastrophe was caused by
+     reverting to the wrong cache source rather than by adaptive reuse
+     itself.
+   - **1.55I** — long-bucket K=1 replication (preregister required;
+     ~2–3h): the natural next scope step after short+medium clean. Has
+     a real risk that long-bucket baseline accuracy falls below the
+     0.40 signal floor; requires a tranche-curation step.
+   - **1.55H** — short-bucket `32f` K=1 boundary probe (~1.5–2.0 h):
+     asks whether the repaired K=1 path survives when the 7B lane crosses
+     into the known long-context basin depth. Wrapper already coded; not
+     auto-queued during the 2026-04-25 AFK session.
 
    **Do not confuse this with 1.55B**, which is the later persistent-KV
    × decode-acceleration composition phase and still depends on 1.54
