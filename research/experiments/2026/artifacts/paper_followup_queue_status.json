@@ -35,7 +35,38 @@
         "pass_signal_floor": null
       },
       "auto_commit": "committed"
+    },
+    {
+      "phase": "1.55I",
+      "runtime_estimate": "~60-90 min",
+      "rationale": "Extend the landed K=1 selective re-prefill result to the long bucket so C-PERSIST can either become a three-regime result or be explicitly scoped to short+medium.",
+      "ready": true,
+      "timeout_seconds": 10800,
+      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_55I_k1_long_replication",
+      "command": [
+        "bash",
+        "/Users/jfb/s/codec-through/scripts/run_phase1_55I_k1_long_replication.sh"
+      ],
+      "status": "completed",
+      "gate": {
+        "paired_correctness_diffs": 0,
+        "paired_choice_diffs": 0,
+        "pathological_follow_up_hits": 0,
+        "pathological_q3_hits": 0,
+        "speedup_all_query_median_cold_over_session_follow_up": 11.23784764931321,
+        "session_follow_up_median_ms": 7231.3236664999995,
+        "peak_rss_gb": 5.93977344,
+        "baseline_accuracy": 0.3333333333333333,
+        "pass_fidelity": true,
+        "pass_exact_match": true,
+        "pass_follow_up_pathology": true,
+        "pass_q3_pathology": true,
+        "pass_speed": true,
+        "pass_memory": true,
+        "pass_signal_floor": true
+      },
+      "auto_commit": "committed"
     }
   ],
-  "updated_at": "2026-04-25T08:03:14+00:00"
+  "updated_at": "2026-04-25T09:08:19+00:00"
 }
