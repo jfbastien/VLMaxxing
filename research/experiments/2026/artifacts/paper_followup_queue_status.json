@@ -97,7 +97,40 @@
         "pass_signal_floor": null
       },
       "auto_commit": "committed"
+    },
+    {
+      "phase": "1.30AB@0.75",
+      "runtime_estimate": "~25-45 min",
+      "rationale": "Measure the long-bucket Q0 keep-rate boundary after 1.30Z falsified kr_Q0=0.67, keeping the same follow-up cache-reuse regime.",
+      "ready": true,
+      "timeout_seconds": 5400,
+      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_30AB_long_q0_kr075",
+      "command": [
+        "bash",
+        "/Users/jfb/s/codec-through/scripts/run_phase1_30AB_long_q0_candidate.sh",
+        "0.75"
+      ],
+      "status": "completed",
+      "gate": {
+        "accuracy_delta": -0.18518518518518517,
+        "accuracy_delta_ci95": [
+          -0.3148148148148148,
+          -0.07407407407407407
+        ],
+        "speedup": 3.369847174636072,
+        "parse_failures": 0,
+        "degenerates": 1,
+        "n_paired_queries": 54,
+        "n_paired_sessions": 18,
+        "pass_complete_pairing": true,
+        "pass_rescue": false,
+        "pass_format": false,
+        "follow_up_vision_pruning_active_fraction": 0.0,
+        "follow_up_all_image_tokens_reused_fraction": 1.0,
+        "follow_up_pruning_materially_active": false
+      },
+      "auto_commit": "committed"
     }
   ],
-  "updated_at": "2026-04-25T10:32:02+00:00"
+  "updated_at": "2026-04-25T11:18:40+00:00"
 }
