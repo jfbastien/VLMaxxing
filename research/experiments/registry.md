@@ -320,26 +320,29 @@ authoritative in the per-phase notes under
   notes: The purpose of this scout is deliberately narrow: after 1.30X, the only remaining format failures under the deployable `dense_on_medium_short` policy are `videomme:long:783-2` and `videomme:long:847-3`, and forcing those two sessions onto the dense-Q0 family misses the full-policy `3.0×` line by only `0.006×`. The scout shows that a cheaper long-session Q0 regime is still viable: `kr_Q0 = 0.67` stays clean on both binding sessions and improves the pair to `5/6`, while `kr_Q0 = 0.75` reintroduces a degenerate follow-up. Wording discipline: this is a **selection-biased routing scout**, not paper evidence. The splice against the landed medium/short dense-Q0 results (`Δacc ≈ -0.0702`, `3.0023×`) is only a design hint that justifies a full long-bucket continuation; it must not be treated as a measured full-policy result.
 
 - phase_id: 1.30Z
-  status: proposed (pre-registered; ready to run)
-  authoritative_note: research/experiments/2026/2026-04-25-phase-1_30Z-long-q0-kr067-prereg.md
-  authoritative_artifacts: []
-  current_best_policy: n/a until the long-bucket continuation runs
-  supersedes: []
-  paper_relevance: primary continuation gate for the local streaming bridge
-  prereg_outcome: (pending)
-  runtime_estimate: ~3.5–5.0 h total (cold long bucket + streaming long bucket + paired analysis)
-  notes: First unbiased test of the `1.30Y` candidate. This run must validate or reject `kr_Q0 = 0.67` on the full long bucket before any duration-conditioned full-union rerun. New instrumentation logs `image_tokens_recomputed` / `vision_pruning_active` per follow-up so the result can distinguish true follow-up pruning activity from pure Q0 admission + K-cache reuse. The committed cold control predates those fields, but the analyzer reads the mechanistic activity signal from the streaming rows only, so reusing the cold arm is scientifically acceptable. Interpret `<0.10` active fraction as negligible follow-up pruning.
+  status: landed (FAIL rescue gate; falsifies 1.30Y candidate)
+  authoritative_note: research/experiments/2026/2026-04-25-phase-1_30Z-long-q0-kr067-findings.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_30Z_long_q0_kr067_20260424/pair_summary.json
+    - research/experiments/2026/artifacts/phase1_30Z_long_q0_kr067_20260424/per_clip_buckets.json
+  current_best_policy: closed for `kr_Q0 = 0.67` long-bucket Q0 admission; reverts to 1.30W (full-union dense Q0 + cache-reused follow-ups, Δ=−0.058 / n=171)
+  supersedes:
+    - 1.30Y (selection-biased residual scout; falsified at scale)
+  paper_relevance: primary (closes the duration-conditioned admission lane in this configuration)
+  prereg_outcome: H1 FAIL (Δacc=−0.130 / n=54, beyond the −0.10 rescue gate; CI95=[−0.278, +0.019]); H2 PASS (0 parse failures, 0 degenerate); speedup 3.12× passes; H4 PASS-as-explicitly-absent (vision_pruning_active_fraction=0.0, all_image_tokens_reused_fraction=1.0 — the relabel-as-Q0-admission rule fires).
+  runtime_estimate: complete (~58 min on this laptop because the cold arm was reused; streaming arm only)
+  notes: First measured generalization test of the 1.30Y residual-pair scout. The result both falsifies the kr_Q0=0.67 candidate and provides the first quantitative measurement that the kr_followup=0.50 vision config is mechanically a no-op under prompt-cache reuse on every long-bucket follow-up. Auto-committed by the closeout queue runner as `6df2369`.
 
 - phase_id: 1.30AA
-  status: proposed (pre-registered; ready to run after 1.30Z)
+  status: skipped-by-1.30Z-gate (pre-registered; correctly not run after 1.30Z failed H1)
   authoritative_note: research/experiments/2026/2026-04-25-phase-1_30AA-duration-conditioned-union-prereg.md
   authoritative_artifacts: []
-  current_best_policy: n/a until the measured no-splice union rerun lands
+  current_best_policy: n/a (the gate that would have unlocked this run did not pass)
   supersedes: []
-  paper_relevance: primary (first publishable no-splice bridge candidate in the 1.30 family)
-  prereg_outcome: (pending)
-  runtime_estimate: ~5.5–7.5 h total (cold union + streaming union + paired analysis)
-  notes: This is the first fully measured version of the duration-conditioned policy family suggested by 1.30X and 1.30Y: short/medium Q0 dense, long Q0 at `kr=0.67`, follow-ups at `kr=0.50`. It should only run if 1.30Z keeps the long bucket inside the rescue/format band. The pair analyzer now emits paired bootstrap CIs for `Δacc`; interpret follow-up pruning activity with the same `<0.10 = negligible` rule used in 1.30Z.
+  paper_relevance: primary (would have produced the first publishable no-splice bridge candidate in the 1.30 family if 1.30Z had passed)
+  prereg_outcome: not run; the closeout queue's `should_launch_130aa = pass_rescue and pass_format` gate evaluated to False after 1.30Z landed Δacc=−0.130. Saved an estimated ~6 hours of MLX compute on a doomed-by-policy run.
+  runtime_estimate: not consumed
+  notes: Re-running 1.30AA only makes sense if 1.30Z's underlying policy family is replaced (e.g. 1.30AB long-Q0 finer sweep) or if 1.30AC enables true follow-up vision pruning by invalidating the cache between queries. The current configuration is closed.
 
 - phase_id: 1.31
   status: proposed
@@ -913,37 +916,41 @@ authoritative in the per-phase notes under
   notes: This run answers the simplest adaptive question cleanly: `Q2` remains the real rescue point (`7/7` correct, `0/7` pathological-like outputs), but `Q3` is not safely dispensable under the retained-full-cache path (`2/7` correct, `7/7` pathological-like outputs). The lane should not spend more time on blind query-index omission variants. If 1.55 continues, the next adaptive move must change the post-Q2 state itself or add an explicit risk signal for Q3. Cross-run caveat: compared with the earlier 1.55D K=1 baseline, one false item (`videomme:short:120-3`) flipped wrong-answer choice while remaining incorrect; the prereg verdict is therefore anchored to the matched baseline rerun inside the 1.55E artifact directory.
 
 - phase_id: 1.55F
-  status: proposed (pre-registered; ready to run)
-  authoritative_note: research/experiments/2026/2026-04-25-phase-1_55F-q3-post-q2-state-prereg.md
+  status: BLOCKED — runner crash on K=0 + post_q2_repaired path; needs code fix
+  authoritative_note: research/experiments/2026/2026-04-25-phase-1_55F-q3-post-q2-state-failure-note.md
   authoritative_artifacts: []
-  current_best_policy: n/a until the adaptive post-Q2-state run lands
+  current_best_policy: n/a (no data produced; experiment did not complete)
   supersedes: []
   paper_relevance: primary continuation of the C-PERSIST recovery lane
-  prereg_outcome: (pending)
-  runtime_estimate: ~60–75 min total
-  notes: Direct follow-up to 1.55E. Tests whether the Q3 collapse was caused by reverting to the original Q1 cache rather than by adaptive reuse per se. Uses the new `--q3-cache-source post_q2_repaired` path and explicit paired metrics output. The prereg now distinguishes the main mechanistic pass (`<=1/21`, `<=2/21`) from the stricter `0/0` exact-match bar against 1.55D K=1.
+  prereg_outcome: not run; runner crashed on first clip Q3 inside `qwen_selective_reprefill.generate_qwen_tail_with_explicit_positions` because `K=0 + post_q2_repaired` produces an empty `grid_thw` that hard-errors `mx.concatenate` inside the upstream Qwen vision tower's `rot_pos_emb`. Q1 + Q2 of clip 037 completed cleanly before the Q3 crash.
+  runtime_estimate: not yet consumed (~60-75 min once code path is fixed)
+  notes: Fix is small (short-circuit the vision-tower call when there are zero new image tokens to embed; embed via `model.language_model.embed_tokens(...)` in that case). Once Codex applies the fix and a CPU smoke test passes, rerun the wrapper end-to-end and treat as paper-relevant.
 
 - phase_id: 1.55G
-  status: proposed (pre-registered; ready to run)
-  authoritative_note: research/experiments/2026/2026-04-25-phase-1_55G-k1-medium-replication-prereg.md
-  authoritative_artifacts: []
-  current_best_policy: n/a until the medium-bucket replication lands
+  status: landed (PASS science gates; H4 RSS narrowly missed against an over-tight prereg ceiling)
+  authoritative_note: research/experiments/2026/2026-04-25-phase-1_55G-k1-medium-replication-findings.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_55G_k1_medium_replication/pair_metrics_k1_n10.json
+    - research/experiments/2026/artifacts/phase1_55G_k1_medium_replication/summary_k1_n10.json
+    - research/experiments/2026/artifacts/phase1_55G_k1_medium_replication/session_k1_n10.jsonl
+    - research/experiments/2026/artifacts/phase1_55G_k1_medium_replication/baseline_k1_n10.jsonl
+  current_best_policy: K=1 selective re-prefill at 20f preserves answer identity exactly on the medium tranche (10 clips × 3 queries, 0/30 paired diffs); ~10× follow-up speedup
   supersedes: []
-  paper_relevance: primary scope check for the best current C-PERSIST recovery point
-  prereg_outcome: (pending)
-  runtime_estimate: ~1.7–2.2 h total
-  notes: Cheapest direct test of whether the landed `1.55D K=1` no-observed-drift result is short-bucket-specific or survives at least one broader regime. Uses the fixed medium tranche listed in the prereg and the new paired metrics analyzer. Includes an explicit baseline-accuracy floor so a low-signal medium slice cannot be over-interpreted as preservation.
+  paper_relevance: primary (turns 1.55D K=1 from short-only to short+medium scope; combined n=51 with 0 observed paired drift)
+  prereg_outcome: H1 EARNED (0/30 correctness, 0/30 choice — the tightest possible value); H2 EARNED (0/20 follow-up pathological, 0/10 Q3 pathological); H3 EARNED strongly (speedup_all_query_median_cold_over_session_follow_up = 10.85×; same-class follow-up speedup = 10.76×); H4 FAIL on the strict letter (peak_rss_gb = 6.097 > 5.5 prereg ceiling) but PASS in spirit (well within the 9 GB safe-RSS guard; ceiling was set too aggressively before any 20f-medium evidence existed); H5 EARNED (baseline accuracy = 0.533 ≥ 0.40 floor).
+  runtime_estimate: complete (~78.8 min on this laptop)
+  notes: First multi-regime confirmation of the C-PERSIST K=1 lane. Speedup *increases* on medium vs short (10.76× vs 9.48×) because the larger 20f-medium prefill (8100 tokens vs 3000 short) makes K=1 cache reuse save proportionally more wall-time. Auto-committed by the closeout queue runner as `45ffc94`.
 
 - phase_id: 1.55H
-  status: proposed (pre-registered; ready to run manually after the primary queue)
+  status: proposed (pre-registered; ready to run manually); paper-leverage upgraded after 1.55G's clean PASS makes the 32f depth-boundary the next obvious scope test
   authoritative_note: research/experiments/2026/2026-04-25-phase-1_55H-k1-32f-short-probe-prereg.md
   authoritative_artifacts: []
   current_best_policy: n/a until the 32f short-bucket boundary probe lands
   supersedes: []
-  paper_relevance: secondary-but-high-value boundary check for the best current C-PERSIST recovery point
+  paper_relevance: secondary-but-high-value boundary check for the C-PERSIST recovery envelope
   prereg_outcome: (pending)
   runtime_estimate: ~1.5–2.0 h total
-  notes: Short-bucket depth-boundary companion to 1.55G. Tests whether the landed K=1 repair survives when Qwen 7B crosses into the known 32f long-context basin depth. If 1.55G passes and 1.55H fails, the recovery envelope becomes content-broadened but depth-bounded.
+  notes: Short-bucket depth-boundary companion to 1.55G. Tests whether the landed K=1 repair survives when Qwen 7B crosses into the known 32f long-context basin depth. With 1.55G PASSing on medium 20f, 1.55H is the natural next probe — the question now is depth, not regime.
 
 - phase_id: 1.55B
   status: proposed (deferred)
