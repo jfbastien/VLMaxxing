@@ -296,6 +296,14 @@ def main() -> int:
     parser.add_argument("--summary", type=Path, required=True)
     parser.add_argument("--allow-dirty", action="store_true")
     parser.add_argument("--rss-guard-mb", type=int, default=0)
+    parser.add_argument(
+        "--reset-cache-between-queries",
+        action="store_true",
+        help=(
+            "Disable prompt-cache reuse across follow-up queries so each query re-enters "
+            "the vision tower under its configured keep rate."
+        ),
+    )
     parser.add_argument("--vision-tower-layer", type=int, default=2)
     parser.add_argument("--vision-tower-keep-rate", type=float, default=1.0)
     parser.add_argument(
@@ -346,6 +354,13 @@ def main() -> int:
         raise SystemExit(
             "thresholded drift refresh is not implemented yet; use --drift-refresh-policy off "
             "or hard-reset"
+        )
+    if args.reset_cache_between_queries and args.stack != "streaming":
+        raise SystemExit("--reset-cache-between-queries only applies to --stack streaming")
+    if args.reset_cache_between_queries and args.drift_refresh_policy != "off":
+        raise SystemExit(
+            "--reset-cache-between-queries currently requires --drift-refresh-policy off "
+            "to avoid ambiguous per-query reset semantics"
         )
 
     rows = runner._load_videomme_rows()
@@ -436,6 +451,21 @@ def main() -> int:
                     )
                 refresh_before_query = False
                 refresh_reason = None
+                if args.stack == "streaming" and args.reset_cache_between_queries and q_index > 0:
+                    state = PromptCacheState()
+                    frame_cache.clear()
+                    refresh_before_query = True
+                    refresh_reason = "per_query_reset"
+                    refresh_trace.append(
+                        {
+                            "seed_item_id": seed.seed_item_id,
+                            "video_id": seed.video_id,
+                            "item_id": item.item_id,
+                            "q_index": q_index,
+                            "reason": refresh_reason,
+                            "threshold": None,
+                        }
+                    )
                 if args.stack == "streaming" and _should_refresh(
                     drift_refresh_policy=args.drift_refresh_policy,
                     q_index=q_index,
@@ -531,6 +561,7 @@ def main() -> int:
                     "parse_failure": parse_failure,
                     "degenerate": degenerate,
                     "refresh_fired": refresh_before_query,
+                    "reset_cache_between_queries": args.reset_cache_between_queries,
                     "refresh_policy": args.drift_refresh_policy,
                     "refresh_reason": refresh_reason,
                     "refresh_threshold": args.drift_refresh_threshold,
@@ -584,6 +615,7 @@ def main() -> int:
         "vision_tower_keep_rate_first_query_medium": args.vision_tower_keep_rate_first_query_medium,
         "vision_tower_keep_rate_first_query_long": args.vision_tower_keep_rate_first_query_long,
         "vision_tower_layer": args.vision_tower_layer,
+        "reset_cache_between_queries": args.reset_cache_between_queries,
         "drift_refresh_policy": args.drift_refresh_policy,
         "drift_refresh_threshold": args.drift_refresh_threshold,
         "total_wall_ms": total_wall_ms,

@@ -43,6 +43,9 @@ VIDEOMME_VIDEO_DIR = Path("data/benchmarks/videomme/videos")
 PHASE130_LONG_COLD_REFERENCE_DIR = Path(
     "research/experiments/2026/artifacts/phase1_30Z_long_q0_kr067_20260424"
 )
+PHASE130W_REFERENCE_DIR = Path(
+    "research/experiments/2026/artifacts/phase1_30W_q0_dense_followup_pruned_full"
+)
 
 
 def _videomme_parquet_path() -> Path:
@@ -188,6 +191,10 @@ def main() -> int:
         PHASE130_LONG_COLD_REFERENCE_DIR.joinpath("cold_dense_long.jsonl").exists()
         and PHASE130_LONG_COLD_REFERENCE_DIR.joinpath("cold_dense_long_summary.json").exists()
     )
+    full_union_cold_ready = (
+        PHASE130W_REFERENCE_DIR.joinpath("cold_dense.jsonl").exists()
+        and PHASE130W_REFERENCE_DIR.joinpath("cold_dense_summary.json").exists()
+    )
 
     payload["experiments"] = {
         "1.30Z": _status(
@@ -216,6 +223,18 @@ def main() -> int:
             qwen_4bit_ready and long_ready,
             detail="K=1 long-bucket replication",
         ),
+        "1.55F-medium": _status(
+            qwen_4bit_ready and medium_ready,
+            detail="adaptive post-Q2-state medium-bucket replication",
+        ),
+        "1.55F-long": _status(
+            qwen_4bit_ready and long_ready,
+            detail="adaptive post-Q2-state long-bucket replication",
+        ),
+        "1.55F-32f": _status(
+            qwen_4bit_ready and short_ready,
+            detail="adaptive post-Q2-state 32f short-bucket replication",
+        ),
         "1.30AB": _status(
             qwen_4bit_ready
             and manifests["videomme_long_dev_holdout_v1"]["ready"]
@@ -231,6 +250,28 @@ def main() -> int:
             and manifests["videomme_dev_v1"]["ready"]
             and manifests["videomme_holdout_v1"]["ready"],
             detail="duration-conditioned full-union rerun with sweep-selected long keep-rate",
+        ),
+        "1.30AC": _status(
+            qwen_4bit_ready
+            and manifests["videomme_dev_v1"]["ready"]
+            and manifests["videomme_holdout_v1"]["ready"]
+            and full_union_cold_ready,
+            detail={
+                "phase": "cache-invalidated follow-up pruning",
+                "reference_cold_dir": PHASE130W_REFERENCE_DIR.as_posix(),
+                "reference_cold_ready": full_union_cold_ready,
+            },
+        ),
+        "1.30AD": _status(
+            qwen_4bit_ready
+            and manifests["videomme_dev_v1"]["ready"]
+            and manifests["videomme_holdout_v1"]["ready"]
+            and full_union_cold_ready,
+            detail={
+                "phase": "instrumented 1.30W rerun",
+                "reference_cold_dir": PHASE130W_REFERENCE_DIR.as_posix(),
+                "reference_cold_ready": full_union_cold_ready,
+            },
         ),
         "1.58": _status(
             qwen_4bit_ready and qwen_bf16_ready and args.max_safe_rss_gb >= 14.0,
