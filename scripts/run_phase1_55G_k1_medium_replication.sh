@@ -21,14 +21,18 @@ VIDEO_IDS="${PHASE1_55G_VIDEO_IDS:-320,354,364,380,407,408,426,484,486,531}"
 
 mkdir -p "$OUT_DIR"
 
-"$PY" scripts/run_kv_selective_reprefill_v2.py \
-  --mode both \
-  --video-ids "$VIDEO_IDS" \
-  --frame-count 20 \
-  --max-tokens 32 \
-  --reprefill-k 1 \
-  --model-path "$MODEL_PATH" \
-  --output-dir "$OUT_DIR"
+if [[ -f "$OUT_DIR/session_k1_n10.jsonl" && -f "$OUT_DIR/baseline_k1_n10.jsonl" && -f "$OUT_DIR/summary_k1_n10.json" ]]; then
+  echo "[1.55G] reusing existing run outputs in $OUT_DIR"
+else
+  "$PY" scripts/run_kv_selective_reprefill_v2.py \
+    --mode both \
+    --video-ids "$VIDEO_IDS" \
+    --frame-count 20 \
+    --max-tokens 32 \
+    --reprefill-k 1 \
+    --model-path "$MODEL_PATH" \
+    --output-dir "$OUT_DIR"
+fi
 
 "$PY" scripts/analyze_selective_reprefill_pairs.py \
   --session-jsonl "$OUT_DIR/session_k1_n10.jsonl" \

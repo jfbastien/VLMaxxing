@@ -36,6 +36,13 @@ Dry-run / plan print:
 uv run python scripts/run_paper_closeout_queue.py --dry-run
 ```
 
+The shell wrappers are intentionally **resumable**:
+
+- if a heavy arm already has both its primary JSONL and summary JSON, the
+  wrapper reuses that arm and reruns only the cheap analysis step
+- this matters immediately for `1.30Z`, where a completed cold control can be
+  reused instead of paying the long-bucket cold cost again
+
 ## Priority order
 
 1. **1.30Z** — long-bucket confirmation of the `kr_Q0 = 0.67` candidate

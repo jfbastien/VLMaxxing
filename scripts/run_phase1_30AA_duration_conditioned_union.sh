@@ -26,37 +26,45 @@ OUT="${OUT:-research/experiments/2026/artifacts/phase1_30AA_duration_conditioned
 
 mkdir -p "$OUT"
 
-"$PY" scripts/run_phase1_30_sam_streaming.py \
-  --stack cold \
-  --manifest research/benchmark_manifests/videomme_dev_v1.toml \
-  --manifest research/benchmark_manifests/videomme_holdout_v1.toml \
-  --frame-count 8 \
-  --max-tokens 32 \
-  --model-path "$MODEL_PATH" \
-  --rss-guard-mb "$RSS_GUARD_MB" \
-  --output "$OUT/cold_dense.jsonl" \
-  --summary "$OUT/cold_dense_summary.json" \
-  --vision-tower-keep-rate 1.0 \
-  --drift-refresh-policy off
+if [[ -f "$OUT/cold_dense.jsonl" && -f "$OUT/cold_dense_summary.json" ]]; then
+  echo "[1.30AA] reusing existing cold arm in $OUT"
+else
+  "$PY" scripts/run_phase1_30_sam_streaming.py \
+    --stack cold \
+    --manifest research/benchmark_manifests/videomme_dev_v1.toml \
+    --manifest research/benchmark_manifests/videomme_holdout_v1.toml \
+    --frame-count 8 \
+    --max-tokens 32 \
+    --model-path "$MODEL_PATH" \
+    --rss-guard-mb "$RSS_GUARD_MB" \
+    --output "$OUT/cold_dense.jsonl" \
+    --summary "$OUT/cold_dense_summary.json" \
+    --vision-tower-keep-rate 1.0 \
+    --drift-refresh-policy off
+fi
 
-"$PY" scripts/run_phase1_30_sam_streaming.py \
-  --stack streaming \
-  --manifest research/benchmark_manifests/videomme_dev_v1.toml \
-  --manifest research/benchmark_manifests/videomme_holdout_v1.toml \
-  --frame-count 8 \
-  --max-tokens 32 \
-  --model-path "$MODEL_PATH" \
-  --rss-guard-mb "$RSS_GUARD_MB" \
-  --output "$OUT/streaming_duration_conditioned.jsonl" \
-  --summary "$OUT/streaming_duration_conditioned_summary.json" \
-  --vision-tower-layer 2 \
-  --vision-tower-keep-rate 0.50 \
-  --vision-tower-keep-rate-first-query 1.0 \
-  --vision-tower-keep-rate-first-query-short 1.0 \
-  --vision-tower-keep-rate-first-query-medium 1.0 \
-  --vision-tower-keep-rate-first-query-long 0.67 \
-  --vision-tower-keep-rate-follow-ups 0.50 \
-  --drift-refresh-policy off
+if [[ -f "$OUT/streaming_duration_conditioned.jsonl" && -f "$OUT/streaming_duration_conditioned_summary.json" ]]; then
+  echo "[1.30AA] reusing existing streaming arm in $OUT"
+else
+  "$PY" scripts/run_phase1_30_sam_streaming.py \
+    --stack streaming \
+    --manifest research/benchmark_manifests/videomme_dev_v1.toml \
+    --manifest research/benchmark_manifests/videomme_holdout_v1.toml \
+    --frame-count 8 \
+    --max-tokens 32 \
+    --model-path "$MODEL_PATH" \
+    --rss-guard-mb "$RSS_GUARD_MB" \
+    --output "$OUT/streaming_duration_conditioned.jsonl" \
+    --summary "$OUT/streaming_duration_conditioned_summary.json" \
+    --vision-tower-layer 2 \
+    --vision-tower-keep-rate 0.50 \
+    --vision-tower-keep-rate-first-query 1.0 \
+    --vision-tower-keep-rate-first-query-short 1.0 \
+    --vision-tower-keep-rate-first-query-medium 1.0 \
+    --vision-tower-keep-rate-first-query-long 0.67 \
+    --vision-tower-keep-rate-follow-ups 0.50 \
+    --drift-refresh-policy off
+fi
 
 "$PY" scripts/analyze_phase1_30_sam_streaming_pair.py \
   --cold-jsonl "$OUT/cold_dense.jsonl" \
