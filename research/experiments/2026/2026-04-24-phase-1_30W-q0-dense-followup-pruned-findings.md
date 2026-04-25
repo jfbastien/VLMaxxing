@@ -7,7 +7,7 @@ artifacts:
 status: SHORT-SCOUT PASS. Promote to full dev+holdout paired rerun.
 ---
 
-# 1.30W — Dense Q0, pruned follow-ups (short scout findings)
+# 1.30W — Dense Q0 admission, session-reuse follow-ups (short scout findings)
 
 ## Result
 
@@ -72,8 +72,8 @@ Amortized speedup is `3.059×`, above the preregistered `2.5×` floor.
 
 ## Interpretation
 
-This is the first local 1.30 rescue lane that actually does what the
-root-cause work predicted.
+This is the first local 1.30 admission-policy lane that does what the
+root-cause work predicted on the short scout.
 
 The result is not "Qwen streaming is fixed." It is more specific:
 
@@ -84,7 +84,16 @@ The result is not "Qwen streaming is fixed." It is more specific:
 - and the bridge still keeps a real systems gain (`3.059×`).
 
 So the 1.30 negative is no longer a dead end. A position-conditioned
-admission policy is a viable rescue direction.
+admission policy is a viable direction for the full rerun.
+
+Mechanistic caution:
+
+- this short scout predates the image-token activity instrumentation
+- the configured follow-up keep-rate is `0.50`, but this run by itself does
+  **not** prove that follow-up vision pruning was materially active under
+  prompt-cache reuse
+- later write-ups should therefore describe this as **dense-Q0 admission plus
+  the session-reuse follow-up path** unless the instrumentation says otherwise
 
 ## Decision
 
@@ -92,4 +101,5 @@ Per the preregistered rule, this short-scout PASS **promotes to a full
 dev+holdout paired rerun**.
 
 That full rerun is now the paper-relevant next step. If it holds, the
-repo has a real composition-rescue story instead of just an anti-claim.
+repo has an admission-policy composition lane worth continuing, not yet
+a paper-grade bridge claim on its own.

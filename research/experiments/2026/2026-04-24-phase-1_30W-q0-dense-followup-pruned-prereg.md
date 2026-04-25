@@ -7,7 +7,7 @@ parent:
 status: preregistered 2026-04-24. Short-scout admission-policy rescue for the 1.30 streaming bridge.
 ---
 
-# 1.30W — Dense Q0, pruned follow-ups (short scout)
+# 1.30W — Dense Q0 admission, session-reuse follow-ups (short scout)
 
 ## Why this prereg exists
 
@@ -22,7 +22,7 @@ say the same thing:
 The simplest admission policy is query-positioned:
 
 - **Q0 dense**
-- **Q2/Q3 pruned at the validated 1.51V operating point**
+- **Q2/Q3 on the same session-reuse follow-up path used by the original 1.30 stack**
 
 This scout tests whether that minimal policy is enough to restore the
 short-scout streaming bridge to a paper-relevant accuracy band while
@@ -39,6 +39,13 @@ Two arms only:
 1. `cold_dense` — no cache reuse, no pruning
 2. `streaming_q0_dense_followup_pruned_off` — cache reuse on, Q0 keep-rate
    `1.0`, Q2/Q3 keep-rate `0.50`, no hard reset
+
+Wording discipline for the resulting write-up:
+
+- until the image-token activity logs exist, describe this as **dense-Q0
+  admission plus the session-reuse follow-up path**
+- do **not** imply that follow-up vision pruning is materially active just from
+  the configured keep-rate alone
 
 Model:
 

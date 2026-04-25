@@ -1,6 +1,6 @@
 # Experiment Registry (Machine-Readable)
 
-Last updated: 2026-04-21
+Last updated: 2026-04-25
 
 This is the primary source of per-phase experiment state. Other docs
 (PLAN.md, research-strategy-post-codecsight.md, literature-map,
@@ -290,7 +290,7 @@ authoritative in the per-phase notes under
   paper_relevance: active near-miss / boundary cell; strongest local composition bridge so far, but still below the preregistered deployment-speed floor
   prereg_outcome: H_q0 PASS exactly (`34/57` in both arms) and H_format PASS (`0` parse failures, `0` degenerates). H_strict FAIL (`Δacc = −0.0585`, speedup `2.7869×`). H_rescue also FAILS because speed remains below the `>=3.0×` floor even though accuracy stays inside the `>=−0.10` rescue band.
   runtime_estimate: complete
-  notes: This full rerun materially improves the original 1.30 negative (`Δacc = −0.193`) without reopening the preregistered bridge. The decisive mechanistic result is that dense Q0 fully fixes the first-query leg: Q0 accuracy is numerically identical in every `duration × split` cell. All remaining loss is follow-up-only, with the strongest deficits in long dev (`follow-up delta = −0.125`), short dev (`−0.10`), short holdout (`−0.1111`), and medium holdout (`−0.10`); medium dev and long holdout follow-ups match cold exactly. The speed miss is structural under the current 3-query protocol: dense Q0 alone consumes `5.249M ms`, while the full run would need to fit inside `4.981M ms` to earn `3.0×`; even zero-cost follow-ups would still miss by `268.7k ms`. If 1.30 continues, the next meaningful work is either a safe cheaper-Q0 policy or a longer-session protocol, not another same-protocol follow-up-only keep-rate tweak.
+  notes: This full rerun materially improves the original 1.30 negative (`Δacc = −0.193`) without reopening the preregistered bridge. The decisive mechanistic result is that dense Q0 fully fixes the first-query leg: Q0 accuracy is numerically identical in every `duration × split` cell. All remaining loss is follow-up-only, with the strongest deficits in long dev (`follow-up delta = −0.125`), short dev (`−0.10`), short holdout (`−0.1111`), and medium holdout (`−0.10`); medium dev and long holdout follow-ups match cold exactly. Wording discipline: this row should be described as **dense-Q0 admission plus the existing session-reuse follow-up path**, not as proven "pruned follow-ups", until the new image-token activity instrumentation shows how much follow-up vision pruning is actually active under prompt-cache reuse. The speed miss is structural under the current 3-query protocol: dense Q0 alone consumes `5.249M ms`, while the full run would need to fit inside `4.981M ms` to earn `3.0×`; even zero-cost follow-ups would still miss by `268.7k ms`. If 1.30 continues, the next meaningful work is either a safe cheaper-Q0 policy or a longer-session protocol, not another same-protocol follow-up-only keep-rate tweak.
 
 - phase_id: 1.30X
   status: partial (speed/accuracy rescue reopened offline; no format-clean point in the current endpoint family)
@@ -302,7 +302,7 @@ authoritative in the per-phase notes under
   paper_relevance: active reopening analysis for the streaming bridge; shows same-protocol admission is viable on speed/accuracy but still blocked on format hygiene
   prereg_outcome: H1 FALSIFIED on the preregistered speed/accuracy rescue criterion because `dense_on_medium_short` passes `Δacc >= −0.10` and `speedup >= 3.0×`. H2 EARNED strongly: the exact frontier contains a `Δacc = 0.0000`, `3.0781×` point. But `best_strict_with_format` and `best_rescue_with_format` are both null within the current 1.30 / 1.30W endpoint family.
   runtime_estimate: complete
-  notes: This offline frontier replay uses only landed session-level outputs from 1.30 and 1.30W; no synthetic within-session timings or answer edits are allowed. The decisive new result is that the current 3-query protocol is no longer closed on speed/accuracy: a simple duration policy (`dense_on_medium_short`) already passes the rescue band. The remaining full-promotion gap is entirely format hygiene. Under that deployable policy, the residual bad sessions are `videomme:long:783-2` and `videomme:long:847-3`. The exact frontier proves that the lane is not dead in principle, but also proves the current 2-endpoint family is insufficient for a format-clean reopening. If 1.30 continues, the next move should target those long-session format failures explicitly or introduce a third endpoint family, not rerun another global policy.
+  notes: This offline frontier replay uses only landed session-level outputs from 1.30 and 1.30W; no synthetic within-session timings or answer edits are allowed. The decisive new result is that the current 3-query protocol is no longer closed on speed/accuracy: a simple duration policy (`dense_on_medium_short`) already passes the rescue band. The remaining full-promotion gap is entirely format hygiene. Under that deployable policy, the residual bad sessions are `videomme:long:783-2` and `videomme:long:847-3`. Wording discipline: the `Δacc = 0.0000`, `3.0781×` frontier point is an **oracle upper bound over the landed endpoint family**, not a deployable policy. The exact frontier proves that the lane is not dead in principle, but also proves the current 2-endpoint family is insufficient for a format-clean reopening. If 1.30 continues, the next move should target those long-session format failures explicitly or introduce a third endpoint family, not rerun another global policy.
 
 - phase_id: 1.30Y
   status: SCOUT COMPLETE 2026-04-24 (`kr_Q0 = 0.67` promoted, `kr_Q0 = 0.75` rejected)
@@ -317,7 +317,29 @@ authoritative in the per-phase notes under
   paper_relevance: active bridge-repair scout for the 1.30 streaming composition lane
   prereg_outcome: `kr_Q0 = 0.75` fails the key format gate (degenerate `847-2`); `kr_Q0 = 0.67` earns the scout format gate (`0` parse, `0` degenerate) and improves the residual pair from `4/6` to `5/6` versus the dense-Q0 reference.
   runtime_estimate: complete (~35 min benchmark-only on the residual pair)
-  notes: The purpose of this scout is deliberately narrow: after 1.30X, the only remaining format failures under the deployable `dense_on_medium_short` policy are `videomme:long:783-2` and `videomme:long:847-3`, and forcing those two sessions onto the dense-Q0 family misses the full-policy `3.0×` line by only `0.006×`. The scout shows that a cheaper long-session Q0 regime is still viable: `kr_Q0 = 0.67` stays clean on both binding sessions and improves the pair to `5/6`, while `kr_Q0 = 0.75` reintroduces a degenerate follow-up. A splice against the landed medium/short dense-Q0 results yields an approximate `Δacc = -0.0702`, `3.0023×`, format-clean full policy, which is sufficient to justify a full long-bucket continuation but not yet a promotion-ready paper number because the splice mixes thermals across runs.
+  notes: The purpose of this scout is deliberately narrow: after 1.30X, the only remaining format failures under the deployable `dense_on_medium_short` policy are `videomme:long:783-2` and `videomme:long:847-3`, and forcing those two sessions onto the dense-Q0 family misses the full-policy `3.0×` line by only `0.006×`. The scout shows that a cheaper long-session Q0 regime is still viable: `kr_Q0 = 0.67` stays clean on both binding sessions and improves the pair to `5/6`, while `kr_Q0 = 0.75` reintroduces a degenerate follow-up. Wording discipline: this is a **selection-biased routing scout**, not paper evidence. The splice against the landed medium/short dense-Q0 results (`Δacc ≈ -0.0702`, `3.0023×`) is only a design hint that justifies a full long-bucket continuation; it must not be treated as a measured full-policy result.
+
+- phase_id: 1.30Z
+  status: proposed (pre-registered; ready to run)
+  authoritative_note: research/experiments/2026/2026-04-25-phase-1_30Z-long-q0-kr067-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: n/a until the long-bucket continuation runs
+  supersedes: []
+  paper_relevance: primary continuation gate for the local streaming bridge
+  prereg_outcome: (pending)
+  runtime_estimate: ~3.5–5.0 h total (cold long bucket + streaming long bucket + paired analysis)
+  notes: First unbiased test of the `1.30Y` candidate. This run must validate or reject `kr_Q0 = 0.67` on the full long bucket before any duration-conditioned full-union rerun. New instrumentation logs `image_tokens_recomputed` / `vision_pruning_active` per follow-up so the result can distinguish true follow-up pruning activity from pure Q0 admission + K-cache reuse.
+
+- phase_id: 1.30AA
+  status: proposed (pre-registered; ready to run after 1.30Z)
+  authoritative_note: research/experiments/2026/2026-04-25-phase-1_30AA-duration-conditioned-union-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: n/a until the measured no-splice union rerun lands
+  supersedes: []
+  paper_relevance: primary (first publishable no-splice bridge candidate in the 1.30 family)
+  prereg_outcome: (pending)
+  runtime_estimate: ~5.5–7.5 h total (cold union + streaming union + paired analysis)
+  notes: This is the first fully measured version of the duration-conditioned policy family suggested by 1.30X and 1.30Y: short/medium Q0 dense, long Q0 at `kr=0.67`, follow-ups at `kr=0.50`. It should only run if 1.30Z keeps the long bucket inside the rescue/format band.
 
 - phase_id: 1.31
   status: proposed
@@ -872,9 +894,9 @@ authoritative in the per-phase notes under
   supersedes:
     - research/experiments/2026/2026-04-20-phase-1_55D-selective-reprefill-v1-driver-findings.md
   paper_relevance: active (working fidelity-recovery frontier; deployment-grade speed still open)
-  prereg_outcome: K=1 on the full 7-clip tranche again earns H1 exactly (session accuracy `17/21`, baseline accuracy `17/21`, `Δacc = 0.0` with paired diffs `0/21`), earns H3 strongly (pathological attractors `0/14` on follow-ups), and earns H4 (`peak_rss_gb = 4.886` vs `<=5.0`). H2 still falsifies narrowly: paired follow-up median `10.14 s` and speedup `9.71×` both land just shy of the intended deployment crossover. K=2 and K=4 remain useful comparison points (`6.72×` and `3.66×`), but the fixed-K frontier is now effectively mapped and K=1 is the best local operating point.
+  prereg_outcome: K=1 on the full 7-clip tranche again earns H1 observationally strongly (session accuracy `17/21`, baseline accuracy `17/21`, `Δacc = 0.0`, no observed paired diffs on `n=21`), earns H3 strongly (pathological attractors `0/14` on follow-ups), and earns H4 (`peak_rss_gb = 4.886` vs `<=5.0`). H2 narrowly misses the intended deployment crossover: paired all-query-cold median over session-follow-up median `= 9.71×`, and the paired cold-follow-up median over session-follow-up median is `9.48×`. K=2 and K=4 remain useful comparison points (`6.72×` and `3.66×`), but the fixed-K frontier is now effectively mapped and K=1 is the best local operating point.
   runtime_estimate: ~65min per K for n=7 paired tranche on M3 Air; K=1, K=2, and K=4 are now completed, and further blind K sweeps are lower-value than adaptive refresh/admission policies
-  notes: v2 uses repo-local explicit tail slicing, explicit position IDs, prefix-cache materialization, and manual rewind rather than mlx-vlm's partial-image `PromptCacheState` path. A repo-local return-type bug in the first v2 smoke (Qwen `LanguageModelOutput` vs raw tensor) was fixed in commit `d6f9354`; after that, the smoke and full K=4, K=2, and K=1 tranches completed. The open question is no longer basic runnability or whether fixed-K selective re-prefill works; it is whether an adaptive policy can clear the `>=10×` line without sacrificing the paired-fidelity result.
+  notes: v2 uses repo-local explicit tail slicing, explicit position IDs, prefix-cache materialization, and manual rewind rather than mlx-vlm's partial-image `PromptCacheState` path. A repo-local return-type bug in the first v2 smoke (Qwen `LanguageModelOutput` vs raw tensor) was fixed in commit `d6f9354`; after that, the smoke and full K=4, K=2, and K=1 tranches completed. Wording discipline: describe this as **no observed paired drift on n=21**, not as an unqualified exact-fidelity law, and define the speed metric explicitly. The canonical paired metrics now live in `pair_metrics_k{1,2,4}_n7.json`. The open question is no longer basic runnability or whether fixed-K selective re-prefill works; it is whether an adaptive policy can clear the `>=10×` line without sacrificing the paired-fidelity result.
 
 - phase_id: 1.55E
   status: CLOSED-NEGATIVE 2026-04-24
@@ -889,6 +911,28 @@ authoritative in the per-phase notes under
   prereg_outcome: H1 FALSIFIED (`Δacc = -0.0952`, paired correctness diffs `4/21`, paired choice diffs `6/21`), H2 FALSIFIED (paired follow-up median speedup `7.38×` < `10×`), H3 FALSIFIED strongly (`Q3` pathological-like outputs `7/7`, follow-up parse failures `2/14`), H4 EARNED (`peak_rss_gb = 4.555`).
   runtime_estimate: complete (~62min paired tranche on M3 Air)
   notes: This run answers the simplest adaptive question cleanly: `Q2` remains the real rescue point (`7/7` correct, `0/7` pathological-like outputs), but `Q3` is not safely dispensable under the retained-full-cache path (`2/7` correct, `7/7` pathological-like outputs). The lane should not spend more time on blind query-index omission variants. If 1.55 continues, the next adaptive move must change the post-Q2 state itself or add an explicit risk signal for Q3. Cross-run caveat: compared with the earlier 1.55D K=1 baseline, one false item (`videomme:short:120-3`) flipped wrong-answer choice while remaining incorrect; the prereg verdict is therefore anchored to the matched baseline rerun inside the 1.55E artifact directory.
+
+- phase_id: 1.55F
+  status: proposed (pre-registered; ready to run)
+  authoritative_note: research/experiments/2026/2026-04-25-phase-1_55F-q3-post-q2-state-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: n/a until the adaptive post-Q2-state run lands
+  supersedes: []
+  paper_relevance: primary continuation of the C-PERSIST recovery lane
+  prereg_outcome: (pending)
+  runtime_estimate: ~60–75 min total
+  notes: Direct follow-up to 1.55E. Tests whether the Q3 collapse was caused by reverting to the original Q1 cache rather than by adaptive reuse per se. Uses the new `--q3-cache-source post_q2_repaired` path and explicit paired metrics output.
+
+- phase_id: 1.55G
+  status: proposed (pre-registered; ready to run)
+  authoritative_note: research/experiments/2026/2026-04-25-phase-1_55G-k1-medium-replication-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: n/a until the medium-bucket replication lands
+  supersedes: []
+  paper_relevance: primary scope check for the best current C-PERSIST recovery point
+  prereg_outcome: (pending)
+  runtime_estimate: ~1.7–2.2 h total
+  notes: Cheapest direct test of whether the landed `1.55D K=1` no-observed-drift result is short-bucket-specific or survives at least one broader regime. Uses the fixed medium tranche listed in the prereg and the new paired metrics analyzer.
 
 - phase_id: 1.55B
   status: proposed (deferred)

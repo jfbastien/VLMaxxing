@@ -7,7 +7,7 @@ artifacts:
 status: FULL RERUN COMPLETE. Q0 parity exact; strict and rescue gates fail.
 ---
 
-# 1.30W — Dense Q0, pruned follow-ups (full dev+holdout findings)
+# 1.30W — Dense Q0 admission, session-reuse follow-ups (full dev+holdout findings)
 
 ## Result
 
@@ -98,7 +98,7 @@ Compared with the original `1.30` stacked run (`Δacc = -0.193`,
 - 1.30W streaming accuracy: `0.503`
 
 So this is no longer a pure anti-claim. It is a **bounded near-miss**
-with a clean mechanism.
+with a clean first-query mechanism.
 
 ### 2. The remaining loss is entirely a follow-up problem
 
@@ -106,7 +106,8 @@ Q0 is solved exactly. Every remaining deficit sits in Q2/Q3.
 
 That means the residual composition problem is not "session streaming"
 in general and not "persistent KV" in general. It is **follow-up
-admission under the current pruning policy**.
+behavior under the existing session-reuse path after dense-Q0
+admission**.
 
 ### 3. The residual loss is regime-conditioned
 
@@ -143,6 +144,16 @@ about `268.7k ms` short of the `3.0×` gate.
 That means the next 1.30 experiment should **not** be "tune follow-ups a
 bit more on the same 3-query benchmark." The current gate cannot be
 earned that way.
+
+Mechanistic caution:
+
+- this full rerun predates the image-token activity instrumentation
+- the configured follow-up keep-rate is `0.50`, but this result alone does
+  **not** prove that follow-up vision pruning was materially active under
+  prompt-cache reuse
+- until the new instrumentation lands on a fresh run, the precise wording
+  should stay: **dense-Q0 admission plus the existing session-reuse follow-up
+  path**
 
 ## Decision
 

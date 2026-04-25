@@ -4,7 +4,7 @@ date: 2026-04-24
 parent: research/experiments/2026/2026-04-24-phase-1_30X-q0-admission-frontier-prereg.md
 artifacts:
   - research/experiments/2026/artifacts/phase1_30X_q0_admission_frontier/
-status: COMPLETE. Speed/accuracy rescue is feasible; no format-clean point exists within the current 1.30 / 1.30W endpoint family.
+status: COMPLETE. Oracle rescue exists in principle; no deployable format-clean point exists within the current 1.30 / 1.30W endpoint family.
 ---
 
 # 1.30X — Q0 admission frontier analysis (findings)
@@ -113,15 +113,17 @@ longer-session amortization. That is too strong after `1.30X`.
 
 The stronger, more accurate claim is:
 
-- speed/accuracy rescue is achievable with session-level admission,
-- but the current endpoint family cannot eliminate the remaining format
-  failures,
+- an **oracle** session-level selector over the current endpoint family can
+  satisfy the speed/accuracy bridge in principle,
+- but **no deployable policy in the current endpoint family** eliminates the
+  remaining format failures,
 - and those failures are concentrated in two long sessions.
 
 ## Decision
 
 1. Reopen 1.30 as an active **admission-policy / protocol-redesign**
-   lane.
+   lane, but keep the paper framing at "reopened for exploration," not
+   "rescued."
 2. Do **not** rerun another global keep-rate or global dense-Q0 policy.
 3. If 1.30 continues immediately, target the remaining long-session
    format failures explicitly.

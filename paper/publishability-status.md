@@ -268,9 +268,9 @@ runnable tonight vs. impl-gated.
 | Prio | Phase | Runtime | Model | Blocker status |
 |------|-------|---------|-------|----------------|
 | should-do #3 | **1.51V Qwen cross-arch probe** (L=2, kr=0.50, VideoMME 8f n=30 thermally paired, 2 arms) | **CLOSED 2026-04-23** | Qwen 2.5-VL-7B-4bit | **landed** — `V_red = 0.398`, `E2E = 1.044× observed vs 1.043× predicted`, aggregate `Δacc = −0.033`; C-VISION upgrades to two-architecture mechanism evidence |
-| should-do #4 | Local paired streaming-protocol reproduction (1.30) + root-cause decomposition | REOPENED-BOUNDARY 2026-04-24 | Qwen 2.5-VL-7B-Instruct-4bit (driver hard-fails on non-Qwen at `run_phase1_30_sam_streaming.py:303-308`) | **1.30W fixed the main mechanism and 1.30X reopened the lane on speed/accuracy** — 1.30W lands paired cold 0.561 / streaming 0.503 (Δacc = −0.0585) / 2.7869× with exact Q0 parity and clean format, but still below the `3.0×` rescue floor. The new offline 1.30X frontier replay shows a simple deployable duration policy (`dense_on_medium_short`) already passes the rescue band on speed/accuracy (`Δacc = −0.0819`, `3.0168×`), so same-protocol admission is viable. However, it still leaves 2 long-session parse failures, and the exact per-session frontier has no format-clean rescue point within the current 1.30 / 1.30W endpoint family. Next useful work is therefore a targeted fix for the remaining long-session format failures or a third endpoint family, not another blind global rerun. |
-| should-do #5 | **1.55D selective re-prefill frontier** (recover Δacc at 20f while clawing back speed) | ~60-70 min per K on the 7-clip tranche | Qwen 2.5-VL-7B-4bit | **K=1 landed 2026-04-24 and remains the best fixed point** — repo-local v2 holds exact paired fidelity (`Δacc = 0.0`, paired diffs `0/21`, attractors `0/14`) while improving to a paired follow-up median `10.14 s` vs cold `98.43 s` (`9.71×`) at `4.886 GB` RSS. The first adaptive follow-up is now also closed: **1.55E (`Q2=K1`, `Q3=K0`) FALSIFIES cleanly** with `Δacc = -0.0952`, paired correctness diffs `4/21`, paired choice diffs `6/21`, and pathological-like outputs on `7/7` third queries. So the next meaningful 1.55 continuation is not another blind omission or fixed-K sweep; it is a richer Q3 state-construction or risk-gated admission policy. **1.55B** remains the separate persistent-KV × 1.54 composition phase. |
-| should-do #6 | **1.58 bf16 KV control at 20f** (discriminate quantization vs attention-OOD) | ~3.5-4 h (bf16 8f n=30 + bf16 16f n=30) | Qwen 2.5-VL-7B bf16 | **wrapper-landed; run still gated** — `scripts/run_phase1_58_bf16_control.sh` + analyzer landed, but checkpoint download and RSS feasibility remain user/environment constraints |
+| should-do #4 | Local paired streaming-protocol reproduction (1.30) + root-cause decomposition | REOPENED-BOUNDARY 2026-04-25 | Qwen 2.5-VL-7B-Instruct-4bit (driver hard-fails on non-Qwen at `run_phase1_30_sam_streaming.py:303-308`) | **Now an explicit closeout queue, not a vague lane.** 1.30W lands paired cold 0.561 / streaming 0.503 (Δacc = −0.0585) / 2.7869× with exact Q0 parity and clean format, but still below the `3.0×` rescue floor. 1.30X reopens speed/accuracy only as a deployable near-miss plus an oracle upper bound. The next two runnable steps are **1.30Z** (long-bucket `kr_Q0 = 0.67` continuation, ~3.5–5 h) and, conditional on that, **1.30AA** (fresh duration-conditioned full-union rerun, ~5.5–7.5 h). New image-token instrumentation will determine whether follow-up pruning is actually active or whether this family should be described as dense-Q0 admission + K-cache reuse. |
+| should-do #5 | **1.55D selective re-prefill frontier** (recover Δacc at 20f while clawing back speed) | ~60-75 min for 1.55F; ~1.7-2.2 h for 1.55G | Qwen 2.5-VL-7B-4bit | **K=1 landed 2026-04-24 and remains the best fixed point** — repo-local v2 shows no observed paired drift on n=21 (one-sided rule-of-three upper bound ≈14% on an unseen paired-diff rate), paired all-query cold median over session-follow-up median `9.71×`, paired cold-follow-up median over session-follow-up median `9.48×`, and `4.886 GB` RSS. The first adaptive omission follow-up is already a bounded negative: **1.55E (`Q2=K1`, `Q3=K0`) FALSIFIES cleanly**. The next meaningful continuations are therefore explicit and ready: **1.55F** (Q3 from repaired post-Q2 state) and **1.55G** (medium-bucket replication of K=1). **1.55B** remains the separate persistent-KV × 1.54 composition phase. |
+| should-do #6 | **1.58 bf16 KV control at 20f** (discriminate quantization vs attention-OOD) | ~3.5-4 h (bf16 8f n=30 + bf16 16f n=30) | Qwen 2.5-VL-7B bf16 | **wrapper-landed; preflight still blocks execution** — `scripts/run_phase1_58_bf16_control.sh` + analyzer landed, but the local bf16 checkpoint is absent and RSS feasibility remains unresolved |
 | should-do #8 | **1.29 codec-native bridge (reframed)** | landed semantically; slow offline extraction | Qwen 2.5-VL-7B-4bit | **planner-substitution evidence landed** — MAX-over-span sparse sampling is HARD-FALSIFIED, while the continuous-score redesign reaches codec-dense agreement 1.000 on VideoMME dev all-duration n=30 with no accuracy loss and zero parse failures. Later calibration-mode and calibration-source ablations are neutral on the local slices we ran. This is not a latency claim: offline codec extraction totals 7290s; the remaining gate is streaming decoder integration / native-rate systems evaluation. |
 | future | **1.60 scroll/pan subset** (20 items stratified by scroll intensity, L=2 kr=0.50 paired) | n/a on VideoMME; ~70-90 min after a real subset exists | Gemma 4-E4B-4bit or matched C-VISION stack | **closed as natural-VideoMME corpus limitation** — wider 60-item VideoMME scan found 0/60 items above `shifted_fraction >= 0.30` (max 0.125), so this only reopens with EgoSchema/EPIC-Kitchens/Ego4D or a labeled synthetic scroll/pan set |
 | diagnostic | **Qwen 8f holdout `videomme_holdout_v1.toml` n=30** (parallel to already-done 16f holdout) | ~8 min (cold) | Qwen 2.5-VL-7B-4bit | **runnable-now** — driver exists, manifest exists |
@@ -279,10 +279,10 @@ runnable tonight vs. impl-gated.
 | blocked | 1.52R composition (1.42 × 1.51R) | ~3 h | Gemma 4-E4B-4bit | 1.42 landing + 1.51R V-patched re-run |
 | future | Claim-5 sparse-execution delta | ~2 h | either | sparse backend unwritten (1-2 wk impl) |
 
-**Runnable-without-approval tonight**: the 1.55D K-sweep frontier
-(`uv run python ...` on Metal with existing repo-local v2), plus the
-Qwen 8f holdout diagnostic (~8 min). The remaining should-do items
-still need either implementation or user/environment support.
+**Runnable-without-approval tonight**: `1.30Z`, `1.30AA` (conditional on
+1.30Z), `1.55F`, and `1.55G` all have wrappers, prereg docs, analyzers,
+and a CPU-only preflight. `1.58` remains blocked on the missing bf16
+checkpoint.
 
 **Aggregate forward cost once blockers clear**: ~20 h benchmark-only
 @ 8f (excludes implementation); ~40 h @ 32f.
@@ -522,28 +522,33 @@ items that priority.md does not carry. For the current ordering see
    `V_red = 0.398`, `E2E = 1.044×` observed vs `1.043×` predicted,
    aggregate `Δacc = −0.033`.
 4. **Local paired streaming-protocol reproduction of Sam's N=60 line**
-   — **BOUNDARY NEAR-MISS 2026-04-24 after the dense-Q0 rerun.** The
-   original bridge was a hard negative; the successor `1.30W` policy
-   ("Q0 dense, Q2/Q3 pruned") improves the same Qwen 7B 8f
-   dev+holdout-union bridge to cold `0.561` / streaming `0.503`
-   (`Δacc = −0.0585`) at `2.7869×` paired amortized speedup, with exact
-   Q0 parity (`34/57` in both arms), `0` parse failures, and `0`
-   degenerates. The paper-promotion gate still does not trigger: every
-   remaining miss is follow-up-only, and the `>=3.0×` rescue floor is
-   structurally unreachable under the current 3-query protocol because
-   dense Q0 alone already dominates the wall-clock budget. The next
-   paper-relevant work is a cheaper safe-Q0 policy or a longer-session
-   protocol, not another same-protocol follow-up tweak.
+   — **REOPENED AS A MEASURED ADMISSION-POLICY LANE.** The original
+   bridge was a hard negative; the successor `1.30W` policy improves the
+   same Qwen 7B 8f dev+holdout-union bridge to cold `0.561` /
+   streaming `0.503` (`Δacc = −0.0585`) at `2.7869×`, with exact Q0
+   parity (`34/57` in both arms), `0` parse failures, and `0`
+   degenerates. But 1.30W should be described as **dense-Q0 admission
+   plus the existing session-reuse follow-up path**, not as proven
+   "Q2/Q3 pruned", until the new image-token activity fields show how
+   much follow-up vision pruning is actually active. The next two runs
+   are now pre-registered and ready: **1.30Z** (long-bucket
+   `kr_Q0 = 0.67` continuation, `~3.5–5 h`) and, conditional on that,
+   **1.30AA** (duration-conditioned full-union rerun, `~5.5–7.5 h`).
+   1.30X's `Δacc = 0.0000`, `3.0781×` point remains an oracle upper
+   bound, not a deployable result.
 5. **1.55D selective re-prefill v2** — no longer an implementation
-   question. Repo-local v2 is landed, and K=1 is the best fixed point
-   (`Δacc = 0.0`, `9.71×`, `4.886 GB`). The first adaptive omission
-   follow-up, 1.55E (`Q2=K1`, `Q3=K0`), is now a bounded negative:
-   `Δacc = -0.0952` with pathological-like outputs on `7/7` third
-   queries. The next paper-relevant move is therefore a richer Q3
-   state-construction or risk-gated admission policy, not more fixed-K
-   sweeps or another blind query-index omission.
+   question. Repo-local v2 is landed, and K=1 is the best fixed point:
+   **no observed paired drift on n=21**, paired all-query cold median
+   over session-follow-up median `9.71×`, paired cold-follow-up median
+   over session-follow-up median `9.48×`, peak RSS `4.886 GB`. The
+   first adaptive omission follow-up, 1.55E (`Q2=K1`, `Q3=K0`), is now
+   a bounded negative: `Δacc = -0.0952` with pathological-like outputs
+   on `7/7` third queries. The next paper-relevant moves are explicit
+   and ready: **1.55F** (Q3 from repaired post-Q2 state, `~60–75 min`)
+   and **1.55G** (medium-bucket replication of K=1, `~1.7–2.2 h`).
 6. **1.58 bf16 KV control at 20f** — isolates quantization as the
-   C-PERSIST basin driver; ~2-4h wall.
+   C-PERSIST basin driver; ~2-4h wall once the bf16 checkpoint exists
+   locally. Preflight currently marks it blocked.
 7. **1.41 Qwen 16f holdout** — third data point for C-VISION V_share
    trajectory; ~30 min wall.
 8. **1.29 codec-native bridge (reframed)** — now a local

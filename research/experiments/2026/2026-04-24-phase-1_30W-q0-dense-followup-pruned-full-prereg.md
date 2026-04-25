@@ -7,7 +7,7 @@ parent:
 status: preregistered 2026-04-24. Full dev+holdout confirmation after short-scout PASS.
 ---
 
-# 1.30W — Dense Q0, pruned follow-ups (full confirmation)
+# 1.30W — Dense Q0 admission, session-reuse follow-ups (full confirmation)
 
 ## Why this full run is justified
 
@@ -32,6 +32,14 @@ where streaming uses:
 - Q0 keep-rate `1.0`
 - Q2/Q3 keep-rate `0.50`
 - no hard reset
+
+Wording discipline for the result:
+
+- this run measures **dense-Q0 admission plus the same session-reuse follow-up
+  path**
+- if later instrumentation shows follow-up image-token recomputation is
+  negligible, write it that way; do not assume the configured follow-up
+  keep-rate proves active follow-up vision pruning
 
 ## Scope
 

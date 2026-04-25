@@ -61,9 +61,12 @@ concentration-aware pixel-diff planner matches dense-8 on MVBench
 motion holdout (0.600 @ 4.06 fresh frames) and ties dense-8 on TOMATO
 motion holdout (0.333 @ 3.55 fresh frames), and six intuitive
 refinements (naive mean-diff, sticky-dynamic on TOMATO,
-positional-encoding correction, 1.51R novelty-pruning on VideoMME,
-1.55D selective re-prefill) fail under matched conditions — establishing
-what is and is not load-bearing on temporal redundancy. The
+positional-encoding correction, 1.51R novelty-pruning on VideoMME, and
+the simplest adaptive selective-reprefill omission policy 1.55E)
+fail under matched conditions — establishing what is and is not
+load-bearing on temporal redundancy. Repo-local 1.55D v2 itself is no
+longer an infrastructure negative; it is a bounded recovery frontier.
+The
 **deployment-scale evidence** comes from the sibling codec-through-sam
 system, which exercises the full streaming stack on a 26 B-class
 model — real-video 4.2–4.5× end-to-end speedups, ~50× dominant-pipeline
@@ -79,9 +82,10 @@ rather than a flaw.
 positional-encoding-only correction does not recover cached-feature
 fidelity on its own; sticky-dynamic quantity without placement hurts
 TOMATO; 1.51R novelty-pruning is a null on its own axis on Gemma
-VideoMME; 1.55D partial image-block re-prefill is infrastructure-
-falsified by mlx-vlm's image-block contract. These set hard limits on
-what training-free temporal reuse is and is not.
+VideoMME; and the original 1.55D v1 partial-image-block path is
+infrastructure-falsified by mlx-vlm's image-block contract even though
+the repo-local 1.55D v2 recovery path now works. These set hard limits
+on what training-free temporal reuse is and is not.
 
 **Limitations.** C-VISION is no longer single-architecture, but the
 first-pass headline cells remain Gemma-heavy: one matched Qwen point

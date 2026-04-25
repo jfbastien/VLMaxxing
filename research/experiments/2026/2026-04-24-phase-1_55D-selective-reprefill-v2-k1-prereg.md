@@ -9,8 +9,10 @@ The original 1.55D preregistered sweep covered `K ∈ {2, 4, 8}`.
 Today, repo-local v2 has already landed two completed frontier points on
 the full 7-clip 20f short-bucket tranche:
 
-- `K=4`: exact recovery, `3.66×`, RSS narrow fail
-- `K=2`: exact recovery, `6.72×`, RSS pass, follow-up median `15.27 s`
+- `K=4`: no observed paired drift on the landed `n=21` tranche, `3.66×`,
+  RSS narrow fail
+- `K=2`: no observed paired drift on the landed `n=21` tranche, `6.72×`,
+  RSS pass, follow-up median `15.27 s`
 
 That moves the live scientific question. The lane is no longer "does
 selective re-prefill work at all?" It does. The question is whether a
@@ -80,4 +82,5 @@ Peak RSS remains `<= 5 GB`.
 - This is not a replacement for the original prereg; it is a targeted
   frontier extension motivated by the completed K=2 result.
 - This does not reopen K=8. K=8 is lower information now that K=2 and
-  K=4 both already establish exact recovery.
+  K=4 both already establish no observed paired drift on the landed
+  tranche.

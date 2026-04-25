@@ -2,8 +2,8 @@
 
 **Date:** 2026-04-24.
 **Parent:** `2026-04-20-phase-1_55D-selective-reprefill-prereg.md`.
-**Verdict:** **frontier point improved; exact recovery holds, speed still below
-the prereg deployment floor.**
+**Verdict:** **frontier point improved; no observed paired drift on n=21,
+speed still below the prereg deployment floor.**
 
 ## Why this run mattered
 
@@ -44,8 +44,9 @@ Most importantly:
 - **paired answer-choice diffs = 0/21**
 - **pathological attractor count on follow-ups = 0/14**
 
-So K=2 keeps the same exact paired fidelity as K=4 while cutting the
-follow-up latency roughly in half and reducing RSS by ~1.7 GB.
+So K=2 keeps the same no-observed-drift result as K=4 on this `n=21`
+paired tranche while cutting the follow-up latency roughly in half and
+reducing RSS by ~1.7 GB.
 
 ## Preregistered verdicts
 
@@ -54,7 +55,9 @@ follow-up latency roughly in half and reducing RSS by ~1.7 GB.
 **EARNED strongly.**
 
 Observed `Δacc = 0.0` relative to the cold baseline, with zero paired
-choice or correctness diffs on all 21 query pairs.
+choice or correctness diffs on all 21 query pairs. Scope this as **no
+observed paired drift on n=21**, not as an unqualified exact-fidelity
+law.
 
 ### H2-1.55D (speedup floor)
 
@@ -105,8 +108,8 @@ The scientific picture after K=2 is:
 K=2 therefore upgrades 1.55D from a single rescue point to a real
 **speed/fidelity frontier**:
 
-- K=4: exact recovery, `3.66×`, RSS miss
-- K=2: exact recovery, `6.72×`, RSS pass
+- K=4: no observed paired drift on n=21, `3.66×`, RSS miss
+- K=2: no observed paired drift on n=21, `6.72×`, RSS pass
 
 That still does not earn the preregistered deployment claim, but it is
 substantially stronger paper evidence than K=4 alone.

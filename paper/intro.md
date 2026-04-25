@@ -183,8 +183,9 @@ matched conditions:
 - Selective re-prefill of the last-K frames (1.55D) is
   no longer infrastructure-falsified: repo-local v2 runs the intended
   multimodal tail-reprefill regime and maps a real fixed-K frontier,
-  with exact paired recovery at K=4/K=2/K=1 and the best fixed point
-  landing just below the deployment-speed crossover.
+  with **no observed paired drift on the landed n=21 short-bucket
+  tranche** at K=4/K=2/K=1 and the best fixed point landing just below
+  the deployment-speed crossover.
 - VideoMME frame-count scaling is non-monotonic on Qwen 2.5-VL at
   4-bit: on the dev split, medium buckets improve from 8 f → 16 f by
   ≈ +30 pp and 32 f does not recover the aggregate. The 16 f long-
@@ -255,7 +256,10 @@ primarily by the V-only Q0 pruning leg, not by K-only reuse, not by a
 V+K interaction, and not by a harness regression. What remains is a
 follow-up-only loss plus a structural speed ceiling under the current
 3-query protocol, so the next bridge experiment has to change the Q0
-cost or the session geometry.
+cost or the session geometry. The immediate measured queue is now
+pre-registered rather than speculative: `1.30Z` validates the promoted
+`kr_Q0 = 0.67` candidate on the full long bucket, and `1.30AA` is the
+first no-splice duration-conditioned full-union rerun.
 
 ## 4.5. What the evidence has ruled out
 
@@ -283,10 +287,12 @@ the positives:
   calibration-mode and calibration-source ablations were exactly neutral
   on the local slices we ran, and the remaining bridge is streaming-decoder
   integration rather than more semantic calibration.
-- **1.55D v1 selective re-prefill: INFRASTRUCTURE-FALSIFIED.** An
-  mlx-vlm image-block-reuse contract the harness does not respect;
-  v2 reopens the experiment behind an in-repo monkey-patch, not yet
-  landed.
+- **1.55D v1 selective re-prefill: INFRASTRUCTURE-FALSIFIED.**
+  Historically important, but no longer the live state. Repo-local
+  1.55D v2 landed and reopened the lane: the fixed-K frontier now runs
+  end-to-end, with no observed paired drift on the 7-clip K=1 short
+  tranche and a narrow miss on the deployment-speed crossover. The live
+  adaptive question is Q3 state construction, not basic runnability.
 - **1.60 scroll/pan regime-boundary probe:** closed as a natural-
   VideoMME corpus limitation. The wider 60-item audit found 0/60 items
   above `shifted_fraction >= 0.30` (max 0.125), so the scroll/pan

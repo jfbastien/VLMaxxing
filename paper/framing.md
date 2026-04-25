@@ -239,13 +239,18 @@ boundary as much as the positives:
   dense-Q0 successor `1.30W` materially improves it: paired cold
   `0.561` / streaming `0.503` (`Δacc = −0.0585`) at `2.7869×`, with
   exact Q0 parity (`34/57` in both arms), `0` parse failures, and `0`
-  degenerates. The composition is still not promoted: every remaining
-  loss is follow-up-only, and the `>=3.0×` rescue floor is structurally
-  unreachable under the current 3-query protocol because dense Q0 alone
-  already exceeds the target wall-clock budget. Root-cause decomposition
-  remains valid, but the next meaningful continuation is a cheaper
-  safe-Q0 policy or a longer-session protocol, not another same-protocol
-  follow-up tweak.
+  degenerates. Wording discipline matters here: 1.30W is currently
+  evidenced as **dense-Q0 admission plus the existing session-reuse
+  follow-up path**, not yet as proven follow-up pruning, because prompt
+  reuse may bypass most follow-up image work. The composition is still
+  not promoted: every remaining loss is follow-up-only, and the
+  `>=3.0×` rescue floor is structurally unreachable under the current
+  3-query protocol because dense Q0 alone already exceeds the target
+  wall-clock budget. Root-cause decomposition remains valid, and the
+  oracle upper bound from `1.30X` proves the lane is not dead in
+  principle, but the next meaningful continuation is the measured
+  `1.30Z` / `1.30AA` queue, not another same-protocol follow-up tweak or
+  another splice.
 - **1.60 scroll/pan regime-boundary probe: closed as a VideoMME corpus
   limitation.** We re-audited the natural corpus on a 60-item VideoMME
   stratification across 8f/16f/32f and found 0/60 items above the relaxed

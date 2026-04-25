@@ -75,10 +75,18 @@ others).
    submission; any sentence a reviewer cross-checks across two docs
    must agree.
 
-3. **Main CI green on `main`.** Local `uv run ruff format --check .`
-   passes; commit `0a8b1d1` is queued locally and unpushed per
-   `feedback_no_auto_push`. User must trigger the push. Without green
-   CI the paper claims of reproducibility look sloppy.
+3. **Main CI green on `main`.** This is currently a real blocker again.
+   The latest failing GitHub run (`24914182731`, 2026-04-24) dies in
+   `uv run ruff format --check .` before lint / mypy / pytest even run.
+   The concrete failures are formatting drift in:
+   `scripts/analyze_phase1_30_rootcause.py`,
+   `scripts/measure_feature_drift.py`,
+   `scripts/phase1_30_rootcause_q0_compare.py`,
+   `scripts/run_benchmark_track_a.py`,
+   `src/codec_through/phase1_30_admission_frontier.py`,
+   `src/codec_through/qwen_selective_reprefill.py`, and
+   `src/codec_through/selective_reprefill_policy.py`.
+   Without green CI the paper claims of reproducibility look sloppy.
 
 4. **Attention-propagation-drift vocabulary discipline.** Codex
    round-21 flagged that Sam's §234 attributes the refresh requirement
@@ -159,38 +167,59 @@ in its own dimension.
    benchmark coverage on Qwen, not proof-of-transfer.
 
 4. **Local paired streaming-protocol reproduction of Sam's N=60 line.**
-   **REOPENED AS A BOUNDED ADMISSION-POLICY LANE 2026-04-24.** The
-   original 1.30 stack was a hard negative; the successor 1.30W policy
-   ("Q0 dense, Q2/Q3 pruned") improved it to cold `0.561` vs streaming
-   `0.503` (`Δacc = −0.0585`) at `2.7869×`, with exact Q0 parity and
-   clean format, but still below the `3.0×` rescue floor. The new
-   `1.30X` frontier replay changes the next-step logic: a simple
-   deployable duration policy (`dense_on_medium_short`) already passes
-   the rescue band on speed/accuracy at `Δacc = −0.0819`, `3.0168×`, so
-   same-protocol admission is viable. However, that policy still leaves
-   `2` long-session parse failures, and the exact per-session frontier
-   shows there is **no** format-clean rescue point within the current
-   1.30 / 1.30W endpoint family. So the next paper-relevant work is a
-   targeted fix for those remaining long-session format failures or a
-   third endpoint family, not another blind global rerun.
+   **REOPENED AS A BOUNDED ADMISSION-POLICY LANE 2026-04-24, with a
+   concrete closeout queue 2026-04-25.** The original 1.30 stack was a
+   hard negative; the successor 1.30W policy improves it to cold
+   `0.561` vs streaming `0.503` (`Δacc = −0.0585`) at `2.7869×`, with
+   exact Q0 parity and clean format, but still below the `3.0×` rescue
+   floor. Wording discipline: 1.30W should be described as **dense-Q0
+   admission plus the existing session-reuse follow-up path**, not as
+   proven "pruned follow-ups", until the new image-token activity logs
+   show how much follow-up vision pruning is actually active.
+
+   The right next steps are now explicit and pre-registered:
+
+   - **1.30Z** — full long-bucket continuation of the promoted
+     `kr_Q0 = 0.67` candidate (`~3.5–5 h`). This is the required
+     generalization test for the selection-biased `1.30Y` scout.
+   - **1.30AA** — fresh duration-conditioned full-union rerun
+     (`~5.5–7.5 h`) with short/medium Q0 dense, long Q0 `0.67`, and
+     follow-ups `0.50`. This is the first no-splice paper-grade bridge
+     candidate in the lane.
+
+   1.30X remains important, but its `Δacc = 0.0000`, `3.0781×` point is
+   an **oracle upper bound**, not a deployable policy. The lane is not
+   "rescued" yet; it is reopened and now has a clean measured queue to
+   settle it.
 
 5. **1.55D selective re-prefill frontier (fidelity recovery).** The v1
    driver was infra-falsified, but that is no longer the live state.
    Repo-local v2 now runs the intended multimodal tail-reprefill regime.
    **K=1 LANDED 2026-04-24** on the full 7-clip 20f short tranche and
    is now the best fixed operating point: `Δacc = 0.0` (`17/21` vs
-   `17/21`), paired diffs `0/21`, pathological attractors `0/14`,
-   paired follow-up median `10.14 s`, cold median `98.43 s`
-   (`9.71×`), peak RSS `4.886 GB`. K=2 and K=4 remain useful lower-speed
-   comparison points (`6.72×` and `3.66×`). The first adaptive follow-up
-   is now also closed: **1.55E (`Q2=K1`, `Q3=K0`) FALSIFIES cleanly**
-   with `Δacc = -0.0952`, paired correctness diffs `4/21`, and
-   pathological-like outputs on `7/7` third queries. So the live
-   question is no longer "does adaptive refresh help at all?" It is
-   "can a richer Q3 state-construction or risk-gated admission policy
-   clear the last gap?" **Do not confuse this with 1.55B**, which is
-   the later persistent-KV × decode-acceleration composition phase and
-   still depends on 1.54 landing first.
+   `17/21`), **no observed paired correctness or choice drift on n=21**,
+   pathological attractors `0/14`, paired all-query cold median over
+   session-follow-up median `9.71×`, paired cold-follow-up median over
+   session-follow-up median `9.48×`, peak RSS `4.886 GB`. K=2 and K=4
+   remain useful lower-speed comparison points (`6.72×` and `3.66×`).
+
+   The first adaptive follow-up is now also closed:
+   **1.55E (`Q2=K1`, `Q3=K0`) FALSIFIES cleanly** with
+   `Δacc = -0.0952`, paired correctness diffs `4/21`, paired choice
+   diffs `6/21`, and pathological-like outputs on `7/7` third queries.
+
+   The next two paper-relevant follow-ups are now explicit and ready:
+
+   - **1.55F** — Q3 from the repaired post-Q2 state (`~60–75 min`):
+     tests whether the Q3 catastrophe was caused by reverting to the
+     wrong cache source rather than by adaptive reuse itself.
+   - **1.55G** — medium-bucket replication of the landed K=1 point
+     (`~1.7–2.2 h`): tests whether the current strongest recovery point
+     is short-only or multi-regime.
+
+   **Do not confuse this with 1.55B**, which is the later persistent-KV
+   × decode-acceleration composition phase and still depends on 1.54
+   landing first.
 
 6. **1.58 bf16 KV control at 20f.** Isolates quantization as a
    causal driver of the 7B basin collapse. Runtime ~2-4h; one clean
@@ -199,7 +228,10 @@ in its own dimension.
    we cannot discriminate. Wrapper + analyzer landed 2026-04-22 in
    `scripts/run_phase1_58_bf16_control.sh` and
    `scripts/analyze_phase1_58_bf16_control.py`; remaining blockers are
-   the bf16 checkpoint and 16 GB RSS feasibility.
+   now concrete rather than abstract: the local preflight confirms the
+   bf16 checkpoint is absent at `/Users/jfb/models/Qwen2.5-VL-7B-Instruct`,
+   so this lane is blocked until the model exists and RSS feasibility is
+   rechecked.
 
 7. **1.41 Qwen 16f holdout.** **LANDED 2026-04-21 (autonomous session,
    task #160).** Ran n=30 on `videomme_holdout_v1.toml`, identity cache,

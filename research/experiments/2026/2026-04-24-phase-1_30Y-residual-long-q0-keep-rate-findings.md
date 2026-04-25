@@ -135,7 +135,8 @@ than the dense-Q0 reference on this residual pair.
 
 ## Residual-pair interpretation
 
-This scout changes the 1.30 picture in an important way.
+This scout changes the 1.30 picture in an important but intentionally
+limited way.
 
 The live question after `1.30X` was whether the only format-clean fix
 for the residual long sessions required fully dense Q0. The answer is
@@ -148,8 +149,14 @@ the residual pair and even improves its answer accuracy relative to the
 fully dense-Q0 reference.
 
 That does **not** yet earn a paper claim. The scout is only two
-sessions. But it is enough to justify a longer continuation on the long
-bucket rather than abandoning the lane or reopening a global sweep.
+sessions, and those sessions were selected because they were already the
+binding residual failures from `1.30X`. This makes the scout explicitly
+selection-biased by construction.
+
+What it *does* earn is narrower:
+
+- `kr_Q0 = 0.67` is worth a full long-bucket generalization test
+- `kr_Q0 = 0.75` is not
 
 ## Approximate full-policy implication
 
@@ -164,9 +171,10 @@ land approximately at:
 - degenerates `= 0`
 
 That splice is **not** a promotion-ready result because it mixes new
-residual-pair thermals with previously landed full-union runs. It is an
-engineering/scientific routing fact: the candidate is now close enough
-to the paper gate that a long-bucket confirmation is justified.
+residual-pair thermals with previously landed full-union runs. It is
+only a routing hint: the candidate is now close enough to justify the
+full long-bucket confirmation (`1.30Z`) and, if that passes, a fresh
+no-splice duration-conditioned union rerun (`1.30AA`).
 
 ## Decision
 

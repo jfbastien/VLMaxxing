@@ -2,8 +2,8 @@
 
 **Date:** 2026-04-24.
 **Parent:** `2026-04-24-phase-1_55D-selective-reprefill-v2-k1-prereg.md`.
-**Verdict:** **best fixed frontier point; exact recovery holds, deployment
-speed still narrowly misses.**
+**Verdict:** **best fixed frontier point; no observed paired drift on n=21,
+deployment speed still narrowly misses.**
 
 ## Why this run mattered
 
@@ -32,8 +32,10 @@ From `summary_k1_n7.json` plus the paired row analysis:
 - `session_follow_up_accuracy = 11/14 = 0.7857`
 - `session_follow_up_median = 11.527 s`
 - paired follow-up median `= 10.136 s`
-- cold baseline median `= 98.433 s`
-- median speedup vs cold baseline `= 9.71×`
+- paired cold-follow-up median `= 96.095 s`
+- paired all-query cold median `= 98.433 s`
+- paired cold-follow-up median over session-follow-up median `= 9.48×`
+- paired all-query cold median over session-follow-up median `= 9.71×`
 - mean follow-up prefix coverage `= 0.9434`
 - `peak_rss_gb = 4.886`
 
@@ -45,8 +47,10 @@ Most importantly:
 
 The two apparently "wrong" session rows on clip `120-Q3` and
 `210-Q1/Q3` were not frontier failures; the matched cold baseline misses
-the same keyed items with the same answer choices. K=1 therefore
-preserves the answer manifold exactly on the full paired tranche.
+the same keyed items with the same answer choices. K=1 therefore shows
+**no observed paired correctness or choice drift on this full paired
+tranche**. With `n=21`, that is strong evidence, but it is still an
+observation-level claim rather than an unqualified exact law.
 
 ## Preregistered verdicts
 
@@ -55,12 +59,13 @@ preserves the answer manifold exactly on the full paired tranche.
 **EARNED strongly.**
 
 Observed `Δacc = 0.0` with zero paired answer-choice or correctness
-diffs on all 21 query pairs. This is much stronger than the preregistered
-partial-recovery target.
+diffs on all 21 query pairs. This is much stronger than the
+preregistered partial-recovery target, but it should still be written as
+**no observed paired drift on n=21**.
 
 ### H2-K1 (deployment-speed crossover)
 
-**FALSIFIED narrowly.**
+**Narrow miss; not formally falsified.**
 
 Observed:
 
@@ -68,8 +73,10 @@ Observed:
 - speedup `= 9.71×`
 
 So K=1 misses the intended deployment crossover by a narrow but real
-margin. The result is close enough to matter scientifically, but it does
-not earn the `>= 10×` paper-grade fixed-policy claim.
+margin. It earns the latency side (`10.136 s <= 10.5 s`) but misses the
+headline multiplier (`9.71× < 10×`). The result is close enough to
+matter scientifically, but it does not earn the `>= 10×` paper-grade
+fixed-policy claim.
 
 ### H3-K1 (basin control)
 
@@ -91,9 +98,10 @@ Observed:
 
 K=1 is now the **best fixed policy** in the 1.55D lane:
 
-- K=4: exact recovery, `3.66×`, RSS narrow fail
-- K=2: exact recovery, `6.72×`, RSS pass
-- K=1: exact recovery, `9.71×`, RSS pass
+- K=4: no observed paired drift on n=21, `3.66×`, RSS narrow fail
+- K=2: no observed paired drift on n=21, `6.72×`, RSS pass
+- K=1: no observed paired drift on n=21, `9.71×` all-query / `9.48×`
+  follow-up, RSS pass
 
 That gives a clean scientific conclusion:
 
