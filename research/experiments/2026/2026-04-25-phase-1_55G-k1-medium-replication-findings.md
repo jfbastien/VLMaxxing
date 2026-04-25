@@ -104,7 +104,8 @@ Across the landed short + medium runs:
 | 1.55G K=1 | 20f medium, 10 clips | 30 | 0/30 / 0/30 | 10.76× | 0/20 follow-up, 0/10 Q3 | 6.097 GB |
 
 **Combined: n=51 paired queries, 0/51 correctness diffs, 0/51 choice diffs,
-0/41 pathological follow-up rows, ~10× follow-up speedup across both regimes.**
+0/34 pathological follow-up rows, 0/17 pathological Q3 rows, ~10× follow-up
+speedup across both regimes.**
 
 Rule-of-three caveat: with 0 observed diffs across n=51, the upper one-sided
 95% CI on the diff rate is ≈ 5.7%. The paper claim should remain "no observed

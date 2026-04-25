@@ -11,8 +11,8 @@ status: preregistered 2026-04-25. Long-bucket K=1 replication at 20f after 1.55G
 
 `1.55D K=1` (n=21 short) and `1.55G K=1` (n=30 medium) both landed
 zero observed paired drift with ~9.5–10.8× follow-up speedup. With
-short + medium combined at n=51 paired queries / 0/51 diffs / 0/41
-pathological responses, the natural next scope question is whether the
+short + medium combined at n=51 paired queries / 0/51 diffs / 0/34
+pathological follow-up responses / 0/17 pathological Q3 responses, the natural next scope question is whether the
 landed K=1 fixed-tail policy survives on the long bucket where
 persistent-KV is most stressed.
 

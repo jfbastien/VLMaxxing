@@ -218,7 +218,7 @@ in its own dimension.
    | --- | --- | --- | --- | --- | --- | --- |
    | 1.55D K=1 | 20f short, 7 clips | 21 | 0/21 / 0/21 | 9.48× | 0/14 follow-up, 0/7 Q3 | 4.886 GB |
    | 1.55G K=1 | 20f medium, 10 clips | 30 | 0/30 / 0/30 | 10.76× | 0/20 follow-up, 0/10 Q3 | 6.097 GB |
-   | **combined** | 20f short+medium | **51** | **0/51 / 0/51** | 9.48-10.76× | **0/41** | 4.9-6.1 GB |
+   | **combined** | 20f short+medium | **51** | **0/51 / 0/51** | 9.48-10.76× | **0/34 follow-up, 0/17 Q3** | 4.9-6.1 GB |
 
    K=2 and K=4 remain useful lower-speed comparison points (`6.72×`
    and `3.66×`). With n=51 zero observed paired drift, the upper one-
@@ -244,10 +244,11 @@ in its own dimension.
      the bug is fixed). Tests whether the Q3 catastrophe was caused by
      reverting to the wrong cache source rather than by adaptive reuse
      itself.
-   - **1.55I** — long-bucket K=1 replication (preregister required;
-     ~2–3h): the natural next scope step after short+medium clean. Has
-     a real risk that long-bucket baseline accuracy falls below the
-     0.40 signal floor; requires a tranche-curation step.
+   - **1.55I** — long-bucket K=1 replication (preregistered; wrapper
+     and tranche curation still needed; ~60–75 min runtime): the natural
+     next scope step after short+medium clean. Has a real risk that
+     long-bucket baseline accuracy falls below the 0.30 signal floor;
+     requires a tranche-curation step.
    - **1.55H** — short-bucket `32f` K=1 boundary probe (~1.5–2.0 h):
      asks whether the repaired K=1 path survives when the 7B lane crosses
      into the known long-context basin depth. Wrapper already coded; not
@@ -276,7 +277,9 @@ observations that all say "aggregate metrics alone are incomplete": `1.30`
 V-only Q0 flips, `1.42` Gemma aggregate-preserved-but-identity-drifting
 MVBench reuse, and `1.55A` persistent-KV pathological attractors.
 `scripts/build_per_item_drift_summary.py` now builds a single JSON payload for
-that figure. This should land before drafting the final Results section.
+that figure. The manuscript now surfaces this as a generated paired-drift
+table; the remaining upgrade is editorial/visual polish, not evidence
+collection.
 
 7. **1.41 Qwen 16f holdout.** **LANDED 2026-04-21 (autonomous session,
    task #160).** Ran n=30 on `videomme_holdout_v1.toml`, identity cache,
@@ -464,11 +467,10 @@ edits:
    against observed E2E. Two counts appear in the paper and both must
    be self-consistent: the C-CEILING **7 regime dimensions** on Gemma
    (8/32-frame × benchmark × keep-rate × anchor arm, median 2.1% /
-   worst 5.2% error) and the C-VISION **5 scatter-back points** in the
-   n=30 ceiling-validation table (4 vision-axis cells + 1 H_stack
-   LLM-axis cell, predictive within 2.7 pp). The rendered figure adds
-   3 holdout cells + 1 pooled EXP10 n=60 for 8 scatter points total.
-   Already satisfied per claim-matrix row 13 and row 15.
+   worst 5.2% error) and the C-VISION rendered view with **9 points**
+   total: 4 Gemma dev cells, 3 Gemma holdout cells, 1 matched Qwen
+   cross-architecture point, and 1 pooled H_stack null. Already
+   satisfied per claim-matrix row 13 and row 15.
 4. **Safe-deployment table.** Reviewer checks the C-PERSIST 7B/3B
    envelope table. Round-23 added the "after-ingest" framing;
    currently self-consistent.

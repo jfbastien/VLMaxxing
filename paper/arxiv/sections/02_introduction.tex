@@ -22,11 +22,12 @@ That distinction changes what the paper is about. The first contribution is
 \emph{C-CEILING}: an arithmetic bound on how much of a local speedup can
 survive to end-to-end wall-clock. The second is \emph{C-PERSIST}: the
 after-ingest same-video regime where the biggest local multipliers already
-exist. The third is \emph{C-VISION}: measured first-pass gains on fresh videos
-via training-free vision-tower pruning. Qwen routing then plays a different
-role: it is the mechanism-validation backbone and the negative-result ledger
-that explains why fresh-compute placement matters more than novelty magnitude
-alone.
+exist, but also where cache reuse enters a measurable basin unless the visual
+tail is repaired. The third is \emph{C-VISION}: measured first-pass gains on
+fresh videos via training-free vision-tower pruning. Qwen routing then plays a
+different role: it is the mechanism-validation backbone and the
+negative-result ledger that explains why fresh-compute placement matters more
+than novelty magnitude alone.
 
 The story also survives contact with operational workloads. In companion
 deployment-scale experiments on a larger Gemma 4 26B streaming stack,
@@ -37,8 +38,11 @@ regimes reach 4.2--4.5$\times$ end-to-end speedups. Those numbers come from a
 different protocol and stay labeled that way in the paper. They matter because
 they show that the same reuse structure survives operational settings.
 A local Qwen session/streaming bridge now makes the boundary sharper:
-the stacked protocol reproduces the speedup side but not the fidelity side, so
-we treat deployment composition as a regime to explain rather than a multiplier
+the original stacked protocol reproduced the speedup side but not the fidelity
+side, a dense-Q0 admission successor fixes first-query damage exactly but
+misses the full 3-query rescue gate, and the duration-conditioned
+\(kr_{Q0}=0.67\) continuation fails to generalize on long clips. We therefore
+treat deployment composition as a regime to explain rather than a multiplier
 to inherit.
 
 \begin{table}[H]
@@ -58,7 +62,7 @@ evidence rather than a sparse wall-clock claim.}
 Regime & Reused work & Reporting unit & Headline evidence \\
 \midrule
 Fresh-video first pass & vision-tower work inside the first query & first-query end-to-end speedup & Gemma first-pass gains from 1.113$\times$ to 1.407$\times$ across clean and advisory holdout cells \\
-After-ingest follow-up & prompt / KV prefix for later questions on the same video & follow-up latency and speedup vs first query & Qwen persistent-KV reaches 47.2$\times$ at 8f and 91.1$\times$ at 16f; 7B stays inside the current safe envelope through 16f while 3B holds a bounded plateau through 36f \\
+After-ingest follow-up & prompt / KV prefix for later questions on the same video & follow-up latency, paired drift, and speedup vs cold queries & Qwen persistent-KV reaches 47.2$\times$ at 8f and 91.1$\times$ at 16f; selective re-prefill repairs the short+medium 20f 7B basin with no observed paired drift on n=51 at 9.48--10.76$\times$ same-class follow-up speedup \\
 Streaming / deployment & repeated visual state in a native-rate or live pipeline & paired ViT, pipeline, or end-to-end reduction & Gemma 26B companion evidence reports 13$\times$ fewer ViT calls, \mbox{$\sim$50$\times$} dominant-pipeline reduction, 4.2--4.5$\times$ real-video E2E, and 5--300$\times$ live-camera ViT savings \\
 \bottomrule
 \end{tabularx}
@@ -74,6 +78,10 @@ multipliers and the pooled n=60 composition null, where the observed
 Qwen collapses follow-up latency to roughly conversational timescales, with a
 7B safe envelope through 16 frames / 6.5k prefill tokens, a clean 16f point,
 and a wider but bounded 3B plateau through 36 frames / 14.5k prefill tokens.
+We then show that the 7B basin is repairable: selective re-prefill of a fixed
+newest-frame visual tail gives no observed paired choice or correctness drift
+on 51 short+medium 20f paired queries while retaining near-10$\times$
+follow-up speedup.
 \item We establish \textbf{C-VISION}: training-free mid-layer vision-tower
 pruning yields measured first-pass end-to-end gains on frozen Gemma video-VLM
 runs, from 1.113$\times$ to 1.407$\times$ across clean and advisory holdout
@@ -95,6 +103,10 @@ wrong variable, and the VideoMME frame-count probes show that ``more frames''
 is not a linear quality knob on the local Qwen stack. The dev-split 16-frame
 long-bucket regression does \emph{not} replicate on disjoint holdout; that is
 exactly the kind of boundary the paper keeps instead of smoothing away.
+The same discipline now applies to paired drift: several runs preserve
+aggregate accuracy while changing individual answers, so the paper reports
+choice diffs, correctness diffs, pathological-attractor counts, and confidence
+intervals whenever they decide the claim boundary.
 
 \begin{sectiontodo}{Tighten the opening once the final venue and title settle}
 The scientific structure is now the right one, but the opening still needs a

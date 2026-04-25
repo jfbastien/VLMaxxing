@@ -2,13 +2,16 @@
 
 \subsection{Problem Setting}
 
-We study three forms of temporal reuse on frozen video-VLM stacks:
+We study three deployment regimes on frozen video-VLM stacks, plus a separate
+routing path used for mechanism validation:
 
 \begin{itemize}[leftmargin=1.5em]
 \item \textbf{First-pass visual pruning:} skip or reduce vision-tower work
 before the rest of the model pays for it.
 \item \textbf{After-ingest follow-up reuse:} keep the expensive prefix from the
 first query and ask the next question against the same video.
+\item \textbf{Streaming / deployment reuse:} revisit repeated visual state in
+a native-rate or live pipeline.
 \item \textbf{Routing under a fixed dense backend:} substitute cached visual
 state to test whether answer quality survives, even when the benchmark path has
 not yet been rewritten into a sparse wall-clock implementation.
@@ -31,6 +34,16 @@ The block geometry is derived from the model's vision configuration rather than
 hard-coded. On Qwen2.5-VL, planner decisions line up with the merged-token
 spatial grid so cached features can be substituted back into the dense path at
 the same geometry the benchmark runner already understands.
+
+The paper's default sparse-QA routing path still uses pixel differences because
+that is the audited semantic baseline. A separate codec-native planner bridge
+now exists locally: continuous H.264-derived scores can substitute for the
+pixel-diff planner signal on VideoMME dev all-duration \(n=30\) without
+changing dense answer choices, and calibration-mode/source ablations are
+neutral on the local slices. We keep this as semantic planner-substitution
+evidence, not a latency claim, because the current offline extraction retrofit
+is much slower than the sparse frame-sampling path; a systems claim requires a
+streaming decoder-integrated path.
 
 \subsection{Bounded Staleness}
 
@@ -78,6 +91,27 @@ reuses the prompt cache and only appends a short textual suffix. The result can
 be dramatically faster, but it is explicitly an \emph{after-ingest} claim. It
 is not a claim about faster first-pass understanding of fresh videos.
 
+Persistent reuse also has a repair path. When a long visual prefix falls into a
+cache-reuse basin, the selective re-prefill runner keeps the reusable text and
+old visual prefix, refreshes a fixed newest-frame visual tail, and continues the
+follow-up from that repaired state. The knob \(K\) is the number of newest
+visual frames re-prefilled on each follow-up. Larger \(K\) spends more latency
+to repair more visual context; smaller \(K\) approaches the deployment-speed
+regime. This is still after-ingest reuse: the first query remains cold, and the
+claim is about later questions on the same video.
+
+\subsection{Paired Drift Metrics}
+
+Aggregate accuracy is not a sufficient safety metric for reuse. A cached or
+pruned run can keep the same aggregate score while changing individual answer
+choices, and a follow-up cache can lose accuracy by collapsing into a
+pathological output distribution rather than by making ordinary wrong choices.
+The paper therefore records paired choice diffs, paired correctness diffs,
+parse failures, degenerate or pathological-like outputs, and query-index splits
+whenever these decide the claim. The distinction matters scientifically:
+answer-identity drift, accuracy drift, and format collapse point to different
+repair mechanisms.
+
 \subsection{What Is Actually Skipped}
 
 The paper keeps semantic substitution and wall-clock skipping separate. The
@@ -85,8 +119,13 @@ Qwen routing runner can replay or substitute cached features to test whether the
 answer survives. That is enough to study the quality--compute frontier. It is
 not enough to claim an end-to-end speedup until the backend itself skips timed
 work. The Gemma and persistent-KV lanes do change measured wall-clock and
-therefore support speedup claims. The Qwen routing lane does not yet. That
-choice is deliberate.
+therefore support speedup claims. The Qwen routing lane does not yet. The
+local session/streaming bridge is instrumented separately: unless image-token
+activity shows that follow-up vision tokens were actually recomputed, the paper
+describes that family as Q0 admission plus K-cache reuse, not as active
+follow-up pruning. The completed 1.30Z continuation measured that boundary in
+the current prompt-cache path: all tested long-bucket follow-up image tokens
+were cache-served. That choice is deliberate.
 
 \begin{sectiontodo}{Add the overview figure and final algorithm box}
 The prose now matches the paper's current scope, but the final manuscript still
@@ -98,5 +137,7 @@ rather than measured sparse execution.
 \path{src/codec_through/novelty_pruning.py},
 \path{src/codec_through/pruned_vision_tower.py},
 \path{scripts/run_kv_cache_session.py},
+\path{scripts/run_kv_selective_reprefill_v2.py},
+\path{scripts/run_phase1_29_planner_accuracy_probe.py},
 \path{paper/claim-matrix.md}.}
 \end{sectiontodo}

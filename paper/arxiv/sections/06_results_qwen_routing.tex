@@ -1,4 +1,5 @@
 \section{Routing Mechanism and Quality--Compute Frontier}
+\label{sec:routing-mechanism}
 
 The Qwen routing lane is the cleanest explanation for why training-free
 anti-recomputation can work at all. It tells us what kind of temporal signal
@@ -43,6 +44,25 @@ interesting: it reaches 0.633 accuracy at 4.49 effective fresh frames and
 therefore matches dense-8 at 56\% of the fresh-frame budget. The current
 artifact is still dirty-tree, so the default manuscript snapshot keeps it out
 of the main figure on purpose.
+
+\subsection{A Second Architecture Shows The Boundary}
+
+The same planner is not a topology fairy tale where one attention pattern is
+``safe'' and another is simply ``unsafe.'' A Gemma 4-E4B-4bit holdout pair makes
+the boundary more useful. On TOMATO motion, Gemma preserves aggregate accuracy
+and passes the preregistered strict-agreement gate: dense and cached accuracy
+are both 8/30, with 28/30 answer agreement. On MVBench motion, aggregate
+accuracy is still preserved exactly (both dense and cached are 6/30), but
+strict agreement falls to 22/30 and misses the 0.85 gate. The eight MVBench
+mismatches spread across action localization, fine-grained action, object
+interaction, and moving direction rather than one brittle subgroup.
+
+That split is now part of the mechanism story. Qwen remains the high-stability
+reference family for the tested routing cells. Gemma shows that feature
+similarity and aggregate accuracy are not enough: answer-level reuse fidelity
+is architecture-conditioned \emph{and} benchmark-conditioned. This is why the
+paper reports paired answer drift instead of treating equal aggregate accuracy
+as proof that reuse is semantically identical.
 
 \subsection{Novelty Magnitude Alone Is Not Enough}
 
@@ -113,6 +133,7 @@ caption language after the final venue template lands.
 \textcolor{todoBorder}{Source pointers: \path{paper/claim-matrix.md},
 \path{research/experiments/2026/2026-04-15-phase-1_20-tomato-motion-slice-enlargement.md},
 \path{research/experiments/2026/2026-04-15-phase-1_21-mvbench-motion-slice-enlargement.md},
+\path{research/experiments/2026/2026-04-24-phase-1_42-gemma-findings.md},
 \path{research/experiments/2026/2026-04-17-phase-1_34-novelty-ranked-dense.md},
 \path{research/experiments/2026/2026-04-17-phase-1_36-feature-change-oracle.md}.}
 \end{sectiontodo}

@@ -33,7 +33,7 @@ Gemma holdouts.
 ## One paper, multiple evidence regimes
 
 **The goal is one results paper, co-authored with Sam, that advances
-SOTA across three independent axes.** Codex rounds 25–26 retired the
+the anti-recomputation evidence across three independent axes.** Codex rounds 25–26 retired the
 earlier "one big multiplicative number via claim 11" framing: the
 paper spine is now three already-earned, independently-evaluable
 contributions (all landed before Codex round-26 2026-04-21):
@@ -48,13 +48,16 @@ contributions (all landed before Codex round-26 2026-04-21):
   6-point speedup curve (47×→91×→70×→94×→122×→150× at 8/16/18/20/24/32f
   on Qwen 7B-4bit) + 3-point cross-arch scaling on Qwen 3B-4bit +
   4-regime temperature matrix. Mechanism decomposes into three
-  independently-varying axes (threshold onset × saturation ceiling ×
-  basin-attractor identity), scaling relation ~1.6× basin-onset depth
+  independently-varying axes (threshold onset × basin-onset depth ×
+  basin geometry), with an approximate 1.6× basin-onset-depth relation
   across architectures. Deployment-facing envelope: 7B stays inside the
   safe region through 16f / ~6.5k prefill, with a clean 16f point and a
   slightly worse but still safe 8f point; 3B stays inside the bounded
   region through 36f / ~14.5k prefill at a tolerated Δacc=−0.19 plateau
-  (not clean).
+  (not clean). Phase 1.55D/G now make recovery local evidence rather
+  than a hypothesis: K=1 selective re-prefill shows no observed paired drift
+  on n=51 short+medium at 9.48×–10.76× same-class median follow-up speedup
+  (up to 10.85× on the all-query denominator).
 - **C-VISION — vision-tower pruning with scatter-back ceiling**
   (claim 15). `E2E ≤ 1/(1 − V_share × V_red)` on Gemma 4-E4B-4bit
   validated across **6 core scatter points** (4 Gemma dev + 1 matched
@@ -145,9 +148,10 @@ narrative.
 > regime through 36f / ~14.5k prefill on a tolerated Δacc=−0.19 plateau
 > (not clean). Fidelity degradation
 > decomposes into three independently-varying axes (threshold onset,
-> saturation ceiling, basin-attractor identity), with a ~1.6× basin-
-> onset depth scaling across architectures. Sampler-invariance at both
-> architecture ceilings is cross-architectural, not a 7B idiosyncrasy.**
+> basin-onset depth, basin geometry), with a ~1.6× basin-onset depth
+> scaling across architectures. Sampler-side recovery is not uniform:
+> 7B basin behavior is sampler-resistant in the tested regimes, while
+> 3B basin behavior can disperse only back to its pre-basin plateau.**
 
 **Tertiary — C-CEILING (arithmetic analytical contribution):**
 
@@ -195,7 +199,7 @@ N=30 holdout, clean-tree provenance; projected compute-savings ceiling
 
 | # | Claim | Numbers (cite) | Evidence path |
 |---|---|---|---|
-| A | **Pareto win on MVBench motion holdout N=30 at matched accuracy.** | Planner 2.0 base `max_abs(8,32) static+shifted age=4` → 0.600 cached_accuracy @ 4.06 effective fresh frames, vs uniform dense-6 at 0.567 @ 6.0 (strict dominance: better accuracy at fewer fresh frames). | `phase1_21_mvbench_motion_holdout_v2_cached_nosticky/*_summary.json`; `paper/figures/pareto_holdout_n30.png` |
+| A | **Pointwise Pareto win on MVBench motion holdout N=30 at matched accuracy.** | Planner 2.0 base `max_abs(8,32) static+shifted age=4` → 0.600 cached_accuracy @ 4.06 effective fresh frames, vs uniform dense-6 at 0.567 @ 6.0 (higher point estimate at fewer fresh frames; keep the n=30 caveat visible). | `phase1_21_mvbench_motion_holdout_v2_cached_nosticky/*_summary.json`; `paper/figures/pareto_holdout_n30.png` |
 | B | **Pareto tie on TOMATO motion holdout N=30 at 44% of the fresh-frame budget.** | Planner 2.0 base → 0.333 cached_accuracy @ 3.55 effective fresh frames, equal to uniform dense-8 at 0.333 @ 8.0. | `phase1_20_tomato_motion_holdout_v2_cached_clean/*_summary.json` |
 | C | **Sticky4 refinement matches dense-8 accuracy at 56% of budget on MVBench.** | Planner 2.0 + sticky_window=4 → 0.633 @ 4.49 vs uniform dense-8 at 0.633 @ 8.0. Strict Pareto equivalence at reduced fresh frames. | `phase1_21_mvbench_motion_holdout_v2_cached/*-sticky4_summary.json` |
 | D | **Beats novelty-ranked dense on both benchmarks at matched fresh-frame count.** | Novelty-ranked dense N=8 on TOMATO: 0.233 (hurts uniform by 0.100). On MVBench: 0.567 (loses to uniform by 0.067, saturates at 0.567). Planner 2.0 cached DOMINATES every novelty cell at equal-or-lower fresh budget. | `results/novelty_ranked_dense/*_holdout_n{4,6,8}.json`; phase 1.34 note |
@@ -204,7 +208,7 @@ N=30 holdout, clean-tree provenance; projected compute-savings ceiling
 | G | **Dense wall-clock baseline captured on M3 Air 16GB.** | TOMATO n=10 mc_scoring at 8 frames, 560×560: 60.1 s/item median; prefill 72% of wall time, vision encode 22%, decode 6%; peak 6.87 GB. | `results/track_b/tomato_mc_n10.json`; phase 1.50 note |
 | H | **Hard ceiling for vision-cache-only Track B: 22% end-to-end speedup at this geometry.** | Arithmetic: vision encode is 22% of per-item wall time, so any method that only skips vision work caps at 22% end-to-end before prefill savings. | Derived from G; explicit in phase 1.50 §Paper implications |
 | R | **1.51V vision-tower pruning on Gemma 4-E4B-4bit (MLX), dev n=30 at L=2 kr_V=0.50 thermally paired:** VideoMME 1.08× (8f) / 1.12× (16f), MVBench **1.21×**, TOMATO **1.24×**; dev V-red lands around 40% across the three benchmarks, but holdout spread is wider and should be described more softly in the manuscript. Scatter-back ceiling `1/(1 − V_share × V_red)` predicts E2E within 2pp on the main dev cells. **32f frame-scaling probe:** V_share = 31.0% at 32f (continues 15.2% → 24.3% → 31.0% monotone), but thermal pairing FAILS on M3 16 GB at 32f (decode Δ = +7.6%); observed cross-run 0.94× is thermally confounded; charitable ceiling prediction 1.14×, sub-threshold. **Holdout replication (EXP15/16, VideoMME holdout v1 n=30 disjoint):** H-stack partial confirmation — V+novelty kr=0.3 on V-patched baseline stacks at 1.064× within-run (thermally clean), 1.127× cross-session (dirty), agreement=0.667, acc Δ=-0.033. LLM-side ceiling `1/(1 − generate_share × generate_reduction) = 1.064×` matches observed to 0.1pp (fifth ceiling regime). **V-only UNPATCHED-vs-PATCHED holdout status:** VideoMME 8f **clean** at 1.113× (EXP17/18); MVBench 8f **advisory** at 1.407× (EXP19/20); TOMATO 8f **earned-advisory** at 1.194× from the session-5 rerun (EXP23/24). | `research/experiments/2026/2026-04-21-phase-1_51V-expansion-findings.md`; `2026-04-21-phase-1_51V-32f-probe-findings.md`; `2026-04-21-phase-1_51V-holdout-findings.md`; `artifacts/phase1_51V_expansion/exp{01..12}_*_summary.json`; `artifacts/phase1_51V_session2/exp{13..16}_*_summary.json`; `codec-through/research/experiments/2026/2026-04-21-phase-1_51V-session5-findings.md` |
-| O | **Persistent-KV follow-up speedup 47×/91×/70×/94×/122×/150× at 8f/16f/18f/20f/24f/32f on Qwen 7B-4bit; reproduces Sam §2.13.3 AND confirms prefill-dominance on a six-point scaling curve. Fidelity preservation is bounded by a MONOTONIC-SATURATING RAMP — clean at ≤ ~6.5k tokens (16f, Δacc=0); 4-basin mixed-attractor degeneracy at ~7.3k (18f, Δacc=−0.24); 2-basin dominance at ~8.1k (20f, Δacc=−0.38); single-token attractor by ~9.7k (24f, Δacc=−0.43). Pairwise Δacc increments decay (−0.238, −0.143, −0.048, 0). Cross-architecture 3-point probe on Qwen 2.5-VL-3B-4bit: 20f Δacc=−0.048 (matched); 24f Δacc=−0.190 (shifted-ramp); 32f Δacc=−0.190 (PLATEAUED — numerically identical to 24f at 60% deeper prefill). 3B saturates at a ~2.3× SHALLOWER CEILING than 7B (−0.19 vs −0.43), and all 28/28 3B follow-ups across 20f/24f/32f emit clean 2-token letter answers (zero basin collapse). Cache-reuse damage decomposes into three independently-varying architectural dimensions: (1) threshold onset is capacity-modulated (7B ramps at ~7.3k; 3B ramps at ~9.7k), (2) saturation ceiling is architecture-specific (−0.43 vs −0.19), (3) failure geometry is architecture-specific (basin collapse to `addCriterion` vs clean-letter drift). **Temperature probe on 7B/20f (T=0.7 + min_p=0.05 + seed=42): Δacc = −0.429 — numerically temperature-invariant (greedy −0.381; diff 0.048 ≈ 1/21 noise floor). H2-temp.distribution-collapse EARNED; H-greedy-commit FALSIFIED. Basin mass redistributed to a NOVEL pathological attractor (`自动生成` Chinese "auto-generate", 5/14) NOT to clean decoding (clean share unchanged at 1/14). The pathological distribution is intrinsic to cache-reused 7B logits, not a greedy-argmax artifact. Failure geometry is architecture-specific AT THE DISTRIBUTION LEVEL on 7B — not sampler-level.** **Temperature mirror on 3B/20f (same sampler): Δacc = −0.095 (greedy −0.048 → temp −0.095, shifts by 1/21 noise floor); 14/14 clean 2-token letter follow-ups; 0 pathological-attractor emergence; H2-3B-temp.null-robust EARNED on both preregistered conditions; H2-3B-temp.hidden-basin FALSIFIED. Sampler-invariance now verified at BOTH architecture ceilings — distribution-level fidelity-loss vs distribution-level clean-drift is cross-architectural, not a 7B idiosyncrasy. Paper corollary: practitioner cannot recover fidelity via temperature + min-p at either ceiling; fidelity recovery requires upstream intervention (Phase 1.55D selective re-prefill preregistered 2026-04-20).** | 1.55A 8f: n=21, follow-up median 815 ms, Δacc −0.048, prefix 0.982, peak RSS 2.81 GB. 1.55A 16f: n=21, follow-up median 807 ms, **Δacc 0.000**, prefix 0.991, peak RSS 1.48 GB. 1.55A 18f: n=21, follow-up median 1102 ms, **Δacc −0.238 (ramp; 4/14 clean-correct + 3/14 clean-wrong-choice + 3/14 long-garbage + 2/14 empty + 2/14 saturated-`addCriterion`; richest basin diversity in the sweep)**, prefix 0.9920, peak RSS 4.19 GB. 1.55A 20f: n=21, follow-up median 905 ms, **Δacc −0.381 (ramp; 9/14 short `addCriterion` + 4/14 long garbage + 1/14 clean-correct)**, prefix 0.9928, peak RSS 3.51 GB. 1.55A 24f: n=21, follow-up median 864 ms, **Δacc −0.429 (saturated)**, prefix 0.9940, peak RSS 3.30 GB. 1.55A 32f: n=21, follow-up median 1008 ms, **Δacc −0.429 (saturated)**, prefix 0.9955, peak RSS 2.50 GB. **1.55A-3B 20f cross-arch (2026-04-19): Qwen 2.5-VL-3B-Instruct-4bit, same 7 clips × 3 Qs, same driver, same prefill ~8.1k → follow-up median 412 ms, speedup 136.07×, Δacc = −0.0476 (INSIDE ±0.05 envelope), prefix 0.9928, peak RSS 3.93 GB, 7/14 follow-up correct. All 14 follow-ups emit 2-token clean letter answers — NO addCriterion basin, NO long-garbage basin. 1.55A-3B 24f boundary-shift (2026-04-20): same 7 clips, 24 frames (~9.7k prefill) → follow-up median 423 ms, speedup 154.17×, Δacc = −0.190 (H2-3B-24.shifted-ramp EARNED, band (−0.30, −0.05)), prefix 0.9940, 6/14 follow-up correct. First-query accuracy 4/7 identical to baseline; follow-up Δacc = −0.286 concentrated on cache-reused queries. Basin structure: 14/14 clean 2-token letter answers (no addCriterion, no long-garbage) — 3B degrades via decode-choice drift, not basin collapse. 1.55A-3B 32f saturation (2026-04-20): same 7 clips, 32 frames (~12.9k prefill) → follow-up median 484 ms, speedup 213.01× (exceeds 7B 32f's 150×), **Δacc = −0.190 (H2-3B-32.plateaued EARNED, band (−0.25, −0.10] — most-surprising pre-registered sub-outcome)**, prefix 0.9955, peak RSS 4.58 GB, 5/14 follow-up correct. **Δacc is numerically identical to 3B 24f** (same 10/21 session, same 14/21 baseline) — 3B has saturated at a ~2.3× shallower ceiling than 7B. First-query 5/7 both modes. All 14 follow-ups remain clean 2-token letter answers at 12.9k prefill — no basin collapse emerges on 3B at deeper prefill than 7B saturation. Cross-arch 3-point: the cache-reuse damage decomposes into three orthogonal dimensions — threshold onset (capacity-modulated), saturation ceiling (architecture-specific), failure geometry (architecture-specific).** 24f and 32f failure statistics are numerically identical (both session 9/21, baseline 18/21, 14/14 follow-ups emit literal `addCriterion` token) — single-attractor collapse. **Basin-structure evolution across ramp on 7B**: clean (16f) → 4-basin diversity (18f) → 2-basin dominance (20f) → single attractor (24f+). This progressive collapse favours threshold mechanisms with a soft edge over pure gradient and over pure cliff. **Mechanism discrimination (cross-arch 2-point): the ramp at 3B is shifted, not absent** — 3B 20f Δacc=−0.048 → 3B 24f Δacc=−0.190 → ramp onset is capacity-modulated with an architecture-specific threshold. **Basin attractor identity is architecture-specific:** 7B saturates to `addCriterion`; 3B stays in the 2-token letter distribution even while accuracy drops. Rules out "pure prefill-length-intrinsic" as a complete mechanism and rules out "shared-tokenizer-space basin" as the locus of the attractor; supports "model-capacity / depth-dependent accumulation". Cold-prefill Q1 accuracy: 7/7 at 18f/24f/32f, 6/7 at 20f (one cold flake), matches baseline — content understanding is intact; only the cache-reuse path is. Speedup scaling (47×→91×→70×→94×→122×→150×) and first-query scaling (38.5→73.5→77.5→83.8→108.9→163.2 s) form a 6-point prefill-dominance curve (18f dip is median-inflated by long-garbage gen tokens, not cache-coupled). 3B 20f speedup 136× exceeds 7B 20f 94× — prefill-dominance ratio is HIGHER at 3B because decode is comparatively faster. Median follow-up matches Sam's 0.8 s (Gemma 4 26B / M5 Max) across 8f/16f. | `research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md`; `.../2026-04-19-phase-1_55A-{16,18,20,24,32}f-frame-scaling-findings.md`; `.../2026-04-19-phase-1_55A-3b-crossarch-findings.md`; `.../artifacts/loop_queue_20260419_155108/phase1_55A_persistent_kv_qwen/summary.json`; `.../artifacts/phase1_55A_{16,18,20,24,32}f_frame_scaling/summary.json`; `.../artifacts/phase1_55A_3b_20f_crossarch/summary.json`; `.../2026-04-20-phase-1_55A-3b-24f-boundary-findings.md`; `.../artifacts/phase1_55A_3b_24f_boundary/summary.json`; `.../2026-04-20-phase-1_55A-3b-32f-saturation-findings.md`; `.../artifacts/phase1_55A_3b_32f_saturation/summary.json`; `.../2026-04-20-phase-1_55A-7b-20f-temperature-findings.md`; `.../artifacts/phase1_55A_7b_20f_temperature/summary.json`; `.../2026-04-20-phase-1_55A-3b-20f-temperature-findings.md`; `.../artifacts/phase1_55A_3b_20f_temperature/summary.json` |
+| O | **Persistent-KV follow-up speedup 47×/91×/70×/94×/122×/150× at 8f/16f/18f/20f/24f/32f on Qwen 7B-4bit; reproduces Sam §2.13.3 AND confirms prefill-dominance on a six-point scaling curve. Fidelity preservation is bounded by a threshold-and-basin story — clean at ≤ ~6.5k tokens (16f, Δacc=0); mixed basin at ~7.3k (18f, Δacc=−0.24); dominant basin at ~8.1k (20f, Δacc=−0.38); single-token attractor by ~9.7k (24f, Δacc=−0.43). Cross-architecture probes revise the older 3B “saturation ceiling” readout: 24f/32f/36f are now treated as a pre-basin plateau at Δacc≈−0.19, with 3B basin onset bracketed to (36f, 40f]. Cache-reuse damage decomposes into threshold onset, basin-onset depth, and basin geometry. Selective re-prefill v2 is now the local recovery frontier: K=1 shows no observed paired drift on n=51 short+medium at 9.48×–10.76× same-class median follow-up speedup (up to 10.85× on the all-query denominator), while the naive adaptive omission Q2=K1/Q3=K0 fails on Q3 and the post-Q2-state adaptive test is runner-blocked, not science-falsified.** | Detailed historical artifacts remain in the phase 1.55A/1.55D/1.55E/1.55G findings docs and should be preferred over this compressed inventory when writing final manuscript prose. | `research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md`; `.../2026-04-24-phase-1_55D-selective-reprefill-v2-k1-findings.md`; `.../2026-04-24-phase-1_55E-q2-mandatory-q3-optional-findings.md`; `.../2026-04-25-phase-1_55G-k1-medium-replication-findings.md` |
 
 ### What remains BLOCKED before venue submission
 
@@ -268,8 +272,8 @@ runnable tonight vs. impl-gated.
 | Prio | Phase | Runtime | Model | Blocker status |
 |------|-------|---------|-------|----------------|
 | should-do #3 | **1.51V Qwen cross-arch probe** (L=2, kr=0.50, VideoMME 8f n=30 thermally paired, 2 arms) | **CLOSED 2026-04-23** | Qwen 2.5-VL-7B-4bit | **landed** — `V_red = 0.398`, `E2E = 1.044× observed vs 1.043× predicted`, aggregate `Δacc = −0.033`; C-VISION upgrades to two-architecture mechanism evidence |
-| should-do #4 | Local paired streaming-protocol reproduction (1.30) + root-cause decomposition | REOPENED-BOUNDARY 2026-04-25 | Qwen 2.5-VL-7B-Instruct-4bit (driver hard-fails on non-Qwen at `run_phase1_30_sam_streaming.py:303-308`) | **Now an explicit closeout queue, not a vague lane.** 1.30W lands paired cold 0.561 / streaming 0.503 (Δacc = −0.0585) / 2.7869× with exact Q0 parity and clean format, but still below the `3.0×` rescue floor. 1.30X reopens speed/accuracy only as a deployable near-miss plus an oracle upper bound. The next two runnable steps are **1.30Z** (long-bucket `kr_Q0 = 0.67` continuation, ~3.5–5 h) and, conditional on that, **1.30AA** (fresh duration-conditioned full-union rerun, ~5.5–7.5 h). New image-token instrumentation will determine whether follow-up pruning is actually active or whether this family should be described as dense-Q0 admission + K-cache reuse. |
-| should-do #5 | **1.55D selective re-prefill frontier** (recover Δacc at 20f while clawing back speed) | ~60-75 min for 1.55F; ~1.7-2.2 h for 1.55G; ~1.5-2.0 h for 1.55H | Qwen 2.5-VL-7B-4bit | **K=1 landed 2026-04-24 and remains the best fixed point** — repo-local v2 shows no observed paired drift on n=21 (one-sided rule-of-three upper bound ≈14% on an unseen paired-diff rate), paired all-query cold median over session-follow-up median `9.71×`, paired cold-follow-up median over session-follow-up median `9.48×`, and `4.886 GB` RSS. The first adaptive omission follow-up is already a bounded negative: **1.55E (`Q2=K1`, `Q3=K0`) FALSIFIES cleanly**. The next meaningful continuations are therefore explicit and ready: **1.55F** (Q3 from repaired post-Q2 state), **1.55G** (medium-bucket replication of K=1), and **1.55H** (short-bucket `32f` K=1 boundary probe). **1.55B** remains the separate persistent-KV × 1.54 composition phase. |
+| should-do #4 | Local paired streaming-protocol reproduction (1.30) + root-cause decomposition | CLOSED-BOUNDARY 2026-04-25 for current policy | Qwen 2.5-VL-7B-Instruct-4bit (driver hard-fails on non-Qwen at `run_phase1_30_sam_streaming.py:303-308`) | 1.30W remains the best landed bridge: paired cold 0.561 / streaming 0.503 (Δacc = −0.0585) / 2.7869× with exact Q0 parity and clean format, but still below the `3.0×` rescue floor. 1.30X's Δacc=0.0 / 3.078× point is oracle-only. 1.30Z falsifies the `kr_Q0=0.67` long-bucket continuation (Δacc = −0.130 on n=54, speedup 3.12×, format clean), so 1.30AA correctly skipped. Instrumentation now proves follow-up vision pruning is inactive in this family (`vision_pruning_active_fraction=0.0`, all follow-up image tokens cache-served); describe it as Q0 admission + K-cache reuse. |
+| should-do #5 | **1.55D/G selective re-prefill frontier** (recover Δacc at 20f while clawing back speed) | ~60-75 min for 1.55F after bug fix; ~60-75 min for 1.55I after wrapper/curation; ~1.5-2.0 h for 1.55H | Qwen 2.5-VL-7B-4bit | **K=1 now has short+medium evidence** — repo-local v2 shows no observed paired drift on n=51 (one-sided rule-of-three upper bound ≈5.7% on an unseen paired-diff rate), 9.48×–10.76× same-class median follow-up speedup (up to 10.85× on the all-query denominator), and 0/34 pathological follow-up outputs. The first adaptive omission follow-up is already a bounded negative: **1.55E (`Q2=K1`, `Q3=K0`) FALSIFIES cleanly**. 1.55F (Q3 from repaired post-Q2 state) is blocked by an empty-grid runner bug, not by science. Next meaningful continuations: fix/rerun 1.55F, run preregistered 1.55I long-bucket K=1 replication after tranche curation/wrapper, and optionally run 1.55H 32f short depth-boundary. **1.55B** remains the separate persistent-KV × 1.54 composition phase. |
 | should-do #6 | **1.58 bf16 KV control at 20f** (discriminate quantization vs attention-OOD) | ~3.5-4 h (bf16 8f n=30 + bf16 16f n=30) | Qwen 2.5-VL-7B bf16 | **wrapper-landed; preflight still blocks execution** — `scripts/run_phase1_58_bf16_control.sh` + analyzer landed, but the local bf16 checkpoint is absent and the current 16 GB laptop plan caps autonomous runs near `10 GB` RSS, well below the prereg's looser `<14 GB` feasibility band |
 | should-do #8 | **1.29 codec-native bridge (reframed)** | landed semantically; slow offline extraction | Qwen 2.5-VL-7B-4bit | **planner-substitution evidence landed** — MAX-over-span sparse sampling is HARD-FALSIFIED, while the continuous-score redesign reaches codec-dense agreement 1.000 on VideoMME dev all-duration n=30 with no accuracy loss and zero parse failures. Later calibration-mode and calibration-source ablations are neutral on the local slices we ran. This is not a latency claim: offline codec extraction totals 7290s; the remaining gate is streaming decoder integration / native-rate systems evaluation. |
 | future | **1.60 scroll/pan subset** (20 items stratified by scroll intensity, L=2 kr=0.50 paired) | n/a on VideoMME; ~70-90 min after a real subset exists | Gemma 4-E4B-4bit or matched C-VISION stack | **closed as natural-VideoMME corpus limitation** — wider 60-item VideoMME scan found 0/60 items above `shifted_fraction >= 0.30` (max 0.125), so this only reopens with EgoSchema/EPIC-Kitchens/Ego4D or a labeled synthetic scroll/pan set |
@@ -279,11 +283,12 @@ runnable tonight vs. impl-gated.
 | blocked | 1.52R composition (1.42 × 1.51R) | ~3 h | Gemma 4-E4B-4bit | 1.42 landing + 1.51R V-patched re-run |
 | future | Claim-5 sparse-execution delta | ~2 h | either | sparse backend unwritten (1-2 wk impl) |
 
-**Runnable-without-approval tonight**: `1.30Z`, `1.30AA` (conditional on
-1.30Z), `1.55F`, and `1.55G` all have wrappers, prereg docs, analyzers,
-and a CPU-only preflight. `1.55H` is also coded as a manual post-primary
-boundary probe. `1.58` remains blocked by the missing bf16 checkpoint and the
-current local memory policy.
+**Runnable next with setup**: `1.55F` needs the empty-grid runner fix before
+rerun; `1.55I` is preregistered but still needs long-tranche curation and a
+wrapper; `1.55H` is coded as a manual 32f depth-boundary probe. `1.30AB` and
+`1.30AC` need preregistration and, for AC, a small driver change. `1.58`
+remains blocked by the missing bf16 checkpoint and the current local memory
+policy.
 
 **Aggregate forward cost once blockers clear**: ~20 h benchmark-only
 @ 8f (excludes implementation); ~40 h @ 32f.
@@ -334,7 +339,7 @@ queue once infra is in place.
   codec-metadata by design, and the local 1.29 bridge is semantic rather than
   latency evidence.
 
-## Immediate next actions to extend publishability (ranked for one-paper SOTA goal)
+## Immediate next actions to extend publishability (ranked for one-paper submission goal)
 
 **Status update 2026-04-23 (Qwen cross-arch probe landed; three-benchmark C-VISION trifecta already closed):**
 - **TOMATO 8f holdout EARNED-ADVISORY** — EXP23/24 rerun after session 4
@@ -523,30 +528,28 @@ items that priority.md does not carry. For the current ordering see
    `V_red = 0.398`, `E2E = 1.044×` observed vs `1.043×` predicted,
    aggregate `Δacc = −0.033`.
 4. **Local paired streaming-protocol reproduction of Sam's N=60 line**
-   — **REOPENED AS A MEASURED ADMISSION-POLICY LANE.** The original
-   bridge was a hard negative; the successor `1.30W` policy improves the
-   same Qwen 7B 8f dev+holdout-union bridge to cold `0.561` /
-   streaming `0.503` (`Δacc = −0.0585`) at `2.7869×`, with exact Q0
-   parity (`34/57` in both arms), `0` parse failures, and `0`
-   degenerates. But 1.30W should be described as **dense-Q0 admission
-   plus the existing session-reuse follow-up path**, not as proven
-   "Q2/Q3 pruned", until the new image-token activity fields show how
-   much follow-up vision pruning is actually active. The next two runs
-   are now pre-registered and ready: **1.30Z** (long-bucket
-   `kr_Q0 = 0.67` continuation, `~3.5–5 h`) and, conditional on that,
-   **1.30AA** (duration-conditioned full-union rerun, `~5.5–7.5 h`).
-   1.30X's `Δacc = 0.0000`, `3.0781×` point remains an oracle upper
-   bound, not a deployable result.
-5. **1.55D selective re-prefill v2** — no longer an implementation
+   — **CLOSED-BOUNDARY FOR THE CURRENT POLICY.** The original bridge was
+   a hard negative; the successor `1.30W` policy improves the same Qwen 7B
+   8f dev+holdout-union bridge to cold `0.561` / streaming `0.503`
+   (`Δacc = −0.0585`) at `2.7869×`, with exact Q0 parity (`34/57` in both
+   arms), `0` parse failures, and `0` degenerates. 1.30Z then falsifies the
+   `kr_Q0=0.67` long-bucket continuation (`Δacc=-0.130`, speedup `3.12×`,
+   format clean), and 1.30AA was correctly skipped. The new instrumentation
+   also confirms the wording boundary: follow-up vision pruning is inactive
+   (`vision_pruning_active_fraction=0.0`), so this lane is **Q0 admission +
+   K-cache reuse**, not proven Q2/Q3 vision pruning. 1.30X's `Δacc = 0.0000`,
+   `3.0781×` point remains an oracle upper bound, not a deployable result.
+5. **1.55D/G selective re-prefill v2** — no longer an implementation
    question. Repo-local v2 is landed, and K=1 is the best fixed point:
-   **no observed paired drift on n=21**, paired all-query cold median
-   over session-follow-up median `9.71×`, paired cold-follow-up median
-   over session-follow-up median `9.48×`, peak RSS `4.886 GB`. The
-   first adaptive omission follow-up, 1.55E (`Q2=K1`, `Q3=K0`), is now
-   a bounded negative: `Δacc = -0.0952` with pathological-like outputs
-   on `7/7` third queries. The next paper-relevant moves are explicit
-   and ready: **1.55F** (Q3 from repaired post-Q2 state, `~60–75 min`)
-   and **1.55G** (medium-bucket replication of K=1, `~1.7–2.2 h`).
+   **no observed paired drift on n=51 short+medium**, 9.48×–10.76× same-class
+   median follow-up speedup (up to 10.85× on the all-query denominator), and 0/34 pathological
+   follow-up outputs. The first adaptive omission follow-up, 1.55E
+   (`Q2=K1`, `Q3=K0`), is a bounded negative: `Δacc = -0.0952` with
+   pathological-like outputs on `7/7` third queries. The post-Q2-state test
+   1.55F is runner-blocked on an empty-grid text-only tail; it remains
+   scientifically untested. The next paper-relevant moves are **fix/rerun
+   1.55F**, **1.55I** (long-bucket K=1 after tranche curation/wrapper), and
+   **1.55H** (32f short depth-boundary).
 6. **1.58 bf16 KV control at 20f** — isolates quantization as the
    C-PERSIST basin driver; ~2-4h wall once the bf16 checkpoint exists
    locally. Preflight currently marks it blocked.
@@ -565,9 +568,10 @@ items that priority.md does not carry. For the current ordering see
    `scripts/plot_v_share_v_red_ceiling.py`; artifacts
    `paper/figures/c_persist_safe_budget.{png,_data.json}` and
    `paper/figures/v_share_v_red_ceiling.{png,_data.json}`. V_share ×
-   V_red figure shows 8 regimes (4 dev + 3 holdout + 1 pooled
-   CLOSED-NULL); dev median |Δ| 2.2pp, MVBench 8f holdout sits 11.6pp
-   above the ceiling (thermal-inflated, matches session-4 advisory).
+   V_red figure now shows 9 rendered points (4 Gemma dev + 3 Gemma
+   holdout + 1 matched Qwen cross-arch + 1 pooled H_stack CLOSED-NULL);
+   dev median |Δ| 2.2pp, MVBench 8f holdout sits 11.6pp above the
+   ceiling (thermal-inflated, matches session-4 advisory).
 
 ### Mechanism-validation backbone (Qwen routing, NOT the headline)
 

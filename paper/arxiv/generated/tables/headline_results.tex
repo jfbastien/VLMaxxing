@@ -9,6 +9,7 @@ Regime & Setting & Gain & Fidelity & Status \\
 \midrule
 After-ingest & Qwen same-video follow-up, 16f & 91.1$\times$ & 0.807\,s median; $\Delta$acc +0.000 & clean \\
 After-ingest & Qwen same-video follow-up, 8f & 47.2$\times$ & 0.815\,s median; $\Delta$acc -0.048 & safe \\
+After-ingest & Qwen selective re-prefill, 20f K=1 short+medium & 9.48--10.76$\times$ & paired diffs 0/51; pathological follow-ups 0/34 & bounded recovery \\
 First-pass & Gemma MVBench 8f holdout & 1.407$\times$ & $\Delta$acc -0.033 & advisory \\
 First-pass & Gemma VideoMME 8f holdout & 1.113$\times$ & $\Delta$acc +0.000 & clean \\
 First-pass & Gemma TOMATO 8f holdout & 1.194$\times$ & $\Delta$acc -0.067 & imported advisory \\

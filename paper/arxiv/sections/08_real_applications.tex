@@ -7,10 +7,10 @@ paired Streaming VideoMME results with 13$\times$ fewer ViT calls and
 \mbox{$\sim$50$\times$} less dominant-pipeline compute, and selected
 real-video regimes with 4.2--4.5$\times$ end-to-end speedups. A separate
 imported companion exactness result reports byte-identical Qwen outputs across
-what the companion whitepaper reports as 1,937 sparse benchmark items under a separate sparse-sampled QA
-protocol when
-unchanged regions are reused instead of being re-encoded. Live-camera
-measurements then show the same regime dependence in the wild: ViT savings
+what the companion whitepaper reports as 1,937 sparse benchmark items under a
+separate sparse-sampled QA protocol when unchanged regions are reused instead
+of being re-encoded. Live-camera measurements then report the same regime
+dependence in the wild: ViT savings
 range from 5$\times$ to 300$\times$ with scene activity, and the post-fix RTSP
 demo still reduces ViT calls by 14.3$\times$ over an active 60\,s window. This
 is the operational regime where the thesis matters most.
@@ -50,11 +50,16 @@ Exact Qwen caching benchmark & sparse-sampled unchanged-region reuse & reported 
 \end{table}
 
 The local Qwen bridge does not yet reproduce the companion Gemma deployment
-story as a fidelity-preserving stack. It reproduces the speedup side but fails
-the accuracy budget, with a semantic rather than syntactic failure profile.
-That is why Table~\ref{tab:real-apps} stays labeled as deployment-scale
-companion evidence rather than being folded into the local C-VISION or
-C-PERSIST headline rows.
+story as a fidelity-preserving stack. The original stacked run reproduced the
+speedup side but failed the accuracy budget. The dense-Q0 admission successor
+fixes first-query damage exactly and leaves a follow-up-only near-miss, but it
+also shows why the claim boundary must stay strict. The long-bucket
+continuation now measures follow-up image-token activity directly and finds
+none: all follow-up image tokens are cache-served under the current
+prompt-cache path. That lane is therefore dense-Q0 admission plus K-cache
+reuse rather than proof of active follow-up vision pruning. That is why
+Table~\ref{tab:real-apps} stays labeled as deployment-scale companion evidence
+rather than being folded into the local C-VISION or C-PERSIST headline rows.
 
 \begin{figure}[H]
   \centering

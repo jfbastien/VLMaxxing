@@ -3,20 +3,23 @@
 This paper argues for anti-recomputation, not for one particular trick. Fresh
 videos admit modest but measured first-pass gains, and those gains obey a
 share-limited ceiling that now binds on both Gemma headline cells and a
-matched Qwen cross-architecture probe. Same-video follow-up queries admit much larger
-multipliers, already reaching sub-second latency on the local stack. Streaming
-deployments push the same idea further into operational regimes with
-double-digit to \mbox{$\sim$50$\times$} savings. The Qwen routing results
-explain why the bars differ so much: fresh-compute placement over time matters
-more than novelty magnitude alone, and semantic substitution must not be
-confused with measured sparse execution.
+matched Qwen cross-architecture probe. Same-video follow-up queries admit much
+larger multipliers, already reaching sub-second latency on the local stack, and
+the 20f selective-reprefill frontier now shows short+medium no-observed-drift
+recovery at roughly 10$\times$ follow-up speedup. Streaming deployments
+push the same idea further into operational regimes with double-digit to
+\mbox{$\sim$50$\times$} savings. The routing and drift results explain why the
+bars differ so much: fresh-compute placement over time matters more than
+novelty magnitude alone, aggregate accuracy can hide answer-identity drift, and
+semantic substitution must not be confused with measured sparse execution.
 
 What remains is a measured sparse backend, broader benchmark coverage on the
-second architecture, and cleaner systems baselines, not proof that the
-principle exists. The n=60
-composition null already answered the easiest bad question: the gains do not
-multiply naively. The useful question now is where each ceiling moves in the
-architectures and deployment protocols people actually care about.
+second architecture, cleaner systems baselines, the long/depth boundary for
+selective re-prefill, and a new Qwen session bridge policy rather than the
+now-falsified \(kr_{Q0}=0.67\) candidate. The n=60 composition null already
+answered the easiest bad question: the gains do not multiply naively. The
+useful question now is where each ceiling moves in the architectures and
+deployment protocols people actually care about.
 
 \begin{sectiontodo}{Shorten this once the venue template and abstract freeze}
 The conclusion now has the right scientific center. The final pass should make

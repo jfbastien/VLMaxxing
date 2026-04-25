@@ -87,18 +87,48 @@ appears.
   \caption{C-PERSIST safe-deployment envelope. The local result is not one
   persistent-KV curve but two different architectural stories: 7B stays inside
   the current safe envelope through 16 frames / 6.5k prefill tokens, while 3B
-  trades exactness for a
-  much wider tolerated plateau through 36 frames / 14.5k prefill tokens before
-  the basin opens.}
+  trades exactness for a much wider pre-basin plateau through 36 frames /
+  14.5k prefill tokens before the basin opens.}
   \label{fig:c-persist-safe-budget}
 \end{figure}
 
 The 7B and 3B stories are therefore not interchangeable. 7B gives the clean
 sub-second 16f point and a safe envelope through 16f. 3B does not. What 3B
-gives instead is a wider tolerated plateau: $\Delta$acc holds at $-0.19$
+gives instead is a wider pre-basin plateau: $\Delta$acc holds at $-0.19$
 through 24f, 32f, and 36f before basin onset appears beyond 14.5k prefill
-tokens. That is a useful deployment boundary, not an embarrassment to be
-hidden under the 7B line.
+tokens. The useful mechanism is not an architecture-specific ``saturation
+ceiling'' but a threshold story: onset depth moves with architecture, while
+basin geometry remains the object to avoid or repair.
+
+That repair path is now local evidence, not just future work. Selective
+re-prefill refreshes a fixed newest-frame visual tail before each follow-up.
+On the 20f Qwen2.5-VL-7B short-bucket tranche, the fixed frontier is smooth:
+\(K=4\) removes the observed follow-up basin at 3.33$\times$ same-class
+follow-up speedup, \(K=2\) keeps no observed paired drift at 6.23$\times$,
+and \(K=1\) keeps no observed paired choice or correctness drift on
+21 paired queries while reaching 9.48$\times$ on the same-class follow-up
+denominator and 9.71$\times$ against the all-query cold median.
+
+The \(K=1\) point now has a second regime. A medium-bucket 20f replication
+adds 30 paired queries with 0/30 choice diffs, 0/30 correctness diffs,
+0/20 pathological follow-up outputs, and 10.76$\times$ same-class
+follow-up speedup (10.85$\times$ against the all-query cold median). Combined
+with the short-bucket run, \(K=1\) gives 0/51 paired choice or correctness
+diffs, 0/34 pathological follow-up outputs, and 9.48--10.76$\times$
+same-class median follow-up speedup across short and medium VideoMME regimes
+(up to 10.85$\times$ against the all-query cold median). The claim is
+deliberately written as ``no observed paired drift'', not as an exact law; with
+\(n=51\), the rule-of-three upper bound is still about 5.7\% for an unseen
+paired diff rate.
+
+The first adaptive variant is a useful negative. Setting \(Q2=K1\) and
+\(Q3=K0\) preserves the second query but collapses every third query back into
+the pathological basin: \(\Delta\)acc \(=-0.0952\), paired correctness diffs
+4/21, paired choice diffs 6/21, and pathological-like outputs on 7/7 Q3
+follow-ups. That is a concrete mechanism result. The adaptive problem is not
+``can we ever skip visual tail repair?'' but ``what state should the next
+follow-up inherit?'' The \(Q3\)-from-post-\(Q2\)-state adaptive test remains
+pending, and no science result is claimed yet.
 
 \subsection{What Stacks and What Does Not}
 
@@ -113,19 +143,34 @@ The newest local bridge makes the same warning concrete. On Qwen2.5-VL-7B-4bit
 at 8 frames, the original session/streaming stack that combines \(L=2\),
 \(kr_V=0.50\) vision pruning with persistent-KV reuse over a VideoMME
 dev+holdout union (\(n=57\) sessions, 171 queries) was a hard negative. The
-dense-Q0 successor `1.30W` materially improves it: aggregate accuracy moves
-from 0.561 to 0.503, a \(-0.0585\) delta, at 2.7869$\times$ paired amortized
-end-to-end speedup with exact Q0 parity (34/57 in both arms), zero parse
-failures, and zero degenerates. We still report this as boundary evidence
-rather than a promotion. The root-cause scout remains valid: the original loss
-was driven primarily by V-only Q0 pruning (H\_V passes, H\_K and
-H\_interaction fail, hard-reset recovers the smaller dense-K term, and H\_path
-passes against the matched 1.51V Q0 path). What remains is follow-up-only
-loss, and the 3.0$\times$ rescue floor is structurally unreachable under the
-current 3-query protocol because dense Q0 alone already exceeds the target
-total wall-clock budget. The practical composition bridge therefore needs a
-safer cheaper-Q0 policy or a longer-session protocol, not another blind same-
-protocol follow-up tweak.
+dense-Q0 admission successor `1.30W` materially improves it: aggregate
+accuracy moves from 0.561 to 0.503, a \(-0.0585\) delta with 95\% paired CI
+roughly \([-0.117, 0.000]\), at 2.7869$\times$ paired amortized end-to-end
+speedup with exact Q0 parity (34/57 in both arms), zero parse failures, and
+zero degenerates. We still report this as boundary evidence rather than a
+promotion. This is dense-Q0 admission plus the existing session-reuse follow-up
+path, not active follow-up vision pruning. The 1.30Z continuation measured the
+mechanics directly: across 36 long-bucket follow-up rows,
+\texttt{vision\_pruning\_active\_fraction} was 0.0 and all follow-up image
+tokens were cache-served.
+
+The root-cause scout remains valid: the original loss was driven primarily by
+V-only Q0 pruning (H\_V passes, H\_K and H\_interaction fail, hard-reset
+recovers the smaller dense-K term, and H\_path passes against the matched
+1.51V Q0 path). What remains is follow-up-only loss, and the 3.0$\times$
+rescue floor is structurally unreachable for fully dense Q0 under the current
+3-query protocol because dense Q0 alone already exceeds the target total
+wall-clock budget. The offline admission frontier shows why the lane is still
+alive: an oracle session selector over the landed endpoint family reaches
+\(\Delta\)acc \(=0.0\) at 3.0781$\times$, but no deployable policy in that
+family is both format-clean and promotion-ready. The residual \(kr_{Q0}=0.67\)
+long-session scout is now falsified as a general policy: the full long-bucket
+continuation lands at \(\Delta\)acc \(=-0.130\) on 54 paired queries
+(95\% CI \([-0.278, +0.019]\)) despite 3.12$\times$ speedup and clean output
+format. The preregistered full-union 1.30AA run was therefore correctly
+skipped. The remaining 1.30 path is future work: a finer Q0 keep-rate sweep or
+a true follow-up V-only arm with cache invalidation, not a promotion of the
+current policy.
 
 The key compositional result is negative and useful: the pooled n=60 H\_stack
 experiment is a ceiling-matched null, not a
@@ -133,6 +178,31 @@ super-ceiling win. The observed 1.042$\times$ pooled result lands where the
 measured fixed-fraction terms place it. That closes the naive
 ``multiply-the-headlines'' interpretation. C-VISION and C-PERSIST matter, but
 they matter on different queries and under different ceilings.
+
+\subsection{Aggregate Accuracy Is Not Enough}
+
+Several of the most informative results in the paper would be invisible if we
+reported only aggregate accuracy. In the 1.30 root-cause decomposition,
+V-only Q0 pruning changes 6/10 choices and 6/10 correctness labels on the
+short scout even though the broader C-VISION operating point can look
+aggregate-neutral elsewhere. In the Gemma second-architecture routing check,
+MVBench preserves aggregate accuracy exactly (dense and cached both 6/30) but
+changes 8/30 answer choices across four motion subgroups. In the unrepaired
+20f persistent-KV basin, 11/21 choices and 10/21 correctness labels change,
+with 13/21 pathological-like outputs concentrated on follow-ups.
+
+\IfFileExists{generated/tables/paired_drift.tex}{
+\input{generated/tables/paired_drift.tex}
+}{
+\draftnote{Run \texttt{make paper-sync} to generate the paired-drift table.}
+}
+
+That is the explanatory link across the paper's failures. C-CEILING tells us
+whether a speedup can survive the denominator. Paired drift tells us whether
+the answer survived for the same reasons. A method that only preserves aggregate
+accuracy may still be unsafe for reuse, and a method that fails can fail by
+ordinary answer drift, by first-query admission damage, or by a cache-state
+basin. Those are different repairs.
 
 \begin{sectiontodo}{Lock the final promotion boundary for advisory cells}
 The current table, ceiling figure, and safe-budget figure are accurate, but
@@ -147,6 +217,14 @@ MVBench and TOMATO are strong, but they should keep their caveats visible.
 \path{research/experiments/2026/2026-04-21-phase-1_51V-exp10-n60-findings.md},
 \path{research/experiments/2026/2026-04-23-phase-1_30-sam-streaming-findings.md},
 \path{research/experiments/2026/2026-04-23-phase-1_30-rootcause-prereg.md},
+\path{research/experiments/2026/2026-04-24-phase-1_30W-q0-dense-followup-pruned-full-findings.md},
+\path{research/experiments/2026/2026-04-24-phase-1_30X-q0-admission-frontier-findings.md},
+\path{research/experiments/2026/2026-04-25-phase-1_30Z-long-q0-kr067-findings.md},
+\path{research/experiments/2026/2026-04-24-phase-1_55D-selective-reprefill-v2-k1-findings.md},
+\path{research/experiments/2026/2026-04-24-phase-1_55E-q2-mandatory-q3-optional-findings.md},
+\path{research/experiments/2026/2026-04-25-phase-1_55F-q3-post-q2-state-failure-note.md},
+\path{research/experiments/2026/2026-04-25-phase-1_55G-k1-medium-replication-findings.md},
+\path{research/experiments/2026/artifacts/phase1_61_per_item_drift_summary.json},
 \path{research/experiments/2026/2026-04-23-phase-1_51V-qwen-cross-arch-findings.md},
 \path{research/experiments/2026/2026-04-21-phase-1_51V-session3-findings.md},
 \path{research/experiments/2026/2026-04-21-phase-1_51V-session4-findings.md},

@@ -448,6 +448,116 @@ def _persistent_kv_snapshot() -> dict[str, object]:
     return {"rows": rows}
 
 
+def _selective_reprefill_snapshot() -> dict:
+    short_path = (
+        ARTIFACTS / "phase1_55D_selective_reprefill_v2" / "pair_metrics_k1_n7.json"
+    )
+    medium_path = (
+        ARTIFACTS / "phase1_55G_k1_medium_replication" / "pair_metrics_k1_n10.json"
+    )
+    short = _artifact_json(short_path)
+    medium = _artifact_json(medium_path)
+    speedups = [
+        float(short["speedup_follow_up_median_cold_over_session"]),
+        float(medium["speedup_follow_up_median_cold_over_session"]),
+    ]
+    all_query_speedups = [
+        float(short["speedup_all_query_median_cold_over_session_follow_up"]),
+        float(medium["speedup_all_query_median_cold_over_session_follow_up"]),
+    ]
+    return {
+        "k": 1,
+        "scope": "short+medium",
+        "n_pairs": int(short["n_pairs"]) + int(medium["n_pairs"]),
+        "n_follow_up_pairs": int(short["n_follow_up_pairs"])
+        + int(medium["n_follow_up_pairs"]),
+        "n_q3_pairs": int(short["q_index_breakdown"]["q3"]["n"])
+        + int(medium["q_index_breakdown"]["q3"]["n"]),
+        "paired_correctness_diffs": int(short["paired_correctness_diffs"])
+        + int(medium["paired_correctness_diffs"]),
+        "paired_choice_diffs": int(short["paired_choice_diffs"])
+        + int(medium["paired_choice_diffs"]),
+        "pathological_follow_up_hits": int(short["pathological_follow_up_hits"])
+        + int(medium["pathological_follow_up_hits"]),
+        "pathological_q3_hits": int(short["pathological_q3_hits"])
+        + int(medium["pathological_q3_hits"]),
+        "speedup_min": min(speedups),
+        "speedup_max": max(speedups),
+        "all_query_speedup_min": min(all_query_speedups),
+        "all_query_speedup_max": max(all_query_speedups),
+        "sources": (
+            _source_path_label(short_path),
+            _source_path_label(medium_path),
+        ),
+    }
+
+
+def _paired_drift_snapshot() -> dict:
+    path = ARTIFACTS / "phase1_61_per_item_drift_summary.json"
+    payload = _artifact_json(path)
+    return {
+        "phase": payload["phase"],
+        "title": payload["title"],
+        "source": _source_path_label(path),
+        "panels": payload["panels"],
+    }
+
+
+def _paired_drift_interpretation(label: str) -> str:
+    if label.startswith("1.30"):
+        return "first-query admission damage"
+    if label.startswith("1.42"):
+        return "aggregate tie hides answer drift"
+    if label.startswith("1.55A"):
+        return "follow-up cache basin"
+    raise ValueError(f"unknown paired-drift panel label: {label}")
+
+
+def _paired_drift_extra(panel: dict) -> str:
+    if "pathological_like" in panel:
+        return f"; pathological-like {int(panel['pathological_like'])}/{int(panel['n'])}"
+    if "dense_accuracy" in panel and "cached_accuracy" in panel:
+        dense = float(panel["dense_accuracy"])
+        cached = float(panel["cached_accuracy"])
+        return f"; dense/cached acc. {dense:.3f}/{cached:.3f}"
+    return ""
+
+
+def _write_paired_drift_table(snapshot: dict) -> None:
+    lines = [
+        r"\begin{table}[H]",
+        r"\centering",
+        r"\caption{Paired-drift audit. Aggregate accuracy can preserve a point estimate while answer identity, correctness on individual examples, or output format changes.}",
+        r"\label{tab:paired-drift}",
+        r"\small",
+        r"\begin{tabularx}{\linewidth}{@{}X r r r X@{}}",
+        r"\toprule",
+        r"Source & \(N\) & Choice drift & Correctness drift & Mechanism signal \\",
+        r"\midrule",
+    ]
+    for panel in snapshot["panels"]:
+        n = int(panel["n"])
+        choice_changed = int(panel["choice_changed"])
+        correctness_changed = int(panel["correctness_changed"])
+        interpretation = _paired_drift_interpretation(str(panel["label"]))
+        extra = _paired_drift_extra(panel)
+        lines.append(
+            f"{panel['label']} & {n} & {choice_changed}/{n} & "
+            f"{correctness_changed}/{n} & {interpretation}{extra} \\\\"
+        )
+    lines.extend(
+        [
+            r"\bottomrule",
+            r"\end{tabularx}",
+            r"\end{table}",
+        ]
+    )
+    (GENERATED / "tables" / "paired_drift.tex").write_text("\n".join(lines) + "\n")
+    (GENERATED / "data" / "paired_drift_snapshot.json").write_text(
+        json.dumps(snapshot, indent=2, sort_keys=True) + "\n"
+    )
+
+
 def _deployment_scale_snapshot(sam_root: Path) -> dict[str, object]:
     whitepaper = sam_root / "whitepaper.md"
     publishability = sam_root / "paper" / "publishability-status.md"
@@ -606,6 +716,7 @@ def _headline_snapshot(upstream_root: Path) -> dict[str, object]:
     return {
         "c_vision": _c_vision_snapshot(upstream_root),
         "persistent_kv": _persistent_kv_snapshot(),
+        "selective_reprefill": _selective_reprefill_snapshot(),
     }
 
 
@@ -762,6 +873,7 @@ def _render_headline_figure(snapshot: dict) -> None:
 def _write_headline_table(snapshot: dict) -> None:
     cvision_rows = snapshot["c_vision"]["rows"]
     kv_by_frame = {row["frame_count"]: row for row in snapshot["persistent_kv"]["rows"]}
+    repair = snapshot["selective_reprefill"]
     tomato_row = next(row for row in cvision_rows if row["benchmark"] == "TOMATO")
 
     lines = [
@@ -785,6 +897,14 @@ def _write_headline_table(snapshot: dict) -> None:
             f"{kv_by_frame[8]['speedup']:.1f}$\\times$ & "
             f"{kv_by_frame[8]['follow_up_median_s']:.3f}\\,s median; "
             f"$\\Delta$acc {kv_by_frame[8]['accuracy_delta']:+.3f} & safe \\\\"
+        ),
+        (
+            "After-ingest & Qwen selective re-prefill, 20f K=1 short+medium & "
+            f"{repair['speedup_min']:.2f}--"
+            f"{repair['speedup_max']:.2f}$\\times$ & "
+            f"paired diffs {repair['paired_choice_diffs']}/{repair['n_pairs']}; "
+            f"pathological follow-ups {repair['pathological_follow_up_hits']}/"
+            f"{repair['n_follow_up_pairs']} & bounded recovery \\\\"
         ),
         (
             "First-pass & Gemma MVBench 8f holdout & "
@@ -958,6 +1078,8 @@ def main() -> int:
     headline_snapshot = _headline_snapshot(upstream_root)
     _render_headline_figure(headline_snapshot)
     _write_headline_table(headline_snapshot)
+    paired_drift_snapshot = _paired_drift_snapshot()
+    _write_paired_drift_table(paired_drift_snapshot)
     deployment_snapshot = _deployment_scale_snapshot(sam_root)
     _render_deployment_scale_figure(deployment_snapshot)
     _sync_curated_paper_figures()
