@@ -66,7 +66,38 @@
         "pass_signal_floor": true
       },
       "auto_commit": "committed"
+    },
+    {
+      "phase": "1.55H",
+      "runtime_estimate": "~1.5-2.0 h",
+      "rationale": "Probe the depth boundary of the repaired K=1 policy at 32f short bucket after 1.55G upgraded the result to short+medium.",
+      "ready": true,
+      "timeout_seconds": 12600,
+      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_55H_k1_32f_short_probe",
+      "command": [
+        "bash",
+        "/Users/jfb/s/codec-through/scripts/run_phase1_55H_k1_32f_short_probe.sh"
+      ],
+      "status": "completed",
+      "gate": {
+        "paired_correctness_diffs": 0,
+        "paired_choice_diffs": 0,
+        "pathological_follow_up_hits": 0,
+        "pathological_q3_hits": 0,
+        "speedup_all_query_median_cold_over_session_follow_up": 19.90371449498257,
+        "session_follow_up_median_ms": 6783.6249795,
+        "peak_rss_gb": 5.821202432,
+        "baseline_accuracy": 0.8571428571428571,
+        "pass_fidelity": true,
+        "pass_exact_match": null,
+        "pass_follow_up_pathology": true,
+        "pass_q3_pathology": true,
+        "pass_speed": true,
+        "pass_memory": true,
+        "pass_signal_floor": null
+      },
+      "auto_commit": "committed"
     }
   ],
-  "updated_at": "2026-04-25T09:08:19+00:00"
+  "updated_at": "2026-04-25T10:32:02+00:00"
 }
