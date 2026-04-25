@@ -48,6 +48,45 @@ def qwen_language_model_logits(output: Any) -> mx.array:
     return cast(mx.array, output)
 
 
+def _qwen_slice_has_images(*, model: Any, prompt: QwenPromptSlice) -> bool:
+    image_rows = int(prompt.image_grid_thw.shape[0])
+    pixel_rows = int(prompt.pixel_values.shape[0])
+    if image_rows == 0:
+        if pixel_rows != 0:
+            raise ValueError(
+                "text-only Qwen prompt slice must not carry pixel rows when "
+                "image_grid_thw is empty"
+            )
+        prompt_ids = np.asarray(prompt.input_ids.tolist(), dtype=np.int64).reshape(-1)
+        for token_name in ("image_token_id", "video_token_id"):
+            token_id = getattr(model.config, token_name, None)
+            if token_id is not None and np.any(prompt_ids == int(token_id)):
+                raise ValueError(
+                    "text-only Qwen prompt slice still contains image/video marker tokens"
+                )
+        return False
+    if pixel_rows == 0:
+        raise ValueError(
+            "Qwen prompt slice has image_grid_thw entries but no pixel rows"
+        )
+    return True
+
+
+def _qwen_get_input_embeddings_for_slice(*, model: Any, prompt: QwenPromptSlice) -> Any:
+    if _qwen_slice_has_images(model=model, prompt=prompt):
+        return model.get_input_embeddings(
+            prompt.input_ids,
+            prompt.pixel_values,
+            mask=prompt.mask,
+            image_grid_thw=prompt.image_grid_thw,
+        )
+    return model.get_input_embeddings(
+        prompt.input_ids,
+        None,
+        mask=prompt.mask,
+    )
+
+
 def _as_int_array(values: Sequence[Sequence[int]] | np.ndarray) -> np.ndarray:
     array = np.asarray(values, dtype=np.int64)
     if array.ndim != 2 or array.shape[1] != 3:
@@ -258,12 +297,7 @@ def make_qwen_prefix_cache(
 ) -> tuple[list[Any], float]:
     prompt_cache = make_prompt_cache(model.language_model)
     t0 = time.perf_counter_ns()
-    embeddings = model.get_input_embeddings(
-        prefix.input_ids,
-        prefix.pixel_values,
-        mask=prefix.mask,
-        image_grid_thw=prefix.image_grid_thw,
-    )
+    embeddings = _qwen_get_input_embeddings_for_slice(model=model, prompt=prefix)
     logits = qwen_language_model_logits(
         model.language_model(
             prefix.input_ids,
@@ -307,12 +341,7 @@ def generate_qwen_tail_with_explicit_positions(
     tokenizer.stopping_criteria.reset(model.config.eos_token_id)
 
     t0 = time.perf_counter_ns()
-    embeddings = model.get_input_embeddings(
-        tail.input_ids,
-        tail.pixel_values,
-        mask=tail.mask,
-        image_grid_thw=tail.image_grid_thw,
-    )
+    embeddings = _qwen_get_input_embeddings_for_slice(model=model, prompt=tail)
     prefill_outputs = qwen_language_model_logits(
         model.language_model(
             tail.input_ids,
