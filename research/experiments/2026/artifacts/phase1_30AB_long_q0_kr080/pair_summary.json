@@ -1,0 +1,53 @@
+{
+  "phase": "1.30",
+  "n_paired_queries": 54,
+  "n_paired_sessions": 18,
+  "cold_accuracy": 0.48148148148148145,
+  "streaming_accuracy": 0.2962962962962963,
+  "accuracy_delta_streaming_minus_cold": -0.18518518518518517,
+  "accuracy_delta_streaming_minus_cold_ci95": [
+    -0.3148148148148148,
+    -0.07407407407407407
+  ],
+  "q0_accuracy_delta_streaming_minus_cold": -0.1111111111111111,
+  "q0_accuracy_delta_streaming_minus_cold_ci95": [
+    -0.2777777777777778,
+    0.0
+  ],
+  "q0_n_paired_queries": 18,
+  "follow_up_accuracy_delta_streaming_minus_cold": -0.2222222222222222,
+  "follow_up_accuracy_delta_streaming_minus_cold_ci95": [
+    -0.3611111111111111,
+    -0.08333333333333333
+  ],
+  "follow_up_n_paired_queries": 36,
+  "cold_total_end_to_end_ms": 9392670.319168,
+  "streaming_total_end_to_end_ms": 2781134.238802,
+  "amortized_speedup_cold_over_streaming": 3.3772804592179564,
+  "response_bucket_counts": {
+    "clean": 36,
+    "mixed": 18,
+    "degenerate": 0
+  },
+  "overlap_bucket_counts": {
+    "both_correct": 16,
+    "cold_only_correct": 10,
+    "streaming_only_correct": 0,
+    "both_wrong": 28
+  },
+  "clean_fraction": 0.6666666666666666,
+  "streaming_degenerate_count": 0,
+  "degenerate_fraction": 0.0,
+  "cold_parse_failures": 0,
+  "streaming_parse_failures": 0,
+  "streaming_parse_failure_fraction": 0.0,
+  "refresh_events": 0,
+  "streaming_follow_up_n": 36,
+  "streaming_follow_up_pruning_instrumented_n": 36,
+  "streaming_follow_up_image_token_instrumented_n": 36,
+  "streaming_follow_up_mean_image_tokens_recomputed": 0.0,
+  "streaming_follow_up_vision_pruning_active_count": 0,
+  "streaming_follow_up_vision_pruning_active_fraction": 0.0,
+  "streaming_follow_up_all_image_tokens_reused_count": 36,
+  "streaming_follow_up_all_image_tokens_reused_fraction": 1.0
+}
