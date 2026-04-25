@@ -18,9 +18,7 @@ def reprefill_k_for_query(
     if q_index < 0:
         raise ValueError(f"q_index must be non-negative, got {q_index}")
     if default_reprefill_k < 0:
-        raise ValueError(
-            f"default_reprefill_k must be non-negative, got {default_reprefill_k}"
-        )
+        raise ValueError(f"default_reprefill_k must be non-negative, got {default_reprefill_k}")
     for name, value in (("q2_reprefill_k", q2_reprefill_k), ("q3_reprefill_k", q3_reprefill_k)):
         if value is not None and value < 0:
             raise ValueError(f"{name} must be non-negative, got {value}")

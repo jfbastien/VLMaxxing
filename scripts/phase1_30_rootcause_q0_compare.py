@@ -14,7 +14,6 @@ import json
 from pathlib import Path
 from typing import Any
 
-
 CHOICE_LETTERS = ("A", "B", "C", "D")
 
 
@@ -66,9 +65,7 @@ def main() -> int:
     args = parser.parse_args()
 
     phase130 = {
-        row["item_id"]: row
-        for row in _load_jsonl(args.phase130_jsonl)
-        if int(row["q_index"]) == 0
+        row["item_id"]: row for row in _load_jsonl(args.phase130_jsonl) if int(row["q_index"]) == 0
     }
     phase151v = {row["item_id"]: row for row in _load_jsonl(args.phase151v_jsonl)}
 
@@ -98,8 +95,8 @@ def main() -> int:
 
     print()
     print(f"n={len(keys)}")
-    print(f"choice agreement:  {agree_choice}/{len(keys)} = {agree_choice/len(keys):.3f}")
-    print(f"correct agreement: {agree_correct}/{len(keys)} = {agree_correct/len(keys):.3f}")
+    print(f"choice agreement:  {agree_choice}/{len(keys)} = {agree_choice / len(keys):.3f}")
+    print(f"correct agreement: {agree_correct}/{len(keys)} = {agree_correct / len(keys):.3f}")
     return 0
 
 

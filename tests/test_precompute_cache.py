@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -30,7 +31,7 @@ def test_array_payload_rejects_shape_mismatch() -> None:
         decode_array(payload)
 
 
-def test_json_cache_write_is_readable(tmp_path) -> None:
+def test_json_cache_write_is_readable(tmp_path: Path) -> None:
     cache_path = tmp_path / "precompute.json"
     payload = {"version": 1, "items": [{"item_id": "x"}]}
 

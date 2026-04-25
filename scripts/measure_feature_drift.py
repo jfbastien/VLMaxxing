@@ -209,9 +209,7 @@ def _features_per_frame_gemma(
     # the measurement path is dtype-stable across MLX releases.
     if features.ndim == 3:
         if int(features.shape[0]) != 1:
-            raise RuntimeError(
-                f"expected Gemma feature batch dimension 1, got {features.shape}"
-            )
+            raise RuntimeError(f"expected Gemma feature batch dimension 1, got {features.shape}")
         flat = np.array(features[0].tolist(), dtype=np.float32)
     elif features.ndim == 2:
         flat = np.array(features.tolist(), dtype=np.float32)

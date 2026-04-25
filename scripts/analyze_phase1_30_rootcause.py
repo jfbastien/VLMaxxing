@@ -108,11 +108,7 @@ def _paired_bootstrap_delta_ci(
     tuples, which is the right unit when two arms ran the same queries.
     """
     ordered_keys = sorted(keys)
-    pairs = [
-        (treatment[k], control[k])
-        for k in ordered_keys
-        if k in treatment and k in control
-    ]
+    pairs = [(treatment[k], control[k]) for k in ordered_keys if k in treatment and k in control]
     n = len(pairs)
     if n == 0:
         return (float("nan"), float("nan"), float("nan"), 0)
@@ -176,8 +172,7 @@ def main() -> int:
 
     print("\n== Raw summary ==")
     header = (
-        f"{'arm':24s} {'all':>6s} {'q0':>6s} {'q23':>6s} "
-        f"{'wall_s':>8s} {'parse':>6s} {'degen':>6s}"
+        f"{'arm':24s} {'all':>6s} {'q0':>6s} {'q23':>6s} {'wall_s':>8s} {'parse':>6s} {'degen':>6s}"
     )
     print(header)
     print("-" * len(header))
@@ -213,10 +208,7 @@ def main() -> int:
                     arm_correct, base_correct, keys, args.n_resamples, rng
                 )
                 if not math.isnan(delta):
-                    line += (
-                        f"{slice_labels[slice_name]} {delta:+.3f} "
-                        f"[{lo:+.3f},{hi:+.3f}] n={n}  "
-                    )
+                    line += f"{slice_labels[slice_name]} {delta:+.3f} [{lo:+.3f},{hi:+.3f}] n={n}  "
                     continue
             # fallback: unpaired point estimate + binomial SE ~= +/- 1.96*SE
             arm_p = _acc(summary, slice_name)
@@ -224,28 +216,20 @@ def main() -> int:
             delta = arm_p - base_p
             arm_n = _slice_n(summary, slice_name)
             base_n = _slice_n(base, slice_name)
-            se = math.sqrt(
-                _binomial_se(arm_p, arm_n) ** 2
-                + _binomial_se(base_p, base_n) ** 2
-            )
+            se = math.sqrt(_binomial_se(arm_p, arm_n) ** 2 + _binomial_se(base_p, base_n) ** 2)
             lo = delta - 1.96 * se
             hi = delta + 1.96 * se
-            line += (
-                f"{slice_labels[slice_name]} {delta:+.3f} "
-                f"[{lo:+.3f},{hi:+.3f}] (unpaired)  "
-            )
+            line += f"{slice_labels[slice_name]} {delta:+.3f} [{lo:+.3f},{hi:+.3f}] (unpaired)  "
         print(line.rstrip())
 
     needed = {"cold_pruned", "streaming_dense_off", "streaming_pruned_off"}
     if needed.issubset(summaries):
         v_only_pt = _acc(summaries["cold_pruned"], "all_queries") - _acc(base, "all_queries")
-        k_only_pt = (
-            _acc(summaries["streaming_dense_off"], "all_queries")
-            - _acc(base, "all_queries")
+        k_only_pt = _acc(summaries["streaming_dense_off"], "all_queries") - _acc(
+            base, "all_queries"
         )
-        combined_pt = (
-            _acc(summaries["streaming_pruned_off"], "all_queries")
-            - _acc(base, "all_queries")
+        combined_pt = _acc(summaries["streaming_pruned_off"], "all_queries") - _acc(
+            base, "all_queries"
         )
         interaction_pt = combined_pt - (v_only_pt + k_only_pt)
 
@@ -268,6 +252,7 @@ def main() -> int:
                     f"{label:9s} ({arm_name:22s} − cold_dense): "
                     f"{delta:+.3f} [{lo:+.3f}, {hi:+.3f}] n={n}"
                 )
+
             # interaction: bootstrap the linearity residual with paired keys.
             # NB: `keys` must be a sequence (not a set) so that bootstrap
             # resamples with replacement preserve duplicate draws — the
@@ -327,9 +312,7 @@ def main() -> int:
                     f"{point:+.3f} [{lo_i:+.3f}, {hi_i:+.3f}] n={n}"
                 )
                 includes_zero = lo_i <= 0 <= hi_i
-                non_additive_by_point = abs(point) > max(
-                    abs(v_only_pt), abs(k_only_pt)
-                )
+                non_additive_by_point = abs(point) > max(abs(v_only_pt), abs(k_only_pt))
                 print(
                     f"  → interaction CI {'includes' if includes_zero else 'excludes'} 0; "
                     f"point term {'IS' if non_additive_by_point else 'is NOT'} "
@@ -346,13 +329,11 @@ def main() -> int:
         # against follow_ups (q23). Using all_queries for H_K (as earlier
         # revisions did) inflates K-only with the Q0 bleed that H_V is
         # supposed to capture and can flip the scientific conclusion.
-        k_only_q23_pt = (
-            _acc(summaries["streaming_dense_off"], "follow_ups")
-            - _acc(base, "follow_ups")
+        k_only_q23_pt = _acc(summaries["streaming_dense_off"], "follow_ups") - _acc(
+            base, "follow_ups"
         )
-        combined_q23_pt = (
-            _acc(summaries["streaming_pruned_off"], "follow_ups")
-            - _acc(base, "follow_ups")
+        combined_q23_pt = _acc(summaries["streaming_pruned_off"], "follow_ups") - _acc(
+            base, "follow_ups"
         )
         print("\n== Preregistered gate summary ==")
         abs_combined = abs(combined_pt)
@@ -362,17 +343,18 @@ def main() -> int:
         h_interaction_point = abs(interaction_pt) > max(abs(v_only_pt), abs(k_only_pt))
         print(
             f"H_V (V-only dominates, all_queries): "
-            f"|V|={abs(v_only_pt):.3f} vs 0.5×|combined|={0.5*abs_combined:.3f}  "
+            f"|V|={abs(v_only_pt):.3f} vs 0.5×|combined|={0.5 * abs_combined:.3f}  "
             f"→ {'PASS' if h_v else 'FAIL'}"
         )
         print(
             f"H_K (K-only dominates, follow_ups):  "
-            f"|K_q23|={abs(k_only_q23_pt):.3f} vs 0.5×|combined_q23|={0.5*abs_combined_q23:.3f}  "
+            f"|K_q23|={abs(k_only_q23_pt):.3f} vs 0.5×|combined_q23|={0.5 * abs_combined_q23:.3f}  "
             f"→ {'PASS' if h_k_q23 else 'FAIL'}"
         )
         print(
             f"H_interaction (non-additive, point, all_queries): "
-            f"|interact|={abs(interaction_pt):.3f} vs max(|V|,|K|)={max(abs(v_only_pt), abs(k_only_pt)):.3f}  "
+            f"|interact|={abs(interaction_pt):.3f} vs max(|V|,|K|)="
+            f"{max(abs(v_only_pt), abs(k_only_pt)):.3f}  "
             f"→ {'PASS' if h_interaction_point else 'FAIL'}"
         )
 

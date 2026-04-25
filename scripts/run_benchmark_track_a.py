@@ -829,8 +829,7 @@ def _split_gemma_dense_segments(
     if features.ndim == 3:
         if int(features.shape[0]) != 1:
             raise ValueError(
-                "expected Gemma cached-image batch dimension of 1, "
-                f"got {features.shape}"
+                f"expected Gemma cached-image batch dimension of 1, got {features.shape}"
             )
         flat_features = features[0]
         restore_batch_dim = True
@@ -1755,10 +1754,10 @@ def run_benchmark(
             stopped_early=stopped_early,
             groups=groups,
             per_group=per_group,
-        frame_count=frame_count,
-        cache_mode=cache_mode,
-        answer_mode=answer_mode,
-        refresh_interval=refresh_interval,
+            frame_count=frame_count,
+            cache_mode=cache_mode,
+            answer_mode=answer_mode,
+            refresh_interval=refresh_interval,
             manifest_path=manifest_path,
             planner_config=planner_config,
             reuse_classes=reuse_classes,
@@ -1933,9 +1932,7 @@ def main() -> None:
                     frame_count=args.frame_count,
                     max_tokens=args.max_tokens,
                     cache_mode=cast(Literal["default", "identity"], args.cache_mode),
-                    answer_mode=cast(
-                        Literal["generation", "option_logprobs"], args.answer_mode
-                    ),
+                    answer_mode=cast(Literal["generation", "option_logprobs"], args.answer_mode),
                     refresh_interval=args.refresh_interval if args.refresh_interval > 0 else None,
                     planner_config=planner_config,
                     reuse_classes=reuse_classes,

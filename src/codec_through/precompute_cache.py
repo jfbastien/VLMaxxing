@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 
@@ -37,7 +37,7 @@ def decode_array(payload: dict[str, Any]) -> np.ndarray:
 def read_json_cache(path: Path) -> dict[str, Any]:
     """Read a JSON cache payload."""
 
-    return json.loads(path.read_text())
+    return cast(dict[str, Any], json.loads(path.read_text()))
 
 
 def write_json_cache_atomic(path: Path, payload: dict[str, Any]) -> None:
