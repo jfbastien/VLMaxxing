@@ -345,29 +345,32 @@ authoritative in the per-phase notes under
   notes: Re-running 1.30AA only makes sense if 1.30Z's underlying policy family is replaced (e.g. 1.30AB long-Q0 finer sweep) or if 1.30AC enables true follow-up vision pruning by invalidating the cache between queries. The current configuration is closed.
 
 - phase_id: 1.30AB
-  status: proposed (pre-registered; queued as the next 1.30 boundary search)
-  authoritative_note: research/experiments/2026/2026-04-25-phase-1_30AB-long-q0-sweep-prereg.md
-  authoritative_artifacts: []
-  current_best_policy: n/a until the long-Q0 sweep lands
+  status: landed (FAIL — all 4 candidates miss rescue gate; long-Q0 admission lane closed under cache-reuse)
+  authoritative_note: research/experiments/2026/2026-04-25-phase-1_30AB-long-q0-sweep-findings.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_30AB_long_q0_kr075/pair_summary.json
+    - research/experiments/2026/artifacts/phase1_30AB_long_q0_kr080/pair_summary.json
+    - research/experiments/2026/artifacts/phase1_30AB_long_q0_kr085/pair_summary.json
+    - research/experiments/2026/artifacts/phase1_30AB_long_q0_kr090/pair_summary.json
+  current_best_policy: 1.30W remains the best landed 1.30 lane number; admission family closed at long-bucket under cache-reuse follow-ups
   supersedes:
-    - 1.30Y (selection-biased scout, replaced by a real sweep)
-    - 1.30Z (single-candidate falsification broadened into a boundary search)
-  paper_relevance: primary continuation of the 1.30 bridge lane
-  prereg_outcome: (pending)
-  runtime_estimate: ~2.0–3.0 h total for four candidates using the landed 1.30Z cold control
-  notes: This sweep asks the only honest next 1.30 question after 1.30Z: where the long-bucket Q0 keep-rate boundary lives, if it exists at all, inside the same cache-reuse family. Mechanistic wording remains governed by measured follow-up activity; if activity stays below 0.10, the lane is still "Q0 admission + K-cache reuse."
+    - 1.30Y (selection-biased scout, falsified by full sweep)
+  paper_relevance: primary (closes the duration-conditioned admission lane; produces a clean Q0/follow-up decoupling mechanism finding at kr_Q0 ≥ 0.85)
+  prereg_outcome: H1 FALSIFIED (no candidate clears Δacc ≥ -0.10 + speedup ≥ 3.0 + format clean); H2 vacuously satisfied (no passing rate); H3 EARNED across all 5 long-bucket runs (active_fraction=0.0). Headline numbers: kr=0.75/0.80 → Δ=-0.185; kr=0.85/0.90 → Δ=-0.130 with q0_dacc=0.000 (Q0 EXACT parity, follow-up drift -0.194 dominates).
+  runtime_estimate: complete (~2.5h total; cold reused from 1.30Z)
+  notes: Mechanism evidence — at kr_Q0 ≥ 0.85, Q0 admission accuracy is exactly preserved but follow-up drift is locked at ~-19pp. This isolates post-Q0 K-cache state quality as the failure mode, not Q0 admission accuracy. Auto-committed by the queue as `dc599d3`, `36cdc21`, `c506614`, `53622c3`; consolidated findings as `148e5e3`.
 
 - phase_id: 1.30AE
-  status: proposed (pre-registered; conditional on a passing 1.30AB candidate)
+  status: skipped-by-1.30AB-gate (correct queue logic — no 1.30AB candidate passed)
   authoritative_note: research/experiments/2026/2026-04-25-phase-1_30AE-duration-conditioned-union-candidate-prereg.md
   authoritative_artifacts: []
-  current_best_policy: n/a until a smallest passing 1.30AB rate is selected
+  current_best_policy: n/a (the gate that would have unlocked this run did not pass)
   supersedes:
     - 1.30AA (policy family replaced after 1.30Z)
-  paper_relevance: primary (would be the first no-splice union rerun after the 1.30Z falsification)
-  prereg_outcome: (pending)
-  runtime_estimate: ~5.5–7.5 h if unlocked
-  notes: Runs only if 1.30AB finds at least one long-Q0 rate that clears the long-only rescue band. The selected rate is the smallest passing candidate. If 1.30AB fails, this phase should remain unrun and the 1.30 lane stays a boundary result.
+  paper_relevance: primary (would have produced the first no-splice union rerun after 1.30Z if any 1.30AB candidate had cleared)
+  prereg_outcome: not run; queue's `_select_130ab_rate()` returned None after all four 1.30AB candidates failed the rescue gate. Saved an estimated ~6 hours of MLX compute.
+  runtime_estimate: not consumed
+  notes: Re-running 1.30AE only makes sense if a fundamentally different policy family lands a passing rate. The current cache-reuse admission family is closed across kr_Q0 ∈ {0.67, 0.75, 0.80, 0.85, 0.90}. Future paths: 1.30AC (cache-invalidated follow-ups, prereg 39f5097), 1.30AD (instrumented 1.30W rerun, prereg 234bf3d), or an optional 1.30AB-fine at kr_Q0=0.95.
 
 - phase_id: 1.31
   status: proposed
@@ -941,16 +944,18 @@ authoritative in the per-phase notes under
   notes: This run answers the simplest adaptive question cleanly: `Q2` remains the real rescue point (`7/7` correct, `0/7` pathological-like outputs), but `Q3` is not safely dispensable under the retained-full-cache path (`2/7` correct, `7/7` pathological-like outputs). The lane should not spend more time on blind query-index omission variants. If 1.55 continues, the next adaptive move must change the post-Q2 state itself or add an explicit risk signal for Q3. Cross-run caveat: compared with the earlier 1.55D K=1 baseline, one false item (`videomme:short:120-3`) flipped wrong-answer choice while remaining incorrect; the prereg verdict is therefore anchored to the matched baseline rerun inside the 1.55E artifact directory.
 
 - phase_id: 1.55F
-  status: proposed (runner bug fixed in 1b7c05a; rerun queued)
-  authoritative_note: research/experiments/2026/2026-04-25-phase-1_55F-q3-post-q2-state-failure-note.md
+  status: landed (PASS — adaptive Q3=K0+post_q2 dominates fixed K=1 on every dimension)
+  authoritative_note: research/experiments/2026/2026-04-25-phase-1_55F-q3-post-q2-state-findings.md
   authoritative_artifacts:
-    - research/experiments/2026/artifacts/phase1_55F_q3_post_q2_state/
-  current_best_policy: n/a until the rerun lands; only a partial failed artifact exists today
+    - research/experiments/2026/artifacts/phase1_55F_q3_post_q2_state/pair_metrics_k1_n7.json
+    - research/experiments/2026/artifacts/phase1_55F_q3_post_q2_state/summary_k1_n7.json
+    - research/experiments/2026/artifacts/phase1_55F_q3_post_q2_state/paired_queries_k1_n7.jsonl
+  current_best_policy: adaptive Q1-cold / Q2-K=1 / Q3-K=0-from-post-Q2-state on 7-clip 20f short — strongest landed C-PERSIST recovery point
   supersedes: []
-  paper_relevance: primary continuation of the C-PERSIST recovery lane
-  prereg_outcome: first run did not complete; the original runner crashed on first clip Q3 because `K=0 + post_q2_repaired` produced an empty `grid_thw` that hard-errored `mx.concatenate` inside the upstream Qwen vision tower. Commit `1b7c05a` fixed the path by routing text-only tails through the text embedding path, and a one-clip smoke run now reaches Q3 successfully; rerun pending.
-  runtime_estimate: ~60-75 min on this laptop
-  notes: The partial failed artifact remains as evidence, but the wrapper now explicitly overwrites incomplete outputs when summary files are absent. The rerun is the highest-leverage next mechanism experiment for C-PERSIST.
+  paper_relevance: primary (paper-headline mechanism story for C-PERSIST adaptive)
+  prereg_outcome: H1 EARNED (0/21 correctness, 0/21 choice diffs — exact paired fidelity); H1' EARNED at the strongest possible level; H2 EARNED dramatically (0/7 Q3 pathological vs 1.55E's 7/7 catastrophe — cache-source choice was the mechanism); H3 EARNED dramatically (24.91× cross-class follow-up speedup vs 1.55D K=1's 9.71× — 2.57× higher); H4 EARNED with massive margin (peak_rss_gb=1.44 vs 5.5 ceiling, also 3.4× lower than 1.55D K=1's 4.886).
+  runtime_estimate: complete (~49.7 min on this laptop)
+  notes: This is now the strongest C-PERSIST result. The Q3 catastrophe in 1.55E was definitively a cache-source error, not adaptive-repair impossibility. Q3 takes ~688ms with K=0+post_q2 vs ~87s cold = 126× per-Q3 speedup. The K=0+post-Q2 path apparently lets MLX release more intermediate state than the K=1 path holds onto, producing the 3.4× peak RSS drop. Auto-committed by the queue runner as `cbe10bd`; findings as `f55262c`. Initial run blocked by 1b7c05a-fixed runner bug; rerun completed cleanly post-fix.
 
 - phase_id: 1.55G
   status: landed (PASS science gates; H4 RSS narrowly missed against an over-tight prereg ceiling)
@@ -968,25 +973,31 @@ authoritative in the per-phase notes under
   notes: First multi-regime confirmation of the C-PERSIST K=1 lane. Speedup *increases* on medium vs short (10.76× vs 9.48×) because the larger 20f-medium prefill (8100 tokens vs 3000 short) makes K=1 cache reuse save proportionally more wall-time. Auto-committed by the closeout queue runner as `45ffc94`.
 
 - phase_id: 1.55H
-  status: proposed (pre-registered; ready to run manually); paper-leverage upgraded after 1.55G's clean PASS makes the 32f depth-boundary the next obvious scope test
-  authoritative_note: research/experiments/2026/2026-04-25-phase-1_55H-k1-32f-short-probe-prereg.md
-  authoritative_artifacts: []
-  current_best_policy: n/a until the 32f short-bucket boundary probe lands
+  status: landed (PASS — K=1 survives 32f depth boundary; speedup 20.37× exceeds 20f speedups due to longer prefill)
+  authoritative_note: research/experiments/2026/2026-04-25-phase-1_55H-k1-32f-short-probe-findings.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_55H_k1_32f_short_probe/pair_metrics_k1_n7.json
+    - research/experiments/2026/artifacts/phase1_55H_k1_32f_short_probe/summary_k1_n7.json
+    - research/experiments/2026/artifacts/phase1_55H_k1_32f_short_probe/paired_queries_k1_n7.jsonl
+  current_best_policy: K=1 selective re-prefill at 32f short, 0/21 paired diffs, 20.37× same-class follow-up speedup
   supersedes: []
-  paper_relevance: secondary-but-high-value boundary check for the C-PERSIST recovery envelope
-  prereg_outcome: (pending)
-  runtime_estimate: ~1.5–2.0 h total
-  notes: Short-bucket depth-boundary companion to 1.55G. Tests whether the landed K=1 repair survives when Qwen 7B crosses into the known 32f long-context basin depth. With 1.55G PASSing on medium 20f, 1.55H is the natural next probe — the question now is depth, not regime.
+  paper_relevance: primary (closes the C-PERSIST K=1 lane at scope+depth: 4-cell n=93 with 0/93 paired drift)
+  prereg_outcome: H1 EARNED dramatically (0/21 vs ≤3/21 prereg ceiling); H2 EARNED (0/14 follow-up pathological); H3 EARNED dramatically (20.37× same-class vs ≥8.0× gate); H4 EARNED (peak_rss_gb=5.821 ≤ 6.5).
+  runtime_estimate: complete (~83.6 min on this laptop)
+  notes: 32f short Q1 cold prefill is ~131-147 s vs 1.55D K=1 short Q1's ~80-90 s, so 32f roughly doubles cold-arm cost. K=1 keeps follow-ups at ~6.78 s, producing the 20.37× ratio (~2× higher than 20f speedups). Mechanism: K=1 cache reuse is prefill-dominated, so the speedup ratio scales with prefix length. Auto-committed as `facd82e`; findings as `12502a5`.
 
 - phase_id: 1.55I
-  status: proposed (pre-registered; tranche fixed and wrapper authored)
-  authoritative_note: research/experiments/2026/2026-04-25-phase-1_55I-k1-long-replication-prereg.md
-  authoritative_artifacts: []
-  current_best_policy: n/a until the long-bucket K=1 replication lands
+  status: landed (PASS — long-bucket K=1, 0/21 paired diffs, 11.24× speedup)
+  authoritative_note: research/experiments/2026/2026-04-25-phase-1_55I-k1-long-replication-findings.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_55I_k1_long_replication/pair_metrics_k1_n7.json
+    - research/experiments/2026/artifacts/phase1_55I_k1_long_replication/summary_k1_n7.json
+    - research/experiments/2026/artifacts/phase1_55I_k1_long_replication/paired_queries_k1_n7.jsonl
+  current_best_policy: K=1 selective re-prefill at 20f long, 0/21 paired diffs, 11.24× same-class follow-up speedup
   supersedes: []
-  paper_relevance: primary continuation of the C-PERSIST recovery lane (scope upgrade)
-  prereg_outcome: (pending)
-  runtime_estimate: ~60–90 min total
+  paper_relevance: primary (turns C-PERSIST K=1 from short+medium to short+medium+long; combined n=72 with 0/72 paired drift)
+  prereg_outcome: H1 EARNED (0/21 vs ≤2/21); H1' EARNED (combined picture closes at n=93 short+medium+long+32f-short with 0/93 drift); H2 EARNED (0/14 fu pathological, 0/7 Q3 pathological — long-bucket basin not triggered); H3 EARNED (11.24× ≥ 6.0×); H4 EARNED (peak_rss_gb=5.94 ≤ 7.5); H5 EARNED (baseline accuracy=0.333 ≥ 0.30 — long-bucket VideoMME on Qwen 7B-4bit is intrinsically hard, but session and baseline agree byte-identically including on the wrong rows).
+  runtime_estimate: complete (~65.0 min on this laptop)
   notes: Natural next scope test after 1.55G. Uses the fixed 7-video long tranche `669,711,712,737,756,758,794`, all drawn from the existing long-manifest pool and validated against the parquet's ≥3-question rule. If H1' passes, the combined K=1 result becomes n=72 paired short+medium+long with 0 observed drift.
 
 - phase_id: 1.55B
