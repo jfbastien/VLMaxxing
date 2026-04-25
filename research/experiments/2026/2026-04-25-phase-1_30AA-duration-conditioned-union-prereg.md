@@ -104,8 +104,10 @@ Failure:
 Acceptance:
 
 - the paired summary emits the follow-up image-token activity fields
-- if follow-up image-token recomputation is negligible, the result is written as
+- if `vision_pruning_active_fraction < 0.10`, the result is written as
   **Q0 admission + K-cache reuse**, not "pruned follow-ups"
+- if `vision_pruning_active_fraction >= 0.10`, the result may mention an
+  active follow-up pruning component
 
 This hypothesis is about interpretability, not promotion.
 

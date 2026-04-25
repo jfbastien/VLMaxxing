@@ -60,13 +60,16 @@ Primary mechanistic readout:
 
 Interpretation:
 
-- if that fraction is near `0`, the follow-up "pruned" path is effectively a
-  no-op under prompt-cache reuse, and the result should be described as a
-  **Q0 admission + K-cache reuse** experiment, not as joint V+K follow-up
-  pruning evidence
-- if it is materially above `0`, follow-up vision pruning is actually active on
-  long sessions and the bridge interpretation can continue to mention a real
-  vision-leg component on follow-ups
+- the committed cold control predates this instrumentation; that is acceptable
+  because the analyzer reads follow-up image-token activity from the
+  **streaming** rows only
+- if `vision_pruning_active_fraction < 0.10`, the follow-up "pruned" path is
+  effectively negligible under prompt-cache reuse and the result should be
+  described as a **Q0 admission + K-cache reuse** experiment, not as joint V+K
+  follow-up pruning evidence
+- if `vision_pruning_active_fraction >= 0.10`, follow-up vision pruning is
+  materially active on long sessions and the bridge interpretation can continue
+  to mention a real vision-leg component on follow-ups
 
 ## Hypotheses
 
@@ -116,10 +119,10 @@ Acceptance:
 
 - the paired summary emits the follow-up image-token activity fields, and
 - those fields support one of two clean interpretations:
-  1. `vision_pruning_active_fraction > 0`, so follow-up pruning is materially
-     active, or
-  2. `vision_pruning_active_fraction = 0`, so follow-up pruning is effectively
-     bypassed and the policy should be renamed/described accordingly
+  1. `vision_pruning_active_fraction >= 0.10`, so follow-up pruning is
+     materially active, or
+  2. `vision_pruning_active_fraction < 0.10`, so follow-up pruning is
+     effectively bypassed and the policy should be renamed/described accordingly
 
 Failure:
 

@@ -185,7 +185,10 @@ in its own dimension.
    - **1.30AA** — fresh duration-conditioned full-union rerun
      (`~5.5–7.5 h`) with short/medium Q0 dense, long Q0 `0.67`, and
      follow-ups `0.50`. This is the first no-splice paper-grade bridge
-     candidate in the lane.
+     candidate in the lane. Both runs now emit paired bootstrap CIs for
+     `Δacc`, and follow-up vision activity is interpreted with an explicit
+     threshold: `< 0.10` means the family is written as dense-Q0 admission +
+     K-cache reuse rather than "pruned follow-ups."
 
    1.30X remains important, but its `Δacc = 0.0000`, `3.0781×` point is
    an **oracle upper bound**, not a deployable policy. The lane is not
@@ -212,10 +215,16 @@ in its own dimension.
 
    - **1.55F** — Q3 from the repaired post-Q2 state (`~60–75 min`):
      tests whether the Q3 catastrophe was caused by reverting to the
-     wrong cache source rather than by adaptive reuse itself.
+     wrong cache source rather than by adaptive reuse itself. The prereg now
+     distinguishes a loose mechanistic pass from the stricter `0/0` exact-match
+     bar against `1.55D K=1`.
    - **1.55G** — medium-bucket replication of the landed K=1 point
      (`~1.7–2.2 h`): tests whether the current strongest recovery point
-     is short-only or multi-regime.
+     is short-only or multi-regime, with an explicit baseline-accuracy floor so
+     a low-signal slice cannot be over-interpreted.
+   - **1.55H** — short-bucket `32f` K=1 boundary probe (`~1.5–2.0 h`,
+     post-primary/P2): asks whether the repaired K=1 path survives after the
+     7B lane crosses into the known long-context basin depth.
 
    **Do not confuse this with 1.55B**, which is the later persistent-KV
    × decode-acceleration composition phase and still depends on 1.54
@@ -230,8 +239,17 @@ in its own dimension.
    `scripts/analyze_phase1_58_bf16_control.py`; remaining blockers are
    now concrete rather than abstract: the local preflight confirms the
    bf16 checkpoint is absent at `/Users/jfb/models/Qwen2.5-VL-7B-Instruct`,
-   so this lane is blocked until the model exists and RSS feasibility is
-   rechecked.
+   and the current single-laptop plan keeps autonomous runs near a `10 GB`
+   RSS ceiling. Since the prereg's own feasibility bar was much looser
+   (`<14 GB`), this lane is blocked locally even if the weights appear unless
+   we explicitly relax the machine policy.
+
+**Supporting closeout analysis:** no MLX time. The paper now has three separate
+observations that all say "aggregate metrics alone are incomplete": `1.30`
+V-only Q0 flips, `1.42` Gemma aggregate-preserved-but-identity-drifting
+MVBench reuse, and `1.55A` persistent-KV pathological attractors.
+`scripts/build_per_item_drift_summary.py` now builds a single JSON payload for
+that figure. This should land before drafting the final Results section.
 
 7. **1.41 Qwen 16f holdout.** **LANDED 2026-04-21 (autonomous session,
    task #160).** Ran n=30 on `videomme_holdout_v1.toml`, identity cache,

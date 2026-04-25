@@ -83,10 +83,25 @@ Failure:
 The RSS threshold is slightly looser than the short-bucket tranche because the
 medium clips are longer and more heterogeneous.
 
+### H5 — the medium tranche is above the signal floor
+
+Acceptance:
+
+- baseline accuracy `>= 0.40`
+
+Failure:
+
+- baseline accuracy `< 0.40`
+
+This guards against a vacuous "preserved" result on a slice that is too weak to
+say much about fidelity preservation.
+
 ## Decision rules
 
-- If H1/H2/H3/H4 pass, `1.55D K=1` upgrades from a short-only strong point to a
+- If H1/H2/H3/H4/H5 pass, `1.55D K=1` upgrades from a short-only strong point to a
   multi-regime recovery result.
+- If H5 fails, treat the run as a low-signal scope probe rather than as
+  evidence for preservation.
 - If H1 fails but H2/H3 pass, the result is still useful: recovery is real but
   regime-bounded, and the paper should scope the claim to short/medium rather
   than speak generically.

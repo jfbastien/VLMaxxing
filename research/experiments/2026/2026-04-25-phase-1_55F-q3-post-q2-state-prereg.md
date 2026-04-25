@@ -64,6 +64,17 @@ This is intentionally weaker than the fixed-K `1.55D` bar. The point is not
 to prove equality first; it is to test whether the Q3 catastrophe was caused by
 the wrong cache source.
 
+### H1′ — exact 1.55D-style match survives the cache-source change
+
+Acceptance:
+
+- paired correctness diffs `= 0/21`
+- paired choice diffs `= 0/21`
+
+This is not required for the main mechanistic claim, but it separates
+"cache-source was the cause and nothing else regressed" from the weaker
+"cache-source was the cause but a small new drift remains."
+
 ### H2 — Q3 basin recurrence is largely suppressed
 
 Acceptance:
@@ -99,6 +110,8 @@ Failure:
 
 - If H1 + H2 + H3 + H4 pass, `1.55F` becomes the new best adaptive point and
   directly tightens the C-PERSIST recovery story.
+- If H1 passes but H1′ fails, the paper should report that post-Q2-state reuse
+  explains the Q3 catastrophe without claiming parity with `1.55D K=1`.
 - If H2 passes but H1 only narrows rather than clears, the scientific result is
   still useful: the Q3 failure mechanism was mostly state-source selection, not
   "adaptive is impossible."

@@ -966,7 +966,9 @@ Near-term order:
    the next useful move is adaptive refresh policy rather than waiting on the
    old co-slicing blocker or running another blind fixed-K sweep
 6. treat phase 1.58 bf16 KV control as the cleanest mechanism discriminator for
-   the persistent-KV basin when checkpoint and RSS constraints permit
+   the persistent-KV basin, but keep it blocked on this 16 GB / ~10 GB-RSS
+   laptop plan even if the checkpoint appears; it only reopens on a deliberate
+   higher-memory exception or different hardware
 7. keep Track B sparse-path work separate: semantic-substitution rows are not
    speed claims until the backend itself skips measured work
 8. keep scroll/pan work off VideoMME: phase 1.60 closed that corpus as the

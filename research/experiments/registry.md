@@ -328,7 +328,7 @@ authoritative in the per-phase notes under
   paper_relevance: primary continuation gate for the local streaming bridge
   prereg_outcome: (pending)
   runtime_estimate: ~3.5–5.0 h total (cold long bucket + streaming long bucket + paired analysis)
-  notes: First unbiased test of the `1.30Y` candidate. This run must validate or reject `kr_Q0 = 0.67` on the full long bucket before any duration-conditioned full-union rerun. New instrumentation logs `image_tokens_recomputed` / `vision_pruning_active` per follow-up so the result can distinguish true follow-up pruning activity from pure Q0 admission + K-cache reuse.
+  notes: First unbiased test of the `1.30Y` candidate. This run must validate or reject `kr_Q0 = 0.67` on the full long bucket before any duration-conditioned full-union rerun. New instrumentation logs `image_tokens_recomputed` / `vision_pruning_active` per follow-up so the result can distinguish true follow-up pruning activity from pure Q0 admission + K-cache reuse. The committed cold control predates those fields, but the analyzer reads the mechanistic activity signal from the streaming rows only, so reusing the cold arm is scientifically acceptable. Interpret `<0.10` active fraction as negligible follow-up pruning.
 
 - phase_id: 1.30AA
   status: proposed (pre-registered; ready to run after 1.30Z)
@@ -339,7 +339,7 @@ authoritative in the per-phase notes under
   paper_relevance: primary (first publishable no-splice bridge candidate in the 1.30 family)
   prereg_outcome: (pending)
   runtime_estimate: ~5.5–7.5 h total (cold union + streaming union + paired analysis)
-  notes: This is the first fully measured version of the duration-conditioned policy family suggested by 1.30X and 1.30Y: short/medium Q0 dense, long Q0 at `kr=0.67`, follow-ups at `kr=0.50`. It should only run if 1.30Z keeps the long bucket inside the rescue/format band.
+  notes: This is the first fully measured version of the duration-conditioned policy family suggested by 1.30X and 1.30Y: short/medium Q0 dense, long Q0 at `kr=0.67`, follow-ups at `kr=0.50`. It should only run if 1.30Z keeps the long bucket inside the rescue/format band. The pair analyzer now emits paired bootstrap CIs for `Δacc`; interpret follow-up pruning activity with the same `<0.10 = negligible` rule used in 1.30Z.
 
 - phase_id: 1.31
   status: proposed
@@ -921,7 +921,7 @@ authoritative in the per-phase notes under
   paper_relevance: primary continuation of the C-PERSIST recovery lane
   prereg_outcome: (pending)
   runtime_estimate: ~60–75 min total
-  notes: Direct follow-up to 1.55E. Tests whether the Q3 collapse was caused by reverting to the original Q1 cache rather than by adaptive reuse per se. Uses the new `--q3-cache-source post_q2_repaired` path and explicit paired metrics output.
+  notes: Direct follow-up to 1.55E. Tests whether the Q3 collapse was caused by reverting to the original Q1 cache rather than by adaptive reuse per se. Uses the new `--q3-cache-source post_q2_repaired` path and explicit paired metrics output. The prereg now distinguishes the main mechanistic pass (`<=1/21`, `<=2/21`) from the stricter `0/0` exact-match bar against 1.55D K=1.
 
 - phase_id: 1.55G
   status: proposed (pre-registered; ready to run)
@@ -932,7 +932,18 @@ authoritative in the per-phase notes under
   paper_relevance: primary scope check for the best current C-PERSIST recovery point
   prereg_outcome: (pending)
   runtime_estimate: ~1.7–2.2 h total
-  notes: Cheapest direct test of whether the landed `1.55D K=1` no-observed-drift result is short-bucket-specific or survives at least one broader regime. Uses the fixed medium tranche listed in the prereg and the new paired metrics analyzer.
+  notes: Cheapest direct test of whether the landed `1.55D K=1` no-observed-drift result is short-bucket-specific or survives at least one broader regime. Uses the fixed medium tranche listed in the prereg and the new paired metrics analyzer. Includes an explicit baseline-accuracy floor so a low-signal medium slice cannot be over-interpreted as preservation.
+
+- phase_id: 1.55H
+  status: proposed (pre-registered; ready to run manually after the primary queue)
+  authoritative_note: research/experiments/2026/2026-04-25-phase-1_55H-k1-32f-short-probe-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: n/a until the 32f short-bucket boundary probe lands
+  supersedes: []
+  paper_relevance: secondary-but-high-value boundary check for the best current C-PERSIST recovery point
+  prereg_outcome: (pending)
+  runtime_estimate: ~1.5–2.0 h total
+  notes: Short-bucket depth-boundary companion to 1.55G. Tests whether the landed K=1 repair survives when Qwen 7B crosses into the known 32f long-context basin depth. If 1.55G passes and 1.55H fails, the recovery envelope becomes content-broadened but depth-bounded.
 
 - phase_id: 1.55B
   status: proposed (deferred)
@@ -979,7 +990,7 @@ authoritative in the per-phase notes under
   paper_relevance: secondary (quantization × long-context — one of three candidate mechanisms for the 16f long-bucket regression)
   prereg_outcome: (deferred; gated on bf16 Qwen 2.5-VL-7B checkpoint download ~15 GB + feasibility check on 16 GB Mac)
   runtime_estimate: ~50-60min bf16 8f n=30 + ~2.5-3h bf16 16f n=30 + matched 4bit re-runs if needed; total ~3.5-4h once bf16 checkpoint is local
-  notes: Tests H-C (4bit × long-context) from the 2026-04-19 16f findings. Four pre-registered H: H1 long-bucket quantization gap ≥ +0.20, H2 no short-bucket gap, H3 RSS < 14 GB, H4 prefill ~4× ratio. Discriminator for the 16f non-monotonic finding; complementary to Phase 1.57 (feature-drift). Wrapper + analyzer landed 2026-04-22 in `scripts/run_phase1_58_bf16_control.sh` and `scripts/analyze_phase1_58_bf16_control.py`; remaining blockers are checkpoint availability and RSS feasibility.
+  notes: Tests H-C (4bit × long-context) from the 2026-04-19 16f findings. Four pre-registered H: H1 long-bucket quantization gap ≥ +0.20, H2 no short-bucket gap, H3 RSS < 14 GB, H4 prefill ~4× ratio. Discriminator for the 16f non-monotonic finding; complementary to Phase 1.57 (feature-drift). Wrapper + analyzer landed 2026-04-22 in `scripts/run_phase1_58_bf16_control.sh` and `scripts/analyze_phase1_58_bf16_control.py`; remaining blockers are checkpoint availability and RSS feasibility, plus the tighter local machine policy that keeps autonomous runs near a 10 GB ceiling on this 16 GB laptop.
 
 - phase_id: 1.59
   status: research_note (future work, no prereg)
@@ -1006,6 +1017,18 @@ authoritative in the per-phase notes under
   prereg_outcome: natural-VideoMME subset construction failed for corpus reasons, not model reasons; wider 60-item scan selected 0/60 at shifted_fraction >= 0.30, max 0.125
   runtime_estimate: n/a on natural VideoMME; future egomotion/synthetic reopen would need a new prereg and subset
   notes: Path A (wider VideoMME scan) executed on 60 items stratified 20 short / 20 medium / 20 long across 8f, 16f, and 32f. The observed shifted-fraction ceiling is far below the relaxed gate, so VideoMME lacks the sustained scroll/pan regime. Do not describe this as C-VISION failing on scroll/pan. Reopen only via EgoSchema/EPIC-Kitchens/Ego4D or a labeled synthetic scroll/pan set.
+
+- phase_id: 1.61
+  status: ready (analysis-only; no MLX runtime)
+  authoritative_note: research/experiments/2026/2026-04-25-paper-closeout-runbook.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_61_per_item_drift_summary.json
+  current_best_policy: n/a
+  supersedes: []
+  paper_relevance: primary supporting analysis (unifies per-item drift across C-VISION, cross-architecture reuse, and persistent-KV failure)
+  prereg_outcome: n/a (analysis synthesis, not a new benchmark run)
+  runtime_estimate: <1 min CPU-only
+  notes: `scripts/build_per_item_drift_summary.py` builds figure-ready JSON from landed artifacts only. The goal is to make the paper's explanatory story concrete: aggregate metrics alone are incomplete, and the repo now has three distinct drift phenotypes worth showing in one place (1.30 V-only Q0 flips, 1.42 Gemma aggregate-preserved identity drift, 1.55A persistent-KV pathological attractors).
 ```
 
 ## Maintenance rules
@@ -1034,7 +1057,7 @@ implementation, debugging, analysis, and CI time. Estimates are at
 | 1.56  | deferred-design — P2 **third** | ~45min | ~2h | Phase 1.44 margin logging + RefreshPolicy API |
 | 1.52R | pending | ~2-3h | ~6-8h | 1.42 + 1.51R sweep completion |
 | 1.55B | deferred | ~65min (composition + controls) | ~2.5h | 1.54 landing + 1.55A earning |
-| 1.58  | deferred | ~1h bf16 8f | ~3h bf16 16f (no 32f) | bf16 Qwen checkpoint download (~15 GB), RSS feasibility |
+| 1.58  | deferred | ~1h bf16 8f | ~3h bf16 16f (no 32f) | bf16 Qwen checkpoint download (~15 GB), prereg RSS feasibility, and a deliberate override of the tighter 10 GB local run policy |
 | 1.59  | research_note | n/a on M3 Air | n/a on M3 Air | external hardware |
 | 1.30  | closed-scout (2026-04-23 dev+holdout paired run negative; short root-cause localized to V-only Q0 pruning) | complete | n/a | fixed-rate adaptive V-leg rescue failed in 1.30V; next composition path requires admission policy |
 | 1.30V | closed-negative | complete | n/a | adaptive/no-prune admission design needed before more 1.30 composition runs |
