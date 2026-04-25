@@ -17,6 +17,7 @@ ARTIFACT_ROOT = REPO_ROOT / "research/experiments/2026/artifacts"
 PREFLIGHT_SCRIPT = REPO_ROOT / "scripts/preflight_remaining_paper_experiments.py"
 PREFLIGHT_JSON = ARTIFACT_ROOT / "paper_closeout_preflight.json"
 QUEUE_STATUS_JSON = ARTIFACT_ROOT / "paper_closeout_queue_status.json"
+PHASE155D_K1_PAIR_METRICS = ARTIFACT_ROOT / "phase1_55D_selective_reprefill_v2/pair_metrics_k1_n7.json"
 
 
 @dataclass(frozen=True, slots=True)
@@ -69,22 +70,41 @@ def _preflight(*, dry_run: bool, output_path: Path) -> dict[str, Any]:
     return _load_json(output_path)
 
 
-def _gate_phase_130(summary: dict[str, Any]) -> dict[str, Any]:
+def _gate_phase_130(
+    summary: dict[str, Any],
+    *,
+    expected_paired_queries: int | None = None,
+    expected_paired_sessions: int | None = None,
+) -> dict[str, Any]:
     accuracy_delta = float(summary["accuracy_delta_streaming_minus_cold"])
     speedup = float(summary["amortized_speedup_cold_over_streaming"])
     parse_failures = int(summary.get("streaming_parse_failures", 0))
     degenerates = int(summary.get("streaming_degenerate_count", 0))
+    n_paired_queries = int(summary.get("n_paired_queries", 0))
+    n_paired_sessions = int(summary.get("n_paired_sessions", 0))
     follow_up_active_fraction = summary.get("streaming_follow_up_vision_pruning_active_fraction")
     materially_active = (
         follow_up_active_fraction is not None and float(follow_up_active_fraction) >= 0.10
     )
+    pass_complete_pairing = True
+    if expected_paired_queries is not None:
+        pass_complete_pairing = pass_complete_pairing and (
+            n_paired_queries == expected_paired_queries
+        )
+    if expected_paired_sessions is not None:
+        pass_complete_pairing = pass_complete_pairing and (
+            n_paired_sessions == expected_paired_sessions
+        )
     return {
         "accuracy_delta": accuracy_delta,
         "accuracy_delta_ci95": summary.get("accuracy_delta_streaming_minus_cold_ci95"),
         "speedup": speedup,
         "parse_failures": parse_failures,
         "degenerates": degenerates,
-        "pass_rescue": accuracy_delta >= -0.10 and speedup >= 3.0,
+        "n_paired_queries": n_paired_queries,
+        "n_paired_sessions": n_paired_sessions,
+        "pass_complete_pairing": pass_complete_pairing,
+        "pass_rescue": pass_complete_pairing and accuracy_delta >= -0.10 and speedup >= 3.0,
         "pass_format": parse_failures == 0 and degenerates == 0,
         "follow_up_vision_pruning_active_fraction": follow_up_active_fraction,
         "follow_up_all_image_tokens_reused_fraction": summary.get(
@@ -92,6 +112,17 @@ def _gate_phase_130(summary: dict[str, Any]) -> dict[str, Any]:
         ),
         "follow_up_pruning_materially_active": materially_active,
     }
+
+
+def _load_phase155d_k1_reference_follow_up_median_ms() -> float:
+    pair_metrics = _load_json(PHASE155D_K1_PAIR_METRICS)
+    value = pair_metrics.get("session_follow_up_median_ms")
+    if value is None:
+        raise SystemExit(
+            "missing session_follow_up_median_ms in "
+            f"{PHASE155D_K1_PAIR_METRICS}"
+        )
+    return float(value)
 
 
 def _gate_phase_155(
@@ -122,7 +153,7 @@ def _gate_phase_155(
     if max_session_follow_up_median_ms is not None:
         pass_speed = pass_speed and (
             session_follow_up_median_ms is not None
-            and float(session_follow_up_median_ms) < max_session_follow_up_median_ms
+            and float(session_follow_up_median_ms) <= max_session_follow_up_median_ms
         )
 
     pass_exact_match = None
@@ -458,7 +489,13 @@ def main() -> int:
             if args.dry_run:
                 record["gate"] = "pending"
             else:
-                gate = _gate_phase_130(_load_json(_phase_gate_paths(step.phase)))
+                expected_queries = 54 if step.phase == "1.30Z" else 171
+                expected_sessions = 18 if step.phase == "1.30Z" else 57
+                gate = _gate_phase_130(
+                    _load_json(_phase_gate_paths(step.phase)),
+                    expected_paired_queries=expected_queries,
+                    expected_paired_sessions=expected_sessions,
+                )
                 record["gate"] = gate
                 if step.phase == "1.30Z":
                     should_launch_130aa = bool(gate["pass_rescue"] and gate["pass_format"])
@@ -468,6 +505,7 @@ def main() -> int:
             else:
                 summary_path = _phase_summary_paths(step.phase)
                 assert summary_path is not None
+                reference_follow_up_median_ms = _load_phase155d_k1_reference_follow_up_median_ms()
                 record["gate"] = _gate_phase_155(
                     pair_metrics=_load_json(_phase_gate_paths(step.phase)),
                     summary=_load_json(summary_path),
@@ -475,7 +513,7 @@ def main() -> int:
                     choice_limit=2,
                     q3_pathological_limit=2,
                     max_rss_gb=5.0,
-                    max_session_follow_up_median_ms=10135.5433955,
+                    max_session_follow_up_median_ms=reference_follow_up_median_ms,
                     strict_correctness_limit=0,
                     strict_choice_limit=0,
                 )

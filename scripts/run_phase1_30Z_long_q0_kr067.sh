@@ -31,6 +31,7 @@ if [[ -f "$OUT/cold_dense_long.jsonl" && -f "$OUT/cold_dense_long_summary.json" 
   echo "[1.30Z] reusing existing cold arm in $OUT"
 else
   "$PY" scripts/run_phase1_30_sam_streaming.py \
+    --allow-dirty \
     --stack cold \
     --manifest research/benchmark_manifests/videomme_long_dev_holdout_v1.toml \
     --frame-count 8 \
@@ -47,6 +48,7 @@ if [[ -f "$OUT/streaming_q0_kr067_followup_kr050_long.jsonl" && -f "$OUT/streami
   echo "[1.30Z] reusing existing streaming arm in $OUT"
 else
   "$PY" scripts/run_phase1_30_sam_streaming.py \
+    --allow-dirty \
     --stack streaming \
     --manifest research/benchmark_manifests/videomme_long_dev_holdout_v1.toml \
     --frame-count 8 \

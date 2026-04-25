@@ -107,6 +107,8 @@ What to inspect:
 - `accuracy_delta_streaming_minus_cold`
 - `accuracy_delta_streaming_minus_cold_ci95`
 - `amortized_speedup_cold_over_streaming`
+- `n_paired_queries`
+- `n_paired_sessions`
 - `streaming_parse_failures`
 - `degenerate_fraction`
 - `streaming_follow_up_vision_pruning_active_fraction`
@@ -136,6 +138,8 @@ What to inspect:
 - `accuracy_delta_streaming_minus_cold`
 - `accuracy_delta_streaming_minus_cold_ci95`
 - `amortized_speedup_cold_over_streaming`
+- `n_paired_queries`
+- `n_paired_sessions`
 - `streaming_parse_failures`
 - `degenerate_fraction`
 - `streaming_follow_up_vision_pruning_active_fraction`
@@ -162,12 +166,15 @@ What to inspect:
 - `paired_correctness_diffs`
 - `paired_choice_diffs`
 - `q_index_breakdown.q3.*`
+- `session_follow_up_median_ms`
 - `speedup_all_query_median_cold_over_session_follow_up`
 
 Interpretation:
 
 - if Q3 mismatches collapse relative to `1.55E`, the failure mechanism was
   largely cache-source selection
+- treat equality with the landed `1.55D K=1` paired session-follow-up median as
+  a speed pass; `1.55F` only needs to avoid regressing the K=1 latency envelope
 - if Q3 still collapses, the next move should be risk gating, not another
   cache-source tweak
 

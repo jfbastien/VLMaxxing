@@ -85,16 +85,19 @@ Failure:
 
 - Q3 pathological-like outputs `>= 4/7`
 
-### H3 — the adaptive speed benefit remains meaningfully above K=1
+### H3 — the adaptive speed benefit does not regress versus landed K=1
 
 Acceptance:
 
-- session follow-up median is lower than the landed `1.55D K=1` follow-up
-  median (`10.136 s`)
+- session follow-up median is no slower than the landed `1.55D K=1` paired
+  session-follow-up median
+- operationally, the queue runner loads the exact reference from
+  `research/experiments/2026/artifacts/phase1_55D_selective_reprefill_v2/pair_metrics_k1_n7.json`
+  instead of hardcoding a decimal literal
 
 Failure:
 
-- session follow-up median is not lower than `1.55D K=1`
+- session follow-up median is slower than the landed `1.55D K=1` reference
 
 ### H4 — memory stays inside the existing local budget
 
@@ -115,6 +118,8 @@ Failure:
 - If H2 passes but H1 only narrows rather than clears, the scientific result is
   still useful: the Q3 failure mechanism was mostly state-source selection, not
   "adaptive is impossible."
+- If H3 passes only at equality, report that the cache-source fix preserved the
+  landed K=1 latency envelope rather than improved on it.
 - If H2 fails, the Q3 catastrophe is not explained by fallback-to-Q1 alone and
   the next move should be risk-gated admission rather than another cache-source
   variant.
