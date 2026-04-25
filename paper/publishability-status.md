@@ -273,7 +273,7 @@ runnable tonight vs. impl-gated.
 |------|-------|---------|-------|----------------|
 | should-do #3 | **1.51V Qwen cross-arch probe** (L=2, kr=0.50, VideoMME 8f n=30 thermally paired, 2 arms) | **CLOSED 2026-04-23** | Qwen 2.5-VL-7B-4bit | **landed** — `V_red = 0.398`, `E2E = 1.044× observed vs 1.043× predicted`, aggregate `Δacc = −0.033`; C-VISION upgrades to two-architecture mechanism evidence |
 | should-do #4 | Local paired streaming-protocol reproduction (1.30) + root-cause decomposition | CLOSED-BOUNDARY 2026-04-25 for current policy | Qwen 2.5-VL-7B-Instruct-4bit (driver hard-fails on non-Qwen at `run_phase1_30_sam_streaming.py:303-308`) | 1.30W remains the best landed bridge: paired cold 0.561 / streaming 0.503 (Δacc = −0.0585) / 2.7869× with exact Q0 parity and clean format, but still below the `3.0×` rescue floor. 1.30X's Δacc=0.0 / 3.078× point is oracle-only. 1.30Z falsifies the `kr_Q0=0.67` long-bucket continuation (Δacc = −0.130 on n=54, speedup 3.12×, format clean), so 1.30AA correctly skipped. Instrumentation now proves follow-up vision pruning is inactive in this family (`vision_pruning_active_fraction=0.0`, all follow-up image tokens cache-served); describe it as Q0 admission + K-cache reuse. |
-| should-do #5 | **1.55D/G selective re-prefill frontier** (recover Δacc at 20f while clawing back speed) | ~60-75 min for 1.55F after bug fix; ~60-75 min for 1.55I after wrapper/curation; ~1.5-2.0 h for 1.55H | Qwen 2.5-VL-7B-4bit | **K=1 now has short+medium evidence** — repo-local v2 shows no observed paired drift on n=51 (one-sided rule-of-three upper bound ≈5.7% on an unseen paired-diff rate), 9.48×–10.76× same-class median follow-up speedup (up to 10.85× on the all-query denominator), and 0/34 pathological follow-up outputs. The first adaptive omission follow-up is already a bounded negative: **1.55E (`Q2=K1`, `Q3=K0`) FALSIFIES cleanly**. 1.55F (Q3 from repaired post-Q2 state) is blocked by an empty-grid runner bug, not by science. Next meaningful continuations: fix/rerun 1.55F, run preregistered 1.55I long-bucket K=1 replication after tranche curation/wrapper, and optionally run 1.55H 32f short depth-boundary. **1.55B** remains the separate persistent-KV × 1.54 composition phase. |
+| should-do #5 | **1.55D/G selective re-prefill frontier** (recover Δacc at 20f while clawing back speed) | ~60-75 min for 1.55F; ~60-90 min for 1.55I; ~1.5-2.0 h for 1.55H | Qwen 2.5-VL-7B-4bit | **K=1 now has short+medium evidence** — repo-local v2 shows no observed paired drift on n=51 (one-sided rule-of-three upper bound ≈5.7% on an unseen paired-diff rate), 9.48×–10.76× same-class median follow-up speedup (up to 10.85× on the all-query denominator), and 0/34 pathological follow-up outputs. The first adaptive omission follow-up is already a bounded negative: **1.55E (`Q2=K1`, `Q3=K0`) FALSIFIES cleanly**. The 1.55F runner bug is fixed in `1b7c05a`, and a one-clip smoke run now exercises the repaired Q3 path cleanly, so the next meaningful continuations are 1.55F (mechanism), 1.55I (long-bucket scope), and 1.55H (32f depth-boundary). **1.55B** remains the separate persistent-KV × 1.54 composition phase. |
 | should-do #6 | **1.58 bf16 KV control at 20f** (discriminate quantization vs attention-OOD) | ~3.5-4 h (bf16 8f n=30 + bf16 16f n=30) | Qwen 2.5-VL-7B bf16 | **wrapper-landed; preflight still blocks execution** — `scripts/run_phase1_58_bf16_control.sh` + analyzer landed, but the local bf16 checkpoint is absent and the current 16 GB laptop plan caps autonomous runs near `10 GB` RSS, well below the prereg's looser `<14 GB` feasibility band |
 | should-do #8 | **1.29 codec-native bridge (reframed)** | landed semantically; slow offline extraction | Qwen 2.5-VL-7B-4bit | **planner-substitution evidence landed** — MAX-over-span sparse sampling is HARD-FALSIFIED, while the continuous-score redesign reaches codec-dense agreement 1.000 on VideoMME dev all-duration n=30 with no accuracy loss and zero parse failures. Later calibration-mode and calibration-source ablations are neutral on the local slices we ran. This is not a latency claim: offline codec extraction totals 7290s; the remaining gate is streaming decoder integration / native-rate systems evaluation. |
 | future | **1.60 scroll/pan subset** (20 items stratified by scroll intensity, L=2 kr=0.50 paired) | n/a on VideoMME; ~70-90 min after a real subset exists | Gemma 4-E4B-4bit or matched C-VISION stack | **closed as natural-VideoMME corpus limitation** — wider 60-item VideoMME scan found 0/60 items above `shifted_fraction >= 0.30` (max 0.125), so this only reopens with EgoSchema/EPIC-Kitchens/Ego4D or a labeled synthetic scroll/pan set |
@@ -283,10 +283,10 @@ runnable tonight vs. impl-gated.
 | blocked | 1.52R composition (1.42 × 1.51R) | ~3 h | Gemma 4-E4B-4bit | 1.42 landing + 1.51R V-patched re-run |
 | future | Claim-5 sparse-execution delta | ~2 h | either | sparse backend unwritten (1-2 wk impl) |
 
-**Runnable next with setup**: `1.55F` needs the empty-grid runner fix before
-rerun; `1.55I` is preregistered but still needs long-tranche curation and a
-wrapper; `1.55H` is coded as a manual 32f depth-boundary probe. `1.30AB` and
-`1.30AC` need preregistration and, for AC, a small driver change. `1.58`
+**Runnable next with setup**: `1.55F`, `1.55I`, and `1.55H` are staged in
+`scripts/run_paper_followup_queue.py`. `1.30AB` and the conditional `1.30AE`
+are also wired for that queue. `1.30AC` still needs the cache-invalidation
+driver change if we want a true follow-up-pruning mechanism experiment. `1.58`
 remains blocked by the missing bf16 checkpoint and the current local memory
 policy.
 
@@ -546,10 +546,11 @@ items that priority.md does not carry. For the current ordering see
    follow-up outputs. The first adaptive omission follow-up, 1.55E
    (`Q2=K1`, `Q3=K0`), is a bounded negative: `Δacc = -0.0952` with
    pathological-like outputs on `7/7` third queries. The post-Q2-state test
-   1.55F is runner-blocked on an empty-grid text-only tail; it remains
-   scientifically untested. The next paper-relevant moves are **fix/rerun
-   1.55F**, **1.55I** (long-bucket K=1 after tranche curation/wrapper), and
-   **1.55H** (32f short depth-boundary).
+   1.55F was runner-blocked on an empty-grid text-only tail, but that path is
+   now fixed in `1b7c05a` and smoke-validated on a one-clip rerun; it remains
+   scientifically untested until the full rerun.
+   The next paper-relevant moves are **1.55F**, **1.55I** (long-bucket K=1),
+   and **1.55H** (32f short depth-boundary).
 6. **1.58 bf16 KV control at 20f** — isolates quantization as the
    C-PERSIST basin driver; ~2-4h wall once the bf16 checkpoint exists
    locally. Preflight currently marks it blocked.

@@ -24,18 +24,16 @@ two-regime (short+medium) or full three-regime (short+medium+long).
 
 - Model: `Qwen2.5-VL-7B-Instruct-4bit`
 - Regime: 20-frame persistent-KV long-bucket VideoMME session
-- Clips: 7 long-bucket video IDs (each must have ≥3 questions in the
-  full VideoMME parquet so the runner's `_questions_for_video_id`
-  succeeds; tranche to be finalized at run time by selecting from the
-  dev+holdout long manifest videos that satisfy the ≥3-question rule)
+- Clips: `669,711,712,737,756,758,794`
+  - chosen from the existing `videomme_long_dev_holdout_v1.toml` pool
+  - each passes the `≥3 questions in the parquet` requirement enforced by
+    `_questions_for_video_id`
 - Queries: 3 per clip, session path vs matched cold baseline
 - Session policy:
   - `Q1`: cold (`K=0`)
   - `Q2/Q3`: selective re-prefill with `K=1`
 - Runner: `scripts/run_kv_selective_reprefill_v2.py`
-- Wrapper: `scripts/run_phase1_55I_k1_long_replication.sh` (to be
-  authored — copy `run_phase1_55G_k1_medium_replication.sh` and
-  substitute the long-bucket video IDs and output dir)
+- Wrapper: `scripts/run_phase1_55I_k1_long_replication.sh`
 
 Estimated runtime:
 
@@ -164,19 +162,13 @@ expected to be lower). A 0.30 floor still rules out vacuous slices.
 
 ## Curation note
 
-The 7-clip tranche must be finalized by selecting long video IDs that
-satisfy the ≥3-questions-in-parquet rule. The runner's
-`_questions_for_video_id` will hard-fail otherwise. The closeout queue
-runner does not curate this; it must be filled in before the wrapper is
-authored. A reasonable starting candidate set drawn from the existing
-long manifest video pool (subject to the ≥3-question check):
-`712, 847` (each currently shows ≥2 in the manifest; needs parquet
-verification) plus other long-bucket videos with ≥3 in parquet.
+The long tranche is now fixed to `669,711,712,737,756,758,794`. This keeps the
+run inside the existing `1.30Z` long-manifest pool while avoiding an extra
+on-the-fly curation step during the autonomous queue.
 
 ## Execution
 
-Pending. Wrapper and tranche curation needed before the run. ~20 minutes
-of setup work for Codex / JF.
+Pending. Wrapper authored and tranche fixed; ready to queue.
 
 ## Result
 

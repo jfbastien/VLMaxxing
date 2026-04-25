@@ -344,6 +344,31 @@ authoritative in the per-phase notes under
   runtime_estimate: not consumed
   notes: Re-running 1.30AA only makes sense if 1.30Z's underlying policy family is replaced (e.g. 1.30AB long-Q0 finer sweep) or if 1.30AC enables true follow-up vision pruning by invalidating the cache between queries. The current configuration is closed.
 
+- phase_id: 1.30AB
+  status: proposed (pre-registered; queued as the next 1.30 boundary search)
+  authoritative_note: research/experiments/2026/2026-04-25-phase-1_30AB-long-q0-sweep-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: n/a until the long-Q0 sweep lands
+  supersedes:
+    - 1.30Y (selection-biased scout, replaced by a real sweep)
+    - 1.30Z (single-candidate falsification broadened into a boundary search)
+  paper_relevance: primary continuation of the 1.30 bridge lane
+  prereg_outcome: (pending)
+  runtime_estimate: ~2.0–3.0 h total for four candidates using the landed 1.30Z cold control
+  notes: This sweep asks the only honest next 1.30 question after 1.30Z: where the long-bucket Q0 keep-rate boundary lives, if it exists at all, inside the same cache-reuse family. Mechanistic wording remains governed by measured follow-up activity; if activity stays below 0.10, the lane is still "Q0 admission + K-cache reuse."
+
+- phase_id: 1.30AE
+  status: proposed (pre-registered; conditional on a passing 1.30AB candidate)
+  authoritative_note: research/experiments/2026/2026-04-25-phase-1_30AE-duration-conditioned-union-candidate-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: n/a until a smallest passing 1.30AB rate is selected
+  supersedes:
+    - 1.30AA (policy family replaced after 1.30Z)
+  paper_relevance: primary (would be the first no-splice union rerun after the 1.30Z falsification)
+  prereg_outcome: (pending)
+  runtime_estimate: ~5.5–7.5 h if unlocked
+  notes: Runs only if 1.30AB finds at least one long-Q0 rate that clears the long-only rescue band. The selected rate is the smallest passing candidate. If 1.30AB fails, this phase should remain unrun and the 1.30 lane stays a boundary result.
+
 - phase_id: 1.31
   status: proposed
   authoritative_note: research/experiments/2026/2026-04-16-phase-1_31-failure-predictor.md
@@ -916,15 +941,16 @@ authoritative in the per-phase notes under
   notes: This run answers the simplest adaptive question cleanly: `Q2` remains the real rescue point (`7/7` correct, `0/7` pathological-like outputs), but `Q3` is not safely dispensable under the retained-full-cache path (`2/7` correct, `7/7` pathological-like outputs). The lane should not spend more time on blind query-index omission variants. If 1.55 continues, the next adaptive move must change the post-Q2 state itself or add an explicit risk signal for Q3. Cross-run caveat: compared with the earlier 1.55D K=1 baseline, one false item (`videomme:short:120-3`) flipped wrong-answer choice while remaining incorrect; the prereg verdict is therefore anchored to the matched baseline rerun inside the 1.55E artifact directory.
 
 - phase_id: 1.55F
-  status: BLOCKED — runner crash on K=0 + post_q2_repaired path; needs code fix
+  status: proposed (runner bug fixed in 1b7c05a; rerun queued)
   authoritative_note: research/experiments/2026/2026-04-25-phase-1_55F-q3-post-q2-state-failure-note.md
-  authoritative_artifacts: []
-  current_best_policy: n/a (no data produced; experiment did not complete)
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_55F_q3_post_q2_state/
+  current_best_policy: n/a until the rerun lands; only a partial failed artifact exists today
   supersedes: []
   paper_relevance: primary continuation of the C-PERSIST recovery lane
-  prereg_outcome: not run; runner crashed on first clip Q3 inside `qwen_selective_reprefill.generate_qwen_tail_with_explicit_positions` because `K=0 + post_q2_repaired` produces an empty `grid_thw` that hard-errors `mx.concatenate` inside the upstream Qwen vision tower's `rot_pos_emb`. Q1 + Q2 of clip 037 completed cleanly before the Q3 crash.
-  runtime_estimate: not yet consumed (~60-75 min once code path is fixed)
-  notes: Fix is small (short-circuit the vision-tower call when there are zero new image tokens to embed; embed via `model.language_model.embed_tokens(...)` in that case). Once Codex applies the fix and a CPU smoke test passes, rerun the wrapper end-to-end and treat as paper-relevant.
+  prereg_outcome: first run did not complete; the original runner crashed on first clip Q3 because `K=0 + post_q2_repaired` produced an empty `grid_thw` that hard-errored `mx.concatenate` inside the upstream Qwen vision tower. Commit `1b7c05a` fixed the path by routing text-only tails through the text embedding path, and a one-clip smoke run now reaches Q3 successfully; rerun pending.
+  runtime_estimate: ~60-75 min on this laptop
+  notes: The partial failed artifact remains as evidence, but the wrapper now explicitly overwrites incomplete outputs when summary files are absent. The rerun is the highest-leverage next mechanism experiment for C-PERSIST.
 
 - phase_id: 1.55G
   status: landed (PASS science gates; H4 RSS narrowly missed against an over-tight prereg ceiling)
@@ -951,6 +977,17 @@ authoritative in the per-phase notes under
   prereg_outcome: (pending)
   runtime_estimate: ~1.5–2.0 h total
   notes: Short-bucket depth-boundary companion to 1.55G. Tests whether the landed K=1 repair survives when Qwen 7B crosses into the known 32f long-context basin depth. With 1.55G PASSing on medium 20f, 1.55H is the natural next probe — the question now is depth, not regime.
+
+- phase_id: 1.55I
+  status: proposed (pre-registered; tranche fixed and wrapper authored)
+  authoritative_note: research/experiments/2026/2026-04-25-phase-1_55I-k1-long-replication-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: n/a until the long-bucket K=1 replication lands
+  supersedes: []
+  paper_relevance: primary continuation of the C-PERSIST recovery lane (scope upgrade)
+  prereg_outcome: (pending)
+  runtime_estimate: ~60–90 min total
+  notes: Natural next scope test after 1.55G. Uses the fixed 7-video long tranche `669,711,712,737,756,758,794`, all drawn from the existing long-manifest pool and validated against the parquet's ≥3-question rule. If H1' passes, the combined K=1 result becomes n=72 paired short+medium+long with 0 observed drift.
 
 - phase_id: 1.55B
   status: proposed (deferred)

@@ -2,17 +2,19 @@
 phase: 1.55F
 date: 2026-04-25
 parent: research/experiments/2026/2026-04-25-phase-1_55F-q3-post-q2-state-prereg.md
-status: BLOCKED 2026-04-25 — runner crash on first clip; experiment did not produce data.
+status: runner failed 2026-04-25; code path fixed in 1b7c05a; rerun pending.
 ---
 
 # Phase 1.55F — Q3 from repaired post-Q2 state (RUNNER FAILURE NOTE)
 
-**Verdict:** **Not a science failure; a runner-code failure.** The
-prereg's hypothesis is still untested. The specific MLX path
-`generate_qwen_tail_with_explicit_positions` crashes when a `K=0` re-prefill
-slice contains zero new image tokens, causing `mx.concatenate` on an empty
-list inside `qwen2_5_vl/vision.py:rot_pos_emb`. The experiment can be
-rerun once that code path is fixed.
+**Verdict:** **Not a science failure; a runner-code failure that is now fixed
+and smoke-validated.** The prereg's hypothesis is still untested. The specific
+MLX path `generate_qwen_tail_with_explicit_positions` used to crash when a
+`K=0` re-prefill slice contained zero new image tokens, causing
+`mx.concatenate` on an empty list inside `qwen2_5_vl/vision.py:rot_pos_emb`.
+Commit `1b7c05a` fixed that text-only-tail path by bypassing the vision tower
+when the slice contains no image rows; a one-clip Q3 smoke run now completes
+successfully on the repaired branch, so the full experiment is ready to rerun.
 
 ## What was supposed to happen
 
@@ -56,11 +58,11 @@ This is a path that did not exist before `1.55E` introduced
 `q3_cache_source` last week. Fixed-K runs (1.55D) never hit it because they
 always have ≥1 frame's worth of new image tokens in the tail.
 
-## Recommended fix
+## Applied fix
 
 `src/codec_through/qwen_selective_reprefill.py:generate_qwen_tail_with_explicit_positions`
-should short-circuit the vision-tower call when there are no new image
-tokens to embed:
+now short-circuits the vision-tower call when there are no new image tokens
+to embed and routes the text-only tail through Qwen's text embedding path:
 
 ```python
 # Pseudocode at line ~305
@@ -77,13 +79,16 @@ else:
 
 The exact embedding entry point on Qwen2.5-VL is
 `model.language_model.embed_tokens(...)`; it is what `get_input_embeddings`
-falls back to when `pixel_values` is `None`.
+falls back to when `pixel_values` is `None`. The repo-local helper also
+hard-fails if an ostensibly text-only slice still carries image/video marker
+tokens or mismatched `pixel_values` / `grid_thw` rows.
 
 ## Recovery plan
 
-1. Codex applies the fix above.
-2. CPU smoke test: a 1-clip 1-query smoke run with `--reprefill-k 0
-   --q3-cache-source post_q2_repaired` to exercise the fixed path.
+1. Fix landed in `1b7c05a`.
+2. Smoke test: completed on clip `037` with `--reprefill-k-q3 0
+   --q3-cache-source post_q2_repaired`; Q3 now runs to completion instead of
+   crashing.
 3. Rerun 1.55F's wrapper (`scripts/run_phase1_55F_q3_post_q2_state.sh`)
    end-to-end. Estimated runtime ≈ 60-75 min (unchanged).
 4. Auto-commit findings.
@@ -98,9 +103,7 @@ falls back to when `pixel_values` is `None`.
 
 ## Pending follow-ups
 
-- Codex: fix `generate_qwen_tail_with_explicit_positions` for the empty
-  `grid_thw` case (above).
-- After fix: rerun 1.55F (cheap, ~60-75 min).
+- After the landed fix: rerun 1.55F (~60-75 min).
 - After 1.55F lands: if it passes H1+H2+H3 cleanly, write findings doc and
   consider promoting "C-PERSIST adaptive recovery via post-Q2 state" as
   the strongest mechanism story in the paper.

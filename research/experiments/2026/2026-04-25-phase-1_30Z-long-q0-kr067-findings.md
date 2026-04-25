@@ -149,7 +149,7 @@ admission policy in the current 1.30 family.
 
 ## Pending follow-ups
 
-- **`1.30AB`** (preregister required, ~4h compute): finer-grained long-Q0
+- **`1.30AB`** (preregistered, ~4h compute): finer-grained long-Q0
   keep-rate sweep at `kr_Q0 ∈ {0.75, 0.80, 0.85, 0.90}`, otherwise identical
   to 1.30Z. Locates the boundary where the rescue band returns.
 - **`1.30AC`** (preregister + small driver change): force cache invalidation

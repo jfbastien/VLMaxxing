@@ -153,7 +153,8 @@ short-only to short+medium.
 ## Pending follow-ups
 
 - Long-bucket K=1 replication (`1.55I`) — next highest-leverage scope
-  expansion. Requires preregister + new wrapper. ~2-3h compute.
+  expansion. Prereg + wrapper now exist; fixed tranche is
+  `669,711,712,737,756,758,794`. ~60-90 min compute on this laptop.
 - 32f short-bucket K=1 boundary probe (`1.55H`) — already coded
   (`scripts/run_phase1_55H_k1_32f_short_probe.sh`). ~1.5-2h. Not auto-queued
   during this AFK session because it's P2 manual.

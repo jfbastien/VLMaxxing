@@ -8,6 +8,11 @@ status: live execution runbook for the remaining paper-closeout queue
 
 # Paper Closeout Runbook (2026-04-25)
 
+Historical note: this queue has completed. `1.30Z` landed and killed the
+`kr_Q0=0.67` continuation, `1.30AA` was skipped by gate, `1.55G` landed, and
+`1.55F` exposed a runner bug that is now fixed. The active next-batch queue is
+[2026-04-25-paper-followup-runbook.md](2026-04-25-paper-followup-runbook.md).
+
 This file is the operational queue for the remaining paper-critical runs that
 can execute **without further coding**.
 

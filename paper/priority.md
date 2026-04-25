@@ -190,13 +190,15 @@ in its own dimension.
    result remains `1.30W` (full-union dense Q0, n=171, `Δacc = −0.0585`,
    `2.79×`) — a "bounded near-miss" against the `3.0×` rescue floor.
 
-   Pending follow-ups (not auto-runnable; require pre-registration plus
-   either compute or small driver work):
+   Pending follow-ups (ordered by current paper leverage):
 
    - **1.30AB** — finer-grained long-Q0 sweep at
      `kr_Q0 ∈ {0.75, 0.80, 0.85, 0.90}` (~4h compute). Locates the
      keep-rate boundary where the rescue band returns. Required if we
      want any "deployable duration-conditioned admission policy" claim.
+   - **1.30AE** — full-union rerun with the **smallest passing 1.30AB
+     long-Q0 rate** (~5.5–7.5 h, conditional). This replaces the dead
+     `1.30AA` family as the only honest no-splice bridge candidate.
    - **1.30AC** — true V-only follow-ups by forcing cache invalidation
      between queries (~3-4h compute + small driver change). Only path
      to a legitimate "follow-up vision pruning" claim, since the current
@@ -232,27 +234,25 @@ in its own dimension.
    `Δacc = -0.0952`, paired correctness diffs `4/21`, paired choice
    diffs `6/21`, and pathological-like outputs on `7/7` third queries.
    **1.55F (`Q2=K1`, `Q3=K0` with `q3_cache_source=post_q2_repaired`)
-   IS BLOCKED** by a runner crash: `generate_qwen_tail_with_explicit_positions`
-   does not handle the empty-`grid_thw` case that the `K=0` text-only
-   tail produces, and `mx.concatenate` hard-errors inside the upstream
-   Qwen `vision_tower.rot_pos_emb`. Recovery is ~30 min of code work
-   plus a CPU smoke test plus the original ~60-75 min experiment rerun.
+   is no longer infra-blocked.** The empty-`grid_thw` text-only-tail crash
+   in `generate_qwen_tail_with_explicit_positions` was fixed in `1b7c05a`,
+   and a one-clip smoke run now exercises the repaired Q3 path cleanly; the
+   experiment is ready to rerun.
 
    Pending follow-ups, in order of paper leverage:
 
-   - **1.55F** — Q3 from the repaired post-Q2 state (~60–75 min once
-     the bug is fixed). Tests whether the Q3 catastrophe was caused by
+   - **1.55F** — Q3 from the repaired post-Q2 state (~60–75 min).
+     Tests whether the Q3 catastrophe was caused by
      reverting to the wrong cache source rather than by adaptive reuse
      itself.
-   - **1.55I** — long-bucket K=1 replication (preregistered; wrapper
-     and tranche curation still needed; ~60–75 min runtime): the natural
-     next scope step after short+medium clean. Has a real risk that
-     long-bucket baseline accuracy falls below the 0.30 signal floor;
-     requires a tranche-curation step.
+   - **1.55I** — long-bucket K=1 replication (preregistered; wrapper and
+     fixed tranche ready; ~60–90 min runtime): the natural next scope
+     step after short+medium clean. Has a real risk that long-bucket
+     baseline accuracy falls below the 0.30 signal floor.
    - **1.55H** — short-bucket `32f` K=1 boundary probe (~1.5–2.0 h):
      asks whether the repaired K=1 path survives when the 7B lane crosses
      into the known long-context basin depth. Wrapper already coded; not
-     auto-queued during the 2026-04-25 AFK session.
+     part of the first closeout queue, but staged in the follow-up queue.
 
    **Do not confuse this with 1.55B**, which is the later persistent-KV
    × decode-acceleration composition phase and still depends on 1.54

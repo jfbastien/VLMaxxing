@@ -449,12 +449,8 @@ def _persistent_kv_snapshot() -> dict[str, object]:
 
 
 def _selective_reprefill_snapshot() -> dict:
-    short_path = (
-        ARTIFACTS / "phase1_55D_selective_reprefill_v2" / "pair_metrics_k1_n7.json"
-    )
-    medium_path = (
-        ARTIFACTS / "phase1_55G_k1_medium_replication" / "pair_metrics_k1_n10.json"
-    )
+    short_path = ARTIFACTS / "phase1_55D_selective_reprefill_v2" / "pair_metrics_k1_n7.json"
+    medium_path = ARTIFACTS / "phase1_55G_k1_medium_replication" / "pair_metrics_k1_n10.json"
     short = _artifact_json(short_path)
     medium = _artifact_json(medium_path)
     speedups = [
@@ -469,8 +465,7 @@ def _selective_reprefill_snapshot() -> dict:
         "k": 1,
         "scope": "short+medium",
         "n_pairs": int(short["n_pairs"]) + int(medium["n_pairs"]),
-        "n_follow_up_pairs": int(short["n_follow_up_pairs"])
-        + int(medium["n_follow_up_pairs"]),
+        "n_follow_up_pairs": int(short["n_follow_up_pairs"]) + int(medium["n_follow_up_pairs"]),
         "n_q3_pairs": int(short["q_index_breakdown"]["q3"]["n"])
         + int(medium["q_index_breakdown"]["q3"]["n"]),
         "paired_correctness_diffs": int(short["paired_correctness_diffs"])
@@ -527,7 +522,11 @@ def _write_paired_drift_table(snapshot: dict) -> None:
     lines = [
         r"\begin{table}[H]",
         r"\centering",
-        r"\caption{Paired-drift audit. Aggregate accuracy can preserve a point estimate while answer identity, correctness on individual examples, or output format changes.}",
+        (
+            r"\caption{Paired-drift audit. Aggregate accuracy can preserve a point "
+            r"estimate while answer identity, correctness on individual examples, or "
+            r"output format changes.}"
+        ),
         r"\label{tab:paired-drift}",
         r"\small",
         r"\begin{tabularx}{\linewidth}{@{}X r r r X@{}}",

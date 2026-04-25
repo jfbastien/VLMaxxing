@@ -25,19 +25,13 @@ It is NOT the place for raw experimental detail. Evidence lives in:
 - [research/falsified-hypotheses.md](../research/falsified-hypotheses.md) —
   what the evidence has ruled out
 
-Last material update: 2026-04-23 (Qwen 1.51V cross-architecture probe passed
-at matched \(L=2\), \(kr_V=0.50\), upgrading C-VISION from
-single-architecture to two-architecture mechanism evidence; 1.57
-feature-drift geometry reproduced on holdout at 8f/16f; EXP10 pooled n=60
-H\_stack remains a ceiling-matched NULL; 1.29 MAX-over-span codec-native pilot
-remains hard-falsified, while the continuous-score + per-item-calibrated
-planner now matches dense on VideoMME dev all-duration \(n=30\); 1.30 local
-Qwen session/streaming composition reproduces speedup but falsifies fidelity;
-C-VISION now reads as 6 core ceiling scatter points with 9 rendered points
-total once the 3 holdouts, the pooled null, and the matched Qwen point are
-included).
+Last material update: 2026-04-25 (1.30Z falsified the `kr_Q0=0.67` long-bucket
+continuation and empirically proved that follow-up vision pruning is inactive
+under prompt-cache reuse in the current 1.30 family; 1.55G upgraded K=1
+selective re-prefill from short-only to short+medium with n=51 zero observed
+paired drift; 1.55F runner bug fixed in `1b7c05a`, rerun pending).
 
-## Current Manuscript Position (2026-04-23)
+## Current Manuscript Position (2026-04-25)
 
 The manuscript should be centered on one anti-recomputation story with three
 explicit regimes:
@@ -234,8 +228,8 @@ boundary as much as the positives:
   (0.533) and zero parse failures; short dev+holdout n=20 also passes on the
   -5pp accuracy-loss boundary. This is local codec-native planner-substitution
   evidence, not a latency win: offline codec extraction totals 7290s.
-- **1.30 Qwen session/streaming composition: BOUNDARY NEAR-MISS
-  2026-04-24.** The original bridge was a hard negative, but the
+- **1.30 Qwen session/streaming composition: BOUNDARY RESULT
+  2026-04-25.** The original bridge was a hard negative, but the
   dense-Q0 successor `1.30W` materially improves it: paired cold
   `0.561` / streaming `0.503` (`Δacc = −0.0585`) at `2.7869×`, with
   exact Q0 parity (`34/57` in both arms), `0` parse failures, and `0`
@@ -248,9 +242,15 @@ boundary as much as the positives:
   3-query protocol because dense Q0 alone already exceeds the target
   wall-clock budget. Root-cause decomposition remains valid, and the
   oracle upper bound from `1.30X` proves the lane is not dead in
-  principle, but the next meaningful continuation is the measured
-  `1.30Z` / `1.30AA` queue, not another same-protocol follow-up tweak or
-  another splice.
+  principle, but `1.30Z` then falsifies the first long-bucket continuation
+  (`kr_Q0 = 0.67`, `Δacc = −0.130`, `3.12×`, clean format). The new
+  instrumentation makes the mechanism boundary quantitative:
+  `streaming_follow_up_vision_pruning_active_fraction = 0.0` and
+  `streaming_follow_up_all_image_tokens_reused_fraction = 1.0` on the
+  long-bucket follow-ups. The current 1.30 family is therefore a
+  **Q0 admission + K-cache reuse** story, not a follow-up-pruning story.
+  The next meaningful continuation is a finer `1.30AB` long-Q0 sweep or a
+  cache-invalidated `1.30AC`, not a revival of `1.30AA` unchanged.
 - **1.60 scroll/pan regime-boundary probe: closed as a VideoMME corpus
   limitation.** We re-audited the natural corpus on a 60-item VideoMME
   stratification across 8f/16f/32f and found 0/60 items above the relaxed

@@ -1,6 +1,6 @@
 # Research Plan
 
-Last updated: 2026-04-24
+Last updated: 2026-04-25
 
 > **This file is the project charter and top-level router.**
 >
@@ -16,6 +16,14 @@ Last updated: 2026-04-24
 > Per-phase experiment state lives in:
 > [`research/experiments/registry.md`](research/experiments/registry.md)
 > — that file is the single source of phase truth.
+>
+> **Current execution router (2026-04-25):** the original closeout queue has
+> finished. The active sequential follow-up queue is
+> `1.55F → 1.55I → 1.55H → 1.30AB sweep → conditional 1.30AE`.
+> `1.30AA` is closed for the old `kr_Q0=0.67` policy after `1.30Z`, and
+> `1.58` is explicitly a larger-memory-machine experiment under the current
+> 16 GB laptop policy. See
+> [`research/experiments/2026/2026-04-25-paper-followup-runbook.md`](research/experiments/2026/2026-04-25-paper-followup-runbook.md).
 >
 > Lane A / temporal-routing research strategy (now the
 > mechanism-validation backbone, not the headline) lives in:
