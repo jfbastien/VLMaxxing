@@ -1,0 +1,914 @@
+[
+  {
+    "seed_item_id": "videomme:long:669-1",
+    "video_id": "669",
+    "item_id": "videomme:long:669-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:669-1",
+    "video_id": "669",
+    "item_id": "videomme:long:669-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:711-2",
+    "video_id": "711",
+    "item_id": "videomme:long:711-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:711-2",
+    "video_id": "711",
+    "item_id": "videomme:long:711-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:712-2",
+    "video_id": "712",
+    "item_id": "videomme:long:712-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:712-2",
+    "video_id": "712",
+    "item_id": "videomme:long:712-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:737-3",
+    "video_id": "737",
+    "item_id": "videomme:long:737-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:737-3",
+    "video_id": "737",
+    "item_id": "videomme:long:737-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:756-2",
+    "video_id": "756",
+    "item_id": "videomme:long:756-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:756-2",
+    "video_id": "756",
+    "item_id": "videomme:long:756-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:758-3",
+    "video_id": "758",
+    "item_id": "videomme:long:758-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:758-3",
+    "video_id": "758",
+    "item_id": "videomme:long:758-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:794-1",
+    "video_id": "794",
+    "item_id": "videomme:long:794-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:794-1",
+    "video_id": "794",
+    "item_id": "videomme:long:794-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:847-3",
+    "video_id": "847",
+    "item_id": "videomme:long:847-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:847-3",
+    "video_id": "847",
+    "item_id": "videomme:long:847-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:892-1",
+    "video_id": "892",
+    "item_id": "videomme:long:892-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:892-1",
+    "video_id": "892",
+    "item_id": "videomme:long:892-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:320-3",
+    "video_id": "320",
+    "item_id": "videomme:medium:320-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:320-3",
+    "video_id": "320",
+    "item_id": "videomme:medium:320-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:354-3",
+    "video_id": "354",
+    "item_id": "videomme:medium:354-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:354-3",
+    "video_id": "354",
+    "item_id": "videomme:medium:354-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:364-2",
+    "video_id": "364",
+    "item_id": "videomme:medium:364-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:364-2",
+    "video_id": "364",
+    "item_id": "videomme:medium:364-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:380-3",
+    "video_id": "380",
+    "item_id": "videomme:medium:380-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:380-3",
+    "video_id": "380",
+    "item_id": "videomme:medium:380-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:407-1",
+    "video_id": "407",
+    "item_id": "videomme:medium:407-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:407-1",
+    "video_id": "407",
+    "item_id": "videomme:medium:407-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:408-1",
+    "video_id": "408",
+    "item_id": "videomme:medium:408-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:408-1",
+    "video_id": "408",
+    "item_id": "videomme:medium:408-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:426-3",
+    "video_id": "426",
+    "item_id": "videomme:medium:426-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:426-3",
+    "video_id": "426",
+    "item_id": "videomme:medium:426-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:484-2",
+    "video_id": "484",
+    "item_id": "videomme:medium:484-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:484-2",
+    "video_id": "484",
+    "item_id": "videomme:medium:484-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:486-2",
+    "video_id": "486",
+    "item_id": "videomme:medium:486-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:486-2",
+    "video_id": "486",
+    "item_id": "videomme:medium:486-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:531-1",
+    "video_id": "531",
+    "item_id": "videomme:medium:531-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:531-1",
+    "video_id": "531",
+    "item_id": "videomme:medium:531-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:037-2",
+    "video_id": "037",
+    "item_id": "videomme:short:037-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:037-2",
+    "video_id": "037",
+    "item_id": "videomme:short:037-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:100-2",
+    "video_id": "100",
+    "item_id": "videomme:short:100-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:100-2",
+    "video_id": "100",
+    "item_id": "videomme:short:100-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:116-3",
+    "video_id": "116",
+    "item_id": "videomme:short:116-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:116-3",
+    "video_id": "116",
+    "item_id": "videomme:short:116-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:120-2",
+    "video_id": "120",
+    "item_id": "videomme:short:120-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:120-2",
+    "video_id": "120",
+    "item_id": "videomme:short:120-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:158-3",
+    "video_id": "158",
+    "item_id": "videomme:short:158-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:158-3",
+    "video_id": "158",
+    "item_id": "videomme:short:158-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:160-1",
+    "video_id": "160",
+    "item_id": "videomme:short:160-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:160-1",
+    "video_id": "160",
+    "item_id": "videomme:short:160-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:210-2",
+    "video_id": "210",
+    "item_id": "videomme:short:210-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:210-2",
+    "video_id": "210",
+    "item_id": "videomme:short:210-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:264-1",
+    "video_id": "264",
+    "item_id": "videomme:short:264-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:264-1",
+    "video_id": "264",
+    "item_id": "videomme:short:264-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:278-3",
+    "video_id": "278",
+    "item_id": "videomme:short:278-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:278-3",
+    "video_id": "278",
+    "item_id": "videomme:short:278-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:282-2",
+    "video_id": "282",
+    "item_id": "videomme:short:282-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:282-2",
+    "video_id": "282",
+    "item_id": "videomme:short:282-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:650-3",
+    "video_id": "650",
+    "item_id": "videomme:long:650-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:650-3",
+    "video_id": "650",
+    "item_id": "videomme:long:650-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:709-1",
+    "video_id": "709",
+    "item_id": "videomme:long:709-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:709-1",
+    "video_id": "709",
+    "item_id": "videomme:long:709-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:751-2",
+    "video_id": "751",
+    "item_id": "videomme:long:751-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:751-2",
+    "video_id": "751",
+    "item_id": "videomme:long:751-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:782-1",
+    "video_id": "782",
+    "item_id": "videomme:long:782-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:782-1",
+    "video_id": "782",
+    "item_id": "videomme:long:782-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:783-2",
+    "video_id": "783",
+    "item_id": "videomme:long:783-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:783-2",
+    "video_id": "783",
+    "item_id": "videomme:long:783-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:840-1",
+    "video_id": "840",
+    "item_id": "videomme:long:840-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:840-1",
+    "video_id": "840",
+    "item_id": "videomme:long:840-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:846-1",
+    "video_id": "846",
+    "item_id": "videomme:long:846-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:846-1",
+    "video_id": "846",
+    "item_id": "videomme:long:846-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:851-3",
+    "video_id": "851",
+    "item_id": "videomme:long:851-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:851-3",
+    "video_id": "851",
+    "item_id": "videomme:long:851-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:885-1",
+    "video_id": "885",
+    "item_id": "videomme:long:885-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:long:885-1",
+    "video_id": "885",
+    "item_id": "videomme:long:885-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:342-2",
+    "video_id": "342",
+    "item_id": "videomme:medium:342-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:342-2",
+    "video_id": "342",
+    "item_id": "videomme:medium:342-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:350-2",
+    "video_id": "350",
+    "item_id": "videomme:medium:350-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:350-2",
+    "video_id": "350",
+    "item_id": "videomme:medium:350-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:377-2",
+    "video_id": "377",
+    "item_id": "videomme:medium:377-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:377-2",
+    "video_id": "377",
+    "item_id": "videomme:medium:377-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:415-3",
+    "video_id": "415",
+    "item_id": "videomme:medium:415-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:415-3",
+    "video_id": "415",
+    "item_id": "videomme:medium:415-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:441-1",
+    "video_id": "441",
+    "item_id": "videomme:medium:441-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:441-1",
+    "video_id": "441",
+    "item_id": "videomme:medium:441-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:449-2",
+    "video_id": "449",
+    "item_id": "videomme:medium:449-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:449-2",
+    "video_id": "449",
+    "item_id": "videomme:medium:449-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:513-1",
+    "video_id": "513",
+    "item_id": "videomme:medium:513-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:513-1",
+    "video_id": "513",
+    "item_id": "videomme:medium:513-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:516-2",
+    "video_id": "516",
+    "item_id": "videomme:medium:516-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:516-2",
+    "video_id": "516",
+    "item_id": "videomme:medium:516-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:562-1",
+    "video_id": "562",
+    "item_id": "videomme:medium:562-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:562-1",
+    "video_id": "562",
+    "item_id": "videomme:medium:562-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:569-1",
+    "video_id": "569",
+    "item_id": "videomme:medium:569-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:medium:569-1",
+    "video_id": "569",
+    "item_id": "videomme:medium:569-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:062-3",
+    "video_id": "062",
+    "item_id": "videomme:short:062-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:062-3",
+    "video_id": "062",
+    "item_id": "videomme:short:062-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:066-3",
+    "video_id": "066",
+    "item_id": "videomme:short:066-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:066-3",
+    "video_id": "066",
+    "item_id": "videomme:short:066-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:070-3",
+    "video_id": "070",
+    "item_id": "videomme:short:070-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:070-3",
+    "video_id": "070",
+    "item_id": "videomme:short:070-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:074-3",
+    "video_id": "074",
+    "item_id": "videomme:short:074-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:074-3",
+    "video_id": "074",
+    "item_id": "videomme:short:074-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:126-1",
+    "video_id": "126",
+    "item_id": "videomme:short:126-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:126-1",
+    "video_id": "126",
+    "item_id": "videomme:short:126-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:136-3",
+    "video_id": "136",
+    "item_id": "videomme:short:136-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:136-3",
+    "video_id": "136",
+    "item_id": "videomme:short:136-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:267-2",
+    "video_id": "267",
+    "item_id": "videomme:short:267-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:267-2",
+    "video_id": "267",
+    "item_id": "videomme:short:267-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:280-3",
+    "video_id": "280",
+    "item_id": "videomme:short:280-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:280-3",
+    "video_id": "280",
+    "item_id": "videomme:short:280-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:293-1",
+    "video_id": "293",
+    "item_id": "videomme:short:293-2",
+    "q_index": 1,
+    "reason": "per_query_reset",
+    "threshold": null
+  },
+  {
+    "seed_item_id": "videomme:short:293-1",
+    "video_id": "293",
+    "item_id": "videomme:short:293-3",
+    "q_index": 2,
+    "reason": "per_query_reset",
+    "threshold": null
+  }
+]

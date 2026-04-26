@@ -138,7 +138,44 @@
         }
       },
       "auto_commit": "committed"
+    },
+    {
+      "phase": "1.30AC",
+      "runtime_estimate": "~5-6 h with 1.30W cold reuse",
+      "rationale": "Force cache invalidation between follow-up queries so the follow-up vision tower actually fires, turning the 1.30 lane into a true follow-up-pruning mechanism experiment.",
+      "ready": true,
+      "timeout_seconds": 25200,
+      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_30AC_cache_invalidated_followups",
+      "command": [
+        "bash",
+        "/Users/jfb/s/codec-through/scripts/run_phase1_30AC_cache_invalidated_followups.sh"
+      ],
+      "status": "completed",
+      "gate": {
+        "accuracy_delta": -0.05847953216374269,
+        "accuracy_delta_ci95": [
+          -0.1286549707602339,
+          0.011695906432748537
+        ],
+        "speedup": 1.0639436559411126,
+        "parse_failures": 0,
+        "degenerates": 0,
+        "n_paired_queries": 171,
+        "n_paired_sessions": 57,
+        "pass_complete_pairing": true,
+        "pass_rescue": false,
+        "pass_format": true,
+        "follow_up_vision_pruning_active_fraction": 1.0,
+        "follow_up_all_image_tokens_reused_fraction": 0.0,
+        "follow_up_pruning_materially_active": true,
+        "pass_activation": true,
+        "mechanism_outcome": "hurtful",
+        "pass_helpful_rescue": false,
+        "evidence_hurtful": true,
+        "follow_up_mean_image_tokens_recomputed": 3200.0
+      },
+      "auto_commit": "committed"
     }
   ],
-  "updated_at": "2026-04-26T06:25:39+00:00"
+  "updated_at": "2026-04-26T10:24:04+00:00"
 }
