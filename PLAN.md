@@ -26,6 +26,9 @@ Last updated: 2026-04-26
 > `1.58` remains a larger-memory-machine experiment under the current 16 GB
 > laptop policy. See
 > [`research/experiments/2026/2026-04-26-paper-adaptive-mechanism-runbook.md`](research/experiments/2026/2026-04-26-paper-adaptive-mechanism-runbook.md).
+> Deployment baselines are staged as a separate planning lane in
+> [`research/experiments/2026/2026-04-26-deployment-baseline-plan.md`](research/experiments/2026/2026-04-26-deployment-baseline-plan.md)
+> so they do not blur the current adaptive-mechanism queue.
 >
 > Lane A / temporal-routing research strategy (now the
 > mechanism-validation backbone, not the headline) lives in:
