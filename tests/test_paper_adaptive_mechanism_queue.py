@@ -89,3 +89,67 @@ def test_gate_phase_130ad_compares_against_reference(tmp_path: Path) -> None:
     assert gate["pass_repro_delta"] is True
     assert gate["pass_repro_ci"] is True
     assert gate["pass_mechanism"] is True
+
+
+def test_phase155f_gate_profiles_pin_preregistered_values() -> None:
+    assert queue.PHASE155F_GATE_PROFILES == {
+        "1.55F-medium": {
+            "correctness_limit": 2,
+            "choice_limit": 3,
+            "q3_pathological_limit": 1,
+            "follow_up_pathological_limit": 2,
+            "max_rss_gb": 5.5,
+            "min_speedup": 15.0,
+            "strict_correctness_limit": 0,
+            "strict_choice_limit": 0,
+            "baseline_accuracy_floor": 0.40,
+        },
+        "1.55F-long": {
+            "correctness_limit": 2,
+            "choice_limit": 3,
+            "q3_pathological_limit": 1,
+            "follow_up_pathological_limit": 2,
+            "max_rss_gb": 5.5,
+            "min_speedup": 16.0,
+            "strict_correctness_limit": 0,
+            "strict_choice_limit": 0,
+            "baseline_accuracy_floor": 0.30,
+        },
+        "1.55F-32f": {
+            "correctness_limit": 2,
+            "choice_limit": 3,
+            "q3_pathological_limit": 1,
+            "follow_up_pathological_limit": 2,
+            "max_rss_gb": 6.0,
+            "min_speedup": 30.0,
+            "strict_correctness_limit": 0,
+            "strict_choice_limit": 0,
+            "baseline_accuracy_floor": 0.40,
+        },
+    }
+
+
+def test_gate_phase_155j_uses_same_class_speedup() -> None:
+    pair_metrics = {
+        "paired_correctness_diffs": 0,
+        "paired_choice_diffs": 0,
+        "pathological_follow_up_hits": 0,
+        "pathological_q3_hits": 0,
+        "speedup_follow_up_median_cold_over_session": 8.2,
+        "speedup_all_query_median_cold_over_session_follow_up": 8.5,
+        "session_follow_up_median_ms": 1000.0,
+    }
+    summary = {
+        "peak_rss_gb": 4.2,
+        "temperature": 0.1,
+        "top_p": 0.95,
+        "min_p": 0.0,
+        "baseline": {"accuracy": 0.8},
+    }
+
+    gate = queue._gate_phase_155j(pair_metrics, summary)
+
+    assert gate["pass_fidelity"] is True
+    assert gate["pass_exact_match"] is True
+    assert gate["pass_same_class_speed"] is True
+    assert gate["sampler"] == {"temperature": 0.1, "top_p": 0.95, "min_p": 0.0}

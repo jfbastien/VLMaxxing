@@ -22,7 +22,7 @@ Last updated: 2026-04-26
 > and the full `1.30AB` sweep. That closes the current `1.30AE`
 > duration-conditioned cache-reuse family and promotes adaptive C-PERSIST plus
 > `1.30AC`/`1.30AD` as the next local compute queue:
-> `1.55F-medium → 1.55F-long → 1.55F-32f → 1.30AC → 1.30AD`.
+> `1.55F-medium → 1.55F-long → 1.55F-32f → 1.55J → 1.30AC → 1.30AD`.
 > `1.58` remains a larger-memory-machine experiment under the current 16 GB
 > laptop policy. See
 > [`research/experiments/2026/2026-04-26-paper-adaptive-mechanism-runbook.md`](research/experiments/2026/2026-04-26-paper-adaptive-mechanism-runbook.md).

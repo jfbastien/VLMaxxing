@@ -54,6 +54,18 @@ that flag was the motivation for the existing per-session cache reset,
 but it operates at the session level. The new flag operates at the
 per-query level and explicitly disables the K-cache-reuse path.
 
+The wrapper also runs a one-seed smoke before the full arm unless
+`PHASE1_30AC_SKIP_SMOKE=1` is set. The smoke validator requires both
+follow-up rows to show:
+
+- `reset_cache_between_queries=true`
+- `refresh_reason=per_query_reset`
+- `prefix_hit=0`
+- `image_tokens_recomputed == image_token_count`
+- `vision_pruning_active=true`
+
+Failure on any condition aborts before the full `~5-6 h` streaming run.
+
 ## Protocol
 
 - Model: `Qwen2.5-VL-7B-Instruct-4bit`

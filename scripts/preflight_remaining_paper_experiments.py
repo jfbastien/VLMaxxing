@@ -235,6 +235,10 @@ def main() -> int:
             qwen_4bit_ready and short_ready,
             detail="adaptive post-Q2-state 32f short-bucket replication",
         ),
+        "1.55J": _status(
+            qwen_4bit_ready and short_ready,
+            detail="K=1 short-bucket sampler-variation scout",
+        ),
         "1.30AB": _status(
             qwen_4bit_ready
             and manifests["videomme_long_dev_holdout_v1"]["ready"]

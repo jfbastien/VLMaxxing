@@ -216,6 +216,8 @@ def main() -> int:
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--mode", choices=("session", "baseline", "both"), default="both")
     parser.add_argument("--temperature", type=float, default=0.0)
+    parser.add_argument("--top-p", type=float, default=1.0)
+    parser.add_argument("--min-p", type=float, default=0.0)
     parser.add_argument("--rss-guard-mb", type=int, default=0)
     args = parser.parse_args()
 
@@ -303,6 +305,8 @@ def main() -> int:
                             max_tokens=args.max_tokens,
                             prompt_cache_state=full_state,
                             temperature=args.temperature,
+                            top_p=args.top_p,
+                            min_p=args.min_p,
                         )
                         full_position_ids = compute_qwen_position_ids(
                             model=model,
@@ -435,6 +439,8 @@ def main() -> int:
                                     full_prompt_tokens=full_prompt_tokens,
                                     max_tokens=args.max_tokens,
                                     temperature=args.temperature,
+                                    top_p=args.top_p,
+                                    min_p=args.min_p,
                                 )
                                 generation_tokens = int(result["generation_tokens"])
                                 base_cache_build_ms = None
@@ -447,6 +453,8 @@ def main() -> int:
                                     max_tokens=args.max_tokens,
                                     prompt_cache_state=full_state,
                                     temperature=args.temperature,
+                                    top_p=args.top_p,
+                                    min_p=args.min_p,
                                 )
                                 generation_tokens = int(result["generation_tokens"])
                                 base_cache_build_ms = None
@@ -513,6 +521,8 @@ def main() -> int:
                                 full_prompt_tokens=full_prompt_tokens,
                                 max_tokens=args.max_tokens,
                                 temperature=args.temperature,
+                                top_p=args.top_p,
+                                min_p=args.min_p,
                             )
                             generation_tokens = int(result["generation_tokens"])
                             if q_index == 1 and args.q3_cache_source == "post_q2_repaired":
@@ -588,6 +598,8 @@ def main() -> int:
                         max_tokens=args.max_tokens,
                         prompt_cache_state=None,
                         temperature=args.temperature,
+                        top_p=args.top_p,
+                        min_p=args.min_p,
                     )
                     choice, correct = _score_answer(result["text"], item)
                     row = {
@@ -631,6 +643,9 @@ def main() -> int:
         "reprefill_k": args.reprefill_k,
         "reprefill_k_q2": args.reprefill_k_q2,
         "reprefill_k_q3": args.reprefill_k_q3,
+        "temperature": args.temperature,
+        "top_p": args.top_p,
+        "min_p": args.min_p,
         "n_clips": len(clips),
         "n_queries_per_mode": 3 * len(clips),
         "total_wall_ms": total_wall_ms,

@@ -218,6 +218,33 @@ def test_generate_qwen_tail_with_explicit_positions_supports_text_only_tail() ->
     assert result["text"] == ""
 
 
+def test_generate_qwen_tail_with_explicit_positions_accepts_sampler_args() -> None:
+    model = _FakeQwenModel()
+    processor = SimpleNamespace(tokenizer=_FakeTokenizer())
+    tail = QwenPromptSlice(
+        input_ids=mx.array([[5, 6]], dtype=mx.int32),
+        mask=mx.array([[1, 1]], dtype=mx.int32),
+        pixel_values=mx.zeros((0, 3), dtype=mx.float32),
+        image_grid_thw=mx.zeros((0, 3), dtype=mx.int32),
+        position_ids=mx.zeros((1, 3, 2), dtype=mx.int32),
+    )
+
+    result = generate_qwen_tail_with_explicit_positions(
+        model=model,
+        processor=processor,
+        prompt_cache=[],
+        tail=tail,
+        full_prompt_tokens=10,
+        max_tokens=0,
+        temperature=0.1,
+        top_p=0.95,
+        min_p=0.0,
+    )
+
+    assert model.pixel_values_seen == [None]
+    assert result["generation_tokens"] == 0
+
+
 def test_make_qwen_prefix_cache_supports_text_only_prefix() -> None:
     model = _FakeQwenModel()
     prefix = QwenPromptSlice(

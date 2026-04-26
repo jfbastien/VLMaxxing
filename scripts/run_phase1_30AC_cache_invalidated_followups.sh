@@ -22,6 +22,7 @@ RSS_GUARD_MB="${RSS_GUARD_MB:-9000}"
 OUT="${1:-research/experiments/2026/artifacts/phase1_30AC_cache_invalidated_followups}"
 REFERENCE_DIR="${REFERENCE_DIR:-research/experiments/2026/artifacts/phase1_30W_q0_dense_followup_pruned_full}"
 RERUN_COLD="${PHASE1_30AC_RERUN_COLD:-0}"
+SKIP_SMOKE="${PHASE1_30AC_SKIP_SMOKE:-0}"
 
 mkdir -p "$OUT"
 
@@ -53,6 +54,27 @@ fi
 if [[ -f "$OUT/streaming_cache_invalidated_followups.jsonl" && -f "$OUT/streaming_cache_invalidated_followups_summary.json" ]]; then
   echo "[1.30AC] reusing existing streaming arm in $OUT"
 else
+  if [[ "$SKIP_SMOKE" != "1" ]]; then
+    "$PY" scripts/run_phase1_30_sam_streaming.py \
+      --allow-dirty \
+      --stack streaming \
+      --manifest research/benchmark_manifests/videomme_dev_v1.toml \
+      --frame-count 8 \
+      --max-tokens 32 \
+      --n-seeds 1 \
+      --model-path "$MODEL_PATH" \
+      --rss-guard-mb "$RSS_GUARD_MB" \
+      --output "$OUT/smoke_cache_invalidated_followups.jsonl" \
+      --summary "$OUT/smoke_cache_invalidated_followups_summary.json" \
+      --vision-tower-layer 2 \
+      --vision-tower-keep-rate 0.50 \
+      --vision-tower-keep-rate-first-query 1.0 \
+      --vision-tower-keep-rate-follow-ups 0.50 \
+      --reset-cache-between-queries \
+      --drift-refresh-policy off
+    "$PY" scripts/validate_phase1_30ac_smoke.py \
+      --jsonl "$OUT/smoke_cache_invalidated_followups.jsonl"
+  fi
   "$PY" scripts/run_phase1_30_sam_streaming.py \
     --allow-dirty \
     --stack streaming \

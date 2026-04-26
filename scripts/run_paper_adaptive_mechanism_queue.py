@@ -29,6 +29,41 @@ QUEUE_STATUS_JSON = ARTIFACT_ROOT / "paper_adaptive_mechanism_queue_status.json"
 PHASE130W_REFERENCE_PAIR_SUMMARY = (
     ARTIFACT_ROOT / "phase1_30W_q0_dense_followup_pruned_full/pair_summary.json"
 )
+PHASE155F_GATE_PROFILES: dict[str, dict[str, float]] = {
+    "1.55F-medium": {
+        "correctness_limit": 2,
+        "choice_limit": 3,
+        "q3_pathological_limit": 1,
+        "follow_up_pathological_limit": 2,
+        "max_rss_gb": 5.5,
+        "min_speedup": 15.0,
+        "strict_correctness_limit": 0,
+        "strict_choice_limit": 0,
+        "baseline_accuracy_floor": 0.40,
+    },
+    "1.55F-long": {
+        "correctness_limit": 2,
+        "choice_limit": 3,
+        "q3_pathological_limit": 1,
+        "follow_up_pathological_limit": 2,
+        "max_rss_gb": 5.5,
+        "min_speedup": 16.0,
+        "strict_correctness_limit": 0,
+        "strict_choice_limit": 0,
+        "baseline_accuracy_floor": 0.30,
+    },
+    "1.55F-32f": {
+        "correctness_limit": 2,
+        "choice_limit": 3,
+        "q3_pathological_limit": 1,
+        "follow_up_pathological_limit": 2,
+        "max_rss_gb": 6.0,
+        "min_speedup": 30.0,
+        "strict_correctness_limit": 0,
+        "strict_choice_limit": 0,
+        "baseline_accuracy_floor": 0.40,
+    },
+}
 
 
 def _phase155_pair_metrics_path(phase: str) -> Path:
@@ -42,6 +77,7 @@ def _phase155_pair_metrics_path(phase: str) -> Path:
         "1.55F-32f": (
             ARTIFACT_ROOT / "phase1_55F_32f_short_adaptive_replication/pair_metrics_k1_n7.json"
         ),
+        "1.55J": ARTIFACT_ROOT / "phase1_55J_k1_sampler_variation/pair_metrics_k1_n7.json",
     }[phase]
 
 
@@ -54,6 +90,7 @@ def _phase155_summary_path(phase: str) -> Path:
         "1.55F-32f": (
             ARTIFACT_ROOT / "phase1_55F_32f_short_adaptive_replication/summary_k1_n7.json"
         ),
+        "1.55J": ARTIFACT_ROOT / "phase1_55J_k1_sampler_variation/summary_k1_n7.json",
     }[phase]
 
 
@@ -127,6 +164,32 @@ def _gate_phase_130ad(summary: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _gate_phase_155j(pair_metrics: dict[str, Any], summary: dict[str, Any]) -> dict[str, Any]:
+    base = _gate_phase_155(
+        pair_metrics=pair_metrics,
+        summary=summary,
+        correctness_limit=1,
+        choice_limit=2,
+        q3_pathological_limit=1,
+        follow_up_pathological_limit=1,
+        max_rss_gb=5.5,
+        strict_correctness_limit=0,
+        strict_choice_limit=0,
+    )
+    same_class_speedup = pair_metrics.get("speedup_follow_up_median_cold_over_session")
+    pass_same_class_speed = same_class_speedup is not None and float(same_class_speedup) >= 8.0
+    return {
+        **base,
+        "speedup_follow_up_median_cold_over_session": same_class_speedup,
+        "pass_same_class_speed": pass_same_class_speed,
+        "sampler": {
+            "temperature": summary.get("temperature"),
+            "top_p": summary.get("top_p"),
+            "min_p": summary.get("min_p"),
+        },
+    }
+
+
 def _steps() -> list[QueueStep]:
     return [
         QueueStep(
@@ -174,6 +237,18 @@ def _steps() -> list[QueueStep]:
             timeout_seconds=9_000,
             artifact_dir=ARTIFACT_ROOT / "phase1_55F_32f_short_adaptive_replication",
             readiness_key="1.55F-32f",
+        ),
+        QueueStep(
+            phase="1.55J",
+            runtime_estimate="~60-90 min",
+            rationale=(
+                "Run the fixed K=1 short-bucket repaired frontier under deterministic "
+                "temperature sampling so the no-drift claim is not greedy-only by default."
+            ),
+            command=("bash", str(REPO_ROOT / "scripts/run_phase1_55J_k1_sampler_variation.sh")),
+            timeout_seconds=7_800,
+            artifact_dir=ARTIFACT_ROOT / "phase1_55J_k1_sampler_variation",
+            readiness_key="1.55J",
         ),
         QueueStep(
             phase="1.30AC",
@@ -280,7 +355,7 @@ def _commit_message(step: QueueStep, record: dict[str, Any]) -> str:
             f"helpful_rescue={'PASS' if gate.get('pass_helpful_rescue') else 'FAIL'}, "
             f"mechanism_outcome={gate.get('mechanism_outcome')}."
         )
-    else:
+    elif phase == "1.30AD":
         subject = "research(1.30AD): land instrumented 1.30W rerun"
         body = (
             "Record the instrumented rerun of the landed 1.30W line so the paper can lock "
@@ -294,6 +369,23 @@ def _commit_message(step: QueueStep, record: dict[str, Any]) -> str:
             f"Repro_delta={'PASS' if gate.get('pass_repro_delta') else 'FAIL'}, "
             f"repro_ci={'PASS' if gate.get('pass_repro_ci') else 'FAIL'}, "
             f"mechanism={'PASS' if gate.get('pass_mechanism') else 'FAIL'}."
+        )
+    else:
+        subject = "research(1.55J): land k1 sampler-variation scout"
+        body = (
+            "Record the fixed K=1 short-bucket repaired frontier under deterministic "
+            "temperature sampling so the paper can distinguish greedy-only stability from "
+            "sampler-robust paired fidelity.\n"
+            f"Gate summary: correctness_diffs={gate.get('paired_correctness_diffs')}, "
+            f"choice_diffs={gate.get('paired_choice_diffs')}, "
+            f"follow_up_pathology={gate.get('pathological_follow_up_hits')}, "
+            f"q3_pathology={gate.get('pathological_q3_hits')}, "
+            "same_class_speedup="
+            f"{_format_float(gate.get('speedup_follow_up_median_cold_over_session'))}x, "
+            f"peak_rss={_format_float(gate.get('peak_rss_gb'))} GB.\n"
+            f"Fidelity={'PASS' if gate.get('pass_fidelity') else 'FAIL'}, "
+            f"exact_match={'PASS' if gate.get('pass_exact_match') else 'FAIL'}, "
+            f"same_class_speed={'PASS' if gate.get('pass_same_class_speed') else 'FAIL'}."
         )
     return f"{subject}\n\n{body}"
 
@@ -425,22 +517,24 @@ def main() -> int:
         if args.dry_run:
             record["gate"] = "pending"
         elif step.phase.startswith("1.55F-"):
+            profile = PHASE155F_GATE_PROFILES[step.phase]
             record["gate"] = _gate_phase_155(
                 pair_metrics=_load_json(_phase155_pair_metrics_path(step.phase)),
                 summary=_load_json(_phase155_summary_path(step.phase)),
-                correctness_limit=2,
-                choice_limit=3,
-                q3_pathological_limit=1,
-                follow_up_pathological_limit=2,
-                max_rss_gb=5.5 if step.phase in {"1.55F-medium", "1.55F-long"} else 6.0,
-                min_speedup=15.0
-                if step.phase == "1.55F-medium"
-                else 16.0
-                if step.phase == "1.55F-long"
-                else 30.0,
-                strict_correctness_limit=0,
-                strict_choice_limit=0,
-                baseline_accuracy_floor=0.40 if step.phase != "1.55F-long" else 0.30,
+                correctness_limit=int(profile["correctness_limit"]),
+                choice_limit=int(profile["choice_limit"]),
+                q3_pathological_limit=int(profile["q3_pathological_limit"]),
+                follow_up_pathological_limit=int(profile["follow_up_pathological_limit"]),
+                max_rss_gb=profile["max_rss_gb"],
+                min_speedup=profile["min_speedup"],
+                strict_correctness_limit=int(profile["strict_correctness_limit"]),
+                strict_choice_limit=int(profile["strict_choice_limit"]),
+                baseline_accuracy_floor=profile["baseline_accuracy_floor"],
+            )
+        elif step.phase == "1.55J":
+            record["gate"] = _gate_phase_155j(
+                pair_metrics=_load_json(_phase155_pair_metrics_path(step.phase)),
+                summary=_load_json(_phase155_summary_path(step.phase)),
             )
         elif step.phase == "1.30AC":
             record["gate"] = _gate_phase_130ac(_load_json(_phase130_pair_summary_path(step.phase)))

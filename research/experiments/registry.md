@@ -372,6 +372,28 @@ authoritative in the per-phase notes under
   runtime_estimate: not consumed
   notes: Re-running 1.30AE only makes sense if a fundamentally different policy family lands a passing rate. The current cache-reuse admission family is closed across kr_Q0 ∈ {0.67, 0.75, 0.80, 0.85, 0.90}. Future paths: 1.30AC (cache-invalidated follow-ups, prereg 39f5097), 1.30AD (instrumented 1.30W rerun, prereg 234bf3d), or an optional 1.30AB-fine at kr_Q0=0.95.
 
+- phase_id: 1.30AC
+  status: preregistered / ready-to-run (cache-invalidated follow-up pruning)
+  authoritative_note: research/experiments/2026/2026-04-25-phase-1_30AC-cache-invalidated-followups-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: pending; forces per-query cache reset so follow-up kr=0.50 actually recomputes image tokens
+  supersedes: []
+  paper_relevance: primary mechanism adjudication for the 1.30 lane
+  prereg_outcome: pending
+  runtime_estimate: ~5-6h with landed 1.30W cold-control reuse; +4-5h if cold rerun forced
+  notes: This is the first 1.30-family run that can support or falsify an actual follow-up vision-pruning mechanism claim. The wrapper runs a one-seed smoke first and aborts unless follow-up rows show prefix_hit=0, all image tokens recomputed, and vision_pruning_active=true.
+
+- phase_id: 1.30AD
+  status: preregistered / ready-to-run (instrumented 1.30W rerun)
+  authoritative_note: research/experiments/2026/2026-04-25-phase-1_30AD-instrumented-1_30W-rerun-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: pending; reruns the landed 1.30W policy with current image-token instrumentation
+  supersedes: []
+  paper_relevance: paper-locking mechanism measurement for the 1.30W reference line
+  prereg_outcome: pending
+  runtime_estimate: ~1.5-2.5h with landed 1.30W cold-control reuse; +4-5h if cold rerun forced
+  notes: Expected to reproduce the landed 1.30W delta and directly confirm that follow-up pruning activity is negligible under prompt-cache reuse. If it does not reproduce within the preregistered delta/CI bands, the 1.30W line needs an explicit reproducibility note.
+
 - phase_id: 1.31
   status: proposed
   authoritative_note: research/experiments/2026/2026-04-16-phase-1_31-failure-predictor.md
@@ -999,6 +1021,17 @@ authoritative in the per-phase notes under
   prereg_outcome: H1 EARNED (0/21 vs ≤2/21); H1' EARNED (combined picture closes at n=93 short+medium+long+32f-short with 0/93 drift); H2 EARNED (0/14 fu pathological, 0/7 Q3 pathological — long-bucket basin not triggered); H3 EARNED (11.24× ≥ 6.0×); H4 EARNED (peak_rss_gb=5.94 ≤ 7.5); H5 EARNED (baseline accuracy=0.333 ≥ 0.30 — long-bucket VideoMME on Qwen 7B-4bit is intrinsically hard, but session and baseline agree byte-identically including on the wrong rows).
   runtime_estimate: complete (~65.0 min on this laptop)
   notes: Natural next scope test after 1.55G. Uses the fixed 7-video long tranche `669,711,712,737,756,758,794`, all drawn from the existing long-manifest pool and validated against the parquet's ≥3-question rule. If H1' passes, the combined K=1 result becomes n=72 paired short+medium+long with 0 observed drift.
+
+- phase_id: 1.55J
+  status: preregistered / ready-to-run (K=1 sampler-variation scout)
+  authoritative_note: research/experiments/2026/2026-04-26-phase-1_55J-k1-sampler-variation-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: pending; fixed K=1 short-bucket replication at temperature=0.1 / top_p=0.95
+  supersedes: []
+  paper_relevance: reviewer-defense for the fixed K=1 repaired frontier; tests whether 0/n paired drift is greedy-only
+  prereg_outcome: pending
+  runtime_estimate: ~60-90min on the current laptop
+  notes: The v2 explicit-tail generator now supports sampling through the same MLX sampler family used by mlx-vlm generation. This phase should not be confused with the already-landed 1.55A sampler probes, which tested naive persistent-KV basin robustness rather than repaired K=1 selective re-prefill.
 
 - phase_id: 1.55B
   status: proposed (deferred)

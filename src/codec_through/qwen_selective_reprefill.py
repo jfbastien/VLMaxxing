@@ -16,6 +16,7 @@ from typing import Any, cast
 import mlx.core as mx
 import numpy as np
 from mlx_lm.models.cache import trim_prompt_cache
+from mlx_vlm.generate import make_sampler
 from mlx_vlm.models.cache import make_prompt_cache
 
 
@@ -330,10 +331,11 @@ def generate_qwen_tail_with_explicit_positions(
     full_prompt_tokens: int,
     max_tokens: int,
     temperature: float = 0.0,
+    top_p: float = 1.0,
+    min_p: float = 0.0,
 ) -> dict[str, Any]:
-    if temperature != 0.0:
-        raise ValueError("selective re-prefill v2 currently supports greedy decoding only")
-
+    mx.random.seed(42)
+    sampler = make_sampler(temp=temperature, top_p=top_p, min_p=min_p)
     tokenizer = processor.tokenizer if hasattr(processor, "tokenizer") else processor
     tokenizer.stopping_criteria.reset(model.config.eos_token_id)
 
@@ -348,7 +350,8 @@ def generate_qwen_tail_with_explicit_positions(
             position_ids=tail.position_ids,
         )
     )
-    next_token = mx.argmax(prefill_outputs[:, -1, :], axis=-1)
+    prefill_logprobs = prefill_outputs[:, -1, :] - mx.logsumexp(prefill_outputs[:, -1, :])
+    next_token = sampler(prefill_logprobs)
     mx.eval(next_token)
     prompt_ms = (time.perf_counter_ns() - t0) / 1_000_000
 
@@ -368,7 +371,8 @@ def generate_qwen_tail_with_explicit_positions(
                 position_ids=step_position_ids,
             )
         )
-        next_token = mx.argmax(logits[:, -1, :], axis=-1)
+        logprobs = logits[:, -1, :] - mx.logsumexp(logits[:, -1, :])
+        next_token = sampler(logprobs)
         mx.eval(next_token)
         if len(generated) % 256 == 0:
             mx.clear_cache()

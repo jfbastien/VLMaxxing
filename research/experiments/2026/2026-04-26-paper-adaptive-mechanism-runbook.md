@@ -22,8 +22,9 @@ The next batch is therefore:
 1. `1.55F-medium` — adaptive breadth
 2. `1.55F-long` — adaptive breadth
 3. `1.55F-32f` — adaptive depth
-4. `1.30AC` — true follow-up-pruning mechanism test
-5. `1.30AD` — instrumented `1.30W` rerun for paper locking
+4. `1.55J` — fixed `K=1` sampler-variation scout
+5. `1.30AC` — true follow-up-pruning mechanism test
+6. `1.30AD` — instrumented `1.30W` rerun for paper locking
 
 `1.58` remains blocked locally. The laptop still has 16 GB unified memory
 and the autonomous-run policy still caps safe runs near `9-10 GB` RSS.
@@ -60,7 +61,7 @@ Operational policy for this machine:
 
 Expected wall-clock with the default cold-reuse settings:
 
-- `~9.5–12.5 h` for the full queue
+- `~10.5–14 h` for the full queue
 - add `~4–5 h` only if you intentionally force fresh cold reruns for `1.30AC`
   or `1.30AD`
 
@@ -109,6 +110,24 @@ Interpretation:
 - FAIL means the adaptive path is more depth-sensitive than the fixed `K=1`
   path.
 
+### 1.55J
+
+Why: fixed `K=1` has the best breadth/depth evidence, but all landed K=1
+cells are greedy-decoding cells. `1.55J` reruns the original short-bucket K=1
+cell with deterministic temperature sampling so we can distinguish a robust
+paired-fidelity result from a greedy-only artifact.
+
+Expected outcome: likely PASS, but this is exactly the reviewer objection worth
+testing. If one or two paired choices move, the fixed lane remains useful but
+the paper should call the result sampler-conditioned.
+
+Interpretation:
+
+- strict PASS means fixed `K=1` short-bucket fidelity is not visibly greedy-only.
+- primary PASS with strict miss means sampler variation moves individual answers
+  but does not break the repaired-frontier claim.
+- FAIL means the fixed `K=1` breadth claim needs a sampler-conditioned caveat.
+
 ### 1.30AC
 
 Why: the existing 1.30 family never actually pruned follow-ups under cache
@@ -119,6 +138,16 @@ Expected outcome: follow-up pruning should finally become active; whether that
 helps is genuinely uncertain. My expectation is that this will be more valuable
 as a mechanism clarification than as a positive latency result, because forcing
 per-query vision passes is expensive.
+
+The wrapper runs a one-seed smoke before the full arm. That smoke hard-fails if
+follow-up rows do not show `prefix_hit=0`, all image tokens recomputed, and
+`vision_pruning_active=true`. This prevents a full run from silently repeating
+the inactive-follow-up-pruning path.
+
+Note: `vision_pruning_active=false` is correct when a follow-up keep rate is
+`1.0`; the field means "pruning actually happened," not merely "the reset flag
+fired." `1.30AC` sets follow-up keep rate to `0.50`, so active rows should be
+true.
 
 Interpretation:
 
@@ -187,6 +216,18 @@ Inspect:
 - `.../phase1_55F_32f_short_adaptive_replication/pair_metrics_k1_n7.json`
 - `.../phase1_55F_32f_short_adaptive_replication/paired_queries_k1_n7.jsonl`
 - `.../phase1_55F_32f_short_adaptive_replication/summary_k1_n7.json`
+
+### Manual `1.55J`
+
+```bash
+./scripts/run_phase1_55J_k1_sampler_variation.sh
+```
+
+Inspect:
+
+- `.../phase1_55J_k1_sampler_variation/pair_metrics_k1_n7.json`
+- `.../phase1_55J_k1_sampler_variation/paired_queries_k1_n7.jsonl`
+- `.../phase1_55J_k1_sampler_variation/summary_k1_n7.json`
 
 ### Manual `1.30AC`
 

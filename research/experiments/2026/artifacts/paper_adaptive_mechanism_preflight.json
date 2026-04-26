@@ -168,6 +168,10 @@
       "ready": true,
       "detail": "adaptive post-Q2-state 32f short-bucket replication"
     },
+    "1.55J": {
+      "ready": true,
+      "detail": "K=1 short-bucket sampler-variation scout"
+    },
     "1.30AB": {
       "ready": true,
       "detail": {
