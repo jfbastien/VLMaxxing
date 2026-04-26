@@ -35,7 +35,38 @@
         "pass_signal_floor": true
       },
       "auto_commit": "committed"
+    },
+    {
+      "phase": "1.55F-long",
+      "runtime_estimate": "~60-90 min",
+      "rationale": "Test whether the adaptive post-Q2-state policy generalizes to the same long tranche where fixed K=1 already landed cleanly.",
+      "ready": true,
+      "timeout_seconds": 7800,
+      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_55F_long_adaptive_replication",
+      "command": [
+        "bash",
+        "/Users/jfb/s/codec-through/scripts/run_phase1_55F_long_adaptive_replication.sh"
+      ],
+      "status": "completed",
+      "gate": {
+        "paired_correctness_diffs": 0,
+        "paired_choice_diffs": 0,
+        "pathological_follow_up_hits": 0,
+        "pathological_q3_hits": 0,
+        "speedup_all_query_median_cold_over_session_follow_up": 22.825228137479222,
+        "session_follow_up_median_ms": 3741.4077705,
+        "peak_rss_gb": 6.048350208,
+        "baseline_accuracy": 0.3333333333333333,
+        "pass_fidelity": true,
+        "pass_exact_match": true,
+        "pass_follow_up_pathology": true,
+        "pass_q3_pathology": true,
+        "pass_speed": true,
+        "pass_memory": false,
+        "pass_signal_floor": true
+      },
+      "auto_commit": "committed"
     }
   ],
-  "updated_at": "2026-04-26T02:37:51+00:00"
+  "updated_at": "2026-04-26T03:46:12+00:00"
 }
