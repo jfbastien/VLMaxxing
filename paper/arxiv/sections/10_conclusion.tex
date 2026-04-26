@@ -1,31 +1,44 @@
 \section{Conclusion}
 
-This paper argues for anti-recomputation, not for one particular trick. Fresh
-videos admit modest but measured first-pass gains, and those gains obey a
-share-limited ceiling that now binds on both Gemma headline cells and a
-matched Qwen cross-architecture probe. Same-video follow-up queries admit much
-larger multipliers, already reaching sub-second latency on the local stack, and
-selective re-prefill now repairs the deeper cache-reuse basin: fixed \(K=1\)
-gives no observed paired drift across 93 paired queries at 9.48--20.37$\times$
-follow-up speedup, while the adaptive post-\(Q2\) state policy reaches
-24.76$\times$ on the short slice. Streaming deployments push the same idea
-further into operational regimes with double-digit to \mbox{$\sim$50$\times$}
-savings. The routing and drift results explain why the bars differ so much:
-fresh-compute placement over time matters more than novelty magnitude alone,
+The paper began with a small absurdity: much of the video did not change, and
+the model paid anyway. The measured answer is not one single multiplier. Fresh
+videos admit modest but real first-pass gains, and those gains obey a
+share-limited ceiling that explains the regime and binds cleanly on the core
+ceiling checks, including the matched Qwen cross-architecture probe. Same-video
+follow-up queries admit much larger multipliers, already reaching sub-second latency on the local stack, and
+selective re-prefill repairs the deeper cache-reuse basin: fixed \(K=1\) gives
+no observed paired drift across 93 paired queries at 9.48--20.37$\times$
+same-class follow-up speedup, while the adaptive post-\(Q2\) state policy
+reaches 24.76$\times$ same-class speedup on the short slice. Separate
+operational rows push the same idea further into streaming regimes with
+4.2--4.5$\times$ real-video end-to-end speedups, double-digit ViT-call and
+follow-up-latency reductions, and \mbox{$\sim$50$\times$} dominant measured
+subpipeline savings.
+
+The scientific value is in the boundaries as much as in the wins.
+Fresh-compute placement over time cannot be reduced to novelty magnitude alone,
 aggregate accuracy can hide answer-identity drift, and semantic substitution
 must not be confused with measured sparse execution.
 
 What remains is a measured sparse backend, broader benchmark coverage on the
 second architecture, cleaner systems baselines, adaptive selective-reprefill
-breadth, and a Qwen session bridge that either invalidates follow-up cache state
-or directly explains why that state drifts. The n=60 composition null and the
-1.30 long-bucket sweep already answered the easiest bad question: the gains do
-not multiply naively. The useful question now is where each ceiling moves in
-the architectures and deployment protocols people actually care about.
+breadth, and a cache-invalidated follow-up test that directly explains why
+reused prompt-cache state drifts. The n=60 composition null and the
+long-bucket admission sweep already answered the easiest bad question: the
+gains do not multiply naively. The useful question now is where each ceiling
+moves in the architectures and deployment protocols people actually care about.
+
+It also leaves a larger media agenda. The current paper is not an AI-native
+codec and does not claim one. It shows why that direction is worth studying:
+VLMs should not have to reverse-engineer every repeated frame back into state.
+Future media streams for machines could expose change, motion, uncertainty,
+objects, text, sensor time, and active tiles directly. Anti-recomputation is
+one empirical step from video-as-frames toward video-as-world-state updates.
 
 \begin{sectiontodo}{Shorten this once the venue template and abstract freeze}
-The conclusion now has the right scientific center. The final pass should make
-it tighter, not louder.
+The conclusion now carries both the measured paper and the larger
+VLM-native-media agenda. The final pass should make it tighter, not louder, and
+must keep the future-codec language clearly separated from current evidence.
 
 \textcolor{todoBorder}{Source pointers: \path{paper/priority.md},
 \path{paper/claim-matrix.md},

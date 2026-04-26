@@ -1,22 +1,21 @@
 \section{Streaming and Deployment Evidence}
 
 The most dramatic gains appear when the model keeps revisiting nearly the same
-visual state. Deployment-scale evaluations on a larger Gemma 4 26B stack
-report 0.8\,s median same-video follow-up latency at 10--18$\times$ speedup,
-paired Streaming VideoMME results with 13$\times$ fewer ViT calls and
-\mbox{$\sim$50$\times$} less dominant-pipeline compute, and selected
-real-video regimes with 4.2--4.5$\times$ end-to-end speedups. These are
-companion measurements, not local headline rows. A separate imported companion
-exactness result reports byte-identical Qwen outputs across what the companion
-whitepaper reports as 1,937 sparse benchmark items under a separate
-sparse-sampled QA protocol when unchanged regions are reused instead of being
-re-encoded. Live-camera measurements then report the same regime dependence in
-the wild: ViT savings
-range from 5$\times$ to 300$\times$ with scene activity, and the post-fix RTSP
-demo still reduces ViT calls by 14.3$\times$ over an active 60\,s window. This
-is the operational regime where the thesis matters most.
-That exactness row is not a live-decode streaming cell; it is a separate
-sparse-QA protocol and stays labeled that way in the paper.
+visual state. A separate Gemma 4 26B streaming implementation reports 0.8\,s
+median same-video follow-up latency at 10--18$\times$ speedup, paired Streaming
+VideoMME results with 13$\times$ fewer ViT calls and
+\mbox{$\sim$50$\times$} less dominant measured subpipeline compute, and selected
+real-video regimes with 4.2--4.5$\times$ end-to-end speedups. Reported
+live-camera measurements show the same regime dependence in the wild: ViT savings range
+from 5$\times$ to 300$\times$ with scene activity, and the post-fix RTSP demo
+reduces ViT calls by 14.3$\times$ over one active 60\,s window.
+
+These rows are not local headline cells. They use a different model, machine,
+and protocol, and they are included because they show the scale of the
+operational regime where a stable scene is queried repeatedly. The right claim
+is that they are consistent with the anti-recomputation structure measured
+locally, not that they can be multiplied into the local C-VISION or C-PERSIST
+numbers.
 
 Smaller-$N$ UI studies stay strictly illustrative, not headline-bearing. The
 sectional-scroll case studies remain explicitly weaker than the paired
@@ -26,11 +25,11 @@ section is the deployment table below.
 
 \begin{table}[H]
 \centering
-\caption{Deployment-scale evidence for the streaming regime. Metric type is
-shown explicitly because these companion rows mix component counters,
-end-to-end timing, live observations, and semantic exactness. Smaller UI and
-demo case studies are discussed in text and kept clearly weaker than the
-paired streaming rows below.}
+\caption{Heterogeneous operational evidence for the streaming/deployment
+regime. Metric type is shown explicitly because these rows mix component
+counters, end-to-end timing, and live observations. Smaller UI and demo case
+studies are discussed in text and kept clearly weaker than the paired
+streaming rows below.}
 \label{tab:real-apps}
 \footnotesize
 \renewcommand{\arraystretch}{1.08}
@@ -43,28 +42,27 @@ paired streaming rows below.}
 \toprule
 Setting & Metric type & Outcome & Evidence class \\
 \midrule
-Streaming VideoMME (Gemma 26B) & component counter + accuracy & 13$\times$ fewer ViT calls; $\sim$50$\times$ less dominant-pipeline compute; paired N=60 results: 58.3/60.0/61.7\% (stream/token-prune/dense), all within the reported $\pm$12 pp 95\% CI & deployment-scale stream benchmark \\
-Real-video paired regimes (Gemma 26B) & end-to-end timing & 4.2--4.5$\times$ end-to-end speedup on talking-head and surveillance-style real-video measurements & deployment-scale real-video benchmark \\
-Gemma 26B same-video follow-up & follow-up latency & 0.8\,s median follow-up; 10--18$\times$ faster than cold prefill; no accuracy loss & deployment-scale follow-up benchmark \\
-Live-camera pipeline & live component counter & 5--300$\times$ fewer ViT calls with scene activity; 14.3$\times$ on one active 60\,s RTSP window; 45 fps perception throughput on one M5 Max report & live deployment measurement \\
-Exact Qwen caching benchmark & semantic exactness & reported byte-identical Qwen outputs on what the companion whitepaper reports as 1,937 sparse benchmark items under a separate sparse-QA protocol & imported companion exactness \\
+Streaming VideoMME (Gemma 26B) & component counter + accuracy & reported paired N=60: 13$\times$ fewer ViT calls; $\sim$50$\times$ less dominant measured subpipeline compute; 58.3/60.0/61.7\% (stream/token-prune/dense), all within the reported $\pm$12 pp 95\% CI & imported deployment-scale stream benchmark \\
+Real-video paired regimes (Gemma 26B) & end-to-end timing & reported 4.2--4.5$\times$ end-to-end speedup on talking-head and surveillance-style real-video measurements & imported deployment-scale real-video benchmark \\
+Gemma 26B same-video follow-up & follow-up latency & reported N=20 VideoMME follow-up subset: 0.8\,s median follow-up; 10--18$\times$ faster than cold prefill; aggregate accuracy 65.0\% with and without KV reuse & imported deployment-scale follow-up benchmark \\
+Live-camera pipeline & live component counter & reported single-system counters: 14.3$\times$ fewer ViT calls on one active 60\,s RTSP window (701 decoded frames / 49 ViT calls); broader 5--300$\times$ scene-dependent range remains imported live-counter evidence & imported live deployment measurement \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-The local Qwen bridge does not yet reproduce the companion Gemma deployment
-story as a fidelity-preserving stack. The original stacked run reproduced the
-speedup side but failed the accuracy budget. The dense-first-query admission
-successor restores first-query aggregate correctness and leaves a
-follow-up-only near-miss, but it also shows why the claim boundary must stay
-strict. The long-bucket
-continuations now measure follow-up image-token activity directly and find
-none: all follow-up image tokens are cache-served under the current prompt-cache
-path, and every tested long-Q0 keep rate misses the rescue band. That lane is
-therefore dense-first-query admission plus K-cache reuse rather than proof of
-active follow-up vision pruning. That is why
-Table~\ref{tab:real-apps} stays labeled as deployment-scale companion evidence
-rather than being folded into the local C-VISION or C-PERSIST headline rows.
+The Qwen composition experiments do not yet reproduce this operational story as
+a fidelity-preserving stack. The original stacked run reproduced the speedup
+side but failed the accuracy budget. The dense-first-query admission successor
+restores first-query aggregate correctness and leaves a follow-up-only
+near-miss, but it also shows why the claim boundary must stay strict. The
+long-bucket continuations now measure follow-up image-token activity directly
+and find none: all follow-up image tokens are cache-served under the current
+prompt-cache path, and every tested long-Q0 keep rate misses the target
+fidelity/speed band.
+That lane is therefore dense-first-query admission plus K-cache reuse rather
+than proof of active follow-up vision pruning. That is why
+Table~\ref{tab:real-apps} is operational evidence rather than part of the local
+C-VISION or C-PERSIST headline rows.
 
 \begin{figure}[H]
   \centering
@@ -76,26 +74,26 @@ rather than being folded into the local C-VISION or C-PERSIST headline rows.
   \caption{Representative imagery from the post-fix RTSP demo. These snapshots
   are qualitative only; they illustrate an active-scene live deployment, but
   the quantitative deployment claims in Table~\ref{tab:real-apps} come from the
-  paired streaming, real-video, live-camera, and exactness measurements rather
-  than from this contact sheet.}
+  paired streaming, real-video, and live-camera measurements rather than from
+  this contact sheet.}
   \label{fig:streaming-contact-sheet}
 \end{figure}
 
 The current streaming evidence does not yet close a full systems-reviewer
 checklist. The paper still lacks the screenshot-polling baseline, broader UI
-diversity, and a dedicated event-detection benchmark. What it already shows is
-that the same anti-recomputation principle survives outside sparse benchmark
-slices and into the regime where users actually keep asking the same system
-about nearly the same scene.
+diversity, and a dedicated event-detection benchmark. What it already suggests
+is that the same anti-recomputation principle can appear outside sparse
+benchmark slices, in the regime where users keep asking the same system about
+nearly the same scene.
 
-\begin{sectiontodo}{Keep the Sam lane sharp and reviewer-safe}
+\begin{sectiontodo}{Keep operational evidence reviewer-safe}
 The next useful additions are a screenshot-polling baseline, a wider UI set,
 and one concrete failure case where stale-cache decisions break trust. Keep the
 section tied to the deployment-scale evidence above. Smaller UI claims such as
 sectional scroll, threshold tuning, or affine-axis mechanism variants should
 stay appendix-weighted until their evidence is cleaned up further.
 
-\textcolor{todoBorder}{Source pointers: \path{codec-through-sam/paper/publishability-status.md},
-\path{codec-through-sam/live_demo_v2_writeup.md},
-\path{codec-through-sam/diagrams/live_demo_v2/}.}
+\textcolor{todoBorder}{Remaining work: add a screenshot-polling baseline,
+broaden UI coverage, and include one stale-cache failure case before making
+the streaming/deployment lane carry more of the headline.}
 \end{sectiontodo}

@@ -25,16 +25,16 @@ note:
 - **Qwen routing**: mechanism and boundary evidence showing why placement of
   fresh computation matters more than novelty magnitude alone.
 
-Sam's streaming lane is not decorative support. It is deployment-scale evidence
-for the same anti-recomputation thesis. Its benchmarking style is different, so
-the manuscript should label those results as deployment-scale or case-study
-evidence rather than flattening them into the same table cell as the local
-Gemma holdouts.
+The separate 26B streaming lane is not decorative support. It is
+deployment-scale operational evidence for the same anti-recomputation thesis.
+Its benchmarking style is different, so the manuscript should label those
+results as supplementary deployment or case-study evidence rather than
+flattening them into the same table cell as the local Gemma holdouts.
 
 ## One paper, multiple evidence regimes
 
-**The goal is one results paper, co-authored with Sam, that advances
-the anti-recomputation evidence across three independent axes.** Codex rounds 25–26 retired the
+**The goal is one results paper that advances the anti-recomputation evidence
+across three independent axes.** Codex rounds 25–26 retired the
 earlier "one big multiplicative number via claim 11" framing: the
 paper spine is now three already-earned, independently-evaluable
 contributions (all landed before Codex round-26 2026-04-21):
@@ -45,17 +45,18 @@ contributions (all landed before Codex round-26 2026-04-21):
   smoke + Stage 7 short × gemma_structural × kr=0.33) at median
   2.1% / worst 5.2% prediction error. A standalone analytical
   contribution independent of any specific SOTA arm.
-- **C-PERSIST — persistent-KV safe-deployment envelope** (claim 14).
+- **C-PERSIST — persistent-KV tested deployment envelope** (claim 14).
   6-point speedup curve (47×→91×→70×→94×→122×→150× at 8/16/18/20/24/32f
   on Qwen 7B-4bit) + 3-point cross-arch scaling on Qwen 3B-4bit +
   4-regime temperature matrix. Mechanism decomposes into three
   independently-varying axes (threshold onset × basin-onset depth ×
-  basin geometry), with an approximate 1.6× basin-onset-depth relation
-  across architectures. Deployment-facing envelope: 7B stays inside the
-  safe region through 16f / ~6.5k prefill, with a clean 16f point and a
-  slightly worse but still safe 8f point; 3B stays inside the bounded
-  region through 36f / ~14.5k prefill at a tolerated Δacc=−0.19 plateau
-  (not clean). Phase 1.55D/G/I/H now make recovery local evidence rather
+  basin geometry). The current onset evidence is bracketed rather than a clean
+  scaling law: 7B enters the basin by roughly 20f / 8.1k prefill tokens, while
+  3B is bracketed to (36f, 40f] / 14.5k--16.1k. Deployment-facing envelope:
+  7B stays inside the tested region through 16f / ~6.5k prefill, with a clean
+  16f point and a slightly worse but still tolerated 8f point; 3B stays inside
+  the bounded region through 36f / ~14.5k prefill at a tolerated Δacc=−0.19
+  plateau (not clean). Phase 1.55D/G/I/H now make recovery local evidence rather
   than a hypothesis: fixed K=1 selective re-prefill shows no observed paired
   drift on n=93 across 20f short/medium/long plus 32f short at
   9.48×–20.37× same-class median follow-up speedup. Phase 1.55F adds the
@@ -91,16 +92,17 @@ TOMATO + MVBench) is the negative-result discipline lane: it shows
 what works and what does not, and it belongs in the paper as mechanism
 and boundary evidence rather than as the headline result.
 
-**Sam as deployment-scale evidence (NOT applications/support).**
-The Sam stack (26B-class, real streaming, full end-to-end pipeline)
+**Separate streaming work as deployment-scale evidence (NOT applications/support).**
+The separate stack (26B-class, real streaming, full end-to-end pipeline)
 runs on a deliberately disjoint regime from codec-through (4B-class,
 sparse benchmark, mechanism isolation): 4.2–4.5× real-video, 13× ViT,
-~50× dominant-pipeline, 0.8 s median follow-up, 5–300× live-camera ViT.
+~50× dominant measured subpipeline, 0.8 s median follow-up, 5–300×
+live-camera ViT.
 Its sparse exactness rows and streaming rows do not use one uniform
 classifier: sparse-sampled QA stays pixel-diff by design, while native-rate
 streaming uses H.264 metadata by design.
 Shared frame with codec-through: C-CEILING arithmetic + attention-
-propagation drift (NOT PE drift). Paper claims are the **evidence
+propagation drift (NOT PE drift). Paper claims are the **labeled evidence
 union** across both repos with regime labels attached. Weak streaming
 case-study claims without paired baselines stay appendix-bound.
 
@@ -118,7 +120,7 @@ narrative.
 
 > **Training-free anti-recomputation for video VLMs: measured first-pass
 > speedups on Gemma, sub-second same-video follow-up queries on Qwen, and
-> routing evidence showing that fresh-compute placement matters more than
+> routing evidence showing that fresh-compute placement cannot be reduced to
 > novelty magnitude.**
 
 **Concrete headline cells today:**
@@ -130,29 +132,30 @@ narrative.
   `L=2`, `kr_V=0.50` lands **1.044×** observed vs **1.043×** predicted, with
   `V_red = 0.398` and aggregate `Δacc = −0.033`.
 - **Qwen persistent-KV:** **47.2×** speedup and **815 ms** median follow-up at
-  8f, rising to **91.1×** and **807 ms** at 16f inside the safe envelope
+  8f, rising to **91.1×** and **807 ms** at 16f inside the tested envelope
   (16f clean; 8f slightly worse but still inside the criterion).
-- **Sam deployment-scale evidence:** **13×** streaming ViT reduction,
-  **~50×** dominant-pipeline reduction, **4.2–4.5×** real-video end-to-end
+- **Separate 26B streaming evidence:** **13×** streaming ViT reduction,
+  **~50×** dominant measured subpipeline reduction, **4.2–4.5×** real-video end-to-end
   speedups in selected regimes, and **0.8 s** same-video follow-up latency on
   Gemma 4 26B.
-- **Qwen routing:** clean-tree Pareto win/tie on MVBench and TOMATO holdouts
+- **Qwen routing:** audited Pareto win/tie on MVBench and TOMATO holdouts
   at much lower effective fresh-frame budgets, with the mechanism lesson that
-  fresh-compute placement matters more than novelty magnitude alone.
+  fresh-compute placement cannot be reduced to novelty magnitude alone.
 
-**Secondary — C-PERSIST (persistent-KV safe-deployment envelope):**
+**Secondary — C-PERSIST (persistent-KV tested deployment envelope):**
 
 > **Persistent KV-cache follow-up queries on Qwen 2.5-VL (MLX) deliver
 > 47×→150× speedups along an 8/16/18/20/24/32-frame curve on 7B-4bit
 > (prefill-dominated) and 136×→213× on 3B-4bit (decode-dominated).
-> Safe deployment envelope is architecture-specific: 7B stays inside the
-> safe regime through 16f / ~6.5k prefill, with a clean 16f point and a
-> slightly worse but still safe 8f point; 3B stays inside the bounded
+> Tested deployment envelope is architecture-specific: 7B stays inside the
+> tested regime through 16f / ~6.5k prefill, with a clean 16f point and a
+> slightly worse but still tolerated 8f point; 3B stays inside the bounded
 > regime through 36f / ~14.5k prefill on a tolerated Δacc=−0.19 plateau
 > (not clean). Fidelity degradation
 > decomposes into three independently-varying axes (threshold onset,
-> basin-onset depth, basin geometry), with a ~1.6× basin-onset depth
-> scaling across architectures. Sampler-side recovery is not uniform:
+> basin-onset depth, basin geometry). Basin onset is bracketed rather than a
+> clean ratio: 7B by ~20f/~8.1k tokens; 3B in (36f, 40f] / 14.5k--16.1k.
+> Sampler-side recovery is not uniform:
 > 7B basin behavior is sampler-resistant in the tested regimes, while
 > 3B basin behavior can disperse only back to its pre-basin plateau.**
 
@@ -193,7 +196,7 @@ What we CANNOT yet honestly say in HN-headline form:
 
 **Honest one-liner for reviewers:** "matched-accuracy Pareto win at
 reduced fresh-frame budget on two temporal-reasoning benchmarks at
-N=30 holdout, clean-tree provenance; projected compute-savings ceiling
+N=30 holdout, audited artifact provenance; projected compute-savings ceiling
 +22% end-to-end pending sparse-execution implementation."
 
 ## Publishable claim inventory (with concrete numbers)
@@ -278,7 +281,7 @@ runnable tonight vs. impl-gated.
 | should-do #4 | Local paired streaming-protocol reproduction (1.30) + root-cause decomposition | CLOSED-BOUNDARY 2026-04-26 for current policy | Qwen 2.5-VL-7B-Instruct-4bit (driver hard-fails on non-Qwen at `run_phase1_30_sam_streaming.py:303-308`) | 1.30W remains the best landed bridge: paired cold 0.561 / streaming 0.503 (Δacc = −0.0585) / 2.7869× with aggregate Q0 parity and clean format, but still below the `3.0×` rescue floor. 1.30X's Δacc=0.0 / 3.078× point is oracle-only. 1.30Z/AB falsify every tested long-Q0 keep rate from 0.67 through 0.90; high keep rates restore aggregate Q0 accuracy but still lose follow-ups by ~19pp. Instrumentation proves follow-up vision pruning is inactive in this family (`vision_pruning_active_fraction=0.0`, all follow-up image tokens cache-served); describe it as Q0 admission + K-cache reuse. |
 | should-do #5 | **1.55 selective re-prefill frontier** (recover Δacc at 20f/32f while clawing back speed) | Adaptive breadth pending: ~70 min medium, ~60-90 min long, ~70-90 min 32f | Qwen 2.5-VL-7B-4bit | **Fixed K=1 now has broad local evidence** — no observed paired drift on n=93 across 20f short/medium/long plus 32f short (one-sided rule-of-three upper bound ≈3.2%), 9.48×–20.37× same-class median follow-up speedup, and 0/62 pathological follow-up outputs. **Adaptive post-Q2-state reuse is the strongest single cell** — 1.55F lands 0/21 paired drift at 24.76× same-class speedup and 1.44 GB peak RSS. The first adaptive omission follow-up, **1.55E (`Q2=K1`, `Q3=K0`)**, remains the bounded negative that proves cache-source inheritance is the mechanism. **1.55B** remains the separate persistent-KV × 1.54 composition phase. |
 | should-do #6 | **1.58 bf16 KV control at 20f** (discriminate quantization vs attention-OOD) | ~3.5-4 h (bf16 8f n=30 + bf16 16f n=30) | Qwen 2.5-VL-7B bf16 | **wrapper-landed; preflight still blocks execution** — `scripts/run_phase1_58_bf16_control.sh` + analyzer landed, but the local bf16 checkpoint is absent and the current 16 GB laptop plan caps autonomous runs near `10 GB` RSS, well below the prereg's looser `<14 GB` feasibility band |
-| should-do #8 | **1.29 codec-native bridge (reframed)** | landed semantically; slow offline extraction | Qwen 2.5-VL-7B-4bit | **planner-substitution evidence landed** — MAX-over-span sparse sampling is HARD-FALSIFIED, while the continuous-score redesign reaches codec-dense agreement 1.000 on VideoMME dev all-duration n=30 with no accuracy loss and zero parse failures. Later calibration-mode and calibration-source ablations are neutral on the local slices we ran. This is not a latency claim: offline codec extraction totals 7290s; the remaining gate is streaming decoder integration / native-rate systems evaluation. |
+| should-do #8 | **1.29 codec-native bridge (reframed)** | landed semantically; slow offline extraction | Qwen 2.5-VL-7B-4bit | **planner-substitution evidence landed** — MAX-over-span sparse sampling is HARD-FALSIFIED, while the continuous-score redesign reaches codec-dense agreement 1.000 on VideoMME dev all-duration n=30 with zero aggregate accuracy delta and zero parse failures. Later calibration-mode and calibration-source ablations are neutral on the local slices we ran. This is not a latency claim: offline codec extraction totals 7290s; the remaining gate is streaming decoder integration / native-rate systems evaluation. |
 | future | **1.60 scroll/pan subset** (20 items stratified by scroll intensity, L=2 kr=0.50 paired) | n/a on VideoMME; ~70-90 min after a real subset exists | Gemma 4-E4B-4bit or matched C-VISION stack | **closed as natural-VideoMME corpus limitation** — wider 60-item VideoMME scan found 0/60 items above `shifted_fraction >= 0.30` (max 0.125), so this only reopens with EgoSchema/EPIC-Kitchens/Ego4D or a labeled synthetic scroll/pan set |
 | diagnostic | **Qwen 8f holdout `videomme_holdout_v1.toml` n=30** (parallel to already-done 16f holdout) | ~8 min (cold) | Qwen 2.5-VL-7B-4bit | **runnable-now** — driver exists, manifest exists |
 | split-landed | 1.42 Gemma topology lane | complete on the preregistered N=30 pair | Gemma 4-E4B-4bit | landed 2026-04-24: TOMATO pass (`agreement=0.933`, `dense_acc=cached_acc=0.267`), MVBench strict-agreement fail (`agreement=0.733`, `dense_acc=cached_acc=0.200`); further work is interpretation or third-architecture breadth, not implementation |
@@ -323,9 +326,9 @@ queue once infra is in place.
 > Routing holdouts on TOMATO and MVBench then show the mechanism
 > boundary: a bounded-staleness planner preserves the quality-compute
 > frontier, beats novelty-ranked dense selection, and shows that
-> fresh-compute placement matters more than novelty magnitude alone.
+> fresh-compute placement cannot be reduced to novelty magnitude alone.
 > Deployment-scale streaming evaluations add **13×** ViT reduction,
-> **~50×** dominant-pipeline reduction, **4.2–4.5×** end-to-end
+> **~50×** dominant measured subpipeline reduction, **4.2–4.5×** end-to-end
 > speedups in selected real-video regimes, and **0.8 s** same-video
 > follow-up latency on Gemma 4 26B.
 
@@ -567,7 +570,7 @@ items that priority.md does not carry. For the current ordering see
    ablations are neutral on the local slices we ran. The remaining paper risk
    is deployment integration, not medium/long semantic survival or calibration
    dependence.
-9. ~~**Paper figures: C-PERSIST safe-budget table + V_share ceiling
+9. ~~**Paper figures: C-PERSIST tested-envelope table + V_share ceiling
    plot**~~ — **LANDED 2026-04-21 (autonomous session, task #161).**
    Scripts `scripts/plot_c_persist_safe_budget.py` +
    `scripts/plot_v_share_v_red_ceiling.py`; artifacts

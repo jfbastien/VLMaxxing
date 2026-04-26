@@ -6,7 +6,7 @@
       "speedup_x": 47.23,
       "delta_acc": -0.048,
       "basin_session_share": "0/14 non-letter",
-      "safe_deploy": true
+      "accepted_envelope": true
     },
     {
       "frame_count": 16,
@@ -14,7 +14,7 @@
       "speedup_x": 91.06,
       "delta_acc": 0.0,
       "basin_session_share": "0/14 non-letter",
-      "safe_deploy": true
+      "accepted_envelope": true
     },
     {
       "frame_count": 18,
@@ -22,7 +22,7 @@
       "speedup_x": 70.28,
       "delta_acc": -0.238,
       "basin_session_share": "7/14 non-letter (4-basin)",
-      "safe_deploy": false
+      "accepted_envelope": false
     },
     {
       "frame_count": 20,
@@ -30,7 +30,7 @@
       "speedup_x": 94.42,
       "delta_acc": -0.381,
       "basin_session_share": "13/14 non-letter (addCriterion)",
-      "safe_deploy": false
+      "accepted_envelope": false
     },
     {
       "frame_count": 24,
@@ -38,7 +38,7 @@
       "speedup_x": 121.58,
       "delta_acc": -0.429,
       "basin_session_share": "14/14 non-letter (saturated)",
-      "safe_deploy": false
+      "accepted_envelope": false
     },
     {
       "frame_count": 32,
@@ -46,7 +46,7 @@
       "speedup_x": 149.88,
       "delta_acc": -0.429,
       "basin_session_share": "14/14 non-letter (saturated)",
-      "safe_deploy": false
+      "accepted_envelope": false
     },
     {
       "frame_count": 40,
@@ -54,7 +54,7 @@
       "speedup_x": 157.6,
       "delta_acc": -0.476,
       "basin_session_share": "13/14 non-letter (addCriterion)",
-      "safe_deploy": false
+      "accepted_envelope": false
     }
   ],
   "three_b": [
@@ -64,7 +64,7 @@
       "speedup_x": 136.07,
       "delta_acc": -0.048,
       "basin_session_share": "0/14 non-letter",
-      "safe_deploy": true
+      "accepted_envelope": true
     },
     {
       "frame_count": 24,
@@ -72,7 +72,7 @@
       "speedup_x": 154.0,
       "delta_acc": -0.19,
       "basin_session_share": "0/14 non-letter (plateau)",
-      "safe_deploy": true
+      "accepted_envelope": true
     },
     {
       "frame_count": 32,
@@ -80,7 +80,7 @@
       "speedup_x": 213.0,
       "delta_acc": -0.19,
       "basin_session_share": "0/14 non-letter (plateau)",
-      "safe_deploy": true
+      "accepted_envelope": true
     },
     {
       "frame_count": 36,
@@ -88,7 +88,7 @@
       "speedup_x": 215.2,
       "delta_acc": -0.19,
       "basin_session_share": "0/14 non-letter (plateau)",
-      "safe_deploy": true
+      "accepted_envelope": true
     },
     {
       "frame_count": 40,
@@ -96,14 +96,14 @@
       "speedup_x": 191.0,
       "delta_acc": -0.238,
       "basin_session_share": "4/14 non-letter (basin onset)",
-      "safe_deploy": false
+      "accepted_envelope": false
     }
   ],
   "thresholds": {
-    "seven_b_safe_frames": 16,
-    "seven_b_safe_prefill_tokens": 6500,
-    "three_b_safe_frames": 36,
-    "three_b_safe_prefill_tokens": 14500,
+    "seven_b_accepted_frames": 16,
+    "seven_b_accepted_prefill_tokens": 6500,
+    "three_b_tolerated_frames": 36,
+    "three_b_tolerated_prefill_tokens": 14500,
     "onset_depth_scaling_ratio": 1.79
   }
 }

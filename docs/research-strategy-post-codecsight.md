@@ -423,6 +423,29 @@ H2: MV-magnitude-based planner correlates with our pixel-diff
   video. UCF-Crime adapts but is a different domain. Defer unless
   Track B ships first.
 
+## Future requirements clusters
+
+These are not current evidence. They are the research clusters that the
+anti-recomputation results motivate and that the paper may discuss as future
+work.
+
+- **Machine-first codec design**: use current failures as requirements for
+  future media interfaces. Candidate experiments: motion-model-conditioned
+  routing, object/state sidecar toy data, event-assisted refresh, and tile
+  granularity / projector-group studies. Output should be a requirements table
+  before any claim of a new codec.
+- **World-state / sensor-fusion sidecars**: treat video as one layer in a
+  synchronized state-update stream carrying RGB, depth/ToF, event activity,
+  IMU/odometry, object tracks, camera pose, timestamps, and confidence.
+  Prototype as router-only synthetic sidecars first.
+- **Predictable movement**: unchanged patches are only the easiest case.
+  Driving, drones, FPV, and robotics require pose-aware or motion-conditioned
+  reuse and protected boundary/contact regions.
+- **Robustness**: novelty amplification, flicker, camera shake, sensor
+  desynchronization, and contradictory sensors can turn anti-recomputation into
+  deadline misses. Treat this as a future robustness suite, not as an earned
+  result.
+
 ## New methodology rules
 
 1. **Matched-budget Pareto requires matched-PROBE items**. If we

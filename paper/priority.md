@@ -18,6 +18,13 @@ C-PERSIST, C-VISION) these priorities map to, and `paper/abstract.md`
 + `paper/intro.md` for the paper-facing three-contributions narrative
 (landed 2026-04-21).
 
+Narrative update 2026-04-26: the arXiv draft now carries the larger
+anti-recomputation-to-VLM-native-media agenda. That agenda is important for
+the paper's shape, but it is not a new submission blocker. Machine-oriented
+sidecars, sensor-fusion/world-state streams, AI-native codecs, compute-denial
+robustness, and driving/robotics/screen specialization stay future work unless
+the experiment registry records new local evidence.
+
 Autonomous session 2026-04-21 status: EXP10 n=60 H_stack composition
 re-check (should-do #1) **CLOSED-NULL** (task #152). Pooled n=60
 E2E 1.042× / lift 2.6pp / agreement 0.65; ceiling model reproduces
@@ -175,7 +182,7 @@ in its own dimension.
    conditioned admission policy at `kr_Q0=0.67 + kr_followup=0.50` is
    closed in this configuration, and `1.30AB` closes the neighboring
    long-Q0 sweep as well: `kr_Q0 ∈ {0.75, 0.80, 0.85, 0.90}` all fail the
-   rescue band on the full long-bucket tranche. The queue correctly
+   target fidelity/speed band on the full long-bucket tranche. The queue correctly
    skipped the conditional full-union rerun (`1.30AE`). The 1.30Y
    residual-pair scout was selection-biased.
 
@@ -343,15 +350,15 @@ collection.
    integration, not semantic calibration. Findings doc:
    `research/experiments/2026/2026-04-23-phase-1_29B-codec-native-replication-prereg.md`.
 
-9. **Paper figures: C-PERSIST safe-deployment table + V_share-governs-
+9. **Paper figures: C-PERSIST tested-envelope table + V_share-governs-
    C-VISION-gains plot.** **LANDED 2026-04-21 (autonomous session).**
    Both figures rendered from already-landed experimental data via
    `scripts/plot_c_persist_safe_budget.py` and
    `scripts/plot_v_share_v_red_ceiling.py`. Artifacts:
    `paper/figures/c_persist_safe_budget.{png,_data.json}` — two-panel
    Δacc vs frames + follow-up speedup vs frames, 7B/3B overlaid with
-   safe-deploy shading; threshold scaling ratio 14500/8100 ≈ 1.79
-   matches the ~1.6× basin-onset-depth-scaling claim. And
+   tested/tolerated envelope shading; the 3B basin is now bracketed to
+   (36f, 40f] rather than treated as a clean-safe range. And
    `paper/figures/v_share_v_red_ceiling.{png,_data.json}` — 9 rendered
    regimes (4 Gemma dev + 3 Gemma holdout + 1 matched Qwen dev +
    1 pooled EXP10 n=60) against the

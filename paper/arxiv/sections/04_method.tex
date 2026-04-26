@@ -25,11 +25,13 @@ analytically separate because they measure different kinds of reuse.
 The session experiments are easier to read with the naming convention stated
 up front. A \emph{cold} query recomputes the full video prefix. A
 \emph{follow-up} query asks another question about the same video after that
-prefix has already been ingested. In the Qwen session experiments, \(Q0\) or
-\(Q1\) denotes the first question on a video, while \(Q2\) and \(Q3\) are later
-questions in the same three-query session. The symbol \(K\) is the number of
-newest visual frames re-prefilled before a follow-up; \(K=1\) means ``refresh
-one newest frame, reuse the rest of the prefix.'' A \emph{same-class speedup}
+prefix has already been ingested. Older persistent-cache artifacts index the
+first question as \(Q1\), while the later composition artifacts call the first
+question \(Q0\); in both cases the named first question is the query that
+creates the reusable state, and later \(Q2/Q3\)-style questions are follow-ups
+in the same session. The symbol \(K\) is the number of newest visual frames
+re-prefilled before a follow-up; \(K=1\) means ``refresh one newest frame,
+reuse the rest of the prefix.'' A \emph{same-class speedup}
 compares cold follow-up queries to session follow-up queries. An
 \emph{all-query denominator} compares all cold queries to session follow-ups;
 we report it only when the text says so explicitly.
@@ -46,7 +48,7 @@ observation, not a population proof.
 For adjacent frames, the routing path computes a per-block statistic on the RGB
 difference plane. The implementation supports mean difference, max-absolute
 difference, changed-pixel fraction, and top-$k$ mean over the block. In the
-best current clean-tree Qwen policy, the statistic is \texttt{max\_abs}. Fixed
+best current audited Qwen policy, the statistic is \texttt{max\_abs}. Fixed
 thresholds partition blocks into \emph{static}, \emph{shifted}, and
 \emph{novel} regions. These names are historical planner labels, not literal
 codec semantics: today they mean low, medium, and high pixel-domain change.
@@ -66,11 +68,16 @@ evidence, not a latency claim, because the current offline extraction retrofit
 is much slower than the sparse frame-sampling path; a systems claim requires a
 streaming decoder-integrated path.
 
+This distinction is load-bearing. Pixel differences, motion vectors, residual
+proxies, and packet structure are novelty or uncertainty signals, not
+semantic-saliency signals. They help decide where fresh visual evidence should
+be bought; they do not decide whether a changed region is task-relevant.
+
 \subsection{Bounded Staleness}
 
 Reuse without age control drifts. The planner therefore carries a
 bounded-staleness counter: even a block that continues to look reusable must be
-refreshed after its age exceeds a configured limit. The clean-tree policy used
+refreshed after its age exceeds a configured limit. The audited policy used
 in the paper sets that limit to four frame steps. That choice is not cosmetic.
 It is the main reason the planner survives TOMATO, where temporally concentrated
 evidence punishes policies that keep trusting a stale region simply because the

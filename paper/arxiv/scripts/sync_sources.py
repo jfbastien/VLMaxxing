@@ -6,7 +6,7 @@ This script is intentionally conservative:
 - it reads canonical, checked-in artifacts only
 - it emits small diffable files under ``paper/arxiv/generated/``
 - it treats the companion ``codec-through-sam`` repo as optional input
-- it keeps the default manuscript snapshot restricted to clean-tree,
+- it keeps the default manuscript snapshot restricted to audited artifact,
   paper-grade evidence
 """
 
@@ -270,7 +270,7 @@ def _render_lane_a_figure(snapshot: dict) -> None:
         ax.set_ylim(0.1, 0.72)
         ax.legend(frameon=False, loc="lower right", fontsize=9)
 
-    fig.suptitle("Training-free temporal routing: clean-tree holdout snapshot", fontsize=13)
+    fig.suptitle("Training-free temporal routing: audited holdout snapshot", fontsize=13)
     fig.tight_layout()
     png_path = GENERATED / "figures" / "lane_a_pareto.png"
     pdf_path = GENERATED / "figures" / "lane_a_pareto.pdf"
@@ -644,13 +644,14 @@ def _write_c_persist_repair_table(snapshot: dict) -> None:
         (
             r"\caption{Selective re-prefill repair frontier. Fixed \(K=1\) is "
             r"the broad envelope; the adaptive post-\(Q2\) state policy is the "
-            r"strongest single-cell mechanism result.}"
+            r"strongest single-cell mechanism result. The gain is median cold "
+            r"follow-up latency divided by median repaired-session follow-up latency.}"
         ),
         r"\label{tab:c-persist-repair}",
         r"\scriptsize",
-        r"\begin{tabularx}{\linewidth}{@{}l X c c X@{}}",
+        r"\begin{tabularx}{\linewidth}{@{}l X >{\raggedright\arraybackslash}p{0.17\linewidth} c X@{}}",
         r"\toprule",
-        r"Policy & Scope & FU median / gain & Paired drift & Mechanism signal \\",
+        r"Policy & Scope & session FU median; cold/session gain & Paired drift & Mechanism signal \\",
         r"\midrule",
         (
             r"Fixed \(K=1\) & 20f short/medium/long + 32f short & "
@@ -681,11 +682,13 @@ def _qwen_bridge_boundary_row(label: str, path: Path) -> dict:
     return {
         "label": label,
         "n": int(payload["n_paired_queries"]),
+        "sessions": int(payload.get("n_paired_sessions", payload["n_paired_queries"] // 3)),
         "delta": float(payload["accuracy_delta_streaming_minus_cold"]),
         "q0_delta": float(payload["q0_accuracy_delta_streaming_minus_cold"]),
         "follow_up_delta": float(payload["follow_up_accuracy_delta_streaming_minus_cold"]),
         "speedup": float(payload["amortized_speedup_cold_over_streaming"]),
         "active_fraction": payload["streaming_follow_up_vision_pruning_active_fraction"],
+        "degenerates": int(payload.get("streaming_degenerate_count", 0)),
         "source": _source_path_label(path),
     }
 
@@ -731,25 +734,29 @@ def _write_qwen_bridge_boundary_table(snapshot: dict) -> None:
         r"\begin{table}[H]",
         r"\centering",
         (
-            r"\caption{Qwen session bridge boundary. The tested admission family "
+            r"\caption{Qwen composition boundary. The tested admission family "
             r"does not produce a deployable composition point; high keep rates "
             r"restore aggregate first-answer accuracy but still damage follow-ups. "
+            r"The speedup column is paired three-query amortized end-to-end speedup "
+            r"versus cold all-query execution. "
             r"The FU V active column is the measured follow-up vision-pruning "
-            r"activity fraction; -- means the legacy row was not instrumented.}"
+            r"activity fraction; -- means the legacy row was not instrumented. "
+            r"Degens counts degenerate streaming outputs.}"
         ),
         r"\label{tab:qwen-bridge-boundary}",
         r"\small",
-        r"\begin{tabularx}{\linewidth}{@{}X r r r r r r@{}}",
+        r"\begin{tabularx}{\linewidth}{@{}X r r r r r r r r@{}}",
         r"\toprule",
-        r"Policy & \(N\) & \(\Delta\)acc & Q0 \(\Delta\) & FU \(\Delta\) & Speed & FU V active \\",
+        r"Policy & Sess. & Queries & \(\Delta\)acc & Q0 \(\Delta\) & FU \(\Delta\) & 3q E2E & FU V active & Degens \\",
         r"\midrule",
     ]
     for row in snapshot["rows"]:
         lines.append(
-            f"{row['label']} & {row['n']} & {row['delta']:+.3f} & "
+            f"{row['label']} & {row['sessions']} & {row['n']} & {row['delta']:+.3f} & "
             f"{row['q0_delta']:+.3f} & {row['follow_up_delta']:+.3f} & "
             f"{row['speedup']:.2f}$\\times$ & "
-            f"{_format_optional_fraction(row['active_fraction'])} \\\\"
+            f"{_format_optional_fraction(row['active_fraction'])} & "
+            f"{row['degenerates']} \\\\"
         )
     lines.extend(
         [
@@ -787,14 +794,6 @@ def _deployment_scale_snapshot(sam_root: Path) -> dict[str, object]:
             "note": "0.8 s median, same-video follow-up",
             "kind": "benchmark",
             "source": _source_path_label(publishability),
-        },
-        {
-            "label": "Gemma prefill speedup",
-            "low": 5.4,
-            "high": 5.4,
-            "note": "novelty-pruning result",
-            "kind": "benchmark",
-            "source": _source_path_label(whitepaper),
         },
         {
             "label": "Streaming VideoMME ViT",
@@ -1038,7 +1037,7 @@ def _render_headline_figure(snapshot: dict) -> None:
     right.set_title("Same-video follow-up reuse")
     right.grid(True, axis="y", alpha=0.22, linewidth=0.8)
     right.axvspan(7.5, 16.5, color="#8ecae6", alpha=0.12, lw=0)
-    right.text(8.2, 18, "safe regime\n(<=16f)", color="#1d3557", fontsize=8.7)
+    right.text(8.2, 18, "tested tolerance\n(<=16f)", color="#1d3557", fontsize=8.7)
 
     right_twin = right.twinx()
     right_twin.plot(
@@ -1106,7 +1105,7 @@ def _write_headline_table(snapshot: dict) -> None:
             "cold/cached follow-up & "
             f"{kv_by_frame[8]['speedup']:.1f}$\\times$ & "
             f"{kv_by_frame[8]['follow_up_median_s']:.3f}\\,s median; "
-            f"$\\Delta$acc {kv_by_frame[8]['accuracy_delta']:+.3f} & safe \\\\"
+            f"$\\Delta$acc {kv_by_frame[8]['accuracy_delta']:+.3f} & within criterion \\\\"
         ),
         (
             "After-ingest & Qwen adaptive re-prefill, 20f short & "
@@ -1186,7 +1185,7 @@ def _write_repo_provenance_table(
         r"\midrule",
         f"codec-through-2 & {_short_sha(primary['sha'], 12)} & {primary['commit_date']} \\\\",
         (f"codec-through & {_short_sha(upstream['sha'], 12)} & {upstream['commit_date']} \\\\"),
-        (f"codec-through-sam & {_short_sha(sam['sha'], 12)} & {sam['commit_date']} \\\\"),
+        (f"deployment companion & {_short_sha(sam['sha'], 12)} & {sam['commit_date']} \\\\"),
         r"\bottomrule",
         r"\end{tabular}",
         r"\end{table}",
@@ -1218,8 +1217,8 @@ def _render_snapshot_contact_sheet(sam_root: Path) -> None:
         draw = ImageDraw.Draw(image)
         text = (
             "TODO: curate real-application snapshots.\n\n"
-            "Preferred current source repo:\n"
-            "codec-through-sam/diagrams/live_demo_v2/\n\n"
+            "Preferred current source:\n"
+            "separate deployment companion, live-demo-v2 snapshots\n\n"
             "Expected images:\n"
             "- diagrams/live_demo_v2/01_setup.jpg\n"
             "- diagrams/live_demo_v2/02_cleaning_begins.jpg\n"
@@ -1230,9 +1229,9 @@ def _render_snapshot_contact_sheet(sam_root: Path) -> None:
         image.save(out_path)
         note_lines = [
             r"\paragraph{Streaming snapshot sources.}",
-            r"The companion repo was not available with the expected four draft",
+            r"The deployment companion artifact was not available with the expected four draft",
             r"screenshots, so the manuscript sync generated a placeholder image",
-            r"instead. Expected source root: \path{codec-through-sam/diagrams/live_demo_v2/}.",
+            r"instead. Expected source family: live-demo-v2 snapshots.",
         ]
         note_path.write_text("\n".join(note_lines) + "\n")
         return
@@ -1263,13 +1262,13 @@ def _render_snapshot_contact_sheet(sam_root: Path) -> None:
 
     lines = [
         r"\paragraph{Streaming snapshot sources.}",
-        r"The draft contact sheet was imported automatically from the companion",
-        r"repo. Current source paths:",
+        r"The draft contact sheet was imported automatically from the separate",
+        r"deployment companion artifact. Current source files:",
         r"\begin{itemize}[leftmargin=1.5em]",
     ]
     for source in sources[:4]:
         rel = source.relative_to(sam_root).as_posix()
-        lines.append(rf"\item \path{{codec-through-sam/{rel}}}")
+        lines.append(rf"\item \path{{deployment-companion/{rel}}}")
     lines.append(r"\end{itemize}")
     note_path.write_text("\n".join(lines) + "\n")
 

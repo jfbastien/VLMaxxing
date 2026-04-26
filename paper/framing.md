@@ -6,7 +6,8 @@ Paper-facing drafts (what a reviewer will actually read):
 
 - [`paper/abstract.md`](abstract.md) — one-page three-contributions
   abstract (C-CEILING / C-PERSIST / C-VISION first-class;
-  Lane A as mechanism backbone; Sam as deployment-scale evidence)
+  Lane A as mechanism backbone; separate 26B streaming work as
+  deployment-scale evidence)
 - [`paper/intro.md`](intro.md) — paper-facing introduction with the
   same structure
 
@@ -93,20 +94,20 @@ duration-conditional partial reproduction + 1.55D frontier-partial):
    vision-axis analog `1/(1 − V_share × V_red)`.
 
 2. **C-PERSIST (claim 14): Cross-architectural persistent-KV
-   safe-deployment envelope.** All persistent-KV claims in this paper
+   tested deployment envelope.** All persistent-KV claims in this paper
    are **after-ingest / follow-up-query** numbers: the user pays the
    full first-query prefill once, subsequent questions on the *same
    video* reuse the KV and return in sub-second time. These are not
    "any-fresh-video" latencies. 7B Qwen 2.5-VL-4bit stays inside the
-   safe envelope through ≤16f / ≤6.5k prefill tokens, with a clean 16f
-   point (Δacc=0) and a slightly worse but still safe 8f point
+   tested envelope through ≤16f / ≤6.5k prefill tokens, with a clean 16f
+   point (Δacc=0) and a slightly worse but still tolerated 8f point
    (Δacc=−0.048); 3B at ≤36f / ≤14.5k prefill sits on a tolerated
-   Δacc=−0.19 plateau (not clean, bounded). Basin-onset depth scales ~1.6× with parameter
-   count; basin geometry (non-letter attractor emergence) is
+   Δacc=−0.19 plateau (not clean, bounded). Basin onset is bracketed rather
+   than a clean parameter-count ratio; basin geometry (non-letter attractor emergence) is
    cross-architectural; sampler-side intervention is
    architecture-conditional (insufficient at 7B basin at 20f AND 40f;
    partial-only at 3B basin at 40f — disperses to pre-basin plateau,
-   not to baseline). Safe-Deployment Regime table in
+   not to baseline). Tested deployment-regime table in
    [`paper/claim-matrix.md`](claim-matrix.md) provides paper-grade
    practitioner guidance; safety-boundary result in its own right.
 
@@ -160,7 +161,8 @@ way to overclaim.
    score. This is what C-VISION and the 1.51R partial reproduction
    measure. It is *not* streaming, and it is *not* live camera.
 2. **Native-rate streaming.** Frames arrive at source rate; the model
-   must keep up. Sam's 4.2–4.5× E2E and ~50× streaming-dominant
+   must keep up. The separate 26B streaming stack's 4.2–4.5× E2E and
+   ~50× streaming-dominant
    multipliers live here. The fixed fraction of the pipeline that is
    decode + ingest is much larger, so the ceiling law
    `1/(fixed + (1−fixed)/s)` bites differently than in (1).
@@ -261,29 +263,30 @@ boundary as much as the positives:
   C-VISION is safe on scroll/pan; it says VideoMME does not contain that
   regime at measurable scale. A scroll/pan characterization now requires
   EgoSchema/EPIC-Kitchens/Ego4D or a labeled synthetic set.
-- **Sam axis #2b: regime-dependent negative evidence, not a vague caveat.**
+- **Streaming axis #2b: regime-dependent negative evidence, not a vague caveat.**
   The paired affine-cache-warp ablation shows a short-regime positive, a
   medium-duration null, near-zero dose-response on VideoMME, and a clean
   reconciliation with local phase 1.60: VideoMME mostly lacks the sustained
   pan/scroll regime the mechanism was designed for.
-- **Sam piecewise reuse: no matched wall-clock baseline.** The
-  piecewise-reuse case study in codec-through-sam is a single-cell
+- **Piecewise reuse: no matched wall-clock baseline.** The
+  piecewise-reuse case study in the separate streaming work is a single-cell
   illustration, not a deployment-scale result. Appendix-bound; does not
   contribute to the headline multipliers.
 
-## Sam: case-study vs deployment-scale (not interchangeable)
+## Streaming evidence: case-study vs deployment-scale (not interchangeable)
 
-Within codec-through-sam the numbers fall into two categories and they
+Within the separate streaming work the numbers fall into two categories and they
 carry different evidential weight:
 
 **Deployment-scale** (main-body multipliers, paired baselines):
-streaming E2E 4.2–4.5 ×; ViT-only 13 ×; streaming-dominant-pipeline
+streaming E2E 4.2–4.5 ×; ViT-only 13 ×; dominant measured subpipeline
 ~50 ×; live-camera ViT 5–300 ×; persistent-KV follow-up median
-0.8 s. These stay in the main body, clearly attributed to Sam, with
+0.8 s. These stay in the main body, clearly attributed to the separate
+operational protocol, with
 their regime explicitly named.
 
 **Sparse exactness** is a separate imported-companion row, not part of
-the deployment-multiplier bucket. The current Sam whitepaper reports
+the deployment-multiplier bucket. The current deployment report lists
 1,937 sparse exactness items in the abstract, but other prose still says
 1,837; this paper therefore keeps that row explicitly reported and not
 re-audited here.
@@ -322,31 +325,31 @@ We do NOT claim:
 - end-to-end gains from stacked compression arithmetic
 - robotics inner-loop safety or real-time guarantees
 - AI-native codecs as a near-term deliverable
+- codec or pixel signals as semantic saliency or task-importance oracles
 
-## Sam as deployment-scale evidence (not "applications / support")
+## Separate streaming work as deployment-scale evidence (not "applications / support")
 
-Treat codec-through-sam as deployment-scale evidence for C-PERSIST and
+Treat the separate streaming work as deployment-scale evidence for C-PERSIST and
 C-VISION, not as decorative applications support. The two repos occupy disjoint
 regimes by design:
 
-| Axis                  | codec-through (this paper)                 | codec-through-sam                                          |
+| Axis                  | local mechanism stack                 | separate streaming stack                                          |
 |-----------------------|--------------------------------------------|------------------------------------------------------------|
 | Model size            | 4 B-class, 4-bit quantized                 | 26 B-class                                                  |
 | Protocol              | sparse-sampled benchmark QA                | mixed companion evidence: native-rate streaming, sparse exactness, live deployment |
 | Eval regime           | N = 30 / 60 holdout, paired, thermally controlled | streaming paired N = 60; sparse exactness N = 1,937; live decode in loop / real-video case studies |
 | Classifier            | pixel-diff proxy on sampled decoded frames | pixel-diff on sparse exactness; codec-native MV + residual at native rate for streaming/live |
 | Focus                 | mechanism isolation, prereg falsification  | full stack, composition, measured end-to-end multipliers    |
-| Strongest numbers     | 1.08–1.24× E2E dev; 1.113× VideoMME 8 f holdout; sub-second follow-up inside safe envelope | 4.2–4.5× real-video E2E; 13× ViT; ~50× streaming dominant-pipeline; median 0.8 s follow-up; 5–300× live ViT |
+| Strongest numbers     | 1.08–1.24× E2E dev; 1.113× VideoMME 8 f holdout; sub-second follow-up inside tested envelope | 4.2–4.5× real-video E2E; 13× ViT; ~50× dominant measured subpipeline; median 0.8 s follow-up; 5–300× live ViT |
 
 The shared frame is **C-CEILING** (`1/(fixed + (1−fixed)/s)` on any
 stage-bounded acceleration, including the vision-axis analog
 `1/(1 − V_share × V_red)`) and a shared definition of
 **attention-propagation drift** as the fidelity mechanism — NOT
-positional-encoding drift. codec-through proves the mechanism at
-small scale under strict prereg/falsification discipline; Sam proves
-that the same mechanism, instantiated on the full stack in the right
-regime, delivers product-scale multiplicative wins. The paper
-reports the **evidence union** under a single analytical theory, with
+positional-encoding drift. The local stack proves the mechanism at
+small scale under strict prereg/falsification discipline; the separate
+streaming stack reports deployment-scale companion evidence under operational protocols. The paper
+reports the **labeled evidence union** under a single analytical theory, with
 honest accounting of where each number came from.
 
 Weak streaming case-study claims without matched baselines (e.g.
@@ -374,7 +377,7 @@ codec-through locally:
 These are the four largest outstanding bridges between the repos; the
 three contributions above stand *without* them.
 
-## Reviewer-Facing Limitations (shared fidelity vocabulary with codec-through-sam)
+## Reviewer-Facing Limitations (shared fidelity vocabulary)
 
 These are the caveats a reviewer will check. Per sam's revised
 whitepaper §8 and codex 2026-04-16 review, the paper must state:
@@ -483,6 +486,13 @@ Candidate line worth keeping:
 
 > The codec already knows what changed. Stop re-encoding what didn't.
 
+First-page paper language should keep the line's energy while qualifying it:
+today's sparse-QA planner mostly uses pixel diff; phase 1.29 is local
+codec-native planner-substitution evidence; decoder-integrated codec-speed
+evidence remains future work. The stronger claim is not "we already built the
+machine codec." It is "we measured which cross-layer temporal signals a frozen
+VLM runtime can use, and the failures define requirements for future media."
+
 The systems-engineering thesis:
 
 - modern codecs already expose cheap signals about novelty, motion, and
@@ -492,6 +502,9 @@ The systems-engineering thesis:
 - part of the opportunity is not inventing new model internals first,
   but recovering cross-layer wins that existing systems left on the
   table
+- denominator discipline is part of the contribution: the paper should be fun
+  because the waste is visible, not because the speedups are multiplied past
+  their measured regime
 
 Framing to keep distinct from adjacent work:
 
@@ -499,6 +512,9 @@ Framing to keep distinct from adjacent work:
   hardware constraints and perceptual objectives
 - machine-consumption pipelines may want to reuse some of those ideas,
   but not inherit the human-vision objective blindly
+- unchanged content is only the first case; predictably changed content
+  motivates motion-conditioned, pose-aware, object/state, and multi-reference
+  routing, all still future evidence here
 
 ## Comparison Boundary
 
@@ -622,8 +638,14 @@ Medium-distance:
 
 Far-distance:
 
-- sensor-fusion timelines or world-state codecs
-- AI-native codecs and hardware co-design
+- sensor-fusion timelines or world-state codecs. Treat "video for machines" as
+  a synchronized state-update stream: RGB/luma context, depth/ToF summaries,
+  event spikes, IMU/odometry, object tracks, camera pose, timestamps, and
+  confidence. Start with synthetic sidecars and router-only fusion before
+  claiming a new codec.
+- AI-native codecs and hardware co-design. Future codecs should expose
+  tensor-friendly active tiles, residual concentration, object/state deltas,
+  uncertainty, and motion references directly to the model/runtime.
 
 ## Proxy Chain To State Explicitly
 

@@ -44,6 +44,21 @@ should match.
 | **Video captioning** (pre-temporal-reasoning paradigm) | May be robust to aggressive reuse; less informative for our thesis. |
 | **Robotics / control** | Real-time constraints dominate; approximate-computing contract is hard-checkable. Not in our current evaluation scope. |
 
+## Regime-to-policy map
+
+These application regimes are part of the research scope, not just motivation.
+They should be labeled as evidence targets when used in the paper.
+
+| Regime | Expected redundancy | Best current / future policy | Failure risks | Evidence status |
+|---|---|---|---|---|
+| **Static cameras / factories / surveillance** | Stable background with sparse entrants and rare decisive events. | Current bounded-staleness temporal reuse; future event-window recall and protected dynamic regions. | Brief events diluted by block mean; stale background assumptions during lighting or camera movement. | Closest to current evidence; application baselines still TODO. |
+| **Stove / countertop / lab bench** | Mostly static work surface with hands, tools, and object state changes. | Refresh hands/tools/contact zones; keep background memory. | Contact and state changes can be subtle; answer-stability QA is not a safety metric. | Future application lane. |
+| **Screen / UI / documents / code** | Exact-copy regions, glyph changes, scrolls, cursor blink, palette-like regions. | Screen-content path with exact-copy, OCR/glyph, DCT/high-frequency or changed-pixel-fraction guards. | Tiny text or transient overlays can be semantically decisive; VideoMME does not cover sustained scroll/pan. | Planned specialization; not locally proven. |
+| **Forward driving** | Structured ego-motion and radial expansion; new content at borders; independent movers. | Motion-model or pose-conditioned routing, boundary refresh, protected signs/lights/pedestrians. | Same-position reuse is the wrong baseline; safety-critical small objects. | Future lane; needs synthetic driving or real dashcam/sim. |
+| **Egocentric / FPV / drones** | Jerky motion, parallax, occlusion, rapidly changing viewpoint. | Stabilized-coordinate caching, multi-reference memory, pose/IMU sidecars. | Pixel novelty dominated by camera motion; high stale-state risk. | Current benchmarks under-sample this; future corpus required. |
+| **Robotics / VLA** | Static workspace plus task-critical gripper/object/contact regions and hard deadlines. | Protected ROIs, p95/p99 latency budgets, deadline governor, dense fallback. | Control failure cost is not captured by QA agreement; sensor desync and compute denial matter. | Future systems lane, not current claim. |
+| **Games / HUD streams** | Stable HUD and repeated camera states mixed with action bursts. | HUD anchors plus event-triggered world refresh and query-aware scene updates. | Action bursts and visual effects can create novelty amplification. | Future application lane. |
+
 ## How this structures the paper
 
 The paper's headline claim applies to **temporal-reasoning QA on

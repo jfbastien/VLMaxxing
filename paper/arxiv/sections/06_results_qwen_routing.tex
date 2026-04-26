@@ -6,11 +6,11 @@ anti-recomputation can work at all. It tells us what kind of temporal signal
 is useful, what kind is too blunt, and where the semantic-substitution story
 stops.
 
-\subsection{Clean-Tree Holdout Frontier}
+\subsection{Audited Holdout Frontier}
 
-On TOMATO motion, the clean base policy matches dense-8 accuracy while spending
+On TOMATO motion, the audited base policy matches dense-8 accuracy while spending
 only 3.55 effective fresh frames instead of 8.0. On MVBench motion, the same
-clean base policy reaches a higher point estimate than dense-6 while spending
+base policy reaches a higher point estimate than dense-6 while spending
 less visual refresh: 0.600 accuracy at 4.06 effective fresh frames versus
 0.567 at 6.0 fresh frames. At \(n=30\), that is a pointwise Pareto frontier
 observation, not a statistical victory lap. Those are not wall-clock claims.
@@ -32,10 +32,10 @@ effective visual budget.
   }{
     \fbox{\parbox{0.9\linewidth}{Run \texttt{make paper-sync} to generate the Lane A Pareto figure.}}
   }
-  \caption{Clean-tree Qwen holdout frontier from canonical artifact summaries.
+  \caption{Audited Qwen holdout frontier from canonical artifact summaries.
   The automated manuscript snapshot intentionally excludes the MVBench
-  \texttt{sticky4} variant because the current artifact is not cleanly rerun and
-  remains supplementary until rerun clean.}
+  \texttt{sticky4} variant because the current artifact remains provisional and
+  supplementary until final rerun.}
   \label{fig:lane-a-pareto}
 \end{figure}
 
@@ -73,10 +73,9 @@ planner is merely doing smart frame selection in disguise. It is not.
 
 \begin{table}[H]
 \centering
-\caption{Novelty-ranked dense baseline imported from the phase~1.34 note. This
-table is still hand-carried from the authoritative note because a stable
-checked-in artifact path for these summaries has not yet been wired into
-\texttt{paper-sync}.}
+\caption{Novelty-ranked dense baseline from the preregistered dense-selection
+ablation. This table is hand-carried until the final artifact path is wired
+into the manuscript automation.}
 \label{tab:novelty-ranked-dense}
 \begin{tabular}{llrr}
 \toprule

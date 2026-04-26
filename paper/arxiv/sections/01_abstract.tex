@@ -1,27 +1,36 @@
-Video VLMs keep paying to understand pixels they have already understood, and
-component-level efficiency wins are easy to misread as end-to-end wall-clock
-wins unless the accelerated stage's share is reported. We study training-free
-anti-recomputation across three places where this waste appears: the first
-pass over a fresh video, later questions about a video that has already been
-ingested, and streaming/deployment settings. The regimes have different
-ceilings. \emph{C-CEILING} formalizes the stage-share bound and explains why
-the pooled n=60 composition attempt is a null rather than a multiplier.
+Video VLMs keep paying to understand pixels they have already understood. The
+factory wall did not move, the stream has cheap evidence that it did not move,
+and the stack still pays again for dense visual or prefix computation. We study
+that waste as training-free anti-recomputation, while keeping the accounting
+honest: component-level efficiency wins are easy to misread as end-to-end
+wall-clock wins unless the accelerated stage's share is reported. We measure
+three places where repeated work appears: the first pass over a fresh video,
+later questions about a video that has already been ingested, and
+streaming/deployment settings. The regimes have different ceilings.
+\emph{C-CEILING} formalizes the stage-share bound and explains why the pooled
+n=60 composition attempt is a null rather than a multiplier.
+\emph{C-PERSIST} is the largest observed follow-up-speedup regime: same-video
+follow-ups can reuse the already-paid prompt state, but unrepaired reuse
+eventually enters a cache basin. Selective re-prefill repairs that basin by refreshing a small
+newest-frame visual tail. A fixed repair policy shows no observed paired answer
+drift on 93 paired queries across short, medium, long, and deeper VideoMME
+slices, with 9.48--20.37$\times$ same-class follow-up speedups, defined as
+median cold follow-up latency divided by median repaired-session follow-up
+latency. A state-aware adaptive policy is the strongest single cell, reaching
+24.76$\times$ same-class speedup with 0/21 paired drift.
 \emph{C-VISION} shows that first-pass vision pruning gives modest but measured
 wall-clock gains: 1.113$\times$ to 1.407$\times$ on Gemma 4-E4B-4bit across
 clean and advisory holdout cells, with a matched Qwen point landing at
-1.044$\times$ observed versus 1.043$\times$ predicted. The big-number regime
-is \emph{C-PERSIST}: same-video follow-ups can reuse the already-paid prompt
-state, but unrepaired reuse eventually enters a cache basin. Selective
-re-prefill repairs that basin by refreshing a small newest-frame visual tail.
-A fixed repair policy shows no observed paired answer drift on 93 paired
-queries across short, medium, long, and deeper VideoMME slices, with
-9.48--20.37$\times$ follow-up speedups. A state-aware adaptive policy is the
-strongest single cell, reaching 24.76$\times$ speedup with 0/21 paired drift.
-Routing and paired-drift audits explain the boundaries: fresh-compute
-placement matters more than novelty magnitude alone, aggregate accuracy can
-hide answer-identity drift, and semantic substitution is not a measured sparse
-backend. Companion deployment-scale experiments on a larger Gemma 26B stack
-report the same anti-recomputation structure in operational regimes, including
-13$\times$ fewer ViT calls, \mbox{$\sim$50$\times$} dominant-pipeline
-reduction, and 4.2--4.5$\times$ end-to-end speedups. These numbers are
-different regimes, not one speedup curve, and they should not be multiplied.
+1.044$\times$ observed versus 1.043$\times$ predicted. Routing and paired-drift
+audits explain the boundaries: fresh-compute placement cannot be reduced to
+novelty magnitude alone, aggregate accuracy can hide answer-identity drift, and
+semantic substitution is not a measured sparse backend. A separate 26B
+streaming protocol reports the same anti-recomputation structure in operational
+regimes, including 13$\times$ fewer ViT calls, \mbox{$\sim$50$\times$} dominant
+measured subpipeline reduction, and 4.2--4.5$\times$ end-to-end speedups. These
+numbers are different regimes, not one speedup curve, and they should not be
+multiplied.
+The broader implication is not that pixel differencing is the final interface:
+the experiments are a requirements probe for future VLM-native media streams
+that expose change, motion, uncertainty, and state directly while keeping the
+present paper's claims limited to measured evidence.

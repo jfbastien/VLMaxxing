@@ -1,0 +1,145 @@
+\section{Discussion: Toward VLM-Native Media}
+
+The experiments above are intentionally conservative: frozen models, explicit
+evidence classes, no speed claim where the backend did not skip timed work.
+That conservatism should not hide the bigger implication. Existing media
+pipelines already contain cheap temporal structure, but most video VLM stacks
+consume the final RGB frames as if every frame were equally new. Anti-
+recomputation asks a systems question before it asks for a new model: what did
+the media pipeline already know, and why did the VLM pay to rediscover it?
+
+\subsection{Unchanged Is Only The First Case}
+
+Same-position reuse is the simplest regime: if a patch did not change, reuse
+its visual evidence. But video codecs also exploit a richer fact: many things
+change predictably. Objects translate, cameras pan, forward-driving cameras
+produce structured expansion, and occlusions create localized new evidence.
+The current paper earns evidence mostly for static-to-medium-motion benchmark
+regimes and for same-video follow-up reuse. It does \emph{not} yet prove
+motion-compensated feature reuse, driving-specific routing, or sensor-fusion
+caching. Those directions follow naturally from the failures and ceilings we
+measured, so they belong in the paper's agenda rather than in the headline
+claim.
+
+\begin{table}[H]
+\centering
+\caption{Application regimes as evidence targets, not generic motivation. The
+right policy depends on the redundancy structure and on what failure would
+cost.}
+\label{tab:application-regimes}
+\small
+\begin{tabularx}{\linewidth}{@{}
+  >{\raggedright\arraybackslash}p{0.18\linewidth}
+  >{\raggedright\arraybackslash}p{0.22\linewidth}
+  >{\raggedright\arraybackslash}p{0.26\linewidth}
+  >{\raggedright\arraybackslash}X
+@{}}
+\toprule
+Regime & Redundancy structure & Candidate routing policy & Evidence status / risk \\
+\midrule
+Static cameras, factories, surveillance, stove/countertop & stable background,
+localized entrants, rare decisive events & persistent visual memory plus
+bounded-staleness refresh around moving regions & closest to current evidence;
+needs stronger application baselines and event-window recall \\
+Screen and UI video & exact-copy regions, glyph changes, scrolling, cursor
+motion & screen-content path with exact-copy, OCR/glyph, and high-frequency
+guards & planned specialization; current VideoMME audit under-samples scroll/pan \\
+Forward driving & structured ego-motion, border entry, independently moving
+objects & pose/flow-conditioned refresh with protected object and boundary
+regions & future lane; should not be inferred from same-position reuse \\
+Egocentric, FPV, drones & jerky motion, parallax, frequent occlusion & global
+stabilization or multi-reference cache before reuse & current benchmark mix is
+the wrong corpus for this claim \\
+Robotics / VLA & static workspace plus gripper/object/contact zones and hard
+deadlines & protected ROIs, p95/p99 latency budgets, safe dense fallback & future
+systems lane; answer-stability QA is not a control-safety metric \\
+Games and HUD-heavy streams & stable HUD, structured camera regimes, repeated
+interaction states & HUD anchors plus event-triggered world refresh & future
+application lane; likely high reuse but unmeasured here \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Codec Signals Are Requirements Probes}
+
+Classical codecs are hand-engineered prediction systems: predict a reference,
+send motion and residual surprise, transform and quantize under a rate-
+distortion objective, and make the result cheap enough for hardware. That
+objective was designed mainly for human viewing. Standards work is already
+moving toward machine consumption, including MPEG Video Coding for Machines
+\cite{mpegvcm}, JPEG AI \cite{jpegai}, and event-data coding efforts such as
+JPEG XE \cite{jpegxe}. Older object/layer media ideas, including MPEG-4 Visual
+object coding \cite{mpeg4visual}, also show that rectangular RGB frames were
+not the only conceivable abstraction. The analogy to object-based audio such
+as Dolby Atmos \cite{dolbyatmos} is useful but only as an analogy: the goal is
+not theatrical rendering, but a synchronized stream of model-facing state
+updates.
+
+Our role in that trajectory is narrower. We are not designing the future codec
+here. We use VLM behavior to motivate candidate requirements for that future
+interface:
+
+\begin{table}[H]
+\centering
+\caption{How current limitations motivate future media-interface requirements.
+These are hypotheses and candidate design requirements, not current
+measured claims.}
+\label{tab:media-requirements}
+\small
+\begin{tabularx}{\linewidth}{@{}
+  >{\raggedright\arraybackslash}p{0.40\linewidth}
+  >{\raggedright\arraybackslash}X
+@{}}
+\toprule
+Observed limitation or boundary & Future VLM-native media should expose \\
+\midrule
+Mean block difference misses small but decisive events & residual
+concentration, changed-pixel fraction, onset flags, and max-age state \\
+Novelty-ranked dense frames can cluster budget in the wrong place & temporal
+coverage constraints, event-window hints, and placement-aware scheduling \\
+Same-position reuse weakens under camera motion & camera pose, global motion,
+depth-aware flow, and boundary-entry flags \\
+Predictably moving objects are not static but are not arbitrary either &
+object IDs, masks, tracks, motion uncertainty, and multi-reference state \\
+Human-compression artifacts can hide model-critical text or color & task-aware
+text, chroma, palette, and high-frequency metadata \\
+Sparse regions may be awkward for today's tensor kernels & tensor-friendly
+active tiles, projector-consistent groups, and regular batched sparse layouts \\
+RGB alone confuses lighting, geometry, and contact & synchronized depth/ToF,
+event, IMU/odometry, timestamp, and confidence sidecars \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Open Experiments}
+
+Several high-value brainstorm items remain deliberately outside the current
+evidence boundary.
+
+\begin{sectiontodo}{Promote only after the runs exist}
+The near-term research questions are reader-facing, not bookkeeping. Does
+semantic substitution become a real wall-clock win when the backend actually
+skips measured vision work? Does temporal placement of fresh compute beat
+novelty magnitude under matched budgets? Can saved compute buy broader
+temporal coverage rather than only lower latency? Can answer-margin and
+paired-drift features predict when reuse will fail? Which application baselines
+make deployment claims credible rather than anecdotal?
+
+The longer-range agenda is the VLM-native media ladder: object/state delta
+sidecars; sensor-fusion world-state streams with depth/ToF, event, pose, and
+timestamp layers; compute-denial robustness; learned recache gates;
+codec-conditioned token types; learned delta encoders; and hardware-aware
+active-tile decode. These ideas follow from the measurements above, but they
+remain future work unless they receive their own reproduced artifacts.
+
+\textcolor{todoBorder}{Remaining work: keep this agenda as future work until
+each item has either a preregistered experiment, a reproduced artifact, or a
+clearly labeled requirements/prototype note.}
+\end{sectiontodo}
+
+The long-term version is simple to state: video for machines should become a
+timeline of state updates, not only dense RGB frames. Static background,
+camera motion, dynamic objects, text, events, depth, sensor confidence, and
+time can all be first-class evidence. This paper is the first rung: a careful
+training-free measurement of where anti-recomputation works today, where it
+fails, and what future media systems should stop making the model rediscover.

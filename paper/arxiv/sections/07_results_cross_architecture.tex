@@ -69,33 +69,36 @@ what the holdouts and the cross-arch probe earned.
 \subsection{C-PERSIST: After-Ingest Reuse Is The Big-Number Regime}
 
 Persistent-KV answers a different question: once the first query on a video has
-already paid the full prompt cost, how cheap can the next question become? On
-Qwen2.5-VL-7B-4bit, the answer is already large enough to matter. At 8 frames,
+already paid the full prompt cost, how cheap can the next question become?
+Every result in this subsection is therefore an after-ingest follow-up result:
+request-level savings depend on how many later questions reuse the same video
+state, and the first query still pays full freight. On Qwen2.5-VL-7B-4bit, the
+answer is already large enough to matter. At 8 frames,
 follow-up latency drops to 815\,ms median with 47.2$\times$ speedup and
 $-0.048$ aggregate accuracy delta. At 16 frames the speedup rises to
 91.1$\times$ while the accuracy delta returns to 0. Within the current
-$\leq$16f safe envelope, the regime is fast and empirically bounded: the safe
-region contains one clean point at 16f and one slightly worse but still safe
-point at 8f. Past that point the curve keeps rising, but the fidelity boundary
-appears.
+$\leq$16f tested envelope, the regime is fast and empirically bounded: the
+accepted region contains one clean point at 16f and one slightly worse but
+still within tolerance at 8f. Past that point the curve keeps rising, but the
+fidelity boundary appears.
 
 \begin{figure}[H]
   \centering
   \IfFileExists{generated/figures/c_persist_safe_budget.png}{
     \includegraphics[width=0.97\linewidth]{generated/figures/c_persist_safe_budget.png}
   }{
-    \fbox{\parbox{0.9\linewidth}{Run \texttt{make paper-sync} to sync the C-PERSIST safe-budget figure.}}
+    \fbox{\parbox{0.9\linewidth}{Run \texttt{make paper-sync} to sync the C-PERSIST tested-envelope figure.}}
   }
-  \caption{C-PERSIST safe-deployment envelope. The local result is not one
+\caption{C-PERSIST tested follow-up-reuse envelope. The local result is not one
   persistent-KV curve but two different architectural stories: 7B stays inside
-  the current safe envelope through 16 frames / 6.5k prefill tokens, while 3B
+  the current tested envelope through 16 frames / 6.5k prefill tokens, while 3B
   trades exactness for a much wider pre-basin plateau through 36 frames /
   14.5k prefill tokens before the basin opens.}
   \label{fig:c-persist-safe-budget}
 \end{figure}
 
 The 7B and 3B stories are therefore not interchangeable. 7B gives the clean
-sub-second 16f point and a safe envelope through 16f. 3B does not. What 3B
+sub-second 16f point and a tested envelope through 16f. 3B does not. What 3B
 gives instead is a wider pre-basin plateau: $\Delta$acc holds at $-0.19$
 through 24f, 32f, and 36f before basin onset appears beyond 14.5k prefill
 tokens. The useful mechanism is not an architecture-specific ``saturation
@@ -149,18 +152,19 @@ answer looks fine.
 The newest local bridge makes the same warning concrete. On Qwen2.5-VL-7B-4bit
 at 8 frames, the original session/streaming stack that combines \(L=2\),
 \(kr_V=0.50\) vision pruning with persistent-KV reuse over a VideoMME
-dev+holdout union (\(n=57\) sessions, 171 queries) was a hard negative. The
-dense-first-query admission successor materially improves it: aggregate accuracy moves
-from 0.561 to 0.503, a \(-0.0585\) delta with 95\% paired CI roughly
-\([-0.117, 0.000]\), at 2.7869$\times$ paired amortized end-to-end speedup,
-with aggregate Q0 correctness parity, zero parse failures, and zero
-degenerates. We still report this as boundary evidence rather than a promotion.
-It misses the target 3.0$\times$ deployment threshold and the current three-query protocol
-cannot get much cheaper with fully dense Q0.
+dev+holdout union (\(n=57\) sessions, 171 queries) was a hard negative. A
+dense-first-query admission successor improves the failure mode, but remains a
+near-miss rather than a promotion: cold aggregate accuracy is 0.561 and the
+streaming path is 0.503, a \(-0.0585\) delta with 95\% paired CI roughly
+\([-0.117, 0.000]\), at 2.7869$\times$ paired amortized end-to-end speedup.
+The important repair is that aggregate Q0 correctness returns to parity, with
+zero parse failures and zero degenerates. The remaining loss is follow-up
+state damage. It also misses the target 3.0$\times$ deployment threshold, and
+the current three-query protocol cannot get much cheaper with fully dense Q0.
 
 The long-bucket sweep closes the tested admission family. None of the tested
-Q0 keep rates \(\{0.67,0.75,0.80,0.85,0.90\}\) reaches the deployable rescue
-band. More importantly, the instrumentation shows that the follow-up
+Q0 keep rates \(\{0.67,0.75,0.80,0.85,0.90\}\) reaches the target
+fidelity/speed band. More importantly, the instrumentation shows that the follow-up
 ``pruning'' arm is mechanically inactive under prompt-cache reuse:
 \texttt{vision\_pruning\_active\_fraction} is 0.0 and all follow-up image
 tokens are cache-served. The result is therefore Q0 admission plus K-cache
@@ -179,12 +183,13 @@ the first answer is identical row-by-row; paired rows still show Q0 identity
 drift. It does show that first-answer aggregate correctness is not enough to
 certify the reused state. The follow-ups consume a cache state produced by a
 pruned first pass, and that state can remain harmful even when the first answer
-recovers. The remaining 1.30 path is therefore not another blind admission
-rate. It is either a deliberately cache-invalidated follow-up V-pruning test or
-new instrumentation that directly explains the cache-state difference.
+recovers. The remaining composition path is therefore not another blind
+admission-rate sweep. It is either a deliberately cache-invalidated follow-up
+V-pruning test or new instrumentation that directly explains the cache-state
+difference.
 
-The key compositional result is negative and useful: the pooled n=60 H\_stack
-experiment is a ceiling-matched null, not a
+The key compositional result is negative and useful: the pooled n=60
+stacked-regime experiment is a ceiling-matched null, not a
 super-ceiling win. The observed 1.042$\times$ pooled result lands where the
 measured fixed-fraction terms place it. That closes the naive
 ``multiply-the-headlines'' interpretation. C-VISION and C-PERSIST matter, but
@@ -193,7 +198,7 @@ they matter on different queries and under different ceilings.
 \subsection{Aggregate Accuracy Is Not Enough}
 
 Several of the most informative results in the paper would be invisible if we
-reported only aggregate accuracy. In the 1.30 root-cause decomposition,
+reported only aggregate accuracy. In the composition root-cause decomposition,
 V-only Q0 pruning changes 6/10 choices and 6/10 correctness labels on the
 short scout even though the broader C-VISION operating point can look
 aggregate-neutral elsewhere. In the Gemma second-architecture routing check,
@@ -216,7 +221,7 @@ ordinary answer drift, by first-query admission damage, or by a cache-state
 basin. Those are different repairs.
 
 \begin{sectiontodo}{Lock the final promotion boundary for advisory cells}
-The current table, ceiling figure, and safe-budget figure are accurate, but
+The current table, ceiling figure, and tested-envelope figure are accurate, but
 the manuscript still needs a final venue-facing decision on how aggressively to
 surface advisory rows in the main text versus the appendix. VideoMME is clean.
 MVBench and TOMATO are strong, but they should keep their caveats visible.

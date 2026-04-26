@@ -6,8 +6,8 @@ Last updated: 2026-04-26
 >
 > **Paper spine (2026-04-21, round-26):** three contributions —
 > **C-CEILING**, **C-PERSIST**, **C-VISION** — with Qwen routing as the
-> **mechanism-validation backbone** and codec-through-sam as
-> **deployment-scale evidence**. The paper-facing spine lives in:
+> **mechanism-validation backbone** and the separate 26B streaming work as
+> **deployment-scale operational evidence**. The paper-facing spine lives in:
 > [`paper/abstract.md`](paper/abstract.md),
 > [`paper/intro.md`](paper/intro.md),
 > [`paper/framing.md`](paper/framing.md), and
@@ -49,6 +49,9 @@ Primary objective:
 
 - determine which cheap temporal and codec-derived signals can reduce video-VLM
   work without unacceptable answer drift
+- use those measurements as a requirements probe for future VLM-native media
+  streams, while keeping the current paper's claims limited to reproduced or
+  explicitly labeled supplementary evidence
 
 Secondary objectives:
 
@@ -203,8 +206,8 @@ The detail below is preserved as background on how the project got
 here; do not treat it as the active execution queue.
 
 The scientific target is not merely to reproduce the imported whitepaper. The
-target is to use an honest reproduction base to build **one results paper,
-co-authored with Sam, that advances SOTA with measured big-number speedups.**
+target is to use an honest reproduction base to build **one results paper that
+advances anti-recomputation evidence with measured, regime-labeled speedups.**
 Method work serves that scientific goal and may land in an appendix; it is
 not a standalone methods paper. See the round-17 reframe in
 `paper/publishability-status.md` and `paper/claim-matrix.md`.
@@ -317,6 +320,23 @@ Rules:
 - KB summaries can set priorities, but they do not replace raw artifacts
 - future-work memos are framing input, not proof
 
+Paper-facing evidence classes:
+
+- **local reproduced evidence**: run in this repo, with commit / artifact /
+  hardware / protocol recorded
+- **local semantic evidence**: answer-stability or planner-substitution result
+  that does not prove timed skipped work
+- **local systems evidence**: measured wall-clock or stage-timing result where
+  the accelerated backend actually skips the named work
+- **advisory local evidence**: useful but caveated by thermal, corpus, sample,
+  or protocol limits
+- **imported upstream evidence**: imported from the predecessor repo and kept
+  separate from local reproduction
+- **reported supplementary deployment evidence**: separate streaming or
+  companion-system rows, labeled by denominator and protocol
+- **future / hypothesis**: proposed design, roadmap, or experiment without a
+  completed local result
+
 ## What We Are Carrying Forward
 
 Strong enough to guide the next phase:
@@ -344,6 +364,12 @@ These are not mathematically impossible. They are simply poor early bets.
 - continuous H.264 spatial scoring as a main saliency path
 - provenance-aware KV allocation as an early milestone
 - aggressive composed speedup or compression arithmetic before local measurements
+- pHash as a quality lever; it is a planner-latency optimization at most
+- majority-vote planner ensembles except as oracle diagnostics
+- blind bigger TOMATO reruns before placement diagnostics or a new hypothesis
+- treating `refresh=4` as a universal default rather than a max-age policy to
+  retune per regime
+- promoting un-audited companion evidence into local benchmark cells
 
 ## Adoption Map
 
@@ -954,6 +980,24 @@ Implications:
 - treat generalized reproduction as the default benchmark standard on this
   machine unless a stricter rerun becomes feasible elsewhere
 
+## Scale-Out Policy
+
+The default science loop stays local and serial enough to preserve provenance.
+Scale-out is for frozen sweeps, not for ad hoc hypothesis drift.
+
+- The M3 Air remains the truth/timing machine for MLX-local paper rows unless a
+  phase note explicitly promotes another machine.
+- Add an Apple-silicon worker first when a frozen grid is too slow locally.
+  Linux/CUDA workers are scouting or baseline machines unless a protocol says
+  otherwise.
+- Before sharding, freeze the commit, manifests, prompts, model revisions,
+  planner grid, parser, and artifact schema.
+- Each shard owns a disjoint manifest slice and writes raw artifacts with
+  machine / hardware / software metadata.
+- Promotion requires a barrier step: aggregate only after all shards finish or
+  are explicitly marked missing, then record the exact commit and hardware mix.
+- Do not mix dirty-tree exploratory artifacts into paper-facing tables.
+
 ## Immediate Backlog
 
 Near-term order:
@@ -969,7 +1013,7 @@ Near-term order:
 3. treat phase 1.30W as the mechanistic reference point and phase 1.30X as
    the new routing reference point: dense Q0 solves the first-query leg
    exactly, and a simple duration-gated admission policy already reopens the
-   speed/accuracy rescue band
+   target speed/accuracy band
 4. do not spend more time on blind global 1.30 reruns or same-protocol
    follow-up-only tweaks: phase 1.30X shows the live gap is now format
    hygiene in two remaining long sessions (`783-2`, `847-3`). Reopen 1.30
@@ -987,17 +1031,39 @@ Near-term order:
 8. keep scroll/pan work off VideoMME: phase 1.60 closed that corpus as the
    wrong regime, so future work needs EgoSchema, Ego4D, EPIC-Kitchens, or a
    labeled synthetic set
+9. keep the brainstorm-closure TODOs visible but scoped:
+   - Track B sparse execution against the captured dense baseline
+   - temporal placement ablations
+   - true matched-budget cached higher-frame-count coverage
+   - failure predictor with answer-margin / paired-drift features
+   - event-window oracle
+   - within-block child-veto
+   - deployment/application baselines
+   - egomotion or synthetic driving lane for predictable-motion routing
 
 ## Future Horizons
 
 Keep these visible, but clearly outside the current evidence boundary:
 
-- robustness against novelty amplification or compute-denial inputs
-- screen-content specialization as a major branch
-- machine-oriented codec sidecars
-- feature-compression and machine-first media standards as adjacent framing
-- sensor-fusion timelines or world-state codecs
-- AI-native codecs and hardware co-design
+- **Near future / requirements experiments**
+  - robustness against novelty amplification or compute-denial inputs
+  - screen-content specialization as a major branch
+  - motion-model-conditioned routing on synthetic pan/zoom/driving clips
+  - event-assisted refresh from synthetic event maps
+  - machine-first tile granularity: token tiles, projector groups, child-veto
+    tiles, object masks, and codec macroblock alignment
+- **Medium-distance representation probes**
+  - machine-oriented codec sidecars
+  - object/state delta sidecars
+  - pose-aware and multi-reference caches
+  - learned recache gates and calibrated selective recompute
+  - codec-conditioned token types
+- **Far-distance media systems**
+  - feature-compression and machine-first media standards as adjacent framing
+  - sensor-fusion timelines or world-state codecs carrying RGB, depth/ToF,
+    event, IMU/odometry, object tracks, timestamps, and confidence
+  - learned delta encoders and AI-native codecs
+  - hardware co-design for tensor-friendly active-tile decode
 
 These are paper-story or long-range-program ideas until local evidence lands.
 

@@ -8,7 +8,7 @@
 Regime & Setting & Denom. & Gain & Fidelity & Status \\
 \midrule
 After-ingest & Qwen same-video follow-up, 16f & cold/cached follow-up & 91.1$\times$ & 0.807\,s median; $\Delta$acc +0.000 & clean \\
-After-ingest & Qwen same-video follow-up, 8f & cold/cached follow-up & 47.2$\times$ & 0.815\,s median; $\Delta$acc -0.048 & safe \\
+After-ingest & Qwen same-video follow-up, 8f & cold/cached follow-up & 47.2$\times$ & 0.815\,s median; $\Delta$acc -0.048 & within criterion \\
 After-ingest & Qwen adaptive re-prefill, 20f short & cold/repaired follow-up & 24.76$\times$ & choice/correct diffs 0/21; pathological follow-ups 0/14 & mechanism win \\
 After-ingest & Qwen fixed K=1 re-prefill, 20f/32f breadth & cold/repaired follow-up & 9.48--20.37$\times$ & choice/correct diffs 0/93; pathological follow-ups 0/62 & broad recovery \\
 First-pass & Gemma MVBench 8f holdout & first-query E2E & 1.407$\times$ & $\Delta$acc -0.033 & advisory \\

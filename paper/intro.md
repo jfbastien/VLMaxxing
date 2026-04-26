@@ -1,10 +1,14 @@
 ---
 date: 2026-04-21
 parent: paper/framing.md
-status: paper-facing draft introduction — three-contributions structure with Sam as deployment-scale evidence
+status: legacy paper-facing scratchpad — canonical introduction is paper/arxiv/sections/02_introduction.tex
 ---
 
 # Introduction (codec-through-2, draft)
+
+> Status note: this markdown file preserves prior introduction framing and may
+> lag the current manuscript. Use `paper/arxiv/sections/02_introduction.tex` as
+> the canonical introduction until this note is removed.
 
 <!--
 Internal: this intro is the paper-facing narrative counterpart to
@@ -12,11 +16,17 @@ Internal: this intro is the paper-facing narrative counterpart to
 operationalizes the structural request from Codex round 25: stop
 foregrounding Lane A as the center of gravity; make C-CEILING,
 C-PERSIST, and C-VISION first-class; keep Qwen routing as
-mechanism-validation backbone; move Sam from "applications/support"
-to deployment-scale evidence.
+mechanism-validation backbone; keep separate streaming results as
+deployment-scale evidence.
 -->
 
 ## 1. Setting: what the efficiency papers are quietly overstating
+
+Video VLMs keep paying to understand visual state that did not change. The
+wall behind the factory robot is still the wall; the stove/countertop
+background is still the stove/countertop background; the camera stream already
+contains cheap evidence of that stability. The fun systems question is why the
+model has to pay again.
 
 Token-pruning, frame-routing, and KV-cache reuse methods for video VLMs
 often report speedups on one component. Readers then compound those numbers
@@ -62,18 +72,18 @@ when a reported end-to-end gain exceeds the
 fixed-stage ceiling, the denominator is wrong (usually thermal drift,
 decode-path conflation, or unreported prefill caching).
 
-### 2.2  C-PERSIST — a cross-architectural safe-deployment envelope for persistent KV
+### 2.2  C-PERSIST — a cross-architectural tested deployment envelope for persistent KV
 
 Reusing the first-query KV across subsequent questions on the *same*
 video collapses follow-up latency into a conversational regime on
 commodity hardware: after the first-query prefill is paid (cold), the
 second and later questions on Qwen 2.5-VL-7B-4bit at ≤ 16 frames return
-in sub-second time inside the current safe envelope. The envelope is
+in sub-second time inside the current tested envelope. The envelope is
 architecturally bounded and characterized:
 
-- **Qwen 2.5-VL-7B-4bit**: safe through 16 frames / ≤ 6.5 k prefill
-  tokens, with a clean 16 f point (Δacc = 0) and a slightly worse but
-  still safe 8 f point (Δacc = −0.048). Soft transition at 18–20 frames into a
+- **Qwen 2.5-VL-7B-4bit**: tested through 16 frames / ≤ 6.5 k prefill
+  tokens, with a clean 16 f point (Δacc = 0) and an 8 f point still inside
+  the preregistered criterion (Δacc = −0.048). Soft transition at 18–20 frames into a
   non-letter-attractor basin (mixed `addCriterion` + garbage); saturated
   single-token attractor at ≤ 24 frames. The basin is
   sampler-invariant at both 20 f and 40 f; sampler intervention does
@@ -197,15 +207,15 @@ matched conditions:
 
 Preserving these nulls is the work Lane A does for the paper.
 
-## 4. Deployment-scale evidence: codec-through-sam
+## 4. Deployment-scale evidence: separate streaming work
 
 The numbers above come from a 4 B-class model at commodity 4-bit
 quantization and sparse benchmark protocols. The sibling system
-**codec-through-sam** (`~/s/codec-through-sam`) exercises the full
+The separate streaming implementation exercises the full
 streaming stack at a different regime and supplies the deployment-scale
 evidence C-PERSIST and C-VISION predict:
 
-- **~50× dominant-pipeline compute reduction** on paired Streaming
+- **~50× dominant measured subpipeline compute reduction** on paired Streaming
   VideoMME.
 - **13× ViT reduction** on a real streaming protocol.
 - **5.4× prefill speedup** on Gemma novelty-pruning.
@@ -226,7 +236,7 @@ where users actually deploy this class of model: mostly static
 surveillance, talking-head conferencing, FPV/egomotion, and repeated
 querying over the same stream.
 
-Two categories of Sam numbers, carrying different evidential weight.
+Two categories of streaming numbers carry different evidential weight.
 **Deployment-scale** — the bullets above — have paired baselines,
 named protocols, and corpus sizes stated. They stand as main-body
 evidence. **Case-study** — piecewise-reuse single-cell illustrations,
@@ -238,7 +248,7 @@ The two repos run on disjoint axes by design. codec-through is
 stricter and more reductionist — smaller local models, sparse-sampled
 benchmark regimes, careful end-to-end accounting, pixel-diff proxy
 science in sparse QA before full codec-native deployment, mechanism
-isolation, and preregistered falsification. codec-through-sam is the
+isolation, and preregistered falsification. The separate streaming work is the
 full stack in the right regime — 26 B-class model, real streaming
 protocol, H.264 metadata at native rate for streaming, pixel-diff
 proxy on sparse benchmark QA, live decode in loop, persistent KV
@@ -282,7 +292,7 @@ the positives:
   10 pp aggregate gate at 7.9 pp but fails per-item at 16–25 pp; the
   reframed planner-accuracy probe now has all-duration VideoMME dev
   \(n=30\) planner-substitution evidence with 30/30 dense-choice agreement
-  and no accuracy loss. This is codec-native semantic evidence, not a
+  and zero aggregate accuracy delta. This is codec-native semantic evidence, not a
   systems-speed result: offline extraction took 7290 s, later
   calibration-mode and calibration-source ablations were exactly neutral
   on the local slices we ran, and the remaining bridge is streaming-decoder
@@ -311,21 +321,21 @@ evidence inline.
 
 codec-through alone is a strong methods paper, a publishable
 analytical contribution, and a credible small systems lane. It is not
-broad SOTA. codec-through-sam, evaluated on its own protocol, delivers
-the product-scale multiplicative numbers. What we claim here is
+broad SOTA. The separate streaming implementation, evaluated on its own protocol, delivers
+reported deployment-scale companion numbers. What we claim here is
 **three linked contributions** — C-CEILING, C-PERSIST, C-VISION —
 *and* the honest accounting of where the evidence mix sits across the
-two systems. The paper is the evidence union, not either part alone.
+two systems. The paper is the labeled evidence union, not either part alone.
 
 ## 6. Roadmap
 
 § 2 develops C-CEILING formally and cross-validates it across the
 measured regime dimensions. § 3 characterizes the C-PERSIST
-safe-deployment envelope and its onset-depth scaling. § 4 presents
+tested deployment envelope and its onset-depth scaling. § 4 presents
 C-VISION's operating point, V-reduction invariance, and three-
 benchmark transfer. § 5 gives Lane A's matched-conditions
 mechanism-validation evidence (what works, what doesn't). § 6
-presents deployment-scale evidence from codec-through-sam. § 7
+presents deployment-scale evidence from the separate streaming implementation. § 7
 discusses limitations, the landed but narrow Qwen C-VISION transfer
 point, the outstanding sparse-execution delta for claim 5, and the
 future phases documented in `paper/priority.md`. Weak streaming case

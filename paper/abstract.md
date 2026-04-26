@@ -1,15 +1,20 @@
 ---
 date: 2026-04-21
 parent: paper/framing.md
-status: paper-facing draft abstract — three-contributions structure (C-CEILING / C-PERSIST / C-VISION)
+status: legacy paper-facing scratchpad — canonical abstract is paper/arxiv/sections/01_abstract.tex
 ---
 
 # Abstract (codec-through-2, draft)
 
-Token-level and frame-level compression methods for video VLMs advertise
-component-level speedups, but the gains that translate to end-to-end
-wall-clock are regime-dependent and easy to misread unless stage share is
-reported. We pin down the
+> Status note: this markdown file preserves prior abstract framing and may lag
+> the current manuscript. Use `paper/arxiv/sections/01_abstract.tex` as the
+> canonical paper abstract until this note is removed.
+
+Video VLMs keep paying to understand visual state that has not changed: the
+factory wall did not move, but the stack pays for it again. Token-level and
+frame-level compression methods for video VLMs advertise component-level
+speedups, but the gains that translate to end-to-end wall-clock are
+regime-dependent and easy to misread unless stage share is reported. We pin down the
 compression-to-wall-clock relationship arithmetically, then instantiate
 it in three independent efficiency settings on commodity hardware.
 
@@ -28,10 +33,10 @@ models, and why decode-heavy regimes resist prefill acceleration.
 *C-PERSIST*: under persistent-KV reuse on commodity 4-bit quantized
 checkpoints, once the first-query prefill is paid, subsequent questions
 on the same video return in sub-second time inside a
-**safe-deployment envelope** that is architecture-specific: Qwen
-2.5-VL-7B-4bit stays inside the safe envelope through 16 frames /
+**tested deployment envelope** that is architecture-specific: Qwen
+2.5-VL-7B-4bit stays inside the tested envelope through 16 frames /
 6.5 k prefill tokens, with a clean 16 f point and a slightly worse but
-still safe 8 f point; 3B-4bit stays bounded through 36 frames /
+still tolerated 8 f point; 3B-4bit stays bounded through 36 frames /
 14.5 k prefill tokens at a Δacc = −0.19 pre-basin plateau. Outside the
 envelope, a narrow soft
 transition exits into a non-letter-attractor basin; basin-onset depth
@@ -67,12 +72,12 @@ fail under matched conditions — establishing what is and is not
 load-bearing on temporal redundancy. Repo-local 1.55D v2 itself is no
 longer an infrastructure negative; it is a bounded recovery frontier.
 The
-**deployment-scale evidence** comes from the sibling codec-through-sam
-system, which exercises the full streaming stack on a 26 B-class
-model — real-video 4.2–4.5× end-to-end speedups, ~50× dominant-pipeline
+**deployment-scale evidence** comes from a separate 26B streaming
+implementation, which exercises the full streaming stack on a 26 B-class
+model — real-video 4.2–4.5× end-to-end speedups, ~50× dominant measured subpipeline
 compute reduction, 13× ViT reduction, 5.4× prefill, and 5–300× live ViT
 savings on camera feeds — anchoring the product-facing claims that
-C-PERSIST and C-VISION predict at 4 B-class scale. The two repos share
+C-PERSIST and C-VISION predict at 4 B-class scale. The two implementations share
 an analytical frame (C-CEILING) and a shared definition of
 attention-propagation drift as the fidelity mechanism, but run on
 disjoint model-size and protocol regimes, which we treat as a feature
@@ -91,8 +96,8 @@ on what training-free temporal reuse is and is not.
 first-pass headline cells remain Gemma-heavy: one matched Qwen point
 supports the ceiling mechanism, not broad architecture generalization.
 Measured end-to-end gain in a sparse-execution path (claim 5) remains
-unmeasured at local scale; the sparse-path evidence lives in
-codec-through-sam. A local Qwen session/streaming bridge reproduces the
+unmeasured at local scale; the sparse-path evidence remains separate from
+the main local claims. A local Qwen composition bridge reproduces the
 speedup side of stacked deployment but falsifies the fidelity gate, so
 the bridge now depends on a safer/adaptive V-leg policy: the completed
 root-cause scout localizes the loss primarily to Q0 vision pruning at
@@ -106,3 +111,9 @@ replicate on a disjoint n = 30 holdout** (holdout 16 f long 0.900 vs
 dev 0.100); we treat the long-bucket shape as a dev-split
 observation. The broader point — frame-count scaling is not a linear
 quality knob on the models we study — survives.
+
+**Larger agenda.** The paper is not an AI-native codec and does not claim one.
+It uses frozen-stack anti-recomputation experiments as a requirements probe for
+future VLM-native media: streams that expose change, motion, uncertainty,
+object/state deltas, text, sensor time, and active tiles directly instead of
+making the model rediscover them from repeated RGB frames.

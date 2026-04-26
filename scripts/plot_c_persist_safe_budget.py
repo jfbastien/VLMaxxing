@@ -1,4 +1,4 @@
-"""C-PERSIST safe-deployment table + follow-up speedup curve.
+"""C-PERSIST tested-envelope table + follow-up speedup curve.
 
 Emits:
 
@@ -6,7 +6,7 @@ Emits:
   panel: Δacc vs frame-count for 7B and 3B Qwen 2.5-VL-4bit on the
   Phase 1.55A persistent-KV probe. Right panel: follow-up speedup
   (dense / session) vs frame-count for the same two architectures.
-  Safe-deploy thresholds (7B ≤16f, 3B ≤36f) are shaded.
+  Tested/tolerated thresholds (7B ≤16f, 3B ≤36f) are shaded.
 - ``paper/figures/c_persist_safe_budget_data.json`` — the full per-cell
   numbers used to render the figure.
 
@@ -45,7 +45,7 @@ class PersistCell:
     speedup_x: float
     delta_acc: float
     basin_session_share: str
-    safe_deploy: bool
+    accepted_envelope: bool
 
 
 SEVEN_B = [
@@ -82,10 +82,10 @@ def plot() -> None:
     three_acc = [c.delta_acc for c in THREE_B]
     three_spd = [c.speedup_x for c in THREE_B]
 
-    # Safe-band shading: 7B safe ≤16f (left of the 7B basin at 20f);
-    # 3B safe ≤36f (left of the 3B basin bracketed (36f, 40f]).
-    ax_acc.axvspan(0, 16, color="tab:blue", alpha=0.08, label="7B safe ≤16f")
-    ax_acc.axvspan(0, 36, color="tab:green", alpha=0.06, label="3B safe ≤36f")
+    # Accepted-region shading: 7B tolerated ≤16f (left of the 7B basin at 20f);
+    # 3B tolerated ≤36f (left of the 3B basin bracketed (36f, 40f]).
+    ax_acc.axvspan(0, 16, color="tab:blue", alpha=0.08, label="7B accepted ≤16f")
+    ax_acc.axvspan(0, 36, color="tab:green", alpha=0.06, label="3B tolerated ≤36f")
     ax_speed.axvspan(0, 16, color="tab:blue", alpha=0.08)
     ax_speed.axvspan(0, 36, color="tab:green", alpha=0.06)
 
@@ -107,9 +107,9 @@ def plot() -> None:
     )
     ax_acc.axhline(0.0, color="black", linewidth=0.6, linestyle=":")
     ax_acc.axhline(
-        -0.05, color="tab:red", linewidth=0.6, linestyle="--", label="Δacc = -0.05 clean envelope"
+        -0.05, color="tab:red", linewidth=0.6, linestyle="--", label="Δacc = -0.05 local criterion"
     )
-    ax_acc.set_title("Follow-up accuracy cost (safe-deploy envelope shaded)")
+    ax_acc.set_title("Follow-up accuracy cost (tested envelope shaded)")
     ax_acc.set_xlabel("frame count at ingest prefill")
     ax_acc.set_ylabel("Δacc (session − baseline)")
     ax_acc.set_xticks(sorted(set(seven_xs + three_xs)))
@@ -140,7 +140,7 @@ def plot() -> None:
     ax_speed.legend(loc="lower right", fontsize=8)
 
     fig.suptitle(
-        "C-PERSIST safe-deployment envelope (Phase 1.55A four-regime probe, n=21/cell)\n"
+        "C-PERSIST tested envelope (Phase 1.55A four-regime probe, n=21/cell)\n"
         "Basin-onset depth scales ~1.6× with parameter count; basin geometry cross-architectural",
         fontsize=12,
     )
@@ -155,10 +155,10 @@ def plot() -> None:
         "seven_b": [asdict(c) for c in SEVEN_B],
         "three_b": [asdict(c) for c in THREE_B],
         "thresholds": {
-            "seven_b_safe_frames": 16,
-            "seven_b_safe_prefill_tokens": 6500,
-            "three_b_safe_frames": 36,
-            "three_b_safe_prefill_tokens": 14500,
+            "seven_b_accepted_frames": 16,
+            "seven_b_accepted_prefill_tokens": 6500,
+            "three_b_tolerated_frames": 36,
+            "three_b_tolerated_prefill_tokens": 14500,
             "onset_depth_scaling_ratio": round(14500 / 8100, 2),
         },
     }
