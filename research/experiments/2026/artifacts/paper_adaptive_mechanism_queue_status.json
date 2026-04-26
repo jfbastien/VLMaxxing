@@ -175,7 +175,47 @@
         "follow_up_mean_image_tokens_recomputed": 3200.0
       },
       "auto_commit": "committed"
+    },
+    {
+      "phase": "1.30AD",
+      "runtime_estimate": "~1.5-2.5 h with 1.30W cold reuse",
+      "rationale": "Re-run the landed 1.30W full union under image-token instrumentation so the published 1.30W mechanism can be stated from a measurement rather than from 1.30Z-only inference.",
+      "ready": true,
+      "timeout_seconds": 12600,
+      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_30AD_instrumented_w_rerun",
+      "command": [
+        "bash",
+        "/Users/jfb/s/codec-through/scripts/run_phase1_30AD_instrumented_w_rerun.sh"
+      ],
+      "status": "completed",
+      "gate": {
+        "accuracy_delta": -0.05847953216374269,
+        "accuracy_delta_ci95": [
+          -0.11695906432748537,
+          0.0
+        ],
+        "speedup": 3.021799187874183,
+        "parse_failures": 0,
+        "degenerates": 0,
+        "n_paired_queries": 171,
+        "n_paired_sessions": 57,
+        "pass_complete_pairing": true,
+        "pass_rescue": true,
+        "pass_format": true,
+        "follow_up_vision_pruning_active_fraction": 0.0,
+        "follow_up_all_image_tokens_reused_fraction": 1.0,
+        "follow_up_pruning_materially_active": false,
+        "reference_accuracy_delta": -0.05847953216374269,
+        "reference_accuracy_delta_ci95": [
+          -0.11695906432748537,
+          0.0
+        ],
+        "pass_repro_delta": true,
+        "pass_repro_ci": true,
+        "pass_mechanism": true
+      },
+      "auto_commit": "committed"
     }
   ],
-  "updated_at": "2026-04-26T10:24:04+00:00"
+  "updated_at": "2026-04-26T11:46:56+00:00"
 }
