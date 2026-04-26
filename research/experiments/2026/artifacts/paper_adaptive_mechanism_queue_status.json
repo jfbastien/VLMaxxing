@@ -1,0 +1,41 @@
+{
+  "preflight_json": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/paper_adaptive_mechanism_preflight.json",
+  "dry_run": false,
+  "strict": false,
+  "auto_commit": true,
+  "started_at": "2026-04-26T01:07:51+00:00",
+  "steps": [
+    {
+      "phase": "1.55F-medium",
+      "runtime_estimate": "~60-75 min",
+      "rationale": "Extend the landed adaptive post-Q2-state policy from short to the fixed medium tranche so adaptive C-PERSIST can either become a two-regime result or be explicitly scoped to short only.",
+      "ready": true,
+      "timeout_seconds": 7200,
+      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_55F_medium_adaptive_replication",
+      "command": [
+        "bash",
+        "/Users/jfb/s/codec-through/scripts/run_phase1_55F_medium_adaptive_replication.sh"
+      ],
+      "status": "completed",
+      "gate": {
+        "paired_correctness_diffs": 0,
+        "paired_choice_diffs": 0,
+        "pathological_follow_up_hits": 0,
+        "pathological_q3_hits": 0,
+        "speedup_all_query_median_cold_over_session_follow_up": 15.279848121041772,
+        "session_follow_up_median_ms": 6512.4797505,
+        "peak_rss_gb": 1.941028864,
+        "baseline_accuracy": 0.5333333333333333,
+        "pass_fidelity": true,
+        "pass_exact_match": true,
+        "pass_follow_up_pathology": true,
+        "pass_q3_pathology": true,
+        "pass_speed": true,
+        "pass_memory": true,
+        "pass_signal_floor": true
+      },
+      "auto_commit": "committed"
+    }
+  ],
+  "updated_at": "2026-04-26T02:37:51+00:00"
+}

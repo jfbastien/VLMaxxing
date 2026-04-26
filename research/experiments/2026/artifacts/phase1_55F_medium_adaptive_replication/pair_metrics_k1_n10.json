@@ -1,0 +1,51 @@
+{
+  "label": "phase1_55F_medium_adaptive_replication",
+  "n_pairs": 30,
+  "n_sessions": 10,
+  "n_follow_up_pairs": 20,
+  "paired_correctness_diffs": 0,
+  "paired_choice_diffs": 0,
+  "pathological_follow_up_hits": 0,
+  "pathological_q3_hits": 0,
+  "accuracy_delta_session_minus_baseline": 0.0,
+  "accuracy_delta_session_minus_baseline_ci95": [
+    0.0,
+    0.0
+  ],
+  "follow_up_accuracy_delta_session_minus_baseline": 0.0,
+  "follow_up_accuracy_delta_session_minus_baseline_ci95": [
+    0.0,
+    0.0
+  ],
+  "q3_accuracy_delta_session_minus_baseline": 0.0,
+  "q3_accuracy_delta_session_minus_baseline_ci95": [
+    0.0,
+    0.0
+  ],
+  "session_follow_up_median_ms": 6512.4797505,
+  "baseline_follow_up_median_ms": 97038.32483299999,
+  "baseline_all_query_median_ms": 99509.70147900001,
+  "speedup_follow_up_median_cold_over_session": 14.900364922524298,
+  "speedup_all_query_median_cold_over_session_follow_up": 15.279848121041772,
+  "q_index_breakdown": {
+    "q1": {
+      "n": 10,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    },
+    "q2": {
+      "n": 10,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    },
+    "q3": {
+      "n": 10,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    }
+  },
+  "mismatches": []
+}
