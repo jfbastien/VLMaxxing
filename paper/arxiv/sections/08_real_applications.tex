@@ -1,9 +1,10 @@
 \section{Streaming and Deployment Evidence}
 
-The most dramatic gains appear when the model keeps revisiting nearly the same
-visual state. A separate Gemma 4 26B streaming implementation reports 0.8\,s
-median same-video follow-up latency at 10--18$\times$ speedup, paired Streaming
-VideoMME results with 13$\times$ fewer ViT calls and
+The largest reported operational gains appear when the model keeps revisiting
+nearly the same visual state. We report this as imported deployment-scale
+evidence under a separate Gemma 4 26B streaming protocol, not as local headline
+cells. That protocol reports 0.8\,s median same-video follow-up latency at
+10--18$\times$ speedup, paired Streaming VideoMME results with 13$\times$ fewer ViT calls and
 \mbox{$\sim$50$\times$} less dominant measured subpipeline compute, and selected
 real-video regimes with 4.2--4.5$\times$ end-to-end speedups. Reported
 live-camera measurements show the same regime dependence in the wild: ViT savings range
@@ -27,9 +28,9 @@ section is the deployment table below.
 \centering
 \caption{Heterogeneous operational evidence for the streaming/deployment
 regime. Metric type is shown explicitly because these rows mix component
-counters, end-to-end timing, and live observations. Smaller UI and demo case
-studies are discussed in text and kept clearly weaker than the paired
-streaming rows below.}
+counters, end-to-end timing, and live observations with different sample sizes
+and denominators. Smaller UI and demo case studies are discussed in text and
+kept clearly weaker than the paired streaming rows below.}
 \label{tab:real-apps}
 \footnotesize
 \renewcommand{\arraystretch}{1.08}

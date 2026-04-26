@@ -445,6 +445,11 @@ work.
   desynchronization, and contradictory sensors can turn anti-recomputation into
   deadline misses. Treat this as a future robustness suite, not as an earned
   result.
+- **Domain rotations**: video generation/world models and audio share the
+  anti-recomputation shape but need their own evidence. For generation, refresh
+  around occlusion, entropy spikes, and new-object events rather than only
+  pixel motion. For audio, quiet is not irrelevant; onset, phoneme boundaries,
+  speaker changes, and prosody are the candidate refresh signals.
 
 ## New methodology rules
 

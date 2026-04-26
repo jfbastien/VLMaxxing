@@ -114,9 +114,9 @@ as the in-repo default (secondary methodology content). Claim 11 is
 duration-conditional partial reproduction, arithmetically bounded to
 ≤1.46× at 8f kr=0.10 per C-CEILING.
 
-See `paper/framing.md`, `paper/abstract.md`, `paper/intro.md`, and
-`paper/priority.md` for the authoritative three-contribution
-narrative.
+See `paper/framing.md`, `paper/priority.md`, and the canonical LaTeX sources
+under `paper/arxiv/sections/` for the authoritative narrative. The Markdown
+abstract/intro files are legacy scratchpads.
 
 > **Training-free anti-recomputation for video VLMs: measured first-pass
 > speedups on Gemma, sub-second same-video follow-up queries on Qwen, and

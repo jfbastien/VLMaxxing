@@ -124,6 +124,14 @@ either benchmark. Routing and point prediction are different objectives: the
 planner only needs a signal that spends scarce refresh budget in the right part
 of the clip often enough to preserve the answer.
 
+\paragraph{Takeaway.}
+Codec-like and pixel-domain signals do not need to be semantic oracles to be
+useful. They need to be good enough freshness or uncertainty oracles that the
+runtime buys new visual evidence in the right temporal neighborhood. That is
+why novelty-ranked dense selection is the critical baseline: it tests whether
+the policy is merely buying the most changed frames, or whether it is placing a
+limited fresh-evidence budget where the question can still be answered.
+
 \begin{sectiontodo}{Finish the mechanism appendix boundary}
 The routing section is now in the right role, but three things still need
 cleanup before submission: wire the novelty-ranked dense table to stable

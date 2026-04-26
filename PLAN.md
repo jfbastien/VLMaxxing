@@ -49,6 +49,8 @@ Primary objective:
 
 - determine which cheap temporal and codec-derived signals can reduce video-VLM
   work without unacceptable answer drift
+- make the central scientific object explicit: the quality-compute frontier of
+  fresh visual evidence over time, not raw reuse rate
 - use those measurements as a requirements probe for future VLM-native media
   streams, while keeping the current paper's claims limited to reproduced or
   explicitly labeled supplementary evidence
@@ -1063,6 +1065,9 @@ Keep these visible, but clearly outside the current evidence boundary:
   - sensor-fusion timelines or world-state codecs carrying RGB, depth/ToF,
     event, IMU/odometry, object tracks, timestamps, and confidence
   - learned delta encoders and AI-native codecs
+  - domain rotations into video generation/world models and audio, where reuse
+    must respect occlusions, entropy spikes, onsets, phoneme boundaries,
+    speaker changes, and prosody rather than naive motion or energy alone
   - hardware co-design for tensor-friendly active-tile decode
 
 These are paper-story or long-range-program ideas until local evidence lands.

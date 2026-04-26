@@ -16,6 +16,14 @@ where most of the scene remains stable for long stretches. The interesting
 question is no longer whether redundancy exists. It does. The question is
 where that redundancy can be removed without breaking the answer.
 
+Our central question is where a VLM must buy fresh visual evidence over time,
+and where cached state is enough to stay on the relevant regime-specific
+quality--compute frontier. The key variable is not simply how much visual
+compute is reused. A small transient event, a moving hand, a text flash, or an
+object entering at a boundary can matter more than a large region of
+predictable background motion. The planner buys fresh evidence; the model
+still decides what matters.
+
 The literature often treats that waste as if it were one knob. It is not. The
 fresh-video pass is bounded by whatever share of wall-clock the vision tower
 actually owns. After-ingest follow-up queries on the same video are a
@@ -42,10 +50,13 @@ cheap temporal signals are already useful to a frozen VLM runtime, where those
 signals fail, and what a future VLM-native media stream should expose directly.
 Codec and pixel signals are therefore treated as freshness and uncertainty
 signals, not as semantic-saliency oracles. They can say where something
-probably changed; the model and the task still decide what matters.
+probably changed; the model and the task still decide what matters. That is
+why the VLM-native media discussion later in the paper is framed as candidate
+requirements, not as a current systems claim.
 
-A separate 26B streaming implementation is consistent with the same structure
-in operational workloads. Under that protocol, same-video follow-up latency is
+A separate 26B streaming implementation is reported as imported
+deployment-scale evidence consistent with the same structure in operational
+workloads. Under that protocol, same-video follow-up latency is
 0.8\,s, paired Streaming VideoMME reports 13$\times$ fewer ViT calls and
 \mbox{$\sim$50$\times$} less dominant measured subpipeline compute, and
 selected real-video regimes reach 4.2--4.5$\times$ end-to-end speedups. These
@@ -80,7 +91,7 @@ Regime & Reused work & Denominator / evidence class & Headline evidence \\
 \midrule
 Fresh-video first pass & vision-tower work inside the first query & first-query wall-clock; local clean/advisory cells & Gemma first-pass gains from 1.113$\times$ to 1.407$\times$ across clean and advisory holdout cells \\
 After-ingest follow-up & prompt / KV prefix for later questions on the same video & follow-up latency and paired drift; first query still pays full freight & fixed \(K=1\) re-prefill repairs short/medium/long and 32f-short slices with no observed drift on n=93; adaptive post-\(Q2\) state reaches 24.76$\times$ same-class speedup on the short slice \\
-Streaming / deployment & repeated visual state in a native-rate or live pipeline & separate operational protocol rows: ViT calls, measured subpipeline compute, live counters, or E2E & a 26B streaming implementation reports 13$\times$ fewer ViT calls, \mbox{$\sim$50$\times$} dominant measured subpipeline reduction, 4.2--4.5$\times$ real-video E2E, and 5--300$\times$ live-camera ViT savings \\
+Streaming / deployment & repeated visual state in a native-rate or live pipeline & separate operational protocol rows: ViT calls, measured subpipeline compute, live counters, or E2E & a 26B streaming implementation reports 13$\times$ fewer ViT calls, \mbox{$\sim$50$\times$} dominant measured subpipeline reduction, 4.2--4.5$\times$ real-video E2E, plus separate live-camera counters \\
 \bottomrule
 \end{tabularx}
 \end{table}

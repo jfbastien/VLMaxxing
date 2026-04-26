@@ -84,12 +84,31 @@ egomotion or scrolling content; it shows VideoMME is the wrong corpus for that
 question. A scroll/pan characterization now requires EgoSchema, EPIC-Kitchens,
 Ego4D, or a labeled synthetic set.
 
+A dynamic-compute runtime also creates a robustness surface we have not yet
+measured. Inputs can amplify apparent novelty and force the system to spend
+more compute seeing: flicker, rolling-shutter bands, blinking UI, repetitive
+local motion, scene-cut bursts, camera shake, and sensor desynchronization are
+all future stressors. The right metrics are novelty amplification, latency
+amplification, deadline miss rate, and fallback behavior. Until that suite
+exists, the speedups in this paper are workload-regime results, not worst-case
+latency guarantees.
+The dual failure also matters: an input can hide a task-critical change below
+the refresh trigger and cause stale reuse rather than excessive recompute. A
+real robustness suite needs both denial-of-savings and denial-of-freshness
+cases.
+
 Finally, equal aggregate accuracy is not the same as identical behavior. The
 Gemma routing split makes this visible: TOMATO passes the agreement gate, while
 MVBench preserves aggregate accuracy but changes 8/30 choices across four
 motion subgroups. The composition and selective-reprefill drift audits show the same pattern in
 different forms. Reviewers should read the paired-drift columns as part of the
 claim, not as decorative diagnostics.
+
+The persistent-cache failures should also be read as attention-context or
+cache-state failures, not as positional-encoding drift claims. The current
+experiments identify when reused state changes later answers; they do not yet
+isolate a unique internal mechanism without the cache-invalidated follow-up
+test and direct cache-state instrumentation.
 
 The paper is nevertheless being built to be reproducible. Automated main-text
 figures and tables are generated from checked-in artifact summaries or from

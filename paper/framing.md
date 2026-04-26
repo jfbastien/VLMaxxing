@@ -2,14 +2,20 @@
 
 This file tracks the paper story, contribution boundary, and anti-claims.
 
-Paper-facing drafts (what a reviewer will actually read):
+Canonical paper-facing manuscript sources (what a reviewer will actually read
+once rendered):
 
-- [`paper/abstract.md`](abstract.md) — one-page three-contributions
-  abstract (C-CEILING / C-PERSIST / C-VISION first-class;
-  Lane A as mechanism backbone; separate 26B streaming work as
-  deployment-scale evidence)
-- [`paper/intro.md`](intro.md) — paper-facing introduction with the
-  same structure
+- [`paper/arxiv/sections/01_abstract.tex`](arxiv/sections/01_abstract.tex) —
+  canonical abstract
+- [`paper/arxiv/sections/02_introduction.tex`](arxiv/sections/02_introduction.tex)
+  — canonical introduction
+
+Legacy scratchpads:
+
+- [`paper/abstract.md`](abstract.md) — preserved prior abstract framing; not
+  canonical
+- [`paper/intro.md`](intro.md) — preserved prior introduction framing; not
+  canonical
 
 It is NOT the place for raw experimental detail. Evidence lives in:
 
@@ -35,8 +41,10 @@ reuse).
 
 ## Current Manuscript Position (2026-04-26)
 
-The manuscript should be centered on one anti-recomputation story with three
-explicit regimes:
+The manuscript should be centered on one anti-recomputation story: where a
+frozen video VLM must buy fresh visual evidence over time, and where cached
+state remains inside the appropriate quality--compute frontier. That story has
+three explicit regimes:
 
 - **C-VISION** for measured first-pass gains on fresh videos
 - **C-PERSIST** for the much larger after-ingest follow-up-query wins
@@ -646,6 +654,11 @@ Far-distance:
 - AI-native codecs and hardware co-design. Future codecs should expose
   tensor-friendly active tiles, residual concentration, object/state deltas,
   uncertainty, and motion references directly to the model/runtime.
+- domain rotations into video generation/world models and audio. These share
+  the anti-recomputation shape but need their own evidence: generation should
+  refresh around occlusion, entropy spikes, and new-object events; audio should
+  treat onset, phoneme boundaries, speaker changes, and prosody as candidate
+  refresh signals rather than assuming low energy means low relevance.
 
 ## Proxy Chain To State Explicitly
 

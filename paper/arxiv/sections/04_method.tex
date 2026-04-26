@@ -92,6 +92,27 @@ where $r_{\mathrm{reuse}}$ is the mean active-region reuse ratio. This gives
 the Qwen routing results a common x-axis with dense-$N$ baselines: how much
 fresh visual budget the policy effectively spent.
 
+\subsection{The Frontier We Measure}
+
+The paper's scientific object is not raw reuse rate. It is the
+quality--compute frontier produced by placing fresh evidence in time. In the
+Qwen routing lane, the x-axis is effective fresh frames and the y-axis is
+answer quality or dense agreement; the controls are uniform dense-$k$ frames
+and novelty-ranked dense-$k$ frames. In the first-pass lane, the x-axis is
+measured wall-clock after vision-tower pruning and the y-axis is benchmark
+accuracy. In the follow-up lane, the x-axis is session follow-up latency after
+the first query has paid full freight, and the y-axis is paired drift against
+cold follow-up answers.
+
+Those are separate frontiers, not one universal curve. A semantic-substitution
+point can show that a routing policy preserves answers at lower effective
+fresh-frame budget; it becomes a systems speedup only after the backend skips
+timed work. A persistent-cache point can show large same-video follow-up gains;
+it says nothing about first-pass latency for a fresh video. The manuscript
+therefore reports quality at fixed budget, budget at fixed quality, and the
+elbow or boundary point inside each regime, rather than multiplying the best
+number from each table.
+
 \subsection{Vision-Tower Pruning and Persistent-KV}
 
 The other two mechanisms operate at different points in the stack.

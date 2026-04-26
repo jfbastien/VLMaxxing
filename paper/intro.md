@@ -1,14 +1,14 @@
 ---
 date: 2026-04-21
 parent: paper/framing.md
-status: legacy paper-facing scratchpad — canonical introduction is paper/arxiv/sections/02_introduction.tex
+status: legacy scratchpad — not paper-facing; canonical introduction is paper/arxiv/sections/02_introduction.tex
 ---
 
-# Introduction (codec-through-2, draft)
+# Legacy Introduction Scratchpad
 
-> Status note: this markdown file preserves prior introduction framing and may
-> lag the current manuscript. Use `paper/arxiv/sections/02_introduction.tex` as
-> the canonical introduction until this note is removed.
+> Status note: this markdown file preserves prior introduction framing and is
+> not the current paper text. It may contain stale numbers or retired framing.
+> Use `paper/arxiv/sections/02_introduction.tex` as the canonical introduction.
 
 <!--
 Internal: this intro is the paper-facing narrative counterpart to

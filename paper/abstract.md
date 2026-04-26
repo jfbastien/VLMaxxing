@@ -1,14 +1,14 @@
 ---
 date: 2026-04-21
 parent: paper/framing.md
-status: legacy paper-facing scratchpad — canonical abstract is paper/arxiv/sections/01_abstract.tex
+status: legacy scratchpad — not paper-facing; canonical abstract is paper/arxiv/sections/01_abstract.tex
 ---
 
-# Abstract (codec-through-2, draft)
+# Legacy Abstract Scratchpad
 
-> Status note: this markdown file preserves prior abstract framing and may lag
-> the current manuscript. Use `paper/arxiv/sections/01_abstract.tex` as the
-> canonical paper abstract until this note is removed.
+> Status note: this markdown file preserves prior abstract framing and is not
+> the current paper text. It may contain stale numbers or retired framing. Use
+> `paper/arxiv/sections/01_abstract.tex` as the canonical paper abstract.
 
 Video VLMs keep paying to understand visual state that has not changed: the
 factory wall did not move, but the stack pays for it again. Token-level and

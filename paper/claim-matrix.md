@@ -13,7 +13,8 @@ research program.
 > three distinct regimes: first-pass visual processing, after-ingest
 > follow-up queries on the same video, and benchmarked routing under a
 > frozen dense backend. The paper's job is to keep those regimes
-> separate, quantify them honestly, and explain when each one matters.
+> separate, quantify them honestly, and explain where fresh visual evidence
+> must be placed over time to stay on the relevant quality-compute frontier.
 
 The paper may discuss VLM-native media, machine-oriented sidecars, sensor-
 fusion world-state codecs, and hardware-aware active tiles only as future

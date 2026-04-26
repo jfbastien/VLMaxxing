@@ -9,8 +9,9 @@ follow-up queries admit much larger multipliers, already reaching sub-second lat
 selective re-prefill repairs the deeper cache-reuse basin: fixed \(K=1\) gives
 no observed paired drift across 93 paired queries at 9.48--20.37$\times$
 same-class follow-up speedup, while the adaptive post-\(Q2\) state policy
-reaches 24.76$\times$ same-class speedup on the short slice. Separate
-operational rows push the same idea further into streaming regimes with
+reaches 24.76$\times$ same-class speedup on the short slice. Imported
+operational rows under a separate 26B protocol push the same idea further into
+streaming regimes with
 4.2--4.5$\times$ real-video end-to-end speedups, double-digit ViT-call and
 follow-up-latency reductions, and \mbox{$\sim$50$\times$} dominant measured
 subpipeline savings.
@@ -34,6 +35,9 @@ VLMs should not have to reverse-engineer every repeated frame back into state.
 Future media streams for machines could expose change, motion, uncertainty,
 objects, text, sensor time, and active tiles directly. Anti-recomputation is
 one empirical step from video-as-frames toward video-as-world-state updates.
+The strongest future version is not a better pixel threshold; it is a
+model-facing media interface where change, motion, object state, sensor time,
+and uncertainty arrive as first-class evidence.
 
 \begin{sectiontodo}{Shorten this once the venue template and abstract freeze}
 The conclusion now carries both the measured paper and the larger

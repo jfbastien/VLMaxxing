@@ -51,7 +51,7 @@ Egocentric, FPV, drones & jerky motion, parallax, frequent occlusion & global
 stabilization or multi-reference cache before reuse & current benchmark mix is
 the wrong corpus for this claim \\
 Robotics / VLA & static workspace plus gripper/object/contact zones and hard
-deadlines & protected ROIs, p95/p99 latency budgets, safe dense fallback & future
+deadlines & protected ROIs, p95/p99 latency budgets, guarded dense fallback & future
 systems lane; answer-stability QA is not a control-safety metric \\
 Games and HUD-heavy streams & stable HUD, structured camera regimes, repeated
 interaction states & HUD anchors plus event-triggered world refresh & future
@@ -59,6 +59,30 @@ application lane; likely high reuse but unmeasured here \\
 \bottomrule
 \end{tabularx}
 \end{table}
+
+\paragraph{Robotics is a different contract.}
+Robotics is not just another row in an application table. It changes the
+optimization target from average answer stability to deadline-safe perception.
+A plausible safety contract is protected reuse, not maximal reuse: test
+policies that always refresh the gripper, manipulated object, contact boundary,
+goal receptacle, newly entering regions, and any sensor-disagreement zone;
+reuse aggressively elsewhere; and report p95/p99 latency, deadline misses,
+fallback rate, and task success instead of only QA accuracy. We do not claim
+that evidence here. We name it because it is the natural systems lane once
+anti-recomputation leaves offline QA.
+
+\subsection{From Video Streams To State Streams}
+
+The same logic extends beyond RGB video. A robot, vehicle, or factory cell may
+carry multiple cameras, depth or ToF, IMU/odometry, event sensors, object
+tracks, calibration, timestamps, and confidence estimates. These side channels
+are not semantic-saliency oracles. They are cheaper refresh and uncertainty
+oracles: RGB says what a region looks like; depth says whether geometry moved;
+IMU says whether apparent motion is explained by the camera; event sensors
+flag onset; multi-camera geometry distinguishes occlusion from disappearance.
+The VLM-native interface we want is therefore not ``more frames,'' but a
+synchronized state-update stream that tells the runtime where fresh visual
+evidence is worth buying.
 
 \subsection{Codec Signals Are Requirements Probes}
 
@@ -111,6 +135,23 @@ event, IMU/odometry, timestamp, and confidence sidecars \\
 \end{tabularx}
 \end{table}
 
+\paragraph{Layered world-state media.}
+One useful mental model is a machine-facing analogue of object/layer media:
+static background memory, camera pose, object tracks and masks, motion
+uncertainty, residual surprise, text/glyph events, event-camera onset,
+depth/ToF changes, timestamps, and confidence. The model would render or
+refresh dense visual evidence only where the state update requires it. This is
+not a current codec implementation; it is the interface pressure revealed by a
+paper about paying for the wall again.
+
+\paragraph{Beyond zero-change inference.}
+The current result is useful precisely because it is frozen-model and
+training-free. It identifies where an existing model already tolerates reuse
+and where it does not. The model-changing version should train around those
+traces rather than ignore them: learned recache gates, codec-conditioned token
+types, P-frame or delta encoders, and cache-state-aware attention can all use
+the failure cases and routing logs produced by this paper as supervision.
+
 \subsection{Open Experiments}
 
 Several high-value brainstorm items remain deliberately outside the current
@@ -131,6 +172,15 @@ timestamp layers; compute-denial robustness; learned recache gates;
 codec-conditioned token types; learned delta encoders; and hardware-aware
 active-tile decode. These ideas follow from the measurements above, but they
 remain future work unless they receive their own reproduced artifacts.
+
+The same anti-recomputation principle may also rotate into generative video
+and audio. A video generator or world model could reuse latent hidden state
+across denoising steps or autoregressive chunks when predicted motion and
+residual uncertainty are low, then refresh around occlusion, entropy spikes, or
+new-object events. Audio has a similar shape but a different trap: quiet is not
+the same as irrelevant, so onset, phoneme boundaries, speaker changes, and
+prosody matter more than energy alone. These are domain rotations, not evidence
+claims in this paper.
 
 \textcolor{todoBorder}{Remaining work: keep this agenda as future work until
 each item has either a preregistered experiment, a reproduced artifact, or a

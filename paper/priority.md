@@ -14,9 +14,16 @@ n=60 gate plus Stage-5 anchor default). Priority.md is now the
 authoritative venue-readiness / submission-gate doc; claim-matrix.md
 and publishability-status.md are expected to conform to this file.
 See `paper/framing.md` for the three major contributions (C-CEILING,
-C-PERSIST, C-VISION) these priorities map to, and `paper/abstract.md`
-+ `paper/intro.md` for the paper-facing three-contributions narrative
-(landed 2026-04-21).
+C-PERSIST, C-VISION) these priorities map to. The canonical paper-facing
+narrative now lives in `paper/arxiv/sections/01_abstract.tex` and
+`paper/arxiv/sections/02_introduction.tex`; the Markdown abstract/intro files
+are legacy scratchpads.
+
+Narrative update 2026-04-26B: the manuscript should present the central
+scientific object as the quality-compute frontier of fresh visual evidence over
+time. The three regimes are still separate, but the throughline is placement:
+where the runtime must buy fresh evidence, where cached state is enough, and
+which evidence class proves each point.
 
 Narrative update 2026-04-26: the arXiv draft now carries the larger
 anti-recomputation-to-VLM-native-media agenda. That agenda is important for
