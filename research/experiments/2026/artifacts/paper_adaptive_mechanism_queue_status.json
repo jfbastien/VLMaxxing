@@ -66,7 +66,38 @@
         "pass_signal_floor": true
       },
       "auto_commit": "committed"
+    },
+    {
+      "phase": "1.55F-32f",
+      "runtime_estimate": "~70-90 min",
+      "rationale": "Intersect the adaptive repaired-state policy with the 32f short depth boundary now that fixed K=1 has already survived that regime.",
+      "ready": true,
+      "timeout_seconds": 9000,
+      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_55F_32f_short_adaptive_replication",
+      "command": [
+        "bash",
+        "/Users/jfb/s/codec-through/scripts/run_phase1_55F_32f_short_adaptive_replication.sh"
+      ],
+      "status": "completed",
+      "gate": {
+        "paired_correctness_diffs": 0,
+        "paired_choice_diffs": 0,
+        "pathological_follow_up_hits": 0,
+        "pathological_q3_hits": 0,
+        "speedup_all_query_median_cold_over_session_follow_up": 35.97143025796818,
+        "session_follow_up_median_ms": 4109.242354,
+        "peak_rss_gb": 6.09427456,
+        "baseline_accuracy": 0.8571428571428571,
+        "pass_fidelity": true,
+        "pass_exact_match": true,
+        "pass_follow_up_pathology": true,
+        "pass_q3_pathology": true,
+        "pass_speed": true,
+        "pass_memory": false,
+        "pass_signal_floor": true
+      },
+      "auto_commit": "committed"
     }
   ],
-  "updated_at": "2026-04-26T03:46:12+00:00"
+  "updated_at": "2026-04-26T05:22:29+00:00"
 }

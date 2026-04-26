@@ -1,0 +1,51 @@
+{
+  "label": "phase1_55F_32f_short_adaptive_replication",
+  "n_pairs": 21,
+  "n_sessions": 7,
+  "n_follow_up_pairs": 14,
+  "paired_correctness_diffs": 0,
+  "paired_choice_diffs": 0,
+  "pathological_follow_up_hits": 0,
+  "pathological_q3_hits": 0,
+  "accuracy_delta_session_minus_baseline": 0.0,
+  "accuracy_delta_session_minus_baseline_ci95": [
+    0.0,
+    0.0
+  ],
+  "follow_up_accuracy_delta_session_minus_baseline": 0.0,
+  "follow_up_accuracy_delta_session_minus_baseline_ci95": [
+    0.0,
+    0.0
+  ],
+  "q3_accuracy_delta_session_minus_baseline": 0.0,
+  "q3_accuracy_delta_session_minus_baseline_ci95": [
+    0.0,
+    0.0
+  ],
+  "session_follow_up_median_ms": 4109.242354,
+  "baseline_follow_up_median_ms": 147592.21433350001,
+  "baseline_all_query_median_ms": 147815.32475,
+  "speedup_follow_up_median_cold_over_session": 35.91713547628348,
+  "speedup_all_query_median_cold_over_session_follow_up": 35.97143025796818,
+  "q_index_breakdown": {
+    "q1": {
+      "n": 7,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    },
+    "q2": {
+      "n": 7,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    },
+    "q3": {
+      "n": 7,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    }
+  },
+  "mismatches": []
+}
