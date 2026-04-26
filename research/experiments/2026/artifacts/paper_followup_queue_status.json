@@ -229,6 +229,16 @@
         "follow_up_pruning_materially_active": false
       },
       "auto_commit": "committed"
+    },
+    {
+      "phase": "1.30AE",
+      "runtime_estimate": "~5.5-7.5 h",
+      "rationale": "Run the first no-splice full-union rerun with the smallest long-bucket Q0 keep rate that passes the 1.30AB long-only rescue band.",
+      "ready": true,
+      "timeout_seconds": 40500,
+      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_30AE_duration_conditioned_union_pending",
+      "selected_130ab_rate": null,
+      "status": "skipped-by-1.30AB-gate"
     }
   ],
   "updated_at": "2026-04-25T13:39:09+00:00"

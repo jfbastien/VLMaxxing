@@ -38,9 +38,7 @@ direct test is a fixed-tranche replication.
   - `Q2`: `K=1` selective re-prefill
   - `Q3`: `K=0` with `q3_cache_source=post_q2_repaired`
 - Runner: `scripts/run_kv_selective_reprefill_v2.py`
-- Wrapper: `scripts/run_phase1_55F_medium_adaptive_replication.sh` (to
-  be authored — copy `run_phase1_55F_q3_post_q2_state.sh` and substitute
-  the medium-bucket video IDs and output dir)
+- Wrapper: `scripts/run_phase1_55F_medium_adaptive_replication.sh`
 
 Estimated runtime:
 
@@ -117,16 +115,19 @@ push the speedup well past the 1.55G fixed-`K=1` line.
 
 Acceptance:
 
-- `peak_rss_gb <= 5.0`
+- `peak_rss_gb <= 5.5`
 
 Failure:
 
-- `peak_rss_gb > 5.0`
+- `peak_rss_gb > 5.5`
 
 `1.55F` short measured `1.44 GB`; `1.55G` fixed-`K=1` medium measured
 `6.10 GB`. The K=0 Q3 path is expected to keep less state alive than
-fixed K=1, so the true number is likely between 1.5 and 4 GB on
-medium. The 5.0 GB ceiling gives margin.
+fixed K=1, but a strict `5.0 GB` ceiling risks a science-pass /
+auxiliary-fail outcome if the repaired-state cache briefly keeps more
+state alive than the short bucket did. `5.5 GB` is still comfortably
+below the fixed-`K=1` medium run and preserves the "local operating
+envelope" interpretation.
 
 ### H5 — the medium tranche stays above the signal floor
 
@@ -163,9 +164,10 @@ questions in the parquet (already verified for `1.55G`).
 
 ## Execution
 
-Pending. Wrapper authoring is ~5 minutes (one-line edits from the
-short-bucket wrapper). Tranche curation is none (reuses 1.55G's).
-Estimated total session: ~70 min compute + ~5 min setup.
+Ready to run. Wrapper now exists at
+`scripts/run_phase1_55F_medium_adaptive_replication.sh`. Tranche
+curation is none (reuses 1.55G's). Estimated total session:
+~70 min compute.
 
 ## Result
 

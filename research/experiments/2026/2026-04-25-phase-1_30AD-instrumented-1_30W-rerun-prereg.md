@@ -4,7 +4,7 @@ date: 2026-04-25
 parent:
   - research/experiments/2026/2026-04-24-phase-1_30W-q0-dense-followup-pruned-full-findings.md
   - research/experiments/2026/2026-04-25-phase-1_30Z-long-q0-kr067-findings.md
-status: preregistered 2026-04-25 (doc-only). Locks the 1.30W published number's mechanism story.
+status: preregistered 2026-04-25. Wrapper landed 2026-04-26; ready to run.
 ---
 
 # 1.30AD — 1.30W full-union rerun under image-token instrumentation
@@ -46,10 +46,7 @@ answer is "we can only infer it."
 - Runner: `scripts/run_phase1_30_sam_streaming.py` (now emits
   `image_token_count`, `image_token_prefix_hit`, `image_tokens_recomputed`,
   `vision_pruning_active` per row)
-- Wrapper: `scripts/run_phase1_30AD_instrumented_w_rerun.sh` (to be
-  authored — copy `run_phase1_30W_q0_dense_followup_pruned_full.sh`
-  if it exists, or copy 1.30AA's wrapper without the long-Q0 keep-rate
-  override)
+- Wrapper: `scripts/run_phase1_30AD_instrumented_w_rerun.sh`
 - Analysis: `scripts/analyze_phase1_30_sam_streaming_pair.py`
   (existing — reads instrumentation from streaming rows)
 
@@ -137,13 +134,10 @@ identical to the would-have-been 1.30AA scope.
 
 ## Execution
 
-Pending. Wrapper authoring is ~5-10 minutes. Tranche curation is none.
-Estimated total session: ~5.5-7.5 h compute (or ~1.5-2.5 h if cold reused).
-
-Doc-only this round; not auto-runnable from the current AFK queue.
-This experiment is high-leverage for paper polish but not novel science,
-so it can wait for a dedicated compute window after the current queue
-resolves.
+Ready to run. The wrapper defaults to reusing the landed `1.30W` cold
+control because the mechanism instrumentation is read from streaming rows
+only; `PHASE1_30AD_RERUN_COLD=1` forces a stricter cold rerun if wanted.
+Estimated total session: ~1.5-2.5 h compute with cold reuse.
 
 ## Result
 

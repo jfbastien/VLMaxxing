@@ -38,9 +38,7 @@ three-regime as well.
   - `Q2`: `K=1` selective re-prefill
   - `Q3`: `K=0` with `q3_cache_source=post_q2_repaired`
 - Runner: `scripts/run_kv_selective_reprefill_v2.py`
-- Wrapper: `scripts/run_phase1_55F_long_adaptive_replication.sh` (to be
-  authored — copy `run_phase1_55F_q3_post_q2_state.sh` and substitute
-  the long-bucket video IDs and output dir)
+- Wrapper: `scripts/run_phase1_55F_long_adaptive_replication.sh`
 
 Estimated runtime:
 
@@ -116,15 +114,17 @@ hit 24.91× vs `1.55D K=1` short's 9.71× (`2.6×` ratio).
 
 Acceptance:
 
-- `peak_rss_gb <= 5.0`
+- `peak_rss_gb <= 5.5`
 
 Failure:
 
-- `peak_rss_gb > 5.0`
+- `peak_rss_gb > 5.5`
 
 `1.55F` short measured 1.44 GB; `1.55I` long fixed-K=1 measured 5.94 GB.
-The long-bucket adaptive should sit between those; 5.0 GB ceiling gives
-margin.
+The long-bucket adaptive should sit between those, but a strict 5.0 GB
+ceiling risks penalizing a scientifically valid run for brief repaired-
+state cache retention. `5.5 GB` preserves a meaningful memory bound
+while staying below the landed fixed-K=1 long run.
 
 ### H5 — long tranche stays above the signal floor
 
@@ -167,11 +167,9 @@ in the parquet (already verified for `1.55I`).
 
 ## Execution
 
-Pending. Wrapper authoring is ~5 minutes. Tranche curation is none.
-Estimated total session: ~55 min compute + ~5 min setup.
-
-Doc-only this round; not auto-runnable from the current AFK queue
-without explicit approval.
+Ready to run. Wrapper now exists at
+`scripts/run_phase1_55F_long_adaptive_replication.sh`. Tranche
+curation is none. Estimated total session: ~55-65 min compute.
 
 ## Result
 

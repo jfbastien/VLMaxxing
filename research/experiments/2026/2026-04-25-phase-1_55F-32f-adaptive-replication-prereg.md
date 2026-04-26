@@ -34,8 +34,6 @@ be the strongest single-cell efficiency result in the paper.
   - `Q3`: `K=0` with `q3_cache_source=post_q2_repaired`
 - Runner: `scripts/run_kv_selective_reprefill_v2.py`
 - Wrapper: `scripts/run_phase1_55F_32f_short_adaptive_replication.sh`
-  (to be authored — copy `run_phase1_55F_q3_post_q2_state.sh` and
-  substitute `--frame-count 32` plus output dir)
 
 Estimated runtime:
 
@@ -153,13 +151,9 @@ runs. Each video has ≥3 questions in the parquet (verified for 1.55D /
 
 ## Execution
 
-Pending. Wrapper authoring is ~5 minutes (one-line edits from
-`run_phase1_55F_q3_post_q2_state.sh`: change `--frame-count 20` to
-`--frame-count 32` and update the output dir). Tranche curation is
-none. Estimated total session: ~70-90 min compute + ~5 min setup.
-
-Doc-only this round; not auto-runnable from the current AFK queue
-without explicit approval.
+Ready to run. Wrapper now exists at
+`scripts/run_phase1_55F_32f_short_adaptive_replication.sh`. Tranche
+curation is none. Estimated total session: ~70-90 min compute.
 
 ## Result
 

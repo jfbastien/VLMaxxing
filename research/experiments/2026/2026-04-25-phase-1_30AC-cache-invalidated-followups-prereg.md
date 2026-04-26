@@ -2,7 +2,7 @@
 phase: 1.30AC
 date: 2026-04-25
 parent: research/experiments/2026/2026-04-25-phase-1_30Z-long-q0-kr067-findings.md
-status: preregistered 2026-04-25 (doc-only). Requires small driver change before run.
+status: preregistered 2026-04-25. Driver change and wrapper landed 2026-04-26; ready to run.
 ---
 
 # 1.30AC — Cache-invalidated follow-ups (true V-only follow-up pruning test)
@@ -35,7 +35,7 @@ embeddings from the configured pruning policy.
 
 ## Required driver change
 
-`scripts/run_phase1_30_sam_streaming.py` needs a new flag:
+`scripts/run_phase1_30_sam_streaming.py` now exposes the required flag:
 
 ```
 --reset-cache-between-queries
@@ -45,10 +45,9 @@ embeddings from the configured pruning policy.
 ```
 
 Implementation: in the inner per-query loop, when this flag is set,
-do `state = PromptCacheState()` and `frame_cache.clear()` BEFORE each
-query (not just at the session boundary). Estimated coding time: ~20
-minutes including a CPU-side smoke test that confirms the reset
-actually fires.
+the runner now does `state = PromptCacheState()` and
+`frame_cache.clear()` before each follow-up query, and records
+`reset_cache_between_queries=true` in the row + summary outputs.
 
 This flag is intentionally orthogonal to `--drift-refresh-policy` —
 that flag was the motivation for the existing per-session cache reset,
@@ -67,10 +66,9 @@ per-query level and explicitly disables the K-cache-reuse path.
     nominally but was suppressed by cache reuse)
 - Cold reference: reuse landed `1.30W` cold control if available, or
   rerun (fresh cold dense Q0 + dense follow-ups; ~4-5h)
-- Runner: `scripts/run_phase1_30_sam_streaming.py` with the new
-  `--reset-cache-between-queries` flag set
+- Runner: `scripts/run_phase1_30_sam_streaming.py` with
+  `--reset-cache-between-queries`
 - Wrapper: `scripts/run_phase1_30AC_cache_invalidated_followups.sh`
-  (to be authored)
 - Analysis: `scripts/analyze_phase1_30_sam_streaming_pair.py`
   (existing analyzer reads `vision_pruning_active` from streaming rows;
   no analyzer change needed)
@@ -161,7 +159,9 @@ Acceptance:
 
 ## Execution
 
-Blocked on driver change (~20 min Codex work). Doc-only for now.
+Ready to run. The wrapper defaults to reusing the landed `1.30W` cold
+control and allows `PHASE1_30AC_RERUN_COLD=1` if a stricter cold rerun
+is desired later.
 
 ## Result
 
