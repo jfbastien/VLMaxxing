@@ -89,3 +89,51 @@ def test_lowfps_analyzer_pairs_sessions_and_reports_outcome(tmp_path: Path) -> N
     assert summary["follow_ups"]["accuracy_delta_candidate_minus_reference"] == -0.5
     assert summary["outcome"] == "low_fps_rejected"
     assert len(pairs.read_text().strip().splitlines()) == 3
+
+
+def test_lowfps_analyzer_requires_clean_format_for_outcome(tmp_path: Path) -> None:
+    reference = tmp_path / "reference.jsonl"
+    candidate = tmp_path / "candidate.jsonl"
+    output = tmp_path / "summary.json"
+
+    base_row = {
+        "seed_item_id": "videomme:short:001-1",
+        "item_id": "videomme:short:001-1",
+        "duration": "short",
+        "q_index": 0,
+        "frame_count": 8,
+        "choice": "A",
+        "correct": True,
+        "parse_failure": False,
+        "degenerate": False,
+        "end_to_end_ms": 1000.0,
+        "prompt_tokens": 1000,
+    }
+    candidate_row = dict(base_row)
+    candidate_row.update(
+        {
+            "frame_count": 4,
+            "parse_failure": True,
+            "end_to_end_ms": 500.0,
+        }
+    )
+    _write_jsonl(reference, [base_row])
+    _write_jsonl(candidate, [candidate_row])
+
+    subprocess.run(
+        [
+            sys.executable,
+            "scripts/analyze_phase1_62_lowfps_dense.py",
+            "--reference-jsonl",
+            str(reference),
+            "--candidate-jsonl",
+            str(candidate),
+            "--output",
+            str(output),
+        ],
+        check=True,
+    )
+
+    summary = json.loads(output.read_text())
+    assert summary["pass_format"] is False
+    assert summary["outcome"] == "format_invalid"

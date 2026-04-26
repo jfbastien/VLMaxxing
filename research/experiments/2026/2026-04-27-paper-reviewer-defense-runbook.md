@@ -18,8 +18,9 @@ keep sweeping the already-closed 1.30 family. It should answer the highest
 value reviewer objections that remain cheap and scientifically clean:
 
 1. Is a simple low-FPS dense baseline enough?
-2. Does adaptive C-PERSIST have a 16f interpolation point?
-3. Does Gemma show matched duration-wise feature-drift geometry?
+2. Does C-VISION skip real vision-tower work, not only preserve answers?
+3. Does adaptive C-PERSIST have a 16f interpolation point?
+4. Does Gemma show matched duration-wise feature-drift geometry?
 
 ## Queue
 
@@ -43,7 +44,25 @@ The queue uses the same operational pattern as the closeout queues:
 - auto-commit only the step artifact directory plus queue status / preflight
 - one MLX approval at launch is enough for the whole queue
 
-## Step 1 — 1.62D Low-FPS Dense Baseline
+## Step 1 — 1.63 Track B Compact Qwen ViT Execution
+
+Runtime estimate: `~2.8-3.2 h`.
+
+What it answers: whether the landed C-VISION Qwen policy actually skips
+vision-tower wall time when run through the compact post-layer execution path.
+This is a Track B measurement, not a Track A substitution result.
+
+Interpretation:
+
+- fidelity PASS + vision reduction PASS + E2E positive + ceiling explained:
+  C-VISION gets a measured skipped-work result at the local vision-only
+  arithmetic ceiling.
+- fidelity PASS + vision reduction PASS but no E2E win: real sparse vision
+  execution exists, but overhead / decode / prefill dominance absorbs the win.
+- fidelity FAIL: the earlier semantic-safe cell did not reproduce in this
+  fresh Track B pair.
+
+## Step 2 — 1.62D Low-FPS Dense Baseline
 
 Runtime estimate: `~3.5-5.5 h`.
 
@@ -58,7 +77,7 @@ Interpretation:
   reference on this session protocol.
 - otherwise: ambiguous; report CI and duration slices.
 
-## Step 2 — 1.55F-16f Adaptive Interpolation
+## Step 3 — 1.55F-16f Adaptive Interpolation
 
 Runtime estimate: `~35-60 min`.
 
@@ -73,9 +92,9 @@ Interpretation:
 - fidelity/pathology fail: non-monotone frame-budget boundary; this is a real
   mechanism result and should be reported, not hidden.
 
-## Step 3 — 1.57G Gemma Matched-Duration Drift
+## Step 4 — 1.57G Gemma Matched-Duration Drift
 
-Runtime estimate: `~1-2 h`.
+Runtime estimate: `~2-6 h`.
 
 What it answers: whether Gemma's visual-feature drift geometry across
 short/medium/long VideoMME buckets matches the Qwen geometry enough to support
@@ -93,8 +112,6 @@ Interpretation:
 
 These are real science gaps but should not be smuggled into this queue:
 
-- Track B sparse execution MVP: high systems value, but needs 1-2 days of
-  implementation and careful wall-clock counters.
 - failure predictor / logit-margin model: high explanatory value; needs a
   separate logprob-rerun plan or a careful inventory of existing logprob
   artifacts.

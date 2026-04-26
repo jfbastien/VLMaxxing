@@ -218,6 +218,35 @@ Validated issues:
 
 - MVBench wording needed to distinguish the 20-task benchmark from the local 18-task saved run
 - cache-size arithmetic needed model- and resolution-specific clarification
+
+## 2026-04-27 Reviewer-Defense Queue Feedback
+
+Validated issues:
+
+- Track B remained the largest systems-evidence gap, but the minimal publishable
+  MVP is not a 1-2 week project. The existing Qwen compact post-layer vision
+  path already performs real skipped vision-tower work after the configured
+  pruning layer; what remains multi-day work is custom-kernel sparse execution
+  that also shrinks prompt geometry or prefill.
+- Low-FPS dense baselines must be interpreted as a benchmark-conditioned
+  deployment baseline, not as evidence that reuse is unnecessary unless a
+  matched low-FPS-plus-reuse arm is run.
+- Sampler robustness should not be reported as sampler-invariance from a single
+  perturbed point. The T=0.7 scout is a reviewer-defense check with an explicit
+  exact-match miss if any paired drift appears.
+- Cross-architecture drift needs a numeric matched-geometry rule before the run,
+  otherwise the same result can be narrated either as transfer or as an
+  architecture-conditioned boundary after inspection.
+
+Plan impact:
+
+- staged a Phase 1.63 Track B compact-Qwen-ViT run as the first reviewer-defense
+  queue phase
+- hardened the 1.62D low-FPS analyzer so format failures cannot be called
+  competitive
+- raised and documented the 1.55F-16f speedup floor and fixed the sampler/max
+  token contract
+- added a numeric Gemma-vs-Qwen drift threshold to the 1.57G summary path
 - TurboQuant was being presented too aggressively for a quality-neutral composed claim
 
 Those corrections now live in `seed/whitepaper/whitepaper.md`.

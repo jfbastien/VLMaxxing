@@ -28,6 +28,8 @@ duration buckets used in the Qwen drift discussion.
 - Runner: `scripts/measure_feature_drift.py --model gemma`.
 - Summary: `scripts/summarize_feature_drift_grid.py` writes a 3×3 grid summary
   with STATIC / SHIFTED / NOVEL means and medians.
+- Reference: Qwen phase 1.57 dev-grid artifacts under
+  `research/experiments/2026/artifacts/phase1_57/`.
 
 ## Gates
 
@@ -36,6 +38,11 @@ duration buckets used in the Qwen drift discussion.
   increasing with frame count within each duration bucket, or any non-monotone
   bucket is explicitly reported as a Gemma-specific boundary. This is a
   mechanism readout, not a pass/fail claim.
+- **H_cross_arch_matched_geometry**: compare Gemma and Qwen STATIC mean cosine
+  in each matched `(duration, frame_count)` cell. If all absolute differences
+  are ≤ 0.05, report "matched drift geometry." Otherwise report
+  "architecture-conditioned drift geometry" and list the cells exceeding the
+  threshold.
 - **H_cross_arch_explanation**: if Gemma STATIC means remain high while answer
   identity can still drift (from 1.42), the paper should state that feature
   cosine alone is insufficient to predict answer stability across
@@ -54,5 +61,7 @@ The point is to make the cross-architecture story less hand-wavy:
 
 ## Runtime
 
-Expected wall time: ~1-2 h for all 9 cells on the local 16 GB laptop. Peak RSS
-should stay near the existing Gemma 1.57 / 1.42 runs.
+Expected wall time: ~2-6 h for all 9 cells on the local 16 GB laptop. The
+queue timeout is intentionally sized for the pessimistic end because the prior
+Gemma 1.57 evidence only timed the long-bucket cells. Peak RSS should stay near
+the existing Gemma 1.57 / 1.42 runs.

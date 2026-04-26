@@ -44,4 +44,6 @@ done
   --model gemma \
   --groups short medium long \
   --frame-counts 8 16 32 \
+  --qwen-reference-dir research/experiments/2026/artifacts/phase1_57 \
+  --matched-threshold 0.05 \
   --output "$OUT_DIR/summary.json"

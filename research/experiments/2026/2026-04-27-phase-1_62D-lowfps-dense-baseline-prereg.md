@@ -66,6 +66,11 @@ Positive or negative outcomes are both useful:
 - If only short clips survive, the deployment story should become
   duration-conditioned.
 
+This phase intentionally does not test "low-FPS + C-PERSIST" in the same run.
+That is a follow-up only if 4f dense is competitive. The current question is
+the simpler reviewer objection: whether dense low-FPS alone replaces the 8f
+reference on the same session protocol.
+
 ## Runtime
 
 Expected wall time on the 16 GB M3 laptop:

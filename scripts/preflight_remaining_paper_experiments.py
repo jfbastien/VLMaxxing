@@ -158,6 +158,10 @@ def main() -> int:
                 Path("research/benchmark_manifests/videomme_long_dev_holdout_v1.toml").exists(),
                 detail="research/benchmark_manifests/videomme_long_dev_holdout_v1.toml",
             ),
+            "videomme_combined_v1_n60": _status(
+                Path("research/benchmark_manifests/videomme_combined_v1_n60.toml").exists(),
+                detail="research/benchmark_manifests/videomme_combined_v1_n60.toml",
+            ),
         },
         "video_sets": {
             "phase1_55F_short": {
@@ -304,6 +308,10 @@ def main() -> int:
                 "reference_cold_dir": PHASE130W_REFERENCE_DIR.as_posix(),
                 "reference_cold_ready": full_union_cold_ready,
             },
+        ),
+        "1.63": _status(
+            qwen_4bit_ready and manifests["videomme_combined_v1_n60"]["ready"],
+            detail="Track B compact Qwen ViT execution, dense vs L2 kr0.50 sparse",
         ),
         "1.58": _status(
             qwen_4bit_ready and qwen_bf16_ready and args.max_safe_rss_gb >= 14.0,

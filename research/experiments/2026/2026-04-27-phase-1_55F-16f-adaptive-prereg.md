@@ -23,6 +23,8 @@ the C-PERSIST curve is not only anchored by high-depth cells.
 - Videos: the same 7 short VideoMME clips used by 1.55F and 1.55D:
   `037,100,116,120,158,160,210`.
 - Frame count: 16.
+- Sampler: greedy decoding in both arms (`temperature=0.0`) with
+  `max_tokens=32`.
 - Session policy:
   - Q1: dense cold
   - Q2: selective re-prefill with `K=1`
@@ -38,7 +40,9 @@ the C-PERSIST curve is not only anchored by high-depth cells.
   This is a stricter reporting tier, not required for H1.
 - **H2_pathology**: Q3 pathological-like outputs ≤ 1/7 and follow-up
   pathological-like outputs ≤ 2/14.
-- **H3_speed**: all-query cold median over session follow-up median ≥ 12×.
+- **H3_speed**: all-query cold median over session follow-up median ≥ 14×.
+  This is intentionally below the 20f-short adaptive point but above a
+  "nominally passes while hiding a non-monotone curve" threshold.
 - **H4_memory**: peak RSS ≤ 5.5 GB. If H1-H3 pass and RSS is ≤ 9 GB but
   >5.5 GB, report this as a science PASS with a too-tight memory gate, matching
   the 1.55F-long / 1.55F-32f precedent.

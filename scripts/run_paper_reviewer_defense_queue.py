@@ -30,6 +30,19 @@ QUEUE_STATUS_JSON = ARTIFACT_ROOT / "paper_reviewer_defense_queue_status.json"
 def _steps() -> list[QueueStep]:
     return [
         QueueStep(
+            phase="1.63",
+            runtime_estimate="~2.8-3.2 h",
+            rationale=(
+                "Run the minimal Track B sparse-execution MVP: dense Qwen vision "
+                "against compact post-layer L=2/kr=0.50 vision execution on the "
+                "VideoMME n=60 manifest."
+            ),
+            command=("bash", str(REPO_ROOT / "scripts/run_phase1_63_track_b_sparse_vit.sh")),
+            timeout_seconds=14_400,
+            artifact_dir=ARTIFACT_ROOT / "phase1_63_track_b_sparse_vit",
+            readiness_key="1.63",
+        ),
+        QueueStep(
             phase="1.62D",
             runtime_estimate="~3.5-5.5 h",
             rationale=(
@@ -58,7 +71,7 @@ def _steps() -> list[QueueStep]:
         ),
         QueueStep(
             phase="1.57G",
-            runtime_estimate="~1-2 h",
+            runtime_estimate="~2-6 h",
             rationale=(
                 "Run the matched Gemma short/medium/long feature-drift grid so the "
                 "cross-architecture C-VISION mechanism story has comparable drift geometry."
@@ -67,7 +80,7 @@ def _steps() -> list[QueueStep]:
                 "bash",
                 str(REPO_ROOT / "scripts/run_phase1_57G_gemma_matched_duration_drift.sh"),
             ),
-            timeout_seconds=9_000,
+            timeout_seconds=21_600,
             artifact_dir=ARTIFACT_ROOT / "phase1_57G_gemma_matched_duration_drift",
             readiness_key="1.57G",
         ),
@@ -98,10 +111,36 @@ def _gate_phase_162d(artifact_dir: Path) -> dict[str, Any]:
         "frame_4": by_frame["4"],
         "frame_2": by_frame["2"],
         "primary_outcome": by_frame["4"]["outcome"],
-        "pass_format": bool(by_frame["4"]["pass_format"] and by_frame["2"]["pass_format"]),
-        "pass_complete_pairing": bool(
-            by_frame["4"]["pass_complete_pairing"] and by_frame["2"]["pass_complete_pairing"]
-        ),
+        "primary_pass_format": bool(by_frame["4"]["pass_format"]),
+        "secondary_pass_format": bool(by_frame["2"]["pass_format"]),
+        "pass_format": bool(by_frame["4"]["pass_format"]),
+        "pass_complete_pairing": bool(by_frame["4"]["pass_complete_pairing"]),
+        "secondary_pass_complete_pairing": bool(by_frame["2"]["pass_complete_pairing"]),
+    }
+
+
+def _gate_phase_163(artifact_dir: Path) -> dict[str, Any]:
+    summary = _load_json(artifact_dir / "pair_summary.json")
+    all_summary = summary["all"]
+    return {
+        "n_paired_items": summary["n_paired_items"],
+        "pass_complete_pairing": summary["pass_complete_pairing"],
+        "pass_format": summary["pass_format"],
+        "accuracy_delta": all_summary["accuracy_delta_sparse_minus_dense"],
+        "accuracy_delta_ci95": all_summary["accuracy_delta_sparse_minus_dense_ci95"],
+        "choice_agreement": all_summary["choice_agreement"],
+        "mean_keep_rate": all_summary["mean_keep_rate"],
+        "vision_reduction": all_summary["vision_reduction"],
+        "vision_speedup_dense_over_sparse": all_summary["vision_speedup_dense_over_sparse"],
+        "actual_e2e_speedup_dense_over_sparse": all_summary["actual_e2e_speedup_dense_over_sparse"],
+        "predicted_e2e_speedup_from_vision_only": all_summary[
+            "predicted_e2e_speedup_from_vision_only"
+        ],
+        "actual_minus_predicted_e2e_speedup": all_summary["actual_minus_predicted_e2e_speedup"],
+        "pass_fidelity": summary["pass_fidelity"],
+        "pass_sparse_vision": summary["pass_sparse_vision"],
+        "pass_e2e_positive": all_summary["actual_e2e_speedup_dense_over_sparse"] >= 1.03,
+        "pass_ceiling_explained": summary["pass_ceiling_explained"],
     }
 
 
@@ -114,7 +153,7 @@ def _gate_phase_155f16(artifact_dir: Path) -> dict[str, Any]:
         q3_pathological_limit=1,
         follow_up_pathological_limit=2,
         max_rss_gb=5.5,
-        min_speedup=12.0,
+        min_speedup=14.0,
         strict_correctness_limit=0,
         strict_choice_limit=0,
         baseline_accuracy_floor=0.40,
@@ -127,16 +166,39 @@ def _gate_phase_157g(artifact_dir: Path) -> dict[str, Any]:
         f"{cell['group']}_{cell['frame_count']}f": cell.get("static_mean_cos")
         for cell in summary.get("cells", [])
     }
+    cross_arch = summary.get("cross_arch") or {}
     return {
         "complete": bool(summary.get("complete")),
         "n_cells": len(summary.get("cells", [])),
         "missing": summary.get("missing", []),
         "static_means": static_means,
+        "cross_arch_complete": bool(cross_arch.get("complete")),
+        "matched_geometry": cross_arch.get("matched_geometry"),
+        "matched_threshold": cross_arch.get("matched_threshold"),
+        "exceeded_threshold": cross_arch.get("exceeded_threshold", []),
     }
 
 
 def _commit_message(step: QueueStep, record: dict[str, Any]) -> str:
     gate = record.get("gate", {})
+    if step.phase == "1.63":
+        return (
+            "research(1.63): land Track B sparse ViT execution\n\n"
+            "Record the minimal real skipped-work Track B MVP by pairing dense Qwen "
+            "vision execution against compact post-layer L=2/kr=0.50 Qwen vision "
+            "execution on the VideoMME n=60 manifest. This scopes the claim to "
+            "vision-tower work only; prompt geometry and LLM prefill remain dense.\n"
+            f"Gate summary: n={gate.get('n_paired_items')}, "
+            f"Δacc={_format_float(gate.get('accuracy_delta'))}, "
+            f"vision_reduction={_format_float(gate.get('vision_reduction'))}, "
+            "e2e_speedup="
+            f"{_format_float(gate.get('actual_e2e_speedup_dense_over_sparse'))}x, "
+            "ceiling_pred="
+            f"{_format_float(gate.get('predicted_e2e_speedup_from_vision_only'))}x. "
+            f"Fidelity={'PASS' if gate.get('pass_fidelity') else 'FAIL'}, "
+            f"sparse_vision={'PASS' if gate.get('pass_sparse_vision') else 'FAIL'}, "
+            f"ceiling={'PASS' if gate.get('pass_ceiling_explained') else 'FAIL'}."
+        )
     if step.phase == "1.62D":
         frame4 = gate.get("frame_4", {})
         frame2 = gate.get("frame_2", {})
@@ -147,10 +209,12 @@ def _commit_message(step: QueueStep, record: dict[str, Any]) -> str:
             "the existing 8f cold reference.\n"
             f"4f outcome={frame4.get('outcome')}, "
             f"Δacc={_format_float(frame4.get('accuracy_delta'))}, "
-            f"speedup={_format_float(frame4.get('speedup_reference_over_candidate'))}x; "
+            "8f/4f cold wall-time ratio="
+            f"{_format_float(frame4.get('speedup_reference_over_candidate'))}x; "
             f"2f outcome={frame2.get('outcome')}, "
             f"Δacc={_format_float(frame2.get('accuracy_delta'))}, "
-            f"speedup={_format_float(frame2.get('speedup_reference_over_candidate'))}x. "
+            "8f/2f cold wall-time ratio="
+            f"{_format_float(frame2.get('speedup_reference_over_candidate'))}x. "
             "This determines whether the paper needs a low-FPS dense caveat or "
             "gets a clean defense against that baseline objection."
         )
@@ -174,7 +238,11 @@ def _commit_message(step: QueueStep, record: dict[str, Any]) -> str:
         "VideoMME buckets at 8/16/32f so the cross-architecture C-VISION story "
         "has a matched mechanism proxy rather than answer-level transfer alone.\n"
         f"Grid complete={gate.get('complete')}, n_cells={gate.get('n_cells')}, "
-        f"missing={gate.get('missing')}."
+        f"missing={gate.get('missing')}. "
+        f"Cross-arch complete={gate.get('cross_arch_complete')}, "
+        f"matched_geometry={gate.get('matched_geometry')}, "
+        f"threshold={gate.get('matched_threshold')}, "
+        f"exceeded={gate.get('exceeded_threshold')}."
     )
 
 
@@ -276,6 +344,8 @@ def main() -> int:
         record["status"] = "completed" if not args.dry_run else "dry-run"
         if args.dry_run:
             record["gate"] = "pending"
+        elif step.phase == "1.63":
+            record["gate"] = _gate_phase_163(step.artifact_dir)
         elif step.phase == "1.62D":
             record["gate"] = _gate_phase_162d(step.artifact_dir)
         elif step.phase == "1.55F-16f":

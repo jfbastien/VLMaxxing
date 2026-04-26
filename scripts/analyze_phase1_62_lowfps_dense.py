@@ -142,7 +142,9 @@ def _slice_summary(
     }
 
 
-def _outcome(delta: float) -> str:
+def _outcome(delta: float, *, pass_format: bool) -> str:
+    if not pass_format:
+        return "format_invalid"
     if delta >= -0.05:
         return "low_fps_competitive"
     if delta <= -0.10:
@@ -210,8 +212,6 @@ def main() -> int:
             predicate=_duration_predicate(duration),
             label=duration,
         )
-    delta = float(all_summary["accuracy_delta_candidate_minus_reference"])
-    payload["outcome"] = _outcome(delta)
     payload["pass_complete_pairing"] = len(rows) == 171 and payload["n_paired_sessions"] == 57
     payload["pass_format"] = (
         payload["parse_failures"]["reference"] == 0
@@ -219,6 +219,8 @@ def main() -> int:
         and payload["degenerates"]["reference"] == 0
         and payload["degenerates"]["candidate"] == 0
     )
+    delta = float(all_summary["accuracy_delta_candidate_minus_reference"])
+    payload["outcome"] = _outcome(delta, pass_format=bool(payload["pass_format"]))
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
