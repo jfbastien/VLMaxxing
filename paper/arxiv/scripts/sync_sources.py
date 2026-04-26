@@ -480,11 +480,8 @@ def _selective_reprefill_cell(
         "pathological_follow_up_hits": int(metrics["pathological_follow_up_hits"]),
         "pathological_q3_hits": int(metrics["pathological_q3_hits"]),
         "speedup": float(metrics["speedup_follow_up_median_cold_over_session"]),
-        "all_query_speedup": float(
-            metrics["speedup_all_query_median_cold_over_session_follow_up"]
-        ),
-        "session_follow_up_median_s": float(metrics["session_follow_up_median_ms"])
-        / 1000.0,
+        "all_query_speedup": float(metrics["speedup_all_query_median_cold_over_session_follow_up"]),
+        "session_follow_up_median_s": float(metrics["session_follow_up_median_ms"]) / 1000.0,
         "baseline_accuracy": float(summary["baseline"]["accuracy"]),
         "peak_rss_gb": float(summary["peak_rss_gb"]),
         "metrics_source": _source_path_label(metrics_path),
@@ -501,9 +498,7 @@ def _sum_reprefill_cells(cells: list[dict]) -> dict:
         "n_pairs": sum(int(cell["n_pairs"]) for cell in cells),
         "n_follow_up_pairs": sum(int(cell["n_follow_up_pairs"]) for cell in cells),
         "n_q3_pairs": sum(int(cell["n_q3_pairs"]) for cell in cells),
-        "paired_correctness_diffs": sum(
-            int(cell["paired_correctness_diffs"]) for cell in cells
-        ),
+        "paired_correctness_diffs": sum(int(cell["paired_correctness_diffs"]) for cell in cells),
         "paired_choice_diffs": sum(int(cell["paired_choice_diffs"]) for cell in cells),
         "pathological_follow_up_hits": sum(
             int(cell["pathological_follow_up_hits"]) for cell in cells
@@ -529,9 +524,7 @@ def _selective_reprefill_snapshot() -> dict:
             metrics_path=ARTIFACTS
             / "phase1_55D_selective_reprefill_v2"
             / "pair_metrics_k1_n7.json",
-            summary_path=ARTIFACTS
-            / "phase1_55D_selective_reprefill_v2"
-            / "summary_k1_n7.json",
+            summary_path=ARTIFACTS / "phase1_55D_selective_reprefill_v2" / "summary_k1_n7.json",
         ),
         _selective_reprefill_cell(
             label="1.55G",
@@ -540,40 +533,28 @@ def _selective_reprefill_snapshot() -> dict:
             metrics_path=ARTIFACTS
             / "phase1_55G_k1_medium_replication"
             / "pair_metrics_k1_n10.json",
-            summary_path=ARTIFACTS
-            / "phase1_55G_k1_medium_replication"
-            / "summary_k1_n10.json",
+            summary_path=ARTIFACTS / "phase1_55G_k1_medium_replication" / "summary_k1_n10.json",
         ),
         _selective_reprefill_cell(
             label="1.55I",
             regime="20f long",
             policy="fixed K=1",
-            metrics_path=ARTIFACTS
-            / "phase1_55I_k1_long_replication"
-            / "pair_metrics_k1_n7.json",
-            summary_path=ARTIFACTS
-            / "phase1_55I_k1_long_replication"
-            / "summary_k1_n7.json",
+            metrics_path=ARTIFACTS / "phase1_55I_k1_long_replication" / "pair_metrics_k1_n7.json",
+            summary_path=ARTIFACTS / "phase1_55I_k1_long_replication" / "summary_k1_n7.json",
         ),
         _selective_reprefill_cell(
             label="1.55H",
             regime="32f short",
             policy="fixed K=1",
-            metrics_path=ARTIFACTS
-            / "phase1_55H_k1_32f_short_probe"
-            / "pair_metrics_k1_n7.json",
-            summary_path=ARTIFACTS
-            / "phase1_55H_k1_32f_short_probe"
-            / "summary_k1_n7.json",
+            metrics_path=ARTIFACTS / "phase1_55H_k1_32f_short_probe" / "pair_metrics_k1_n7.json",
+            summary_path=ARTIFACTS / "phase1_55H_k1_32f_short_probe" / "summary_k1_n7.json",
         ),
     ]
     adaptive_cell = _selective_reprefill_cell(
         label="1.55F",
         regime="20f short",
         policy="adaptive Q2 K=1, Q3 post-Q2 K=0",
-        metrics_path=ARTIFACTS
-        / "phase1_55F_q3_post_q2_state"
-        / "pair_metrics_k1_n7.json",
+        metrics_path=ARTIFACTS / "phase1_55F_q3_post_q2_state" / "pair_metrics_k1_n7.json",
         summary_path=ARTIFACTS / "phase1_55F_q3_post_q2_state" / "summary_k1_n7.json",
     )
     return {
@@ -692,9 +673,7 @@ def _write_c_persist_repair_table(snapshot: dict) -> None:
         r"\end{tabularx}",
         r"\end{table}",
     ]
-    (GENERATED / "tables" / "c_persist_repair.tex").write_text(
-        "\n".join(lines) + "\n"
-    )
+    (GENERATED / "tables" / "c_persist_repair.tex").write_text("\n".join(lines) + "\n")
 
 
 def _qwen_bridge_boundary_row(label: str, path: Path) -> dict:
@@ -704,9 +683,7 @@ def _qwen_bridge_boundary_row(label: str, path: Path) -> dict:
         "n": int(payload["n_paired_queries"]),
         "delta": float(payload["accuracy_delta_streaming_minus_cold"]),
         "q0_delta": float(payload["q0_accuracy_delta_streaming_minus_cold"]),
-        "follow_up_delta": float(
-            payload["follow_up_accuracy_delta_streaming_minus_cold"]
-        ),
+        "follow_up_delta": float(payload["follow_up_accuracy_delta_streaming_minus_cold"]),
         "speedup": float(payload["amortized_speedup_cold_over_streaming"]),
         "active_fraction": payload["streaming_follow_up_vision_pruning_active_fraction"],
         "source": _source_path_label(path),
@@ -717,9 +694,7 @@ def _qwen_bridge_boundary_snapshot() -> dict:
     rows = [
         _qwen_bridge_boundary_row(
             "dense Q0 full union",
-            ARTIFACTS
-            / "phase1_30W_q0_dense_followup_pruned_full"
-            / "pair_summary.json",
+            ARTIFACTS / "phase1_30W_q0_dense_followup_pruned_full" / "pair_summary.json",
         ),
         _qwen_bridge_boundary_row(
             "long kr=0.67",
@@ -783,9 +758,7 @@ def _write_qwen_bridge_boundary_table(snapshot: dict) -> None:
             r"\end{table}",
         ]
     )
-    (GENERATED / "tables" / "qwen_bridge_boundary.tex").write_text(
-        "\n".join(lines) + "\n"
-    )
+    (GENERATED / "tables" / "qwen_bridge_boundary.tex").write_text("\n".join(lines) + "\n")
     (GENERATED / "data" / "qwen_bridge_boundary_snapshot.json").write_text(
         json.dumps(snapshot, indent=2, sort_keys=True) + "\n"
     )
@@ -1191,17 +1164,9 @@ def _write_build_meta(
     lines = [
         f"\\newcommand{{\\PrimaryRepoSHA}}{{{_short_sha(primary['sha'])}}}",
         f"\\newcommand{{\\PrimaryRepoCommitDate}}{{{primary['commit_date']}}}",
-        (
-            "\\newcommand{\\UpstreamRepoSHA}{"
-            f"{_short_sha(upstream['sha'])}"
-            "}"
-        ),
+        (f"\\newcommand{{\\UpstreamRepoSHA}}{{{_short_sha(upstream['sha'])}}}"),
         f"\\newcommand{{\\UpstreamRepoCommitDate}}{{{upstream['commit_date']}}}",
-        (
-            "\\newcommand{\\SamRepoSHA}{"
-            f"{_short_sha(sam['sha'])}"
-            "}"
-        ),
+        (f"\\newcommand{{\\SamRepoSHA}}{{{_short_sha(sam['sha'])}}}"),
         f"\\newcommand{{\\SamRepoCommitDate}}{{{sam['commit_date']}}}",
     ]
     (GENERATED / "tex" / "build_meta.tex").write_text("\n".join(lines) + "\n")
@@ -1220,16 +1185,8 @@ def _write_repo_provenance_table(
         r"Repo & Commit & Commit date \\",
         r"\midrule",
         f"codec-through-2 & {_short_sha(primary['sha'], 12)} & {primary['commit_date']} \\\\",
-        (
-            "codec-through & "
-            f"{_short_sha(upstream['sha'], 12)} & "
-            f"{upstream['commit_date']} \\\\"
-        ),
-        (
-            "codec-through-sam & "
-            f"{_short_sha(sam['sha'], 12)} & "
-            f"{sam['commit_date']} \\\\"
-        ),
+        (f"codec-through & {_short_sha(upstream['sha'], 12)} & {upstream['commit_date']} \\\\"),
+        (f"codec-through-sam & {_short_sha(sam['sha'], 12)} & {sam['commit_date']} \\\\"),
         r"\bottomrule",
         r"\end{tabular}",
         r"\end{table}",
