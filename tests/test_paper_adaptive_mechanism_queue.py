@@ -141,10 +141,11 @@ def test_gate_phase_155j_uses_same_class_speedup() -> None:
     }
     summary = {
         "peak_rss_gb": 4.2,
-        "temperature": 0.1,
+        "temperature": 0.7,
         "top_p": 0.95,
         "min_p": 0.0,
         "baseline": {"accuracy": 0.8},
+        "session": {"accuracy": 15 / 21, "n_correct": 15},
     }
 
     gate = queue._gate_phase_155j(pair_metrics, summary)
@@ -152,4 +153,30 @@ def test_gate_phase_155j_uses_same_class_speedup() -> None:
     assert gate["pass_fidelity"] is True
     assert gate["pass_exact_match"] is True
     assert gate["pass_same_class_speed"] is True
-    assert gate["sampler"] == {"temperature": 0.1, "top_p": 0.95, "min_p": 0.0}
+    assert gate["pass_session_floor"] is True
+    assert gate["sampler"] == {"temperature": 0.7, "top_p": 0.95, "min_p": 0.0}
+
+
+def test_gate_phase_155j_rejects_low_session_floor() -> None:
+    pair_metrics = {
+        "paired_correctness_diffs": 0,
+        "paired_choice_diffs": 0,
+        "pathological_follow_up_hits": 0,
+        "pathological_q3_hits": 0,
+        "speedup_follow_up_median_cold_over_session": 8.2,
+        "speedup_all_query_median_cold_over_session_follow_up": 8.5,
+        "session_follow_up_median_ms": 1000.0,
+    }
+    summary = {
+        "peak_rss_gb": 4.2,
+        "temperature": 0.7,
+        "top_p": 0.95,
+        "min_p": 0.0,
+        "baseline": {"accuracy": 0.8},
+        "session": {"accuracy": 13 / 21, "n_correct": 13},
+    }
+
+    gate = queue._gate_phase_155j(pair_metrics, summary)
+
+    assert gate["pass_fidelity"] is True
+    assert gate["pass_session_floor"] is False

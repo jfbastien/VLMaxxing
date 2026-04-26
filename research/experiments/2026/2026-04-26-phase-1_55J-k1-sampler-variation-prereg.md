@@ -22,7 +22,9 @@ one matched non-greedy scout before the paper leans on the fixed-lane
 claim too hard.
 
 This phase reruns the original 1.55D short tranche under deterministic
-temperature sampling.
+temperature sampling. The sampler uses `temperature=0.7` rather than a
+near-greedy low temperature because the point of the phase is a substantive
+sampler perturbation, not another effectively greedy replay.
 
 ## Configuration
 
@@ -31,7 +33,7 @@ temperature sampling.
   (`037,100,116,120,158,160,210`)
 - Frame count: `20`
 - Policy: fixed `K=1` selective re-prefill on Q2 and Q3
-- Sampler: `temperature=0.1`, `top_p=0.95`, `min_p=0.0`
+- Sampler: `temperature=0.7`, `top_p=0.95`, `min_p=0.0`
 - Runner: `scripts/run_kv_selective_reprefill_v2.py`
 - Wrapper: `scripts/run_phase1_55J_k1_sampler_variation.sh`
 - Output: `research/experiments/2026/artifacts/phase1_55J_k1_sampler_variation/`
@@ -96,6 +98,19 @@ Acceptance:
 Failure:
 
 - peak RSS `> 7.0 GB`
+
+### H5 — signal floor
+
+Acceptance:
+
+- session correctness `>= 14/21`
+
+Failure:
+
+- session correctness `< 14/21`
+
+This prevents a vacuous paired-drift pass where both the baseline and session
+arms collapse to low-signal sampled outputs.
 
 ## Runtime
 

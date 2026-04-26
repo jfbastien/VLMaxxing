@@ -1026,7 +1026,7 @@ authoritative in the per-phase notes under
   status: preregistered / ready-to-run (K=1 sampler-variation scout)
   authoritative_note: research/experiments/2026/2026-04-26-phase-1_55J-k1-sampler-variation-prereg.md
   authoritative_artifacts: []
-  current_best_policy: pending; fixed K=1 short-bucket replication at temperature=0.1 / top_p=0.95
+  current_best_policy: pending; fixed K=1 short-bucket replication at temperature=0.7 / top_p=0.95
   supersedes: []
   paper_relevance: reviewer-defense for the fixed K=1 repaired frontier; tests whether 0/n paired drift is greedy-only
   prereg_outcome: pending

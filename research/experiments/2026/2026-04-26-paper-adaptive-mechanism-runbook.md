@@ -114,8 +114,8 @@ Interpretation:
 
 Why: fixed `K=1` has the best breadth/depth evidence, but all landed K=1
 cells are greedy-decoding cells. `1.55J` reruns the original short-bucket K=1
-cell with deterministic temperature sampling so we can distinguish a robust
-paired-fidelity result from a greedy-only artifact.
+cell with deterministic `temperature=0.7` sampling so we can distinguish a
+robust paired-fidelity result from a greedy-only artifact.
 
 Expected outcome: likely PASS, but this is exactly the reviewer objection worth
 testing. If one or two paired choices move, the fixed lane remains useful but
@@ -123,7 +123,8 @@ the paper should call the result sampler-conditioned.
 
 Interpretation:
 
-- strict PASS means fixed `K=1` short-bucket fidelity is not visibly greedy-only.
+- strict PASS plus the `>=14/21` session-correctness floor means fixed `K=1`
+  short-bucket fidelity is not visibly greedy-only.
 - primary PASS with strict miss means sampler variation moves individual answers
   but does not break the repaired-frontier claim.
 - FAIL means the fixed `K=1` breadth claim needs a sampler-conditioned caveat.

@@ -178,10 +178,17 @@ def _gate_phase_155j(pair_metrics: dict[str, Any], summary: dict[str, Any]) -> d
     )
     same_class_speedup = pair_metrics.get("speedup_follow_up_median_cold_over_session")
     pass_same_class_speed = same_class_speedup is not None and float(same_class_speedup) >= 8.0
+    session_summary = summary.get("session", {})
+    session_n_correct = session_summary.get("n_correct")
+    session_accuracy = session_summary.get("accuracy")
+    pass_session_floor = session_n_correct is not None and int(session_n_correct) >= 14
     return {
         **base,
         "speedup_follow_up_median_cold_over_session": same_class_speedup,
         "pass_same_class_speed": pass_same_class_speed,
+        "session_n_correct": session_n_correct,
+        "session_accuracy": session_accuracy,
+        "pass_session_floor": pass_session_floor,
         "sampler": {
             "temperature": summary.get("temperature"),
             "top_p": summary.get("top_p"),
@@ -382,10 +389,12 @@ def _commit_message(step: QueueStep, record: dict[str, Any]) -> str:
             f"q3_pathology={gate.get('pathological_q3_hits')}, "
             "same_class_speedup="
             f"{_format_float(gate.get('speedup_follow_up_median_cold_over_session'))}x, "
+            f"session_correct={gate.get('session_n_correct')}, "
             f"peak_rss={_format_float(gate.get('peak_rss_gb'))} GB.\n"
             f"Fidelity={'PASS' if gate.get('pass_fidelity') else 'FAIL'}, "
             f"exact_match={'PASS' if gate.get('pass_exact_match') else 'FAIL'}, "
-            f"same_class_speed={'PASS' if gate.get('pass_same_class_speed') else 'FAIL'}."
+            f"same_class_speed={'PASS' if gate.get('pass_same_class_speed') else 'FAIL'}, "
+            f"session_floor={'PASS' if gate.get('pass_session_floor') else 'FAIL'}."
         )
     return f"{subject}\n\n{body}"
 

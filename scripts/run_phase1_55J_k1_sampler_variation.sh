@@ -25,7 +25,7 @@ else
   "$PY" scripts/run_kv_selective_reprefill_v2.py \
     --reprefill-k 1 \
     --frame-count 20 \
-    --temperature 0.1 \
+    --temperature 0.7 \
     --top-p 0.95 \
     --min-p 0.0 \
     --model-path "$MODEL_PATH" \
@@ -36,5 +36,5 @@ fi
 "$PY" scripts/analyze_selective_reprefill_pairs.py \
   --session-jsonl "$OUT_DIR/session_k1_n7.jsonl" \
   --baseline-jsonl "$OUT_DIR/baseline_k1_n7.jsonl" \
-  --pair-metrics "$OUT_DIR/pair_metrics_k1_n7.json" \
+  --output "$OUT_DIR/pair_metrics_k1_n7.json" \
   --paired-queries "$OUT_DIR/paired_queries_k1_n7.jsonl"
