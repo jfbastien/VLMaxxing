@@ -17,7 +17,7 @@ from typing import Any
 def _manifest_benchmark(path: Path) -> str:
     payload = tomllib.loads(path.read_text())
     benchmark = payload.get("benchmark")
-    if benchmark not in {"tomato", "mvbench"}:
+    if benchmark not in {"tomato", "mvbench", "videomme"}:
         raise ValueError(f"invalid benchmark in manifest {path}: {benchmark!r}")
     return str(benchmark)
 

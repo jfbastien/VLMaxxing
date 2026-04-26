@@ -1,6 +1,6 @@
 ---
 date: 2026-04-26
-status: planning note; not in the default adaptive-mechanism queue
+status: D1 staged for reviewer-defense queue; D2/D3 remain design work
 related:
   - research/experiments/2026/2026-04-21-phase-1_30-sam-streaming-reproduction-prereg.md
   - research/experiments/2026/2026-04-24-phase-1_30W-q0-dense-followup-pruned-full-findings.md
@@ -102,9 +102,27 @@ separate deployment-baseline queue after `1.55F-medium/long/32f`, `1.55J`,
 First deployment queue:
 
 1. low-FPS dense 4f full union
-2. low-FPS dense 2f full union only if 4f is competitive
+2. low-FPS dense 2f full union as a lower-bound companion
 3. protocol design review for screenshot polling and recency
 
 This gives the paper an honest answer to the cheapest baseline objection before
 we spend time on harder online baselines whose fairness depends on design
 choices rather than code alone.
+
+## Staged implementation
+
+Phase 1.62D is now preregistered and scripted:
+
+- prereg:
+  `research/experiments/2026/2026-04-27-phase-1_62D-lowfps-dense-baseline-prereg.md`
+- wrapper:
+  `scripts/run_phase1_62D_lowfps_dense_videomme.sh`
+- analyzer:
+  `scripts/analyze_phase1_62_lowfps_dense.py`
+- queue:
+  `scripts/run_paper_reviewer_defense_queue.py`
+
+The staged protocol uses the 1.30 session harness rather than the one-item
+VideoMME manifest path, so it compares against the same 57 sessions / 171
+queries as the 1.30W reference. That matters: deployment objections are about
+session behavior, not just one question per clip.
