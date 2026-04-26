@@ -111,6 +111,11 @@ def main() -> int:
         default=Path.home() / "models" / "Qwen2.5-VL-7B-Instruct",
     )
     parser.add_argument(
+        "--gemma-4bit-model",
+        type=Path,
+        default=Path.home() / "models" / "gemma-4-e4b-it-4bit",
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=Path("research/experiments/2026/artifacts/paper_closeout_preflight.json"),
@@ -136,6 +141,9 @@ def main() -> int:
         "models": {
             "qwen_4bit": _status(args.qwen_4bit_model.exists(), detail=str(args.qwen_4bit_model)),
             "qwen_bf16": _status(args.qwen_bf16_model.exists(), detail=str(args.qwen_bf16_model)),
+            "gemma_4bit": _status(
+                args.gemma_4bit_model.exists(), detail=str(args.gemma_4bit_model)
+            ),
         },
         "manifests": {
             "videomme_dev_v1": _status(
@@ -186,6 +194,7 @@ def main() -> int:
     long_ready = all(entry["ready"] for entry in payload["video_sets"]["phase1_55I_long"].values())
     qwen_4bit_ready = payload["models"]["qwen_4bit"]["ready"]
     qwen_bf16_ready = payload["models"]["qwen_bf16"]["ready"]
+    gemma_4bit_ready = payload["models"]["gemma_4bit"]["ready"]
     manifests = payload["manifests"]
     long_cold_ready = (
         PHASE130_LONG_COLD_REFERENCE_DIR.joinpath("cold_dense_long.jsonl").exists()
@@ -239,6 +248,14 @@ def main() -> int:
             qwen_4bit_ready and short_ready,
             detail="K=1 short-bucket sampler-variation scout",
         ),
+        "1.55F-16f": _status(
+            qwen_4bit_ready and short_ready,
+            detail="adaptive post-Q2-state 16f short-bucket interpolation",
+        ),
+        "1.57G": _status(
+            gemma_4bit_ready and manifests["videomme_dev_v1"]["ready"],
+            detail="Gemma short/medium/long feature-drift grid at 8/16/32f",
+        ),
         "1.30AB": _status(
             qwen_4bit_ready
             and manifests["videomme_long_dev_holdout_v1"]["ready"]
@@ -273,6 +290,17 @@ def main() -> int:
             and full_union_cold_ready,
             detail={
                 "phase": "instrumented 1.30W rerun",
+                "reference_cold_dir": PHASE130W_REFERENCE_DIR.as_posix(),
+                "reference_cold_ready": full_union_cold_ready,
+            },
+        ),
+        "1.62D": _status(
+            qwen_4bit_ready
+            and manifests["videomme_dev_v1"]["ready"]
+            and manifests["videomme_holdout_v1"]["ready"]
+            and full_union_cold_ready,
+            detail={
+                "phase": "low-FPS dense VideoMME session baseline",
                 "reference_cold_dir": PHASE130W_REFERENCE_DIR.as_posix(),
                 "reference_cold_ready": full_union_cold_ready,
             },
