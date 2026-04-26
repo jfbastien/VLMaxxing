@@ -1,0 +1,60 @@
+{
+  "label": "session_k1_n7",
+  "n_pairs": 21,
+  "n_sessions": 7,
+  "n_follow_up_pairs": 14,
+  "paired_correctness_diffs": 1,
+  "paired_choice_diffs": 1,
+  "pathological_follow_up_hits": 0,
+  "pathological_q3_hits": 0,
+  "accuracy_delta_session_minus_baseline": -0.047619047619047616,
+  "accuracy_delta_session_minus_baseline_ci95": [
+    -0.14285714285714285,
+    0.0
+  ],
+  "follow_up_accuracy_delta_session_minus_baseline": -0.07142857142857142,
+  "follow_up_accuracy_delta_session_minus_baseline_ci95": [
+    -0.21428571428571427,
+    0.0
+  ],
+  "q3_accuracy_delta_session_minus_baseline": 0.0,
+  "q3_accuracy_delta_session_minus_baseline_ci95": [
+    0.0,
+    0.0
+  ],
+  "session_follow_up_median_ms": 8416.934125,
+  "baseline_follow_up_median_ms": 102737.986229,
+  "baseline_all_query_median_ms": 103194.363208,
+  "speedup_follow_up_median_cold_over_session": 12.206105537151274,
+  "speedup_all_query_median_cold_over_session_follow_up": 12.260326821555111,
+  "q_index_breakdown": {
+    "q1": {
+      "n": 7,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    },
+    "q2": {
+      "n": 7,
+      "correctness_diffs": 1,
+      "choice_diffs": 1,
+      "pathological_hits": 0
+    },
+    "q3": {
+      "n": 7,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    }
+  },
+  "mismatches": [
+    {
+      "item_id": "videomme:short:160-2",
+      "q_index": 1,
+      "session_choice": "B",
+      "baseline_choice": "D",
+      "session_correct": false,
+      "baseline_correct": true
+    }
+  ]
+}

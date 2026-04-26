@@ -97,7 +97,48 @@
         "pass_signal_floor": true
       },
       "auto_commit": "committed"
+    },
+    {
+      "phase": "1.55J",
+      "runtime_estimate": "~60-90 min",
+      "rationale": "Run the fixed K=1 short-bucket repaired frontier under deterministic temperature sampling so the no-drift claim is not greedy-only by default.",
+      "ready": true,
+      "timeout_seconds": 7800,
+      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_55J_k1_sampler_variation",
+      "command": [
+        "bash",
+        "/Users/jfb/s/codec-through/scripts/run_phase1_55J_k1_sampler_variation.sh"
+      ],
+      "status": "completed",
+      "gate": {
+        "paired_correctness_diffs": 1,
+        "paired_choice_diffs": 1,
+        "pathological_follow_up_hits": 0,
+        "pathological_q3_hits": 0,
+        "speedup_all_query_median_cold_over_session_follow_up": 12.260326821555111,
+        "session_follow_up_median_ms": 8416.934125,
+        "peak_rss_gb": 5.235523584,
+        "baseline_accuracy": 0.8571428571428571,
+        "pass_fidelity": true,
+        "pass_exact_match": false,
+        "pass_follow_up_pathology": true,
+        "pass_q3_pathology": true,
+        "pass_speed": true,
+        "pass_memory": true,
+        "pass_signal_floor": null,
+        "speedup_follow_up_median_cold_over_session": 12.206105537151274,
+        "pass_same_class_speed": true,
+        "session_n_correct": 17,
+        "session_accuracy": 0.8095238095238095,
+        "pass_session_floor": true,
+        "sampler": {
+          "temperature": 0.7,
+          "top_p": 0.95,
+          "min_p": 0.0
+        }
+      },
+      "auto_commit": "committed"
     }
   ],
-  "updated_at": "2026-04-26T05:22:29+00:00"
+  "updated_at": "2026-04-26T06:25:39+00:00"
 }
