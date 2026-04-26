@@ -17,7 +17,7 @@ sync. Within the main text, numbers are written so they can be traced back to
 one phase note and one artifact family. When a result is excluded on
 provenance grounds, the paper says so explicitly. The best current example is
 the MVBench \texttt{sticky4} refinement: it is scientifically interesting, but
-the artifact is still dirty-tree, so it stays supplementary until rerun clean.
+the artifact remains provisional, so it stays supplementary until rerun clean.
 
 \begin{table}[H]
 \centering
@@ -40,10 +40,10 @@ Asset & Claim & Protocol & Evidence class & Repo @ commit & Source / hardware \\
 Table~\ref{tab:headline-results} & regime headline cells & paired sparse holdout + after-ingest follow-up & local + imported upstream & \texttt{ct2}@\PrimaryRepoSHA\newline \texttt{ct}@\UpstreamRepoSHA & phase1\_51V, phase1\_55A, and phase1\_55D artifacts plus upstream session5 findings; Gemma/Qwen local stacks, MLX / M3 Air 16 GB \\
 Figure~\ref{fig:vshare-ceiling} & C-CEILING / C-VISION scatter-back validation & sparse holdout + pooled H\_stack + matched cross-arch probe & local + imported upstream & \texttt{ct2}@\PrimaryRepoSHA\newline \texttt{ct}@\UpstreamRepoSHA & \texttt{v\_share\_v\_red\_ceiling\_data.json}; local Gemma and local Qwen stacks plus imported TOMATO rerun \\
 Figure~\ref{fig:c-persist-safe-budget} & C-PERSIST safe envelope & after-ingest same-video follow-up & local & \texttt{ct2}@\PrimaryRepoSHA & phase1\_55A artifacts; Qwen 7B/3B-4bit, MLX / M3 Air 16 GB \\
-Sec.~\ref{sec:results-cross-architecture} & C-PERSIST selective repair & 20f same-video selective re-prefill & local bounded recovery & \texttt{ct2}@\PrimaryRepoSHA & phase1\_55D/55E/55G artifacts; Qwen 7B-4bit, VideoMME short+medium, MLX / M3 Air \\
+Sec.~\ref{sec:results-cross-architecture} & C-PERSIST selective repair & 20f/32f same-video selective re-prefill & local bounded recovery & \texttt{ct2}@\PrimaryRepoSHA & phase1\_55D/55E/55F/55G/55H/55I artifacts; Qwen 7B-4bit, VideoMME short/medium/long + 32f short, MLX / M3 Air \\
 Figure~\ref{fig:lane-a-pareto} & routing frontier & sparse routing under dense backend & local & \texttt{ct2}@\PrimaryRepoSHA & phase1\_20/21/34/36 notes; Qwen 7B-4bit, MLX \\
 Sec.~\ref{sec:routing-mechanism} & Gemma routing boundary & second-architecture semantic substitution & local boundary & \texttt{ct2}@\PrimaryRepoSHA & phase1\_42 artifacts; Gemma 4-E4B-4bit, TOMATO/MVBench motion holdouts \\
-Sec.~\ref{sec:results-cross-architecture} & Qwen stacked-regime boundary & session/streaming composition & local negative / boundary & \texttt{ct2}@\PrimaryRepoSHA & phase1\_30 root-cause + 1.30W/X/Y/Z artifacts; Qwen 7B-4bit, VideoMME dev+holdout, MLX / M3 Air \\
+Sec.~\ref{sec:results-cross-architecture} & Qwen stacked-regime boundary & session/streaming composition & local negative / boundary & \texttt{ct2}@\PrimaryRepoSHA & phase1\_30 root-cause + 1.30W/X/Y/Z/AB artifacts; Qwen 7B-4bit, VideoMME dev+holdout, MLX / M3 Air \\
 Table~\ref{tab:paired-drift} & paired drift audit & paired choice/correctness drift summary & local analysis & \texttt{ct2}@\PrimaryRepoSHA & phase1\_61 drift summary built from landed 1.30, 1.42, and 1.55A artifacts \\
 Sec.~9 & codec-native planner bridge & semantic planner substitution & local semantic evidence & \texttt{ct2}@\PrimaryRepoSHA & phase1\_29B artifacts; Qwen 7B-4bit, VideoMME dev/short slices; offline extraction, not latency \\
 Table~\ref{tab:real-apps} (streaming row) & deployment-scale reuse & native-rate streaming paired N=60 & imported companion & \texttt{sam}@\SamRepoSHA & Sam whitepaper \S2.13.2 / status docs; Gemma 4 26B / M5 Max \\

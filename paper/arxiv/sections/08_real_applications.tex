@@ -5,12 +5,13 @@ visual state. Deployment-scale evaluations on a larger Gemma 4 26B stack
 report 0.8\,s median same-video follow-up latency at 10--18$\times$ speedup,
 paired Streaming VideoMME results with 13$\times$ fewer ViT calls and
 \mbox{$\sim$50$\times$} less dominant-pipeline compute, and selected
-real-video regimes with 4.2--4.5$\times$ end-to-end speedups. A separate
-imported companion exactness result reports byte-identical Qwen outputs across
-what the companion whitepaper reports as 1,937 sparse benchmark items under a
-separate sparse-sampled QA protocol when unchanged regions are reused instead
-of being re-encoded. Live-camera measurements then report the same regime
-dependence in the wild: ViT savings
+real-video regimes with 4.2--4.5$\times$ end-to-end speedups. These are
+companion measurements, not local headline rows. A separate imported companion
+exactness result reports byte-identical Qwen outputs across what the companion
+whitepaper reports as 1,937 sparse benchmark items under a separate
+sparse-sampled QA protocol when unchanged regions are reused instead of being
+re-encoded. Live-camera measurements then report the same regime dependence in
+the wild: ViT savings
 range from 5$\times$ to 300$\times$ with scene activity, and the post-fix RTSP
 demo still reduces ViT calls by 14.3$\times$ over an active 60\,s window. This
 is the operational regime where the thesis matters most.
@@ -25,39 +26,43 @@ section is the deployment table below.
 
 \begin{table}[H]
 \centering
-\caption{Deployment-scale evidence for the streaming regime. Smaller UI and
+\caption{Deployment-scale evidence for the streaming regime. Metric type is
+shown explicitly because these companion rows mix component counters,
+end-to-end timing, live observations, and semantic exactness. Smaller UI and
 demo case studies are discussed in text and kept clearly weaker than the
 paired streaming rows below.}
 \label{tab:real-apps}
 \footnotesize
 \renewcommand{\arraystretch}{1.08}
 \begin{tabularx}{\linewidth}{@{}
-  >{\raggedright\arraybackslash}p{0.20\linewidth}
-  >{\raggedright\arraybackslash}p{0.19\linewidth}
+  >{\raggedright\arraybackslash}p{0.18\linewidth}
+  >{\raggedright\arraybackslash}p{0.16\linewidth}
   >{\raggedright\arraybackslash}X
   >{\raggedright\arraybackslash}p{0.16\linewidth}
 @{}}
 \toprule
-Setting & Work avoided & Outcome & Evidence class \\
+Setting & Metric type & Outcome & Evidence class \\
 \midrule
-Streaming VideoMME (Gemma 26B) & 13$\times$ fewer ViT calls; $\sim$50$\times$ less dominant-pipeline compute & paired N=60 results: 58.3/60.0/61.7\% (stream/token-prune/dense), all within the reported $\pm$12 pp 95\% CI & deployment-scale stream benchmark \\
-Real-video paired regimes (Gemma 26B) & 4.2--4.5$\times$ end-to-end speedup & talking-head and surveillance-style real-video measurements & deployment-scale real-video benchmark \\
-Gemma 26B same-video follow-up & 10--18$\times$ faster than cold prefill & 0.8\,s median follow-up; no accuracy loss & deployment-scale follow-up benchmark \\
-Live-camera pipeline & 5--300$\times$ fewer ViT calls; 14.3$\times$ on one active 60\,s RTSP window & scene-dependent live-camera savings; 45 fps perception throughput on one M5 Max report & live deployment measurement \\
-Exact Qwen caching benchmark & sparse-sampled unchanged-region reuse & reported byte-identical Qwen outputs on what the companion whitepaper reports as 1,937 sparse benchmark items under a separate sparse-QA protocol & imported companion exactness \\
+Streaming VideoMME (Gemma 26B) & component counter + accuracy & 13$\times$ fewer ViT calls; $\sim$50$\times$ less dominant-pipeline compute; paired N=60 results: 58.3/60.0/61.7\% (stream/token-prune/dense), all within the reported $\pm$12 pp 95\% CI & deployment-scale stream benchmark \\
+Real-video paired regimes (Gemma 26B) & end-to-end timing & 4.2--4.5$\times$ end-to-end speedup on talking-head and surveillance-style real-video measurements & deployment-scale real-video benchmark \\
+Gemma 26B same-video follow-up & follow-up latency & 0.8\,s median follow-up; 10--18$\times$ faster than cold prefill; no accuracy loss & deployment-scale follow-up benchmark \\
+Live-camera pipeline & live component counter & 5--300$\times$ fewer ViT calls with scene activity; 14.3$\times$ on one active 60\,s RTSP window; 45 fps perception throughput on one M5 Max report & live deployment measurement \\
+Exact Qwen caching benchmark & semantic exactness & reported byte-identical Qwen outputs on what the companion whitepaper reports as 1,937 sparse benchmark items under a separate sparse-QA protocol & imported companion exactness \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 The local Qwen bridge does not yet reproduce the companion Gemma deployment
 story as a fidelity-preserving stack. The original stacked run reproduced the
-speedup side but failed the accuracy budget. The dense-Q0 admission successor
-fixes first-query damage exactly and leaves a follow-up-only near-miss, but it
-also shows why the claim boundary must stay strict. The long-bucket
-continuation now measures follow-up image-token activity directly and finds
-none: all follow-up image tokens are cache-served under the current
-prompt-cache path. That lane is therefore dense-Q0 admission plus K-cache
-reuse rather than proof of active follow-up vision pruning. That is why
+speedup side but failed the accuracy budget. The dense-first-query admission
+successor restores first-query aggregate correctness and leaves a
+follow-up-only near-miss, but it also shows why the claim boundary must stay
+strict. The long-bucket
+continuations now measure follow-up image-token activity directly and find
+none: all follow-up image tokens are cache-served under the current prompt-cache
+path, and every tested long-Q0 keep rate misses the rescue band. That lane is
+therefore dense-first-query admission plus K-cache reuse rather than proof of
+active follow-up vision pruning. That is why
 Table~\ref{tab:real-apps} stays labeled as deployment-scale companion evidence
 rather than being folded into the local C-VISION or C-PERSIST headline rows.
 

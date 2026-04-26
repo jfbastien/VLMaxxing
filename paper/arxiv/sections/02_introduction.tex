@@ -39,11 +39,11 @@ different protocol and stay labeled that way in the paper. They matter because
 they show that the same reuse structure survives operational settings.
 A local Qwen session/streaming bridge now makes the boundary sharper:
 the original stacked protocol reproduced the speedup side but not the fidelity
-side, a dense-Q0 admission successor fixes first-query damage exactly but
-misses the full 3-query rescue gate, and the duration-conditioned
-\(kr_{Q0}=0.67\) continuation fails to generalize on long clips. We therefore
-treat deployment composition as a regime to explain rather than a multiplier
-to inherit.
+side. Follow-up experiments close that family as a deployable policy under the
+current prompt-cache semantics: even when the first answer is preserved, the
+reused cache state can still damage later answers. We therefore treat
+deployment composition as a regime to explain rather than a multiplier to
+inherit.
 
 \begin{table}[H]
 \centering
@@ -62,7 +62,7 @@ evidence rather than a sparse wall-clock claim.}
 Regime & Reused work & Reporting unit & Headline evidence \\
 \midrule
 Fresh-video first pass & vision-tower work inside the first query & first-query end-to-end speedup & Gemma first-pass gains from 1.113$\times$ to 1.407$\times$ across clean and advisory holdout cells \\
-After-ingest follow-up & prompt / KV prefix for later questions on the same video & follow-up latency, paired drift, and speedup vs cold queries & Qwen persistent-KV reaches 47.2$\times$ at 8f and 91.1$\times$ at 16f; selective re-prefill repairs the short+medium 20f 7B basin with no observed paired drift on n=51 at 9.48--10.76$\times$ same-class follow-up speedup \\
+After-ingest follow-up & prompt / KV prefix for later questions on the same video & follow-up latency, paired drift, and speedup vs cold queries & fixed \(K=1\) re-prefill repairs short/medium/long and 32f-short slices with no observed drift on n=93; adaptive post-\(Q2\) state reaches 24.76$\times$ on the short slice \\
 Streaming / deployment & repeated visual state in a native-rate or live pipeline & paired ViT, pipeline, or end-to-end reduction & Gemma 26B companion evidence reports 13$\times$ fewer ViT calls, \mbox{$\sim$50$\times$} dominant-pipeline reduction, 4.2--4.5$\times$ real-video E2E, and 5--300$\times$ live-camera ViT savings \\
 \bottomrule
 \end{tabularx}
@@ -73,15 +73,19 @@ We make three contributions:
 \item We derive and validate \textbf{C-CEILING}: a stage-share ceiling for
 end-to-end gain. The same arithmetic explains both the modest first-pass
 multipliers and the pooled n=60 composition null, where the observed
-1.042$\times$ stacked result lands almost exactly where the ceiling predicts.
+1.042$\times$ stacked result lands almost exactly where the measured share
+terms predict.
 \item We characterize \textbf{C-PERSIST}: after-ingest persistent-KV reuse on
 Qwen collapses follow-up latency to roughly conversational timescales, with a
 7B safe envelope through 16 frames / 6.5k prefill tokens, a clean 16f point,
 and a wider but bounded 3B plateau through 36 frames / 14.5k prefill tokens.
 We then show that the 7B basin is repairable: selective re-prefill of a fixed
 newest-frame visual tail gives no observed paired choice or correctness drift
-on 51 short+medium 20f paired queries while retaining near-10$\times$
-follow-up speedup.
+on 93 paired queries spanning short, medium, long, and 32-frame short slices,
+while retaining 9.48--20.37$\times$ follow-up speedup. A state-aware adaptive
+variant then repairs once and lets the next follow-up inherit that repaired
+state, reaching 24.76$\times$ speedup on the short slice with no observed
+paired drift.
 \item We establish \textbf{C-VISION}: training-free mid-layer vision-tower
 pruning yields measured first-pass end-to-end gains on frozen Gemma video-VLM
 runs, from 1.113$\times$ to 1.407$\times$ across clean and advisory holdout

@@ -5,23 +5,25 @@
 The paper uses three workload families, because the contribution is not a
 single benchmark trick and the protocols are not interchangeable.
 
-The routing mechanism is evaluated on sparse after-ingest QA holdouts: TOMATO
-\cite{tomato} and a frozen motion-heavy MVBench slice \cite{mvbench}. These
-are the cleanest settings for testing whether training-free temporal reuse
-preserves answers at lower effective fresh-frame budgets.
+The routing mechanism is evaluated on sparse semantic-substitution holdouts:
+TOMATO \cite{tomato} and a frozen motion-heavy MVBench slice \cite{mvbench}.
+These are the cleanest settings for testing whether training-free temporal
+reuse preserves answers at lower effective fresh-frame budgets under a fixed
+dense backend.
 
 The first-pass speedup story uses Gemma 4-E4B-4bit on Video-MME
 \cite{videomme}, MVBench, and TOMATO at 8-frame settings, plus dev-expansion
 cells and deeper frame-count probes. The after-ingest persistent-KV story uses
-repeated follow-up questions on short Video-MME clips, where the same video is
-queried multiple times and prompt reuse is therefore meaningful.
+repeated follow-up questions on Video-MME sessions across short, medium, long,
+and deeper 32-frame slices, where the same video is queried multiple times and
+prompt reuse is therefore meaningful.
 
 The streaming and UI studies are kept separate from those benchmark claims.
 They are native-rate or deployment-style evidence, not replacements for the
 main evaluation.
-By design, sparse after-ingest QA uses pixel-diff on sampled decoded frames,
-while the companion streaming lane uses H.264 metadata at native frame rate.
-The signals are protocol-specific, not interchangeable.
+By design, sparse routing uses pixel-diff on sampled decoded frames, while the
+companion streaming lane uses H.264 metadata at native frame rate. The signals
+are protocol-specific, not interchangeable.
 
 \subsection{Models, Hardware, and Preprocessing}
 
@@ -39,6 +41,16 @@ separately from raw padded reuse in the artifact summaries; paper-facing
 effective-budget numbers use active-region reuse rather than trivially static
 padded borders.
 
+For local timing claims, the harness uses one wall-clock source per experiment,
+forces the backend to finish work before stopping the timer, and reports the
+denominator for every speedup. Follow-up speedups are median cold-follow-up
+latency divided by median session-follow-up latency unless explicitly labeled
+otherwise; first-pass rows are first-query end-to-end ratios. Paired
+experiments keep clip order and compared conditions aligned, log raw per-query
+records, and treat fanless-laptop thermal caveats as evidence labels rather
+than as post-hoc excuses. When a run is missing the instrumentation needed for
+a mechanism claim, the manuscript says so or keeps the result advisory.
+
 \subsection{Metrics and Reporting Discipline}
 
 We report different metrics for different regimes because the paper would be
@@ -47,9 +59,9 @@ misleading otherwise.
 For Qwen routing, the paper reports accuracy, dense-versus-cached agreement,
 parse failures, and effective fresh frames. For Gemma first-pass pruning, it
 reports end-to-end speedup, vision-time reduction, accuracy delta, and the
-share$\times$reduction ceiling prediction. For persistent-KV, it reports
-follow-up latency, speedup relative to the first query, prefix coverage, and
-accuracy delta between baseline and session modes.
+share$\times$reduction prediction. For persistent-KV, it reports follow-up
+latency, cold-versus-session speedup, prefix coverage, and accuracy delta
+between baseline and session modes.
 
 All automated main-text assets are generated from checked-in artifact summaries.
 If a result is advisory, imported, or still provisional, the manuscript says so

@@ -5,21 +5,23 @@ videos admit modest but measured first-pass gains, and those gains obey a
 share-limited ceiling that now binds on both Gemma headline cells and a
 matched Qwen cross-architecture probe. Same-video follow-up queries admit much
 larger multipliers, already reaching sub-second latency on the local stack, and
-the 20f selective-reprefill frontier now shows short+medium no-observed-drift
-recovery at roughly 10$\times$ follow-up speedup. Streaming deployments
-push the same idea further into operational regimes with double-digit to
-\mbox{$\sim$50$\times$} savings. The routing and drift results explain why the
-bars differ so much: fresh-compute placement over time matters more than
-novelty magnitude alone, aggregate accuracy can hide answer-identity drift, and
-semantic substitution must not be confused with measured sparse execution.
+selective re-prefill now repairs the deeper cache-reuse basin: fixed \(K=1\)
+gives no observed paired drift across 93 paired queries at 9.48--20.37$\times$
+follow-up speedup, while the adaptive post-\(Q2\) state policy reaches
+24.76$\times$ on the short slice. Streaming deployments push the same idea
+further into operational regimes with double-digit to \mbox{$\sim$50$\times$}
+savings. The routing and drift results explain why the bars differ so much:
+fresh-compute placement over time matters more than novelty magnitude alone,
+aggregate accuracy can hide answer-identity drift, and semantic substitution
+must not be confused with measured sparse execution.
 
 What remains is a measured sparse backend, broader benchmark coverage on the
-second architecture, cleaner systems baselines, the long/depth boundary for
-selective re-prefill, and a new Qwen session bridge policy rather than the
-now-falsified \(kr_{Q0}=0.67\) candidate. The n=60 composition null already
-answered the easiest bad question: the gains do not multiply naively. The
-useful question now is where each ceiling moves in the architectures and
-deployment protocols people actually care about.
+second architecture, cleaner systems baselines, adaptive selective-reprefill
+breadth, and a Qwen session bridge that either invalidates follow-up cache state
+or directly explains why that state drifts. The n=60 composition null and the
+1.30 long-bucket sweep already answered the easiest bad question: the gains do
+not multiply naively. The useful question now is where each ceiling moves in
+the architectures and deployment protocols people actually care about.
 
 \begin{sectiontodo}{Shorten this once the venue template and abstract freeze}
 The conclusion now has the right scientific center. The final pass should make

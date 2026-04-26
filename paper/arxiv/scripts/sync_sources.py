@@ -51,7 +51,17 @@ def _git_info(repo: Path) -> dict[str, str]:
         return {"sha": "missing", "commit_date": "missing"}
     sha = _run(["git", "rev-parse", "HEAD"], cwd=repo)
     commit_date = _run(["git", "show", "-s", "--format=%cs", "HEAD"], cwd=repo)
+    if _run(["git", "status", "--short"], cwd=repo):
+        sha = f"{sha}-dirty"
     return {"sha": sha, "commit_date": commit_date}
+
+
+def _short_sha(sha: str, length: int = 7) -> str:
+    if sha == "missing":
+        return sha
+    suffix = "-dirty" if sha.endswith("-dirty") else ""
+    base = sha.removesuffix("-dirty")
+    return f"{base[:length]}{suffix}"
 
 
 def _ensure_dirs() -> None:
@@ -448,42 +458,128 @@ def _persistent_kv_snapshot() -> dict[str, object]:
     return {"rows": rows}
 
 
-def _selective_reprefill_snapshot() -> dict:
-    short_path = ARTIFACTS / "phase1_55D_selective_reprefill_v2" / "pair_metrics_k1_n7.json"
-    medium_path = ARTIFACTS / "phase1_55G_k1_medium_replication" / "pair_metrics_k1_n10.json"
-    short = _artifact_json(short_path)
-    medium = _artifact_json(medium_path)
-    speedups = [
-        float(short["speedup_follow_up_median_cold_over_session"]),
-        float(medium["speedup_follow_up_median_cold_over_session"]),
-    ]
-    all_query_speedups = [
-        float(short["speedup_all_query_median_cold_over_session_follow_up"]),
-        float(medium["speedup_all_query_median_cold_over_session_follow_up"]),
-    ]
+def _selective_reprefill_cell(
+    *,
+    label: str,
+    regime: str,
+    policy: str,
+    metrics_path: Path,
+    summary_path: Path,
+) -> dict:
+    metrics = _artifact_json(metrics_path)
+    summary = _artifact_json(summary_path)
     return {
-        "k": 1,
-        "scope": "short+medium",
-        "n_pairs": int(short["n_pairs"]) + int(medium["n_pairs"]),
-        "n_follow_up_pairs": int(short["n_follow_up_pairs"]) + int(medium["n_follow_up_pairs"]),
-        "n_q3_pairs": int(short["q_index_breakdown"]["q3"]["n"])
-        + int(medium["q_index_breakdown"]["q3"]["n"]),
-        "paired_correctness_diffs": int(short["paired_correctness_diffs"])
-        + int(medium["paired_correctness_diffs"]),
-        "paired_choice_diffs": int(short["paired_choice_diffs"])
-        + int(medium["paired_choice_diffs"]),
-        "pathological_follow_up_hits": int(short["pathological_follow_up_hits"])
-        + int(medium["pathological_follow_up_hits"]),
-        "pathological_q3_hits": int(short["pathological_q3_hits"])
-        + int(medium["pathological_q3_hits"]),
+        "label": label,
+        "regime": regime,
+        "policy": policy,
+        "n_pairs": int(metrics["n_pairs"]),
+        "n_follow_up_pairs": int(metrics["n_follow_up_pairs"]),
+        "n_q3_pairs": int(metrics["q_index_breakdown"]["q3"]["n"]),
+        "paired_correctness_diffs": int(metrics["paired_correctness_diffs"]),
+        "paired_choice_diffs": int(metrics["paired_choice_diffs"]),
+        "pathological_follow_up_hits": int(metrics["pathological_follow_up_hits"]),
+        "pathological_q3_hits": int(metrics["pathological_q3_hits"]),
+        "speedup": float(metrics["speedup_follow_up_median_cold_over_session"]),
+        "all_query_speedup": float(
+            metrics["speedup_all_query_median_cold_over_session_follow_up"]
+        ),
+        "session_follow_up_median_s": float(metrics["session_follow_up_median_ms"])
+        / 1000.0,
+        "baseline_accuracy": float(summary["baseline"]["accuracy"]),
+        "peak_rss_gb": float(summary["peak_rss_gb"]),
+        "metrics_source": _source_path_label(metrics_path),
+        "summary_source": _source_path_label(summary_path),
+    }
+
+
+def _sum_reprefill_cells(cells: list[dict]) -> dict:
+    speedups = [float(cell["speedup"]) for cell in cells]
+    all_query_speedups = [float(cell["all_query_speedup"]) for cell in cells]
+    rss = [float(cell["peak_rss_gb"]) for cell in cells]
+    latencies = [float(cell["session_follow_up_median_s"]) for cell in cells]
+    return {
+        "n_pairs": sum(int(cell["n_pairs"]) for cell in cells),
+        "n_follow_up_pairs": sum(int(cell["n_follow_up_pairs"]) for cell in cells),
+        "n_q3_pairs": sum(int(cell["n_q3_pairs"]) for cell in cells),
+        "paired_correctness_diffs": sum(
+            int(cell["paired_correctness_diffs"]) for cell in cells
+        ),
+        "paired_choice_diffs": sum(int(cell["paired_choice_diffs"]) for cell in cells),
+        "pathological_follow_up_hits": sum(
+            int(cell["pathological_follow_up_hits"]) for cell in cells
+        ),
+        "pathological_q3_hits": sum(int(cell["pathological_q3_hits"]) for cell in cells),
         "speedup_min": min(speedups),
         "speedup_max": max(speedups),
         "all_query_speedup_min": min(all_query_speedups),
         "all_query_speedup_max": max(all_query_speedups),
-        "sources": (
-            _source_path_label(short_path),
-            _source_path_label(medium_path),
+        "latency_min_s": min(latencies),
+        "latency_max_s": max(latencies),
+        "rss_min": min(rss),
+        "rss_max": max(rss),
+    }
+
+
+def _selective_reprefill_snapshot() -> dict:
+    fixed_cells = [
+        _selective_reprefill_cell(
+            label="1.55D",
+            regime="20f short",
+            policy="fixed K=1",
+            metrics_path=ARTIFACTS
+            / "phase1_55D_selective_reprefill_v2"
+            / "pair_metrics_k1_n7.json",
+            summary_path=ARTIFACTS
+            / "phase1_55D_selective_reprefill_v2"
+            / "summary_k1_n7.json",
         ),
+        _selective_reprefill_cell(
+            label="1.55G",
+            regime="20f medium",
+            policy="fixed K=1",
+            metrics_path=ARTIFACTS
+            / "phase1_55G_k1_medium_replication"
+            / "pair_metrics_k1_n10.json",
+            summary_path=ARTIFACTS
+            / "phase1_55G_k1_medium_replication"
+            / "summary_k1_n10.json",
+        ),
+        _selective_reprefill_cell(
+            label="1.55I",
+            regime="20f long",
+            policy="fixed K=1",
+            metrics_path=ARTIFACTS
+            / "phase1_55I_k1_long_replication"
+            / "pair_metrics_k1_n7.json",
+            summary_path=ARTIFACTS
+            / "phase1_55I_k1_long_replication"
+            / "summary_k1_n7.json",
+        ),
+        _selective_reprefill_cell(
+            label="1.55H",
+            regime="32f short",
+            policy="fixed K=1",
+            metrics_path=ARTIFACTS
+            / "phase1_55H_k1_32f_short_probe"
+            / "pair_metrics_k1_n7.json",
+            summary_path=ARTIFACTS
+            / "phase1_55H_k1_32f_short_probe"
+            / "summary_k1_n7.json",
+        ),
+    ]
+    adaptive_cell = _selective_reprefill_cell(
+        label="1.55F",
+        regime="20f short",
+        policy="adaptive Q2 K=1, Q3 post-Q2 K=0",
+        metrics_path=ARTIFACTS
+        / "phase1_55F_q3_post_q2_state"
+        / "pair_metrics_k1_n7.json",
+        summary_path=ARTIFACTS / "phase1_55F_q3_post_q2_state" / "summary_k1_n7.json",
+    )
+    return {
+        "fixed_cells": fixed_cells,
+        "fixed": _sum_reprefill_cells(fixed_cells),
+        "adaptive_cell": adaptive_cell,
     }
 
 
@@ -553,6 +649,144 @@ def _write_paired_drift_table(snapshot: dict) -> None:
     )
     (GENERATED / "tables" / "paired_drift.tex").write_text("\n".join(lines) + "\n")
     (GENERATED / "data" / "paired_drift_snapshot.json").write_text(
+        json.dumps(snapshot, indent=2, sort_keys=True) + "\n"
+    )
+
+
+def _write_c_persist_repair_table(snapshot: dict) -> None:
+    repair = snapshot["selective_reprefill"]
+    fixed = repair["fixed"]
+    adaptive = repair["adaptive_cell"]
+    lines = [
+        r"\begin{table}[H]",
+        r"\centering",
+        (
+            r"\caption{Selective re-prefill repair frontier. Fixed \(K=1\) is "
+            r"the broad envelope; the adaptive post-\(Q2\) state policy is the "
+            r"strongest single-cell mechanism result.}"
+        ),
+        r"\label{tab:c-persist-repair}",
+        r"\scriptsize",
+        r"\begin{tabularx}{\linewidth}{@{}l X c c X@{}}",
+        r"\toprule",
+        r"Policy & Scope & FU median / gain & Paired drift & Mechanism signal \\",
+        r"\midrule",
+        (
+            r"Fixed \(K=1\) & 20f short/medium/long + 32f short & "
+            f"{fixed['latency_min_s']:.2f}--{fixed['latency_max_s']:.2f}s / "
+            f"{fixed['speedup_min']:.2f}--{fixed['speedup_max']:.2f}$\\times$ & "
+            f"choice {fixed['paired_choice_diffs']}/{fixed['n_pairs']}; "
+            f"correct {fixed['paired_correctness_diffs']}/{fixed['n_pairs']} & "
+            f"pathological follow-ups {fixed['pathological_follow_up_hits']}/"
+            f"{fixed['n_follow_up_pairs']}; rule-of-three bound \\(\\approx\\)3.2\\% \\\\"
+        ),
+        (
+            r"Adaptive post-\(Q2\) & 20f short & "
+            f"{adaptive['session_follow_up_median_s']:.2f}s / "
+            f"{adaptive['speedup']:.2f}$\\times$ & "
+            f"choice {adaptive['paired_choice_diffs']}/{adaptive['n_pairs']}; "
+            f"correct {adaptive['paired_correctness_diffs']}/{adaptive['n_pairs']} & "
+            "Q2 refreshes one frame; Q3 inherits the repaired state \\\\"
+        ),
+        r"\bottomrule",
+        r"\end{tabularx}",
+        r"\end{table}",
+    ]
+    (GENERATED / "tables" / "c_persist_repair.tex").write_text(
+        "\n".join(lines) + "\n"
+    )
+
+
+def _qwen_bridge_boundary_row(label: str, path: Path) -> dict:
+    payload = _artifact_json(path)
+    return {
+        "label": label,
+        "n": int(payload["n_paired_queries"]),
+        "delta": float(payload["accuracy_delta_streaming_minus_cold"]),
+        "q0_delta": float(payload["q0_accuracy_delta_streaming_minus_cold"]),
+        "follow_up_delta": float(
+            payload["follow_up_accuracy_delta_streaming_minus_cold"]
+        ),
+        "speedup": float(payload["amortized_speedup_cold_over_streaming"]),
+        "active_fraction": payload["streaming_follow_up_vision_pruning_active_fraction"],
+        "source": _source_path_label(path),
+    }
+
+
+def _qwen_bridge_boundary_snapshot() -> dict:
+    rows = [
+        _qwen_bridge_boundary_row(
+            "dense Q0 full union",
+            ARTIFACTS
+            / "phase1_30W_q0_dense_followup_pruned_full"
+            / "pair_summary.json",
+        ),
+        _qwen_bridge_boundary_row(
+            "long kr=0.67",
+            ARTIFACTS / "phase1_30Z_long_q0_kr067_20260424" / "pair_summary.json",
+        ),
+        _qwen_bridge_boundary_row(
+            "long kr=0.75",
+            ARTIFACTS / "phase1_30AB_long_q0_kr075" / "pair_summary.json",
+        ),
+        _qwen_bridge_boundary_row(
+            "long kr=0.80",
+            ARTIFACTS / "phase1_30AB_long_q0_kr080" / "pair_summary.json",
+        ),
+        _qwen_bridge_boundary_row(
+            "long kr=0.85",
+            ARTIFACTS / "phase1_30AB_long_q0_kr085" / "pair_summary.json",
+        ),
+        _qwen_bridge_boundary_row(
+            "long kr=0.90",
+            ARTIFACTS / "phase1_30AB_long_q0_kr090" / "pair_summary.json",
+        ),
+    ]
+    return {"rows": rows}
+
+
+def _format_optional_fraction(value: object) -> str:
+    if value is None:
+        return "--"
+    return f"{float(value):.1f}"
+
+
+def _write_qwen_bridge_boundary_table(snapshot: dict) -> None:
+    lines = [
+        r"\begin{table}[H]",
+        r"\centering",
+        (
+            r"\caption{Qwen session bridge boundary. The tested admission family "
+            r"does not produce a deployable composition point; high keep rates "
+            r"restore aggregate first-answer accuracy but still damage follow-ups. "
+            r"The FU V active column is the measured follow-up vision-pruning "
+            r"activity fraction; -- means the legacy row was not instrumented.}"
+        ),
+        r"\label{tab:qwen-bridge-boundary}",
+        r"\small",
+        r"\begin{tabularx}{\linewidth}{@{}X r r r r r r@{}}",
+        r"\toprule",
+        r"Policy & \(N\) & \(\Delta\)acc & Q0 \(\Delta\) & FU \(\Delta\) & Speed & FU V active \\",
+        r"\midrule",
+    ]
+    for row in snapshot["rows"]:
+        lines.append(
+            f"{row['label']} & {row['n']} & {row['delta']:+.3f} & "
+            f"{row['q0_delta']:+.3f} & {row['follow_up_delta']:+.3f} & "
+            f"{row['speedup']:.2f}$\\times$ & "
+            f"{_format_optional_fraction(row['active_fraction'])} \\\\"
+        )
+    lines.extend(
+        [
+            r"\bottomrule",
+            r"\end{tabularx}",
+            r"\end{table}",
+        ]
+    )
+    (GENERATED / "tables" / "qwen_bridge_boundary.tex").write_text(
+        "\n".join(lines) + "\n"
+    )
+    (GENERATED / "data" / "qwen_bridge_boundary_snapshot.json").write_text(
         json.dumps(snapshot, indent=2, sort_keys=True) + "\n"
     )
 
@@ -873,6 +1107,8 @@ def _write_headline_table(snapshot: dict) -> None:
     cvision_rows = snapshot["c_vision"]["rows"]
     kv_by_frame = {row["frame_count"]: row for row in snapshot["persistent_kv"]["rows"]}
     repair = snapshot["selective_reprefill"]
+    fixed_repair = repair["fixed"]
+    adaptive_repair = repair["adaptive_cell"]
     tomato_row = next(row for row in cvision_rows if row["benchmark"] == "TOMATO")
 
     lines = [
@@ -880,44 +1116,60 @@ def _write_headline_table(snapshot: dict) -> None:
         r"\centering",
         r"\caption{Headline anti-recomputation results by regime.}",
         r"\label{tab:headline-results}",
-        r"\small",
-        r"\begin{tabularx}{\linewidth}{l X c X l}",
+        r"\footnotesize",
+        r"\begin{tabularx}{\linewidth}{l X p{0.15\linewidth} c X l}",
         r"\toprule",
-        r"Regime & Setting & Gain & Fidelity & Status \\",
+        r"Regime & Setting & Denom. & Gain & Fidelity & Status \\",
         r"\midrule",
         (
             "After-ingest & Qwen same-video follow-up, 16f & "
+            "cold/cached follow-up & "
             f"{kv_by_frame[16]['speedup']:.1f}$\\times$ & "
             f"{kv_by_frame[16]['follow_up_median_s']:.3f}\\,s median; "
             f"$\\Delta$acc {kv_by_frame[16]['accuracy_delta']:+.3f} & clean \\\\"
         ),
         (
             "After-ingest & Qwen same-video follow-up, 8f & "
+            "cold/cached follow-up & "
             f"{kv_by_frame[8]['speedup']:.1f}$\\times$ & "
             f"{kv_by_frame[8]['follow_up_median_s']:.3f}\\,s median; "
             f"$\\Delta$acc {kv_by_frame[8]['accuracy_delta']:+.3f} & safe \\\\"
         ),
         (
-            "After-ingest & Qwen selective re-prefill, 20f K=1 short+medium & "
-            f"{repair['speedup_min']:.2f}--"
-            f"{repair['speedup_max']:.2f}$\\times$ & "
-            f"paired diffs {repair['paired_choice_diffs']}/{repair['n_pairs']}; "
-            f"pathological follow-ups {repair['pathological_follow_up_hits']}/"
-            f"{repair['n_follow_up_pairs']} & bounded recovery \\\\"
+            "After-ingest & Qwen adaptive re-prefill, 20f short & "
+            "cold/repaired follow-up & "
+            f"{adaptive_repair['speedup']:.2f}$\\times$ & "
+            f"choice/correct diffs {adaptive_repair['paired_choice_diffs']}/"
+            f"{adaptive_repair['n_pairs']}; pathological follow-ups "
+            f"{adaptive_repair['pathological_follow_up_hits']}/"
+            f"{adaptive_repair['n_follow_up_pairs']} & mechanism win \\\\"
+        ),
+        (
+            "After-ingest & Qwen fixed K=1 re-prefill, 20f/32f breadth & "
+            "cold/repaired follow-up & "
+            f"{fixed_repair['speedup_min']:.2f}--"
+            f"{fixed_repair['speedup_max']:.2f}$\\times$ & "
+            f"choice/correct diffs {fixed_repair['paired_choice_diffs']}/"
+            f"{fixed_repair['n_pairs']}; pathological follow-ups "
+            f"{fixed_repair['pathological_follow_up_hits']}/"
+            f"{fixed_repair['n_follow_up_pairs']} & broad recovery \\\\"
         ),
         (
             "First-pass & Gemma MVBench 8f holdout & "
+            "first-query E2E & "
             f"{cvision_rows[1]['observed_e2e']:.3f}$\\times$ "
             f"& $\\Delta$acc {cvision_rows[1]['acc_delta']:+.3f} & advisory \\\\"
         ),
         (
             "First-pass & Gemma VideoMME 8f holdout & "
+            "first-query E2E & "
             f"{cvision_rows[0]['observed_e2e']:.3f}$\\times$ "
             f"& $\\Delta$acc {cvision_rows[0]['acc_delta']:+.3f} & clean \\\\"
         ),
         (
             "First-pass & Gemma TOMATO 8f "
             f"{'holdout' if 'holdout' in tomato_row['status'] else 'dev'} & "
+            "first-query E2E & "
             f"{tomato_row['observed_e2e']:.3f}$\\times$ & "
             f"$\\Delta$acc {tomato_row['acc_delta']:+.3f} & "
             + (
@@ -937,17 +1189,17 @@ def _write_build_meta(
     primary: dict[str, str], upstream: dict[str, str], sam: dict[str, str]
 ) -> None:
     lines = [
-        f"\\newcommand{{\\PrimaryRepoSHA}}{{{primary['sha'][:7]}}}",
+        f"\\newcommand{{\\PrimaryRepoSHA}}{{{_short_sha(primary['sha'])}}}",
         f"\\newcommand{{\\PrimaryRepoCommitDate}}{{{primary['commit_date']}}}",
         (
             "\\newcommand{\\UpstreamRepoSHA}{"
-            f"{upstream['sha'][:7] if upstream['sha'] != 'missing' else 'missing'}"
+            f"{_short_sha(upstream['sha'])}"
             "}"
         ),
         f"\\newcommand{{\\UpstreamRepoCommitDate}}{{{upstream['commit_date']}}}",
         (
             "\\newcommand{\\SamRepoSHA}{"
-            f"{sam['sha'][:7] if sam['sha'] != 'missing' else 'missing'}"
+            f"{_short_sha(sam['sha'])}"
             "}"
         ),
         f"\\newcommand{{\\SamRepoCommitDate}}{{{sam['commit_date']}}}",
@@ -967,15 +1219,15 @@ def _write_repo_provenance_table(
         r"\toprule",
         r"Repo & Commit & Commit date \\",
         r"\midrule",
-        f"codec-through-2 & {primary['sha'][:12]} & {primary['commit_date']} \\\\",
+        f"codec-through-2 & {_short_sha(primary['sha'], 12)} & {primary['commit_date']} \\\\",
         (
             "codec-through & "
-            f"{upstream['sha'][:12] if upstream['sha'] != 'missing' else 'missing'} & "
+            f"{_short_sha(upstream['sha'], 12)} & "
             f"{upstream['commit_date']} \\\\"
         ),
         (
             "codec-through-sam & "
-            f"{sam['sha'][:12] if sam['sha'] != 'missing' else 'missing'} & "
+            f"{_short_sha(sam['sha'], 12)} & "
             f"{sam['commit_date']} \\\\"
         ),
         r"\bottomrule",
@@ -1077,6 +1329,9 @@ def main() -> int:
     headline_snapshot = _headline_snapshot(upstream_root)
     _render_headline_figure(headline_snapshot)
     _write_headline_table(headline_snapshot)
+    _write_c_persist_repair_table(headline_snapshot)
+    qwen_bridge_snapshot = _qwen_bridge_boundary_snapshot()
+    _write_qwen_bridge_boundary_table(qwen_bridge_snapshot)
     paired_drift_snapshot = _paired_drift_snapshot()
     _write_paired_drift_table(paired_drift_snapshot)
     deployment_snapshot = _deployment_scale_snapshot(sam_root)

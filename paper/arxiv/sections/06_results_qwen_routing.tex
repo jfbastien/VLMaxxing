@@ -34,7 +34,7 @@ effective visual budget.
   }
   \caption{Clean-tree Qwen holdout frontier from canonical artifact summaries.
   The automated manuscript snapshot intentionally excludes the MVBench
-  \texttt{sticky4} variant because the current artifact is dirty-tree and
+  \texttt{sticky4} variant because the current artifact is not cleanly rerun and
   remains supplementary until rerun clean.}
   \label{fig:lane-a-pareto}
 \end{figure}
@@ -42,14 +42,15 @@ effective visual budget.
 The omitted MVBench \texttt{sticky4} refinement remains scientifically
 interesting: it reaches 0.633 accuracy at 4.49 effective fresh frames and
 therefore matches dense-8 at 56\% of the fresh-frame budget. The current
-artifact is still dirty-tree, so the default manuscript snapshot keeps it out
+artifact is still provisional, so the default manuscript snapshot keeps it out
 of the main figure on purpose.
 
 \subsection{A Second Architecture Shows The Boundary}
 
-The same planner is not a topology fairy tale where one attention pattern is
-``safe'' and another is simply ``unsafe.'' A Gemma 4-E4B-4bit holdout pair makes
-the boundary more useful. On TOMATO motion, Gemma preserves aggregate accuracy
+The same planner is not governed by a single universal attention topology
+where one pattern is always ``safe'' and another is simply ``unsafe.'' A Gemma
+4-E4B-4bit holdout pair makes the boundary more useful. On TOMATO motion,
+Gemma preserves aggregate accuracy
 and passes the preregistered strict-agreement gate: dense and cached accuracy
 are both 8/30, with 28/30 answer agreement. On MVBench motion, aggregate
 accuracy is still preserved exactly (both dense and cached are 6/30), but
@@ -94,9 +95,9 @@ MVBench & 8 & 0.633 & 0.567 \\
 On TOMATO, novelty ranking hurts once the budget rises above four frames. On
 MVBench, it helps at $N=4$ but then saturates and fails to improve with larger
 budgets. The cached base policy beats every novelty-ranked dense cell on both
-benchmarks. The point is not that novelty is useless. It is that temporal
-placement is the real objective, and novelty magnitude alone is a poor proxy
-for it.
+benchmarks. The point is not that novelty is useless. It is that the evidence
+points to temporal placement, not novelty magnitude alone, as the missing
+variable.
 
 \subsection{Pixel Statistics Predict Features Only Weakly}
 

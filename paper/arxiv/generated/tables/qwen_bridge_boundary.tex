@@ -1,0 +1,18 @@
+\begin{table}[H]
+\centering
+\caption{Qwen session bridge boundary. The tested admission family does not produce a deployable composition point; high keep rates restore aggregate first-answer accuracy but still damage follow-ups. The FU V active column is the measured follow-up vision-pruning activity fraction; -- means the legacy row was not instrumented.}
+\label{tab:qwen-bridge-boundary}
+\small
+\begin{tabularx}{\linewidth}{@{}X r r r r r r@{}}
+\toprule
+Policy & \(N\) & \(\Delta\)acc & Q0 \(\Delta\) & FU \(\Delta\) & Speed & FU V active \\
+\midrule
+dense Q0 full union & 171 & -0.058 & +0.000 & -0.088 & 2.79$\times$ & -- \\
+long kr=0.67 & 54 & -0.130 & -0.111 & -0.139 & 3.12$\times$ & 0.0 \\
+long kr=0.75 & 54 & -0.185 & -0.111 & -0.222 & 3.37$\times$ & 0.0 \\
+long kr=0.80 & 54 & -0.185 & -0.111 & -0.222 & 3.38$\times$ & 0.0 \\
+long kr=0.85 & 54 & -0.130 & +0.000 & -0.194 & 3.35$\times$ & 0.0 \\
+long kr=0.90 & 54 & -0.130 & +0.000 & -0.194 & 3.34$\times$ & 0.0 \\
+\bottomrule
+\end{tabularx}
+\end{table}

@@ -26,17 +26,17 @@ pre-basin plateau through 36f / 14.5k prefill tokens rather than preserving the
 clean 7B envelope, and the current mechanism story is threshold onset plus
 basin geometry rather than an architecture-specific saturation ceiling.
 
-Selective re-prefill narrows that limitation but does not erase it. The K=1
-20f Qwen 7B result is now a real local repair frontier, with no observed paired
-drift on 51 short+medium paired queries and zero observed pathological
-follow-up outputs across 34 repaired follow-ups. It is still not a universal
-persistent-KV fix: long-bucket and 32f boundary probes remain open, and the
-medium run exceeded its too-tight preregistered RSS ceiling while still staying
-inside the local 9\,GB guard. The failed \(Q2=K1,Q3=K0\) adaptive variant also
-matters: it shows that skipping the third-query repair by falling back to the
-retained full cache reintroduces the basin. A better adaptive state path is
-still untested because the first \(Q3\)-from-repaired-state attempt exposed a
-runner bug on a text-only tail.
+Selective re-prefill narrows that limitation but does not erase it. Fixed
+\(K=1\) is now a real local repair envelope, with no observed paired drift on
+93 paired queries across short, medium, long, and 32-frame short slices and no
+observed pathological outputs across 62 repaired follow-ups. The rule-of-three
+upper bound on an unseen paired-drift rate is still about 3.2\%, so the claim
+remains ``no observed paired drift,'' not population-level exactness. The
+long-bucket cell also preserves a weak 7/21 cold baseline; that is fidelity
+evidence under a hard regime, not evidence that the model itself understands
+long VideoMME well. The adaptive \(Q3\)-from-post-\(Q2\)-state result is
+stronger but narrower: it is currently a short-slice \(n=21\) mechanism result.
+Medium, long, and 32f adaptive replications remain the obvious breadth tests.
 
 For Qwen routing, the opposite caveat applies. The holdout evidence is clean
 and useful, but it is still a quality--compute frontier result under a fixed
@@ -54,16 +54,18 @@ because it already closes the full systems-reviewer checklist. The paper still
 needs a screenshot-polling baseline and broader UI coverage if that lane is
 going to carry more of the headline later. The local Qwen session/streaming
 bridge now exists and is useful precisely because it is diagnosed rather than
-promoted: the original stack reproduced speedup but lost accuracy, dense-Q0
-admission fixes Q0 exactly but misses the 3-query rescue gate, and the offline
-admission frontier contains an oracle rescue point but no deployable
-format-clean policy in the current endpoint family. The 1.30Z continuation
-then falsifies the \(kr_{Q0}=0.67\) long-bucket candidate
-(\(\Delta\)acc \(=-0.130\), 3.12$\times$, format-clean) and empirically
-confirms that follow-up vision pruning is inactive under prompt-cache reuse
-in that arm. The completed root-cause and continuation runs localize the
-remaining bridge to Q0 admission policy or a deliberately cache-invalidated
-follow-up V-only path, not to the current session-reuse path. A related
+promoted: the original stack reproduced speedup but lost accuracy,
+dense-first-query admission restores Q0 aggregate correctness but misses the
+3-query rescue gate, and the offline admission frontier contains an oracle
+rescue point but no deployable format-clean policy in the current endpoint
+family. The long-bucket sweep then
+falsifies every tested Q0 keep rate from 0.67 to 0.90 and empirically confirms
+that follow-up vision pruning is inactive under prompt-cache reuse in that arm.
+At high keep rates, aggregate Q0 accuracy recovers while follow-up accuracy
+still drops, so the failure is downstream of first-query aggregate correctness
+and tied to the reused state. This does not uniquely prove a single cache-state
+mechanism; it motivates the cache-invalidated follow-up test and direct
+cache-state instrumentation. A related
 local codec-native bridge remains scientifically interesting, and the latest
 1.29 results now provide semantic
 planner-substitution evidence: MAX-over-span sparse sampling is hard-falsified,
@@ -110,7 +112,10 @@ main text versus move to the appendix.
 \path{research/experiments/2026/2026-04-23-phase-1_29B-codec-native-replication-prereg.md},
 \path{research/experiments/2026/2026-04-24-phase-1_30W-q0-dense-followup-pruned-full-findings.md},
 \path{research/experiments/2026/2026-04-25-phase-1_30Z-long-q0-kr067-findings.md},
+\path{research/experiments/2026/2026-04-25-phase-1_30AB-long-q0-sweep-findings.md},
 \path{research/experiments/2026/2026-04-24-phase-1_55D-selective-reprefill-v2-k1-findings.md},
 \path{research/experiments/2026/2026-04-25-phase-1_55G-k1-medium-replication-findings.md},
-\path{research/experiments/2026/2026-04-25-phase-1_55F-q3-post-q2-state-failure-note.md}.}
+\path{research/experiments/2026/2026-04-25-phase-1_55F-q3-post-q2-state-findings.md},
+\path{research/experiments/2026/2026-04-25-phase-1_55I-k1-long-replication-findings.md},
+\path{research/experiments/2026/2026-04-25-phase-1_55H-k1-32f-short-probe-findings.md}.}
 \end{sectiontodo}

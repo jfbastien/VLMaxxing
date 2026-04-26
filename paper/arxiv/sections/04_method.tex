@@ -20,6 +20,27 @@ not yet been rewritten into a sparse wall-clock implementation.
 These are related, but they are not interchangeable. They are kept
 analytically separate because they measure different kinds of reuse.
 
+\subsection{Reader's Map of the Session Terms}
+
+The session experiments are easier to read with the naming convention stated
+up front. A \emph{cold} query recomputes the full video prefix. A
+\emph{follow-up} query asks another question about the same video after that
+prefix has already been ingested. In the Qwen session experiments, \(Q0\) or
+\(Q1\) denotes the first question on a video, while \(Q2\) and \(Q3\) are later
+questions in the same three-query session. The symbol \(K\) is the number of
+newest visual frames re-prefilled before a follow-up; \(K=1\) means ``refresh
+one newest frame, reuse the rest of the prefix.'' A \emph{same-class speedup}
+compares cold follow-up queries to session follow-up queries. An
+\emph{all-query denominator} compares all cold queries to session follow-ups;
+we report it only when the text says so explicitly.
+
+The main safety metric is \emph{paired drift}. A run has no observed paired
+choice drift when each session answer chooses the same multiple-choice option
+as its matched cold baseline. It has no observed paired correctness drift when
+each answer is right or wrong on the same examples as the baseline. This is
+stronger than matching aggregate accuracy, but it is still a finite-sample
+observation, not a population proof.
+
 \subsection{Temporal Planner}
 
 For adjacent frames, the routing path computes a per-block statistic on the RGB
@@ -72,15 +93,21 @@ The Gemma path patches the vision tower after an internal layer, keeps only a
 fraction of the tokens, and scatters the result back so downstream geometry is
 unchanged. The resulting first-pass speedup is constrained by how much of total
 wall-clock the vision tower owns. More generally, if a method accelerates only
-one stage of a pipeline by a factor $s$, the end-to-end gain is bounded by
+one stage of a pipeline by a factor $s$, and all other stages are held fixed,
+the ideal end-to-end gain is
 \[
-\mathrm{E2E} \le \frac{1}{f_{\mathrm{fixed}} + (1 - f_{\mathrm{fixed}}) / s},
+\mathrm{E2E}_{\mathrm{ideal}} =
+\frac{1}{f_{\mathrm{fixed}} + (1 - f_{\mathrm{fixed}}) / s},
 \]
 where $f_{\mathrm{fixed}}$ is the dense wall-clock fraction left untouched.
-That is the paper's C-CEILING contribution. For vision-tower pruning, the same
-logic reduces to the scatter-back ceiling
+That is the paper's C-CEILING contribution: the denominator limits how much of
+a local speedup can survive. In real runs, residuals around this model expose
+overhead, scheduler noise, thermal movement, or non-target stages that moved
+despite the intended intervention. For vision-tower pruning, the same logic
+reduces to the scatter-back prediction
 \[
-\mathrm{E2E} \le \frac{1}{1 - V_{\mathrm{share}} V_{\mathrm{red}}},
+\mathrm{E2E}_{\mathrm{pred}} =
+\frac{1}{1 - V_{\mathrm{share}} V_{\mathrm{red}}},
 \]
 where $V_{\mathrm{share}}$ is the dense vision share and $V_{\mathrm{red}}$ is
 the observed reduction in vision time.
@@ -123,8 +150,8 @@ therefore support speedup claims. The Qwen routing lane does not yet. The
 local session/streaming bridge is instrumented separately: unless image-token
 activity shows that follow-up vision tokens were actually recomputed, the paper
 describes that family as Q0 admission plus K-cache reuse, not as active
-follow-up pruning. The completed 1.30Z continuation measured that boundary in
-the current prompt-cache path: all tested long-bucket follow-up image tokens
+follow-up pruning. The completed long-bucket continuations measured that
+boundary in the current prompt-cache path: all tested follow-up image tokens
 were cache-served. That choice is deliberate.
 
 \begin{sectiontodo}{Add the overview figure and final algorithm box}
