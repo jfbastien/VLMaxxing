@@ -25,6 +25,15 @@ time. The three regimes are still separate, but the throughline is placement:
 where the runtime must buy fresh evidence, where cached state is enough, and
 which evidence class proves each point.
 
+Narrative update 2026-04-27: adaptive C-PERSIST breadth is no longer pending.
+It is the current follow-up-reuse headline: n=93 / 0 observed paired drift
+across 20f short/medium/long plus 32f short, 15.28×--35.97× all-query speedup,
+and 14.90×--35.92× same-class follow-up speedup. Fixed K=1 remains the simple
+no-coordination baseline. The 1.30AC/AD family is now a negative composition
+boundary: cache reuse preserves speed but drifts, cache invalidation forces
+follow-up V-pruning but kills speed, and both land at the same net aggregate
+loss through different any-paired-drift sets.
+
 Narrative update 2026-04-26: the arXiv draft now carries the larger
 anti-recomputation-to-VLM-native-media agenda. That agenda is important for
 the paper's shape, but it is not a new submission blocker. Machine-oriented
@@ -32,10 +41,10 @@ sidecars, sensor-fusion/world-state streams, AI-native codecs, compute-denial
 robustness, and driving/robotics/screen specialization stay future work unless
 the experiment registry records new local evidence.
 
-Autonomous session 2026-04-21 status: EXP10 n=60 H_stack composition
-re-check (should-do #1) **CLOSED-NULL** (task #152). Pooled n=60
+Autonomous session 2026-04-21 status: EXP10 n=60 composition audit
+(should-do #1) **CLOSED-NULL** (task #152). n=60
 E2E 1.042× / lift 2.6pp / agreement 0.65; ceiling model reproduces
-observation to within 0.2pp — pooled fixed_frac = 0.875 is decode-
+observation to within 0.2pp — fixed_frac = 0.875 is decode-
 dominated, arithmetic ceiling at per-token speedup 1.446× is 1.041×.
 Composition-appendix claim does not land; three-contribution spine
 unchanged. See `research/experiments/2026/2026-04-21-phase-1_51V-exp10-n60-findings.md`.
@@ -117,7 +126,7 @@ others).
    already demoted 1.51R's dev-only 1.39× aggregate to a
    "duration-conditional partial reproduction"; round-24 codex
    reiterates. 1.51R should appear in the paper as:
-   - the EXP10 n=60 H_stack gate on VideoMME holdout (one explicit
+   - the EXP10 n=60 composition-audit gate on VideoMME holdout (one explicit
      promotion rule: ≥ 4pp E2E lift over V-alone AND agreement ≥ 0.75
      AND acc within −0.067), and
    - the Stage 5 anchor-arm comparison that produces the
@@ -133,8 +142,8 @@ These are not blockers, but any one of them individually raises the
 submission tier from "efficiency workshop" to "main-track defensible"
 in its own dimension.
 
-1. **EXP10 n=60 H_stack thermally-paired re-check.** **CLOSED-NULL
-   2026-04-21 (task #152).** Pooled n=60 arm B (V+novelty kr=0.30)
+1. **EXP10 n=60 composition-audit thermally-paired re-check.** **CLOSED-NULL
+   2026-04-21 (task #152).** n=60 arm B (V+novelty kr=0.30)
    E2E = **1.0420×**, V-only reference arm A = **1.0159×**; lift
    2.6pp FAILS the ≥4pp gate AND agreement 0.650 FAILS the ≥0.75
    gate (acc Δ −0.017 passes the −0.067 gate). Prereg primary 1.10×
@@ -209,28 +218,36 @@ in its own dimension.
    It shows that first-answer aggregate correctness is insufficient to
    certify the reused cache state.
 
-   Pending follow-ups (ordered by current paper leverage):
+   Completed follow-ups:
 
-   - **1.30AC** — true V-only follow-ups by forcing cache invalidation
-     between queries (~5-6h compute + small driver change). Only path
-     to a legitimate "follow-up vision pruning" claim, since the current
-     prompt-cache reuse path mechanically suppresses the V-pruning.
-   - **1.30AD** — instrumented `1.30W` rerun (~1.5-2.5h with cold reuse).
-     Paper-polish: locks the published near-miss mechanism under current
-     instrumentation.
+   - **1.30AC** forced cache invalidation so follow-up V-pruning actually
+     fires. It lands at **1.06×** and the same net aggregate loss as the
+     cache-reuse lane, so it is a negative composition result rather than an
+     active follow-up-pruning win.
+   - **1.30AD** instruments the `1.30W` path and confirms the near-miss
+     mechanism: dense Q0 + K-cache reuse gives **3.02×** but still loses
+     follow-up accuracy. The AC/AD drift sets are not row-identical (Jaccard
+     0.3125), so paper wording should say "same net aggregate boundary," not
+     "byte-equivalent."
+
+   Remaining follow-ups (ordered by current paper leverage):
+
+   - **Direct cache-state instrumentation** — K-cache distance or equivalent
+     per-layer state probe to explain why the AC and AD mechanisms meet the
+     same aggregate boundary.
    - **1.30AB-fine @ 0.95** — optional boundary cleanup (~30 min). Useful
      only if we need to characterize the sharp 0.90→1.0 transition.
 
    1.30X remains important, but its `Δacc = 0.0000`, `3.0781×` point is
    an **oracle upper bound**, not a deployable policy. The lane is closed
-   at the tested keep-rates pending cache invalidation or direct
-   cache-state instrumentation.
+   at the tested keep-rates pending direct cache-state instrumentation.
 
 5. **1.55 selective re-prefill frontier (fidelity recovery).** The v1
    driver was infra-falsified, but that is no longer the live state.
    Repo-local v2 now runs the intended multimodal tail-reprefill regime.
    **Fixed K=1** now spans 20f short, medium, long, plus 32f short. The
-   adaptive post-Q2-state policy is the strongest single-cell result.
+   adaptive post-Q2-state policy now spans the same breadth and is the current
+   headline result.
 
    | run | regime | n_paired | paired diffs | speedup (same-class) | pathology | RSS |
    | --- | --- | --- | --- | --- | --- | --- |
@@ -239,7 +256,14 @@ in its own dimension.
    | 1.55I K=1 | 20f long, 7 clips | 21 | 0/21 / 0/21 | 11.24× | 0/14 follow-up, 0/7 Q3 | 5.940 GB |
    | 1.55H K=1 | 32f short, 7 clips | 21 | 0/21 / 0/21 | 20.37× | 0/14 follow-up, 0/7 Q3 | 5.821 GB |
    | **fixed combined** | 20f short/medium/long + 32f short | **93** | **0/93 / 0/93** | 9.48-20.37× | **0/62 follow-up, 0/31 Q3** | 4.9-6.1 GB |
-   | **1.55F adaptive** | 20f short, post-Q2 state | **21** | **0/21 / 0/21** | **24.76×** | **0/14 follow-up, 0/7 Q3** | **1.44 GB** |
+   | **1.55F adaptive breadth** | 20f short/medium/long + 32f short, post-Q2 state | **93** | **0/93 / 0/93** | **14.90-35.92× same-class** (**15.28-35.97× all-query**) | **0/62 follow-up, 0/31 Q3** | 1.44-6.09 GB |
+
+   RSS in this table is the summary-level peak reported by each run summary.
+   The separate 1.66 memory characterization reads row-level JSONL memory
+   signals too and sees larger transient peaks in some C-PERSIST artifacts
+   (up to 13.61 GB). Do not use 1.66 as a final memory-model figure until the
+   measured sparse-execution / 1.63 family lands; do use it to keep manuscript memory claims
+   denominator-specific.
 
    K=2 and K=4 remain useful lower-speed comparison points (`6.72×`
    and `3.66×`). With n=93 zero observed paired drift in the fixed lane,
@@ -253,18 +277,23 @@ in its own dimension.
    `Δacc = -0.0952`, paired correctness diffs `4/21`, paired choice
    diffs `6/21`, and pathological-like outputs on `7/7` third queries.
    **1.55F (`Q2=K1`, `Q3=K0` with `q3_cache_source=post_q2_repaired`)
-   PASSES** on the same short tranche with `0/21` paired diffs and
-   `24.76×` same-class follow-up speedup. This is the clearest mechanism
-   result: the 1.55E Q3 catastrophe was caused by inheriting the wrong
-   cache state, not by adaptive repair being impossible.
+   now PASSES** across the broad tranche with `0/93` paired diffs. This is the
+   clearest mechanism result: the 1.55E Q3 catastrophe was caused by inheriting
+   the wrong cache state, not by adaptive repair being impossible. Stage timing
+   explains the additional speedup over fixed K=1: adaptive Q3 reuses the
+   post-Q2-repaired cache and re-prefills only the question tail, while fixed
+   K=1 re-prefills the last-frame block on every Q3.
 
    Pending follow-ups, in order of paper leverage:
 
-   - **1.55F-medium** — adaptive policy on the medium tranche (~70 min).
-   - **1.55F-long** — adaptive policy on the long tranche (~60-90 min).
-   - **1.55F-32f** — adaptive policy on the 32f short tranche (~70-90 min).
-   These are breadth/depth tests for the stronger adaptive lane; the fixed
-   K=1 lane is already paper-grade for scope+depth at the tested cells.
+   - **Many-turn stability stress** — 10/20/50 follow-ups to test whether
+     paired drift remains flat or accumulates after the current two-follow-up
+     sessions.
+   - **Sampler sweep** — the T=0.7 point is near-greedy parity but not strict
+     invariance; a temperature curve is needed before claiming sampler-robust
+     reuse.
+   - **Cross-architecture C-PERSIST** — blocked on Gemma sliding-window /
+     RotatingKVCache prompt-cache semantics, not on model availability.
 
    **Do not confuse this with 1.55B**, which is the later persistent-KV
    × decode-acceleration composition phase and still depends on 1.54
@@ -368,10 +397,10 @@ collection.
    (36f, 40f] rather than treated as a clean-safe range. And
    `paper/figures/v_share_v_red_ceiling.{png,_data.json}` — 9 rendered
    regimes (4 Gemma dev + 3 Gemma holdout + 1 matched Qwen dev +
-   1 pooled EXP10 n=60) against the
+	   1 n=60 composition-audit cell) against the
    `1/(1 − V_share × V_red)` curve; dev median |Δ| = 2.2pp, holdout
    max 11.6pp (MVBench 8f, thermal-inflated and advisory per Session 4
-   findings). Pooled n=60 cell sits at product 0.027 / E2E 1.042× —
+	   findings). The n=60 composition-audit cell sits at product 0.027 / E2E 1.042× —
    the CLOSED-NULL data-point visible at the bottom-left of the curve.
    No new runs; paper-draft work only. Commit: follow-up.
 
@@ -418,7 +447,7 @@ a must-do slot opens.
   `dense_acc=cached_acc=0.200`) while preserving aggregate accuracy
   exactly. This means claim #7 is no longer blocked on execution; it is
   blocked only if we want to upgrade it beyond a benchmark-conditional
-  spectrum story. Gemma Track B baselines are now exploratory rather
+	  spectrum story. Gemma measured-sparse-execution baselines are now exploratory rather
   than claim-bearing because the prereg promotion rule required both
   holdout cells to pass.
 
@@ -481,7 +510,7 @@ edits:
    (8/32-frame × benchmark × keep-rate × anchor arm, median 2.1% /
    worst 5.2% error) and the C-VISION rendered view with **9 points**
    total: 4 Gemma dev cells, 3 Gemma holdout cells, 1 matched Qwen
-   cross-architecture point, and 1 pooled H_stack null. Already
+   cross-architecture point, and 1 composition-audit null. Already
    satisfied per claim-matrix row 13 and row 15.
 4. **Safe-deployment table.** Reviewer checks the C-PERSIST 7B/3B
    envelope table. Round-23 added the "after-ingest" framing;

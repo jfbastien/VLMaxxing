@@ -2,11 +2,14 @@
 
 Video VLMs spend a surprising amount of time rediscovering what they already
 know. The wall behind a factory robot did not move. The stove, countertop, or
-security-camera background often did not move either. The video stream carries
-cheap evidence of that fact, and classical codecs have spent decades turning
-predictable motion and residual surprise into compact state. Yet most VLM
-pipelines hand the model another dense stack of RGB frames and ask it to pay
-again for vision encoding, prefill, or both.
+security-camera background often did not move either. A vehicle's front camera
+also sees much of the world move predictably: nearby objects expand, lane
+markers flow outward, and the surprise is concentrated near boundaries,
+occlusions, and independent movers. The video stream carries cheap evidence of
+stasis, motion, and residual surprise, and classical codecs have spent decades
+turning that evidence into compact state. Yet most VLM pipelines hand the model
+another dense stack of RGB frames and ask it to pay again for vision encoding,
+prefill, or both.
 
 That repeated payment is the seed of this paper. A benchmark clip is sampled
 into several frames, many of those frames are visually redundant, and the stack
@@ -34,11 +37,12 @@ already been rewritten to skip timed work. Reuse is three regimes with three
 different ceilings, not one multiplier that can be copied from paper to paper.
 
 That distinction changes what the paper is about. The first contribution is
-\emph{C-CEILING}: an arithmetic bound on how much of a local speedup can
-survive to end-to-end wall-clock. The second is \emph{C-PERSIST}: the
-after-ingest same-video regime where the biggest local multipliers already
-exist, but also where cache reuse enters a measurable basin unless the visual
-tail is repaired. The third is \emph{C-VISION}: measured first-pass gains on
+\emph{stage-share ceiling (C-CEILING)}: an arithmetic bound on how much of a
+local speedup can survive to end-to-end wall-clock. The second is
+\emph{persistent follow-up reuse (C-PERSIST)}: the after-ingest same-video
+regime where the biggest local multipliers already exist, but also where cache
+reuse enters a measurable basin unless the visual tail is repaired. The third
+is \emph{first-pass vision pruning (C-VISION)}: measured first-pass gains on
 fresh videos via training-free vision-tower pruning. Qwen routing then plays a
 different role: it is the mechanism-validation backbone and the
 negative-result ledger showing that fresh-compute placement cannot be reduced
@@ -54,16 +58,18 @@ probably changed; the model and the task still decide what matters. That is
 why the VLM-native media discussion later in the paper is framed as candidate
 requirements, not as a current systems claim.
 
-A separate 26B streaming implementation is reported as imported
-deployment-scale evidence consistent with the same structure in operational
-workloads. Under that protocol, same-video follow-up latency is
-0.8\,s, paired Streaming VideoMME reports 13$\times$ fewer ViT calls and
-\mbox{$\sim$50$\times$} less dominant measured subpipeline compute, and
-selected real-video regimes reach 4.2--4.5$\times$ end-to-end speedups. These
-numbers come from a different model, machine, and protocol, so they are
-reported as operational evidence rather than local headline cells. They matter
-because they show where the anti-recomputation structure can become large in
-practice. They also do \emph{not} license a naive composition claim: our Qwen
+The scale-out streaming lane is part of the same science story, but it has a
+different protocol. Under a separate 26B-class streaming stack, same-video
+follow-up latency is reported at 0.8\,s, paired Streaming VideoMME reports
+13$\times$ fewer ViT calls and \mbox{$\sim$50$\times$} less dominant measured
+subpipeline compute, and selected real-video regimes reach 4.2--4.5$\times$
+end-to-end speedups. These numbers come from a different model, machine, and
+streaming protocol, so the current draft labels them as scale-out operational
+evidence rather than local headline cells. The intended end-state is stronger:
+the same claim axes, artifact format, paired gates, and baselines should make
+the 26B lane a first-class \emph{streaming state reuse} evaluation. They matter
+because they show where anti-recomputation can become large in practice. They
+also do \emph{not} license a naive composition claim: our Qwen
 session-composition experiments reproduce speedup without preserving the full
 fidelity contract, and later sweeps rule out the tested prompt-cache family as
 a deployable composition policy. Even when the first answer is preserved, the
@@ -90,8 +96,8 @@ claim.}
 Regime & Reused work & Denominator / evidence class & Headline evidence \\
 \midrule
 Fresh-video first pass & vision-tower work inside the first query & first-query wall-clock; local clean/advisory cells & Gemma first-pass gains from 1.113$\times$ to 1.407$\times$ across clean and advisory holdout cells \\
-After-ingest follow-up & prompt / KV prefix for later questions on the same video & follow-up latency and paired drift; first query still pays full freight & fixed \(K=1\) re-prefill repairs short/medium/long and 32f-short slices with no observed drift on n=93; adaptive post-\(Q2\) state reaches 24.76$\times$ same-class speedup on the short slice \\
-Streaming / deployment & repeated visual state in a native-rate or live pipeline & separate operational protocol rows: ViT calls, measured subpipeline compute, live counters, or E2E & a 26B streaming implementation reports 13$\times$ fewer ViT calls, \mbox{$\sim$50$\times$} dominant measured subpipeline reduction, 4.2--4.5$\times$ real-video E2E, plus separate live-camera counters \\
+After-ingest follow-up & prompt / KV prefix for later questions on the same video & follow-up latency and paired drift; first query still pays full freight & adaptive post-\(Q2\) state repairs short/medium/long and 32f-short slices with no observed drift on n=93, reaching 15.28--35.97$\times$ all-query median speedup; fixed \(K=1\) is the no-coordination baseline \\
+Scale-out streaming & repeated visual state in a native-rate or live pipeline & separate operational protocol rows: ViT calls, measured subpipeline compute, live counters, or E2E & a 26B streaming implementation reports 13$\times$ fewer ViT calls, \mbox{$\sim$50$\times$} dominant measured subpipeline reduction, 4.2--4.5$\times$ real-video E2E, plus separate live-camera counters \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -100,12 +106,12 @@ The table is a workload map. The contributions below are the analytical and
 empirical pieces that explain those workloads without collapsing them into a
 single multiplier. We make three contributions:
 \begin{itemize}[leftmargin=1.5em]
-\item We derive and validate \textbf{C-CEILING}: a stage-share ceiling for
+\item We derive and validate \textbf{stage-share ceiling (C-CEILING)}: a stage-share ceiling for
 end-to-end gain. The same arithmetic explains both the modest first-pass
-multipliers and the pooled n=60 composition null, where the observed
+multipliers and the n=60 composition audit, where the observed
 1.042$\times$ stacked result lands almost exactly where the measured share
 terms predict.
-\item We characterize \textbf{C-PERSIST}: after-ingest persistent-KV reuse on
+\item We characterize \textbf{persistent follow-up reuse (C-PERSIST)}: after-ingest persistent-KV reuse on
 Qwen collapses follow-up latency to roughly conversational timescales, with a
 7B tested envelope through 16 frames / 6.5k prefill tokens, a clean 16f point,
 and a wider but bounded 3B plateau through 36 frames / 14.5k prefill tokens.
@@ -113,10 +119,10 @@ We then show that the 7B basin is repairable: selective re-prefill of a fixed
 newest-frame visual tail gives no observed paired choice or correctness drift
 on 93 paired queries spanning short, medium, long, and 32-frame short slices,
 while retaining 9.48--20.37$\times$ follow-up speedup. A state-aware adaptive
-variant then repairs once and lets the next follow-up inherit that repaired
-state, reaching 24.76$\times$ same-class speedup on the short slice with no
-observed paired drift.
-\item We establish \textbf{C-VISION}: training-free mid-layer vision-tower
+variant repairs once and lets the next follow-up inherit that repaired state;
+across the same 93-query breadth, it has no observed paired drift and reaches
+15.28--35.97$\times$ all-query median speedup.
+\item We establish \textbf{first-pass vision pruning (C-VISION)}: training-free mid-layer vision-tower
 pruning yields measured first-pass end-to-end gains on frozen Gemma video-VLM
 runs, from 1.113$\times$ to 1.407$\times$ across clean and advisory holdout
 cells, with magnitude governed by the vision-share ceiling rather than wishful

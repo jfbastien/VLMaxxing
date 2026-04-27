@@ -32,30 +32,34 @@ It is NOT the place for raw experimental detail. Evidence lives in:
 - [research/falsified-hypotheses.md](../research/falsified-hypotheses.md) —
   what the evidence has ruled out
 
-Last material update: 2026-04-26 (1.55F landed the adaptive post-Q2-state
-mechanism win at 24.76× same-class speedup with 0/21 paired drift; 1.55I and
-1.55H upgraded fixed K=1 to n=93 / 0 observed drift across 20f
-short/medium/long plus 32f short; 1.30AB closed the tested long-Q0 admission
-family and confirmed follow-up vision pruning is inactive under prompt-cache
-reuse).
+Last material update: 2026-04-27 (adaptive C-PERSIST breadth landed across
+20f short/medium/long plus 32f short at n=93 / 0 observed paired drift,
+15.28×--35.97× all-query speedup, and 14.90×--35.92× same-class follow-up
+speedup; stage-timing attribution shows adaptive Q3 avoids the fixed-K last-frame
+re-prefill; 1.30AC/AD close the cache-reuse/composition boundary as same net
+aggregate loss through different any-paired-drift sets).
 
-## Current Manuscript Position (2026-04-26)
+## Current Manuscript Position (2026-04-27)
 
 The manuscript should be centered on one anti-recomputation story: where a
 frozen video VLM must buy fresh visual evidence over time, and where cached
 state remains inside the appropriate quality--compute frontier. That story has
-three explicit regimes:
+three explicit local regimes, plus one scale-out streaming lane:
 
-- **C-VISION** for measured first-pass gains on fresh videos
-- **C-PERSIST** for the much larger after-ingest follow-up-query wins
-- **Qwen routing** for mechanism and boundary evidence
+- **First-pass vision pruning** (C-VISION) for measured first-query gains on
+  fresh videos.
+- **Persistent follow-up reuse** (C-PERSIST) for the much larger after-ingest
+  follow-up-query wins.
+- **Routing-frontier experiments** for mechanism and boundary evidence.
+- **Scale-out streaming state reuse** for the 26B native-rate deployment lane
+  once artifact-compatible protocols and matched baselines are available.
 
 Those regimes matter for different reasons. C-VISION shows that frozen
 first-pass pruning already buys real wall-clock savings, but only in proportion
 to the vision share that the dense path actually owns. C-PERSIST is where the
 largest local multipliers live, because once a video has already been ingested,
 the next question can reuse the expensive prefix instead of rebuilding it.
-Qwen routing is the cleanest evidence for why any of this works: novelty
+Routing is the cleanest evidence for why any of this works: novelty
 magnitude alone is not enough, temporal placement of fresh compute matters, and
 semantic-substitution claims must stay separate from sparse-path speedup
 claims.
@@ -72,14 +76,14 @@ paper should lead with, prefer `priority.md`.
 > temporal placement of fresh compute matters more than novelty
 > magnitude alone.
 
-The semantic codec-native bridge has now landed locally, but the systems bridge
-has not. Keep the wording precise: sparse-sampled QA is still pixel-diff by
-design, native-rate streaming is codec-metadata by design, and any
-``codec-guided'' wording should stay attached to the protocol it actually
-describes.
+The semantic codec-native bridge has now landed locally, but the fully
+harmonized scale-out systems bridge has not. Keep the wording precise:
+sparse-sampled QA is still pixel-diff by design, native-rate streaming is
+codec-metadata by design, and any ``codec-guided'' wording should stay attached
+to the protocol it actually describes.
 
 The paper-grade story is training-free anti-recomputation with measured
-first-pass Gemma gains, large after-ingest follow-up wins, and Qwen routing
+first-pass Gemma/Qwen gains, large after-ingest Qwen follow-up wins, and routing
 evidence that explains the mechanism boundary.
 For the per-claim breakdown, see
 [`paper/claim-matrix.md`](claim-matrix.md) and
@@ -101,7 +105,7 @@ duration-conditional partial reproduction + 1.55D frontier-partial):
    1.51R reproduction lane and further extended by 1.51V to a
    vision-axis analog `1/(1 − V_share × V_red)`.
 
-2. **C-PERSIST (claim 14): Cross-architectural persistent-KV
+2. **C-PERSIST (claim 14): Persistent follow-up reuse with paired-drift
    tested deployment envelope.** All persistent-KV claims in this paper
    are **after-ingest / follow-up-query** numbers: the user pays the
    full first-query prefill once, subsequent questions on the *same
@@ -115,9 +119,15 @@ duration-conditional partial reproduction + 1.55D frontier-partial):
    cross-architectural; sampler-side intervention is
    architecture-conditional (insufficient at 7B basin at 20f AND 40f;
    partial-only at 3B basin at 40f — disperses to pre-basin plateau,
-   not to baseline). Tested deployment-regime table in
-   [`paper/claim-matrix.md`](claim-matrix.md) provides paper-grade
-   practitioner guidance; safety-boundary result in its own right.
+   not to baseline). The repair story is now broad on Qwen: fixed K=1
+   selective re-prefill gives 0/93 observed paired drift at 9.48×--20.37×
+   same-class follow-up speedup, while adaptive post-Q2-state reuse gives
+   0/93 observed paired drift at 15.28×--35.97× all-query speedup
+   (14.90×--35.92× same-class). Stage timing explains the adaptive gain:
+   Q3 reuses the post-Q2 cache and avoids the fixed-K last-frame re-prefill.
+   Tested deployment-regime table in [`paper/claim-matrix.md`](claim-matrix.md)
+   provides paper-grade practitioner guidance; paired-fidelity boundary result
+   in its own right.
 
 3. **C-VISION (claim 15): Vision-tower pruning transfers at `L=2`
    `kr_V=0.50` across Gemma 4-E4B-4bit and Qwen 2.5-VL-7B-4bit, with
@@ -140,7 +150,7 @@ reduction → `1/(1 − share × reduction)` ceiling**, with
 architecture-specific and regime-specific bounds characterized. The
 paper presents these as three independent instantiations of a unified
 efficiency-ceiling theory: C-CEILING (LLM-generate axis), C-VISION
-(vision-tower axis), and the LLM-side analog for H_stack. C-PERSIST
+(vision-tower axis), and the LLM-side composition analog. C-PERSIST
 adds the orthogonal fidelity-floor axis (where the ceiling falls apart
 entirely under cache reuse).
 
@@ -158,9 +168,9 @@ depends on broader asks: (a) one measured sparse-path end-to-end delta,
 (d) a scroll/pan or egomotion regime-boundary probe on a corpus that
 actually contains that motion regime.
 
-## Protocol matters — three non-interchangeable evaluation regimes
+## Protocol matters — non-interchangeable evaluation regimes
 
-Every number in this paper lives inside one of three protocols, and the
+Every number in this paper lives inside one of these protocols, and the
 protocols are not mutually substitutable. Conflating them is the easiest
 way to overclaim.
 
@@ -202,9 +212,9 @@ their independent speedups:
 - **C-CEILING × C-VISION shares the vision axis.** The V_share term
   in `1/(1 − V_share × V_red)` is the *same V* as the V in the general
   ceiling. Stacking re-uses the same budget — you can't spend it twice.
-- **The EXP10 n=60 H_stack result sits at the ceiling, not above it.**
+- **The EXP10 n=60 composition audit sits at the ceiling, not above it.**
   Composition of 1.51R prefill-pruning × 1.51V vision-pruning lands at
-  1.042 × E2E, ceiling-matched to the predicted H_stack bound — a
+  1.042 × E2E, ceiling-matched to the predicted LLM-side composition bound — a
   preregistered NULL on "stacking beats the ceiling" and an
   EARNED on the ceiling law itself.
 
@@ -223,7 +233,7 @@ boundary as much as the positives:
   Gemma 4-E4B-4bit VideoMME 8 f dev n=30, prefill-pruning alone yields
   `e2e=1.00×`, `gen=1.01×`. The 1.51R speedup in the main body comes
   from `kr=0.10` with a different aggregate-accuracy story.
-- **EXP10 n=60 H_stack composition: preregistered NULL** on "stacking
+- **EXP10 n=60 composition audit: preregistered NULL** on "stacking
   beats the ceiling." The observed 1.042 × E2E is ceiling-matched, not
   super-ceiling. (This is a positive result on the *ceiling law*, and a
   null on stack-beats-ceiling.)
@@ -261,14 +271,17 @@ boundary as much as the positives:
   **Q0 admission + K-cache reuse** story, not a follow-up-pruning story.
   High keep rates restore aggregate Q0 accuracy but still lose follow-up
   accuracy by ~19pp, so first-answer aggregate correctness is not sufficient
-  to certify the reused state. The next meaningful continuation is a
-  cache-invalidated `1.30AC`, instrumented `1.30AD`, or optional `0.95`
-  boundary point, not a revival of `1.30AA` unchanged.
+  to certify the reused state. The cache-invalidated `1.30AC` and instrumented
+  `1.30AD` successors now close this as a negative composition boundary: both
+  reach the same net aggregate loss through different any-paired-drift sets, and
+  only cache reuse preserves the speed profile. The next meaningful
+  continuation is direct cache-state instrumentation or optional `0.95`
+  boundary cleanup, not a revival of `1.30AA` unchanged.
 - **1.60 scroll/pan regime-boundary probe: closed as a VideoMME corpus
   limitation.** We re-audited the natural corpus on a 60-item VideoMME
   stratification across 8f/16f/32f and found 0/60 items above the relaxed
-  `shifted_fraction >= 0.30` gate (max 0.125). The result does not say
-  C-VISION is safe on scroll/pan; it says VideoMME does not contain that
+  `shifted_fraction >= 0.30` gate (max 0.125). The result does not certify
+  C-VISION on scroll/pan; it says VideoMME does not contain that
   regime at measurable scale. A scroll/pan characterization now requires
   EgoSchema/EPIC-Kitchens/Ego4D or a labeled synthetic set.
 - **Streaming axis #2b: regime-dependent negative evidence, not a vague caveat.**
@@ -278,23 +291,23 @@ boundary as much as the positives:
   pan/scroll regime the mechanism was designed for.
 - **Piecewise reuse: no matched wall-clock baseline.** The
   piecewise-reuse case study in the separate streaming work is a single-cell
-  illustration, not a deployment-scale result. Appendix-bound; does not
+  illustration, not a scale-out result. Appendix-bound; does not
   contribute to the headline multipliers.
 
-## Streaming evidence: case-study vs deployment-scale (not interchangeable)
+## Streaming evidence: case-study vs scale-out lane (not interchangeable)
 
 Within the separate streaming work the numbers fall into two categories and they
 carry different evidential weight:
 
-**Deployment-scale** (main-body multipliers, paired baselines):
+**Scale-out streaming** (main-body multipliers, paired baselines):
 streaming E2E 4.2–4.5 ×; ViT-only 13 ×; dominant measured subpipeline
 ~50 ×; live-camera ViT 5–300 ×; persistent-KV follow-up median
 0.8 s. These stay in the main body, clearly attributed to the separate
 operational protocol, with
 their regime explicitly named.
 
-**Sparse exactness** is a separate imported-companion row, not part of
-the deployment-multiplier bucket. The current deployment report lists
+**Sparse exactness** is a separate scale-out partner row, not part of
+the deployment-multiplier bucket. The current scale-out report lists
 1,937 sparse exactness items in the abstract, but other prose still says
 1,837; this paper therefore keeps that row explicitly reported and not
 re-audited here.
@@ -303,7 +316,7 @@ re-audited here.
 matched wall-clock): piecewise reuse; individual streaming anecdotes
 without the paired sparse-benchmark comparison. These are appendix-bound
 and do not contribute to the headline — the paper does not present a
-case-study multiplier as evidence for a deployment-scale claim.
+case-study multiplier as evidence for a scale-out claim.
 
 ## Current Narrow Claim Boundary
 
@@ -335,9 +348,9 @@ We do NOT claim:
 - AI-native codecs as a near-term deliverable
 - codec or pixel signals as semantic saliency or task-importance oracles
 
-## Separate streaming work as deployment-scale evidence (not "applications / support")
+## Separate streaming work as scale-out evidence (not "applications / support")
 
-Treat the separate streaming work as deployment-scale evidence for C-PERSIST and
+Treat the separate streaming work as scale-out evidence for C-PERSIST and
 C-VISION, not as decorative applications support. The two repos occupy disjoint
 regimes by design:
 
@@ -356,7 +369,7 @@ stage-bounded acceleration, including the vision-axis analog
 **attention-propagation drift** as the fidelity mechanism — NOT
 positional-encoding drift. The local stack proves the mechanism at
 small scale under strict prereg/falsification discipline; the separate
-streaming stack reports deployment-scale companion evidence under operational protocols. The paper
+streaming stack reports scale-out companion evidence under operational protocols. The paper
 reports the **labeled evidence union** under a single analytical theory, with
 honest accounting of where each number came from.
 
@@ -371,13 +384,13 @@ codec-through locally:
   1.30 speedup landed locally on Qwen, but fidelity falsified the
   preregistered gate; root-cause decomposition now localizes the
   short-scout loss primarily to the V-only Q0 pruning leg, so the bridge
-  depends on a safer/adaptive V admission policy rather than another
+  depends on a better-certified/adaptive V admission policy rather than another
   blind stack run
 - codec-native streaming-decoder integration for 1.29; the local
   planner-substitution bridge now survives both calibration-mode and
   calibration-source ablations, but the offline extraction path is still not a
   systems win
-- sparse-execution measured delta for claim 5 (Track B infra exists
+- sparse-execution measured delta for claim 5 (dense timing infra exists
   on dense; sparse path unwritten)
 - broader cross-architecture C-VISION coverage beyond the matched Qwen
   VideoMME point
@@ -451,9 +464,9 @@ whitepaper §8 and codex 2026-04-16 review, the paper must state:
    [`publishability-status.md`](publishability-status.md) §Attention-
    context-drift-vs-PE-drift for the Codex round-21 reconciliation.
 
-## Track B Reporting Template (from sam, for future use)
+## Measured Sparse-Execution Reporting Template (from sam, for future use)
 
-When Track B sparse execution lands, report:
+When measured sparse execution lands, report:
 
 | Metric | Content types | Unit |
 |---|---|---|
@@ -467,7 +480,7 @@ When Track B sparse execution lands, report:
 
 Content types: talking-head, surveillance, FPV/egomotion (matching
 sam's table structure). Report ViT-only AND E2E separately; do NOT
-use feature-replay timing as the main Track B claim.
+use feature-replay timing as the main sparse-execution claim.
 
 ## Emerging Mechanistic Theory (2026-04-16)
 
@@ -568,7 +581,7 @@ Near-term paper path:
   temporal-coverage-metrics doc)
 - matched dense frame-budget baselines PLUS novelty-ranked dense (phase
   1.34) and event-window oracle (phase 1.35)
-- careful Track B timing only after sparse execution exists
+- careful sparse-execution timing only after the sparse path exists
 
 Follow-on systems work (belongs in the one-paper discussion, NOT
 a separate systems paper per the round-17 reframe):

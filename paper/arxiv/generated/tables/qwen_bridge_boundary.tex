@@ -1,18 +1,23 @@
 \begin{table}[H]
 \centering
-\caption{Qwen composition boundary. The tested admission family does not produce a deployable composition point; high keep rates restore aggregate first-answer accuracy but still damage follow-ups. The speedup column is paired three-query amortized end-to-end speedup versus cold all-query execution. The FU V active column is the measured follow-up vision-pruning activity fraction; -- means the legacy row was not instrumented. Degens counts degenerate streaming outputs.}
+\caption{Qwen composition boundary. The tested admission family does not produce a deployable composition point. Dense-Q0 cache reuse and cache invalidation reach the same net aggregate loss through different any-paired-drift sets; only cache reuse preserves the three-query speed profile. The speedup column is paired three-query amortized end-to-end speedup versus cold all-query execution. Follow-up V active is the measured follow-up vision-pruning activity fraction; -- means the row was not instrumented.}
 \label{tab:qwen-bridge-boundary}
 \small
-\begin{tabularx}{\linewidth}{@{}X r r r r r r r r@{}}
+\renewcommand{\arraystretch}{1.18}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}l r r r r r r r r@{}}
 \toprule
-Policy & Sess. & Queries & \(\Delta\)acc & Q0 \(\Delta\) & FU \(\Delta\) & 3q E2E & FU V active & Degens \\
+Policy & Sessions & Queries & \(\Delta\)acc & Q0 \(\Delta\) & Follow-up \(\Delta\) & 3-query E2E & Follow-up V active & Degens \\
 \midrule
-dense Q0 full union & 57 & 171 & -0.058 & +0.000 & -0.088 & 2.79$\times$ & -- & 0 \\
+cache reuse (1.30AD) & 57 & 171 & -0.058 & +0.000 & -0.088 & 3.02$\times$ & 0.0 & 0 \\
+cache invalidated (1.30AC) & 57 & 171 & -0.058 & +0.000 & -0.088 & 1.06$\times$ & 1.0 & 0 \\
+legacy dense Q0 (1.30W) & 57 & 171 & -0.058 & +0.000 & -0.088 & 2.79$\times$ & -- & 0 \\
 long kr=0.67 & 18 & 54 & -0.130 & -0.111 & -0.139 & 3.12$\times$ & 0.0 & 0 \\
 long kr=0.75 & 18 & 54 & -0.185 & -0.111 & -0.222 & 3.37$\times$ & 0.0 & 1 \\
 long kr=0.80 & 18 & 54 & -0.185 & -0.111 & -0.222 & 3.38$\times$ & 0.0 & 0 \\
 long kr=0.85 & 18 & 54 & -0.130 & +0.000 & -0.194 & 3.35$\times$ & 0.0 & 0 \\
 long kr=0.90 & 18 & 54 & -0.130 & +0.000 & -0.194 & 3.34$\times$ & 0.0 & 0 \\
 \bottomrule
-\end{tabularx}
+\end{tabular}%
+}
 \end{table}

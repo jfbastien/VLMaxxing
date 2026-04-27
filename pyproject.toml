@@ -67,11 +67,6 @@ select = [
   "UP",
 ]
 
-[tool.ruff.lint.per-file-ignores]
-"paper/arxiv/scripts/sync_sources.py" = [
-  "E501", # LaTeX table specs and headers are raw strings; wrapping harms readability.
-]
-
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"

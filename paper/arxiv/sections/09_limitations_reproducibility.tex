@@ -10,7 +10,7 @@ thermal caveats are still visible and should remain visible in the text.
 Architecture breadth is still asymmetric, but no longer Gemma-only. The
 first-pass measured headline cells are still Gemma-first today, while a
 matched Qwen cross-architecture probe now shows the same ceiling binding at a
-smaller absolute lift. The pooled n=60 H\_stack result also closes one
+smaller absolute lift. The n=60 stacked-regime composition audit also closes one
 tempting overclaim: composition does not outrun the ceiling. The local stacked
 cell is ceiling-matched, which is useful evidence for the arithmetic and a
 null on super-ceiling composition.
@@ -35,9 +35,16 @@ upper bound on an unseen paired-drift rate is still about 3.2\%, so the claim
 remains ``no observed paired drift,'' not population-level exactness. The
 long-bucket cell also preserves a weak 7/21 cold baseline; that is fidelity
 evidence under a hard regime, not evidence that the model itself understands
-long VideoMME well. The adaptive \(Q3\)-from-post-\(Q2\)-state result is
-stronger but narrower: it is currently a short-slice \(n=21\) mechanism result.
-Medium, long, and 32f adaptive replications remain the obvious breadth tests.
+long VideoMME well. The adaptive \(Q3\)-from-post-\(Q2\)-state result is now
+the stronger breadth result rather than a short-only curiosity: it covers the
+same 93 paired queries with no observed paired drift and 15.28--35.97$\times$
+all-query median speedup. Its remaining caveats are different. The long and
+32f cells passed the science gates but exceeded preregistered RSS gates that
+were too tight relative to later observed memory; the paper should report the
+observed memory envelope rather than retroactively calling those runs failures.
+The result is also finite-horizon: the current sessions contain two follow-up
+questions, so many-turn drift remains an explicit stress test rather than a
+settled property.
 
 For Qwen routing, the opposite caveat applies. The holdout evidence is clean
 and useful, but it is still a quality--compute frontier result under a fixed
@@ -64,9 +71,12 @@ falsifies every tested Q0 keep rate from 0.67 to 0.90 and empirically confirms
 that follow-up vision pruning is inactive under prompt-cache reuse in that arm.
 At high keep rates, aggregate Q0 accuracy recovers while follow-up accuracy
 still drops, so the failure is downstream of first-query aggregate correctness
-and tied to the reused state. This does not uniquely prove a single cache-state
-mechanism; it motivates the cache-invalidated follow-up test and direct
-cache-state instrumentation. A related
+and tied to the follow-up state. The completed cache-invalidated follow-up test
+sharpens the boundary: forcing follow-up V-pruning to be active collapses the
+speedup to 1.06$\times$ and still lands on the same net aggregate loss as
+cache reuse, while any-paired-drift sets differ. This does not uniquely prove a
+single cache-state mechanism; it motivates direct cache-state instrumentation
+and per-example margin or distance probes. A related
 local codec-native bridge remains scientifically interesting, and the latest
 1.29 results now provide semantic
 planner-substitution evidence: MAX-over-span sparse sampling is hard-falsified,
@@ -79,7 +89,7 @@ still needs streaming decoder integration.
 The current benchmark mix also under-samples scroll and pan regimes. We audited
 this directly on a 60-item VideoMME stratification across 8f/16f/32f and found
 0/60 items above a relaxed \texttt{shifted\_fraction} \(\geq 0.30\) gate, with
-max shifted fraction 0.125. That does not show C-VISION is safe on sustained
+max shifted fraction 0.125. That does not certify C-VISION on sustained
 egomotion or scrolling content; it shows VideoMME is the wrong corpus for that
 question. A scroll/pan characterization now requires EgoSchema, EPIC-Kitchens,
 Ego4D, or a labeled synthetic set.
@@ -107,13 +117,23 @@ claim, not as decorative diagnostics.
 The persistent-cache failures should also be read as attention-context or
 cache-state failures, not as positional-encoding drift claims. The current
 experiments identify when reused state changes later answers; they do not yet
-isolate a unique internal mechanism without the cache-invalidated follow-up
-test and direct cache-state instrumentation.
+isolate a unique internal mechanism without direct cache-state instrumentation.
+
+Architecture exposure is another limitation and a design lesson. Qwen is the
+high-stability local family for routing and persistent-cache follow-up reuse.
+Gemma is the primary first-pass vision-pruning family and exposes a useful
+vision-tower sparse path, but Gemma adaptive persistent-cache reuse remains
+blocked by sliding-window / rotating-cache semantics in the current MLX stack.
+Future VLM runtimes should expose stable cache semantics, cache invalidation
+controls, vision-tower keep masks, per-stage timing, token geometry, and
+cache-state diagnostics as first-class interfaces. Those hooks are not just
+engineering convenience; they decide which anti-recomputation claims can be
+tested without risking silent cache corruption.
 
 The paper is nevertheless being built to be reproducible. Automated main-text
 figures and tables are generated from checked-in artifact summaries or from
 checked-in paper figures, the appendix records the repo commits used for the
-sync, and imported or advisory evidence is labeled as such instead of being
+sync, and tracked-upstream, scale-out, or advisory evidence is labeled as such instead of being
 silently promoted into the headline figures. The paper builds locally with the
 checked-in \texttt{make paper-*} targets plus `tectonic` or a fuller TeX
 stack.

@@ -34,14 +34,22 @@ re-prefilled before a follow-up; \(K=1\) means ``refresh one newest frame,
 reuse the rest of the prefix.'' A \emph{same-class speedup}
 compares cold follow-up queries to session follow-up queries. An
 \emph{all-query denominator} compares all cold queries to session follow-ups;
-we report it only when the text says so explicitly.
+we report it only when the text says so explicitly. For example, a cold median
+over all three queries divided by the repaired-session follow-up median is an
+all-query speedup; it does not include the repaired session's cold first query
+in the repaired follow-up median or pretend the first query was free.
 
-The main safety metric is \emph{paired drift}. A run has no observed paired
+The main paired-fidelity metric is \emph{paired drift}. A run has no observed paired
 choice drift when each session answer chooses the same multiple-choice option
 as its matched cold baseline. It has no observed paired correctness drift when
 each answer is right or wrong on the same examples as the baseline. This is
 stronger than matching aggregate accuracy, but it is still a finite-sample
 observation, not a population proof.
+
+A \emph{cache basin} is the corresponding failure region: reused state drives
+systematic answer drift or repeated pathological outputs rather than ordinary
+independent mistakes. Selective re-prefill is designed to leave that basin by
+refreshing a small newest-frame visual tail before a follow-up query.
 
 \subsection{Temporal Planner}
 
@@ -119,8 +127,10 @@ The other two mechanisms operate at different points in the stack.
 
 The Gemma path patches the vision tower after an internal layer, keeps only a
 fraction of the tokens, and scatters the result back so downstream geometry is
-unchanged. The resulting first-pass speedup is constrained by how much of total
-wall-clock the vision tower owns. More generally, if a method accelerates only
+unchanged. \(L\) names the internal pruning layer, and \(kr_V\) is the keep
+ratio for visual token groups after that layer. The resulting first-pass
+speedup is constrained by how much of total wall-clock the vision tower owns.
+More generally, if a method accelerates only
 one stage of a pipeline by a factor $s$, and all other stages are held fixed,
 the ideal end-to-end gain is
 \[
@@ -138,7 +148,10 @@ reduces to the scatter-back prediction
 \frac{1}{1 - V_{\mathrm{share}} V_{\mathrm{red}}},
 \]
 where $V_{\mathrm{share}}$ is the dense vision share and $V_{\mathrm{red}}$ is
-the observed reduction in vision time.
+the observed reduction in vision time. Both are measured from stage timings:
+\(V_{\mathrm{share}}\) from the dense baseline, \(V_{\mathrm{red}}\) from the
+paired pruned run. The ceiling prediction is then compared with observed
+end-to-end speedup; it is not fit to the observed end-to-end result.
 
 The persistent-KV path answers a different question. Here the user has already
 paid for the first query on a video. The next question about that same video
@@ -157,7 +170,7 @@ claim is about later questions on the same video.
 
 \subsection{Paired Drift Metrics}
 
-Aggregate accuracy is not a sufficient safety metric for reuse. A cached or
+Aggregate accuracy is not a sufficient paired-fidelity metric for reuse. A cached or
 pruned run can keep the same aggregate score while changing individual answer
 choices, and a follow-up cache can lose accuracy by collapsing into a
 pathological output distribution rather than by making ordinary wrong choices.

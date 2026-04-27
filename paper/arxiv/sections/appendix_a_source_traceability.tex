@@ -3,13 +3,13 @@
 The manuscript uses four evidence classes and labels them differently in the
 text. \emph{Reproduced-here evidence} comes from \texttt{codec-through-2} and
 backs the automated headline assets, the persistent-KV curve, and the Qwen
-routing section. \emph{Imported upstream evidence} comes from the sibling
+routing section. \emph{Tracked-upstream evidence} comes from the sibling
 \texttt{codec-through} tree when the local manuscript is intentionally tracking
-a fresher rerun that has not yet been copied back here. \emph{Imported
-companion evidence} comes from the separate deployment companion tree and is
-restricted to the streaming and real-application section. \emph{Hypotheses or moving results}
-may be discussed for context, but they are not allowed into the default
-automated manuscript snapshot.
+a fresher rerun that has not yet been copied back here. \emph{Scale-out partner
+evidence} comes from the separate 26B streaming tree and is restricted to the
+streaming and real-application section until artifact harmonization lands.
+\emph{Hypotheses or moving results} may be discussed for context, but they are
+not allowed into the default automated manuscript snapshot.
 
 This appendix is where that distinction becomes audit-friendly. The repo
 provenance table below records the current commit pins used by the manuscript
@@ -25,33 +25,31 @@ supplementary until rerun clean.
 \centering
 \caption{Claim/protocol/evidence manifest for the main quantitative assets.}
 \label{tab:claim-protocol-manifest}
-\tiny
-\setlength{\tabcolsep}{1pt}
-\renewcommand{\arraystretch}{1.08}
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\renewcommand{\arraystretch}{1.18}
 \begin{tabularx}{0.99\linewidth}{@{}
-  >{\raggedright\arraybackslash}p{0.11\linewidth}
-  >{\raggedright\arraybackslash}p{0.13\linewidth}
-  >{\raggedright\arraybackslash}p{0.12\linewidth}
-  >{\raggedright\arraybackslash}p{0.13\linewidth}
   >{\raggedright\arraybackslash}p{0.12\linewidth}
   >{\raggedright\arraybackslash}X
+  >{\raggedright\arraybackslash}p{0.14\linewidth}
+  >{\raggedright\arraybackslash}p{0.25\linewidth}
 @{}}
 \toprule
-Asset & Claim & Protocol & Evidence class & Repo @ commit & Source / hardware \\
+Asset & Claim / protocol & Evidence class & Source / hardware \\
 \midrule
-Table~\ref{tab:headline-results} & regime headline cells & first-pass vision-pruning holdout + after-ingest follow-up & local + imported upstream & \texttt{ct2}@\PrimaryRepoSHA\newline \texttt{ct}@\UpstreamRepoSHA & phase1\_51V and phase1\_55A/55D/55E/55F/55G/55H/55I artifacts plus upstream session5 findings; Gemma/Qwen local stacks, MLX / M3 Air 16 GB \\
-Figure~\ref{fig:vshare-ceiling} & C-CEILING / C-VISION scatter-back validation & first-pass vision-pruning holdout + pooled stacked-regime + matched cross-arch probe & local + imported upstream & \texttt{ct2}@\PrimaryRepoSHA\newline \texttt{ct}@\UpstreamRepoSHA & \texttt{v\_share\_v\_red\_ceiling\_data.json}; local Gemma and local Qwen stacks plus imported TOMATO rerun \\
-Figure~\ref{fig:c-persist-safe-budget} & C-PERSIST tested envelope & after-ingest same-video follow-up & local & \texttt{ct2}@\PrimaryRepoSHA & phase1\_55A artifacts; Qwen 7B/3B-4bit, MLX / M3 Air 16 GB \\
-Sec.~\ref{sec:results-cross-architecture} & C-PERSIST selective repair & 20f/32f same-video selective re-prefill & local bounded recovery & \texttt{ct2}@\PrimaryRepoSHA & phase1\_55D/55E/55F/55G/55H/55I artifacts; Qwen 7B-4bit, VideoMME short/medium/long + 32f short, MLX / M3 Air \\
-Figure~\ref{fig:lane-a-pareto} & routing frontier & sparse routing under dense backend & local & \texttt{ct2}@\PrimaryRepoSHA & phase1\_20/21/34/36 notes; Qwen 7B-4bit, MLX \\
-Sec.~\ref{sec:routing-mechanism} & Gemma routing boundary & second-architecture semantic substitution & local boundary & \texttt{ct2}@\PrimaryRepoSHA & phase1\_42 artifacts; Gemma 4-E4B-4bit, TOMATO/MVBench motion holdouts \\
-Sec.~\ref{sec:results-cross-architecture} & Qwen stacked-regime boundary & session/streaming composition & local negative / boundary & \texttt{ct2}@\PrimaryRepoSHA & phase1\_30 root-cause + 1.30W/X/Y/Z/AB artifacts; Qwen 7B-4bit, VideoMME dev+holdout, MLX / M3 Air \\
-Table~\ref{tab:paired-drift} & paired drift audit & paired choice/correctness drift summary & local analysis & \texttt{ct2}@\PrimaryRepoSHA & phase1\_61 drift summary built from landed 1.30, 1.42, and 1.55A artifacts \\
-Method / limitations & codec-native planner bridge & semantic planner substitution & local semantic evidence & \texttt{ct2}@\PrimaryRepoSHA & phase1\_29B artifacts; Qwen 7B-4bit, VideoMME dev/short slices; offline extraction, not latency \\
-Table~\ref{tab:real-apps} (streaming row) & deployment-scale reuse & native-rate streaming paired N=60 & imported companion & \texttt{deploy}@\SamRepoSHA & deployment report \S2.13.2 / status docs; Gemma 4 26B / M5 Max \\
-Table~\ref{tab:real-apps} (real-video row) & deployment-scale reuse & paired real-video regimes & imported companion & \texttt{deploy}@\SamRepoSHA & deployment report \S2.8 real-video timings; Gemma 4 26B / M5 Max \\
-Table~\ref{tab:real-apps} (follow-up row) & deployment-scale follow-up & after-ingest same-video follow-up & imported companion & \texttt{deploy}@\SamRepoSHA & deployment report \S2.13.3; Gemma 4 26B / M5 Max \\
-Table~\ref{tab:real-apps} (live-camera row) & deployment-scale live deployment & native-rate live camera & imported companion & \texttt{deploy}@\SamRepoSHA & deployment report \S2.13.1 / live-demo docs; Gemma 4 26B / M5 Max \\
+Headline table & regime headline cells; first-pass vision-pruning holdout plus after-ingest follow-up & local + tracked-upstream & Phases 1.51V and 1.55A/D/E/F/G/H/I; adaptive mechanism and stage-timing artifacts; Gemma/Qwen local stacks, MLX / M3 Air 16 GB \\
+C-CEILING figure & C-CEILING / C-VISION scatter-back validation; first-pass holdout, n=60 stacked-regime audit, and matched cross-arch probe & local + tracked-upstream & ceiling data JSON; local Gemma and local Qwen stacks plus tracked-upstream TOMATO rerun \\
+C-PERSIST figure & C-PERSIST tested envelope; after-ingest same-video follow-up & local & Phase 1.55A artifacts; Qwen 7B/3B-4bit, MLX / M3 Air 16 GB \\
+C-PERSIST repair & 20f/32f same-video selective re-prefill & local bounded recovery & Phases 1.55D/E/F/G/H/I plus adaptive mechanism and stage-timing artifacts; Qwen 7B-4bit, VideoMME short/medium/long + 32f short \\
+Routing frontier & sparse routing under dense backend & local & Phase 1.20/21/34/36 notes; Qwen 7B-4bit, MLX \\
+Gemma routing boundary & second-architecture semantic substitution & local boundary & Phase 1.42 artifacts; Gemma 4-E4B-4bit, TOMATO/MVBench motion holdouts \\
+Qwen stacked boundary & session/streaming composition & local negative / boundary & Phase 1.30 root-cause + W/X/Y/Z/AB/AC/AD/AF artifacts; Qwen 7B-4bit, VideoMME dev+holdout \\
+Paired drift table & paired choice/correctness drift summary & local analysis & Phase 1.61 drift summary built from landed 1.30, 1.42, and 1.55A artifacts \\
+Method / limitations & codec-native planner bridge; semantic planner substitution & local semantic evidence & Phase 1.29B artifacts; Qwen 7B-4bit, VideoMME dev/short slices; offline extraction, not latency \\
+Scale-out streaming & native-rate streaming paired N=60 & scale-out partner, pending artifact harmonization & deployment report \S2.13.2 / status docs; Gemma 4 26B / M5 Max \\
+Scale-out real video & paired real-video regimes & scale-out partner, pending artifact harmonization & deployment report \S2.8 real-video timings; Gemma 4 26B / M5 Max \\
+Scale-out follow-up & after-ingest same-video follow-up & scale-out partner, pending artifact harmonization & deployment report \S2.13.3; Gemma 4 26B / M5 Max \\
+Scale-out live & native-rate live camera & scale-out partner, pending artifact harmonization & deployment report \S2.13.1 / live-demo docs; Gemma 4 26B / M5 Max \\
 \bottomrule
 \end{tabularx}
 \end{table}

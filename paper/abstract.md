@@ -53,7 +53,7 @@ with the dev tranche clustering in the **39–43 %** range across
 VideoMME (8 f / 16 f), MVBench (8 f), and TOMATO (8 f). End-to-end speedups
 follow the vision-axis analog of C-CEILING,
 `E2E ≤ 1 / (1 − V_share × V_red)`, predictive within 2.7 pp of observed
-across four vision-axis cells plus a pooled H-stack null at 1.042×,
+across four vision-axis cells plus the n=60 composition audit at 1.042×,
 and a matched Qwen VideoMME 8 f point lands
 at 1.044× observed versus 1.043× predicted. Dev-n=30 headline cells are
 **TOMATO 1.24×, MVBench 1.21×, VideoMME 1.12× @ 16 f / 1.08× @ 8 f**,

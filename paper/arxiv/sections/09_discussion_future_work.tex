@@ -27,7 +27,8 @@ claim.
 right policy depends on the redundancy structure and on what failure would
 cost.}
 \label{tab:application-regimes}
-\small
+\footnotesize
+\renewcommand{\arraystretch}{1.22}
 \begin{tabularx}{\linewidth}{@{}
   >{\raggedright\arraybackslash}p{0.18\linewidth}
   >{\raggedright\arraybackslash}p{0.22\linewidth}
@@ -41,18 +42,23 @@ Static cameras, factories, surveillance, stove/countertop & stable background,
 localized entrants, rare decisive events & persistent visual memory plus
 bounded-staleness refresh around moving regions & closest to current evidence;
 needs stronger application baselines and event-window recall \\
+\addlinespace[0.25em]
 Screen and UI video & exact-copy regions, glyph changes, scrolling, cursor
 motion & screen-content path with exact-copy, OCR/glyph, and high-frequency
 guards & planned specialization; current VideoMME audit under-samples scroll/pan \\
+\addlinespace[0.25em]
 Forward driving & structured ego-motion, border entry, independently moving
 objects & pose/flow-conditioned refresh with protected object and boundary
 regions & future lane; should not be inferred from same-position reuse \\
+\addlinespace[0.25em]
 Egocentric, FPV, drones & jerky motion, parallax, frequent occlusion & global
 stabilization or multi-reference cache before reuse & current benchmark mix is
 the wrong corpus for this claim \\
+\addlinespace[0.25em]
 Robotics / VLA & static workspace plus gripper/object/contact zones and hard
 deadlines & protected ROIs, p95/p99 latency budgets, guarded dense fallback & future
 systems lane; answer-stability QA is not a control-safety metric \\
+\addlinespace[0.25em]
 Games and HUD-heavy streams & stable HUD, structured camera regimes, repeated
 interaction states & HUD anchors plus event-triggered world refresh & future
 application lane; likely high reuse but unmeasured here \\
@@ -110,6 +116,7 @@ These are hypotheses and candidate design requirements, not current
 measured claims.}
 \label{tab:media-requirements}
 \small
+\renewcommand{\arraystretch}{1.14}
 \begin{tabularx}{\linewidth}{@{}
   >{\raggedright\arraybackslash}p{0.40\linewidth}
   >{\raggedright\arraybackslash}X
@@ -151,6 +158,26 @@ and where it does not. The model-changing version should train around those
 traces rather than ignore them: learned recache gates, codec-conditioned token
 types, P-frame or delta encoders, and cache-state-aware attention can all use
 the failure cases and routing logs produced by this paper as supervision.
+There is also a training-compute hypothesis: if future VLMs learn from
+state-update streams rather than dense RGB frame stacks, they may spend the
+same training FLOPs on more temporal coverage, more queries per clip, or harder
+event windows. We do not measure that here. The caveat is important:
+post-ViT feature caching does not directly become an end-to-end training
+speedup when the vision encoder is trainable, because cached features
+approximate or break the gradient path. The training version likely needs
+model-native delta encoders, differentiable refresh gates, or teacher/student
+traces rather than dropping inference caches into pretraining unchanged.
+
+\paragraph{Beyond video.}
+The general pattern is not unique to pixels. Any expensive encoder over a
+slowly changing state stream can, in principle, benefit from a cheap freshness
+oracle: financial order books, industrial telemetry, scientific sensor arrays,
+long medical monitoring streams, or logs from embodied agents. Video is the
+right starting point because temporal redundancy is explicit, codecs already
+extract motion and residual signals, and the cost of visual encoding is large
+enough to matter. Other domains need their own state variables and failure
+contracts; the transferable lesson is anti-recomputation under a measured
+quality--compute frontier, not pixel differencing itself.
 
 \subsection{Open Experiments}
 
@@ -164,7 +191,9 @@ skips measured vision work? Does temporal placement of fresh compute beat
 novelty magnitude under matched budgets? Can saved compute buy broader
 temporal coverage rather than only lower latency? Can answer-margin and
 paired-drift features predict when reuse will fail? Which application baselines
-make deployment claims credible rather than anecdotal?
+make deployment claims credible rather than anecdotal? How far does paired
+stability extend when a user asks 10, 20, or 50 follow-up questions about the
+same video, and what repair schedule prevents drift from accumulating?
 
 The longer-range agenda is the VLM-native media ladder: object/state delta
 sidecars; sensor-fusion world-state streams with depth/ToF, event, pose, and

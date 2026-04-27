@@ -1,14 +1,15 @@
 \begin{table}[H]
 \centering
-\caption{Selective re-prefill repair frontier. Fixed \(K=1\) is the broad envelope; the adaptive post-\(Q2\) state policy is the strongest single-cell mechanism result. The gain is median cold follow-up latency divided by median repaired-session follow-up latency.}
+\caption{Selective re-prefill repair frontier. Fixed \(K=1\) is the no-coordination baseline; the adaptive post-\(Q2\) state policy is the primary broad repair result. Gains are reported as cold follow-up or all-query latency divided by repaired-session latency.}
 \label{tab:c-persist-repair}
 \scriptsize
+\renewcommand{\arraystretch}{1.20}
 \begin{tabularx}{\linewidth}{@{}l X >{\raggedright\arraybackslash}p{0.17\linewidth} c X@{}}
 \toprule
 Policy & Scope & session FU median; cold/session gain & Paired drift & Mechanism signal \\
 \midrule
-Fixed \(K=1\) & 20f short/medium/long + 32f short & 6.78--10.14s / 9.48--20.37$\times$ & choice 0/93; correct 0/93 & pathological follow-ups 0/62; rule-of-three bound \(\approx\)3.2\% \\
-Adaptive post-\(Q2\) & 20f short & 3.20s / 24.76$\times$ & choice 0/21; correct 0/21 & Q2 refreshes one frame; Q3 inherits the repaired state \\
+Fixed \(K=1\) & 20f short/medium/long + 32f short & 6.78--10.14s / 9.48--20.37$\times$ & choice 0/93; correct 0/93 & pathological follow-ups 0/62; drift rule-of-three over n=93: \(\leq\)3.2\% \\
+Adaptive post-\(Q2\) & 20f short/medium/long + 32f short & 3.20--6.51s; 15.28--35.97$\times$ all-query; 14.90--35.92$\times$ same-class & choice 0/93; correct 0/93 & Q3 inherits post-Q2 repaired state; paired Q3 fixed/adaptive speedup 9.50$\times$ \\
 \bottomrule
 \end{tabularx}
 \end{table}

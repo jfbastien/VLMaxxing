@@ -18,21 +18,23 @@ repeated follow-up questions on Video-MME sessions across short, medium, long,
 and deeper 32-frame slices, where the same video is queried multiple times and
 prompt reuse is therefore meaningful.
 
-The streaming and UI studies are kept separate from those benchmark claims.
-They are native-rate or deployment-style evidence, not replacements for the
-main evaluation.
+The scale-out streaming and UI studies are kept separate from those benchmark
+claims. They are native-rate deployment evidence, not replacements for the main
+evaluation, and they become first-class scale-out tests only when the same
+artifact standards and matched baselines are available.
 By design, sparse routing uses pixel-diff on sampled decoded frames, while the
 separate streaming lane uses H.264 metadata at native frame rate. The signals
 are protocol-specific, not interchangeable.
 
 \subsection{Models, Hardware, and Preprocessing}
 
-The Qwen routing and persistent-KV experiments use Qwen2.5-VL-7B-Instruct-4bit
-through MLX-VLM on Apple Silicon. The dense wall-clock baseline and the
-persistent-KV scaling curve use the same local stack on an M3 Air with 16\,GB
-unified memory. The first-pass vision-pruning results use Gemma 4-E4B-4bit on
-the same general MLX environment. The deployment-scale streaming evaluation
-uses a separate RTSP and screen-recording pipeline with Gemma 4 26B.
+The Qwen routing and persistent-KV experiments use Qwen2.5-VL-7B-Instruct-4bit,
+a frozen open-weight video VLM, through MLX-VLM on Apple Silicon. The dense
+wall-clock baseline and the persistent-KV scaling curve use the same local
+stack on an M3 Air with 16\,GB unified memory. The first-pass vision-pruning
+results use Gemma 4-E4B-4bit, a separate open VLM family, on the same general
+MLX environment. The scale-out streaming evaluation uses a separate RTSP and
+screen-recording pipeline with Gemma 4 26B.
 
 For benchmark comparability, the main-path runs use uniform global sampling at
 8 frames and square-pad plus resize to 560\,$\times$\,560. The routing planner
@@ -60,12 +62,16 @@ For Qwen routing, the paper reports accuracy, dense-versus-cached agreement,
 parse failures, and effective fresh frames. For Gemma first-pass pruning, it
 reports end-to-end speedup, vision-time reduction, accuracy delta, and the
 share$\times$reduction prediction. For persistent-KV, it reports follow-up
-latency, cold-versus-session speedup, prefix coverage, and accuracy delta
-between baseline and session modes.
+latency, cold-versus-session speedup, prefix coverage, paired choice and
+correctness drift, and accuracy delta between baseline and session modes. These
+paired-drift metrics are stricter than aggregate accuracy: they ask whether the
+same item gets the same parsed answer under reuse, not merely whether the total
+score is unchanged.
 
 All automated main-text assets are generated from checked-in artifact summaries.
-If a result is advisory, imported, or still provisional, the manuscript says so
-explicitly instead of letting the build silently promote it.
+If a result is clean, advisory, tracked-upstream, scale-out partner evidence, or
+still provisional, the manuscript says so explicitly instead of letting the
+build silently promote it.
 
 \begin{sectiontodo}{Add the final hardware/software table and release sentence}
 This section still needs one compact table with model names, hardware, frame

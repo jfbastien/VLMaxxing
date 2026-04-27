@@ -400,9 +400,9 @@ def _c_vision_snapshot(upstream_root: Path) -> dict[str, object]:
                 upstream_session5 / "exp24_tomato_holdout_8f_L2_kr050_summary.json",
                 benchmark="TOMATO",
                 frame_count=8,
-                status="advisory-holdout-imported",
+                status="advisory-holdout-upstream",
                 advisory_note=(
-                    "Revised thermal gate misses by 19 ms in the favorable direction; imported "
+                    "Revised thermal gate misses by 19 ms in the favorable direction; tracked "
                     "from the freshly pulled upstream session-5 rerun."
                 ),
             )
@@ -550,17 +550,51 @@ def _selective_reprefill_snapshot() -> dict:
             summary_path=ARTIFACTS / "phase1_55H_k1_32f_short_probe" / "summary_k1_n7.json",
         ),
     ]
-    adaptive_cell = _selective_reprefill_cell(
-        label="1.55F",
-        regime="20f short",
-        policy="adaptive Q2 K=1, Q3 post-Q2 K=0",
-        metrics_path=ARTIFACTS / "phase1_55F_q3_post_q2_state" / "pair_metrics_k1_n7.json",
-        summary_path=ARTIFACTS / "phase1_55F_q3_post_q2_state" / "summary_k1_n7.json",
-    )
+    adaptive_cells = [
+        _selective_reprefill_cell(
+            label="1.55F",
+            regime="20f short",
+            policy="adaptive Q2 K=1, Q3 post-Q2 K=0",
+            metrics_path=ARTIFACTS / "phase1_55F_q3_post_q2_state" / "pair_metrics_k1_n7.json",
+            summary_path=ARTIFACTS / "phase1_55F_q3_post_q2_state" / "summary_k1_n7.json",
+        ),
+        _selective_reprefill_cell(
+            label="1.55F-medium",
+            regime="20f medium",
+            policy="adaptive Q2 K=1, Q3 post-Q2 K=0",
+            metrics_path=ARTIFACTS
+            / "phase1_55F_medium_adaptive_replication"
+            / "pair_metrics_k1_n10.json",
+            summary_path=ARTIFACTS
+            / "phase1_55F_medium_adaptive_replication"
+            / "summary_k1_n10.json",
+        ),
+        _selective_reprefill_cell(
+            label="1.55F-long",
+            regime="20f long",
+            policy="adaptive Q2 K=1, Q3 post-Q2 K=0",
+            metrics_path=ARTIFACTS
+            / "phase1_55F_long_adaptive_replication"
+            / "pair_metrics_k1_n7.json",
+            summary_path=ARTIFACTS / "phase1_55F_long_adaptive_replication" / "summary_k1_n7.json",
+        ),
+        _selective_reprefill_cell(
+            label="1.55F-32f",
+            regime="32f short",
+            policy="adaptive Q2 K=1, Q3 post-Q2 K=0",
+            metrics_path=ARTIFACTS
+            / "phase1_55F_32f_short_adaptive_replication"
+            / "pair_metrics_k1_n7.json",
+            summary_path=ARTIFACTS
+            / "phase1_55F_32f_short_adaptive_replication"
+            / "summary_k1_n7.json",
+        ),
+    ]
     return {
         "fixed_cells": fixed_cells,
         "fixed": _sum_reprefill_cells(fixed_cells),
-        "adaptive_cell": adaptive_cell,
+        "adaptive_cells": adaptive_cells,
+        "adaptive": _sum_reprefill_cells(adaptive_cells),
     }
 
 
@@ -606,6 +640,7 @@ def _write_paired_drift_table(snapshot: dict) -> None:
         ),
         r"\label{tab:paired-drift}",
         r"\small",
+        r"\renewcommand{\arraystretch}{1.12}",
         r"\begin{tabularx}{\linewidth}{@{}X r r r X@{}}",
         r"\toprule",
         r"Source & \(N\) & Choice drift & Correctness drift & Mechanism signal \\",
@@ -637,21 +672,29 @@ def _write_paired_drift_table(snapshot: dict) -> None:
 def _write_c_persist_repair_table(snapshot: dict) -> None:
     repair = snapshot["selective_reprefill"]
     fixed = repair["fixed"]
-    adaptive = repair["adaptive_cell"]
+    adaptive = repair["adaptive"]
     lines = [
         r"\begin{table}[H]",
         r"\centering",
         (
             r"\caption{Selective re-prefill repair frontier. Fixed \(K=1\) is "
-            r"the broad envelope; the adaptive post-\(Q2\) state policy is the "
-            r"strongest single-cell mechanism result. The gain is median cold "
-            r"follow-up latency divided by median repaired-session follow-up latency.}"
+            r"the no-coordination baseline; the adaptive post-\(Q2\) state "
+            r"policy is the primary broad repair result. Gains are reported as "
+            r"cold follow-up or all-query latency divided by repaired-session "
+            r"latency.}"
         ),
         r"\label{tab:c-persist-repair}",
         r"\scriptsize",
-        r"\begin{tabularx}{\linewidth}{@{}l X >{\raggedright\arraybackslash}p{0.17\linewidth} c X@{}}",
+        r"\renewcommand{\arraystretch}{1.20}",
+        (
+            r"\begin{tabularx}{\linewidth}"
+            r"{@{}l X >{\raggedright\arraybackslash}p{0.17\linewidth} c X@{}}"
+        ),
         r"\toprule",
-        r"Policy & Scope & session FU median; cold/session gain & Paired drift & Mechanism signal \\",
+        (
+            r"Policy & Scope & session FU median; cold/session gain & "
+            r"Paired drift & Mechanism signal \\"
+        ),
         r"\midrule",
         (
             r"Fixed \(K=1\) & 20f short/medium/long + 32f short & "
@@ -660,15 +703,20 @@ def _write_c_persist_repair_table(snapshot: dict) -> None:
             f"choice {fixed['paired_choice_diffs']}/{fixed['n_pairs']}; "
             f"correct {fixed['paired_correctness_diffs']}/{fixed['n_pairs']} & "
             f"pathological follow-ups {fixed['pathological_follow_up_hits']}/"
-            f"{fixed['n_follow_up_pairs']}; rule-of-three bound \\(\\approx\\)3.2\\% \\\\"
+            f"{fixed['n_follow_up_pairs']}; drift rule-of-three over "
+            f"n={fixed['n_pairs']}: \\(\\leq\\)3.2\\% \\\\"
         ),
         (
-            r"Adaptive post-\(Q2\) & 20f short & "
-            f"{adaptive['session_follow_up_median_s']:.2f}s / "
-            f"{adaptive['speedup']:.2f}$\\times$ & "
+            r"Adaptive post-\(Q2\) & 20f short/medium/long + 32f short & "
+            f"{adaptive['latency_min_s']:.2f}--{adaptive['latency_max_s']:.2f}s; "
+            f"{adaptive['all_query_speedup_min']:.2f}--"
+            f"{adaptive['all_query_speedup_max']:.2f}$\\times$ all-query; "
+            f"{adaptive['speedup_min']:.2f}--"
+            f"{adaptive['speedup_max']:.2f}$\\times$ same-class & "
             f"choice {adaptive['paired_choice_diffs']}/{adaptive['n_pairs']}; "
             f"correct {adaptive['paired_correctness_diffs']}/{adaptive['n_pairs']} & "
-            "Q2 refreshes one frame; Q3 inherits the repaired state \\\\"
+            "Q3 inherits post-Q2 repaired state; paired Q3 fixed/adaptive "
+            "speedup 9.50$\\times$ \\\\"
         ),
         r"\bottomrule",
         r"\end{tabularx}",
@@ -696,7 +744,15 @@ def _qwen_bridge_boundary_row(label: str, path: Path) -> dict:
 def _qwen_bridge_boundary_snapshot() -> dict:
     rows = [
         _qwen_bridge_boundary_row(
-            "dense Q0 full union",
+            "cache reuse (1.30AD)",
+            ARTIFACTS / "phase1_30AD_instrumented_w_rerun" / "pair_summary.json",
+        ),
+        _qwen_bridge_boundary_row(
+            "cache invalidated (1.30AC)",
+            ARTIFACTS / "phase1_30AC_cache_invalidated_followups" / "pair_summary.json",
+        ),
+        _qwen_bridge_boundary_row(
+            "legacy dense Q0 (1.30W)",
             ARTIFACTS / "phase1_30W_q0_dense_followup_pruned_full" / "pair_summary.json",
         ),
         _qwen_bridge_boundary_row(
@@ -735,19 +791,25 @@ def _write_qwen_bridge_boundary_table(snapshot: dict) -> None:
         r"\centering",
         (
             r"\caption{Qwen composition boundary. The tested admission family "
-            r"does not produce a deployable composition point; high keep rates "
-            r"restore aggregate first-answer accuracy but still damage follow-ups. "
-            r"The speedup column is paired three-query amortized end-to-end speedup "
-            r"versus cold all-query execution. "
-            r"The FU V active column is the measured follow-up vision-pruning "
-            r"activity fraction; -- means the legacy row was not instrumented. "
-            r"Degens counts degenerate streaming outputs.}"
+            r"does not produce a deployable composition point. Dense-Q0 cache "
+            r"reuse and cache invalidation reach the same net aggregate loss "
+            r"through different any-paired-drift sets; only cache reuse preserves "
+            r"the three-query speed profile. The speedup column is paired "
+            r"three-query amortized end-to-end speedup versus cold all-query "
+            r"execution. Follow-up V active is the measured follow-up "
+            r"vision-pruning activity fraction; -- means the row was not "
+            r"instrumented.}"
         ),
         r"\label{tab:qwen-bridge-boundary}",
         r"\small",
-        r"\begin{tabularx}{\linewidth}{@{}X r r r r r r r r@{}}",
+        r"\renewcommand{\arraystretch}{1.18}",
+        r"\resizebox{\linewidth}{!}{%",
+        r"\begin{tabular}{@{}l r r r r r r r r@{}}",
         r"\toprule",
-        r"Policy & Sess. & Queries & \(\Delta\)acc & Q0 \(\Delta\) & FU \(\Delta\) & 3q E2E & FU V active & Degens \\",
+        (
+            r"Policy & Sessions & Queries & \(\Delta\)acc & Q0 \(\Delta\) & "
+            r"Follow-up \(\Delta\) & 3-query E2E & Follow-up V active & Degens \\"
+        ),
         r"\midrule",
     ]
     for row in snapshot["rows"]:
@@ -761,7 +823,8 @@ def _write_qwen_bridge_boundary_table(snapshot: dict) -> None:
     lines.extend(
         [
             r"\bottomrule",
-            r"\end{tabularx}",
+            r"\end{tabular}%",
+            r"}",
             r"\end{table}",
         ]
     )
@@ -840,7 +903,7 @@ def _render_deployment_scale_figure(snapshot: dict) -> None:
         ax.text(
             0.02,
             0.9,
-            "TODO: deployment-scale evidence figure unavailable.\n"
+            "TODO: scale-out evidence figure unavailable.\n"
             "Expected sources:\n"
             "- codec-through-sam/whitepaper.md\n"
             "- codec-through-sam/paper/publishability-status.md\n"
@@ -885,7 +948,7 @@ def _render_deployment_scale_figure(snapshot: dict) -> None:
     ax.set_yticks(ys, [entry["label"] for entry in entries])
     ax.set_xlim(3.5, 420)
     ax.grid(True, axis="x", alpha=0.22, linewidth=0.8)
-    ax.set_title("Deployment-scale anti-recomputation ranges")
+    ax.set_title("Scale-out anti-recomputation ranges")
     ax.legend(
         handles=[
             plt.Line2D(
@@ -893,7 +956,7 @@ def _render_deployment_scale_figure(snapshot: dict) -> None:
                 [0],
                 color=colors["benchmark"],
                 lw=2.4,
-                label="deployment-scale benchmark",
+                label="scale-out benchmark",
             ),
             plt.Line2D(
                 [0],
@@ -944,7 +1007,7 @@ def _render_headline_figure(snapshot: dict) -> None:
     status_styles = {
         "clean-holdout": {"facecolor": "#dfe7f2", "edgecolor": "#1d3557", "hatch": ""},
         "advisory-holdout": {"facecolor": "#f3ebd3", "edgecolor": "#8d6e00", "hatch": "///"},
-        "advisory-holdout-imported": {
+        "advisory-holdout-upstream": {
             "facecolor": "#f3ebd3",
             "edgecolor": "#8d6e00",
             "hatch": "///",
@@ -1080,7 +1143,7 @@ def _write_headline_table(snapshot: dict) -> None:
     kv_by_frame = {row["frame_count"]: row for row in snapshot["persistent_kv"]["rows"]}
     repair = snapshot["selective_reprefill"]
     fixed_repair = repair["fixed"]
-    adaptive_repair = repair["adaptive_cell"]
+    adaptive_repair = repair["adaptive"]
     tomato_row = next(row for row in cvision_rows if row["benchmark"] == "TOMATO")
 
     lines = [
@@ -1088,33 +1151,35 @@ def _write_headline_table(snapshot: dict) -> None:
         r"\centering",
         r"\caption{Headline anti-recomputation results by regime.}",
         r"\label{tab:headline-results}",
-        r"\footnotesize",
-        r"\begin{tabularx}{\linewidth}{l X p{0.15\linewidth} c X l}",
+        r"\scriptsize",
+        r"\renewcommand{\arraystretch}{1.14}",
+        r"\begin{tabularx}{\linewidth}{@{}l X p{0.14\linewidth} c X l@{}}",
         r"\toprule",
-        r"Regime & Setting & Denom. & Gain & Fidelity & Status \\",
+        r"Regime & Setting & Denom. & Gain & Fidelity & Evidence \\",
         r"\midrule",
         (
             "After-ingest & Qwen same-video follow-up, 16f & "
             "cold/cached follow-up & "
             f"{kv_by_frame[16]['speedup']:.1f}$\\times$ & "
             f"{kv_by_frame[16]['follow_up_median_s']:.3f}\\,s median; "
-            f"$\\Delta$acc {kv_by_frame[16]['accuracy_delta']:+.3f} & clean \\\\"
+            f"$\\Delta$acc {kv_by_frame[16]['accuracy_delta']:+.3f} & local clean \\\\"
         ),
         (
             "After-ingest & Qwen same-video follow-up, 8f & "
             "cold/cached follow-up & "
             f"{kv_by_frame[8]['speedup']:.1f}$\\times$ & "
             f"{kv_by_frame[8]['follow_up_median_s']:.3f}\\,s median; "
-            f"$\\Delta$acc {kv_by_frame[8]['accuracy_delta']:+.3f} & within criterion \\\\"
+            f"$\\Delta$acc {kv_by_frame[8]['accuracy_delta']:+.3f} & local within criterion \\\\"
         ),
         (
-            "After-ingest & Qwen adaptive re-prefill, 20f short & "
-            "cold/repaired follow-up & "
-            f"{adaptive_repair['speedup']:.2f}$\\times$ & "
+            "After-ingest & Qwen adaptive re-prefill, 20f/32f breadth & "
+            "cold/repaired all-query median & "
+            f"{adaptive_repair['all_query_speedup_min']:.2f}--"
+            f"{adaptive_repair['all_query_speedup_max']:.2f}$\\times$ & "
             f"choice/correct diffs {adaptive_repair['paired_choice_diffs']}/"
-            f"{adaptive_repair['n_pairs']}; pathological follow-ups "
-            f"{adaptive_repair['pathological_follow_up_hits']}/"
-            f"{adaptive_repair['n_follow_up_pairs']} & mechanism win \\\\"
+            f"{adaptive_repair['n_pairs']}; same-class follow-up "
+            f"{adaptive_repair['speedup_min']:.2f}--"
+            f"{adaptive_repair['speedup_max']:.2f}$\\times$ & local repair breadth \\\\"
         ),
         (
             "After-ingest & Qwen fixed K=1 re-prefill, 20f/32f breadth & "
@@ -1124,19 +1189,19 @@ def _write_headline_table(snapshot: dict) -> None:
             f"choice/correct diffs {fixed_repair['paired_choice_diffs']}/"
             f"{fixed_repair['n_pairs']}; pathological follow-ups "
             f"{fixed_repair['pathological_follow_up_hits']}/"
-            f"{fixed_repair['n_follow_up_pairs']} & broad recovery \\\\"
+            f"{fixed_repair['n_follow_up_pairs']} & local repair breadth \\\\"
         ),
         (
             "First-pass & Gemma MVBench 8f holdout & "
             "first-query E2E & "
             f"{cvision_rows[1]['observed_e2e']:.3f}$\\times$ "
-            f"& $\\Delta$acc {cvision_rows[1]['acc_delta']:+.3f} & advisory \\\\"
+            f"& $\\Delta$acc {cvision_rows[1]['acc_delta']:+.3f} & advisory local \\\\"
         ),
         (
             "First-pass & Gemma VideoMME 8f holdout & "
             "first-query E2E & "
             f"{cvision_rows[0]['observed_e2e']:.3f}$\\times$ "
-            f"& $\\Delta$acc {cvision_rows[0]['acc_delta']:+.3f} & clean \\\\"
+            f"& $\\Delta$acc {cvision_rows[0]['acc_delta']:+.3f} & clean local \\\\"
         ),
         (
             "First-pass & Gemma TOMATO 8f "
@@ -1145,8 +1210,8 @@ def _write_headline_table(snapshot: dict) -> None:
             f"{tomato_row['observed_e2e']:.3f}$\\times$ & "
             f"$\\Delta$acc {tomato_row['acc_delta']:+.3f} & "
             + (
-                "imported advisory \\\\"
-                if tomato_row["status"] == "advisory-holdout-imported"
+                "tracked-upstream advisory \\\\"
+                if tomato_row["status"] == "advisory-holdout-upstream"
                 else "dev-only \\\\"
             )
         ),
@@ -1185,7 +1250,7 @@ def _write_repo_provenance_table(
         r"\midrule",
         f"codec-through-2 & {_short_sha(primary['sha'], 12)} & {primary['commit_date']} \\\\",
         (f"codec-through & {_short_sha(upstream['sha'], 12)} & {upstream['commit_date']} \\\\"),
-        (f"deployment companion & {_short_sha(sam['sha'], 12)} & {sam['commit_date']} \\\\"),
+        (f"scale-out partner & {_short_sha(sam['sha'], 12)} & {sam['commit_date']} \\\\"),
         r"\bottomrule",
         r"\end{tabular}",
         r"\end{table}",
@@ -1218,7 +1283,7 @@ def _render_snapshot_contact_sheet(sam_root: Path) -> None:
         text = (
             "TODO: curate real-application snapshots.\n\n"
             "Preferred current source:\n"
-            "separate deployment companion, live-demo-v2 snapshots\n\n"
+            "scale-out partner tree, live-demo-v2 snapshots\n\n"
             "Expected images:\n"
             "- diagrams/live_demo_v2/01_setup.jpg\n"
             "- diagrams/live_demo_v2/02_cleaning_begins.jpg\n"
@@ -1229,7 +1294,7 @@ def _render_snapshot_contact_sheet(sam_root: Path) -> None:
         image.save(out_path)
         note_lines = [
             r"\paragraph{Streaming snapshot sources.}",
-            r"The deployment companion artifact was not available with the expected four draft",
+            r"The scale-out partner artifact was not available with the expected four draft",
             r"screenshots, so the manuscript sync generated a placeholder image",
             r"instead. Expected source family: live-demo-v2 snapshots.",
         ]
@@ -1262,8 +1327,8 @@ def _render_snapshot_contact_sheet(sam_root: Path) -> None:
 
     lines = [
         r"\paragraph{Streaming snapshot sources.}",
-        r"The draft contact sheet was imported automatically from the separate",
-        r"deployment companion artifact. Current source files:",
+        r"The draft contact sheet was synced automatically from the scale-out",
+        r"partner artifact. Current source files:",
         r"\begin{itemize}[leftmargin=1.5em]",
     ]
     for source in sources[:4]:

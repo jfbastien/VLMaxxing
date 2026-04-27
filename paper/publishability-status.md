@@ -1,4 +1,4 @@
-# Publishability Status — 2026-04-26
+# Publishability Status — 2026-04-27
 
 One-file answer to "what can we actually claim, in what venue, with what
 numbers, today." Kept in sync with [claim-matrix.md](claim-matrix.md) but
@@ -11,7 +11,7 @@ runtime inventories lower in this file are retained for provenance, but the
 current narrative interpretation should come from `priority.md` and the claim
 matrix.
 
-## Current Manuscript Position (2026-04-26)
+## Current Manuscript Position (2026-04-27)
 
 The draft should lead with three linked claims, not with a Qwen-only routing
 note:
@@ -21,15 +21,17 @@ note:
   scatter-back ceiling now transfers to a matched Qwen VideoMME probe.
 - **C-PERSIST**: persistent-KV reuse already delivers the largest local
   deployment numbers in the repo on same-video follow-up queries, and
-  selective re-prefill now repairs the 20f/32f basin on the tested slices.
+  adaptive selective re-prefill now repairs the 20f/32f basin across the broad
+  tested Qwen tranche: n=93, 0 observed paired drift, 15.28×--35.97× all-query
+  speedup, and 14.90×--35.92× same-class follow-up speedup.
 - **Qwen routing**: mechanism and boundary evidence showing why placement of
   fresh computation matters more than novelty magnitude alone.
 
-The separate 26B streaming lane is not decorative support. It is
-deployment-scale operational evidence for the same anti-recomputation thesis.
-Its benchmarking style is different, so the manuscript should label those
-results as supplementary deployment or case-study evidence rather than
-flattening them into the same table cell as the local Gemma holdouts.
+The separate 26B streaming lane is not decorative support. It is the scale-out
+streaming lane for the same anti-recomputation thesis. Its benchmarking style is
+different, so the manuscript should label those results as scale-out streaming
+evidence with distinct denominators until artifact-compatible protocols and
+matched baselines make it first-class in the same evidence graph.
 
 ## One paper, multiple evidence regimes
 
@@ -59,9 +61,10 @@ contributions (all landed before Codex round-26 2026-04-21):
   plateau (not clean). Phase 1.55D/G/I/H now make recovery local evidence rather
   than a hypothesis: fixed K=1 selective re-prefill shows no observed paired
   drift on n=93 across 20f short/medium/long plus 32f short at
-  9.48×–20.37× same-class median follow-up speedup. Phase 1.55F adds the
-  strongest single cell: adaptive post-Q2-state reuse at 24.76× same-class
-  speedup with 0/21 observed paired drift.
+  9.48×–20.37× same-class median follow-up speedup. Phase 1.55F breadth is now
+  the stronger adaptive headline: 0/93 observed paired drift at
+  15.28×–35.97× all-query speedup and 14.90×–35.92× same-class follow-up
+  speedup.
 - **C-VISION — vision-tower pruning with scatter-back ceiling**
   (claim 15). `E2E ≤ 1/(1 − V_share × V_red)` on Gemma 4-E4B-4bit
   validated across **6 core scatter points** (4 Gemma dev + 1 matched
@@ -92,7 +95,7 @@ TOMATO + MVBench) is the negative-result discipline lane: it shows
 what works and what does not, and it belongs in the paper as mechanism
 and boundary evidence rather than as the headline result.
 
-**Separate streaming work as deployment-scale evidence (NOT applications/support).**
+**Separate streaming work as scale-out streaming evidence (NOT applications/support).**
 The separate stack (26B-class, real streaming, full end-to-end pipeline)
 runs on a deliberately disjoint regime from codec-through (4B-class,
 sparse benchmark, mechanism isolation): 4.2–4.5× real-video, 13× ViT,
@@ -133,7 +136,9 @@ abstract/intro files are legacy scratchpads.
   `V_red = 0.398` and aggregate `Δacc = −0.033`.
 - **Qwen persistent-KV:** **47.2×** speedup and **815 ms** median follow-up at
   8f, rising to **91.1×** and **807 ms** at 16f inside the tested envelope
-  (16f clean; 8f slightly worse but still inside the criterion).
+  (16f clean; 8f slightly worse but still inside the criterion). The repaired
+  basin headline is adaptive selective re-prefill: **0/93** observed paired
+  drift with **15.28×–35.97×** all-query speedup.
 - **Separate 26B streaming evidence:** **13×** streaming ViT reduction,
   **~50×** dominant measured subpipeline reduction, **4.2–4.5×** real-video end-to-end
   speedups in selected regimes, and **0.8 s** same-video follow-up latency on
@@ -183,10 +188,11 @@ abstract/intro files are legacy scratchpads.
 
 What we CANNOT yet honestly say in HN-headline form:
 
-- "**N%** faster" — Track B sparse execution path is not written; only
-  the dense wall-clock baseline has been captured (60.1 s/item median
-  end-to-end at 8 frames). The projected ceiling on a vision-cache-only
-  Track B speedup is **22% end-to-end** at this geometry (phase 1.50).
+- "**N%** faster" for a broad sparse backend — the ViT-only measured-sparse-execution path is
+  staged but not yet a landed paper-grade artifact in this checkout. The dense
+  wall-clock baseline has been captured (60.1 s/item median end-to-end at
+  8 frames), and the projected ceiling on a vision-cache-only sparse-ViT speedup
+  is **22% end-to-end** at this geometry (phase 1.50).
 - "**N%** less energy" — no energy instrumentation. Projected proportional
   to wall-clock at fixed memory.
 - "**N%** as accurate" — accuracy is equal (0.633=0.633 on MVBench
@@ -194,10 +200,10 @@ What we CANNOT yet honestly say in HN-headline form:
   TOMATO dense-8 vs base, clean tree). No accuracy trade on the clean
   tree; the win is on the x-axis, not the y-axis.
 
-**Honest one-liner for reviewers:** "matched-accuracy Pareto win at
-reduced fresh-frame budget on two temporal-reasoning benchmarks at
-N=30 holdout, audited artifact provenance; projected compute-savings ceiling
-+22% end-to-end pending sparse-execution implementation."
+**Honest one-liner for reviewers:** "training-free anti-recomputation across
+separate denominator regimes: large after-ingest follow-up reuse, share-limited
+first-pass pruning, a negative composition boundary, and staged
+measured-sparse-execution validation for the measured wall-clock ceiling."
 
 ## Publishable claim inventory (with concrete numbers)
 
@@ -212,15 +218,15 @@ N=30 holdout, audited artifact provenance; projected compute-savings ceiling
 | E | **Bounded staleness is the mechanism on TOMATO; removing age=4 causes catastrophic novelty collapse.** | TOMATO Planner 2.0 no-age: novel_blocks→0, identical-feature reuse. With age=4: recovers proxy signal. Content-conditional finding. | phase 1.20 ablation cells (canonical note + registry) |
 | F | **Pixel-diff proxy → ViT feature-change correlation is non-trivial but content-conditional.** | Phase 1.36 feature-change oracle: best pixel stat Pearson r=0.233 (TOMATO MEAN) to r=0.504 (MVBench CPF). Ranking is content-dependent; the best routing stat (MAX_ABS) is NOT the best point predictor. | `phase1_36_feature_change_oracle/*.json`; phase 1.36 note |
 | G | **Dense wall-clock baseline captured on M3 Air 16GB.** | TOMATO n=10 mc_scoring at 8 frames, 560×560: 60.1 s/item median; prefill 72% of wall time, vision encode 22%, decode 6%; peak 6.87 GB. | `results/track_b/tomato_mc_n10.json`; phase 1.50 note |
-| H | **Hard ceiling for vision-cache-only Track B: 22% end-to-end speedup at this geometry.** | Arithmetic: vision encode is 22% of per-item wall time, so any method that only skips vision work caps at 22% end-to-end before prefill savings. | Derived from G; explicit in phase 1.50 §Paper implications |
-| R | **1.51V vision-tower pruning on Gemma 4-E4B-4bit (MLX), dev n=30 at L=2 kr_V=0.50 thermally paired:** VideoMME 1.08× (8f) / 1.12× (16f), MVBench **1.21×**, TOMATO **1.24×**; dev V-red lands around 40% across the three benchmarks, but holdout spread is wider and should be described more softly in the manuscript. Scatter-back ceiling `1/(1 − V_share × V_red)` predicts E2E within 2pp on the main dev cells. **32f frame-scaling probe:** V_share = 31.0% at 32f (continues 15.2% → 24.3% → 31.0% monotone), but thermal pairing FAILS on M3 16 GB at 32f (decode Δ = +7.6%); observed cross-run 0.94× is thermally confounded; charitable ceiling prediction 1.14×, sub-threshold. **Holdout replication (EXP15/16, VideoMME holdout v1 n=30 disjoint):** H-stack partial confirmation — V+novelty kr=0.3 on V-patched baseline stacks at 1.064× within-run (thermally clean), 1.127× cross-session (dirty), agreement=0.667, acc Δ=-0.033. LLM-side ceiling `1/(1 − generate_share × generate_reduction) = 1.064×` matches observed to 0.1pp (fifth ceiling regime). **V-only UNPATCHED-vs-PATCHED holdout status:** VideoMME 8f **clean** at 1.113× (EXP17/18); MVBench 8f **advisory** at 1.407× (EXP19/20); TOMATO 8f **earned-advisory** at 1.194× from the session-5 rerun (EXP23/24). | `research/experiments/2026/2026-04-21-phase-1_51V-expansion-findings.md`; `2026-04-21-phase-1_51V-32f-probe-findings.md`; `2026-04-21-phase-1_51V-holdout-findings.md`; `artifacts/phase1_51V_expansion/exp{01..12}_*_summary.json`; `artifacts/phase1_51V_session2/exp{13..16}_*_summary.json`; `codec-through/research/experiments/2026/2026-04-21-phase-1_51V-session5-findings.md` |
-| O | **Persistent-KV follow-up speedup 47×/91×/70×/94×/122×/150× at 8f/16f/18f/20f/24f/32f on Qwen 7B-4bit; reproduces Sam §2.13.3 AND confirms prefill-dominance on a six-point scaling curve. Fidelity preservation is bounded by a threshold-and-basin story — clean at ≤ ~6.5k tokens (16f, Δacc=0); mixed basin at ~7.3k (18f, Δacc=−0.24); dominant basin at ~8.1k (20f, Δacc=−0.38); single-token attractor by ~9.7k (24f, Δacc=−0.43). Cross-architecture probes revise the older 3B “saturation ceiling” readout: 24f/32f/36f are now treated as a pre-basin plateau at Δacc≈−0.19, with 3B basin onset bracketed to (36f, 40f]. Cache-reuse damage decomposes into threshold onset, basin-onset depth, and basin geometry. Selective re-prefill v2 is now the local recovery frontier: fixed K=1 shows no observed paired drift on n=93 across 20f short/medium/long plus 32f short at 9.48×–20.37× same-class speedup, while adaptive post-Q2-state reuse lands 0/21 paired drift at 24.76× same-class speedup. The naive adaptive omission Q2=K1/Q3=K0 fails on Q3, establishing cache-source inheritance as the mechanism.** | Detailed historical artifacts remain in the phase 1.55A/1.55D/1.55E/1.55F/1.55G/1.55H/1.55I findings docs and should be preferred over this compressed inventory when writing final manuscript prose. | `research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md`; `.../2026-04-24-phase-1_55D-selective-reprefill-v2-k1-findings.md`; `.../2026-04-24-phase-1_55E-q2-mandatory-q3-optional-findings.md`; `.../2026-04-25-phase-1_55F-q3-post-q2-state-findings.md`; `.../2026-04-25-phase-1_55G-k1-medium-replication-findings.md`; `.../2026-04-25-phase-1_55H-k1-32f-short-probe-findings.md`; `.../2026-04-25-phase-1_55I-k1-long-replication-findings.md` |
+| H | **Hard ceiling for vision-cache-only sparse execution: 22% end-to-end speedup at this geometry.** | Arithmetic: vision encode is 22% of per-item wall time, so any method that only skips vision work caps at 22% end-to-end before prefill savings. | Derived from G; explicit in phase 1.50 §Paper implications |
+| R | **1.51V vision-tower pruning on Gemma 4-E4B-4bit (MLX), dev n=30 at L=2 kr_V=0.50 thermally paired:** VideoMME 1.08× (8f) / 1.12× (16f), MVBench **1.21×**, TOMATO **1.24×**; dev V-red lands around 40% across the three benchmarks, but holdout spread is wider and should be described more softly in the manuscript. Scatter-back ceiling `1/(1 − V_share × V_red)` predicts E2E within 2pp on the main dev cells. **32f frame-scaling probe:** V_share = 31.0% at 32f (continues 15.2% → 24.3% → 31.0% monotone), but thermal pairing FAILS on M3 16 GB at 32f (decode Δ = +7.6%); observed cross-run 0.94× is thermally confounded; charitable ceiling prediction 1.14×, sub-threshold. **Holdout replication (EXP15/16, VideoMME holdout v1 n=30 disjoint):** stacked-regime partial confirmation — V+novelty kr=0.3 on V-patched baseline stacks at 1.064× within-run (thermally clean), 1.127× cross-session (dirty), agreement=0.667, acc Δ=-0.033. LLM-side ceiling `1/(1 − generate_share × generate_reduction) = 1.064×` matches observed to 0.1pp (fifth ceiling regime). **V-only UNPATCHED-vs-PATCHED holdout status:** VideoMME 8f **clean** at 1.113× (EXP17/18); MVBench 8f **advisory** at 1.407× (EXP19/20); TOMATO 8f **earned-advisory** at 1.194× from the session-5 rerun (EXP23/24). | `research/experiments/2026/2026-04-21-phase-1_51V-expansion-findings.md`; `2026-04-21-phase-1_51V-32f-probe-findings.md`; `2026-04-21-phase-1_51V-holdout-findings.md`; `artifacts/phase1_51V_expansion/exp{01..12}_*_summary.json`; `artifacts/phase1_51V_session2/exp{13..16}_*_summary.json`; `research/experiments/2026/2026-04-21-phase-1_51V-session5-findings.md` |
+| O | **Persistent-KV follow-up speedup 47×/91×/70×/94×/122×/150× at 8f/16f/18f/20f/24f/32f on Qwen 7B-4bit; reproduces Sam §2.13.3 AND confirms prefill-dominance on a six-point scaling curve. Fidelity preservation is bounded by a threshold-and-basin story — clean at ≤ ~6.5k tokens (16f, Δacc=0); mixed basin at ~7.3k (18f, Δacc=−0.24); dominant basin at ~8.1k (20f, Δacc=−0.38); single-token attractor by ~9.7k (24f, Δacc=−0.43). Cross-architecture probes revise the older 3B “saturation ceiling” readout: 24f/32f/36f are now treated as a pre-basin plateau at Δacc≈−0.19, with 3B basin onset bracketed to (36f, 40f]. Cache-reuse damage decomposes into threshold onset, basin-onset depth, and basin geometry. Selective re-prefill v2 is now the local recovery frontier: fixed K=1 shows no observed paired drift on n=93 across 20f short/medium/long plus 32f short at 9.48×–20.37× same-class speedup, while adaptive post-Q2-state reuse lands 0/93 paired drift at 15.28×–35.97× all-query speedup and 14.90×–35.92× same-class speedup. Stage timing shows adaptive Q3 gets its extra lift by reusing the post-Q2-repaired cache and avoiding fixed-K's repeated last-frame re-prefill. The naive adaptive omission Q2=K1/Q3=K0 fails on Q3, establishing cache-source inheritance as the mechanism.** | Detailed historical artifacts remain in the phase 1.55A/1.55D/1.55E/1.55F/1.55G/1.55H/1.55I and adaptive-mechanism findings docs and should be preferred over this compressed inventory when writing final manuscript prose. | `research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md`; `.../2026-04-24-phase-1_55D-selective-reprefill-v2-k1-findings.md`; `.../2026-04-24-phase-1_55E-q2-mandatory-q3-optional-findings.md`; `.../2026-04-25-phase-1_55F-q3-post-q2-state-findings.md`; `.../2026-04-25-phase-1_55G-k1-medium-replication-findings.md`; `.../2026-04-25-phase-1_55H-k1-32f-short-probe-findings.md`; `.../2026-04-25-phase-1_55I-k1-long-replication-findings.md`; `.../2026-04-27-adaptive-mechanism-queue-findings.md` |
 
 ### What remains BLOCKED before venue submission
 
 | # | Claim | Blocker | Runtime estimate |
 |---|---|---|---|
-| I | "Method delivers measured N% speedup" | Sparse-execution path does not exist. Track B measures dense; a sparse path must be written to measure the delta. | Implementation ≈ 1-2 weeks; per-run wall time ≈ 1 h for N=30 on each benchmark. |
+| I | "Method delivers broad measured sparse-path speedup" | Vision-only sparse execution code is staged, but no paper-grade 1.63 artifact has landed in this checkout. Treat measured sparse-backend claims as TODO until the 1.63 queue lands and passes. | Current queued scope is ViT-only sparse execution with dense LM prefill; sparse LM prefill remains a larger systems project. |
 | J | "Validated on VideoMME (de facto benchmark)" | **EARNED 2026-04-18 (8f); strengthened 2026-04-19 (16f, 32f).** Qwen 2.5-VL-7B-4bit, videomme_dev_v1.toml n=30. **8f**: dense_acc=0.533, parse_fail=0, agreement=1.000, RSS=6.67GB, mean e2e=31.0s. **16f**: dense_acc=0.567, mean e2e=75.2s. **32f**: dense_acc=0.533 (n=30), mean e2e=157.9s, RSS=8.52GB — zero per-bucket flips vs 16f; long plateau confirmed. **Non-monotonic bucket scaling** — medium +30pp (0.50→0.80→0.70), long −20pp at 16f and held at 32f. **Mechanism**: Phase 1.57 adjacent-frame ViT feature-cos landed on same manifest; H-drift-compounds REJECTED, H-saturation SUPPORTED (long drift AND long acc both plateau at 16f). Frame-scaling not a linear knob; 32f not Pareto-efficient (2× cost for zero aggregate lift). | Open: Phase 1.58 (4bit × long-context quantization) to test the one surviving mechanism candidate. Phase 1.54 (decode-accel) still open for long-item latency, not accuracy. |
 | K | "Cross-architecture generalization (Qwen windowed ↔ Gemma/InternVL3 all-global)" | Partial: matched Qwen C-VISION transfer exists, but broader architecture coverage remains open. | Next useful work is matched Qwen/Gemma drift probes or a third architecture, not another claim that the ceiling itself can transfer at one point. |
 | L | "Placement ablation (phase 1.38)" | Not run. | ≈ 30 min GPU wall time on a subset. |
@@ -243,7 +249,7 @@ is work the user is buying forever. What the user is paying for
 | D | Novelty-ranked dense 2×3 grid (TOMATO+MVBench, N={4,6,8}) | ≈ 120 min | ≈ 45-60 min | Qwen 2.5-VL-7B-4bit |
 | E | TOMATO ablation cells (6 cells × 2 benchmarks × N=30) | ≈ 6-8 h | ≈ 3-4 h | Qwen 2.5-VL-7B-4bit |
 | F | Phase 1.36 oracle (per-block Pearson, partial cache coverage) | ≈ 60 min | ≈ 20 min | Qwen 2.5-VL-7B-4bit |
-| G | Phase 1.50 Track B dense wall-clock baseline N=30 pair | ≈ 2 h per benchmark (cold) | ≈ 2 h (cold; no cache win) | Qwen 2.5-VL-7B-4bit |
+| G | Phase 1.50 dense wall-clock baseline for sparse-execution accounting N=30 pair | ≈ 2 h per benchmark (cold) | ≈ 2 h (cold; no cache win) | Qwen 2.5-VL-7B-4bit |
 | H | Derived from G, zero runtime | — | — | — |
 | J₈ | Phase 1.41 VideoMME dev n=30 @ 8f | ≈ 16 min (931 s measured) | ≈ 16 min (no feature cache) | Qwen 2.5-VL-7B-4bit |
 | J₁₆ | Phase 1.41 VideoMME dev n=30 @ 16f | ≈ 38 min (2,257 s measured) | ≈ 38 min | Qwen 2.5-VL-7B-4bit |
@@ -251,6 +257,7 @@ is work the user is buying forever. What the user is paying for
 | K | Claim-11 reproduction log (1.51R Stages 1/2b/3/5/6/7) | ≈ 10-12 h total across N=30 cells on both benchmarks | n/a (incremental) | Gemma 4-E4B-4bit |
 | M | Claim-13 C-CEILING cross-validation (7 regime dimensions) | included in K | n/a | Gemma 4-E4B-4bit |
 | O | Phase 1.55A persistent-KV follow-up latency (n=21 queries × 6 frame counts + 3B cross-arch 3-point + 7B/20f temperature probe + 3B/20f temperature probe) | ≈ 18 min at 8f (1057 s) + ≈ 35 min at 16f (2095 s) + ≈ 38 min at 18f (2302 s) + ≈ 42 min at 20f (2506 s) + ≈ 55 min at 24f (3281 s) + ≈ 76 min at 32f (4573 s) + ≈ 27 min at 3B-20f (1595 s) + ≈ 31 min at 3B-24f (1830 s) + ≈ 50 min at 3B-32f (2972 s) + ≈ 48 min at 7B-20f-temp (2862 s) + ≈ 24 min at 3B-20f-temp (1427 s) = ≈ 7.3 h | ≈ 7.3 h | Qwen 2.5-VL-7B-4bit + 2.5-VL-3B-4bit |
+| O₂ | Phase 1.55 selective re-prefill repair breadth (adaptive short/medium/long/32f plus fixed-K repair artifacts) | Adaptive breadth alone measured ≈ 5.1 h across short, medium, long, and 32f-short cells (0.83 h + 1.50 h + 1.14 h + 1.60 h); fixed-K repair artifacts add the no-coordination baseline | same | Qwen 2.5-VL-7B-4bit |
 | P | Phase 1.51V expansion (12 exps — Tier 0 confirm + Tier 1 Pareto + Tier 2 cross-bench + Tier 3 stack + Tier 4 16f scale) | 15,621 s measured = **4.34 h** (EXP01–12; runtime per-exp 606–2155 s, dense+pruned both reported) | 4.34 h | Gemma 4-E4B-4bit |
 | Q | Phase 1.51V 32f probe (EXP13 unpatched + EXP14 L=2 kr=0.50, n=30 each) | 7,167 s measured = **1.99 h** (EXP13 3415 s + EXP14 3752 s; thermal confounder documented) | 1.99 h | Gemma 4-E4B-4bit |
 | R | Phase 1.51V holdout session 2 (EXP15 V-patched baseline + EXP16 V+novelty kr=0.3, n=30 VideoMME holdout v1) | 2,706 s measured = **0.75 h** (EXP15 1425 s + EXP16 1281 s; thermal pairing dirty -7.8% decode Δ; within-run pairing CLEAN) | 0.75 h | Gemma 4-E4B-4bit |
@@ -258,7 +265,7 @@ is work the user is buying forever. What the user is paying for
 | T | Phase 1.51V session 4 (EXP19/20 MVBench holdout pair + EXP21/22 TOMATO holdout pair, run 2) | ~2.0 h (queue.log elapsed across 4 exps; run 1 memory-contaminated and quarantined to run1_confounded/) | 2.0 h | Gemma 4-E4B-4bit |
 | U | Phase 1.51V session 5 (EXP23/24 TOMATO holdout pair rerun after session 4 thermal confound) | 1735 s measured = **0.48 h** (EXP23 886 s + EXP24 849 s; favorable-direction 119 ms decode Δ; EARNED-ADVISORY on primary E2E gate) | 0.48 h | Gemma 4-E4B-4bit |
 | J₁₆ₕ | Phase 1.41 Qwen 16f VideoMME **holdout** n=30 (H2 falsification run, task #160) | ~38 min (same per-item cost as dev 16f; aggregate 0.700, H2 FALSIFIES the dev-only long-bucket −20pp observation — holdout long 0.900 vs dev 0.100) | 0.63 h | Qwen 2.5-VL-7B-4bit |
-| V | Phase 1.51V EXP10 n=60 pooled H_stack re-check (VideoMME dev+holdout combined, task #152 CLOSED-NULL) | ~3.0 h measured (pooled n=60; lift 2.6pp FAILS ≥4pp gate, agreement 0.65 FAILS 0.75; ceiling model reproduces to 0.2pp at pooled fixed_frac = 0.875) | 3.0 h | Gemma 4-E4B-4bit |
+| V | Phase 1.51V EXP10 n=60 composition audit (VideoMME dev+holdout combined, task #152 CLOSED-NULL) | ~3.0 h measured (n=60; lift 2.6pp FAILS ≥4pp gate, agreement 0.65 FAILS 0.75; ceiling model reproduces to 0.2pp at fixed_frac = 0.875) | 3.0 h | Gemma 4-E4B-4bit |
 
 ### Runtime cost summary
 
@@ -266,7 +273,7 @@ is work the user is buying forever. What the user is paying for
 - Lane A (TOMATO + MVBench routing, Qwen): ~25-30 h (A+B+C+D+E+F+G, measured across many N=30 passes)
 - Lane B (Gemma 1.51R + ceiling validation): ~10-12 h (K+M)
 - Lane B (Gemma 1.51V expansion + 32f probe + holdout sessions 2-5): ~10.4 h (P 4.34 h + Q 1.99 h + R 0.75 h + S 0.8 h + T 2.0 h + U 0.48 h measured)
-- Lane B (Gemma 1.51V EXP10 n=60 pooled H_stack, 2026-04-21): ~3.0 h (V)
+- Lane B (Gemma 1.51V EXP10 n=60 composition audit, 2026-04-21): ~3.0 h (V)
 - VideoMME lane (claim 8 earned + strengthened + **holdout**): ~120 min (J₈ 16 min + J₁₆ 38 min + J₃₂L 28 min + **J₁₆ₕ 38 min** 2026-04-21)
 - Persistent-KV lane (claim 14): ~7.3 h (O)
 - **Total benchmark wall-clock already spent: ~58-65 h**
@@ -279,7 +286,7 @@ runnable tonight vs. impl-gated.
 |------|-------|---------|-------|----------------|
 | should-do #3 | **1.51V Qwen cross-arch probe** (L=2, kr=0.50, VideoMME 8f n=30 thermally paired, 2 arms) | **CLOSED 2026-04-23** | Qwen 2.5-VL-7B-4bit | **landed** — `V_red = 0.398`, `E2E = 1.044× observed vs 1.043× predicted`, aggregate `Δacc = −0.033`; C-VISION upgrades to two-architecture mechanism evidence |
 | should-do #4 | Local paired streaming-protocol reproduction (1.30) + root-cause decomposition | CLOSED-BOUNDARY 2026-04-26 for current policy | Qwen 2.5-VL-7B-Instruct-4bit (driver hard-fails on non-Qwen at `run_phase1_30_sam_streaming.py:303-308`) | 1.30W remains the best landed bridge: paired cold 0.561 / streaming 0.503 (Δacc = −0.0585) / 2.7869× with aggregate Q0 parity and clean format, but still below the `3.0×` rescue floor. 1.30X's Δacc=0.0 / 3.078× point is oracle-only. 1.30Z/AB falsify every tested long-Q0 keep rate from 0.67 through 0.90; high keep rates restore aggregate Q0 accuracy but still lose follow-ups by ~19pp. Instrumentation proves follow-up vision pruning is inactive in this family (`vision_pruning_active_fraction=0.0`, all follow-up image tokens cache-served); describe it as Q0 admission + K-cache reuse. |
-| should-do #5 | **1.55 selective re-prefill frontier** (recover Δacc at 20f/32f while clawing back speed) | Adaptive breadth pending: ~70 min medium, ~60-90 min long, ~70-90 min 32f | Qwen 2.5-VL-7B-4bit | **Fixed K=1 now has broad local evidence** — no observed paired drift on n=93 across 20f short/medium/long plus 32f short (one-sided rule-of-three upper bound ≈3.2%), 9.48×–20.37× same-class median follow-up speedup, and 0/62 pathological follow-up outputs. **Adaptive post-Q2-state reuse is the strongest single cell** — 1.55F lands 0/21 paired drift at 24.76× same-class speedup and 1.44 GB peak RSS. The first adaptive omission follow-up, **1.55E (`Q2=K1`, `Q3=K0`)**, remains the bounded negative that proves cache-source inheritance is the mechanism. **1.55B** remains the separate persistent-KV × 1.54 composition phase. |
+| should-do #5 | **1.55 selective re-prefill frontier** (recover Δacc at 20f/32f while clawing back speed) | Breadth landed; many-turn / sampler / cross-architecture follow-ups remain | Qwen 2.5-VL-7B-4bit | **Fixed K=1 now has broad local evidence** — no observed paired drift on n=93 across 20f short/medium/long plus 32f short (one-sided rule-of-three upper bound ≈3.2%), 9.48×–20.37× same-class median follow-up speedup, and 0/62 pathological follow-up outputs. **Adaptive post-Q2-state reuse is now the headline repair lane** — 0/93 paired drift, 15.28×–35.97× all-query speedup, 14.90×–35.92× same-class follow-up speedup. Stage timing shows adaptive Q3 avoids fixed-K's repeated last-frame re-prefill. **1.55E (`Q2=K1`, `Q3=K0`)** remains the bounded negative that proves cache-source inheritance is the mechanism. **1.55B** remains the separate persistent-KV × 1.54 composition phase. |
 | should-do #6 | **1.58 bf16 KV control at 20f** (discriminate quantization vs attention-OOD) | ~3.5-4 h (bf16 8f n=30 + bf16 16f n=30) | Qwen 2.5-VL-7B bf16 | **wrapper-landed; preflight still blocks execution** — `scripts/run_phase1_58_bf16_control.sh` + analyzer landed, but the local bf16 checkpoint is absent and the current 16 GB laptop plan caps autonomous runs near `10 GB` RSS, well below the prereg's looser `<14 GB` feasibility band |
 | should-do #8 | **1.29 codec-native bridge (reframed)** | landed semantically; slow offline extraction | Qwen 2.5-VL-7B-4bit | **planner-substitution evidence landed** — MAX-over-span sparse sampling is HARD-FALSIFIED, while the continuous-score redesign reaches codec-dense agreement 1.000 on VideoMME dev all-duration n=30 with zero aggregate accuracy delta and zero parse failures. Later calibration-mode and calibration-source ablations are neutral on the local slices we ran. This is not a latency claim: offline codec extraction totals 7290s; the remaining gate is streaming decoder integration / native-rate systems evaluation. |
 | future | **1.60 scroll/pan subset** (20 items stratified by scroll intensity, L=2 kr=0.50 paired) | n/a on VideoMME; ~70-90 min after a real subset exists | Gemma 4-E4B-4bit or matched C-VISION stack | **closed as natural-VideoMME corpus limitation** — wider 60-item VideoMME scan found 0/60 items above `shifted_fraction >= 0.30` (max 0.125), so this only reopens with EgoSchema/EPIC-Kitchens/Ego4D or a labeled synthetic scroll/pan set |
@@ -287,13 +294,13 @@ runnable tonight vs. impl-gated.
 | split-landed | 1.42 Gemma topology lane | complete on the preregistered N=30 pair | Gemma 4-E4B-4bit | landed 2026-04-24: TOMATO pass (`agreement=0.933`, `dense_acc=cached_acc=0.267`), MVBench strict-agreement fail (`agreement=0.733`, `dense_acc=cached_acc=0.200`); further work is interpretation or third-architecture breadth, not implementation |
 | blocked | 1.43 EgoSchema breadth gate | ~2 h | Qwen 2.5-VL-7B-4bit | loader + manifest unwritten |
 | blocked | 1.52R composition (1.42 × 1.51R) | ~3 h | Gemma 4-E4B-4bit | 1.42 landing + 1.51R V-patched re-run |
-| future | Claim-5 sparse-execution delta | ~2 h | either | sparse backend unwritten (1-2 wk impl) |
+| future | Claim-5 sparse-execution delta | ~2 h for ViT-only queued cells after harness is stable | either | ViT-only sparse backend is staged but not yet paper-grade in this checkout; sparse LM prefill remains larger engineering work |
 
-**Runnable next with setup**: adaptive `1.55F-medium`, `1.55F-long`, and
-`1.55F-32f` are the highest-value follow-up queue. `1.30AC` still needs the
-cache-invalidation driver change if we want a true follow-up-pruning mechanism
-experiment. `1.30AD` is paper-polish. `1.58` remains blocked by the missing
-bf16 checkpoint and the current local memory policy.
+**Runnable next with setup**: many-turn C-PERSIST stability, sampler sweep,
+direct cache-state instrumentation for the 1.30 boundary, and scale-out
+artifact-compatible 26B replication are now higher leverage than more VideoMME
+breadth. `1.58` remains blocked by the missing bf16 checkpoint and the current
+local memory policy.
 
 **Aggregate forward cost once blockers clear**: ~20 h benchmark-only
 @ 8f (excludes implementation); ~40 h @ 32f.
@@ -307,8 +314,8 @@ queue once infra is in place.
 
 | Venue | Fit today | What would need to land |
 |---|---|---|
-| **arXiv preprint (current anti-recomputation draft)** | **Ready today** as a multi-regime anti-recomputation paper with clean versus advisory status stated explicitly and deployment-scale evidence labeled by source class. | No new science gate. Keep provenance tight, finalize manuscript framing, and keep the paper honest about which rows are local clean, local advisory, upstream imported, or deployment-scale imported evidence. |
-| **NeurIPS / ICLR / CVPR efficiency workshop** | **Defensible today** as the current anti-recomputation paper if the provenance remains tight and the manuscript keeps clean, advisory, imported, and deployment-scale rows visibly distinct. | Stronger with one measured sparse-path delta and a cleaner local streaming bridge. |
+| **arXiv preprint (current anti-recomputation draft)** | **Ready today** as a multi-regime anti-recomputation paper with clean versus advisory status stated explicitly and scale-out streaming evidence labeled by source class. | No new science gate. Keep provenance tight, finalize manuscript framing, and keep the paper honest about which rows are local clean, local advisory, tracked-upstream advisory, or scale-out partner evidence. |
+| **NeurIPS / ICLR / CVPR efficiency workshop** | **Defensible today** as the current anti-recomputation paper if the provenance remains tight and the manuscript keeps clean, advisory, tracked-upstream, and scale-out streaming rows visibly distinct. | Stronger with one measured sparse-path delta and a cleaner local streaming bridge. |
 | **Main track (NeurIPS/ICML/CVPR)** | **Not ready yet.** The paper now has a better three-regime story than the old venue rows implied, but it still lacks one measured sparse-path delta, broader apples-to-apples comparison against adjacent methods, and a cleaner bridge from local benchmark evidence into deployment-style streaming evaluation. | One measured sparse-path delta, broader first-pass coverage on the second architecture, a decoder-integrated codec-native / native-rate systems bridge, a scroll/pan/egomotion probe on a corpus that actually contains that regime, and tighter head-to-head positioning against the closest trained and training-free baselines. |
 | **Systems conference (MLSys/OSDI)** | **Not ready yet.** The deployment evidence is interesting, but the current paper still does not characterize a full sparse backend or benchmark the streaming path against a clean systems baseline such as screenshot polling. | Sparse execution characterization, screenshot-polling baseline, broader streaming or event-detection evaluation, and ideally a decoder-integrated codec-native streaming bridge. |
 
@@ -322,12 +329,14 @@ queue once infra is in place.
 > advisory holdout cells, with magnitude predicted by a simple
 > share×reduction ceiling. On Qwen2.5-VL-7B-4bit, persistent-KV reuse
 > cuts same-video follow-up latency to **815 ms** median at **47.2×**
-> speedup at 8 frames and **807 ms** at **91.1×** speedup at 16 frames.
+> speedup at 8 frames and **807 ms** at **91.1×** speedup at 16 frames; the
+> repair lane is now broader, with adaptive selective re-prefill
+> showing **0/93** observed paired drift at **15.28×–35.97×** all-query speedup.
 > Routing holdouts on TOMATO and MVBench then show the mechanism
 > boundary: a bounded-staleness planner preserves the quality-compute
 > frontier, beats novelty-ranked dense selection, and shows that
 > fresh-compute placement cannot be reduced to novelty magnitude alone.
-> Deployment-scale streaming evaluations add **13×** ViT reduction,
+> Scale-out streaming evaluations add **13×** ViT reduction,
 > **~50×** dominant measured subpipeline reduction, **4.2–4.5×** end-to-end
 > speedups in selected real-video regimes, and **0.8 s** same-video
 > follow-up latency on Gemma 4 26B.
@@ -335,7 +344,8 @@ queue once infra is in place.
 ## What is NOT safe to say today
 
 - "SOTA" on any axis.
-- "N% faster end-to-end" (no sparse path).
+- "Broad sparse-backend speedup" (ViT-only measured sparse execution is queued/staged but not yet
+  a landed paper-grade result here; sparse LM prefill remains out of scope).
 - "Generalizes broadly across architectures" (one matched second-architecture point is now landed, but broad transfer is still too strong).
 - ~~"Validated on VideoMME" (phase 1.41 not run).~~ **EARNED 2026-04-18** (Qwen 2.5-VL-7B VideoMME dev n=30, dense_accuracy 0.533).
 - "Beats CodecSight / CoPE / FastV / VisionZip" (no head-to-head).
@@ -394,7 +404,7 @@ queue once infra is in place.
   TOMATO still fails (206 ms > 100 ms floor), and all four dev 1.51V
   cells that previously failed the strict 2% gate clear. Will apply
   going forward to short-clip holdout benchmarks and to task #152 EXP10
-  H_stack re-check.
+  composition audit.
 - **TOMATO 8f holdout THERMALLY CONFOUNDED** — EXP21/22, paired sum-ratio
   E2E 1.330× (outlier-contaminated), median 1.113×, robust (trimmed)
   1.056×; V_red 0.2867 (below band); acc Δ −0.067 (outside band);
@@ -423,7 +433,7 @@ queue once infra is in place.
   M3 16 GB thermal pairing breaks at 32f (decode Δ=+7.6%); H_32f_e2e
   REJECTED on both observed (0.94×) and charitable-ceiling (1.14×)
   grounds.
-- **1.51V holdout session 2 (n=30 disjoint VideoMME items):** H_stack
+- **1.51V holdout session 2 (n=30 disjoint VideoMME items):** composition
   PARTIAL confirmation — V+novelty kr=0.3 stacks at 1.064× within-run
   (thermally clean) / 1.127× cross-session (dirty, decode Δ=-7.8%);
   agreement 0.667; acc Δ=-0.033. V_share from EXP15 V-patched reference
@@ -515,11 +525,11 @@ items that priority.md does not carry. For the current ordering see
 
 ### Current queue mirror (priority.md §Should-do, in rank order)
 
-1. ~~**EXP10 n=60 H_stack re-check**~~ — **CLOSED-NULL 2026-04-21
-   (autonomous session, task #152).** Pooled n=60 arm B V+novelty E2E
+1. ~~**EXP10 n=60 composition audit**~~ — **CLOSED-NULL 2026-04-21
+   (autonomous session, task #152).** n=60 arm B V+novelty E2E
    1.0420× / V-only ref arm A 1.0159×; lift 2.6pp FAILS ≥4pp gate;
    agreement 0.650 FAILS ≥0.75; acc Δ −0.017 PASSES. Ceiling model
-   reproduces observation to 0.2pp: pooled fixed_frac 0.875 (V_share
+   reproduces observation to 0.2pp: fixed_frac 0.875 (V_share
    collapsed to 6.26% vs dev 15.2%), per-token speedup 1.446× gives
    arithmetic ceiling 1.041×. Composition appendix does NOT land; the
    paper's three-contribution spine is unchanged. Findings:
@@ -539,25 +549,28 @@ items that priority.md does not carry. For the current ordering see
    (`Δacc = −0.0585`) at `2.7869×`, with aggregate Q0 parity (`34/57` in
    both arms), `0` parse failures, and `0` degenerates. 1.30Z/AB then
    falsify every tested long-Q0 keep rate from `0.67` through `0.90`, and
-   the conditional union rerun was correctly skipped. The new instrumentation
-   also confirms the wording boundary: follow-up vision pruning is inactive
-   (`vision_pruning_active_fraction=0.0`), so this lane is **Q0 admission +
-   K-cache reuse**, not proven Q2/Q3 vision pruning. 1.30X's `Δacc = 0.0000`,
-   `3.0781×` point remains an oracle upper bound, not a deployable result.
+   the conditional union rerun was correctly skipped. Later instrumentation
+   confirms the wording boundary: 1.30AD's speed comes from **Q0 admission +
+   K-cache reuse** (`vision_pruning_active_fraction=0.0`), while 1.30AC forces
+   follow-up V-pruning active but falls to **1.06×**. Both land at the same net
+   aggregate loss through different any-paired-drift sets. 1.30X's
+   `Δacc = 0.0000`, `3.0781×` point remains an oracle upper bound, not a
+   deployable result.
 5. **1.55 selective re-prefill v2** — no longer an implementation
    question. Repo-local v2 is landed, fixed K=1 is the broad recovery
-   envelope, and adaptive post-Q2-state reuse is the best single point:
+   envelope, and adaptive post-Q2-state reuse is the headline repair lane:
    **fixed K=1 has no observed paired drift on n=93** across 20f
    short/medium/long plus 32f short, 9.48×–20.37× same-class follow-up
    speedup, and 0/62 pathological follow-up outputs. **1.55F adaptive**
-   has no observed paired drift on n=21 at 24.76× same-class speedup and
-   1.44 GB peak RSS. The first adaptive omission follow-up, 1.55E
+   has no observed paired drift on n=93 at 15.28×–35.97× all-query speedup
+   and 14.90×–35.92× same-class speedup. The first adaptive omission follow-up,
+   1.55E
    (`Q2=K1`, `Q3=K0`), is a bounded negative: `Δacc = -0.0952` with
    pathological-like outputs on `7/7` third queries. Together, 1.55E and
    1.55F say the Q3 catastrophe was a cache-source inheritance problem,
    not adaptive repair impossibility.
-   The next paper-relevant moves are **1.55F-medium**, **1.55F-long**, and
-   **1.55F-32f**.
+   The next paper-relevant moves are many-turn stability, sampler sweep,
+   cross-architecture cache semantics, and direct cache-state instrumentation.
 6. **1.58 bf16 KV control at 20f** — isolates quantization as the
    C-PERSIST basin driver; ~2-4h wall once the bf16 checkpoint exists
    locally. Preflight currently marks it blocked.
@@ -577,7 +590,7 @@ items that priority.md does not carry. For the current ordering see
    `paper/figures/c_persist_safe_budget.{png,_data.json}` and
    `paper/figures/v_share_v_red_ceiling.{png,_data.json}`. V_share ×
    V_red figure now shows 9 rendered points (4 Gemma dev + 3 Gemma
-   holdout + 1 matched Qwen cross-arch + 1 pooled H_stack CLOSED-NULL);
+   holdout + 1 matched Qwen cross-arch + 1 composition-audit CLOSED-NULL);
    dev median |Δ| 2.2pp, MVBench 8f holdout sits 11.6pp above the
    ceiling (thermal-inflated, matches session-4 advisory).
 
@@ -597,7 +610,7 @@ Documented here as appendix-grade method evidence. These are the null
   ≈2 h wall after code lands; orthogonal path to claim 3.
 - **Phase 1.43 EgoSchema N=30 on Qwen** — long-form/egocentric
   generalization; ≈2-3 h wall; claim 12 enabler.
-- **Track B sparse-execution path** — biggest single claim-5 unlock,
+- **Measured sparse-execution path** — biggest single claim-5 unlock,
   weeks of engineering. Deferable to post-submission discussion —
   C-CEILING already bounds the measurable delta analytically.
 

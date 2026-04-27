@@ -1,47 +1,60 @@
-Video already carries evidence about what stayed still, what moved, and what is
-new. Most video VLM stacks discard that structure, hand the model dense RGB
-again, and ask it to rediscover state it could have reused. The factory wall
-did not move, the stream has cheap evidence that it did not move, and the stack
-still pays again for dense visual or prefix computation. We study that waste as
-training-free anti-recomputation. The central question is where a runtime must
-buy fresh visual evidence over time, and where cached state is enough to remain
-on its regime-specific quality--compute frontier.
+Video vision-language models (VLMs) already receive evidence about what stayed
+still, what moved, and what is new. Most stacks discard that structure, hand the
+model dense RGB again, and ask it to rediscover state it could have reused. The
+factory wall did not move, the stream has cheap evidence that it did not move,
+and the stack still pays again for dense visual or prefix computation. We study
+that waste as training-free anti-recomputation.
 
-That question only makes sense if the accounting is honest. We separate two
-local speed regimes and one imported deployment-scale regime: first-pass visual
-work on fresh videos, after-ingest follow-up questions about the same video,
-and streaming workloads that revisit nearly the same visual state. These are
-not interchangeable. \emph{C-CEILING} formalizes the stage-share bound: a
-component win becomes an end-to-end win only in proportion to the wall-clock
-share it actually accelerates, explaining why a pooled n=60 composition attempt
-is a ceiling-matched null rather than a multiplier.
+The largest local result appears after the video has already been ingested. On
+frozen Qwen2.5-VL-7B-Instruct-4bit, adaptive same-video follow-up reuse repairs
+20-frame short, medium, and long VideoMME slices plus a 32-frame short slice
+with no observed paired choice or correctness drift on 93 paired queries,
+including 62 repaired follow-ups. It reaches 15.28--35.97$\times$ median speedup when cold all-query
+latency is compared with repaired follow-up latency, and 14.90--35.92$\times$
+when comparing cold follow-ups to repaired follow-ups. This is not first-query
+speedup: the first query still pays full freight, and the tested sessions have
+two follow-up questions per video.
 
-The largest local gains appear after ingest. \emph{C-PERSIST} shows that
-same-video follow-ups can reuse the already-paid prompt state, but also that
-unrepaired reuse eventually enters a cache basin. Selective re-prefill refreshes
-a small newest-frame visual tail and restores the tested follow-up contract:
-fixed \(K=1\) shows no observed paired answer drift on 93 paired queries across
-short, medium, long, and deeper VideoMME slices while retaining
-9.48--20.37$\times$ same-class follow-up speedups, measured as cold follow-up
-latency divided by repaired-session follow-up latency. A short-slice
-state-aware adaptive cell reaches 24.76$\times$ same-class speedup with 0/21
-paired drift.
+The central question is where a runtime must buy fresh visual evidence over
+time, and where cached state is enough to remain on its regime-specific
+quality--compute frontier. That question only makes sense if the accounting is
+honest. We evaluate frozen
+VLMs on local MLX runs over VideoMME, MVBench, and TOMATO, plus a separate
+26B-class streaming protocol, and we keep the regimes separate: first-pass
+visual work on fresh videos, after-ingest follow-up questions about the same
+video, and streaming workloads that revisit nearly the same visual state. They
+are not interchangeable. \emph{Stage-share ceiling (C-CEILING)} formalizes the
+bound: a component win becomes an end-to-end win only in proportion to the
+wall-clock share it actually accelerates. This is why the n=60 composition
+audit is a ceiling-matched null rather than a multiplier.
 
-Fresh-video pruning is smaller but measured. \emph{C-VISION} gives
-1.113--1.407$\times$ first-pass wall-clock gains on Gemma 4-E4B-4bit across
-clean and advisory holdout cells, and a matched Qwen point lands at
-1.044$\times$ observed versus 1.043$\times$ predicted. The routing audits
-explain why those numbers are not the whole story: fresh-compute placement
-cannot be reduced to novelty magnitude alone, aggregate accuracy can hide
-answer-identity drift, and semantic substitution is not a measured sparse
-backend.
+\emph{Persistent follow-up reuse (C-PERSIST)} is the name we give to this
+after-ingest regime. It reuses the already-paid prompt/KV state for later
+questions about the same video. Unrepaired reuse eventually enters a cache
+basin, a failure region where reused state drives repeated answer drift or
+pathological outputs. Selective re-prefill refreshes a small newest-frame
+visual tail and restores the tested follow-up contract. Fixed \(K=1\) remains
+the no-coordination baseline at 9.48--20.37$\times$ same-class speedup with no
+observed paired drift on the same 93-query envelope.
 
-A separate 26B streaming protocol reports the same anti-recomputation structure
-in operational regimes, including 13$\times$ fewer ViT calls,
+Fresh-video pruning is smaller but measured. \emph{First-pass vision pruning
+(C-VISION)} reduces work inside the VLM vision tower, the visual encoder that
+turns frames into model tokens, during the first query on a fresh video. It
+gives 1.113--1.407$\times$ first-pass wall-clock gains on
+Gemma 4-E4B-4bit across clean and advisory holdout cells, and a matched Qwen
+point lands at 1.044$\times$ observed versus 1.043$\times$ predicted. The
+routing audits explain why those numbers are not the whole story:
+fresh-compute placement cannot be reduced to novelty magnitude alone,
+aggregate accuracy can hide answer-identity drift, and semantic substitution is
+not a measured sparse backend.
+
+A separate 26B scale-out streaming protocol reports the same anti-recomputation
+structure in operational regimes, including 13$\times$ fewer ViT calls,
 \mbox{$\sim$50$\times$} dominant measured subpipeline reduction, and
-4.2--4.5$\times$ end-to-end speedups. Those numbers are imported
-deployment-scale evidence from a different protocol, not factors to multiply
-with the local cells.
+4.2--4.5$\times$ end-to-end speedups. Those numbers are evidence from a
+different protocol, not factors to multiply with the local cells; the next
+scale-out step is to rerun them with artifact-compatible gates and matched
+baselines.
 
 The broader implication is not that pixel differencing is the final interface.
 The experiments are a requirements probe for future VLM-native media streams:

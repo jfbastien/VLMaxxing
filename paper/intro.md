@@ -65,7 +65,7 @@ vision-axis analog,
 > E2E ≤ 1 / (1 − V_share × V_red),
 
 governs C-VISION (below) and matches observed speedups within a few
-percentage points across the clean dev cells plus the pooled H-stack null.
+percentage points across the clean dev cells plus the n=60 composition audit.
 
 This is the paper's analytical contribution. It is also a diagnostic:
 when a reported end-to-end gain exceeds the
@@ -118,7 +118,7 @@ wider and should be described more softly than “benchmark-invariant,” across
 - TOMATO 8-frame dev (n = 30)
 
 with the vision-axis ceiling predicting observed E2E within 2.7 pp on
-all four, plus a pooled H-stack null at 1.042× where we stack
+all four, plus the n=60 composition audit at 1.042× where we stack
 novelty-pruning on top and remain ceiling-matched. Dev-n=30 headline cells are
 
 | Benchmark        | E2E speedup | V_red observed | V_share (dense) |
@@ -161,7 +161,7 @@ current 3-query protocol because dense Q0 alone already exceeds the
 target total wall-clock budget. The paper therefore treats the three contributions as
 **separately-auditable safety envelopes**, not a stack whose union is
 claimed without evidence. Our 1.042 × pooled
-H_stack cell (n = 60) is ceiling-matched, a preregistered NULL on
+n=60 composition-audit cell is ceiling-matched, a preregistered NULL on
 "stacking beats the ceiling" and a positive on the ceiling law itself.
 The paper reports composed numbers against their ceiling bound, never
 as a bare product of independent multipliers.
@@ -281,8 +281,8 @@ the positives:
   4-E4B-4bit VideoMME 8 f dev (e2e = 1.00 ×, gen = 1.01 ×). The 1.51R
   numbers in the body come from `kr=0.10` with a different aggregate-
   accuracy story.
-- **EXP10 n = 60 H_stack composition: preregistered NULL** on
-  "stacking beats the ceiling." The 1.042 × pooled result is
+- **EXP10 n = 60 composition audit: preregistered NULL** on
+  "stacking beats the ceiling." The 1.042 × result is
   ceiling-matched, which
   is a positive result on the ceiling law and a null on stack-beats-
   ceiling.
