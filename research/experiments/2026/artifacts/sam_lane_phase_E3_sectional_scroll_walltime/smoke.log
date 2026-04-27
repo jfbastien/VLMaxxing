@@ -1,0 +1,43 @@
+Decoding /Users/sam/repos/codec-through/research/2026-04-26-e3-sectional-scroll-walltime/recordings/twitter_1080p_30.mp4 with MVs…
+  1933 frames @ 30.0fps (64.4s)
+  per-frame decode mean=9.44ms p90=15.83ms; mv_grid mean=3.90ms p90=4.28ms
+Loading Gemma 4 26B…
+  Loading google/gemma-4-26B-A4B-it (thinking=False)...
+Fetching 9 files:   0%|          | 0/9 [00:00<?, ?it/s]Fetching 9 files: 100%|██████████| 9/9 [00:00<00:00, 33112.93it/s]
+  Loaded in 5.7s
+  T0 = frame 60 (t=2.0s), feat shape (256, 2816) (canvas 18.2ms, ViT 353.8ms)
+
+dt    mv_sum    K_global  K_piece   cos_nv   cos_gl   cos_pw   j_f  j_nv j_gl j_pw 
+--------------------------------------------------------------------------------------------------------------
+ 1.0s     16.2  0         1          0.6784   0.6784   0.7482  Y   N   N   N     
+
+================================================================================
+AGGREGATE (1 queries)
+================================================================================
+  Judge YES rate:
+    fresh     :   100%
+    naive     :     0%
+    global    :     0%
+    piecewise :     0%
+
+  Mean cos vs fresh:
+    naive     : 0.678
+    global    : 0.678
+    piecewise : 0.748
+
+  Piecewise K distribution:
+    K=1: 1 queries
+
+  Piecewise mean fresh-mask tokens per query: 32.0 / 256
+  Fresh rebuilds: 0 (at threshold=500.0)
+  Dilation rings: 1
+
+  WALL-CLOCK SUMMARY:
+    Total pipeline: 7.6s (1 oracle ViT fires, 0 piecewise rebuild ViT fires)
+    Per-query oracle    median: 2048ms p90: 2048ms
+    Per-query piecewise median: 1382ms p90: 1382ms
+    Speedup (median):  1.48×
+    Cache reuse mean:  87.5%
+    Stage medians (ms): decode=77.4 mv_grid=117.2 region_detect=29.22 shift=0.29 vit=176 llm_fresh=1782 llm_piece=1136
+
+→ wrote /tmp/smoke_twitter_v7.json

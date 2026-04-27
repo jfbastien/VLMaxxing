@@ -1,0 +1,233 @@
+{
+  "model_id": "google/gemma-4-26B-A4B-it",
+  "python_version": "3.14.3 (main, Feb  3 2026, 15:32:20) [Clang 17.0.0 (clang-1700.6.3.2)]",
+  "platform_uname": {
+    "system": "Darwin",
+    "node": "primary.local",
+    "release": "25.4.0",
+    "version": "Darwin Kernel Version 25.4.0: Thu Mar 19 19:33:50 PDT 2026; root:xnu-12377.101.15~1/RELEASE_ARM64_T6050",
+    "machine": "arm64",
+    "processor": "arm"
+  },
+  "packages": {
+    "mlx": "0.31.1",
+    "mlx-lm": "0.31.2",
+    "mlx-vlm": "0.4.4",
+    "transformers": "5.5.4",
+    "huggingface-hub": "1.10.2",
+    "safetensors": "0.7.0",
+    "numpy": "2.4.4",
+    "pillow": "12.2.0"
+  },
+  "mlx_vlm_commit": {
+    "git_root": "/opt/homebrew",
+    "sha": "299ab19496df6fc76e8356c0b87100ff91ef827e"
+  },
+  "mlx_lm_commit": {
+    "git_root": "/opt/homebrew",
+    "sha": "299ab19496df6fc76e8356c0b87100ff91ef827e"
+  },
+  "hardware": {
+    "system_profiler": "Hardware:\n\n    Hardware Overview:\n\n      Model Name: MacBook Pro\n      Model Identifier: Mac17,7\n      Model Number: Z1MN00180LL/A\n      Chip: Apple M5 Max\n      Total Number of Cores: 18 (6 Super and 12 Performance)\n      Memory: 128 GB\n      System Firmware Version: 18000.101.7\n      OS Loader Version: 18000.101.7\n      Serial Number (system): J7XTDRH2C5\n      Hardware UUID: 9FF4BF4D-9490-5F0F-A509-9F677CF0F732\n      Provisioning UDID: 00006050-000561193CD1401C\n      Activation Lock Status: Enabled",
+    "machdep_cpu_brand": "Apple M5 Max",
+    "uname_a": "Darwin primary.local 25.4.0 Darwin Kernel Version 25.4.0: Thu Mar 19 19:33:50 PDT 2026; root:xnu-12377.101.15~1/RELEASE_ARM64_T6050 arm64"
+  },
+  "thermal_state": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded",
+  "power_mode": "System-wide power settings:\nCurrently in use:\n standby              1\n Sleep On Power Button 1\n hibernatefile        /var/vm/sleepimage\n powernap             1\n networkoversleep     0\n disksleep            10\n sleep                1 (sleep prevented by runningboardd, runningboardd, caffeinate, dasd, dasd)\n hibernatemode        3",
+  "cwd_git_sha": "4c7fd19a886b2bb0db01907f0601fdc331f17da2",
+  "cwd_git_status_short": "M .fleet/fleet.db\n M __reviewer___result.json\n M experiments/exp_videomme_streaming.py\n ? experiments/tomato-bench\n M fleet-kb/data/knowledge.db\n M review_result.json\n?? adjacent-synthesizer_result.json\n?? affine-estimator-researcher_result.json\n?? data/\n?? diagrams/pruned/\n?? docs_h264_extraction_design.md\n?? empirical-writer_result.json\n?? experiments/exp_accumulate_snap.py\n?? experiments/exp_inverse_stacked.py\n?? experiments/exp_proactive_output_pilot.py\n?? experiments/exp_s0_provenance.py\n?? experiments/exp_stacked_pruning.py\n?? experiments/exp_streaming_bench.py\n?? experiments/exp_streamingbench_mvadaptive.py\n?? experiments/exp_streamingbench_pilot.py\n?? experiments/exp_streamingbench_scratchpad.py\n?? experiments/exp_streamingbench_scratchpad_v2.py\n?? experiments/exp_streamingbench_scratchpad_v3.py\n?? experiments/exp_visual_pruning.py\n?? experiments/inverse_stacked_32f.log\n?? experiments/live_stream_demo.log\n?? experiments/live_stream_demo_fixed.log\n?? experiments/live_stream_demo_motion.log\n?? experiments/live_stream_demo_parallel.log\n?? experiments/mv3_scroll_staleness.json\n?? experiments/mv3b_inflection_staleness.json\n?? experiments/mv4_asymmetric_results.json\n?? experiments/mv4_gate_results.json\n?? experiments/mv_adaptive_n15.json\n?? experiments/mv_cache_staleness_n12.json\n?? experiments/mv_energy_distribution.json\n?? experiments/mv_hybrid_n15.json\n?? experiments/mv_inflection_static.json\n?? experiments/mv_inflection_v2.json\n?? experiments/mv_inflection_v3.json",
+  "hf_config": {
+    "path": "/Users/sam/.cache/huggingface/hub/models--google--gemma-4-26B-A4B-it/snapshots/7d4c97e54145f8ffd1a4dd1b4986a5015a517842/config.json",
+    "model_type": "gemma4",
+    "topology": {
+      "model_type": "gemma4",
+      "image_token_id": 258880,
+      "video_token_id": 258884,
+      "vision_soft_tokens_per_image": 280,
+      "text_config": {
+        "num_hidden_layers": 30,
+        "sliding_window": 1024,
+        "attention_chunk_size": null,
+        "attn_window_size": null,
+        "rope_parameters": {
+          "full_attention": {
+            "partial_rotary_factor": 0.25,
+            "rope_theta": 1000000.0,
+            "rope_type": "proportional"
+          },
+          "sliding_attention": {
+            "rope_theta": 10000.0,
+            "rope_type": "default"
+          }
+        },
+        "rope_local_base_freq": null,
+        "rope_global_base_freq": null,
+        "layer_types": [
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "full_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "full_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "full_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "full_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "full_attention"
+        ],
+        "n_sliding_layers": 25,
+        "n_full_layers": 5,
+        "sliding_layer_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          6,
+          7,
+          8,
+          9,
+          10,
+          12,
+          13,
+          14,
+          15,
+          16,
+          18,
+          19,
+          20,
+          21,
+          22,
+          24,
+          25,
+          26,
+          27,
+          28
+        ],
+        "full_layer_indices": [
+          5,
+          11,
+          17,
+          23,
+          29
+        ],
+        "max_position_embeddings": 262144,
+        "use_bidirectional_attention": "vision",
+        "enable_moe_block": true,
+        "num_experts": 128,
+        "top_k_experts": 8,
+        "dtype": "bfloat16"
+      },
+      "vision_config": {
+        "num_hidden_layers": 27,
+        "hidden_size": 1152,
+        "patch_size": 16,
+        "pooling_kernel_size": 3,
+        "max_position_embeddings": 131072,
+        "rope_parameters": {
+          "rope_theta": 100.0,
+          "rope_type": "default"
+        }
+      }
+    },
+    "quantization": {
+      "note": "no top-level 'quantization' field in HF config; weights are likely BF16 native"
+    },
+    "dtype_top": "bfloat16"
+  },
+  "safetensors_inspection": {
+    "n_safetensor_files": 2,
+    "files_sample": [
+      "model-00001-of-00002.safetensors",
+      "model-00002-of-00002.safetensors"
+    ],
+    "sample_keys": [
+      "model.embed_vision.embedding_projection.weight",
+      "model.language_model.embed_tokens.weight",
+      "model.language_model.layers.0.experts.down_proj",
+      "model.language_model.layers.0.experts.gate_up_proj",
+      "model.language_model.layers.0.input_layernorm.weight",
+      "model.language_model.layers.0.layer_scalar",
+      "model.language_model.layers.0.mlp.down_proj.weight",
+      "model.language_model.layers.0.mlp.gate_proj.weight",
+      "model.language_model.layers.0.mlp.up_proj.weight",
+      "model.language_model.layers.0.post_attention_layernorm.weight",
+      "model.language_model.layers.0.post_feedforward_layernorm.weight",
+      "model.language_model.layers.0.post_feedforward_layernorm_1.weight",
+      "model.language_model.layers.0.post_feedforward_layernorm_2.weight",
+      "model.language_model.layers.0.pre_feedforward_layernorm.weight",
+      "model.language_model.layers.0.pre_feedforward_layernorm_2.weight",
+      "model.language_model.layers.0.router.per_expert_scale",
+      "model.language_model.layers.0.router.proj.weight",
+      "model.language_model.layers.0.router.scale",
+      "model.language_model.layers.0.self_attn.k_norm.weight",
+      "model.language_model.layers.0.self_attn.k_proj.weight"
+    ],
+    "sample_dtypes": {
+      "model.embed_vision.embedding_projection.weight": {
+        "dtype": "BF16",
+        "shape": [
+          2816,
+          1152
+        ]
+      },
+      "model.language_model.embed_tokens.weight": {
+        "dtype": "BF16",
+        "shape": [
+          262144,
+          2816
+        ]
+      },
+      "model.language_model.layers.0.experts.down_proj": {
+        "dtype": "BF16",
+        "shape": [
+          128,
+          2816,
+          704
+        ]
+      },
+      "model.language_model.layers.0.experts.gate_up_proj": {
+        "dtype": "BF16",
+        "shape": [
+          128,
+          1408,
+          2816
+        ]
+      },
+      "model.language_model.layers.0.input_layernorm.weight": {
+        "dtype": "BF16",
+        "shape": [
+          2816
+        ]
+      },
+      "model.language_model.layers.0.layer_scalar": {
+        "dtype": "BF16",
+        "shape": [
+          1
+        ]
+      }
+    },
+    "safetensors_metadata": {
+      "format": "pt"
+    }
+  }
+}

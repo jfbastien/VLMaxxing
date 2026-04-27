@@ -1,0 +1,51 @@
+Decoding /Users/sam/repos/codec-through/research/2026-04-26-e3-sectional-scroll-walltime/recordings/terminal_1080p_30.mp4 with MVs…
+  1320 frames @ 30.0fps (44.0s)
+  per-frame decode mean=9.42ms p90=17.37ms; mv_grid mean=4.07ms p90=4.43ms
+Loading Gemma 4 26B…
+  Loading google/gemma-4-26B-A4B-it (thinking=False)...
+Fetching 9 files:   0%|          | 0/9 [00:00<?, ?it/s]Fetching 9 files: 100%|██████████| 9/9 [00:00<00:00, 118706.72it/s]
+  Loaded in 4.9s
+  T0 = frame 60 (t=2.0s), feat shape (256, 2816) (canvas 16.0ms, ViT 366.2ms)
+
+dt    mv_sum    K_global  K_piece   cos_nv   cos_gl   cos_pw   j_f  j_nv j_gl j_pw 
+--------------------------------------------------------------------------------------------------------------
+ 1.0s     21.6  1         1          0.8369   0.4080   0.8886  Y   Y   Y   Y     
+ 2.0s     37.5  1         1          0.8188   0.4704   0.8730  Y   Y   N   Y     
+ 3.0s     61.5  1         1          0.8398   0.5553   0.8828  Y   Y   Y   Y     
+ 4.0s     83.0  1         1          0.8410   0.6821   1.0000  N   Y   Y   N    R
+ 5.0s     99.9  1         0          0.8533   0.6786   0.8544  Y   Y   N   N     
+ 6.0s    117.8  1         0          0.8299   0.7750   0.8183  Y   Y   Y   N     
+ 7.0s    133.4  1         1          0.8193   0.8693   0.8435  Y   Y   Y   N     
+ 8.0s    149.0  1         1          0.8065   0.8707   0.8221  Y   Y   N   N     
+
+================================================================================
+AGGREGATE (8 queries)
+================================================================================
+  Judge YES rate:
+    fresh     :    88%
+    naive     :   100%
+    global    :    62%
+    piecewise :    38%
+
+  Mean cos vs fresh:
+    naive     : 0.831
+    global    : 0.664
+    piecewise : 0.873
+
+  Piecewise K distribution:
+    K=0: 2 queries
+    K=1: 6 queries
+
+  Piecewise mean fresh-mask tokens per query: 21.0 / 256
+  Fresh rebuilds: 1 (at threshold=500.0)
+  Dilation rings: 1
+
+  WALL-CLOCK SUMMARY:
+    Total pipeline: 123.2s (8 oracle ViT fires, 1 piecewise rebuild ViT fires)
+    Per-query oracle    median: 3374ms p90: 3664ms
+    Per-query piecewise median: 3080ms p90: 3375ms
+    Speedup (median):  1.10×
+    Cache reuse mean:  80.5%
+    Stage medians (ms): decode=129.3 mv_grid=120.0 region_detect=2.92 shift=0.12 vit=539 llm_fresh=2622 llm_piece=2662
+
+→ wrote /Users/sam/repos/codec-through/research/2026-04-26-e3-sectional-scroll-walltime/terminal_v7.json
