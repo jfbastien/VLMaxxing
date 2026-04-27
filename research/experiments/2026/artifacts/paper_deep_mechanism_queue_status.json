@@ -286,6 +286,130 @@
         "pass_feature_attribution_report": true
       },
       "auto_commit": "committed"
+    },
+    {
+      "phase": "1.66",
+      "runtime_estimate": "~1 min (analysis-only)",
+      "rationale": "Aggregate peak memory/RSS observations from landed 1.30, 1.55, and Track B artifacts so the paper can explain memory budgets and RSS-gate misses as a measured envelope.",
+      "ready": true,
+      "timeout_seconds": 600,
+      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_66_memory_characterization",
+      "command": [
+        "bash",
+        "/Users/jfb/s/codec-through/scripts/run_phase1_66_memory_characterization.sh"
+      ],
+      "status": "completed",
+      "gate": {
+        "n_cells": 43,
+        "max_observed_peak_gb": 13.614139964,
+        "n_cells_over_9gb": 20,
+        "n_cells_over_10gb": 16,
+        "by_family": {
+          "C-PERSIST/1.55": {
+            "max_peak_observed_gb": 13.614139964,
+            "n_cells": 33,
+            "n_cells_over_10gb": 16,
+            "n_cells_over_9gb": 20
+          },
+          "C-VISION/1.30": {
+            "max_peak_observed_gb": 6.665520695,
+            "n_cells": 10,
+            "n_cells_over_10gb": 0,
+            "n_cells_over_9gb": 0
+          }
+        },
+        "families_present": [
+          "C-PERSIST/1.55",
+          "C-VISION/1.30"
+        ],
+        "missing_required_families": [
+          "Track-B/1.63"
+        ],
+        "high_watermark_cells": [
+          {
+            "final_rss_gb": null,
+            "frame_count": null,
+            "max_peak_memory_gb": 13.614139964,
+            "mean_peak_memory_gb": 13.447671391999998,
+            "model": null,
+            "n_rows": 21,
+            "over_10gb": true,
+            "over_9gb": true,
+            "peak_observed_gb": 13.614139964,
+            "peak_rss_gb": null,
+            "phase_family": "C-PERSIST/1.55",
+            "phase_id": "phase1_55F_32f_short_adaptive_replication",
+            "source_path": "research/experiments/2026/artifacts/phase1_55F_32f_short_adaptive_replication/baseline_k1_n7.jsonl",
+            "source_type": "jsonl"
+          },
+          {
+            "final_rss_gb": null,
+            "frame_count": null,
+            "max_peak_memory_gb": 13.614139964,
+            "mean_peak_memory_gb": 13.200635202857143,
+            "model": null,
+            "n_rows": 21,
+            "over_10gb": true,
+            "over_9gb": true,
+            "peak_observed_gb": 13.614139964,
+            "peak_rss_gb": null,
+            "phase_family": "C-PERSIST/1.55",
+            "phase_id": "phase1_55F_32f_short_adaptive_replication",
+            "source_path": "research/experiments/2026/artifacts/phase1_55F_32f_short_adaptive_replication/session_k1_n7.jsonl",
+            "source_type": "jsonl"
+          },
+          {
+            "final_rss_gb": null,
+            "frame_count": null,
+            "max_peak_memory_gb": 13.614139964,
+            "mean_peak_memory_gb": 13.473225750857141,
+            "model": null,
+            "n_rows": 21,
+            "over_10gb": true,
+            "over_9gb": true,
+            "peak_observed_gb": 13.614139964,
+            "peak_rss_gb": null,
+            "phase_family": "C-PERSIST/1.55",
+            "phase_id": "phase1_55H_k1_32f_short_probe",
+            "source_path": "research/experiments/2026/artifacts/phase1_55H_k1_32f_short_probe/baseline_k1_n7.jsonl",
+            "source_type": "jsonl"
+          },
+          {
+            "final_rss_gb": null,
+            "frame_count": null,
+            "max_peak_memory_gb": 13.614139964,
+            "mean_peak_memory_gb": 13.226189561714286,
+            "model": null,
+            "n_rows": 21,
+            "over_10gb": true,
+            "over_9gb": true,
+            "peak_observed_gb": 13.614139964,
+            "peak_rss_gb": null,
+            "phase_family": "C-PERSIST/1.55",
+            "phase_id": "phase1_55H_k1_32f_short_probe",
+            "source_path": "research/experiments/2026/artifacts/phase1_55H_k1_32f_short_probe/session_k1_n7.jsonl",
+            "source_type": "jsonl"
+          },
+          {
+            "final_rss_gb": null,
+            "frame_count": null,
+            "max_peak_memory_gb": 10.628532284,
+            "mean_peak_memory_gb": 10.529516672,
+            "model": null,
+            "n_rows": 21,
+            "over_10gb": true,
+            "over_9gb": true,
+            "peak_observed_gb": 10.628532284,
+            "peak_rss_gb": null,
+            "phase_family": "C-PERSIST/1.55",
+            "phase_id": "phase1_55I_k1_long_replication",
+            "source_path": "research/experiments/2026/artifacts/phase1_55I_k1_long_replication/baseline_k1_n7.jsonl",
+            "source_type": "jsonl"
+          }
+        ],
+        "pass_memory_characterized": false
+      },
+      "auto_commit": "committed"
     }
   ],
   "updated_at": "2026-04-27T04:27:12+00:00"
