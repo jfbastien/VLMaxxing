@@ -21,8 +21,10 @@ FRAME_COUNTS="${PHASE1_63E_FRAME_COUNTS:-16 20 32}"
 mkdir -p "$OUT_DIR"
 
 SUMMARY_ARGS=()
-if [[ -f "$REFERENCE_8F" ]]; then
+REFERENCE_ARGS=()
+if [[ " $FRAME_COUNTS " != *" 8 "* && -f "$REFERENCE_8F" ]]; then
   SUMMARY_ARGS+=(--cell 8 "$REFERENCE_8F")
+  REFERENCE_ARGS+=(--reference-frame-count 8)
 fi
 
 for FRAME_COUNT in $FRAME_COUNTS; do
@@ -84,5 +86,5 @@ done
 
 "$PY" scripts/summarize_phase1_63_track_b_scaling.py \
   "${SUMMARY_ARGS[@]}" \
-  --reference-frame-count 8 \
+  "${REFERENCE_ARGS[@]}" \
   --output "$OUT_DIR/scaling_summary.json"

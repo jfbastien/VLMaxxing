@@ -37,6 +37,9 @@ nohup ./.venv/bin/python scripts/run_paper_deep_mechanism_queue.py --auto-commit
 Optional overrides:
 
 - `PHASE1_63E_FRAME_COUNTS="16 20 32"` controls Qwen frame-budget cells.
+  If the 8f 1.63 summary is already present, it is included as a non-veto
+  reference. If 8f has not run and should be part of this batch, set
+  `PHASE1_63E_FRAME_COUNTS="8 16 20 32"` so it is computed as a normal cell.
 - `PHASE1_65_MAX_ROWS=0` runs the full logit-margin source set instead of the
   default 180-row balanced scout.
 
