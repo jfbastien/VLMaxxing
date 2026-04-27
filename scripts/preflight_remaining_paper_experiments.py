@@ -47,6 +47,33 @@ PHASE130_LONG_COLD_REFERENCE_DIR = Path(
 PHASE130W_REFERENCE_DIR = Path(
     "research/experiments/2026/artifacts/phase1_30W_q0_dense_followup_pruned_full"
 )
+PHASE165_REQUIRED_SOURCES = (
+    Path(
+        "research/experiments/2026/artifacts/phase1_55F_q3_post_q2_state/paired_queries_k1_n7.jsonl"
+    ),
+    Path(
+        "research/experiments/2026/artifacts/"
+        "phase1_55F_medium_adaptive_replication/paired_queries_k1_n10.jsonl"
+    ),
+    Path(
+        "research/experiments/2026/artifacts/"
+        "phase1_55F_long_adaptive_replication/paired_queries_k1_n7.jsonl"
+    ),
+    Path(
+        "research/experiments/2026/artifacts/"
+        "phase1_55F_32f_short_adaptive_replication/paired_queries_k1_n7.jsonl"
+    ),
+    Path(
+        "research/experiments/2026/artifacts/"
+        "phase1_55E_adaptive_reprefill_q2_k1_q3_k0/paired_queries_k1_n7.jsonl"
+    ),
+    Path(
+        "research/experiments/2026/artifacts/phase1_30AD_instrumented_w_rerun/paired_queries.jsonl"
+    ),
+    Path(
+        "research/experiments/2026/artifacts/phase1_30AC_cache_invalidated_followups/paired_queries.jsonl"
+    ),
+)
 
 
 def _videomme_parquet_path() -> Path:
@@ -229,6 +256,7 @@ def main() -> int:
         PHASE130W_REFERENCE_DIR.joinpath("cold_dense.jsonl").exists()
         and PHASE130W_REFERENCE_DIR.joinpath("cold_dense_summary.json").exists()
     )
+    phase165_sources_ready = all(path.exists() for path in PHASE165_REQUIRED_SOURCES)
     lowfps_union_session_count = _unique_session_count_for_manifests(
         [
             Path("research/benchmark_manifests/videomme_dev_v1.toml"),
@@ -342,6 +370,22 @@ def main() -> int:
         "1.63": _status(
             qwen_4bit_ready and manifests["videomme_combined_v1_n60"]["ready"],
             detail="Track B compact Qwen ViT execution, dense vs L2 kr0.50 sparse",
+        ),
+        "1.63E": _status(
+            qwen_4bit_ready and manifests["videomme_combined_v1_n60"]["ready"],
+            detail="Track B compact Qwen ViT execution across 16f/20f/32f frame budgets",
+        ),
+        "1.63G": _status(
+            gemma_4bit_ready and manifests["videomme_combined_v1_n60"]["ready"],
+            detail="Track B compact Gemma ViT execution at 8f on VideoMME n=60",
+        ),
+        "1.65": _status(
+            qwen_4bit_ready and phase165_sources_ready,
+            detail={
+                "phase": "dense logit-margin failure-predictor scout",
+                "required_sources_ready": phase165_sources_ready,
+                "required_sources": [path.as_posix() for path in PHASE165_REQUIRED_SOURCES],
+            },
         ),
         "1.58": _status(
             qwen_4bit_ready and qwen_bf16_ready and args.max_safe_rss_gb >= 14.0,

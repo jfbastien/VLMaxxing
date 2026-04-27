@@ -198,6 +198,15 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--paired-items", type=Path, default=None)
     parser.add_argument("--expected-items", type=int, default=60)
+    parser.add_argument(
+        "--sparse-execution-scope",
+        default=(
+            "Qwen compact post-layer vision execution: dense patch embed and early "
+            "vision blocks through L, compact execution for remaining vision blocks, "
+            "scatter before merger so LLM prompt geometry is unchanged."
+        ),
+        help="Human-readable scope statement persisted in the summary.",
+    )
     args = parser.parse_args()
 
     dense_rows = _load_jsonl(args.dense_jsonl)
@@ -212,11 +221,7 @@ def main() -> int:
         "sparse_jsonl": args.sparse_jsonl.as_posix(),
         "dense_summary": args.dense_summary.as_posix(),
         "sparse_summary": args.sparse_summary.as_posix(),
-        "sparse_execution_scope": (
-            "Qwen compact post-layer vision execution: dense patch embed and early "
-            "vision blocks through L, compact execution for remaining vision blocks, "
-            "scatter before merger so LLM prompt geometry is unchanged."
-        ),
+        "sparse_execution_scope": args.sparse_execution_scope,
         "dense_manifest": dense_summary.get("manifest"),
         "sparse_manifest": sparse_summary.get("manifest"),
         "frame_count": sparse_summary.get("frame_count"),

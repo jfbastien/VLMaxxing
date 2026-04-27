@@ -1117,6 +1117,50 @@ authoritative in the per-phase notes under
   prereg_outcome: n/a (analysis synthesis, not a new benchmark run)
   runtime_estimate: <1 min CPU-only
   notes: `scripts/build_per_item_drift_summary.py` builds figure-ready JSON from landed artifacts only. The goal is to make the paper's explanatory story concrete: aggregate metrics alone are incomplete, and the repo now has three distinct drift phenotypes worth showing in one place (1.30 V-only Q0 flips, 1.42 Gemma aggregate-preserved identity drift, 1.55A persistent-KV pathological attractors).
+
+- phase_id: 1.63
+  status: preregistered / ready-to-run
+  authoritative_note: research/experiments/2026/2026-04-27-phase-1_63-track-b-sparse-vit-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: pending; Qwen compact post-layer L=2 kr=0.50 Track B sparse-ViT at 8f
+  supersedes: []
+  paper_relevance: primary (first measured real skipped ViT work for C-VISION; LM prefill remains dense)
+  prereg_outcome: pending
+  runtime_estimate: ~2.8-3.2h
+  notes: Track B scope is vision-tower-only. It hard-gates on both real vision-stage reduction and positive end-to-end speedup so a dense-stage-share null cannot be accidentally promoted as a headline.
+
+- phase_id: 1.63E
+  status: preregistered / ready-to-run
+  authoritative_note: research/experiments/2026/2026-04-27-phase-1_63E-track-b-frame-scaling-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: pending; Qwen compact post-layer L=2 kr=0.50 Track B sparse-ViT at 16f/20f/32f
+  supersedes: []
+  paper_relevance: primary (tests whether C-CEILING predicts measured Track B wall-clock across frame budgets)
+  prereg_outcome: pending
+  runtime_estimate: ~6-8h
+  notes: Summarizes the 8f 1.63 reference when present but adjudicates the new 16f/20f/32f cells independently.
+
+- phase_id: 1.63G
+  status: preregistered / ready-to-run
+  authoritative_note: research/experiments/2026/2026-04-27-phase-1_63G-gemma-track-b-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: pending; Gemma compact post-layer L=2 kr=0.50 Track B sparse-ViT at 8f
+  supersedes: []
+  paper_relevance: primary diagnostic (tests architecture generality of Track B sparse-ViT and the ceiling model)
+  prereg_outcome: pending
+  runtime_estimate: ~2.5-3.5h
+  notes: Uses a dedicated Gemma arm runner because the existing Gemma novelty-pruning runner shortens prompt geometry and is not a clean vision-tower-only Track B test.
+
+- phase_id: 1.65
+  status: preregistered / ready-to-run
+  authoritative_note: research/experiments/2026/2026-04-27-phase-1_65-logit-margin-predictor-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: pending; dense Qwen answer-letter logit-margin predictor scout over stable and drifted paired artifacts
+  supersedes: []
+  paper_relevance: primary diagnostic (turns paired stability from descriptive 0/n evidence into a measurable confidence-signal test)
+  prereg_outcome: pending
+  runtime_estimate: ~3-6h at PHASE1_65_MAX_ROWS=180; longer for full scoring
+  notes: This is an oracle-feature predictor scout, not a deployed guard. Set `PHASE1_65_MAX_ROWS=0` to score all loaded paired rows after the bounded scout lands.
 ```
 
 ## Maintenance rules
