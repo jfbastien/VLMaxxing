@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import tomllib
 from pathlib import Path
 from typing import Any
 
@@ -96,6 +97,26 @@ def _video_ready(rows: list[dict[str, Any]], video_id: str) -> tuple[bool, str]:
 
 def _status(ok: bool, *, detail: Any) -> dict[str, Any]:
     return {"ready": ok, "detail": detail}
+
+
+def _load_manifest_items(path: Path) -> list[str]:
+    payload = tomllib.loads(path.read_text())
+    return [str(item_id) for item_id in payload["item_ids"]]
+
+
+def _video_id_from_item_id(item_id: str) -> str:
+    parts = item_id.split(":")
+    if len(parts) != 3:
+        raise ValueError(f"unexpected VideoMME item_id format: {item_id!r}")
+    return parts[2].split("-")[0]
+
+
+def _unique_session_count_for_manifests(paths: list[Path]) -> int:
+    video_ids: set[str] = set()
+    for path in paths:
+        for item_id in _load_manifest_items(path):
+            video_ids.add(_video_id_from_item_id(item_id))
+    return len(video_ids)
 
 
 def main() -> int:
@@ -208,6 +229,12 @@ def main() -> int:
         PHASE130W_REFERENCE_DIR.joinpath("cold_dense.jsonl").exists()
         and PHASE130W_REFERENCE_DIR.joinpath("cold_dense_summary.json").exists()
     )
+    lowfps_union_session_count = _unique_session_count_for_manifests(
+        [
+            Path("research/benchmark_manifests/videomme_dev_v1.toml"),
+            Path("research/benchmark_manifests/videomme_holdout_v1.toml"),
+        ]
+    )
 
     payload["experiments"] = {
         "1.30Z": _status(
@@ -302,11 +329,14 @@ def main() -> int:
             qwen_4bit_ready
             and manifests["videomme_dev_v1"]["ready"]
             and manifests["videomme_holdout_v1"]["ready"]
-            and full_union_cold_ready,
+            and full_union_cold_ready
+            and lowfps_union_session_count == 57,
             detail={
                 "phase": "low-FPS dense VideoMME session baseline",
                 "reference_cold_dir": PHASE130W_REFERENCE_DIR.as_posix(),
                 "reference_cold_ready": full_union_cold_ready,
+                "unique_manifest_sessions": lowfps_union_session_count,
+                "expected_unique_manifest_sessions": 57,
             },
         ),
         "1.63": _status(

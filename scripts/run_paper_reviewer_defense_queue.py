@@ -12,7 +12,6 @@ from run_paper_closeout_queue import (
     ARTIFACT_ROOT,
     REPO_ROOT,
     QueueStep,
-    _check_clean_worktree,
     _format_float,
     _gate_phase_155,
     _load_json,
@@ -25,6 +24,51 @@ from run_paper_closeout_queue import (
 
 PREFLIGHT_JSON = ARTIFACT_ROOT / "paper_reviewer_defense_preflight.json"
 QUEUE_STATUS_JSON = ARTIFACT_ROOT / "paper_reviewer_defense_queue_status.json"
+
+
+def _allowed_startup_dirty_paths() -> tuple[Path, ...]:
+    return (
+        PREFLIGHT_JSON,
+        QUEUE_STATUS_JSON,
+        ARTIFACT_ROOT / "phase1_63_track_b_sparse_vit",
+        ARTIFACT_ROOT / "phase1_62D_lowfps_dense_videomme",
+        ARTIFACT_ROOT / "phase1_55F_16f_short_adaptive_replication",
+        ARTIFACT_ROOT / "phase1_57G_gemma_matched_duration_drift",
+    )
+
+
+def _is_allowed_startup_dirty_path(path: Path) -> bool:
+    resolved = (REPO_ROOT / path).resolve()
+    for allowed in _allowed_startup_dirty_paths():
+        allowed_resolved = allowed.resolve()
+        if resolved == allowed_resolved or allowed_resolved in resolved.parents:
+            return True
+    return False
+
+
+def _check_reviewer_queue_worktree() -> None:
+    result = subprocess.run(
+        ["git", "status", "--short"],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    disallowed: list[str] = []
+    for line in result.stdout.splitlines():
+        if not line:
+            continue
+        path_text = line[3:]
+        if " -> " in path_text:
+            _old, path_text = path_text.split(" -> ", 1)
+        if not _is_allowed_startup_dirty_path(Path(path_text)):
+            disallowed.append(line)
+    if disallowed:
+        details = "\n".join(disallowed)
+        raise SystemExit(
+            "reviewer-defense queue requires a clean source tree; only its own "
+            f"artifact/status paths may be dirty before resume.\n{details}"
+        )
 
 
 def _steps() -> list[QueueStep]:
@@ -139,7 +183,7 @@ def _gate_phase_163(artifact_dir: Path) -> dict[str, Any]:
         "actual_minus_predicted_e2e_speedup": all_summary["actual_minus_predicted_e2e_speedup"],
         "pass_fidelity": summary["pass_fidelity"],
         "pass_sparse_vision": summary["pass_sparse_vision"],
-        "pass_e2e_positive": all_summary["actual_e2e_speedup_dense_over_sparse"] >= 1.03,
+        "pass_e2e_positive": summary["pass_e2e_positive"],
         "pass_ceiling_explained": summary["pass_ceiling_explained"],
     }
 
@@ -197,6 +241,7 @@ def _commit_message(step: QueueStep, record: dict[str, Any]) -> str:
             f"{_format_float(gate.get('predicted_e2e_speedup_from_vision_only'))}x. "
             f"Fidelity={'PASS' if gate.get('pass_fidelity') else 'FAIL'}, "
             f"sparse_vision={'PASS' if gate.get('pass_sparse_vision') else 'FAIL'}, "
+            f"e2e_positive={'PASS' if gate.get('pass_e2e_positive') else 'FAIL'}, "
             f"ceiling={'PASS' if gate.get('pass_ceiling_explained') else 'FAIL'}."
         )
     if step.phase == "1.62D":
@@ -284,7 +329,7 @@ def main() -> int:
     if args.auto_commit and args.dry_run:
         raise SystemExit("--auto-commit cannot be combined with --dry-run")
     if args.auto_commit:
-        _check_clean_worktree()
+        _check_reviewer_queue_worktree()
 
     preflight = _preflight(dry_run=args.dry_run, output_path=args.preflight_json)
     experiments_ready = preflight.get("experiments", {})

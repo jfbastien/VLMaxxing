@@ -49,6 +49,16 @@ def test_gate_phase_162d_uses_4f_as_primary(tmp_path: Path) -> None:
     assert gate["secondary_pass_complete_pairing"] is False
 
 
+def test_reviewer_queue_startup_dirty_path_filter() -> None:
+    assert queue._is_allowed_startup_dirty_path(
+        Path("research/experiments/2026/artifacts/phase1_63_track_b_sparse_vit/dense_8f.jsonl")
+    )
+    assert queue._is_allowed_startup_dirty_path(
+        Path("research/experiments/2026/artifacts/paper_reviewer_defense_queue_status.json")
+    )
+    assert not queue._is_allowed_startup_dirty_path(Path("scripts/run_phase1_51V.py"))
+
+
 def test_gate_phase_163_reports_track_b_metrics(tmp_path: Path) -> None:
     artifact_dir = tmp_path
     (artifact_dir / "pair_summary.json").write_text(
@@ -59,6 +69,7 @@ def test_gate_phase_163_reports_track_b_metrics(tmp_path: Path) -> None:
                 "pass_format": True,
                 "pass_fidelity": True,
                 "pass_sparse_vision": True,
+                "pass_e2e_positive": True,
                 "pass_ceiling_explained": True,
                 "all": {
                     "accuracy_delta_sparse_minus_dense": -0.02,

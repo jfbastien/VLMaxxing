@@ -4,6 +4,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 
 def _write_jsonl(path: Path, rows: list[dict[str, object]]) -> None:
@@ -40,7 +41,11 @@ def _row(
     }
 
 
-def test_track_b_analyzer_reports_sparse_vision_and_ceiling(tmp_path: Path) -> None:
+def _run_analyzer(
+    tmp_path: Path,
+    *,
+    sparse_end_to_end_ms: float,
+) -> dict[str, Any]:
     dense_jsonl = tmp_path / "dense.jsonl"
     sparse_jsonl = tmp_path / "sparse.jsonl"
     dense_summary = tmp_path / "dense_summary.json"
@@ -79,7 +84,7 @@ def test_track_b_analyzer_reports_sparse_vision_and_ceiling(tmp_path: Path) -> N
                 correct=True,
                 choice_index=0,
                 vision_ms=20.0,
-                end_to_end_ms=80.0,
+                end_to_end_ms=sparse_end_to_end_ms,
                 kept_groups=5,
                 total_groups=10,
             ),
@@ -88,7 +93,7 @@ def test_track_b_analyzer_reports_sparse_vision_and_ceiling(tmp_path: Path) -> N
                 correct=False,
                 choice_index=1,
                 vision_ms=20.0,
-                end_to_end_ms=80.0,
+                end_to_end_ms=sparse_end_to_end_ms,
                 kept_groups=5,
                 total_groups=10,
             ),
@@ -129,7 +134,13 @@ def test_track_b_analyzer_reports_sparse_vision_and_ceiling(tmp_path: Path) -> N
         check=True,
     )
 
-    summary = json.loads(output.read_text())
+    summary: dict[str, Any] = json.loads(output.read_text())
+    assert len(paired.read_text().strip().splitlines()) == 2
+    return summary
+
+
+def test_track_b_analyzer_reports_sparse_vision_and_ceiling(tmp_path: Path) -> None:
+    summary = _run_analyzer(tmp_path, sparse_end_to_end_ms=80.0)
     all_summary = summary["all"]
     assert summary["n_paired_items"] == 2
     assert summary["pass_complete_pairing"] is True
@@ -139,4 +150,13 @@ def test_track_b_analyzer_reports_sparse_vision_and_ceiling(tmp_path: Path) -> N
     assert all_summary["actual_e2e_speedup_dense_over_sparse"] == 1.25
     assert summary["pass_fidelity"] is True
     assert summary["pass_sparse_vision"] is True
-    assert len(paired.read_text().strip().splitlines()) == 2
+    assert summary["pass_e2e_positive"] is True
+
+
+def test_track_b_analyzer_does_not_hide_e2e_boundary(tmp_path: Path) -> None:
+    summary = _run_analyzer(tmp_path, sparse_end_to_end_ms=198.0)
+    all_summary = summary["all"]
+    assert all_summary["actual_e2e_speedup_dense_over_sparse"] < 1.03
+    assert summary["pass_fidelity"] is True
+    assert summary["pass_sparse_vision"] is True
+    assert summary["pass_e2e_positive"] is False

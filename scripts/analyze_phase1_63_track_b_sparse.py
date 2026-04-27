@@ -233,6 +233,8 @@ def main() -> int:
         and summary["sparse_parse_failures"] == 0,
         "pass_fidelity": summary["accuracy_delta_sparse_minus_dense"] >= -0.05,
         "pass_sparse_vision": summary["vision_reduction"] >= 0.25,
+        "pass_e2e_positive": summary["actual_e2e_speedup_dense_over_sparse"] is not None
+        and summary["actual_e2e_speedup_dense_over_sparse"] >= 1.03,
         "pass_ceiling_explained": (
             summary["actual_minus_predicted_e2e_speedup"] is not None
             and abs(float(summary["actual_minus_predicted_e2e_speedup"])) <= 0.05

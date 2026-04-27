@@ -53,6 +53,9 @@ This experiment is diagnostic rather than winner-take-all.
   duration slices instead of a binary claim.
 - 2f is secondary. It maps the lower boundary and should not override the 4f
   interpretation unless 4f is competitive and 2f also survives.
+- Any parse failure or degenerate answer in either paired 4f/8f arm vetoes a
+  competitive verdict and is reported as `format_invalid`, regardless of the
+  accuracy delta.
 
 ## Interpretation
 

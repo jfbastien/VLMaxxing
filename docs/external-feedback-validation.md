@@ -228,6 +228,10 @@ Validated issues:
   path already performs real skipped vision-tower work after the configured
   pruning layer; what remains multi-day work is custom-kernel sparse execution
   that also shrinks prompt geometry or prefill.
+- Track B headline and boundary outcomes must be separated by an explicit
+  end-to-end positivity gate. Real vision-stage reduction alone is not enough
+  to claim a wall-clock win if decode, prefill, or sparse bookkeeping absorbs
+  the saved ViT work.
 - Low-FPS dense baselines must be interpreted as a benchmark-conditioned
   deployment baseline, not as evidence that reuse is unnecessary unless a
   matched low-FPS-plus-reuse arm is run.
@@ -242,6 +246,9 @@ Plan impact:
 
 - staged a Phase 1.63 Track B compact-Qwen-ViT run as the first reviewer-defense
   queue phase
+- added the Phase 1.63 `pass_e2e_positive` artifact gate so the analyzer
+  preserves the preregistered distinction between a headline Track B win and a
+  useful systems boundary result
 - hardened the 1.62D low-FPS analyzer so format failures cannot be called
   competitive
 - raised and documented the 1.55F-16f speedup floor and fixed the sampler/max

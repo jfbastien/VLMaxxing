@@ -112,6 +112,15 @@ Interpretation:
 
 These are real science gaps but should not be smuggled into this queue:
 
+- Track B frame-budget scaling (`1.63E` candidate): repeat the compact Qwen
+  sparse-ViT measurement at 16f/20f/32f to test whether the arithmetic ceiling
+  remains predictive across operating points. This is high-value after the 8f
+  Track B point lands, but it adds ~6-8 h of compute and deserves its own
+  preregistered batch.
+- Track B cross-architecture check (`1.63G` candidate): run the equivalent
+  Gemma compact-ViT path to test whether the ceiling model generalizes beyond
+  Qwen. This is valuable, but should follow the Qwen 1.63 result and the 1.57G
+  drift-geometry readout.
 - failure predictor / logit-margin model: high explanatory value; needs a
   separate logprob-rerun plan or a careful inventory of existing logprob
   artifacts.
