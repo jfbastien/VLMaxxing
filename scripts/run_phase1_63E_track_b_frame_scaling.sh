@@ -2,9 +2,9 @@
 # Phase 1.63E — Track B Qwen sparse-ViT frame-budget scaling.
 #
 # Runs the same dense vs compact post-layer L=2/kr=0.50 Qwen Track B protocol
-# as 1.63 at 16f, 20f, and 32f. The landed 8f 1.63 cell can be included in
-# the summary automatically when present, but this wrapper only computes the
-# three additional frame-budget cells.
+# as 1.63 at 8f, 16f, 20f, and 32f. Re-running 8f keeps every frame-budget
+# cell inside the same wrapper and gate, which is cleaner than treating 8f as a
+# non-veto reference.
 
 set -euo pipefail
 
@@ -16,7 +16,7 @@ MANIFEST="${PHASE1_63E_MANIFEST:-research/benchmark_manifests/videomme_combined_
 OUT_DIR="${PHASE1_63E_OUT_DIR:-research/experiments/2026/artifacts/phase1_63E_track_b_frame_scaling}"
 REFERENCE_8F="${PHASE1_63E_REFERENCE_8F:-research/experiments/2026/artifacts/phase1_63_track_b_sparse_vit/pair_summary.json}"
 RSS_GUARD_MB="${RSS_GUARD_MB:-9000}"
-FRAME_COUNTS="${PHASE1_63E_FRAME_COUNTS:-16 20 32}"
+FRAME_COUNTS="${PHASE1_63E_FRAME_COUNTS:-8 16 20 32}"
 
 mkdir -p "$OUT_DIR"
 

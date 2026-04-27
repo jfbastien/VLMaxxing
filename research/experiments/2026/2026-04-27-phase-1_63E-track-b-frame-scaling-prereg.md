@@ -24,8 +24,10 @@ ViT work, not LM-prefill sparsity.
 
 - Model: `Qwen2.5-VL-7B-Instruct-4bit`.
 - Manifest: `research/benchmark_manifests/videomme_combined_v1_n60.toml`.
-- New frame counts: 16f, 20f, 32f.
-- Reference frame count: include the landed 8f 1.63 summary if present.
+- Default frame counts: 8f, 16f, 20f, 32f.
+- Resume/debug override: `PHASE1_63E_FRAME_COUNTS="16 20 32"` may reuse the
+  landed 8f 1.63 summary as a non-veto reference, but the paper-facing default
+  recomputes 8f as a normal gated cell.
 - Dense arms: `scripts/run_phase1_51V.py --vision-tower-keep-rate 1.0`.
 - Sparse arms: `scripts/run_phase1_51V.py --vision-tower-layer 2
   --vision-tower-keep-rate 0.50`.
@@ -35,7 +37,7 @@ ViT work, not LM-prefill sparsity.
 
 ## Gates
 
-Each new frame-count cell is evaluated with the 1.63 gates:
+Each frame-count cell is evaluated with the 1.63 gates:
 
 - **H_pairing**: 60 paired items, zero parse failures in both arms.
 - **H_fidelity**: sparse-minus-dense accuracy delta >= -0.05.
@@ -45,10 +47,10 @@ Each new frame-count cell is evaluated with the 1.63 gates:
   the vision-only arithmetic-ceiling prediction
   `1 / (1 - dense_vision_share * observed_vision_reduction)`.
 
-Headline scaling PASS requires all new cells to pass H_fidelity,
-H_sparse_vision, H_e2e_positive, and H_ceiling_explained. If the 8f reference
-is present it is summarized but does not veto the new-cell gate, because it was
-preregistered and adjudicated in 1.63.
+Headline scaling PASS requires all cells run in this wrapper to pass
+H_fidelity, H_sparse_vision, H_e2e_positive, and H_ceiling_explained. If an
+operator intentionally overrides the wrapper to reuse 8f as a reference, that
+reference is summarized but excluded from the headline gate.
 
 ## Interpretation
 
@@ -65,6 +67,6 @@ preregistered and adjudicated in 1.63.
 
 ## Runtime And Resources
 
-Expected local wall time on the 16 GB laptop: 6-8 h for 16f/20f/32f plus
-analysis. Peak RSS should stay under the 9 GB guard because the language-model
-prompt geometry remains dense and each arm runs sequentially.
+Expected local wall time on the 16 GB laptop: 7.5-9.5 h for 8f/16f/20f/32f
+plus analysis. Peak RSS should stay under the 9 GB guard because the
+language-model prompt geometry remains dense and each arm runs sequentially.

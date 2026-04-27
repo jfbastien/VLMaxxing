@@ -49,29 +49,33 @@ PHASE130W_REFERENCE_DIR = Path(
 )
 PHASE165_REQUIRED_SOURCES = (
     Path(
-        "research/experiments/2026/artifacts/phase1_55F_q3_post_q2_state/paired_queries_k1_n7.jsonl"
-    ),
-    Path(
-        "research/experiments/2026/artifacts/"
-        "phase1_55F_medium_adaptive_replication/paired_queries_k1_n10.jsonl"
-    ),
-    Path(
-        "research/experiments/2026/artifacts/"
-        "phase1_55F_long_adaptive_replication/paired_queries_k1_n7.jsonl"
-    ),
-    Path(
-        "research/experiments/2026/artifacts/"
-        "phase1_55F_32f_short_adaptive_replication/paired_queries_k1_n7.jsonl"
-    ),
-    Path(
-        "research/experiments/2026/artifacts/"
-        "phase1_55E_adaptive_reprefill_q2_k1_q3_k0/paired_queries_k1_n7.jsonl"
-    ),
-    Path(
         "research/experiments/2026/artifacts/phase1_30AD_instrumented_w_rerun/paired_queries.jsonl"
     ),
     Path(
         "research/experiments/2026/artifacts/phase1_30AC_cache_invalidated_followups/paired_queries.jsonl"
+    ),
+)
+PHASE155F_STAGE_TIMING_REQUIRED_SOURCES = (
+    Path("research/experiments/2026/artifacts/phase1_55F_q3_post_q2_state/session_k1_n7.jsonl"),
+    Path(
+        "research/experiments/2026/artifacts/phase1_55D_selective_reprefill_v2/session_k1_n7.jsonl"
+    ),
+)
+PHASE130AF_REQUIRED_SOURCES = (
+    Path(
+        "research/experiments/2026/artifacts/phase1_30AD_instrumented_w_rerun/paired_queries.jsonl"
+    ),
+    Path(
+        "research/experiments/2026/artifacts/phase1_30AD_instrumented_w_rerun/"
+        "streaming_q0_dense_cache_reuse_followups.jsonl"
+    ),
+    Path(
+        "research/experiments/2026/artifacts/"
+        "phase1_30AC_cache_invalidated_followups/paired_queries.jsonl"
+    ),
+    Path(
+        "research/experiments/2026/artifacts/phase1_30AC_cache_invalidated_followups/"
+        "streaming_cache_invalidated_followups.jsonl"
     ),
 )
 
@@ -257,6 +261,10 @@ def main() -> int:
         and PHASE130W_REFERENCE_DIR.joinpath("cold_dense_summary.json").exists()
     )
     phase165_sources_ready = all(path.exists() for path in PHASE165_REQUIRED_SOURCES)
+    phase155f_stage_sources_ready = all(
+        path.exists() for path in PHASE155F_STAGE_TIMING_REQUIRED_SOURCES
+    )
+    phase130af_sources_ready = all(path.exists() for path in PHASE130AF_REQUIRED_SOURCES)
     lowfps_union_session_count = _unique_session_count_for_manifests(
         [
             Path("research/benchmark_manifests/videomme_dev_v1.toml"),
@@ -311,6 +319,34 @@ def main() -> int:
             qwen_4bit_ready and short_ready,
             detail="adaptive post-Q2-state 16f short-bucket interpolation",
         ),
+        "1.55F-stage-timing": _status(
+            phase155f_stage_sources_ready,
+            detail={
+                "phase": "adaptive-vs-fixed timing attribution",
+                "required_sources_ready": phase155f_stage_sources_ready,
+                "required_sources": [
+                    path.as_posix() for path in PHASE155F_STAGE_TIMING_REQUIRED_SOURCES
+                ],
+            },
+        ),
+        "1.55K": _status(
+            qwen_4bit_ready and short_ready,
+            detail="adaptive short-bucket sampler-temperature sweep",
+        ),
+        "1.55F-Gemma": _status(
+            False,
+            detail={
+                "phase": "Gemma adaptive C-PERSIST replication",
+                "gemma_model_ready": gemma_4bit_ready,
+                "blocked_reason": (
+                    "Gemma 4 E4B weights are present, but adaptive C-PERSIST is "
+                    "blocked by the known mlx-vlm RotatingKVCache/sliding-window "
+                    "prompt-cache incompatibility from phase 1.55C. Do not run a "
+                    "Qwen-style selective re-prefill driver on Gemma 4 without a "
+                    "cache-type-aware implementation."
+                ),
+            },
+        ),
         "1.57G": _status(
             gemma_4bit_ready and manifests["videomme_dev_v1"]["ready"],
             detail="Gemma short/medium/long feature-drift grid at 8/16/32f",
@@ -353,6 +389,14 @@ def main() -> int:
                 "reference_cold_ready": full_union_cold_ready,
             },
         ),
+        "1.30AF": _status(
+            phase130af_sources_ready,
+            detail={
+                "phase": "post-hoc 1.30AC/AD cache-boundary attribution",
+                "required_sources_ready": phase130af_sources_ready,
+                "required_sources": [path.as_posix() for path in PHASE130AF_REQUIRED_SOURCES],
+            },
+        ),
         "1.62D": _status(
             qwen_4bit_ready
             and manifests["videomme_dev_v1"]["ready"]
@@ -373,7 +417,7 @@ def main() -> int:
         ),
         "1.63E": _status(
             qwen_4bit_ready and manifests["videomme_combined_v1_n60"]["ready"],
-            detail="Track B compact Qwen ViT execution across 16f/20f/32f frame budgets",
+            detail="Track B compact Qwen ViT execution across 8f/16f/20f/32f frame budgets",
         ),
         "1.63G": _status(
             gemma_4bit_ready and manifests["videomme_combined_v1_n60"]["ready"],

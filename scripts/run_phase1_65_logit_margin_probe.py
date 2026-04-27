@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Phase 1.65 — dense logit-margin probe for paired drift prediction.
+"""Phase 1.65 — within-1.30 dense logit-margin probe.
 
-The experiment re-scores a deterministic balanced sample of existing paired
-artifacts with the dense Qwen prompt, records the answer-letter logprob margin,
-and tests whether high dense margin predicts paired stability under the reuse
-policies. This is a predictor scout, not a deployed runtime guard: it uses the
-dense reference model as an oracle feature so the paper can distinguish
-"descriptive 0/n drift" from a measurable stability signal.
+The experiment re-scores 1.30 cache-boundary follow-up rows with the dense Qwen
+prompt, records the answer-letter logprob margin, and tests on held-out item IDs
+whether high dense margin predicts paired stability. This is a predictor scout,
+not a deployed runtime guard: it uses the dense reference model as an oracle
+feature and intentionally excludes 1.55F-style zero-drift sources so the probe
+does not learn experiment identity instead of item stability.
 """
 
 from __future__ import annotations
@@ -16,7 +16,9 @@ import gc
 import importlib.util
 import json
 import math
+import random
 import sys
+from collections import Counter, defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal, cast
@@ -62,36 +64,6 @@ class PairRow:
 
 
 DEFAULT_SOURCES = (
-    SourceSpec(
-        "1.55F-short-adaptive",
-        ARTIFACT_ROOT / "phase1_55F_q3_post_q2_state/paired_queries_k1_n7.jsonl",
-        20,
-        "phase155",
-    ),
-    SourceSpec(
-        "1.55F-medium-adaptive",
-        ARTIFACT_ROOT / "phase1_55F_medium_adaptive_replication/paired_queries_k1_n10.jsonl",
-        20,
-        "phase155",
-    ),
-    SourceSpec(
-        "1.55F-long-adaptive",
-        ARTIFACT_ROOT / "phase1_55F_long_adaptive_replication/paired_queries_k1_n7.jsonl",
-        20,
-        "phase155",
-    ),
-    SourceSpec(
-        "1.55F-32f-adaptive",
-        ARTIFACT_ROOT / "phase1_55F_32f_short_adaptive_replication/paired_queries_k1_n7.jsonl",
-        32,
-        "phase155",
-    ),
-    SourceSpec(
-        "1.55E-adaptive-negative",
-        ARTIFACT_ROOT / "phase1_55E_adaptive_reprefill_q2_k1_q3_k0/paired_queries_k1_n7.jsonl",
-        20,
-        "phase155",
-    ),
     SourceSpec(
         "1.30AD-cache-reuse-negative",
         ARTIFACT_ROOT / "phase1_30AD_instrumented_w_rerun/paired_queries.jsonl",
@@ -180,24 +152,80 @@ def _load_pair_rows(spec: SourceSpec) -> list[PairRow]:
 
 
 def _sample_rows(rows: list[PairRow], *, max_rows: int) -> list[PairRow]:
-    rows = sorted(rows, key=lambda row: (row.any_drift, row.source, row.item_id, row.q_index))
     if max_rows <= 0 or len(rows) <= max_rows:
-        return rows
-    stable = [row for row in rows if not row.any_drift]
-    drift = [row for row in rows if row.any_drift]
-    target_drift = min(len(drift), max_rows // 2)
-    target_stable = min(len(stable), max_rows - target_drift)
-    selected = drift[:target_drift] + stable[:target_stable]
+        return sorted(rows, key=lambda row: (row.source, row.item_id, row.q_index))
+
+    by_source: dict[str, list[PairRow]] = defaultdict(list)
+    for row in rows:
+        by_source[row.source].append(row)
+
+    selected: list[PairRow] = []
+    per_source = max(1, max_rows // len(by_source))
+    for source in sorted(by_source):
+        source_rows = sorted(
+            by_source[source], key=lambda row: (row.any_drift, row.item_id, row.q_index)
+        )
+        stable = [row for row in source_rows if not row.any_drift]
+        drift = [row for row in source_rows if row.any_drift]
+        target_drift = min(len(drift), per_source // 2)
+        target_stable = min(len(stable), per_source - target_drift)
+        selected.extend(drift[:target_drift])
+        selected.extend(stable[:target_stable])
+
     if len(selected) < max_rows:
         used = {(row.source, row.item_id, row.q_index) for row in selected}
-        for row in rows:
+        for row in sorted(
+            rows, key=lambda row: (row.source, row.any_drift, row.item_id, row.q_index)
+        ):
             key = (row.source, row.item_id, row.q_index)
-            if key not in used:
-                selected.append(row)
-                used.add(key)
-                if len(selected) == max_rows:
-                    break
+            if key in used:
+                continue
+            selected.append(row)
+            used.add(key)
+            if len(selected) == max_rows:
+                break
     return sorted(selected, key=lambda row: (row.source, row.item_id, row.q_index))
+
+
+def _split_rows_by_item(
+    rows: list[PairRow], *, test_fraction: float, seed: int
+) -> tuple[list[PairRow], list[PairRow]]:
+    """Grouped, class-stratified split so the same item never leaks across folds."""
+    if not 0.0 < test_fraction < 1.0:
+        raise ValueError(f"test_fraction must be in (0, 1), got {test_fraction}")
+
+    by_item: dict[str, list[PairRow]] = defaultdict(list)
+    for row in rows:
+        by_item[row.item_id].append(row)
+
+    stable_items: list[str] = []
+    drift_items: list[str] = []
+    for item_id, item_rows in by_item.items():
+        if any(row.any_drift for row in item_rows):
+            drift_items.append(item_id)
+        else:
+            stable_items.append(item_id)
+
+    rng = random.Random(seed)
+    rng.shuffle(stable_items)
+    rng.shuffle(drift_items)
+
+    def _test_subset(items: list[str]) -> set[str]:
+        if len(items) <= 1:
+            return set(items)
+        n_test = max(1, round(len(items) * test_fraction))
+        n_test = min(n_test, len(items) - 1)
+        return set(items[:n_test])
+
+    test_items = _test_subset(stable_items) | _test_subset(drift_items)
+    train_rows: list[PairRow] = []
+    test_rows: list[PairRow] = []
+    for row in rows:
+        if row.item_id in test_items:
+            test_rows.append(row)
+        else:
+            train_rows.append(row)
+    return train_rows, test_rows
 
 
 def _token_ids_for_letter(tokenizer: Any, letter: str) -> list[int]:
@@ -336,19 +364,137 @@ def _safe_filter(rows: list[dict[str, Any]]) -> dict[str, Any]:
     return best
 
 
-def _summarize(scored_rows: list[dict[str, Any]]) -> dict[str, Any]:
+def _evaluate_threshold(rows: list[dict[str, Any]], threshold: float | None) -> dict[str, Any]:
+    if threshold is None:
+        return {
+            "threshold": None,
+            "precision_stable": None,
+            "coverage": 0.0,
+            "n_selected": 0,
+            "n_stable_selected": 0,
+            "brier_binary": None,
+        }
+    selected = [row for row in rows if float(row["dense_answer_margin"]) >= threshold]
+    stable_selected = sum(not bool(row["any_drift"]) for row in selected)
+    precision = stable_selected / len(selected) if selected else None
+    coverage = len(selected) / len(rows) if rows else 0.0
+    stable_targets = [0.0 if bool(row["any_drift"]) else 1.0 for row in rows]
+    predictions = [1.0 if float(row["dense_answer_margin"]) >= threshold else 0.0 for row in rows]
+    brier = (
+        sum(
+            (prediction - target) ** 2
+            for prediction, target in zip(predictions, stable_targets, strict=True)
+        )
+        / len(stable_targets)
+        if stable_targets
+        else None
+    )
+    return {
+        "threshold": threshold,
+        "precision_stable": precision,
+        "coverage": coverage,
+        "n_selected": len(selected),
+        "n_stable_selected": stable_selected,
+        "brier_binary": brier,
+    }
+
+
+def _margin_bins(rows: list[dict[str, Any]], *, n_bins: int = 5) -> list[dict[str, Any]]:
+    if not rows:
+        return []
+    ordered = sorted(rows, key=lambda row: float(row["dense_answer_margin"]))
+    bins: list[dict[str, Any]] = []
+    for bin_index in range(n_bins):
+        start = round(bin_index * len(ordered) / n_bins)
+        end = round((bin_index + 1) * len(ordered) / n_bins)
+        bucket = ordered[start:end]
+        if not bucket:
+            continue
+        stable = sum(not bool(row["any_drift"]) for row in bucket)
+        bins.append(
+            {
+                "bin": bin_index,
+                "n": len(bucket),
+                "margin_min": float(bucket[0]["dense_answer_margin"]),
+                "margin_max": float(bucket[-1]["dense_answer_margin"]),
+                "stable_fraction": stable / len(bucket),
+                "drift_fraction": 1.0 - stable / len(bucket),
+            }
+        )
+    return bins
+
+
+def _bootstrap_auc_ci_by_item(
+    rows: list[dict[str, Any]], *, n_resamples: int, seed: int
+) -> list[float] | None:
+    if not rows:
+        return None
+    by_item: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        by_item[str(row["item_id"])].append(row)
+    item_ids = sorted(by_item)
+    rng = random.Random(seed)
+    aucs: list[float] = []
+    for _ in range(n_resamples):
+        sampled_rows: list[dict[str, Any]] = []
+        for item_id in rng.choices(item_ids, k=len(item_ids)):
+            sampled_rows.extend(by_item[item_id])
+        margins = [float(row["dense_answer_margin"]) for row in sampled_rows]
+        stable_labels = [not bool(row["any_drift"]) for row in sampled_rows]
+        auc = _auc(margins, stable_labels)
+        if auc is not None:
+            aucs.append(auc)
+    if not aucs:
+        return None
+    aucs.sort()
+    return [
+        aucs[int(0.025 * (len(aucs) - 1))],
+        aucs[int(0.975 * (len(aucs) - 1))],
+    ]
+
+
+def _summarize_split(
+    scored_rows: list[dict[str, Any]],
+    *,
+    train_rows: list[dict[str, Any]],
+    test_rows: list[dict[str, Any]],
+    n_resamples: int,
+    seed: int,
+) -> dict[str, Any]:
     margins = [float(row["dense_answer_margin"]) for row in scored_rows]
-    stable_labels = [not bool(row["any_drift"]) for row in scored_rows]
     drift_rows = [row for row in scored_rows if bool(row["any_drift"])]
     stable_rows = [row for row in scored_rows if not bool(row["any_drift"])]
-    safe_filter = _safe_filter(scored_rows) if scored_rows else {}
-    auc_stability = _auc(margins, stable_labels)
+    train_safe_filter = _safe_filter(train_rows) if train_rows else {}
+    threshold = train_safe_filter.get("threshold")
+    test_threshold_eval = _evaluate_threshold(test_rows, threshold)
+    train_auc = _auc(
+        [float(row["dense_answer_margin"]) for row in train_rows],
+        [not bool(row["any_drift"]) for row in train_rows],
+    )
+    test_auc = _auc(
+        [float(row["dense_answer_margin"]) for row in test_rows],
+        [not bool(row["any_drift"]) for row in test_rows],
+    )
+    test_auc_ci95 = _bootstrap_auc_ci_by_item(test_rows, n_resamples=n_resamples, seed=seed)
     return {
         "n_scored_rows": len(scored_rows),
+        "n_train_rows": len(train_rows),
+        "n_test_rows": len(test_rows),
         "n_stable_rows": len(stable_rows),
         "n_drift_rows": len(drift_rows),
+        "n_train_stable_rows": sum(not bool(row["any_drift"]) for row in train_rows),
+        "n_train_drift_rows": sum(bool(row["any_drift"]) for row in train_rows),
+        "n_test_stable_rows": sum(not bool(row["any_drift"]) for row in test_rows),
+        "n_test_drift_rows": sum(bool(row["any_drift"]) for row in test_rows),
         "n_choice_drift_rows": sum(bool(row["choice_drift"]) for row in scored_rows),
         "n_correctness_drift_rows": sum(bool(row["correctness_drift"]) for row in scored_rows),
+        "source_counts": dict(Counter(str(row["source"]) for row in scored_rows)),
+        "train_source_counts": dict(Counter(str(row["source"]) for row in train_rows)),
+        "test_source_counts": dict(Counter(str(row["source"]) for row in test_rows)),
+        "q_index_counts": {
+            str(key): value
+            for key, value in Counter(int(row["q_index"]) for row in scored_rows).items()
+        },
         "mean_margin_all": float(np.mean(margins)) if margins else None,
         "mean_margin_stable": float(np.mean([row["dense_answer_margin"] for row in stable_rows]))
         if stable_rows
@@ -364,18 +510,27 @@ def _summarize(scored_rows: list[dict[str, Any]]) -> dict[str, Any]:
         "median_margin_drift": float(np.median([row["dense_answer_margin"] for row in drift_rows]))
         if drift_rows
         else None,
-        "auc_stability_from_dense_margin": auc_stability,
-        "safe_filter": safe_filter,
-        "pass_margin_signal": auc_stability is not None and auc_stability >= 0.65,
-        "pass_safe_filter": bool(
-            safe_filter
-            and safe_filter.get("precision_stable") is not None
-            and float(safe_filter["precision_stable"]) >= 0.95
-            and float(safe_filter["coverage"]) >= 0.25
+        "train_auc_stability_from_dense_margin": train_auc,
+        "test_auc_stability_from_dense_margin": test_auc,
+        "test_auc_stability_from_dense_margin_ci95": test_auc_ci95,
+        "train_safe_filter": train_safe_filter,
+        "test_safe_filter_at_train_threshold": test_threshold_eval,
+        "test_margin_calibration_bins": _margin_bins(test_rows),
+        "pass_class_presence": (
+            sum(not bool(row["any_drift"]) for row in train_rows) > 0
+            and sum(bool(row["any_drift"]) for row in train_rows) > 0
+            and sum(not bool(row["any_drift"]) for row in test_rows) > 0
+            and sum(bool(row["any_drift"]) for row in test_rows) > 0
         ),
-        "margin_signal_threshold": 0.65,
-        "safe_filter_precision_threshold": 0.95,
-        "safe_filter_coverage_threshold": 0.25,
+        "pass_margin_signal": bool(test_auc_ci95 is not None and test_auc_ci95[0] >= 0.60),
+        "pass_safe_filter": bool(
+            test_threshold_eval.get("precision_stable") is not None
+            and float(test_threshold_eval["precision_stable"]) >= 0.90
+            and float(test_threshold_eval["coverage"]) >= 0.15
+        ),
+        "margin_signal_lower_ci_threshold": 0.60,
+        "safe_filter_test_precision_threshold": 0.90,
+        "safe_filter_test_coverage_threshold": 0.15,
     }
 
 
@@ -397,9 +552,29 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model-path", type=Path, default=DEFAULT_MODEL_PATH)
     parser.add_argument("--output-dir", type=Path, required=True)
-    parser.add_argument("--max-rows", type=int, default=180, help="0 scores all loaded rows")
+    parser.add_argument("--max-rows", type=int, default=0, help="0 scores all loaded rows")
     parser.add_argument("--max-tokens", type=int, default=1)
     parser.add_argument("--rss-guard-mb", type=int, default=0)
+    parser.add_argument("--test-fraction", type=float, default=0.20)
+    parser.add_argument("--split-seed", type=int, default=20260427)
+    parser.add_argument("--n-resamples", type=int, default=2000)
+    parser.add_argument(
+        "--include-q0",
+        action="store_true",
+        help=(
+            "Include q_index=0 rows. Default is follow-up-only because the "
+            "1.65 claim is about cache/reuse stability after Q0."
+        ),
+    )
+    parser.add_argument(
+        "--allow-logit-choice-mismatch",
+        action="store_true",
+        help=(
+            "Keep rows where first-step dense logit argmax does not match the "
+            "artifact dense choice. Default rejects them because the margin "
+            "would not explain the recorded dense decision."
+        ),
+    )
     parser.add_argument("--source", action="append", type=_parse_source, default=None)
     args = parser.parse_args()
 
@@ -413,11 +588,20 @@ def main() -> int:
     loaded_rows: list[PairRow] = []
     for spec in sources:
         loaded_rows.extend(_load_pair_rows(spec))
+    raw_loaded_rows = len(loaded_rows)
+    if not args.include_q0:
+        loaded_rows = [row for row in loaded_rows if row.q_index > 0]
     selected_rows = _sample_rows(loaded_rows, max_rows=args.max_rows)
-    if not any(row.any_drift for row in selected_rows):
-        raise SystemExit("selected rows contain no drift examples; cannot fit a predictor scout")
-    if not any(not row.any_drift for row in selected_rows):
-        raise SystemExit("selected rows contain no stable examples; cannot fit a predictor scout")
+    train_pair_rows, test_pair_rows = _split_rows_by_item(
+        selected_rows,
+        test_fraction=args.test_fraction,
+        seed=args.split_seed,
+    )
+    for label, rows in (("train", train_pair_rows), ("test", test_pair_rows)):
+        if not any(row.any_drift for row in rows):
+            raise SystemExit(f"{label} split contains no drift examples")
+        if not any(not row.any_drift for row in rows):
+            raise SystemExit(f"{label} split contains no stable examples")
 
     qwen_runner = _load_qwen_runner()
     base_runner = qwen_runner._load_runner_module()
@@ -431,9 +615,15 @@ def main() -> int:
         check_rss_guard(args.rss_guard_mb, stage="post_model_load")
 
     score_cache: dict[tuple[str, int], dict[str, Any]] = {}
+    split_by_key: dict[tuple[str, str, int], str] = {
+        (row.source, row.item_id, row.q_index): "train" for row in train_pair_rows
+    }
+    split_by_key.update({(row.source, row.item_id, row.q_index): "test" for row in test_pair_rows})
     scored_rows: list[dict[str, Any]] = []
+    rejected_rows: list[dict[str, Any]] = []
     args.output_dir.mkdir(parents=True, exist_ok=True)
     scored_path = args.output_dir / "scored_rows.jsonl"
+    rejected_path = args.output_dir / "rejected_rows.jsonl"
     with scored_path.open("w") as handle:
         for row in selected_rows:
             cache_key = (row.item_id, row.frame_count)
@@ -448,6 +638,10 @@ def main() -> int:
                     max_tokens=args.max_tokens,
                 )
             score_payload = score_cache[cache_key]
+            logit_choice_matches_baseline = (
+                row.baseline_choice is not None
+                and score_payload["top_candidate_letter"] == row.baseline_choice
+            )
             merged = {
                 "source": row.source,
                 "source_path": row.source_path,
@@ -461,17 +655,50 @@ def main() -> int:
                 "choice_drift": row.choice_drift,
                 "correctness_drift": row.correctness_drift,
                 "any_drift": row.any_drift,
+                "split": split_by_key[(row.source, row.item_id, row.q_index)],
+                "logit_choice_matches_baseline": logit_choice_matches_baseline,
                 **score_payload,
             }
             if not math.isfinite(float(merged["dense_answer_margin"])):
                 raise ValueError(f"non-finite margin for {row.item_id}")
+            if not args.allow_logit_choice_mismatch and not logit_choice_matches_baseline:
+                rejected_rows.append(
+                    {
+                        "source": row.source,
+                        "item_id": row.item_id,
+                        "q_index": row.q_index,
+                        "split": split_by_key[(row.source, row.item_id, row.q_index)],
+                        "baseline_choice": row.baseline_choice,
+                        "logit_top_candidate_letter": score_payload["top_candidate_letter"],
+                        "reason": "dense_logit_argmax_mismatched_artifact_dense_choice",
+                    }
+                )
+                continue
             scored_rows.append(merged)
             handle.write(json.dumps(merged, sort_keys=True) + "\n")
             handle.flush()
             if args.rss_guard_mb > 0:
                 check_rss_guard(args.rss_guard_mb, stage=f"post_score:{row.item_id}")
 
-    summary = _summarize(scored_rows)
+    if rejected_rows:
+        with rejected_path.open("w") as handle:
+            for row in rejected_rows:
+                handle.write(json.dumps(row, sort_keys=True) + "\n")
+
+    train_scored_rows = [row for row in scored_rows if row["split"] == "train"]
+    test_scored_rows = [row for row in scored_rows if row["split"] == "test"]
+    for label, rows in (("train", train_scored_rows), ("test", test_scored_rows)):
+        if not any(row["any_drift"] for row in rows):
+            raise SystemExit(f"{label} scored split contains no drift examples")
+        if not any(not row["any_drift"] for row in rows):
+            raise SystemExit(f"{label} scored split contains no stable examples")
+    summary = _summarize_split(
+        scored_rows,
+        train_rows=train_scored_rows,
+        test_rows=test_scored_rows,
+        n_resamples=args.n_resamples,
+        seed=args.split_seed,
+    )
     summary.update(
         {
             "phase": "1.65",
@@ -485,15 +712,27 @@ def main() -> int:
                 }
                 for spec in sources
             ],
+            "n_loaded_rows_raw": raw_loaded_rows,
             "n_loaded_rows": len(loaded_rows),
+            "n_selected_rows": len(selected_rows),
+            "n_rejected_logit_choice_mismatch": len(rejected_rows),
             "max_rows": args.max_rows,
             "rss_guard_mb": args.rss_guard_mb if args.rss_guard_mb > 0 else None,
             "n_unique_scored_prompts": len(score_cache),
+            "include_q0": args.include_q0,
+            "allow_logit_choice_mismatch": args.allow_logit_choice_mismatch,
+            "test_fraction": args.test_fraction,
+            "split_seed": args.split_seed,
+            "n_resamples": args.n_resamples,
             "scored_rows_jsonl": scored_path.as_posix(),
+            "rejected_rows_jsonl": rejected_path.as_posix() if rejected_rows else None,
             "interpretation_scope": (
-                "Predictor scout using dense-reference answer-letter logprob margin. "
-                "It is not a deployed guard because it requires a dense pass; it tests "
-                "whether paired stability has a measurable confidence signal."
+                "Within-1.30 predictor scout using dense-reference answer-letter "
+                "logprob margin. It is not a deployed guard because it requires a "
+                "dense pass; it scores follow-up rows only and tests whether the "
+                "1.30 cache-boundary drift concentrates on intrinsically uncertain "
+                "items after excluding rows where the dense logit argmax does not "
+                "match the recorded dense answer."
             ),
         }
     )

@@ -1133,12 +1133,12 @@ authoritative in the per-phase notes under
   status: preregistered / ready-to-run
   authoritative_note: research/experiments/2026/2026-04-27-phase-1_63E-track-b-frame-scaling-prereg.md
   authoritative_artifacts: []
-  current_best_policy: pending; Qwen compact post-layer L=2 kr=0.50 Track B sparse-ViT at 16f/20f/32f
+  current_best_policy: pending; Qwen compact post-layer L=2 kr=0.50 Track B sparse-ViT at 8f/16f/20f/32f
   supersedes: []
   paper_relevance: primary (tests whether C-CEILING predicts measured Track B wall-clock across frame budgets)
   prereg_outcome: pending
-  runtime_estimate: ~6-8h
-  notes: Summarizes the 8f 1.63 reference when present but adjudicates the new 16f/20f/32f cells independently.
+  runtime_estimate: ~7.5-9.5h
+  notes: Default wrapper recomputes 8f as a normal gated cell rather than treating it as a non-veto reference; override PHASE1_63E_FRAME_COUNTS only for intentional resume/debug.
 
 - phase_id: 1.63G
   status: preregistered / ready-to-run
@@ -1151,16 +1151,60 @@ authoritative in the per-phase notes under
   runtime_estimate: ~2.5-3.5h
   notes: Uses a dedicated Gemma arm runner because the existing Gemma novelty-pruning runner shortens prompt geometry and is not a clean vision-tower-only Track B test.
 
+- phase_id: 1.55F-stage-timing
+  status: preregistered / ready-to-run
+  authoritative_note: research/experiments/2026/2026-04-27-phase-1_55F-stage-timing-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: pending; analysis-only adaptive-vs-fixed timing attribution from existing 1.55F/1.55D artifacts
+  supersedes: []
+  paper_relevance: secondary mechanism (explains adaptive C-PERSIST speedup as Q3 re-prefill avoidance)
+  prereg_outcome: pending
+  runtime_estimate: <1min
+  notes: No new MLX generation; this is a mechanism attribution over existing JSONL timings and tail-token counts.
+
+- phase_id: 1.55K
+  status: preregistered / ready-to-run
+  authoritative_note: research/experiments/2026/2026-04-27-phase-1_55K-adaptive-temperature-sweep-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: pending; adaptive Q2=K1/Q3=K0 post-Q2-state policy under sampler temperatures 0.5/0.7/1.0/1.5
+  supersedes: [1.55J]
+  paper_relevance: reviewer-defense (tests whether adaptive C-PERSIST headline is greedy-only)
+  prereg_outcome: pending
+  runtime_estimate: ~4-6h
+  notes: Uses identical sampler settings for session and baseline arms; T=0.0 greedy 1.55F is included as reference when present.
+
+- phase_id: 1.30AF
+  status: preregistered / ready-to-run
+  authoritative_note: research/experiments/2026/2026-04-27-phase-1_30AF-cache-boundary-attribution-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: pending; post-hoc 1.30AC/1.30AD row-level failure-set attribution
+  supersedes: []
+  paper_relevance: secondary mechanism (distinguishes same aggregate loss from row-identical behavior)
+  prereg_outcome: pending
+  runtime_estimate: <1min
+  notes: Named 1.30AF because 1.30AE already denotes the skipped duration-conditioned union candidate. This is not direct KV tensor-distance measurement.
+
+- phase_id: 1.55F-Gemma
+  status: deferred / blocked
+  authoritative_note: research/experiments/2026/2026-04-27-phase-1_55F-gemma-adaptive-deferred.md
+  authoritative_artifacts: []
+  current_best_policy: blocked; Gemma 4 adaptive C-PERSIST requires cache-type-aware sliding-window/RotatingKVCache support
+  supersedes: []
+  paper_relevance: future cross-architecture C-PERSIST breadth
+  prereg_outcome: blocked before run
+  runtime_estimate: n/a until driver exists
+  notes: Gemma 4 E4B 4-bit weights are local and fit prior runs, but the Qwen selective re-prefill driver must not be reused because 1.55C found silent Gemma prompt-cache corruption risk.
+
 - phase_id: 1.65
   status: preregistered / ready-to-run
   authoritative_note: research/experiments/2026/2026-04-27-phase-1_65-logit-margin-predictor-prereg.md
   authoritative_artifacts: []
-  current_best_policy: pending; dense Qwen answer-letter logit-margin predictor scout over stable and drifted paired artifacts
+  current_best_policy: pending; held-out dense Qwen answer-letter logit-margin predictor scout over 1.30AD/1.30AC follow-up rows
   supersedes: []
-  paper_relevance: primary diagnostic (turns paired stability from descriptive 0/n evidence into a measurable confidence-signal test)
+  paper_relevance: primary diagnostic (tests whether 1.30 cache-boundary drift concentrates on intrinsically uncertain items)
   prereg_outcome: pending
-  runtime_estimate: ~3-6h at PHASE1_65_MAX_ROWS=180; longer for full scoring
-  notes: This is an oracle-feature predictor scout, not a deployed guard. Set `PHASE1_65_MAX_ROWS=0` to score all loaded paired rows after the bounded scout lands.
+  runtime_estimate: ~5-8h at PHASE1_65_MAX_ROWS=0
+  notes: This is an oracle-feature predictor scout, not a deployed guard. It deliberately excludes Q0 rows and all 1.55F/adaptive rows to avoid learning admission/source/policy identity instead of within-1.30 follow-up stability; rows where the dense logit argmax disagrees with the artifact dense choice are rejected before analysis.
 ```
 
 ## Maintenance rules

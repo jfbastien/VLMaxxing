@@ -6,7 +6,10 @@ the larger mechanism tests requested after Track B landed:
 
 * 1.63E: Qwen Track B frame-budget scaling.
 * 1.63G: Gemma Track B architecture check.
-* 1.65: dense logit-margin predictor scout.
+* 1.55F-stage-timing: adaptive-vs-fixed timing attribution.
+* 1.55K: adaptive sampler-temperature sweep.
+* 1.30AF: cache-boundary row-level attribution.
+* 1.65: within-1.30 dense logit-margin predictor scout.
 """
 
 from __future__ import annotations
@@ -39,6 +42,9 @@ def _allowed_startup_dirty_paths() -> tuple[Path, ...]:
         QUEUE_STATUS_JSON,
         ARTIFACT_ROOT / "phase1_63E_track_b_frame_scaling",
         ARTIFACT_ROOT / "phase1_63G_gemma_track_b",
+        ARTIFACT_ROOT / "phase1_55F_stage_timing",
+        ARTIFACT_ROOT / "phase1_55K_adaptive_temperature_sweep",
+        ARTIFACT_ROOT / "phase1_30AF_cache_boundary_attribution",
         ARTIFACT_ROOT / "phase1_65_logit_margin_failure_predictor",
     )
 
@@ -80,12 +86,26 @@ def _check_queue_worktree() -> None:
 def _steps() -> list[QueueStep]:
     return [
         QueueStep(
-            phase="1.63E",
-            runtime_estimate="~6-8 h",
+            phase="1.55F-stage-timing",
+            runtime_estimate="~1 min (analysis-only)",
             rationale=(
-                "Run Track B compact Qwen ViT at 16f, 20f, and 32f to test "
+                "Attribute the adaptive-vs-fixed C-PERSIST speedup gap from "
+                "existing artifacts by comparing Q3 elapsed time and tail-token "
+                "counts. This explains why adaptive is faster without another "
+                "accuracy run."
+            ),
+            command=("bash", str(REPO_ROOT / "scripts/run_phase1_55F_stage_timing_analysis.sh")),
+            timeout_seconds=600,
+            artifact_dir=ARTIFACT_ROOT / "phase1_55F_stage_timing",
+            readiness_key="1.55F-stage-timing",
+        ),
+        QueueStep(
+            phase="1.63E",
+            runtime_estimate="~7.5-9.5 h with 8f/16f/20f/32f default",
+            rationale=(
+                "Run Track B compact Qwen ViT at 8f, 16f, 20f, and 32f to test "
                 "whether the arithmetic ceiling predicts measured wall-clock "
-                "across frame budgets rather than at 8f only."
+                "across frame budgets rather than using 8f as a non-veto reference."
             ),
             command=("bash", str(REPO_ROOT / "scripts/run_phase1_63E_track_b_frame_scaling.sh")),
             timeout_seconds=36_000,
@@ -106,15 +126,45 @@ def _steps() -> list[QueueStep]:
             readiness_key="1.63G",
         ),
         QueueStep(
-            phase="1.65",
-            runtime_estimate="~3-6 h at default PHASE1_65_MAX_ROWS=180",
+            phase="1.55K",
+            runtime_estimate="~4-6 h",
             rationale=(
-                "Re-score a balanced sample of stable and drifted paired artifacts "
-                "with dense Qwen answer-letter logprobs to test whether logit "
-                "margin predicts paired stability."
+                "Run the adaptive 1.55F policy across practical sampling "
+                "temperatures to test whether the headline 0-drift result is "
+                "greedy-only or sampler-stable."
+            ),
+            command=("bash", str(REPO_ROOT / "scripts/run_phase1_55K_k1_temperature_sweep.sh")),
+            timeout_seconds=28_800,
+            artifact_dir=ARTIFACT_ROOT / "phase1_55K_adaptive_temperature_sweep",
+            readiness_key="1.55K",
+        ),
+        QueueStep(
+            phase="1.30AF",
+            runtime_estimate="~1 min (analysis-only)",
+            rationale=(
+                "Compare the 1.30AC cache-invalidated and 1.30AD cache-reuse "
+                "failure sets to verify whether their equal aggregate loss is "
+                "row-identical or a boundary aggregate reached through different "
+                "mechanisms."
+            ),
+            command=(
+                "bash",
+                str(REPO_ROOT / "scripts/run_phase1_30AF_cache_boundary_attribution.sh"),
+            ),
+            timeout_seconds=600,
+            artifact_dir=ARTIFACT_ROOT / "phase1_30AF_cache_boundary_attribution",
+            readiness_key="1.30AF",
+        ),
+        QueueStep(
+            phase="1.65",
+            runtime_estimate="~5-8 h at default PHASE1_65_MAX_ROWS=0",
+            rationale=(
+                "Re-score the 1.30 cache-boundary paired artifacts with dense "
+                "Qwen answer-letter logprobs, using a grouped train/test split, "
+                "to test whether logit margin predicts paired stability."
             ),
             command=("bash", str(REPO_ROOT / "scripts/run_phase1_65_logit_margin_probe.sh")),
-            timeout_seconds=28_800,
+            timeout_seconds=36_000,
             artifact_dir=ARTIFACT_ROOT / "phase1_65_logit_margin_failure_predictor",
             readiness_key="1.65",
         ),
@@ -179,26 +229,105 @@ def _gate_phase_163g(artifact_dir: Path) -> dict[str, Any]:
 
 def _gate_phase_165(artifact_dir: Path) -> dict[str, Any]:
     summary = _load_json(artifact_dir / "prediction_summary.json")
-    safe_filter = summary.get("safe_filter") or {}
+    train_safe_filter = summary.get("train_safe_filter") or {}
+    test_safe_filter = summary.get("test_safe_filter_at_train_threshold") or {}
     return {
         "n_loaded_rows": summary["n_loaded_rows"],
+        "n_loaded_rows_raw": summary["n_loaded_rows_raw"],
+        "n_selected_rows": summary["n_selected_rows"],
         "n_scored_rows": summary["n_scored_rows"],
+        "n_rejected_logit_choice_mismatch": summary["n_rejected_logit_choice_mismatch"],
+        "n_train_rows": summary["n_train_rows"],
+        "n_test_rows": summary["n_test_rows"],
         "n_unique_scored_prompts": summary["n_unique_scored_prompts"],
         "n_stable_rows": summary["n_stable_rows"],
         "n_drift_rows": summary["n_drift_rows"],
-        "auc_stability_from_dense_margin": summary["auc_stability_from_dense_margin"],
+        "source_counts": summary["source_counts"],
+        "q_index_counts": summary["q_index_counts"],
+        "test_auc_stability_from_dense_margin": summary["test_auc_stability_from_dense_margin"],
+        "test_auc_stability_from_dense_margin_ci95": summary[
+            "test_auc_stability_from_dense_margin_ci95"
+        ],
         "mean_margin_stable": summary["mean_margin_stable"],
         "mean_margin_drift": summary["mean_margin_drift"],
-        "safe_filter_threshold": safe_filter.get("threshold"),
-        "safe_filter_precision_stable": safe_filter.get("precision_stable"),
-        "safe_filter_coverage": safe_filter.get("coverage"),
+        "safe_filter_threshold": train_safe_filter.get("threshold"),
+        "train_safe_filter_precision_stable": train_safe_filter.get("precision_stable"),
+        "train_safe_filter_coverage": train_safe_filter.get("coverage"),
+        "test_safe_filter_precision_stable": test_safe_filter.get("precision_stable"),
+        "test_safe_filter_coverage": test_safe_filter.get("coverage"),
+        "pass_class_presence": summary["pass_class_presence"],
         "pass_margin_signal": summary["pass_margin_signal"],
         "pass_safe_filter": summary["pass_safe_filter"],
     }
 
 
+def _gate_phase_155f_stage_timing(artifact_dir: Path) -> dict[str, Any]:
+    summary = _load_json(artifact_dir / "stage_timing_summary.json")
+    return {
+        "q3_fixed_over_adaptive_speedup": summary["q3_fixed_over_adaptive_speedup"],
+        "q3_tail_token_reduction": summary["q3_tail_token_reduction"],
+        "adaptive_q3": summary["adaptive"]["q_index"].get("q3"),
+        "fixed_k1_q3": summary["fixed_k1"]["q_index"].get("q3"),
+        "pass_mechanism": summary["pass_mechanism"],
+        "pass_tail_work": summary["pass_tail_work"],
+    }
+
+
+def _gate_phase_155k(artifact_dir: Path) -> dict[str, Any]:
+    summary = _load_json(artifact_dir / "temperature_sweep_summary.json")
+    return {
+        "n_cells": summary["n_cells"],
+        "temperatures": summary["temperatures"],
+        "pass_sampler_stability": summary["pass_sampler_stability"],
+        "strict_exact_match_temperatures": summary["strict_exact_match_temperatures"],
+        "cells": summary["cells"],
+    }
+
+
+def _gate_phase_130af(artifact_dir: Path) -> dict[str, Any]:
+    summary = _load_json(artifact_dir / "attribution_summary.json")
+    return {
+        "common_pair_rows": summary["common_pair_rows"],
+        "accuracy_delta_gap": summary["accuracy_delta_gap"],
+        "any_drift_set_overlap": {
+            key: summary["any_drift_set_overlap"][key]
+            for key in (
+                "left_count",
+                "right_count",
+                "intersection_count",
+                "left_only_count",
+                "right_only_count",
+                "jaccard",
+            )
+        },
+        "cache_reuse_active_fraction": summary["cache_reuse"]["streaming_summary"][
+            "follow_up_vision_pruning_active_fraction"
+        ],
+        "cache_invalidated_active_fraction": summary["cache_invalidated"]["streaming_summary"][
+            "follow_up_vision_pruning_active_fraction"
+        ],
+        "pass_complete_overlap": summary["pass_complete_overlap"],
+        "pass_same_net_delta": summary["pass_same_net_delta"],
+        "pass_mechanism_contrast": summary["pass_mechanism_contrast"],
+        "pass_row_set_nonidentity": summary["pass_row_set_nonidentity"],
+    }
+
+
 def _commit_message(step: QueueStep, record: dict[str, Any]) -> str:
     gate = record.get("gate", {})
+    if step.phase == "1.55F-stage-timing":
+        return (
+            "research(1.55F): land adaptive stage-timing attribution\n\n"
+            "Summarize existing adaptive and fixed-K=1 short-tranche artifacts "
+            "to explain where adaptive's speedup comes from. This analysis is "
+            "accuracy-neutral and attributes the Q3 gap to the post-Q2 repaired "
+            "cache reducing tail prompt work.\n"
+            "Gate summary: q3_fixed_over_adaptive_speedup="
+            f"{_format_float(gate.get('q3_fixed_over_adaptive_speedup'))}x, "
+            f"q3_tail_token_reduction={_format_float(gate.get('q3_tail_token_reduction'))}. "
+            f"mechanism={'PASS' if gate.get('pass_mechanism') else 'FAIL'}, "
+            f"tail_work={'PASS' if gate.get('pass_tail_work') else 'FAIL'}."
+        )
     if step.phase == "1.63E":
         cells = gate.get("cells", [])
         cell_bits = ", ".join(
@@ -211,8 +340,7 @@ def _commit_message(step: QueueStep, record: dict[str, Any]) -> str:
         return (
             "research(1.63E): land Track B frame-budget scaling\n\n"
             "Record Qwen compact post-layer L=2/kr=0.50 Track B sparse-ViT "
-            "execution at 16f, 20f, and 32f, summarized alongside the existing "
-            "8f reference when present. This tests whether the arithmetic "
+            "execution at 8f, 16f, 20f, and 32f by default. This tests whether the arithmetic "
             "ceiling predicts measured end-to-end wall-clock across frame "
             "budgets while keeping LM prompt geometry dense.\n"
             f"Cells: {cell_bits}. "
@@ -239,18 +367,57 @@ def _commit_message(step: QueueStep, record: dict[str, Any]) -> str:
             f"e2e_positive={'PASS' if gate.get('pass_e2e_positive') else 'FAIL'}, "
             f"ceiling={'PASS' if gate.get('pass_ceiling_explained') else 'FAIL'}."
         )
+    if step.phase == "1.55K":
+        cell_bits = ", ".join(
+            f"T={cell.get('temperature')}: diffs="
+            f"{cell.get('paired_correctness_diffs')}/{cell.get('paired_choice_diffs')}, "
+            f"speed={_format_float(cell.get('speedup_all_query_median_cold_over_session_follow_up'))}x"
+            for cell in gate.get("cells", [])
+        )
+        return (
+            "research(1.55K): land adaptive sampler-temperature sweep\n\n"
+            "Run the adaptive Q2=K1/Q3=K0 post-Q2-state policy on the short "
+            "tranche across non-greedy sampling temperatures. Session and "
+            "baseline arms use identical sampler settings, so paired diffs "
+            "measure cache-policy sensitivity rather than sampler mismatch.\n"
+            f"Cells: {cell_bits}. "
+            f"sampler_stability={'PASS' if gate.get('pass_sampler_stability') else 'FAIL'}, "
+            f"strict_exact_match_temperatures={gate.get('strict_exact_match_temperatures')}."
+        )
+    if step.phase == "1.30AF":
+        overlap = gate.get("any_drift_set_overlap", {})
+        return (
+            "research(1.30AF): land cache-boundary attribution\n\n"
+            "Compare 1.30AD cache-reuse and 1.30AC cache-invalidated follow-up "
+            "artifacts to determine whether their equal aggregate accuracy "
+            "drop is row-identical or a boundary aggregate reached through "
+            "different row-level flips. This is a post-hoc attribution, not a "
+            "direct KV tensor-distance probe.\n"
+            f"Gate summary: common_rows={gate.get('common_pair_rows')}, "
+            f"delta_gap={_format_float(gate.get('accuracy_delta_gap'))}, "
+            f"drift_jaccard={_format_float(overlap.get('jaccard'))}, "
+            f"reuse_active={_format_float(gate.get('cache_reuse_active_fraction'))}, "
+            f"invalidated_active={_format_float(gate.get('cache_invalidated_active_fraction'))}. "
+            f"same_net={'PASS' if gate.get('pass_same_net_delta') else 'FAIL'}, "
+            f"mechanism_contrast={'PASS' if gate.get('pass_mechanism_contrast') else 'FAIL'}, "
+            f"row_nonidentity={'PASS' if gate.get('pass_row_set_nonidentity') else 'FAIL'}."
+        )
     return (
         "research(1.65): land logit-margin stability predictor scout\n\n"
         "Record dense Qwen answer-letter logprob margins over a deterministic "
-        "balanced sample of stable and drifted paired artifacts. This is an "
-        "oracle-feature predictor scout, not a deployed guard, and tests whether "
-        "paired stability has a measurable confidence signal instead of only a "
-        "descriptive 0/n drift table.\n"
+        "1.30 cache-boundary paired artifacts with a grouped train/test split. "
+        "This is an oracle-feature predictor scout, not a deployed guard, and "
+        "tests whether 1.30 drift concentrates on intrinsically uncertain items.\n"
         f"Gate summary: n_scored={gate.get('n_scored_rows')}, "
-        f"drift={gate.get('n_drift_rows')}, stable={gate.get('n_stable_rows')}, "
-        f"AUC={_format_float(gate.get('auc_stability_from_dense_margin'))}, "
-        f"safe_filter_precision={_format_float(gate.get('safe_filter_precision_stable'))}, "
-        f"coverage={_format_float(gate.get('safe_filter_coverage'))}. "
+        f"rejected={gate.get('n_rejected_logit_choice_mismatch')}, "
+        f"test_n={gate.get('n_test_rows')}, drift={gate.get('n_drift_rows')}, "
+        f"stable={gate.get('n_stable_rows')}, "
+        f"test_AUC={_format_float(gate.get('test_auc_stability_from_dense_margin'))}, "
+        f"test_CI={gate.get('test_auc_stability_from_dense_margin_ci95')}, "
+        "test_safe_filter_precision="
+        f"{_format_float(gate.get('test_safe_filter_precision_stable'))}, "
+        f"coverage={_format_float(gate.get('test_safe_filter_coverage'))}. "
+        f"Class_presence={'PASS' if gate.get('pass_class_presence') else 'FAIL'}, "
         f"Margin_signal={'PASS' if gate.get('pass_margin_signal') else 'FAIL'}, "
         f"safe_filter={'PASS' if gate.get('pass_safe_filter') else 'FAIL'}."
     )
@@ -354,10 +521,16 @@ def main() -> int:
         record["status"] = "completed" if not args.dry_run else "dry-run"
         if args.dry_run:
             record["gate"] = "pending"
+        elif step.phase == "1.55F-stage-timing":
+            record["gate"] = _gate_phase_155f_stage_timing(step.artifact_dir)
         elif step.phase == "1.63E":
             record["gate"] = _gate_phase_163e(step.artifact_dir)
         elif step.phase == "1.63G":
             record["gate"] = _gate_phase_163g(step.artifact_dir)
+        elif step.phase == "1.55K":
+            record["gate"] = _gate_phase_155k(step.artifact_dir)
+        elif step.phase == "1.30AF":
+            record["gate"] = _gate_phase_130af(step.artifact_dir)
         else:
             record["gate"] = _gate_phase_165(step.artifact_dir)
 
