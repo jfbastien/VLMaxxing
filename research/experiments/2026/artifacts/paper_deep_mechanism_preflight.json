@@ -1,0 +1,303 @@
+{
+  "machine_policy": {
+    "max_safe_rss_gb": 10.0,
+    "note": "The closeout queue is planned for a 16 GB unified-memory laptop. Treat experiments expected to exceed the operator ceiling as blocked even if weights exist locally."
+  },
+  "models": {
+    "qwen_4bit": {
+      "ready": true,
+      "detail": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit"
+    },
+    "qwen_bf16": {
+      "ready": false,
+      "detail": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct"
+    },
+    "gemma_4bit": {
+      "ready": true,
+      "detail": "/Users/jfb/models/gemma-4-e4b-it-4bit"
+    }
+  },
+  "manifests": {
+    "videomme_dev_v1": {
+      "ready": true,
+      "detail": "research/benchmark_manifests/videomme_dev_v1.toml"
+    },
+    "videomme_holdout_v1": {
+      "ready": true,
+      "detail": "research/benchmark_manifests/videomme_holdout_v1.toml"
+    },
+    "videomme_long_dev_holdout_v1": {
+      "ready": true,
+      "detail": "research/benchmark_manifests/videomme_long_dev_holdout_v1.toml"
+    },
+    "videomme_combined_v1_n60": {
+      "ready": true,
+      "detail": "research/benchmark_manifests/videomme_combined_v1_n60.toml"
+    }
+  },
+  "video_sets": {
+    "phase1_55F_short": {
+      "037": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/EQ-67udZEeg.mp4"
+      },
+      "100": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/56yT3H_DjVE.mp4"
+      },
+      "116": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/qK4G2KpmqFU.mp4"
+      },
+      "120": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/s50vvwTystA.mp4"
+      },
+      "158": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/uJFbOrNrL3w.mp4"
+      },
+      "160": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/njc90ODIbLc.mp4"
+      },
+      "210": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/XS6ysDFTbLU.mp4"
+      }
+    },
+    "phase1_55G_medium": {
+      "320": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/z2APU5ob9Og.mp4"
+      },
+      "354": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/HooZ84rpovQ.mp4"
+      },
+      "364": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/3fQxvz4ENDg.mp4"
+      },
+      "380": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/2Bns2m5Bg4M.mp4"
+      },
+      "407": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/QxYHkKLaFmY.mp4"
+      },
+      "408": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/weOrNMHcDTI.mp4"
+      },
+      "426": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/vv6ATRPUjrI.mp4"
+      },
+      "484": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/PSyedQl9IiQ.mp4"
+      },
+      "486": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/WO86oRJt8lM.mp4"
+      },
+      "531": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/xk8PdL_PdSo.mp4"
+      }
+    },
+    "phase1_55I_long": {
+      "669": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/g1VFfVsZt7w.mp4"
+      },
+      "711": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/XOfeqRgaF1A.mp4"
+      },
+      "712": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/GDzuMTvHnJE.mp4"
+      },
+      "737": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/HT2iYl6E_Vo.mp4"
+      },
+      "756": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/i1p5PAgNvR0.mp4"
+      },
+      "758": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/rhDdA-7gEhs.mp4"
+      },
+      "794": {
+        "ready": true,
+        "detail": "data/benchmarks/videomme/videos/XDq08lk5GnQ.mp4"
+      }
+    }
+  },
+  "experiments": {
+    "1.30Z": {
+      "ready": true,
+      "detail": "long-bucket kr_Q0=0.67 continuation"
+    },
+    "1.30AA": {
+      "ready": true,
+      "detail": "duration-conditioned full-union rerun"
+    },
+    "1.55F": {
+      "ready": true,
+      "detail": "Q3 from repaired post-Q2 state"
+    },
+    "1.55G": {
+      "ready": true,
+      "detail": "K=1 medium-bucket replication"
+    },
+    "1.55H": {
+      "ready": true,
+      "detail": "K=1 short-bucket 32f boundary probe"
+    },
+    "1.55I": {
+      "ready": true,
+      "detail": "K=1 long-bucket replication"
+    },
+    "1.55F-medium": {
+      "ready": true,
+      "detail": "adaptive post-Q2-state medium-bucket replication"
+    },
+    "1.55F-long": {
+      "ready": true,
+      "detail": "adaptive post-Q2-state long-bucket replication"
+    },
+    "1.55F-32f": {
+      "ready": true,
+      "detail": "adaptive post-Q2-state 32f short-bucket replication"
+    },
+    "1.55J": {
+      "ready": true,
+      "detail": "K=1 short-bucket sampler-variation scout"
+    },
+    "1.55F-16f": {
+      "ready": true,
+      "detail": "adaptive post-Q2-state 16f short-bucket interpolation"
+    },
+    "1.55F-stage-timing": {
+      "ready": true,
+      "detail": {
+        "phase": "adaptive-vs-fixed timing attribution",
+        "required_sources_ready": true,
+        "required_sources": [
+          "research/experiments/2026/artifacts/phase1_55F_q3_post_q2_state/session_k1_n7.jsonl",
+          "research/experiments/2026/artifacts/phase1_55D_selective_reprefill_v2/session_k1_n7.jsonl"
+        ]
+      }
+    },
+    "1.55K": {
+      "ready": true,
+      "detail": "adaptive short-bucket sampler-temperature sweep"
+    },
+    "1.55F-Gemma": {
+      "ready": false,
+      "detail": {
+        "phase": "Gemma adaptive C-PERSIST replication",
+        "gemma_model_ready": true,
+        "blocked_reason": "Gemma 4 E4B weights are present, but adaptive C-PERSIST is blocked by the known mlx-vlm RotatingKVCache/sliding-window prompt-cache incompatibility from phase 1.55C. Do not run a Qwen-style selective re-prefill driver on Gemma 4 without a cache-type-aware implementation."
+      }
+    },
+    "1.57G": {
+      "ready": true,
+      "detail": "Gemma short/medium/long feature-drift grid at 8/16/32f"
+    },
+    "1.30AB": {
+      "ready": true,
+      "detail": {
+        "phase": "long-bucket Q0 keep-rate boundary sweep",
+        "reference_cold_dir": "research/experiments/2026/artifacts/phase1_30Z_long_q0_kr067_20260424",
+        "reference_cold_ready": true
+      }
+    },
+    "1.30AE": {
+      "ready": true,
+      "detail": "duration-conditioned full-union rerun with sweep-selected long keep-rate"
+    },
+    "1.30AC": {
+      "ready": true,
+      "detail": {
+        "phase": "cache-invalidated follow-up pruning",
+        "reference_cold_dir": "research/experiments/2026/artifacts/phase1_30W_q0_dense_followup_pruned_full",
+        "reference_cold_ready": true
+      }
+    },
+    "1.30AD": {
+      "ready": true,
+      "detail": {
+        "phase": "instrumented 1.30W rerun",
+        "reference_cold_dir": "research/experiments/2026/artifacts/phase1_30W_q0_dense_followup_pruned_full",
+        "reference_cold_ready": true
+      }
+    },
+    "1.30AF": {
+      "ready": true,
+      "detail": {
+        "phase": "post-hoc 1.30AC/AD cache-boundary attribution",
+        "required_sources_ready": true,
+        "required_sources": [
+          "research/experiments/2026/artifacts/phase1_30AD_instrumented_w_rerun/paired_queries.jsonl",
+          "research/experiments/2026/artifacts/phase1_30AD_instrumented_w_rerun/streaming_q0_dense_cache_reuse_followups.jsonl",
+          "research/experiments/2026/artifacts/phase1_30AC_cache_invalidated_followups/paired_queries.jsonl",
+          "research/experiments/2026/artifacts/phase1_30AC_cache_invalidated_followups/streaming_cache_invalidated_followups.jsonl"
+        ]
+      }
+    },
+    "1.62D": {
+      "ready": true,
+      "detail": {
+        "phase": "low-FPS dense VideoMME session baseline",
+        "reference_cold_dir": "research/experiments/2026/artifacts/phase1_30W_q0_dense_followup_pruned_full",
+        "reference_cold_ready": true,
+        "unique_manifest_sessions": 57,
+        "expected_unique_manifest_sessions": 57
+      }
+    },
+    "1.63": {
+      "ready": true,
+      "detail": "Track B compact Qwen ViT execution, dense vs L2 kr0.50 sparse"
+    },
+    "1.63E": {
+      "ready": true,
+      "detail": "Track B compact Qwen ViT execution across 8f/16f/20f/32f frame budgets"
+    },
+    "1.63G": {
+      "ready": true,
+      "detail": "Track B compact Gemma ViT execution across 8f/16f/32f on VideoMME n=60"
+    },
+    "1.66": {
+      "ready": true,
+      "detail": "analysis-only memory characterization over landed 1.30/1.55/Track B artifacts"
+    },
+    "1.65": {
+      "ready": true,
+      "detail": {
+        "phase": "dense logit-margin failure-predictor scout",
+        "required_sources_ready": true,
+        "required_sources": [
+          "research/experiments/2026/artifacts/phase1_30AD_instrumented_w_rerun/paired_queries.jsonl",
+          "research/experiments/2026/artifacts/phase1_30AC_cache_invalidated_followups/paired_queries.jsonl"
+        ]
+      }
+    },
+    "1.58": {
+      "ready": false,
+      "detail": {
+        "phase": "bf16 quantization control",
+        "bf16_checkpoint_present": false,
+        "required_safe_rss_gb": 14.0,
+        "configured_safe_rss_gb": 10.0,
+        "blocked_reason": "bf16 path exceeds the current local memory policy and/or weights are absent"
+      }
+    }
+  }
+}

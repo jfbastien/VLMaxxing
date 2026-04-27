@@ -1,0 +1,132 @@
+{
+  "preflight_json": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/paper_deep_mechanism_preflight.json",
+  "dry_run": false,
+  "strict": false,
+  "auto_commit": true,
+  "started_at": "2026-04-27T04:27:12+00:00",
+  "steps": [
+    {
+      "phase": "1.55F-stage-timing",
+      "runtime_estimate": "~1 min (analysis-only)",
+      "rationale": "Attribute the adaptive-vs-fixed C-PERSIST speedup gap from existing artifacts by comparing Q3 elapsed time and tail-token counts. This explains why adaptive is faster without another accuracy run.",
+      "ready": true,
+      "timeout_seconds": 600,
+      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_55F_stage_timing",
+      "command": [
+        "bash",
+        "/Users/jfb/s/codec-through/scripts/run_phase1_55F_stage_timing_analysis.sh"
+      ],
+      "status": "completed",
+      "gate": {
+        "q3_fixed_over_adaptive_speedup": 9.852119862012811,
+        "q3_speedup_threshold": 3.0,
+        "q3_tail_token_reduction": 0.8891352549889135,
+        "adaptive_q3": {
+          "cache_sources": [
+            "post_q2_repaired"
+          ],
+          "median_elapsed_ms": 675.185291,
+          "median_prefix_coverage": 0.9938302073050346,
+          "median_tail_prompt_tokens": 50.0,
+          "n": 7,
+          "reprefill_k_values": [
+            0
+          ]
+        },
+        "fixed_k1_q3": {
+          "cache_sources": [
+            "None"
+          ],
+          "median_elapsed_ms": 6652.006416,
+          "median_prefix_coverage": 0.9443484698914116,
+          "median_tail_prompt_tokens": 451.0,
+          "n": 7,
+          "reprefill_k_values": [
+            1
+          ]
+        },
+        "paired_q3": {
+          "median_fixed_over_adaptive_speedup": 9.499639841646504,
+          "median_tail_token_reduction": 0.8891352549889135,
+          "n": 7,
+          "rows": [
+            {
+              "adaptive_elapsed_ms": 688.586,
+              "adaptive_tail_prompt_tokens": 88.0,
+              "fixed_k1_elapsed_ms": 6541.3189999999995,
+              "fixed_k1_tail_prompt_tokens": 489.0,
+              "fixed_over_adaptive_speedup": 9.499639841646504,
+              "item_id": "videomme:short:037-3",
+              "q_index": 2,
+              "tail_token_reduction": 0.820040899795501
+            },
+            {
+              "adaptive_elapsed_ms": 650.624417,
+              "adaptive_tail_prompt_tokens": 50.0,
+              "fixed_k1_elapsed_ms": 6652.006416,
+              "fixed_k1_tail_prompt_tokens": 451.0,
+              "fixed_over_adaptive_speedup": 10.224034392487303,
+              "item_id": "videomme:short:100-3",
+              "q_index": 2,
+              "tail_token_reduction": 0.8891352549889135
+            },
+            {
+              "adaptive_elapsed_ms": 675.185291,
+              "adaptive_tail_prompt_tokens": 46.0,
+              "fixed_k1_elapsed_ms": 6412.960584,
+              "fixed_k1_tail_prompt_tokens": 447.0,
+              "fixed_over_adaptive_speedup": 9.49807507580908,
+              "item_id": "videomme:short:116-3",
+              "q_index": 2,
+              "tail_token_reduction": 0.8970917225950783
+            },
+            {
+              "adaptive_elapsed_ms": 582.947334,
+              "adaptive_tail_prompt_tokens": 39.0,
+              "fixed_k1_elapsed_ms": 8743.642916,
+              "fixed_k1_tail_prompt_tokens": 440.0,
+              "fixed_over_adaptive_speedup": 14.999027195139384,
+              "item_id": "videomme:short:120-3",
+              "q_index": 2,
+              "tail_token_reduction": 0.9113636363636364
+            },
+            {
+              "adaptive_elapsed_ms": 812.447042,
+              "adaptive_tail_prompt_tokens": 82.0,
+              "fixed_k1_elapsed_ms": 8533.508459,
+              "fixed_k1_tail_prompt_tokens": 483.0,
+              "fixed_over_adaptive_speedup": 10.50346424795033,
+              "item_id": "videomme:short:158-3",
+              "q_index": 2,
+              "tail_token_reduction": 0.8302277432712215
+            },
+            {
+              "adaptive_elapsed_ms": 492.62133300000005,
+              "adaptive_tail_prompt_tokens": 34.0,
+              "fixed_k1_elapsed_ms": 4202.792084,
+              "fixed_k1_tail_prompt_tokens": 435.0,
+              "fixed_over_adaptive_speedup": 8.531486158761215,
+              "item_id": "videomme:short:160-3",
+              "q_index": 2,
+              "tail_token_reduction": 0.9218390804597701
+            },
+            {
+              "adaptive_elapsed_ms": 912.4773339999999,
+              "adaptive_tail_prompt_tokens": 78.0,
+              "fixed_k1_elapsed_ms": 7138.213375,
+              "fixed_k1_tail_prompt_tokens": 479.0,
+              "fixed_over_adaptive_speedup": 7.822893905439191,
+              "item_id": "videomme:short:210-3",
+              "q_index": 2,
+              "tail_token_reduction": 0.837160751565762
+            }
+          ]
+        },
+        "pass_mechanism": true,
+        "pass_tail_work": true
+      },
+      "auto_commit": "committed"
+    }
+  ],
+  "updated_at": "2026-04-27T04:27:12+00:00"
+}
