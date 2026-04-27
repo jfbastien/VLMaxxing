@@ -30,6 +30,12 @@ def test_deep_mechanism_queue_startup_dirty_path_filter() -> None:
             "phase1_55K_adaptive_temperature_sweep/t0p7/pair_metrics_k1_n7.json"
         )
     )
+    assert queue._is_allowed_startup_dirty_path(
+        Path(
+            "research/experiments/2026/artifacts/"
+            "phase1_66_memory_characterization/memory_characterization_summary.json"
+        )
+    )
     assert not queue._is_allowed_startup_dirty_path(Path("scripts/run_phase1_63G_gemma_track_b.py"))
 
 
@@ -85,6 +91,111 @@ def test_gate_phase_163e_reports_scaling_verdict(tmp_path: Path) -> None:
     assert gate["frame_counts"] == [16, 32]
     assert gate["max_abs_actual_minus_predicted"] == 0.04
     assert gate["cells"][1]["frame_count"] == 32
+
+
+def test_gate_phase_163g_uses_scaling_summary(tmp_path: Path) -> None:
+    artifact_dir = tmp_path
+    (artifact_dir / "scaling_summary.json").write_text(
+        json.dumps(
+            {
+                "complete": True,
+                "headline_pass": True,
+                "n_cells": 3,
+                "frame_counts": [8, 16, 32],
+                "headline_frame_counts": [8, 16, 32],
+                "reference_frame_counts": [],
+                "max_abs_actual_minus_predicted": 0.03,
+                "headline_max_abs_actual_minus_predicted": 0.03,
+                "cells": [
+                    {
+                        "frame_count": 8,
+                        "n_paired_items": 60,
+                        "accuracy_delta": 0.0,
+                        "vision_reduction": 0.35,
+                        "actual_e2e_speedup": 1.05,
+                        "predicted_e2e_speedup": 1.04,
+                        "actual_minus_predicted": 0.01,
+                        "pass_fidelity": True,
+                        "pass_sparse_vision": True,
+                        "pass_e2e_positive": True,
+                        "pass_ceiling_explained": True,
+                    },
+                    {
+                        "frame_count": 16,
+                        "n_paired_items": 60,
+                        "accuracy_delta": 0.0,
+                        "vision_reduction": 0.40,
+                        "actual_e2e_speedup": 1.08,
+                        "predicted_e2e_speedup": 1.07,
+                        "actual_minus_predicted": 0.01,
+                        "pass_fidelity": True,
+                        "pass_sparse_vision": True,
+                        "pass_e2e_positive": True,
+                        "pass_ceiling_explained": True,
+                    },
+                    {
+                        "frame_count": 32,
+                        "n_paired_items": 60,
+                        "accuracy_delta": -0.01,
+                        "vision_reduction": 0.50,
+                        "actual_e2e_speedup": 1.13,
+                        "predicted_e2e_speedup": 1.11,
+                        "actual_minus_predicted": 0.02,
+                        "pass_fidelity": True,
+                        "pass_sparse_vision": True,
+                        "pass_e2e_positive": True,
+                        "pass_ceiling_explained": True,
+                    },
+                ],
+            }
+        )
+        + "\n"
+    )
+
+    gate = queue._gate_phase_163g(artifact_dir)
+
+    assert gate["headline_pass"] is True
+    assert gate["frame_counts"] == [8, 16, 32]
+    assert gate["cells"][2]["actual_e2e_speedup"] == 1.13
+
+
+def test_gate_phase_166_reports_memory_envelope(tmp_path: Path) -> None:
+    artifact_dir = tmp_path
+    (artifact_dir / "memory_characterization_summary.json").write_text(
+        json.dumps(
+            {
+                "n_cells": 12,
+                "max_observed_peak_gb": 13.6,
+                "n_cells_over_9gb": 4,
+                "n_cells_over_10gb": 2,
+                "by_family": {
+                    "C-PERSIST/1.55": {
+                        "n_cells": 8,
+                        "max_peak_observed_gb": 13.6,
+                        "n_cells_over_9gb": 4,
+                        "n_cells_over_10gb": 2,
+                    }
+                },
+                "families_present": ["C-PERSIST/1.55", "C-VISION/1.30", "Track-B/1.63"],
+                "missing_required_families": [],
+                "high_watermark_cells": [
+                    {
+                        "phase_id": "phase1_55H_k1_32f_short_probe",
+                        "peak_observed_gb": 13.6,
+                    }
+                ],
+                "pass_memory_characterized": True,
+            }
+        )
+        + "\n"
+    )
+
+    gate = queue._gate_phase_166(artifact_dir)
+
+    assert gate["pass_memory_characterized"] is True
+    assert gate["missing_required_families"] == []
+    assert gate["max_observed_peak_gb"] == 13.6
+    assert gate["high_watermark_cells"][0]["phase_id"] == "phase1_55H_k1_32f_short_probe"
 
 
 def test_gate_phase_165_reports_predictor_metrics(tmp_path: Path) -> None:

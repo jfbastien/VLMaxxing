@@ -1144,12 +1144,12 @@ authoritative in the per-phase notes under
   status: preregistered / ready-to-run
   authoritative_note: research/experiments/2026/2026-04-27-phase-1_63G-gemma-track-b-prereg.md
   authoritative_artifacts: []
-  current_best_policy: pending; Gemma compact post-layer L=2 kr=0.50 Track B sparse-ViT at 8f
+  current_best_policy: pending; Gemma compact post-layer L=2 kr=0.50 Track B sparse-ViT at 8f/16f/32f
   supersedes: []
-  paper_relevance: primary diagnostic (tests architecture generality of Track B sparse-ViT and the ceiling model)
+  paper_relevance: primary diagnostic (tests architecture and frame-budget generality of Track B sparse-ViT and the ceiling model)
   prereg_outcome: pending
-  runtime_estimate: ~2.5-3.5h
-  notes: Uses a dedicated Gemma arm runner because the existing Gemma novelty-pruning runner shortens prompt geometry and is not a clean vision-tower-only Track B test.
+  runtime_estimate: ~7.5-10.5h
+  notes: Uses a dedicated Gemma arm runner because the existing Gemma novelty-pruning runner shortens prompt geometry and is not a clean vision-tower-only Track B test. The default wrapper runs 8f/16f/32f so the cross-architecture C-CEILING evidence is a curve, not a single point.
 
 - phase_id: 1.55F-stage-timing
   status: preregistered / ready-to-run
@@ -1205,6 +1205,28 @@ authoritative in the per-phase notes under
   prereg_outcome: pending
   runtime_estimate: ~5-8h at PHASE1_65_MAX_ROWS=0
   notes: This is an oracle-feature predictor scout, not a deployed guard. It deliberately excludes Q0 rows and all 1.55F/adaptive rows to avoid learning admission/source/policy identity instead of within-1.30 follow-up stability; rows where the dense logit argmax disagrees with the artifact dense choice are rejected before analysis.
+
+- phase_id: 1.30AG
+  status: preregistered / conditional
+  authoritative_note: research/experiments/2026/2026-04-27-phase-1_30AG-kcache-distance-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: conditional K-cache distance probe for 1.30AC/1.30AD aggregate-equivalence mechanism
+  supersedes: []
+  paper_relevance: optional mechanism closure (only if 1.30AF feature attribution is diffuse)
+  prereg_outcome: pending
+  runtime_estimate: ~2h if implemented/launched
+  notes: Named 1.30AG because 1.30AE already denotes the skipped duration-conditioned union candidate. This is not in the default deep-mechanism queue; launch only if row/feature/margin attribution fails to explain the equal aggregate loss.
+
+- phase_id: 1.66
+  status: preregistered / ready-to-run
+  authoritative_note: research/experiments/2026/2026-04-27-phase-1_66-memory-characterization-prereg.md
+  authoritative_artifacts: []
+  current_best_policy: analysis-only memory envelope over landed 1.30/1.55/Track-B artifacts
+  supersedes: []
+  paper_relevance: reviewer-defense (turns RSS-gate misses and high-watermark cells into an explicit local-memory envelope)
+  prereg_outcome: pending
+  runtime_estimate: <1min
+  notes: Emits JSON and CSV only; it is not a model-quality claim and should be used to explain local 16 GB resource boundaries.
 ```
 
 ## Maintenance rules

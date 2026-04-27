@@ -421,7 +421,11 @@ def main() -> int:
         ),
         "1.63G": _status(
             gemma_4bit_ready and manifests["videomme_combined_v1_n60"]["ready"],
-            detail="Track B compact Gemma ViT execution at 8f on VideoMME n=60",
+            detail="Track B compact Gemma ViT execution across 8f/16f/32f on VideoMME n=60",
+        ),
+        "1.66": _status(
+            True,
+            detail="analysis-only memory characterization over landed 1.30/1.55/Track B artifacts",
         ),
         "1.65": _status(
             qwen_4bit_ready and phase165_sources_ready,

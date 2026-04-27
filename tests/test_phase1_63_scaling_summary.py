@@ -6,13 +6,20 @@ import sys
 from pathlib import Path
 
 
-def _write_cell(path: Path, *, frame_count: int, actual_minus_predicted: float) -> None:
+def _write_cell(
+    path: Path,
+    *,
+    frame_count: int,
+    actual_minus_predicted: float,
+    pass_complete_pairing: bool = True,
+    pass_format: bool = True,
+) -> None:
     path.write_text(
         json.dumps(
             {
                 "n_paired_items": 60,
-                "pass_complete_pairing": True,
-                "pass_format": True,
+                "pass_complete_pairing": pass_complete_pairing,
+                "pass_format": pass_format,
                 "pass_fidelity": True,
                 "pass_sparse_vision": True,
                 "pass_e2e_positive": True,
@@ -99,3 +106,31 @@ def test_scaling_summary_can_exclude_reference_from_headline_gate(tmp_path: Path
     assert summary["headline_pass"] is True
     assert summary["max_abs_actual_minus_predicted"] == 0.20
     assert summary["headline_max_abs_actual_minus_predicted"] == 0.02
+
+
+def test_scaling_summary_vetoes_incomplete_headline_cell(tmp_path: Path) -> None:
+    cell16 = tmp_path / "pair_summary_16f.json"
+    output = tmp_path / "scaling_summary.json"
+    _write_cell(
+        cell16,
+        frame_count=16,
+        actual_minus_predicted=0.02,
+        pass_complete_pairing=False,
+    )
+
+    subprocess.run(
+        [
+            sys.executable,
+            "scripts/summarize_phase1_63_track_b_scaling.py",
+            "--cell",
+            "16",
+            str(cell16),
+            "--output",
+            str(output),
+        ],
+        check=True,
+    )
+
+    summary = json.loads(output.read_text())
+    assert summary["complete"] is False
+    assert summary["headline_pass"] is False

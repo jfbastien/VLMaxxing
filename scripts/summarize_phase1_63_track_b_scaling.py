@@ -39,6 +39,7 @@ def _cell(frame_count: int, summary_path: Path) -> dict[str, Any]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--phase", default="1.63E")
     parser.add_argument(
         "--cell",
         action="append",
@@ -67,14 +68,16 @@ def main() -> int:
     if not headline_cells:
         headline_cells = cells
     headline_pass = all(
-        cell["pass_fidelity"]
+        cell["pass_complete_pairing"]
+        and cell["pass_format"]
+        and cell["pass_fidelity"]
         and cell["pass_sparse_vision"]
         and cell["pass_e2e_positive"]
         and cell["pass_ceiling_explained"]
         for cell in headline_cells
     )
     payload = {
-        "phase": "1.63E",
+        "phase": args.phase,
         "complete": complete,
         "headline_pass": headline_pass,
         "n_cells": len(cells),
@@ -95,7 +98,7 @@ def main() -> int:
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
-    print(f"[1.63E] wrote {args.output}")
+    print(f"[{args.phase}] wrote {args.output}")
     return 0
 
 

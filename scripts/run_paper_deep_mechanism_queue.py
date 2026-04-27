@@ -5,11 +5,12 @@ This queue is intentionally separate from the reviewer-defense queue. It adds
 the larger mechanism tests requested after Track B landed:
 
 * 1.63E: Qwen Track B frame-budget scaling.
-* 1.63G: Gemma Track B architecture check.
+* 1.63G: Gemma Track B frame-budget architecture check.
 * 1.55F-stage-timing: adaptive-vs-fixed timing attribution.
 * 1.55K: adaptive sampler-temperature sweep.
-* 1.30AF: cache-boundary row-level attribution.
 * 1.65: within-1.30 dense logit-margin predictor scout.
+* 1.30AF: cache-boundary row-level attribution.
+* 1.66: memory-envelope characterization.
 """
 
 from __future__ import annotations
@@ -46,6 +47,7 @@ def _allowed_startup_dirty_paths() -> tuple[Path, ...]:
         ARTIFACT_ROOT / "phase1_55K_adaptive_temperature_sweep",
         ARTIFACT_ROOT / "phase1_30AF_cache_boundary_attribution",
         ARTIFACT_ROOT / "phase1_65_logit_margin_failure_predictor",
+        ARTIFACT_ROOT / "phase1_66_memory_characterization",
     )
 
 
@@ -114,14 +116,15 @@ def _steps() -> list[QueueStep]:
         ),
         QueueStep(
             phase="1.63G",
-            runtime_estimate="~2.5-3.5 h",
+            runtime_estimate="~7.5-10.5 h with 8f/16f/32f default",
             rationale=(
                 "Run the same vision-tower-only Track B compact execution on "
-                "Gemma 4 E4B to test whether the ceiling/sparse-execution story "
-                "is architecture-general rather than Qwen-only."
+                "Gemma 4 E4B at 8f, 16f, and 32f to test whether the "
+                "ceiling/sparse-execution story is architecture-general across "
+                "frame budgets rather than Qwen-only."
             ),
             command=("bash", str(REPO_ROOT / "scripts/run_phase1_63G_gemma_track_b.sh")),
-            timeout_seconds=18_000,
+            timeout_seconds=45_000,
             artifact_dir=ARTIFACT_ROOT / "phase1_63G_gemma_track_b",
             readiness_key="1.63G",
         ),
@@ -168,6 +171,19 @@ def _steps() -> list[QueueStep]:
             artifact_dir=ARTIFACT_ROOT / "phase1_30AF_cache_boundary_attribution",
             readiness_key="1.30AF",
         ),
+        QueueStep(
+            phase="1.66",
+            runtime_estimate="~1 min (analysis-only)",
+            rationale=(
+                "Aggregate peak memory/RSS observations from landed 1.30, "
+                "1.55, and Track B artifacts so the paper can explain memory "
+                "budgets and RSS-gate misses as a measured envelope."
+            ),
+            command=("bash", str(REPO_ROOT / "scripts/run_phase1_66_memory_characterization.sh")),
+            timeout_seconds=600,
+            artifact_dir=ARTIFACT_ROOT / "phase1_66_memory_characterization",
+            readiness_key="1.66",
+        ),
     ]
 
 
@@ -204,26 +220,21 @@ def _gate_phase_163e(artifact_dir: Path) -> dict[str, Any]:
 
 
 def _gate_phase_163g(artifact_dir: Path) -> dict[str, Any]:
-    summary = _load_json(artifact_dir / "pair_summary.json")
-    all_summary = summary["all"]
+    return _gate_phase_163e(artifact_dir)
+
+
+def _gate_phase_166(artifact_dir: Path) -> dict[str, Any]:
+    summary = _load_json(artifact_dir / "memory_characterization_summary.json")
     return {
-        "n_paired_items": summary["n_paired_items"],
-        "pass_complete_pairing": summary["pass_complete_pairing"],
-        "pass_format": summary["pass_format"],
-        "accuracy_delta": all_summary["accuracy_delta_sparse_minus_dense"],
-        "choice_agreement": all_summary["choice_agreement"],
-        "mean_keep_rate": all_summary["mean_keep_rate"],
-        "vision_reduction": all_summary["vision_reduction"],
-        "vision_speedup_dense_over_sparse": all_summary["vision_speedup_dense_over_sparse"],
-        "actual_e2e_speedup_dense_over_sparse": all_summary["actual_e2e_speedup_dense_over_sparse"],
-        "predicted_e2e_speedup_from_vision_only": all_summary[
-            "predicted_e2e_speedup_from_vision_only"
-        ],
-        "actual_minus_predicted_e2e_speedup": all_summary["actual_minus_predicted_e2e_speedup"],
-        "pass_fidelity": summary["pass_fidelity"],
-        "pass_sparse_vision": summary["pass_sparse_vision"],
-        "pass_e2e_positive": summary["pass_e2e_positive"],
-        "pass_ceiling_explained": summary["pass_ceiling_explained"],
+        "n_cells": summary["n_cells"],
+        "max_observed_peak_gb": summary["max_observed_peak_gb"],
+        "n_cells_over_9gb": summary["n_cells_over_9gb"],
+        "n_cells_over_10gb": summary["n_cells_over_10gb"],
+        "by_family": summary["by_family"],
+        "families_present": summary["families_present"],
+        "missing_required_families": summary["missing_required_families"],
+        "high_watermark_cells": summary["high_watermark_cells"][:5],
+        "pass_memory_characterized": summary["pass_memory_characterized"],
     }
 
 
@@ -364,23 +375,24 @@ def _commit_message(step: QueueStep, record: dict[str, Any]) -> str:
             f"{_format_float(gate.get('headline_max_abs_actual_minus_predicted'))}."
         )
     if step.phase == "1.63G":
+        cells = gate.get("cells", [])
+        cell_bits = ", ".join(
+            f"{cell.get('frame_count')}f: e2e="
+            f"{_format_float(cell.get('actual_e2e_speedup'))}x, pred="
+            f"{_format_float(cell.get('predicted_e2e_speedup'))}x, "
+            f"Δ={_format_float(cell.get('actual_minus_predicted'))}"
+            for cell in cells
+        )
         return (
-            "research(1.63G): land Gemma Track B sparse ViT check\n\n"
+            "research(1.63G): land Gemma Track B frame scaling\n\n"
             "Record Gemma 4 E4B dense versus compact post-layer L=2/kr=0.50 "
-            "vision execution on the VideoMME n=60 Track B manifest. The scope "
-            "is vision-tower-only: compact execution is scattered back before "
+            "vision execution at 8f, 16f, and 32f by default. The scope is "
+            "vision-tower-only: compact execution is scattered back before "
             "pooler/merger so the LM prompt remains dense.\n"
-            f"Gate summary: n={gate.get('n_paired_items')}, "
-            f"Δacc={_format_float(gate.get('accuracy_delta'))}, "
-            f"vision_reduction={_format_float(gate.get('vision_reduction'))}, "
-            "e2e_speedup="
-            f"{_format_float(gate.get('actual_e2e_speedup_dense_over_sparse'))}x, "
-            "ceiling_pred="
-            f"{_format_float(gate.get('predicted_e2e_speedup_from_vision_only'))}x. "
-            f"Fidelity={'PASS' if gate.get('pass_fidelity') else 'FAIL'}, "
-            f"sparse_vision={'PASS' if gate.get('pass_sparse_vision') else 'FAIL'}, "
-            f"e2e_positive={'PASS' if gate.get('pass_e2e_positive') else 'FAIL'}, "
-            f"ceiling={'PASS' if gate.get('pass_ceiling_explained') else 'FAIL'}."
+            f"Cells: {cell_bits}. "
+            f"headline_pass={gate.get('headline_pass')}, "
+            "headline_max_abs_actual_minus_predicted="
+            f"{_format_float(gate.get('headline_max_abs_actual_minus_predicted'))}."
         )
     if step.phase == "1.55K":
         cell_bits = ", ".join(
@@ -426,6 +438,24 @@ def _commit_message(step: QueueStep, record: dict[str, Any]) -> str:
             f"mechanism_contrast={'PASS' if gate.get('pass_mechanism_contrast') else 'FAIL'}, "
             f"row_nonidentity={'PASS' if gate.get('pass_row_set_nonidentity') else 'FAIL'}, "
             f"feature_report={'PASS' if gate.get('pass_feature_attribution_report') else 'FAIL'}."
+        )
+    if step.phase == "1.66":
+        high = gate.get("high_watermark_cells", [])
+        high_text = high[0] if high else {}
+        return (
+            "research(1.66): land memory characterization\n\n"
+            "Aggregate peak RSS and peak model-memory observations from landed "
+            "1.30, 1.55, and Track B artifacts. This is analysis-only reviewer "
+            "defense for the local 16 GB laptop envelope and explains prior "
+            "RSS-gate misses as measured operating points rather than hidden "
+            "failures.\n"
+            f"Gate summary: n_cells={gate.get('n_cells')}, "
+            f"max_peak_gb={_format_float(gate.get('max_observed_peak_gb'))}, "
+            f"over_9gb={gate.get('n_cells_over_9gb')}, "
+            f"over_10gb={gate.get('n_cells_over_10gb')}, "
+            f"missing_required_families={gate.get('missing_required_families')}, "
+            f"top_high_watermark={high_text}. "
+            f"memory_characterized={'PASS' if gate.get('pass_memory_characterized') else 'FAIL'}."
         )
     return (
         "research(1.65): land logit-margin stability predictor scout\n\n"
@@ -556,6 +586,8 @@ def main() -> int:
             record["gate"] = _gate_phase_155k(step.artifact_dir)
         elif step.phase == "1.30AF":
             record["gate"] = _gate_phase_130af(step.artifact_dir)
+        elif step.phase == "1.66":
+            record["gate"] = _gate_phase_166(step.artifact_dir)
         else:
             record["gate"] = _gate_phase_165(step.artifact_dir)
 
