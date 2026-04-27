@@ -101,6 +101,10 @@ def test_selective_reprefill_pair_analyzer_surfaces_pathology_and_speed(tmp_path
     ]
     assert len(paired_rows) == 3
     assert metrics["n_sessions"] == 1
+    assert metrics["session_n_correct"] == 2
+    assert metrics["baseline_n_correct"] == 3
+    assert metrics["session_accuracy"] == 2 / 3
+    assert metrics["baseline_accuracy"] == 1.0
     assert metrics["paired_correctness_diffs"] == 1
     assert metrics["paired_choice_diffs"] == 1
     assert metrics["pathological_follow_up_hits"] == 2

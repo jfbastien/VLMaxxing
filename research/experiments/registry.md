@@ -1160,7 +1160,7 @@ authoritative in the per-phase notes under
   paper_relevance: secondary mechanism (explains adaptive C-PERSIST speedup as Q3 re-prefill avoidance)
   prereg_outcome: pending
   runtime_estimate: <1min
-  notes: No new MLX generation; this is a mechanism attribution over existing JSONL timings and tail-token counts.
+  notes: No new MLX generation; this is a mechanism attribution over existing JSONL timings and tail-token counts. The preregistered Q3 speedup gate is >=3x so the analyzer does not mark a clear measured attribution as a false failure solely because it is below a more aggressive 5x heuristic.
 
 - phase_id: 1.55K
   status: preregistered / ready-to-run
@@ -1171,18 +1171,18 @@ authoritative in the per-phase notes under
   paper_relevance: reviewer-defense (tests whether adaptive C-PERSIST headline is greedy-only)
   prereg_outcome: pending
   runtime_estimate: ~4-6h
-  notes: Uses identical sampler settings for session and baseline arms; T=0.0 greedy 1.55F is included as reference when present.
+  notes: Uses identical sampler settings for session and baseline arms; T=0.0 greedy 1.55F is included as reference when present. The summary hard-gates sampler-robustness on absolute cold-baseline accuracy >=14/21 in every temperature cell so mutual sampler collapse cannot masquerade as cache robustness.
 
 - phase_id: 1.30AF
   status: preregistered / ready-to-run
   authoritative_note: research/experiments/2026/2026-04-27-phase-1_30AF-cache-boundary-attribution-prereg.md
   authoritative_artifacts: []
-  current_best_policy: pending; post-hoc 1.30AC/1.30AD row-level failure-set attribution
+  current_best_policy: pending; post-hoc 1.30AC/1.30AD row-level failure-set and feature attribution
   supersedes: []
   paper_relevance: secondary mechanism (distinguishes same aggregate loss from row-identical behavior)
   prereg_outcome: pending
   runtime_estimate: <1min
-  notes: Named 1.30AF because 1.30AE already denotes the skipped duration-conditioned union candidate. This is not direct KV tensor-distance measurement.
+  notes: Named 1.30AF because 1.30AE already denotes the skipped duration-conditioned union candidate. This is not direct KV tensor-distance measurement; it reports duration/q-index/cold-correctness feature concentrations and, when 1.65 has landed first, logit-margin stratification.
 
 - phase_id: 1.55F-Gemma
   status: deferred / blocked

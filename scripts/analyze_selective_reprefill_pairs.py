@@ -111,6 +111,8 @@ def main() -> int:
     session_follow_up_ms: list[float] = []
     baseline_follow_up_ms: list[float] = []
     baseline_all_ms = [float(row["elapsed_ms"]) for row in baseline_rows]
+    session_n_correct = sum(bool(row["correct"]) for row in session_rows)
+    baseline_n_correct = sum(bool(row["correct"]) for row in baseline_rows)
     q_index_breakdown: dict[str, dict[str, Any]] = {}
     pathological_follow_up_hits = 0
     pathological_q3_hits = 0
@@ -202,6 +204,10 @@ def main() -> int:
         "n_pairs": len(keys),
         "n_sessions": n_sessions,
         "n_follow_up_pairs": len(session_follow_up_ms),
+        "session_n_correct": session_n_correct,
+        "baseline_n_correct": baseline_n_correct,
+        "session_accuracy": session_n_correct / len(keys) if keys else None,
+        "baseline_accuracy": baseline_n_correct / len(keys) if keys else None,
         "paired_correctness_diffs": correctness_diffs,
         "paired_choice_diffs": choice_diffs,
         "pathological_follow_up_hits": pathological_follow_up_hits,

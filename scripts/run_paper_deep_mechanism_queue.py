@@ -139,23 +139,6 @@ def _steps() -> list[QueueStep]:
             readiness_key="1.55K",
         ),
         QueueStep(
-            phase="1.30AF",
-            runtime_estimate="~1 min (analysis-only)",
-            rationale=(
-                "Compare the 1.30AC cache-invalidated and 1.30AD cache-reuse "
-                "failure sets to verify whether their equal aggregate loss is "
-                "row-identical or a boundary aggregate reached through different "
-                "mechanisms."
-            ),
-            command=(
-                "bash",
-                str(REPO_ROOT / "scripts/run_phase1_30AF_cache_boundary_attribution.sh"),
-            ),
-            timeout_seconds=600,
-            artifact_dir=ARTIFACT_ROOT / "phase1_30AF_cache_boundary_attribution",
-            readiness_key="1.30AF",
-        ),
-        QueueStep(
             phase="1.65",
             runtime_estimate="~5-8 h at default PHASE1_65_MAX_ROWS=0",
             rationale=(
@@ -167,6 +150,23 @@ def _steps() -> list[QueueStep]:
             timeout_seconds=36_000,
             artifact_dir=ARTIFACT_ROOT / "phase1_65_logit_margin_failure_predictor",
             readiness_key="1.65",
+        ),
+        QueueStep(
+            phase="1.30AF",
+            runtime_estimate="~1 min (analysis-only)",
+            rationale=(
+                "Compare the 1.30AC cache-invalidated and 1.30AD cache-reuse "
+                "failure sets to verify whether their equal aggregate loss is "
+                "row-identical or a boundary aggregate reached through different "
+                "mechanisms, with margin-stratified attribution when 1.65 lands."
+            ),
+            command=(
+                "bash",
+                str(REPO_ROOT / "scripts/run_phase1_30AF_cache_boundary_attribution.sh"),
+            ),
+            timeout_seconds=600,
+            artifact_dir=ARTIFACT_ROOT / "phase1_30AF_cache_boundary_attribution",
+            readiness_key="1.30AF",
         ),
     ]
 
@@ -265,9 +265,11 @@ def _gate_phase_155f_stage_timing(artifact_dir: Path) -> dict[str, Any]:
     summary = _load_json(artifact_dir / "stage_timing_summary.json")
     return {
         "q3_fixed_over_adaptive_speedup": summary["q3_fixed_over_adaptive_speedup"],
+        "q3_speedup_threshold": summary["q3_speedup_threshold"],
         "q3_tail_token_reduction": summary["q3_tail_token_reduction"],
         "adaptive_q3": summary["adaptive"]["q_index"].get("q3"),
         "fixed_k1_q3": summary["fixed_k1"]["q_index"].get("q3"),
+        "paired_q3": summary["paired_q3"],
         "pass_mechanism": summary["pass_mechanism"],
         "pass_tail_work": summary["pass_tail_work"],
     }
@@ -278,6 +280,8 @@ def _gate_phase_155k(artifact_dir: Path) -> dict[str, Any]:
     return {
         "n_cells": summary["n_cells"],
         "temperatures": summary["temperatures"],
+        "baseline_accuracy_floor": summary["baseline_accuracy_floor"],
+        "pass_baseline_quality": summary["pass_baseline_quality"],
         "pass_sampler_stability": summary["pass_sampler_stability"],
         "strict_exact_match_temperatures": summary["strict_exact_match_temperatures"],
         "cells": summary["cells"],
@@ -286,6 +290,12 @@ def _gate_phase_155k(artifact_dir: Path) -> dict[str, Any]:
 
 def _gate_phase_130af(artifact_dir: Path) -> dict[str, Any]:
     summary = _load_json(artifact_dir / "attribution_summary.json")
+    reuse_top = summary["cache_reuse"]["feature_correlations"]["top_drift_concentrations_n_ge_5"][
+        :3
+    ]
+    invalidated_top = summary["cache_invalidated"]["feature_correlations"][
+        "top_drift_concentrations_n_ge_5"
+    ][:3]
     return {
         "common_pair_rows": summary["common_pair_rows"],
         "accuracy_delta_gap": summary["accuracy_delta_gap"],
@@ -300,16 +310,20 @@ def _gate_phase_130af(artifact_dir: Path) -> dict[str, Any]:
                 "jaccard",
             )
         },
+        "cache_reuse_top_drift_concentrations": reuse_top,
+        "cache_invalidated_top_drift_concentrations": invalidated_top,
         "cache_reuse_active_fraction": summary["cache_reuse"]["streaming_summary"][
             "follow_up_vision_pruning_active_fraction"
         ],
         "cache_invalidated_active_fraction": summary["cache_invalidated"]["streaming_summary"][
             "follow_up_vision_pruning_active_fraction"
         ],
+        "logit_margin_available": summary["logit_margin_available"],
         "pass_complete_overlap": summary["pass_complete_overlap"],
         "pass_same_net_delta": summary["pass_same_net_delta"],
         "pass_mechanism_contrast": summary["pass_mechanism_contrast"],
         "pass_row_set_nonidentity": summary["pass_row_set_nonidentity"],
+        "pass_feature_attribution_report": summary["pass_feature_attribution_report"],
     }
 
 
@@ -324,6 +338,7 @@ def _commit_message(step: QueueStep, record: dict[str, Any]) -> str:
             "cache reducing tail prompt work.\n"
             "Gate summary: q3_fixed_over_adaptive_speedup="
             f"{_format_float(gate.get('q3_fixed_over_adaptive_speedup'))}x, "
+            f"threshold={_format_float(gate.get('q3_speedup_threshold'))}x, "
             f"q3_tail_token_reduction={_format_float(gate.get('q3_tail_token_reduction'))}. "
             f"mechanism={'PASS' if gate.get('pass_mechanism') else 'FAIL'}, "
             f"tail_work={'PASS' if gate.get('pass_tail_work') else 'FAIL'}."
@@ -371,6 +386,7 @@ def _commit_message(step: QueueStep, record: dict[str, Any]) -> str:
         cell_bits = ", ".join(
             f"T={cell.get('temperature')}: diffs="
             f"{cell.get('paired_correctness_diffs')}/{cell.get('paired_choice_diffs')}, "
+            f"base_acc={_format_float(cell.get('baseline_accuracy'))}, "
             f"speed={_format_float(cell.get('speedup_all_query_median_cold_over_session_follow_up'))}x"
             for cell in gate.get("cells", [])
         )
@@ -381,11 +397,16 @@ def _commit_message(step: QueueStep, record: dict[str, Any]) -> str:
             "baseline arms use identical sampler settings, so paired diffs "
             "measure cache-policy sensitivity rather than sampler mismatch.\n"
             f"Cells: {cell_bits}. "
+            f"baseline_quality={'PASS' if gate.get('pass_baseline_quality') else 'FAIL'}, "
             f"sampler_stability={'PASS' if gate.get('pass_sampler_stability') else 'FAIL'}, "
             f"strict_exact_match_temperatures={gate.get('strict_exact_match_temperatures')}."
         )
     if step.phase == "1.30AF":
         overlap = gate.get("any_drift_set_overlap", {})
+        reuse_top = gate.get("cache_reuse_top_drift_concentrations", [])
+        invalidated_top = gate.get("cache_invalidated_top_drift_concentrations", [])
+        reuse_top_text = reuse_top[0] if reuse_top else {}
+        invalidated_top_text = invalidated_top[0] if invalidated_top else {}
         return (
             "research(1.30AF): land cache-boundary attribution\n\n"
             "Compare 1.30AD cache-reuse and 1.30AC cache-invalidated follow-up "
@@ -397,10 +418,14 @@ def _commit_message(step: QueueStep, record: dict[str, Any]) -> str:
             f"delta_gap={_format_float(gate.get('accuracy_delta_gap'))}, "
             f"drift_jaccard={_format_float(overlap.get('jaccard'))}, "
             f"reuse_active={_format_float(gate.get('cache_reuse_active_fraction'))}, "
-            f"invalidated_active={_format_float(gate.get('cache_invalidated_active_fraction'))}. "
+            f"invalidated_active={_format_float(gate.get('cache_invalidated_active_fraction'))}, "
+            f"margin_available={gate.get('logit_margin_available')}. "
+            f"Top reuse concentration={reuse_top_text}; "
+            f"top invalidated concentration={invalidated_top_text}. "
             f"same_net={'PASS' if gate.get('pass_same_net_delta') else 'FAIL'}, "
             f"mechanism_contrast={'PASS' if gate.get('pass_mechanism_contrast') else 'FAIL'}, "
-            f"row_nonidentity={'PASS' if gate.get('pass_row_set_nonidentity') else 'FAIL'}."
+            f"row_nonidentity={'PASS' if gate.get('pass_row_set_nonidentity') else 'FAIL'}, "
+            f"feature_report={'PASS' if gate.get('pass_feature_attribution_report') else 'FAIL'}."
         )
     return (
         "research(1.65): land logit-margin stability predictor scout\n\n"

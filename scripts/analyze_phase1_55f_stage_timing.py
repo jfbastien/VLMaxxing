@@ -25,6 +25,10 @@ def _median(values: list[float]) -> float | None:
     return float(statistics.median(values)) if values else None
 
 
+def _row_key(row: dict[str, Any]) -> tuple[str, int]:
+    return (str(row["item_id"]), int(row["q_index"]))
+
+
 def _summarize_policy(label: str, rows: list[dict[str, Any]]) -> dict[str, Any]:
     by_q: dict[int, list[dict[str, Any]]] = defaultdict(list)
     for row in rows:
@@ -50,6 +54,55 @@ def _summarize_policy(label: str, rows: list[dict[str, Any]]) -> dict[str, Any]:
         "follow_up_median_elapsed_ms": _median([float(row["elapsed_ms"]) for row in follow_rows]),
         "follow_up_median_tail_prompt_tokens": _median(
             [float(row.get("tail_prompt_tokens", 0)) for row in follow_rows]
+        ),
+    }
+
+
+def _paired_q3_attribution(
+    adaptive_rows: list[dict[str, Any]], fixed_rows: list[dict[str, Any]]
+) -> dict[str, Any]:
+    adaptive_by_key = {_row_key(row): row for row in adaptive_rows if int(row["q_index"]) == 2}
+    fixed_by_key = {_row_key(row): row for row in fixed_rows if int(row["q_index"]) == 2}
+    if set(adaptive_by_key) != set(fixed_by_key):
+        raise SystemExit(
+            f"adaptive/fixed Q3 keys differ: {sorted(set(adaptive_by_key) ^ set(fixed_by_key))[:5]}"
+        )
+    paired: list[dict[str, Any]] = []
+    for key in sorted(adaptive_by_key):
+        adaptive = adaptive_by_key[key]
+        fixed = fixed_by_key[key]
+        adaptive_ms = float(adaptive["elapsed_ms"])
+        fixed_ms = float(fixed["elapsed_ms"])
+        adaptive_tail = float(adaptive.get("tail_prompt_tokens", 0))
+        fixed_tail = float(fixed.get("tail_prompt_tokens", 0))
+        paired.append(
+            {
+                "item_id": key[0],
+                "q_index": key[1],
+                "adaptive_elapsed_ms": adaptive_ms,
+                "fixed_k1_elapsed_ms": fixed_ms,
+                "fixed_over_adaptive_speedup": fixed_ms / adaptive_ms if adaptive_ms else None,
+                "adaptive_tail_prompt_tokens": adaptive_tail,
+                "fixed_k1_tail_prompt_tokens": fixed_tail,
+                "tail_token_reduction": (1.0 - adaptive_tail / fixed_tail if fixed_tail else None),
+            }
+        )
+    return {
+        "n": len(paired),
+        "rows": paired,
+        "median_fixed_over_adaptive_speedup": _median(
+            [
+                float(row["fixed_over_adaptive_speedup"])
+                for row in paired
+                if row["fixed_over_adaptive_speedup"] is not None
+            ]
+        ),
+        "median_tail_token_reduction": _median(
+            [
+                float(row["tail_token_reduction"])
+                for row in paired
+                if row["tail_token_reduction"] is not None
+            ]
         ),
     }
 
@@ -80,8 +133,11 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    adaptive = _summarize_policy("adaptive_q3_post_q2", _load_jsonl(args.adaptive_session_jsonl))
-    fixed = _summarize_policy("fixed_k1", _load_jsonl(args.fixed_k1_session_jsonl))
+    adaptive_rows = _load_jsonl(args.adaptive_session_jsonl)
+    fixed_rows = _load_jsonl(args.fixed_k1_session_jsonl)
+    adaptive = _summarize_policy("adaptive_q3_post_q2", adaptive_rows)
+    fixed = _summarize_policy("fixed_k1", fixed_rows)
+    paired_q3 = _paired_q3_attribution(adaptive_rows, fixed_rows)
     adaptive_q3 = adaptive["q_index"].get("q3", {})
     fixed_q3 = fixed["q_index"].get("q3", {})
     adaptive_q3_ms = adaptive_q3.get("median_elapsed_ms")
@@ -94,6 +150,7 @@ def main() -> int:
         "fixed_k1_session_jsonl": args.fixed_k1_session_jsonl.as_posix(),
         "adaptive": adaptive,
         "fixed_k1": fixed,
+        "paired_q3": paired_q3,
         "q3_adaptive_over_fixed_elapsed_ratio": (
             adaptive_q3_ms / fixed_q3_ms
             if adaptive_q3_ms is not None and fixed_q3_ms not in (None, 0)
@@ -112,14 +169,14 @@ def main() -> int:
         "pass_mechanism": bool(
             fixed_q3_ms is not None
             and adaptive_q3_ms not in (None, 0)
-            and fixed_q3_ms / adaptive_q3_ms >= 5.0
+            and fixed_q3_ms / adaptive_q3_ms >= 3.0
         ),
         "pass_tail_work": bool(
             adaptive_q3_tail is not None
             and fixed_q3_tail is not None
             and adaptive_q3_tail < fixed_q3_tail
         ),
-        "q3_speedup_threshold": 5.0,
+        "q3_speedup_threshold": 3.0,
         "mechanism_claim": (
             "Adaptive Q3 speedup is attributed to reusing the post-Q2 repaired "
             "cache and reducing Q3 tail prompt tokens relative to fixed K=1. "

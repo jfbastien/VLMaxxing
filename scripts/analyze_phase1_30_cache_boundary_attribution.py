@@ -124,6 +124,125 @@ def _set_stats(left: set[str], right: set[str]) -> dict[str, Any]:
     }
 
 
+def _key_text(row: dict[str, Any]) -> str:
+    item_id, q_index = _row_key(row)
+    return f"{item_id}#q{q_index}"
+
+
+def _load_margin_by_key(path: Path | None) -> dict[str, float]:
+    if path is None or not path.exists():
+        return {}
+    margins: dict[str, float] = {}
+    for row in _load_jsonl(path):
+        key = _key_text(row)
+        margins.setdefault(key, float(row["dense_answer_margin"]))
+    return margins
+
+
+def _feature_groups(row: dict[str, Any]) -> dict[str, str]:
+    return {
+        "duration": str(row.get("duration")),
+        "split": str(row.get("split")),
+        "q_index": f"q{int(row['q_index'])}",
+        "cold_correct": str(bool(row.get("cold_correct"))).lower(),
+        "duration_x_q_index": f"{row.get('duration')}/q{int(row['q_index'])}",
+    }
+
+
+def _summarize_group(rows: list[dict[str, Any]], margins: dict[str, float]) -> dict[str, Any]:
+    n = len(rows)
+    if n == 0:
+        return {"n": 0}
+    any_drift_rows = [
+        row
+        for row in rows
+        if (
+            row.get("cold_choice") is not None
+            and row.get("streaming_choice") is not None
+            and row["cold_choice"] != row["streaming_choice"]
+        )
+        or bool(row.get("cold_correct")) != bool(row.get("streaming_correct"))
+    ]
+    choice_drift_rows = [
+        row
+        for row in rows
+        if row.get("cold_choice") is not None
+        and row.get("streaming_choice") is not None
+        and row["cold_choice"] != row["streaming_choice"]
+    ]
+    correctness_drift_rows = [
+        row for row in rows if bool(row.get("cold_correct")) != bool(row.get("streaming_correct"))
+    ]
+    cold_correct = sum(bool(row.get("cold_correct")) for row in rows)
+    streaming_correct = sum(bool(row.get("streaming_correct")) for row in rows)
+    margin_values = [margins[_key_text(row)] for row in rows if _key_text(row) in margins]
+    drift_margin_values = [
+        margins[_key_text(row)] for row in any_drift_rows if _key_text(row) in margins
+    ]
+    any_drift_keys = {_key_text(row) for row in any_drift_rows}
+    stable_margin_values = [
+        margins[_key_text(row)]
+        for row in rows
+        if _key_text(row) not in any_drift_keys and _key_text(row) in margins
+    ]
+    return {
+        "n": n,
+        "any_drift_count": len(any_drift_rows),
+        "choice_drift_count": len(choice_drift_rows),
+        "correctness_drift_count": len(correctness_drift_rows),
+        "any_drift_fraction": len(any_drift_rows) / n,
+        "accuracy_delta": (streaming_correct - cold_correct) / n,
+        "n_with_margin": len(margin_values),
+        "mean_margin_all": _mean(margin_values),
+        "mean_margin_drift": _mean(drift_margin_values),
+        "mean_margin_stable": _mean(stable_margin_values),
+        "median_margin_all": _median(margin_values),
+        "median_margin_drift": _median(drift_margin_values),
+        "median_margin_stable": _median(stable_margin_values),
+    }
+
+
+def _feature_correlation_summary(
+    rows: list[dict[str, Any]], margins: dict[str, float]
+) -> dict[str, Any]:
+    by_feature: dict[str, dict[str, list[dict[str, Any]]]] = {}
+    for row in rows:
+        for feature, value in _feature_groups(row).items():
+            by_feature.setdefault(feature, {}).setdefault(value, []).append(row)
+    summary = {
+        feature: {
+            value: _summarize_group(group_rows, margins)
+            for value, group_rows in sorted(groups.items())
+        }
+        for feature, groups in sorted(by_feature.items())
+    }
+    concentrated_groups: list[dict[str, Any]] = []
+    for feature, groups in summary.items():
+        for value, group in groups.items():
+            if int(group["n"]) < 5:
+                continue
+            concentrated_groups.append(
+                {
+                    "feature": feature,
+                    "value": value,
+                    "n": group["n"],
+                    "any_drift_fraction": group["any_drift_fraction"],
+                    "accuracy_delta": group["accuracy_delta"],
+                    "mean_margin_drift": group["mean_margin_drift"],
+                    "mean_margin_stable": group["mean_margin_stable"],
+                }
+            )
+    concentrated_groups.sort(
+        key=lambda group: (float(group["any_drift_fraction"]), int(group["n"])),
+        reverse=True,
+    )
+    return {
+        "groups": summary,
+        "top_drift_concentrations_n_ge_5": concentrated_groups[:10],
+        "margin_available": bool(margins),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -159,6 +278,15 @@ def main() -> int:
         ),
     )
     parser.add_argument(
+        "--logit-margin-jsonl",
+        type=Path,
+        default=Path(
+            "research/experiments/2026/artifacts/"
+            "phase1_65_logit_margin_failure_predictor/scored_rows.jsonl"
+        ),
+        help="Optional 1.65 scored_rows.jsonl for margin-stratified attribution.",
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=Path(
@@ -170,6 +298,7 @@ def main() -> int:
 
     reuse_pairs = _load_jsonl(args.cache_reuse_pairs)
     invalidated_pairs = _load_jsonl(args.cache_invalidated_pairs)
+    margin_by_key = _load_margin_by_key(args.logit_margin_jsonl)
     reuse_pair_summary = _pair_summary(reuse_pairs)
     invalidated_pair_summary = _pair_summary(invalidated_pairs)
     reuse_keys = set(reuse_pair_summary["any_drift_keys"])
@@ -198,14 +327,20 @@ def main() -> int:
             "pairs": args.cache_reuse_pairs.as_posix(),
             "streaming": args.cache_reuse_streaming.as_posix(),
             "pair_summary": reuse_pair_summary,
+            "feature_correlations": _feature_correlation_summary(reuse_pairs, margin_by_key),
             "streaming_summary": _streaming_summary(_load_jsonl(args.cache_reuse_streaming)),
         },
         "cache_invalidated": {
             "pairs": args.cache_invalidated_pairs.as_posix(),
             "streaming": args.cache_invalidated_streaming.as_posix(),
             "pair_summary": invalidated_pair_summary,
+            "feature_correlations": _feature_correlation_summary(invalidated_pairs, margin_by_key),
             "streaming_summary": _streaming_summary(_load_jsonl(args.cache_invalidated_streaming)),
         },
+        "logit_margin_jsonl": (
+            args.logit_margin_jsonl.as_posix() if args.logit_margin_jsonl.exists() else None
+        ),
+        "logit_margin_available": bool(margin_by_key),
         "common_pair_rows": len(common_pair_keys),
         "accuracy_delta_gap": accuracy_delta_gap,
         "any_drift_set_overlap": _set_stats(reuse_keys, invalidated_keys),
@@ -213,6 +348,7 @@ def main() -> int:
         "pass_same_net_delta": bool(accuracy_delta_gap is not None and accuracy_delta_gap <= 0.005),
         "pass_mechanism_contrast": False,
         "pass_row_set_nonidentity": bool(reuse_keys != invalidated_keys),
+        "pass_feature_attribution_report": True,
     }
     reuse_active = payload["cache_reuse"]["streaming_summary"][
         "follow_up_vision_pruning_active_fraction"

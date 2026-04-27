@@ -11,6 +11,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 queue = cast(Any, importlib.import_module("run_paper_deep_mechanism_queue"))
+temperature_summary = cast(Any, importlib.import_module("summarize_phase1_55k_temperature_sweep"))
 
 
 def test_deep_mechanism_queue_startup_dirty_path_filter() -> None:
@@ -147,7 +148,13 @@ def test_gate_phase_155f_stage_timing_reports_mechanism(tmp_path: Path) -> None:
         json.dumps(
             {
                 "q3_fixed_over_adaptive_speedup": 20.0,
+                "q3_speedup_threshold": 3.0,
                 "q3_tail_token_reduction": 0.99,
+                "paired_q3": {
+                    "n": 7,
+                    "median_fixed_over_adaptive_speedup": 20.0,
+                    "median_tail_token_reduction": 0.99,
+                },
                 "pass_mechanism": True,
                 "pass_tail_work": True,
                 "adaptive": {"q_index": {"q3": {"median_elapsed_ms": 600.0}}},
@@ -160,7 +167,9 @@ def test_gate_phase_155f_stage_timing_reports_mechanism(tmp_path: Path) -> None:
     gate = queue._gate_phase_155f_stage_timing(artifact_dir)
 
     assert gate["q3_fixed_over_adaptive_speedup"] == 20.0
+    assert gate["q3_speedup_threshold"] == 3.0
     assert gate["adaptive_q3"]["median_elapsed_ms"] == 600.0
+    assert gate["paired_q3"]["n"] == 7
     assert gate["pass_mechanism"] is True
 
 
@@ -171,6 +180,8 @@ def test_gate_phase_155k_reports_temperature_sweep(tmp_path: Path) -> None:
             {
                 "n_cells": 2,
                 "temperatures": [0.0, 0.7],
+                "baseline_accuracy_floor": 14 / 21,
+                "pass_baseline_quality": True,
                 "pass_sampler_stability": True,
                 "strict_exact_match_temperatures": [0.0],
                 "cells": [
@@ -178,12 +189,14 @@ def test_gate_phase_155k_reports_temperature_sweep(tmp_path: Path) -> None:
                         "temperature": 0.0,
                         "paired_correctness_diffs": 0,
                         "paired_choice_diffs": 0,
+                        "baseline_accuracy": 17 / 21,
                         "speedup_all_query_median_cold_over_session_follow_up": 24.9,
                     },
                     {
                         "temperature": 0.7,
                         "paired_correctness_diffs": 1,
                         "paired_choice_diffs": 1,
+                        "baseline_accuracy": 17 / 21,
                         "speedup_all_query_median_cold_over_session_follow_up": 18.0,
                     },
                 ],
@@ -195,7 +208,65 @@ def test_gate_phase_155k_reports_temperature_sweep(tmp_path: Path) -> None:
     gate = queue._gate_phase_155k(artifact_dir)
 
     assert gate["pass_sampler_stability"] is True
+    assert gate["pass_baseline_quality"] is True
     assert gate["temperatures"] == [0.0, 0.7]
+
+
+def test_gate_phase_155k_preserves_baseline_quality_fail(tmp_path: Path) -> None:
+    artifact_dir = tmp_path
+    (artifact_dir / "temperature_sweep_summary.json").write_text(
+        json.dumps(
+            {
+                "n_cells": 1,
+                "temperatures": [1.5],
+                "baseline_accuracy_floor": 14 / 21,
+                "pass_baseline_quality": False,
+                "pass_sampler_stability": False,
+                "strict_exact_match_temperatures": [],
+                "cells": [
+                    {
+                        "temperature": 1.5,
+                        "paired_correctness_diffs": 1,
+                        "paired_choice_diffs": 1,
+                        "baseline_accuracy": 8 / 21,
+                        "speedup_all_query_median_cold_over_session_follow_up": 18.0,
+                    }
+                ],
+            }
+        )
+        + "\n"
+    )
+
+    gate = queue._gate_phase_155k(artifact_dir)
+
+    assert gate["pass_sampler_stability"] is False
+    assert gate["pass_baseline_quality"] is False
+    assert gate["cells"][0]["baseline_accuracy"] == 8 / 21
+
+
+def test_temperature_summary_falls_back_to_paired_queries_for_accuracy(tmp_path: Path) -> None:
+    metrics_path = tmp_path / "pair_metrics_k1_n7.json"
+    metrics_path.write_text(json.dumps({"n_pairs": 3}) + "\n")
+    paired_path = tmp_path / "paired_queries_k1_n7.jsonl"
+    paired_path.write_text(
+        "\n".join(
+            [
+                json.dumps({"session_correct": True, "baseline_correct": True}),
+                json.dumps({"session_correct": False, "baseline_correct": True}),
+                json.dumps({"session_correct": True, "baseline_correct": True}),
+            ]
+        )
+        + "\n"
+    )
+
+    fields = temperature_summary._accuracy_fields(
+        json.loads(metrics_path.read_text()), metrics_path
+    )
+
+    assert fields["session_n_correct"] == 2
+    assert fields["baseline_n_correct"] == 3
+    assert fields["session_accuracy"] == 2 / 3
+    assert fields["baseline_accuracy"] == 1.0
 
 
 def test_gate_phase_130af_reports_boundary_attribution(tmp_path: Path) -> None:
@@ -214,15 +285,37 @@ def test_gate_phase_130af_reports_boundary_attribution(tmp_path: Path) -> None:
                     "jaccard": 0.25,
                 },
                 "cache_reuse": {
-                    "streaming_summary": {"follow_up_vision_pruning_active_fraction": 0.0}
+                    "feature_correlations": {
+                        "top_drift_concentrations_n_ge_5": [
+                            {
+                                "feature": "duration_x_q_index",
+                                "value": "long/q2",
+                                "n": 18,
+                                "any_drift_fraction": 0.44,
+                            }
+                        ]
+                    },
+                    "streaming_summary": {"follow_up_vision_pruning_active_fraction": 0.0},
                 },
                 "cache_invalidated": {
-                    "streaming_summary": {"follow_up_vision_pruning_active_fraction": 1.0}
+                    "feature_correlations": {
+                        "top_drift_concentrations_n_ge_5": [
+                            {
+                                "feature": "duration_x_q_index",
+                                "value": "medium/q1",
+                                "n": 20,
+                                "any_drift_fraction": 0.45,
+                            }
+                        ]
+                    },
+                    "streaming_summary": {"follow_up_vision_pruning_active_fraction": 1.0},
                 },
+                "logit_margin_available": True,
                 "pass_complete_overlap": True,
                 "pass_same_net_delta": True,
                 "pass_mechanism_contrast": True,
                 "pass_row_set_nonidentity": True,
+                "pass_feature_attribution_report": True,
             }
         )
         + "\n"
@@ -232,4 +325,7 @@ def test_gate_phase_130af_reports_boundary_attribution(tmp_path: Path) -> None:
 
     assert gate["pass_same_net_delta"] is True
     assert gate["pass_mechanism_contrast"] is True
+    assert gate["pass_feature_attribution_report"] is True
+    assert gate["logit_margin_available"] is True
     assert gate["any_drift_set_overlap"]["jaccard"] == 0.25
+    assert gate["cache_reuse_top_drift_concentrations"][0]["value"] == "long/q2"
