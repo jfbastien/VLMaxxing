@@ -3,25 +3,81 @@
   "dry_run": false,
   "strict": false,
   "auto_commit": true,
-  "started_at": "2026-04-27T04:28:52+00:00",
+  "started_at": "2026-04-28T01:34:28+00:00",
   "steps": [
     {
-      "phase": "1.63E",
-      "runtime_estimate": "~7.5-9.5 h with 8f/16f/20f/32f default",
-      "rationale": "Run Track B compact Qwen ViT at 8f, 16f, 20f, and 32f to test whether the arithmetic ceiling predicts measured wall-clock across frame budgets rather than using 8f as a non-veto reference.",
+      "phase": "1.63G",
+      "runtime_estimate": "~7.5-10.5 h with 8f/16f/32f default",
+      "rationale": "Run the same vision-tower-only Track B compact execution on Gemma 4 E4B at 8f, 16f, and 32f to test whether the ceiling/sparse-execution story is architecture-general across frame budgets rather than Qwen-only.",
       "ready": true,
-      "timeout_seconds": 36000,
-      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_63E_track_b_frame_scaling",
+      "timeout_seconds": 45000,
+      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_63G_gemma_track_b",
       "command": [
         "bash",
-        "/Users/jfb/s/codec-through/scripts/run_phase1_63E_track_b_frame_scaling.sh"
+        "/Users/jfb/s/codec-through/scripts/run_phase1_63G_gemma_track_b.sh"
       ],
-      "status": "failed-timeout",
-      "error": {
-        "type": "TimeoutExpired",
-        "timeout_seconds": 35999.999977583066
-      }
+      "status": "completed",
+      "gate": {
+        "complete": false,
+        "headline_pass": false,
+        "n_cells": 3,
+        "frame_counts": [
+          8,
+          16,
+          32
+        ],
+        "headline_frame_counts": [
+          8,
+          16,
+          32
+        ],
+        "reference_frame_counts": [],
+        "max_abs_actual_minus_predicted": 0.062228106776148984,
+        "headline_max_abs_actual_minus_predicted": 0.062228106776148984,
+        "cells": [
+          {
+            "frame_count": 8,
+            "n_paired_items": 60,
+            "accuracy_delta": 0.0,
+            "vision_reduction": 0.4821313873120997,
+            "actual_e2e_speedup": 1.1015661737310605,
+            "predicted_e2e_speedup": 1.0393380669549115,
+            "actual_minus_predicted": 0.062228106776148984,
+            "pass_fidelity": true,
+            "pass_sparse_vision": true,
+            "pass_e2e_positive": true,
+            "pass_ceiling_explained": false
+          },
+          {
+            "frame_count": 16,
+            "n_paired_items": 60,
+            "accuracy_delta": 0.0,
+            "vision_reduction": 0.4057125223254274,
+            "actual_e2e_speedup": 1.0350326109203674,
+            "predicted_e2e_speedup": 1.0673971276446057,
+            "actual_minus_predicted": -0.032364516724238346,
+            "pass_fidelity": true,
+            "pass_sparse_vision": true,
+            "pass_e2e_positive": true,
+            "pass_ceiling_explained": true
+          },
+          {
+            "frame_count": 32,
+            "n_paired_items": 60,
+            "accuracy_delta": 0.0,
+            "vision_reduction": 0.4334645706490079,
+            "actual_e2e_speedup": 1.126003380764751,
+            "predicted_e2e_speedup": 1.1172063921979394,
+            "actual_minus_predicted": 0.008796988566811548,
+            "pass_fidelity": true,
+            "pass_sparse_vision": true,
+            "pass_e2e_positive": true,
+            "pass_ceiling_explained": true
+          }
+        ]
+      },
+      "auto_commit": "committed"
     }
   ],
-  "updated_at": "2026-04-27T14:28:52+00:00"
+  "updated_at": "2026-04-28T09:08:21+00:00"
 }

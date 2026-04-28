@@ -1,0 +1,87 @@
+{
+  "cells": [
+    {
+      "accuracy_delta": 0.0,
+      "accuracy_delta_ci95": [
+        0.0,
+        0.0
+      ],
+      "actual_e2e_speedup": 1.1015661737310605,
+      "actual_minus_predicted": 0.062228106776148984,
+      "frame_count": 8,
+      "mean_keep_rate": 0.5,
+      "n_paired_items": 60,
+      "pass_ceiling_explained": false,
+      "pass_complete_pairing": true,
+      "pass_e2e_positive": true,
+      "pass_fidelity": true,
+      "pass_format": false,
+      "pass_sparse_vision": true,
+      "predicted_e2e_speedup": 1.0393380669549115,
+      "summary_path": "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/pair_summary_8f.json",
+      "vision_reduction": 0.4821313873120997,
+      "vision_share_dense": 0.07850381738579185
+    },
+    {
+      "accuracy_delta": 0.0,
+      "accuracy_delta_ci95": [
+        0.0,
+        0.0
+      ],
+      "actual_e2e_speedup": 1.0350326109203674,
+      "actual_minus_predicted": -0.032364516724238346,
+      "frame_count": 16,
+      "mean_keep_rate": 0.5,
+      "n_paired_items": 60,
+      "pass_ceiling_explained": true,
+      "pass_complete_pairing": true,
+      "pass_e2e_positive": true,
+      "pass_fidelity": true,
+      "pass_format": false,
+      "pass_sparse_vision": true,
+      "predicted_e2e_speedup": 1.0673971276446057,
+      "summary_path": "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/pair_summary_16f.json",
+      "vision_reduction": 0.4057125223254274,
+      "vision_share_dense": 0.15563130022965554
+    },
+    {
+      "accuracy_delta": 0.0,
+      "accuracy_delta_ci95": [
+        0.0,
+        0.0
+      ],
+      "actual_e2e_speedup": 1.126003380764751,
+      "actual_minus_predicted": 0.008796988566811548,
+      "frame_count": 32,
+      "mean_keep_rate": 0.5,
+      "n_paired_items": 60,
+      "pass_ceiling_explained": true,
+      "pass_complete_pairing": true,
+      "pass_e2e_positive": true,
+      "pass_fidelity": true,
+      "pass_format": false,
+      "pass_sparse_vision": true,
+      "predicted_e2e_speedup": 1.1172063921979394,
+      "summary_path": "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/pair_summary_32f.json",
+      "vision_reduction": 0.4334645706490079,
+      "vision_share_dense": 0.2420272576196171
+    }
+  ],
+  "complete": false,
+  "frame_counts": [
+    8,
+    16,
+    32
+  ],
+  "headline_frame_counts": [
+    8,
+    16,
+    32
+  ],
+  "headline_max_abs_actual_minus_predicted": 0.062228106776148984,
+  "headline_pass": false,
+  "max_abs_actual_minus_predicted": 0.062228106776148984,
+  "n_cells": 3,
+  "phase": "1.63G",
+  "reference_frame_counts": []
+}
