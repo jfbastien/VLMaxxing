@@ -255,6 +255,98 @@
         "pass_safe_filter": false
       },
       "auto_commit": "committed"
+    },
+    {
+      "phase": "1.30AF",
+      "runtime_estimate": "~1 min (analysis-only)",
+      "rationale": "Compare the 1.30AC cache-invalidated and 1.30AD cache-reuse failure sets to verify whether their equal aggregate loss is row-identical or a boundary aggregate reached through different mechanisms, with margin-stratified attribution when 1.65 lands.",
+      "ready": true,
+      "timeout_seconds": 600,
+      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_30AF_cache_boundary_attribution",
+      "command": [
+        "bash",
+        "/Users/jfb/s/codec-through/scripts/run_phase1_30AF_cache_boundary_attribution.sh"
+      ],
+      "status": "completed",
+      "gate": {
+        "common_pair_rows": 171,
+        "accuracy_delta_gap": 0.0,
+        "any_drift_set_overlap": {
+          "left_count": 39,
+          "right_count": 45,
+          "intersection_count": 20,
+          "left_only_count": 19,
+          "right_only_count": 25,
+          "jaccard": 0.3125
+        },
+        "cache_reuse_top_drift_concentrations": [
+          {
+            "accuracy_delta": -0.15789473684210525,
+            "any_drift_fraction": 0.5263157894736842,
+            "feature": "duration_x_q_index",
+            "mean_margin_drift": 1.49375,
+            "mean_margin_stable": 3.435763888888889,
+            "n": 19,
+            "value": "short/q2"
+          },
+          {
+            "accuracy_delta": -0.1111111111111111,
+            "any_drift_fraction": 0.4444444444444444,
+            "feature": "duration_x_q_index",
+            "mean_margin_drift": 0.466796875,
+            "mean_margin_stable": 2.134375,
+            "n": 18,
+            "value": "long/q2"
+          },
+          {
+            "accuracy_delta": -0.12280701754385964,
+            "any_drift_fraction": 0.40350877192982454,
+            "feature": "q_index",
+            "mean_margin_drift": 1.252038043478261,
+            "mean_margin_stable": 2.467830882352941,
+            "n": 57,
+            "value": "q2"
+          }
+        ],
+        "cache_invalidated_top_drift_concentrations": [
+          {
+            "accuracy_delta": -0.3684210526315789,
+            "any_drift_fraction": 0.5789473684210527,
+            "feature": "duration_x_q_index",
+            "mean_margin_drift": 1.4389204545454546,
+            "mean_margin_stable": 2.21484375,
+            "n": 19,
+            "value": "short/q1"
+          },
+          {
+            "accuracy_delta": 0.05,
+            "any_drift_fraction": 0.45,
+            "feature": "duration_x_q_index",
+            "mean_margin_drift": 1.1944444444444444,
+            "mean_margin_stable": 2.928977272727273,
+            "n": 20,
+            "value": "medium/q1"
+          },
+          {
+            "accuracy_delta": -0.05555555555555555,
+            "any_drift_fraction": 0.4444444444444444,
+            "feature": "duration_x_q_index",
+            "mean_margin_drift": 1.025390625,
+            "mean_margin_stable": 1.6875,
+            "n": 18,
+            "value": "long/q2"
+          }
+        ],
+        "cache_reuse_active_fraction": 0.0,
+        "cache_invalidated_active_fraction": 1.0,
+        "logit_margin_available": true,
+        "pass_complete_overlap": true,
+        "pass_same_net_delta": true,
+        "pass_mechanism_contrast": true,
+        "pass_row_set_nonidentity": true,
+        "pass_feature_attribution_report": true
+      },
+      "auto_commit": "committed"
     }
   ],
   "updated_at": "2026-04-28T15:27:37+00:00"
