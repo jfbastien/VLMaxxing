@@ -1,0 +1,117 @@
+{
+  "baseline_accuracy_floor": 0.6666666666666666,
+  "cells": [
+    {
+      "accuracy_delta_session_minus_baseline": 0.0,
+      "accuracy_delta_session_minus_baseline_ci95": [
+        0.0,
+        0.0
+      ],
+      "baseline_accuracy": 0.8095238095238095,
+      "baseline_n_correct": 17,
+      "n_pairs": 21,
+      "pair_metrics": "research/experiments/2026/artifacts/phase1_55F_q3_post_q2_state/pair_metrics_k1_n7.json",
+      "paired_choice_diffs": 0,
+      "paired_correctness_diffs": 0,
+      "pathological_follow_up_hits": 0,
+      "pathological_q3_hits": 0,
+      "session_accuracy": 0.8095238095238095,
+      "session_n_correct": 17,
+      "speedup_all_query_median_cold_over_session_follow_up": 24.911966421092952,
+      "temperature": 0.0
+    },
+    {
+      "accuracy_delta_session_minus_baseline": 0.0,
+      "accuracy_delta_session_minus_baseline_ci95": [
+        0.0,
+        0.0
+      ],
+      "baseline_accuracy": 0.8095238095238095,
+      "baseline_n_correct": 17,
+      "n_pairs": 21,
+      "pair_metrics": "research/experiments/2026/artifacts/phase1_55K_adaptive_temperature_sweep/t0p5/pair_metrics_k1_n7.json",
+      "paired_choice_diffs": 0,
+      "paired_correctness_diffs": 0,
+      "pathological_follow_up_hits": 0,
+      "pathological_q3_hits": 0,
+      "session_accuracy": 0.8095238095238095,
+      "session_n_correct": 17,
+      "speedup_all_query_median_cold_over_session_follow_up": 25.38558642942113,
+      "temperature": 0.5
+    },
+    {
+      "accuracy_delta_session_minus_baseline": -0.047619047619047616,
+      "accuracy_delta_session_minus_baseline_ci95": [
+        -0.14285714285714285,
+        0.0
+      ],
+      "baseline_accuracy": 0.8571428571428571,
+      "baseline_n_correct": 18,
+      "n_pairs": 21,
+      "pair_metrics": "research/experiments/2026/artifacts/phase1_55K_adaptive_temperature_sweep/t0p7/pair_metrics_k1_n7.json",
+      "paired_choice_diffs": 2,
+      "paired_correctness_diffs": 1,
+      "pathological_follow_up_hits": 0,
+      "pathological_q3_hits": 0,
+      "session_accuracy": 0.8095238095238095,
+      "session_n_correct": 17,
+      "speedup_all_query_median_cold_over_session_follow_up": 20.750432609168243,
+      "temperature": 0.7
+    },
+    {
+      "accuracy_delta_session_minus_baseline": -0.047619047619047616,
+      "accuracy_delta_session_minus_baseline_ci95": [
+        -0.14285714285714285,
+        0.0
+      ],
+      "baseline_accuracy": 0.8571428571428571,
+      "baseline_n_correct": 18,
+      "n_pairs": 21,
+      "pair_metrics": "research/experiments/2026/artifacts/phase1_55K_adaptive_temperature_sweep/t1p0/pair_metrics_k1_n7.json",
+      "paired_choice_diffs": 1,
+      "paired_correctness_diffs": 1,
+      "pathological_follow_up_hits": 0,
+      "pathological_q3_hits": 0,
+      "session_accuracy": 0.8095238095238095,
+      "session_n_correct": 17,
+      "speedup_all_query_median_cold_over_session_follow_up": 23.16739022463165,
+      "temperature": 1.0
+    },
+    {
+      "accuracy_delta_session_minus_baseline": 0.0,
+      "accuracy_delta_session_minus_baseline_ci95": [
+        0.0,
+        0.0
+      ],
+      "baseline_accuracy": 0.7619047619047619,
+      "baseline_n_correct": 16,
+      "n_pairs": 21,
+      "pair_metrics": "research/experiments/2026/artifacts/phase1_55K_adaptive_temperature_sweep/t1p5/pair_metrics_k1_n7.json",
+      "paired_choice_diffs": 0,
+      "paired_correctness_diffs": 0,
+      "pathological_follow_up_hits": 0,
+      "pathological_q3_hits": 0,
+      "session_accuracy": 0.7619047619047619,
+      "session_n_correct": 16,
+      "speedup_all_query_median_cold_over_session_follow_up": 24.663728517513583,
+      "temperature": 1.5
+    }
+  ],
+  "n_cells": 5,
+  "pass_baseline_quality": true,
+  "pass_sampler_stability": true,
+  "phase": "1.55K",
+  "policy": "adaptive_q2_k1_q3_k0_post_q2_state",
+  "strict_exact_match_temperatures": [
+    0.0,
+    0.5,
+    1.5
+  ],
+  "temperatures": [
+    0.0,
+    0.5,
+    0.7,
+    1.0,
+    1.5
+  ]
+}

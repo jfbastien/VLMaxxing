@@ -1,0 +1,51 @@
+{
+  "phase": "1.55D_v2",
+  "model": "qwen2.5-vl-7b-instruct-4bit",
+  "frame_count": 20,
+  "reprefill_k": 1,
+  "reprefill_k_q2": 1,
+  "reprefill_k_q3": 0,
+  "temperature": 0.5,
+  "top_p": 0.95,
+  "min_p": 0.0,
+  "n_clips": 7,
+  "n_queries_per_mode": 21,
+  "total_wall_ms": 3144348.340583,
+  "peak_rss_gb": 5.803442176,
+  "pathological_follow_up_hits": 0,
+  "pathological_follow_up_total": 14,
+  "pathological_q3_hits": 0,
+  "pathological_q3_total": 7,
+  "session": {
+    "label": "session",
+    "n": 21,
+    "n_correct": 17,
+    "accuracy": 0.8095238095238095,
+    "mean_elapsed_ms": 32318.484928428574,
+    "median_elapsed_ms": 11557.829666,
+    "p05_elapsed_ms": 577.151167,
+    "p95_elapsed_ms": 87199.17725
+  },
+  "session_follow_up": {
+    "label": "session_follow_up",
+    "n": 14,
+    "n_correct": 11,
+    "accuracy": 0.7857142857142857,
+    "mean_elapsed_ms": 5995.110767571428,
+    "median_elapsed_ms": 3365.627395,
+    "p05_elapsed_ms": 488.156667,
+    "p95_elapsed_ms": 12255.557458000001
+  },
+  "baseline": {
+    "label": "baseline",
+    "n": 21,
+    "n_correct": 17,
+    "accuracy": 0.8095238095238095,
+    "mean_elapsed_ms": 85853.0581727619,
+    "median_elapsed_ms": 85438.425125,
+    "p05_elapsed_ms": 83037.561625,
+    "p95_elapsed_ms": 89516.845042
+  },
+  "mean_follow_up_prefix_coverage": 0.9680910641383029,
+  "accuracy_delta_session_minus_baseline": 0.0
+}

@@ -1,0 +1,72 @@
+{
+  "label": "phase1_55K_adaptive_temperature_0.7",
+  "n_pairs": 21,
+  "n_sessions": 7,
+  "n_follow_up_pairs": 14,
+  "session_n_correct": 17,
+  "baseline_n_correct": 18,
+  "session_accuracy": 0.8095238095238095,
+  "baseline_accuracy": 0.8571428571428571,
+  "paired_correctness_diffs": 1,
+  "paired_choice_diffs": 2,
+  "pathological_follow_up_hits": 0,
+  "pathological_q3_hits": 0,
+  "accuracy_delta_session_minus_baseline": -0.047619047619047616,
+  "accuracy_delta_session_minus_baseline_ci95": [
+    -0.14285714285714285,
+    0.0
+  ],
+  "follow_up_accuracy_delta_session_minus_baseline": -0.07142857142857142,
+  "follow_up_accuracy_delta_session_minus_baseline_ci95": [
+    -0.21428571428571427,
+    0.0
+  ],
+  "q3_accuracy_delta_session_minus_baseline": 0.0,
+  "q3_accuracy_delta_session_minus_baseline_ci95": [
+    0.0,
+    0.0
+  ],
+  "session_follow_up_median_ms": 4181.1339375,
+  "baseline_follow_up_median_ms": 86165.0441035,
+  "baseline_all_query_median_ms": 86760.338,
+  "speedup_follow_up_median_cold_over_session": 20.608056424765035,
+  "speedup_all_query_median_cold_over_session_follow_up": 20.750432609168243,
+  "q_index_breakdown": {
+    "q1": {
+      "n": 7,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    },
+    "q2": {
+      "n": 7,
+      "correctness_diffs": 1,
+      "choice_diffs": 1,
+      "pathological_hits": 0
+    },
+    "q3": {
+      "n": 7,
+      "correctness_diffs": 0,
+      "choice_diffs": 1,
+      "pathological_hits": 0
+    }
+  },
+  "mismatches": [
+    {
+      "item_id": "videomme:short:120-3",
+      "q_index": 2,
+      "session_choice": "D",
+      "baseline_choice": "A",
+      "session_correct": false,
+      "baseline_correct": false
+    },
+    {
+      "item_id": "videomme:short:160-2",
+      "q_index": 1,
+      "session_choice": "B",
+      "baseline_choice": "D",
+      "session_correct": false,
+      "baseline_correct": true
+    }
+  ]
+}
