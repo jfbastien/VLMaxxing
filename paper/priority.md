@@ -261,10 +261,10 @@ in its own dimension.
    RSS in this table is the summary-level peak reported by each run summary.
    The separate 1.66 memory characterization reads row-level JSONL memory
    signals too and sees larger transient peaks in some C-PERSIST artifacts
-   (up to 13.61 GB). Do not use 1.66 as a final memory-model figure until the
-   measured sparse-execution / 1.63 family includes a fidelity-preserving
-   operating point or clearly marked boundary cells; do use it to keep
-   manuscript memory claims denominator-specific.
+   (up to 13.61 GB). The 1.63 family now has clearly marked measured
+   sparse-execution boundary cells and one clean Gemma operating point, so use
+   1.66 to keep manuscript memory claims denominator-specific. Do not say the
+   observed process working set stayed under the 12 GB MLX allocation cap.
 
    K=2 and K=4 remain useful lower-speed comparison points (`6.72×`
    and `3.66×`). With n=93 zero observed paired drift in the fixed lane,
@@ -290,9 +290,12 @@ in its own dimension.
    - **Many-turn stability stress** — 10/20/50 follow-ups to test whether
      paired drift remains flat or accumulates after the current two-follow-up
      sessions.
-   - **Sampler sweep** — the T=0.7 point is near-greedy parity but not strict
-     invariance; a temperature curve is needed before claiming sampler-robust
-     reuse.
+   - **Sampler sweep closed for the short mechanism cell (1.55K)** — adaptive
+     reuse was tested at \(T=0.0,0.5,0.7,1.0,1.5\). It is reviewer-defense
+     evidence that the mechanism is not greedy-only; because the sweep is one
+     short-cell tranche and has small nonzero diffs at \(T=0.7/1.0\), the
+     remaining paper claim should be "practical temperature sweep," not
+     universal sampler invariance.
    - **Cross-architecture C-PERSIST** — blocked on Gemma sliding-window /
      RotatingKVCache prompt-cache semantics, not on model availability.
 
@@ -396,9 +399,9 @@ collection.
    Δacc vs frames + follow-up speedup vs frames, 7B/3B overlaid with
    tested/tolerated envelope shading; the 3B basin is now bracketed to
    (36f, 40f] rather than treated as a clean-safe range. And
-   `paper/figures/v_share_v_red_ceiling.{png,_data.json}` — 9 rendered
-   regimes (4 Gemma dev + 3 Gemma holdout + 1 matched Qwen dev +
-	   1 n=60 composition-audit cell) against the
+   `paper/figures/v_share_v_red_ceiling.{png,_data.json}` — Gemma
+   dev/holdout, Qwen cross-arch, measured sparse-execution, and
+   composition-audit regimes against the
 	   `1/(1 − V_share × V_red)` curve; dev median |Δ| = 2.2pp, holdout
 	   max 13.6pp (MVBench 8f, thermal-inflated and advisory per Session 4
 	   findings). The n=60 composition-audit cell sits at product 0.027 / E2E 1.042× —

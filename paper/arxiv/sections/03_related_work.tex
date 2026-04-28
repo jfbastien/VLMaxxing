@@ -37,9 +37,10 @@ stage-share ceiling, not through the component multiplier alone.
 Temporal redundancy inside vision transformers is also prior art. Eventful
 Transformers \cite{eventful} reprocess only tokens that changed significantly
 between frames, often without retraining. That makes it a useful north star for
-measured sparse execution. Our local Track-B evidence is deliberately narrower:
-it verifies that a Qwen sparse-ViT path can skip timed vision work and that the
-ceiling predicts the timing, while also reporting the current fidelity failure.
+measured sparse execution. Our local measured sparse-execution evidence is
+deliberately narrower: it verifies timed vision-work reduction, shows a clean
+Gemma operating point, and reports Qwen's keep-rate boundary instead of
+claiming a broad sparse backend.
 
 Long-horizon reuse and systems co-design are directly relevant. QuickVideo
 \cite{quickvideo} explicitly co-designs decode and prefill. ReKV \cite{rekv},

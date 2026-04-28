@@ -22,8 +22,10 @@ Current bottom line:
   answer-stability slice, a narrow real-video slice, and supportive hosted
   MVBench benchmark evidence
 - not reproduced locally yet: the whitepaper's mechanism section at imported
-  strength, TOMATO on this stack, refresh drift, and any Track B speedup or
-  compression headline
+  strength, TOMATO on this stack, refresh drift, and the imported
+  compression/throughput headline. A local measured sparse-execution envelope
+  now exists, but it is hardware- and model-conditioned boundary evidence
+  rather than a reproduction of the M5 stackup.
 - mechanism interpretation currently compares a local `MLX 4-bit` path against
   an imported `PyTorch/MPS float32` whitepaper path; treat remaining gaps as
   stack-specific until a higher-precision local follow-up lands
@@ -49,7 +51,7 @@ Current bottom line:
 | Refresh-interval drift / 14-frame tolerance | Partial only | Accepted on the targeted `direction` subset | [2026-04-14-phase-1_49-tomato-direction-refresh-sweep.md](../research/experiments/2026/2026-04-14-phase-1_49-tomato-direction-refresh-sweep.md) shows that the current TOMATO `direction` failures were refresh-sensitive on the local `7B` stack and this five-item subset: no-refresh cached accuracy is `0.2`, while refresh intervals `1`, `2`, and `4` all recover to exact dense agreement there | run a broader refresh sweep beyond the `direction` slice before treating the imported `14`-frame tolerance claim as reproduced |
 | Q-table spatial correlation | Imported only | N/A | Q-table helpers exist, but no local correlation note or artifact is checked in | run local pre-filter correlation study |
 | Track A synthetic answer stability under same-position reuse | Reproduced locally, narrow | Accepted in `v1`, Accepted in `1.05`, Re-interpreted after ablation | [2026-04-13-track-a-local-pilot.md](../research/experiments/2026/2026-04-13-track-a-local-pilot.md), [2026-04-13-track-a-local-pilot-v2.md](../research/experiments/2026/2026-04-13-track-a-local-pilot-v2.md), and [2026-04-13-phase-1_05-temporal-necessity-ablation.md](../research/experiments/2026/2026-04-13-phase-1_05-temporal-necessity-ablation.md) together show one canonical cached failure plus prompt-prior contamination in several apparent v2 passes | use the discriminating subset, add natural-video middle-event items, then run threshold sweeps |
-| Track B skipped-compute, wall-clock, or compression headlines | Not reproduced | N/A | current local work is intentionally Track A only | build the in-memory timing path and sparse-execution path before claiming speedup |
+| Measured sparse-execution wall-clock boundary | Partially reproduced locally | Mixed / bounded | local measured sparse-vision runs now skip timed vision-tower work: Gemma has a clean 32f-short operating point, while Qwen exposes a keep-rate/fidelity boundary | broaden to a fidelity-preserving sparse-backend curve before claiming a general compression/speed headline |
 
 ## Interpretation Rules
 
@@ -59,8 +61,8 @@ Current bottom line:
   class, but not the exact imported claim.
 - `Imported only` means the repo still depends on seed material or predecessor
   evidence.
-- `Not reproduced` means the repo intentionally has not attempted the claim yet,
-  usually because it belongs to Track B rather than Track A.
+- `Not reproduced` means the repo intentionally has not attempted the claim yet
+  or has only landed a bounded proxy rather than the imported claim.
 - `Prereg outcome` records what the local experiment contract actually said.
   Narrative terms such as `partial reproduction` do not override an
   `Inconclusive` preregistration outcome.
@@ -93,11 +95,11 @@ are:
   (helps MVBench holdout; hurts TOMATO motion dev; explanatory
   variable = placement, not quantity)
 - Phase 1.27 projector-group mask completion — **COMPLETED 2026-04-14**
-- Phase 1.50 Track B dense baseline — **COMPLETED 2026-04-17** (n=10
+- Phase 1.50 measured sparse-execution dense baseline — **COMPLETED 2026-04-17** (n=10
   dev + N=30 holdout on BOTH benchmarks: TOMATO 61.1 s/item median
   p95 70.2 s, MVBench 56.5 s/item median p95 60.3 s). Sparse-execution
-  path — the actual "real skipped compute" claim — still blocked
-  on implementation; see `paper/publishability-status.md` claim I.
+  path later landed as bounded local evidence in 1.63E/G/H; see
+  `paper/publishability-status.md` claim I.
 - Phase 1.34 novelty-ranked dense baseline — **COMPLETED 2026-04-17**
   (2×3 grid N=30; cached planner dominates every novelty cell).
 - Phase 1.36 feature-change oracle — **COMPLETED 2026-04-17** (best

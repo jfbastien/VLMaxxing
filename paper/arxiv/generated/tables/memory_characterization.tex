@@ -1,0 +1,15 @@
+\begin{table}[H]
+\centering
+\caption{Memory characterization across landed cells. The runtime mitigation configures an MLX allocation cap and avoided kernel panics in the clean queue, but observed process working-set peaks still reached 13.6\,GB.}
+\label{tab:memory-characterization}
+\small
+\begin{tabularx}{\linewidth}{@{}X r r r X@{}}
+\toprule
+Family & Cells & Max peak & Cells \(>10\)GB & Paper meaning \\
+\midrule
+After-ingest follow-up reuse & 45 & 13.61\,GB & 24 & observed envelope \\
+Composition/admission boundary & 10 & 6.67\,GB & 0 & observed envelope \\
+Measured sparse vision execution & 23 & 10.80\,GB & 4 & observed envelope \\
+\bottomrule
+\end{tabularx}
+\end{table}

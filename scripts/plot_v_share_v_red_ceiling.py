@@ -76,9 +76,14 @@ CROSS_ARCH_CELLS = [
     CeilingCell("Qwen VideoMME 8f dev", "cross-arch", 0.103, 0.398, 1.043, 1.044),
 ]
 
-# Measured sparse-execution boundary point (Qwen 2.5-VL-7B, VideoMME 8f).
+# Measured sparse-execution points: timed vision-tower work is actually skipped.
 SPARSE_CELLS = [
-    CeilingCell("Qwen sparse-ViT 8f n=60", "measured sparse", 0.0998, 0.448, 1.047, 1.042),
+    CeilingCell("Qwen sparse vision 8f n=60", "measured sparse", 0.0998, 0.448, 1.047, 1.042),
+    CeilingCell("Gemma sparse vision 8f n=60", "measured sparse", 0.0785, 0.482, 1.039, 1.102),
+    CeilingCell("Gemma sparse vision 16f n=60", "measured sparse", 0.1556, 0.406, 1.067, 1.035),
+    CeilingCell("Gemma sparse vision 32f n=60", "measured sparse", 0.2420, 0.433, 1.117, 1.126),
+    CeilingCell("Gemma sparse vision 32f short", "measured sparse", 0.5856, 0.422, 1.328, 1.316),
+    CeilingCell("Qwen sparse vision 16f kr=0.85", "measured sparse", 0.1490, 0.136, 1.021, 1.032),
 ]
 
 # Composition-audit cell (EXP10 n=60 CLOSED-NULL).
@@ -130,9 +135,9 @@ def plot() -> None:
                     bbox={"boxstyle": "round,pad=0.25", "fc": "#fff7e6", "ec": "#8d6e00"},
                 )
                 continue
-            if c.label == "Qwen sparse-ViT 8f n=60":
+            if c.label == "Qwen sparse vision 8f n=60":
                 ax.annotate(
-                    "real skipped ViT work\nceiling holds; fidelity fails",
+                    "real skipped vision work\nceiling holds; fidelity fails",
                     xy=(c.product, c.observed_e2e),
                     xytext=(32, -18),
                     textcoords="offset points",
@@ -140,6 +145,19 @@ def plot() -> None:
                     arrowprops={"arrowstyle": "->", "linewidth": 0.8, "color": "#5b2a86"},
                     bbox={"boxstyle": "round,pad=0.25", "fc": "#f3e8ff", "ec": "#6f42c1"},
                 )
+                continue
+            if c.label == "Gemma sparse vision 32f short":
+                ax.annotate(
+                    "Gemma 32f short\nclean timed-skip cell",
+                    xy=(c.product, c.observed_e2e),
+                    xytext=(-116, 20),
+                    textcoords="offset points",
+                    fontsize=8,
+                    arrowprops={"arrowstyle": "->", "linewidth": 0.8, "color": "#5b2a86"},
+                    bbox={"boxstyle": "round,pad=0.25", "fc": "#f3e8ff", "ec": "#6f42c1"},
+                )
+                continue
+            if c.split in {"measured sparse", "cross-arch", "composition"}:
                 continue
             ax.annotate(
                 c.label,
@@ -152,18 +170,18 @@ def plot() -> None:
     _scatter(DEV_CELLS, "o", "tab:blue", "dev (n=30 thermally paired)")
     _scatter(HOLDOUT_CELLS, "s", "tab:orange", "holdout (V-only pairs)")
     _scatter(CROSS_ARCH_CELLS, "^", "tab:green", "Qwen cross-arch (n=30, matched point)")
-    _scatter(SPARSE_CELLS, "P", "tab:purple", "Qwen measured sparse (n=60, fidelity fail)")
+    _scatter(SPARSE_CELLS, "P", "tab:purple", "measured sparse vision")
     _scatter(COMPOSITION_CELLS, "D", "tab:red", "n=60 composition audit")
 
     ax.set_xlabel("V_share × V_red  (share-weighted vision-tower pruning)")
     ax.set_ylabel("end-to-end speedup ×")
     ax.set_title(
         "C-VISION scatter-back ceiling validation\n"
-        "10 regimes; C-CEILING is the null, not a fitted curve"
+        f"{len(all_cells)} regimes; C-CEILING is the null, not a fitted curve"
     )
     ax.grid(True, alpha=0.3)
     ax.set_xlim(0.0, 0.30)
-    ax.set_ylim(1.0, 1.50)
+    ax.set_ylim(1.0, 1.52)
     ax.legend(loc="lower right", fontsize=9)
 
     FIGURES.mkdir(parents=True, exist_ok=True)

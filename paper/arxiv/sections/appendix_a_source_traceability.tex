@@ -20,18 +20,18 @@ submission-frozen artifact bundle. The final release should regenerate this
 table from a clean tag. Within the main text, numbers are written so they can
 be traced back to one phase note and one artifact family. When a result is
 excluded or downgraded on provenance grounds, the paper says so explicitly. The
-best current examples are the MVBench \texttt{sticky4} refinement and the
-1.63E sparse-ViT 8f boundary: both are scientifically interesting, but the
-frozen artifact bundle still needs stable raw paths before either should be
-promoted beyond its current status.
+best current examples are the MVBench \texttt{sticky4} refinement, Gemma's
+matched-parse-failure sparse-vision sweep, and Qwen's conservative low-gain
+sparse-vision boundary: all are scientifically useful, but none should be
+silently promoted beyond the finite evidence class it actually earned.
 
 \begin{table}[H]
 \centering
 \caption{Claim/protocol/evidence manifest for the main quantitative assets.}
 \label{tab:claim-protocol-manifest}
-\scriptsize
-\setlength{\tabcolsep}{2pt}
-\renewcommand{\arraystretch}{1.18}
+\tiny
+\setlength{\tabcolsep}{1.5pt}
+\renewcommand{\arraystretch}{1.06}
 \begin{tabularx}{0.99\linewidth}{@{}
   >{\raggedright\arraybackslash}p{0.12\linewidth}
   >{\raggedright\arraybackslash}X
@@ -41,19 +41,23 @@ promoted beyond its current status.
 \toprule
 Asset & Claim / protocol & Evidence class & Source / hardware \\
 \midrule
-Headline table & regime headline cells; first-pass vision-pruning holdout plus after-ingest follow-up & local + tracked-upstream & Phases 1.51V and 1.55A/D/E/F/G/H/I; adaptive mechanism and stage-timing artifacts; Gemma/Qwen local stacks, MLX / M3 Air 16 GB \\
-C-CEILING figure & C-CEILING / C-VISION scatter-back validation; first-pass holdout, n=60 stacked-regime audit, matched cross-arch probe, and 8f sparse-ViT boundary & local + tracked-upstream + findings-note boundary & ceiling data JSON; local Gemma and local Qwen stacks plus tracked-upstream TOMATO rerun; 1.63E 8f raw artifact import pending for the frozen bundle \\
+Headline table & regime headline cells; first-pass vision-pruning holdout, measured sparse-vision envelope, and after-ingest follow-up & local + tracked-upstream & Phases 1.51V, 1.55A/D/E/F/G/H/I/K, 1.63E/G/H; adaptive mechanism and stage-timing artifacts; Gemma/Qwen local stacks, MLX / M3 Air 16 GB \\
+C-CEILING figure & C-CEILING / C-VISION scatter-back validation; first-pass holdout, n=60 stacked-regime audit, matched cross-arch probe, and measured sparse-vision boundary & local + tracked-upstream + local boundary & ceiling data JSON; local Gemma and local Qwen stacks plus tracked-upstream TOMATO rerun; 1.63E/G/H raw artifacts checked in \\
+Measured sparse-vision tables & real timed vision-tower work skipped under Gemma and Qwen & local bounded systems evidence & Phase 1.63G Gemma 8/16/32f scaling and Phase 1.63H Qwen 16f keep-rate sweep; Qwen 1.63E 8f boundary \\
 C-PERSIST figure & C-PERSIST tested envelope; after-ingest same-video follow-up & local & Phase 1.55A artifacts; Qwen 7B/3B-4bit, MLX / M3 Air 16 GB \\
 C-PERSIST repair & 20f/32f same-video selective re-prefill & local bounded recovery & Phases 1.55D/E/F/G/H/I plus adaptive mechanism and stage-timing artifacts; Qwen 7B-4bit, VideoMME short/medium/long + 32f short \\
+C-PERSIST sampler sweep & adaptive short-cell practical temperature robustness & local reviewer-defense evidence & Phase 1.55K artifacts; Qwen 7B-4bit, VideoMME short slice, \(T\in\{0.0,0.5,0.7,1.0,1.5\}\) \\
 Routing frontier & sparse routing under dense backend & local & Phase 1.20/21/34/36 notes; Qwen 7B-4bit, MLX \\
 Gemma routing boundary & second-architecture semantic substitution & local boundary & Phase 1.42 artifacts; Gemma 4-E4B-4bit, TOMATO/MVBench motion holdouts \\
-Qwen stacked boundary & session/streaming composition & local negative / boundary & Phase 1.30 root-cause + W/X/Y/Z/AB/AC/AD/AF artifacts; Qwen 7B-4bit, VideoMME dev+holdout \\
+Qwen stacked boundary & session/streaming composition plus cache-boundary attribution & local negative / boundary & Phase 1.30 root-cause + W/X/Y/Z/AB/AC/AD/AF artifacts; Qwen 7B-4bit, VideoMME dev+holdout \\
 Paired drift table & paired choice/correctness drift summary & local analysis & Phase 1.61 drift summary built from landed 1.30, 1.42, and 1.55A artifacts \\
+Logit-margin scout & dense answer-margin signal is insufficient as a high-precision drift guard & local negative / future guard feature & Phase 1.65 artifacts; 228 scored Qwen paired rows \\
+Memory envelope & process working-set characterization across landed families & local reproducibility evidence & Phase 1.66 memory characterization; 78 cells across follow-up reuse, admission/composition, and measured sparse vision \\
 Method / limitations & codec-native planner bridge; semantic planner substitution & local semantic evidence & Phase 1.29B artifacts; Qwen 7B-4bit, VideoMME dev/short slices; offline extraction, not latency \\
 Scale-out streaming & native-rate streaming paired N=60 & scale-out partner, pending artifact harmonization & deployment report \S2.13.2 / status docs; Gemma 4 26B / M5 Max \\
 Scale-out real video & paired real-video regimes & scale-out partner, pending artifact harmonization & deployment report \S2.8 real-video timings; Gemma 4 26B / M5 Max \\
-Candidate C-STREAM probes & MV/residual staleness, sectional cache shift, static-camera inflection triggers, and E3 wall-clock instrumentation & scale-out partner mechanism probes, pending harmonized raw artifacts & \texttt{codec-through-sam} decision-log rows 2.02, 2.03-SCROLL, 2.06, 2.06-NEG; E3 findings; Gemma 4 26B / M5 Max \\
-Scale-out follow-up diagnostic & Gemma 26B PromptCacheState cross-turn smoke & blocked cache-semantics diagnostic & S0 cache-correctness findings; deterministic and within-turn checks pass, cross-turn warm follow-up matches dense on 2/5 \\
+Candidate C-STREAM probes & MV/residual staleness, sectional cache shift, static-camera inflection triggers, and E3 wall-clock instrumentation & scale-out partner mechanism probes, pending harmonized raw artifacts & companion deployment repository decision-log rows 2.02, 2.03-SCROLL, 2.06, 2.06-NEG; E3 findings; Gemma 4 26B / M5 Max \\
+Scale-out follow-up diagnostic & Gemma 26B PromptCacheState cross-turn smoke & blocked cache-semantics diagnostic & cross-turn cache-correctness findings; deterministic and within-turn checks pass, cross-turn warm follow-up matches dense on 2/5 \\
 Scale-out live & native-rate live camera & scale-out partner, pending artifact harmonization & deployment report \S2.13.1 / live-demo docs; Gemma 4 26B / M5 Max \\
 \bottomrule
 \end{tabularx}

@@ -87,7 +87,7 @@
   ],
   "measured_sparse_cells": [
     {
-      "label": "Qwen sparse-ViT 8f n=60",
+      "label": "Qwen sparse vision 8f n=60",
       "split": "measured sparse",
       "v_share": 0.0998,
       "v_red": 0.448,
@@ -95,6 +95,56 @@
       "observed_e2e": 1.042,
       "error_pp": -0.5,
       "product": 0.0447
+    },
+    {
+      "label": "Gemma sparse vision 8f n=60",
+      "split": "measured sparse",
+      "v_share": 0.0785,
+      "v_red": 0.482,
+      "predicted_e2e": 1.039,
+      "observed_e2e": 1.102,
+      "error_pp": 6.3,
+      "product": 0.0378
+    },
+    {
+      "label": "Gemma sparse vision 16f n=60",
+      "split": "measured sparse",
+      "v_share": 0.1556,
+      "v_red": 0.406,
+      "predicted_e2e": 1.067,
+      "observed_e2e": 1.035,
+      "error_pp": -3.2,
+      "product": 0.0632
+    },
+    {
+      "label": "Gemma sparse vision 32f n=60",
+      "split": "measured sparse",
+      "v_share": 0.242,
+      "v_red": 0.433,
+      "predicted_e2e": 1.117,
+      "observed_e2e": 1.126,
+      "error_pp": 0.9,
+      "product": 0.1048
+    },
+    {
+      "label": "Gemma sparse vision 32f short",
+      "split": "measured sparse",
+      "v_share": 0.5856,
+      "v_red": 0.422,
+      "predicted_e2e": 1.328,
+      "observed_e2e": 1.316,
+      "error_pp": -1.2,
+      "product": 0.2471
+    },
+    {
+      "label": "Qwen sparse vision 16f kr=0.85",
+      "split": "measured sparse",
+      "v_share": 0.149,
+      "v_red": 0.136,
+      "predicted_e2e": 1.021,
+      "observed_e2e": 1.032,
+      "error_pp": 1.1,
+      "product": 0.0203
     }
   ],
   "composition_cells": [
@@ -110,5 +160,5 @@
     }
   ],
   "worst_abs_error_pp": 13.65,
-  "median_abs_error_pp": 2.2
+  "median_abs_error_pp": 1.8
 }

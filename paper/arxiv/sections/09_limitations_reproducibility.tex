@@ -16,13 +16,16 @@ cell is ceiling-matched, which is useful evidence for the arithmetic and a
 null on super-ceiling composition.
 
 The measured sparse-execution story is now more concrete but still bounded.
-A Qwen 8f compact vision-tower run skips real timed vision work and matches
-the predicted E2E ceiling within 0.5pp, but it fails the fidelity gate on the
-combined \(n=60\) manifest. This supports C-CEILING as a systems model and
-shows that the sparse path is not merely dense-with-zeros. It does not yet
-support a broad fidelity-preserving sparse-backend claim. The next paper-grade
-step is frame scaling and a less brittle operating point, not hiding the
-short-bucket regression.
+Gemma supplies the cleanest current operating point: 32f short skips timed
+vision-tower work at 1.316$\times$ first-query speedup with no paired drift and
+no parse failures on 20 items. The full Gemma 8/16/32f sweep has zero paired
+answer drift, but dense and sparse arms share parse failures in some cells and
+the 8f row misses the ceiling tolerance. Qwen supplies the complementary
+boundary: aggressive 16f pruning collapses fidelity and format, while
+\(kr=0.85\) restores fidelity, format, and ceiling agreement at only
+1.032$\times$ end-to-end speedup and 13.6\% vision-time reduction. The paper
+therefore claims a measured sparse-vision envelope, not a broad
+fidelity-preserving sparse backend.
 
 For persistent-KV, the numbers are much larger, but the regime is narrower.
 These are \emph{after-ingest} claims: the first query on the video still pays
@@ -57,6 +60,12 @@ observed memory envelope rather than retroactively calling those runs failures.
 The result is also finite-horizon: the current sessions contain two follow-up
 questions, so many-turn drift remains an explicit stress test rather than a
 settled property.
+
+\IfFileExists{generated/tables/memory_characterization.tex}{
+\input{generated/tables/memory_characterization.tex}
+}{
+\draftnote{Run \texttt{make paper-sync} to generate the memory characterization table.}
+}
 
 The related-work bar for this lane is also higher than ``we reused a KV
 cache.'' Prefix caching, RadixAttention, CacheBlend-style repair, SparseVILA,
@@ -99,8 +108,14 @@ speedup to 1.06$\times$ and still lands on the same net aggregate loss as
 cache reuse, while any-paired-drift sets differ. That is informative even
 before the tensor-level mechanism is isolated: it falsifies a single-row-set
 explanation and localizes the boundary to follow-up state quality rather than
-first-query aggregate correctness alone. The next proof step is direct
-cache-state instrumentation plus per-example margin or distance probes. A related
+first-query aggregate correctness alone. The current post-hoc attribution
+passes its preregistered gates, but it is not a causal tensor probe. A dense
+logit-margin scout adds a useful negative: answer-letter margin has signal
+(held-out AUC about 0.71), but margin alone is insufficient as a
+high-precision drift guard and would require a dense pass anyway. The next
+proof step is direct cache-state instrumentation plus richer per-example
+features such as entropy, turn index, duration, cold correctness, and policy
+source. A related
 local codec-native bridge remains scientifically interesting, and the latest
 1.29 results now provide semantic
 planner-substitution evidence: MAX-over-span sparse sampling is hard-falsified,
@@ -170,11 +185,12 @@ tested cleanly.}
 Family & What it currently supports & Design lesson \\
 \midrule
 Qwen2.5-VL-7B & Stable routing and persistent follow-up reuse; strong
-selective re-prefill evidence; measured sparse-ViT ceiling boundary at 8f &
+selective re-prefill evidence; measured sparse-vision configuration boundary &
 Expose stable cache semantics, cache diagnostics, and frame-tail repair hooks. \\
-Gemma 4-E4B & First-pass vision-pruning measurements and vision-tower sparse
-path; second-architecture semantic-substitution boundary & Expose keep masks
-and per-stage timing, but make rotating/sliding cache behavior explicit. \\
+Gemma 4-E4B & First-pass vision-pruning measurements; clean measured
+sparse-vision 32f-short operating point plus broader zero-drift sweep with
+format caveats & Expose keep masks and per-stage timing, but make
+rotating/sliding cache behavior explicit. \\
 Gemma 4 26B scale-out & Streaming operational upside under a separate native
 stack & Export artifact-compatible paired rows, baselines, and cache-correctness
 smokes before promoting the lane to local-equivalent evidence. \\
@@ -209,5 +225,10 @@ main text versus move to the appendix.
 \path{research/experiments/2026/2026-04-25-phase-1_55G-k1-medium-replication-findings.md},
 \path{research/experiments/2026/2026-04-25-phase-1_55F-q3-post-q2-state-findings.md},
 \path{research/experiments/2026/2026-04-25-phase-1_55I-k1-long-replication-findings.md},
-\path{research/experiments/2026/2026-04-25-phase-1_55H-k1-32f-short-probe-findings.md}.}
+\path{research/experiments/2026/2026-04-25-phase-1_55H-k1-32f-short-probe-findings.md},
+\path{research/experiments/2026/artifacts/phase1_55K_adaptive_temperature_sweep/},
+\path{research/experiments/2026/artifacts/phase1_63G_gemma_track_b/},
+\path{research/experiments/2026/artifacts/phase1_63H_16f_kr_sweep/},
+\path{research/experiments/2026/artifacts/phase1_65_logit_margin_failure_predictor/},
+\path{research/experiments/2026/artifacts/phase1_66_memory_characterization/}.}
 \end{sectiontodo}

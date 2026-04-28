@@ -103,7 +103,8 @@ into one curve. Routing under a fixed dense backend is reported separately
 because it is mechanism-validation evidence rather than a sparse wall-clock
 claim.}
 \label{tab:three-regimes}
-\small
+\footnotesize
+\renewcommand{\arraystretch}{1.08}
 \begin{tabularx}{\linewidth}{@{}
   >{\raggedright\arraybackslash}p{0.18\linewidth}
   >{\raggedright\arraybackslash}p{0.23\linewidth}
@@ -113,9 +114,9 @@ claim.}
 \toprule
 Regime & Reused work & Denominator / evidence class & Headline evidence \\
 \midrule
-Fresh-video first pass & vision-tower work inside the first query & first-query wall-clock; local clean/advisory cells & Gemma first-pass gains from 1.113$\times$ to 1.407$\times$ across clean and advisory holdout cells \\
-After-ingest follow-up & prompt / KV prefix for later questions on the same video & follow-up latency and paired drift; first query still pays full freight & adaptive post-\(Q2\) state repairs short/medium/long and 32f-short slices with no observed drift on n=93, reaching 14.90--35.92$\times$ same-class follow-up speedup (15.28--35.97$\times$ cold-all-query / repaired-follow-up ratio); fixed \(K=1\) is the no-coordination baseline \\
-Scale-out streaming (candidate C-STREAM) & repeated visual state in a native-rate or live pipeline & separate operational protocol rows: ViT calls, measured subpipeline compute, live counters, or E2E & a 26B streaming implementation reports 13$\times$ fewer ViT calls, \mbox{$\sim$50$\times$} dominant measured subpipeline reduction, 4.2--4.5$\times$ real-video E2E, plus separate live-camera counters \\
+Fresh-video first pass & vision-tower work inside the first query & first-query wall-clock; local clean/advisory cells plus measured sparse-execution envelopes & VideoMME clean 1.113$\times$; MVBench/TOMATO advisory; measured sparse vision: Gemma 32f short 1.316$\times$ with 0/20 drift, Qwen conservative boundary 1.032$\times$ \\
+After-ingest follow-up & prompt / KV prefix for later questions on the same video & follow-up latency and paired drift; first query still pays full freight & raw 16f reuse reaches 91.1$\times$; adaptive repair spans short/medium/long and 32f-short with 0/93 drift at 14.90--35.92$\times$ same-class follow-up speedup \\
+Scale-out streaming (candidate C-STREAM) & repeated visual state in a native-rate or live pipeline & separate operational protocol rows: ViT calls, measured subpipeline compute, live counters, or E2E & 26B streaming rows report 13$\times$ fewer ViT calls, \mbox{$\sim$50$\times$} subpipeline reduction, and 4.2--4.5$\times$ real-video E2E under a separate protocol \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -143,10 +144,12 @@ across the same 93-query breadth, it has no observed paired drift and reaches
 (15.28--35.97$\times$ cold-all-query / repaired-follow-up ratio).
 \item We establish \textbf{first-pass vision pruning (C-VISION)}: training-free mid-layer vision-tower
 pruning yields measured first-pass end-to-end gains on frozen Gemma video-VLM
-runs, from 1.113$\times$ to 1.407$\times$ across clean and advisory holdout
-cells, with magnitude governed by the vision-share ceiling rather than wishful
-component-wise multiplication; a matched Qwen VideoMME probe lands on that
-same ceiling at smaller absolute lift because its dense vision share is lower.
+runs, from a clean 1.113$\times$ VideoMME holdout to advisory larger cells,
+with magnitude governed by the vision-share ceiling rather than wishful
+component-wise multiplication. The measured sparse-execution envelope then
+separates systems truth from fidelity truth: Gemma 32f short is a clean
+1.316$\times$ timed-skip cell, while Qwen needs a conservative low-gain keep
+rate to restore fidelity.
 \end{itemize}
 
 Those three contributions do not compose as a naive product. C-VISION changes

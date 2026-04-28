@@ -11,19 +11,19 @@ related:
 
 # Paper update notes v2 — after deep-mechanism queue closeout
 
-The deep-mechanism queue (1.63G + 1.55K + 1.65 + 1.30AF + 1.66) plus the 1.63H 16f kr-sweep all landed cleanly. Codex has already done the front-loading pass for adaptive C-PERSIST (commit 9b9dceb). These notes are the consolidated edit checklist for what still needs to land in `paper/arxiv/sections/` to reflect the new evidence.
+The deep-mechanism queue (1.63G + 1.55K + 1.65 + 1.30AF + 1.66) plus the 1.63H 16f kr-sweep all landed. Several rows are boundary evidence, not clean all-gates wins: Gemma measured sparse vision has matched parse-failure caveats, Qwen kr=0.85 is fidelity-safe but low-gain, and 1.66 observed process memory peaks above 12 GB even though the MLX allocation cap avoided the panic path. Codex has already done the front-loading pass for adaptive C-PERSIST (commit 9b9dceb). These notes are the consolidated edit checklist for what still needs to land in `paper/arxiv/sections/` to reflect the new evidence.
 
 ## What's locked since the previous notes (2026-04-27)
 
 - 1.55F-stage-timing committed (bc6c2e2): paired Q3 9.50× explained by post-Q2-repaired prefix coverage 99.4%
 - 1.63E 8f committed (43e8a0c): C-CEILING tight, fidelity bounded
 - 1.63E 16f catastrophic + 20f partial (5cd2245): boundary result
-- 1.63G Gemma full-frame Track B (74d957e): **0/60 paired drift at 8f/16f/32f, 1.316× short-bucket 32f**
-- 1.55K adaptive temperature sweep (5f9aaa1): **sampler-stable T∈[0,1.5]**
+- 1.63G Gemma full-frame measured sparse vision (74d957e): **0/60 paired drift at 8f/16f/32f, 1.316× clean short-bucket 32f; full sweep has matched parse-failure caveats and 8f ceiling miss**
+- 1.55K adaptive temperature sweep (5f9aaa1): **short-cell sampler-stability evidence over T∈[0,1.5], not the full 0/93 breadth claim**
 - 1.65 logit-margin scout (4d6bf61): **margin alone insufficient — useful negative result**
 - 1.30AF re-run with margin data (b69365b): all 5 gates pass
-- 1.66 memory characterization (6dde8c0): all 3 families covered, 12 GB cap honored
-- 1.63H 16f kr-sweep (57cf3a4 + f206504): **kr=0.85 is the safe Qwen 16f Track B operating point**
+- 1.66 memory characterization (6dde8c0): all 3 families covered; MLX cap mitigated panics, while observed process peaks still reached 13.61 GB
+- 1.63H 16f kr-sweep (57cf3a4 + f206504): **kr=0.85 is the fidelity-safe, low-gain Qwen 16f measured sparse-vision boundary**
 
 ## Concrete edits to apply (paper/arxiv/sections/)
 
@@ -35,7 +35,7 @@ Codex already updated the abstract for adaptive C-PERSIST in 9b9dceb. Two furthe
 
    Current (post-9b9dceb): single-cell Qwen 1.044× / 1.043× framing.
 
-   Replace with: "C-VISION generalizes across architectures: a 60-item paired Track B sweep on Gemma 4-E4B at 8f/16f/32f produces zero paired answer drift in all three frame budgets, with a 1.316× short-bucket end-to-end speedup at 32f and the C-CEILING arithmetic gap below 0.05× tolerance at every frame budget. A matched Qwen sweep is more configuration-conditional: at 16f the safe operating point shifts to keep-rate 0.85 (1.032× E2E, 0/60 parse failures, ceiling gap +0.011)."
+   Replace with: "C-VISION generalizes across architectures: a 60-item paired measured sparse-vision sweep on Gemma 4-E4B at 8f/16f/32f produces zero paired answer drift in all three frame budgets, with a clean 1.316× short-bucket end-to-end speedup at 32f; the full sweep carries matched parse-failure caveats and the 8f point misses the ceiling tolerance. A matched Qwen sweep is more configuration-conditional: at 16f the fidelity-safe operating point shifts to keep-rate 0.85 (1.032× E2E, 0/60 parse failures, ceiling gap +0.011) but only saves 13.6% vision time."
 
 2. **Add one sentence on adaptive C-PERSIST sampler stability** (paper currently does not mention 1.55K).
 

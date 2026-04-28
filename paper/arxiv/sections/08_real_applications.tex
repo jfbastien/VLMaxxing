@@ -84,7 +84,7 @@ Setting & Metric type & Outcome & Evidence class \\
 \midrule
 Streaming VideoMME (Gemma 26B) & component counter + accuracy & reported paired N=60: 13$\times$ fewer ViT calls; $\sim$50$\times$ less dominant measured subpipeline compute in the instrumented streaming segment; 58.3/60.0/61.7\% (stream/token-prune/dense), all within the reported $\pm$12 pp 95\% CI & scale-out stream benchmark \\
 Real-video paired regimes (Gemma 26B) & end-to-end timing & reported 4.2--4.5$\times$ end-to-end speedup on talking-head and surveillance-style real-video measurements & scale-out real-video benchmark \\
-Gemma 26B PromptCacheState follow-up & cache correctness + latency & S0 smoke: determinism 10/10 and within-turn cache-equivalence 10/10 pass, but cross-turn warm follow-up matches dense on only 2/5 items; warm latency is observed, yet correctness-preserving C-PERSIST is blocked pending a cache-safe rerun & blocked follow-up diagnostic \\
+Gemma 26B PromptCacheState follow-up & cache correctness + latency & cross-turn cache-correctness smoke: determinism 10/10 and within-turn cache-equivalence 10/10 pass, but cross-turn warm follow-up matches dense on only 2/5 items; warm latency is observed, yet correctness-preserving C-PERSIST is blocked pending a cache-safe rerun & blocked follow-up diagnostic \\
 Live-camera pipeline & live component counter & reported single-system counter: 14.3$\times$ fewer ViT calls on one active 60\,s RTSP window (701 decoded frames / 49 ViT calls); broader 5--300$\times$ scene-dependent range remains appendix-weighted live-counter evidence & scale-out live measurement \\
 \bottomrule
 \end{tabularx}
@@ -124,7 +124,7 @@ checklist. The paper still lacks the screenshot-polling baseline, low-FPS dense
 baseline, SimpleStream-style recency baseline, broader UI diversity, and a
 dedicated stale-cache failure case. The scale-out lane should next run the same
 claim axes as the local paper: a cache-correctness fix and expanded smoke before
-any 26B C-PERSIST replication, measured sparse-ViT / ceiling validation, native
+any 26B C-PERSIST replication, measured sparse vision / ceiling validation, native
 streaming matched baselines, and a raw re-export of the large sparse exactness
 artifact with item IDs, paired outputs, parse failures, and confidence
 intervals. The sparse-exactness audit currently supports zero accuracy delta on
@@ -142,7 +142,7 @@ stay appendix-weighted until their evidence is cleaned up further.
 
 \textcolor{todoBorder}{Remaining work: fix or bound Gemma 26B cross-turn cache
 semantics, rerun an expanded cache-correctness smoke, run C-PERSIST scale-out
-replication only if that smoke passes, add measured sparse-ViT / ceiling
+replication only if that smoke passes, add measured sparse vision / ceiling
 validation, screenshot-polling and low-FPS dense baselines, broader UI coverage,
 one stale-cache failure case, and a fuller raw-paired sparse-exactness export
 before making the streaming lane carry more of the headline.}

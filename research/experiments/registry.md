@@ -1,6 +1,6 @@
 # Experiment Registry (Machine-Readable)
 
-Last updated: 2026-04-25
+Last updated: 2026-04-29
 
 This is the primary source of per-phase experiment state. Other docs
 (PLAN.md, research-strategy-post-codecsight.md, literature-map,
@@ -373,25 +373,25 @@ authoritative in the per-phase notes under
   notes: Re-running 1.30AE only makes sense if a fundamentally different policy family lands a passing rate. The current cache-reuse admission family is closed across kr_Q0 ∈ {0.67, 0.75, 0.80, 0.85, 0.90}. Future paths: 1.30AC (cache-invalidated follow-ups, prereg 39f5097), 1.30AD (instrumented 1.30W rerun, prereg 234bf3d), or an optional 1.30AB-fine at kr_Q0=0.95.
 
 - phase_id: 1.30AC
-  status: preregistered / ready-to-run (cache-invalidated follow-up pruning)
+  status: completed 2026-04-27
   authoritative_note: research/experiments/2026/2026-04-25-phase-1_30AC-cache-invalidated-followups-prereg.md
-  authoritative_artifacts: []
-  current_best_policy: pending; forces per-query cache reset so follow-up kr=0.50 actually recomputes image tokens
+  authoritative_artifacts: [research/experiments/2026/artifacts/phase1_30AC_cache_invalidated_followups/]
+  current_best_policy: cache-invalidated follow-up test: follow-up vision activity fires, speedup collapses to 1.06x, and aggregate loss matches the cache-reuse arm through different row-level failures
   supersedes: []
   paper_relevance: primary mechanism adjudication for the 1.30 lane
-  prereg_outcome: pending
-  runtime_estimate: ~5-6h with landed 1.30W cold-control reuse; +4-5h if cold rerun forced
+  prereg_outcome: boundary landed; use as evidence that active follow-up pruning is not a deployable rescue in the current family
+  runtime_estimate: complete
   notes: This is the first 1.30-family run that can support or falsify an actual follow-up vision-pruning mechanism claim. The wrapper runs a one-seed smoke first and aborts unless follow-up rows show prefix_hit=0, all image tokens recomputed, and vision_pruning_active=true.
 
 - phase_id: 1.30AD
-  status: preregistered / ready-to-run (instrumented 1.30W rerun)
+  status: completed 2026-04-27
   authoritative_note: research/experiments/2026/2026-04-25-phase-1_30AD-instrumented-1_30W-rerun-prereg.md
-  authoritative_artifacts: []
-  current_best_policy: pending; reruns the landed 1.30W policy with current image-token instrumentation
+  authoritative_artifacts: [research/experiments/2026/artifacts/phase1_30AD_instrumented_w_rerun/]
+  current_best_policy: instrumented cache-reuse reference: reproduces 1.30W aggregate boundary while preserving the speed profile
   supersedes: []
   paper_relevance: paper-locking mechanism measurement for the 1.30W reference line
-  prereg_outcome: pending
-  runtime_estimate: ~1.5-2.5h with landed 1.30W cold-control reuse; +4-5h if cold rerun forced
+  prereg_outcome: landed; pairs with 1.30AC and 1.30AF for the composition-boundary narrative
+  runtime_estimate: complete
   notes: Expected to reproduce the landed 1.30W delta and directly confirm that follow-up pruning activity is negligible under prompt-cache reuse. If it does not reproduce within the preregistered delta/CI bands, the 1.30W line needs an explicit reproducibility note.
 
 - phase_id: 1.31
@@ -1023,14 +1023,14 @@ authoritative in the per-phase notes under
   notes: Natural next scope test after 1.55G. Uses the fixed 7-video long tranche `669,711,712,737,756,758,794`, all drawn from the existing long-manifest pool and validated against the parquet's ≥3-question rule. If H1' passes, the combined K=1 result becomes n=72 paired short+medium+long with 0 observed drift.
 
 - phase_id: 1.55J
-  status: preregistered / ready-to-run (K=1 sampler-variation scout)
+  status: completed 2026-04-27
   authoritative_note: research/experiments/2026/2026-04-26-phase-1_55J-k1-sampler-variation-prereg.md
-  authoritative_artifacts: []
-  current_best_policy: pending; fixed K=1 short-bucket replication at temperature=0.7 / top_p=0.95
+  authoritative_artifacts: [research/experiments/2026/artifacts/phase1_55J_k1_sampler_variation/]
+  current_best_policy: fixed K=1 sampler scout at T=0.7 produced a small paired-diff count but remained within the reviewer-defense gate
   supersedes: []
   paper_relevance: reviewer-defense for the fixed K=1 repaired frontier; tests whether 0/n paired drift is greedy-only
-  prereg_outcome: pending
-  runtime_estimate: ~60-90min on the current laptop
+  prereg_outcome: landed; superseded for adaptive headline purposes by 1.55K
+  runtime_estimate: complete
   notes: The v2 explicit-tail generator now supports sampling through the same MLX sampler family used by mlx-vlm generation. This phase should not be confused with the already-landed 1.55A sampler probes, which tested naive persistent-KV basin robustness rather than repaired K=1 selective re-prefill.
 
 - phase_id: 1.55B
@@ -1119,69 +1119,80 @@ authoritative in the per-phase notes under
   notes: `scripts/build_per_item_drift_summary.py` builds figure-ready JSON from landed artifacts only. The goal is to make the paper's explanatory story concrete: aggregate metrics alone are incomplete, and the repo now has three distinct drift phenotypes worth showing in one place (1.30 V-only Q0 flips, 1.42 Gemma aggregate-preserved identity drift, 1.55A persistent-KV pathological attractors).
 
 - phase_id: 1.63
-  status: preregistered / ready-to-run
+  status: superseded by 1.63E/1.63G/1.63H
   authoritative_note: research/experiments/2026/2026-04-27-phase-1_63-track-b-sparse-vit-prereg.md
   authoritative_artifacts: []
-  current_best_policy: pending; Qwen compact post-layer L=2 kr=0.50 Track B sparse-ViT at 8f
+  current_best_policy: base prereg superseded by measured sparse-execution frame scaling and keep-rate sweep
   supersedes: []
   paper_relevance: primary (first measured real skipped ViT work for C-VISION; LM prefill remains dense)
-  prereg_outcome: pending
-  runtime_estimate: ~2.8-3.2h
-  notes: Track B scope is vision-tower-only. It hard-gates on both real vision-stage reduction and positive end-to-end speedup so a dense-stage-share null cannot be accidentally promoted as a headline.
+  prereg_outcome: superseded; see 1.63E/G/H
+  runtime_estimate: superseded
+  notes: Scope is vision-tower-only measured sparse execution. It hard-gates on both real vision-stage reduction and positive end-to-end speedup so a dense-stage-share null cannot be accidentally promoted as a headline.
 
 - phase_id: 1.63E
-  status: partial findings-note landed for 8f; raw artifact import pending; higher frame counts pending
+  status: completed partial / boundary 2026-04-29
   authoritative_note: research/experiments/2026/2026-04-27-phase-1_63E-track-b-frame-scaling-prereg.md + research/experiments/2026/2026-04-27-phase-1_63E-8f-findings.md
-  authoritative_artifacts: []
-  current_best_policy: "Qwen compact post-layer L=2 kr=0.50 Track B sparse-ViT at 8f: ceiling explained (1.042x observed vs 1.047x predicted) and real vision work skipped, but H_fidelity FAILS at -0.067 aggregate; 16f/20f/32f remain pending"
+  authoritative_artifacts: [research/experiments/2026/artifacts/phase1_63E_track_b_frame_scaling/]
+  current_best_policy: "Qwen compact post-layer L=2 kr=0.50 measured sparse vision: 8f ceiling explained (1.042x observed vs 1.047x predicted) and real vision work skipped, but H_fidelity FAILS at -0.067 aggregate; 16f kr=0.50 catastrophically fails format/fidelity"
   supersedes: []
-  paper_relevance: primary (tests whether C-CEILING predicts measured Track B wall-clock across frame budgets)
-  prereg_outcome: "8f partial: H_sparse_vision/H_e2e_positive/H_ceiling_explained PASS, H_fidelity FAIL; higher frame-count sweep pending"
-  runtime_estimate: ~7.5-9.5h
-  notes: Default wrapper recomputes 8f as a normal gated cell rather than treating it as a non-veto reference; override PHASE1_63E_FRAME_COUNTS only for intentional resume/debug. The 8f result is currently findings-note-backed in this checkout; import or link raw paired artifacts before using it as a frozen submission artifact.
+  paper_relevance: primary boundary (C-CEILING timing validation plus Qwen fidelity/format failure at aggressive keep rate)
+  prereg_outcome: "8f timing boundary passes H_sparse_vision/H_e2e_positive/H_ceiling_explained but fails H_fidelity; 16f kr=0.50 fails format/fidelity and motivates 1.63H"
+  runtime_estimate: complete partial
+  notes: Preserve as a negative/boundary result, not a positive sparse-backend headline.
 
 - phase_id: 1.63G
-  status: preregistered / ready-to-run
+  status: completed 2026-04-29
   authoritative_note: research/experiments/2026/2026-04-27-phase-1_63G-gemma-track-b-prereg.md
-  authoritative_artifacts: []
-  current_best_policy: pending; Gemma compact post-layer L=2 kr=0.50 Track B sparse-ViT at 8f/16f/32f
+  authoritative_artifacts: [research/experiments/2026/artifacts/phase1_63G_gemma_track_b/]
+  current_best_policy: Gemma measured sparse vision at 8/16/32f has zero paired answer drift; cleanest cell is 32f short at 1.316x with 0/20 drift and 0/0 parse failures; full sweep has matched parse-failure caveats and 8f ceiling miss
   supersedes: []
-  paper_relevance: primary diagnostic (tests architecture and frame-budget generality of Track B sparse-ViT and the ceiling model)
-  prereg_outcome: pending
-  runtime_estimate: ~7.5-10.5h
-  notes: Uses a dedicated Gemma arm runner because the existing Gemma novelty-pruning runner shortens prompt geometry and is not a clean vision-tower-only Track B test. The default wrapper runs 8f/16f/32f so the cross-architecture C-CEILING evidence is a curve, not a single point.
+  paper_relevance: primary measured sparse-execution evidence (Gemma curve plus caveats)
+  prereg_outcome: landed as bounded envelope; headline_pass=false because full sweep is not format-clean and 8f misses ceiling tolerance
+  runtime_estimate: complete
+  notes: Use paper wording "zero paired drift under matched parse behavior"; do not call it clean all-gates.
+
+- phase_id: 1.63H
+  status: completed 2026-04-29
+  authoritative_note: research/experiments/2026/2026-04-29-phase-1_63H-16f-kr-sweep-findings.md
+  authoritative_artifacts: [research/experiments/2026/artifacts/phase1_63H_16f_kr_sweep/]
+  current_best_policy: Qwen 16f keep-rate sweep recovers fidelity as kr rises; kr=0.85 is fidelity/format/ceiling safe but low-gain at 1.032x and 13.6% vision-time reduction
+  supersedes: []
+  paper_relevance: primary boundary (Qwen measured sparse-execution configuration envelope)
+  prereg_outcome: landed; useful monotone recovery curve, not a full sparse-vision gate pass
+  runtime_estimate: complete
+  notes: If a Qwen positive sparse-backend claim is needed later, bracket kr=0.75--0.85 to see whether any point preserves fidelity while clearing the 25% vision-reduction gate.
 
 - phase_id: 1.55F-stage-timing
-  status: preregistered / ready-to-run
+  status: completed 2026-04-27
   authoritative_note: research/experiments/2026/2026-04-27-phase-1_55F-stage-timing-prereg.md
-  authoritative_artifacts: []
-  current_best_policy: pending; analysis-only adaptive-vs-fixed timing attribution from existing 1.55F/1.55D artifacts
+  authoritative_artifacts: [research/experiments/2026/artifacts/phase1_55F_stage_timing/]
+  current_best_policy: adaptive Q3 wins because it inherits post-Q2 repaired cache; tail tokens 451->50 and paired Q3 fixed/adaptive speedup is 9.50x
   supersedes: []
   paper_relevance: secondary mechanism (explains adaptive C-PERSIST speedup as Q3 re-prefill avoidance)
-  prereg_outcome: pending
-  runtime_estimate: <1min
+  prereg_outcome: landed; mechanism attribution explains adaptive speedup over fixed K=1
+  runtime_estimate: complete (<1min)
   notes: No new MLX generation; this is a mechanism attribution over existing JSONL timings and tail-token counts. The preregistered Q3 speedup gate is >=3x so the analyzer does not mark a clear measured attribution as a false failure solely because it is below a more aggressive 5x heuristic.
 
 - phase_id: 1.55K
-  status: preregistered / ready-to-run
+  status: completed 2026-04-29
   authoritative_note: research/experiments/2026/2026-04-27-phase-1_55K-adaptive-temperature-sweep-prereg.md
-  authoritative_artifacts: []
-  current_best_policy: pending; adaptive Q2=K1/Q3=K0 post-Q2-state policy under sampler temperatures 0.5/0.7/1.0/1.5
+  authoritative_artifacts: [research/experiments/2026/artifacts/phase1_55K_adaptive_temperature_sweep/]
+  current_best_policy: adaptive short-cell sampler sweep across T=0.0/0.5/0.7/1.0/1.5; no pathological hits, large speedups, small nonzero diffs at T=0.7/1.0
   supersedes: [1.55J]
   paper_relevance: reviewer-defense (tests whether adaptive C-PERSIST headline is greedy-only)
-  prereg_outcome: pending
-  runtime_estimate: ~4-6h
+  prereg_outcome: landed as practical reviewer-defense against greedy-only artifact; not full 0/93 breadth and not universal sampler invariance
+  runtime_estimate: complete
   notes: Uses identical sampler settings for session and baseline arms; T=0.0 greedy 1.55F is included as reference when present. The summary hard-gates sampler-robustness on absolute cold-baseline accuracy >=14/21 in every temperature cell so mutual sampler collapse cannot masquerade as cache robustness.
 
 - phase_id: 1.30AF
-  status: preregistered / ready-to-run
+  status: completed 2026-04-29
   authoritative_note: research/experiments/2026/2026-04-27-phase-1_30AF-cache-boundary-attribution-prereg.md
-  authoritative_artifacts: []
-  current_best_policy: pending; post-hoc 1.30AC/1.30AD row-level failure-set and feature attribution
+  authoritative_artifacts: [research/experiments/2026/artifacts/phase1_30AF_cache_boundary_attribution/]
+  current_best_policy: post-hoc AC/AD attribution: same aggregate loss, non-identical row-level failure sets, Jaccard 0.3125
   supersedes: []
   paper_relevance: secondary mechanism (distinguishes same aggregate loss from row-identical behavior)
-  prereg_outcome: pending
-  runtime_estimate: <1min
+  prereg_outcome: landed; supports "same aggregate boundary through different row sets" but not causal tensor mechanism
+  runtime_estimate: complete (<1min)
   notes: Named 1.30AF because 1.30AE already denotes the skipped duration-conditioned union candidate. This is not direct KV tensor-distance measurement; it reports duration/q-index/cold-correctness feature concentrations and, when 1.65 has landed first, logit-margin stratification.
 
 - phase_id: 1.55F-Gemma
@@ -1196,14 +1207,14 @@ authoritative in the per-phase notes under
   notes: Gemma 4 E4B 4-bit weights are local and fit prior runs, but the Qwen selective re-prefill driver must not be reused because 1.55C found silent Gemma prompt-cache corruption risk.
 
 - phase_id: 1.65
-  status: preregistered / ready-to-run
+  status: completed scout 2026-04-29
   authoritative_note: research/experiments/2026/2026-04-27-phase-1_65-logit-margin-predictor-prereg.md
-  authoritative_artifacts: []
-  current_best_policy: pending; held-out dense Qwen answer-letter logit-margin predictor scout over 1.30AD/1.30AC follow-up rows
+  authoritative_artifacts: [research/experiments/2026/artifacts/phase1_65_logit_margin_failure_predictor/]
+  current_best_policy: dense answer-letter margin has signal but is insufficient alone as a high-precision drift guard
   supersedes: []
   paper_relevance: primary diagnostic (tests whether 1.30 cache-boundary drift concentrates on intrinsically uncertain items)
-  prereg_outcome: pending
-  runtime_estimate: ~5-8h at PHASE1_65_MAX_ROWS=0
+  prereg_outcome: negative scout landed; test AUC point estimate 0.7125 but pass_margin_signal/pass_safe_filter fail
+  runtime_estimate: complete
   notes: This is an oracle-feature predictor scout, not a deployed guard. It deliberately excludes Q0 rows and all 1.55F/adaptive rows to avoid learning admission/source/policy identity instead of within-1.30 follow-up stability; rows where the dense logit argmax disagrees with the artifact dense choice are rejected before analysis.
 
 - phase_id: 1.30AG
@@ -1218,14 +1229,14 @@ authoritative in the per-phase notes under
   notes: Named 1.30AG because 1.30AE already denotes the skipped duration-conditioned union candidate. This is not in the default deep-mechanism queue; launch only if row/feature/margin attribution fails to explain the equal aggregate loss.
 
 - phase_id: 1.66
-  status: preregistered / ready-to-run
+  status: completed 2026-04-29
   authoritative_note: research/experiments/2026/2026-04-27-phase-1_66-memory-characterization-prereg.md
-  authoritative_artifacts: []
-  current_best_policy: analysis-only memory envelope over landed 1.30/1.55/Track-B artifacts
+  authoritative_artifacts: [research/experiments/2026/artifacts/phase1_66_memory_characterization/]
+  current_best_policy: analysis-only memory envelope over landed 1.30/1.55/1.63 artifacts; max observed peak 13.61 GB, measured sparse-execution max 10.80 GB
   supersedes: []
   paper_relevance: reviewer-defense (turns RSS-gate misses and high-watermark cells into an explicit local-memory envelope)
-  prereg_outcome: pending
-  runtime_estimate: <1min
+  prereg_outcome: landed; use to distinguish MLX allocation cap from observed process working-set peaks
+  runtime_estimate: complete (<1min)
   notes: Emits JSON and CSV only; it is not a model-quality claim and should be used to explain local 16 GB resource boundaries.
 ```
 

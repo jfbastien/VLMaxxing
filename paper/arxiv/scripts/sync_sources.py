@@ -918,6 +918,106 @@ def _c_vision_snapshot(upstream_root: Path) -> dict[str, object]:
     return {"rows": rows}
 
 
+def _measured_sparse_execution_snapshot() -> dict[str, object]:
+    """Return artifact-backed measured sparse-vision execution cells.
+
+    These rows are deliberately separate from the older semantic C-VISION
+    holdouts. They time real skipped vision-tower work and therefore carry a
+    different evidence class and a different failure surface.
+    """
+
+    gemma_dir = ARTIFACTS / "phase1_63G_gemma_track_b"
+    qwen_dir = ARTIFACTS / "phase1_63H_16f_kr_sweep"
+    qwen_e_dir = ARTIFACTS / "phase1_63E_track_b_frame_scaling"
+
+    gemma_scaling = _artifact_json(gemma_dir / "scaling_summary.json")
+    gemma_rows = []
+    for cell in gemma_scaling["cells"]:
+        frame_count = int(cell["frame_count"])
+        pair = _artifact_json(gemma_dir / f"pair_summary_{frame_count}f.json")
+        all_row = pair["all"]
+        gemma_rows.append(
+            {
+                "model": "Gemma 4-E4B",
+                "frame_count": frame_count,
+                "n": int(cell["n_paired_items"]),
+                "accuracy_delta": float(cell["accuracy_delta"]),
+                "choice_agreement": float(all_row["choice_agreement"]),
+                "dense_parse_failures": int(all_row["dense_parse_failures"]),
+                "sparse_parse_failures": int(all_row["sparse_parse_failures"]),
+                "vision_reduction": float(cell["vision_reduction"]),
+                "vision_share_dense": float(cell["vision_share_dense"]),
+                "observed_e2e": float(cell["actual_e2e_speedup"]),
+                "predicted_e2e": float(cell["predicted_e2e_speedup"]),
+                "residual": float(cell["actual_minus_predicted"]),
+                "pass_format": bool(cell["pass_format"]),
+                "pass_ceiling": bool(cell["pass_ceiling_explained"]),
+                "source": _source_path_label(gemma_dir / f"pair_summary_{frame_count}f.json"),
+            }
+        )
+
+    gemma_32f = _artifact_json(gemma_dir / "pair_summary_32f.json")
+    gemma_32f_short = gemma_32f["by_group"]["short"]
+
+    qwen_rows = []
+    qwen_8f = _artifact_json(qwen_e_dir / "pair_summary_8f.json")["all"]
+    qwen_rows.append(
+        {
+            "model": "Qwen2.5-VL-7B",
+            "setting": "8f, kr=0.50",
+            "n": int(qwen_8f["n"]),
+            "accuracy_delta": float(qwen_8f["accuracy_delta_sparse_minus_dense"]),
+            "choice_agreement": float(qwen_8f["choice_agreement"]),
+            "sparse_parse_failures": int(qwen_8f["sparse_parse_failures"]),
+            "vision_reduction": float(qwen_8f["vision_reduction"]),
+            "observed_e2e": float(qwen_8f["actual_e2e_speedup_dense_over_sparse"]),
+            "predicted_e2e": float(qwen_8f["predicted_e2e_speedup_from_vision_only"]),
+            "residual": float(qwen_8f["actual_minus_predicted_e2e_speedup"]),
+            "interpretation": "ceiling-validating fidelity fail",
+            "source": _source_path_label(qwen_e_dir / "pair_summary_8f.json"),
+        }
+    )
+    for kr_label, keep_rate in [("0.65", "065"), ("0.75", "075"), ("0.85", "085")]:
+        path = qwen_dir / f"pair_summary_kr{keep_rate}_16f.json"
+        row = _artifact_json(path)["all"]
+        qwen_rows.append(
+            {
+                "model": "Qwen2.5-VL-7B",
+                "setting": f"16f, kr={kr_label}",
+                "n": int(row["n"]),
+                "accuracy_delta": float(row["accuracy_delta_sparse_minus_dense"]),
+                "choice_agreement": float(row["choice_agreement"]),
+                "sparse_parse_failures": int(row["sparse_parse_failures"]),
+                "vision_reduction": float(row["vision_reduction"]),
+                "observed_e2e": float(row["actual_e2e_speedup_dense_over_sparse"]),
+                "predicted_e2e": float(row["predicted_e2e_speedup_from_vision_only"]),
+                "residual": float(row["actual_minus_predicted_e2e_speedup"]),
+                "interpretation": (
+                    "fidelity-safe low-gain boundary" if kr_label == "0.85" else "recovery sweep"
+                ),
+                "source": _source_path_label(path),
+            }
+        )
+
+    return {
+        "gemma_rows": gemma_rows,
+        "gemma_32f_short": {
+            "n": int(gemma_32f_short["n"]),
+            "accuracy_delta": float(gemma_32f_short["accuracy_delta_sparse_minus_dense"]),
+            "choice_agreement": float(gemma_32f_short["choice_agreement"]),
+            "dense_parse_failures": int(gemma_32f_short["dense_parse_failures"]),
+            "sparse_parse_failures": int(gemma_32f_short["sparse_parse_failures"]),
+            "vision_reduction": float(gemma_32f_short["vision_reduction"]),
+            "vision_share_dense": float(gemma_32f_short["vision_share_dense"]),
+            "observed_e2e": float(gemma_32f_short["actual_e2e_speedup_dense_over_sparse"]),
+            "predicted_e2e": float(gemma_32f_short["predicted_e2e_speedup_from_vision_only"]),
+            "residual": float(gemma_32f_short["actual_minus_predicted_e2e_speedup"]),
+            "source": _source_path_label(gemma_dir / "pair_summary_32f.json"),
+        },
+        "qwen_rows": qwen_rows,
+    }
+
+
 def _persistent_kv_snapshot() -> dict[str, object]:
     summary_paths = {
         8: (
@@ -1476,6 +1576,7 @@ def _render_deployment_scale_figure(snapshot: dict) -> None:
 def _headline_snapshot(upstream_root: Path) -> dict[str, object]:
     return {
         "c_vision": _c_vision_snapshot(upstream_root),
+        "measured_sparse_execution": _measured_sparse_execution_snapshot(),
         "persistent_kv": _persistent_kv_snapshot(),
         "selective_reprefill": _selective_reprefill_snapshot(),
     }
@@ -1633,11 +1734,13 @@ def _render_headline_figure(snapshot: dict) -> None:
 
 def _write_headline_table(snapshot: dict) -> None:
     cvision_rows = snapshot["c_vision"]["rows"]
+    measured_sparse = snapshot["measured_sparse_execution"]
+    gemma_sparse_short = measured_sparse["gemma_32f_short"]
+    qwen_sparse_safe = measured_sparse["qwen_rows"][-1]
     kv_by_frame = {row["frame_count"]: row for row in snapshot["persistent_kv"]["rows"]}
     repair = snapshot["selective_reprefill"]
     fixed_repair = repair["fixed"]
     adaptive_repair = repair["adaptive"]
-    tomato_row = next(row for row in cvision_rows if row["benchmark"] == "TOMATO")
 
     lines = [
         r"\begin{table}[H]",
@@ -1686,34 +1789,191 @@ def _write_headline_table(snapshot: dict) -> None:
             f"{fixed_repair['n_follow_up_pairs']} & local repair breadth \\\\"
         ),
         (
-            "First-pass & Gemma MVBench 8f holdout & "
-            "first-query E2E & "
-            f"{cvision_rows[1]['observed_e2e']:.3f}$\\times$ "
-            f"& $\\Delta$acc {cvision_rows[1]['acc_delta']:+.3f} & advisory local \\\\"
-        ),
-        (
             "First-pass & Gemma VideoMME 8f holdout & "
             "first-query E2E & "
             f"{cvision_rows[0]['observed_e2e']:.3f}$\\times$ "
             f"& $\\Delta$acc {cvision_rows[0]['acc_delta']:+.3f} & clean local \\\\"
         ),
         (
-            "First-pass & Gemma TOMATO 8f "
-            f"{'holdout' if 'holdout' in tomato_row['status'] else 'dev'} & "
+            "First-pass & Gemma measured sparse vision, 32f short & "
             "first-query E2E & "
-            f"{tomato_row['observed_e2e']:.3f}$\\times$ & "
-            f"$\\Delta$acc {tomato_row['acc_delta']:+.3f} & "
-            + (
-                "tracked-upstream advisory \\\\"
-                if tomato_row["status"] == "advisory-holdout-upstream"
-                else "dev-only \\\\"
-            )
+            f"{gemma_sparse_short['observed_e2e']:.3f}$\\times$ & "
+            f"choice agreement {gemma_sparse_short['choice_agreement'] * 100:.0f}\\%; "
+            f"$\\Delta$acc {gemma_sparse_short['accuracy_delta']:+.3f}; "
+            "parse failures 0/0 & clean sparse-execution cell \\\\"
+        ),
+        (
+            "First-pass & Gemma MVBench 8f holdout & "
+            "first-query E2E & "
+            f"{cvision_rows[1]['observed_e2e']:.3f}$\\times$ & "
+            f"$\\Delta$acc {cvision_rows[1]['acc_delta']:+.3f}; "
+            "favorable timing caveat & advisory local \\\\"
+        ),
+        (
+            "First-pass & Qwen measured sparse vision, 16f kr=0.85 & "
+            "first-query E2E & "
+            f"{qwen_sparse_safe['observed_e2e']:.3f}$\\times$ & "
+            f"$\\Delta$acc {qwen_sparse_safe['accuracy_delta']:+.3f}; "
+            f"vision reduction {qwen_sparse_safe['vision_reduction'] * 100:.1f}\\%; "
+            "parse failures 0 & fidelity-safe low-gain boundary \\\\"
         ),
         r"\bottomrule",
         r"\end{tabularx}",
         r"\end{table}",
     ]
     (GENERATED / "tables" / "headline_results.tex").write_text("\n".join(lines) + "\n")
+
+
+def _write_measured_sparse_execution_tables(snapshot: dict) -> None:
+    measured = snapshot["measured_sparse_execution"]
+
+    gemma_lines = [
+        r"\begin{table}[H]",
+        r"\centering",
+        (
+            r"\caption{Measured sparse vision execution on Gemma. The timed "
+            r"path skips real vision-tower work. All three frame budgets have "
+            r"zero paired accuracy delta and 100\% choice agreement, but the "
+            r"full sweep is not format-clean because dense and sparse arms "
+            r"share parse failures; the clean operating point is the 32f short "
+            r"bucket described in the text.}"
+        ),
+        r"\label{tab:gemma-measured-sparse-vision}",
+        r"\scriptsize",
+        r"\renewcommand{\arraystretch}{1.12}",
+        r"\begin{tabularx}{\linewidth}{@{}l r r r r r r r X@{}}",
+        r"\toprule",
+        (
+            r"Frames & \(n\) & \(\Delta\)acc & Agree & Parse & "
+            r"\(V_{\mathrm{red}}\) & Obs. & Gap & Interpretation \\"
+        ),
+        r"\midrule",
+    ]
+    for row in measured["gemma_rows"]:
+        parse = f"{row['dense_parse_failures']}/{row['sparse_parse_failures']}"
+        interp = "clean ceiling cell" if row["pass_ceiling"] else "ceiling miss"
+        if not row["pass_format"]:
+            interp += "; matched parse failures"
+        gemma_lines.append(
+            f"{row['frame_count']}f & {row['n']} & "
+            f"{row['accuracy_delta']:+.3f} & "
+            f"{row['choice_agreement'] * 100:.0f}\\% & {parse} & "
+            f"{row['vision_reduction'] * 100:.1f}\\% & "
+            f"{row['observed_e2e']:.3f}$\\times$ & "
+            f"{row['residual']:+.3f} & {interp} \\\\"
+        )
+    gemma_lines.extend([r"\bottomrule", r"\end{tabularx}", r"\end{table}"])
+
+    qwen_lines = [
+        r"\begin{table}[H]",
+        r"\centering",
+        (
+            r"\caption{Measured sparse vision execution on Qwen. The 8f point "
+            r"validates the timing model but fails fidelity. At 16f, increasing "
+            r"the keep rate monotonically recovers accuracy and format, ending "
+            r"at a fidelity-safe but low-gain point that no longer clears the "
+            r"vision-reduction gate.}"
+        ),
+        r"\label{tab:qwen-measured-sparse-vision}",
+        r"\scriptsize",
+        r"\renewcommand{\arraystretch}{1.12}",
+        r"\begin{tabularx}{\linewidth}{@{}l r r r r r r r X@{}}",
+        r"\toprule",
+        (
+            r"Setting & \(n\) & \(\Delta\)acc & Agree & Parse & "
+            r"\(V_{\mathrm{red}}\) & Obs. & Gap & Interpretation \\"
+        ),
+        r"\midrule",
+    ]
+    for row in measured["qwen_rows"]:
+        qwen_lines.append(
+            f"{row['setting']} & {row['n']} & {row['accuracy_delta']:+.3f} & "
+            f"{row['choice_agreement'] * 100:.1f}\\% & "
+            f"{row['sparse_parse_failures']} & "
+            f"{row['vision_reduction'] * 100:.1f}\\% & "
+            f"{row['observed_e2e']:.3f}$\\times$ & "
+            f"{row['residual']:+.3f} & {row['interpretation']} \\\\"
+        )
+    qwen_lines.extend([r"\bottomrule", r"\end{tabularx}", r"\end{table}"])
+
+    out = GENERATED / "tables"
+    out.joinpath("gemma_measured_sparse_vision.tex").write_text("\n".join(gemma_lines) + "\n")
+    out.joinpath("qwen_measured_sparse_vision.tex").write_text("\n".join(qwen_lines) + "\n")
+    (GENERATED / "data" / "measured_sparse_execution_snapshot.json").write_text(
+        json.dumps(measured, indent=2, sort_keys=True) + "\n"
+    )
+
+
+def _write_c_persist_sampler_table() -> None:
+    summary = _artifact_json(
+        ARTIFACTS / "phase1_55K_adaptive_temperature_sweep" / "temperature_sweep_summary.json"
+    )
+    lines = [
+        r"\begin{table}[H]",
+        r"\centering",
+        (
+            r"\caption{Adaptive C-PERSIST sampler-temperature sweep on the "
+            r"short-slice mechanism cell. This is reviewer-defense evidence "
+            r"against a greedy-decoding artifact, not the full 0/93 breadth "
+            r"claim and not a universal stochastic robustness theorem.}"
+        ),
+        r"\label{tab:c-persist-sampler-stability}",
+        r"\small",
+        r"\begin{tabular}{@{}r r r r r r@{}}",
+        r"\toprule",
+        (
+            r"\(T\) & Baseline & Session & \(\Delta\)acc & "
+            r"Choice/correct diffs & Speedup \\"
+        ),
+        r"\midrule",
+    ]
+    for row in summary["cells"]:
+        lines.append(
+            f"{row['temperature']:.1f} & "
+            f"{row['baseline_n_correct']}/{row['n_pairs']} & "
+            f"{row['session_n_correct']}/{row['n_pairs']} & "
+            f"{row['accuracy_delta_session_minus_baseline']:+.3f} & "
+            f"{row['paired_choice_diffs']}/{row['paired_correctness_diffs']} & "
+            f"{row['speedup_all_query_median_cold_over_session_follow_up']:.2f}"
+            r"$\times$ \\"
+        )
+    lines.extend([r"\bottomrule", r"\end{tabular}", r"\end{table}"])
+    (GENERATED / "tables" / "c_persist_sampler_stability.tex").write_text("\n".join(lines) + "\n")
+
+
+def _write_memory_characterization_table() -> None:
+    summary = _artifact_json(
+        ARTIFACTS / "phase1_66_memory_characterization" / "memory_characterization_summary.json"
+    )
+    family_labels = {
+        "C-PERSIST/1.55": "After-ingest follow-up reuse",
+        "C-VISION/1.30": "Composition/admission boundary",
+        "Track-B/1.63": "Measured sparse vision execution",
+    }
+    lines = [
+        r"\begin{table}[H]",
+        r"\centering",
+        (
+            r"\caption{Memory characterization across landed cells. The "
+            r"runtime mitigation configures an MLX allocation cap and avoided "
+            r"kernel panics in the clean queue, but observed process working-set "
+            r"peaks still reached 13.6\,GB.}"
+        ),
+        r"\label{tab:memory-characterization}",
+        r"\small",
+        r"\begin{tabularx}{\linewidth}{@{}X r r r X@{}}",
+        r"\toprule",
+        r"Family & Cells & Max peak & Cells \(>10\)GB & Paper meaning \\",
+        r"\midrule",
+    ]
+    for family, row in summary["by_family"].items():
+        label = family_labels.get(family, family)
+        lines.append(
+            f"{label} & {row['n_cells']} & {row['max_peak_observed_gb']:.2f}\\,GB & "
+            f"{row['n_cells_over_10gb']} & observed envelope \\\\"
+        )
+    lines.extend([r"\bottomrule", r"\end{tabularx}", r"\end{table}"])
+    (GENERATED / "tables" / "memory_characterization.tex").write_text("\n".join(lines) + "\n")
 
 
 def _write_build_meta(
@@ -1724,8 +1984,8 @@ def _write_build_meta(
         f"\\newcommand{{\\PrimaryRepoCommitDate}}{{{primary['commit_date']}}}",
         (f"\\newcommand{{\\UpstreamRepoSHA}}{{{_short_sha(upstream['sha'])}}}"),
         f"\\newcommand{{\\UpstreamRepoCommitDate}}{{{upstream['commit_date']}}}",
-        (f"\\newcommand{{\\SamRepoSHA}}{{{_short_sha(sam['sha'])}}}"),
-        f"\\newcommand{{\\SamRepoCommitDate}}{{{sam['commit_date']}}}",
+        (f"\\newcommand{{\\ScaleoutRepoSHA}}{{{_short_sha(sam['sha'])}}}"),
+        f"\\newcommand{{\\ScaleoutRepoCommitDate}}{{{sam['commit_date']}}}",
     ]
     (GENERATED / "tex" / "build_meta.tex").write_text("\n".join(lines) + "\n")
 
@@ -1850,7 +2110,10 @@ def main() -> int:
     _render_regime_overview_figure(headline_snapshot)
     _render_headline_figure(headline_snapshot)
     _write_headline_table(headline_snapshot)
+    _write_measured_sparse_execution_tables(headline_snapshot)
     _write_c_persist_repair_table(headline_snapshot)
+    _write_c_persist_sampler_table()
+    _write_memory_characterization_table()
     _render_c_persist_timeline_figure()
     qwen_bridge_snapshot = _qwen_bridge_boundary_snapshot()
     _write_qwen_bridge_boundary_table(qwen_bridge_snapshot)

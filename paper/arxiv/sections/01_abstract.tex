@@ -45,13 +45,16 @@ Fresh-video pruning is smaller but measured. \emph{First-pass vision pruning
 turns frames into model tokens, during the first query on a fresh video. The
 clean VideoMME holdout cell gives 1.113$\times$ first-pass wall-clock gain
 with zero aggregate accuracy delta; advisory MVBench and TOMATO holdout cells
-are larger but carry timing and accuracy caveats. A matched Qwen point lands at
-1.044$\times$ observed versus 1.043$\times$ predicted. The
-Qwen measured sparse-ViT path also validates the ceiling numerically at 8f
-(1.042$\times$ observed versus 1.047$\times$ predicted after 44.8\% vision-time
-reduction), but fails the fidelity gate on the n=60 combined manifest; it is a
-boundary result, not a new fidelity-preserving headline. The
-routing audits explain why those numbers are not the whole story:
+are larger but carry timing and accuracy caveats. Measured sparse vision
+execution makes the first-pass story sharper: on Gemma 32f short, the runtime
+skips timed vision-tower work at 1.316$\times$ first-query speedup with no
+paired drift on 20 items and no parse failures. The full Gemma 8/16/32f sweep
+has zero paired answer drift but matched dense/sparse parse failures in some
+cells; Qwen is configuration-sensitive, with aggressive pruning failing
+fidelity and a conservative 16f operating point restoring fidelity at
+1.032$\times$ with only 13.6\% vision-time reduction. These are measured
+sparse-execution envelopes, not a license to multiply every component win.
+The routing audits explain why those numbers are not the whole story:
 fresh-compute placement cannot be reduced to novelty magnitude alone,
 aggregate accuracy can hide answer-identity drift, and semantic substitution is
 not itself a measured sparse backend.

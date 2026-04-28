@@ -72,7 +72,7 @@ Important runtime distinction:
 | `WP-3.1` | Default thresholds `(3, 8)` | use these as the default imported planner thresholds unless a preregistered sweep says otherwise | direct local reproduction target |
 | `WP-3.3` | Refresh-interval drift tolerance | imported `14`-frame tolerance remains external until local sweep exists | direct local reproduction target |
 | `WP-4` | Q-table pre-filter correlation | useful supporting reproduction target, not the first milestone | deferred reproduction target |
-| `WP-5` | Compression and speed stackup | out of scope until Track B evidence exists on this stack | explicitly gated |
+| `WP-5` | Compression and speed stackup | partial local measured sparse-execution evidence now exists, but the imported compression/speed stackup remains unreproduced | explicitly gated |
 | | | | |
 | **From revised whitepaper (2026-04-16)** | | | |
 | | | | |
@@ -90,7 +90,7 @@ Important runtime distinction:
 | `WP-4.2` | Combined temporal+spatial pipeline, end-to-end measured, 4–5× sustained across 32/64/128 frames (Sam, Gemma 4 26B on M5 Max) | Sam's most distinctive empirical contribution; measured, not projected. Citable as "Sam 2026 reports," with hardware/model caveat. Our Phase 1.45 would test whether the arithmetic composes on Qwen2.5-VL-7B 4-bit at M3 Air. | deferred local reproduction |
 | `WP-2.10` | Thinking-amplification finding (agreement drops with thinking enabled on Gemma 4) | requires Gemma 4 thinking-on/off comparison. Supplementary to WP-2.9. | deferred reproduction target |
 | `WP-2.11` | Hard spatial pruning (Gemma 4 with token reduction) | new in latest sam revision; not in our original import. Deferred behind temporal reuse mainline. | deferred |
-| `WP-4.1` | Wall-clock throughput (M5 Max: 6.0× ViT, 4.2× E2E, 130 fps on 32-frame conferencing) | NOT directly reproducible on M3 Air 16GB; a local Track B harness would produce different absolute numbers on different hardware | generalized reproduction target (hardware-conditioned) |
+| `WP-4.1` | Wall-clock throughput (M5 Max: 6.0× ViT, 4.2× E2E, 130 fps on 32-frame conferencing) | NOT directly reproducible on M3 Air 16GB; the local measured sparse-execution harness now provides hardware-conditioned boundary evidence, not the imported M5 throughput claim | generalized reproduction target (hardware-conditioned) |
 | `WP-5.1` | Composition projection (~175× with TurboQuant) | projected, not measured, even by sam; explicitly marked as future work in their §5 | explicitly gated |
 
 ## Strict Versus Generalized Reproduction

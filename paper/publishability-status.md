@@ -1,4 +1,4 @@
-# Publishability Status — 2026-04-27
+# Publishability Status — 2026-04-29
 
 One-file answer to "what can we actually claim, in what venue, with what
 numbers, today." Kept in sync with [claim-matrix.md](claim-matrix.md) but
@@ -11,14 +11,16 @@ runtime inventories lower in this file are retained for provenance, but the
 current narrative interpretation should come from `priority.md` and the claim
 matrix.
 
-## Current Manuscript Position (2026-04-27)
+## Current Manuscript Position (2026-04-29)
 
 The draft should lead with three linked claims, not with a Qwen-only routing
 note:
 
-- **C-VISION**: Gemma vision-tower pruning now has paper-grade first-pass
-  speedup evidence on clean and advisory holdout cells, and the same
-  scatter-back ceiling now transfers to a matched Qwen VideoMME probe.
+- **C-VISION**: Gemma vision-tower pruning has paper-grade first-pass
+  speedup evidence on clean and advisory holdout cells, and measured sparse
+  vision now has a bounded timed-execution envelope: Gemma 32f short is clean
+  at 1.316× with 0/20 paired drift, while Qwen recovers fidelity only at a
+  conservative low-gain keep rate.
 - **C-PERSIST**: persistent-KV reuse already delivers the largest local
   deployment numbers in the repo on same-video follow-up queries, and
   adaptive selective re-prefill now repairs the 20f/32f basin across the broad
@@ -67,13 +69,18 @@ contributions (all landed before Codex round-26 2026-04-21):
   cold-all-query ratio.
 - **C-VISION — vision-tower pruning with scatter-back ceiling**
   (claim 15). `E2E ≤ 1/(1 − V_share × V_red)` on Gemma 4-E4B-4bit
-  validated across **6 core scatter points** (4 Gemma dev + 1 matched
-  Qwen dev + 1 EXP10 n=60 composition audit), with **9 rendered points total** once
-  the 3 Gemma holdout cells are included; V_red benchmark-invariant at
+  validated across Gemma dev/holdout cells, a matched Qwen dev point,
+  measured sparse-execution cells, and the EXP10 n=60 composition audit;
+  V_red benchmark-invariant at
   39–43% at L=2 kr_V=0.50 on the first dev tranche. **Three-benchmark
   holdout trifecta CLOSED 2026-04-21** (VideoMME 8f CLEAN,
   MVBench 8f CLOSED-ADVISORY on thermal-calibration footnote,
   TOMATO 8f EARNED-ADVISORY on favorable-drift footnote).
+  **Measured sparse-execution envelope landed 2026-04-29**: Gemma 8/16/32f
+  skips timed vision work with zero paired answer drift but matched
+  parse-failure caveats; Gemma 32f short is the clean operating point at
+  1.316×. Qwen 16f keep-rate sweep recovers fidelity at kr=0.85 but with only
+  13.6% vision-time reduction and 1.032× E2E.
 
 - **First-pass measured gains (Gemma / C-VISION).** This is the main
   reviewer-facing result today: measured end-to-end speedups on VideoMME,
@@ -96,12 +103,12 @@ what works and what does not, and it belongs in the paper as mechanism
 and boundary evidence rather than as the headline result.
 
 **Separate streaming work as scale-out streaming evidence (NOT applications/support).**
-The separate stack (26B-class, real streaming, full end-to-end pipeline)
+The separate scale-out stack (26B-class, real streaming, full end-to-end pipeline)
 runs on a deliberately disjoint regime from codec-through (4B-class,
 sparse benchmark, mechanism isolation): 4.2–4.5× real-video, 13× ViT,
 ~50× dominant measured subpipeline, and 5–300× live-camera ViT. The
 0.8 s Gemma 26B follow-up latency is now a blocked diagnostic row:
-Sam's S0 cache-correctness smoke observed fast warm responses, but
+the cross-turn cache-correctness smoke observed fast warm responses, but
 cross-turn warm follow-up matched dense on only 2/5 items.
 Its sparse exactness rows and streaming rows do not use one uniform
 classifier: sparse-sampled QA stays pixel-diff by design, while native-rate
@@ -190,11 +197,10 @@ abstract/intro files are legacy scratchpads.
 
 What we CANNOT yet honestly say in HN-headline form:
 
-- "**N%** faster" for a broad sparse backend — the ViT-only measured-sparse-execution path is
-  staged but not yet a landed paper-grade artifact in this checkout. The dense
-  wall-clock baseline has been captured (60.1 s/item median end-to-end at
-  8 frames), and the projected ceiling on a vision-cache-only sparse-ViT speedup
-  is **22% end-to-end** at this geometry (phase 1.50).
+- "**N%** faster" for a broad sparse backend — the local measured-sparse-vision
+  path has landed as a bounded envelope, not a broad backend claim. Gemma has a
+  clean 32f-short cell; Qwen has a fidelity-safe low-gain boundary. Sparse LM
+  prefill and broad fidelity-preserving curves remain out of scope.
 - "**N%** less energy" — no energy instrumentation. Projected proportional
   to wall-clock at fixed memory.
 - "**N%** as accurate" — accuracy is equal (0.633=0.633 on MVBench
@@ -204,8 +210,8 @@ What we CANNOT yet honestly say in HN-headline form:
 
 **Honest one-liner for reviewers:** "training-free anti-recomputation across
 separate denominator regimes: large after-ingest follow-up reuse, share-limited
-first-pass pruning, a negative composition boundary, and staged
-measured-sparse-execution validation for the measured wall-clock ceiling."
+first-pass pruning, a negative composition boundary, and bounded measured
+sparse-execution validation for the measured wall-clock ceiling."
 
 ## Publishable claim inventory (with concrete numbers)
 
@@ -228,7 +234,7 @@ measured-sparse-execution validation for the measured wall-clock ceiling."
 
 | # | Claim | Blocker | Runtime estimate |
 |---|---|---|---|
-| I | "Method delivers broad measured sparse-path speedup" | A Qwen 8f sparse-ViT boundary point has landed: real skipped vision work, 1.042× measured E2E, ceiling gap 0.005, but H_fidelity fails at Δacc=-0.067 aggregate and -0.25 on short. Treat broad measured sparse-backend claims as TODO until a fidelity-preserving 1.63 point or curve lands. | Current queued scope is ViT-only sparse execution with dense LM prefill; sparse LM prefill remains a larger systems project. |
+| I | "Method delivers broad measured sparse-path speedup" | Bounded measured sparse-vision envelope landed. Gemma 32f short is clean at 1.316× with 0/20 paired drift; full Gemma sweep has matched parse-failure caveats. Qwen kr=0.85 restores fidelity/format/ceiling at 16f but is low-gain (1.032×, 13.6% vision-time reduction). | Broad sparse backend and sparse LM prefill remain larger systems projects. |
 | J | "Validated on VideoMME (de facto benchmark)" | **EARNED 2026-04-18 (8f); strengthened 2026-04-19 (16f, 32f).** Qwen 2.5-VL-7B-4bit, videomme_dev_v1.toml n=30. **8f**: dense_acc=0.533, parse_fail=0, agreement=1.000, RSS=6.67GB, mean e2e=31.0s. **16f**: dense_acc=0.567, mean e2e=75.2s. **32f**: dense_acc=0.533 (n=30), mean e2e=157.9s, RSS=8.52GB — zero per-bucket flips vs 16f; long plateau confirmed. **Non-monotonic bucket scaling** — medium +30pp (0.50→0.80→0.70), long −20pp at 16f and held at 32f. **Mechanism**: Phase 1.57 adjacent-frame ViT feature-cos landed on same manifest; H-drift-compounds REJECTED, H-saturation SUPPORTED (long drift AND long acc both plateau at 16f). Frame-scaling not a linear knob; 32f not Pareto-efficient (2× cost for zero aggregate lift). | Open: Phase 1.58 (4bit × long-context quantization) to test the one surviving mechanism candidate. Phase 1.54 (decode-accel) still open for long-item latency, not accuracy. |
 | K | "Cross-architecture generalization (Qwen windowed ↔ Gemma/InternVL3 all-global)" | Partial: matched Qwen C-VISION transfer exists, but broader architecture coverage remains open. | Next useful work is matched Qwen/Gemma drift probes or a third architecture, not another claim that the ceiling itself can transfer at one point. |
 | L | "Placement ablation (phase 1.38)" | Not run. | ≈ 30 min GPU wall time on a subset. |
@@ -272,10 +278,10 @@ is work the user is buying forever. What the user is paying for
 ### Runtime cost summary
 
 **Already spent** (benchmark wall-clock, cumulative approx over project):
-- Lane A (TOMATO + MVBench routing, Qwen): ~25-30 h (A+B+C+D+E+F+G, measured across many N=30 passes)
-- Lane B (Gemma 1.51R + ceiling validation): ~10-12 h (K+M)
-- Lane B (Gemma 1.51V expansion + 32f probe + holdout sessions 2-5): ~10.4 h (P 4.34 h + Q 1.99 h + R 0.75 h + S 0.8 h + T 2.0 h + U 0.48 h measured)
-- Lane B (Gemma 1.51V EXP10 n=60 composition audit, 2026-04-21): ~3.0 h (V)
+- Qwen routing (TOMATO + MVBench): ~25-30 h (A+B+C+D+E+F+G, measured across many N=30 passes)
+- Gemma first-pass pruning + ceiling validation: ~10-12 h (K+M)
+- Gemma first-pass expansion + 32f probe + holdout sessions 2-5: ~10.4 h (P 4.34 h + Q 1.99 h + R 0.75 h + S 0.8 h + T 2.0 h + U 0.48 h measured)
+- Gemma EXP10 n=60 composition audit, 2026-04-21: ~3.0 h (V)
 - VideoMME lane (claim 8 earned + strengthened + **holdout**): ~120 min (J₈ 16 min + J₁₆ 38 min + J₃₂L 28 min + **J₁₆ₕ 38 min** 2026-04-21)
 - Persistent-KV lane (claim 14): ~7.3 h (O)
 - **Total benchmark wall-clock already spent: ~58-65 h**
@@ -296,9 +302,9 @@ runnable tonight vs. impl-gated.
 | split-landed | 1.42 Gemma topology lane | complete on the preregistered N=30 pair | Gemma 4-E4B-4bit | landed 2026-04-24: TOMATO pass (`agreement=0.933`, `dense_acc=cached_acc=0.267`), MVBench strict-agreement fail (`agreement=0.733`, `dense_acc=cached_acc=0.200`); further work is interpretation or third-architecture breadth, not implementation |
 | blocked | 1.43 EgoSchema breadth gate | ~2 h | Qwen 2.5-VL-7B-4bit | loader + manifest unwritten |
 | blocked | 1.52R composition (1.42 × 1.51R) | ~3 h | Gemma 4-E4B-4bit | 1.42 landing + 1.51R V-patched re-run |
-| future | Claim-5 sparse-execution delta | ~2 h for ViT-only queued cells after harness is stable | either | ViT-only sparse backend is staged but not yet paper-grade in this checkout; sparse LM prefill remains larger engineering work |
+| landed-boundary | Claim-5 measured sparse-execution envelope | landed 2026-04-29; broader curve remains open | Gemma 4-E4B and Qwen 2.5-VL-7B-4bit | Gemma 32f short is the clean timed-skip cell (1.316×, 0/20 paired drift, parse failures 0/0). Gemma 8/16/32f full sweep has matched parse-failure caveats. Qwen 16f kr=0.85 is fidelity-safe but low-gain; broad sparse backend and sparse LM prefill remain larger engineering work. |
 
-**Runnable next with setup**: many-turn C-PERSIST stability, sampler sweep,
+**Runnable next with setup**: many-turn C-PERSIST stability,
 direct cache-state instrumentation for the 1.30 boundary, and scale-out
 artifact-compatible 26B replication are now higher leverage than more VideoMME
 breadth. `1.58` remains blocked by the missing bf16 checkpoint and the current
@@ -593,8 +599,8 @@ items that priority.md does not carry. For the current ordering see
    `scripts/plot_v_share_v_red_ceiling.py`; artifacts
    `paper/figures/c_persist_safe_budget.{png,_data.json}` and
    `paper/figures/v_share_v_red_ceiling.{png,_data.json}`. V_share ×
-   V_red figure now shows 9 rendered points (4 Gemma dev + 3 Gemma
-	   holdout + 1 matched Qwen cross-arch + 1 composition-audit CLOSED-NULL);
+   V_red figure now shows Gemma dev/holdout, Qwen cross-arch, measured
+   sparse-execution, and composition-audit points;
 	   dev median |Δ| 2.2pp, MVBench 8f holdout sits 13.6pp above the
    ceiling (thermal-inflated, matches session-4 advisory).
 
@@ -620,7 +626,7 @@ Documented here as appendix-grade method evidence. These are the null
 
 ### Retired framing (do not reintroduce)
 
-- **"Lane B big-numbers gate via claim 11"** — retired 2026-04-21
+- **"Claim 11 as the big-numbers gate"** — retired 2026-04-21
   per codex round-26. Claim 11 is duration-conditional partial
   reproduction, arithmetically bounded to ≤1.46× at 8f kr=0.10 per
   C-CEILING. Stage 5 anchor comparison lands `gemma_structural` as
