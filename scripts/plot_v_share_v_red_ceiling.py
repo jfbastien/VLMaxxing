@@ -37,7 +37,7 @@ FIGURES = REPO_ROOT / "paper" / "figures"
 @dataclass(frozen=True)
 class CeilingCell:
     label: str
-    split: str  # "dev" or "holdout" or "pooled"
+    split: str  # "dev", "holdout", "cross-arch", or "composition"
     v_share: float
     v_red: float
     predicted_e2e: float
@@ -67,8 +67,8 @@ DEV_CELLS = [
 # Holdout V-only cells (session 3 / 4 / 5).
 HOLDOUT_CELLS = [
     CeilingCell("VideoMME 8f holdout", "holdout", 0.1545, 0.413, ceiling(0.1545 * 0.413), 1.113),
-    CeilingCell("MVBench 8f holdout", "holdout", 0.478, 0.471, ceiling(0.478 * 0.471), 1.407),
-    CeilingCell("TOMATO 8f holdout", "holdout", 0.407, 0.350, ceiling(0.407 * 0.350), 1.194),
+    CeilingCell("MVBench 8f holdout", "holdout", 0.4521, 0.471, ceiling(0.4521 * 0.471), 1.407),
+    CeilingCell("TOMATO 8f holdout", "holdout", 0.3839, 0.350, ceiling(0.3839 * 0.350), 1.194),
 ]
 
 # Cross-architecture C-VISION transfer point (Qwen 2.5-VL-7B, VideoMME 8f).
@@ -76,13 +76,18 @@ CROSS_ARCH_CELLS = [
     CeilingCell("Qwen VideoMME 8f dev", "cross-arch", 0.103, 0.398, 1.043, 1.044),
 ]
 
-# Pooled-regime cell (H_stack EXP10 n=60 CLOSED-NULL).
-POOLED_CELLS = [
-    # Arm B V+novelty on pooled VideoMME n=60: V_share collapsed to 0.0626,
+# Measured sparse-execution boundary point (Qwen 2.5-VL-7B, VideoMME 8f).
+SPARSE_CELLS = [
+    CeilingCell("Qwen sparse-ViT 8f n=60", "measured sparse", 0.0998, 0.448, 1.047, 1.042),
+]
+
+# Composition-audit cell (EXP10 n=60 CLOSED-NULL).
+COMPOSITION_CELLS = [
+    # Arm B V+novelty on VideoMME n=60: V_share collapsed to 0.0626,
     # V_red (vision-side only) 0.43 at kr_V=0.50. Observed E2E 1.042×.
     CeilingCell(
-        "VideoMME pooled n=60 (H_stack arm B)",
-        "pooled",
+        "VideoMME n=60 composition audit",
+        "composition",
         0.0626,
         0.430,
         ceiling(0.0626 * 0.430),
@@ -92,7 +97,7 @@ POOLED_CELLS = [
 
 
 def plot() -> None:
-    all_cells = DEV_CELLS + HOLDOUT_CELLS + CROSS_ARCH_CELLS + POOLED_CELLS
+    all_cells = DEV_CELLS + HOLDOUT_CELLS + CROSS_ARCH_CELLS + SPARSE_CELLS + COMPOSITION_CELLS
 
     fig, ax = plt.subplots(figsize=(9.5, 6.2))
 
@@ -125,14 +130,15 @@ def plot() -> None:
     _scatter(DEV_CELLS, "o", "tab:blue", "dev (n=30 thermally paired)")
     _scatter(HOLDOUT_CELLS, "s", "tab:orange", "holdout (V-only pairs)")
     _scatter(CROSS_ARCH_CELLS, "^", "tab:green", "Qwen cross-arch (n=30, matched point)")
-    _scatter(POOLED_CELLS, "D", "tab:red", "pooled n=60 (H_stack CLOSED-NULL)")
+    _scatter(SPARSE_CELLS, "P", "tab:purple", "Qwen measured sparse (n=60, fidelity fail)")
+    _scatter(COMPOSITION_CELLS, "D", "tab:red", "n=60 composition audit")
 
     ax.set_xlabel("V_share × V_red  (share-weighted vision-tower pruning)")
     ax.set_ylabel("end-to-end speedup ×")
     ax.set_title(
         "C-VISION scatter-back ceiling validation\n"
-        "9 regimes (4 Gemma dev + 3 holdout + 1 Qwen + 1 pooled); "
-        "Qwen lands at +0.1pp; holdout max 11.6pp (MVBench, thermal-inflated)"
+        "10 regimes (4 Gemma dev + 3 holdout + 2 Qwen + 1 composition audit); "
+        "Qwen lands at +0.1pp; holdout max 13.6pp (MVBench, advisory)"
     )
     ax.grid(True, alpha=0.3)
     ax.set_xlim(0.0, 0.30)
@@ -158,9 +164,13 @@ def plot() -> None:
             {**asdict(c), "error_pp": round(c.error_pp, 2), "product": round(c.product, 4)}
             for c in CROSS_ARCH_CELLS
         ],
-        "pooled_cells": [
+        "measured_sparse_cells": [
             {**asdict(c), "error_pp": round(c.error_pp, 2), "product": round(c.product, 4)}
-            for c in POOLED_CELLS
+            for c in SPARSE_CELLS
+        ],
+        "composition_cells": [
+            {**asdict(c), "error_pp": round(c.error_pp, 2), "product": round(c.product, 4)}
+            for c in COMPOSITION_CELLS
         ],
         "worst_abs_error_pp": round(max(abs(c.error_pp) for c in all_cells), 2),
         "median_abs_error_pp": round(float(np.median([abs(c.error_pp) for c in all_cells])), 2),

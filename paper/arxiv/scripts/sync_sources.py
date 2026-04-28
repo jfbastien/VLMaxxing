@@ -77,7 +77,11 @@ def _ensure_dirs() -> None:
 
 
 def _sync_curated_paper_figures() -> None:
-    figure_stems = ["v_share_v_red_ceiling", "c_persist_safe_budget"]
+    figure_stems = [
+        "v_share_v_red_ceiling",
+        "c_persist_safe_budget",
+        "anti_recomputation_overview",
+    ]
     for stem in figure_stems:
         source_png = REPO_ROOT / "paper" / "figures" / f"{stem}.png"
         if source_png.exists():
@@ -85,6 +89,257 @@ def _sync_curated_paper_figures() -> None:
         source_json = REPO_ROOT / "paper" / "figures" / f"{stem}_data.json"
         if source_json.exists():
             (GENERATED / "data" / source_json.name).write_text(source_json.read_text())
+
+
+def _draw_overview_box(
+    ax,
+    xy: tuple[float, float],
+    width: float,
+    height: float,
+    *,
+    face: str,
+    edge: str = "#1f2933",
+    text: str = "",
+    size: float = 9,
+    weight: str = "normal",
+):
+    rect = mpatches.FancyBboxPatch(
+        xy,
+        width,
+        height,
+        boxstyle="round,pad=0.02,rounding_size=0.035",
+        linewidth=1.0,
+        edgecolor=edge,
+        facecolor=face,
+    )
+    ax.add_patch(rect)
+    if text:
+        ax.text(
+            xy[0] + width / 2,
+            xy[1] + height / 2,
+            text,
+            ha="center",
+            va="center",
+            fontsize=size,
+            weight=weight,
+        )
+    return rect
+
+
+def _draw_overview_arrow(
+    ax,
+    start: tuple[float, float],
+    end: tuple[float, float],
+    *,
+    color: str = "#374151",
+    lw: float = 1.4,
+) -> None:
+    ax.annotate(
+        "",
+        xy=end,
+        xytext=start,
+        arrowprops=dict(arrowstyle="->", color=color, lw=lw, shrinkA=0, shrinkB=0),
+    )
+
+
+def _render_regime_overview_figure(snapshot: dict) -> None:
+    """Render a compact conceptual map of the paper's denominator regimes."""
+
+    repair = snapshot["selective_reprefill"]["adaptive"]
+    persistent = snapshot["persistent_kv"]
+    qwen_16f = next(row for row in persistent["rows"] if int(row["frame_count"]) == 16)
+
+    plt.rcParams.update(
+        {
+            "font.family": "DejaVu Sans",
+            "figure.facecolor": "white",
+            "axes.facecolor": "white",
+        }
+    )
+    fig, ax = plt.subplots(figsize=(12.0, 6.2))
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis("off")
+
+    ax.text(0.05, 0.93, "Video state over time", fontsize=12, weight="bold")
+    ax.text(
+        0.05,
+        0.88,
+        "Most pixels keep explaining the same wall; fresh work should buy the surprise.",
+        fontsize=8.5,
+        color="#4b5563",
+    )
+
+    frame_w = 0.17
+    frame_h = 0.48
+    for idx in range(4):
+        x = 0.08 + idx * 0.105
+        y = 0.23 + idx * 0.045
+        _draw_overview_box(ax, (x, y), frame_w, frame_h, face="#f8fafc", edge="#64748b")
+        ax.add_patch(
+            mpatches.Rectangle(
+                (x + 0.015, y + 0.04),
+                frame_w - 0.03,
+                frame_h - 0.08,
+                facecolor="#dbeafe",
+                alpha=0.55,
+                edgecolor="none",
+            )
+        )
+        ax.add_patch(
+            mpatches.Rectangle(
+                (x + 0.06 + 0.018 * idx, y + 0.17 + 0.01 * idx),
+                0.055,
+                0.10,
+                facecolor="#f97316",
+                alpha=0.90,
+                edgecolor="#9a3412",
+                linewidth=0.6,
+            )
+        )
+        ax.text(x + frame_w / 2, y - 0.035, f"t+{idx}", ha="center", fontsize=8)
+
+    ax.text(0.09, 0.15, "cached stable state", fontsize=8, color="#1d4ed8")
+    ax.text(0.30, 0.15, "fresh residual", fontsize=8, color="#c2410c")
+    _draw_overview_arrow(ax, (0.20, 0.13), (0.16, 0.31), color="#1d4ed8")
+    _draw_overview_arrow(ax, (0.38, 0.13), (0.39, 0.52), color="#c2410c")
+
+    ax.plot([0.49, 0.49], [0.08, 0.92], color="#cbd5e1", linewidth=1.0)
+    ax.text(0.52, 0.93, "Four evidence rails, four denominators", fontsize=12, weight="bold")
+    rails = [
+        (
+            0.77,
+            "C-VISION",
+            "first query",
+            "skip vision-tower work",
+            "first-query E2E; 1.113--1.407x",
+            "#e0f2fe",
+            "#0284c7",
+        ),
+        (
+            0.59,
+            "C-PERSIST",
+            "same-video follow-up",
+            "reuse prompt / KV state",
+            f"after-ingest; {qwen_16f['speedup']:.1f}x raw, "
+            f"{repair['all_query_speedup_min']:.2f}--"
+            f"{repair['all_query_speedup_max']:.2f}x repaired",
+            "#dcfce7",
+            "#16a34a",
+        ),
+        (
+            0.41,
+            "Routing",
+            "dense backend",
+            "place fresh evidence",
+            "quality frontier, not wall-clock",
+            "#f3e8ff",
+            "#7e22ce",
+        ),
+        (
+            0.23,
+            "Streaming",
+            "scale-out lane",
+            "reuse live state",
+            "component counters + E2E",
+            "#fef3c7",
+            "#d97706",
+        ),
+    ]
+    for y, label, regime, mechanism, denom, face, edge in rails:
+        _draw_overview_box(
+            ax,
+            (0.52, y),
+            0.12,
+            0.09,
+            face=face,
+            edge=edge,
+            text=f"{label}\n{regime}",
+            size=8,
+            weight="bold",
+        )
+        _draw_overview_arrow(ax, (0.655, y + 0.045), (0.725, y + 0.045), color=edge)
+        _draw_overview_box(
+            ax,
+            (0.74, y),
+            0.17,
+            0.09,
+            face="#ffffff",
+            edge=edge,
+            text=mechanism,
+            size=8,
+        )
+        ax.text(0.52, y - 0.035, f"denominator: {denom}", fontsize=7.7, color="#4b5563")
+
+    y = 0.535
+    xs = [0.56, 0.655, 0.75, 0.845]
+    labels = ["Q0 full", "Q1 reuse", "Q2 repair", "Q3 reuse"]
+    for x, label in zip(xs, labels, strict=True):
+        _draw_overview_box(
+            ax, (x, y), 0.071, 0.046, face="#f0fdf4", edge="#16a34a", text=label, size=7
+        )
+    for a, b in zip(xs, xs[1:], strict=False):
+        _draw_overview_arrow(
+            ax, (a + 0.072, y + 0.023), (b - 0.003, y + 0.023), color="#16a34a", lw=1.0
+        )
+    ax.text(
+        0.56,
+        0.495,
+        "Adaptive repair works because Q3 inherits the repaired Q2 cache.",
+        fontsize=7.6,
+        color="#166534",
+    )
+
+    ax.text(0.52, 0.13, "C-CEILING", fontsize=10.5, weight="bold")
+    ax.text(0.52, 0.095, "End-to-end lift only moves with the stage share touched.", fontsize=8)
+    _draw_overview_box(
+        ax, (0.52, 0.025), 0.11, 0.055, face="#eef2ff", edge="#4f46e5", text="V_share", size=8
+    )
+    ax.text(0.645, 0.052, "x", fontsize=10, weight="bold")
+    _draw_overview_box(
+        ax, (0.67, 0.025), 0.10, 0.055, face="#eef2ff", edge="#4f46e5", text="V_red", size=8
+    )
+    ax.text(0.787, 0.052, "->", fontsize=10, weight="bold")
+    _draw_overview_box(
+        ax, (0.83, 0.025), 0.10, 0.055, face="#f5f3ff", edge="#4f46e5", text="E2E", size=8
+    )
+
+    fig.suptitle(
+        (
+            "Anti-recomputation: reuse stable state, "
+            "buy fresh evidence only where the denominator allows it"
+        ),
+        fontsize=13.5,
+        weight="bold",
+        y=0.985,
+    )
+    fig.tight_layout()
+    out_png = GENERATED / "figures" / "regime_overview.png"
+    out_pdf = GENERATED / "figures" / "regime_overview.pdf"
+    fig.savefig(out_png, dpi=220, bbox_inches="tight")
+    fig.savefig(out_pdf, bbox_inches="tight")
+    overview = {
+        "figure": "regime_overview",
+        "purpose": "conceptual denominator map for anti-recomputation regimes",
+        "c_vision": {"speedup_range": "1.113--1.407x", "denominator": "first-query E2E"},
+        "c_persist": {
+            "raw_16f_speedup": qwen_16f["speedup"],
+            "adaptive_all_query_speedup_min": repair["all_query_speedup_min"],
+            "adaptive_all_query_speedup_max": repair["all_query_speedup_max"],
+            "denominator": "after-ingest follow-up / repaired-session latency",
+        },
+        "routing": {
+            "denominator": "effective fresh frames under dense backend",
+            "speedup_claim": False,
+        },
+        "streaming": {
+            "denominator": "scale-out component counters and E2E timing",
+            "artifact_harmonization_pending": True,
+        },
+    }
+    (GENERATED / "data" / "regime_overview_snapshot.json").write_text(
+        json.dumps(overview, indent=2) + "\n"
+    )
 
 
 def _load_json(path: Path) -> dict:
@@ -1348,6 +1603,7 @@ def main() -> int:
     _render_lane_a_figure(snapshot)
     _write_lane_a_table(snapshot)
     headline_snapshot = _headline_snapshot(upstream_root)
+    _render_regime_overview_figure(headline_snapshot)
     _render_headline_figure(headline_snapshot)
     _write_headline_table(headline_snapshot)
     _write_c_persist_repair_table(headline_snapshot)

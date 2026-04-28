@@ -262,8 +262,9 @@ in its own dimension.
    The separate 1.66 memory characterization reads row-level JSONL memory
    signals too and sees larger transient peaks in some C-PERSIST artifacts
    (up to 13.61 GB). Do not use 1.66 as a final memory-model figure until the
-   measured sparse-execution / 1.63 family lands; do use it to keep manuscript memory claims
-   denominator-specific.
+   measured sparse-execution / 1.63 family includes a fidelity-preserving
+   operating point or clearly marked boundary cells; do use it to keep
+   manuscript memory claims denominator-specific.
 
    K=2 and K=4 remain useful lower-speed comparison points (`6.72×`
    and `3.66×`). With n=93 zero observed paired drift in the fixed lane,
@@ -398,8 +399,8 @@ collection.
    `paper/figures/v_share_v_red_ceiling.{png,_data.json}` — 9 rendered
    regimes (4 Gemma dev + 3 Gemma holdout + 1 matched Qwen dev +
 	   1 n=60 composition-audit cell) against the
-   `1/(1 − V_share × V_red)` curve; dev median |Δ| = 2.2pp, holdout
-   max 11.6pp (MVBench 8f, thermal-inflated and advisory per Session 4
+	   `1/(1 − V_share × V_red)` curve; dev median |Δ| = 2.2pp, holdout
+	   max 13.6pp (MVBench 8f, thermal-inflated and advisory per Session 4
 	   findings). The n=60 composition-audit cell sits at product 0.027 / E2E 1.042× —
    the CLOSED-NULL data-point visible at the bottom-left of the curve.
    No new runs; paper-draft work only. Commit: follow-up.

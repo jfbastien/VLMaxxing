@@ -15,6 +15,15 @@ tempting overclaim: composition does not outrun the ceiling. The local stacked
 cell is ceiling-matched, which is useful evidence for the arithmetic and a
 null on super-ceiling composition.
 
+The measured sparse-execution story is now more concrete but still bounded.
+A Qwen 8f compact vision-tower run skips real timed vision work and matches
+the predicted E2E ceiling within 0.5pp, but it fails the fidelity gate on the
+combined \(n=60\) manifest. This supports C-CEILING as a systems model and
+shows that the sparse path is not merely dense-with-zeros. It does not yet
+support a broad fidelity-preserving sparse-backend claim. The next paper-grade
+step is frame scaling and a less brittle operating point, not hiding the
+short-bucket regression.
+
 For persistent-KV, the numbers are much larger, but the regime is narrower.
 These are \emph{after-ingest} claims: the first query on the video still pays
 full freight, and the gain only appears when subsequent questions concern that
@@ -129,6 +138,31 @@ controls, vision-tower keep masks, per-stage timing, token geometry, and
 cache-state diagnostics as first-class interfaces. Those hooks are not just
 engineering convenience; they decide which anti-recomputation claims can be
 tested without risking silent cache corruption.
+
+\begin{table}[H]
+\centering
+\caption{Architecture lessons from the current evidence. This is not a model
+leaderboard; it is a runtime-interface lesson about which reuse claims can be
+tested cleanly.}
+\label{tab:architecture-lessons}
+\small
+\renewcommand{\arraystretch}{1.12}
+\begin{tabularx}{\linewidth}{@{}p{0.18\linewidth} X X@{}}
+\toprule
+Family & What it currently supports & Design lesson \\
+\midrule
+Qwen2.5-VL-7B & Stable routing and persistent follow-up reuse; strong
+selective re-prefill evidence; measured sparse-ViT ceiling boundary at 8f &
+Expose stable cache semantics, cache diagnostics, and frame-tail repair hooks. \\
+Gemma 4-E4B & First-pass vision-pruning measurements and vision-tower sparse
+path; second-architecture semantic-substitution boundary & Expose keep masks
+and per-stage timing, but make rotating/sliding cache behavior explicit. \\
+Gemma 4 26B scale-out & Streaming operational upside under a separate native
+stack & Export artifact-compatible paired rows, baselines, and cache-correctness
+smokes before promoting the lane to local-equivalent evidence. \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
 The paper is nevertheless being built to be reproducible. Automated main-text
 figures and tables are generated from checked-in artifact summaries or from

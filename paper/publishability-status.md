@@ -226,7 +226,7 @@ measured-sparse-execution validation for the measured wall-clock ceiling."
 
 | # | Claim | Blocker | Runtime estimate |
 |---|---|---|---|
-| I | "Method delivers broad measured sparse-path speedup" | Vision-only sparse execution code is staged, but no paper-grade 1.63 artifact has landed in this checkout. Treat measured sparse-backend claims as TODO until the 1.63 queue lands and passes. | Current queued scope is ViT-only sparse execution with dense LM prefill; sparse LM prefill remains a larger systems project. |
+| I | "Method delivers broad measured sparse-path speedup" | A Qwen 8f sparse-ViT boundary point has landed: real skipped vision work, 1.042× measured E2E, ceiling gap 0.005, but H_fidelity fails at Δacc=-0.067 aggregate and -0.25 on short. Treat broad measured sparse-backend claims as TODO until a fidelity-preserving 1.63 point or curve lands. | Current queued scope is ViT-only sparse execution with dense LM prefill; sparse LM prefill remains a larger systems project. |
 | J | "Validated on VideoMME (de facto benchmark)" | **EARNED 2026-04-18 (8f); strengthened 2026-04-19 (16f, 32f).** Qwen 2.5-VL-7B-4bit, videomme_dev_v1.toml n=30. **8f**: dense_acc=0.533, parse_fail=0, agreement=1.000, RSS=6.67GB, mean e2e=31.0s. **16f**: dense_acc=0.567, mean e2e=75.2s. **32f**: dense_acc=0.533 (n=30), mean e2e=157.9s, RSS=8.52GB — zero per-bucket flips vs 16f; long plateau confirmed. **Non-monotonic bucket scaling** — medium +30pp (0.50→0.80→0.70), long −20pp at 16f and held at 32f. **Mechanism**: Phase 1.57 adjacent-frame ViT feature-cos landed on same manifest; H-drift-compounds REJECTED, H-saturation SUPPORTED (long drift AND long acc both plateau at 16f). Frame-scaling not a linear knob; 32f not Pareto-efficient (2× cost for zero aggregate lift). | Open: Phase 1.58 (4bit × long-context quantization) to test the one surviving mechanism candidate. Phase 1.54 (decode-accel) still open for long-item latency, not accuracy. |
 | K | "Cross-architecture generalization (Qwen windowed ↔ Gemma/InternVL3 all-global)" | Partial: matched Qwen C-VISION transfer exists, but broader architecture coverage remains open. | Next useful work is matched Qwen/Gemma drift probes or a third architecture, not another claim that the ceiling itself can transfer at one point. |
 | L | "Placement ablation (phase 1.38)" | Not run. | ≈ 30 min GPU wall time on a subset. |
@@ -344,8 +344,9 @@ queue once infra is in place.
 ## What is NOT safe to say today
 
 - "SOTA" on any axis.
-- "Broad sparse-backend speedup" (ViT-only measured sparse execution is queued/staged but not yet
-  a landed paper-grade result here; sparse LM prefill remains out of scope).
+- "Broad sparse-backend speedup" (ViT-only measured sparse execution has one
+  real skipped-work boundary point, but not a fidelity-preserving paper-grade
+  speedup curve; sparse LM prefill remains out of scope).
 - "Generalizes broadly across architectures" (one matched second-architecture point is now landed, but broad transfer is still too strong).
 - ~~"Validated on VideoMME" (phase 1.41 not run).~~ **EARNED 2026-04-18** (Qwen 2.5-VL-7B VideoMME dev n=30, dense_accuracy 0.533).
 - "Beats CodecSight / CoPE / FastV / VisionZip" (no head-to-head).
@@ -590,8 +591,8 @@ items that priority.md does not carry. For the current ordering see
    `paper/figures/c_persist_safe_budget.{png,_data.json}` and
    `paper/figures/v_share_v_red_ceiling.{png,_data.json}`. V_share ×
    V_red figure now shows 9 rendered points (4 Gemma dev + 3 Gemma
-   holdout + 1 matched Qwen cross-arch + 1 composition-audit CLOSED-NULL);
-   dev median |Δ| 2.2pp, MVBench 8f holdout sits 11.6pp above the
+	   holdout + 1 matched Qwen cross-arch + 1 composition-audit CLOSED-NULL);
+	   dev median |Δ| 2.2pp, MVBench 8f holdout sits 13.6pp above the
    ceiling (thermal-inflated, matches session-4 advisory).
 
 ### Mechanism-validation backbone (Qwen routing, NOT the headline)

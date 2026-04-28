@@ -39,6 +39,15 @@ smaller because Qwen's dense \(V_{\mathrm{share}}\) at this geometry is only abo
 What transfers is the share-weighted denominator, not a benchmark-independent
 multiplier.
 
+The first measured sparse-ViT Qwen point makes the same lesson sharper. At
+8f on the combined \(n=60\) manifest, compact post-layer vision execution
+reduces vision time by 44.8\% and lands at 1.042$\times$ observed
+end-to-end speedup versus 1.047$\times$ predicted from the measured dense
+vision share. That is real skipped vision-tower work and a tight C-CEILING
+validation point. It is not a C-VISION fidelity headline: aggregate accuracy
+drops by 6.7pp, and the short bucket drops by 25pp. The correct read is a
+systems boundary, not a free multiplier.
+
 \begin{figure}[H]
   \centering
   \IfFileExists{generated/figures/v_share_v_red_ceiling.png}{
@@ -48,7 +57,7 @@ multiplier.
   }
   \caption{C-VISION share-model validation. The rendered paper-facing figure shows
   four Gemma dev cells, three Gemma holdout cells, one matched Qwen
-  cross-architecture point, and the n=60 stacked-regime composition audit. The n=60
+  cross-architecture point, one measured sparse Qwen boundary point, and the n=60 stacked-regime composition audit. The n=60
   point matters because it closes the intuitive ``stacking should multiply''
   story in the opposite direction: the observed 1.042$\times$ result sits
   where the measured share terms say it should, and the low-share Qwen point
@@ -58,6 +67,34 @@ multiplier.
   observed end-to-end speedup.}
   \label{fig:vshare-ceiling}
 \end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Numeric residuals for the C-CEILING scatter in
+Figure~\ref{fig:vshare-ceiling}. The prediction is computed from measured
+share terms, not fit to the observed end-to-end multiplier. The MVBench
+holdout point remains the visible high-residual advisory cell; the matched
+Qwen point is the low-share cross-architecture sanity check.}
+\label{tab:vshare-ceiling-residuals}
+\scriptsize
+\renewcommand{\arraystretch}{1.12}
+\begin{tabularx}{\linewidth}{@{}X r r r r r X@{}}
+\toprule
+Cell & \(V_{\mathrm{share}}\) & \(V_{\mathrm{red}}\) & Pred. & Obs. & Resid. & Evidence \\
+\midrule
+VideoMME 8f dev & 0.152 & 0.390 & 1.062 & 1.080 & +1.8pp & Gemma dev \\
+VideoMME 16f dev & 0.243 & 0.390 & 1.105 & 1.120 & +1.5pp & Gemma dev \\
+MVBench 8f dev & 0.478 & 0.400 & 1.237 & 1.210 & -2.7pp & Gemma dev \\
+TOMATO 8f dev & 0.407 & 0.427 & 1.214 & 1.240 & +2.6pp & Gemma dev \\
+VideoMME 8f holdout & 0.154 & 0.413 & 1.068 & 1.113 & +4.5pp & clean local \\
+MVBench 8f holdout & 0.452 & 0.471 & 1.271 & 1.407 & +13.6pp & advisory local \\
+TOMATO 8f holdout & 0.384 & 0.350 & 1.155 & 1.194 & +3.9pp & tracked-upstream advisory \\
+Qwen VideoMME 8f dev & 0.103 & 0.398 & 1.043 & 1.044 & +0.1pp & matched cross-arch \\
+Qwen sparse-ViT 8f n=60 & 0.100 & 0.448 & 1.047 & 1.042 & -0.5pp & measured sparse, fidelity fail \\
+VideoMME n=60 composition audit & 0.063 & 0.430 & 1.028 & 1.042 & +1.4pp & composition null \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
 Across the rendered nine-cell view, the share model stays predictive enough to
 be useful and honest, but it is not a literal no-residual theorem. Advisory

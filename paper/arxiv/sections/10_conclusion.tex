@@ -4,7 +4,9 @@ The paper began with a small absurdity: much of the video did not change, and
 the model paid anyway. The measured answer is not one single multiplier. Fresh
 videos admit modest but real first-pass gains, and those gains obey a
 share-limited ceiling that explains the regime and binds cleanly on the core
-ceiling checks, including the matched Qwen cross-architecture probe. Same-video
+ceiling checks, including the matched Qwen cross-architecture probe and the
+Qwen sparse-ViT boundary point that skips real vision work but fails fidelity.
+Same-video
 follow-up queries admit much larger multipliers: raw persistent-KV reuse
 reaches sub-second latency inside the \(\leq 16\)f tested envelope, while
 selective re-prefill repairs the deeper cache-reuse basin at higher latency.
@@ -24,7 +26,7 @@ Fresh-compute placement over time cannot be reduced to novelty magnitude alone,
 aggregate accuracy can hide answer-identity drift, and semantic substitution
 must not be confused with measured sparse execution.
 
-What remains is a measured sparse backend, broader benchmark coverage on the
+What remains is a fidelity-preserving measured sparse backend, broader benchmark coverage on the
 second architecture, cleaner systems baselines, many-turn follow-up stress
 tests, and direct cache-state instrumentation that explains why reused
 prompt-cache state drifts. The n=60 composition audit, the long-bucket

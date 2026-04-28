@@ -177,7 +177,10 @@ right starting point because temporal redundancy is explicit, codecs already
 extract motion and residual signals, and the cost of visual encoding is large
 enough to matter. Other domains need their own state variables and failure
 contracts; the transferable lesson is anti-recomputation under a measured
-quality--compute frontier, not pixel differencing itself.
+quality--compute frontier, not pixel differencing itself. The transfer rule is
+strict: the domain needs slowly changing state, an oracle cheaper than the
+encoder, expensive recomputation, and task-specific paired-failure metrics.
+Without all four, anti-recomputation is just a metaphor.
 
 \subsection{Open Experiments}
 

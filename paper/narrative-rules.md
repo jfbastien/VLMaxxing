@@ -27,8 +27,9 @@ Order the story by reader impact, while keeping denominators visible:
 3. **C-VISION / first-pass vision pruning** is the fresh-video speedup claim.
    It is real, measured, and share-limited.
 4. **Qwen routing** explains temporal placement and failure boundaries. It is
-   mechanism evidence under a dense backend until measured sparse execution
-   lands.
+   mechanism evidence under a dense backend. The 1.63E Qwen sparse-ViT 8f
+   point is a measured sparse-execution boundary result: real skipped vision
+   work and tight ceiling agreement, but not fidelity-preserving.
 5. **Scale-out streaming** should become a first-class lane only when matched
    artifacts and baselines exist. Until then, frame it as scale-out
    operational evidence pending artifact harmonization, not as "other" work.
@@ -104,8 +105,10 @@ Do not leave readers with "huh, why?"
 - 1.30AC and 1.30AD reach the same aggregate loss through different row sets.
   Current evidence supports an aggregate boundary, not identical failures.
   If feature concentration is not enough, run the K-cache distance probe.
-- Track B, when it lands, should be framed as ceiling-model validation for
-  measured ViT-only skipped work, not as a huge end-to-end speedup.
+- Measured sparse execution should be framed as ceiling-model validation for
+  measured ViT-only skipped work, not as a huge end-to-end speedup. The current
+  1.63E 8f point validates the ceiling but fails fidelity, so it is boundary
+  evidence until a fidelity-preserving operating point lands.
 
 ## Training Claim Boundary
 

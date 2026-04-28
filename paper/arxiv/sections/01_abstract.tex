@@ -43,10 +43,14 @@ turns frames into model tokens, during the first query on a fresh video. It
 gives 1.113--1.407$\times$ first-pass wall-clock gains on
 Gemma 4-E4B-4bit across clean and advisory holdout cells, and a matched Qwen
 point lands at 1.044$\times$ observed versus 1.043$\times$ predicted. The
+Qwen measured sparse-ViT path also validates the ceiling numerically at 8f
+(1.042$\times$ observed versus 1.047$\times$ predicted after 44.8\% vision-time
+reduction), but fails the fidelity gate on the n=60 combined manifest; it is a
+boundary result, not a new fidelity-preserving headline. The
 routing audits explain why those numbers are not the whole story:
 fresh-compute placement cannot be reduced to novelty magnitude alone,
 aggregate accuracy can hide answer-identity drift, and semantic substitution is
-not a measured sparse backend.
+not itself a measured sparse backend.
 
 A separate 26B scale-out streaming protocol reports the same anti-recomputation
 structure in operational regimes, including 13$\times$ fewer ViT calls,

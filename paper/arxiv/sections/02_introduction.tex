@@ -58,6 +58,12 @@ probably changed; the model and the task still decide what matters. That is
 why the VLM-native media discussion later in the paper is framed as candidate
 requirements, not as a current systems claim.
 
+The same boundary applies to training. These are training-free inference
+experiments, not measured training-speedup experiments. The training-relevant
+claim is narrower and more useful: the traces identify where frozen models
+already tolerate reuse, where they do not, and what a future model could learn
+as native refresh gates, delta encoders, or cache-state-aware attention.
+
 The scale-out streaming lane is part of the same science story, but it has a
 different protocol. Under a separate 26B-class streaming stack, same-video
 follow-up latency is reported at 0.8\,s, paired Streaming VideoMME reports
@@ -76,6 +82,20 @@ a deployable composition policy. Even when the first answer is preserved, the
 reused cache state can still damage later answers. We therefore treat
 deployment composition as a regime to explain rather than a multiplier to
 inherit.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{generated/figures/regime_overview.pdf}
+  \caption{Denominator map for the paper. A repeated video stream contains
+  stable state and fresh residual evidence, but anti-recomputation touches
+  different parts of the VLM pipeline in different regimes. C-VISION changes
+  first-query vision-tower work and is bounded by \(V_{\mathrm{share}}\times
+  V_{\mathrm{red}}\); C-PERSIST changes later same-video follow-ups after the
+  first query has paid the prefix cost; routing validates temporal placement
+  under a dense backend; and streaming uses a separate scale-out protocol.
+  These rails are one idea, not one denominator.}
+  \label{fig:regime-overview}
+\end{figure}
 
 \begin{table}[H]
 \centering

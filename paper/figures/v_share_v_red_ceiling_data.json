@@ -55,22 +55,22 @@
     {
       "label": "MVBench 8f holdout",
       "split": "holdout",
-      "v_share": 0.478,
+      "v_share": 0.4521,
       "v_red": 0.471,
-      "predicted_e2e": 1.2905523822306422,
+      "predicted_e2e": 1.270549712226843,
       "observed_e2e": 1.407,
-      "error_pp": 11.64,
-      "product": 0.2251
+      "error_pp": 13.65,
+      "product": 0.2129
     },
     {
       "label": "TOMATO 8f holdout",
       "split": "holdout",
-      "v_share": 0.407,
+      "v_share": 0.3839,
       "v_red": 0.35,
-      "predicted_e2e": 1.166112763104192,
+      "predicted_e2e": 1.155221311522755,
       "observed_e2e": 1.194,
-      "error_pp": 2.79,
-      "product": 0.1424
+      "error_pp": 3.88,
+      "product": 0.1344
     }
   ],
   "cross_arch_cells": [
@@ -85,10 +85,22 @@
       "product": 0.041
     }
   ],
-  "pooled_cells": [
+  "measured_sparse_cells": [
     {
-      "label": "VideoMME pooled n=60 (H_stack arm B)",
-      "split": "pooled",
+      "label": "Qwen sparse-ViT 8f n=60",
+      "split": "measured sparse",
+      "v_share": 0.0998,
+      "v_red": 0.448,
+      "predicted_e2e": 1.047,
+      "observed_e2e": 1.042,
+      "error_pp": -0.5,
+      "product": 0.0447
+    }
+  ],
+  "composition_cells": [
+    {
+      "label": "VideoMME n=60 composition audit",
+      "split": "composition",
       "v_share": 0.0626,
       "v_red": 0.43,
       "predicted_e2e": 1.027662622471693,
@@ -97,6 +109,6 @@
       "product": 0.0269
     }
   ],
-  "worst_abs_error_pp": 11.64,
-  "median_abs_error_pp": 2.6
+  "worst_abs_error_pp": 13.65,
+  "median_abs_error_pp": 2.2
 }
