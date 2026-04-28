@@ -21,10 +21,13 @@ vision-tower pruning still produces measured end-to-end gains before any
 same-video caching trick enters the picture. VideoMME 8f is clean at
 1.113$\times$ with zero aggregate accuracy delta. MVBench 8f has the larger
 observed multiplier at 1.407$\times$, with a small accuracy loss and an
-advisory thermal note because the short decode window makes the old relative
-gate too strict for scheduler-scale jitter. TOMATO 8f is advisory as well: the current holdout
-rerun reports 1.194$\times$ with a favorable-direction 19\,ms thermal
-miss.
+advisory timing note because non-vision timing moved in the favorable
+direction: the patched arm decodes 50\,ms faster on a 432\,ms decode window
+and also runs generation faster. A literal decode-only normalization would
+lower the observed multiplier only to about 1.40$\times$, so the row remains a
+useful but advisory high-residual cell rather than a clean ceiling validation.
+TOMATO 8f is advisory as well: the current holdout rerun reports
+1.194$\times$ with a favorable-direction 19\,ms thermal miss.
 
 Their magnitude tracks the dense share owned by the vision tower. The same
 pruning mechanism gives smaller gains on VideoMME than on MVBench because
@@ -64,7 +67,9 @@ systems boundary, not a free multiplier.
   shows the same denominator binding on a second architecture. \(V_{\mathrm{share}}\)
   is measured from the dense baseline timing, \(V_{\mathrm{red}}\) from the
   pruned run, and the predicted speedup is then compared with the independently
-  observed end-to-end speedup.}
+  observed end-to-end speedup. The purple Qwen sparse-ViT point is the first
+  real-skipped-vision-work point: the timing model holds, while fidelity does
+  not.}
   \label{fig:vshare-ceiling}
 \end{figure}
 
@@ -74,7 +79,9 @@ systems boundary, not a free multiplier.
 Figure~\ref{fig:vshare-ceiling}. The prediction is computed from measured
 share terms, not fit to the observed end-to-end multiplier. The MVBench
 holdout point remains the visible high-residual advisory cell; the matched
-Qwen point is the low-share cross-architecture sanity check.}
+Qwen point is the low-share cross-architecture sanity check. MVBench's
+advisory residual is in the favorable timing direction, so it is not used as a
+clean first-pass headline.}
 \label{tab:vshare-ceiling-residuals}
 \scriptsize
 \renewcommand{\arraystretch}{1.12}
@@ -103,7 +110,9 @@ jitter, or thermal state moves with the run. The holdout spread is wider than
 the first dev tranche made it look, and the matched Qwen point sits low-left
 where its smaller \(V_{\mathrm{share}}\) says it should. That is why the paper describes
 benchmark-, architecture-, and protocol-sensitive magnitude rather than
-benchmark-invariant first-pass gain. That softening is not a retreat. It is
+benchmark-invariant first-pass gain. \(V_{\mathrm{share}}\) governs magnitude,
+while \(V_{\mathrm{red}}\) itself is benchmark- and configuration-conditional
+within the measured 0.350--0.471 range. That softening is not a retreat. It is
 what the holdouts and the cross-arch probe earned.
 
 \subsection{C-PERSIST: After-Ingest Reuse Is The Big-Number Regime}
@@ -181,9 +190,11 @@ plus the 32f short slice, adaptive post-\(Q2\) repair has no observed paired
 choice or correctness drift on 93 paired queries, no observed pathological
 follow-up outputs, and 15.28--35.97$\times$ all-query median speedup
 (14.90--35.92$\times$ same-class follow-up speedup). The rule-of-three upper
-bound on an unseen paired-drift rate is about 3.2\%. Each tested session has
-two follow-up questions after the cold first query; many-turn conversational
-stability remains a separate stress test. The 32f short cell is the largest
+bound on a query-level unseen paired-drift rate is about 3.2\%. At the
+session level the conservative count is 0/31 sessions with any paired drift,
+or a rule-of-three bound of about 9.7\%. Each tested session has two follow-up
+questions after the cold first query; many-turn conversational stability
+remains a separate stress test. The 32f short cell is the largest
 local efficiency point in the draft at 35.97$\times$ all-query median speedup,
 but the reason is not magic: Q3 inherits the repaired state instead of paying
 another newest-frame re-prefill.

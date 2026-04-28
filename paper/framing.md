@@ -615,7 +615,7 @@ Closest to current evidence:
   gradient path. A gradient-faithful training formulation for
   temporal reuse remains open future work. Adjacent precedents:
   Run-Length Tokenization (arxiv id=b1ggjW00NI, 30% faster fine-tuning,
-  >100% at 30 FPS in some settings), ToMe (arxiv id=JroZRaRw7Eu,
+  >100% at 30 FPS in some settings), ToMe (arXiv:2210.09461,
   training-throughput gains including video), DynamicViT
   (arxiv id=jB0Nlbwlybm), EViT (arxiv id=BjyvwnXXVn_).
 - **calibrated selective recompute / risk-triggered retry ladder.**

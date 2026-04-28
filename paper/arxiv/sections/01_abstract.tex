@@ -9,11 +9,14 @@ The largest local result appears after the video has already been ingested. On
 frozen Qwen2.5-VL-7B-Instruct-4bit, adaptive same-video follow-up reuse repairs
 20-frame short, medium, and long VideoMME slices plus a 32-frame short slice
 with no observed paired choice or correctness drift on 93 paired queries,
-including 62 repaired follow-ups. It reaches 15.28--35.97$\times$ median speedup when cold all-query
-latency is compared with repaired follow-up latency, and 14.90--35.92$\times$
-when comparing cold follow-ups to repaired follow-ups. This is not first-query
-speedup: the first query still pays full freight, and the tested sessions have
-two follow-up questions per video.
+including 62 repaired follow-ups. Same-class follow-up speedup is
+14.90--35.92$\times$ when cold follow-ups are compared with repaired
+follow-ups; the cold-all-query versus repaired-follow-up ratio is
+15.28--35.97$\times$. The mechanism is concrete: adaptive \(Q3\) inherits the
+post-\(Q2\) repaired cache, so it appends mostly the new question instead of
+repairing the newest-frame tail again. This is not first-query speedup: the
+first query still pays full freight, and the tested sessions have two
+follow-up questions per video.
 
 The central question is where a runtime must buy fresh visual evidence over
 time, and where cached state is enough to remain on its regime-specific
@@ -39,10 +42,11 @@ observed paired drift on the same 93-query envelope.
 
 Fresh-video pruning is smaller but measured. \emph{First-pass vision pruning
 (C-VISION)} reduces work inside the VLM vision tower, the visual encoder that
-turns frames into model tokens, during the first query on a fresh video. It
-gives 1.113--1.407$\times$ first-pass wall-clock gains on
-Gemma 4-E4B-4bit across clean and advisory holdout cells, and a matched Qwen
-point lands at 1.044$\times$ observed versus 1.043$\times$ predicted. The
+turns frames into model tokens, during the first query on a fresh video. The
+clean VideoMME holdout cell gives 1.113$\times$ first-pass wall-clock gain
+with zero aggregate accuracy delta; advisory MVBench and TOMATO holdout cells
+are larger but carry timing and accuracy caveats. A matched Qwen point lands at
+1.044$\times$ observed versus 1.043$\times$ predicted. The
 Qwen measured sparse-ViT path also validates the ceiling numerically at 8f
 (1.042$\times$ observed versus 1.047$\times$ predicted after 44.8\% vision-time
 reduction), but fails the fidelity gate on the n=60 combined manifest; it is a

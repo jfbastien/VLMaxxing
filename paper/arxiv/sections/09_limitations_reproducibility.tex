@@ -40,8 +40,10 @@ Selective re-prefill narrows that limitation but does not erase it. Fixed
 \(K=1\) is now a real local repair envelope, with no observed paired drift on
 93 paired queries across short, medium, long, and 32-frame short slices and no
 observed pathological outputs across 62 repaired follow-ups. The rule-of-three
-upper bound on an unseen paired-drift rate is still about 3.2\%, so the claim
-remains ``no observed paired drift,'' not population-level exactness. The
+upper bound on an unseen query-level paired-drift rate is still about 3.2\%;
+the more conservative session-level view is 0/31 sessions with any drift, or
+about 9.7\%. The claim remains ``no observed paired drift,'' not
+population-level exactness. The
 long-bucket cell also preserves a weak 7/21 cold baseline; that is fidelity
 evidence under a hard regime, not evidence that the model itself understands
 long VideoMME well. The adaptive \(Q3\)-from-post-\(Q2\)-state result is now
@@ -54,6 +56,15 @@ observed memory envelope rather than retroactively calling those runs failures.
 The result is also finite-horizon: the current sessions contain two follow-up
 questions, so many-turn drift remains an explicit stress test rather than a
 settled property.
+
+The related-work bar for this lane is also higher than ``we reused a KV
+cache.'' Prefix caching, RadixAttention, CacheBlend-style repair, SparseVILA,
+and HERMES all make parts of that sentence prior art. The manuscript's current
+claim is narrower: video-specific visual-tail repair, paired-drift accounting,
+the cache-basin failure mode, and the post-\(Q2\) inheritance rule on this
+local stack. A submission version should still add at least one matched
+head-to-head against the closest persistent-video or visual-token sparsity
+baselines.
 
 For Qwen routing, the opposite caveat applies. The holdout evidence is clean
 and useful, but it is still a quality--compute frontier result under a fixed
@@ -83,9 +94,11 @@ still drops, so the failure is downstream of first-query aggregate correctness
 and tied to the follow-up state. The completed cache-invalidated follow-up test
 sharpens the boundary: forcing follow-up V-pruning to be active collapses the
 speedup to 1.06$\times$ and still lands on the same net aggregate loss as
-cache reuse, while any-paired-drift sets differ. This does not uniquely prove a
-single cache-state mechanism; it motivates direct cache-state instrumentation
-and per-example margin or distance probes. A related
+cache reuse, while any-paired-drift sets differ. That is informative even
+before the tensor-level mechanism is isolated: it falsifies a single-row-set
+explanation and localizes the boundary to follow-up state quality rather than
+first-query aggregate correctness alone. The next proof step is direct
+cache-state instrumentation plus per-example margin or distance probes. A related
 local codec-native bridge remains scientifically interesting, and the latest
 1.29 results now provide semantic
 planner-substitution evidence: MAX-over-span sparse sampling is hard-falsified,

@@ -119,6 +119,28 @@ def plot() -> None:
             zorder=3,
         )
         for c in cells:
+            if c.label == "MVBench 8f holdout":
+                ax.annotate(
+                    "MVBench holdout\n+13.6pp, advisory\nnon-vision timing",
+                    xy=(c.product, c.observed_e2e),
+                    xytext=(-102, -35),
+                    textcoords="offset points",
+                    fontsize=8,
+                    arrowprops={"arrowstyle": "->", "linewidth": 0.8, "color": "#5f370e"},
+                    bbox={"boxstyle": "round,pad=0.25", "fc": "#fff7e6", "ec": "#8d6e00"},
+                )
+                continue
+            if c.label == "Qwen sparse-ViT 8f n=60":
+                ax.annotate(
+                    "real skipped ViT work\nceiling holds; fidelity fails",
+                    xy=(c.product, c.observed_e2e),
+                    xytext=(32, -18),
+                    textcoords="offset points",
+                    fontsize=8,
+                    arrowprops={"arrowstyle": "->", "linewidth": 0.8, "color": "#5b2a86"},
+                    bbox={"boxstyle": "round,pad=0.25", "fc": "#f3e8ff", "ec": "#6f42c1"},
+                )
+                continue
             ax.annotate(
                 c.label,
                 xy=(c.product, c.observed_e2e),
@@ -137,8 +159,7 @@ def plot() -> None:
     ax.set_ylabel("end-to-end speedup ×")
     ax.set_title(
         "C-VISION scatter-back ceiling validation\n"
-        "10 regimes (4 Gemma dev + 3 holdout + 2 Qwen + 1 composition audit); "
-        "Qwen lands at +0.1pp; holdout max 13.6pp (MVBench, advisory)"
+        "10 regimes; C-CEILING is the null, not a fitted curve"
     )
     ax.grid(True, alpha=0.3)
     ax.set_xlim(0.0, 0.30)

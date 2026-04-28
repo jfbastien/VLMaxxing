@@ -19,21 +19,48 @@ the picture.
 
 Another family reduces visual cost after tokens already exist. FastV
 \cite{fastv}, FastVID \cite{fastvid}, FlashVID \cite{flashvid}, VisionZip
-\cite{visionzip}, SparseVLM \cite{sparsevlm}, VScan \cite{vscan}, and STTM
-\cite{sttm} prune or merge visual tokens using attention-derived, density, or
-feature-similarity signals. Those methods are adjacent but not identical to our
-setting. Their signal usually lives after visual tokens exist. Our routing lane
-asks an earlier question: can we decide where fresh computation should land in
-time before the full dense backend pays for every frame again?
+\cite{visionzip}, SparseVLM \cite{sparsevlm}, VScan \cite{vscan}, STTM
+\cite{sttm}, SparseVILA \cite{sparsevila}, and LLaVA-PruMerge
+\cite{llavaprumerge} prune, retrieve, or merge visual tokens using
+attention-derived, density, query-aware, or feature-similarity signals. ToMe
+\cite{tome} is the older training-free ViT token-merging ancestor, and
+EvoPrune \cite{evoprune} is a late-breaking MLLM example of pruning inside
+the visual encoder itself. Those methods are adjacent but not identical to our
+setting. Their signal usually lives after visual tokens exist, or changes the
+encoder/runtime contract. Our routing lane asks an earlier question: can we
+decide where fresh computation should land in time before the full dense
+backend pays for every frame again? Our first-pass pruning lane then adds a
+different discipline: the speedup must be interpreted through the measured
+stage-share ceiling, not through the component multiplier alone.
 
-Long-horizon reuse and systems co-design are also relevant. QuickVideo
+Temporal redundancy inside vision transformers is also prior art. Eventful
+Transformers \cite{eventful} reprocess only tokens that changed significantly
+between frames, often without retraining. That makes it a useful north star for
+measured sparse execution. Our local Track-B evidence is deliberately narrower:
+it verifies that a Qwen sparse-ViT path can skip timed vision work and that the
+ceiling predicts the timing, while also reporting the current fidelity failure.
+
+Long-horizon reuse and systems co-design are directly relevant. QuickVideo
 \cite{quickvideo} explicitly co-designs decode and prefill. ReKV \cite{rekv},
-VLCache \cite{vlcache}, and StreamingVLM \cite{streamingvlm} study how cached
-visual or KV state can be reused across requests or over long contexts. That
-line of work is especially relevant to our persistent-KV contribution: the
-paper's largest local speedups do not come from a better frame selector, but
-from refusing to repay the same prefix when the next question is about the same
-video.
+VLCache \cite{vlcache}, StreamingVLM \cite{streamingvlm}, SparseVILA
+\cite{sparsevila}, and HERMES \cite{hermes} study cached visual or KV state
+over long contexts, streaming video, or multi-turn multimodal inference.
+SGLang's RadixAttention \cite{sglang}, vLLM/PagedAttention \cite{vllm}, and
+standard prefix caching show that shared-prefix KV reuse is already a serving
+systems primitive; C-PERSIST should not be read as inventing that primitive.
+CacheBlend \cite{cacheblend} is even closer to the repair pattern: it reuses
+bulk cached KV for RAG contexts and selectively recomputes part of the cache to
+restore quality. Our contribution is the video-VLM instantiation and boundary:
+which visual tail to refresh, the cache-basin failure mode, the paired-drift
+contract, and the post-\(Q2\) inheritance rule that separates the failed and
+successful adaptive variants.
+
+Efficient VLM architectures such as FastVLM \cite{fastvlm} attack the same
+latency pressure by changing the visual encoder and tokenization. They are
+complementary to this paper rather than baselines for a frozen-stack claim:
+our experiments ask what a deployed VLM can avoid recomputing without changing
+weights, while C-CEILING explains when even a large component win can remain a
+modest request-level win.
 
 SimpleStream \cite{simplestream} is also an important streaming baseline
 because it argues that a strong recent-frame window can match or outperform

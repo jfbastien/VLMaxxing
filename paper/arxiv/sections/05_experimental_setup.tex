@@ -43,6 +43,33 @@ separately from raw padded reuse in the artifact summaries; paper-facing
 effective-budget numbers use active-region reuse rather than trivially static
 padded borders.
 
+\begin{table}[H]
+\centering
+\caption{Main evaluation lanes. The rows are protocol identifiers, not a
+claim that all results share one denominator.}
+\label{tab:setup-lanes}
+\small
+\renewcommand{\arraystretch}{1.12}
+\begin{tabularx}{\linewidth}{@{}p{0.20\linewidth} p{0.23\linewidth} X p{0.20\linewidth}@{}}
+\toprule
+Lane & Model/runtime & Primary protocol & Main reported metric \\
+\midrule
+Routing & Qwen2.5-VL-7B-Instruct-4bit, MLX-VLM & TOMATO and MVBench
+semantic-substitution holdouts & Accuracy/agreement at effective fresh-frame
+budget \\
+First-pass pruning & Gemma 4-E4B-4bit and matched Qwen probes, MLX & Fresh-video
+first query at 8f plus selected frame-count probes & First-query E2E, \(V_{\mathrm{share}}\),
+\(V_{\mathrm{red}}\), accuracy delta \\
+After-ingest reuse & Qwen2.5-VL-7B-Instruct-4bit, MLX-VLM & VideoMME sessions
+with one cold query and two follow-ups & Paired drift, follow-up latency,
+repair speedup \\
+Scale-out streaming & Separate Gemma 4 26B RTSP / screen-recording stack &
+Native-rate partner protocol & ViT-call reduction, throughput, diagnostics,
+artifact-harmonization status \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
 For local timing claims, the harness uses one wall-clock source per experiment,
 forces the backend to finish work before stopping the timer, and reports the
 denominator for every speedup. Follow-up speedups are median cold-follow-up
@@ -50,8 +77,12 @@ latency divided by median session-follow-up latency unless explicitly labeled
 otherwise; first-pass rows are first-query end-to-end ratios. Paired
 experiments keep clip order and compared conditions aligned, log raw per-query
 records, and treat fanless-laptop thermal caveats as evidence labels rather
-than as post-hoc excuses. When a run is missing the instrumentation needed for
-a mechanism claim, the manuscript says so or keeps the result advisory.
+than as post-hoc excuses. The practical pairing rule is simple: compared arms
+use the same manifest, frame count, scorer, and local wall-clock harness, and
+the thermal label is determined from the logged non-target-stage timing deltas
+rather than from whether the result is convenient. When a run is missing the
+instrumentation needed for a mechanism claim, the manuscript says so or keeps
+the result advisory.
 
 \subsection{Metrics and Reporting Discipline}
 
@@ -73,10 +104,17 @@ If a result is clean, advisory, tracked-upstream, scale-out partner evidence, or
 still provisional, the manuscript says so explicitly instead of letting the
 build silently promote it.
 
-\begin{sectiontodo}{Add the final hardware/software table and release sentence}
-This section still needs one compact table with model names, hardware, frame
-counts, question protocol, and scorer type, plus a final public-release
-sentence once the artifact bundle is frozen.
+For the adaptive C-PERSIST breadth result, the denominator is both query- and
+session-visible. The combined envelope is 31 sessions \(\times\) three queries
+per session \(=93\) paired queries, with 62 repaired follow-ups. The paper
+reports the query-level no-observed-drift bound because the paired answer is
+logged per query, and also reports the more conservative 0/31 session-level
+view where any drift in a session would count against the session.
+
+\begin{sectiontodo}{Add the final release sentence}
+This section still needs the final public-release sentence once the artifact
+bundle is frozen, plus any venue-template-specific hardware fields required
+for camera-ready submission.
 
 \textcolor{todoBorder}{Source pointers: \path{docs/benchmark-taxonomy.md},
 \path{docs/benchmark-setup.md},

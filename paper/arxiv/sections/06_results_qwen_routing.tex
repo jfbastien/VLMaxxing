@@ -15,7 +15,9 @@ less visual refresh: 0.600 accuracy at 4.06 effective fresh frames versus
 0.567 at 6.0 fresh frames. At \(n=30\), that is a pointwise Pareto frontier
 observation, not a statistical victory lap. Those are not wall-clock claims.
 They are benchmarked statements about preserved answer quality at lower
-effective visual budget.
+effective visual budget. The MVBench statement is explicitly against the
+dense-6 point at a matched-or-lower fresh-frame budget; dense-8 remains the
+higher absolute-accuracy point on that slice.
 
 \subsection{Automated Snapshot}
 
@@ -74,8 +76,8 @@ planner is merely doing smart frame selection in disguise. It is not.
 \begin{table}[H]
 \centering
 \caption{Novelty-ranked dense baseline from the preregistered dense-selection
-ablation. This table is hand-carried until the final artifact path is wired
-into the manuscript automation.}
+ablation. This is the control that tests whether the cached planner is merely
+selecting visually novel frames.}
 \label{tab:novelty-ranked-dense}
 \begin{tabular}{llrr}
 \toprule
