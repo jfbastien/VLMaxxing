@@ -1,13 +1,14 @@
 # Research Plan
 
-Last updated: 2026-04-26
+Last updated: 2026-04-28
 
 > **This file is the project charter and top-level router.**
 >
-> **Paper spine (2026-04-21, round-26):** three contributions —
+> **Paper spine (2026-04-28):** three contributions —
 > **C-CEILING**, **C-PERSIST**, **C-VISION** — with Qwen routing as the
 > **mechanism-validation backbone** and the separate 26B streaming work as
-> **deployment-scale operational evidence**. The paper-facing spine lives in:
+> **scale-out partner evidence pending artifact harmonization**. The
+> paper-facing spine lives in:
 > [`paper/abstract.md`](paper/abstract.md),
 > [`paper/intro.md`](paper/intro.md),
 > [`paper/framing.md`](paper/framing.md), and
@@ -17,18 +18,14 @@ Last updated: 2026-04-26
 > [`research/experiments/registry.md`](research/experiments/registry.md)
 > — that file is the single source of phase truth.
 >
-> **Current execution router (2026-04-26):** the 2026-04-25 follow-up queue
-> landed `1.55F` adaptive short, `1.55I` long `K=1`, `1.55H` short `32f`,
-> and the full `1.30AB` sweep. That closes the current `1.30AE`
-> duration-conditioned cache-reuse family and promotes adaptive C-PERSIST plus
-> `1.30AC`/`1.30AD` as the next local compute queue:
-> `1.55F-medium → 1.55F-long → 1.55F-32f → 1.55J → 1.30AC → 1.30AD`.
-> `1.58` remains a larger-memory-machine experiment under the current 16 GB
-> laptop policy. See
-> [`research/experiments/2026/2026-04-26-paper-adaptive-mechanism-runbook.md`](research/experiments/2026/2026-04-26-paper-adaptive-mechanism-runbook.md).
-> Deployment baselines are staged as a separate planning lane in
-> [`research/experiments/2026/2026-04-26-deployment-baseline-plan.md`](research/experiments/2026/2026-04-26-deployment-baseline-plan.md)
-> so they do not blur the current adaptive-mechanism queue.
+> **Current execution router (2026-04-28):** adaptive C-PERSIST breadth is now
+> the local headline (`0/93` paired drift across 20f short/medium/long and 32f
+> short). The main open science lanes are many-turn C-PERSIST drift,
+> sparse-ViT / C-CEILING salvage after the Qwen 8f fidelity boundary, low-FPS
+> dense baselines, sampler/logit-margin reruns after the MLX aborts, and the
+> Sam scale-out bundle (`S0b` cache-correctness, then `S1`/`S3` only if earned).
+> Per-phase details live in the registry and dated experiment notes; this file
+> is only the router.
 >
 > Lane A / temporal-routing research strategy (now the
 > mechanism-validation backbone, not the headline) lives in:

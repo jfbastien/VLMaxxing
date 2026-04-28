@@ -198,6 +198,22 @@ latency 0.675\,s, median tail prompt 50 tokens, and median prefix coverage
 9.50$\times$, with an 88.9\% median tail-token reduction. This explains why
 adaptive dominates fixed \(K=1\) without changing the fidelity contract.
 
+\begin{figure}[H]
+  \centering
+  \IfFileExists{generated/figures/c_persist_timeline.pdf}{
+    \includegraphics[width=0.98\linewidth]{generated/figures/c_persist_timeline.pdf}
+  }{
+    \fbox{\parbox{0.9\linewidth}{Run \texttt{make paper-sync} to sync the C-PERSIST timing figure.}}
+  }
+  \caption{Adaptive C-PERSIST timing attribution. Fixed \(K=1\) repairs the
+  newest-frame tail again at \(Q3\), while adaptive \(Q3\) inherits the
+  post-\(Q2\) repaired cache and mostly appends the new question text. The
+  visual shows the short-slice timing mechanism behind the 9.50\(\times\)
+  paired Q3 speedup; the broader 0/93 fidelity result is reported in the text
+  and Table~\ref{tab:c-persist-repair}.}
+  \label{fig:c-persist-timeline}
+\end{figure}
+
 \subsection{What Stacks and What Does Not}
 
 The measured first-pass gains and the after-ingest gains complement rather than

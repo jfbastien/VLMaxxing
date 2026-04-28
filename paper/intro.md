@@ -160,8 +160,8 @@ and the `>=3.0×` rescue floor is structurally unreachable under the
 current 3-query protocol because dense Q0 alone already exceeds the
 target total wall-clock budget. The paper therefore treats the three contributions as
 **separately-auditable safety envelopes**, not a stack whose union is
-claimed without evidence. Our 1.042 × pooled
-n=60 composition-audit cell is ceiling-matched, a preregistered NULL on
+claimed without evidence. Our 1.042 × n=60
+composition-audit cell is ceiling-matched, a preregistered NULL on
 "stacking beats the ceiling" and a positive on the ceiling law itself.
 The paper reports composed numbers against their ceiling bound, never
 as a bare product of independent multipliers.

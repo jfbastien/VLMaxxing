@@ -102,6 +102,7 @@ def _draw_overview_box(
     text: str = "",
     size: float = 9,
     weight: str = "normal",
+    linestyle: str = "solid",
 ):
     rect = mpatches.FancyBboxPatch(
         xy,
@@ -111,6 +112,7 @@ def _draw_overview_box(
         linewidth=1.0,
         edgecolor=edge,
         facecolor=face,
+        linestyle=linestyle,
     )
     ax.add_patch(rect)
     if text:
@@ -156,25 +158,25 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
             "axes.facecolor": "white",
         }
     )
-    fig, ax = plt.subplots(figsize=(7.4, 4.25))
+    fig, ax = plt.subplots(figsize=(7.4, 3.8))
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     ax.axis("off")
 
-    ax.text(0.04, 0.91, "Video state over time", fontsize=10.5, weight="bold")
+    ax.text(0.04, 0.925, "Video state over time", fontsize=10.0, weight="bold")
     ax.text(
         0.04,
-        0.865,
-        "Most pixels keep explaining the same wall.",
+        0.855,
+        "Stable state persists;\nmotion is the residual.",
         fontsize=7.8,
         color="#4b5563",
     )
 
     frame_w = 0.12
-    frame_h = 0.42
+    frame_h = 0.39
     for idx in range(4):
         x = 0.055 + idx * 0.074
-        y = 0.22 + idx * 0.043
+        y = 0.24 + idx * 0.041
         _draw_overview_box(ax, (x, y), frame_w, frame_h, face="#f8fafc", edge="#64748b")
         ax.add_patch(
             mpatches.Rectangle(
@@ -199,101 +201,101 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
         )
         ax.text(x + frame_w / 2, y - 0.035, f"t+{idx}", ha="center", fontsize=8)
 
-    ax.text(0.07, 0.14, "stable state", fontsize=7.5, color="#1d4ed8", weight="bold")
-    ax.text(0.07, 0.116, "reuse/cache", fontsize=7.0, color="#1d4ed8")
-    ax.text(0.25, 0.14, "fresh residual", fontsize=7.5, color="#c2410c", weight="bold")
-    ax.text(0.25, 0.116, "spend work", fontsize=7.0, color="#c2410c")
-    _draw_overview_arrow(ax, (0.16, 0.16), (0.13, 0.30), color="#1d4ed8", lw=1.2)
-    _draw_overview_arrow(ax, (0.33, 0.16), (0.34, 0.50), color="#c2410c", lw=1.2)
+    ax.text(0.07, 0.15, "stable state", fontsize=7.5, color="#1d4ed8", weight="bold")
+    ax.text(0.07, 0.126, "reuse/cache", fontsize=7.0, color="#1d4ed8")
+    ax.text(0.25, 0.15, "fresh residual", fontsize=7.5, color="#c2410c", weight="bold")
+    ax.text(0.25, 0.126, "spend work", fontsize=7.0, color="#c2410c")
+    _draw_overview_arrow(ax, (0.16, 0.17), (0.13, 0.32), color="#1d4ed8", lw=1.2)
+    _draw_overview_arrow(ax, (0.33, 0.17), (0.34, 0.52), color="#c2410c", lw=1.2)
 
-    ax.plot([0.43, 0.43], [0.08, 0.91], color="#cbd5e1", linewidth=1.0)
-    ax.text(0.455, 0.91, "Three regimes + one control", fontsize=10.5, weight="bold")
-    ax.text(0.455, 0.85, "Regime", fontsize=7.4, color="#475569", weight="bold")
-    ax.text(0.63, 0.85, "Touched work", fontsize=7.4, color="#475569", weight="bold")
-    ax.text(0.79, 0.85, "Denominator + status", fontsize=7.4, color="#475569", weight="bold")
+    ax.plot([0.41, 0.41], [0.08, 0.91], color="#cbd5e1", linewidth=1.0)
+    ax.text(0.435, 0.91, "Regime denominators", fontsize=10.0, weight="bold")
+    ax.text(0.435, 0.855, "Regime", fontsize=7.4, color="#475569", weight="bold")
+    ax.text(0.58, 0.855, "Touched work", fontsize=7.4, color="#475569", weight="bold")
+    ax.text(0.745, 0.855, "Denominator / status", fontsize=7.4, color="#475569", weight="bold")
 
     rails = [
         (
-            0.75,
+            0.76,
             "C-VISION",
-            "first query",
-            "skip vision-\ntower work",
-            "first-query E2E\n1/(1 - V_share V_red)",
+            "vision tower",
+            "first-query E2E; share-limited",
             "#e0f2fe",
             "#0284c7",
+            "solid",
         ),
         (
-            0.62,
+            0.635,
             "C-PERSIST",
-            "same-video follow-up",
-            "reuse prompt /\nKV state",
-            "after-ingest follow-up\nQ2 repair -> Q3 inherits\n"
-            f"{repair['all_query_speedup_min']:.2f}--{repair['all_query_speedup_max']:.2f}x",
+            "prompt + KV",
+            "same-video follow-up; first query paid",
             "#dcfce7",
             "#16a34a",
+            "solid",
         ),
         (
-            0.42,
+            0.51,
             "Routing",
-            "dense control",
-            "place fresh\nevidence",
-            "quality frontier\nnot wall-clock speedup",
-            "#f3e8ff",
-            "#7e22ce",
+            "frame choice",
+            "quality frontier; dense backend control",
+            "#f1f5f9",
+            "#64748b",
+            "dashed",
         ),
         (
-            0.285,
+            0.385,
             "Streaming",
-            "scale-out lane",
-            "reuse live\nstate",
-            "component counters + E2E\n26B cache reuse blocked",
-            "#fef3c7",
+            "live state",
+            "scale-out partner; C-PERSIST\nblocked on 26B cache smoke",
+            "#fff7ed",
             "#d97706",
+            "dashed",
         ),
     ]
-    for y, label, regime, mechanism, denom, face, edge in rails:
+    for y, label, mechanism, denom, face, edge, linestyle in rails:
         _draw_overview_box(
             ax,
-            (0.455, y),
-            0.145,
-            0.075,
+            (0.435, y),
+            0.12,
+            0.068,
             face=face,
             edge=edge,
-            text=f"{label}\n{regime}",
+            text=label,
             size=7.4,
             weight="bold",
+            linestyle=linestyle,
         )
-        _draw_overview_arrow(ax, (0.61, y + 0.037), (0.625, y + 0.037), color=edge)
+        _draw_overview_arrow(ax, (0.565, y + 0.034), (0.58, y + 0.034), color=edge)
         _draw_overview_box(
             ax,
-            (0.635, y),
-            0.14,
-            0.075,
+            (0.59, y),
+            0.13,
+            0.068,
             face="#ffffff",
             edge=edge,
             text=mechanism,
-            size=7.4,
+            size=7.1,
+            linestyle=linestyle,
         )
-        ax.text(0.79, y + 0.039, denom, fontsize=6.9, color="#334155", va="center")
+        ax.text(0.745, y + 0.034, denom, fontsize=6.8, color="#334155", va="center")
 
-    ax.text(0.455, 0.16, "C-CEILING", fontsize=10.0, weight="bold")
-    ax.text(0.455, 0.122, "End-to-end lift moves only with the touched stage share.", fontsize=7.6)
+    ax.text(0.435, 0.255, "C-CEILING", fontsize=9.6, weight="bold")
+    ax.text(0.435, 0.225, "Do not multiply rows; denominators differ.", fontsize=7.6)
     _draw_overview_box(
         ax,
-        (0.455, 0.045),
-        0.39,
-        0.052,
+        (0.435, 0.12),
+        0.48,
+        0.068,
         face="#eef2ff",
         edge="#4f46e5",
-        text="first-pass cap = 1 / (1 - V_share * V_red)",
-        size=7.2,
+        text=(
+            "general: E2E = 1 / (fixed + accelerated / s)\nvision case: 1 / (1 - V_share * V_red)"
+        ),
+        size=6.7,
     )
 
     fig.suptitle(
-        (
-            "Anti-recomputation: reuse stable state, "
-            "buy fresh evidence only where the denominator allows it"
-        ),
+        "Anti-recomputation regimes: reuse stable state, buy fresh evidence",
         fontsize=10.5,
         weight="bold",
         y=0.985,
@@ -336,6 +338,256 @@ def _artifact_json(path: Path) -> dict:
     if not path.exists():
         raise FileNotFoundError(f"missing canonical artifact: {path}")
     return _load_json(path)
+
+
+def _render_c_persist_timeline_figure() -> None:
+    """Render the adaptive C-PERSIST timing mechanism as a focused timeline."""
+
+    summary = _artifact_json(ARTIFACTS / "phase1_55F_stage_timing" / "stage_timing_summary.json")
+    fixed_q2 = summary["fixed_k1"]["q_index"]["q2"]
+    fixed_q3 = summary["fixed_k1"]["q_index"]["q3"]
+    adaptive_q2 = summary["adaptive"]["q_index"]["q2"]
+    adaptive_q3 = summary["adaptive"]["q_index"]["q3"]
+    paired = summary["paired_q3"]
+
+    fixed_q3_s = fixed_q3["median_elapsed_ms"] / 1000.0
+    adaptive_q3_s = adaptive_q3["median_elapsed_ms"] / 1000.0
+    speedup = paired["median_fixed_over_adaptive_speedup"]
+    token_reduction = paired["median_tail_token_reduction"] * 100.0
+
+    plt.rcParams.update(
+        {
+            "font.family": "DejaVu Sans",
+            "figure.facecolor": "white",
+            "axes.facecolor": "white",
+        }
+    )
+    fig, ax = plt.subplots(figsize=(7.4, 3.2))
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis("off")
+
+    ax.text(
+        0.02,
+        0.93,
+        "Adaptive C-PERSIST: repair once, reuse the repaired state",
+        fontsize=11,
+        weight="bold",
+    )
+    ax.text(
+        0.02,
+        0.86,
+        "The visual tail is bought at Q2. Fixed K=1 buys it again at Q3; "
+        "adaptive Q3 mostly appends text.",
+        fontsize=7.6,
+        color="#475569",
+    )
+
+    xs = {"q0": 0.12, "q2": 0.42, "q3": 0.72}
+    for key, label in [
+        ("q0", "Q0/Q1 first query"),
+        ("q2", "Q2 repair"),
+        ("q3", "Q3 follow-up"),
+    ]:
+        ax.text(xs[key], 0.78, label, fontsize=8.0, weight="bold", ha="center", color="#334155")
+
+    def bar(
+        x: float,
+        y: float,
+        *,
+        cached_w: float,
+        tail_w: float,
+        tail_color: str,
+        label: str,
+        tail_label: str,
+    ) -> None:
+        ax.add_patch(
+            mpatches.FancyBboxPatch(
+                (x, y),
+                cached_w,
+                0.075,
+                boxstyle="round,pad=0.01,rounding_size=0.018",
+                facecolor="#dcfce7",
+                edgecolor="#16a34a",
+                linewidth=1.0,
+            )
+        )
+        ax.add_patch(
+            mpatches.FancyBboxPatch(
+                (x + cached_w + 0.006, y),
+                tail_w,
+                0.075,
+                boxstyle="round,pad=0.01,rounding_size=0.018",
+                facecolor=tail_color,
+                edgecolor="#c2410c",
+                linewidth=1.0,
+            )
+        )
+        ax.text(x + cached_w / 2, y + 0.038, label, fontsize=6.6, ha="center", va="center")
+        ax.text(
+            x + cached_w + 0.006 + tail_w / 2,
+            y + 0.038,
+            tail_label,
+            fontsize=6.3,
+            ha="center",
+            va="center",
+        )
+
+    def arrow(start: tuple[float, float], end: tuple[float, float], color: str = "#64748b") -> None:
+        ax.annotate(
+            "",
+            xy=end,
+            xytext=start,
+            arrowprops=dict(arrowstyle="->", lw=1.1, color=color, shrinkA=0, shrinkB=0),
+        )
+
+    # Q0/Q1 establishes the long reusable prefix; both policies share this part.
+    ax.add_patch(
+        mpatches.FancyBboxPatch(
+            (0.035, 0.53),
+            0.18,
+            0.13,
+            boxstyle="round,pad=0.012,rounding_size=0.025",
+            facecolor="#f8fafc",
+            edgecolor="#64748b",
+            linewidth=1.0,
+        )
+    )
+    ax.text(0.125, 0.595, "full prefill\n~8.1k tokens", fontsize=7.0, ha="center", va="center")
+
+    ax.text(0.02, 0.64, "Fixed K=1", fontsize=8.2, weight="bold", color="#14532d")
+    ax.text(0.02, 0.40, "Adaptive", fontsize=8.2, weight="bold", color="#14532d")
+
+    # Q2 repair is the same operation in both rows.
+    bar(
+        xs["q2"] - 0.13,
+        0.60,
+        cached_w=0.105,
+        tail_w=0.11,
+        tail_color="#fed7aa",
+        label="cache",
+        tail_label=f"{fixed_q2['median_tail_prompt_tokens']:.0f} tok",
+    )
+    bar(
+        xs["q2"] - 0.13,
+        0.36,
+        cached_w=0.105,
+        tail_w=0.11,
+        tail_color="#fed7aa",
+        label="cache",
+        tail_label=f"{adaptive_q2['median_tail_prompt_tokens']:.0f} tok",
+    )
+
+    # Q3 is where the adaptive mechanism appears.
+    bar(
+        xs["q3"] - 0.14,
+        0.60,
+        cached_w=0.105,
+        tail_w=0.11,
+        tail_color="#fb923c",
+        label="cache",
+        tail_label=f"{fixed_q3['median_tail_prompt_tokens']:.0f} tok",
+    )
+    bar(
+        xs["q3"] - 0.14,
+        0.36,
+        cached_w=0.17,
+        tail_w=0.025,
+        tail_color="#fdba74",
+        label="post-Q2 repaired cache",
+        tail_label=f"{adaptive_q3['median_tail_prompt_tokens']:.0f}",
+    )
+
+    arrow((0.22, 0.595), (0.285, 0.635))
+    arrow((0.22, 0.595), (0.285, 0.395))
+    arrow((0.515, 0.638), (0.58, 0.638), "#16a34a")
+    arrow((0.515, 0.398), (0.58, 0.398), "#16a34a")
+
+    ax.text(
+        0.67,
+        0.70,
+        f"Q3: {fixed_q3_s:.2f}s\nrepeat tail",
+        fontsize=7.0,
+        ha="center",
+        color="#7c2d12",
+    )
+    ax.text(
+        0.68,
+        0.28,
+        f"Q3: {adaptive_q3_s:.3f}s\nreuse repaired cache",
+        fontsize=7.0,
+        ha="center",
+        color="#14532d",
+    )
+
+    ax.add_patch(
+        mpatches.FancyBboxPatch(
+            (0.80, 0.33),
+            0.17,
+            0.24,
+            boxstyle="round,pad=0.018,rounding_size=0.03",
+            facecolor="#ecfdf5",
+            edgecolor="#16a34a",
+            linewidth=1.2,
+        )
+    )
+    ax.text(
+        0.885,
+        0.49,
+        f"{speedup:.2f}x\npaired Q3\nspeedup",
+        fontsize=8.8,
+        weight="bold",
+        ha="center",
+        va="center",
+        color="#14532d",
+    )
+    ax.text(
+        0.885,
+        0.39,
+        f"{token_reduction:.1f}% fewer\nQ3 tail tokens",
+        fontsize=7.2,
+        ha="center",
+        va="center",
+        color="#166534",
+    )
+
+    ax.text(0.05, 0.16, "green = cached prefix/state", fontsize=7.2, color="#166534")
+    ax.text(0.28, 0.16, "orange = newly bought tail work", fontsize=7.2, color="#c2410c")
+    ax.text(
+        0.02,
+        0.08,
+        "Timing attribution from existing 1.55F/1.55D short-slice artifacts; "
+        "fidelity breadth is reported separately.",
+        fontsize=6.8,
+        color="#475569",
+    )
+
+    fig.tight_layout()
+    out_png = GENERATED / "figures" / "c_persist_timeline.png"
+    out_pdf = GENERATED / "figures" / "c_persist_timeline.pdf"
+    fig.savefig(out_png, dpi=220, bbox_inches="tight")
+    fig.savefig(out_pdf, bbox_inches="tight")
+    plt.close(fig)
+    (GENERATED / "data" / "c_persist_timeline_snapshot.json").write_text(
+        json.dumps(
+            {
+                "phase": summary["phase"],
+                "fixed_q3_elapsed_s": fixed_q3_s,
+                "adaptive_q3_elapsed_s": adaptive_q3_s,
+                "fixed_q3_tail_prompt_tokens": fixed_q3["median_tail_prompt_tokens"],
+                "adaptive_q3_tail_prompt_tokens": adaptive_q3["median_tail_prompt_tokens"],
+                "paired_q3_fixed_over_adaptive_speedup": speedup,
+                "paired_q3_tail_token_reduction": paired["median_tail_token_reduction"],
+                "source": (
+                    "research/experiments/2026/artifacts/"
+                    "phase1_55F_stage_timing/stage_timing_summary.json"
+                ),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n"
+    )
 
 
 def _source_path_label(path: Path) -> str:
@@ -1593,6 +1845,7 @@ def main() -> int:
     _render_headline_figure(headline_snapshot)
     _write_headline_table(headline_snapshot)
     _write_c_persist_repair_table(headline_snapshot)
+    _render_c_persist_timeline_figure()
     qwen_bridge_snapshot = _qwen_bridge_boundary_snapshot()
     _write_qwen_bridge_boundary_table(qwen_bridge_snapshot)
     paired_drift_snapshot = _paired_drift_snapshot()

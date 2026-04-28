@@ -79,7 +79,7 @@ compute reduction, 13× ViT reduction, 5.4× prefill, and 5–300× live ViT
 savings on camera feeds. Gemma 26B warm follow-up latency is currently a
 cache-correctness diagnostic, not earned C-PERSIST evidence, after S0 found
 cross-turn follow-up agreement on only 2/5 items. These rows anchor the
-product-facing claims that C-PERSIST and C-VISION predict at 4 B-class scale
+product-facing claims at 26B-class scale
 without collapsing the evidence classes. The two implementations share
 an analytical frame (C-CEILING) and a shared definition of
 attention-propagation drift as the fidelity mechanism, but run on
