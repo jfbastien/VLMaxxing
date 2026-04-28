@@ -32,7 +32,7 @@ from mlx_vlm.generate import generate_step
 # (CVE-2026-28834-class GPU-driver race, unpatched on macOS 26.3).
 mx.set_memory_limit(12 * 1024**3)
 
-from codec_through.memory_guard import check_rss_guard
+from codec_through.memory_guard import check_rss_guard  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 QWEN_RUNNER_PATH = REPO_ROOT / "scripts" / "run_phase1_51V.py"

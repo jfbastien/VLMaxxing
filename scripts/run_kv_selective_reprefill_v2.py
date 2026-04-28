@@ -23,9 +23,9 @@ from mlx_vlm.utils import prepare_inputs
 # (CVE-2026-28834-class GPU-driver race, unpatched on macOS 26.3).
 mx.set_memory_limit(12 * 1024**3)
 
-from codec_through.answers import extract_choice
-from codec_through.memory_guard import check_rss_guard
-from codec_through.qwen_selective_reprefill import (
+from codec_through.answers import extract_choice  # noqa: E402
+from codec_through.memory_guard import check_rss_guard  # noqa: E402
+from codec_through.qwen_selective_reprefill import (  # noqa: E402
     common_prefix_token_count,
     compute_qwen_position_ids,
     compute_qwen_reprefill_plan,
@@ -35,7 +35,7 @@ from codec_through.qwen_selective_reprefill import (
     rewind_qwen_prefix_cache,
     slice_qwen_prompt_for_reprefill,
 )
-from codec_through.selective_reprefill_policy import reprefill_k_for_query
+from codec_through.selective_reprefill_policy import reprefill_k_for_query  # noqa: E402
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:

@@ -32,15 +32,15 @@ from mlx_vlm import generate, load
 # Avoid IOGPU state-inconsistency panics under allocation churn
 # (CVE-2026-28834-class GPU-driver race, unpatched on macOS 26.3).
 mx.set_memory_limit(12 * 1024**3)
-from mlx_vlm.utils import prepare_inputs
+from mlx_vlm.utils import prepare_inputs  # noqa: E402
 
-from codec_through.answers import extract_choice
-from codec_through.memory_guard import check_rss_guard, rss_mb
-from codec_through.qwen_pruned_vision_tower import (
+from codec_through.answers import extract_choice  # noqa: E402
+from codec_through.memory_guard import check_rss_guard, rss_mb  # noqa: E402
+from codec_through.qwen_pruned_vision_tower import (  # noqa: E402
     QwenVisionPruneConfig,
     patch_qwen_vision_tower,
 )
-from codec_through.qwen_vision_pruning import qwen_groups_per_frame
+from codec_through.qwen_vision_pruning import qwen_groups_per_frame  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RUNNER_PATH = REPO_ROOT / "scripts" / "run_benchmark_track_a.py"
