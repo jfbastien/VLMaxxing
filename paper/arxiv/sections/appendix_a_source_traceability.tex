@@ -12,14 +12,18 @@ streaming and real-application section until artifact harmonization lands.
 not allowed into the default automated manuscript snapshot.
 
 This appendix is where that distinction becomes audit-friendly. The repo
-provenance table below records the current commit pins used by the manuscript
-sync; a \texttt{-dirty} suffix means this PDF is a working-tree draft, not a
-submission-frozen artifact bundle. Within the main text, numbers are written so
-they can be traced back to one phase note and one artifact family. When a
-result is excluded on provenance grounds, the paper says so explicitly. The
-best current example is the MVBench \texttt{sticky4} refinement: it is
-scientifically interesting, but the artifact remains provisional, so it stays
-supplementary until rerun clean.
+provenance table below records the commit pins observed by the manuscript sync
+step. Because this draft commits generated paper assets, the primary row can
+point to the pre-commit working-tree snapshot that produced the PDF; a
+\texttt{-dirty} suffix means the PDF is a working-tree draft, not a
+submission-frozen artifact bundle. The final release should regenerate this
+table from a clean tag. Within the main text, numbers are written so they can
+be traced back to one phase note and one artifact family. When a result is
+excluded or downgraded on provenance grounds, the paper says so explicitly. The
+best current examples are the MVBench \texttt{sticky4} refinement and the
+1.63E sparse-ViT 8f boundary: both are scientifically interesting, but the
+frozen artifact bundle still needs stable raw paths before either should be
+promoted beyond its current status.
 
 \begin{table}[H]
 \centering
@@ -38,7 +42,7 @@ supplementary until rerun clean.
 Asset & Claim / protocol & Evidence class & Source / hardware \\
 \midrule
 Headline table & regime headline cells; first-pass vision-pruning holdout plus after-ingest follow-up & local + tracked-upstream & Phases 1.51V and 1.55A/D/E/F/G/H/I; adaptive mechanism and stage-timing artifacts; Gemma/Qwen local stacks, MLX / M3 Air 16 GB \\
-C-CEILING figure & C-CEILING / C-VISION scatter-back validation; first-pass holdout, n=60 stacked-regime audit, and matched cross-arch probe & local + tracked-upstream & ceiling data JSON; local Gemma and local Qwen stacks plus tracked-upstream TOMATO rerun \\
+C-CEILING figure & C-CEILING / C-VISION scatter-back validation; first-pass holdout, n=60 stacked-regime audit, matched cross-arch probe, and 8f sparse-ViT boundary & local + tracked-upstream + findings-note boundary & ceiling data JSON; local Gemma and local Qwen stacks plus tracked-upstream TOMATO rerun; 1.63E 8f raw artifact import pending for the frozen bundle \\
 C-PERSIST figure & C-PERSIST tested envelope; after-ingest same-video follow-up & local & Phase 1.55A artifacts; Qwen 7B/3B-4bit, MLX / M3 Air 16 GB \\
 C-PERSIST repair & 20f/32f same-video selective re-prefill & local bounded recovery & Phases 1.55D/E/F/G/H/I plus adaptive mechanism and stage-timing artifacts; Qwen 7B-4bit, VideoMME short/medium/long + 32f short \\
 Routing frontier & sparse routing under dense backend & local & Phase 1.20/21/34/36 notes; Qwen 7B-4bit, MLX \\

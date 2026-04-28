@@ -94,8 +94,8 @@ architecturally bounded and characterized:
   → 1/14) but returns only to the pre-basin plateau, not to baseline
   — sampler-invariance is an architecture-conditional property, not
   a universal rescue.
-- **Basin-onset depth scales ~1.6× with parameter count** (7 B onset
-  ~16–20 f; 3 B onset ~36–40 f). The basin geometry — non-letter
+- **Basin-onset depth is deeper on the tested Qwen 3B point than on the tested
+  Qwen 7B point** (7 B onset ~16–20 f; 3 B onset ~36–40 f). The basin geometry — non-letter
   attractor emergence, not a random letter flip — is cross-
   architectural and appears at 1/21 signature on all four probes.
 - **Gemma 4-E4B-4bit** does not expose the persistent-KV path under

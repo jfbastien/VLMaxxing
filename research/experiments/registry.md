@@ -602,7 +602,7 @@ authoritative in the per-phase notes under
   notes: Original prereg mistakenly attributed Sam's MEASURED 2.13.3 persistent-KV result as a Codex hypothesis, and gated on an mlx-vlm fork that turned out to already be upstream (PromptCacheState + find_prefix_length). Split 2026-04-19 into 1.55A (reproduction of Sam 2.13.3 on Qwen 7B/M3 Air) and 1.55B (composition with 1.54 decode accel — deferred).
 
 - phase_id: 1.55A
-  status: completed/CLOSED (8f + 16f + 18f + 20f + 24f + 32f frame-scaling on 7B + 3B 20f matched + 3B 24f shifted-ramp + 3B 32f plateau-candidate + 3B 36f PRE-BASIN PLATEAU EXTENDED + 3B 40f LATENT BASIN EARNED + **7B 40f BASIN-SYMMETRY EARNED** + 7B/20f temperature probe EARNED H-distribution-collapse + 3B/20f temperature probe EARNED H2-3B-temp.null-robust + **3B/40f temperature probe HYBRID (basin partially dispersed, sampler-invariance is architecture-conditional)**; three-dimensional mechanism decomposition REVISED 2026-04-20 from saturation-ceiling to shifted-onset-same-basin AND **SYMMETRICALLY CONFIRMED** 2026-04-20 on 7B at 2× basin-onset depth: threshold onset capacity-modulated, **basin-onset depth architecture-dependent** (7B ~8k tokens; 3B ~16k tokens, ~1.6× scaling), **basin geometry architecture-conditional under sampling** — 7B basin sampler-invariant at both 20f and 40f; 3B basin at 40f is sampler-dispersible (4/14 → 1/14 novel) but dispersed mass returns only to the pre-basin plateau, not to baseline; phase closes; reopen conditions (f) RETIRED and (h) CLOSED with HYBRID outcome)
+  status: completed/CLOSED (8f + 16f + 18f + 20f + 24f + 32f frame-scaling on 7B + 3B 20f matched + 3B 24f shifted-ramp + 3B 32f plateau-candidate + 3B 36f PRE-BASIN PLATEAU EXTENDED + 3B 40f LATENT BASIN EARNED + **7B 40f BASIN-SYMMETRY EARNED** + 7B/20f temperature probe EARNED H-distribution-collapse + 3B/20f temperature probe EARNED H2-3B-temp.null-robust + **3B/40f temperature probe HYBRID (basin partially dispersed, sampler-invariance is architecture-conditional)**; three-dimensional mechanism decomposition REVISED 2026-04-20 from saturation-ceiling to shifted-onset-same-basin AND **SYMMETRICALLY CONFIRMED** 2026-04-20 on 7B at 2× basin-onset depth: threshold onset capacity-modulated, **basin-onset depth architecture-dependent** (7B ~8k tokens; 3B ~16k tokens in the tested Qwen points; two-size evidence, not a scaling law), **basin geometry architecture-conditional under sampling** — 7B basin sampler-invariant at both 20f and 40f; 3B basin at 40f is sampler-dispersible (4/14 → 1/14 novel) but dispersed mass returns only to the pre-basin plateau, not to baseline; phase closes; reopen conditions (f) RETIRED and (h) CLOSED with HYBRID outcome)
   authoritative_note: research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-16f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-18f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-20f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-24f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-32f-frame-scaling-findings.md + research/experiments/2026/2026-04-19-phase-1_55A-3b-crossarch-findings.md + research/experiments/2026/2026-04-20-phase-1_55A-3b-24f-boundary-findings.md + research/experiments/2026/2026-04-20-phase-1_55A-3b-32f-saturation-findings.md + research/experiments/2026/2026-04-20-phase-1_55A-7b-20f-temperature-findings.md + research/experiments/2026/2026-04-20-phase-1_55A-3b-20f-temperature-findings.md + research/experiments/2026/2026-04-20-phase-1_55A-3b-40f-deeper-plateau-findings.md + research/experiments/2026/2026-04-20-phase-1_55A-7b-40f-symmetry-findings.md + research/experiments/2026/2026-04-20-phase-1_55A-3b-36f-interpolation-findings.md + research/experiments/2026/2026-04-20-phase-1_55A-3b-40f-temperature-findings.md
   authoritative_artifacts:
     - research/experiments/2026/artifacts/loop_queue_20260419_155108/phase1_55A_persistent_kv_qwen/summary.json
@@ -804,8 +804,8 @@ authoritative in the per-phase notes under
     architectural-ceiling to shifted-onset:** 3B is NOT on a
     saturation plateau; the 24f/32f "plateau" was pre-onset, and
     basin emergence appears at ~16k prefill tokens (40f). 3B and
-    7B share the same basin geometry; onset depth scales ~1.6×
-    with parameter count (7B ~8k at 20f; 3B ~16k at 40f). The
+    7B share the same basin geometry; onset depth is deeper on the tested 3B
+    point than on the tested 7B point (7B ~8k at 20f; 3B ~16k at 40f). The
     3-D decomposition's dimension 2 is relabelled from
     "saturation ceiling = architecture-specific" to "**basin-
     onset depth = architecture-dependent; basin geometry =
@@ -1130,15 +1130,15 @@ authoritative in the per-phase notes under
   notes: Track B scope is vision-tower-only. It hard-gates on both real vision-stage reduction and positive end-to-end speedup so a dense-stage-share null cannot be accidentally promoted as a headline.
 
 - phase_id: 1.63E
-  status: preregistered / ready-to-run
-  authoritative_note: research/experiments/2026/2026-04-27-phase-1_63E-track-b-frame-scaling-prereg.md
+  status: partial findings-note landed for 8f; raw artifact import pending; higher frame counts pending
+  authoritative_note: research/experiments/2026/2026-04-27-phase-1_63E-track-b-frame-scaling-prereg.md + research/experiments/2026/2026-04-27-phase-1_63E-8f-findings.md
   authoritative_artifacts: []
-  current_best_policy: pending; Qwen compact post-layer L=2 kr=0.50 Track B sparse-ViT at 8f/16f/20f/32f
+  current_best_policy: "Qwen compact post-layer L=2 kr=0.50 Track B sparse-ViT at 8f: ceiling explained (1.042x observed vs 1.047x predicted) and real vision work skipped, but H_fidelity FAILS at -0.067 aggregate; 16f/20f/32f remain pending"
   supersedes: []
   paper_relevance: primary (tests whether C-CEILING predicts measured Track B wall-clock across frame budgets)
-  prereg_outcome: pending
+  prereg_outcome: "8f partial: H_sparse_vision/H_e2e_positive/H_ceiling_explained PASS, H_fidelity FAIL; higher frame-count sweep pending"
   runtime_estimate: ~7.5-9.5h
-  notes: Default wrapper recomputes 8f as a normal gated cell rather than treating it as a non-veto reference; override PHASE1_63E_FRAME_COUNTS only for intentional resume/debug.
+  notes: Default wrapper recomputes 8f as a normal gated cell rather than treating it as a non-veto reference; override PHASE1_63E_FRAME_COUNTS only for intentional resume/debug. The 8f result is currently findings-note-backed in this checkout; import or link raw paired artifacts before using it as a frozen submission artifact.
 
 - phase_id: 1.63G
   status: preregistered / ready-to-run

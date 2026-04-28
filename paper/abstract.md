@@ -40,9 +40,9 @@ still tolerated 8 f point; 3B-4bit stays bounded through 36 frames /
 14.5 k prefill tokens at a Δacc = −0.19 pre-basin plateau. Outside the
 envelope, a narrow soft
 transition exits into a non-letter-attractor basin; basin-onset depth
-scales ~1.6× with parameter count and sampler-side intervention is
-architecture-conditional (sampler-invariant at 7 B; sampler-dispersible
-at 3 B only back to the pre-basin plateau). Paired follow-up-query
+is deeper on the tested Qwen 3B point than on the tested Qwen 7B point, and
+sampler-side intervention is architecture-conditional (sampler-invariant at
+7 B; sampler-dispersible at 3 B only back to the pre-basin plateau). Paired follow-up-query
 latency, not first-query latency, is the right reporting unit for
 conversational deployment.
 

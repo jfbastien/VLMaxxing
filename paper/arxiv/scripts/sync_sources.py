@@ -1736,7 +1736,12 @@ def _write_repo_provenance_table(
     lines = [
         r"\begin{table}[H]",
         r"\centering",
-        r"\caption{Repo provenance for the current manuscript sync.}",
+        (
+            r"\caption{Repo provenance captured by the manuscript sync step. "
+            r"For draft PDFs committed after generation, the primary row can "
+            r"point to the pre-commit working-tree snapshot; regenerate from a "
+            r"clean release tag for the frozen artifact bundle.}"
+        ),
         r"\label{tab:repo-provenance}",
         r"\begin{tabular}{lll}",
         r"\toprule",

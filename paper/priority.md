@@ -27,8 +27,8 @@ which evidence class proves each point.
 
 Narrative update 2026-04-27: adaptive C-PERSIST breadth is no longer pending.
 It is the current follow-up-reuse headline: n=93 / 0 observed paired drift
-across 20f short/medium/long plus 32f short, 15.28×--35.97× all-query speedup,
-and 14.90×--35.92× same-class follow-up speedup. Fixed K=1 remains the simple
+across 20f short/medium/long plus 32f short, 14.90×--35.92× same-class
+follow-up speedup, and a 15.28×--35.97× cold-all-query ratio. Fixed K=1 remains the simple
 no-coordination baseline. The 1.30AC/AD family is now a negative composition
 boundary: cache reuse preserves speed but drifts, cache invalidation forces
 follow-up V-pruning but kills speed, and both land at the same net aggregate

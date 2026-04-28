@@ -34,8 +34,8 @@ It is NOT the place for raw experimental detail. Evidence lives in:
 
 Last material update: 2026-04-27 (adaptive C-PERSIST breadth landed across
 20f short/medium/long plus 32f short at n=93 / 0 observed paired drift,
-15.28×--35.97× all-query speedup, and 14.90×--35.92× same-class follow-up
-speedup; stage-timing attribution shows adaptive Q3 avoids the fixed-K last-frame
+14.90×--35.92× same-class follow-up speedup, and a 15.28×--35.97×
+cold-all-query ratio; stage-timing attribution shows adaptive Q3 avoids the fixed-K last-frame
 re-prefill; 1.30AC/AD close the cache-reuse/composition boundary as same net
 aggregate loss through different any-paired-drift sets).
 
@@ -122,8 +122,8 @@ duration-conditional partial reproduction + 1.55D frontier-partial):
    not to baseline). The repair story is now broad on Qwen: fixed K=1
    selective re-prefill gives 0/93 observed paired drift at 9.48×--20.37×
    same-class follow-up speedup, while adaptive post-Q2-state reuse gives
-   0/93 observed paired drift at 15.28×--35.97× all-query speedup
-   (14.90×--35.92× same-class). Stage timing explains the adaptive gain:
+   0/93 observed paired drift at 14.90×--35.92× same-class follow-up speedup
+   (15.28×--35.97× cold-all-query ratio). Stage timing explains the adaptive gain:
    Q3 reuses the post-Q2 cache and avoids the fixed-K last-frame re-prefill.
    Tested deployment-regime table in [`paper/claim-matrix.md`](claim-matrix.md)
    provides paper-grade practitioner guidance; paired-fidelity boundary result

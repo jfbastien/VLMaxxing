@@ -97,13 +97,13 @@ VideoMME 8f holdout & 0.154 & 0.413 & 1.068 & 1.113 & +4.5pp & clean local \\
 MVBench 8f holdout & 0.452 & 0.471 & 1.271 & 1.407 & +13.6pp & advisory local \\
 TOMATO 8f holdout & 0.384 & 0.350 & 1.155 & 1.194 & +3.9pp & tracked-upstream advisory \\
 Qwen VideoMME 8f dev & 0.103 & 0.398 & 1.043 & 1.044 & +0.1pp & matched cross-arch \\
-Qwen sparse-ViT 8f n=60 & 0.100 & 0.448 & 1.047 & 1.042 & -0.5pp & measured sparse, fidelity fail \\
+Qwen sparse-ViT 8f n=60 & 0.100 & 0.448 & 1.047 & 1.042 & -0.5pp & findings-note boundary, fidelity fail \\
 VideoMME n=60 composition audit & 0.063 & 0.430 & 1.028 & 1.042 & +1.4pp & composition null \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-Across the rendered nine-cell view, the share model stays predictive enough to
+Across the rendered ten-row view, the share model stays predictive enough to
 be useful and honest, but it is not a literal no-residual theorem. Advisory
 cells can sit above or below the prediction when non-vision timing, scheduler
 jitter, or thermal state moves with the run. The holdout spread is wider than
@@ -188,16 +188,16 @@ the repaired post-\(Q2\) cache state with \(K=0\).
 That rule now has breadth. Across 20f short, medium, and long VideoMME slices
 plus the 32f short slice, adaptive post-\(Q2\) repair has no observed paired
 choice or correctness drift on 93 paired queries, no observed pathological
-follow-up outputs, and 15.28--35.97$\times$ all-query median speedup
-(14.90--35.92$\times$ same-class follow-up speedup). The rule-of-three upper
+follow-up outputs, and 14.90--35.92$\times$ same-class follow-up speedup
+(15.28--35.97$\times$ cold-all-query / repaired-follow-up ratio). The rule-of-three upper
 bound on a query-level unseen paired-drift rate is about 3.2\%. At the
 session level the conservative count is 0/31 sessions with any paired drift,
 or a rule-of-three bound of about 9.7\%. Each tested session has two follow-up
 questions after the cold first query; many-turn conversational stability
 remains a separate stress test. The 32f short cell is the largest
-local efficiency point in the draft at 35.97$\times$ all-query median speedup,
-but the reason is not magic: Q3 inherits the repaired state instead of paying
-another newest-frame re-prefill.
+local efficiency point in the draft at 35.92$\times$ same-class follow-up
+speedup (35.97$\times$ cold-all-query ratio), but the reason is not magic: Q3
+inherits the repaired state instead of paying another newest-frame re-prefill.
 
 A timing attribution on the existing short-slice artifacts makes that concrete.
 On the seven paired Q3 follow-ups, fixed \(K=1\) has to re-prefill the

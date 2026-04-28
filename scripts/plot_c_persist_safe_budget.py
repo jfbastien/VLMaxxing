@@ -141,7 +141,7 @@ def plot() -> None:
 
     fig.suptitle(
         "C-PERSIST tested envelope (Phase 1.55A four-regime probe, n=21/cell)\n"
-        "Basin-onset depth scales ~1.6× with parameter count; basin geometry cross-architectural",
+        "Observed basin onset is deeper for the tested 3B point than the tested 7B point",
         fontsize=12,
     )
     fig.tight_layout()
