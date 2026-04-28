@@ -1202,10 +1202,10 @@ def _write_c_persist_repair_table(snapshot: dict) -> None:
         (
             r"Adaptive post-\(Q2\) & 20f short/medium/long + 32f short & "
             f"{adaptive['latency_min_s']:.2f}--{adaptive['latency_max_s']:.2f}s; "
-            f"{adaptive['all_query_speedup_min']:.2f}--"
-            f"{adaptive['all_query_speedup_max']:.2f}$\\times$ all-query; "
             f"{adaptive['speedup_min']:.2f}--"
-            f"{adaptive['speedup_max']:.2f}$\\times$ same-class & "
+            f"{adaptive['speedup_max']:.2f}$\\times$ same-class; "
+            f"{adaptive['all_query_speedup_min']:.2f}--"
+            f"{adaptive['all_query_speedup_max']:.2f}$\\times$ all-query & "
             f"choice {adaptive['paired_choice_diffs']}/{adaptive['n_pairs']}; "
             f"correct {adaptive['paired_correctness_diffs']}/{adaptive['n_pairs']} & "
             "Q3 inherits post-Q2 repaired state; paired Q3 fixed/adaptive "
@@ -1666,13 +1666,14 @@ def _write_headline_table(snapshot: dict) -> None:
         ),
         (
             "After-ingest & Qwen adaptive re-prefill, 20f/32f breadth & "
-            "cold/repaired all-query median & "
+            "cold/repaired follow-up median & "
+            f"{adaptive_repair['speedup_min']:.2f}--"
+            f"{adaptive_repair['speedup_max']:.2f}$\\times$ & "
+            f"choice/correct diffs {adaptive_repair['paired_choice_diffs']}/"
+            f"{adaptive_repair['n_pairs']}; cold-all-query ratio "
             f"{adaptive_repair['all_query_speedup_min']:.2f}--"
             f"{adaptive_repair['all_query_speedup_max']:.2f}$\\times$ & "
-            f"choice/correct diffs {adaptive_repair['paired_choice_diffs']}/"
-            f"{adaptive_repair['n_pairs']}; same-class follow-up "
-            f"{adaptive_repair['speedup_min']:.2f}--"
-            f"{adaptive_repair['speedup_max']:.2f}$\\times$ & local repair breadth \\\\"
+            "local repair breadth \\\\"
         ),
         (
             "After-ingest & Qwen fixed K=1 re-prefill, 20f/32f breadth & "

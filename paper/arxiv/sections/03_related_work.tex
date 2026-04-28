@@ -48,6 +48,9 @@ over long contexts, streaming video, or multi-turn multimodal inference.
 SGLang's RadixAttention \cite{sglang}, vLLM/PagedAttention \cite{vllm}, and
 standard prefix caching show that shared-prefix KV reuse is already a serving
 systems primitive; C-PERSIST should not be read as inventing that primitive.
+StreamingLLM \cite{streamingllm} is also adjacent as a text-only long-context
+KV-retention result built around attention sinks, though it is not a visual
+state-reuse method.
 CacheBlend \cite{cacheblend} is even closer to the repair pattern: it reuses
 bulk cached KV for RAG contexts and selectively recomputes part of the cache to
 restore quality. Our contribution is the video-VLM instantiation and boundary:
