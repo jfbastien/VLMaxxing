@@ -1,0 +1,134 @@
+{
+  "allow_logit_choice_mismatch": false,
+  "include_q0": false,
+  "interpretation_scope": "Within-1.30 predictor scout using dense-reference answer-letter logprob margin. It is not a deployed guard because it requires a dense pass; it scores follow-up rows only and tests whether the 1.30 cache-boundary drift concentrates on intrinsically uncertain items after excluding rows where the dense logit argmax does not match the recorded dense answer.",
+  "margin_signal_lower_ci_threshold": 0.6,
+  "max_rows": 0,
+  "mean_margin_all": 1.9376370614035088,
+  "mean_margin_drift": 1.1162574404761905,
+  "mean_margin_stable": 2.416775173611111,
+  "median_margin_drift": 0.53125,
+  "median_margin_stable": 1.5625,
+  "model_path": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
+  "n_choice_drift_rows": 84,
+  "n_correctness_drift_rows": 52,
+  "n_drift_rows": 84,
+  "n_loaded_rows": 228,
+  "n_loaded_rows_raw": 342,
+  "n_rejected_logit_choice_mismatch": 0,
+  "n_resamples": 2000,
+  "n_scored_rows": 228,
+  "n_selected_rows": 228,
+  "n_stable_rows": 144,
+  "n_test_drift_rows": 16,
+  "n_test_rows": 46,
+  "n_test_stable_rows": 30,
+  "n_train_drift_rows": 68,
+  "n_train_rows": 182,
+  "n_train_stable_rows": 114,
+  "n_unique_scored_prompts": 114,
+  "pass_class_presence": true,
+  "pass_margin_signal": false,
+  "pass_safe_filter": false,
+  "phase": "1.65",
+  "q_index_counts": {
+    "1": 114,
+    "2": 114
+  },
+  "rejected_rows_jsonl": null,
+  "rss_guard_mb": 9000,
+  "safe_filter_test_coverage_threshold": 0.15,
+  "safe_filter_test_precision_threshold": 0.9,
+  "scored_rows_jsonl": "research/experiments/2026/artifacts/phase1_65_logit_margin_failure_predictor/scored_rows.jsonl",
+  "source_counts": {
+    "1.30AC-cache-invalidated-negative": 114,
+    "1.30AD-cache-reuse-negative": 114
+  },
+  "sources": [
+    {
+      "frame_count": 8,
+      "label": "1.30AD-cache-reuse-negative",
+      "path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_30AD_instrumented_w_rerun/paired_queries.jsonl",
+      "schema": "phase130"
+    },
+    {
+      "frame_count": 8,
+      "label": "1.30AC-cache-invalidated-negative",
+      "path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_30AC_cache_invalidated_followups/paired_queries.jsonl",
+      "schema": "phase130"
+    }
+  ],
+  "split_seed": 20260427,
+  "test_auc_stability_from_dense_margin": 0.7125,
+  "test_auc_stability_from_dense_margin_ci95": [
+    0.553921568627451,
+    0.8448275862068966
+  ],
+  "test_fraction": 0.2,
+  "test_margin_calibration_bins": [
+    {
+      "bin": 0,
+      "drift_fraction": 0.5555555555555556,
+      "margin_max": 0.671875,
+      "margin_min": 0.171875,
+      "n": 9,
+      "stable_fraction": 0.4444444444444444
+    },
+    {
+      "bin": 1,
+      "drift_fraction": 0.5555555555555556,
+      "margin_max": 1.03125,
+      "margin_min": 0.671875,
+      "n": 9,
+      "stable_fraction": 0.4444444444444444
+    },
+    {
+      "bin": 2,
+      "drift_fraction": 0.30000000000000004,
+      "margin_max": 2.140625,
+      "margin_min": 1.09375,
+      "n": 10,
+      "stable_fraction": 0.7
+    },
+    {
+      "bin": 3,
+      "drift_fraction": 0.2222222222222222,
+      "margin_max": 4.375,
+      "margin_min": 2.359375,
+      "n": 9,
+      "stable_fraction": 0.7777777777777778
+    },
+    {
+      "bin": 4,
+      "drift_fraction": 0.11111111111111116,
+      "margin_max": 7.953125,
+      "margin_min": 4.375,
+      "n": 9,
+      "stable_fraction": 0.8888888888888888
+    }
+  ],
+  "test_safe_filter_at_train_threshold": {
+    "brier_binary": 0.6521739130434783,
+    "coverage": 0.0,
+    "n_selected": 0,
+    "n_stable_selected": 0,
+    "precision_stable": null,
+    "threshold": 8.421875
+  },
+  "test_source_counts": {
+    "1.30AC-cache-invalidated-negative": 23,
+    "1.30AD-cache-reuse-negative": 23
+  },
+  "train_auc_stability_from_dense_margin": 0.7080753353973168,
+  "train_safe_filter": {
+    "coverage": 0.03296703296703297,
+    "n_selected": 6,
+    "n_stable_selected": 6,
+    "precision_stable": 1.0,
+    "threshold": 8.421875
+  },
+  "train_source_counts": {
+    "1.30AC-cache-invalidated-negative": 91,
+    "1.30AD-cache-reuse-negative": 91
+  }
+}

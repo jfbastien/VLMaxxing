@@ -206,7 +206,56 @@
         ]
       },
       "auto_commit": "committed"
+    },
+    {
+      "phase": "1.65",
+      "runtime_estimate": "~5-8 h at default PHASE1_65_MAX_ROWS=0",
+      "rationale": "Re-score the 1.30 cache-boundary paired artifacts with dense Qwen answer-letter logprobs, using a grouped train/test split, to test whether logit margin predicts paired stability.",
+      "ready": true,
+      "timeout_seconds": 36000,
+      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_65_logit_margin_failure_predictor",
+      "command": [
+        "bash",
+        "/Users/jfb/s/codec-through/scripts/run_phase1_65_logit_margin_probe.sh"
+      ],
+      "status": "completed",
+      "gate": {
+        "n_loaded_rows": 228,
+        "n_loaded_rows_raw": 342,
+        "n_selected_rows": 228,
+        "n_scored_rows": 228,
+        "n_rejected_logit_choice_mismatch": 0,
+        "n_train_rows": 182,
+        "n_test_rows": 46,
+        "n_unique_scored_prompts": 114,
+        "n_stable_rows": 144,
+        "n_drift_rows": 84,
+        "source_counts": {
+          "1.30AC-cache-invalidated-negative": 114,
+          "1.30AD-cache-reuse-negative": 114
+        },
+        "q_index_counts": {
+          "1": 114,
+          "2": 114
+        },
+        "test_auc_stability_from_dense_margin": 0.7125,
+        "test_auc_stability_from_dense_margin_ci95": [
+          0.553921568627451,
+          0.8448275862068966
+        ],
+        "mean_margin_stable": 2.416775173611111,
+        "mean_margin_drift": 1.1162574404761905,
+        "safe_filter_threshold": 8.421875,
+        "train_safe_filter_precision_stable": 1.0,
+        "train_safe_filter_coverage": 0.03296703296703297,
+        "test_safe_filter_precision_stable": null,
+        "test_safe_filter_coverage": 0.0,
+        "pass_class_presence": true,
+        "pass_margin_signal": false,
+        "pass_safe_filter": false
+      },
+      "auto_commit": "committed"
     }
   ],
-  "updated_at": "2026-04-28T12:41:14+00:00"
+  "updated_at": "2026-04-28T15:27:37+00:00"
 }
