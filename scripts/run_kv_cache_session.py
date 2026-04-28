@@ -190,8 +190,9 @@ def _run_query(
     temperature: float = 0.0,
     top_p: float = 1.0,
     min_p: float = 0.0,
+    seed: int = 42,
 ) -> dict[str, Any]:
-    mx.random.seed(42)
+    mx.random.seed(seed)
     kwargs = dict(sample.extra_kwargs)
     prefix_hit_before = 0
     input_len = int(sample.input_ids.size)
@@ -276,6 +277,12 @@ def main() -> int:
     )
     parser.add_argument("--top-p", type=float, default=1.0)
     parser.add_argument("--min-p", type=float, default=0.0)
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        help="MLX random seed for deterministic sampling when temperature > 0.",
+    )
     args = parser.parse_args()
 
     video_ids = [vid.strip() for vid in args.video_ids.split(",") if vid.strip()]
@@ -335,6 +342,7 @@ def main() -> int:
                         temperature=args.temperature,
                         top_p=args.top_p,
                         min_p=args.min_p,
+                        seed=args.seed,
                     )
                     choice, correct = _score_answer(result["text"], item)
                     row = {
@@ -383,6 +391,7 @@ def main() -> int:
                         temperature=args.temperature,
                         top_p=args.top_p,
                         min_p=args.min_p,
+                        seed=args.seed,
                     )
                     choice, correct = _score_answer(result["text"], item)
                     row = {
@@ -483,7 +492,7 @@ def main() -> int:
             "temperature": args.temperature,
             "top_p": args.top_p,
             "min_p": args.min_p,
-            "seed": 42,
+            "seed": args.seed,
         },
         "session": session_summary,
         "session_first_query": first_summary,

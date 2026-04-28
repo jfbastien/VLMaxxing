@@ -46,3 +46,8 @@ for FRAME_COUNT in 4 2; do
     --output "$OUT_DIR/lowfps_${FRAME_COUNT}f_vs_8f_summary.json" \
     --paired-queries "$OUT_DIR/lowfps_${FRAME_COUNT}f_vs_8f_paired_queries.jsonl"
 done
+
+"$PY" scripts/summarize_phase1_62d_lowfps_dense.py \
+  --cell 4 "$OUT_DIR/lowfps_4f_vs_8f_summary.json" \
+  --cell 2 "$OUT_DIR/lowfps_2f_vs_8f_summary.json" \
+  --output "$OUT_DIR/summary.json"

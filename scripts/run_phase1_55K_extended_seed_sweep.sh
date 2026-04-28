@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+# Phase 1.55K-extended — adaptive C-PERSIST temperature sweep across seeds.
+#
+# This is a reviewer-defense extension, not the primary C-PERSIST headline.
+# It keeps the same short tranche and runs a smaller practical temperature set
+# across multiple sampler seeds.
+
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+PY="${PYTHON:-./.venv/bin/python}"
+MODEL_PATH="${MODEL_PATH:-$HOME/models/Qwen2.5-VL-7B-Instruct-4bit}"
+RSS_GUARD_MB="${RSS_GUARD_MB:-9000}"
+OUT_DIR="${PHASE1_55K_EXT_OUT_DIR:-research/experiments/2026/artifacts/phase1_55K_extended_seed_sweep}"
+TEMPERATURES="${PHASE1_55K_EXT_TEMPERATURES:-0.5 1.0 1.5}"
+SEEDS="${PHASE1_55K_EXT_SEEDS:-42 99 2026}"
+VIDEO_IDS="${PHASE1_55K_EXT_VIDEO_IDS:-037,100,116,120,158,160,210}"
+
+mkdir -p "$OUT_DIR"
+
+for SEED in $SEEDS; do
+  SUMMARY_ARGS=()
+  for TEMPERATURE in $TEMPERATURES; do
+    T_TAG="$(printf '%s' "$TEMPERATURE" | tr '.' 'p')"
+    CELL_DIR="$OUT_DIR/seed${SEED}_t${T_TAG}"
+    mkdir -p "$CELL_DIR"
+
+    if [[ -f "$CELL_DIR/session_k1_n7.jsonl" && -f "$CELL_DIR/baseline_k1_n7.jsonl" && -f "$CELL_DIR/summary_k1_n7.json" ]]; then
+      echo "[1.55K-ext] reusing seed=${SEED} T=${TEMPERATURE} outputs in $CELL_DIR"
+    else
+      if [[ -f "$CELL_DIR/session_k1_n7.jsonl" || -f "$CELL_DIR/baseline_k1_n7.jsonl" || -f "$CELL_DIR/summary_k1_n7.json" ]]; then
+        echo "[1.55K-ext] incomplete seed=${SEED} T=${TEMPERATURE} outputs detected; rerunning"
+      fi
+      "$PY" scripts/run_kv_selective_reprefill_v2.py \
+        --mode both \
+        --video-ids "$VIDEO_IDS" \
+        --frame-count 20 \
+        --max-tokens 32 \
+        --reprefill-k 1 \
+        --reprefill-k-q2 1 \
+        --reprefill-k-q3 0 \
+        --q3-cache-source post_q2_repaired \
+        --temperature "$TEMPERATURE" \
+        --top-p 0.95 \
+        --min-p 0.0 \
+        --seed "$SEED" \
+        --model-path "$MODEL_PATH" \
+        --rss-guard-mb "$RSS_GUARD_MB" \
+        --output-dir "$CELL_DIR"
+    fi
+
+    "$PY" scripts/analyze_selective_reprefill_pairs.py \
+      --session-jsonl "$CELL_DIR/session_k1_n7.jsonl" \
+      --baseline-jsonl "$CELL_DIR/baseline_k1_n7.jsonl" \
+      --output "$CELL_DIR/pair_metrics_k1_n7.json" \
+      --paired-queries "$CELL_DIR/paired_queries_k1_n7.jsonl" \
+      --label "phase1_55K_ext_seed${SEED}_temperature_${TEMPERATURE}"
+
+    SUMMARY_ARGS+=(--cell "$TEMPERATURE" "$CELL_DIR/pair_metrics_k1_n7.json")
+  done
+
+  "$PY" scripts/summarize_phase1_55k_temperature_sweep.py \
+    "${SUMMARY_ARGS[@]}" \
+    --output "$OUT_DIR/seed${SEED}_temperature_sweep_summary.json"
+done
+
+"$PY" scripts/summarize_phase1_55k_extended_seed_sweep.py \
+  --artifact-dir "$OUT_DIR" \
+  --output "$OUT_DIR/extended_seed_sweep_summary.json"

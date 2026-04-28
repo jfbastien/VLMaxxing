@@ -1,6 +1,6 @@
 ---
 date: 2026-04-29
-status: design doc; pre-implementation
+status: design doc; local scripts implemented for A1/A2/A4/A5/A6/A7
 authors: Claude (lead), Codex (reviewer), JF (PI)
 related:
   - research/experiments/2026/2026-04-29-paper-update-notes-v2.md
@@ -12,6 +12,8 @@ related:
 
 This document is the agreed-on next-experiment slate after the deep-mechanism queue and 1.63H 16f kr-sweep landed. It incorporates Codex's read of the queue ("the science is materially stronger but two overclaims to avoid: Gemma 8f misses the ceiling gate, all Gemma cells have parse failures in both arms, and Qwen 16f kr=0.85 is fidelity-safe but only 13.6% vision reduction") and adds my own analysis from sub-agent investigations.
 
+2026-04-29 Codex implementation update: A1/A2/A4/A5/A6/A7 now have run-capable scripts, and Sam's scale-out track has a strict JSON schema plus handoff doc. A6 is explicitly a **stateless same-video repeated-query horizon** to preserve continuity with the existing local C-PERSIST protocol; it is not a true conversational-history benchmark. A2 reports both label-free and explanatory-oracle variants so answer-aware features cannot be mistaken for deployable runtime guard evidence.
+
 The design splits into two tracks:
 - **Track A — Local (M3 Air, 16 GB unified, mlx 4-bit)**: configuration-envelope tightening, predictor enrichment, many-turn drift, low-FPS baseline, K-cache distance.
 - **Track B — Sam (M5 MBP, 128 GB unified, 26B runtime)**: cross-protocol scale-out evidence; C-PERSIST/C-VISION/C-CEILING at scale; streaming baselines.
@@ -22,13 +24,13 @@ Total scope is the *complete* set of experiments needed to close the paper to re
 
 | ID | Phase | Track | Hours | Status | Tightens |
 |---|---|---|---|---|---|
-| A1 | Gemma format diagnostic | local | 0.5 | analysis-only | Gemma headline framing |
-| A2 | 1.65v2 richer predictor | local | 0.5 | analysis-only on existing data | C-PERSIST limitations / future-work |
+| A1 | Gemma format diagnostic | local | 0.5 | scripted, analysis-only | Gemma headline framing |
+| A2 | 1.65v2 richer predictor | local | 0.5 | scripted, analysis-only on existing data | C-PERSIST limitations / future-work |
 | A3 | 1.62D low-FPS dense | local | 3.5 | preregistered, script ready | "why not just 4f dense?" attack |
-| A4 | 1.63I Qwen 16f kr fine-bracket | local | 9 | needs script (variant of 1.63H) | Qwen Track B real gate-pass |
-| A5 | 1.30AG K-cache distance probe | local | 2 | preregistered, needs script | 1.30 boundary causal mechanism |
-| A6 | 1.55L Many-turn C-PERSIST drift | local | 8 | needs new driver (~3h impl + 5h run) | "two follow-ups" reviewer attack — biggest |
-| A7 | 1.55K-extended seeds | local | 5 | needs adaptation | Universal sampler claim |
+| A4 | 1.63I Qwen 16f kr fine-bracket | local | 9 | scripted | Qwen Track B real gate-pass |
+| A5 | 1.30AG K-cache distance probe | local | 2 | scripted; needs smoke review | 1.30 boundary causal mechanism |
+| A6 | 1.55L Many-turn C-PERSIST drift | local | 8 | scripted; stateless-query horizon | "two follow-ups" reviewer attack — biggest |
+| A7 | 1.55K-extended seeds | local | 7.5 | scripted after seed plumbing | sampler-seed robustness |
 | **Track A total** | | | **~28h** | (compute) + ~5h impl |  |
 | B0 | 26B cache-correctness smoke | Sam | 1.5 | blocked on Sam | gating gate for C1 |
 | B1 | 26B C-PERSIST replication | Sam | 8 | conditional on B0 | C-PERSIST scale-out |
@@ -75,7 +77,12 @@ Local execution order (A1 → A2 → A3 → A4 → A5 → A6 → A7) is what I r
 
 **Hypothesis.** Yes — partial. Margin alone has AUC 0.7125 (lower CI 0.554), and the mean-margin gap stable=2.42 / drift=1.12 (2.16×) is genuine signal. Adding entropy from `candidate_logprobs` (already in scored_rows.jsonl), `q_index` (q1/q2 categorical), and `source` (1.30AC/1.30AD categorical) should lift AUC into 0.78–0.85. Whether that crosses the safe-filter precision threshold of 0.85 at 30% recall depends on the calibration of the new score; we should report what we get and let the gate verdict fall out honestly.
 
-**Protocol.** Pure pandas/sklearn on the already-committed `scored_rows.jsonl` (n=228, 114 each from 1.30AC/AD, balanced classes). Train a logistic regression on (margin, top-second-spread, 4-way-entropy, q_index, source, baseline_correct, prompt_tokens) with grouped train/test by item_id, bootstrap CIs by item, Brier + calibration bins; report ROC AUC, precision/recall at the threshold derived from train, and gate decisions.
+**Protocol.** Pure NumPy on the already-committed `scored_rows.jsonl` (n=228, 114 each from 1.30AC/AD, balanced classes). Train two logistic regressions with grouped train/test by item_id, bootstrap CIs by item, Brier + calibration bins, and train-derived safe-filter thresholds:
+
+- `label_free`: top-second spread, 4-way entropy, q_index, source, duration, prompt tokens.
+- `oracle`: label-free features plus answer-aware dense features (`dense_answer_margin`, `answer_letter_logprob`, `baseline_correct`).
+
+The label-free variant is the only one that can support guard-like language. The oracle variant is explanatory only.
 
 **Expected outcome.**
 - AUC ≥ 0.80 with safe-filter precision ≥ 0.85: predictor scout becomes a useful "when reuse fails" appendix. Paper "future work" promise upgraded to "limited but functional runtime guard."
@@ -91,7 +98,7 @@ Local execution order (A1 → A2 → A3 → A4 → A5 → A6 → A7) is what I r
 
 **Hypothesis.** Mostly no. The expected ordering is: 8f (0.617 measured) > 4f > 2f, with 4f probably 5–10 percentage points below 8f and 2f another 5–10 below that. If 4f is within 5pp of 8f, the "why not just fewer frames?" reviewer attack has weight; otherwise, low-FPS dense is rejected as a replacement.
 
-**Protocol.** Already preregistered in the reviewer-defense queue. Run `bash scripts/run_phase1_62D_lowfps_dense_videomme.sh`. Two cells: dense Qwen 4f n=60 and dense Qwen 2f n=60 on `videomme_combined_v1_n60.toml`. Compare to the committed `phase1_63E_track_b_frame_scaling/dense_8f_summary.json` reference. Bucket-stratified accuracy delta CIs.
+**Protocol.** Already preregistered in the reviewer-defense queue. Run `bash scripts/run_phase1_62D_lowfps_dense_videomme.sh`. Two cells: dense Qwen 4f and dense Qwen 2f on the same 57-session / 171-query 1.30W union used by the preregistered 8f reference. This is not the 1.63E n=60 Track-B manifest; if we need a separate n=60 C-VISION comparator, register that separately.
 
 **Expected outcome.**
 - 4f Δacc ≥ -0.05: low-FPS dense is a serious comparable; paper needs explicit caveat about why we choose 8f as the reference.
@@ -110,13 +117,13 @@ Local execution order (A1 → A2 → A3 → A4 → A5 → A6 → A7) is what I r
 
 **Hypothesis.** Probably yes, around kr=0.78–0.80. The 1.63H sweep showed Δacc -0.10 at kr=0.75 and -0.05 at kr=0.85 with 27% and 13.6% vision reduction respectively. Linearly interpolating, kr=0.78 should give Δacc ≈ -0.07 with vision_reduction ≈ 22%, and kr=0.80 should give Δacc ≈ -0.06 with vision_reduction ≈ 21%. Neither obviously crosses both thresholds, but the actual measurement is the point. If a real kr in [0.78, 0.82] passes both, Qwen Track B becomes a "real" C-VISION gate-pass at 16f. If not, the low-gain envelope is confirmed and the paper writes the result honestly.
 
-**Protocol.** Three sparse cells at L=2, kr ∈ {0.78, 0.80, 0.82} on `videomme_combined_v1_n60.toml`, paired against the committed `phase1_63E_track_b_frame_scaling/dense_16f.jsonl`. Same script structure as 1.63H. Need a new bash wrapper `scripts/run_phase1_63I_16f_kr_fine_bracket.sh` or a parameterized variant of 1.63H.
+**Protocol.** Three sparse cells at L=2, kr ∈ {0.78, 0.80, 0.82} on `videomme_combined_v1_n60.toml`, paired against the committed `phase1_63E_track_b_frame_scaling/dense_16f.jsonl`. Same script structure as 1.63H, with a keep-rate-specific summarizer so the aggregate JSON does not mislabel keep-rate cells as frame counts.
 
 **Expected outcome.**
 - Some kr passes both gates: Qwen Track B becomes a paper-grade gate-pass; the paper can lead with "Qwen 16f Track B is fidelity-safe at kr=0.X with X% vision reduction and X.XX× E2E."
 - No kr passes both: confirm low-gain envelope; paper text stays "the safe Qwen 16f operating point trades vision-reduction for fidelity; the configuration envelope is real."
 
-**Time.** 3 cells × ~3h each = ~9h. **Status.** Script needed. Trivial variant of 1.63H.
+**Time.** 3 cells × ~3h each = ~9h. **Status.** Scripted at `scripts/run_phase1_63I_16f_kr_fine_bracket.sh`.
 
 **Paper impact.** Either upgrades or empirically locks the Qwen 16f Track B configuration envelope.
 
@@ -126,11 +133,11 @@ Local execution order (A1 → A2 → A3 → A4 → A5 → A6 → A7) is what I r
 
 **Hypothesis.** Saturation. Different perturbations, similar distance from dense, same aggregate landing point. The 1.30AF attribution showed concentration on different slices (top reuse: short/q2 with drift 0.526; top invalidated: short/q1 with drift 0.579) — these are concentrated on different slices but with similar magnitude, which is exactly the pattern 1.30AG is designed to test causally.
 
-**Protocol.** Per the existing prereg `2026-04-27-phase-1_30AG-kcache-distance-prereg.md`. Select a deterministic 20-session subset stratified by drift class (shared, reuse-only, invalidated-only, stable). For each: capture post-Q0 cache tensors for dense reference, 1.30AD path, 1.30AC path. Compute layer-wise cosine distance to dense reference, K and V separately. Join distance summaries to row-level drift outcomes.
+**Protocol.** Per the existing prereg `2026-04-27-phase-1_30AG-kcache-distance-prereg.md`. Select a deterministic 20-follow-up subset stratified by drift class (shared, reuse-only, invalidated-only, stable). For each: capture the current follow-up prompt cache for dense reference, Q0-cache-reuse plus current text-tail prefill, and cache-invalidated current-query prefill with follow-up vision pruning. Compute layer-wise cosine distance to dense reference, K and V separately. Join distance summaries to row-level drift outcomes.
 
 **Expected outcome.** Per prereg's H4: if both policies' aggregate distances within 10% AND their row drift sets non-identical → saturation supported, paper can claim cache-state distance threshold mechanism. If not → empirical boundary, no stronger mechanism claim. Either is publishable; the saturation result would be much stronger.
 
-**Time.** ~2h estimated. **Status.** Conditional prereg exists but no script — needs a new driver that captures cache tensors. **Verify cache hooks exist before scheduling.**
+**Time.** ~2h estimated. **Status.** Scripted at `scripts/run_phase1_30AG_kcache_distance_probe.py`; needs smoke review because it directly introspects MLX prompt-cache objects.
 
 **Paper impact.** Either gives the 1.30 boundary a causal mechanism (huge), or honestly closes it as empirical (acceptable).
 
@@ -142,33 +149,28 @@ Local execution order (A1 → A2 → A3 → A4 → A5 → A6 → A7) is what I r
 
 **Hypothesis.** Without refresh, drift accumulates linearly or super-linearly with turns; with periodic post-Q2-style refresh every 5–7 turns, drift is bounded. The current paper claim is explicitly "two follow-ups, many-turn is stress test for future work" (line 195–196 section 07). This is the single biggest claim-tightening experiment in the entire slate.
 
-**Protocol.** Modify `run_kv_selective_reprefill_v2.py` to:
-1. Cycle the 3 VideoMME questions per video into a 10/20/50-turn sequence: `[Q1, Q2, Q3, Q1, Q2, Q3, …]`.
-2. Apply adaptive C-PERSIST policy per turn: turn 1 = K=1 reprefill, turn ≥2 = K=0 from `post_q2_repaired` cache, with optional `--periodic-refresh-interval N` that does a fresh K=1 reprefill every N turns.
-3. Run dense-control with the same Q-cycle and same text history (this is critical — paired control must have the same prompt context, not independent cold queries).
-4. Three test horizons: 10, 20, 50 turns, on the same 7-clip short tranche used by 1.55K (consistent comparison).
-5. Two refresh policies: `off` and `periodic-5` (refresh every 5 turns).
+**Protocol.** `scripts/run_phase1_55L_many_turn_cpersist.py` cycles the 3 VideoMME questions per video into a 10/20/50-turn sequence: `[Q1, Q2, Q3, Q1, Q2, Q3, …]`. It applies three policies: fixed K=1, adaptive post-Q2/post-previous repaired cache, and scheduled refresh every 10 turns. The dense control uses the same stateless question cycle. This keeps the experiment inside the existing local C-PERSIST protocol and avoids a new chat-history prompt distribution.
 
-Cells: `{10t, 20t, 50t} × {off, periodic-5} × {adaptive, dense-control}` = 12 cells.
+Cells: `{10t, 20t, 50t} × {fixed_k1, adaptive_post_q2, refresh10}` plus turn-matched dense controls.
 
 **Expected outcome.**
 - Off-refresh drift ≤ 0.05/21 paired diffs at 10t, 20t, 50t: the C-PERSIST repeated-prefill mechanism is robust over 50 turns. Paper goes from "two follow-ups" to "tested through 50 turns".
 - Off-refresh drift accelerates with turns; periodic-5 keeps drift ≤ 0.05/21: refresh is needed; paper makes a stronger conditional claim.
-- Drift accumulates even with periodic-5: a tighter refresh interval is needed; paper reports the boundary of repair.
+- Drift accumulates even with refresh10: a tighter refresh interval is needed; paper reports the boundary of repair.
 
 **Time.** 10t × 7 clips ≈ 1.5h, 20t × 7 ≈ 3h, 50t × 7 ≈ 7h. With adaptive + dense control + 2 refresh policies that's `12 cells × {1.5h, 3h, 7h scaled by horizon}` ≈ ~12h sequential, ~8h with reuse of the cold dense baseline across cells.
 
-**Status.** Needs a new driver (extension of `run_kv_selective_reprefill_v2.py`) — sub-agent reports ~3h implementation effort. The forward-compatible policy modules already exist in `selective_reprefill_policy.py`.
+**Status.** Scripted. It is a stateless repeated-query horizon; a true conversational-history benchmark remains a separate Sam-scale/deployment experiment.
 
 **Paper impact.** Single biggest tightening: converts "many-turn is future work" to "tested through 50 turns with measured refresh interval".
 
 ### A7. 1.55K-extended — Multi-seed sampler robustness
 
-**Question.** Is the 1.55K sampler-stable result robust across seeds (not just one), and across more clips (n>7)?
+**Question.** Is the 1.55K sampler-stable result robust across seeds (not just one) on the original short tranche?
 
-**Hypothesis.** The aggregate Δacc 0/0/-0.048/-0.048/0 across T={0,0.5,0.7,1.0,1.5} should be reproducible across 3 different sampling seeds with overlap; the 7-clip tranche is unusually small for a robust sampler claim. With 3 seeds × 5 temperatures × medium-bucket-extension (7 short + 6 medium clips), we'd have 39 sessions per cell, enough to claim "stable across seeds and bucket".
+**Hypothesis.** The aggregate Δacc 0/0/-0.048/-0.048/0 across T={0,0.5,0.7,1.0,1.5} should be reproducible across 3 different sampling seeds with overlap. This does not broaden the clip set; it specifically tests whether the existing short-tranche sampler result was seed-fragile.
 
-**Protocol.** Add `--seed` argument to `run_kv_selective_reprefill_v2.py` (currently uses fixed `mx.random.seed(42)` at line 177 of `run_phase1_51V.py`-equivalent). Run 3 seeds × 5 temperatures × {short tranche, short+medium tranche} × {baseline, session}. Aggregate-level analysis: do the cross-seed CIs include zero? Per-seed Δacc dispersion.
+**Protocol.** `run_kv_selective_reprefill_v2.py` and `run_kv_cache_session.py` now accept `--seed` and pass it into both standard and explicit-tail generation paths. Run 3 seeds × 3 temperatures (`0.5, 1.0, 1.5`) on the short tranche. Aggregate-level analysis: do the cross-seed CIs include zero? Per-seed Δacc dispersion.
 
 **Expected outcome.**
 - Cross-seed Δacc ranges all within ±0.05: paper claim upgrades from "robust across this temperature sweep" to "stochastic-stable across seeds and temperatures."
@@ -176,9 +178,9 @@ Cells: `{10t, 20t, 50t} × {off, periodic-5} × {adaptive, dense-control}` = 12 
 
 **Time.** 3 seeds × the 1.55K runtime (~5h) = ~15h, but we can prune: just T=0.0, 0.5, 1.0 across 3 seeds × short tranche = 9 cells × ~50 min each = ~7.5h. Pick this tighter scope.
 
-**Status.** Needs `--seed` plumbing in `run_kv_selective_reprefill_v2.py` and an extended sweep script. ~1h implementation.
+**Status.** Seed plumbing and extended sweep script implemented; run a 1-clip smoke before the full sweep if launch time allows.
 
-**Paper impact.** Lifts 1.55K from "reviewer-defense T-sweep" to "stochastic-stable" claim. Optional for arXiv v1 but valuable.
+**Paper impact.** Lifts 1.55K from "single-seed T-sweep" to "short-tranche stochastic-stable" claim. It does not answer cross-bucket sampler robustness.
 
 ## Track B — Sam (M5 MBP, 128 GB, 26B runtime)
 
@@ -247,12 +249,12 @@ Schema per row: `item_id, q_index, arm, model_id="26B", runtime_commit, frame_co
 
 ## Things I'm unsure about / need extra scrutiny
 
-1. **A5 (1.30AG) cache-tensor capture hook.** I have not verified that the existing 1.30 runner exposes per-layer K/V cache tensors at session boundaries. If it doesn't, 1.30AG implementation could blow up to 1–2 days. **Action:** before scheduling A5, do a 30-min code-spike to confirm the hook exists, or write the hook.
-2. **A6 (1.55L) controls.** Codex was emphatic that the dense control must have the *same text history*, not independent cold questions. I need to make sure the implementation cycles questions in the same order in both arms; my current sketch does, but it's worth a code review before running.
-3. **A6 (1.55L) refresh-policy interpretation.** "Periodic-5" is one choice; an adaptive refresh ("refresh when drift detected") would be more interesting but requires online drift detection that we haven't built. I'm proposing the simpler periodic-N for now and flagging adaptive-refresh as future work.
-4. **A7 (1.55K-extended) seed plumbing.** The existing scripts use `mx.random.seed(42)` hardcoded. Adding `--seed` requires touching the driver and verifying that downstream pieces (sampling, top-p) all consume the seeded RNG; I'd want to confirm with a 1-clip smoke that two different `--seed` values produce *different* outputs at T=1.0.
+1. **A5 (1.30AG) cache-tensor capture hook.** Implemented through direct `make_prompt_cache` objects and K/V tensor introspection, not through the 1.30 runner. It still needs a one-row MLX smoke because cache-entry internals are runtime-object dependent.
+2. **A6 (1.55L) controls.** The implemented local control is the same stateless question cycle in both arms, not true conversational text history. This is scientifically valid as a C-PERSIST protocol horizon, but the paper must not call it a conversational-history result.
+3. **A6 (1.55L) refresh-policy interpretation.** The first implemented policy is `refresh10`. Adaptive refresh ("refresh when drift detected") would be more interesting but requires online drift detection that we have not built; keep it future work.
+4. **A7 (1.55K-extended) seed plumbing.** Seed arguments are now threaded through the standard and explicit-tail paths. A 1-clip T=1.0 smoke should still verify that different seeds produce different stochastic outputs before the full sweep.
 5. **A4 (1.63I) negative-result framing.** If no kr in [0.78, 0.82] passes both gates, the paper conclusion is "low-gain envelope confirmed." That's a fine outcome but worth pre-committing to before running, so we don't post-hoc rationalize a near-miss.
-6. **B-track schema mirror.** Codex specified a schema; I should write that schema as a JSON-schema doc in `research/schemas/sam_artifact_v1.json` so Sam has a strict target. I haven't done that yet.
+6. **B-track schema mirror.** Implemented at `research/schemas/sam_scaleout_artifact_v1.schema.json`, with protocol details in `2026-04-29-sam-scaleout-handoff.md`.
 7. **Memory cap on Sam.** The 12 GB MLX cap was a workaround for the 16 GB unified-memory laptop's GPU race. On Sam's 128 GB box this is irrelevant; do *not* port the cap into B-track scripts.
 
 ## Recommended execution order
@@ -281,7 +283,7 @@ Following the established pattern (`scripts/run_paper_deep_mechanism_restart.sh`
 2. A Python analyzer that consumes its JSONLs and writes a `<phase>_summary.json` with `pass_*` gate keys.
 3. A findings markdown doc once the cell lands.
 
-The wrapper script `scripts/run_phase2_local_chain.sh` will chain A1–A7 in order, with `--start-at <phase>` resume support and auto-commit of artifact directories. Same pattern as the deep-mechanism queue.
+The wrapper script `scripts/run_phase2_local_chain.py` chains A1–A7 in order, with `--start-at <phase>` resume support and auto-commit of artifact directories. Same pattern as the deep-mechanism queue.
 
 ## Open questions for the user
 

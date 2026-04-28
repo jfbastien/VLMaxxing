@@ -333,8 +333,9 @@ def generate_qwen_tail_with_explicit_positions(
     temperature: float = 0.0,
     top_p: float = 1.0,
     min_p: float = 0.0,
+    seed: int = 42,
 ) -> dict[str, Any]:
-    mx.random.seed(42)
+    mx.random.seed(seed)
     sampler = make_sampler(temp=temperature, top_p=top_p, min_p=min_p)
     tokenizer = processor.tokenizer if hasattr(processor, "tokenizer") else processor
     tokenizer.stopping_criteria.reset(model.config.eos_token_id)

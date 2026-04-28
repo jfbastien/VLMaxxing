@@ -222,8 +222,16 @@ def main() -> int:
     parser.add_argument("--temperature", type=float, default=0.0)
     parser.add_argument("--top-p", type=float, default=1.0)
     parser.add_argument("--min-p", type=float, default=0.0)
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        help="MLX sampling seed used for every deterministic query replay.",
+    )
     parser.add_argument("--rss-guard-mb", type=int, default=0)
     args = parser.parse_args()
+
+    mx.random.seed(args.seed)
 
     if args.reprefill_k <= 0:
         raise SystemExit("--reprefill-k must be > 0")
@@ -311,6 +319,7 @@ def main() -> int:
                             temperature=args.temperature,
                             top_p=args.top_p,
                             min_p=args.min_p,
+                            seed=args.seed,
                         )
                         full_position_ids = compute_qwen_position_ids(
                             model=model,
@@ -445,6 +454,7 @@ def main() -> int:
                                     temperature=args.temperature,
                                     top_p=args.top_p,
                                     min_p=args.min_p,
+                                    seed=args.seed,
                                 )
                                 generation_tokens = int(result["generation_tokens"])
                                 base_cache_build_ms = None
@@ -459,6 +469,7 @@ def main() -> int:
                                     temperature=args.temperature,
                                     top_p=args.top_p,
                                     min_p=args.min_p,
+                                    seed=args.seed,
                                 )
                                 generation_tokens = int(result["generation_tokens"])
                                 base_cache_build_ms = None
@@ -527,6 +538,7 @@ def main() -> int:
                                 temperature=args.temperature,
                                 top_p=args.top_p,
                                 min_p=args.min_p,
+                                seed=args.seed,
                             )
                             generation_tokens = int(result["generation_tokens"])
                             if q_index == 1 and args.q3_cache_source == "post_q2_repaired":
@@ -604,6 +616,7 @@ def main() -> int:
                         temperature=args.temperature,
                         top_p=args.top_p,
                         min_p=args.min_p,
+                        seed=args.seed,
                     )
                     choice, correct = _score_answer(result["text"], item)
                     row = {
@@ -650,6 +663,7 @@ def main() -> int:
         "temperature": args.temperature,
         "top_p": args.top_p,
         "min_p": args.min_p,
+        "seed": args.seed,
         "n_clips": len(clips),
         "n_queries_per_mode": 3 * len(clips),
         "total_wall_ms": total_wall_ms,
