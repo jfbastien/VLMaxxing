@@ -115,7 +115,7 @@ Regime & Reused work & Denominator / evidence class & Headline evidence \\
 \midrule
 Fresh-video first pass & vision-tower work inside the first query & first-query wall-clock; local clean/advisory cells & Gemma first-pass gains from 1.113$\times$ to 1.407$\times$ across clean and advisory holdout cells \\
 After-ingest follow-up & prompt / KV prefix for later questions on the same video & follow-up latency and paired drift; first query still pays full freight & adaptive post-\(Q2\) state repairs short/medium/long and 32f-short slices with no observed drift on n=93, reaching 14.90--35.92$\times$ same-class follow-up speedup (15.28--35.97$\times$ cold-all-query / repaired-follow-up ratio); fixed \(K=1\) is the no-coordination baseline \\
-Scale-out streaming & repeated visual state in a native-rate or live pipeline & separate operational protocol rows: ViT calls, measured subpipeline compute, live counters, or E2E & a 26B streaming implementation reports 13$\times$ fewer ViT calls, \mbox{$\sim$50$\times$} dominant measured subpipeline reduction, 4.2--4.5$\times$ real-video E2E, plus separate live-camera counters \\
+Scale-out streaming (candidate C-STREAM) & repeated visual state in a native-rate or live pipeline & separate operational protocol rows: ViT calls, measured subpipeline compute, live counters, or E2E & a 26B streaming implementation reports 13$\times$ fewer ViT calls, \mbox{$\sim$50$\times$} dominant measured subpipeline reduction, 4.2--4.5$\times$ real-video E2E, plus separate live-camera counters \\
 \bottomrule
 \end{tabularx}
 \end{table}

@@ -38,16 +38,17 @@ visual state under a streaming workload, where the unit of work is not one
 sampled benchmark clip or one follow-up question but an ongoing stream. Unlike
 sparse-sampled benchmark runs, this lane tests cache lifetime: when to keep
 state, shift it, rebuild it, or declare it stale. The scale-out work includes
-companion-lane probes for motion-vector staleness signals, sectional cache
-shifts, and static-camera event/inflection triggers. Those mechanisms are why
-the lane is not merely an application demo, even though its claims remain
+companion-lane probes for motion-vector and residual side-channel staleness
+signals, sectional cache shifts, and static-camera event/inflection triggers.
+Those mechanisms are why the lane is not merely an application demo, even
+though its claims remain
 separately labeled until
 matched baselines, cache-safe follow-up semantics, and artifact-compatible
 paired outputs land.
 
 Smaller-$N$ UI studies stay strictly illustrative, not headline-bearing. Recent
 sectional-scroll wall-clock instrumentation is useful on the
-perception-rate axis: at matched temporal coverage it reports 22--64$\times$
+perception-rate axis: over the same recording duration it reports 22--64$\times$
 fewer ViT fires than an arithmetic naive 1\,Hz polling baseline on two
 recordings; equivalently, at matched ViT cost the polling baseline would see
 one frame every 22--64 seconds while the cached pipeline maintains stream state

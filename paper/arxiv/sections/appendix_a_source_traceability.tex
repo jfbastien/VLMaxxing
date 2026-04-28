@@ -52,7 +52,8 @@ Paired drift table & paired choice/correctness drift summary & local analysis & 
 Method / limitations & codec-native planner bridge; semantic planner substitution & local semantic evidence & Phase 1.29B artifacts; Qwen 7B-4bit, VideoMME dev/short slices; offline extraction, not latency \\
 Scale-out streaming & native-rate streaming paired N=60 & scale-out partner, pending artifact harmonization & deployment report \S2.13.2 / status docs; Gemma 4 26B / M5 Max \\
 Scale-out real video & paired real-video regimes & scale-out partner, pending artifact harmonization & deployment report \S2.8 real-video timings; Gemma 4 26B / M5 Max \\
-Scale-out follow-up & after-ingest same-video follow-up & scale-out partner, pending artifact harmonization & deployment report \S2.13.3; Gemma 4 26B / M5 Max \\
+Candidate C-STREAM probes & MV/residual staleness, sectional cache shift, static-camera inflection triggers, and E3 wall-clock instrumentation & scale-out partner mechanism probes, pending harmonized raw artifacts & \texttt{codec-through-sam} decision-log rows 2.02, 2.03-SCROLL, 2.06, 2.06-NEG; E3 findings; Gemma 4 26B / M5 Max \\
+Scale-out follow-up diagnostic & Gemma 26B PromptCacheState cross-turn smoke & blocked cache-semantics diagnostic & S0 cache-correctness findings; deterministic and within-turn checks pass, cross-turn warm follow-up matches dense on 2/5 \\
 Scale-out live & native-rate live camera & scale-out partner, pending artifact harmonization & deployment report \S2.13.1 / live-demo docs; Gemma 4 26B / M5 Max \\
 \bottomrule
 \end{tabularx}
