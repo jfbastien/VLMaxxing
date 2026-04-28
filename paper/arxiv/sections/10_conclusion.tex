@@ -16,10 +16,11 @@ at 3.20--6.51\,s repaired follow-up median and 14.90--35.92$\times$
 same-class follow-up speedup; the cold-all-query versus repaired-follow-up
 ratio is 15.28--35.97$\times$. Fixed \(K=1\) remains the no-coordination
 baseline at 9.48--20.37$\times$ same-class follow-up speedup on the same
-breadth. Scale-out operational rows under a separate 26B
-protocol push the same idea further into streaming regimes with
-4.2--4.5$\times$ real-video end-to-end speedups, double-digit ViT-call
-reductions, and \mbox{$\sim$50$\times$} dominant measured subpipeline savings.
+breadth. The separate 26B scale-out rows point toward the candidate C-STREAM
+regime: perception-rate streaming state reuse, with 4.2--4.5$\times$
+real-video end-to-end speedups, double-digit ViT-call reductions, and
+\mbox{$\sim$50$\times$} dominant measured subpipeline savings under a separate
+protocol.
 The Gemma 26B follow-up-latency probe is now a cautionary row rather than a
 win: it observed fast warm responses, but the cross-turn cache-correctness
 smoke failed, so correctness-preserving 26B C-PERSIST remains blocked.

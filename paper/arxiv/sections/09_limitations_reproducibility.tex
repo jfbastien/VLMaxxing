@@ -77,11 +77,12 @@ as a dev-only shape rather than a universal scaling law. The 1.57 feature-drift
 geometry itself now reproduces on holdout at 8f and 16f; what failed to
 transfer was the downstream long-bucket accuracy shape, not the drift signal.
 
-The streaming/deployment lane is the smallest-$N$ evidence class in the paper. It is
-there because it shows the practical regime where redundancy becomes large, not
-because it already closes the full systems-reviewer checklist. The paper still
-needs a screenshot-polling baseline and broader UI coverage if that lane is
-going to carry more of the headline later. The Qwen composition bridge now
+The streaming/deployment lane is the least harmonized evidence class in the
+paper, even though it is the clearest candidate for a future C-STREAM claim. It
+is there because it shows the practical regime where redundancy becomes large,
+not because it already closes the full systems-reviewer checklist. The paper
+still needs a screenshot-polling baseline and broader UI coverage if that lane
+is going to carry more of the headline later. The Qwen composition bridge now
 exists and is useful precisely because it is diagnosed rather than promoted:
 the original stack reproduced speedup but lost accuracy,
 dense-first-query admission restores Q0 aggregate correctness but misses the
@@ -138,7 +139,10 @@ different forms. Reviewers should read the paired-drift columns as part of the
 claim, not as decorative diagnostics.
 
 The persistent-cache failures should also be read as attention-context or
-cache-state failures, not as positional-encoding drift claims. The current
+cache-state failures, not as positional-encoding drift claims. The recurring
+failure mode is not just stale pixels; it is incoherent internal state. Fresh
+and cached mixtures must preserve cache topology, positions, and layer
+semantics, or they can move fast while answering the wrong question. The current
 experiments identify when reused state changes later answers; they do not yet
 isolate a unique internal mechanism without direct cache-state instrumentation.
 

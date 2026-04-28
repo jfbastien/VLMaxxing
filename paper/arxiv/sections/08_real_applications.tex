@@ -33,25 +33,42 @@ The paper-facing goal is to turn this lane into a first-class
 correctness smoke tests, low-FPS / screenshot-polling / recency baselines, and
 artifact bundle as the controlled local runs.
 
+That makes this the paper's candidate C-STREAM lane: online reuse of repeated
+visual state under a streaming workload, where the unit of work is not one
+sampled benchmark clip or one follow-up question but an ongoing stream. Unlike
+sparse-sampled benchmark runs, this lane tests cache lifetime: when to keep
+state, shift it, rebuild it, or declare it stale. The scale-out work includes
+companion-lane probes for motion-vector staleness signals, sectional cache
+shifts, and static-camera event/inflection triggers. Those mechanisms are why
+the lane is not merely an application demo, even though its claims remain
+separately labeled until
+matched baselines, cache-safe follow-up semantics, and artifact-compatible
+paired outputs land.
+
 Smaller-$N$ UI studies stay strictly illustrative, not headline-bearing. Recent
-sectional-scroll wall-clock instrumentation is useful on the throughput axis:
-at fixed ViT budget it reports 22--64$\times$ fewer ViT fires than naive
-1\,Hz polling on two recordings, while per-query latency moves only
-1.09--1.10$\times$ because LLM generation dominates. Its current quality axis is
-not yet earned, because the new v7 recordings regress relative to the older
-sectional-scroll mechanism numbers and need revalidation. The contact-sheet
-imagery below is qualitative rather than quantitative. The main-body evidence
-for this section is the deployment table below.
+sectional-scroll wall-clock instrumentation is useful on the
+perception-rate axis: at matched temporal coverage it reports 22--64$\times$
+fewer ViT fires than an arithmetic naive 1\,Hz polling baseline on two
+recordings; equivalently, at matched ViT cost the polling baseline would see
+one frame every 22--64 seconds while the cached pipeline maintains stream state
+between rare rebuilds.
+Per-query latency moves only 1.09--1.10$\times$ because LLM generation
+dominates. Its current quality axis is not yet earned, because the new v7
+recordings regress relative to the older sectional-scroll mechanism numbers and
+need revalidation. The contact-sheet imagery below is qualitative rather than
+quantitative: it anchors the perception-rate setting in which the same scene is
+revisited continuously, but it is not evidence for the multiplier. The
+main-body evidence for this section is the deployment table below.
 
 \begin{table}[H]
 \centering
-\caption{Heterogeneous operational evidence for the streaming/deployment
-regime. Metric type is shown explicitly because these rows mix component
-counters, end-to-end timing, and live observations with different sample sizes
-and denominators. Smaller UI and demo case studies are discussed in text and
-kept clearly weaker than the paired streaming rows below. All scale-out rows are
-pending artifact harmonization before they become first-class evidence in the
-same claim graph as the local runs.}
+\caption{Heterogeneous operational evidence for the candidate C-STREAM /
+streaming state reuse regime. Metric type is shown explicitly because these
+rows mix component counters, end-to-end timing, and live observations with
+different sample sizes and denominators. Smaller UI and demo case studies are
+discussed in text and kept clearly weaker than the paired streaming rows below.
+All scale-out rows are pending artifact harmonization before they become
+first-class evidence in the same claim graph as the local runs.}
 \label{tab:real-apps}
 \footnotesize
 \renewcommand{\arraystretch}{1.16}
