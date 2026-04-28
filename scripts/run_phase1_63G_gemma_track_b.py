@@ -20,6 +20,10 @@ from mlx_vlm import generate, load
 from mlx_vlm.utils import prepare_inputs
 from PIL import Image
 
+# Avoid IOGPU state-inconsistency panics under allocation churn
+# (CVE-2026-28834-class GPU-driver race, unpatched on macOS 26.3).
+mx.set_memory_limit(12 * 1024**3)
+
 from codec_through.answers import extract_choice
 from codec_through.memory_guard import check_rss_guard, rss_mb
 from codec_through.pruned_vision_tower import PruneConfig, patch_vision_tower
