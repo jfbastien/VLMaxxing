@@ -68,7 +68,7 @@ contributions (all landed before Codex round-26 2026-04-21):
 - **C-VISION — vision-tower pruning with scatter-back ceiling**
   (claim 15). `E2E ≤ 1/(1 − V_share × V_red)` on Gemma 4-E4B-4bit
   validated across **6 core scatter points** (4 Gemma dev + 1 matched
-  Qwen dev + 1 pooled EXP10 n=60), with **9 rendered points total** once
+  Qwen dev + 1 EXP10 n=60 composition audit), with **9 rendered points total** once
   the 3 Gemma holdout cells are included; V_red benchmark-invariant at
   39–43% at L=2 kr_V=0.50 on the first dev tranche. **Three-benchmark
   holdout trifecta CLOSED 2026-04-21** (VideoMME 8f CLEAN,
@@ -99,8 +99,10 @@ and boundary evidence rather than as the headline result.
 The separate stack (26B-class, real streaming, full end-to-end pipeline)
 runs on a deliberately disjoint regime from codec-through (4B-class,
 sparse benchmark, mechanism isolation): 4.2–4.5× real-video, 13× ViT,
-~50× dominant measured subpipeline, 0.8 s median follow-up, 5–300×
-live-camera ViT.
+~50× dominant measured subpipeline, and 5–300× live-camera ViT. The
+0.8 s Gemma 26B follow-up latency is now a blocked diagnostic row:
+Sam's S0 cache-correctness smoke observed fast warm responses, but
+cross-turn warm follow-up matched dense on only 2/5 items.
 Its sparse exactness rows and streaming rows do not use one uniform
 classifier: sparse-sampled QA stays pixel-diff by design, while native-rate
 streaming uses H.264 metadata by design.
@@ -141,8 +143,8 @@ abstract/intro files are legacy scratchpads.
   drift with **15.28×–35.97×** all-query speedup.
 - **Separate 26B streaming evidence:** **13×** streaming ViT reduction,
   **~50×** dominant measured subpipeline reduction, **4.2–4.5×** real-video end-to-end
-  speedups in selected regimes, and **0.8 s** same-video follow-up latency on
-  Gemma 4 26B.
+  speedups in selected regimes. Gemma 4 26B same-video follow-up latency
+  remains diagnostic only until a cache-safe cross-turn path passes S0b.
 - **Qwen routing:** audited Pareto win/tie on MVBench and TOMATO holdouts
   at much lower effective fresh-frame budgets, with the mechanism lesson that
   fresh-compute placement cannot be reduced to novelty magnitude alone.
@@ -337,9 +339,10 @@ queue once infra is in place.
 > frontier, beats novelty-ranked dense selection, and shows that
 > fresh-compute placement cannot be reduced to novelty magnitude alone.
 > Scale-out streaming evaluations add **13×** ViT reduction,
-> **~50×** dominant measured subpipeline reduction, **4.2–4.5×** end-to-end
-> speedups in selected real-video regimes, and **0.8 s** same-video
-> follow-up latency on Gemma 4 26B.
+> **~50×** dominant measured subpipeline reduction, and **4.2–4.5×**
+> end-to-end speedups in selected real-video regimes. Gemma 4 26B
+> follow-up latency is currently a cache-correctness diagnostic, not an
+> earned C-PERSIST claim.
 
 ## What is NOT safe to say today
 

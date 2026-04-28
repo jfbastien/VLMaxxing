@@ -72,12 +72,15 @@ fail under matched conditions — establishing what is and is not
 load-bearing on temporal redundancy. Repo-local 1.55D v2 itself is no
 longer an infrastructure negative; it is a bounded recovery frontier.
 The
-**deployment-scale evidence** comes from a separate 26B streaming
+**scale-out operational evidence** comes from a separate 26B streaming
 implementation, which exercises the full streaming stack on a 26 B-class
 model — real-video 4.2–4.5× end-to-end speedups, ~50× dominant measured subpipeline
 compute reduction, 13× ViT reduction, 5.4× prefill, and 5–300× live ViT
-savings on camera feeds — anchoring the product-facing claims that
-C-PERSIST and C-VISION predict at 4 B-class scale. The two implementations share
+savings on camera feeds. Gemma 26B warm follow-up latency is currently a
+cache-correctness diagnostic, not earned C-PERSIST evidence, after S0 found
+cross-turn follow-up agreement on only 2/5 items. These rows anchor the
+product-facing claims that C-PERSIST and C-VISION predict at 4 B-class scale
+without collapsing the evidence classes. The two implementations share
 an analytical frame (C-CEILING) and a shared definition of
 attention-propagation drift as the fidelity mechanism, but run on
 disjoint model-size and protocol regimes, which we treat as a feature

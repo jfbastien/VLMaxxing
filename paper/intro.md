@@ -17,7 +17,7 @@ operationalizes the structural request from Codex round 25: stop
 foregrounding Lane A as the center of gravity; make C-CEILING,
 C-PERSIST, and C-VISION first-class; keep Qwen routing as
 mechanism-validation backbone; keep separate streaming results as
-deployment-scale evidence.
+scale-out operational evidence.
 -->
 
 ## 1. Setting: what the efficiency papers are quietly overstating
@@ -207,12 +207,12 @@ matched conditions:
 
 Preserving these nulls is the work Lane A does for the paper.
 
-## 4. Deployment-scale evidence: separate streaming work
+## 4. Scale-out operational evidence: separate streaming work
 
 The numbers above come from a 4 B-class model at commodity 4-bit
-quantization and sparse benchmark protocols. The sibling system
-The separate streaming implementation exercises the full
-streaming stack at a different regime and supplies the deployment-scale
+quantization and sparse benchmark protocols. The separate streaming
+implementation exercises the full
+streaming stack at a different regime and supplies the scale-out operational
 evidence C-PERSIST and C-VISION predict:
 
 - **~50× dominant measured subpipeline compute reduction** on paired Streaming
@@ -220,13 +220,15 @@ evidence C-PERSIST and C-VISION predict:
 - **13× ViT reduction** on a real streaming protocol.
 - **5.4× prefill speedup** on Gemma novelty-pruning.
 - **4.2–4.5× real-video end-to-end speedups** in selected regimes.
-- **Median 0.8 s follow-up latency** with persistent KV.
+- **Median 0.8 s follow-up latency** as a blocked cache-correctness
+  diagnostic: warm responses are fast, but Gemma 26B cross-turn
+  PromptCacheState reuse failed S0 on 3/5 follow-up items.
 - **5–300× live-camera ViT savings** depending on scene activity.
-- **reported 1,937-item sparse exactness** on Qwen under a separate
-  sparse-sampled QA protocol.
+- **zero accuracy delta on 1,937 sparse-sampled Qwen items**, with
+  byte-identical raw-paired outputs directly verified on 513 items.
 
 We do not claim these as codec-through numbers; we claim them as
-deployment-scale evidence from a shared ceiling theory and a shared
+scale-out evidence from a shared ceiling theory and a shared
 attention-propagation-drift fidelity story. They establish that
 C-PERSIST (conversational follow-up) and C-VISION (stage-bounded
 vision speedup) are not artifacts of 4 B-class small-scale probing —
@@ -237,12 +239,12 @@ surveillance, talking-head conferencing, FPV/egomotion, and repeated
 querying over the same stream.
 
 Two categories of streaming numbers carry different evidential weight.
-**Deployment-scale** — the bullets above — have paired baselines,
+**Scale-out operational** — the bullets above — have paired baselines,
 named protocols, and corpus sizes stated. They stand as main-body
 evidence. **Case-study** — piecewise-reuse single-cell illustrations,
 streaming anecdotes lacking a matched wall-clock comparison — are
 appendix-bound. A case-study multiplier is not evidence for a
-deployment-scale claim, and the paper does not mix the two.
+scale-out claim, and the paper does not mix the two.
 
 The two repos run on disjoint axes by design. codec-through is
 stricter and more reductionist — smaller local models, sparse-sampled
@@ -322,7 +324,7 @@ evidence inline.
 codec-through alone is a strong methods paper, a publishable
 analytical contribution, and a credible small systems lane. It is not
 broad SOTA. The separate streaming implementation, evaluated on its own protocol, delivers
-reported deployment-scale companion numbers. What we claim here is
+reported scale-out companion numbers. What we claim here is
 **three linked contributions** — C-CEILING, C-PERSIST, C-VISION —
 *and* the honest accounting of where the evidence mix sits across the
 two systems. The paper is the labeled evidence union, not either part alone.
@@ -335,7 +337,7 @@ tested deployment envelope and its onset-depth scaling. § 4 presents
 C-VISION's operating point, V-reduction invariance, and three-
 benchmark transfer. § 5 gives Lane A's matched-conditions
 mechanism-validation evidence (what works, what doesn't). § 6
-presents deployment-scale evidence from the separate streaming implementation. § 7
+presents scale-out evidence from the separate streaming implementation. § 7
 discusses limitations, the landed but narrow Qwen C-VISION transfer
 point, the outstanding sparse-execution delta for claim 5, and the
 future phases documented in `paper/priority.md`. Weak streaming case

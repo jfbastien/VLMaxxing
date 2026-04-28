@@ -65,17 +65,20 @@ already tolerate reuse, where they do not, and what a future model could learn
 as native refresh gates, delta encoders, or cache-state-aware attention.
 
 The scale-out streaming lane is part of the same science story, but it has a
-different protocol. Under a separate 26B-class streaming stack, same-video
-follow-up latency is reported at 0.8\,s, paired Streaming VideoMME reports
-13$\times$ fewer ViT calls and \mbox{$\sim$50$\times$} less dominant measured
-subpipeline compute, and selected real-video regimes reach 4.2--4.5$\times$
-end-to-end speedups. These numbers come from a different model, machine, and
-streaming protocol, so the current draft labels them as scale-out operational
-evidence rather than local headline cells. The intended end-state is stronger:
-the same claim axes, artifact format, paired gates, and baselines should make
-the 26B lane a first-class \emph{streaming state reuse} evaluation. They matter
-because they show where anti-recomputation can become large in practice. They
-also do \emph{not} license a naive composition claim: our Qwen
+different protocol. Under a separate 26B-class streaming stack, paired
+Streaming VideoMME reports 13$\times$ fewer ViT calls and
+\mbox{$\sim$50$\times$} less dominant measured subpipeline compute, and selected
+real-video regimes reach 4.2--4.5$\times$ end-to-end speedups. A separate
+Gemma 26B follow-up probe observed 0.8\,s warm responses, but its
+cache-correctness smoke failed on 3/5 cross-turn follow-up items, so that row is
+diagnostic latency rather than correctness-preserving C-PERSIST evidence. These
+numbers come from a different model, machine, and streaming protocol, so the
+current draft labels them as scale-out operational evidence rather than local
+headline cells. The intended end-state is stronger: the same claim axes,
+artifact format, paired gates, and baselines should make the 26B lane a
+first-class \emph{streaming state reuse} evaluation. They matter because they
+show where anti-recomputation can become large in practice. They also do
+\emph{not} license a naive composition claim: our Qwen
 session-composition experiments reproduce speedup without preserving the full
 fidelity contract, and later sweeps rule out the tested prompt-cache family as
 a deployable composition policy. Even when the first answer is preserved, the
@@ -83,17 +86,12 @@ reused cache state can still damage later answers. We therefore treat
 deployment composition as a regime to explain rather than a multiplier to
 inherit.
 
-\begin{figure}[H]
+\begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{generated/figures/regime_overview.pdf}
-  \caption{Denominator map for the paper. A repeated video stream contains
-  stable state and fresh residual evidence, but anti-recomputation touches
-  different parts of the VLM pipeline in different regimes. C-VISION changes
-  first-query vision-tower work and is bounded by \(V_{\mathrm{share}}\times
-  V_{\mathrm{red}}\); C-PERSIST changes later same-video follow-ups after the
-  first query has paid the prefix cost; routing validates temporal placement
-  under a dense backend; and streaming uses a separate scale-out protocol.
-  These rails are one idea, not one denominator.}
+  \caption{Denominator map for the paper. Stable visual state and fresh
+  residual evidence recur across regimes, but each reuse policy touches a
+  different stage and therefore has a different denominator.}
   \label{fig:regime-overview}
 \end{figure}
 

@@ -126,10 +126,14 @@ methods paper. Both lanes must contribute evidence.
 - Role in the paper: validates the routing / bounded-staleness mechanism and the "pixel-diff proxy" story. Natural home for the method appendix.
 - Currently earned: 1, 2, 6, 9. Partial: 3 (sticky4 only — dirty-tree supplementary; halo-veto retired 2026-04-17 as preregistered null on TOMATO + MVBench dev, child-veto 1.37 remaining path), 4 (asymmetry only; placement ablations pending), 5 (dense baseline only).
 
-**Lane B — measured anti-recomputation gains (Gemma + same-video follow-up).**
+**Lane B — measured anti-recomputation gains (Gemma + Qwen follow-up).**
 - Claims 14 and 15 now provide the strongest paper-facing numbers.
 - Role in the paper: the main results section, not an appendix or future-work placeholder.
-- Currently earned: C-VISION first-pass gains and C-PERSIST follow-up-query gains. What remains open is broader composition and sparse execution, not whether the paper has a headline result.
+- Currently earned: local C-VISION first-pass gains and Qwen C-PERSIST
+  follow-up-query gains. Gemma 26B follow-up reuse is blocked by Sam S0 until a
+  cache-safe cross-turn path passes an expanded smoke. What remains open is
+  broader composition, sparse execution, and scale-out artifact harmonization,
+  not whether the paper has a headline result.
 
 Prose must never conflate lane-A-earned with lane-B-prospective. When a claim sits in both lanes (e.g., claim 5 sparse-execution delta measured on either Qwen or Gemma), name the architecture explicitly.
 

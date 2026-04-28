@@ -58,10 +58,15 @@ Current wording:
 - "scale-out operational evidence"
 - "pending artifact harmonization"
 - "different model, machine, runtime, and streaming protocol"
+- "0.8 s Gemma 26B warm follow-up latency is diagnostic only until a
+  cache-safe cross-turn path passes S0b"
+- "zero accuracy delta on 1,937 sparse-sampled Qwen items; byte-identical
+  raw-paired outputs verified on 513 items"
 
 Promotion requirements:
 
-- cache-correctness smoke test
+- cache-correctness fix and expanded smoke test after Sam S0 found only 2/5
+  cross-turn follow-up agreement
 - exact model/runtime/hardware provenance
 - raw paired outputs with item IDs
 - C-PERSIST same-video follow-up replication

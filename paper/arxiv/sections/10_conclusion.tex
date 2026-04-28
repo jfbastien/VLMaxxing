@@ -17,9 +17,11 @@ all-query median speedup, while fixed \(K=1\) remains the no-coordination
 baseline at 9.48--20.37$\times$ same-class follow-up speedup on the same
 breadth. Scale-out operational rows under a separate 26B
 protocol push the same idea further into streaming regimes with
-4.2--4.5$\times$ real-video end-to-end speedups, double-digit ViT-call and
-follow-up-latency reductions, and \mbox{$\sim$50$\times$} dominant measured
-subpipeline savings.
+4.2--4.5$\times$ real-video end-to-end speedups, double-digit ViT-call
+reductions, and \mbox{$\sim$50$\times$} dominant measured subpipeline savings.
+The Gemma 26B follow-up-latency probe is now a cautionary row rather than a
+win: it observed fast warm responses, but the cross-turn cache-correctness
+smoke failed, so correctness-preserving 26B C-PERSIST remains blocked.
 
 The scientific value is in the boundaries as much as in the wins.
 Fresh-compute placement over time cannot be reduced to novelty magnitude alone,

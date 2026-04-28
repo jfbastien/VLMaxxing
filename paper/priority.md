@@ -150,8 +150,8 @@ in its own dimension.
    gate FAILS (below 1.08× partial-confirm by 3.8pp); thermal gate
    FAILS (decode Δ +2040 ms / 3.07% rel, adverse direction); thermal-
    correction does not cross 1.08×. Ceiling model reproduces observed
-   1.042× to within 0.2pp: pooled fixed_frac = 0.875 (V_share dropped
-   to 6.26% vs dev's 15.2% — pooled session concentrated long-decode
+   1.042× to within 0.2pp: composition-audit fixed_frac = 0.875
+   (V_share dropped to 6.26% vs dev's 15.2% — the audited session concentrated long-decode
    items / warm-decoder state), so arithmetic ceiling at the observed
    per-token generate speedup (1.446×) is 1.041×. Mechanism intact;
    regime binds. **Composition appendix claim does NOT land**; the

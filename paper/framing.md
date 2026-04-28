@@ -301,16 +301,19 @@ carry different evidential weight:
 
 **Scale-out streaming** (main-body multipliers, paired baselines):
 streaming E2E 4.2–4.5 ×; ViT-only 13 ×; dominant measured subpipeline
-~50 ×; live-camera ViT 5–300 ×; persistent-KV follow-up median
-0.8 s. These stay in the main body, clearly attributed to the separate
-operational protocol, with
-their regime explicitly named.
+~50 ×; live-camera ViT 5–300 ×. The Gemma 26B persistent-KV follow-up
+median 0.8 s row is now a blocked diagnostic, not an earned C-PERSIST
+claim, because S0 found cross-turn PromptCacheState reuse matches dense
+on only 2/5 follow-up items. The streaming rows stay in the main body,
+clearly attributed to the separate operational protocol, with their
+regime explicitly named.
 
 **Sparse exactness** is a separate scale-out partner row, not part of
-the deployment-multiplier bucket. The current scale-out report lists
-1,937 sparse exactness items in the abstract, but other prose still says
-1,837; this paper therefore keeps that row explicitly reported and not
-re-audited here.
+the deployment-multiplier bucket. The current audit supports zero
+accuracy delta on 1,937 sparse-sampled Qwen items, but direct
+byte-identical raw-paired verification covers 513 items. Do not write
+"byte-identical on 1,937" unless Sam re-exports or reruns the missing
+raw paired rows.
 
 **Case-study** (single-cell illustrations, no paired baseline, or no
 matched wall-clock): piecewise reuse; individual streaming anecdotes
@@ -361,7 +364,7 @@ regimes by design:
 | Eval regime           | N = 30 / 60 holdout, paired, thermally controlled | streaming paired N = 60; sparse exactness N = 1,937; live decode in loop / real-video case studies |
 | Classifier            | pixel-diff proxy on sampled decoded frames | pixel-diff on sparse exactness; codec-native MV + residual at native rate for streaming/live |
 | Focus                 | mechanism isolation, prereg falsification  | full stack, composition, measured end-to-end multipliers    |
-| Strongest numbers     | 1.08–1.24× E2E dev; 1.113× VideoMME 8 f holdout; sub-second follow-up inside tested envelope | 4.2–4.5× real-video E2E; 13× ViT; ~50× dominant measured subpipeline; median 0.8 s follow-up; 5–300× live ViT |
+| Strongest numbers     | 1.08–1.24× E2E dev; 1.113× VideoMME 8 f holdout; sub-second follow-up inside tested envelope | 4.2–4.5× real-video E2E; 13× ViT; ~50× dominant measured subpipeline; 5–300× live ViT; 0.8 s follow-up latency remains cache-correctness-blocked |
 
 The shared frame is **C-CEILING** (`1/(fixed + (1−fixed)/s)` on any
 stage-bounded acceleration, including the vision-axis analog

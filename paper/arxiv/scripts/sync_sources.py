@@ -156,25 +156,25 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
             "axes.facecolor": "white",
         }
     )
-    fig, ax = plt.subplots(figsize=(12.0, 6.2))
+    fig, ax = plt.subplots(figsize=(7.4, 4.25))
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     ax.axis("off")
 
-    ax.text(0.05, 0.93, "Video state over time", fontsize=12, weight="bold")
+    ax.text(0.04, 0.91, "Video state over time", fontsize=10.5, weight="bold")
     ax.text(
-        0.05,
-        0.88,
-        "Most pixels keep explaining the same wall; fresh work should buy the surprise.",
-        fontsize=8.5,
+        0.04,
+        0.865,
+        "Most pixels keep explaining the same wall.",
+        fontsize=7.8,
         color="#4b5563",
     )
 
-    frame_w = 0.17
-    frame_h = 0.48
+    frame_w = 0.12
+    frame_h = 0.42
     for idx in range(4):
-        x = 0.08 + idx * 0.105
-        y = 0.23 + idx * 0.045
+        x = 0.055 + idx * 0.074
+        y = 0.22 + idx * 0.043
         _draw_overview_box(ax, (x, y), frame_w, frame_h, face="#f8fafc", edge="#64748b")
         ax.add_patch(
             mpatches.Rectangle(
@@ -199,49 +199,54 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
         )
         ax.text(x + frame_w / 2, y - 0.035, f"t+{idx}", ha="center", fontsize=8)
 
-    ax.text(0.09, 0.15, "cached stable state", fontsize=8, color="#1d4ed8")
-    ax.text(0.30, 0.15, "fresh residual", fontsize=8, color="#c2410c")
-    _draw_overview_arrow(ax, (0.20, 0.13), (0.16, 0.31), color="#1d4ed8")
-    _draw_overview_arrow(ax, (0.38, 0.13), (0.39, 0.52), color="#c2410c")
+    ax.text(0.07, 0.14, "stable state", fontsize=7.5, color="#1d4ed8", weight="bold")
+    ax.text(0.07, 0.116, "reuse/cache", fontsize=7.0, color="#1d4ed8")
+    ax.text(0.25, 0.14, "fresh residual", fontsize=7.5, color="#c2410c", weight="bold")
+    ax.text(0.25, 0.116, "spend work", fontsize=7.0, color="#c2410c")
+    _draw_overview_arrow(ax, (0.16, 0.16), (0.13, 0.30), color="#1d4ed8", lw=1.2)
+    _draw_overview_arrow(ax, (0.33, 0.16), (0.34, 0.50), color="#c2410c", lw=1.2)
 
-    ax.plot([0.49, 0.49], [0.08, 0.92], color="#cbd5e1", linewidth=1.0)
-    ax.text(0.52, 0.93, "Four evidence rails, four denominators", fontsize=12, weight="bold")
+    ax.plot([0.43, 0.43], [0.08, 0.91], color="#cbd5e1", linewidth=1.0)
+    ax.text(0.455, 0.91, "Three regimes + one control", fontsize=10.5, weight="bold")
+    ax.text(0.455, 0.85, "Regime", fontsize=7.4, color="#475569", weight="bold")
+    ax.text(0.63, 0.85, "Touched work", fontsize=7.4, color="#475569", weight="bold")
+    ax.text(0.79, 0.85, "Denominator + status", fontsize=7.4, color="#475569", weight="bold")
+
     rails = [
         (
-            0.77,
+            0.75,
             "C-VISION",
             "first query",
-            "skip vision-tower work",
-            "first-query E2E; 1.113--1.407x",
+            "skip vision-\ntower work",
+            "first-query E2E\n1/(1 - V_share V_red)",
             "#e0f2fe",
             "#0284c7",
         ),
         (
-            0.59,
+            0.62,
             "C-PERSIST",
             "same-video follow-up",
-            "reuse prompt / KV state",
-            f"after-ingest; {qwen_16f['speedup']:.1f}x raw, "
-            f"{repair['all_query_speedup_min']:.2f}--"
-            f"{repair['all_query_speedup_max']:.2f}x repaired",
+            "reuse prompt /\nKV state",
+            "after-ingest follow-up\nQ2 repair -> Q3 inherits\n"
+            f"{repair['all_query_speedup_min']:.2f}--{repair['all_query_speedup_max']:.2f}x",
             "#dcfce7",
             "#16a34a",
         ),
         (
-            0.41,
+            0.42,
             "Routing",
-            "dense backend",
-            "place fresh evidence",
-            "quality frontier, not wall-clock",
+            "dense control",
+            "place fresh\nevidence",
+            "quality frontier\nnot wall-clock speedup",
             "#f3e8ff",
             "#7e22ce",
         ),
         (
-            0.23,
+            0.285,
             "Streaming",
             "scale-out lane",
-            "reuse live state",
-            "component counters + E2E",
+            "reuse live\nstate",
+            "component counters + E2E\n26B cache reuse blocked",
             "#fef3c7",
             "#d97706",
         ),
@@ -249,59 +254,39 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
     for y, label, regime, mechanism, denom, face, edge in rails:
         _draw_overview_box(
             ax,
-            (0.52, y),
-            0.12,
-            0.09,
+            (0.455, y),
+            0.145,
+            0.075,
             face=face,
             edge=edge,
             text=f"{label}\n{regime}",
-            size=8,
+            size=7.4,
             weight="bold",
         )
-        _draw_overview_arrow(ax, (0.655, y + 0.045), (0.725, y + 0.045), color=edge)
+        _draw_overview_arrow(ax, (0.61, y + 0.037), (0.625, y + 0.037), color=edge)
         _draw_overview_box(
             ax,
-            (0.74, y),
-            0.17,
-            0.09,
+            (0.635, y),
+            0.14,
+            0.075,
             face="#ffffff",
             edge=edge,
             text=mechanism,
-            size=8,
+            size=7.4,
         )
-        ax.text(0.52, y - 0.035, f"denominator: {denom}", fontsize=7.7, color="#4b5563")
+        ax.text(0.79, y + 0.039, denom, fontsize=6.9, color="#334155", va="center")
 
-    y = 0.535
-    xs = [0.56, 0.655, 0.75, 0.845]
-    labels = ["Q0 full", "Q1 reuse", "Q2 repair", "Q3 reuse"]
-    for x, label in zip(xs, labels, strict=True):
-        _draw_overview_box(
-            ax, (x, y), 0.071, 0.046, face="#f0fdf4", edge="#16a34a", text=label, size=7
-        )
-    for a, b in zip(xs, xs[1:], strict=False):
-        _draw_overview_arrow(
-            ax, (a + 0.072, y + 0.023), (b - 0.003, y + 0.023), color="#16a34a", lw=1.0
-        )
-    ax.text(
-        0.56,
-        0.495,
-        "Adaptive repair works because Q3 inherits the repaired Q2 cache.",
-        fontsize=7.6,
-        color="#166534",
-    )
-
-    ax.text(0.52, 0.13, "C-CEILING", fontsize=10.5, weight="bold")
-    ax.text(0.52, 0.095, "End-to-end lift only moves with the stage share touched.", fontsize=8)
+    ax.text(0.455, 0.16, "C-CEILING", fontsize=10.0, weight="bold")
+    ax.text(0.455, 0.122, "End-to-end lift moves only with the touched stage share.", fontsize=7.6)
     _draw_overview_box(
-        ax, (0.52, 0.025), 0.11, 0.055, face="#eef2ff", edge="#4f46e5", text="V_share", size=8
-    )
-    ax.text(0.645, 0.052, "x", fontsize=10, weight="bold")
-    _draw_overview_box(
-        ax, (0.67, 0.025), 0.10, 0.055, face="#eef2ff", edge="#4f46e5", text="V_red", size=8
-    )
-    ax.text(0.787, 0.052, "->", fontsize=10, weight="bold")
-    _draw_overview_box(
-        ax, (0.83, 0.025), 0.10, 0.055, face="#f5f3ff", edge="#4f46e5", text="E2E", size=8
+        ax,
+        (0.455, 0.045),
+        0.39,
+        0.052,
+        face="#eef2ff",
+        edge="#4f46e5",
+        text="first-pass cap = 1 / (1 - V_share * V_red)",
+        size=7.2,
     )
 
     fig.suptitle(
@@ -309,7 +294,7 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
             "Anti-recomputation: reuse stable state, "
             "buy fresh evidence only where the denominator allows it"
         ),
-        fontsize=13.5,
+        fontsize=10.5,
         weight="bold",
         y=0.985,
     )
@@ -335,6 +320,7 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
         "streaming": {
             "denominator": "scale-out component counters and E2E timing",
             "artifact_harmonization_pending": True,
+            "gemma_26b_followup_status": "blocked_by_cache_correctness_smoke",
         },
     }
     (GENERATED / "data" / "regime_overview_snapshot.json").write_text(
@@ -1106,14 +1092,6 @@ def _deployment_scale_snapshot(sam_root: Path) -> dict[str, object]:
             "source": _source_path_label(whitepaper),
         },
         {
-            "label": "Gemma follow-up latency",
-            "low": 10.0,
-            "high": 18.0,
-            "note": "0.8 s median, same-video follow-up",
-            "kind": "benchmark",
-            "source": _source_path_label(publishability),
-        },
-        {
             "label": "Streaming VideoMME ViT",
             "low": 13.0,
             "high": 13.0,
@@ -1146,7 +1124,15 @@ def _deployment_scale_snapshot(sam_root: Path) -> dict[str, object]:
             "source": _source_path_label(whitepaper),
         },
     ]
-    return {"entries": entries, "available": True}
+    blocked_entries = [
+        {
+            "label": "Gemma 26B follow-up latency",
+            "status": "blocked_by_cache_correctness_smoke",
+            "note": "0.8 s warm latency observed; cross-turn follow-up matches dense on 2/5",
+            "source": "codec-through-sam/research/2026-04-26-s0-cache-correctness-findings.md",
+        }
+    ]
+    return {"entries": entries, "blocked_entries": blocked_entries, "available": True}
 
 
 def _render_deployment_scale_figure(snapshot: dict) -> None:

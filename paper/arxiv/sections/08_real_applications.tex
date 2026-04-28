@@ -7,10 +7,15 @@ application color. The current draft still labels those rows separately because
 they use a different model, machine, runtime, and streaming protocol; promoting
 them to first-class evidence requires the same artifact-compatible outputs and
 matched baselines used by the local experiments. Under the current protocol,
-the stack reports 0.8\,s median same-video follow-up latency at 10--18$\times$
-speedup, paired Streaming VideoMME results with 13$\times$ fewer ViT calls and
+paired Streaming VideoMME results report 13$\times$ fewer ViT calls and
 \mbox{$\sim$50$\times$} less dominant measured subpipeline compute, and selected
-real-video regimes with 4.2--4.5$\times$ end-to-end speedups. ``Dominant
+real-video regimes report 4.2--4.5$\times$ end-to-end speedups. A separate
+Gemma 26B follow-up probe observed 0.8\,s warm responses at roughly
+10--18$\times$ lower latency than cold prefill, but the required
+cache-correctness smoke failed: deterministic dense generation and within-turn
+cache-equivalence both passed, while cross-turn warm follow-up agreed with dense
+on only 2/5 items. We therefore treat that row as a blocked cache-semantics
+diagnostic, not as earned 26B C-PERSIST evidence. ``Dominant
 measured subpipeline'' is the instrumented high-cost streaming segment in that
 runtime, not a full end-to-end denominator. Reported live-camera measurements
 show the same regime dependence in the wild: one post-fix RTSP demo reduces
@@ -28,11 +33,15 @@ The paper-facing goal is to turn this lane into a first-class
 correctness smoke tests, low-FPS / screenshot-polling / recency baselines, and
 artifact bundle as the controlled local runs.
 
-Smaller-$N$ UI studies stay strictly illustrative, not headline-bearing. The
-sectional-scroll case studies remain explicitly weaker than the paired
-streaming and real-video measurements above, and the contact-sheet imagery
-below is qualitative rather than quantitative. The main-body evidence for this
-section is the deployment table below.
+Smaller-$N$ UI studies stay strictly illustrative, not headline-bearing. Recent
+sectional-scroll wall-clock instrumentation is useful on the throughput axis:
+at fixed ViT budget it reports 22--64$\times$ fewer ViT fires than naive
+1\,Hz polling on two recordings, while per-query latency moves only
+1.09--1.10$\times$ because LLM generation dominates. Its current quality axis is
+not yet earned, because the new v7 recordings regress relative to the older
+sectional-scroll mechanism numbers and need revalidation. The contact-sheet
+imagery below is qualitative rather than quantitative. The main-body evidence
+for this section is the deployment table below.
 
 \begin{table}[H]
 \centering
@@ -57,7 +66,7 @@ Setting & Metric type & Outcome & Evidence class \\
 \midrule
 Streaming VideoMME (Gemma 26B) & component counter + accuracy & reported paired N=60: 13$\times$ fewer ViT calls; $\sim$50$\times$ less dominant measured subpipeline compute in the instrumented streaming segment; 58.3/60.0/61.7\% (stream/token-prune/dense), all within the reported $\pm$12 pp 95\% CI & scale-out stream benchmark \\
 Real-video paired regimes (Gemma 26B) & end-to-end timing & reported 4.2--4.5$\times$ end-to-end speedup on talking-head and surveillance-style real-video measurements & scale-out real-video benchmark \\
-Gemma 26B same-video follow-up & follow-up latency & reported N=20 VideoMME follow-up subset: 0.8\,s median follow-up; 10--18$\times$ faster than cold prefill; aggregate accuracy 65.0\% with and without KV reuse & scale-out follow-up benchmark \\
+Gemma 26B PromptCacheState follow-up & cache correctness + latency & S0 smoke: determinism 10/10 and within-turn cache-equivalence 10/10 pass, but cross-turn warm follow-up matches dense on only 2/5 items; warm latency is observed, yet correctness-preserving C-PERSIST is blocked pending a cache-safe rerun & blocked follow-up diagnostic \\
 Live-camera pipeline & live component counter & reported single-system counter: 14.3$\times$ fewer ViT calls on one active 60\,s RTSP window (701 decoded frames / 49 ViT calls); broader 5--300$\times$ scene-dependent range remains appendix-weighted live-counter evidence & scale-out live measurement \\
 \bottomrule
 \end{tabularx}
@@ -96,11 +105,13 @@ The current streaming evidence does not yet close a full systems-reviewer
 checklist. The paper still lacks the screenshot-polling baseline, low-FPS dense
 baseline, SimpleStream-style recency baseline, broader UI diversity, and a
 dedicated stale-cache failure case. The scale-out lane should next run the same
-claim axes as the local paper: a cache-correctness smoke test, C-PERSIST
-same-video follow-up replication, measured sparse-ViT / ceiling validation,
-native streaming matched baselines, and a raw re-export of the large sparse
-exactness artifact with item IDs, paired outputs, parse failures, and
-confidence intervals. What it already suggests is that the same
+claim axes as the local paper: a cache-correctness fix and expanded smoke before
+any 26B C-PERSIST replication, measured sparse-ViT / ceiling validation, native
+streaming matched baselines, and a raw re-export of the large sparse exactness
+artifact with item IDs, paired outputs, parse failures, and confidence
+intervals. The sparse-exactness audit currently supports zero accuracy delta on
+1,937 items, but byte-identical outputs are directly verified only on the
+513-item raw-paired subset. What the lane already suggests is that the same
 anti-recomputation principle can appear outside sparse benchmark slices, in the
 regime where users keep asking the same system about nearly the same scene.
 
@@ -111,9 +122,10 @@ section tied to the scale-out evidence above. Smaller UI claims such as
 sectional scroll, threshold tuning, or affine-axis mechanism variants should
 stay appendix-weighted until their evidence is cleaned up further.
 
-\textcolor{todoBorder}{Remaining work: add cache-correctness smoke artifacts
-for the 26B stack, a C-PERSIST scale-out replication, measured sparse-ViT /
-ceiling validation, screenshot-polling and low-FPS dense baselines, broader UI
-coverage, and one stale-cache failure case before making the streaming lane
-carry more of the headline.}
+\textcolor{todoBorder}{Remaining work: fix or bound Gemma 26B cross-turn cache
+semantics, rerun an expanded cache-correctness smoke, run C-PERSIST scale-out
+replication only if that smoke passes, add measured sparse-ViT / ceiling
+validation, screenshot-polling and low-FPS dense baselines, broader UI coverage,
+one stale-cache failure case, and a fuller raw-paired sparse-exactness export
+before making the streaming lane carry more of the headline.}
 \end{sectiontodo}
