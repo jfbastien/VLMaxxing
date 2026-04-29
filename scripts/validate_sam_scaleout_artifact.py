@@ -180,14 +180,19 @@ def _require_b0b_protocol(rows: list[dict[str, Any]]) -> list[str]:
 
     if len(cross_turn_rows) < 21:
         errors.append(f"B0b requires at least 21 cross_turn_warm rows, saw {len(cross_turn_rows)}")
-    if not within_turn_rows:
-        errors.append("B0b requires within_turn_cache_replay rows")
+    if len(within_turn_rows) < 21:
+        errors.append(
+            f"B0b requires at least 21 within_turn_cache_replay rows, saw {len(within_turn_rows)}"
+        )
     if not baseline_rows:
         errors.append("B0b requires baseline_arm='cold_dense' rows")
 
     cross_by_video: dict[Any, set[int]] = defaultdict(set)
     for row in cross_turn_rows:
         cross_by_video[row.get("video_id")].add(int(row.get("q_index") or 0))
+    within_by_video: dict[Any, set[int]] = defaultdict(set)
+    for row in within_turn_rows:
+        within_by_video[row.get("video_id")].add(int(row.get("q_index") or 0))
     if len(cross_by_video) < 7:
         errors.append(f"B0b requires at least 7 videos, saw {len(cross_by_video)}")
     underspecified = sorted(
@@ -197,6 +202,18 @@ def _require_b0b_protocol(rows: list[dict[str, Any]]) -> list[str]:
         errors.append(
             "B0b requires at least 3 cross-turn questions per video; "
             f"underspecified videos: {underspecified[:10]}"
+        )
+    within_underspecified = sorted(
+        str(video_id) for video_id, q_indices in within_by_video.items() if len(q_indices) < 3
+    )
+    if len(within_by_video) < 7:
+        errors.append(
+            f"B0b requires within-turn replay across at least 7 videos, saw {len(within_by_video)}"
+        )
+    if within_underspecified:
+        errors.append(
+            "B0b requires at least 3 within-turn replay questions per video; "
+            f"underspecified videos: {within_underspecified[:10]}"
         )
     if not any(_is_followup(row) for row in cross_turn_rows):
         errors.append("B0b requires at least one cross-turn follow-up row")
@@ -256,6 +273,16 @@ def _phase_errors(rows: list[dict[str, Any]], args: argparse.Namespace) -> list[
 
     if args.expected_row_count is not None and len(rows) != args.expected_row_count:
         errors.append(f"expected exactly {args.expected_row_count} rows, saw {len(rows)}")
+
+    if args.min_pair_keys is not None:
+        pair_key_count = len({row.get("pair_key") for row in rows})
+        if pair_key_count < args.min_pair_keys:
+            errors.append(f"expected at least {args.min_pair_keys} pair_keys, saw {pair_key_count}")
+
+    if args.min_videos is not None:
+        video_count = len({row.get("video_id") for row in rows})
+        if video_count < args.min_videos:
+            errors.append(f"expected at least {args.min_videos} videos, saw {video_count}")
 
     if args.require_arms:
         required_arms = {arm.strip() for arm in args.require_arms.split(",") if arm.strip()}
@@ -392,6 +419,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--phase")
     parser.add_argument("--min-rows", type=int, default=1)
     parser.add_argument("--expected-row-count", type=int)
+    parser.add_argument("--min-pair-keys", type=int)
+    parser.add_argument("--min-videos", type=int)
     parser.add_argument("--require-arms")
     parser.add_argument("--require-zero-choice-diffs", action="store_true")
     parser.add_argument("--require-zero-correctness-diffs", action="store_true")

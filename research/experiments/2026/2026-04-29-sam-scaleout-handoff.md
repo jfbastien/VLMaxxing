@@ -45,6 +45,8 @@ protocol closely enough to support C-PERSIST replication.
 
 Protocol:
 - Minimum: 7 videos x 3 questions = 21 cross-turn rows.
+- Also export the matching 21 within-turn cache-equivalence replay rows; the
+  repaired runtime must prove the within-turn path did not regress.
 - Deterministic decoding.
 - Arm labels: `baseline_arm=cold_dense`, `arm=within_turn_cache_replay`, and
   `arm=cross_turn_warm`.
@@ -73,7 +75,7 @@ Validation command:
 python scripts/validate_sam_scaleout_artifact.py \
   --jsonl sam_b0b_cache_correctness.jsonl \
   --phase B0b \
-  --min-rows 21 \
+  --min-rows 42 \
   --require-zero-choice-diffs \
   --require-zero-correctness-diffs \
   --require-zero-text-diffs \
@@ -169,7 +171,9 @@ Validation command:
 python scripts/validate_sam_scaleout_artifact.py \
   --jsonl sam_b3_streaming_baselines.jsonl \
   --phase B3 \
-  --min-rows 1 \
+  --min-rows 80 \
+  --min-pair-keys 20 \
+  --min-videos 2 \
   --require-arms screenshot_polling,low_fps_dense,recency_last_k,sam_policy \
   --require-zero-parse-failures \
   --require-b3-matched-events \
@@ -269,7 +273,8 @@ Expected runtime: 1-2 hours if the source artifacts already exist.
 For each run, provide:
 - `*.jsonl` raw paired rows conforming to the schema.
 - `summary.json` with gate fields, CIs, model/runtime/hardware metadata.
-- The exact repo commit and command line.
+- The exact Sam repo commit in every row as `commit_sha`, plus the exact
+  command line.
 - A short note describing any parse failures and at least one representative
   raw response for each failure class.
 - A bundle-level validation summary produced by:

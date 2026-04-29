@@ -35,7 +35,7 @@ CHECKS: Final[tuple[BundleCheck, ...]] = (
             "--phase",
             "B0b",
             "--min-rows",
-            "21",
+            "42",
             "--require-zero-choice-diffs",
             "--require-zero-correctness-diffs",
             "--require-zero-text-diffs",
@@ -76,7 +76,11 @@ CHECKS: Final[tuple[BundleCheck, ...]] = (
             "--phase",
             "B3",
             "--min-rows",
-            "1",
+            "80",
+            "--min-pair-keys",
+            "20",
+            "--min-videos",
+            "2",
             "--require-arms",
             "screenshot_polling,low_fps_dense,recency_last_k,sam_policy",
             "--require-zero-parse-failures",
@@ -187,6 +191,18 @@ def main() -> int:
         for check in checks:
             if not check["present"] and check["required_for_minimum"]:
                 check["passed"] = True
+    else:
+        by_filename = {str(check["filename"]): check for check in checks}
+        b0b = by_filename["sam_b0b_cache_correctness.jsonl"]
+        if b0b["present"] and b0b["passed"]:
+            for filename in (
+                "sam_b1_cpersist_replication.jsonl",
+                "sam_b2_many_turn_horizon.jsonl",
+            ):
+                check = by_filename[filename]
+                if not check["present"]:
+                    check["passed"] = False
+                    check["blocked_reason"] = "B0b passed, so B1/B2 are required"
 
     summary = {
         "bundle_dir": str(bundle_dir),

@@ -218,7 +218,8 @@ JSONLs must validate with `scripts/validate_sam_scaleout_artifact.py` against
 
 **Why.** Sam's last cache-correctness smoke failed on 3/5 cross-turn follow-up items (per paper line 72–74). Until this passes, *no* C-PERSIST claim from 26B is admissible.
 
-**Protocol.** Minimum 7 videos × 3 questions each = 21 cross-turn rows. Three arms per video:
+**Protocol.** Minimum 7 videos × 3 questions each = 21 cross-turn rows plus
+the matching 21 within-turn replay rows. Three arms per video:
 1. Dense deterministic replay (Q1, Q2, Q3 from cold cache)
 2. Within-turn cache replay (Q1 → cache → Q1' produces same output)
 3. Cross-turn warm follow-up (Q1 → cache → Q2 produces same output as cold-Q2-on-same-cache-state)
@@ -265,6 +266,8 @@ last-K, selected frame indices/ids/hashes, evidence budget, and event time.
 Include one stale-cache failure case (a question whose answer changed between
 turns 1 and 5). B3 can run even if B0b blocks cross-turn PromptCacheState as
 long as the compared policy does not rely on that broken cache path.
+Minimum size: 20 matched event/question pair keys across at least 2
+recordings/scenes, so the four-arm bundle has at least 80 rows.
 
 **Time.** ~8h. **Promotes C-STREAM from "partner evidence" to "same-graph science"** per Codex.
 

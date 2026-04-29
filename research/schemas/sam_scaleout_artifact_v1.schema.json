@@ -73,7 +73,8 @@
     "generation_tokens",
     "seed",
     "temperature",
-    "top_p"
+    "top_p",
+    "commit_sha"
   ],
   "properties": {
     "schema_version": {
@@ -425,7 +426,8 @@
       "type": ["object", "null"]
     },
     "commit_sha": {
-      "type": ["string", "null"]
+      "type": "string",
+      "minLength": 1
     }
   }
 }

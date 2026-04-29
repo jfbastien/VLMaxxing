@@ -57,13 +57,16 @@ Dense-with-zeroed-tokens is not Track B and must not be exported as B4.
   `/Users/jfb/s/codec-through/research/schemas/sam_scaleout_artifact_v1.schema.json`.
 - Do not port the local 12 GB MLX memory cap to the 128 GB M5 machine.
 - Record exact model id, model hash, quantization, runtime commit, macOS,
-  Metal, MLX/runtime version, command line, and memory definition.
+  Metal, MLX/runtime version, Sam repo `commit_sha`, command line, and memory
+  definition.
 - Include raw paired prompts/responses, parse failures split by arm, prompt
   hashes, input-id hashes, frame ids/hashes, cache topology, prefix coverage,
   stage timings, and peak memory.
 - B3 must use the same recordings, events/timestamps, observation windows,
   questions, answer keys, scoring, and schema across screenshot polling,
   low-FPS dense, recency/last-K, and Sam policy.
+- B3 must include at least 20 matched event/question pair keys across at least
+  2 recordings/scenes. With the four required arms, this is at least 80 rows.
 - B5 must keep the claim bounded unless raw paired responses exist: 1,937
   zero-accuracy-delta rows and 513 byte-identical raw-paired rows are separate
   artifacts.
