@@ -522,7 +522,36 @@
           }
         }
       }
+    },
+    {
+      "name": "A3-1.62D-lowfps-dense",
+      "command": [
+        "scripts/run_phase1_62D_lowfps_dense_videomme.sh"
+      ],
+      "status": "timeout",
+      "summary_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_62D_lowfps_dense_videomme/summary.json",
+      "returncode": null,
+      "elapsed_s": 18000.019546790994,
+      "error": "Command '('scripts/run_phase1_62D_lowfps_dense_videomme.sh',)' timed out after 17999.999967375 seconds"
+    },
+    {
+      "name": "A4-1.63I-qwen-16f-kr-bracket",
+      "command": [
+        "scripts/run_phase1_63I_16f_kr_fine_bracket.sh"
+      ],
+      "status": "failed-summary-validation",
+      "summary_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_63I_16f_kr_fine_bracket/fine_bracket_summary.json",
+      "elapsed_s": 21197.005626917,
+      "error": "A4-1.63I-qwen-16f-kr-bracket failed required gate(s): complete"
+    },
+    {
+      "name": "A6-1.55L-many-turn-cpersist",
+      "command": [
+        "scripts/run_phase1_55L_many_turn_cpersist.sh"
+      ],
+      "status": "running",
+      "summary_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_55L_many_turn_cpersist/summary.json"
     }
   ],
-  "updated_at_unix_s": 1777423949.3028748
+  "updated_at_unix_s": 1777463146.9579232
 }

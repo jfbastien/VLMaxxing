@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import signal
 import subprocess
 import time
 from dataclasses import dataclass
@@ -116,12 +118,18 @@ def _steps() -> list[Step]:
 
 def _run(cmd: tuple[str, ...], *, timeout_s: int) -> None:
     print(f"[phase2] $ {' '.join(cmd)}", flush=True)
-    subprocess.run(
-        cmd,
-        cwd=ROOT,
-        check=True,
-        timeout=timeout_s,
-    )
+    process = subprocess.Popen(cmd, cwd=ROOT, start_new_session=True)
+    try:
+        return_code = process.wait(timeout=timeout_s)
+    except subprocess.TimeoutExpired:
+        try:
+            os.killpg(os.getpgid(process.pid), signal.SIGKILL)
+        except (ProcessLookupError, PermissionError):
+            process.kill()
+        process.wait(timeout=30)
+        raise
+    if return_code != 0:
+        raise subprocess.CalledProcessError(return_code, cmd)
 
 
 def _git_status_short(paths: list[Path] | None = None) -> list[str]:

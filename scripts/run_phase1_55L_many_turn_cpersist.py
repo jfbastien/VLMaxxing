@@ -334,59 +334,76 @@ def main() -> int:
     session_rows: list[dict[str, Any]] = []
     paired_rows: list[dict[str, Any]] = []
 
+    # Baseline phase is stateless_question_cycle with a fixed seed: outputs only
+    # depend on (vid, source_q_index). Compute each unique baseline once and
+    # replicate the row per (horizon, turn_index) so the analyzer's pairing
+    # logic (baseline_by_key[(vid, horizon, turn_index)]) is unchanged.
+    unique_baselines: dict[tuple[str, int], dict[str, Any]] = {}
+    n_unique_total = sum(len(question_bank[vid]) for vid in video_ids)
+    n_unique_done = 0
+    for vid in video_ids:
+        questions = question_bank[vid]
+        for source_q_index, item in enumerate(questions):
+            sample = _prepare_sample(
+                processor,
+                item,
+                frame_count=args.frame_count,
+                frame_cache=frame_cache,
+            )
+            result = _run_query(
+                model,
+                processor,
+                sample,
+                max_tokens=args.max_tokens,
+                prompt_cache_state=None,
+                temperature=args.temperature,
+                top_p=args.top_p,
+                min_p=args.min_p,
+                seed=args.seed,
+            )
+            choice, correct = _score_answer(result["text"], item)
+            unique_baselines[(vid, source_q_index)] = {
+                "video_id": vid,
+                "duration": item.group,
+                "source_q_index": source_q_index,
+                "item_id": item.item_id,
+                "choice": choice,
+                "correct": correct,
+                "response": str(result["text"]).strip()[:400],
+                "elapsed_ms": float(result["elapsed_ms"]),
+                "peak_memory_gb": float(result["peak_memory_gb"]),
+                "pathological": _is_pathological_like_response(result["text"]),
+            }
+            n_unique_done += 1
+            print(
+                f"[1.55L] baseline unique {vid} q{source_q_index} "
+                f"({n_unique_done}/{n_unique_total}): "
+                f"{result['elapsed_ms']:.0f} ms correct={correct}"
+            )
+            check_memory_mb = _peak_rss_gb() * 1000
+            if check_memory_mb > args.rss_guard_mb:
+                raise MemoryError(
+                    f"RSS guard exceeded: {check_memory_mb:.0f} MB > {args.rss_guard_mb} MB"
+                )
+
     with baseline_path.open("w") as bf:
         for horizon in turn_counts:
             for vid in video_ids:
                 questions = question_bank[vid]
                 for turn_index in range(horizon):
-                    item = questions[turn_index % len(questions)]
-                    sample = _prepare_sample(
-                        processor,
-                        item,
-                        frame_count=args.frame_count,
-                        frame_cache=frame_cache,
-                    )
-                    result = _run_query(
-                        model,
-                        processor,
-                        sample,
-                        max_tokens=args.max_tokens,
-                        prompt_cache_state=None,
-                        temperature=args.temperature,
-                        top_p=args.top_p,
-                        min_p=args.min_p,
-                        seed=args.seed,
-                    )
-                    choice, correct = _score_answer(result["text"], item)
+                    source_q_index = turn_index % len(questions)
+                    unique = unique_baselines[(vid, source_q_index)]
                     row = {
                         "mode": "baseline",
                         "history_mode": "stateless_question_cycle",
                         "horizon": horizon,
-                        "video_id": vid,
-                        "duration": item.group,
                         "turn_index": turn_index,
-                        "source_q_index": turn_index % len(questions),
-                        "item_id": item.item_id,
-                        "choice": choice,
-                        "correct": correct,
-                        "response": str(result["text"]).strip()[:400],
-                        "elapsed_ms": float(result["elapsed_ms"]),
-                        "peak_memory_gb": float(result["peak_memory_gb"]),
-                        "pathological": _is_pathological_like_response(result["text"]),
+                        **unique,
                     }
                     key = (vid, horizon, turn_index)
                     baseline_by_key[key] = row
                     baseline_rows.append(row)
                     _jsonl_write(bf, row)
-                    print(
-                        f"[1.55L] baseline h={horizon} {vid} t={turn_index + 1}: "
-                        f"{row['elapsed_ms']:.0f} ms correct={correct}"
-                    )
-                    check_memory_mb = _peak_rss_gb() * 1000
-                    if check_memory_mb > args.rss_guard_mb:
-                        raise MemoryError(
-                            f"RSS guard exceeded: {check_memory_mb:.0f} MB > {args.rss_guard_mb} MB"
-                        )
 
     with session_path.open("w") as sf, paired_path.open("w") as pf:
         for policy in policies:
