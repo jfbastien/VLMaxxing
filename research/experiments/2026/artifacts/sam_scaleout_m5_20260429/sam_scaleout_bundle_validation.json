@@ -1,0 +1,59 @@
+{
+  "bundle_dir": "research/experiments/2026/artifacts/sam_scaleout_m5_20260429",
+  "checks": [
+    {
+      "filename": "sam_b0b_cache_correctness.jsonl",
+      "present": true,
+      "required_for_minimum": true,
+      "passed": false,
+      "returncode": 1,
+      "summary_path": "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b0b_cache_correctness_validation_summary.json"
+    },
+    {
+      "filename": "sam_b1_cpersist_replication.jsonl",
+      "present": false,
+      "required_for_minimum": false,
+      "passed": true,
+      "summary_path": null
+    },
+    {
+      "filename": "sam_b2_many_turn_horizon.jsonl",
+      "present": false,
+      "required_for_minimum": false,
+      "passed": true,
+      "summary_path": null
+    },
+    {
+      "filename": "sam_b3_streaming_baselines.jsonl",
+      "present": true,
+      "required_for_minimum": true,
+      "passed": true,
+      "returncode": 0,
+      "summary_path": "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b3_streaming_baselines_validation_summary.json"
+    },
+    {
+      "filename": "sam_b4_sparse_vit_ceiling.jsonl",
+      "present": false,
+      "required_for_minimum": false,
+      "passed": true,
+      "summary_path": null
+    },
+    {
+      "filename": "sam_b5_s4_accuracy_1937.jsonl",
+      "present": true,
+      "required_for_minimum": true,
+      "passed": true,
+      "returncode": 0,
+      "summary_path": "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b5_s4_accuracy_1937_validation_summary.json"
+    },
+    {
+      "filename": "sam_b5_s4_raw_paired_513.jsonl",
+      "present": true,
+      "required_for_minimum": true,
+      "passed": true,
+      "returncode": 0,
+      "summary_path": "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b5_s4_raw_paired_513_validation_summary.json"
+    }
+  ],
+  "pass": false
+}
