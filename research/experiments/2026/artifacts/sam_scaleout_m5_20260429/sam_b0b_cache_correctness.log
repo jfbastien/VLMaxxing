@@ -1,0 +1,146 @@
+[provenance] {
+  "run_id": "sam_b0b_1777499779_25269ee5",
+  "model_id": "google/gemma-4-26B-A4B-it",
+  "model_sha": "7d4c97e54145f8ffd1a4dd1b4986a5015a517842",
+  "quantization": "bf16_native",
+  "runtime": "mlx_vlm-0.4.4",
+  "runtime_commit": "pypi",
+  "hardware": "Apple M5 Max | 128.0 GB unified | Darwin 25.4.0",
+  "os_version": "Darwin 25.4.0",
+  "mlx_version": "unknown",
+  "metal_version": "Metal 4",
+  "command_line": "scripts/run_sam_b0b_cache_correctness.py",
+  "memory_definition": "ru_maxrss bytes (macOS) -> GB",
+  "commit_sha": "20396be388099734e90c81b870ba84dc5a76ff8e"
+}
+[setup] resolving 7 videos + extracting frames
+[loader] loading google/gemma-4-26B-A4B-it ...
+Fetching 9 files:   0%|          | 0/9 [00:00<?, ?it/s]Fetching 9 files: 100%|██████████| 9/9 [00:00<00:00, 132451.71it/s]
+[loader] loaded in 6.7s
+[video 1/7] fFjv93ACGo8
+  [cold_dense] q1_mc
+Prefill:   0%|          | 0/2155 [00:00<?, ?tok/s]Prefill:  95%|█████████▌| 2048/2155 [00:02<00:00, 995.22tok/s]Prefill: 100%|█████████▉| 2154/2155 [00:02<00:00, 950.50tok/s]Prefill: 100%|█████████▉| 2154/2155 [00:02<00:00, 962.76tok/s]
+  [cold_dense] q2_followup_color
+Prefill:   0%|          | 0/2086 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2086 [00:01<00:00, 1052.56tok/s]Prefill: 100%|█████████▉| 2085/2086 [00:02<00:00, 1008.45tok/s]
+  [cold_dense] q3_followup_people
+Prefill:   0%|          | 0/2092 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2092 [00:02<00:00, 971.57tok/s]Prefill: 100%|█████████▉| 2091/2092 [00:02<00:00, 937.30tok/s]
+  [within_turn_cache_replay] q1_mc
+Prefill:   0%|          | 0/2155 [00:00<?, ?tok/s]Prefill:  95%|█████████▌| 2048/2155 [00:02<00:00, 970.36tok/s]Prefill: 100%|█████████▉| 2154/2155 [00:02<00:00, 933.92tok/s]Prefill: 100%|█████████▉| 2154/2155 [00:02<00:00, 943.97tok/s]
+  [within_turn_cache_replay] q2_followup_color
+Prefill:   0%|          | 0/2086 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2086 [00:02<00:00, 953.24tok/s]Prefill: 100%|█████████▉| 2085/2086 [00:02<00:00, 919.48tok/s]
+  [within_turn_cache_replay] q3_followup_people
+Prefill:   0%|          | 0/2092 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2092 [00:02<00:00, 934.28tok/s]Prefill: 100%|█████████▉| 2091/2092 [00:02<00:00, 901.05tok/s]
+  [cross_turn_warm] q0_setup (cache primer)
+Prefill:   0%|          | 0/2084 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2084 [00:02<00:00, 920.79tok/s]Prefill: 100%|█████████▉| 2083/2084 [00:02<00:00, 888.97tok/s]
+  [cross_turn_warm] q1_mc (turn 1)
+  [cross_turn_warm] q2_followup_color (turn 2)
+  [cross_turn_warm] q3_followup_people (turn 3)
+[video 2/7] N1cdUjctpG8
+  [cold_dense] q1_mc
+Prefill:   0%|          | 0/2144 [00:00<?, ?tok/s]Prefill:  96%|█████████▌| 2048/2144 [00:02<00:00, 918.88tok/s]Prefill: 100%|█████████▉| 2143/2144 [00:02<00:00, 886.11tok/s]Prefill: 100%|█████████▉| 2143/2144 [00:02<00:00, 895.20tok/s]
+  [cold_dense] q2_followup_color
+Prefill:   0%|          | 0/2086 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2086 [00:02<00:00, 900.03tok/s]Prefill: 100%|█████████▉| 2085/2086 [00:02<00:00, 869.37tok/s]
+  [cold_dense] q3_followup_people
+Prefill:   0%|          | 0/2092 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2092 [00:02<00:00, 859.62tok/s]Prefill: 100%|█████████▉| 2091/2092 [00:02<00:00, 831.47tok/s]
+  [within_turn_cache_replay] q1_mc
+Prefill:   0%|          | 0/2144 [00:00<?, ?tok/s]Prefill:  96%|█████████▌| 2048/2144 [00:02<00:00, 855.43tok/s]Prefill: 100%|█████████▉| 2143/2144 [00:02<00:00, 828.34tok/s]Prefill: 100%|█████████▉| 2143/2144 [00:02<00:00, 835.88tok/s]
+  [within_turn_cache_replay] q2_followup_color
+Prefill:   0%|          | 0/2086 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2086 [00:02<00:00, 870.55tok/s]Prefill: 100%|█████████▉| 2085/2086 [00:02<00:00, 841.88tok/s]
+  [within_turn_cache_replay] q3_followup_people
+Prefill:   0%|          | 0/2092 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2092 [00:02<00:00, 877.52tok/s]Prefill: 100%|█████████▉| 2091/2092 [00:02<00:00, 847.43tok/s]
+  [cross_turn_warm] q0_setup (cache primer)
+Prefill:   0%|          | 0/2084 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2084 [00:02<00:00, 885.12tok/s]Prefill: 100%|█████████▉| 2083/2084 [00:02<00:00, 853.31tok/s]
+  [cross_turn_warm] q1_mc (turn 1)
+  [cross_turn_warm] q2_followup_color (turn 2)
+  [cross_turn_warm] q3_followup_people (turn 3)
+[video 3/7] HIjX8OPuf-w
+  [cold_dense] q1_mc
+Prefill:   0%|          | 0/2133 [00:00<?, ?tok/s]Prefill:  96%|█████████▌| 2048/2133 [00:02<00:00, 880.93tok/s]Prefill: 100%|█████████▉| 2132/2133 [00:02<00:00, 859.45tok/s]
+  [cold_dense] q2_followup_color
+Prefill:   0%|          | 0/2086 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2086 [00:02<00:00, 860.07tok/s]Prefill: 100%|█████████▉| 2085/2086 [00:02<00:00, 832.58tok/s]
+  [cold_dense] q3_followup_people
+Prefill:   0%|          | 0/2092 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2092 [00:02<00:00, 852.94tok/s]Prefill: 100%|█████████▉| 2091/2092 [00:02<00:00, 826.26tok/s]
+  [within_turn_cache_replay] q1_mc
+Prefill:   0%|          | 0/2133 [00:00<?, ?tok/s]Prefill:  96%|█████████▌| 2048/2133 [00:02<00:00, 847.70tok/s]Prefill: 100%|█████████▉| 2132/2133 [00:02<00:00, 827.81tok/s]
+  [within_turn_cache_replay] q2_followup_color
+Prefill:   0%|          | 0/2086 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2086 [00:02<00:00, 850.03tok/s]Prefill: 100%|█████████▉| 2085/2086 [00:02<00:00, 821.40tok/s]
+  [within_turn_cache_replay] q3_followup_people
+Prefill:   0%|          | 0/2092 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2092 [00:02<00:00, 843.38tok/s]Prefill: 100%|█████████▉| 2091/2092 [00:02<00:00, 815.75tok/s]
+  [cross_turn_warm] q0_setup (cache primer)
+Prefill:   0%|          | 0/2084 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2084 [00:02<00:00, 844.54tok/s]Prefill: 100%|█████████▉| 2083/2084 [00:02<00:00, 817.56tok/s]
+  [cross_turn_warm] q1_mc (turn 1)
+  [cross_turn_warm] q2_followup_color (turn 2)
+  [cross_turn_warm] q3_followup_people (turn 3)
+[video 4/7] HwnB8aCn8yE
+  [cold_dense] q1_mc
+Prefill:   0%|          | 0/2149 [00:00<?, ?tok/s]Prefill:  95%|█████████▌| 2048/2149 [00:02<00:00, 799.89tok/s]Prefill: 100%|█████████▉| 2148/2149 [00:02<00:00, 776.46tok/s]Prefill: 100%|█████████▉| 2148/2149 [00:02<00:00, 782.98tok/s]
+  [cold_dense] q2_followup_color
+Prefill:   0%|          | 0/2086 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2086 [00:02<00:00, 813.68tok/s]Prefill: 100%|█████████▉| 2085/2086 [00:02<00:00, 785.83tok/s]
+  [cold_dense] q3_followup_people
+Prefill:   0%|          | 0/2092 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2092 [00:02<00:00, 819.29tok/s]Prefill: 100%|█████████▉| 2091/2092 [00:02<00:00, 792.23tok/s]
+  [within_turn_cache_replay] q1_mc
+Prefill:   0%|          | 0/2149 [00:00<?, ?tok/s]Prefill:  95%|█████████▌| 2048/2149 [00:02<00:00, 824.54tok/s]Prefill: 100%|█████████▉| 2148/2149 [00:02<00:00, 798.87tok/s]Prefill: 100%|█████████▉| 2148/2149 [00:02<00:00, 805.99tok/s]
+  [within_turn_cache_replay] q2_followup_color
+Prefill:   0%|          | 0/2086 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2086 [00:02<00:00, 828.37tok/s]Prefill: 100%|█████████▉| 2085/2086 [00:02<00:00, 800.10tok/s]
+  [within_turn_cache_replay] q3_followup_people
+Prefill:   0%|          | 0/2092 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2092 [00:02<00:00, 823.69tok/s]Prefill: 100%|█████████▉| 2091/2092 [00:02<00:00, 796.33tok/s]
+  [cross_turn_warm] q0_setup (cache primer)
+Prefill:   0%|          | 0/2084 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2084 [00:02<00:00, 807.94tok/s]Prefill: 100%|█████████▉| 2083/2084 [00:02<00:00, 782.19tok/s]
+  [cross_turn_warm] q1_mc (turn 1)
+  [cross_turn_warm] q2_followup_color (turn 2)
+  [cross_turn_warm] q3_followup_people (turn 3)
+[video 5/7] 24i4ncHuf6A
+  [cold_dense] q1_mc
+Prefill:   0%|          | 0/2140 [00:00<?, ?tok/s]Prefill:  96%|█████████▌| 2048/2140 [00:02<00:00, 747.85tok/s]Prefill: 100%|█████████▉| 2139/2140 [00:02<00:00, 726.65tok/s]Prefill: 100%|█████████▉| 2139/2140 [00:02<00:00, 732.55tok/s]
+  [cold_dense] q2_followup_color
+Prefill:   0%|          | 0/2086 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2086 [00:02<00:00, 728.21tok/s]Prefill: 100%|█████████▉| 2085/2086 [00:02<00:00, 708.42tok/s]
+  [cold_dense] q3_followup_people
+Prefill:   0%|          | 0/2092 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2092 [00:02<00:00, 786.56tok/s]Prefill: 100%|█████████▉| 2091/2092 [00:02<00:00, 762.40tok/s]
+  [within_turn_cache_replay] q1_mc
+Prefill:   0%|          | 0/2140 [00:00<?, ?tok/s]Prefill:  96%|█████████▌| 2048/2140 [00:02<00:00, 776.23tok/s]Prefill: 100%|█████████▉| 2139/2140 [00:02<00:00, 753.22tok/s]Prefill: 100%|█████████▉| 2139/2140 [00:02<00:00, 759.64tok/s]
+  [within_turn_cache_replay] q2_followup_color
+Prefill:   0%|          | 0/2086 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2086 [00:02<00:00, 756.47tok/s]Prefill: 100%|█████████▉| 2085/2086 [00:02<00:00, 734.42tok/s]
+  [within_turn_cache_replay] q3_followup_people
+Prefill:   0%|          | 0/2092 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2092 [00:02<00:00, 766.45tok/s]Prefill: 100%|█████████▉| 2091/2092 [00:02<00:00, 744.14tok/s]
+  [cross_turn_warm] q0_setup (cache primer)
+Prefill:   0%|          | 0/2084 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2084 [00:02<00:00, 769.79tok/s]Prefill: 100%|█████████▉| 2083/2084 [00:02<00:00, 747.76tok/s]
+  [cross_turn_warm] q1_mc (turn 1)
+  [cross_turn_warm] q2_followup_color (turn 2)
+  [cross_turn_warm] q3_followup_people (turn 3)
+[video 6/7] 40BlVzjxu-I
+  [cold_dense] q1_mc
+Prefill:   0%|          | 0/2137 [00:00<?, ?tok/s]Prefill:  96%|█████████▌| 2048/2137 [00:03<00:00, 667.38tok/s]Prefill: 100%|█████████▉| 2136/2137 [00:03<00:00, 656.18tok/s]Prefill: 100%|█████████▉| 2136/2137 [00:03<00:00, 659.33tok/s]
+  [cold_dense] q2_followup_color
+Prefill:   0%|          | 0/2086 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2086 [00:02<00:00, 745.77tok/s]Prefill: 100%|█████████▉| 2085/2086 [00:02<00:00, 725.02tok/s]
+  [cold_dense] q3_followup_people
+Prefill:   0%|          | 0/2092 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2092 [00:02<00:00, 730.08tok/s]Prefill: 100%|█████████▉| 2091/2092 [00:02<00:00, 710.39tok/s]
+  [within_turn_cache_replay] q1_mc
+Prefill:   0%|          | 0/2137 [00:00<?, ?tok/s]Prefill:  96%|█████████▌| 2048/2137 [00:02<00:00, 745.45tok/s]Prefill: 100%|█████████▉| 2136/2137 [00:02<00:00, 726.21tok/s]Prefill: 100%|█████████▉| 2136/2137 [00:02<00:00, 731.60tok/s]
+  [within_turn_cache_replay] q2_followup_color
+Prefill:   0%|          | 0/2086 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2086 [00:02<00:00, 744.74tok/s]Prefill: 100%|█████████▉| 2085/2086 [00:02<00:00, 724.05tok/s]
+  [within_turn_cache_replay] q3_followup_people
+Prefill:   0%|          | 0/2092 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2092 [00:02<00:00, 716.56tok/s]Prefill: 100%|█████████▉| 2091/2092 [00:02<00:00, 697.56tok/s]
+  [cross_turn_warm] q0_setup (cache primer)
+Prefill:   0%|          | 0/2084 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2084 [00:02<00:00, 714.86tok/s]Prefill: 100%|█████████▉| 2083/2084 [00:02<00:00, 696.65tok/s]
+  [cross_turn_warm] q1_mc (turn 1)
+  [cross_turn_warm] q2_followup_color (turn 2)
+  [cross_turn_warm] q3_followup_people (turn 3)
+[video 7/7] 0ay2Qy3wBe8
+  [cold_dense] q1_mc
+Prefill:   0%|          | 0/2146 [00:00<?, ?tok/s]Prefill:  95%|█████████▌| 2048/2146 [00:03<00:00, 648.64tok/s]Prefill: 100%|█████████▉| 2145/2146 [00:03<00:00, 639.03tok/s]Prefill: 100%|█████████▉| 2145/2146 [00:03<00:00, 641.73tok/s]
+  [cold_dense] q2_followup_color
+Prefill:   0%|          | 0/2086 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2086 [00:03<00:00, 647.37tok/s]Prefill: 100%|█████████▉| 2085/2086 [00:03<00:00, 631.84tok/s]
+  [cold_dense] q3_followup_people
+Prefill:   0%|          | 0/2092 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2092 [00:03<00:00, 628.55tok/s]Prefill: 100%|█████████▉| 2091/2092 [00:03<00:00, 611.94tok/s]
+  [within_turn_cache_replay] q1_mc
+Prefill:   0%|          | 0/2146 [00:00<?, ?tok/s]Prefill:  95%|█████████▌| 2048/2146 [00:03<00:00, 566.21tok/s]Prefill: 100%|█████████▉| 2145/2146 [00:03<00:00, 559.42tok/s]Prefill: 100%|█████████▉| 2145/2146 [00:03<00:00, 561.33tok/s]
+  [within_turn_cache_replay] q2_followup_color
+Prefill:   0%|          | 0/2086 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2086 [00:03<00:00, 564.82tok/s]Prefill: 100%|█████████▉| 2085/2086 [00:03<00:00, 552.92tok/s]
+  [within_turn_cache_replay] q3_followup_people
+Prefill:   0%|          | 0/2092 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2092 [00:03<00:00, 553.39tok/s]Prefill: 100%|█████████▉| 2091/2092 [00:03<00:00, 542.22tok/s]
+  [cross_turn_warm] q0_setup (cache primer)
+Prefill:   0%|          | 0/2084 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2084 [00:03<00:00, 554.19tok/s]Prefill: 100%|█████████▉| 2083/2084 [00:03<00:00, 542.87tok/s]
+  [cross_turn_warm] q1_mc (turn 1)
+  [cross_turn_warm] q2_followup_color (turn 2)
+  [cross_turn_warm] q3_followup_people (turn 3)
+[wrote] 42 rows -> /Users/sam/repos/codec-through-jfb/research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b0b_cache_correctness.jsonl
