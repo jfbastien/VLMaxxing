@@ -1,0 +1,207 @@
+{
+  "accuracy_1937": {
+    "claim": "S4_zero_acc_delta_1937",
+    "source_files": [
+      "/Users/sam/repos/codec-through/research/2026-04-26-s4-1937-exactness/tomato.jsonl",
+      "/Users/sam/repos/codec-through/research/2026-04-26-s4-1937-exactness/mvbench.jsonl",
+      "/Users/sam/repos/codec-through/research/2026-04-26-s4-1937-exactness/videomme.jsonl",
+      "/Users/sam/repos/codec-through/research/2026-04-26-s4-1937-exactness/egoschema.jsonl"
+    ],
+    "expected_row_count": 1937,
+    "exported_row_count": 1937,
+    "rows_with_raw_paired": 453,
+    "rows_byte_identical": 453,
+    "ci_method": "paired_session_bootstrap_seed42_n1000_short_circuit_zero",
+    "ci95": [
+      0.0,
+      0.0
+    ],
+    "audit_summary": {
+      "tomato": {
+        "paired_with_raw_subset": {
+          "n_total": 60,
+          "n_paired_with_raw": 60,
+          "n_boolean_only": 0,
+          "byte_identical_count": 60,
+          "byte_identical_pct": 100.0,
+          "parse_failures_dense": 0,
+          "parse_failures_cached": 0,
+          "drift_items": [],
+          "accuracy_dense_pct": 21.666666666666668,
+          "accuracy_cached_pct": 21.666666666666668,
+          "delta_accuracy_mean": 0.0,
+          "delta_accuracy_ci95": [
+            0.0,
+            0.0
+          ],
+          "bootstrap_kind": "shortcircuit_all_zero"
+        },
+        "boolean_only_subset": {
+          "n_total": 1484,
+          "n_paired_with_raw": 0,
+          "n_boolean_only": 1484,
+          "byte_identical_count": 0,
+          "byte_identical_pct": null,
+          "parse_failures_dense": 0,
+          "parse_failures_cached": 0,
+          "drift_items": [],
+          "accuracy_dense_pct": 22.169811320754718,
+          "accuracy_cached_pct": 22.169811320754718,
+          "delta_accuracy_mean": 0.0,
+          "delta_accuracy_ci95": [
+            0.0,
+            0.0
+          ],
+          "bootstrap_kind": "shortcircuit_all_zero"
+        },
+        "combined": {
+          "n_total": 1544,
+          "n_paired_with_raw": 60,
+          "n_boolean_only": 1484,
+          "byte_identical_count": 60,
+          "byte_identical_pct": 100.0,
+          "parse_failures_dense": 0,
+          "parse_failures_cached": 0,
+          "drift_items": [],
+          "accuracy_dense_pct": 22.150259067357513,
+          "accuracy_cached_pct": 22.150259067357513,
+          "delta_accuracy_mean": 0.0,
+          "delta_accuracy_ci95": [
+            0.0,
+            0.0
+          ],
+          "bootstrap_kind": "shortcircuit_all_zero"
+        }
+      },
+      "mvbench": {
+        "paired_with_raw_subset": {
+          "n_total": 53,
+          "n_paired_with_raw": 53,
+          "n_boolean_only": 0,
+          "byte_identical_count": 53,
+          "byte_identical_pct": 100.0,
+          "parse_failures_dense": 0,
+          "parse_failures_cached": 0,
+          "drift_items": [],
+          "accuracy_dense_pct": 45.28301886792453,
+          "accuracy_cached_pct": 45.28301886792453,
+          "delta_accuracy_mean": 0.0,
+          "delta_accuracy_ci95": [
+            0.0,
+            0.0
+          ],
+          "bootstrap_kind": "shortcircuit_all_zero"
+        },
+        "boolean_only_subset": {
+          "n_total": 160,
+          "n_paired_with_raw": 0,
+          "n_boolean_only": 160,
+          "byte_identical_count": 0,
+          "byte_identical_pct": null,
+          "parse_failures_dense": 0,
+          "parse_failures_cached": 0,
+          "drift_items": [],
+          "accuracy_dense_pct": 40.0,
+          "accuracy_cached_pct": 40.0,
+          "delta_accuracy_mean": 0.0,
+          "delta_accuracy_ci95": [
+            0.0,
+            0.0
+          ],
+          "bootstrap_kind": "shortcircuit_all_zero"
+        },
+        "combined": {
+          "n_total": 213,
+          "n_paired_with_raw": 53,
+          "n_boolean_only": 160,
+          "byte_identical_count": 53,
+          "byte_identical_pct": 100.0,
+          "parse_failures_dense": 0,
+          "parse_failures_cached": 0,
+          "drift_items": [],
+          "accuracy_dense_pct": 41.31455399061033,
+          "accuracy_cached_pct": 41.31455399061033,
+          "delta_accuracy_mean": 0.0,
+          "delta_accuracy_ci95": [
+            0.0,
+            0.0
+          ],
+          "bootstrap_kind": "shortcircuit_all_zero"
+        }
+      },
+      "videomme": {
+        "paired_with_raw": {
+          "n_total": 300,
+          "n_paired_with_raw": 300,
+          "n_boolean_only": 0,
+          "byte_identical_count": 300,
+          "byte_identical_pct": 100.0,
+          "parse_failures_dense": 0,
+          "parse_failures_cached": 0,
+          "drift_items": [],
+          "accuracy_dense_pct": 45.0,
+          "accuracy_cached_pct": 45.0,
+          "delta_accuracy_mean": 0.0,
+          "delta_accuracy_ci95": [
+            0.0,
+            0.0
+          ],
+          "bootstrap_kind": "shortcircuit_all_zero"
+        }
+      },
+      "egoschema": {
+        "paired_with_raw": {
+          "n_total": 100,
+          "n_paired_with_raw": 100,
+          "n_boolean_only": 0,
+          "byte_identical_count": 100,
+          "byte_identical_pct": 100.0,
+          "parse_failures_dense": 0,
+          "parse_failures_cached": 0,
+          "drift_items": [],
+          "accuracy_dense_pct": 38.0,
+          "accuracy_cached_pct": 38.0,
+          "delta_accuracy_mean": 0.0,
+          "delta_accuracy_ci95": [
+            0.0,
+            0.0
+          ],
+          "bootstrap_kind": "shortcircuit_all_zero"
+        }
+      },
+      "AGGREGATE": {
+        "claim_in_whitepaper": {
+          "n_items": 1937,
+          "breakdown": "TOMATO 1484 + MVBench 53 + VideoMME 300 + EgoSchema 100",
+          "byte_identical_pct": 100.0,
+          "parse_failures": 0
+        },
+        "audit": {
+          "n_paired_with_raw": 513,
+          "n_paired_byte_identical": 513,
+          "n_boolean_only_unverifiable_byte_identical": 1644,
+          "n_boolean_only_loose_match_true": 1644,
+          "total_items_audited": 2157
+        },
+        "verdict": "closed-partial: 513/1937 items have raw paired responses and all 513 reproduce byte-identical with 0 parse failures. The remaining 1644 items (TOMATO 1424 + MVBench 107) lack raw responses in their artifacts; the byte-identical claim on those is unverifiable from the artifacts alone, only loose-match (default-to-A on parse fail) was logged. Both subsets show 100% loose-match (1644/1644)."
+      }
+    }
+  },
+  "raw_paired_513": {
+    "claim": "S4_byte_identical_513",
+    "source_files": [
+      "/Users/sam/repos/codec-through/research/2026-04-26-s4-1937-exactness/tomato.jsonl",
+      "/Users/sam/repos/codec-through/research/2026-04-26-s4-1937-exactness/mvbench.jsonl",
+      "/Users/sam/repos/codec-through/research/2026-04-26-s4-1937-exactness/videomme.jsonl",
+      "/Users/sam/repos/codec-through/research/2026-04-26-s4-1937-exactness/egoschema.jsonl"
+    ],
+    "expected_row_count": 513,
+    "exported_row_count": 513,
+    "byte_identical_count": 513,
+    "ci_method": "paired_session_bootstrap_seed42_n1000_short_circuit_zero",
+    "ci95": [
+      0.0,
+      0.0
+    ]
+  }
+}

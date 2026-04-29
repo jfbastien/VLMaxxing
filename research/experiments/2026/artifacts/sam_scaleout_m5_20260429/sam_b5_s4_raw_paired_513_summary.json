@@ -1,0 +1,24 @@
+{
+  "n_rows": 513,
+  "phases": {
+    "B5": 513
+  },
+  "arms": {
+    "codec_through_cached": 513
+  },
+  "policies": {
+    "cached_features_swap_at_static_boundary": 513
+  },
+  "choice_diffs": 0,
+  "correctness_diffs": 0,
+  "text_diffs": 0,
+  "parse_failures": 0,
+  "session_parse_failures": 0,
+  "baseline_parse_failures": 0,
+  "input_hash_mismatches": 513,
+  "prompt_hash_mismatches": 0,
+  "frame_hash_mismatches": 0,
+  "schema_or_gate_errors": 0,
+  "first_errors": [],
+  "pass": true
+}
