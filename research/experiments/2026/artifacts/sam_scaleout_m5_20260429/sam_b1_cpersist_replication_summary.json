@@ -1,0 +1,26 @@
+{
+  "n_rows": 42,
+  "phases": {
+    "B1": 42
+  },
+  "arms": {
+    "fixed_k1_cache_reuse": 21,
+    "adaptive_post_prev_repaired": 21
+  },
+  "policies": {
+    "prompt_cache_state_after_setup_one_step_followup": 21,
+    "prompt_cache_state_chained_post_prev": 21
+  },
+  "choice_diffs": 4,
+  "correctness_diffs": 0,
+  "text_diffs": 33,
+  "parse_failures": 4,
+  "session_parse_failures": 4,
+  "baseline_parse_failures": 4,
+  "input_hash_mismatches": 0,
+  "prompt_hash_mismatches": 0,
+  "frame_hash_mismatches": 0,
+  "schema_or_gate_errors": 0,
+  "first_errors": [],
+  "pass": true
+}
