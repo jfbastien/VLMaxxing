@@ -467,14 +467,16 @@ def main() -> int:
                     keep_rate=args.vision_tower_keep_rate,
                 ),
             )
-            pruned_cache, pruned_ms = _full_prompt_cache(model=model, sample=current_sample)
-            set_qwen_vision_tower_config(
-                model,
-                QwenVisionPruneConfig(
-                    layer_idx=args.vision_tower_layer,
-                    keep_rate=1.0,
-                ),
-            )
+            try:
+                pruned_cache, pruned_ms = _full_prompt_cache(model=model, sample=current_sample)
+            finally:
+                set_qwen_vision_tower_config(
+                    model,
+                    QwenVisionPruneConfig(
+                        layer_idx=args.vision_tower_layer,
+                        keep_rate=1.0,
+                    ),
+                )
 
             row = {
                 **selected_row,
