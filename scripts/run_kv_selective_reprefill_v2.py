@@ -576,7 +576,7 @@ def main() -> int:
                         "prefix_hit": int(result["prefix_hit"]),
                         "input_len": int(result["input_len"]),
                         "prefix_coverage": float(result["prefix_coverage"]),
-                        "base_cache_build_ms": base_cache_build_ms if q_index == 0 else None,
+                        "base_cache_build_ms": base_cache_build_ms,
                         "trunc_idx": plan.trunc_token_idx if plan is not None else None,
                         "reprefill_k": effective_k,
                         "reprefill_k_q2": args.reprefill_k_q2,

@@ -60,6 +60,33 @@ def test_keep_rate_rejects_negative_query_index() -> None:
         )
 
 
+def test_keep_rate_rejects_invalid_default_rate() -> None:
+    with pytest.raises(ValueError, match="default_keep_rate must be in"):
+        keep_rate_for_query(
+            q_index=1,
+            default_keep_rate=0.0,
+            first_query_keep_rate=None,
+            follow_up_keep_rate=None,
+        )
+
+
+def test_keep_rate_rejects_invalid_overrides() -> None:
+    with pytest.raises(ValueError, match="first_query_keep_rate must be in"):
+        keep_rate_for_query(
+            q_index=0,
+            default_keep_rate=0.5,
+            first_query_keep_rate=1.5,
+            follow_up_keep_rate=None,
+        )
+    with pytest.raises(ValueError, match="follow_up_keep_rate must be in"):
+        keep_rate_for_query(
+            q_index=1,
+            default_keep_rate=0.5,
+            first_query_keep_rate=None,
+            follow_up_keep_rate=-0.1,
+        )
+
+
 def test_keep_rate_for_session_query_uses_duration_specific_q0_override() -> None:
     assert (
         keep_rate_for_session_query(
@@ -107,4 +134,16 @@ def test_keep_rate_for_session_query_rejects_unknown_duration() -> None:
             default_keep_rate=0.5,
             first_query_keep_rate=1.0,
             follow_up_keep_rate=0.5,
+        )
+
+
+def test_keep_rate_for_session_query_rejects_invalid_duration_override() -> None:
+    with pytest.raises(ValueError, match="first_query_keep_rate_long must be in"):
+        keep_rate_for_session_query(
+            q_index=0,
+            duration="long",
+            default_keep_rate=0.5,
+            first_query_keep_rate=1.0,
+            follow_up_keep_rate=0.5,
+            first_query_keep_rate_long=0.0,
         )

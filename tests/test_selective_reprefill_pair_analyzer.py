@@ -34,6 +34,8 @@ def test_selective_reprefill_pair_analyzer_surfaces_pathology_and_speed(tmp_path
             "correct": False,
             "response": "addCriterion",
             "elapsed_ms": 200.0,
+            "base_cache_build_ms": 50.0,
+            "cache_source": "reprefill_k=1",
         },
         {
             "item_id": "videomme:short:001-3",
@@ -42,6 +44,8 @@ def test_selective_reprefill_pair_analyzer_surfaces_pathology_and_speed(tmp_path
             "correct": True,
             "response": "自动",
             "elapsed_ms": 250.0,
+            "base_cache_build_ms": 50.0,
+            "cache_source": "reprefill_k=1",
         },
     ]
     baseline_rows = [
@@ -125,8 +129,91 @@ def test_selective_reprefill_pair_analyzer_surfaces_pathology_and_speed(tmp_path
         <= metrics["q3_accuracy_delta_session_minus_baseline_ci95"][1]
     )
     assert metrics["session_follow_up_median_ms"] == 225.0
+    assert metrics["session_follow_up_setup_amortized_median_ms"] == 250.0
     assert metrics["baseline_follow_up_median_ms"] == 950.0
     assert metrics["baseline_all_query_median_ms"] == 1000.0
+    assert metrics["n_follow_up_rows_with_cache_build_ms"] == 2
+    assert metrics["n_sessions_with_cache_build_ms"] == 1
+    assert metrics["session_cache_build_total_median_ms"] == 50.0
+    assert metrics["session_total_median_ms_including_cache_build"] == 1500.0
+    assert metrics["baseline_total_median_ms"] == 3000.0
     assert metrics["speedup_follow_up_median_cold_over_session"] == 950.0 / 225.0
     assert metrics["speedup_all_query_median_cold_over_session_follow_up"] == 1000.0 / 225.0
+    assert metrics["speedup_follow_up_median_cold_over_session_setup_amortized"] == 950.0 / 250.0
+    assert (
+        metrics["speedup_all_query_median_cold_over_session_follow_up_setup_amortized"]
+        == 1000.0 / 250.0
+    )
+    assert metrics["speedup_session_total_median_cold_over_session_including_cache_build"] == 2.0
     assert metrics["q_index_breakdown"]["q3"]["pathological_hits"] == 1
+
+
+def test_selective_reprefill_pair_analyzer_leaves_setup_metrics_empty_without_setup(
+    tmp_path: Path,
+) -> None:
+    session_jsonl = tmp_path / "session.jsonl"
+    baseline_jsonl = tmp_path / "baseline.jsonl"
+    output = tmp_path / "pair_metrics.json"
+    session_rows = [
+        {
+            "item_id": "videomme:short:001-1",
+            "q_index": 0,
+            "choice": "A",
+            "correct": True,
+            "response": "A",
+            "elapsed_ms": 100.0,
+        },
+        {
+            "item_id": "videomme:short:001-2",
+            "q_index": 1,
+            "choice": "B",
+            "correct": True,
+            "response": "B",
+            "elapsed_ms": 20.0,
+        },
+    ]
+    baseline_rows = [
+        {
+            "item_id": "videomme:short:001-1",
+            "q_index": 0,
+            "choice": "A",
+            "correct": True,
+            "response": "A",
+            "elapsed_ms": 120.0,
+        },
+        {
+            "item_id": "videomme:short:001-2",
+            "q_index": 1,
+            "choice": "B",
+            "correct": True,
+            "response": "B",
+            "elapsed_ms": 80.0,
+        },
+    ]
+    _write_jsonl(session_jsonl, session_rows)
+    _write_jsonl(baseline_jsonl, baseline_rows)
+
+    subprocess.run(
+        [
+            sys.executable,
+            "scripts/analyze_selective_reprefill_pairs.py",
+            "--session-jsonl",
+            str(session_jsonl),
+            "--baseline-jsonl",
+            str(baseline_jsonl),
+            "--output",
+            str(output),
+            "--n-resamples",
+            "20",
+        ],
+        check=True,
+    )
+
+    metrics = json.loads(output.read_text())
+    assert metrics["n_follow_up_rows_with_cache_build_ms"] == 0
+    assert metrics["n_sessions_with_cache_build_ms"] == 0
+    assert metrics["session_follow_up_setup_amortized_median_ms"] is None
+    assert metrics["session_cache_build_total_median_ms"] is None
+    assert metrics["session_total_median_ms_including_cache_build"] is None
+    assert metrics["baseline_total_median_ms"] is None
+    assert metrics["speedup_session_total_median_cold_over_session_including_cache_build"] is None

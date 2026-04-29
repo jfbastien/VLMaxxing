@@ -14,6 +14,13 @@ def _normalize_duration(duration: str | None) -> str | None:
     return normalized
 
 
+def _validate_keep_rate(value: float, *, name: str) -> float:
+    resolved = float(value)
+    if not (0.0 < resolved <= 1.0):
+        raise ValueError(f"{name} must be in (0, 1], got {value}")
+    return resolved
+
+
 def keep_rate_for_query(
     *,
     q_index: int,
@@ -31,10 +38,10 @@ def keep_rate_for_query(
     if q_index < 0:
         raise ValueError(f"q_index must be non-negative, got {q_index}")
     if q_index == 0 and first_query_keep_rate is not None:
-        return float(first_query_keep_rate)
+        return _validate_keep_rate(first_query_keep_rate, name="first_query_keep_rate")
     if q_index > 0 and follow_up_keep_rate is not None:
-        return float(follow_up_keep_rate)
-    return float(default_keep_rate)
+        return _validate_keep_rate(follow_up_keep_rate, name="follow_up_keep_rate")
+    return _validate_keep_rate(default_keep_rate, name="default_keep_rate")
 
 
 def keep_rate_for_session_query(
@@ -58,11 +65,20 @@ def keep_rate_for_session_query(
     normalized_duration = _normalize_duration(duration)
     resolved_first_query_keep_rate = first_query_keep_rate
     if normalized_duration == "short" and first_query_keep_rate_short is not None:
-        resolved_first_query_keep_rate = float(first_query_keep_rate_short)
+        resolved_first_query_keep_rate = _validate_keep_rate(
+            first_query_keep_rate_short,
+            name="first_query_keep_rate_short",
+        )
     elif normalized_duration == "medium" and first_query_keep_rate_medium is not None:
-        resolved_first_query_keep_rate = float(first_query_keep_rate_medium)
+        resolved_first_query_keep_rate = _validate_keep_rate(
+            first_query_keep_rate_medium,
+            name="first_query_keep_rate_medium",
+        )
     elif normalized_duration == "long" and first_query_keep_rate_long is not None:
-        resolved_first_query_keep_rate = float(first_query_keep_rate_long)
+        resolved_first_query_keep_rate = _validate_keep_rate(
+            first_query_keep_rate_long,
+            name="first_query_keep_rate_long",
+        )
 
     return keep_rate_for_query(
         q_index=q_index,

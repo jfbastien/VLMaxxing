@@ -41,6 +41,13 @@ def _session_id(row: dict[str, Any]) -> str:
     return str(row["item_id"]).rsplit("-", 1)[0]
 
 
+def _optional_float(row: dict[str, Any], key: str) -> float | None:
+    value = row.get(key)
+    if value is None:
+        return None
+    return float(value)
+
+
 def _paired_bootstrap_delta_ci(
     rows: list[dict[str, Any]],
     *,
@@ -109,8 +116,13 @@ def main() -> int:
     choice_diffs = 0
     mismatches: list[dict[str, Any]] = []
     session_follow_up_ms: list[float] = []
+    session_follow_up_ms_by_session: dict[str, list[float]] = {}
+    follow_up_rows_with_cache_build_ms = 0
     baseline_follow_up_ms: list[float] = []
     baseline_all_ms = [float(row["elapsed_ms"]) for row in baseline_rows]
+    session_total_ms_by_session: dict[str, float] = {}
+    baseline_total_ms_by_session: dict[str, float] = {}
+    cache_build_ms_by_session: dict[str, dict[str, float]] = {}
     session_n_correct = sum(bool(row["correct"]) for row in session_rows)
     baseline_n_correct = sum(bool(row["correct"]) for row in baseline_rows)
     q_index_breakdown: dict[str, dict[str, Any]] = {}
@@ -121,6 +133,13 @@ def main() -> int:
     for key in keys:
         session = session_by_key[key]
         baseline = baseline_by_key[key]
+        sid = _session_id(session)
+        session_total_ms_by_session[sid] = session_total_ms_by_session.get(sid, 0.0) + float(
+            session["elapsed_ms"]
+        )
+        baseline_total_ms_by_session[sid] = baseline_total_ms_by_session.get(sid, 0.0) + float(
+            baseline["elapsed_ms"]
+        )
         if bool(session["correct"]) != bool(baseline["correct"]):
             correctness_diffs += 1
         if session.get("choice") != baseline.get("choice"):
@@ -146,11 +165,23 @@ def main() -> int:
             if q_index == 2:
                 pathological_q3_hits += 1
         if q_index > 0:
-            session_follow_up_ms.append(float(session["elapsed_ms"]))
+            session_elapsed_ms = float(session["elapsed_ms"])
+            session_follow_up_ms.append(session_elapsed_ms)
+            session_follow_up_ms_by_session.setdefault(sid, []).append(session_elapsed_ms)
             baseline_follow_up_ms.append(float(baseline["elapsed_ms"]))
+            cache_build_ms = _optional_float(session, "base_cache_build_ms")
+            if cache_build_ms is not None:
+                follow_up_rows_with_cache_build_ms += 1
+                cache_source = str(
+                    session.get("cache_source") or session.get("reprefill_k") or f"q{q_index + 1}"
+                )
+                cache_build_ms_by_session.setdefault(sid, {}).setdefault(
+                    cache_source,
+                    cache_build_ms,
+                )
         paired_rows.append(
             {
-                "session_id": _session_id(session),
+                "session_id": sid,
                 "item_id": session["item_id"],
                 "q_index": q_index,
                 "session_choice": session.get("choice"),
@@ -161,6 +192,10 @@ def main() -> int:
                 "baseline_response": baseline.get("response"),
                 "session_elapsed_ms": float(session["elapsed_ms"]),
                 "baseline_elapsed_ms": float(baseline["elapsed_ms"]),
+                "session_base_cache_build_ms": _optional_float(
+                    session,
+                    "base_cache_build_ms",
+                ),
             }
         )
         if bool(session["correct"]) != bool(baseline["correct"]) or session.get(
@@ -180,6 +215,34 @@ def main() -> int:
     session_follow_up_median_ms = _median(session_follow_up_ms)
     baseline_follow_up_median_ms = _median(baseline_follow_up_ms)
     baseline_all_query_median_ms = _median(baseline_all_ms)
+    session_cache_build_total_ms_by_session = {
+        sid: sum(cache_builds.values()) for sid, cache_builds in cache_build_ms_by_session.items()
+    }
+    if session_cache_build_total_ms_by_session:
+        # Amortize each one-time cache build across that session's follow-up rows.
+        session_follow_up_setup_amortized_ms = [
+            (sum(session_follow_up_ms_by_session[sid]) + setup_ms)
+            / len(session_follow_up_ms_by_session[sid])
+            for sid, setup_ms in session_cache_build_total_ms_by_session.items()
+            if sid in session_follow_up_ms_by_session and session_follow_up_ms_by_session[sid]
+        ]
+        session_total_including_cache_build_ms = [
+            session_total_ms_by_session[sid] + setup_ms
+            for sid, setup_ms in session_cache_build_total_ms_by_session.items()
+            if sid in session_total_ms_by_session
+        ]
+        baseline_total_ms = [
+            baseline_total_ms_by_session[sid]
+            for sid in session_cache_build_total_ms_by_session
+            if sid in baseline_total_ms_by_session
+        ]
+    else:
+        session_follow_up_setup_amortized_ms = []
+        session_total_including_cache_build_ms = []
+        baseline_total_ms = []
+    session_follow_up_setup_amortized_median_ms = _median(session_follow_up_setup_amortized_ms)
+    session_total_including_cache_build_median_ms = _median(session_total_including_cache_build_ms)
+    baseline_total_median_ms = _median(baseline_total_ms)
     rng = random.Random(args.seed)
     all_delta, all_ci, n_sessions = _paired_bootstrap_delta_ci(
         paired_rows,
@@ -219,8 +282,20 @@ def main() -> int:
         "q3_accuracy_delta_session_minus_baseline": q3_delta,
         "q3_accuracy_delta_session_minus_baseline_ci95": q3_ci,
         "session_follow_up_median_ms": session_follow_up_median_ms,
+        "session_follow_up_setup_amortized_median_ms": (
+            session_follow_up_setup_amortized_median_ms
+        ),
         "baseline_follow_up_median_ms": baseline_follow_up_median_ms,
         "baseline_all_query_median_ms": baseline_all_query_median_ms,
+        "n_follow_up_rows_with_cache_build_ms": follow_up_rows_with_cache_build_ms,
+        "n_sessions_with_cache_build_ms": len(session_cache_build_total_ms_by_session),
+        "session_cache_build_total_median_ms": _median(
+            list(session_cache_build_total_ms_by_session.values())
+        ),
+        "session_total_median_ms_including_cache_build": (
+            session_total_including_cache_build_median_ms
+        ),
+        "baseline_total_median_ms": baseline_total_median_ms,
         "speedup_follow_up_median_cold_over_session": (
             baseline_follow_up_median_ms / session_follow_up_median_ms
             if baseline_follow_up_median_ms is not None
@@ -233,6 +308,27 @@ def main() -> int:
             if baseline_all_query_median_ms is not None
             and session_follow_up_median_ms is not None
             and session_follow_up_median_ms > 0
+            else None
+        ),
+        "speedup_follow_up_median_cold_over_session_setup_amortized": (
+            baseline_follow_up_median_ms / session_follow_up_setup_amortized_median_ms
+            if baseline_follow_up_median_ms is not None
+            and session_follow_up_setup_amortized_median_ms is not None
+            and session_follow_up_setup_amortized_median_ms > 0
+            else None
+        ),
+        "speedup_all_query_median_cold_over_session_follow_up_setup_amortized": (
+            baseline_all_query_median_ms / session_follow_up_setup_amortized_median_ms
+            if baseline_all_query_median_ms is not None
+            and session_follow_up_setup_amortized_median_ms is not None
+            and session_follow_up_setup_amortized_median_ms > 0
+            else None
+        ),
+        "speedup_session_total_median_cold_over_session_including_cache_build": (
+            baseline_total_median_ms / session_total_including_cache_build_median_ms
+            if baseline_total_median_ms is not None
+            and session_total_including_cache_build_median_ms is not None
+            and session_total_including_cache_build_median_ms > 0
             else None
         ),
         "q_index_breakdown": q_index_breakdown,

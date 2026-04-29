@@ -139,8 +139,9 @@ def _keep_top_k(scores: FloatArray, k: int) -> BoolArray:
         return np.zeros(n, dtype=bool)
     if k >= n:
         return np.ones(n, dtype=bool)
-    # argpartition gives us indices of the top-k unordered; mask them True.
-    top_idx = np.argpartition(-scores, k - 1)[:k]
+    # Sort by descending score, then ascending index, so documented tie
+    # behavior does not depend on argpartition's unspecified tie ordering.
+    top_idx = np.lexsort((np.arange(n), -scores))[:k]
     mask = np.zeros(n, dtype=bool)
     mask[top_idx] = True
     return mask
