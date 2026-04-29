@@ -94,7 +94,19 @@ by reading mlx-vlm + mlx-lm sources:
 Within-turn cache replay does not exercise the trim path (the cache is
 fresh), which is why the within-turn arm of B0b is byte-identical.
 
-### Recommended fix (B0b-fix-v1)
+### Recommended fix (B0b-fix-v1) — superseded; see r2 handoff
+
+> **Update 2026-04-30 (after second-round review):** the shim
+> originally drafted below was wrong. mlx-vlm's `stream_generate`
+> still trims `input_ids = input_ids[:, prefix_len:]` even if SWA
+> caches are cleared, so SWA layers would receive only suffix tokens
+> with no prefix attention context — broken for a different reason
+> than the bug we are diagnosing. The corrected r2 plan installs a
+> **correctness-control guard** that fully disables cross-turn cache
+> reuse whenever any `RotatingKVCache` is present. See
+> `2026-04-30-sam-r2-handoff.md` Step 1 for the working code. The
+> below snippet is preserved only as a record of why the naïve
+> per-layer shim is unsafe.
 
 Smallest correctness-preserving patch: in
 `scripts/run_sam_b0b_cache_correctness.py`, monkey-patch the trim block

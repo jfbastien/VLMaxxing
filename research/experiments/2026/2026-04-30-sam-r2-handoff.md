@@ -68,93 +68,82 @@ the JSONL or summaries is fine.
 | B5 513 | PASS — 513 byte-identical raw paired | `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b5_s4_raw_paired_513.jsonl` |
 | B3 protocol | PASS schema; partial mechanism — `low_fps_dense` 17/22 wins matched 4-frame budget | `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b3_streaming_baselines.jsonl` |
 
-## Step 1 — apply the mlx-vlm SWA-trim patch (B0b root cause)
+## Step 1 — install a CORRECTNESS-CONTROL guard (do not pursue a speedup-preserving shim)
 
-Root cause is `mlx_vlm/generate.py:687-697` doing `c.keys[:, :, :prefix_len, :]`
-and `c.values[:, :, :prefix_len, :]` for **every** prompt-cache entry.
-That is correct for `KVCache` (full-attention) but wrong for
-`RotatingKVCache` (sliding-window) — the slot-0 of a rotated buffer is
-not the oldest temporal token. Gemma 4 26B-A4B builds 25
-RotatingKVCache + 5 KVCache; Qwen 7B builds only KVCache so it is
-unaffected. mlx-lm already exposes `trim_prompt_cache` and per-cache
-`c.trim(n)` that respect topology; mlx-vlm bypasses them.
+**This step changed after a second-round review.** The original draft
+proposed a shim that cleared `RotatingKVCache` layers and let mlx-vlm's
+`stream_generate` continue to trim `input_ids = input_ids[:, prefix_len:]`.
+That is broken: the model would receive only suffix tokens, so SWA
+layers (which got their cache cleared) would be missing the entire
+prefix's attention context, while full-attention layers would still
+have the prefix in cache. Per-layer prompt state would be inconsistent
+and the model output would diverge from the dense baseline for a
+second, different reason than the one we are diagnosing.
 
-Add this monkey-patch at the top of
-`scripts/run_sam_b0b_cache_correctness.py` (and any future B1/B2 26B
-runner), AFTER the `from mlx_vlm import …` import:
+The correct r2 step is a **diagnostic correctness control**: when any
+`RotatingKVCache` is present in the prompt cache, **disable cross-turn
+cache reuse entirely** for that turn. Forces full re-prefill on cross-
+turn. Slow but correct. This proves the bug is in the cache-reuse path
+and unblocks B0b's gate (the gate measures correctness, not speedup).
+
+Drop this at the top of
+`scripts/run_sam_b0b_cache_correctness.py` AFTER the `from mlx_vlm import …`
+imports. **Do not** hand-trim cache entries; let mlx-vlm see no cache
+state at all on cross-turn:
 
 ```python
-# --- BEGIN B0b SWA-trim safety patch ---
-# mlx-vlm 0.4.4 flat-slices c.keys / c.values on every cache entry, which
-# corrupts RotatingKVCache (SWA layers). Force full re-prefill of SWA
-# layers and reuse cache only for full-attention (KVCache) layers.
+# --- BEGIN B0b correctness-control guard ---
+# Background: mlx_vlm/generate.py:671-697 (mlx-vlm 0.4.4) flat-slices
+# c.keys[:, :, :prefix_len, :] for every prompt-cache entry. That is
+# correct for KVCache (Qwen, full-attention everywhere) but corrupts
+# RotatingKVCache (Gemma 4 SWA layers — slot 0 of a rotated buffer is
+# not the oldest temporal token). Combined with the input_ids trim on
+# the same path, partial-cache reuse on Gemma 4 26B-A4B is unsafe.
+#
+# Until a topology-aware vendor patch lands, this guard refuses to
+# reuse the cache cross-turn whenever any RotatingKVCache is present.
+# The result: B0b's correctness gate can pass; the C-PERSIST speedup
+# claim on Gemma 26B remains BLOCKED until the upstream fix.
 import mlx_vlm.generate as _gen
-from mlx_lm.models.cache import RotatingKVCache, KVCache  # type: ignore
+from mlx_lm.models.cache import RotatingKVCache  # type: ignore
 
-def _safe_trim_prompt_cache(prompt_cache, prefix_len: int) -> int:
-    """Return the number of layers whose KV was actually preserved."""
-    preserved = 0
-    for c in prompt_cache:
-        if isinstance(c, RotatingKVCache):
-            # SWA layer: drop the cache entirely; this layer re-prefills.
-            c.keys = None
-            c.values = None
-            c.offset = 0
-            c._idx = 0
-        elif isinstance(c, KVCache):
-            c.keys = c.keys[:, :, :prefix_len, :]
-            c.values = c.values[:, :, :prefix_len, :]
-            c.offset = prefix_len
-            preserved += 1
-        else:
-            # Unknown cache type; refuse to touch it (correctness > speed).
-            c.keys = None
-            c.values = None
-            c.offset = 0
-    return preserved
-
-# Patch the trim block. Find the function in mlx_vlm.generate that runs
-# the slice loop and replace its body. As of 0.4.4 the loop is inside
-# stream_generate. The simplest hook is to wrap the cache reuse decision:
 _orig_stream_generate = _gen.stream_generate
 
-def _patched_stream_generate(*args, **kwargs):
-    # Override the in-process trim. This is brittle to mlx-vlm version
-    # bumps; revisit on every dependency upgrade.
+def _correctness_guard_stream_generate(*args, **kwargs):
     cache_state = kwargs.get("prompt_cache_state")
     if cache_state is not None and getattr(cache_state, "cache", None):
-        # Determine prefix_len exactly the way mlx-vlm would, then call
-        # our safe trim instead of the inline slice.
-        # If mlx-vlm has already exposed prefix_len, use it; otherwise
-        # fall back to find_prefix_length.
-        from mlx_vlm.utils import find_prefix_length  # type: ignore
-        new_token_ids = kwargs.get("token_ids") or kwargs.get("inputs")
-        if cache_state.token_ids is not None and new_token_ids is not None:
-            prefix_len = find_prefix_length(
-                cache_state.token_ids, new_token_ids
-            )
-            _safe_trim_prompt_cache(cache_state.cache, prefix_len)
-            cache_state.token_ids = new_token_ids[:prefix_len]
-            # Hand off to the original generator with the cache already
-            # trimmed; mlx-vlm will see prefix_len and skip its own slice.
+        if any(isinstance(c, RotatingKVCache) for c in cache_state.cache):
+            # Refuse cross-turn cache reuse on mixed-topology models.
+            # Force full re-prefill. mlx-vlm sees no cache, takes the
+            # cold path, and produces a correctness-clean output.
+            kwargs["prompt_cache_state"] = None
     return _orig_stream_generate(*args, **kwargs)
 
-_gen.stream_generate = _patched_stream_generate
-# --- END B0b SWA-trim safety patch ---
+_gen.stream_generate = _correctness_guard_stream_generate
+# --- END B0b correctness-control guard ---
+
 ```
 
-Notes:
-- This is a **shim**, not a vendor patch. Long-term we want to upstream
-  a fix that calls `mlx_lm.models.cache.trim_prompt_cache(...)`
-  instead of the inline slice. For now the shim unblocks B0b without
-  modifying `.venv/`.
-- Revisit on every mlx-vlm version bump — the call signature and trim
-  location may move.
-- This patch DOES NOT change behaviour for Qwen runs; KVCache slicing
-  is identical to the inline mlx-vlm slice. Track A (Qwen 7B) is
-  unaffected.
+Notes on what this guard IS and IS NOT:
 
-## Step 2 — smoke-validate the patch (≤30 min)
+- **It IS a correctness control.** Cross-turn cache reuse is disabled
+  for mixed-topology models. Forces full re-prefill. Slow but correct.
+  Lets the B0b correctness gate finally pass and locks down the
+  diagnosis: the failure is in the cache-reuse path, not in
+  prompts/frames/model stochasticity.
+- **It IS NOT a C-PERSIST speedup-preserving fix.** The C-PERSIST
+  speedup claim on Gemma 26B is now an *open architecture boundary*.
+  The paper should frame Gemma 26B as "persistent-KV reuse not
+  correctness-safe under mlx-vlm 0.4.4 flat-trim; topology-aware fix
+  required upstream" and lean on Qwen 7B as the C-PERSIST headline.
+- **Qwen runs are unaffected.** The guard is a no-op on Qwen 2.5-VL
+  prompt caches (no `RotatingKVCache` in any layer). Track A still
+  uses cross-turn cache reuse the way it did before.
+- **Revisit on every mlx-vlm version bump.** The function signature
+  and inner trim location may move; the guard's `isinstance` check on
+  `prompt_cache_state.cache` is the brittle surface.
+
+## Step 2 — smoke-validate the guard (≤30 min)
 
 ```bash
 PHASE2_SAM_VIDEOS_LIMIT=1 \
@@ -165,16 +154,22 @@ PHASE2_SAM_QUESTIONS_LIMIT=3 \
 ```
 
 Pass criterion (read from the resulting `*_summary.json`):
-- `cross_turn_warm.text_diffs == 0`
-- `cross_turn_warm.choice_diffs == 0`
-- `cross_turn_warm.correctness_diffs == 0`
-- `within_turn_cache_replay.text_diffs == 0` (positive control still passes)
+- `cross_turn_warm.text_diffs == 0` — guard prevents corruption.
+- `cross_turn_warm.choice_diffs == 0` — answers identical to dense.
+- `cross_turn_warm.correctness_diffs == 0`.
+- `within_turn_cache_replay.text_diffs == 0` (positive control still
+  passes, because within-turn replay short-circuits the trim block
+  entirely — `prefix_len == input_ids.shape[1]` so the buggy code is
+  never executed).
+- `cross_turn_warm` per-turn timing should be ~comparable to a cold
+  prefill (the speedup is intentionally surrendered).
 
-Falsifier: any text-diff ≥ 1 means the SWA trim was not the only bug.
-The likely second-bug class is position-ID continuation across turns
-(Gemma uses absolute positions; reusing a cache requires the new
-turn's position offset to continue the previous turn's, not reset to 0).
-If smoke fails, stop and write a fresh findings note before scaling.
+Falsifier: any `text_diff ≥ 1` on `cross_turn_warm` would mean there
+is a SECOND bug class — most likely position-ID continuation across
+turns, since Gemma uses absolute positions and the old prefix's
+positions would need to chain into the new turn's. If smoke fails,
+stop, write a fresh findings note, and pursue the position-ID
+hypothesis before going further.
 
 ## Step 3 — full B0b rerun (after smoke passes; ~1h on M5)
 
@@ -184,8 +179,13 @@ If smoke fails, stop and write a fresh findings note before scaling.
 ```
 
 Expected: 42 rows (7 videos × 3 questions × {within, cross}), gate
-PASS on both arms. Commit as a single
-`research(sam-r2): B0b -- cache-correctness gate PASS after SWA-trim patch`.
+PASS on both arms. Commit as
+`research(sam-r2): B0b -- cache-correctness gate PASS under
+correctness-control guard (cross-turn reuse disabled on Gemma 26B
+mixed-topology)`. The findings doc should explicitly state that the
+PASS is achieved by **disabling** cross-turn cache reuse, and that the
+C-PERSIST speedup question on Gemma 26B remains OPEN until an upstream
+mlx-vlm topology-aware trim lands.
 
 ## Step 4 — concurrent experiments (do NOT block on each other)
 
@@ -269,20 +269,39 @@ reproducibility section can cite.
 
 ## Step 5 — what to commit, in what order
 
-1. **B0b SWA shim** — `fix(sam-r2): mlx-vlm SWA-trim shim for Gemma 4
-   26B-A4B`. Just the patched `run_sam_b0b_cache_correctness.py`,
-   commit message links to this handoff and the local commit cb098fe
-   (chain runner process-group precedent).
-2. **B0b smoke artifacts** — `research(sam-r2): B0b smoke -- SWA-trim
-   patch passes positive and negative arms`. ~3 row JSONL.
+1. **B0b correctness-control guard** — `fix(sam-r2): correctness-
+   control guard disabling cross-turn cache reuse on Gemma 26B mixed
+   topology`. Just the patched `run_sam_b0b_cache_correctness.py`. The
+   commit message must call out (a) the root cause is mlx-vlm 0.4.4's
+   flat-trim of `RotatingKVCache`, (b) this is a correctness control
+   not a speedup-preserving fix, (c) the speedup question is now an
+   open architecture boundary that requires a topology-aware upstream
+   patch.
+2. **B0b smoke artifacts** — `research(sam-r2): B0b smoke -- gate PASS
+   under correctness-control guard`. ~3 row JSONL.
 3. **B0b full artifacts** — `research(sam-r2): B0b full -- gate PASS,
-   42 rows after SWA fix`. Findings doc rewrites status to
-   `closed-earned`.
+   42 rows under correctness-control guard`. Findings doc status moves
+   to `closed-correctness-control / open-speedup-boundary`. Make the
+   "speedup BLOCKED on Gemma 26B" framing explicit; do not let the
+   PASS imply C-PERSIST works on Gemma 26B today.
 4. **S0 / S1 / S2** — separate `research(sam-r2): S0 -- ...`, etc.
 
 If any phase fails its gate, commit the artifacts anyway with
 `status: closed-arch-blocked` or `closed-partial` framing — the
 negative result is still evidence for the paper.
+
+### Future work (do NOT do in r2; this is post-paper)
+
+5. **Topology-aware upstream fix to mlx-vlm.** Replace the inline
+   slice at `mlx_vlm/generate.py:687-697` with a call to
+   `mlx_lm.models.cache.trim_prompt_cache(prompt_cache, n_to_keep)`
+   that respects each cache's `is_trimmable()`. For
+   `RotatingKVCache.is_trimmable() == False`, the model.forward path
+   needs a way to re-prefill that single layer's prefix while still
+   reusing other layers' caches. This is a real upstream contribution
+   to mlx-vlm (and possibly mlx-lm) and unlocks C-PERSIST on every
+   Gemma family that uses SWA. Out of scope for r2; track as a
+   separate engineering project.
 
 ## Step 6 — wording fixes in already-landed Sam findings
 
