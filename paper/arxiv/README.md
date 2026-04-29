@@ -9,7 +9,8 @@ This subtree is the actual manuscript workspace.
 - `sections/`: one file per paper section
 - `generated/`: automated tables, figures, and provenance snippets
 - `scripts/`: manuscript sync/build/doctor tooling
-- `references.bib`: bibliography placeholder
+- `sections/90_references.tex`: manual `thebibliography` used by the
+  current lightweight build
 
 ## Build Flow
 
@@ -85,3 +86,7 @@ checked into the repo yet. Once the target venue is fixed, swap the
 For manuscript work, use [`../AGENTS.md`](../AGENTS.md) and
 [`../priority.md`](../priority.md) before editing prose. The LaTeX files are a
 distilled view of the science, not the claim authority.
+
+The current draft intentionally uses the manual bibliography in
+`sections/90_references.tex`. Do not add a parallel `.bib` file unless the build
+workflow is also converted to BibTeX/Biber.

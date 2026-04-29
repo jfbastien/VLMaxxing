@@ -23,8 +23,10 @@ claims. They are native-rate deployment evidence, not replacements for the main
 evaluation, and they become first-class scale-out tests only when the same
 artifact standards and matched baselines are available.
 By design, sparse routing uses pixel-diff on sampled decoded frames, while the
-separate streaming lane uses H.264 metadata at native frame rate. The signals
-are protocol-specific, not interchangeable.
+separate streaming lane uses H.264 metadata at native frame rate, including
+FFmpeg-exported motion-vector side data and `codecview`-style inspection paths
+\cite{ffmpegcodecs,ffmpegfilters}. The signals are protocol-specific, not
+interchangeable.
 
 \subsection{Models, Hardware, and Preprocessing}
 

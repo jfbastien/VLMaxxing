@@ -77,7 +77,8 @@ Validated enough to guide work:
 - training-free temporal feature reuse is worth studying
 - same-position reuse is the default baseline
 - pixel diff is the current semantic-validation baseline
-- sparse execution is not yet proven and must be measured separately
+- bounded measured sparse-vision execution now exists, but broad sparse-backend
+  coverage and sparse LM prefill remain open systems work
 - the local controls are reproduced, but the imported whitepaper benchmark and
   mechanism claims remain mostly unreproduced here
 

@@ -27,9 +27,10 @@ Last updated: 2026-04-28
 > Per-phase details live in the registry and dated experiment notes; this file
 > is only the router.
 >
-> Lane A / temporal-routing research strategy (now the
-> mechanism-validation backbone, not the headline) lives in:
-> [`docs/research-strategy-post-codecsight.md`](docs/research-strategy-post-codecsight.md)
+> Lane A / temporal-routing status (now the mechanism-validation backbone,
+> not the headline) lives in:
+> [`paper/claim-matrix.md`](paper/claim-matrix.md) and
+> [`paper/publishability-status.md`](paper/publishability-status.md)
 >
 > Literature positioning lives in:
 > [`docs/literature-map-2026-04-16.md`](docs/literature-map-2026-04-16.md)
@@ -216,15 +217,15 @@ Current position relative to the adjacent efficiency literature tracked in
 (post-CodecSight map; supersedes the earlier
 [docs/literature-map.md](docs/literature-map.md) which remains as
 historical context). See also
-[docs/research-strategy-post-codecsight.md](docs/research-strategy-post-codecsight.md)
-and [docs/benchmark-taxonomy.md](docs/benchmark-taxonomy.md) and
+[docs/benchmark-taxonomy.md](docs/benchmark-taxonomy.md),
 [docs/related-work-table.md](docs/related-work-table.md) for paper
 framing:
 
 - we now have real benchmark-native semantic evidence, which is necessary but
   not sufficient for a competitive systems or efficiency paper
-- we do not yet have Track B skipped-compute evidence, so we are not yet
-  competitive on latency, throughput, or memory claims against FastV, ToMe,
+- bounded Track B sparse-vision evidence now exists, but broad sparse-backend
+  and sparse LM prefill coverage remain open, so we are not yet competitive on
+  general latency, throughput, or memory claims against FastV, ToMe,
   CoPE-VideoLM, CodecSight, or related pruning and compressed-domain methods
 - on quality, the current local benchmark agreement range (`0.833` to `0.870`)
   is scientifically useful but still weaker than the low-drop quality stories
@@ -253,10 +254,11 @@ framing:
     not a benchmark-blind holdout — the policy was chosen on TOMATO
     dev but selection was informed by MVBench dev via phase 1.16
   - dirty-tree artifacts
-  - Track B compute measurement is NOT built; "speedup" claims are
-    not yet supported
+  - this historical row predates the bounded measured sparse-vision envelope;
+    do not treat it as broad sparse-backend evidence
   - Phase 1.21 N=30 enlargement is the next hardening gate. See
-    `docs/research-strategy-post-codecsight.md` for ordering.
+    `paper/claim-matrix.md` and `paper/publishability-status.md` for
+    ordering.
 - Phase 1.11 MVBench dev sweep completed at 30/30; the primary dev
   winners failed phase 1.12 holdout; the current live winner is the
   transfer-discovered age=4 variant described above (the original
@@ -1031,7 +1033,8 @@ Near-term order:
    wrong regime, so future work needs EgoSchema, Ego4D, EPIC-Kitchens, or a
    labeled synthetic set
 9. keep the brainstorm-closure TODOs visible but scoped:
-   - Track B sparse execution against the captured dense baseline
+   - broader Track B sparse execution beyond the bounded measured sparse-vision
+     envelope
    - temporal placement ablations
    - true matched-budget cached higher-frame-count coverage
    - failure predictor with answer-margin / paired-drift features

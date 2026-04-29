@@ -12,9 +12,9 @@ slot**, if later phase work (phase 1.20 TOMATO N=30, phase 1.21 MVBench
 N=30, Stage E Track B) lands, is a training-free, codec-guided
 temporal routing method targeting a better quality–compute Pareto
 frontier on temporal-reasoning benchmarks with real measured skipped
-compute. Several axes of that claim (Track B, projector-consistent
-sparse execution, composition) are currently **target claims, not
-current evidence** — do not cite them as proven work.
+compute. As of 2026-04-29, bounded measured sparse-vision evidence exists,
+but broad sparse-backend coverage, sparse LM prefill, and composition remain
+target claims — do not cite those broader claims as proven work.
 
 ## Four-axis taxonomy of video-VLM efficiency
 
@@ -24,7 +24,7 @@ mechanisms. Clean separation is what the paper needs.
 | Axis | Prune layer | Signal | Training |
 |---|---|---|---|
 | **Temporal (across-frame)** — *our slot* | pre-ViT or post-ViT-pre-LLM | pixel/codec diff of frames | training-free |
-| **Intra-frame visual token reduction** | post-ViT-pre-LLM or inside LLM layers | attention scores, CLS scores, dual importance | training-free (FastV/VisionZip/SparseVLM) or trained (FastVID) |
+| **Intra-frame visual token reduction** | post-ViT-pre-LLM or inside LLM layers | attention scores, CLS scores, dual importance | training-free / inference-time policies (FastV/VisionZip/SparseVLM/FastVID) |
 | **Long-horizon memory** | LLM KV cache | recency, importance, attention fading | training-free (StreamingLLM) or trained |
 | **KV compression (bits/entry)** | LLM KV cache | quantization | training-free (TurboQuant/PolarQuant) |
 
@@ -163,13 +163,13 @@ table in [related-work-table.md](related-work-table.md)):
 | **VisionZip** (CVPR 2025) | Post-encoder | CLS-attention | torch only, Qwen2-VL port exists, Qwen2.5-VL TBD |
 | **SparseVLM** (ICML 2025) | Decoder-internal (every LLM layer) | Cross-modal (text-visual attention) | torch only (HF hooks per layer) |
 | **FastVID** | Post-encoder, spans temporal groups | Density clustering | torch only (hardwired into lmms-eval fork of `modeling_qwen2_5_vl.py`) |
-| **VScan** (ICML 2025) | Two-stage: ViT token merge + LLM mid-layer prune | Intra-modal (ViT) + cross-modal | torch only, modifies both forward passes |
+| **VScan** (TMLR 2026) | Two-stage: ViT token merge + LLM mid-layer prune | Intra-modal (ViT) + cross-modal | torch only, modifies both forward passes |
 | **VLCache** | Encoder-cache + KV-cache reuse | Cross-request similarity | SGLang only |
 
 **FrameFusion** (added 2026-04-16 per ChatGPT audit): the most
 directly-adjacent *video-native* within-frame reduction method. It
 combines similarity-based token merging with importance-based pruning
-and reports 70% vision-token reduction with 1.6–1.9× end-to-end
+and reports 70% vision-token reduction with 1.6–3.6× end-to-end
 speedup and small average performance loss across multiple LVLMs.
 Because our method also addresses temporal redundancy (across frames),
 FrameFusion partially overlaps our signal axis — we likely cannot
@@ -261,7 +261,9 @@ speedup** (lane B). The routing / bounded-staleness method content
 (lane A) is supporting evidence that explains *why* the speedup
 is correct and not a content-specific lucky shot.
 
-Six **target claims** (NOT yet evidence):
+The following six claims were the 2026-04-16 target decomposition. They are
+preserved to explain the positioning map; current evidence status is mixed and
+is summarized in the table below plus `paper/claim-matrix.md`.
 
 1. Multiplicative end-to-end speedup ≥ 1.8× on VideoMME with Gemma
    via novelty-pruning alone (phase 1.51 pending). THE headline.
@@ -285,10 +287,11 @@ Six **target claims** (NOT yet evidence):
    preregistered null — NO-LIFT on TOMATO dev, HURTS on MVBench dev).
 5. VideoMME validation on Qwen (phase 1.41 pending asset unpack).
 6. Real sparse execution converts the proxy gain into measured
-   speedup (Track B, claim 5 in the matrix). Prospective; the
-   one-paper-gate requires at least one wall-clock measurement.
+   speedup (Track B, claim 5 in the matrix). Bounded measured sparse-vision
+   cells now exist; broad sparse-backend and sparse LM prefill coverage remain
+   open.
 
-### Current evidence level (2026-04-16)
+### Current evidence level (last partial refresh 2026-04-29)
 
 | Claim | Status |
 |---|---|
@@ -300,7 +303,7 @@ Six **target claims** (NOT yet evidence):
 | Sticky-dynamic is benchmark-conditional (hurts TOMATO dev, helps MVBench holdout) | **Real mechanism finding** (phase 1.26 + 1.26.B); supports budget-placement theory |
 | Projector-group completion repairs failures | **Pending** — on our Qwen 2.5-VL stack, `BLOCK_SIZE=28` is already at projector granularity, so the mechanism semantics needs rescoping |
 | "More frames at same budget" coverage benefit | **Rejected on off-budget probe** (phase 1.28 ran at higher budget than preregistered); true iso-budget test pending |
-| Real skipped compute (wall-clock / FLOP) | **Not measured** — Track B unbuilt |
+| Real skipped compute (wall-clock / FLOP) | **Bounded measured sparse-vision envelope exists**; broad sparse backend and sparse LM prefill remain open |
 | Composition with FastV multiplies gains | **Not measured** — mlx-vlm fork required |
 
 ## What's off-limits now
@@ -332,7 +335,7 @@ citations.
 - VScan: https://arxiv.org/abs/2505.22654
 - VisionZip: https://arxiv.org/abs/2412.04467
 - SparseVLM: https://arxiv.org/abs/2410.04417
-- FastV: https://arxiv.org/abs/2403.06764 (CVPR 2024)
+- FastV: https://arxiv.org/abs/2403.06764 (ECCV 2024 Oral)
 - Déjà Vu: https://arxiv.org/abs/2506.14107
 - Eventful Transformers: https://arxiv.org/abs/2308.13494
 - CoViAR: https://arxiv.org/abs/1712.00636
@@ -344,4 +347,4 @@ citations.
 - T3S: https://arxiv.org/abs/2511.17945 (training-free temporal sampling wrapper)
 - AdaCache: https://openreview.net/forum?id=DyyLUUVXJ5 (adaptive caching for video diffusion)
 - VLCache: https://arxiv.org/abs/2512.12977
-- MPEG VCM: https://mpeg.chiariglione.org/standards/exploration/video-coding-machines.html
+- MPEG VCM: https://www.mpeg.org/standards/MPEG-AI/2/

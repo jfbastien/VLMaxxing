@@ -100,14 +100,14 @@ Classical codecs are hand-engineered prediction systems: predict a reference,
 send motion and residual surprise, transform and quantize under a rate-
 distortion objective, and make the result cheap enough for hardware. That
 objective was designed mainly for human viewing. Standards work is already
-moving toward machine consumption, including MPEG Video Coding for Machines
-\cite{mpegvcm}, JPEG AI \cite{jpegai}, and event-data coding efforts such as
-JPEG XE \cite{jpegxe}. Older object/layer media ideas, including MPEG-4 Visual
-object coding \cite{mpeg4visual}, also show that rectangular RGB frames were
-not the only conceivable abstraction. The analogy to object-based audio such
-as Dolby Atmos \cite{dolbyatmos} is useful but only as an analogy: the goal is
-not theatrical rendering, but a synchronized stream of model-facing state
-updates.
+moving toward machine consumption, including MPEG-AI Part 2 Video Coding for
+Machines \cite{mpegvcm}, JPEG AI \cite{jpegai}, and event-data coding efforts
+such as JPEG XE \cite{jpegxe}. Older object/layer media ideas, including
+MPEG-4 Visual object coding \cite{mpeg4visual}, also show that rectangular RGB
+frames were not the only conceivable abstraction. The analogy to object-based
+audio such as Dolby Atmos \cite{dolbyatmos} is useful but only as an analogy:
+the goal is not theatrical rendering, but a synchronized stream of
+model-facing state updates.
 
 Our role in that trajectory is narrower. We are not designing the future codec
 here. We use VLM behavior to motivate candidate requirements for that future

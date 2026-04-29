@@ -28,7 +28,7 @@ Total scope is the *complete* set of experiments needed to close the paper to re
 | A2 | 1.65v2 richer predictor | local | 0.5 | scripted, analysis-only on existing data | C-PERSIST limitations / future-work |
 | A3 | 1.62D low-FPS dense | local | 3.5 | preregistered, script ready | "why not just 4f dense?" attack |
 | A4 | 1.63I Qwen 16f kr fine-bracket | local | 9 | scripted | Qwen Track B real gate-pass |
-| A5 | 1.30AG K-cache distance probe | local | 2 | scripted; needs smoke review | 1.30 boundary causal mechanism |
+| A5 | 1.30AG K-cache distance probe | local | 2 | scripted; ready for one-row smoke, full cell unrun | 1.30 boundary causal mechanism |
 | A6 | 1.55L Many-turn C-PERSIST drift | local | 8 | scripted; stateless-query horizon | "two follow-ups" reviewer attack — biggest |
 | A7 | 1.55K-extended seeds | local | 7.5 | scripted after seed plumbing | sampler-seed robustness |
 | **Track A total** | | | **~28h** | (compute) + ~5h impl |  |
@@ -148,11 +148,11 @@ is removed.
 
 **Expected outcome.** Per prereg's H4: if both policies' aggregate distances within 10% AND their row drift sets non-identical → saturation supported, paper can claim cache-state distance threshold mechanism. If not → empirical boundary, no stronger mechanism claim. Either is publishable; the saturation result would be much stronger.
 
-**Time.** ~2h estimated. **Status.** Scripted at `scripts/run_phase1_30AG_kcache_distance_probe.py`; needs smoke review because it directly introspects MLX prompt-cache objects.
+**Time.** ~2h estimated. **Status.** Scripted at `scripts/run_phase1_30AG_kcache_distance_probe.py`; statically repaired for valid-window cache measurement and cosine-distance gates. The full cell remains unrun, and direct cache-state causality must not be claimed until the one-row MLX smoke and full summary artifact land.
 
 **Paper impact.** Either gives the 1.30 boundary a causal mechanism (huge), or honestly closes it as empirical (acceptable).
 
-**Risk.** I have not verified that the 1.30 runner exposes a cache-tensor capture hook. If it doesn't, 1.30AG needs a runtime-hook implementation that is bigger than the current 2h estimate. Need to check.
+**Risk.** The implementation bypasses the 1.30 runner and captures direct `make_prompt_cache` objects. That removes the old hook uncertainty, but MLX cache-entry internals are still runtime-object dependent, so the one-row smoke remains mandatory before the full cell.
 
 ### A6. 1.55L — Many-turn C-PERSIST drift (10/20/50 turns)
 
@@ -298,7 +298,7 @@ verification on 513 rows.
 
 ## Things I'm unsure about / need extra scrutiny
 
-1. **A5 (1.30AG) cache-tensor capture hook.** Implemented through direct `make_prompt_cache` objects and K/V tensor introspection, not through the 1.30 runner. It still needs a one-row MLX smoke because cache-entry internals are runtime-object dependent.
+1. **A5 (1.30AG) cache-tensor capture hook.** Implemented through direct `make_prompt_cache` objects and K/V tensor introspection, not through the 1.30 runner. The P0 valid-window/cosine-gate issues are fixed, but it still needs a one-row MLX smoke because cache-entry internals are runtime-object dependent.
 2. **A6 (1.55L) controls.** The implemented local control is the same stateless question cycle in both arms, not true conversational text history. This is scientifically valid as a C-PERSIST protocol horizon, but the paper must not call it a conversational-history result.
 3. **A6 (1.55L) refresh-policy interpretation.** The first implemented policy is `refresh10`. Adaptive refresh ("refresh when drift detected") would be more interesting but requires online drift detection that we have not built; keep it future work.
 4. **A7 (1.55K-extended) seed plumbing.** Seed arguments are now threaded through the standard and explicit-tail paths. A 1-clip T=1.0 smoke should still verify that different seeds produce different stochastic outputs before the full sweep.

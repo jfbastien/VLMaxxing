@@ -1,5 +1,11 @@
 # Research Dashboard — 2026-04-20
 
+> **Frozen historical snapshot.** This dashboard is preserved to explain the
+> April 20 research state. It is not current status and should not be updated
+> for submission decisions. Use `paper/priority.md`,
+> `paper/publishability-status.md`, `paper/claim-matrix.md`, and
+> `research/decision-log.md` for live state.
+
 Snapshot of phase status, SOTA-relevance, and remaining benchmark work. Built
 from `research/experiments/registry.md` + recent findings. Update this file
 when phases close or expand, not the registry (registry is the ledger).

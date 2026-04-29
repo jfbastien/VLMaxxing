@@ -28,7 +28,9 @@ This file only routes work inside `docs/`.
 ## Where New Knowledge Goes
 
 - active roadmap: [PLAN.md](../PLAN.md)
-- post-CodecSight research strategy: [research-strategy-post-codecsight.md](research-strategy-post-codecsight.md)
+- paper claim and readiness ledgers:
+  [paper/claim-matrix.md](../paper/claim-matrix.md) and
+  [paper/publishability-status.md](../paper/publishability-status.md)
 - experiment preregistration and results: [research/experiments](../research/experiments/)
 - adopted, weakened, killed, revived ideas: [research/decision-log.md](../research/decision-log.md)
 - falsified hypotheses ledger: [research/falsified-hypotheses.md](../research/falsified-hypotheses.md)
@@ -36,12 +38,10 @@ This file only routes work inside `docs/`.
 
 ## Read Order
 
-### Active (post-2026-04-16 repositioning)
+### Active
 
 - [literature-map-2026-04-16.md](literature-map-2026-04-16.md) — current
   positioning map, supersedes the older literature-map.md
-- [research-strategy-post-codecsight.md](research-strategy-post-codecsight.md)
-  — active research strategy
 - [benchmark-taxonomy.md](benchmark-taxonomy.md) — why each benchmark is
   active or deferred
 - [related-work-table.md](related-work-table.md) — paper-facing
@@ -64,10 +64,13 @@ This file only routes work inside `docs/`.
 - [original-repo-audit.md](original-repo-audit.md)
 - [external-feedback-validation.md](external-feedback-validation.md)
 - [literature-map.md](literature-map.md) — pre-CodecSight; historical
+- [research-strategy-post-codecsight.md](research-strategy-post-codecsight.md)
+  — historical strategy snapshot; superseded by the paper status files
 - [execution-plan-round-7.md](execution-plan-round-7.md) — historical
-  router; superseded by research-strategy-post-codecsight.md
+  router; superseded by PLAN.md and the paper status files
+- [chatgpt-review-packet.md](chatgpt-review-packet.md) — historical
+  external-review packet; regenerate from paper status docs before reuse
 - [knowledge-base-notes.md](knowledge-base-notes.md)
 - [clip-policy.md](clip-policy.md)
 - [benchmark-setup.md](benchmark-setup.md)
-- [chatgpt-review-packet.md](chatgpt-review-packet.md)
 - [local-setup.md](local-setup.md)

@@ -25,8 +25,9 @@ It is NOT the place for raw experimental detail. Evidence lives in:
   positioning map against CodecSight / CoPE / FastV / FrameFusion / etc.
 - [docs/related-work-table.md](../docs/related-work-table.md) — paper-facing
   method comparison table with verified numbers
-- [docs/research-strategy-post-codecsight.md](../docs/research-strategy-post-codecsight.md)
-  — active research strategy with evidence-level table per claim
+- [claim-matrix.md](claim-matrix.md) and
+  [publishability-status.md](publishability-status.md) — current paper-facing
+  claim and readiness ledgers
 - [research/experiments/2026/](../research/experiments/2026/) — phase-by-phase
   results
 - [research/falsified-hypotheses.md](../research/falsified-hypotheses.md) —

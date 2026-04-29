@@ -145,10 +145,12 @@ Why it matters:
 
 How it differs from 1.51R:
 
-- uses learned importance signals tied to a specific backbone, not
-  a zero-training pixel-novelty + anchor rule
-- reports prefill speedup, not end-to-end wall-clock in our
-  strict-e2e sense (important for interpreting their 6.3×)
+- uses attention/diversity token selection plus tree-based spatiotemporal
+  token merging inside a VLM token pipeline, not a zero-training
+  pixel-novelty + anchor rule
+- reports prefill and TTFT speedups rather than our strict end-to-end
+  wall-clock denominator, so its 6.3× prefill figure should not be compared
+  directly with our full-query E2E numbers
 
 ### FastVID
 
@@ -323,9 +325,12 @@ What it does not tell us:
 
 ### FFmpeg `export_mvs`
 
-Source:
+Sources:
 
-- <https://www.ffmpeg.org/ffmpeg-codecs.html>
+- `export_mvs` / `AV_FRAME_DATA_MOTION_VECTORS` side data:
+  <https://ffmpeg.org/ffmpeg-codecs.html>
+- `codecview` visualization of exported motion vectors:
+  <https://ffmpeg.org/ffmpeg-filters.html>
 
 Why it matters:
 

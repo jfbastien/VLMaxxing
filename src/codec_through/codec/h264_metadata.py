@@ -259,13 +259,13 @@ class H264MetadataExtractor:
     def _build_mb_grid(self, mv_arr: np.ndarray | None, is_intra_frame: bool = False) -> np.ndarray:
         """Aggregate sub-partition MVs into a (MB_H, MB_W) structured grid.
 
-        For I-frames: missing MBs are genuinely intra.
-        For P/B-frames: missing MBs are almost always SKIP (zero-MV
-        inter), not intra. FFmpeg's export_mvs only emits entries for
-        MBs with non-trivial MVs, so absence of an entry signals
-        "encoder chose skip mode" rather than intra-coded. Defaulting
-        to intra would over-flag static content as NOVEL in our
-        classifier.
+        For I-frames: missing MBs are genuinely intra. For P/B-frames,
+        FFmpeg's exported motion-vector side data is present only for codecs
+        and macroblock directions that produce MV entries. Absence of an entry
+        is therefore not a full macroblock-mode classification; for this
+        classifier it is a conservative "no exported motion vector here"
+        signal. Defaulting those cells to intra would over-flag static content
+        as NOVEL.
         """
         mbs = np.zeros((self.mb_h, self.mb_w), dtype=MB_DTYPE)
         mbs["mv_x_back"] = np.nan

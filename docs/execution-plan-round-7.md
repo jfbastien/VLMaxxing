@@ -9,8 +9,9 @@
 > route through:
 >
 > - [`PLAN.md`](../PLAN.md) — active roadmap
-> - [`docs/research-strategy-post-codecsight.md`](research-strategy-post-codecsight.md)
->   — active research strategy after CodecSight + CoPE-VideoLM
+> - [`../paper/claim-matrix.md`](../paper/claim-matrix.md) and
+>   [`../paper/publishability-status.md`](../paper/publishability-status.md)
+>   — current claim and paper-readiness ledgers
 > - [`docs/literature-map-2026-04-16.md`](literature-map-2026-04-16.md)
 >   — current positioning map
 >
@@ -54,7 +55,8 @@ task-aware routing.
 - Best dev-side finding: `mean + max_age=4` reaches cached 0.400 at
   fresh-token-equivalent budget ~1247, matching dense-6 at 2400 tokens. Dev-only
   Pareto win. Holdout flat.
-- No Track B measurements anywhere in the repo.
+- At this historical snapshot, no Track B measurements existed anywhere in
+  the repo.
 
 ## Strategic Framing
 
@@ -272,7 +274,7 @@ helps VLMs" systems slot and the "trained codec-native representation"
 model slot respectively. Our research repositions as *training-free,
 temporal-reasoning benchmarks, MLX-local, real skipped compute*. See
 `docs/literature-map-2026-04-16.md` and
-`docs/research-strategy-post-codecsight.md`.
+`../paper/claim-matrix.md`.
 
 **Executed priority ordering** (by `probability-of-moving-paper-claim ×
 magnitude / effort`):

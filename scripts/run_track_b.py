@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Phase 1.30 / claim #5 Track B wall-clock harness.
+"""Legacy dense-baseline wall-clock harness.
+
+This script is preserved for historical dense-baseline accounting only. It is
+not the claim-bearing measured sparse-vision driver for the current paper; use
+the phase 1.63 sparse-vision runners for current Track B evidence.
 
 Times the dense local VLM path with phase-level granularity. Two modes:
 

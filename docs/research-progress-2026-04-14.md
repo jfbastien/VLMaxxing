@@ -24,7 +24,7 @@ end of the round-7 takeover tranche.
 | §2.6 MVBench 100% agreement on 160 items | NOT reproduced; weaker analog | Local 54-item dense=0.630, cached=0.648, agreement=0.870. Cached and dense statistically indistinguishable on this slice (McNemar p=1.0) |
 | §3.3 14-frame drift tolerance | Partial | Refresh-every-4 recovers TOMATO direction on 5-item subset; broader sweep pending |
 | §4 Q-table spatial correlation | Not attempted | Helpers exist but no local correlation note |
-| §5 ~175× composed compression | NOT attempted | Track B not yet built; no skipped-compute evidence |
+| §5 ~175× composed compression | NOT attempted | At this snapshot, Track B was not yet built; no skipped-compute evidence |
 
 ## What "There is a there there" looks like today
 
@@ -44,7 +44,7 @@ the Pareto comparison is uninterpretable.
 
 | Method | Compute reduction (claimed) | Quality drop (claimed) | Type |
 |---|---|---|---|
-| FastV (CVPR 2024) | 45% FLOP | <1% accuracy | training-free, token-prune |
+| FastV (ECCV 2024 Oral) | 45% FLOP | <1% accuracy | training-free, token-prune |
 | SparseVLM (ICLR 2025) | 75% token | <2% accuracy | training-free |
 | ToMe (ICLR 2023) | ~50% token | <1% accuracy | spatial only, image |
 | CoPE-VideoLM (Feb 2026) | 93% token | comparable | TRAINED 21k GPU-h |
