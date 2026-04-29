@@ -323,8 +323,8 @@ queue once infra is in place.
 | Venue | Fit today | What would need to land |
 |---|---|---|
 | **arXiv preprint (current anti-recomputation draft)** | **Ready today** as a multi-regime anti-recomputation paper with clean versus advisory status stated explicitly and scale-out streaming evidence labeled by source class. | No new science gate. Keep provenance tight, finalize manuscript framing, and keep the paper honest about which rows are local clean, local advisory, tracked-upstream advisory, or scale-out partner evidence. |
-| **NeurIPS / ICLR / CVPR efficiency workshop** | **Defensible today** as the current anti-recomputation paper if the provenance remains tight and the manuscript keeps clean, advisory, tracked-upstream, and scale-out streaming rows visibly distinct. | Stronger with one measured sparse-path delta and a cleaner local streaming bridge. |
-| **Main track (NeurIPS/ICML/CVPR)** | **Not ready yet.** The paper now has a better three-regime story than the old venue rows implied, but it still lacks one measured sparse-path delta, broader apples-to-apples comparison against adjacent methods, and a cleaner bridge from local benchmark evidence into deployment-style streaming evaluation. | One measured sparse-path delta, broader first-pass coverage on the second architecture, a decoder-integrated codec-native / native-rate systems bridge, a scroll/pan/egomotion probe on a corpus that actually contains that regime, and tighter head-to-head positioning against the closest trained and training-free baselines. |
+| **NeurIPS / ICLR / CVPR efficiency workshop** | **Defensible today** as the current anti-recomputation paper if the provenance remains tight and the manuscript keeps clean, advisory, tracked-upstream, and scale-out streaming rows visibly distinct. | Stronger with broader measured sparse-backend coverage, many-turn C-PERSIST stress, and a cleaner local streaming bridge. |
+| **Main track (NeurIPS/ICML/CVPR)** | **Not ready yet.** The paper now has a better three-regime story than the old venue rows implied and does include bounded measured sparse-vision evidence, but it still lacks broad fidelity-preserving sparse-backend coverage, broader apples-to-apples comparison against adjacent methods, and a cleaner bridge from local benchmark evidence into deployment-style streaming evaluation. | Broader measured sparse-backend coverage, many-turn C-PERSIST stability, broader first-pass coverage on the second architecture, a decoder-integrated codec-native / native-rate systems bridge, a scroll/pan/egomotion probe on a corpus that actually contains that regime, and tighter head-to-head positioning against the closest trained and training-free baselines. |
 | **Systems conference (MLSys/OSDI)** | **Not ready yet.** The deployment evidence is interesting, but the current paper still does not characterize a full sparse backend or benchmark the streaming path against a clean systems baseline such as screenshot polling. | Sparse execution characterization, screenshot-polling baseline, broader streaming or event-detection evaluation, and ideally a decoder-integrated codec-native streaming bridge. |
 
 ## What is safe to say in a one-paragraph abstract TODAY
@@ -334,12 +334,14 @@ queue once infra is in place.
 > follow-up questions on the same video, and routing under a fixed dense
 > backend. On Gemma 4-E4B-4bit, mid-layer vision-tower pruning yields
 > measured first-pass gains from **1.113×** to **1.407×** on clean or
-> advisory holdout cells, with magnitude predicted by a simple
-> share×reduction ceiling. On Qwen2.5-VL-7B-4bit, persistent-KV reuse
-> cuts same-video follow-up latency to **815 ms** median at **47.2×**
-> speedup at 8 frames and **807 ms** at **91.1×** speedup at 16 frames; the
-> repair lane is now broader, with adaptive selective re-prefill
-> showing **0/93** observed paired drift at **15.28×–35.97×** all-query speedup.
+> advisory holdout cells, and bounded measured sparse-vision runs now add
+> real skipped vision work, led by a clean **1.316×** 32f-short operating
+> point. On Qwen2.5-VL-7B-4bit, persistent-KV reuse cuts same-video follow-up
+> latency to **815 ms** median at **47.2×** speedup at 8 frames and **807 ms**
+> at **91.1×** speedup at 16 frames; the repair lane is now broader, with
+> adaptive selective re-prefill showing **0/93** observed paired drift at
+> **14.90×–35.92×** same-class follow-up speedup and a **15.28×–35.97×**
+> cold-all-query ratio.
 > Routing holdouts on TOMATO and MVBench then show the mechanism
 > boundary: a bounded-staleness planner preserves the quality-compute
 > frontier, beats novelty-ranked dense selection, and shows that

@@ -182,7 +182,9 @@ providing composition-appendix evidence conditional on EXP10 n=60.
 - **Claim 6 earned (method on ≥ 2 temporal benchmarks).** Already done
   (TOMATO + MVBench paper-grade N=30).
 - **Claim 5 remains explicitly separate.** Measured sparse-path
-  wall-clock is still open and must not be implied by the routing lane.
+  wall-clock has landed as a bounded local vision-tower envelope and must
+  still not be implied by the routing lane. Treat it as real skipped vision
+  work with architecture/configuration caveats, not as a broad sparse backend.
 
 **Strongly recommended to strengthen the paper** (`priority.md`
 should-do tier):
@@ -194,7 +196,11 @@ should-do tier):
   Composition is ceiling-bounded, not multiplicative; no paper-level
   appendix claim earned. See `claim-matrix.md` row 15 sub-row and
   `research/experiments/2026/2026-04-21-phase-1_51V-exp10-n60-findings.md`.
-- **Claim 5 measured sparse-execution delta** on at least one path.
+- ~~**Claim 5 measured sparse-execution delta** on at least one path.~~
+  **CLOSED as a bounded envelope 2026-04-29.** Gemma gives the clean
+  operating point at 32f short; Qwen supplies the configuration boundary.
+  Broader sparse-backend coverage and matched competitor comparisons remain
+  strengthening work.
 - **Cross-arch C-VISION probe on Qwen.** **CLOSED 2026-04-23.**
   C-VISION is now two-architecture mechanism evidence at matched
   \(L=2\), \(kr_V=0.50\); broader benchmark coverage on the second
@@ -236,10 +242,10 @@ big-number mechanism (now claim 15).
 - Claim 12 (EgoSchema long-form)
 - TempCompass as third benchmark
 - Claim 4 (placement ablation) — strengthens, not required
-- Claim 5 measured sparse-execution delta — described as future work
-  with the ceiling upper bound already analytically characterized
-  (claim 13 C-CEILING). Keep as post-submission work; not a blocker
-  for the three-contribution submission.
+- Broader sparse-backend coverage beyond the bounded measured sparse-vision
+  envelope — described as future work with the ceiling upper bound already
+  analytically characterized (claim 13 C-CEILING). Keep as strengthening work,
+  not as a blocker for the three-contribution submission.
 
 ## Language rules
 
@@ -251,5 +257,6 @@ Per ChatGPT 2026-04-16 review:
   concentrated, fine-grained evidence dependence."
 - DO NOT say "SOTA claim reopened." SAY: "paper slot reopened" or
   "SOTA-direction signal."
-- DO NOT present measured sparse execution as built. SAY: "prospective" or "not yet
-  measured."
+- DO NOT present measured sparse execution as a broad sparse backend. SAY:
+  "bounded measured sparse-vision envelope" or "real skipped vision work with
+  architecture/configuration caveats."

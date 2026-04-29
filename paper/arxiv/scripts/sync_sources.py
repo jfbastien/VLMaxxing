@@ -1212,6 +1212,16 @@ def _paired_drift_interpretation(label: str) -> str:
     raise ValueError(f"unknown paired-drift panel label: {label}")
 
 
+def _paired_drift_public_label(label: str) -> str:
+    if label.startswith("1.30"):
+        return "C-VISION Q0 scout"
+    if label.startswith("1.42"):
+        return "Gemma MVBench holdout"
+    if label.startswith("1.55A"):
+        return "unrepaired persistent-KV 20f"
+    raise ValueError(f"unknown paired-drift panel label: {label}")
+
+
 def _paired_drift_extra(panel: dict) -> str:
     if "pathological_like" in panel:
         return f"; pathological-like {int(panel['pathological_like'])}/{int(panel['n'])}"
@@ -1244,9 +1254,10 @@ def _write_paired_drift_table(snapshot: dict) -> None:
         choice_changed = int(panel["choice_changed"])
         correctness_changed = int(panel["correctness_changed"])
         interpretation = _paired_drift_interpretation(str(panel["label"]))
+        label = _paired_drift_public_label(str(panel["label"]))
         extra = _paired_drift_extra(panel)
         lines.append(
-            f"{panel['label']} & {n} & {choice_changed}/{n} & "
+            f"{label} & {n} & {choice_changed}/{n} & "
             f"{correctness_changed}/{n} & {interpretation}{extra} \\\\"
         )
     lines.extend(
@@ -1337,15 +1348,15 @@ def _qwen_bridge_boundary_row(label: str, path: Path) -> dict:
 def _qwen_bridge_boundary_snapshot() -> dict:
     rows = [
         _qwen_bridge_boundary_row(
-            "cache reuse (1.30AD)",
+            "cache reuse",
             ARTIFACTS / "phase1_30AD_instrumented_w_rerun" / "pair_summary.json",
         ),
         _qwen_bridge_boundary_row(
-            "cache invalidated (1.30AC)",
+            "cache invalidated",
             ARTIFACTS / "phase1_30AC_cache_invalidated_followups" / "pair_summary.json",
         ),
         _qwen_bridge_boundary_row(
-            "legacy dense Q0 (1.30W)",
+            "dense Q0 reference",
             ARTIFACTS / "phase1_30W_q0_dense_followup_pruned_full" / "pair_summary.json",
         ),
         _qwen_bridge_boundary_row(
