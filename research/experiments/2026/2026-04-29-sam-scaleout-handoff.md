@@ -13,7 +13,7 @@ diffs, timing, memory, and confidence intervals.
 
 - Machine: Sam's M5 MacBook Pro with 128 GB unified memory.
 - Primary model: the exact 26B Gemma/Qwen-family model used in Sam's prior
-  scale-out work. Run from `codec-through`; if prior `codec-through-sam` code
+  scale-out work. Run from `codec-through`; if prior external prototype code
   is used as reference or called by a wrapper, record the reference commit and
   runtime provenance in the findings note.
 - Record full model id, model hash, quantization, runtime commit, Sam's

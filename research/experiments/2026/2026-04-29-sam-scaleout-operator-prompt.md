@@ -2,8 +2,7 @@
 
 Use this as the short instruction for Sam's coding agent on the M5 128 GB
 machine. `codec-through` is the canonical execution, artifact, validation, and
-commit repo for this bundle. `codec-through-sam` may be used only as reference
-or prototype code if needed.
+commit repo for this bundle.
 
 ## Bootstrap
 
@@ -12,41 +11,60 @@ From Sam's machine:
 ```bash
 git clone git@github.com:jfbastien/codec-through.git
 cd codec-through
-git checkout <branch-or-commit-containing-this-handoff>
+git switch sam-scaleout-handoff-20260429
+git pull --ff-only
+git switch -c sam/scaleout-m5-20260429
 claude
 ```
 
-Then give Claude the one-shot request below. If `codec-through` is already
-cloned, update that clone instead of creating a second one. Run from the
-`codec-through` repo root.
+If `codec-through` is already cloned, use that clone instead of creating a
+second one:
+
+```bash
+cd codec-through
+git switch sam-scaleout-handoff-20260429
+git pull --ff-only
+git switch -c sam/scaleout-m5-20260429
+claude
+```
+
+The base branch `sam-scaleout-handoff-20260429` must already exist on GitHub
+and contain this handoff, schema, and validators. Run from the `codec-through`
+repo root.
 
 ## One-Shot Request
 
-Please run the Sam scale-out bundle described in:
+Read `AGENTS.md`, then run the Sam scale-out bundle described in:
 
 `research/experiments/2026/2026-04-29-sam-scaleout-handoff.md`
 
-Use `codec-through` as the artifact repo. If code from `codec-through-sam` is
-needed, port or call it from this repo and record that provenance in the
-findings note; do not make `codec-through-sam` the returned artifact home.
+Use the current branch as the result branch. Implement or adapt any missing
+M5/26B runners inside `codec-through`, using the handoff's schema and gates as
+the acceptance contract.
 
-Return one committed artifact bundle that validates with:
+Run autonomously in a loop:
+
+- Execute phases in the gate order below.
+- Monitor long-running jobs and record useful progress in logs.
+- Validate each phase artifact with the row validator after it lands.
+- Write a short findings note for each completed phase.
+- Commit after each completed phase, including scientific failures,
+  infrastructure failures, and boundary results.
+- Push the result branch periodically and after the final validation.
+
+The final bundle must validate with:
 
 ```bash
 python scripts/validate_sam_scaleout_bundle.py \
-  --bundle-dir research/experiments/2026/artifacts/<sam-scaleout-run-id> \
-  --summary-output research/experiments/2026/artifacts/<sam-scaleout-run-id>/sam_scaleout_bundle_validation.json
+  --bundle-dir research/experiments/2026/artifacts/sam_scaleout_m5_20260429 \
+  --summary-output research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_scaleout_bundle_validation.json
 ```
-
-Commit the raw JSONLs, summaries, validation output, command logs, and a short
-findings note in `codec-through`. Send back the `codec-through` commit SHA,
-artifact directory path, and the bundle validation summary.
 
 ## Required File Names
 
 Put these files in one artifact directory:
 
-`research/experiments/2026/artifacts/<sam-scaleout-run-id>/`
+`research/experiments/2026/artifacts/sam_scaleout_m5_20260429/`
 
 - `sam_b0b_cache_correctness.jsonl`
 - `sam_b3_streaming_baselines.jsonl`
@@ -74,14 +92,18 @@ Dense-with-zeroed-tokens is not Track B and must not be exported as B4.
 4. Run B1/B2 only after B0b passes.
 5. Run B4 only if real sparse/compact ViT execution exists.
 
+If B0b fails, commit the failed B0b artifacts and validation summary, mark
+B1/B2 as blocked in the findings note, and continue with B3/B5 and eligible
+B4. Do not silently drop failed artifacts.
+
 ## Non-Negotiable Artifact Rules
 
 - Validate every row against
   `research/schemas/sam_scaleout_artifact_v1.schema.json`.
 - Do not port the local 12 GB MLX memory cap to the 128 GB M5 machine.
 - Record exact model id, model hash, quantization, runtime commit, macOS,
-  Metal, MLX/runtime version, `codec-through` `commit_sha`, command line, and memory
-  definition.
+  Metal, MLX/runtime version, `codec-through` `commit_sha`, command line, and
+  memory definition.
 - Include raw paired prompts/responses, parse failures split by arm, prompt
   hashes, input-id hashes, frame ids/hashes, cache topology, prefix coverage,
   stage timings, and peak memory.
@@ -94,10 +116,16 @@ Dense-with-zeroed-tokens is not Track B and must not be exported as B4.
   zero-accuracy-delta rows and 513 byte-identical raw-paired rows are separate
   artifacts.
 
-## What We Need Back
+## Final Response
 
-- The `codec-through` commit SHA.
-- The artifact directory path under `research/experiments/2026/artifacts/`.
-- `sam_scaleout_bundle_validation.json`.
-- One short note with: which phases ran, which gates passed/failed, any parse
-  failures, and any runtime/cache implementation deviations from the handoff.
+At the end, push the result branch and respond with:
+
+- Pushed branch name.
+- Final commit SHA.
+- Compact phase table: phase, status, pass/fail gates, row counts, runtime.
+- Whether `sam_scaleout_bundle_validation.json` passed.
+- Any scientific blockers, infrastructure failures, or runtime deviations from
+  the handoff.
+
+Do not send raw artifacts separately; they live in the pushed branch under
+`research/experiments/2026/artifacts/sam_scaleout_m5_20260429/`.
