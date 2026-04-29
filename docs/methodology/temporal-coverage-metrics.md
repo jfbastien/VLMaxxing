@@ -154,6 +154,6 @@ instrumentation; earlier phases can continue reporting the scalar
 
 ## Links
 
-- [docs/research-strategy-post-codecsight.md](../research-strategy-post-codecsight.md)
+- [paper/claim-matrix.md](../../paper/claim-matrix.md)
 - [phase 1.31 failure predictor prereg](../../research/experiments/2026/2026-04-16-phase-1_31-failure-predictor.md)
 - [2026-04-16 audit decision-log row on budget placement](../../research/decision-log.md)

@@ -2,14 +2,12 @@
 
 Date: 2026-04-16
 Parent: [PLAN.md](../PLAN.md)
-Sibling: [research-strategy-post-codecsight.md](research-strategy-post-codecsight.md)
-Prior map: [literature-map.md](literature-map.md) (pre-CodecSight)
+Current verified table: [related-work-table.md](related-work-table.md)
 
-This document updates the research-position map after CodecSight
+This document records the research-position map after CodecSight
 (2604.06036v3) and CoPE-VideoLM (2602.13191). Whitepaper reproduction
 remains the methodological foundation. The broader **candidate paper
-slot**, if later phase work (phase 1.20 TOMATO N=30, phase 1.21 MVBench
-N=30, Stage E Track B) lands, is a training-free, codec-guided
+slot** is a training-free, anti-recomputation
 temporal routing method targeting a better quality–compute Pareto
 frontier on temporal-reasoning benchmarks with real measured skipped
 compute. As of 2026-04-29, bounded measured sparse-vision evidence exists,
@@ -176,13 +174,13 @@ FrameFusion partially overlaps our signal axis — we likely cannot
 claim strict orthogonality. Include in the paper's related-work
 comparison table.
 
-All six listed methods run as training-free inference-time policies
+All listed methods run as training-free inference-time policies
 on top of frozen VLMs. (FastVID adds dynamic density clustering at
 inference time; no fine-tuning is required.) Verify per-paper before
 citing in a paper table.
 
 Our slot on the same axes:
-`(Post-encoder, Pixel/frame-domain, Training-free, Cross-frame)` —
+`(pre-ViT / frame-domain / training-free / cross-frame)` —
 genuinely orthogonal to every method above on the signal-source axis
 (they all use attention; we use frame-domain pixel statistics) and
 orthogonal to FastV/SparseVLM/VScan/VLCache on the stage axis (we
@@ -190,19 +188,17 @@ prune before they see tokens).
 
 Headline compute-reduction numbers (orientation only — numbers come
 from heterogeneous model stacks and benchmarks, not a head-to-head
-comparison; MVBench/TempCompass specific figures are NOT publicly
-reported for any of these — all evaluated on VideoMME, EgoSchema,
-LLaVA-1.5 image VQA):
+comparison):
 
 - **FastV**: 45% FLOPs reduction on LLaVA-1.5-13B, minimal accuracy
   drop
 - **VisionZip**: ≥5% SOTA gain over prior art (their setting)
 - **SparseVLM**: 54% FLOPs, 37% CUDA latency reduction, 97% accuracy
   retained on LLaVA-1.5-13B
-- **FastVID**: 90%+ token pruning, ~98% accuracy retained, 7.1x
-  prefill speedup on LLaVA-OneVision-7B
+- **FastVID**: 90.3% token pruning, FLOPs to 8.3%, 98.0% original
+  accuracy retained, 7.1x LLM prefill speedup on LLaVA-OneVision-7B
 - **VScan**: 2.91x prefill speedup, 10x FLOPs reduction, 95.4%
-  accuracy on LLaVA-NeXT-7B
+  original performance retained on LLaVA-NeXT-7B
 - **VLCache**: 1.2x–16x TTFT speedup, 2–5% of tokens computed,
   accuracy on par with full recomputation
 

@@ -180,4 +180,6 @@ Paper implication (updated 2026-04-16):
 - [phase 1.12 holdout evaluation (phase 1 of the discipline gate)](2026-04-14-phase-1_12-grid-winners-holdout.md)
 - [phase 1.16 cross-benchmark transfer](2026-04-15-phase-1_16-cross-benchmark-winner-transfer.md)
 - [phase 1.11 MVBench motion dev grid](2026-04-14-phase-1_11-planner-grid-mvbench-motion-dev.md)
-- [docs/research-strategy-post-codecsight.md](../../../docs/research-strategy-post-codecsight.md)
+- Pre-release CodecSight strategy notes are preserved in git history; current
+  release-facing positioning is in [paper/framing.md](../../../paper/framing.md)
+  and [docs/related-work-table.md](../../../docs/related-work-table.md).

@@ -58,8 +58,8 @@ Current wording:
 - "scale-out operational evidence"
 - "pending artifact harmonization"
 - "different model, machine, runtime, and streaming protocol"
-- "0.8 s Gemma 26B warm follow-up latency is diagnostic only until a
-  cache-safe cross-turn path passes S0b"
+- "scale-out warm follow-up latency is diagnostic only until a cache-safe
+  cross-turn path passes"
 - "zero accuracy delta on 1,937 sparse-sampled Qwen items; byte-identical
   raw-paired outputs verified on 513 items"
 

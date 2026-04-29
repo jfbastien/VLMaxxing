@@ -17,7 +17,6 @@ automation:
 4. [publishability-status.md](publishability-status.md)
 5. [framing.md](framing.md)
 6. [arxiv/README.md](arxiv/README.md)
-7. [arxiv/DISTILLATION_MAP.md](arxiv/DISTILLATION_MAP.md)
 
 If those files disagree, prefer them in that order.
 
@@ -41,21 +40,21 @@ mechanism-validation backbone:
    computation matters more than novelty magnitude alone, and which intuitive
    fixes do not survive matched conditions.
 
-The Sam lane remains important, but it is not just decoration. Use it for:
+The streaming lane remains important, but it is not just decoration. Use it for:
 
-- deployment-scale main-body evidence when the protocol and baseline are named
+- deployment-scale evidence only after a checked, validated artifact bundle lands
 - streaming / deployment motivation
 - bounded case studies when the evidence is qualitative or lacks a matched
   wall-clock baseline
 
 Do not let the paper drift back to a Qwen-only routing note, and do not let it
-flatten Sam into generic demo material.
+flatten streaming work into generic demo material.
 
 ## Evidence Hygiene
 
 - `paper/arxiv/sections/*.tex` are draft prose, not the source of truth.
 - Every paper-facing number must trace to a dated note plus checked-in
-  artifacts, or be explicitly labeled as imported companion evidence.
+  artifacts, or be explicitly labeled as pending artifact harmonization.
 - If a result is advisory, dev-only, dirty-tree, or imported, say so in the
   manuscript.
 - Do not silently promote supplementary results into automated headline

@@ -21,7 +21,7 @@ jobs:
         # the vlm group is intentionally omitted on CI. Tests that load
         # MLX-dependent scripts use pytest.importorskip("mlx.core") to
         # skip cleanly on non-MLX hosts. See round-16 CI post-mortem.
-        run: uv sync --group dev --group research --group benchmark --group seed
+        run: uv sync --group dev --group research --group benchmark --group paper
 
       - name: Ruff format check
         run: uv run ruff format --check .
@@ -47,10 +47,10 @@ jobs:
           python-version-file: ".python-version"
 
       - name: Sync dependencies
-        run: uv sync --group dev --group research --group benchmark --group seed
+        run: uv sync --group dev --group research --group benchmark --group paper
 
       - name: Generate manuscript assets
-        run: uv run --group seed python paper/arxiv/scripts/sync_sources.py
+        run: uv run --group paper python paper/arxiv/scripts/sync_sources.py
 
       - name: Build paper PDF
         uses: xu-cheng/latex-action@v3

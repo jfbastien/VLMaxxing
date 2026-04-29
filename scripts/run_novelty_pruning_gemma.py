@@ -10,11 +10,10 @@ prefill at 70-78% of end-to-end wall-clock on Qwen 2.5-VL-7B-4bit at
 8 frames × 560×560; Gemma's smaller vision tower shifts the ratio
 further toward prefill-dominance).
 
-Note: the "~1.8× end-to-end" figure previously cited here was our
-internal preregistered reproduction *target*, not a claim from Sam's
-whitepaper. The real whitepaper numbers are 5.4× prefill (Gemma 26B,
-VideoMME 32f), 4.2× e2e (Qwen 32f talking-head), and 4-5× combined
-real-video e2e (Gemma 26B). See docs/literature-map-2026-04-16.md.
+Note: the "~1.8× end-to-end" figure previously cited here was an internal
+preregistered reproduction target, not a release claim. Historical imported
+targets are summarized in docs/claim-register.md; raw seed imports are not part
+of the release tree.
 
 Architecture:
 - Loads Gemma 4 via ``mlx_vlm.load``.
@@ -438,8 +437,7 @@ def _process_one_item(
     if anchor_arm in _FEATURE_DEPENDENT_ARMS:
         # Gemma vision_tower emits bfloat16 features; np.asarray trips on
         # MLX's PEP-3118 exposure of bf16 (item_size=2, format='B'). Route
-        # through mx.float32 first — same pattern as Sam's seed code
-        # (seed/original_repo/experiments/exp_wall_clock_speedup.py:274).
+        # through mx.float32 first, matching the historical reproduction path.
         vision_features_f32 = vision_features.astype(mx.float32)
         mx.eval(vision_features_f32)
         vision_np = np.array(vision_features_f32)

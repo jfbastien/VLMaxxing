@@ -21,8 +21,8 @@ def extract_choice(
 ) -> int | None:
     """Return the parsed answer index or ``None`` if parsing failed.
 
-    The original benchmark scripts in ``codec-through-sam`` defaulted to option A
-    on parse failure. That can hide real disagreement. This version fails closed.
+    The predecessor benchmark scripts defaulted to option A on parse failure.
+    That can hide real disagreement. This version fails closed.
     """
 
     normalized = response.strip().upper()

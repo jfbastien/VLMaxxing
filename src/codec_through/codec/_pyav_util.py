@@ -1,14 +1,11 @@
 """PyAV decode helpers shared across codec-through's codec surfaces.
 
-Ported from `codec-through-sam/experiments/exp_videomme_streaming.py`
-(`_robust_reformat`). Under Metal/MLX memory pressure PyAV's sws_scale
-path can intermittently return `EAGAIN` on `frame.to_ndarray(...)`; a
-short back-off plus explicit `gc.collect()` typically clears the
-allocator and the retry succeeds. Without it, pixel-diff and codec
-extraction both fail sporadically on the same clips they would
-normally decode fine.
-
-Keep function signatures close to Sam's so future diffs remain legible.
+Ported from a predecessor prototype's robust reformat helper. Under
+Metal/MLX memory pressure PyAV's sws_scale path can intermittently
+return `EAGAIN` on `frame.to_ndarray(...)`; a short back-off plus
+explicit `gc.collect()` typically clears the allocator and the retry
+succeeds. Without it, pixel-diff and codec extraction both fail
+sporadically on the same clips they would normally decode fine.
 """
 
 from __future__ import annotations

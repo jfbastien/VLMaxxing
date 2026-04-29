@@ -5,7 +5,6 @@ This script is intentionally conservative:
 
 - it reads canonical, checked-in artifacts only
 - it emits small diffable files under ``paper/arxiv/generated/``
-- it treats the companion ``codec-through-sam`` repo as optional input
 - it keeps the default manuscript snapshot restricted to audited artifact,
   paper-grade evidence
 """
@@ -15,14 +14,12 @@ from __future__ import annotations
 import json
 import os
 import subprocess
-import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 os.environ.setdefault("MPLCONFIGDIR", str(REPO_ROOT / ".tmp" / "matplotlib"))
 
 import matplotlib  # noqa: E402
-from PIL import Image, ImageDraw  # noqa: E402
 
 matplotlib.use("Agg")
 import matplotlib.patches as mpatches  # noqa: E402
@@ -30,8 +27,6 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 MANUSCRIPT_ROOT = REPO_ROOT / "paper" / "arxiv"
 GENERATED = MANUSCRIPT_ROOT / "generated"
-DEFAULT_SAM_ROOT = REPO_ROOT.parent / "codec-through-sam"
-DEFAULT_UPSTREAM_ROOT = REPO_ROOT.parent / "codec-through"
 ARTIFACTS = REPO_ROOT / "research" / "experiments" / "2026" / "artifacts"
 
 
@@ -246,7 +241,7 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
             0.385,
             "Streaming",
             "live state",
-            "scale-out partner; C-PERSIST\nblocked on 26B cache smoke",
+            "candidate C-STREAM;\npending artifact bundle",
             "#fff7ed",
             "#d97706",
             "dashed",
@@ -592,17 +587,10 @@ def _render_c_persist_timeline_figure() -> None:
 
 def _source_path_label(path: Path) -> str:
     path = path.resolve()
-    candidates = [
-        (REPO_ROOT.resolve(), "codec-through-2"),
-        (DEFAULT_UPSTREAM_ROOT.resolve(), "codec-through"),
-        (DEFAULT_SAM_ROOT.resolve(), "codec-through-sam"),
-    ]
-    for root, label in candidates:
-        try:
-            rel = path.relative_to(root).as_posix()
-        except ValueError:
-            continue
-        return rel if label == "codec-through-2" else f"{label}/{rel}"
+    try:
+        return path.relative_to(REPO_ROOT.resolve()).as_posix()
+    except ValueError:
+        pass
     return path.name
 
 
@@ -864,7 +852,7 @@ def _paired_pruning_snapshot(
     }
 
 
-def _c_vision_snapshot(upstream_root: Path) -> dict[str, object]:
+def _c_vision_snapshot() -> dict[str, object]:
     rows = [
         _paired_pruning_snapshot(
             ARTIFACTS / "phase1_51V_session3" / "exp17_videomme_holdout_8f_unpatched_summary.json",
@@ -882,38 +870,19 @@ def _c_vision_snapshot(upstream_root: Path) -> dict[str, object]:
             advisory_note="50 ms decode delta on a 432 ms window; interpreted as OS-jitter scale.",
         ),
     ]
-
-    upstream_session5 = (
-        upstream_root / "research" / "experiments" / "2026" / "artifacts" / "phase1_51V_session5"
+    rows.append(
+        _paired_pruning_snapshot(
+            ARTIFACTS / "phase1_51V_session5" / "exp23_tomato_holdout_8f_unpatched_summary.json",
+            ARTIFACTS / "phase1_51V_session5" / "exp24_tomato_holdout_8f_L2_kr050_summary.json",
+            benchmark="TOMATO",
+            frame_count=8,
+            status="advisory-holdout",
+            advisory_note=(
+                "Revised thermal gate misses by 19 ms in the favorable direction; "
+                "source artifacts are checked into this repo."
+            ),
+        )
     )
-    if upstream_session5.exists():
-        rows.append(
-            _paired_pruning_snapshot(
-                upstream_session5 / "exp23_tomato_holdout_8f_unpatched_summary.json",
-                upstream_session5 / "exp24_tomato_holdout_8f_L2_kr050_summary.json",
-                benchmark="TOMATO",
-                frame_count=8,
-                status="advisory-holdout-upstream",
-                advisory_note=(
-                    "Revised thermal gate misses by 19 ms in the favorable direction; tracked "
-                    "from the freshly pulled upstream session-5 rerun."
-                ),
-            )
-        )
-    else:
-        rows.append(
-            _paired_pruning_snapshot(
-                ARTIFACTS / "phase1_51V_expansion" / "exp07_tomato_8f_unpatched_summary.json",
-                ARTIFACTS / "phase1_51V_expansion" / "exp08_tomato_8f_L2_kr050_summary.json",
-                benchmark="TOMATO",
-                frame_count=8,
-                status="dev-only",
-                advisory_note=(
-                    "Local tree lacks the session-5 advisory holdout rerun; "
-                    "using the dev cell for now."
-                ),
-            )
-        )
 
     return {"rows": rows}
 
@@ -1065,6 +1034,7 @@ def _selective_reprefill_cell(
         "label": label,
         "regime": regime,
         "policy": policy,
+        "n_sessions": int(metrics["n_sessions"]),
         "n_pairs": int(metrics["n_pairs"]),
         "n_follow_up_pairs": int(metrics["n_follow_up_pairs"]),
         "n_q3_pairs": int(metrics["q_index_breakdown"]["q3"]["n"]),
@@ -1075,6 +1045,17 @@ def _selective_reprefill_cell(
         "speedup": float(metrics["speedup_follow_up_median_cold_over_session"]),
         "all_query_speedup": float(metrics["speedup_all_query_median_cold_over_session_follow_up"]),
         "session_follow_up_median_s": float(metrics["session_follow_up_median_ms"]) / 1000.0,
+        "setup_inclusive_available": "session_follow_up_setup_amortized_median_ms" in metrics,
+        "setup_inclusive_follow_up_median_s": (
+            float(metrics["session_follow_up_setup_amortized_median_ms"]) / 1000.0
+            if "session_follow_up_setup_amortized_median_ms" in metrics
+            else None
+        ),
+        "setup_inclusive_speedup": (
+            float(metrics["speedup_follow_up_median_cold_over_session_setup_amortized"])
+            if "speedup_follow_up_median_cold_over_session_setup_amortized" in metrics
+            else None
+        ),
         "baseline_accuracy": float(summary["baseline"]["accuracy"]),
         "peak_rss_gb": float(summary["peak_rss_gb"]),
         "metrics_source": _source_path_label(metrics_path),
@@ -1089,6 +1070,7 @@ def _sum_reprefill_cells(cells: list[dict]) -> dict:
     latencies = [float(cell["session_follow_up_median_s"]) for cell in cells]
     return {
         "n_pairs": sum(int(cell["n_pairs"]) for cell in cells),
+        "n_sessions": sum(int(cell["n_sessions"]) for cell in cells),
         "n_follow_up_pairs": sum(int(cell["n_follow_up_pairs"]) for cell in cells),
         "n_q3_pairs": sum(int(cell["n_q3_pairs"]) for cell in cells),
         "paired_correctness_diffs": sum(int(cell["paired_correctness_diffs"]) for cell in cells),
@@ -1105,6 +1087,7 @@ def _sum_reprefill_cells(cells: list[dict]) -> dict:
         "latency_max_s": max(latencies),
         "rss_min": min(rss),
         "rss_max": max(rss),
+        "setup_inclusive_available": all(bool(cell["setup_inclusive_available"]) for cell in cells),
     }
 
 
@@ -1285,7 +1268,8 @@ def _write_c_persist_repair_table(snapshot: dict) -> None:
             r"the no-coordination baseline; the adaptive post-\(Q2\) state "
             r"policy is the primary broad repair result. Gains are reported as "
             r"cold follow-up or all-query latency divided by repaired-session "
-            r"latency.}"
+            r"latency. Setup-inclusive fields are emitted when artifacts record "
+            r"cache-build setup time; these checked-in cells predate that field.}"
         ),
         r"\label{tab:c-persist-repair}",
         r"\scriptsize",
@@ -1304,6 +1288,7 @@ def _write_c_persist_repair_table(snapshot: dict) -> None:
             r"Fixed \(K=1\) & 20f short/medium/long + 32f short & "
             f"{fixed['latency_min_s']:.2f}--{fixed['latency_max_s']:.2f}s / "
             f"{fixed['speedup_min']:.2f}--{fixed['speedup_max']:.2f}$\\times$ & "
+            f"sessions {fixed['paired_correctness_diffs']}/{fixed['n_sessions']}; "
             f"choice {fixed['paired_choice_diffs']}/{fixed['n_pairs']}; "
             f"correct {fixed['paired_correctness_diffs']}/{fixed['n_pairs']} & "
             f"pathological follow-ups {fixed['pathological_follow_up_hits']}/"
@@ -1317,6 +1302,7 @@ def _write_c_persist_repair_table(snapshot: dict) -> None:
             f"{adaptive['speedup_max']:.2f}$\\times$ same-class; "
             f"{adaptive['all_query_speedup_min']:.2f}--"
             f"{adaptive['all_query_speedup_max']:.2f}$\\times$ all-query & "
+            f"sessions {adaptive['paired_correctness_diffs']}/{adaptive['n_sessions']}; "
             f"choice {adaptive['paired_choice_diffs']}/{adaptive['n_pairs']}; "
             f"correct {adaptive['paired_correctness_diffs']}/{adaptive['n_pairs']} & "
             "Q3 inherits post-Q2 repaired state; paired Q3 fixed/adaptive "
@@ -1438,155 +1424,9 @@ def _write_qwen_bridge_boundary_table(snapshot: dict) -> None:
     )
 
 
-def _deployment_scale_snapshot(sam_root: Path) -> dict[str, object]:
-    whitepaper = sam_root / "whitepaper.md"
-    publishability = sam_root / "paper" / "publishability-status.md"
-    live_demo = sam_root / "live_demo_v2_writeup.md"
-    if not whitepaper.exists() or not publishability.exists() or not live_demo.exists():
-        return {"entries": [], "available": False}
-
-    entries = [
-        {
-            "label": "Real-video end-to-end",
-            "low": 4.2,
-            "high": 4.5,
-            "note": "talking-head / surveillance regimes",
-            "kind": "benchmark",
-            "source": _source_path_label(whitepaper),
-        },
-        {
-            "label": "Streaming VideoMME ViT",
-            "low": 13.0,
-            "high": 13.0,
-            "note": "paired N=60 Gemma streaming protocol",
-            "kind": "benchmark",
-            "source": _source_path_label(whitepaper),
-        },
-        {
-            "label": "Active-scene RTSP ViT",
-            "low": 14.3,
-            "high": 14.3,
-            "note": "60 s live demo, 701 decoded / 49 ViT calls",
-            "kind": "live",
-            "source": _source_path_label(live_demo),
-        },
-        {
-            "label": "Streaming dominant pipeline",
-            "low": 50.0,
-            "high": 50.0,
-            "note": "reported aggregate reduction",
-            "kind": "benchmark",
-            "source": _source_path_label(whitepaper),
-        },
-        {
-            "label": "Live-camera ViT savings",
-            "low": 5.0,
-            "high": 300.0,
-            "note": "scene-dependent range",
-            "kind": "live",
-            "source": _source_path_label(whitepaper),
-        },
-    ]
-    blocked_entries = [
-        {
-            "label": "Gemma 26B follow-up latency",
-            "status": "blocked_by_cache_correctness_smoke",
-            "note": "0.8 s warm latency observed; cross-turn follow-up matches dense on 2/5",
-            "source": "codec-through-sam/research/2026-04-26-s0-cache-correctness-findings.md",
-        }
-    ]
-    return {"entries": entries, "blocked_entries": blocked_entries, "available": True}
-
-
-def _render_deployment_scale_figure(snapshot: dict) -> None:
-    out_path = GENERATED / "figures" / "deployment_scale_ranges.pdf"
-    png_path = GENERATED / "figures" / "deployment_scale_ranges.png"
-    if not snapshot.get("entries"):
-        fig, ax = plt.subplots(figsize=(10.5, 4.4))
-        ax.axis("off")
-        ax.text(
-            0.02,
-            0.9,
-            "TODO: scale-out evidence figure unavailable.\n"
-            "Expected sources:\n"
-            "- codec-through-sam/whitepaper.md\n"
-            "- codec-through-sam/paper/publishability-status.md\n"
-            "- codec-through-sam/live_demo_v2_writeup.md",
-            va="top",
-            fontsize=11,
-        )
-        fig.tight_layout(rect=(0, 0, 1, 0.96))
-        fig.savefig(out_path, bbox_inches="tight")
-        fig.savefig(png_path, dpi=220, bbox_inches="tight")
-        plt.close(fig)
-        return
-
-    plt.rcParams.update(
-        {
-            "font.size": 10.5,
-            "axes.titlesize": 12,
-            "axes.labelsize": 10.5,
-            "axes.spines.top": False,
-            "axes.spines.right": False,
-            "figure.facecolor": "white",
-            "axes.facecolor": "white",
-            "savefig.facecolor": "white",
-        }
-    )
-
-    entries = snapshot["entries"]
-    fig, ax = plt.subplots(figsize=(13.2, 5.3))
-    colors = {"benchmark": "#1d3557", "live": "#b08900"}
-    ys = list(range(len(entries)))
-    for y, entry in enumerate(entries):
-        low = float(entry["low"])
-        high = float(entry["high"])
-        mid = low if low == high else (low * high) ** 0.5
-        color = colors.get(entry["kind"], "#1d3557")
-        ax.hlines(y, low, high, color=color, linewidth=2.4)
-        ax.scatter([mid], [y], color=color, s=42, zorder=3)
-        ax.text(high * 1.08, y, entry["note"], va="center", fontsize=9)
-
-    ax.set_xscale("log")
-    ax.set_xlabel("Reduction or speedup (x, log scale)")
-    ax.set_yticks(ys, [entry["label"] for entry in entries])
-    ax.set_xlim(3.5, 420)
-    ax.grid(True, axis="x", alpha=0.22, linewidth=0.8)
-    ax.set_title("Scale-out anti-recomputation ranges")
-    ax.legend(
-        handles=[
-            plt.Line2D(
-                [0],
-                [0],
-                color=colors["benchmark"],
-                lw=2.4,
-                label="scale-out benchmark",
-            ),
-            plt.Line2D(
-                [0],
-                [0],
-                color=colors["live"],
-                lw=2.4,
-                label="live or scene-dependent range",
-            ),
-        ],
-        frameon=False,
-        loc="lower right",
-        fontsize=8.8,
-    )
-    fig.tight_layout(rect=(0, 0, 1, 0.94))
-    fig.savefig(out_path, bbox_inches="tight")
-    fig.savefig(png_path, dpi=220, bbox_inches="tight")
-    plt.close(fig)
-
-    (GENERATED / "data" / "deployment_scale_snapshot.json").write_text(
-        json.dumps(snapshot, indent=2, sort_keys=True) + "\n"
-    )
-
-
-def _headline_snapshot(upstream_root: Path) -> dict[str, object]:
+def _headline_snapshot() -> dict[str, object]:
     return {
-        "c_vision": _c_vision_snapshot(upstream_root),
+        "c_vision": _c_vision_snapshot(),
         "measured_sparse_execution": _measured_sparse_execution_snapshot(),
         "persistent_kv": _persistent_kv_snapshot(),
         "selective_reprefill": _selective_reprefill_snapshot(),
@@ -1612,11 +1452,6 @@ def _render_headline_figure(snapshot: dict) -> None:
     status_styles = {
         "clean-holdout": {"facecolor": "#dfe7f2", "edgecolor": "#1d3557", "hatch": ""},
         "advisory-holdout": {"facecolor": "#f3ebd3", "edgecolor": "#8d6e00", "hatch": "///"},
-        "advisory-holdout-upstream": {
-            "facecolor": "#f3ebd3",
-            "edgecolor": "#8d6e00",
-            "hatch": "///",
-        },
         "dev-only": {"facecolor": "#eef0f2", "edgecolor": "#6c757d", "hatch": ".."},
     }
 
@@ -1992,31 +1827,26 @@ def _write_memory_characterization_table() -> None:
     (GENERATED / "tables" / "memory_characterization.tex").write_text("\n".join(lines) + "\n")
 
 
-def _write_build_meta(
-    primary: dict[str, str], upstream: dict[str, str], sam: dict[str, str]
-) -> None:
+def _write_build_meta(primary: dict[str, str]) -> None:
     lines = [
         f"\\newcommand{{\\PrimaryRepoSHA}}{{{_short_sha(primary['sha'])}}}",
         f"\\newcommand{{\\PrimaryRepoCommitDate}}{{{primary['commit_date']}}}",
-        (f"\\newcommand{{\\UpstreamRepoSHA}}{{{_short_sha(upstream['sha'])}}}"),
-        f"\\newcommand{{\\UpstreamRepoCommitDate}}{{{upstream['commit_date']}}}",
-        (f"\\newcommand{{\\ScaleoutRepoSHA}}{{{_short_sha(sam['sha'])}}}"),
-        f"\\newcommand{{\\ScaleoutRepoCommitDate}}{{{sam['commit_date']}}}",
+        r"\newcommand{\UpstreamRepoSHA}{not used}",
+        r"\newcommand{\UpstreamRepoCommitDate}{not used}",
+        r"\newcommand{\ScaleoutRepoSHA}{pending artifact bundle}",
+        r"\newcommand{\ScaleoutRepoCommitDate}{pending artifact bundle}",
     ]
     (GENERATED / "tex" / "build_meta.tex").write_text("\n".join(lines) + "\n")
 
 
-def _write_repo_provenance_table(
-    primary: dict[str, str], upstream: dict[str, str], sam: dict[str, str]
-) -> None:
+def _write_repo_provenance_table(primary: dict[str, str]) -> None:
     lines = [
         r"\begin{table}[H]",
         r"\centering",
         (
             r"\caption{Repo provenance captured by the manuscript sync step. "
-            r"For draft PDFs committed after generation, the primary row can "
-            r"point to the pre-commit working-tree snapshot; regenerate from a "
-            r"clean release tag for the frozen artifact bundle.}"
+            r"Regenerate from a clean release tag for the frozen artifact "
+            r"bundle.}"
         ),
         r"\label{tab:repo-provenance}",
         r"\begin{tabular}{lll}",
@@ -2024,8 +1854,6 @@ def _write_repo_provenance_table(
         r"Repo & Commit & Commit date \\",
         r"\midrule",
         f"codec-through-2 & {_short_sha(primary['sha'], 12)} & {primary['commit_date']} \\\\",
-        (f"codec-through & {_short_sha(upstream['sha'], 12)} & {upstream['commit_date']} \\\\"),
-        (f"scale-out partner & {_short_sha(sam['sha'], 12)} & {sam['commit_date']} \\\\"),
         r"\bottomrule",
         r"\end{tabular}",
         r"\end{table}",
@@ -2033,96 +1861,12 @@ def _write_repo_provenance_table(
     (GENERATED / "tables" / "repo_provenance.tex").write_text("\n".join(lines) + "\n")
 
 
-def _candidate_snapshot_paths(sam_root: Path) -> list[Path]:
-    return [
-        sam_root / "diagrams" / "live_demo_v2" / "01_setup.jpg",
-        sam_root / "diagrams" / "live_demo_v2" / "02_cleaning_begins.jpg",
-        sam_root / "diagrams" / "live_demo_v2" / "03_cleaning_active.jpg",
-        sam_root / "diagrams" / "live_demo_v2" / "04_end_of_window.jpg",
-    ]
-
-
-def _draw_label(draw: ImageDraw.ImageDraw, xy: tuple[int, int], text: str) -> None:
-    draw.rectangle((xy[0], xy[1], xy[0] + 190, xy[1] + 24), fill=(255, 255, 255, 220))
-    draw.text((xy[0] + 6, xy[1] + 5), text, fill=(20, 20, 20))
-
-
-def _render_snapshot_contact_sheet(sam_root: Path) -> None:
-    sources = [path for path in _candidate_snapshot_paths(sam_root) if path.exists()]
-    out_path = GENERATED / "figures" / "streaming_snapshot_contact_sheet.png"
-    note_path = GENERATED / "tex" / "streaming_snapshot_note.tex"
-
-    if len(sources) < 4:
-        image = Image.new("RGB", (1400, 850), color=(250, 248, 245))
-        draw = ImageDraw.Draw(image)
-        text = (
-            "TODO: curate real-application snapshots.\n\n"
-            "Preferred current source:\n"
-            "scale-out partner tree, live-demo-v2 snapshots\n\n"
-            "Expected images:\n"
-            "- diagrams/live_demo_v2/01_setup.jpg\n"
-            "- diagrams/live_demo_v2/02_cleaning_begins.jpg\n"
-            "- diagrams/live_demo_v2/03_cleaning_active.jpg\n"
-            "- diagrams/live_demo_v2/04_end_of_window.jpg"
-        )
-        draw.multiline_text((70, 90), text, fill=(40, 40, 40), spacing=10)
-        image.save(out_path)
-        note_lines = [
-            r"\paragraph{Streaming snapshot sources.}",
-            r"The scale-out partner artifact was not available with the expected four draft",
-            r"screenshots, so the manuscript sync generated a placeholder image",
-            r"instead. Expected source family: live-demo-v2 snapshots.",
-        ]
-        note_path.write_text("\n".join(note_lines) + "\n")
-        return
-
-    cell_w = 640
-    cell_h = 360
-    margin = 30
-    canvas = Image.new("RGB", (margin * 3 + cell_w * 2, margin * 3 + cell_h * 2), "white")
-    labels = [
-        "A. setup",
-        "B. change begins",
-        "C. change active",
-        "D. end of window",
-    ]
-    for idx, source in enumerate(sources[:4]):
-        image = Image.open(source).convert("RGB")
-        image.thumbnail((cell_w, cell_h))
-        tile = Image.new("RGB", (cell_w, cell_h), color=(245, 245, 245))
-        x = (cell_w - image.width) // 2
-        y = (cell_h - image.height) // 2
-        tile.paste(image, (x, y))
-        draw = ImageDraw.Draw(tile)
-        _draw_label(draw, (10, 10), labels[idx])
-        col = idx % 2
-        row = idx // 2
-        canvas.paste(tile, (margin + col * (cell_w + margin), margin + row * (cell_h + margin)))
-    canvas.save(out_path)
-
-    lines = [
-        r"\paragraph{Streaming snapshot sources.}",
-        r"The draft contact sheet was synced automatically from the scale-out",
-        r"partner artifact. Current source files:",
-        r"\begin{itemize}[leftmargin=1.5em]",
-    ]
-    for source in sources[:4]:
-        rel = source.relative_to(sam_root).as_posix()
-        lines.append(rf"\item \path{{deployment-companion/{rel}}}")
-    lines.append(r"\end{itemize}")
-    note_path.write_text("\n".join(lines) + "\n")
-
-
 def main() -> int:
-    sam_root = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else DEFAULT_SAM_ROOT.resolve()
-    upstream_root = (
-        Path(sys.argv[2]).resolve() if len(sys.argv) > 2 else DEFAULT_UPSTREAM_ROOT.resolve()
-    )
     _ensure_dirs()
     snapshot = _lane_a_snapshot()
     _render_lane_a_figure(snapshot)
     _write_lane_a_table(snapshot)
-    headline_snapshot = _headline_snapshot(upstream_root)
+    headline_snapshot = _headline_snapshot()
     _render_regime_overview_figure(headline_snapshot)
     _render_headline_figure(headline_snapshot)
     _write_headline_table(headline_snapshot)
@@ -2135,15 +1879,10 @@ def main() -> int:
     _write_qwen_bridge_boundary_table(qwen_bridge_snapshot)
     paired_drift_snapshot = _paired_drift_snapshot()
     _write_paired_drift_table(paired_drift_snapshot)
-    deployment_snapshot = _deployment_scale_snapshot(sam_root)
-    _render_deployment_scale_figure(deployment_snapshot)
     _sync_curated_paper_figures()
     primary = _git_info(REPO_ROOT)
-    upstream = _git_info(upstream_root)
-    sam = _git_info(sam_root)
-    _write_build_meta(primary, upstream, sam)
-    _write_repo_provenance_table(primary, upstream, sam)
-    _render_snapshot_contact_sheet(sam_root)
+    _write_build_meta(primary)
+    _write_repo_provenance_table(primary)
     return 0
 
 

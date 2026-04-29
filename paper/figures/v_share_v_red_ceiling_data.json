@@ -7,6 +7,11 @@
       "v_red": 0.39,
       "predicted_e2e": 1.062,
       "observed_e2e": 1.08,
+      "source_paths": [
+        "research/experiments/2026/2026-04-21-phase-1_51V-expansion-findings.md",
+        "research/experiments/2026/artifacts/phase1_51V_expansion/exp01_videomme_8f_unpatched_summary.json",
+        "research/experiments/2026/artifacts/phase1_51V_expansion/exp02_videomme_8f_L2_kr050_summary.json"
+      ],
       "error_pp": 1.8,
       "product": 0.0593
     },
@@ -17,6 +22,11 @@
       "v_red": 0.39,
       "predicted_e2e": 1.105,
       "observed_e2e": 1.12,
+      "source_paths": [
+        "research/experiments/2026/2026-04-21-phase-1_51V-expansion-findings.md",
+        "research/experiments/2026/artifacts/phase1_51V_expansion/exp11_videomme_16f_unpatched_summary.json",
+        "research/experiments/2026/artifacts/phase1_51V_expansion/exp12_videomme_16f_L2_kr050_summary.json"
+      ],
       "error_pp": 1.5,
       "product": 0.0948
     },
@@ -27,6 +37,11 @@
       "v_red": 0.4,
       "predicted_e2e": 1.237,
       "observed_e2e": 1.21,
+      "source_paths": [
+        "research/experiments/2026/2026-04-21-phase-1_51V-expansion-findings.md",
+        "research/experiments/2026/artifacts/phase1_51V_expansion/exp05_mvbench_8f_unpatched_summary.json",
+        "research/experiments/2026/artifacts/phase1_51V_expansion/exp06_mvbench_8f_L2_kr050_summary.json"
+      ],
       "error_pp": -2.7,
       "product": 0.1912
     },
@@ -37,6 +52,11 @@
       "v_red": 0.427,
       "predicted_e2e": 1.214,
       "observed_e2e": 1.24,
+      "source_paths": [
+        "research/experiments/2026/2026-04-21-phase-1_51V-expansion-findings.md",
+        "research/experiments/2026/artifacts/phase1_51V_expansion/exp07_tomato_8f_unpatched_summary.json",
+        "research/experiments/2026/artifacts/phase1_51V_expansion/exp08_tomato_8f_L2_kr050_summary.json"
+      ],
       "error_pp": 2.6,
       "product": 0.1738
     }
@@ -49,6 +69,11 @@
       "v_red": 0.413,
       "predicted_e2e": 1.0681575297361703,
       "observed_e2e": 1.113,
+      "source_paths": [
+        "research/experiments/2026/2026-04-21-phase-1_51V-session3-findings.md",
+        "research/experiments/2026/artifacts/phase1_51V_session3/exp17_videomme_holdout_8f_unpatched_summary.json",
+        "research/experiments/2026/artifacts/phase1_51V_session3/exp18_videomme_holdout_8f_L2_kr050_summary.json"
+      ],
       "error_pp": 4.48,
       "product": 0.0638
     },
@@ -59,6 +84,11 @@
       "v_red": 0.471,
       "predicted_e2e": 1.270549712226843,
       "observed_e2e": 1.407,
+      "source_paths": [
+        "research/experiments/2026/2026-04-21-phase-1_51V-session4-findings.md",
+        "research/experiments/2026/artifacts/phase1_51V_session4/exp19_mvbench_holdout_8f_unpatched_summary.json",
+        "research/experiments/2026/artifacts/phase1_51V_session4/exp20_mvbench_holdout_8f_L2_kr050_summary.json"
+      ],
       "error_pp": 13.65,
       "product": 0.2129
     },
@@ -69,6 +99,11 @@
       "v_red": 0.35,
       "predicted_e2e": 1.155221311522755,
       "observed_e2e": 1.194,
+      "source_paths": [
+        "research/experiments/2026/2026-04-21-phase-1_51V-session5-findings.md",
+        "research/experiments/2026/artifacts/phase1_51V_session5/exp23_tomato_holdout_8f_unpatched_summary.json",
+        "research/experiments/2026/artifacts/phase1_51V_session5/exp24_tomato_holdout_8f_L2_kr050_summary.json"
+      ],
       "error_pp": 3.88,
       "product": 0.1344
     }
@@ -81,6 +116,10 @@
       "v_red": 0.398,
       "predicted_e2e": 1.043,
       "observed_e2e": 1.044,
+      "source_paths": [
+        "research/experiments/2026/2026-04-22-phase-1_57-qwen-bridge-findings.md",
+        "research/experiments/2026/artifacts/phase1_57/qwen_8f_dev30.json"
+      ],
       "error_pp": 0.1,
       "product": 0.041
     }
@@ -93,6 +132,10 @@
       "v_red": 0.448,
       "predicted_e2e": 1.047,
       "observed_e2e": 1.042,
+      "source_paths": [
+        "research/experiments/2026/2026-04-29-phase-1_63E-track-b-frame-scaling-findings.md",
+        "research/experiments/2026/artifacts/phase1_63E_track_b_frame_scaling/pair_summary_8f.json"
+      ],
       "error_pp": -0.5,
       "product": 0.0447
     },
@@ -103,6 +146,10 @@
       "v_red": 0.482,
       "predicted_e2e": 1.039,
       "observed_e2e": 1.102,
+      "source_paths": [
+        "research/experiments/2026/2026-04-29-phase-1_63G-gemma-track-b-findings.md",
+        "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/pair_summary_8f.json"
+      ],
       "error_pp": 6.3,
       "product": 0.0378
     },
@@ -113,6 +160,10 @@
       "v_red": 0.406,
       "predicted_e2e": 1.067,
       "observed_e2e": 1.035,
+      "source_paths": [
+        "research/experiments/2026/2026-04-29-phase-1_63G-gemma-track-b-findings.md",
+        "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/pair_summary_16f.json"
+      ],
       "error_pp": -3.2,
       "product": 0.0632
     },
@@ -123,6 +174,10 @@
       "v_red": 0.433,
       "predicted_e2e": 1.117,
       "observed_e2e": 1.126,
+      "source_paths": [
+        "research/experiments/2026/2026-04-29-phase-1_63G-gemma-track-b-findings.md",
+        "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/pair_summary_32f.json"
+      ],
       "error_pp": 0.9,
       "product": 0.1048
     },
@@ -133,6 +188,10 @@
       "v_red": 0.422,
       "predicted_e2e": 1.328,
       "observed_e2e": 1.316,
+      "source_paths": [
+        "research/experiments/2026/2026-04-29-phase-1_63G-gemma-track-b-findings.md",
+        "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/scaling_summary.json"
+      ],
       "error_pp": -1.2,
       "product": 0.2471
     },
@@ -143,6 +202,10 @@
       "v_red": 0.136,
       "predicted_e2e": 1.021,
       "observed_e2e": 1.032,
+      "source_paths": [
+        "research/experiments/2026/2026-04-29-phase-1_63H-16f-kr-sweep-findings.md",
+        "research/experiments/2026/artifacts/phase1_63H_16f_kr_sweep/pair_summary_kr085_16f.json"
+      ],
       "error_pp": 1.1,
       "product": 0.0203
     }
@@ -155,6 +218,10 @@
       "v_red": 0.43,
       "predicted_e2e": 1.027662622471693,
       "observed_e2e": 1.042,
+      "source_paths": [
+        "research/experiments/2026/2026-04-21-phase-1_51V-exp10-n60-findings.md",
+        "research/experiments/2026/artifacts/phase1_51V_exp10_n60/summary.json"
+      ],
       "error_pp": 1.43,
       "product": 0.0269
     }

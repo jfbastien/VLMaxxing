@@ -10,19 +10,15 @@ duplicating instructions.
 Read these before changing anything substantial:
 
 1. [README.md](README.md)
-2. [docs/claim-register.md](docs/claim-register.md)
-3. [docs/reproduction-status.md](docs/reproduction-status.md)
-4. [PLAN.md](PLAN.md)
-5. [paper/README.md](paper/README.md)
-6. [paper/priority.md](paper/priority.md)
+2. [PLAN.md](PLAN.md)
+3. [docs/README.md](docs/README.md)
+4. [docs/claim-register.md](docs/claim-register.md)
+5. [docs/reproduction-status.md](docs/reproduction-status.md)
+6. [paper/README.md](paper/README.md)
 7. [paper/claim-matrix.md](paper/claim-matrix.md)
 8. [paper/publishability-status.md](paper/publishability-status.md)
-9. [paper/framing.md](paper/framing.md)
-10. [docs/README.md](docs/README.md)
-11. [docs/methodology/performance.md](docs/methodology/performance.md)
-12. [docs/methodology/preprocessing.md](docs/methodology/preprocessing.md)
-13. [research/README.md](research/README.md)
-14. [research/decision-log.md](research/decision-log.md)
+9. [research/README.md](research/README.md)
+10. [research/experiments/registry.md](research/experiments/registry.md)
 
 Use that order for repo-wide orientation.
 
@@ -47,10 +43,6 @@ current task.
   [docs/reproduction-status.md](docs/reproduction-status.md)
 - For active roadmap and phase order:
   [PLAN.md](PLAN.md)
-- For imported predecessor evidence and what it actually proved:
-  [docs/original-repo-audit.md](docs/original-repo-audit.md)
-- For validated external-review takeaways:
-  [docs/external-feedback-validation.md](docs/external-feedback-validation.md)
 - For corpus and local asset policy:
   [docs/clip-policy.md](docs/clip-policy.md),
   [docs/local-setup.md](docs/local-setup.md), and
@@ -67,8 +59,6 @@ current task.
   [paper/publishability-status.md](paper/publishability-status.md),
   [paper/framing.md](paper/framing.md), and
   [paper/arxiv/README.md](paper/arxiv/README.md)
-- For imported provenance artifacts:
-  `seed/`
 
 ## Current Research Position
 
@@ -79,8 +69,8 @@ Validated enough to guide work:
 - pixel diff is the current semantic-validation baseline
 - bounded measured sparse-vision execution now exists, but broad sparse-backend
   coverage and sparse LM prefill remain open systems work
-- the local controls are reproduced, but the imported whitepaper benchmark and
-  mechanism claims remain mostly unreproduced here
+- imported target claims are tracked in the claim register; raw seed imports are
+  intentionally absent from the release tree because git history preserves them
 
 Deprioritized until new evidence appears:
 
@@ -104,7 +94,7 @@ Still hypotheses:
   - Track B: real work skipped in decode, vision, attention, or prefill.
 - Hard-fail on mismatched shapes, silent truncation, or ambiguous parsing unless the repo explicitly wants softer behavior.
 - Use primary sources for literature or standards claims.
-- Do not let seed material become the source of truth by repetition.
+- Do not let historical imports become the source of truth by repetition.
 
 ## Knowledge Maintenance
 
@@ -121,10 +111,9 @@ After every decision-worthy experiment:
 Durable homes:
 
 - `PLAN.md`: active roadmap and phase order
-- `docs/`: stable methodology, provenance, literature, external-review validation
+- `docs/`: stable methodology, provenance, literature, and setup guidance
 - `research/`: experiment notes and decision ledger
 - `paper/`: manuscript source, claim framing, and paper-story notes
-- `seed/`: imported provenance only
 
 ## Model And Runtime Notes
 

@@ -14,7 +14,7 @@ title can have the fun; technical terms should help readers stay oriented.
 | VLM | Vision-language model: a model that consumes visual inputs and text prompts to produce text answers. | Define once in the abstract or introduction. |
 | vision tower | The visual encoder inside a VLM that turns image or video frames into visual tokens before the language model consumes them. | Use freely after first definition. |
 | Qwen | The Qwen2.5-VL family used for local routing and persistent-cache experiments. | First use should name the tested variant, usually `Qwen2.5-VL-7B-Instruct-4bit`. |
-| Gemma | The Gemma video-VLM family used for most first-pass vision-pruning measurements and the 26B streaming lane. | First use should name `Gemma 4-E4B-4bit` or `Gemma 4 26B` depending on lane. |
+| Gemma | The Gemma video-VLM family used for most first-pass vision-pruning measurements and for pending scale-out discussion. | First use should name the exact model/precision when claim-bearing. |
 | first-pass | The first query on a fresh video, before the visual prefix has been cached. | Prefer over "fresh-video" when talking about query protocol. |
 | after-ingest | Later questions about the same video after the first query has already paid visual/prefix cost. | Use whenever reporting the large follow-up speedups. |
 | persistent KV | Reusing cached key/value attention state from an already-ingested prompt/video prefix. | Pair with "after-ingest" so readers do not mistake it for first-pass speedup. |
@@ -42,7 +42,7 @@ unless expanded. First use should follow this pattern:
   VLM vision tower during the first query on a fresh video.
 - **streaming state reuse (candidate C-STREAM)**: online/native-rate reuse of
   repeated visual state in a streaming or live deployment. Do not make this a
-  fourth headline contribution until the 26B scale-out lane has matched
+  fourth headline contribution until the scale-out lane has matched
   artifacts, cache-correctness smoke tests, and baselines.
 
 ## Terms To Avoid In Main Text

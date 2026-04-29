@@ -26,18 +26,15 @@ This subtree is the actual manuscript workspace.
 - a headline anti-recomputation figure and table covering:
   - first-pass Gemma vision-pruning holdout cells from canonical artifacts
   - the local Qwen persistent-KV scaling curve from canonical artifacts
-  - an optional TOMATO session-5 advisory upgrade from `../codec-through`
-    when that sibling repo is available locally
-- repo provenance tables
-- a contact-sheet placeholder or imported streaming/UI snapshots from
-  `../codec-through-sam` when available
+- the local TOMATO session-5 advisory rerun from checked-in artifacts
+- repo provenance tables, generated at build/freeze time
 
 ## Local Tooling
 
 Current local requirements:
 
 - Python via `uv`
-- `matplotlib` and `Pillow` through the existing `seed` dependency group
+- `matplotlib` and plotting dependencies through the `paper` dependency group
 - One TeX engine:
   - preferred lightweight local path: `tectonic`
   - acceptable fuller path: `latexmk` + `pdflatex`
@@ -90,3 +87,9 @@ distilled view of the science, not the claim authority.
 The current draft intentionally uses the manual bibliography in
 `sections/90_references.tex`. Do not add a parallel `.bib` file unless the build
 workflow is also converted to BibTeX/Biber.
+
+## Provenance
+
+`generated/tex/build_meta.tex` and `generated/tables/repo_provenance.tex`
+encode the current checkout SHA, so they are generated locally and not tracked.
+Regenerate them from a clean release tag before treating a PDF as frozen.

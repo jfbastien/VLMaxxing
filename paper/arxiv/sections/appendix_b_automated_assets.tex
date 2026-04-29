@@ -1,51 +1,24 @@
 \section{Automated Assets and Figure Sources}
 
-The manuscript tooling automates only the parts of the draft that currently
-have stable, canonical inputs. At the moment that means a Lane~A
-holdout figure and table, a headline anti-recomputation figure and table, a
-a draft repo-provenance table, an appendix-only deployment evidence map, and
-a scale-out partner contact sheet from the streaming evaluation when the expected
-live-demo images are available. The sync step avoids derived paper-side
-summaries, avoids workstation-local absolute paths, and excludes provisional
-supplementary rows from the default automated snapshot.
+The manuscript tooling automates only the paper elements that have stable,
+checked-in inputs: the Lane~A holdout figure and table, headline
+anti-recomputation assets, measured sparse-vision tables, C-PERSIST repair and
+sampler tables, memory characterization, paired-drift summaries, and draft repo
+provenance generated from the current checkout.
 
-Several paper elements are still intentionally manual. The novelty-ranked dense
-baseline table is currently carried from the authoritative phase note because a
-stable checked-in artifact path is not yet wired into the paper tooling. The
-supporting systems section also still uses hand-written summary prose rather
-than generated tables, because those claims are still being sorted into
-main-text versus appendix roles. This is deliberate: the draft automates what
-is stable and leaves the moving pieces visibly manual.
-
-\IfFileExists{generated/figures/deployment_scale_ranges.pdf}{
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\linewidth]{generated/figures/deployment_scale_ranges}
-  \caption{Heterogeneous scale-out evidence map. These rows mix
-  end-to-end speedups, follow-up-latency reductions, ViT reductions, and live
-  scene-dependent ranges from scale-out partner evidence, so the plot is
-  kept in the appendix rather than treated as a single comparable main-text
-  figure.}
-  \label{fig:deployment-scale-ranges}
-\end{figure}
-}{
-\draftnote{Run \texttt{make paper-sync} to generate the scale-out
-evidence map.}
-}
+The sync step deliberately does not read sibling checkouts or free-form
+deployment markdown. Candidate C-STREAM and scale-out rows remain manual and
+visibly pending until a validated local artifact bundle lands. That keeps the
+draft useful for incoming experiments without letting stale screenshots or
+partner prose become release evidence.
 
 \begin{sectiontodo}{Expand automation only where the evidence surface is stable}
-Good next targets are a generated novelty-ranked dense table and a stronger
-artifact-backed bridge for the streaming evaluation lane. Do not automate from
-free-form markdown when a canonical artifact is missing; either add the
-artifact or keep the text manual.
+Good next targets are a generated novelty-ranked dense table, setup-inclusive
+C-PERSIST rows once cache-build setup time is recorded, and a schema-validated
+C-STREAM artifact import. Do not automate from free-form markdown when a
+canonical artifact is missing; either add the artifact or keep the text pending.
 
 \textcolor{todoBorder}{Source pointers: \path{paper/arxiv/scripts/sync_sources.py},
 \path{paper/arxiv/scripts/build.py},
 \path{paper/arxiv/generated/}.}
 \end{sectiontodo}
-
-\IfFileExists{generated/tex/streaming_snapshot_note.tex}{
-\input{generated/tex/streaming_snapshot_note.tex}
-}{
-\draftnote{Run \texttt{make paper-sync} to generate the streaming snapshot source note.}
-}

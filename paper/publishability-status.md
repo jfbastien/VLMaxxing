@@ -29,11 +29,11 @@ note:
 - **Qwen routing**: mechanism and boundary evidence showing why placement of
   fresh computation matters more than novelty magnitude alone.
 
-The separate 26B streaming lane is not decorative support. It is the scale-out
-streaming lane for the same anti-recomputation thesis. Its benchmarking style is
-different, so the manuscript should label those results as scale-out streaming
-evidence with distinct denominators until artifact-compatible protocols and
-matched baselines make it first-class in the same evidence graph.
+Candidate C-STREAM is not decorative support, but it is not a release claim
+yet. The manuscript should keep native-rate streaming as a pending scale-out
+lane until artifact-compatible protocols, raw paired rows, cache-correctness
+smokes, source paths, and matched baselines make it first-class in the same
+evidence graph.
 
 ## One paper, multiple evidence regimes
 
@@ -102,21 +102,12 @@ TOMATO + MVBench) is the negative-result discipline lane: it shows
 what works and what does not, and it belongs in the paper as mechanism
 and boundary evidence rather than as the headline result.
 
-**Separate streaming work as scale-out streaming evidence (NOT applications/support).**
-The separate scale-out stack (26B-class, real streaming, full end-to-end pipeline)
-runs on a deliberately disjoint regime from codec-through (4B-class,
-sparse benchmark, mechanism isolation): 4.2–4.5× real-video, 13× ViT,
-~50× dominant measured subpipeline, and 5–300× live-camera ViT. The
-0.8 s Gemma 26B follow-up latency is now a blocked diagnostic row:
-the cross-turn cache-correctness smoke observed fast warm responses, but
-cross-turn warm follow-up matched dense on only 2/5 items.
-Its sparse exactness rows and streaming rows do not use one uniform
-classifier: sparse-sampled QA stays pixel-diff by design, while native-rate
-streaming uses H.264 metadata by design.
-Shared frame with codec-through: C-CEILING arithmetic + attention-
-propagation drift (NOT PE drift). Paper claims are the **labeled evidence
-union** across both repos with regime labels attached. Weak streaming
-case-study claims without paired baselines stay appendix-bound.
+**Candidate C-STREAM (NOT applications/support).** Native-rate streaming is the
+scale-out regime for the same anti-recomputation thesis, but numeric deployment
+rows stay pending until they are imported as validated artifacts rather than
+sibling prose. Sparse-sampled QA stays pixel-diff by design; native-rate
+streaming may use H.264 metadata by design. The shared frame is C-CEILING
+arithmetic plus cache-state correctness, not a cross-repo multiplier.
 
 1.51R novelty-pruning does NOT carry the headline. It appears as
 (a) the EXP10 n=60 composition-appendix gate (≥4 pp E2E lift over
@@ -128,7 +119,7 @@ duration-conditional partial reproduction, arithmetically bounded to
 
 See `paper/framing.md`, `paper/priority.md`, and the canonical LaTeX sources
 under `paper/arxiv/sections/` for the authoritative narrative. The Markdown
-abstract/intro files are legacy scratchpads.
+LaTeX section files are the canonical manuscript sources.
 
 > **Training-free anti-recomputation for video VLMs: measured first-pass
 > speedups on Gemma, sub-second same-video follow-up queries on Qwen, and
@@ -139,7 +130,7 @@ abstract/intro files are legacy scratchpads.
 
 - **Gemma first-pass vision pruning:** VideoMME 8f holdout **1.113×** clean,
   MVBench 8f holdout **1.407×** advisory, TOMATO 8f holdout **1.194×**
-  earned-advisory from the freshly pulled upstream session-5 rerun.
+  earned-advisory from checked-in session-5 artifacts.
 - **Qwen cross-architecture C-VISION transfer:** VideoMME 8f dev at matched
   `L=2`, `kr_V=0.50` lands **1.044×** observed vs **1.043×** predicted, with
   `V_red = 0.398` and aggregate `Δacc = −0.033`.
@@ -148,10 +139,9 @@ abstract/intro files are legacy scratchpads.
   (16f clean; 8f slightly worse but still inside the criterion). The repaired
   basin headline is adaptive selective re-prefill: **0/93** observed paired
   drift with **15.28×–35.97×** all-query speedup.
-- **Separate 26B streaming evidence:** **13×** streaming ViT reduction,
-  **~50×** dominant measured subpipeline reduction, **4.2–4.5×** real-video end-to-end
-  speedups in selected regimes. Gemma 4 26B same-video follow-up latency
-  remains diagnostic only until a cache-safe cross-turn path passes S0b.
+- **Candidate C-STREAM:** pending validated artifact bundle. Do not include
+  numeric deployment rows in release claims until raw paired outputs, cache
+  smokes, source paths, and matched baselines are checked in.
 - **Qwen routing:** audited Pareto win/tie on MVBench and TOMATO holdouts
   at much lower effective fresh-frame budgets, with the mechanism lesson that
   fresh-compute placement cannot be reduced to novelty magnitude alone.
@@ -322,8 +312,8 @@ queue once infra is in place.
 
 | Venue | Fit today | What would need to land |
 |---|---|---|
-| **arXiv preprint (current anti-recomputation draft)** | **Ready today** as a multi-regime anti-recomputation paper with clean versus advisory status stated explicitly and scale-out streaming evidence labeled by source class. | No new science gate. Keep provenance tight, finalize manuscript framing, and keep the paper honest about which rows are local clean, local advisory, tracked-upstream advisory, or scale-out partner evidence. |
-| **NeurIPS / ICLR / CVPR efficiency workshop** | **Defensible today** as the current anti-recomputation paper if the provenance remains tight and the manuscript keeps clean, advisory, tracked-upstream, and scale-out streaming rows visibly distinct. | Stronger with broader measured sparse-backend coverage, many-turn C-PERSIST stress, and a cleaner local streaming bridge. |
+| **arXiv preprint (current anti-recomputation draft)** | **Ready today** as a multi-regime anti-recomputation paper with clean, advisory, and artifact-pending status stated explicitly. | No new science gate for the local claims. Keep provenance tight, finalize manuscript framing, and keep candidate C-STREAM pending until its artifact bundle lands. |
+| **NeurIPS / ICLR / CVPR efficiency workshop** | **Defensible today** as the current anti-recomputation paper if the provenance remains tight and clean/advisory/pending rows stay visibly distinct. | Stronger with broader measured sparse-backend coverage, many-turn C-PERSIST stress, and a cleaner local streaming bridge. |
 | **Main track (NeurIPS/ICML/CVPR)** | **Not ready yet.** The paper now has a better three-regime story than the old venue rows implied and does include bounded measured sparse-vision evidence, but it still lacks broad fidelity-preserving sparse-backend coverage, broader apples-to-apples comparison against adjacent methods, and a cleaner bridge from local benchmark evidence into deployment-style streaming evaluation. | Broader measured sparse-backend coverage, many-turn C-PERSIST stability, broader first-pass coverage on the second architecture, a decoder-integrated codec-native / native-rate systems bridge, a scroll/pan/egomotion probe on a corpus that actually contains that regime, and tighter head-to-head positioning against the closest trained and training-free baselines. |
 | **Systems conference (MLSys/OSDI)** | **Not ready yet.** The deployment evidence is interesting, but the current paper still does not characterize a full sparse backend or benchmark the streaming path against a clean systems baseline such as screenshot polling. | Sparse execution characterization, screenshot-polling baseline, broader streaming or event-detection evaluation, and ideally a decoder-integrated codec-native streaming bridge. |
 
@@ -346,11 +336,9 @@ queue once infra is in place.
 > boundary: a bounded-staleness planner preserves the quality-compute
 > frontier, beats novelty-ranked dense selection, and shows that
 > fresh-compute placement cannot be reduced to novelty magnitude alone.
-> Scale-out streaming evaluations add **13×** ViT reduction,
-> **~50×** dominant measured subpipeline reduction, and **4.2–4.5×**
-> end-to-end speedups in selected real-video regimes. Gemma 4 26B
-> follow-up latency is currently a cache-correctness diagnostic, not an
-> earned C-PERSIST claim.
+> Candidate C-STREAM remains pending until a validated streaming artifact bundle
+> supplies raw paired outputs, cache-correctness smokes, source paths, and
+> matched baselines.
 
 ## What is NOT safe to say today
 
@@ -516,9 +504,9 @@ queue once infra is in place.
   retroactively adjust numbers — keep them as pessimistic
   benchmarks, note the amortization in the method section. See
   `2026-04-19-codex-round-21-sam-imports.md` §4.
-- **Attention-context drift vs PE drift (Codex round-21).** Sam's
-  whitepaper attributes the refresh requirement to attention-context
-  drift (~0.01/frame, `paper/whitepaper-revised-2026-04-16.md:234`),
+- **Attention-context drift vs PE drift (Codex round-21).** The imported
+  predecessor whitepaper attributed the refresh requirement to attention-context
+  drift (~0.01/frame; target summarized in `docs/claim-register.md`),
   NOT positional-encoding drift. Our 1.49 refresh sweep shows
   *that* periodic re-encode recovers agreement but does not isolate
   *which* drift mechanism is load-bearing. Paper framing must say
@@ -622,9 +610,9 @@ Documented here as appendix-grade method evidence. These are the null
   ≈2 h wall after code lands; orthogonal path to claim 3.
 - **Phase 1.43 EgoSchema N=30 on Qwen** — long-form/egocentric
   generalization; ≈2-3 h wall; claim 12 enabler.
-- **Measured sparse-execution path** — biggest single claim-5 unlock,
-  weeks of engineering. Deferable to post-submission discussion —
-  C-CEILING already bounds the measurable delta analytically.
+- **Broader measured sparse-backend path** — bounded sparse-vision evidence has
+  landed, but broad sparse-backend coverage and sparse LM prefill remain open.
+  Defer broad claims until fidelity-preserving curves exist.
 
 ### Retired framing (do not reintroduce)
 

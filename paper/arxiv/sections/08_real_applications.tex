@@ -1,149 +1,52 @@
-\section{Scale-Out Streaming and Deployment Evidence}
+\section{Candidate C-STREAM and Deployment Evidence}
 
-The largest reported operational gains appear when the model keeps revisiting
-nearly the same visual state. We treat the Gemma 4 26B streaming stack as a
-scale-out lane for the same anti-recomputation questions, not as decorative
-application color. The current draft still labels those rows separately because
-they use a different model, machine, runtime, and streaming protocol; promoting
-them to first-class evidence requires the same artifact-compatible outputs and
-matched baselines used by the local experiments. Under the current protocol,
-paired Streaming VideoMME results report 13$\times$ fewer ViT calls and
-\mbox{$\sim$50$\times$} less dominant measured subpipeline compute, and selected
-real-video regimes report 4.2--4.5$\times$ end-to-end speedups. A separate
-Gemma 26B follow-up probe observed 0.8\,s warm responses at roughly
-10--18$\times$ lower latency than cold prefill, but the required
-cache-correctness smoke failed: deterministic dense generation and within-turn
-cache-equivalence both passed, while cross-turn warm follow-up agreed with dense
-on only 2/5 items. We therefore treat that row as a blocked cache-semantics
-diagnostic, not as earned 26B C-PERSIST evidence. ``Dominant
-measured subpipeline'' is the instrumented high-cost streaming segment in that
-runtime, not a full end-to-end denominator. Reported live-camera measurements
-show the same regime dependence in the wild: one post-fix RTSP demo reduces
-ViT calls by 14.3$\times$ over an active 60\,s window, while broader
-scene-dependent 5--300$\times$ live-counter ranges remain appendix-weighted
-until matched baselines land.
+Native-rate streaming is the natural scale-out setting for anti-recomputation:
+the model revisits nearly the same visual state while deciding when to keep,
+shift, rebuild, or invalidate cached state. We keep this lane visible because it
+is scientifically important, but it is not a fourth headline contribution yet.
+The current release tree no longer reads a sibling deployment checkout or
+free-form partner markdown. C-STREAM becomes claim-bearing only after a
+validated local artifact bundle provides raw paired outputs, cache-correctness
+smoke results, matched low-FPS or screenshot-polling baselines, and exact source
+paths.
 
-These rows are not local headline cells yet. They are included because they
-show the scale of the operational regime where a stable scene is queried
-repeatedly. The right current claim is that the scale-out lane exercises the
-same anti-recomputation structure under a native streaming workload, not that
-its counters can be multiplied into the local C-VISION or C-PERSIST numbers.
-The paper-facing goal is to turn this lane into a first-class
-\emph{streaming state reuse} evaluation with the same paired outputs, cache
-correctness smoke tests, low-FPS / screenshot-polling / recency baselines, and
-artifact bundle as the controlled local runs.
-
-That makes this the paper's candidate C-STREAM lane: online reuse of repeated
-visual state under a streaming workload, where the unit of work is not one
-sampled benchmark clip or one follow-up question but an ongoing stream. Unlike
-sparse-sampled benchmark runs, this lane tests cache lifetime: when to keep
-state, shift it, rebuild it, or declare it stale. The scale-out work includes
-companion-lane probes for motion-vector and residual side-channel staleness
-signals, sectional cache shifts, and static-camera event/inflection triggers.
-Those mechanisms are why the lane is not merely an application demo, even
-though its claims remain
-separately labeled until
-matched baselines, cache-safe follow-up semantics, and artifact-compatible
-paired outputs land.
-
-Smaller-$N$ UI studies stay strictly illustrative, not headline-bearing. Recent
-sectional-scroll wall-clock instrumentation is useful on the
-perception-rate axis: over the same recording duration it reports 22--64$\times$
-fewer ViT fires than an arithmetic naive 1\,Hz polling baseline on two
-recordings; equivalently, at matched ViT cost the polling baseline would see
-one frame every 22--64 seconds while the cached pipeline maintains stream state
-between rare rebuilds.
-Per-query latency moves only 1.09--1.10$\times$ because LLM generation
-dominates. Its current quality axis is not yet earned, because the new v7
-recordings regress relative to the older sectional-scroll mechanism numbers and
-need revalidation. The contact-sheet imagery below is qualitative rather than
-quantitative: it anchors the perception-rate setting in which the same scene is
-revisited continuously, but it is not evidence for the multiplier. The
-main-body evidence for this section is the deployment table below.
+The local Qwen session/streaming bridge explains why this gate matters. The
+best landed bridge restores aggregate first-query correctness and reaches
+2.7869$\times$ paired speedup, but still misses the follow-up fidelity target.
+Instrumentation also shows that follow-up vision pruning is inactive in that
+family: follow-up image tokens are cache-served rather than actively pruned. The
+right interpretation is dense-first-query admission plus K-cache reuse, not a
+validated native-rate sparse-vision backend.
 
 \begin{table}[H]
 \centering
-\caption{Heterogeneous operational evidence for the candidate C-STREAM /
-streaming state reuse regime. Metric type is shown explicitly because these
-rows mix component counters, end-to-end timing, and live observations with
-different sample sizes and denominators. Smaller UI and demo case studies are
-discussed in text and kept clearly weaker than the paired streaming rows below.
-All scale-out rows are pending artifact harmonization before they become
-first-class evidence in the same claim graph as the local runs.}
+\caption{Release-safe status for candidate C-STREAM. Numeric deployment rows
+are intentionally absent until the incoming scale-out bundle is checked into
+this repo with raw paired artifacts and matched baselines.}
 \label{tab:real-apps}
 \footnotesize
 \renewcommand{\arraystretch}{1.16}
-\begin{tabularx}{\linewidth}{@{}
-  >{\raggedright\arraybackslash}p{0.18\linewidth}
-  >{\raggedright\arraybackslash}p{0.16\linewidth}
-  >{\raggedright\arraybackslash}X
-  >{\raggedright\arraybackslash}p{0.16\linewidth}
-@{}}
+\begin{tabularx}{\linewidth}{@{}p{0.24\linewidth} X p{0.22\linewidth}@{}}
 \toprule
-Setting & Metric type & Outcome & Evidence class \\
+Lane & Current status & Evidence class \\
 \midrule
-Streaming VideoMME (Gemma 26B) & component counter + accuracy & reported paired N=60: 13$\times$ fewer ViT calls; $\sim$50$\times$ less dominant measured subpipeline compute in the instrumented streaming segment; 58.3/60.0/61.7\% (stream/token-prune/dense), all within the reported $\pm$12 pp 95\% CI & scale-out stream benchmark \\
-Real-video paired regimes (Gemma 26B) & end-to-end timing & reported 4.2--4.5$\times$ end-to-end speedup on talking-head and surveillance-style real-video measurements & scale-out real-video benchmark \\
-Gemma 26B PromptCacheState follow-up & cache correctness + latency & cross-turn cache-correctness smoke: determinism 10/10 and within-turn cache-equivalence 10/10 pass, but cross-turn warm follow-up matches dense on only 2/5 items; warm latency is observed, yet correctness-preserving C-PERSIST is blocked pending a cache-safe rerun & blocked follow-up diagnostic \\
-Live-camera pipeline & live component counter & reported single-system counter: 14.3$\times$ fewer ViT calls on one active 60\,s RTSP window (701 decoded frames / 49 ViT calls); broader 5--300$\times$ scene-dependent range remains appendix-weighted live-counter evidence & scale-out live measurement \\
+Local Qwen session/streaming bridge & Boundary result: speed side is real, but
+follow-up fidelity remains short of the promotion gate and follow-up vision
+pruning is inactive. & checked local boundary \\
+26B native-rate streaming & Pending import of a validated artifact bundle with
+raw paired rows, cache-correctness smoke, and matched baselines. & pending
+C-STREAM evidence \\
+Live camera / UI case studies & Useful for protocol design and workload
+motivation; not release evidence for multipliers without raw counters and
+baselines. & qualitative / pending \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-The Qwen composition experiments do not yet reproduce this operational story as
-a fidelity-preserving stack. The original stacked run reproduced the speedup
-side but failed the accuracy budget. The dense-first-query admission successor
-restores first-query aggregate correctness and leaves a follow-up-only
-near-miss, but it also shows why the claim boundary must stay strict. The
-long-bucket continuations now measure follow-up image-token activity directly
-and find none: all follow-up image tokens are cache-served under the current
-prompt-cache path, and every tested long-Q0 keep rate misses the target
-fidelity/speed band.
-That lane is therefore dense-first-query admission plus K-cache reuse rather
-than proof of active follow-up vision pruning. That is why
-Table~\ref{tab:real-apps} is operational evidence rather than part of the local
-C-VISION or C-PERSIST headline rows.
-
-\begin{figure}[H]
-  \centering
-  \IfFileExists{generated/figures/streaming_snapshot_contact_sheet.png}{
-    \includegraphics[width=\linewidth]{generated/figures/streaming_snapshot_contact_sheet.png}
-  }{
-    \fbox{\parbox{0.9\linewidth}{Run \texttt{make paper-sync} to generate the streaming/UI contact sheet or a placeholder.}}
-  }
-  \caption{Representative imagery from the post-fix RTSP demo. These snapshots
-  are qualitative only; they illustrate an active-scene live deployment, but
-  the quantitative deployment claims in Table~\ref{tab:real-apps} come from the
-  paired streaming, real-video, and live-camera measurements rather than from
-  this contact sheet.}
-  \label{fig:streaming-contact-sheet}
-\end{figure}
-
-The current streaming evidence does not yet close a full systems-reviewer
-checklist. The paper still lacks the screenshot-polling baseline, low-FPS dense
-baseline, SimpleStream-style recency baseline, broader UI diversity, and a
-dedicated stale-cache failure case. The scale-out lane should next run the same
-claim axes as the local paper: a cache-correctness fix and expanded smoke before
-any 26B C-PERSIST replication, measured sparse vision / ceiling validation, native
-streaming matched baselines, and a raw re-export of the large sparse exactness
-artifact with item IDs, paired outputs, parse failures, and confidence
-intervals. The sparse-exactness audit currently supports zero accuracy delta on
-1,937 items, but byte-identical outputs are directly verified only on the
-513-item raw-paired subset. What the lane already suggests is that the same
-anti-recomputation principle can appear outside sparse benchmark slices, in the
-regime where users keep asking the same system about nearly the same scene.
-
-\begin{sectiontodo}{Keep scale-out evidence reviewer-safe}
-The next useful additions are a screenshot-polling baseline, a wider UI set,
-and one concrete failure case where stale-cache decisions break trust. Keep the
-section tied to the scale-out evidence above. Smaller UI claims such as
-sectional scroll, threshold tuning, or affine-axis mechanism variants should
-stay appendix-weighted until their evidence is cleaned up further.
-
-\textcolor{todoBorder}{Remaining work: fix or bound Gemma 26B cross-turn cache
-semantics, rerun an expanded cache-correctness smoke, run C-PERSIST scale-out
-replication only if that smoke passes, add measured sparse vision / ceiling
-validation, screenshot-polling and low-FPS dense baselines, broader UI coverage,
-one stale-cache failure case, and a fuller raw-paired sparse-exactness export
-before making the streaming lane carry more of the headline.}
+\begin{sectiontodo}{Land the C-STREAM artifact bundle before promotion}
+Import only schema-validated artifacts, not sibling markdown or screenshots.
+The bundle should carry raw paired outputs, stream/cold baselines,
+cache-correctness smokes, low-FPS or screenshot-polling comparisons, hardware
+metadata, and a source-path manifest. Once that lands, this section can replace
+the pending rows with earned C-STREAM claims.
 \end{sectiontodo}

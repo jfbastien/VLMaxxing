@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate Sam scale-out JSONL artifacts before importing them as evidence.
+"""Validate external scale-out JSONL artifacts before importing them as evidence.
 
 This intentionally implements only the JSON-Schema subset used by
 ``research/schemas/sam_scaleout_artifact_v1.schema.json`` plus explicit

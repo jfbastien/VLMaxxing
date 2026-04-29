@@ -161,4 +161,6 @@ probes at higher frame counts.
 - [phase 1.8 TOMATO motion frame-budget](2026-04-14-phase-1_8-motion-frame-budget-baselines.md)
 - [phase 1.10 TOMATO motion dev grid](2026-04-14-phase-1_10-planner-grid-tomato-motion-dev.md)
 - [docs/literature-map-2026-04-16.md](../../../docs/literature-map-2026-04-16.md)
-- [docs/research-strategy-post-codecsight.md](../../../docs/research-strategy-post-codecsight.md)
+- Pre-release CodecSight strategy notes are preserved in git history; current
+  release-facing positioning is in [paper/framing.md](../../../paper/framing.md)
+  and [docs/related-work-table.md](../../../docs/related-work-table.md).

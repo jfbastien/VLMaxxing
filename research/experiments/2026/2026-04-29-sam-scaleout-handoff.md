@@ -1,22 +1,22 @@
-# 2026-04-29 Sam Scale-Out Handoff
+# 2026-04-29 Scale-Out Artifact Handoff
 
-Status: preregistered handoff plan; no Sam-side results imported here yet.
+Status: preregistered handoff plan; no scale-out results imported here yet.
 
 ## Goal
 
-Promote Sam's 26B streaming work from "partner evidence" to first-class
+Promote external 26B streaming work from "partner evidence" to first-class
 same-graph evidence by requiring the same paired-artifact structure used in
 this repo: item ids, raw outputs, parse failures, paired correctness/choice
 diffs, timing, memory, and confidence intervals.
 
 ## Hardware / Runtime
 
-- Machine: Sam's M5 MacBook Pro with 128 GB unified memory.
-- Primary model: the exact 26B Gemma/Qwen-family model used in Sam's prior
+- Machine: M5-class MacBook Pro with 128 GB unified memory.
+- Primary model: the exact 26B Gemma/Qwen-family model used in prior
   scale-out work. Run from `codec-through`; if prior external prototype code
   is used as reference or called by a wrapper, record the reference commit and
   runtime provenance in the findings note.
-- Record full model id, model hash, quantization, runtime commit, Sam's
+- Record full model id, model hash, quantization, runtime commit,
   `codec-through` commit, and Metal/macOS versions.
 - Do not inherit this repo's 12 GB MLX memory cap. That cap is a local M3
   mitigation for a Metal panic and would invalidate the scale-out run.
@@ -26,20 +26,16 @@ Rows should validate against
 
 ## Acceptance Contract
 
-Sam's results become same-graph evidence only if the raw row JSONL validates
+Scale-out results become same-graph evidence only if the raw row JSONL validates
 against `research/schemas/sam_scaleout_artifact_v1.schema.json` and the
 phase-specific gates below. The schema is intentionally provenance-heavy:
 stage timings, prompt/input/frame hashes, parse failures by arm, cache
 topology, runtime metadata, command line, and memory definition are required on
 every paired row.
 
-Use `scripts/validate_sam_scaleout_artifact.py` before handing artifacts back
-to this repo. The validator enforces the base schema and the B0b/B3/B5 gates
-that are easy to overclaim by prose.
-
-For the shortest operator-facing version, give Sam:
-`research/experiments/2026/2026-04-29-sam-scaleout-operator-prompt.md`.
-It names the required JSONL files and the one bundle-validation command.
+Use `scripts/validate_sam_scaleout_artifact.py` before importing artifacts into
+this repo. The validator enforces the base schema and the B0b/B3/B5 gates that
+are easy to overclaim by prose.
 
 ## B0b — Expanded Cache-Correctness Gate
 
@@ -153,7 +149,7 @@ Baselines:
 - Screenshot polling / fixed-cadence dense.
 - Low-FPS dense.
 - Recency / last-K frames.
-- Sam policy.
+- scale-out policy.
 
 Protocol:
 - Use the same recordings, event ids/timestamps, observation windows,
@@ -234,9 +230,9 @@ Protocol:
   note.
 - Export `sam_b5_s4_raw_paired_513.jsonl` with the 513 raw-paired rows used
   for byte-identical verification.
-- If Sam can re-export all 1,937 rows with raw paired responses, treat that as
-  a new stronger artifact and validate it explicitly; do not infer it from the
-  older accounting.
+- If the scale-out bundle can re-export all 1,937 rows with raw paired
+  responses, treat that as a new stronger artifact and validate it explicitly;
+  do not infer it from the older accounting.
 - If the 1,937-row source cannot provide raw paired responses, it cannot pass
   this schema as same-graph evidence; keep the paper claim bounded to imported
   zero-accuracy-delta support plus the 513 raw-paired exactness audit.

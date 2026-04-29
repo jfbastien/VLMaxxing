@@ -16,8 +16,8 @@ and publishability-status.md are expected to conform to this file.
 See `paper/framing.md` for the three major contributions (C-CEILING,
 C-PERSIST, C-VISION) these priorities map to. The canonical paper-facing
 narrative now lives in `paper/arxiv/sections/01_abstract.tex` and
-`paper/arxiv/sections/02_introduction.tex`; the Markdown abstract/intro files
-are legacy scratchpads.
+`paper/arxiv/sections/02_introduction.tex`; superseded Markdown scratchpads
+were removed from the release tree.
 
 Narrative update 2026-04-26B: the manuscript should present the central
 scientific object as the quality-compute frontier of fresh visual evidence over
@@ -90,13 +90,12 @@ others).
    Findings: `research/experiments/2026/2026-04-21-phase-1_51V-session3-findings.md`.
 
 2. **Ledger consistency across registry ↔ claim-matrix ↔
-   publishability-status ↔ research-dashboard.** Claim-matrix has been
-   the authoritative doc through round-20; registry rows had drifted.
-   Fixed this round for phase 1.41 (status `proposed` → `EARNED
-   2026-04-18`) and phase 1.55D research-dashboard row (`closed-null` →
-   `infra-falsified`). Sweep for remaining stale rows is a P0 before
-   submission; any sentence a reviewer cross-checks across two docs
-   must agree.
+   publishability-status.** Claim-matrix has been the authoritative doc
+   through round-20; registry rows had drifted. Fixed this round for phase
+   1.41 (status `proposed` → `EARNED 2026-04-18`) and phase 1.55D status
+   (`closed-null` → `infra-falsified`). Sweep for remaining stale rows is a
+   P0 before submission; any sentence a reviewer cross-checks across two
+   docs must agree.
 
 3. **Main CI green on `main`.** This is currently a real blocker again.
    The latest failing GitHub run (`24914182731`, 2026-04-24) dies in

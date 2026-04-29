@@ -9,12 +9,16 @@ whitepaper?" is ambiguous.
 
 Canonical imported references:
 
-- **Original whitepaper**: [seed/whitepaper/whitepaper.md](../seed/whitepaper/whitepaper.md)
-  — the frozen target this repo was initially built against.
-- **Revised whitepaper (2026-04-16)**: [seed/whitepaper/whitepaper-revised-2026-04-16.md](../seed/whitepaper/whitepaper-revised-2026-04-16.md)
-  — adds VideoMME, Gemma 4 cross-arch, wall-clock, strict-parse audit,
-  and an expanded comparison table. Imported as seed provenance per
-  [research/experiments/2026/2026-04-16-seed-audit-revised-whitepaper.md](../research/experiments/2026/2026-04-16-seed-audit-revised-whitepaper.md).
+- **Original whitepaper**: the frozen target this repo was initially built
+  against.
+- **Revised whitepaper (2026-04-16)**: adds VideoMME, Gemma 4 cross-arch,
+  wall-clock, strict-parse audit, and an expanded comparison table. Imported
+  and audited in
+  [2026-04-16-seed-audit-revised-whitepaper.md](../research/experiments/2026/2026-04-16-seed-audit-revised-whitepaper.md).
+
+The raw seed files are intentionally absent from the release tree. This register
+is the durable source of truth; git history preserves the raw imports for
+forensic review.
 
 The repo is canonically targeting **both**: the original WP-2.1 through
 WP-5 claims remain active, PLUS the new WP-2.7 through WP-5.1 claims

@@ -65,26 +65,15 @@ already tolerate reuse, where they do not, and what a future model could learn
 as native refresh gates, delta encoders, or cache-state-aware attention.
 
 The scale-out streaming lane is part of the same science story, but it has a
-different protocol. Under a separate 26B-class streaming stack, paired
-Streaming VideoMME reports 13$\times$ fewer ViT calls and
-\mbox{$\sim$50$\times$} less dominant measured subpipeline compute, and selected
-real-video regimes reach 4.2--4.5$\times$ end-to-end speedups. A separate
-Gemma 26B follow-up probe observed 0.8\,s warm responses, but its
-cache-correctness smoke failed on 3/5 cross-turn follow-up items, so that row is
-diagnostic latency rather than correctness-preserving C-PERSIST evidence. These
-numbers come from a different model, machine, and streaming protocol, so the
-current draft labels them as scale-out operational evidence rather than local
-headline cells. The intended end-state is stronger: the same claim axes,
-artifact format, paired gates, and baselines should make the 26B lane a
-first-class \emph{streaming state reuse} evaluation. They matter because they
-show where anti-recomputation can become large in practice. They also do
-\emph{not} license a naive composition claim: our Qwen
-session-composition experiments reproduce speedup without preserving the full
-fidelity contract, and later sweeps rule out the tested prompt-cache family as
-a deployable composition policy. Even when the first answer is preserved, the
-reused cache state can still damage later answers. We therefore treat
-deployment composition as a regime to explain rather than a multiplier to
-inherit.
+different protocol and is not yet a release claim. The intended end-state is a
+first-class \emph{streaming state reuse} evaluation with the same claim axes,
+artifact format, paired gates, cache-correctness smokes, and baselines as the
+local runs. Until that validated bundle lands, candidate C-STREAM is motivation
+and a set of gates, not a multiplier to inherit. This caution is earned by our
+Qwen session-composition experiments: they reproduce speedup without preserving
+the full fidelity contract, and later sweeps rule out the tested prompt-cache
+family as a deployable composition policy. Even when the first answer is
+preserved, reused cache state can still damage later answers.
 
 \begin{figure}[t]
   \centering
@@ -116,7 +105,7 @@ Regime & Reused work & Denominator / evidence class & Headline evidence \\
 \midrule
 Fresh-video first pass & vision-tower work inside the first query & first-query wall-clock; local clean/advisory cells plus measured sparse-execution envelopes & VideoMME clean 1.113$\times$; MVBench/TOMATO advisory; measured sparse vision: Gemma 32f short 1.316$\times$ with 0/20 drift, Qwen conservative boundary 1.032$\times$ \\
 After-ingest follow-up & prompt / KV prefix for later questions on the same video & follow-up latency and paired drift; first query still pays full freight & raw 16f reuse reaches 91.1$\times$; adaptive repair spans short/medium/long and 32f-short with 0/93 drift at 14.90--35.92$\times$ same-class follow-up speedup \\
-Scale-out streaming (candidate C-STREAM) & repeated visual state in a native-rate or live pipeline & separate operational protocol rows: ViT calls, measured subpipeline compute, live counters, or E2E & 26B streaming rows report 13$\times$ fewer ViT calls, \mbox{$\sim$50$\times$} subpipeline reduction, and 4.2--4.5$\times$ real-video E2E under a separate protocol \\
+Candidate C-STREAM & repeated visual state in a native-rate or live pipeline & pending validated streaming artifact bundle & no numeric release claim until raw paired outputs, cache smokes, source paths, and matched baselines land \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -171,7 +160,7 @@ choice diffs, correctness diffs, pathological-attractor counts, and confidence
 intervals whenever they decide the claim boundary.
 
 \begin{sectiontodo}{Tighten the opening once the final venue and title settle}
-The opening now carries the wall/background seed artifact and the
+The opening now carries the wall/background motivating example and the
 anti-recomputation agenda. The final venue pass should compress it without
 cutting that energy: this should not drift back into either a Qwen-only methods
 note or a vague ``everything stacks'' efficiency story.

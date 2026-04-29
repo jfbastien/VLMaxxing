@@ -29,11 +29,8 @@ measured on the same MLX path:
   all-tokens baseline in vision compute columns. This is NOT a
   measured result.
 
-This is the contingency path flagged in `docs/execution-plan-round-7.md`
-Stage F — if temporal reuse alone fails holdout on both benchmarks,
-FastV composition becomes a promising alternate path. If temporal
-reuse holds at N=30 on its own, FastV composition becomes optional
-rather than mandatory.
+This is a historical composition scout. Current claim status lives in
+`paper/claim-matrix.md`; do not treat this plan as an active release gate.
 
 ## Current repo state (encoder-side)
 

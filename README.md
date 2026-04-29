@@ -1,24 +1,24 @@
 # codec-through
 
-Research repo for codec-conditioned acceleration of video vision-language models.
+Research code, artifacts, and manuscript tooling for training-free
+anti-recomputation in video vision-language models.
 
-This repo starts from an imported whitepaper, imported ChatGPT seed artifacts, and an audited predecessor repo. None of those are treated as final truth. The job here is to turn promising ideas into a reproducible research program with explicit experiment contracts, honest measurement, and preserved negative results.
+The repo is organized around a small set of claim-bearing regimes:
 
-## Current Status
+- **C-CEILING**: component speedups survive to end-to-end latency only in
+  proportion to the dense wall-clock share they own.
+- **C-PERSIST**: after ingest, same-video follow-up queries can be much cheaper
+  inside a tested cache-reuse envelope.
+- **C-VISION**: bounded measured sparse-vision execution exists; broad sparse
+  backends and sparse LM prefill remain open.
+- **candidate C-STREAM**: native-rate streaming state reuse is still pending a
+  harmonized artifact bundle and matched baselines.
 
-- the imported whitepaper and its correction notes live under `seed/whitepaper/`.
-- Imported ChatGPT material lives under `seed/chatgpt/`.
-- Selected reference material from the original `codec-through-sam` repo lives under `seed/original_repo/`.
-- Clean rewritten utilities for frame probing, block classification, and strict answer parsing live under `src/codec_through/`.
-- The current research plan, experiment ledger, and paper workspace live in `PLAN.md`, `research/`, and `paper/`.
-
-## Research Principles
-
-- hypothesis first
-- separate semantic validation from real sparse execution
-- change one variable at a time
-- measure both quality and systems impact
-- keep failed experiments and weakened hypotheses
+Historical seed imports and old review packets are not part of the release
+surface. The durable imported-target summary is in
+[docs/claim-register.md](docs/claim-register.md), local reproduction status is
+in [docs/reproduction-status.md](docs/reproduction-status.md), and raw history
+remains in git.
 
 ## Quick Start
 
@@ -30,137 +30,66 @@ uv run mypy src tests
 uv run pytest
 ```
 
-If you want the imported reference and seed stacks available too:
-
-```bash
-uv sync --group dev --group seed --group research
-```
-
-If you want the local MLX/MLX-VLM stack available too:
+For local research utilities:
 
 ```bash
 uv sync --group dev --group research --group vlm
 ```
 
-If you want the local primary and synthetic evaluation clips:
+For benchmark assets:
 
 ```bash
 uv run python scripts/fetch_corpus.py --tier primary --encode
 uv run python scripts/generate_synthetic_corpus.py
 ```
 
-If you want to build the paper draft locally:
+For the paper draft:
 
 ```bash
-uv sync --group dev --group research --group benchmark --group seed
+uv sync --group dev --group research --group benchmark --group paper
 brew install tectonic
 make paper-doctor
 make paper-sync
 make paper-build
 ```
 
-If you prefer a fuller TeX stack instead of `tectonic`:
-
-```bash
-brew install --cask mactex-no-gui
-eval "$(/usr/libexec/path_helper)"
-```
-
 ## Where To Read First
 
 - [AGENTS.md](AGENTS.md): canonical coding-agent guidance
-- [PLAN.md](PLAN.md): current research plan and phase order
-- [docs/claim-register.md](docs/claim-register.md): frozen imported whitepaper targets and inconsistencies
-- [docs/reproduction-status.md](docs/reproduction-status.md): what is and is not reproduced locally from the imported whitepaper
-- [docs/README.md](docs/README.md): where durable knowledge belongs
-- [docs/clip-policy.md](docs/clip-policy.md): local-only clip and corpus policy
-- [docs/benchmark-setup.md](docs/benchmark-setup.md): benchmark-native TOMATO and MVBench asset setup
-- [research/README.md](research/README.md): experiment-note and decision-log workflow
-- [paper/README.md](paper/README.md): paper workspace overview
-- [paper/priority.md](paper/priority.md): current paper-triage order
-- [paper/claim-matrix.md](paper/claim-matrix.md): paper claim truth table
-- [paper/publishability-status.md](paper/publishability-status.md): reviewer-facing paper status
-- [paper/framing.md](paper/framing.md): current paper story, anti-claims, and future horizons
-- [docs/original-repo-audit.md](docs/original-repo-audit.md): what the original repo actually proved
-- [docs/external-feedback-validation.md](docs/external-feedback-validation.md): validated takeaways from Claude and ChatGPT reviews
-- [docs/methodology/performance.md](docs/methodology/performance.md): measurement contract
-- [docs/methodology/preprocessing.md](docs/methodology/preprocessing.md): decode, resize, padding, and sampling contract
-- [docs/local-setup.md](docs/local-setup.md): repo-centric setup and model guidance
+- [PLAN.md](PLAN.md): current roadmap and open gates
+- [docs/README.md](docs/README.md): durable docs router
+- [docs/claim-register.md](docs/claim-register.md): imported target register
+- [docs/reproduction-status.md](docs/reproduction-status.md): local status
+- [docs/methodology/performance.md](docs/methodology/performance.md): timing and denominator rules
+- [research/README.md](research/README.md): experiment-note workflow
+- [research/experiments/registry.md](research/experiments/registry.md): phase/artifact ledger
+- [paper/README.md](paper/README.md): manuscript workspace
+- [paper/claim-matrix.md](paper/claim-matrix.md): paper-facing claim truth table
 
 ## Repository Layout
 
 ```text
 .
-├── AGENTS.md
-├── CLAUDE.md
-├── .github/workflows/ci.yml
-├── PLAN.md
-├── README.md
-├── docs/
-│   ├── README.md
-│   ├── clip-policy.md
-│   ├── external-feedback-validation.md
-│   ├── knowledge-base-notes.md
-│   ├── literature-map.md
-│   ├── local-setup.md
-│   ├── methodology/
-│   │   ├── performance.md
-│   │   ├── preprocessing.md
-│   │   └── timing-harness.md
-│   └── original-repo-audit.md
-├── data/
-│   └── corpus/
-│       └── manifest.toml
-├── paper/
-│   ├── AGENTS.md
-│   ├── README.md
-│   ├── arxiv/
-│   ├── claim-matrix.md
-│   ├── framing.md
-│   ├── priority.md
-│   └── publishability-status.md
-├── research/
-│   ├── README.md
-│   ├── decision-log.md
-│   ├── prompt_bank/
-│   └── experiments/
-│       └── 2026/
-│           ├── 2026-04-13-phase-0_5-feasibility.md
-│           └── 2026-04-13-phase-0_75-cache-identity.md
-├── seed/
-│   ├── chatgpt/
-│   ├── original_repo/
-│   └── whitepaper/
-├── scripts/
-│   ├── check_model_configs.py
-│   ├── fetch_corpus.py
-│   └── generate_synthetic_corpus.py
-├── src/
-│   └── codec_through/
-└── tests/
+├── docs/        stable methodology, setup, literature, and status
+├── paper/       arXiv draft, generated assets, and paper claim ledgers
+├── research/    dated experiment notes, registry, and checked artifacts
+├── scripts/     reusable runners, analyzers, validators, and plotters
+├── src/         importable codec_through package
+└── tests/       unit tests for reusable code
 ```
 
-## What This Repo Is For
+Checked research artifacts remain in this repo when they directly support
+tables, figures, or status claims. Large future bundles should use a manifest
+with checksums, but deleting current artifact evidence would make the paper
+harder to audit.
 
-The near-term job is to answer a narrow set of questions with good evidence:
+## Research Principles
 
-1. How much temporal reuse is actually safe for video VLMs?
-2. How much of the remaining waste is in decode, the vision encoder, attention, and prefill?
-3. Which cheap routing signals are genuinely useful: pixel diff, frame metadata, motion vectors, Q-table flatness, or something else?
-4. Which content classes break the idea first: egomotion, OCR, color-sensitive tasks, small objects, or screen content?
-
-## Seed Material
-
-The material under `seed/` is preserved because it is useful source material.
-
-It is intentionally not the repo's source of truth.
-
-The source of truth is:
-
-- measured local results
-- checked-in clean code
-- verified primary references
-- explicit notes about uncertainty and failed ideas
+- label claims as reproduced here, imported target, or hypothesis
+- separate semantic answer stability from real skipped work
+- report denominators and setup costs explicitly
+- keep negative results when they change the claim boundary
+- use primary sources for literature and standards claims
 
 ## License
 

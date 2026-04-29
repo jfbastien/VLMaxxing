@@ -52,6 +52,83 @@ class CeilingCell:
         return (self.observed_e2e - self.predicted_e2e) * 100.0
 
 
+SOURCE_PATHS: dict[str, list[str]] = {
+    "VideoMME 8f dev": [
+        "research/experiments/2026/2026-04-21-phase-1_51V-expansion-findings.md",
+        "research/experiments/2026/artifacts/phase1_51V_expansion/exp01_videomme_8f_unpatched_summary.json",
+        "research/experiments/2026/artifacts/phase1_51V_expansion/exp02_videomme_8f_L2_kr050_summary.json",
+    ],
+    "VideoMME 16f dev": [
+        "research/experiments/2026/2026-04-21-phase-1_51V-expansion-findings.md",
+        "research/experiments/2026/artifacts/phase1_51V_expansion/exp11_videomme_16f_unpatched_summary.json",
+        "research/experiments/2026/artifacts/phase1_51V_expansion/exp12_videomme_16f_L2_kr050_summary.json",
+    ],
+    "MVBench 8f dev": [
+        "research/experiments/2026/2026-04-21-phase-1_51V-expansion-findings.md",
+        "research/experiments/2026/artifacts/phase1_51V_expansion/exp05_mvbench_8f_unpatched_summary.json",
+        "research/experiments/2026/artifacts/phase1_51V_expansion/exp06_mvbench_8f_L2_kr050_summary.json",
+    ],
+    "TOMATO 8f dev": [
+        "research/experiments/2026/2026-04-21-phase-1_51V-expansion-findings.md",
+        "research/experiments/2026/artifacts/phase1_51V_expansion/exp07_tomato_8f_unpatched_summary.json",
+        "research/experiments/2026/artifacts/phase1_51V_expansion/exp08_tomato_8f_L2_kr050_summary.json",
+    ],
+    "VideoMME 8f holdout": [
+        "research/experiments/2026/2026-04-21-phase-1_51V-session3-findings.md",
+        "research/experiments/2026/artifacts/phase1_51V_session3/exp17_videomme_holdout_8f_unpatched_summary.json",
+        "research/experiments/2026/artifacts/phase1_51V_session3/exp18_videomme_holdout_8f_L2_kr050_summary.json",
+    ],
+    "MVBench 8f holdout": [
+        "research/experiments/2026/2026-04-21-phase-1_51V-session4-findings.md",
+        "research/experiments/2026/artifacts/phase1_51V_session4/exp19_mvbench_holdout_8f_unpatched_summary.json",
+        "research/experiments/2026/artifacts/phase1_51V_session4/exp20_mvbench_holdout_8f_L2_kr050_summary.json",
+    ],
+    "TOMATO 8f holdout": [
+        "research/experiments/2026/2026-04-21-phase-1_51V-session5-findings.md",
+        "research/experiments/2026/artifacts/phase1_51V_session5/exp23_tomato_holdout_8f_unpatched_summary.json",
+        "research/experiments/2026/artifacts/phase1_51V_session5/exp24_tomato_holdout_8f_L2_kr050_summary.json",
+    ],
+    "Qwen VideoMME 8f dev": [
+        "research/experiments/2026/2026-04-22-phase-1_57-qwen-bridge-findings.md",
+        "research/experiments/2026/artifacts/phase1_57/qwen_8f_dev30.json",
+    ],
+    "Qwen sparse vision 8f n=60": [
+        "research/experiments/2026/2026-04-29-phase-1_63E-track-b-frame-scaling-findings.md",
+        "research/experiments/2026/artifacts/phase1_63E_track_b_frame_scaling/pair_summary_8f.json",
+    ],
+    "Gemma sparse vision 8f n=60": [
+        "research/experiments/2026/2026-04-29-phase-1_63G-gemma-track-b-findings.md",
+        "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/pair_summary_8f.json",
+    ],
+    "Gemma sparse vision 16f n=60": [
+        "research/experiments/2026/2026-04-29-phase-1_63G-gemma-track-b-findings.md",
+        "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/pair_summary_16f.json",
+    ],
+    "Gemma sparse vision 32f n=60": [
+        "research/experiments/2026/2026-04-29-phase-1_63G-gemma-track-b-findings.md",
+        "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/pair_summary_32f.json",
+    ],
+    "Gemma sparse vision 32f short": [
+        "research/experiments/2026/2026-04-29-phase-1_63G-gemma-track-b-findings.md",
+        "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/scaling_summary.json",
+    ],
+    "Qwen sparse vision 16f kr=0.85": [
+        "research/experiments/2026/2026-04-29-phase-1_63H-16f-kr-sweep-findings.md",
+        "research/experiments/2026/artifacts/phase1_63H_16f_kr_sweep/pair_summary_kr085_16f.json",
+    ],
+    "VideoMME n=60 composition audit": [
+        "research/experiments/2026/2026-04-21-phase-1_51V-exp10-n60-findings.md",
+        "research/experiments/2026/artifacts/phase1_51V_exp10_n60/summary.json",
+    ],
+}
+
+
+def _cell_dict(cell: CeilingCell) -> dict[str, object]:
+    data = asdict(cell)
+    data["source_paths"] = SOURCE_PATHS[cell.label]
+    return data
+
+
 def ceiling(product: float) -> float:
     return 1.0 / (1.0 - product)
 
@@ -192,23 +269,23 @@ def plot() -> None:
 
     summary = {
         "dev_cells": [
-            {**asdict(c), "error_pp": round(c.error_pp, 2), "product": round(c.product, 4)}
+            {**_cell_dict(c), "error_pp": round(c.error_pp, 2), "product": round(c.product, 4)}
             for c in DEV_CELLS
         ],
         "holdout_cells": [
-            {**asdict(c), "error_pp": round(c.error_pp, 2), "product": round(c.product, 4)}
+            {**_cell_dict(c), "error_pp": round(c.error_pp, 2), "product": round(c.product, 4)}
             for c in HOLDOUT_CELLS
         ],
         "cross_arch_cells": [
-            {**asdict(c), "error_pp": round(c.error_pp, 2), "product": round(c.product, 4)}
+            {**_cell_dict(c), "error_pp": round(c.error_pp, 2), "product": round(c.product, 4)}
             for c in CROSS_ARCH_CELLS
         ],
         "measured_sparse_cells": [
-            {**asdict(c), "error_pp": round(c.error_pp, 2), "product": round(c.product, 4)}
+            {**_cell_dict(c), "error_pp": round(c.error_pp, 2), "product": round(c.product, 4)}
             for c in SPARSE_CELLS
         ],
         "composition_cells": [
-            {**asdict(c), "error_pp": round(c.error_pp, 2), "product": round(c.product, 4)}
+            {**_cell_dict(c), "error_pp": round(c.error_pp, 2), "product": round(c.product, 4)}
             for c in COMPOSITION_CELLS
         ],
         "worst_abs_error_pp": round(max(abs(c.error_pp) for c in all_cells), 2),

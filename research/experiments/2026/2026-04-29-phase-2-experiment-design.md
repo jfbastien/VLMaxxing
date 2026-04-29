@@ -204,19 +204,21 @@ interpreted separately from K=1 repair turns.
 
 **Paper impact.** Lifts 1.55K from "single-seed T-sweep" to "short-tranche stochastic-stable" claim. It does not answer cross-bucket sampler robustness.
 
-## Track B — Sam (M5 MBP, 128 GB, 26B runtime)
+## Track B — Scale-Out Bundle (M5 MBP, 128 GB, 26B runtime)
 
-These are best-effort spec sheets for Sam; we won't run them locally. The
-canonical execution contract is
+These are best-effort spec sheets for the external scale-out runner; we won't
+run them locally. The canonical execution contract is
 `research/experiments/2026/2026-04-29-sam-scaleout-handoff.md`, and returned
 JSONLs must validate with `scripts/validate_sam_scaleout_artifact.py` against
 `research/schemas/sam_scaleout_artifact_v1.schema.json`.
 
 ### B0b. Expanded 26B cache-correctness gate
 
-**Question.** Does Sam's 26B runtime preserve answer identity across cross-turn warm follow-ups?
+**Question.** Does the 26B runtime preserve answer identity across cross-turn warm follow-ups?
 
-**Why.** Sam's last cache-correctness smoke failed on 3/5 cross-turn follow-up items (per paper line 72–74). Until this passes, *no* C-PERSIST claim from 26B is admissible.
+**Why.** The last cache-correctness smoke failed on 3/5 cross-turn follow-up
+items (per paper line 72–74). Until this passes, *no* C-PERSIST claim from 26B
+is admissible.
 
 **Protocol.** Minimum 7 videos × 3 questions each = 21 cross-turn rows plus
 the matching 21 within-turn replay rows. Three arms per video:
@@ -235,7 +237,7 @@ memory definition, exact runtime/model metadata, and command line.
 diffs, zero parse failures, matching prompt/input/frame hashes, and positive
 prefix metadata on follow-ups. Anything less = 26B C-PERSIST remains blocked.
 
-**Time.** ~1.5h. **Status.** Sam-only, blocking gate.
+**Time.** ~1.5h. **Status.** scale-out-only, blocking gate.
 
 ### B1. 26B C-PERSIST replication (conditional on B0b PASS)
 
@@ -251,17 +253,21 @@ prefix metadata on follow-ups. Anything less = 26B C-PERSIST remains blocked.
 
 **Question.** Does same-video cache reuse stay stable through 10/20/50 turns at 26B?
 
-**Protocol.** Same as A6, but at 26B and ideally with Sam's actual streaming protocol (continuous turn history rather than synthesized cycle). Three horizons: 10, 20, 50 turns, with two refresh policies.
+**Protocol.** Same as A6, but at 26B and ideally with the actual scale-out
+streaming protocol (continuous turn history rather than synthesized cycle).
+Three horizons: 10, 20, 50 turns, with two refresh policies.
 
 **Time.** ~10h. **This is the headline experiment.**
 
 ### B3. Matched streaming baselines (C-STREAM bundle)
 
-**Question.** What does same-video reuse measure against compared to: screenshot polling, low-FPS dense, recency/last-K, and Sam's adaptive repair?
+**Question.** What does same-video reuse measure against compared to:
+screenshot polling, low-FPS dense, recency/last-K, and the scale-out adaptive
+policy?
 
 **Protocol.** Same recordings, event ids/timestamps, observation windows,
 questions, answer keys, scoring, and artifact schema across screenshot polling,
-low-FPS dense, recency/last-K, and Sam policy. Every row records cadence/FPS or
+low-FPS dense, recency/last-K, and the scale-out policy. Every row records cadence/FPS or
 last-K, selected frame indices/ids/hashes, evidence budget, and event time.
 Include one stale-cache failure case (a question whose answer changed between
 turns 1 and 5). B3 can run even if B0b blocks cross-turn PromptCacheState as
@@ -283,10 +289,11 @@ recordings/scenes, so the four-arm bundle has at least 80 rows.
 
 ### B5. 1,937 re-export with full schema
 
-**Question.** Is the 1,937 exactness claim from the original Sam protocol still reproducible with full per-row provenance?
+**Question.** Is the 1,937 exactness claim from the original scale-out protocol
+still reproducible with full per-row provenance?
 
-**Protocol.** Re-export the data Sam used for the 1,937 number with: item IDs,
-raw paired outputs, parse_failure split by arm, CIs,
+**Protocol.** Re-export the data used for the 1,937 number with: item IDs, raw
+paired outputs, parse_failure split by arm, CIs,
 model/runtime/hardware metadata, exact commit, command line, prompt_hash,
 frame ids/hashes, frame_count, policy, source artifact path/hash, and
 provenance note. This is a documentation+tooling task, not a new experiment.
@@ -304,7 +311,9 @@ verification on 513 rows.
 4. **A7 (1.55K-extended) seed plumbing.** Seed arguments are now threaded through the standard and explicit-tail paths. A 1-clip T=1.0 smoke should still verify that different seeds produce different stochastic outputs before the full sweep.
 5. **A4 (1.63I) negative-result framing.** If no kr in [0.78, 0.82] passes both gates, the paper conclusion is "low-gain envelope confirmed." That's a fine outcome but worth pre-committing to before running, so we don't post-hoc rationalize a near-miss.
 6. **B-track schema mirror.** Implemented at `research/schemas/sam_scaleout_artifact_v1.schema.json`, with protocol details in `2026-04-29-sam-scaleout-handoff.md`.
-7. **Memory cap on Sam.** The 12 GB MLX cap was a workaround for the 16 GB unified-memory laptop's GPU race. On Sam's 128 GB box this is irrelevant; do *not* port the cap into B-track scripts.
+7. **Memory cap on scale-out hardware.** The 12 GB MLX cap was a workaround for
+   the 16 GB unified-memory laptop's GPU race. On 128 GB hardware this is
+   irrelevant; do *not* port the cap into B-track scripts.
 
 ## Recommended execution order
 
@@ -321,8 +330,9 @@ verification on 513 rows.
 6. **A4 1.63I Qwen kr fine-bracket** (9h) → Qwen Track B gate-pass attempt
 7. **A7 1.55K-extended seeds** (1h impl + 7.5h run = 8.5h) → universal sampler
 
-**Sam track (in parallel):**
-- **B0b expanded cache-correctness gate** as soon as Sam can — gating gate
+**Scale-out track (in parallel):**
+- **B0b expanded cache-correctness gate** as soon as the runner is ready —
+  gating gate
 - **B3 and B5** can run early; **B1/B2** wait for B0b; **B4** waits for real sparse-ViT support
 
 ## Each experiment will get a wrapper script
@@ -342,7 +352,8 @@ deep-mechanism queue.
 1. Run all of Track A in one chain, or want me to gate at A3 / A6 boundaries for human review?
 2. Should A6 (many-turn) include a "no refresh + dense control" 50-turn cell, or skip the unsafe scenario?
 3. A7 (1.55K-extended) is optional for arXiv v1 — keep it in scope, or save for v2?
-4. For B-track: do you want me to draft the Sam handoff document (schema + protocol + acceptance criteria) now, or wait until A-track completes?
+4. For B-track: draft the scale-out handoff document (schema + protocol +
+   acceptance criteria) before importing any scale-out evidence.
 
 ## What this slate does NOT include
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Validate a Sam scale-out result bundle.
+"""Validate an external scale-out result bundle.
 
 This wrapper runs the row-level validator with the phase-specific gates from
-the Sam handoff. It is intentionally file-name based so Sam can hand us one
-artifact directory and one validation summary.
+the scale-out handoff. It is intentionally file-name based so the external
+runner can hand us one artifact directory and one validation summary.
 """
 
 from __future__ import annotations

@@ -94,6 +94,8 @@ Pending.
 
 ## Links
 
-- [docs/research-strategy-post-codecsight.md](../../../docs/research-strategy-post-codecsight.md)
+- Pre-release CodecSight strategy notes are preserved in git history; current
+  release-facing positioning is in [paper/framing.md](../../../paper/framing.md)
+  and [docs/related-work-table.md](../../../docs/related-work-table.md).
 - [phase 1.12 holdout evaluation](2026-04-14-phase-1_12-grid-winners-holdout.md)
 - ChatGPT 2026-04-16 audit recommendation.

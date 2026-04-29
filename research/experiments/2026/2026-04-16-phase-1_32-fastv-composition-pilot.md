@@ -82,4 +82,6 @@ Pending.
 
 - [phase 1.23 FastV scouting](2026-04-15-phase-1_23-fastv-composition-scouting.md)
 - [docs/fastv-composition-plan.md](../../../docs/fastv-composition-plan.md)
-- [docs/research-strategy-post-codecsight.md](../../../docs/research-strategy-post-codecsight.md)
+- Pre-release CodecSight strategy notes are preserved in git history; current
+  release-facing positioning is in [paper/framing.md](../../../paper/framing.md)
+  and [docs/related-work-table.md](../../../docs/related-work-table.md).

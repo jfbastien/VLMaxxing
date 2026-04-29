@@ -102,7 +102,7 @@ not actionable without resources.
 ## Cross-references
 
 - `paper/framing.md` § Future Work (training-speedup paragraph)
-- `docs/research-strategy-post-codecsight.md` (calibrated retry;
+- pre-release CodecSight strategy notes preserved in git history (calibrated retry;
   object-state sidecar)
 - Phase 1.53 (object-state delta sidecar — another deferred
   future-work thread that graduated)

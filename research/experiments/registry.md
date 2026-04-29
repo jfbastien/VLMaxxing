@@ -3,8 +3,8 @@
 Last updated: 2026-04-29
 
 This is the primary source of per-phase experiment state. Other docs
-(PLAN.md, research-strategy-post-codecsight.md, literature-map,
-paper/framing.md) narrate and contextualize; if they contradict this
+(PLAN.md, paper/framing.md, docs/related-work-table.md) narrate and contextualize;
+if they contradict this
 registry on a phase's status or current_best_policy, fix them.
 
 Limitation: this is structured Markdown, not a real machine-parseable
@@ -533,7 +533,8 @@ authoritative in the per-phase notes under
     - results/track_b/tomato_mc_n10.json
     - results/track_b/tomato_mc_n30.json
     - results/track_b/mvbench_mc_n30.json
-    - scripts/run_track_b.py
+    - historical dense-baseline driver removed from the OSS release tree;
+      current measured sparse-vision claims use the 1.63 drivers below
   current_best_policy: n/a (wall-clock baseline, not a policy)
   supersedes: []
   paper_relevance: primary (claim #5 dense reference; sparse-execution half still blocked)
@@ -1249,9 +1250,8 @@ authoritative in the per-phase notes under
   `paper/framing.md` + `literature-map-2026-04-16.md` citations.
 - When a new phase is preregistered, add its registry row alongside
   the prereg note.
-- When an old roadmap document (PLAN.md, execution-plan-round-7.md)
-  is updated, re-verify that its claims agree with this registry.
-  If they disagree, fix the prose and cite back to this registry.
+- When PLAN.md or paper/framing.md changes, re-verify that its claims agree with
+  this registry. If they disagree, fix the prose and cite back to this registry.
 
 ## Forward-queue runtime budget (benchmark wall-clock only)
 

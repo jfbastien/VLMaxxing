@@ -1,19 +1,14 @@
 """H.264 per-macroblock metadata extraction.
 
-**Ported 2026-04-19 from Sam's whitepaper repo**
-(`codec-through-sam/experiments/h264_metadata.py`). Variable names and
-function signatures are kept close to the original so future diffs
-with Sam's version remain legible. Integration shim for our
-`BlockStatistic` layer lives separately — this module is the raw
-codec-native extractor.
+**Ported 2026-04-19 from a predecessor prototype.** Integration shim
+for our `BlockStatistic` layer lives separately; this module is the
+raw codec-native extractor.
 
-Production-ready replacement for the pixel-diff classification path in
-Sam's ``codec_pipeline.classify_blocks``. Uses PyAV's MV side-data export
+Production-ready replacement for the earlier pixel-diff classification path.
+Uses PyAV's MV side-data export
 (``flags2 |= AV_CODEC_FLAG2_EXPORT_MVS``) plus a motion-compensated
 Y-residual proxy to produce a structured ndarray of per-MB features
 per frame.
-
-Design doc (Sam's repo): ``docs_h264_extraction_design.md``.
 
 Fields obtainable from the H.264 bitstream via PyAV alone:
   - Bitstream-accurate: ``frame_type``, ``mv_x/mv_y/mv_magnitude``
@@ -603,8 +598,8 @@ class H264MetadataExtractor:
 
 
 # ══════════════════════════════════════════════════════════════════
-# classify_blocks_h264 — drop-in replacement for Sam's
-# codec_pipeline.classify_blocks
+# classify_blocks_h264 — drop-in replacement for the predecessor
+# codec pipeline's classify_blocks helper
 # ══════════════════════════════════════════════════════════════════
 
 STATIC = 0

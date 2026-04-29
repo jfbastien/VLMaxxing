@@ -12,12 +12,10 @@ This file only routes work inside `docs/`.
 
 - stable measurement rules
 - literature and standards references
-- audits of imported repos
-- validated takeaways from external review
+- imported-target registers and reproduction status
 - setup instructions that apply to any clean checkout
 - clip and local-asset policy
 - benchmark-native asset setup
-- focused external review packets
 
 ## What Does Not Go Here
 
@@ -41,7 +39,7 @@ This file only routes work inside `docs/`.
 ### Active
 
 - [literature-map-2026-04-16.md](literature-map-2026-04-16.md) — current
-  positioning map, supersedes the older literature-map.md
+  positioning map
 - [benchmark-taxonomy.md](benchmark-taxonomy.md) — why each benchmark is
   active or deferred
 - [related-work-table.md](related-work-table.md) — paper-facing
@@ -54,23 +52,17 @@ This file only routes work inside `docs/`.
 - [fastv-composition-plan.md](fastv-composition-plan.md) — phase 1.23
   scouting output
 
-### Foundation / historical context
+### Foundation
 
 - [claim-register.md](claim-register.md)
 - [reproduction-status.md](reproduction-status.md)
 - [methodology/performance.md](methodology/performance.md)
 - [methodology/preprocessing.md](methodology/preprocessing.md)
 - [methodology/timing-harness.md](methodology/timing-harness.md)
-- [original-repo-audit.md](original-repo-audit.md)
-- [external-feedback-validation.md](external-feedback-validation.md)
-- [literature-map.md](literature-map.md) — pre-CodecSight; historical
-- [research-strategy-post-codecsight.md](research-strategy-post-codecsight.md)
-  — historical strategy snapshot; superseded by the paper status files
-- [execution-plan-round-7.md](execution-plan-round-7.md) — historical
-  router; superseded by PLAN.md and the paper status files
-- [chatgpt-review-packet.md](chatgpt-review-packet.md) — historical
-  external-review packet; regenerate from paper status docs before reuse
-- [knowledge-base-notes.md](knowledge-base-notes.md)
 - [clip-policy.md](clip-policy.md)
 - [benchmark-setup.md](benchmark-setup.md)
 - [local-setup.md](local-setup.md)
+
+Historical seed imports, review packets, and superseded strategy notes are not
+kept in the release tree. Use the status docs above for current claims; use git
+history only when auditing the provenance of a removed import.

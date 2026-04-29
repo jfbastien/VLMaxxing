@@ -183,7 +183,9 @@ pilot).
 - Sam's `experiments/codec_pipeline.py` — downstream design target
 - Sam's `exp_live_stream_demo.py` — streaming deployment target
 - CoViAR (arXiv 1712.00636) — classical MV-based video representation
-- [docs/research-strategy-post-codecsight.md](../../../docs/research-strategy-post-codecsight.md)
+- Pre-release CodecSight strategy notes are preserved in git history; current
+  release-facing positioning is in [paper/framing.md](../../../paper/framing.md)
+  and [docs/related-work-table.md](../../../docs/related-work-table.md).
 - Project memory `project_sam_imports_2026-04-18.md` — Codex review
   that prioritized this rewrite over other Sam imports
 

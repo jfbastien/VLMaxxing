@@ -59,13 +59,10 @@ fresh-compute placement cannot be reduced to novelty magnitude alone,
 aggregate accuracy can hide answer-identity drift, and semantic substitution is
 not itself a measured sparse backend.
 
-A separate 26B scale-out streaming protocol reports the same anti-recomputation
-structure in operational regimes, including 13$\times$ fewer ViT calls,
-\mbox{$\sim$50$\times$} dominant measured subpipeline reduction, and
-4.2--4.5$\times$ end-to-end speedups. Those numbers are evidence from a
-different protocol, not factors to multiply with the local cells; the next
-scale-out step is to rerun them with artifact-compatible gates and matched
-baselines.
+Candidate C-STREAM is the native-rate version of the same question, but it is
+not yet a headline claim. The release tree now treats 26B streaming rows as
+pending until a validated artifact bundle supplies raw paired outputs,
+cache-correctness smokes, source paths, and matched baselines.
 
 The broader implication is not that pixel differencing is the final interface.
 The experiments are a requirements probe for future VLM-native media streams:

@@ -48,6 +48,64 @@ class PersistCell:
     accepted_envelope: bool
 
 
+SOURCE_PATHS: dict[tuple[str, int], list[str]] = {
+    ("seven_b", 8): [
+        "research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md",
+        "research/experiments/2026/artifacts/loop_queue_20260419_155108/phase1_55A_persistent_kv_qwen/summary.json",
+    ],
+    ("seven_b", 16): [
+        "research/experiments/2026/2026-04-19-phase-1_55A-16f-frame-scaling-findings.md",
+        "research/experiments/2026/artifacts/phase1_55A_16f_frame_scaling/summary.json",
+    ],
+    ("seven_b", 18): [
+        "research/experiments/2026/2026-04-19-phase-1_55A-18f-frame-scaling-findings.md",
+        "research/experiments/2026/artifacts/phase1_55A_18f_frame_scaling/summary.json",
+    ],
+    ("seven_b", 20): [
+        "research/experiments/2026/2026-04-19-phase-1_55A-20f-frame-scaling-findings.md",
+        "research/experiments/2026/artifacts/phase1_55A_20f_frame_scaling/summary.json",
+    ],
+    ("seven_b", 24): [
+        "research/experiments/2026/2026-04-19-phase-1_55A-24f-frame-scaling-findings.md",
+        "research/experiments/2026/artifacts/phase1_55A_24f_frame_scaling/summary.json",
+    ],
+    ("seven_b", 32): [
+        "research/experiments/2026/2026-04-19-phase-1_55A-32f-frame-scaling-findings.md",
+        "research/experiments/2026/artifacts/phase1_55A_32f_frame_scaling/summary.json",
+    ],
+    ("seven_b", 40): [
+        "research/experiments/2026/2026-04-20-phase-1_55A-7b-40f-symmetry-findings.md",
+        "research/experiments/2026/artifacts/phase1_55A_7b_40f_symmetry/summary.json",
+    ],
+    ("three_b", 20): [
+        "research/experiments/2026/2026-04-19-phase-1_55A-3b-crossarch-findings.md",
+        "research/experiments/2026/artifacts/phase1_55A_3b_20f_crossarch/summary.json",
+    ],
+    ("three_b", 24): [
+        "research/experiments/2026/2026-04-20-phase-1_55A-3b-24f-boundary-findings.md",
+        "research/experiments/2026/artifacts/phase1_55A_3b_24f_boundary/summary.json",
+    ],
+    ("three_b", 32): [
+        "research/experiments/2026/2026-04-20-phase-1_55A-3b-32f-saturation-findings.md",
+        "research/experiments/2026/artifacts/phase1_55A_3b_32f_saturation/summary.json",
+    ],
+    ("three_b", 36): [
+        "research/experiments/2026/2026-04-20-phase-1_55A-3b-36f-interpolation-findings.md",
+        "research/experiments/2026/artifacts/phase1_55A_3b_36f_interpolation/summary.json",
+    ],
+    ("three_b", 40): [
+        "research/experiments/2026/2026-04-20-phase-1_55A-3b-40f-deeper-plateau-findings.md",
+        "research/experiments/2026/artifacts/phase1_55A_3b_40f_deeper_plateau/summary.json",
+    ],
+}
+
+
+def _cell_dict(model: str, cell: PersistCell) -> dict[str, object]:
+    data = asdict(cell)
+    data["source_paths"] = SOURCE_PATHS[(model, cell.frame_count)]
+    return data
+
+
 SEVEN_B = [
     PersistCell(8, 3200, 47.23, -0.048, "0/14 non-letter", True),
     PersistCell(16, 6500, 91.06, 0.000, "0/14 non-letter", True),
@@ -152,8 +210,8 @@ def plot() -> None:
     print(f"Wrote {out_png}")
 
     summary = {
-        "seven_b": [asdict(c) for c in SEVEN_B],
-        "three_b": [asdict(c) for c in THREE_B],
+        "seven_b": [_cell_dict("seven_b", c) for c in SEVEN_B],
+        "three_b": [_cell_dict("three_b", c) for c in THREE_B],
         "thresholds": {
             "seven_b_accepted_frames": 16,
             "seven_b_accepted_prefill_tokens": 6500,

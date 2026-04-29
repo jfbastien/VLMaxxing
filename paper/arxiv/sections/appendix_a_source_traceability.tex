@@ -1,15 +1,13 @@
 \section{Source Traceability and Provenance}
 
-The manuscript uses four evidence classes and labels them differently in the
-text. \emph{Reproduced-here evidence} comes from \texttt{codec-through-2} and
-backs the automated headline assets, the persistent-KV curve, and the Qwen
-routing section. \emph{Tracked-upstream evidence} comes from the sibling
-\texttt{codec-through} tree when the local manuscript is intentionally tracking
-a fresher rerun that has not yet been copied back here. \emph{Scale-out partner
-evidence} comes from the separate 26B streaming tree and is restricted to the
-streaming and real-application section until artifact harmonization lands.
-\emph{Hypotheses or moving results} may be discussed for context, but they are
-not allowed into the default automated manuscript snapshot.
+The manuscript uses evidence classes and labels them differently in the text.
+\emph{Reproduced-here evidence} comes from checked-in \texttt{codec-through}
+artifacts and backs the automated headline assets, the persistent-KV curve, and
+the Qwen routing section. \emph{Advisory evidence} is checked in but misses a
+clean promotion gate such as thermal pairing or a strict quality band.
+\emph{Pending C-STREAM evidence} is not automated until a validated local bundle
+lands. \emph{Hypotheses or moving results} may be discussed for context, but
+they are not allowed into the default automated manuscript snapshot.
 
 This appendix is where that distinction becomes audit-friendly. The repo
 provenance table below records the commit pins observed by the manuscript sync
@@ -41,8 +39,8 @@ silently promoted beyond the finite evidence class it actually earned.
 \toprule
 Asset & Claim / protocol & Evidence class & Source / hardware \\
 \midrule
-Headline table & regime headline cells; first-pass vision-pruning holdout, measured sparse-vision envelope, and after-ingest follow-up & local + tracked-upstream & Phases 1.51V, 1.55A/D/E/F/G/H/I/K, 1.63E/G/H; adaptive mechanism and stage-timing artifacts; Gemma/Qwen local stacks, MLX / M3 Air 16 GB \\
-C-CEILING figure & C-CEILING / C-VISION scatter-back validation; first-pass holdout, n=60 stacked-regime audit, matched cross-arch probe, and measured sparse-vision boundary & local + tracked-upstream + local boundary & ceiling data JSON; local Gemma and local Qwen stacks plus tracked-upstream TOMATO rerun; 1.63E/G/H raw artifacts checked in \\
+Headline table & regime headline cells; first-pass vision-pruning holdout, measured sparse-vision envelope, and after-ingest follow-up & local clean + local advisory & Phases 1.51V, 1.55A/D/E/F/G/H/I/K, 1.63E/G/H; adaptive mechanism and stage-timing artifacts; Gemma/Qwen local stacks, MLX / M3 Air 16 GB \\
+C-CEILING figure & C-CEILING / C-VISION scatter-back validation; first-pass holdout, n=60 stacked-regime audit, matched cross-arch probe, and measured sparse-vision boundary & local clean + local advisory + local boundary & ceiling data JSON; local Gemma and Qwen stacks plus checked-in TOMATO session-5 artifacts; 1.63E/G/H raw artifacts checked in \\
 Measured sparse-vision tables & real timed vision-tower work skipped under Gemma and Qwen & local bounded systems evidence & Phase 1.63G Gemma 8/16/32f scaling and Phase 1.63H Qwen 16f keep-rate sweep; Qwen 1.63E 8f boundary \\
 C-PERSIST figure & C-PERSIST tested envelope; after-ingest same-video follow-up & local & Phase 1.55A artifacts; Qwen 7B/3B-4bit, MLX / M3 Air 16 GB \\
 C-PERSIST repair & 20f/32f same-video selective re-prefill & local bounded recovery & Phases 1.55D/E/F/G/H/I plus adaptive mechanism and stage-timing artifacts; Qwen 7B-4bit, VideoMME short/medium/long + 32f short \\
@@ -54,11 +52,7 @@ Paired drift table & paired choice/correctness drift summary & local analysis & 
 Logit-margin scout & dense answer-margin signal is insufficient as a high-precision drift guard & local negative / future guard feature & Phase 1.65 artifacts; 228 scored Qwen paired rows \\
 Memory envelope & process working-set characterization across landed families & local reproducibility evidence & Phase 1.66 memory characterization; 78 cells across follow-up reuse, admission/composition, and measured sparse vision \\
 Method / limitations & codec-native planner bridge; semantic planner substitution & local semantic evidence & Phase 1.29B artifacts; Qwen 7B-4bit, VideoMME dev/short slices; offline extraction, not latency \\
-Scale-out streaming & native-rate streaming paired N=60 & scale-out partner, pending artifact harmonization & deployment report \S2.13.2 / status docs; Gemma 4 26B / M5 Max \\
-Scale-out real video & paired real-video regimes & scale-out partner, pending artifact harmonization & deployment report \S2.8 real-video timings; Gemma 4 26B / M5 Max \\
-Candidate C-STREAM probes & MV/residual staleness, sectional cache shift, static-camera inflection triggers, and E3 wall-clock instrumentation & scale-out partner mechanism probes, pending harmonized raw artifacts & companion deployment repository decision-log rows 2.02, 2.03-SCROLL, 2.06, 2.06-NEG; E3 findings; Gemma 4 26B / M5 Max \\
-Scale-out follow-up diagnostic & Gemma 26B PromptCacheState cross-turn smoke & blocked cache-semantics diagnostic & cross-turn cache-correctness findings; deterministic and within-turn checks pass, cross-turn warm follow-up matches dense on 2/5 \\
-Scale-out live & native-rate live camera & scale-out partner, pending artifact harmonization & deployment report \S2.13.1 / live-demo docs; Gemma 4 26B / M5 Max \\
+Candidate C-STREAM & native-rate streaming, live camera, and deployment-style follow-up & pending validated artifact bundle & hold until checked local bundle provides raw paired outputs, cache-correctness smoke, matched baselines, and source-path manifest \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -71,8 +65,8 @@ that still move between main text and appendix.
 
 \textcolor{todoBorder}{Source pointers: \path{paper/claim-matrix.md},
 \path{docs/reproduction-status.md},
-\path{paper/publishability-status.md},
-\path{paper/arxiv/generated/tables/repo_provenance.tex}.}
+\path{paper/publishability-status.md}, and the locally generated
+repo-provenance table produced by \texttt{make paper-sync}.}
 \end{sectiontodo}
 
 \IfFileExists{generated/tables/repo_provenance.tex}{

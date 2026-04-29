@@ -6,15 +6,15 @@ imported-only.
 
 Canonical imported targets:
 
-- **Original whitepaper**: [seed/whitepaper/whitepaper.md](../seed/whitepaper/whitepaper.md)
-  — the frozen target for WP-2.1 through WP-5.
-- **Revised whitepaper (2026-04-16)**: [seed/whitepaper/whitepaper-revised-2026-04-16.md](../seed/whitepaper/whitepaper-revised-2026-04-16.md)
-  — adds VideoMME (WP-2.7), strict-parse audit (WP-2.8), cross-arch
-  (WP-2.9), thinking amplification (WP-2.10), wall-clock (WP-4.1),
-  composition (WP-5.1). See [claim-register.md](claim-register.md)
-  for the full table.
+- **Original whitepaper**: the frozen target for WP-2.1 through WP-5.
+- **Revised whitepaper (2026-04-16)**: adds VideoMME (WP-2.7),
+  strict-parse audit (WP-2.8), cross-arch (WP-2.9), thinking amplification
+  (WP-2.10), wall-clock (WP-4.1), and composition (WP-5.1). See
+  [claim-register.md](claim-register.md) for the full table.
 - Do not treat either document as the source of truth for what we
   claim locally; use this status table and the claim register.
+- Raw seed files are not kept in the release tree. Git history preserves them;
+  this file records their current reproduction status.
 
 Current bottom line:
 
@@ -59,8 +59,8 @@ Current bottom line:
   supporting the claim on this machine and stack.
 - `Partial only` means the repo reproduces a close corollary, proxy, or content
   class, but not the exact imported claim.
-- `Imported only` means the repo still depends on seed material or predecessor
-  evidence.
+- `Imported only` means the repo still depends on external imported evidence
+  recorded in the claim register rather than local artifacts.
 - `Not reproduced` means the repo intentionally has not attempted the claim yet
   or has only landed a bounded proxy rather than the imported claim.
 - `Prereg outcome` records what the local experiment contract actually said.

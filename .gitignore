@@ -25,3 +25,5 @@ tmp/
 research/cache/
 paper/arxiv/build/
 paper/arxiv/dist/
+paper/arxiv/generated/tables/repo_provenance.tex
+paper/arxiv/generated/tex/build_meta.tex

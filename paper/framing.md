@@ -10,13 +10,6 @@ once rendered):
 - [`paper/arxiv/sections/02_introduction.tex`](arxiv/sections/02_introduction.tex)
   — canonical introduction
 
-Legacy scratchpads:
-
-- [`paper/abstract.md`](abstract.md) — preserved prior abstract framing; not
-  canonical
-- [`paper/intro.md`](intro.md) — preserved prior introduction framing; not
-  canonical
-
 It is NOT the place for raw experimental detail. Evidence lives in:
 
 - [docs/reproduction-status.md](../docs/reproduction-status.md) — per-claim
@@ -139,8 +132,8 @@ duration-conditional partial reproduction + 1.55D frontier-partial):
    differentiated rather than missing: VideoMME 8f is **clean** at
    **1.113×** with zero aggregate accuracy delta; MVBench 8f is
    **advisory** at **1.407×** with a scheduler-scale decode note; and
-   TOMATO 8f is **earned-advisory** at **1.194×** from the upstream
-   session-5 rerun. The matched Qwen VideoMME 8f cross-arch point lands
+  TOMATO 8f is **earned-advisory** at **1.194×** from checked-in session-5
+  artifacts. The matched Qwen VideoMME 8f cross-arch point lands
    at **1.044× observed vs 1.043× predicted**, with smaller absolute lift
    because Qwen's dense vision share is only ~10\%. The mechanism is
    stable; the exact magnitude remains regime-dependent because `V_share`
@@ -180,11 +173,8 @@ way to overclaim.
    score. This is what C-VISION and the 1.51R partial reproduction
    measure. It is *not* streaming, and it is *not* live camera.
 2. **Native-rate streaming.** Frames arrive at source rate; the model
-   must keep up. The separate 26B streaming stack's 4.2–4.5× E2E and
-   ~50× streaming-dominant
-   multipliers live here. The fixed fraction of the pipeline that is
-   decode + ingest is much larger, so the ceiling law
-   `1/(fixed + (1−fixed)/s)` bites differently than in (1).
+   must keep up. Candidate C-STREAM lives here, but numeric scale-out rows stay
+   pending until a validated artifact bundle lands.
 3. **After-ingest persistent-KV reuse.** Same video, follow-up
    question. The first query pays full prefill; subsequent queries reuse
    the KV and return in sub-second wall-clock. This is what C-PERSIST
@@ -297,23 +287,15 @@ boundary as much as the positives:
 
 ## Streaming evidence: case-study vs scale-out lane (not interchangeable)
 
-Within the separate streaming work the numbers fall into two categories and they
-carry different evidential weight:
+Candidate C-STREAM remains pending. Do not promote numeric streaming rows until
+raw paired outputs, cache-correctness smokes, source paths, and matched
+baselines are checked into this repo.
 
-**Scale-out streaming** (main-body multipliers, paired baselines):
-streaming E2E 4.2–4.5 ×; ViT-only 13 ×; dominant measured subpipeline
-~50 ×; live-camera ViT 5–300 ×. The Gemma 26B persistent-KV follow-up
-median 0.8 s row is now a blocked diagnostic, not an earned C-PERSIST
-claim, because S0 found cross-turn PromptCacheState reuse matches dense
-on only 2/5 follow-up items. The streaming rows stay in the main body,
-clearly attributed to the separate operational protocol, with their
-regime explicitly named.
-
-**Sparse exactness** is a separate scale-out partner row, not part of
-the deployment-multiplier bucket. The current audit supports zero
+**Sparse exactness** is a separate pending artifact-bundle row, not part of
+the deployment-multiplier bucket. Historical audits supported zero
 accuracy delta on 1,937 sparse-sampled Qwen items, but direct
-byte-identical raw-paired verification covers 513 items. Do not write
-"byte-identical on 1,937" unless Sam re-exports or reruns the missing
+byte-identical raw-paired verification covered 513 items. Do not write
+"byte-identical on 1,937" unless the validated bundle re-exports or reruns the missing
 raw paired rows.
 
 **Case-study** (single-cell illustrations, no paired baseline, or no
@@ -352,20 +334,20 @@ We do NOT claim:
 - AI-native codecs as a near-term deliverable
 - codec or pixel signals as semantic saliency or task-importance oracles
 
-## Separate streaming work as scale-out evidence (not "applications / support")
+## Candidate C-STREAM (not applications / support)
 
-Treat the separate streaming work as scale-out evidence for C-PERSIST and
-C-VISION, not as decorative applications support. The two repos occupy disjoint
-regimes by design:
+Treat native-rate streaming as the scale-out lane for anti-recomputation, not
+as decorative applications support. The local mechanism stack and future
+streaming bundle occupy disjoint regimes by design:
 
-| Axis                  | local mechanism stack                 | separate streaming stack                                          |
+| Axis                  | local mechanism stack                 | candidate streaming bundle                                          |
 |-----------------------|--------------------------------------------|------------------------------------------------------------|
-| Model size            | 4 B-class, 4-bit quantized                 | 26 B-class                                                  |
-| Protocol              | sparse-sampled benchmark QA                | mixed companion evidence: native-rate streaming, sparse exactness, live deployment |
-| Eval regime           | N = 30 / 60 holdout, paired, thermally controlled | streaming paired N = 60; sparse exactness N = 1,937; live decode in loop / real-video case studies |
-| Classifier            | pixel-diff proxy on sampled decoded frames | pixel-diff on sparse exactness; codec-native MV + residual at native rate for streaming/live |
-| Focus                 | mechanism isolation, prereg falsification  | full stack, composition, measured end-to-end multipliers    |
-| Strongest numbers     | 1.08–1.24× E2E dev; 1.113× VideoMME 8 f holdout; sub-second follow-up inside tested envelope | 4.2–4.5× real-video E2E; 13× ViT; ~50× dominant measured subpipeline; 5–300× live ViT; 0.8 s follow-up latency remains cache-correctness-blocked |
+| Model size            | 4 B-class, 4-bit quantized                 | TBD by validated bundle |
+| Protocol              | sparse-sampled benchmark QA                | native-rate streaming / live deployment |
+| Eval regime           | N = 30 / 60 holdout, paired, thermally controlled | pending raw paired rows and matched baselines |
+| Classifier            | pixel-diff proxy on sampled decoded frames | likely codec-native MV/residual at native rate, bundle-defined |
+| Focus                 | mechanism isolation, prereg falsification  | full stack and deployment-style state reuse |
+| Strongest numbers     | 1.08–1.24× E2E dev; 1.113× VideoMME 8 f holdout; sub-second follow-up inside tested envelope | pending validated artifact bundle |
 
 The shared frame is **C-CEILING** (`1/(fixed + (1−fixed)/s)` on any
 stage-bounded acceleration, including the vision-axis analog
