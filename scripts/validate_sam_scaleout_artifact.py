@@ -244,7 +244,6 @@ def _require_b3_matched_events(rows: list[dict[str, Any]], args: argparse.Namesp
         "event_time_s",
         "observation_window_s",
         "changed_answer_expected",
-        "evidence_budget",
     )
     for pair_key, group in by_pair_key.items():
         observed_arms = {str(row.get("arm")) for row in group}

@@ -42,17 +42,22 @@ Use the current branch as the result branch. Implement or adapt any missing
 M5/26B runners inside `codec-through`, using the handoff's schema and gates as
 the acceptance contract.
 
+Before running a phase, commit any runner/scaffolding changes needed for that
+phase. Run from a clean `HEAD`, and write that pre-run `codec-through` code
+commit into each row's `commit_sha`. After the phase finishes, commit the
+artifacts, logs, validation output, and findings note.
+
 Run autonomously in a loop:
 
 - Execute phases in the gate order below.
 - Monitor long-running jobs and record useful progress in logs.
 - Validate each phase artifact with the row validator after it lands.
 - Write a short findings note for each completed phase.
-- Commit after each completed phase, including scientific failures,
+- Commit artifacts after each completed phase, including scientific failures,
   infrastructure failures, and boundary results.
 - Push the result branch periodically and after the final validation.
 
-The final bundle must validate with:
+Run final bundle validation with:
 
 ```bash
 python scripts/validate_sam_scaleout_bundle.py \
@@ -96,14 +101,19 @@ If B0b fails, commit the failed B0b artifacts and validation summary, mark
 B1/B2 as blocked in the findings note, and continue with B3/B5 and eligible
 B4. Do not silently drop failed artifacts.
 
+B1 findings must report the preregistered gates explicitly:
+correctness diffs `<=1/21`, choice diffs `<=2/21`, and parse failures
+`<=1/21`. B2 findings must report the longest horizon with `<=3%` paired
+choice/correctness drift and identify any 10-turn bucket over `10%` drift.
+
 ## Non-Negotiable Artifact Rules
 
 - Validate every row against
   `research/schemas/sam_scaleout_artifact_v1.schema.json`.
 - Do not port the local 12 GB MLX memory cap to the 128 GB M5 machine.
 - Record exact model id, model hash, quantization, runtime commit, macOS,
-  Metal, MLX/runtime version, `codec-through` `commit_sha`, command line, and
-  memory definition.
+  Metal, MLX/runtime version, clean pre-run `codec-through` `commit_sha`,
+  command line, and memory definition.
 - Include raw paired prompts/responses, parse failures split by arm, prompt
   hashes, input-id hashes, frame ids/hashes, cache topology, prefix coverage,
   stage timings, and peak memory.
@@ -116,16 +126,11 @@ B4. Do not silently drop failed artifacts.
   zero-accuracy-delta rows and 513 byte-identical raw-paired rows are separate
   artifacts.
 
-## Final Response
+## Finish
 
-At the end, push the result branch and respond with:
-
-- Pushed branch name.
-- Final commit SHA.
-- Compact phase table: phase, status, pass/fail gates, row counts, runtime.
-- Whether `sam_scaleout_bundle_validation.json` passed.
-- Any scientific blockers, infrastructure failures, or runtime deviations from
-  the handoff.
+At the end, push the result branch. The branch must contain all artifacts,
+validation JSON, command logs, and findings notes. A short "branch pushed"
+message is enough; the results live in git.
 
 Do not send raw artifacts separately; they live in the pushed branch under
 `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/`.

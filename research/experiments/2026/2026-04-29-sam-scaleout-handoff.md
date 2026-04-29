@@ -116,6 +116,8 @@ Gate:
 - Deterministic: <=1/21 correctness diffs and <=2/21 choice diffs.
 - Parse failures <=1/21.
 - Follow-up speedup reported, not gated.
+- Findings summary must report correctness diffs, choice diffs, parse
+  failures, same-class follow-up speedup, all-query speedup, and row count.
 
 Expected runtime: 1-3 hours depending on 26B decode speed.
 
@@ -137,6 +139,8 @@ Protocol:
 Gate:
 - Report longest horizon with <=3% paired choice and correctness drift.
 - Flag a cliff if any 10-turn bucket exceeds 10% drift.
+- Findings summary must report drift by horizon and by 10-turn bucket, plus
+  the longest horizon satisfying the <=3% criterion.
 
 Expected runtime: 4-12 hours.
 
@@ -156,6 +160,8 @@ Protocol:
   questions, answer keys, scoring, and artifact schema across all arms.
 - Record the evidence budget on every row: cadence, FPS, last-K, selected frame
   indices, selected frame ids/hashes, and observation window.
+- Evidence-budget metadata must be present on every row, but it is
+  policy-specific and is not required to be identical across arms.
 - Use the same videos/questions as B1/B2 where possible, but B3 may run even
   if B0b blocks cross-turn PromptCacheState, as long as the compared policy
   does not depend on the broken cache path.
@@ -276,16 +282,16 @@ Expected runtime: 1-2 hours if the source artifacts already exist.
 For each run, provide:
 - `*.jsonl` raw paired rows conforming to the schema.
 - `summary.json` with gate fields, CIs, model/runtime/hardware metadata.
-- The exact Sam repo commit in every row as `commit_sha`, plus the exact
-  command line.
+- The exact clean pre-run `codec-through` code commit used for the run in every
+  row as `commit_sha`, plus the exact command line.
 - A short note describing any parse failures and at least one representative
   raw response for each failure class.
 - A bundle-level validation summary produced by:
 
 ```bash
 python scripts/validate_sam_scaleout_bundle.py \
-  --bundle-dir <artifact_dir> \
-  --summary-output <artifact_dir>/sam_scaleout_bundle_validation.json
+  --bundle-dir research/experiments/2026/artifacts/sam_scaleout_m5_20260429 \
+  --summary-output research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_scaleout_bundle_validation.json
 ```
 
 This bundle is sufficient for this repo to import Sam evidence as same-graph
