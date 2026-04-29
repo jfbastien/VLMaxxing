@@ -67,6 +67,8 @@ the JSONL or summaries is fine.
 | B5 1937 | PASS — 0 correctness deltas, CI95 [0.0, 0.0] | `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b5_s4_accuracy_1937.jsonl` |
 | B5 513 | PASS — 513 byte-identical raw paired | `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b5_s4_raw_paired_513.jsonl` |
 | B3 protocol | PASS schema; partial mechanism — `low_fps_dense` 17/22 wins matched 4-frame budget | `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b3_streaming_baselines.jsonl` |
+| **B1 (broken-cache diagnostic)** | DIAGNOSTIC — DO NOT cite as 26B C-PERSIST speedup. 10× speedup numbers were measured on the same broken cache path B0b caught. Findings doc IS honest (`closed-arch-blocked`). | `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b1_cpersist_replication*` |
+| **B4-adjacent (post-ViT hard prune)** | NEGATIVE — hard-prune does NOT pay off on this stack. 8f median 0.757× (slower); 32f 1.042×. Useful null evidence + C-CEILING limitations data. NOT strict sparse-ViT Track B. | `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b4_sparse_vit_ceiling*` |
 
 ## Step 1 — install a CORRECTNESS-CONTROL guard (do not pursue a speedup-preserving shim)
 
@@ -109,7 +111,15 @@ from mlx_lm.models.cache import RotatingKVCache  # type: ignore
 
 _orig_stream_generate = _gen.stream_generate
 
+# Sticky module-level flag. The runner reads this AFTER every
+# stream_generate call to decide whether to emit "cache-reuse" or
+# "guarded full-refill" metadata for that row. Reset by the runner
+# before the next call.
+B0B_GUARD_TRIGGERED = False
+
 def _correctness_guard_stream_generate(*args, **kwargs):
+    global B0B_GUARD_TRIGGERED
+    B0B_GUARD_TRIGGERED = False
     cache_state = kwargs.get("prompt_cache_state")
     if cache_state is not None and getattr(cache_state, "cache", None):
         if any(isinstance(c, RotatingKVCache) for c in cache_state.cache):
@@ -117,41 +127,83 @@ def _correctness_guard_stream_generate(*args, **kwargs):
             # Force full re-prefill. mlx-vlm sees no cache, takes the
             # cold path, and produces a correctness-clean output.
             kwargs["prompt_cache_state"] = None
+            B0B_GUARD_TRIGGERED = True
     return _orig_stream_generate(*args, **kwargs)
 
 _gen.stream_generate = _correctness_guard_stream_generate
 # --- END B0b correctness-control guard ---
-
 ```
 
-Notes on what this guard IS and IS NOT:
+### Step 1b — patch the cross-turn row emission to honour the guard
 
-- **It IS a correctness control.** Cross-turn cache reuse is disabled
-  for mixed-topology models. Forces full re-prefill. Slow but correct.
-  Lets the B0b correctness gate finally pass and locks down the
-  diagnosis: the failure is in the cache-reuse path, not in
-  prompts/frames/model stochasticity.
-- **It IS NOT a C-PERSIST speedup-preserving fix.** The C-PERSIST
-  speedup claim on Gemma 26B is now an *open architecture boundary*.
-  The paper should frame Gemma 26B as "persistent-KV reuse not
-  correctness-safe under mlx-vlm 0.4.4 flat-trim; topology-aware fix
-  required upstream" and lean on Qwen 7B as the C-PERSIST headline.
-- **Qwen runs are unaffected.** The guard is a no-op on Qwen 2.5-VL
-  prompt caches (no `RotatingKVCache` in any layer). Track A still
-  uses cross-turn cache reuse the way it did before.
-- **Revisit on every mlx-vlm version bump.** The function signature
-  and inner trim location may move; the guard's `isinstance` check on
-  `prompt_cache_state.cache` is the brittle surface.
+Without this, rows from a guarded full-refill will falsely advertise
+cache reuse. The current runner emits hard-coded
+`policy="prompt_cache_state_cross_turn_chained"`, `vit_calls=0`,
+`prefix_hit=cross["n_input_tokens"]`, `prefix_coverage=1.0` regardless
+of whether the cache was actually reused (lines 743-761 of
+`scripts/run_sam_b0b_cache_correctness.py`). Replace that block with
+guard-aware metadata, and add a `cache_guard_triggered` field to
+`make_row` (~3 lines change to the make_row signature too):
+
+```python
+# In the cross-turn row append (was: lines 740-762):
+guard_fired = bool(B0B_GUARD_TRIGGERED)  # reads the module flag
+rows.append(make_row(
+    **base_kw,
+    pair_key=f"v={it['video_id']}/q={q_idx}/cross",
+    arm="cross_turn_warm",
+    baseline_arm="cold_dense",
+    policy=(
+        "full_refill_guard_rotating_kv"  # guard fired -> no cache reuse
+        if guard_fired
+        else "prompt_cache_state_cross_turn_chained"
+    ),
+    baseline_policy="cold_dense_no_cache",
+    comparator_arm="cold_dense",
+    input_ids_hash=cross["input_ids_hash"],
+    raw_response=cross["output_text"],
+    session_choice=cross_choice,
+    session_correct=cross_correct,
+    session_parse_failure=cross_pf,
+    prompt_tokens=cross["n_input_tokens"],
+    generation_tokens=cross["n_output_tokens"],
+    prefill_ms=cross["prefill_ms"],
+    generate_ms=cross["generate_ms"],
+    repair_prefill_ms=None,
+    end_to_end_ms=cross["wall_time_ms"],
+    vit_calls=1 if guard_fired else 0,
+    prefix_hit=0 if guard_fired else cross["n_input_tokens"],
+    prefix_coverage=0.0 if guard_fired else 1.0,
+    cache_guard_triggered=guard_fired,  # new field; thread through make_row
+))
+```
+
+The `make_row` signature at line 388 needs a new
+`cache_guard_triggered: bool` parameter that lands in the row dict
+(default `False` for backward-compat with B5/B3 row emitters that
+don't use the guard). The summary aggregator should then count rows
+by `effective_policy` so the gate can distinguish "guarded full-
+refill PASSES" from "actual cache reuse PASSES" — they are different
+scientific outcomes.
+
+The same emission bug exists in `scripts/run_sam_b1_cpersist_replication.py`
+around lines 534-535 and 562-563. If you ever rerun B1 under the same
+guard, apply the same patch there. **Until B1 is rerun under the
+guard, do not cite its 10× speedup numbers as a 26B C-PERSIST result
+— B1 ran on the broken cache path.**
 
 ## Step 2 — smoke-validate the guard (≤30 min)
 
 ```bash
-PHASE2_SAM_VIDEOS_LIMIT=1 \
-PHASE2_SAM_QUESTIONS_LIMIT=3 \
 ./.venv/bin/python scripts/run_sam_b0b_cache_correctness.py \
-  --output-dir research/experiments/2026/artifacts/sam_scaleout_m5_r2_20260430 \
-  --smoke
+  --smoke \
+  --out research/experiments/2026/artifacts/sam_scaleout_m5_r2_20260430/sam_b0b_cache_correctness_smoke.jsonl
 ```
+
+`--smoke` sets `n_videos=1`. With the default 3 questions per video,
+this gives 1 video × 3 questions × {within_turn, cross_turn} = 6 rows
+plus 3 cold_dense baselines = 9 rows total. Runs in ~5–10 minutes on
+M5.
 
 Pass criterion (read from the resulting `*_summary.json`):
 - `cross_turn_warm.text_diffs == 0` — guard prevents corruption.
@@ -163,6 +215,12 @@ Pass criterion (read from the resulting `*_summary.json`):
   never executed).
 - `cross_turn_warm` per-turn timing should be ~comparable to a cold
   prefill (the speedup is intentionally surrendered).
+- **Every cross-turn row has `cache_guard_triggered = true` and
+  `policy = "full_refill_guard_rotating_kv"`** — confirms the guard
+  fired and the metadata is honest. If any row reports
+  `policy = "prompt_cache_state_cross_turn_chained"` with
+  `cache_guard_triggered = false`, the guard didn't trigger when it
+  should have; investigate before scaling.
 
 Falsifier: any `text_diff ≥ 1` on `cross_turn_warm` would mean there
 is a SECOND bug class — most likely position-ID continuation across
@@ -175,7 +233,7 @@ hypothesis before going further.
 
 ```bash
 ./.venv/bin/python scripts/run_sam_b0b_cache_correctness.py \
-  --output-dir research/experiments/2026/artifacts/sam_scaleout_m5_r2_20260430
+  --out research/experiments/2026/artifacts/sam_scaleout_m5_r2_20260430/sam_b0b_cache_correctness.jsonl
 ```
 
 Expected: 42 rows (7 videos × 3 questions × {within, cross}), gate
