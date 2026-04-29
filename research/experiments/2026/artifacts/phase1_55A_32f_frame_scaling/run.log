@@ -1,4 +1,4 @@
-[1.55A] loading model from /Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit
+[1.55A] loading model from <model:Qwen2.5-VL-7B-Instruct-4bit>
 [1.55A] model loaded; video_ids=['037', '100', '116', '120', '158', '160', '210'] frames=32
 [1.55A] prepared 7 clips × 3 questions = 21 queries
 [1.55A] clip 037 duration=short
@@ -79,4 +79,4 @@
 Prefill:   0%|          | 0/12956 [00:00<?, ?tok/s]Prefill:  16%|█▌        | 2048/12956 [00:52<04:39, 38.98tok/s]Prefill:  32%|███▏      | 4096/12956 [01:07<02:11, 67.38tok/s]Prefill:  32%|███▏      | 4096/12956 [01:17<02:11, 67.38tok/s]Prefill:  47%|████▋     | 6144/12956 [01:23<01:19, 85.65tok/s]Prefill:  47%|████▋     | 6144/12956 [01:37<01:19, 85.65tok/s]Prefill:  63%|██████▎   | 8192/12956 [01:40<00:48, 97.69tok/s]Prefill:  63%|██████▎   | 8192/12956 [01:57<00:48, 97.69tok/s]Prefill:  79%|███████▉  | 10240/12956 [01:58<00:26, 101.73tok/s]Prefill:  95%|█████████▍| 12288/12956 [02:17<00:06, 103.89tok/s]Prefill: 100%|█████████▉| 12955/12956 [02:24<00:00, 103.71tok/s]Prefill: 100%|█████████▉| 12955/12956 [02:24<00:00, 89.88tok/s] 
    baseline Q3: 144484 ms correct=False
 [1.55A] done. session follow-up median 1008 ms, speedup 149.88×, prefix coverage 99.55%, Δacc -0.42857142857142855
-[1.55A] wrote /Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_55A_32f_frame_scaling/summary.json
+[1.55A] wrote <repo-root>/research/experiments/2026/artifacts/phase1_55A_32f_frame_scaling/summary.json

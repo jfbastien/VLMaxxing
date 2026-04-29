@@ -7,9 +7,9 @@ Links: [prereg](2026-04-17-phase-1_51-novelty-pruning-gemma-prereg.md), [pilot f
 
 ## TL;DR
 
-At Sam's implicit kr≈0.5 operating point, novelty-pruning on Gemma 4-E4B-4bit gives **no end-to-end speedup (1.00×) and -10pp accuracy**. This is a preregistered NULL at the paper's headline operating point.
+At the pre-release source's implicit kr≈0.5 operating point, novelty-pruning on Gemma 4-E4B-4bit gives **no end-to-end speedup (1.00×) and -10pp accuracy**. This is a preregistered NULL at the paper's headline operating point.
 
-At **kr=0.10** (90% of visual tokens pruned), the mechanism **does produce a real wall-clock speedup**: e2e 1.21×, generate-only 2.67×, **no accuracy loss vs dense** at n=5. This is a partial reproduction along a different operating point than Sam's.
+At **kr=0.10** (90% of visual tokens pruned), the mechanism **does produce a real wall-clock speedup**: e2e 1.21×, generate-only 2.67×, **no accuracy loss vs dense** at n=5. This is a partial reproduction along a different operating point than the pre-release source's.
 
 **Key confound:** we do not yet log per-item `generated_tokens` count, and Stage 2 kr=0.75 shows pruned gen is *40% longer* than dense (likely because degraded context produces longer or less-terminal generations). Some fraction of the measured gen speedup at kr=0.10 may be "pruned stops sooner," not "pruned is faster per-token." Task #89 is now P1.
 
@@ -72,15 +72,15 @@ Implication: the "gen=2.67×" at kr=0.10 is a **combined** effect of (a) prefill
 
 | Claim | Status |
 |-------|--------|
-| Sam 1.8× e2e on VideoMME at kr≈0.5 | **FALSIFIED on Gemma 4-E4B-4bit** (1.00×, n=30) |
+| the pre-release source 1.8× e2e on VideoMME at kr≈0.5 | **FALSIFIED on Gemma 4-E4B-4bit** (1.00×, n=30) |
 | Prefill-shortening mechanism **can produce** real e2e speedup | **CONFIRMED at kr=0.10** (1.21×, n=5) |
 | Mechanism preserves accuracy | **AMBIGUOUS** — kr=0.10 matches dense at n=5 but kr=0.25 regresses; need more n |
-| Sam 1.8× achievable at all on E4B | **OPEN** — the fact that kr=0.10 gives 1.21× on mixed items but 1.45× on short items suggests short-only subsets might approach 1.5-1.8× |
+| the pre-release source 1.8× achievable at all on E4B | **OPEN** — the fact that kr=0.10 gives 1.21× on mixed items but 1.45× on short items suggests short-only subsets might approach 1.5-1.8× |
 | Arithmetic ceiling theory (pilot note) | **REVISED** — ceiling computation was correct conditional on prefill speedup, but prefill speedup itself is strongly kr-dependent, not ceiling-bounded at kr=0.5 |
 
 ## Paper-ready framing
 
-*"We preregistered an attempt to reproduce Sam (2026) on Gemma 4-E4B-4bit + VideoMME. At Sam's implicit kr≈0.5 operating point, we find no end-to-end speedup (1.00×, n=30) and a -10pp accuracy drop. A subsequent kr-aggressiveness sweep (n=5 subset, kr ∈ {0.10, 0.25, 0.75}) shows the mechanism does produce substantial speedup at more aggressive regimes (e2e=1.21×, gen=2.67× at kr=0.10), and that accuracy at kr=0.10 matches dense on our subset. We interpret Sam's claim as operating-point-sensitive: the 1.8× number likely requires either a larger model where per-token decode is more attention-bound, a longer context where attention dominates prefill, or a more aggressive kr than the paper discloses. Our result contributes a preregistered null at kr=0.5 and a partial reproduction at kr=0.10 for the E4B regime. A confound — differential generation length — is flagged and scheduled for follow-up."*
+*"We preregistered an attempt to reproduce the pre-release source (2026) on Gemma 4-E4B-4bit + VideoMME. At the pre-release source's implicit kr≈0.5 operating point, we find no end-to-end speedup (1.00×, n=30) and a -10pp accuracy drop. A subsequent kr-aggressiveness sweep (n=5 subset, kr ∈ {0.10, 0.25, 0.75}) shows the mechanism does produce substantial speedup at more aggressive regimes (e2e=1.21×, gen=2.67× at kr=0.10), and that accuracy at kr=0.10 matches dense on our subset. We interpret the pre-release source's claim as operating-point-sensitive: the 1.8× number likely requires either a larger model where per-token decode is more attention-bound, a longer context where attention dominates prefill, or a more aggressive kr than the paper discloses. Our result contributes a preregistered null at kr=0.5 and a partial reproduction at kr=0.10 for the E4B regime. A confound — differential generation length — is flagged and scheduled for follow-up."*
 
 ## Updated next experiments
 

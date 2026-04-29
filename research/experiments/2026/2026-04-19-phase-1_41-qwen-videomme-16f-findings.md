@@ -72,7 +72,7 @@ usable regime — and 16f gives ~22s stride which crosses a usability
 threshold. Short (<4 min) is saturated at 80% and neither stride
 matters.
 
-**H-B (attention-context drift, Sam's mechanism).** Sam's whitepaper
+**H-B (attention-context drift, the pre-release source's mechanism).** the pre-release source
 line 234 quotes "~0.01/frame attention-context drift." At 16f we
 are twice as deep into the drift regime as 8f, and long items have
 the least redundancy between frames (the drift-correcting signal
@@ -95,10 +95,10 @@ deferred to a bf16 comparison (Phase 1.58, not yet preregistered).
 - This is **not** a claim that more frames always hurt. The paired
   8f-to-16f lift is +3.3pp in aggregate; the long-bucket regression
   could be random noise at n=10 (although the sign is stable).
-- It does NOT rule out Sam's 32f regime being monotonically better
+- It does NOT rule out the pre-release source's 32f regime being monotonically better
   on long-bucket — his model is 26B, ours is 7B, and the
   attention-scaling curves for frame-count may shape-differently at
-  larger parameter counts. The "regime gap" framing (Sam's 26B/32f
+  larger parameter counts. The "regime gap" framing (the pre-release source's 26B/32f
   vs ours 7B/16f) now has two independent supports: ceiling binds
   differently, and frame-scaling is differently-shaped.
 - It does NOT change claim #8. Claim #8 is EARNED at 8f and now
@@ -166,5 +166,5 @@ prefill).
 - Claim #8 (EARNED at 8f, strengthened with 16f)
 - Phase 1.57 (attention-entropy ablation — now more load-bearing)
 - Phase 1.54 prereg (decode-accel — gates any 32f attempt)
-- 2026-04-19-codex-round-21-sam-imports.md §3 (attention-drift
+- 2026-04-19-codex-round-21-scaleout-imports.md §3 (attention-drift
   framing)

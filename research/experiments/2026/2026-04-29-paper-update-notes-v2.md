@@ -117,7 +117,7 @@ Caption: "Qwen 2.5-VL-7B-4bit Track B at 16f exhibits a continuous configuration
 ## What is *not* changing in the paper
 
 - C-PERSIST 4-cell scoping (0/93 / 15.28–35.97×) and Codex's adaptive front-loading (commit 9b9dceb) are correct as written.
-- Sam streaming (cross-protocol 26B) numbers are out of scope for this update.
+- the pre-release source streaming (cross-protocol 26B) numbers are out of scope for this update.
 - The deployment-scale framing the round-25/26/27 Codex passes established holds.
 
 ## Recommended next steps (not science, but launch-blockers)

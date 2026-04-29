@@ -43,11 +43,11 @@ answer is "we can only infer it."
   - `Q1`/`Q2`: `kr=0.50` (same nominal config as 1.30W)
 - Cold reference: reuse the landed 1.30W cold control if image-token
   fields match the new analyzer's expectations; else rerun cold dense
-- Runner: `scripts/run_phase1_30_sam_streaming.py` (now emits
+- Runner: `scripts/run_phase1_30_scaleout_streaming.py` (now emits
   `image_token_count`, `image_token_prefix_hit`, `image_tokens_recomputed`,
   `vision_pruning_active` per row)
 - Wrapper: `scripts/run_phase1_30AD_instrumented_w_rerun.sh`
-- Analysis: `scripts/analyze_phase1_30_sam_streaming_pair.py`
+- Analysis: `scripts/analyze_phase1_30_scaleout_streaming_pair.py`
   (existing — reads instrumentation from streaming rows)
 
 Estimated runtime:

@@ -1,17 +1,17 @@
-# Phase 1.29: Codec-Native H.264 Extractor (Sam Port)
+# Phase 1.29: Codec-Native H.264 Extractor (the pre-release source Port)
 
 **Status:** deferred preregistration — scheduled after 1.51R anchor-arm
 comparison (Stage 5) completes. Supersedes the earlier "MV-only via
 PyAV" framing (see history in git log; that prereg was pixel-diff
 proxy science that this rewrite replaces). Updated 2026-04-18 per
-Codex 2026-04-18 review identifying Sam's `experiments/h264_metadata.py`
-as the single highest-value import from the whitepaper repo.
+Codex 2026-04-18 review identifying the pre-release source's `experiments/h264_metadata.py`
+as the single highest-value import from the pre-release source implementation.
 
 ## Preregistration
 
 ### Objective
 
-Port Sam's codec-native H.264 extractor from the whitepaper repo
+Port the pre-release source's codec-native H.264 extractor from the pre-release source implementation
 (`experiments/h264_metadata.py`) into `codec_through` under
 `src/codec_through/codec/h264_metadata.py`, surface the extractor
 through a `BlockStatistic`-compatible adapter, and adjudicate
@@ -20,11 +20,11 @@ deployability bridge that moves the paper from "pixel-diff proxy
 science" to "real codec-guided system with a credible production
 path."
 
-### Why this is the priority Sam import
+### Why this is the priority the pre-release source import
 
 The Codex 2026-04-18 review named this as the single most important
-Sam artifact codec-through does not yet have. Two concrete correctness
-details Sam's implementation fixes that the pixel-diff path silently
+the pre-release source artifact codec-through does not yet have. Two concrete correctness
+details the pre-release source's implementation fixes that the pixel-diff path silently
 gets wrong:
 
 1. **Skip-MB default must be zero-MV inter, not intra.** In H.264,
@@ -37,7 +37,7 @@ gets wrong:
    B-frames reference both past and future and their residual magnitude
    distribution is different from P-frame residuals. A single
    threshold tuned on P-frames flags too many (or too few) B-frame
-   blocks as changed. Sam's implementation handles both reference
+   blocks as changed. the pre-release source's implementation handles both reference
    directions and relaxes the decision threshold accordingly.
 
 Both of these are trivial to get wrong in a scratch implementation
@@ -50,14 +50,14 @@ and non-trivial to diagnose without a ground-truth reference.
   to "proxy validated under real codec metadata."
 - Paper claim 5 ("real sparse execution converts proxy gain into
   measured speedup") — a codec-native extractor is the prerequisite
-  for any streaming / live-decode path (see Sam's
+  for any streaming / live-decode path (see the pre-release source's
   `exp_live_stream_demo.py` as the design target for Track B).
 - `WP-3.3`.
 
 ### Reproduction mode
 
-- method-development via port. Do **not** just cite Sam's extractor
-  in a footnote — port it, test it against the whitepaper's reported
+- method-development via port. Do **not** just cite the pre-release source's extractor
+  in a footnote — port it, test it against the pre-release source's reported
   behavior on a small slice, and keep it in-tree so future changes can
   be tracked against our regression suite.
 
@@ -85,8 +85,8 @@ benchmark GPU load (H.264 extraction is CPU).
   1 item of the pixel-diff result 0.333@3.55).
 - **H3 (codec-native is deployable)**: H.264 metadata extraction adds
   ≤ 100 ms per 8-frame clip on our M3 Air — acceptable overhead for a
-  future streaming deployment. This matches Sam's reported numbers in
-  whitepaper §3 but must be replicated locally.
+  future streaming deployment. This matches the pre-release source's reported numbers in
+  pre-release source §3 but must be replicated locally.
 - **H4 (skip-MB correctness matters)**: the corrected skip-MB handling
   reduces the fraction of false-positive "changed" blocks on static
   scenes (TOMATO direction items) by at least 30% relative to a naive
@@ -121,10 +121,10 @@ benchmark GPU load (H.264 extraction is CPU).
 
 ### Inconclusive
 
-- Sam's `h264_metadata.py` is not portable as-is (e.g. depends on a
+- the pre-release source's `h264_metadata.py` is not portable as-is (e.g. depends on a
   vendored codec SDK we don't have). Fallback: port the skip-MB and
   B-frame logic manually over PyAV `EXPORT_MVS` side-data, flag any
-  behavior differences from Sam's reference in the findings doc.
+  behavior differences from the pre-release source's reference in the findings doc.
 - Our TOMATO / MVBench corpus uses an H.264 profile or container
   variant that doesn't surface all the metadata the extractor
   expects. Document which items fail, fall back to pixel-diff for
@@ -133,9 +133,9 @@ benchmark GPU load (H.264 extraction is CPU).
 ### Code change
 
 1. New module `src/codec_through/codec/h264_metadata.py` — port from
-   Sam's `experiments/h264_metadata.py` in the whitepaper repo. Keep
+   the pre-release source's `experiments/h264_metadata.py` in the pre-release source implementation. Keep
    variable names and function signatures close to the original so
-   future diffs with Sam remain legible.
+   future diffs with the pre-release source remain legible.
 2. New `BlockStatistic` variant: `CODEC_NATIVE_MV_MAGNITUDE` — reads
    from the extractor, aggregates to our 28×28 block grid on the
    Qwen path (or 16×16 on the Gemma path via
@@ -176,18 +176,18 @@ pilot).
 
 ### Links
 
-- Sam whitepaper §3 (H.264 extractor)
-- Sam whitepaper §3.2 (skip-MB correctness)
-- Sam whitepaper §3.3 (B-frame bidirectional residuals)
-- Sam's `experiments/h264_metadata.py` (port source)
-- Sam's `experiments/codec_pipeline.py` — downstream design target
-- Sam's `exp_live_stream_demo.py` — streaming deployment target
+- pre-release source §3 (H.264 extractor)
+- pre-release source §3.2 (skip-MB correctness)
+- pre-release source §3.3 (B-frame bidirectional residuals)
+- the pre-release source's `experiments/h264_metadata.py` (port source)
+- the pre-release source's `experiments/codec_pipeline.py` — downstream design target
+- the pre-release source's `exp_live_stream_demo.py` — streaming deployment target
 - CoViAR (arXiv 1712.00636) — classical MV-based video representation
 - Pre-release CodecSight strategy notes are preserved in git history; current
   release-facing positioning is in [paper/framing.md](../../../paper/framing.md)
   and [docs/related-work-table.md](../../../docs/related-work-table.md).
-- Project memory `project_sam_imports_2026-04-18.md` — Codex review
-  that prioritized this rewrite over other Sam imports
+- Project memory `private pre-release-source import note` — Codex review
+  that prioritized this rewrite over other the pre-release source imports
 
 ### Result
 

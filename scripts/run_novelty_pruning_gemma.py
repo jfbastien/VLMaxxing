@@ -181,7 +181,7 @@ class StageTimings:
     through final generated text, summing all stages that actually ran on
     this branch. Use this for the preregistered reproduction target (≥
     1.8× end-to-end on VideoMME, an internal hypothesis — NOT a number
-    quoted in Sam's whitepaper). ``generate_ms`` alone understates the
+    quoted in the pre-release source). ``generate_ms`` alone understates the
     denominator (it misses decode, processor, novelty, vision, mask,
     prune). Reporting both lets us separate "how much we save on generate"
     from "how much we save end-to-end after paying the overhead of

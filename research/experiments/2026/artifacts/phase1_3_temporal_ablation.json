@@ -4,7 +4,7 @@
     "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
     "git_dirty": true,
     "git_sha": "fa64ccdd28ec16e3064d6a2c53640d93fcbc8687",
-    "mlx_vlm_module": "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
+    "mlx_vlm_module": "<repo-root>/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
     "platform": "macOS-26.3-arm64-arm-64bit",
     "python": "3.12.12"
   },

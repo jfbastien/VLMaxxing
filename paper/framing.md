@@ -13,7 +13,7 @@ once rendered):
 It is NOT the place for raw experimental detail. Evidence lives in:
 
 - [docs/reproduction-status.md](../docs/reproduction-status.md) — per-claim
-  whitepaper reproduction state
+  pre-release source reproduction state
 - [docs/literature-map-2026-04-16.md](../docs/literature-map-2026-04-16.md) —
   positioning map against CodecSight / CoPE / FastV / FrameFusion / etc.
 - [docs/related-work-table.md](../docs/related-work-table.md) — paper-facing
@@ -220,7 +220,7 @@ A reviewer who believes only the positive claims has not read the paper.
 These are the nulls and boundaries we have earned; they shape the claim
 boundary as much as the positives:
 
-- **1.51R own-axis null at Sam's reference kr.** At `kr_R=0.50` on
+- **1.51R own-axis null at the pre-release reference kr.** At `kr_R=0.50` on
   Gemma 4-E4B-4bit VideoMME 8 f dev n=30, prefill-pruning alone yields
   `e2e=1.00×`, `gen=1.01×`. The 1.51R speedup in the main body comes
   from `kr=0.10` with a different aggregate-accuracy story.
@@ -366,7 +366,7 @@ appear in the main body unless the paired baseline is also reported.
 Bridge experiments we explicitly do NOT claim as landed in
 codec-through locally:
 
-- streaming-protocol fidelity reproduction of Sam's N = 60 line: phase
+- streaming-protocol fidelity reproduction of the pre-release N = 60 line: phase
   1.30 speedup landed locally on Qwen, but fidelity falsified the
   preregistered gate; root-cause decomposition now localizes the
   short-scout loss primarily to the V-only Q0 pruning leg, so the bridge
@@ -386,8 +386,8 @@ three contributions above stand *without* them.
 
 ## Reviewer-Facing Limitations (shared fidelity vocabulary)
 
-These are the caveats a reviewer will check. Per sam's revised
-whitepaper §8 and codex 2026-04-16 review, the paper must state:
+These are the caveats a reviewer will check. Per the pre-release source's
+revised pre-release source §8 and codex 2026-04-16 review, the paper must state:
 
 1. **Architecture-conditioned reuse fidelity is a spectrum**: on
    windowed-attention-heavy ViTs (Qwen 2.5-VL: 28 of 32 layers
@@ -398,7 +398,7 @@ whitepaper §8 and codex 2026-04-16 review, the paper must state:
    TOMATO motion N=30 lands at `0.933` strict agreement with no
    accuracy gap, while MVBench motion N=30 lands at only `0.733`
    strict agreement with the same `0.200` dense/cached accuracy.
-   However, per sam §2.7, InternVL3 (also all-global) still yields
+   However, per the pre-release source §2.7, InternVL3 (also all-global) still yields
    95% strict agreement and +3.3% accuracy delta — so the claim is
    NOT a clean binary. Output stability is conditioned by attention
    topology, benchmark/query manifold, and pretraining. We must NOT
@@ -428,7 +428,7 @@ whitepaper §8 and codex 2026-04-16 review, the paper must state:
    near-zero benefit. This is a fundamental limitation, not a
    policy gap.
 7. **Drift language discipline — attention-propagation drift, not
-   PE drift.** Sam's whitepaper §234 attributes the refresh requirement
+   PE drift.** The pre-release source attributes the refresh requirement
    to *attention-context* drift (attention weights at a given key
    position evolve ~0.01/frame as the query set shifts), NOT
    positional-encoding drift. Our phase 1.49 refresh sweep shows that
@@ -443,14 +443,14 @@ whitepaper §8 and codex 2026-04-16 review, the paper must state:
    paper must therefore frame drift as **architecture-conditioned**
    rather than as a universal collapse law, and must still say
    "attention-propagation drift" (or "attention-context drift") when
-   citing Sam and must NOT assert a positional-encoding mechanism absent
+   citing the pre-release source and must NOT assert a positional-encoding mechanism absent
    a local PE-ablation. Re-encode at I-frames (what we do) addresses
    attention-propagation drift; temporal-RoPE key correction would
    address PE drift — they require different mitigations. See
    [`publishability-status.md`](publishability-status.md) §Attention-
    context-drift-vs-PE-drift for the Codex round-21 reconciliation.
 
-## Measured Sparse-Execution Reporting Template (from sam, for future use)
+## Measured Sparse-Execution Reporting Template (from the scale-out source, for future use)
 
 When measured sparse execution lands, report:
 
@@ -465,7 +465,7 @@ When measured sparse execution lands, report:
 | Peak memory | per model size | GB |
 
 Content types: talking-head, surveillance, FPV/egomotion (matching
-sam's table structure). Report ViT-only AND E2E separately; do NOT
+the source table structure). Report ViT-only AND E2E separately; do NOT
 use feature-replay timing as the main sparse-execution claim.
 
 ## Emerging Mechanistic Theory (2026-04-16)
@@ -556,7 +556,7 @@ skipped compute.
 
 Near-term paper path:
 
-- honest reproduction of the whitepaper controls and benchmark lane on
+- honest reproduction of the pre-release source controls and benchmark lane on
   Apple Silicon (mostly done; see `docs/reproduction-status.md`)
 - benchmark-native diagnosis of where same-position reuse fails and why
 - a stronger training-free planner: phase 1.21 MVBench N=30 **PASSED**
@@ -717,9 +717,9 @@ Classical codecs (H.264/H.265, VVC, AV1) optimize for the
 human-visual-system rate-distortion objective. A growing body of
 standards work targets machine consumption instead:
 
-- **MPEG-VCM** (Video Coding for Machines): specifies a codec
-  bitstream whose decoder reconstructs a representation optimized
-  for downstream machine tasks, not human viewing.
+- **MPEG-AI Part 2 / VCM** (Video Coding for Machines): ongoing
+  standardization work aiming to define bitstream syntax, decoding, and
+  descriptors optimized for downstream machine tasks, not human viewing.
 - **JPEG AI**: learned image codec standardization activity with
   machine-task rate-distortion as a first-class objective.
 - **DCVC-RT** (Deep Contextual Video Compression — Real-Time): the

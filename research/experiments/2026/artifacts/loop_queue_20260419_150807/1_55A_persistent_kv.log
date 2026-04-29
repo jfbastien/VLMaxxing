@@ -1,5 +1,5 @@
-cmd: /Users/jfb/s/codec-through/.venv/bin/python3 /Users/jfb/s/codec-through/scripts/run_kv_cache_session.py --mode both --output-dir /Users/jfb/s/codec-through/research/experiments/2026/artifacts/loop_queue_20260419_150807/phase1_55A_persistent_kv_qwen
-[1.55A] loading model from /Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit
+cmd: <repo-root>/.venv/bin/python3 <repo-root>/scripts/run_kv_cache_session.py --mode both --output-dir <repo-root>/research/experiments/2026/artifacts/loop_queue_20260419_150807/phase1_55A_persistent_kv_qwen
+[1.55A] loading model from <model:Qwen2.5-VL-7B-Instruct-4bit>
 [1.55A] model loaded; video_ids=['037', '100', '116', '120', '158', '160', '210'] frames=8
 [1.55A] prepared 7 clips × 3 questions = 21 queries
 [1.55A] clip 037 duration=short
@@ -94,4 +94,4 @@ cmd: /Users/jfb/s/codec-through/.venv/bin/python3 /Users/jfb/s/codec-through/scr
 Prefill:   0%|          | 0/3308 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3308 [00:23<00:14, 86.87tok/s]Prefill: 100%|█████████▉| 3307/3308 [00:33<00:00, 103.74tok/s]Prefill: 100%|█████████▉| 3307/3308 [00:33<00:00, 100.13tok/s]
    baseline Q3: 33226 ms correct=False
 [1.55A] done. session follow-up median 37354 ms, speedup 1.01×, prefix coverage 0.00%, Δacc 0.0
-[1.55A] wrote /Users/jfb/s/codec-through/research/experiments/2026/artifacts/loop_queue_20260419_150807/phase1_55A_persistent_kv_qwen/summary.json
+[1.55A] wrote <repo-root>/research/experiments/2026/artifacts/loop_queue_20260419_150807/phase1_55A_persistent_kv_qwen/summary.json

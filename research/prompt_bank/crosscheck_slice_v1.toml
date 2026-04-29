@@ -4,7 +4,7 @@ track = "A"
 sampling_mode = "contiguous_window"
 notes = """
 Small scored real-video slice on the predecessor cross-check clips. This is a
-generalized whitepaper-reproduction suite, not a stable-paper-evidence corpus.
+generalized pre-release reproduction suite, not a stable-paper-evidence corpus.
 Use it to test whether same-position reuse preserves dense answers on natural
 video before benchmark-native TOMATO or MVBench work begins.
 """

@@ -23,7 +23,7 @@ This is an offline analysis only. No new MLX execution is involved.
 ## Inputs
 
 - original `1.30` paired session artifacts:
-  `research/experiments/2026/artifacts/phase1_30_sam_streaming/`
+  `research/experiments/2026/artifacts/phase1_30_scaleout_streaming/`
 - dense-Q0 `1.30W` paired session artifacts:
   `research/experiments/2026/artifacts/phase1_30W_q0_dense_followup_pruned_full/`
 

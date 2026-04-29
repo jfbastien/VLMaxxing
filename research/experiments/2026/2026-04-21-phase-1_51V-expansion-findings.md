@@ -59,7 +59,7 @@ All runs: `gemma-4-e4b-it-4bit`, n=30, max_tokens=32, rss-guard-mb=10000. Therma
 3. "If Tier 3 shows any E2E speedup > 1.15× on composition, the 1.51R null lane re-opens." → **RE-OPENS conditional**: EXP10 (anchor=none kr_novelty=0.3) reaches 1.17× cross-session, agreement=0.63. NOT full confirmation (agreement is low); flag as a targeted re-run lane rather than a closure.
 4. "If Tier 4 shows V_share > 0.22 at 16f, 1.51V ceiling re-opens for longer-horizon regimes." → **RE-OPENS**: V_share_16f = 24.3% > 22%. 32f probe now warranted.
 
-## SOTA advancement vs whitepaper reproduction
+## SOTA advancement vs pre-release source reproduction
 
 **Advances to SOTA (vision-tower pruning at fixed L=2 kr=0.50, n=30 each, thermally paired):**
 
@@ -137,7 +137,7 @@ Short bucket fully preserved (agreement 1.00). Long and medium each drop one ite
 - Summaries: `research/experiments/2026/artifacts/phase1_51V_expansion/exp{01..12}_*_summary.json`
 - Queue log: `research/experiments/2026/artifacts/phase1_51V_expansion/queue.log`
 - Queue completion marker: `research/experiments/2026/artifacts/phase1_51V_expansion/queue.done`
-- Rolling dashboard: `docs/research-dashboard-2026-04-20.md`
+- Rolling dashboard: `research/experiments/registry.md`
 
 ## Wall-clock and resource usage
 

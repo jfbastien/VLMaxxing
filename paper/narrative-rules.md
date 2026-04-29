@@ -48,10 +48,10 @@ Wrong sentence shape:
 
 > Combining these techniques yields X times total speedup.
 
-## How To Talk About Sam's 26B Lane
+## How To Talk About The 26B Scale-Out Lane
 
-Do not make Sam's work sound like an anecdote. It is the **scale-out streaming
-lane**.
+Do not make the external 26B work sound like an anecdote. It is the
+**scale-out streaming lane**.
 
 Current wording:
 
@@ -65,7 +65,7 @@ Current wording:
 
 Promotion requirements:
 
-- cache-correctness fix and expanded smoke test after Sam S0 found only 2/5
+- cache-correctness fix and expanded smoke test after the S0 run found only 2/5
   cross-turn follow-up agreement
 - exact model/runtime/hardware provenance
 - raw paired outputs with item IDs

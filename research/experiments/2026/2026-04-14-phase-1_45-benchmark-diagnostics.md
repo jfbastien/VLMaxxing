@@ -61,10 +61,11 @@ Artifact:
 
 - [phase1_45_benchmark_diagnostics.json](artifacts/phase1_45_benchmark_diagnostics.json)
 
-Command:
+Historical command. The diagnostic script was removed from the OSS release tree;
+the checked artifact below is retained as the durable record:
 
 ```bash
-uv run python scripts/diagnose_benchmark_reproduction.py \
+uv run python <removed-pre-release-diagnostic-script> \
   --output research/experiments/2026/artifacts/phase1_45_benchmark_diagnostics.json
 ```
 
@@ -74,10 +75,10 @@ Inputs:
   [phase1_4_run_b_subset30.json](artifacts/phase1_4_run_b_subset30.json)
 - local MVBench subset:
   [phase1_5_run_b_subset54.json](artifacts/phase1_5_run_b_subset54.json)
-- predecessor TOMATO results:
-  [seed/original_repo/results/tomato_7b_ALL_1000.json](../../../seed/original_repo/results/tomato_7b_ALL_1000.json)
-- predecessor MVBench results:
-  [seed/original_repo/results/mvbench_7b_10.json](../../../seed/original_repo/results/mvbench_7b_10.json)
+- predecessor TOMATO results: pre-release imported artifact, removed from the
+  OSS tree and summarized in [docs/reproduction-status.md](../../../docs/reproduction-status.md)
+- predecessor MVBench results: pre-release imported artifact, removed from the
+  OSS tree and summarized in [docs/reproduction-status.md](../../../docs/reproduction-status.md)
 
 ## Result
 

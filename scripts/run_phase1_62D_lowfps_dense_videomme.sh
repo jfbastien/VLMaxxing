@@ -27,7 +27,7 @@ for FRAME_COUNT in 4 2; do
     if [[ -f "$JSONL" || -f "$SUMMARY" ]]; then
       echo "[1.62D] incomplete prior ${FRAME_COUNT}f outputs detected; rerunning and overwriting partial artifacts"
     fi
-    "$PY" scripts/run_phase1_30_sam_streaming.py \
+    "$PY" scripts/run_phase1_30_scaleout_streaming.py \
       --stack cold \
       --manifest research/benchmark_manifests/videomme_dev_v1.toml \
       --manifest research/benchmark_manifests/videomme_holdout_v1.toml \

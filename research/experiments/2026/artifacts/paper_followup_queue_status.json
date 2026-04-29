@@ -1,5 +1,5 @@
 {
-  "preflight_json": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/paper_followup_preflight.json",
+  "preflight_json": "<repo-root>/research/experiments/2026/artifacts/paper_followup_preflight.json",
   "dry_run": false,
   "strict": false,
   "auto_commit": true,
@@ -11,10 +11,10 @@
       "rationale": "Rerun the adaptive Q3 post-Q2-state probe after the text-only-tail fix to test whether the 1.55E Q3 collapse was a cache-source bug rather than an adaptive impossibility.",
       "ready": true,
       "timeout_seconds": 7200,
-      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_55F_q3_post_q2_state",
+      "artifact_dir": "<repo-root>/research/experiments/2026/artifacts/phase1_55F_q3_post_q2_state",
       "command": [
         "bash",
-        "/Users/jfb/s/codec-through/scripts/run_phase1_55F_q3_post_q2_state.sh"
+        "<repo-root>/scripts/run_phase1_55F_q3_post_q2_state.sh"
       ],
       "status": "completed",
       "gate": {
@@ -42,10 +42,10 @@
       "rationale": "Extend the landed K=1 selective re-prefill result to the long bucket so C-PERSIST can either become a three-regime result or be explicitly scoped to short+medium.",
       "ready": true,
       "timeout_seconds": 10800,
-      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_55I_k1_long_replication",
+      "artifact_dir": "<repo-root>/research/experiments/2026/artifacts/phase1_55I_k1_long_replication",
       "command": [
         "bash",
-        "/Users/jfb/s/codec-through/scripts/run_phase1_55I_k1_long_replication.sh"
+        "<repo-root>/scripts/run_phase1_55I_k1_long_replication.sh"
       ],
       "status": "completed",
       "gate": {
@@ -73,10 +73,10 @@
       "rationale": "Probe the depth boundary of the repaired K=1 policy at 32f short bucket after 1.55G upgraded the result to short+medium.",
       "ready": true,
       "timeout_seconds": 12600,
-      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_55H_k1_32f_short_probe",
+      "artifact_dir": "<repo-root>/research/experiments/2026/artifacts/phase1_55H_k1_32f_short_probe",
       "command": [
         "bash",
-        "/Users/jfb/s/codec-through/scripts/run_phase1_55H_k1_32f_short_probe.sh"
+        "<repo-root>/scripts/run_phase1_55H_k1_32f_short_probe.sh"
       ],
       "status": "completed",
       "gate": {
@@ -104,10 +104,10 @@
       "rationale": "Measure the long-bucket Q0 keep-rate boundary after 1.30Z falsified kr_Q0=0.67, keeping the same follow-up cache-reuse regime.",
       "ready": true,
       "timeout_seconds": 5400,
-      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_30AB_long_q0_kr075",
+      "artifact_dir": "<repo-root>/research/experiments/2026/artifacts/phase1_30AB_long_q0_kr075",
       "command": [
         "bash",
-        "/Users/jfb/s/codec-through/scripts/run_phase1_30AB_long_q0_candidate.sh",
+        "<repo-root>/scripts/run_phase1_30AB_long_q0_candidate.sh",
         "0.75"
       ],
       "status": "completed",
@@ -137,10 +137,10 @@
       "rationale": "Measure the long-bucket Q0 keep-rate boundary after 1.30Z falsified kr_Q0=0.67, keeping the same follow-up cache-reuse regime.",
       "ready": true,
       "timeout_seconds": 5400,
-      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_30AB_long_q0_kr080",
+      "artifact_dir": "<repo-root>/research/experiments/2026/artifacts/phase1_30AB_long_q0_kr080",
       "command": [
         "bash",
-        "/Users/jfb/s/codec-through/scripts/run_phase1_30AB_long_q0_candidate.sh",
+        "<repo-root>/scripts/run_phase1_30AB_long_q0_candidate.sh",
         "0.80"
       ],
       "status": "completed",
@@ -170,10 +170,10 @@
       "rationale": "Measure the long-bucket Q0 keep-rate boundary after 1.30Z falsified kr_Q0=0.67, keeping the same follow-up cache-reuse regime.",
       "ready": true,
       "timeout_seconds": 5400,
-      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_30AB_long_q0_kr085",
+      "artifact_dir": "<repo-root>/research/experiments/2026/artifacts/phase1_30AB_long_q0_kr085",
       "command": [
         "bash",
-        "/Users/jfb/s/codec-through/scripts/run_phase1_30AB_long_q0_candidate.sh",
+        "<repo-root>/scripts/run_phase1_30AB_long_q0_candidate.sh",
         "0.85"
       ],
       "status": "completed",
@@ -203,10 +203,10 @@
       "rationale": "Measure the long-bucket Q0 keep-rate boundary after 1.30Z falsified kr_Q0=0.67, keeping the same follow-up cache-reuse regime.",
       "ready": true,
       "timeout_seconds": 5400,
-      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_30AB_long_q0_kr090",
+      "artifact_dir": "<repo-root>/research/experiments/2026/artifacts/phase1_30AB_long_q0_kr090",
       "command": [
         "bash",
-        "/Users/jfb/s/codec-through/scripts/run_phase1_30AB_long_q0_candidate.sh",
+        "<repo-root>/scripts/run_phase1_30AB_long_q0_candidate.sh",
         "0.90"
       ],
       "status": "completed",
@@ -236,7 +236,7 @@
       "rationale": "Run the first no-splice full-union rerun with the smallest long-bucket Q0 keep rate that passes the 1.30AB long-only rescue band.",
       "ready": true,
       "timeout_seconds": 40500,
-      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_30AE_duration_conditioned_union_pending",
+      "artifact_dir": "<repo-root>/research/experiments/2026/artifacts/phase1_30AE_duration_conditioned_union_pending",
       "selected_130ab_rate": null,
       "status": "skipped-by-1.30AB-gate"
     }

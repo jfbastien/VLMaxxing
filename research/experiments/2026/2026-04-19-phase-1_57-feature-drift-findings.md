@@ -38,7 +38,7 @@ measurement is a *lower bound* on that cache-substitute drift:
   fresh encode of frame t+1 at position k by at least the
   adjacent-frame cosine we measure (because both the "what was at
   position k in frame t" and the "context of frame t" have changed).
-- Any multi-frame cache reuse (e.g., Sam's `sticky4`, or frame-0
+- Any multi-frame cache reuse (e.g., the pre-release source's `sticky4`, or frame-0
   persistent reuse) accumulates at least this much drift per frame.
 
 So **adjacent-frame per-class cos is a conservative lower bound
@@ -73,8 +73,8 @@ model=qwen2.5-vl-7b-4bit items_ok=30 miss=0 samples=84000
 of 0.562 is *far* below the preregistered [0.95, 1.000] band. Two
 readings:
 
-(a) **Our measurement differs from Sam's in a specific way and
-the band wasn't the right target for our measurement.** Sam's
+(a) **Our measurement differs from the pre-release source's in a specific way and
+the band wasn't the right target for our measurement.** the pre-release source's
 cache-substitute vs fresh comparison uses a specific hybrid
 encoding; ours uses naive adjacent fresh encodes. Adjacent-frame
 cosine is naturally lower because the INPUT to the ViT at
@@ -142,7 +142,7 @@ direction (denser sampling → smaller adjacent pixel delta →
 higher feature cos). Ordering STATIC > SHIFTED > NOVEL also
 holds at every frame count.
 
-Caveat: **H3 as preregistered in the Sam cache-substitute frame
+Caveat: **H3 as preregistered in the pre-release source cache-substitute frame
 (which predicts *decreasing* cos with more frames, due to
 accumulated reuse drift) is NOT tested by our measurement.** Our
 H3-earn is the inverted-direction version and is scientifically
@@ -285,7 +285,7 @@ reason (adjacent-frame vs cache-substitute), and report the
 on Qwen because ViT features are bit-faithful adjacent-frame"
 **cannot be supported by this measurement**. Qwen's feature drift
 is substantial even at STATIC positions. Whether the LLM prefill
-nonetheless tolerates *cache-substitute-drift* (the Sam-style
+nonetheless tolerates *cache-substitute-drift* (the scale-out-style
 experiment) is a distinct, not-yet-measured question. The
 identity-cache 100% agreement results (8f/16f/32f, n=30 each on
 VideoMME dev) are a **determinism result** — both branches run
@@ -299,7 +299,7 @@ the same ViT — **not** a robustness-to-drift result.
    `run_novelty_pruning_gemma.py:_compute_vision_features`. Once
    wired, H1 can be tested directly.
 2. **True cache-substitute measurement.** If we want a faithful
-   replication of Sam's measurement, we need a ViT forward pass
+   replication of the pre-release source's measurement, we need a ViT forward pass
    that accepts a mask of "use frame 0's features at these
    positions, re-run ViT on the others." On mlx-vlm this is
    non-trivial (would require patching the vision tower call
@@ -320,4 +320,4 @@ the same ViT — **not** a robustness-to-drift result.
 - 32f cross-bucket findings: `2026-04-19-phase-1_41-qwen-videomme-32f-long-findings.md`
   (mechanism context)
 - Claim #11 (streaming/mechanism) — this is the numerical content
-- Sam ref: `~/s/codec-through-sam/research_queue.md` lines 14-29
+- the pre-release source ref: `pre-release external research queue` lines 14-29

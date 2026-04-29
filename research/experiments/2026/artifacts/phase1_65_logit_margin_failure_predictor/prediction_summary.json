@@ -9,7 +9,7 @@
   "mean_margin_stable": 2.416775173611111,
   "median_margin_drift": 0.53125,
   "median_margin_stable": 1.5625,
-  "model_path": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
+  "model_path": "<model:Qwen2.5-VL-7B-Instruct-4bit>",
   "n_choice_drift_rows": 84,
   "n_correctness_drift_rows": 52,
   "n_drift_rows": 84,
@@ -48,13 +48,13 @@
     {
       "frame_count": 8,
       "label": "1.30AD-cache-reuse-negative",
-      "path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_30AD_instrumented_w_rerun/paired_queries.jsonl",
+      "path": "<repo-root>/research/experiments/2026/artifacts/phase1_30AD_instrumented_w_rerun/paired_queries.jsonl",
       "schema": "phase130"
     },
     {
       "frame_count": 8,
       "label": "1.30AC-cache-invalidated-negative",
-      "path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_30AC_cache_invalidated_followups/paired_queries.jsonl",
+      "path": "<repo-root>/research/experiments/2026/artifacts/phase1_30AC_cache_invalidated_followups/paired_queries.jsonl",
       "schema": "phase130"
     }
   ],

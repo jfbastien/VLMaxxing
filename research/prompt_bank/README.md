@@ -21,7 +21,7 @@ questions from chat history.
   local Track A work
 - [crosscheck_slice_v2.toml](crosscheck_slice_v2.toml): endpoint-oriented
   real-video slice on the predecessor cross-check clips; current natural-video
-  Track A slice for generalized whitepaper reproduction
+  Track A slice for generalized pre-release source reproduction
 - [crosscheck_slice_v1.toml](crosscheck_slice_v1.toml): first cross-check
   real-video draft preserved because it surfaced weak middle-event items and
   drove the v2 rewrite

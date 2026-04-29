@@ -16,9 +16,11 @@ uses, then measure sparse later with the same harness.
 
 ## Method
 
-`scripts/run_track_b.py --mode mc_scoring` emulates Track A's
-scoring path: prefill the `(vision + prompt + options)` tokens and
-measure through the first forward pass. We do NOT run full
+The pre-release dense-timing harness emulated Track A's scoring path:
+prefill the `(vision + prompt + options)` tokens and measure through
+the first forward pass. That legacy harness was removed from the OSS
+release tree; current measured sparse-vision claims use the phase 1.63
+drivers instead. We do NOT run full
 autoregressive generation (`--mode full_generation` is available
 for a future comparison, but mc_scoring is what phase 1.21 / 1.24
 actually used).
@@ -113,7 +115,7 @@ Peak memory: 6.85 GB mean post-inference, 6.87 GB p95, 6.87 GB max.
   the paper's limitations paragraph before anyone else does.
 - Reported numbers must stay **end-to-end**. Reporting "vision
   encode speedup" as Track B would double-count the saved work
-  (sam's feedback from the round-5 review, now enforced in the
+  (the pre-release source's feedback from the round-5 review, now enforced in the
   harness by the mutually-exclusive `--mode` flag).
 
 ## Open questions
@@ -133,10 +135,11 @@ Peak memory: 6.85 GB mean post-inference, 6.87 GB p95, 6.87 GB max.
 
 ## Reproduction
 
-n=10 dev baseline (initial):
+n=10 dev baseline (initial, historical command; legacy harness removed before
+OSS release):
 
 ```bash
-uv run python scripts/run_track_b.py \
+uv run python <removed-legacy-track-b-harness> \
   --manifest research/benchmark_manifests/tomato_motion_dev_v1.toml \
   --mode mc_scoring \
   --frame-count 8 \
@@ -144,10 +147,11 @@ uv run python scripts/run_track_b.py \
   --output results/track_b/tomato_mc_n10.jsonl
 ```
 
-TOMATO N=30 holdout (2026-04-17):
+TOMATO N=30 holdout (2026-04-17, historical command; legacy harness removed
+before OSS release):
 
 ```bash
-uv run python scripts/run_track_b.py \
+uv run python <removed-legacy-track-b-harness> \
   --manifest research/benchmark_manifests/tomato_motion_holdout_v2.toml \
   --mode mc_scoring \
   --frame-count 8 \
@@ -156,10 +160,11 @@ uv run python scripts/run_track_b.py \
   --summary results/track_b/tomato_mc_n30.json
 ```
 
-MVBench N=30 holdout (2026-04-17):
+MVBench N=30 holdout (2026-04-17, historical command; legacy harness removed
+before OSS release):
 
 ```bash
-uv run python scripts/run_track_b.py \
+uv run python <removed-legacy-track-b-harness> \
   --manifest research/benchmark_manifests/mvbench_motion_holdout_v2.toml \
   --mode mc_scoring \
   --frame-count 8 \
@@ -248,7 +253,7 @@ Cross-benchmark deltas at this geometry (8 frames, 560×560, 4-bit):
   Any Track B claim based purely on ViT-skip reuse has a hard
   ceiling near 20% end-to-end at this geometry. Beyond that
   requires either prefill-token reduction (SparseVLM / FastV /
-  VisionZip / Sam's novelty-pruning) or cross-frame KV reuse
+  VisionZip / the pre-release source's novelty-pruning) or cross-frame KV reuse
   (CoPE-style).
 - Publish both numbers; the paper's limitations paragraph should
   cite the 20–23% band, not a single number.
@@ -261,8 +266,9 @@ Cross-benchmark deltas at this geometry (8 frames, 560×560, 4-bit):
 - `results/track_b/tomato_mc_n30.jsonl` — per-item raw timings
 - `results/track_b/mvbench_mc_n30.json` — MVBench N=30 holdout summary
 - `results/track_b/mvbench_mc_n30.jsonl` — per-item raw timings
-- `scripts/run_track_b.py` — driver (committed, see commit
-  `d81335f` for the initial landing and subsequent hardening)
+- legacy Track-B dense-timing driver, removed from the OSS release tree; see
+  git history around commit `d81335f` for the original landing and subsequent
+  hardening
 
 The `results/` tree is `.gitignore`d; artifacts above are local-only
 and regenerable from the reproduction commands.

@@ -126,4 +126,4 @@ curve is a real slice feature, not a harness artifact.
 
 - [phase 1.8 motion frame-budget baselines](2026-04-14-phase-1_8-motion-frame-budget-baselines.md)
 - [phase 1.12 holdout evaluation](2026-04-14-phase-1_12-grid-winners-holdout.md)
-- [execution plan round 7](../../../docs/execution-plan-round-7.md)
+- [experiment registry](../registry.md)

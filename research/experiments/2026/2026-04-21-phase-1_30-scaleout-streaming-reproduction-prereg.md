@@ -6,20 +6,20 @@ prior:
   - research/experiments/2026/2026-04-16-phase-1_30-streaming-window-harness.md
   - research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md
   - research/experiments/2026/2026-04-21-phase-1_51V-expansion-findings.md
-  - paper/whitepaper-revised-2026-04-16.md (§2.13.3, §5)
+  - pre-release external source (§2.13.3, §5)
 status: prereg (deferred — queued after EXP17/18 + EXP10 n=60 land)
 ---
 
-# 1.30 Sam streaming/deployment-protocol reproduction — prereg
+# 1.30 the pre-release source streaming/deployment-protocol reproduction — prereg
 
-## Motivation (why round-24 promoted this to "biggest Sam bridge")
+## Motivation (why round-24 promoted this to "biggest the pre-release source bridge")
 
 Codex round-24 identified that every local result in this repo is a
 **phase-isolated** experiment: one benchmark, one frame-count, one
-(L, kr) pair, one persistent-KV depth. Sam's whitepaper §5 describes
+(L, kr) pair, one persistent-KV depth. the pre-release source §5 describes
 a **deployment-grade protocol** where these mechanisms compose across
 a streaming client and where a reviewer would want to see an N=60
-line matching Sam's reporting template:
+line matching the pre-release source's reporting template:
 
 > Video arrives frame-by-frame; the client runs a rolling pre-prefill
 > queue with KV-cache reuse across consecutive queries on the same
@@ -36,7 +36,7 @@ union) paired with the cold baseline.
 
 ## Hypotheses (preregistered)
 
-### H_sam_e2e (primary)
+### H_stream_e2e (primary)
 
 **Paired within-run E2E speedup (cold-baseline vs streaming-stack)
 ≥ 3.0× on VideoMME 60-item union at 8f, with acc Δ ∈ [−0.05,
@@ -49,9 +49,9 @@ on the follow-up path per 1.55A; amortized over a realistic
 query-per-clip distribution (assume 3 queries per clip, 1 first-query
 + 2 follow-ups), expected amortized e2e is approximately:
 `(1 × first_query_e2e + 2 × follow_up_e2e) / (3 × cold_e2e)` — with
-follow_up_e2e ≈ 0.8 s (Sam line) and cold_e2e ≈ 40 s (VideoMME 8f
+follow_up_e2e ≈ 0.8 s (the pre-release source line) and cold_e2e ≈ 40 s (VideoMME 8f
 dense on M3 16GB), the amortized e2e is ~14× on 3-query clips. The
-H_sam_e2e ≥ 3.0× threshold is a conservative lower bound that
+H_stream_e2e ≥ 3.0× threshold is a conservative lower bound that
 accommodates (a) first-query overhead dominating short clips, (b)
 drift-triggered re-prefill cost on longer clips, (c) per-item variance.
 
@@ -59,20 +59,20 @@ drift-triggered re-prefill cost on longer clips, (c) per-item variance.
 composition-of-mechanisms argument on VideoMME and indicate that
 per-clip overhead swamps per-query wins at this scale.
 
-### H_sam_bucket (primary)
+### H_stream_bucket (primary)
 
-**Sam's "clean / mixed / degenerate" bucket distribution
+**The pre-release source's "clean / mixed / degenerate" bucket distribution
 reproduces locally with clean-bucket fraction ≥ 0.50 and
 degenerate-bucket fraction ≤ 0.15** across the 60-item × 3-queries
 stream.
 
-Sam's §5 deployment table reports per-item bucket tallies for his
+The pre-release source's §5 deployment table reports per-item bucket tallies for the
 26B/M5 Max setup. A local reproduction that does not hit comparable
 bucket shares on the same VideoMME manifest (adjusted for our 4B/M3
 setup — expect higher degenerate share if 7B basin collapse triggers
 at our prefill depths) would indicate the protocol is not transferring.
 
-### H_sam_drift_refresh (secondary)
+### H_stream_drift_refresh (secondary)
 
 **Drift-triggered re-prefill fires on ≤ 30% of follow-up queries
 AND reduces degenerate-bucket share by ≥ 50% vs a no-refresh baseline
@@ -84,7 +84,7 @@ If refresh fires too often (> 30%), we lose the persistent-KV
 speedup; if it fires too rarely, degenerate-bucket share will not
 drop.
 
-### H_sam_thermal (process)
+### H_stream_thermal (process)
 
 **Decode Δ across cold vs streaming stack: |decode_ms(streaming) −
 decode_ms(cold)| / decode_ms(cold) < 2%.**
@@ -107,7 +107,7 @@ re-streaming) and report the minimum-drift pair.
 ## Configuration
 
 ```
-model-path        /Users/jfb/models/gemma-4-e4b-it-4bit
+model-path        $GEMMA_MODEL_PATH
 manifest          union(videomme_dev_v1.toml, videomme_holdout_v1.toml)
                    (60 items — expect 30 dev + 30 holdout, 1 overlap
                     per VideoMME subset manifest)
@@ -129,7 +129,7 @@ STREAMING stack:   --persistent-kv-reuse
 
 Drift-refresh threshold: use 1.49's adjacent-frame ViT cos ≥ 0.95
 trigger as the default; parameter-sweep is out of scope for this
-prereg (could be added as a follow-up if H_sam_drift_refresh fails).
+prereg (could be added as a follow-up if H_stream_drift_refresh fails).
 
 ## Dependencies (gating)
 
@@ -154,15 +154,15 @@ thermal-pair retries. **Single autonomous session.**
 
 ## Adjudication rules
 
-- **H_sam_e2e**: CONFIRMED if paired amortized e2e ≥ 3.0× AND acc
-  Δ in band AND H_sam_thermal passes. EARNED if ≥ 1.5× with thermal
+- **H_stream_e2e**: CONFIRMED if paired amortized e2e ≥ 3.0× AND acc
+  Δ in band AND H_stream_thermal passes. EARNED if ≥ 1.5× with thermal
   gate failing (diagnostic). NULL if < 1.5× with thermal gate passing.
-- **H_sam_bucket**: CONFIRMED if clean ≥ 0.50 AND degenerate ≤ 0.15.
+- **H_stream_bucket**: CONFIRMED if clean ≥ 0.50 AND degenerate ≤ 0.15.
   PARTIAL if one criterion meets, other within 10 pp.
-- **H_sam_drift_refresh**: CONFIRMED if refresh-rate ≤ 30% AND
+- **H_stream_drift_refresh**: CONFIRMED if refresh-rate ≤ 30% AND
   degenerate-reduction ≥ 50%. NULL if refresh-rate > 50% (heuristic
   fails) or degenerate-reduction ≤ 20% (refresh doesn't help).
-- **Paper promotion rule**: if H_sam_e2e + H_sam_bucket both pass,
+- **Paper promotion rule**: if H_stream_e2e + H_stream_bucket both pass,
   this reopens C-VISION as a **deployment-grade composition**
   contribution and unlocks the "streaming/deployment" framing of
   the paper's main result (raising submission tier from efficiency
@@ -170,18 +170,18 @@ thermal-pair retries. **Single autonomous session.**
 
 ## Artifacts expected
 
-- `research/experiments/2026/artifacts/phase1_30_sam_streaming/cold_summary.json`
-- `research/experiments/2026/artifacts/phase1_30_sam_streaming/streaming_summary.json`
-- `research/experiments/2026/artifacts/phase1_30_sam_streaming/per_clip_bucket_tally.json`
-- `research/experiments/2026/artifacts/phase1_30_sam_streaming/drift_refresh_trace.json`
-- Findings: `research/experiments/2026/2026-04-??-phase-1_30-sam-streaming-findings.md`
-- Runner: `scripts/run_phase1_30_sam_streaming.sh` (to be written)
+- `research/experiments/2026/artifacts/phase1_30_scaleout_streaming/cold_summary.json`
+- `research/experiments/2026/artifacts/phase1_30_scaleout_streaming/streaming_summary.json`
+- `research/experiments/2026/artifacts/phase1_30_scaleout_streaming/per_clip_bucket_tally.json`
+- `research/experiments/2026/artifacts/phase1_30_scaleout_streaming/drift_refresh_trace.json`
+- Findings: `research/experiments/2026/2026-04-23-phase-1_30-scaleout-streaming-findings.md`
+- Runner: `scripts/run_phase1_30_scaleout_streaming.sh` (to be written)
 
 ## Relationship to original 1.30 harness prereg
 
 The 2026-04-16 harness prereg targeted a CodecSight-comparable
 UCF-Crime operating point. This prereg drops UCF-Crime entirely
-because (a) we do not report on it and (b) Sam does not report on it
+because (a) we do not report on it and (b) the pre-release source does not report on it
 either — he reports on VideoMME-adjacent manifests. The streaming
 *protocol* is preserved, the *corpus* changes. Once this lands, the
 2026-04-16 harness prereg should be closed as historical or

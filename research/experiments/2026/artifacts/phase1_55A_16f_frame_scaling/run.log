@@ -1,4 +1,4 @@
-[1.55A] loading model from /Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit
+[1.55A] loading model from <model:Qwen2.5-VL-7B-Instruct-4bit>
 [1.55A] model loaded; video_ids=['037', '100', '116', '120', '158', '160', '210'] frames=16
 [1.55A] prepared 7 clips × 3 questions = 21 queries
 [1.55A] clip 037 duration=short
@@ -79,4 +79,4 @@
 Prefill:   0%|          | 0/6524 [00:00<?, ?tok/s]Prefill:  31%|███▏      | 2048/6524 [00:34<01:15, 59.15tok/s]Prefill:  31%|███▏      | 2048/6524 [00:48<01:15, 59.15tok/s]Prefill:  63%|██████▎   | 4096/6524 [00:50<00:27, 87.45tok/s]Prefill:  94%|█████████▍| 6144/6524 [01:06<00:03, 100.87tok/s]Prefill: 100%|█████████▉| 6523/6524 [01:10<00:00, 102.46tok/s]Prefill: 100%|█████████▉| 6523/6524 [01:10<00:00, 93.17tok/s] 
    baseline Q3: 70253 ms correct=True
 [1.55A] done. session follow-up median 807 ms, speedup 91.06×, prefix coverage 99.11%, Δacc 0.0
-[1.55A] wrote /Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_55A_16f_frame_scaling/summary.json
+[1.55A] wrote <repo-root>/research/experiments/2026/artifacts/phase1_55A_16f_frame_scaling/summary.json

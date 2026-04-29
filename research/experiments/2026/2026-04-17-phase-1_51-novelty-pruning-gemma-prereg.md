@@ -29,7 +29,7 @@ sensitivity) will put error bars on the null and check whether any
 subset of (duration bucket, kr, max_tokens) reaches the preregistered
 1.8× gate. Expected outcome: preregistered NO-REPRO on E4B for
 claim #11 headline, with the negative result itself publishable as
-evidence that Sam's mechanism is model-scale-sensitive.
+evidence that the pre-release source's mechanism is model-scale-sensitive.
 
 ## Round-18 amendment (2026-04-17)
 
@@ -39,8 +39,8 @@ inconsistent with the phase 1.42 design note (§Critical re-read,
 line 62) which says novelty-pruning "does not require
 `_mix_gemma_features` at all" — it's a fresh per-frame
 token-drop path at the LLM prefill input. This prereg is updated
-to match. See also the Sam-reproduction lane prereg
-(`research/experiments/2026/2026-04-17-sam-reproduction-lane-prereg.md`)
+to match. See also the pre-release reproduction lane prereg
+(`research/experiments/2026/2026-04-17-scaleout-reproduction-lane-prereg.md`)
 which assigns phase 1.51R the "reproduction" role; the extension
 work on TOMATO/MVBench stays under phase 1.51 (now "1.51E" for
 extension).
@@ -50,7 +50,7 @@ Sibling: `research/experiments/2026/2026-04-17-phase-1_42-gemma-architecture-top
 ## Motivation
 
 Claim #10 in the paper matrix is currently deferred because we
-have no measured spatial-pruning result. Sam's sibling project
+have no measured spatial-pruning result. the pre-release source's sibling project
 reports 4-5× end-to-end speedups on Gemma 4 26B (M5 Max) by
 dropping visual tokens from the LLM prefill based on a per-frame
 novelty score. Codex round-15 explicitly flagged that
@@ -75,7 +75,7 @@ positional embeddings.
 This is why the novelty-pruning phase lives on Gemma first. Qwen
 composition with pruning is a separate future-work item that
 needs either an M-RoPE-V-safe token-drop strategy or a re-indexing
-trick (both are open research questions; see Sam's whitepaper §4).
+trick (both are open research questions; see the pre-release source §4).
 
 ## Hypothesis
 
@@ -83,7 +83,7 @@ H1 (end-to-end speedup): Novelty-pruning Gemma 4 visual tokens at
 **50 % keep rate** (keep the 50 % most novel tokens per frame,
 drop the rest before LLM prefill) achieves ≥ 1.8× wall-clock
 speedup on TOMATO motion N=30 vs Gemma-dense-8. Target:
-≥ 2 × (Sam's 4-5 × on the 26 B model doesn't directly translate
+≥ 2 × (the pre-release source's 4-5 × on the 26 B model doesn't directly translate
 at half the depth and quarter the weights; we budget conservative).
 
 H2 (quality preservation): At 50 % keep rate, cached accuracy is

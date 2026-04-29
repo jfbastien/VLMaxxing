@@ -128,4 +128,4 @@ H1 acceptance band (MAE < 0.02 on ≥20 of 22 completed policies):
 - [phase 1.10 TOMATO motion dev](2026-04-14-phase-1_10-planner-grid-tomato-motion-dev.md)
 - [phase 1.11 MVBench motion dev](2026-04-14-phase-1_11-planner-grid-mvbench-motion-dev.md)
 - [decision-log 2026-04-14 calibration mismatch](../../../research/decision-log.md)
-- [execution plan round 7](../../../docs/execution-plan-round-7.md)
+- [experiment registry](../registry.md)

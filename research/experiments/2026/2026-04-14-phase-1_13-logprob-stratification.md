@@ -116,4 +116,4 @@ mostly a measure of dense baseline weakness, not caching policy quality.
 
 - [phase 1.12 holdout evaluation](2026-04-14-phase-1_12-grid-winners-holdout.md)
 - [scripts/stratify_logprobs.py](../../../scripts/stratify_logprobs.py)
-- [execution plan round 7](../../../docs/execution-plan-round-7.md)
+- [experiment registry](../registry.md)

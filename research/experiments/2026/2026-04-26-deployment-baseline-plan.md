@@ -2,7 +2,7 @@
 date: 2026-04-26
 status: D1 staged for reviewer-defense queue; D2/D3 remain design work
 related:
-  - research/experiments/2026/2026-04-21-phase-1_30-sam-streaming-reproduction-prereg.md
+  - research/experiments/2026/2026-04-21-phase-1_30-scaleout-streaming-reproduction-prereg.md
   - research/experiments/2026/2026-04-24-phase-1_30W-q0-dense-followup-pruned-full-findings.md
   - research/experiments/2026/2026-04-25-phase-1_30AB-long-q0-sweep-findings.md
 ---

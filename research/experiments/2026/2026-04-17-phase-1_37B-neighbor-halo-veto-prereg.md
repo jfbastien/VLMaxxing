@@ -12,7 +12,7 @@ Sibling: `research/experiments/2026/2026-04-16-phase-1_12b-crossbench-winner-mvb
 > veto — a scan over neighboring *parent* blocks — NOT the within-block
 > 2×2 child-veto preregistered in
 > `research/experiments/2026/2026-04-16-phase-1_37-child-veto-subtoken-guard.md`.
-> Sam's feedback flagged this mismatch: "child-veto" was the name of a
+> the pre-release source's feedback flagged this mismatch: "child-veto" was the name of a
 > different mechanism (subtoken guard inside each merged-token block) and
 > should not be reused for the halo variant. As a result:
 >
@@ -256,7 +256,7 @@ even if the metric analysis waits for phase 1.31.
   0.650 raw to 0.476 after halo-veto, confirming the veto promotes
   STATIC→NOVEL as designed.
 - 2026-04-17: **TOMATO dev shortlisted 9-cell sweep launched in
-  background** via `/tmp/claude/run_halo_dev_tomato.sh`; expected
+  background** via scratch runner; expected
   wall time ≈ 4 h. MVBench dev 9-cell sweep queued sequentially.
 - 2026-04-17 12:53Z: **TOMATO dev 9/9 complete — NO-LIFT verdict**
   per frozen promotion rule (control is rank 1 by tiebreakers;

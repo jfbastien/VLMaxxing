@@ -80,7 +80,7 @@ Failure pattern: **B is the dominant wrong-answer token in medium-bucket**; the 
 uv run python scripts/run_benchmark_track_a.py run \
   --benchmark videomme \
   --manifest research/benchmark_manifests/videomme_holdout_v1.toml \
-  --model-path /Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit \
+  --model-path $QWEN_7B_4BIT_MODEL_PATH \
   --frame-count 16 \
   --cache-mode identity \
   --max-tokens 32 \

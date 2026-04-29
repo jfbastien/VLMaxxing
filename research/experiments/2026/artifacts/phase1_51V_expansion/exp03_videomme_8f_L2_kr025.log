@@ -1,4 +1,4 @@
-loading model: /Users/jfb/models/gemma-4-e4b-it-4bit
+loading model: <model:gemma-4-e4b-it-4bit>
 [rss before load] 428 MiB
 [model weight dtypes] unavailable (model.parameters() returned empty)
 [rss after load] 5256 MiB

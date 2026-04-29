@@ -99,6 +99,6 @@ Planned output directory:
 
 Runner:
 
-- `scripts/run_phase1_30_sam_streaming.py`
+- `scripts/run_phase1_30_scaleout_streaming.py`
 
 No code changes are required for this long-only continuation.

@@ -213,5 +213,5 @@ That artifact is the current paper-ready source for the per-item-drift table:
 - **1.58** — larger-memory-machine only.
 - **Matched Qwen/Gemma drift probes** — explanation-strength work, not a local
   blocking item for the next queue.
-- **1.29 runtime decoder integration / Sam-style matched baselines** — needed
+- **1.29 runtime decoder integration / scale-out-style matched baselines** — needed
   for systems-venue strength, but outside this immediate local paper closeout.

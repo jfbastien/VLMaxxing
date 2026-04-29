@@ -4,7 +4,7 @@
 Gemma 4-E4B-4bit MLX after the bounded-decode OOM fix.
 **Parent preregs:**
 - `research/experiments/2026/2026-04-17-phase-1_51-novelty-pruning-gemma-prereg.md`
-- `research/experiments/2026/2026-04-17-sam-reproduction-lane-prereg.md`
+- `research/experiments/2026/2026-04-17-scaleout-reproduction-lane-prereg.md`
 **Artifacts:** `research/experiments/2026/artifacts/phase1_51R_pilot/`
 
 ## Result
@@ -35,7 +35,7 @@ post-pool grid 16×16 (runtime-verified 2026-04-18; processor's stale
 
 ## Why end-to-end speedup is capped on E4B at this geometry
 
-The Sam-reproduction prereg predicted ≥ 1.8× end-to-end at kr=0.5 on
+The pre-release reproduction prereg predicted ≥ 1.8× end-to-end at kr=0.5 on
 Gemma + VideoMME. The pilot shows 1.01×. Root cause is NOT a bug —
 it's the arithmetic of the pipeline:
 
@@ -43,7 +43,7 @@ it's the arithmetic of the pipeline:
    this — it's ffmpeg / PyAV pulling bytes off disk. On VideoMME
    `long` items (multi-minute videos) this fraction is even higher
    than on `short` items; we should stratify.
-2. **Vision tower (~5s) runs on ALL tokens pre-prune.** Sam's
+2. **Vision tower (~5s) runs on ALL tokens pre-prune.** the pre-release source's
    mechanism drops tokens between the vision tower and the LLM
    prefill — the ViT still processes the full 2048-token grid. On
    the E4B backbone, vision tower cost (4.9s) is comparable to LLM
@@ -70,7 +70,7 @@ On this pilot item (`D = 22.8s`, `V = 4.9s`, `G = 5.1s`):
 | s = ∞ (zero-cost generate) | 1.184× |
 
 Even if prefill-shortening eliminated ALL generate cost, the ceiling
-is 1.18× on this long-video item. **Sam's 1.8× claim is
+is 1.18× on this long-video item. **the pre-release source's 1.8× claim is
 unreachable at these (D, V, G) proportions.** To recover the claim
 on E4B we would need one of:
 
@@ -87,12 +87,12 @@ on E4B we would need one of:
 |---|---|
 | H-decode (decode dominates end-to-end) | **Confirmed** — 69% of wall time is I/O-bound. |
 | H-vision (vision tower caps prefill-shortening gains on E4B) | **Confirmed** — V ≈ G, so removing G halves only part of non-decode. |
-| H-sam-1.8× reproduces at kr=0.5 on VideoMME long | **Falsified** — analytically impossible at this (D, V, G). |
+| H-the pre-release source-1.8× reproduces at kr=0.5 on VideoMME long | **Falsified** — analytically impossible at this (D, V, G). |
 | H-generate-path-correct (pruning ≠ bug) | **Confirmed** — dense and pruned answers agree, kept_tokens exactly 1024/2048. |
 
 ## What this means for the paper
 
-The Sam-reproduction lane lands a **partial / null reproduction** as
+The pre-release reproduction lane lands a **partial / null reproduction** as
 the headline result for claim #11:
 
 - **Sign matches:** pruning at kr=0.5 gives positive generate-only
@@ -105,7 +105,7 @@ the headline result for claim #11:
 This is a **publishable negative result** under the prereg's
 accept/reject gate: speedup < 1.3× at the best cell → "NO-REPRO on
 E4B, preregistered null with mechanistic explanation (vision tower +
-decode dominance)." The paper discusses this as evidence that Sam's
+decode dominance)." The paper discusses this as evidence that the pre-release source's
 mechanism is model-scale-sensitive (26B prefill dominates; E4B
 prefill does not).
 
@@ -127,7 +127,7 @@ disturbing measurements.
    prefill-is-tiny. Expected: doesn't fix end-to-end because vision
    still dominates.
 4. **Stage 4 — (out of 1.51R scope)** vision-tower pruning as a
-   separate mechanism. Would fully reproduce Sam's 1.8× feasibility
+   separate mechanism. Would fully reproduce the pre-release source's 1.8× feasibility
    envelope but requires a different drop point (pre-vision).
 
 ## Runtime estimates (benchmark-only, not implementation)

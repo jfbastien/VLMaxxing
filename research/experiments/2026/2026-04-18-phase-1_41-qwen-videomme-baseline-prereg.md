@@ -21,7 +21,7 @@ VideoMME is 4-option multiple choice across short (<60s),
 medium (60–300s), long (15+ min) durations. Public reports put
 Qwen 2.5-VL-7B ≈ 0.55 on the full benchmark (n=2700). We run
 on **videomme_dev_v1 n=30** (10 short + 10 medium + 10 long from
-the dev split, distinct from Sam's or any public test draw).
+the dev split, distinct from the pre-release source's or any public test draw).
 
 Baseline priors (from known Qwen performance on similar benchmarks
 at 8 frames × 560×560 × max_tokens=32):

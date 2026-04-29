@@ -62,9 +62,9 @@ Run date:
 Manifests:
 
 - dev:
-  [tomato_motion_dev_v1.toml](../benchmark_manifests/tomato_motion_dev_v1.toml)
+  [tomato_motion_dev_v1.toml](../../benchmark_manifests/tomato_motion_dev_v1.toml)
 - holdout:
-  [tomato_motion_holdout_v1.toml](../benchmark_manifests/tomato_motion_holdout_v1.toml)
+  [tomato_motion_holdout_v1.toml](../../benchmark_manifests/tomato_motion_holdout_v1.toml)
 
 Artifact:
 

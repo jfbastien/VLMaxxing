@@ -23,7 +23,7 @@ All cells evaluated on N=30 holdout v2 slices. All cells used
 | TOMATO holdout v2 | 0.333 @ 3.55 | 0.300 @ 4.56 | −0.033 | +1.01 |
 
 **Cross-benchmark consistency**: SHIFTED adds exactly −0.033 accuracy
-and −1.0 fresh frame on both benchmarks. The whitepaper's "localized
+and −1.0 fresh frame on both benchmarks. The pre-release source's "localized
 motion preserves embeddings at 0.997+ cosine" translates directly into
 method value.
 
@@ -47,7 +47,7 @@ paper claim that:
 - **MAX_ABS dominates CPF** on both temporal-reasoning benchmarks
   (it catches subtle single-pixel changes that CPF's count threshold
   misses)
-- **SHIFTED reuse is a real method contribution** (the whitepaper's
+- **SHIFTED reuse is a real method contribution** (the pre-release source's
   shift-locality observation translates into measurable accuracy + budget
   improvements on both benchmarks: −0.033 accuracy, +1.0 fresh frame
   when SHIFTED is removed)

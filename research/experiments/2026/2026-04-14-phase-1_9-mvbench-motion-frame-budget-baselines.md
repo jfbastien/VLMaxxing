@@ -154,6 +154,6 @@ Key questions to answer:
 ## Links
 
 - [phase 1.8 motion frame-budget](2026-04-14-phase-1_8-motion-frame-budget-baselines.md)
-- [phase 1.47 first-frame ablation](2026-04-13-phase-1_47-benchmark-first-frame-ablation.md)
+- [phase 1.47 first-frame ablation](2026-04-14-phase-1_47-benchmark-first-frame-ablation.md)
 - [claim register](../../../docs/claim-register.md)
 - [reproduction status](../../../docs/reproduction-status.md)

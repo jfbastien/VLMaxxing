@@ -6,11 +6,11 @@
   "models": {
     "qwen_4bit": {
       "ready": true,
-      "detail": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit"
+      "detail": "<model:Qwen2.5-VL-7B-Instruct-4bit>"
     },
     "qwen_bf16": {
       "ready": false,
-      "detail": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct"
+      "detail": "<model:Qwen2.5-VL-7B-Instruct>"
     }
   },
   "manifests": {

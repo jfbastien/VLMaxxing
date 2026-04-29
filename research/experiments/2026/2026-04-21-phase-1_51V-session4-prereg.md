@@ -77,7 +77,7 @@ V_red observed on dev.
 ## Configuration
 
 ```
-model-path        /Users/jfb/models/gemma-4-e4b-it-4bit
+model-path        $GEMMA_MODEL_PATH
 frame-count       8
 n                 30 per arm
 max-tokens        32
@@ -130,4 +130,4 @@ when the unpatched arm runs first back-to-back.
 - `research/experiments/2026/artifacts/phase1_51V_session4/exp22_tomato_holdout_8f_L2_kr050.{jsonl,log,done}` + summary
 - `research/experiments/2026/artifacts/phase1_51V_session4/queue.log`
 - Runner: `scripts/run_phase1_51V_session4.sh`
-- Findings doc: `research/experiments/2026/2026-04-??-phase-1_51V-session4-findings.md`
+- Findings doc: `research/experiments/2026/2026-04-21-phase-1_51V-session4-findings.md`

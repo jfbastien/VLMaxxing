@@ -134,4 +134,4 @@ Expected wall-clock: 10 × ~170s ≈ 28 min.
 - 16f findings: `2026-04-19-phase-1_41-qwen-videomme-16f-findings.md`
 - Claim-matrix row 8 (VideoMME)
 - Phase 1.57 (mechanism ablation — load-bearing if H1 lower-tail)
-- `2026-04-19-codex-round-21-sam-imports.md` §3 (attention-drift)
+- `2026-04-19-codex-round-21-scaleout-imports.md` §3 (attention-drift)

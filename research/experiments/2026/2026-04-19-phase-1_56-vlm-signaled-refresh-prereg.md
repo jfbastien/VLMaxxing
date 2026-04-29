@@ -6,9 +6,9 @@ answer-margin logging landing, and (b) a refresh-policy API that
 reads per-generation logprobs.
 
 **Provenance.** This prereg is a Codex-round-21 hypothesis, not a
-reproduction of a documented whitepaper claim. Sam's whitepaper
+reproduction of a documented pre-release source claim. the pre-release source
 uses periodic (I-frame-aligned) refresh
-(`paper/whitepaper-revised-2026-04-16.md:234-240`), not
+(`pre-release external source:234-240`), not
 VLM-signal-conditioned refresh. This is a proposed extension.
 
 ## Objective
@@ -81,10 +81,10 @@ to co-validate the C-CEILING model's regime sensitivity.
 
 ## Cross-references
 
-- `2026-04-19-codex-round-21-sam-imports.md` §5
+- `2026-04-19-codex-round-21-scaleout-imports.md` §5
 - Phase 1.44 (answer-margin logging — queued)
 - `paper/claim-matrix.md` row 3 (routing), row 11 (novelty-pruning)
-- Sam whitepaper §3.3 — periodic I-frame refresh
+- pre-release source §3.3 — periodic I-frame refresh
 
 ## Status
 

@@ -7,7 +7,7 @@
         "scripts/run_phase1_55L_many_turn_cpersist.sh"
       ],
       "status": "completed",
-      "summary_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_55L_many_turn_cpersist/summary.json",
+      "summary_path": "<repo-root>/research/experiments/2026/artifacts/phase1_55L_many_turn_cpersist/summary.json",
       "elapsed_s": 24456.934899457992,
       "summary": {
         "cells": [

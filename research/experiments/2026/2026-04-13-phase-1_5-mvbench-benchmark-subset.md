@@ -192,7 +192,7 @@ What the smoke established:
 
 - after adding `perception.zip` and fixing nested hosted-path resolution, the
   hosted predecessor-style MVBench slice is genuinely runnable locally
-- MVBench on this stack behaves much closer to the imported whitepaper
+- MVBench on this stack behaves much closer to the pre-release source
   direction than TOMATO does
 - the default same-position cached path preserved `17/18` dense answers on the
   first hosted item from each predecessor-style task

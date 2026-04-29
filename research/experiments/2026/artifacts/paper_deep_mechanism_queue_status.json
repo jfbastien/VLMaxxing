@@ -1,5 +1,5 @@
 {
-  "preflight_json": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/paper_deep_mechanism_preflight.json",
+  "preflight_json": "<repo-root>/research/experiments/2026/artifacts/paper_deep_mechanism_preflight.json",
   "dry_run": false,
   "strict": false,
   "auto_commit": true,
@@ -11,10 +11,10 @@
       "rationale": "Run the same vision-tower-only Track B compact execution on Gemma 4 E4B at 8f, 16f, and 32f to test whether the ceiling/sparse-execution story is architecture-general across frame budgets rather than Qwen-only.",
       "ready": true,
       "timeout_seconds": 45000,
-      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_63G_gemma_track_b",
+      "artifact_dir": "<repo-root>/research/experiments/2026/artifacts/phase1_63G_gemma_track_b",
       "command": [
         "bash",
-        "/Users/jfb/s/codec-through/scripts/run_phase1_63G_gemma_track_b.sh"
+        "<repo-root>/scripts/run_phase1_63G_gemma_track_b.sh"
       ],
       "status": "completed",
       "gate": {
@@ -84,10 +84,10 @@
       "rationale": "Run the adaptive 1.55F policy across practical sampling temperatures to test whether the headline 0-drift result is greedy-only or sampler-stable.",
       "ready": true,
       "timeout_seconds": 28800,
-      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_55K_adaptive_temperature_sweep",
+      "artifact_dir": "<repo-root>/research/experiments/2026/artifacts/phase1_55K_adaptive_temperature_sweep",
       "command": [
         "bash",
-        "/Users/jfb/s/codec-through/scripts/run_phase1_55K_k1_temperature_sweep.sh"
+        "<repo-root>/scripts/run_phase1_55K_k1_temperature_sweep.sh"
       ],
       "status": "completed",
       "gate": {
@@ -213,10 +213,10 @@
       "rationale": "Re-score the 1.30 cache-boundary paired artifacts with dense Qwen answer-letter logprobs, using a grouped train/test split, to test whether logit margin predicts paired stability.",
       "ready": true,
       "timeout_seconds": 36000,
-      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_65_logit_margin_failure_predictor",
+      "artifact_dir": "<repo-root>/research/experiments/2026/artifacts/phase1_65_logit_margin_failure_predictor",
       "command": [
         "bash",
-        "/Users/jfb/s/codec-through/scripts/run_phase1_65_logit_margin_probe.sh"
+        "<repo-root>/scripts/run_phase1_65_logit_margin_probe.sh"
       ],
       "status": "completed",
       "gate": {
@@ -262,10 +262,10 @@
       "rationale": "Compare the 1.30AC cache-invalidated and 1.30AD cache-reuse failure sets to verify whether their equal aggregate loss is row-identical or a boundary aggregate reached through different mechanisms, with margin-stratified attribution when 1.65 lands.",
       "ready": true,
       "timeout_seconds": 600,
-      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_30AF_cache_boundary_attribution",
+      "artifact_dir": "<repo-root>/research/experiments/2026/artifacts/phase1_30AF_cache_boundary_attribution",
       "command": [
         "bash",
-        "/Users/jfb/s/codec-through/scripts/run_phase1_30AF_cache_boundary_attribution.sh"
+        "<repo-root>/scripts/run_phase1_30AF_cache_boundary_attribution.sh"
       ],
       "status": "completed",
       "gate": {
@@ -354,10 +354,10 @@
       "rationale": "Aggregate peak memory/RSS observations from landed 1.30, 1.55, and Track B artifacts so the paper can explain memory budgets and RSS-gate misses as a measured envelope.",
       "ready": true,
       "timeout_seconds": 600,
-      "artifact_dir": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_66_memory_characterization",
+      "artifact_dir": "<repo-root>/research/experiments/2026/artifacts/phase1_66_memory_characterization",
       "command": [
         "bash",
-        "/Users/jfb/s/codec-through/scripts/run_phase1_66_memory_characterization.sh"
+        "<repo-root>/scripts/run_phase1_66_memory_characterization.sh"
       ],
       "status": "completed",
       "gate": {

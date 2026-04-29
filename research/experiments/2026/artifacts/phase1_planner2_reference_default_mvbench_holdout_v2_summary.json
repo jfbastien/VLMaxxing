@@ -2,7 +2,7 @@
   "benchmark": "mvbench",
   "frame_count": 8,
   "manifest_path": "research/benchmark_manifests/mvbench_motion_holdout_v2.toml",
-  "policies_source": "research/experiments/2026/artifacts/phase1_planner2_whitepaper_default_policy.json",
+  "policies_source": "research/experiments/2026/artifacts/phase1_planner2_reference_default_policy.json",
   "results": [
     {
       "candidate": {
@@ -19,7 +19,7 @@
         "sticky_window": null,
         "top_k": 16
       },
-      "jsonl_path": "research/experiments/2026/artifacts/phase1_planner2_whitepaper_default_mvbench_holdout_v2/mean-3.0-8.0-static+shifted-noage.jsonl",
+      "jsonl_path": "research/experiments/2026/artifacts/phase1_planner2_reference_default_mvbench_holdout_v2/mean-3.0-8.0-static+shifted-noage.jsonl",
       "summary": {
         "agreement": 0.9333333333333333,
         "benchmark": "mvbench",
@@ -65,8 +65,8 @@
           "git_dirty": true,
           "git_sha": "89f6984dccf8d41252c77a4994a9077f17d3ee1a",
           "huggingface_hub": "1.10.1",
-          "mlx_vlm_module": "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
-          "model_path": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
+          "mlx_vlm_module": "<repo-root>/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
+          "model_path": "<model:Qwen2.5-VL-7B-Instruct-4bit>",
           "platform": "darwin",
           "python": "3.12.12"
         },
@@ -133,7 +133,7 @@
         },
         "stopped_early": false
       },
-      "summary_path": "research/experiments/2026/artifacts/phase1_planner2_whitepaper_default_mvbench_holdout_v2/mean-3.0-8.0-static+shifted-noage_summary.json"
+      "summary_path": "research/experiments/2026/artifacts/phase1_planner2_reference_default_mvbench_holdout_v2/mean-3.0-8.0-static+shifted-noage_summary.json"
     }
   ]
 }

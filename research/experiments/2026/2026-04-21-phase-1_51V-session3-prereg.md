@@ -77,7 +77,7 @@ pooler geometry; accuracy should be neutral).
 ## Configuration
 
 ```
-model-path        /Users/jfb/models/gemma-4-e4b-it-4bit
+model-path        $GEMMA_MODEL_PATH
 manifest          research/benchmark_manifests/videomme_holdout_v1.toml
 frame-count       8
 n                 30 (full holdout v1)

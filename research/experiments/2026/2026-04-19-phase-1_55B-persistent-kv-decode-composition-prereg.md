@@ -14,12 +14,12 @@ exceed either alone, or does one gate the other?
 
 ## Provenance
 
-Sam's whitepaper §2.13.3 (follow-up speedup) and §2.13.4 (e2e
+the pre-release source §2.13.3 (follow-up speedup) and §2.13.4 (e2e
 deployment-latency model) are both measured on Gemma 4 26B. The
 e2e model states explicitly that "neither mechanism alone delivers
 the user-facing conversational ambient agent experience; together
-they do" (whitepaper.md:452). That compound claim is measured on
-Sam's hardware but not on ours. This prereg tests it locally.
+they do" (pre-release source:452). That compound claim is measured on
+the pre-release source's hardware but not on ours. This prereg tests it locally.
 
 ## Gating (hard)
 
@@ -58,7 +58,7 @@ Blocked on:
   Qwen-7B/M3 Air within claim #13's C-CEILING band." High-value
   SOTA-facing number.
 - H1 middle (1.5× ≤ x < 2.0×) → report as partial compound; the
-  gap to Sam's 2×+ story is explained by regime (smaller model,
+  gap to the pre-release source's 2×+ story is explained by regime (smaller model,
   less prefill to amortize).
 - H1 rejects → note which lever is gating (KV-warmth is invisible
   means prefill is not the bottleneck on long; decode-accel is
@@ -84,7 +84,7 @@ Blocked on:
 
 - `2026-04-19-phase-1_55A-persistent-kv-reproduction-prereg.md`
 - `2026-04-18-phase-1_54-video-decode-acceleration-prereg.md`
-- `~/s/codec-through-sam/whitepaper.md` §2.13.3, §2.13.4
+- `pre-release external source` §2.13.3, §2.13.4
 - Claim #13 (C-CEILING) — composition test extends arithmetic.
 
 ## Status

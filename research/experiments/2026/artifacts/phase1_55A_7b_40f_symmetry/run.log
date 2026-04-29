@@ -1,4 +1,4 @@
-[1.55A] loading model from /Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit
+[1.55A] loading model from <model:Qwen2.5-VL-7B-Instruct-4bit>
 [1.55A] model loaded; video_ids=['037', '100', '116', '120', '158', '160', '210'] frames=40
 [1.55A] prepared 7 clips × 3 questions = 21 queries
 [1.55A] clip 037 duration=short

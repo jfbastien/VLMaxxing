@@ -1,0 +1,157 @@
+{
+  "seven_b": [
+    {
+      "frame_count": 8,
+      "prefill_tokens_approx": 3200,
+      "speedup_x": 47.23,
+      "delta_acc": -0.048,
+      "basin_session_share": "0/14 non-letter",
+      "accepted_envelope": true,
+      "source_paths": [
+        "research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md",
+        "research/experiments/2026/artifacts/loop_queue_20260419_155108/phase1_55A_persistent_kv_qwen/summary.json"
+      ]
+    },
+    {
+      "frame_count": 16,
+      "prefill_tokens_approx": 6500,
+      "speedup_x": 91.06,
+      "delta_acc": 0.0,
+      "basin_session_share": "0/14 non-letter",
+      "accepted_envelope": true,
+      "source_paths": [
+        "research/experiments/2026/2026-04-19-phase-1_55A-16f-frame-scaling-findings.md",
+        "research/experiments/2026/artifacts/phase1_55A_16f_frame_scaling/summary.json"
+      ]
+    },
+    {
+      "frame_count": 18,
+      "prefill_tokens_approx": 7300,
+      "speedup_x": 70.28,
+      "delta_acc": -0.238,
+      "basin_session_share": "7/14 non-letter (4-basin)",
+      "accepted_envelope": false,
+      "source_paths": [
+        "research/experiments/2026/2026-04-19-phase-1_55A-18f-frame-scaling-findings.md",
+        "research/experiments/2026/artifacts/phase1_55A_18f_frame_scaling/summary.json"
+      ]
+    },
+    {
+      "frame_count": 20,
+      "prefill_tokens_approx": 8100,
+      "speedup_x": 94.42,
+      "delta_acc": -0.381,
+      "basin_session_share": "13/14 non-letter (addCriterion)",
+      "accepted_envelope": false,
+      "source_paths": [
+        "research/experiments/2026/2026-04-19-phase-1_55A-20f-frame-scaling-findings.md",
+        "research/experiments/2026/artifacts/phase1_55A_20f_frame_scaling/summary.json"
+      ]
+    },
+    {
+      "frame_count": 24,
+      "prefill_tokens_approx": 9700,
+      "speedup_x": 121.58,
+      "delta_acc": -0.429,
+      "basin_session_share": "14/14 non-letter (saturated)",
+      "accepted_envelope": false,
+      "source_paths": [
+        "research/experiments/2026/2026-04-19-phase-1_55A-24f-frame-scaling-findings.md",
+        "research/experiments/2026/artifacts/phase1_55A_24f_frame_scaling/summary.json"
+      ]
+    },
+    {
+      "frame_count": 32,
+      "prefill_tokens_approx": 12900,
+      "speedup_x": 149.88,
+      "delta_acc": -0.429,
+      "basin_session_share": "14/14 non-letter (saturated)",
+      "accepted_envelope": false,
+      "source_paths": [
+        "research/experiments/2026/2026-04-19-phase-1_55A-32f-frame-scaling-findings.md",
+        "research/experiments/2026/artifacts/phase1_55A_32f_frame_scaling/summary.json"
+      ]
+    },
+    {
+      "frame_count": 40,
+      "prefill_tokens_approx": 16100,
+      "speedup_x": 157.6,
+      "delta_acc": -0.476,
+      "basin_session_share": "13/14 non-letter (addCriterion)",
+      "accepted_envelope": false,
+      "source_paths": [
+        "research/experiments/2026/2026-04-20-phase-1_55A-7b-40f-symmetry-findings.md",
+        "research/experiments/2026/artifacts/phase1_55A_7b_40f_symmetry/summary.json"
+      ]
+    }
+  ],
+  "three_b": [
+    {
+      "frame_count": 20,
+      "prefill_tokens_approx": 8100,
+      "speedup_x": 136.07,
+      "delta_acc": -0.048,
+      "basin_session_share": "0/14 non-letter",
+      "accepted_envelope": true,
+      "source_paths": [
+        "research/experiments/2026/2026-04-19-phase-1_55A-3b-crossarch-findings.md",
+        "research/experiments/2026/artifacts/phase1_55A_3b_20f_crossarch/summary.json"
+      ]
+    },
+    {
+      "frame_count": 24,
+      "prefill_tokens_approx": 9700,
+      "speedup_x": 154.0,
+      "delta_acc": -0.19,
+      "basin_session_share": "0/14 non-letter (plateau)",
+      "accepted_envelope": true,
+      "source_paths": [
+        "research/experiments/2026/2026-04-20-phase-1_55A-3b-24f-boundary-findings.md",
+        "research/experiments/2026/artifacts/phase1_55A_3b_24f_boundary/summary.json"
+      ]
+    },
+    {
+      "frame_count": 32,
+      "prefill_tokens_approx": 12900,
+      "speedup_x": 213.0,
+      "delta_acc": -0.19,
+      "basin_session_share": "0/14 non-letter (plateau)",
+      "accepted_envelope": true,
+      "source_paths": [
+        "research/experiments/2026/2026-04-20-phase-1_55A-3b-32f-saturation-findings.md",
+        "research/experiments/2026/artifacts/phase1_55A_3b_32f_saturation/summary.json"
+      ]
+    },
+    {
+      "frame_count": 36,
+      "prefill_tokens_approx": 14500,
+      "speedup_x": 215.2,
+      "delta_acc": -0.19,
+      "basin_session_share": "0/14 non-letter (plateau)",
+      "accepted_envelope": true,
+      "source_paths": [
+        "research/experiments/2026/2026-04-20-phase-1_55A-3b-36f-interpolation-findings.md",
+        "research/experiments/2026/artifacts/phase1_55A_3b_36f_interpolation/summary.json"
+      ]
+    },
+    {
+      "frame_count": 40,
+      "prefill_tokens_approx": 16100,
+      "speedup_x": 191.0,
+      "delta_acc": -0.238,
+      "basin_session_share": "4/14 non-letter (basin onset)",
+      "accepted_envelope": false,
+      "source_paths": [
+        "research/experiments/2026/2026-04-20-phase-1_55A-3b-40f-deeper-plateau-findings.md",
+        "research/experiments/2026/artifacts/phase1_55A_3b_40f_deeper_plateau/summary.json"
+      ]
+    }
+  ],
+  "thresholds": {
+    "seven_b_accepted_frames": 16,
+    "seven_b_accepted_prefill_tokens": 6500,
+    "three_b_tolerated_frames": 36,
+    "three_b_tolerated_prefill_tokens": 14500,
+    "onset_depth_scaling_ratio": 1.79
+  }
+}

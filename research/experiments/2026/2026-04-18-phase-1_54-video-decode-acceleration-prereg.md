@@ -76,8 +76,8 @@ long-item ceiling.
    no falsifiable hypothesis about *whether* faster decode reduces
    D; there's only "how much, and at what engineering cost". The
    paper does not need this phase to clear publication bar.
-4. **Tracks Sam's codec-native extractor (phase 1.29) — unify
-   later.** Sam's H.264 extractor is the likely long-term backend
+4. **Tracks the pre-release source's codec-native extractor (phase 1.29) — unify
+   later.** the pre-release source's H.264 extractor is the likely long-term backend
    for this. Preregistering 1.54 now guarantees 1.29 completion
    flows directly into the long-item speedup story.
 
@@ -87,7 +87,7 @@ long-item ceiling.
    or `hevc_videotoolbox` on macOS). Least-effort replacement.
 2. **Decord** (<https://github.com/dmlc/decord>). Widely used in
    video-VLM literature; supports seek without full-container decode.
-3. **Sam's codec-native extractor** (phase 1.29). Bypass decode
+3. **the pre-release source's codec-native extractor** (phase 1.29). Bypass decode
    entirely: emit I-frame pixels + motion-vector sidecar without
    pixel reconstruction for intermediate frames. Most aggressive.
 
@@ -133,7 +133,7 @@ Runtime estimate: ~2h total (implementation + dev + holdout).
 - Trigger condition: 1.51V results landed and the long-item
   accuracy story still leaves D as the binding constraint for e2e.
 - Related: `research/experiments/2026/2026-04-18-arithmetic-ceiling-findings.md`
-- Related: `research/experiments/2026/2026-04-17-phase-1_29-codec-native-prereg.md` (Sam's
+- Related: `research/experiments/2026/2026-04-17-phase-1_29-codec-native-prereg.md` (the pre-release source's
   H.264 path; if that lands first, 1.54 collapses into 1.29).
 - Paper claim: part of claim #5 (real sparse execution converts
   proxy gain into measured speedup) — specifically the "long-item"

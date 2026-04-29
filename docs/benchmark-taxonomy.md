@@ -36,7 +36,7 @@ presence here does not imply a local result.
   - `tomato_motion_holdout_v1.toml` (15 disjoint items, same groups)
     — phase 1.12 holdout
 - **Why we use it**: our current strongest motion-reasoning test,
-  and the benchmark the source whitepaper claims near-perfect
+  and the benchmark the source pre-release source claims near-perfect
   agreement on.
 - **Status**: **active**, primary temporal-reasoning benchmark.
 - **Open**: Phase 1.20 N=30 enlargement required for cross-paper
@@ -114,7 +114,7 @@ presence here does not imply a local result.
 - **Task format**: multiple choice.
 - **Scorer**: exact-letter match.
 - **Frame structure**: long (3-minute clips, 32 frames sampled).
-- **Why we want it**: sam WP-2.7.1 reports Qwen2.5-VL-7B achieves
+- **Why we want it**: pre-release source WP-2.7.1 reports Qwen2.5-VL-7B achieves
   100% byte-identical output at 29.9% avg reuse (range 20.1%–65.1%)
   with 0.0% accuracy delta. If our planner sustains this low-reuse
   robustness, claim #4 (budget-placement-over-quantity) gains

@@ -32,7 +32,7 @@ mkdir -p "$OUT"
 if [[ -f "$OUT/cold_dense.jsonl" && -f "$OUT/cold_dense_summary.json" ]]; then
   echo "[1.30AE] reusing existing cold arm in $OUT"
 else
-  "$PY" scripts/run_phase1_30_sam_streaming.py \
+  "$PY" scripts/run_phase1_30_scaleout_streaming.py \
     --allow-dirty \
     --stack cold \
     --manifest research/benchmark_manifests/videomme_dev_v1.toml \
@@ -50,7 +50,7 @@ fi
 if [[ -f "$OUT/streaming_duration_conditioned.jsonl" && -f "$OUT/streaming_duration_conditioned_summary.json" ]]; then
   echo "[1.30AE] reusing existing streaming arm in $OUT"
 else
-  "$PY" scripts/run_phase1_30_sam_streaming.py \
+  "$PY" scripts/run_phase1_30_scaleout_streaming.py \
     --allow-dirty \
     --stack streaming \
     --manifest research/benchmark_manifests/videomme_dev_v1.toml \
@@ -71,7 +71,7 @@ else
     --drift-refresh-policy off
 fi
 
-"$PY" scripts/analyze_phase1_30_sam_streaming_pair.py \
+"$PY" scripts/analyze_phase1_30_scaleout_streaming_pair.py \
   --cold-jsonl "$OUT/cold_dense.jsonl" \
   --streaming-jsonl "$OUT/streaming_duration_conditioned.jsonl" \
   --cold-summary "$OUT/cold_dense_summary.json" \

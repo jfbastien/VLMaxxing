@@ -61,8 +61,8 @@ Inconclusive:
 
 Prompt bank:
 
-- [crosscheck_slice_v1.toml](../prompt_bank/crosscheck_slice_v1.toml)
-- successor rewrite: [crosscheck_slice_v2.toml](../prompt_bank/crosscheck_slice_v2.toml)
+- [crosscheck_slice_v1.toml](../../prompt_bank/crosscheck_slice_v1.toml)
+- successor rewrite: [crosscheck_slice_v2.toml](../../prompt_bank/crosscheck_slice_v2.toml)
 
 Notes:
 
@@ -123,7 +123,7 @@ Caveat:
 - the accepted v2 slice is endpoint-oriented scene-fact evaluation on natural
   video, not a middle-dependent temporal-event slice
 - it is therefore a narrow generalized reproduction of `WP-2.4`, not a full
-  replacement for the larger whitepaper quality suite
+  replacement for the larger pre-release source quality suite
 
 ## Interpretation
 
@@ -148,7 +148,7 @@ the declared execution contract on this machine.
 
 ## Links
 
-- [docs/claim-register.md](../../docs/claim-register.md)
-- [research/prompt_bank/crosscheck_slice_v1.toml](../prompt_bank/crosscheck_slice_v1.toml)
-- [research/prompt_bank/crosscheck_slice_v2.toml](../prompt_bank/crosscheck_slice_v2.toml)
+- [docs/claim-register.md](../../../docs/claim-register.md)
+- [research/prompt_bank/crosscheck_slice_v1.toml](../../prompt_bank/crosscheck_slice_v1.toml)
+- [research/prompt_bank/crosscheck_slice_v2.toml](../../prompt_bank/crosscheck_slice_v2.toml)
 - [2026-04-13-phase-1_0b-matched-content-redundancy.md](2026-04-13-phase-1_0b-matched-content-redundancy.md)

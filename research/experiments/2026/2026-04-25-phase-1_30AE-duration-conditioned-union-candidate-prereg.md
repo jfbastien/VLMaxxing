@@ -32,10 +32,10 @@ This phase is that second step.
   - medium Q0: `kr=1.0`
   - long Q0: **smallest `1.30AB` rate that passes the long-only gate**
   - follow-ups: configured at `kr=0.50`, but interpreted by measured activity
-- Runner: `scripts/run_phase1_30_sam_streaming.py`
+- Runner: `scripts/run_phase1_30_scaleout_streaming.py`
 - Wrapper:
   `scripts/run_phase1_30AE_duration_conditioned_union_candidate.sh <selected_rate>`
-- Analysis: `scripts/analyze_phase1_30_sam_streaming_pair.py`
+- Analysis: `scripts/analyze_phase1_30_scaleout_streaming_pair.py`
 
 Estimated runtime:
 

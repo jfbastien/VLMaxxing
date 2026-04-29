@@ -90,7 +90,7 @@ measurement within 0.3 pp. Two corollaries:
   anticipated.
 
 The stale memory entry at
-`/Users/jfb/.claude/projects/-Users-jfb-s-codec-through/memory/project_1_51V_expansion_2026-04-21.md`
+pre-release local memory note `project_1_51V_expansion_2026-04-21.md`
 says "V_share 15.2/24.3/31.0% at 8f/16f/32f dev, 8.6% at 8f holdout"; the
 holdout value must be revised to 15.45% (8f).
 
@@ -173,7 +173,7 @@ evaluation in the relevant literature.
    methodology generalizes to the other benchmarks directly.
 2. **Update `paper/priority.md` must-do #1 status** from "IN PROGRESS" to
    "CLOSED 2026-04-21 — all four hypotheses pass".
-3. **Update `docs/research-dashboard-2026-04-20.md` running-work**: session 3
+3. **Update `research/experiments/registry.md` running-work**: session 3
    row moves from in-progress to closed; add findings pointer.
 4. **Update C-VISION row in `paper/claim-matrix.md`**: VideoMME 8f cell no
    longer needs "dev-only" caveat.
@@ -192,8 +192,8 @@ evaluation in the relevant literature.
 - Cross-arm per-item overlap (did the same 14/30 items answer correctly in
   both arms?) is not computed here. If we want a per-item bucket report
   (EXP17-only-correct, EXP18-only-correct, both-correct, both-wrong) for
-  the Sam-style "clean / mixed / degenerate" decomposition, we need to join
-  the two jsonls. Deferred to the Sam N=60 streaming reproduction prereg.
+  the scale-out-style "clean / mixed / degenerate" decomposition, we need to join
+  the two jsonls. Deferred to the pre-release source N=60 streaming reproduction prereg.
 
 ## Artifacts
 

@@ -36,7 +36,7 @@ if [[ "$RERUN_COLD" != "1" && -f "$REFERENCE_DIR/cold_dense.jsonl" && -f "$REFER
 elif [[ -f "$OUT/cold_dense.jsonl" && -f "$OUT/cold_dense_summary.json" ]]; then
   echo "[1.30AC] reusing cold arm in $OUT"
 else
-  "$PY" scripts/run_phase1_30_sam_streaming.py \
+  "$PY" scripts/run_phase1_30_scaleout_streaming.py \
     --allow-dirty \
     --stack cold \
     --manifest research/benchmark_manifests/videomme_dev_v1.toml \
@@ -55,7 +55,7 @@ if [[ -f "$OUT/streaming_cache_invalidated_followups.jsonl" && -f "$OUT/streamin
   echo "[1.30AC] reusing existing streaming arm in $OUT"
 else
   if [[ "$SKIP_SMOKE" != "1" ]]; then
-    "$PY" scripts/run_phase1_30_sam_streaming.py \
+    "$PY" scripts/run_phase1_30_scaleout_streaming.py \
       --allow-dirty \
       --stack streaming \
       --manifest research/benchmark_manifests/videomme_dev_v1.toml \
@@ -75,7 +75,7 @@ else
     "$PY" scripts/validate_phase1_30ac_smoke.py \
       --jsonl "$OUT/smoke_cache_invalidated_followups.jsonl"
   fi
-  "$PY" scripts/run_phase1_30_sam_streaming.py \
+  "$PY" scripts/run_phase1_30_scaleout_streaming.py \
     --allow-dirty \
     --stack streaming \
     --manifest research/benchmark_manifests/videomme_dev_v1.toml \
@@ -94,7 +94,7 @@ else
     --drift-refresh-policy off
 fi
 
-"$PY" scripts/analyze_phase1_30_sam_streaming_pair.py \
+"$PY" scripts/analyze_phase1_30_scaleout_streaming_pair.py \
   --cold-jsonl "$COLD_JSONL" \
   --streaming-jsonl "$OUT/streaming_cache_invalidated_followups.jsonl" \
   --cold-summary "$COLD_SUMMARY" \

@@ -90,7 +90,7 @@ the longer temporal horizon that "long" items carry.
   generate speedup at kr=0.10 is consistent with Stage 3's matched-token
   measurement of 3.82× at n=5. The gap (3.82 → 2.69) reflects real
   distribution-level variance across items rather than n=5 sampling.
-- **Sam's 1.8× e2e on VideoMME does not reproduce.** Our e2e is 1.12×
+- **the pre-release source's 1.8× e2e on VideoMME does not reproduce.** Our e2e is 1.12×
   because vision-tower fixed cost dominates the remaining wall-clock
   budget. Consistent with Stage 1 n=30 at kr=0.50 (e2e 1.00×).
 
@@ -125,7 +125,7 @@ Stage 5 pivots from the previously planned kr=0.10 comparison because:
   kr=0.10 budget (25/frame), making the arm infeasible at kr=0.10
   without changing its reference config (which would defeat the
   comparison with the method it adapts, arxiv 2602.02951).
-- kr=0.50 is Sam's reference operating point and is inside the prereg
+- kr=0.50 is the pre-release source's reference operating point and is inside the prereg
   grid {0.3, 0.4, 0.5, 0.6, 0.7}.
 - The Stage 1 n=30 baseline at kr=0.50 with `none` (pruned=0.40,
   agreement~0.47) is the apples-to-apples reference that anchor
@@ -177,7 +177,7 @@ Launching Stage 5a on nuwa_pillar hit a pre-existing bug in
 dtype=np.float32)` fails on Gemma's bf16 vision features because MLX
 exposes bf16 via buffer-protocol with `item_size=2, format='B'`, which
 numpy refuses to coerce. Fix routed through `mx.float32` first, matching
-Sam's seed pattern (`seed/original_repo/experiments/exp_wall_clock_speedup.py:274`).
+the pre-release predecessor pattern preserved in git history.
 Committed in same branch pre-Stage 5a.
 
 ## Artifacts

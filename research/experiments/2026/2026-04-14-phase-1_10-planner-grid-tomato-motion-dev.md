@@ -187,6 +187,6 @@ Methodology caveats (to propagate to future grid sweeps):
 ## Links
 
 - [phase 1.6 policy sweep](2026-04-14-phase-1_6-motion-policy-sweep.md)
-- [phase 1.7 statistic sweep](2026-04-14-phase-1_7-motion-statistic-sweep.md)
+- [phase 1.7 statistic comparison](2026-04-14-phase-1_7-motion-statistic-comparison.md)
 - [phase 1.8 frame-budget baselines](2026-04-14-phase-1_8-motion-frame-budget-baselines.md)
-- [execution plan round 7](../../../docs/execution-plan-round-7.md)
+- [experiment registry](../registry.md)

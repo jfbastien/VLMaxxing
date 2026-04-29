@@ -1,4 +1,4 @@
-cmd: /Users/jfb/s/codec-through/.venv/bin/python3 -c 
+cmd: <repo-root>/.venv/bin/python3 -c
 import time, sys, resource, os
 t0 = time.monotonic()
 try:

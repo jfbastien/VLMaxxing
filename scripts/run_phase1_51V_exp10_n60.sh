@@ -54,7 +54,8 @@ run_exp() {
   fi
 }
 
-COMMON="--model-path /Users/jfb/models/gemma-4-e4b-it-4bit --frame-count 8 --max-tokens 32 --rss-guard-mb 10000"
+: "${GEMMA_MODEL_PATH:?Set GEMMA_MODEL_PATH to the Gemma 4 E4B 4-bit model path or model id}"
+COMMON="--model-path $GEMMA_MODEL_PATH --frame-count 8 --max-tokens 32 --rss-guard-mb 10000"
 MANIFEST="research/benchmark_manifests/videomme_combined_v1_n60.toml"
 VT_FLAGS="--vision-tower-layer 2 --vision-tower-keep-rate 0.50"
 

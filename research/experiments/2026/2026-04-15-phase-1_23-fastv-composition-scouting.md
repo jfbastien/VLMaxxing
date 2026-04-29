@@ -14,7 +14,7 @@ Claim register targets:
 
 - Stage F integration readiness; paper-framing contingency if phase
   1.12 holdout fails outright (fallback narrative in
-  `docs/execution-plan-round-7.md`)
+  `research/experiments/registry.md`)
 
 Reproduction mode:
 
@@ -65,7 +65,7 @@ Planned sources to read:
 - FastV paper (FastV: Fast Video Understanding via Fast Vision Token
   Reduction, CVPR 2024)
 - mlx-vlm attention mask exposure in Qwen2.5-VL
-- existing composition precedents in the repo's seed/ directory
+- current composition precedents in the experiment registry and claim matrix
 
 Runtime: ~1 hr research + 30 min writing.
 
@@ -121,5 +121,5 @@ Revised from "trivially portable" earlier framing (caught by
 
 ## Links
 
-- [execution plan round 7 — Stage F](../../../docs/execution-plan-round-7.md)
+- [experiment registry](../registry.md)
 - [PLAN.md — SOTA position](../../../PLAN.md)

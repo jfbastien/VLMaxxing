@@ -34,7 +34,7 @@ duration-conditioned full-union rerun.
   1. `cold_dense`
   2. `streaming_q0_kr067_followup_kr050`
 - Runner:
-  `scripts/run_phase1_30_sam_streaming.py`
+  `scripts/run_phase1_30_scaleout_streaming.py`
 - Wrapper:
   `scripts/run_phase1_30Z_long_q0_kr067.sh`
 

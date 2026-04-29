@@ -47,7 +47,7 @@ Stage 3 resolves the differential-generation confound flagged in Stage 2. On a 5
 
 ### Confirmed from Stage 1/2
 
-- **Sam's 1.8× e2e on VideoMME at kr≈0.5 does NOT reproduce on Gemma 4-E4B-4bit.** At matched tokens we see 1.00× e2e (same as uninstrumented Stage 1 n=30). Preregistered NULL stands.
+- **the pre-release source's 1.8× e2e on VideoMME at kr≈0.5 does NOT reproduce on Gemma 4-E4B-4bit.** At matched tokens we see 1.00× e2e (same as uninstrumented Stage 1 n=30). Preregistered NULL stands.
 - **Mechanism works at aggressive kr.** At matched tokens kr=0.10 gives gen=3.82×. Stage 2 uninstrumented showed 2.67×; the gap was confound. **Clean prefill-only speedup is actually higher, not lower, than the raw number.**
 - **kr=0.25 accuracy drop (0.40 → 0.20) is real**, replicated at both mt=1 and mt=32.
 
@@ -78,7 +78,7 @@ The **prefill-only measurement at mt=1** cleanly exposes the attention savings. 
 
 **End-to-end (includes vision + processor):** 1.24× at kr=0.10 on the same subset. Vision tower is fixed cost (~5s), so as prefill shrinks the fixed fraction dominates — e2e will plateau unless vision is also sped up (rationale for Phase 1.51V).
 
-**Sam's 1.8× claim is recovered on a per-phase basis at a more aggressive operating point than Sam discloses.** The e2e gap likely closes on larger models (more decode-bound) or via vision-tower acceleration.
+**the pre-release source's 1.8× claim is recovered on a per-phase basis at a more aggressive operating point than the pre-release source discloses.** The e2e gap likely closes on larger models (more decode-bound) or via vision-tower acceleration.
 
 ## Updated next experiments (priority order)
 

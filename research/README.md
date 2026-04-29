@@ -10,11 +10,11 @@ This directory is the durable experiment ledger.
 - [prompt_bank](prompt_bank/): versioned prompt sets and answer keys
 - `experiments/<year>/...`: one dated file per decision-worthy experiment family
 
-Older experiment notes preserve the wording and provenance that existed when
-they were written. Some of those notes mention pre-release seed imports or
-sibling checkouts that are intentionally absent from the OSS release tree; use
-the current [decision log](decision-log.md), [experiment registry](experiments/registry.md),
-and [claim register](../docs/claim-register.md) as the live sources of truth.
+Use the current [decision log](decision-log.md),
+[experiment registry](experiments/registry.md), and
+[claim register](../docs/claim-register.md) as the live sources of truth. Raw
+artifact logs may still contain machine-local paths captured at execution time;
+those are provenance fields, not reproduction instructions.
 
 ## Experiment Note Template
 

@@ -39,7 +39,7 @@ Autonomous run with per-phase commits:
 
 ```bash
 nohup ./.venv/bin/python scripts/run_paper_deep_mechanism_queue.py --auto-commit \
-  > /tmp/claude/deep_mechanism_queue.log 2>&1 &
+  > .tmp/deep_mechanism_queue.log 2>&1 &
 ```
 
 Optional overrides:

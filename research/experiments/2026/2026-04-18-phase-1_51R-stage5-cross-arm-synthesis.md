@@ -150,4 +150,4 @@ required).
   this is the only remaining e2e lever at kr=0.50 accuracy budget.
 - **Queue 1.54** (video-decode acceleration) for long-bucket items.
 - **Consider Stage 6:** 32-frame regime-match to test whether the
-  ceiling lifts in Sam's reference configuration (task #106).
+  ceiling lifts in the pre-release source's reference configuration (task #106).

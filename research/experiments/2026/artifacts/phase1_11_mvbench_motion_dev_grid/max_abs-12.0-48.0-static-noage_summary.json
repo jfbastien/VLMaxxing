@@ -28,8 +28,8 @@
     "git_dirty": true,
     "git_sha": "09cf58e64325404b6a6bac53c37962420a815f8b",
     "huggingface_hub": "1.10.1",
-    "mlx_vlm_module": "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
-    "model_path": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
+    "mlx_vlm_module": "<repo-root>/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
+    "model_path": "<model:Qwen2.5-VL-7B-Instruct-4bit>",
     "platform": "darwin",
     "python": "3.12.12"
   },

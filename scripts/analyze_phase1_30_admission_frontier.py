@@ -15,7 +15,7 @@ def main() -> None:
     parser.add_argument(
         "--pruned-dir",
         type=Path,
-        default=Path("research/experiments/2026/artifacts/phase1_30_sam_streaming"),
+        default=Path("research/experiments/2026/artifacts/phase1_30_scaleout_streaming"),
     )
     parser.add_argument(
         "--dense-dir",

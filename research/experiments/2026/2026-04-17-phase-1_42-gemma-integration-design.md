@@ -40,7 +40,7 @@ This means every concept in `_mix_qwen_features` needs a deliberate Gemma analog
 **Decision**: reuse the entire 256-token vector from a prior frame when the pair passes a threshold; otherwise recompute all 256.
 
 - **Pro**: smallest code change (wraps `model.vision_tower` with a frame-level memoizer). Clean semantics. No spatial-footprint bookkeeping.
-- **Pro**: maps cleanly to Sam's whitepaper §2.7 framing (architecture-conditioned fidelity tested at the frame boundary).
+- **Pro**: maps cleanly to the pre-release source §2.7 framing (architecture-conditioned fidelity tested at the frame boundary).
 - **Con**: crude. Can't capture "this corner of the frame changed, the rest didn't."
 - **Con**: reuse ratio is bimodal (0 or 1 per frame) — less informative ablation surface.
 
@@ -74,7 +74,7 @@ Justification: the point of phase 1.42 is to establish claim #7 (architecture fi
 
 **Critical re-read** (round-17): phase 1.51 is a *fresh code path* (per-frame novelty-based token drop before LLM prefill). It does not require `_mix_gemma_features` at all. The code needed is:
 
-1. Compute per-token novelty score (distance from a "static anchor" token per Sam's WP §2.11 / per §2.7 background-class preservation).
+1. Compute per-token novelty score (distance from a "static anchor" token per the pre-release source's WP §2.11 / per §2.7 background-class preservation).
 2. Sort tokens by novelty descending, keep the top K (per a `--novelty-keep-rate` sweep).
 3. Pass the kept tokens into the LLM prefill (Gemma supports variable-length prefill because its LLM uses standard 1D RoPE).
 
@@ -147,6 +147,6 @@ When phase 1.42 v0 runs (post-halo-sweep + post-Gemma-smoke):
 
 - `~/models/gemma-4-e4b-it-4bit/config.json`: `patch_size=16`, `pooling_kernel_size=3`; use the live cached-feature geometry (35×35 patches pooled to 133 cached tokens) rather than stale metadata fields.
 - `.venv/lib/python3.12/site-packages/mlx_vlm/models/gemma4/gemma4.py:100-106`: `cached_image_features` kwarg supported.
-- Sam's whitepaper §2.7: "architecture-conditioned reuse fidelity is a spectrum, not a binary (windowed-exact vs all-global-approximate)."
+- the pre-release source §2.7: "architecture-conditioned reuse fidelity is a spectrum, not a binary (windowed-exact vs all-global-approximate)."
 - Phase 1.51 prereg (novelty-pruning on Gemma): `research/experiments/2026/2026-04-17-phase-1_51-novelty-pruning-gemma-prereg.md`.
 - Phase 1.52 prereg (combined temporal+spatial): `research/experiments/2026/2026-04-17-phase-1_52-combined-temporal-spatial-prereg.md`.

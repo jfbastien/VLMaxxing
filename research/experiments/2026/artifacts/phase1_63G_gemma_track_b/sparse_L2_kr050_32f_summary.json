@@ -18,7 +18,7 @@
   "mean_peak_memory_gb": 10.710787242799999,
   "mean_processor_ms": 59.13232631666667,
   "mean_total_groups": 8192.0,
-  "model_path": "/Users/jfb/models/gemma-4-e4b-it-4bit",
+  "model_path": "<model:gemma-4-e4b-it-4bit>",
   "n_frames": 32,
   "n_items": 60,
   "rss_guard_mb": 9000,

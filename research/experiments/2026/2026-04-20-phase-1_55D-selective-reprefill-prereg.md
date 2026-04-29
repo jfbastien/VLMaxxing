@@ -35,7 +35,7 @@ preserves the question-conditioned "recency" of those frame tokens
 and may restore the logit-distribution mass lost to 4-bit KV
 quantization accumulation across the long tail.
 
-This is Sam's whitepaper §2.13.3 with a targeted carve-out: we trade
+This is the pre-release source §2.13.3 with a targeted carve-out: we trade
 a fraction of the follow-up speedup for a fidelity recovery that
 the temperature probe proved sampler-side interventions cannot
 deliver.
@@ -60,7 +60,7 @@ approach that envelope while retaining ≥30× speedup.
 ## Hypotheses
 
 **H1-1.55D (fidelity recovery).** At K=4 on 7B-20f, Δacc ≤ −0.15
-(primary target) — equivalent to Sam's reported regime. At K=2,
+(primary target) — equivalent to the pre-release source's reported regime. At K=2,
 Δacc ≤ −0.25 (partial recovery). At K=8, Δacc ≤ −0.10.
 **Falsification:** K=4 yields Δacc worse than −0.25 → selective
 re-prefill does not escape the basin; mechanism is deeper than
@@ -89,7 +89,7 @@ memory overhead that would block deployment?
 
 - **H1-1.55D.K=4 earns** → paper-grade result: selective re-prefill
   is the deployment lever that restores fidelity under cache reuse.
-  Claim #14 extends with a prescriptive recovery recipe. Sam's 1.8×
+  Claim #14 extends with a prescriptive recovery recipe. the pre-release source's 1.8×
   regime becomes reachable on 7B-4bit with K=4.
 - **H1-1.55D.K=4 misses but H1-1.55D.K=8 earns** → fidelity is
   recoverable at reduced speedup (~7× instead of ~30×). Report as
@@ -147,7 +147,7 @@ of the last-4 frames per follow-up restores accuracy to within
 Δacc ≤ −0.15 while retaining ≥ 15× speedup."
 
 This is the first fidelity-recovery lever that complements the
-mechanism decomposition and closes the gap to Sam's 26B/Gemma 1.8×
+mechanism decomposition and closes the gap to the pre-release source's 26B/Gemma 1.8×
 claim on a smaller model with a different architecture family.
 
 ## Non-goals

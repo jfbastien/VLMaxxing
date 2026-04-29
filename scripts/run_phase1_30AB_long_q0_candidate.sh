@@ -39,7 +39,7 @@ mkdir -p "$OUT"
 if [[ -f "$OUT/streaming_q0_candidate_long.jsonl" && -f "$OUT/streaming_q0_candidate_long_summary.json" ]]; then
   echo "[1.30AB] reusing existing streaming arm in $OUT"
 else
-  "$PY" scripts/run_phase1_30_sam_streaming.py \
+  "$PY" scripts/run_phase1_30_scaleout_streaming.py \
     --allow-dirty \
     --stack streaming \
     --manifest research/benchmark_manifests/videomme_long_dev_holdout_v1.toml \
@@ -57,7 +57,7 @@ else
     --drift-refresh-policy off
 fi
 
-"$PY" scripts/analyze_phase1_30_sam_streaming_pair.py \
+"$PY" scripts/analyze_phase1_30_scaleout_streaming_pair.py \
   --cold-jsonl "$COLD_JSONL" \
   --streaming-jsonl "$OUT/streaming_q0_candidate_long.jsonl" \
   --cold-summary "$COLD_SUMMARY" \

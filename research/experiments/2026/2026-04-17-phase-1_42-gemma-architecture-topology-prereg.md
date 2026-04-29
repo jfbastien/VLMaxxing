@@ -12,8 +12,8 @@ Sibling: `research/experiments/2026/2026-04-17-phase-1_51-novelty-pruning-gemma-
 Claim #7 in the paper matrix asserts that reuse fidelity is a
 spectrum that depends on vision-encoder attention topology. The
 evidence so far is entirely on **Qwen 2.5-VL** (windowed global
-attention with full-global layers at layers {1, 9, 17, 25}). Sam's
-whitepaper §2.7/§2.9 notes that all-global architectures (e.g.
+attention with full-global layers at layers {1, 9, 17, 25}). the pre-release source's
+pre-release source §2.7/§2.9 notes that all-global architectures (e.g.
 InternVL3) still exhibit 95 % strict agreement when reusing stale
 tokens, so the claim "windowed-mostly = byte-identical, all-global
 = high-fidelity approximate" was under-evidenced by the original
@@ -111,7 +111,7 @@ historical prereg target):
 
 **Phase C — Track B on Gemma** (if Phase B passes):
 
-1. Same harness as `scripts/run_track_b.py` but with Gemma
+1. Same dense-timing harness concept as the pre-release Track-B driver, but with Gemma
    model-path. Measure dense wall-clock baseline at 8 frames.
    Record prefill / vision / decode split. Compare to Qwen
    baseline (TOMATO 61.1 s, MVBench 56.5 s at 8-frame 560×560).
@@ -212,7 +212,7 @@ instruction):
 
 ## Why Gemma and not InternVL3 — a methodological note
 
-Sam's whitepaper uses InternVL3 as the all-global reference.
+the pre-release source uses InternVL3 as the all-global reference.
 Running the same reference on M3 Air is desirable for direct
 comparison. However, InternVL3 MLX support is weaker than Gemma's
 (single-image only in the current mlx-vlm fork), and the

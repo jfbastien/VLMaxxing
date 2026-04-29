@@ -4,7 +4,7 @@
 
 Hypothesis:
 
-- the local Qwen 3B vision path reproduces the whitepaper's mechanistic shape:
+- the local Qwen 3B vision path reproduces the pre-release source's mechanistic shape:
   exact repeated-image identity, strong locality under a single aligned token
   change, and high far-field similarity under localized motion
 
@@ -129,11 +129,11 @@ What reproduced only qualitatively:
 - small localized shifts of `1 px` and `4 px` keep the target token highly
   similar and the far field near `0.99`
 
-What did not reproduce at imported whitepaper strength:
+What did not reproduce at pre-release source strength:
 
 - the far field under the aligned partial-change probe stayed below the
   preregistered `>0.99` target
-- larger shifts degraded more sharply than the imported whitepaper story would
+- larger shifts degraded more sharply than the pre-release source story would
   suggest
 - the partial-change probe's minimum-cosine token did not land exactly on the
   target token, so alignment or broader-context effects remain an open question

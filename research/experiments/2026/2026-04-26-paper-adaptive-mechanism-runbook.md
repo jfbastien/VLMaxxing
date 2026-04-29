@@ -273,5 +273,5 @@ Key paper-locking questions:
   `0.90 → 1.00` transition needs one more measured point.
 - matched Qwen/Gemma drift probes — high-value explanation work, but separate
   from this immediate queue.
-- `1.29` runtime decoder integration / Sam-style matched baselines — systems-
+- `1.29` runtime decoder integration / scale-out-style matched baselines — systems-
   venue work, not this local paper-closeout batch.

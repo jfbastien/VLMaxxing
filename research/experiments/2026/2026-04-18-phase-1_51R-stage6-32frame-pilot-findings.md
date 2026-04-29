@@ -5,7 +5,7 @@
 ## Purpose
 
 Pre-registered test of the regime-gap hypothesis (task #110): does matching
-Sam's 32-frame regime on VideoMME long bucket deliver aggregate e2e ∈
+the pre-release source's 32-frame regime on VideoMME long bucket deliver aggregate e2e ∈
 [1.5×, 2.0×] with Δacc ∈ [-0.15, -0.05]?
 
 Prereg: `2026-04-18-phase-1_51R-stage6-regime-match-prereg.md`.
@@ -129,9 +129,9 @@ This has two implications:
 
 ## What the pilot FALSIFIES
 
-- Sam's 1.8× long-bucket claim is **not reproducible on our pipeline** at
+- the pre-release source's 1.8× long-bucket claim is **not reproducible on our pipeline** at
   the model size we run (Gemma 4-E4B, 4bit), *if* we interpret "wall-clock"
-  to include video decode. If Sam's "speedup" excludes video decode (i.e.
+  to include video decode. If the pre-release source's "speedup" excludes video decode (i.e.
   measures generate-only or vision+generate), our generate-only speedup of
   5.02× comfortably exceeds 1.8×; the discrepancy is a scope definition,
   not a mechanism failure.
@@ -162,7 +162,7 @@ This has two implications:
 - `2026-04-18-phase-1_51R-stage6-regime-match-prereg.md` — prereg.
 - `2026-04-18-phase-1_51R-stage6-32frame-smoke-findings.md` — smoke.
 - `2026-04-18-arithmetic-ceiling-findings.md` — ceiling model.
-- `2026-04-18-sam-regime-gap-note.md` — regime-gap thesis (now needs
+- `2026-04-18-scaleout-regime-gap-note.md` — regime-gap thesis (now needs
   update: aggregate e2e does not fully close).
 - `artifacts/phase1_51R_32frame_pilot/long_kr010_n10_32frame_summary.json`
   — authoritative numbers.

@@ -12,11 +12,11 @@ related:
 
 This document is the agreed-on next-experiment slate after the deep-mechanism queue and 1.63H 16f kr-sweep landed. It incorporates Codex's read of the queue ("the science is materially stronger but two overclaims to avoid: Gemma 8f misses the ceiling gate, all Gemma cells have parse failures in both arms, and Qwen 16f kr=0.85 is fidelity-safe but only 13.6% vision reduction") and adds my own analysis from sub-agent investigations.
 
-2026-04-29 Codex implementation update: A1/A2/A4/A5/A6/A7 now have run-capable scripts, and Sam's scale-out track has a strict JSON schema plus handoff doc. A6 is explicitly a **stateless same-video repeated-query horizon** to preserve continuity with the existing local C-PERSIST protocol; it is not a true conversational-history benchmark. A2 reports both label-free and explanatory-oracle variants so answer-aware features cannot be mistaken for deployable runtime guard evidence.
+2026-04-29 Codex implementation update: A1/A2/A4/A5/A6/A7 now have run-capable scripts, and the external scale-out track has a strict JSON schema plus handoff doc. A6 is explicitly a **stateless same-video repeated-query horizon** to preserve continuity with the existing local C-PERSIST protocol; it is not a true conversational-history benchmark. A2 reports both label-free and explanatory-oracle variants so answer-aware features cannot be mistaken for deployable runtime guard evidence.
 
 The design splits into two tracks:
 - **Track A — Local (M3 Air, 16 GB unified, mlx 4-bit)**: configuration-envelope tightening, predictor enrichment, many-turn drift, low-FPS baseline, K-cache distance.
-- **Track B — Sam (M5 MBP, 128 GB unified, 26B runtime)**: cross-protocol scale-out evidence; C-PERSIST/C-VISION/C-CEILING at scale; streaming baselines.
+- **Track B — Scale-out bundle (M5 MBP, 128 GB unified, 26B runtime)**: cross-protocol scale-out evidence; C-PERSIST/C-VISION/C-CEILING at scale; streaming baselines.
 
 Total scope is the *complete* set of experiments needed to close the paper to reviewer-defense quality; we will execute a prioritized subset based on time budget.
 
@@ -32,19 +32,19 @@ Total scope is the *complete* set of experiments needed to close the paper to re
 | A6 | 1.55L Many-turn C-PERSIST drift | local | 8 | scripted; stateless-query horizon | "two follow-ups" reviewer attack — biggest |
 | A7 | 1.55K-extended seeds | local | 7.5 | scripted after seed plumbing | sampler-seed robustness |
 | **Track A total** | | | **~28h** | (compute) + ~5h impl |  |
-| B0b | Expanded 26B cache-correctness gate | Sam | 1.5 | blocked on Sam | gating gate for C1 |
-| B1 | 26B C-PERSIST replication | Sam | 8 | conditional on B0b | C-PERSIST scale-out |
-| B2 | 26B many-turn streaming horizon | Sam | 10 | conditional on B0b | streaming first-class |
-| B3 | Matched streaming baselines | Sam | 8 | can run before B0b if cache path unused | C-STREAM real comparator |
-| B4 | 26B sparse-ViT / C-CEILING | Sam | 8 | conditional on runtime support | C-CEILING at scale |
-| B5 | 1,937 re-export | Sam | 1.5 | doc + tooling | reproducibility |
+| B0b | Expanded 26B cache-correctness gate | scale-out | 1.5 | blocked on external runtime | gating gate for C1 |
+| B1 | 26B C-PERSIST replication | scale-out | 8 | conditional on B0b | C-PERSIST scale-out |
+| B2 | 26B many-turn streaming horizon | scale-out | 10 | conditional on B0b | streaming first-class |
+| B3 | Matched streaming baselines | scale-out | 8 | can run before B0b if cache path unused | C-STREAM real comparator |
+| B4 | 26B sparse-ViT / C-CEILING | scale-out | 8 | conditional on runtime support | C-CEILING at scale |
+| B5 | 1,937 re-export | scale-out | 1.5 | doc + tooling | reproducibility |
 | **Track B total** | | | **~37h** |  |  |
 
 Local execution order is A1 → A2 → A3 → A4 → A6 → A7 → A5. A6/A7 are the
 highest-value local reviewer-defense cells and do not depend on A5; the
 cache-distance probe is intentionally last because a valid non-comparable-cache
-H1 outcome should not block the cache-horizon and seed-sweep evidence. If Sam
-can run in parallel, B0b should land before B1/B2 because
+H1 outcome should not block the cache-horizon and seed-sweep evidence. If the
+scale-out runner can run in parallel, B0b should land before B1/B2 because
 cache-correctness is gating.
 
 ## Codex's review distilled (so we share a target)
@@ -171,7 +171,7 @@ Cells: `{10t, 20t, 50t} × {fixed_k1, adaptive_post_q2, refresh10}` plus turn-ma
 
 **Time.** 10t × 7 clips ≈ 1.5h, 20t × 7 ≈ 3h, 50t × 7 ≈ 7h. With adaptive + dense control + 2 refresh policies that's `12 cells × {1.5h, 3h, 7h scaled by horizon}` ≈ ~12h sequential, ~8h with reuse of the cold dense baseline across cells.
 
-**Status.** Scripted. It is a stateless repeated-query horizon; a true conversational-history benchmark remains a separate Sam-scale/deployment experiment.
+**Status.** Scripted. It is a stateless repeated-query horizon; a true conversational-history benchmark remains a separate scale-out/deployment experiment.
 
 **Findings-doc requirement.** When 1.55L lands, describe it as a **stateless
 same-video cache-horizon stress test**, not a many-turn conversation. The prompt
@@ -208,9 +208,9 @@ interpreted separately from K=1 repair turns.
 
 These are best-effort spec sheets for the external scale-out runner; we won't
 run them locally. The canonical execution contract is
-`research/experiments/2026/2026-04-29-sam-scaleout-handoff.md`, and returned
-JSONLs must validate with `scripts/validate_sam_scaleout_artifact.py` against
-`research/schemas/sam_scaleout_artifact_v1.schema.json`.
+`research/experiments/2026/2026-04-29-scaleout-artifact-handoff.md`, and returned
+JSONLs must validate with `scripts/validate_scaleout_artifact.py` against
+`research/schemas/scaleout_artifact_v1.schema.json`.
 
 ### B0b. Expanded 26B cache-correctness gate
 
@@ -310,7 +310,7 @@ verification on 513 rows.
 3. **A6 (1.55L) refresh-policy interpretation.** The first implemented policy is `refresh10`. Adaptive refresh ("refresh when drift detected") would be more interesting but requires online drift detection that we have not built; keep it future work.
 4. **A7 (1.55K-extended) seed plumbing.** Seed arguments are now threaded through the standard and explicit-tail paths. A 1-clip T=1.0 smoke should still verify that different seeds produce different stochastic outputs before the full sweep.
 5. **A4 (1.63I) negative-result framing.** If no kr in [0.78, 0.82] passes both gates, the paper conclusion is "low-gain envelope confirmed." That's a fine outcome but worth pre-committing to before running, so we don't post-hoc rationalize a near-miss.
-6. **B-track schema mirror.** Implemented at `research/schemas/sam_scaleout_artifact_v1.schema.json`, with protocol details in `2026-04-29-sam-scaleout-handoff.md`.
+6. **B-track schema mirror.** Implemented at `research/schemas/scaleout_artifact_v1.schema.json`, with protocol details in `2026-04-29-scaleout-artifact-handoff.md`.
 7. **Memory cap on scale-out hardware.** The 12 GB MLX cap was a workaround for
    the 16 GB unified-memory laptop's GPU race. On 128 GB hardware this is
    irrelevant; do *not* port the cap into B-track scripts.
@@ -365,4 +365,4 @@ deep-mechanism queue.
 
 ## Bottom line for the editor
 
-If we land A1–A6 and Sam lands B0b–B2, the paper has all five contributions (C-PERSIST, C-CEILING, C-VISION, C-STREAM, plus 1.30 attribution) backed by gate-grade evidence at the configuration boundaries. If A4 finds a real Qwen kr gate-pass, we can lead C-VISION with two architectures showing zero-drift sparse vision execution. If A6 stays drift-bounded through 50 turns, the C-PERSIST headline goes from "two follow-ups" to "tested at scale". Both are paper-defining.
+If we land A1–A6 and the scale-out bundle lands B0b–B2, the paper has all five contributions (C-PERSIST, C-CEILING, C-VISION, C-STREAM, plus 1.30 attribution) backed by gate-grade evidence at the configuration boundaries. If A4 finds a real Qwen kr gate-pass, we can lead C-VISION with two architectures showing zero-drift sparse vision execution. If A6 stays drift-bounded through 50 turns, the C-PERSIST headline goes from "two follow-ups" to "tested at scale". Both are paper-defining.

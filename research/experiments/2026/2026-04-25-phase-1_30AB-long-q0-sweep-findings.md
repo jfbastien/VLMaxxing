@@ -38,7 +38,7 @@ under cache reuse).
 - Streaming policy:
   - `Q0`: kr_Q0 ∈ {0.75, 0.80, 0.85, 0.90}
   - `Q1`/`Q2`: kr=0.50 (cache-served, mechanically no-op)
-- Runner: `scripts/run_phase1_30_sam_streaming.py`
+- Runner: `scripts/run_phase1_30_scaleout_streaming.py`
 - Wrapper: `scripts/run_phase1_30AB_long_q0_candidate.sh <rate>`
 - Output dirs: `phase1_30AB_long_q0_kr<tag>/` (one per candidate)
 - Auto-committed by the follow-up queue runner as `dc599d3`, `36cdc21`,

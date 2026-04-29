@@ -1,26 +1,25 @@
-# Phase 1.55A — Persistent LLM KV-cache follow-up latency (Sam §2.13.3 REPRODUCTION, PREREG)
+# Phase 1.55A — Persistent LLM KV-cache follow-up latency (the pre-release source §2.13.3 REPRODUCTION, PREREG)
 
 **Status:** preregistration, 2026-04-19. Local reproduction of a
-**measured** whitepaper result; not a Codex hypothesis.
+**measured** pre-release source result; not a Codex hypothesis.
 
 ## Provenance correction
 
 Earlier drafts of 1.55 framed persistent KV-cache as "Codex round-21
-extension" / "not a reproduction of a documented whitepaper claim."
+extension" / "not a reproduction of a documented pre-release source claim."
 This was wrong.
 
-Sam's whitepaper `~/s/codec-through-sam/whitepaper.md` §2.13.3
-(lines 410-430) reports a measured persistent-KV result on Gemma
+The pre-release external source §2.13.3 (lines 410-430;
+removed from the OSS tree, summarized in `docs/claim-register.md`) reports a measured persistent-KV result on Gemma
 4 26B × MLX: N=7 videos × 3 questions = 20 queries, first-query
 latency 1.9–17.7 s, follow-up latency uniformly sub-2 s (median
 0.8 s), **10–18× follow-up speedup**, zero accuracy change on the
 20-item subset. The mechanism is `PromptCacheState` + prefix
 matching allocated per video, threaded through sequential queries.
 
-The current local copy in `seed/whitepaper/whitepaper-revised-
-2026-04-16.md` (382 lines) was frozen before §2.13.3 landed; that
-is the source of the provenance confusion. The authoritative Sam
-whitepaper is 638 lines and §2.13.3 is real measured work.
+The pre-release seed copy was frozen before §2.13.3 landed; that
+is the source of the provenance confusion. The external source was
+638 lines and §2.13.3 is real measured work.
 
 1.55 is therefore reframed as a local reproduction target, split
 into two sub-phases:
@@ -28,7 +27,7 @@ into two sub-phases:
 - **1.55A (this prereg)**: follow-up latency reproduction on our
   hardware stack (M3 Air 16 GB) using the same `PromptCacheState`
   + prefix-matching API. Measures whether the 10–18× follow-up
-  speedup claim generalizes off Sam's M5 Max hardware and onto
+  speedup claim generalizes off the pre-release source's M5 Max hardware and onto
   our smaller-model × smaller-Mac regime.
 - **1.55B (separate prereg, deferred)**: composition with Phase
   1.54 decode acceleration (what was previously H3 of the combined
@@ -41,7 +40,7 @@ Follow-up latency is the highest-product-relevance number in
 the whole codec-through story. The "conversational ambient agent"
 deployment narrative — "once a video is ingested, follow-up
 questions are conversational" — hinges on follow-up queries being
-sub-second. Sam shows this is measured-real. We need to show it
+sub-second. the pre-release source shows this is measured-real. We need to show it
 holds on our hardware class (16 GB Mac, Qwen 7B-4bit) so that the
 paper's deployment-regime claims extend beyond M5 Max / Gemma 26B.
 
@@ -67,28 +66,28 @@ Required for 1.55A:
       (d) logs first-query and follow-up-query latency per clip.
 - [ ] Question corpus: use the 3 existing VideoMME questions per
       clip from our `videomme_dev_v1` manifest (no synthesized
-      paraphrases needed for reproduction — Sam's protocol matches
-      exactly). 7 clips × 3 questions = 21 queries, matching Sam.
+      paraphrases needed for reproduction — the pre-release source's protocol matches
+      exactly). 7 clips × 3 questions = 21 queries, matching the pre-release source.
 - [ ] Cache-hit verification: assert `find_prefix_length` returns
       a positive value on Q2, Q3 of each clip; fail loudly if not.
 
 ## Hypotheses
 
-Pre-registered against Sam's measured numbers:
+Pre-registered against the pre-release source's measured numbers:
 
 - **H1 (follow-up speedup magnitude).** On Qwen 2.5-VL-7B-4bit
   (our primary model), median follow-up generate time is
   **≤ 3 s** and follow-up speedup is **≥ 5×** relative to
-  first-query. Sam measures 0.8 s median and 10–18× on Gemma
+  first-query. the pre-release source measures 0.8 s median and 10–18× on Gemma
   4 26B. Because our model is smaller *and* 4-bit, we expect
-  absolute latencies lower than Sam's but speedup possibly lower
+  absolute latencies lower than the pre-release source's but speedup possibly lower
   (smaller prefill fraction to amortize). **Falsification:**
   median follow-up ≥ 5 s, or speedup ≤ 2× → persistent-KV on our
   stack is not delivering the deployment story.
 
 - **H2 (accuracy preservation).** 21-query session accuracy is
   within ±0.05 absolute of the equivalent 21 cold-start
-  evaluations on the same items. Sam saw zero change on 20 items.
+  evaluations on the same items. the pre-release source saw zero change on 20 items.
   **Falsification:** |Δ acc| > 0.10 → cache threading introduces
   a quality regression.
 
@@ -133,7 +132,7 @@ Middle bands mean "partially reproduced; document and investigate."
 - **Benchmark:** VideoMME dev `videomme_dev_v1.toml`, 7 items
   selected from short (<4 min) bucket to minimize first-query
   cost and maximize follow-up-speedup signal. Short-bucket items
-  are ~3,300 prompt tokens at 8f, matching Sam's feature-buffer
+  are ~3,300 prompt tokens at 8f, matching the pre-release source's feature-buffer
   regime (18-317 features × ~256 tokens ≈ 4.6K-81K tokens; we
   sit at the low end with 8f prefill).
 - **Drivers compared:**
@@ -158,7 +157,7 @@ Middle bands mean "partially reproduced; document and investigate."
 
 - H1+H2+H3+H4 all earn → claim a real follow-up-speedup
   reproduction on Qwen-7B/M3 Air regime. Add to paper §2.13
-  Sam-reproduction line. Queue 1.55B (composition with 1.54) and
+  pre-release reproduction line. Queue 1.55B (composition with 1.54) and
   a Gemma parallel-run.
 - H1 earns but H2 rejects → cache threading has a correctness
   bug; halt and investigate before reporting.
@@ -172,10 +171,10 @@ Middle bands mean "partially reproduced; document and investigate."
 
 ## Cross-references
 
-- `~/s/codec-through-sam/whitepaper.md` §2.13.3 (authoritative
-  Sam measurement, lines 410-430).
-- `seed/whitepaper/whitepaper-revised-2026-04-16.md` (our local
-  copy — frozen before §2.13.3 landed).
+- pre-release external source §2.13.3 (authoritative
+  the pre-release source measurement, lines 410-430).
+- pre-release seed copy, removed from the OSS tree and preserved in git
+  history (frozen before §2.13.3 landed).
 - `research/experiments/2026/2026-04-19-phase-1_55-persistent-kv-prereg.md`
   (superseded by this file + 1.55B).
 - Phase 1.54 (decode acceleration — composition target for 1.55B).

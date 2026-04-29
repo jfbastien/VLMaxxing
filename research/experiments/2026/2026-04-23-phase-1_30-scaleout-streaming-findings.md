@@ -1,20 +1,20 @@
 ---
 phase: 1.30
 date: 2026-04-23
-parent: research/experiments/2026/2026-04-21-phase-1_30-sam-streaming-reproduction-prereg.md
+parent: research/experiments/2026/2026-04-21-phase-1_30-scaleout-streaming-reproduction-prereg.md
 prior:
   - research/experiments/2026/2026-04-21-phase-1_51V-expansion-findings.md
   - research/experiments/2026/2026-04-23-phase-1_51V-qwen-cross-arch-findings.md
   - research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md
-status: findings 2026-04-23. Preregistered H_sam_e2e FALSIFIED on accuracy clause; paper-promotion rule not triggered. C-VISION remains mechanism-grade, not deployment-grade composition.
+status: findings 2026-04-23. Preregistered H_stream_e2e FALSIFIED on accuracy clause; paper-promotion rule not triggered. C-VISION remains mechanism-grade, not deployment-grade composition.
 tracking: autonomous AFK session 2026-04-22/23
 ---
 
-# 1.30 Sam session/streaming bridge — findings (n=57 seeds, 171 paired queries)
+# 1.30 scale-out session/streaming bridge — findings (n=57 seeds, 171 paired queries)
 
 ## TL;DR
 
-Sam's session/streaming deployment protocol (cold prefill per query →
+the pre-release source's session/streaming deployment protocol (cold prefill per query →
 persistent-KV reuse + L=2 kr_V=0.50 vision pruning stack) reproduces
 the **speedup half** of its preregistered headline but **falsifies the
 accuracy half** on Qwen 2.5-VL-7B-Instruct-4bit at VideoMME 8f n=57
@@ -25,18 +25,18 @@ accuracy half** on Qwen 2.5-VL-7B-Instruct-4bit at VideoMME 8f n=57
 - Response-bucket distribution: clean 55.6%, mixed 39.2%, degenerate 5.3%
   (gates clean ≥ 0.50 **PASS**, degenerate ≤ 0.15 **PASS**)
 
-Per the preregistered adjudication rule, H_sam_e2e requires both speedup
+Per the preregistered adjudication rule, H_stream_e2e requires both speedup
 AND accuracy clauses. The accuracy clause fails hard; the paper-promotion
-rule "if H_sam_e2e + H_sam_bucket both pass, reopen C-VISION as deployment-
+rule "if H_stream_e2e + H_stream_bucket both pass, reopen C-VISION as deployment-
 grade composition" **does NOT trigger**. C-VISION retains its current
 mechanism-grade claim (1.51V ceiling law; 1.044× Qwen, 1.08–1.40× Gemma
-at the operating point). Sam's stacked session protocol does not transfer
+at the operating point). the pre-release source's stacked session protocol does not transfer
 to 7B Qwen at these preregistered tolerances.
 
 ## Arm/prereg deviation (document explicitly)
 
-The prereg at `research/experiments/2026/2026-04-21-phase-1_30-sam-streaming-reproduction-prereg.md`
-line 110 specifies `model-path /Users/jfb/models/gemma-4-e4b-it-4bit`. The
+The prereg at `research/experiments/2026/2026-04-21-phase-1_30-scaleout-streaming-reproduction-prereg.md`
+line 110 specifies `model-path $GEMMA_MODEL_PATH`. The
 run was executed against **Qwen 2.5-VL-7B-Instruct-4bit** (wrapper default
 `$HOME/models/Qwen2.5-VL-7B-Instruct-4bit`, confirmed in
 `cold_summary.json:4` and `streaming_summary.json:4`). This is an
@@ -54,8 +54,8 @@ Context that makes the Qwen execution defensible:
 
 The findings below report what the run measured. Gemma replication is
 **not** a next step as written, because the current
-`scripts/run_phase1_30_sam_streaming.py` hard-fails on any model_type
-that isn't `qwen2_5_vl` (see `scripts/run_phase1_30_sam_streaming.py:303-308`).
+`scripts/run_phase1_30_scaleout_streaming.py` hard-fails on any model_type
+that isn't `qwen2_5_vl` (see `scripts/run_phase1_30_scaleout_streaming.py:303-308`).
 Porting 1.30's session harness to Gemma is a separate engineering phase
 whose value depends on what root-cause decomposition says about Qwen
 (see `research/experiments/2026/2026-04-23-phase-1_30-rootcause-prereg.md`).
@@ -125,25 +125,25 @@ rootcause-prereg.md` decomposition is the adjudicating experiment.
 | mixed | 67 | 0.392 | — |
 | degenerate | 9 | 0.053 | **≤0.15 PASS** |
 
-H_sam_bucket **CONFIRMED** in the preregistered bands. This tells us
+H_stream_bucket **CONFIRMED** in the preregistered bands. This tells us
 the streaming stack is producing well-formed outputs (parseable answer
-letter, not noise tokens) at Sam-comparable rates — the accuracy loss
+letter, not noise tokens) at the pre-release source-comparable rates — the accuracy loss
 is semantic (wrong answer confidently), not syntactic (token collapse).
 
 ## Hypothesis verdicts
 
 | ID | Gate | Measured | Verdict |
 |----|------|----------|---------|
-| H_sam_e2e speedup | paired amortized ≥ 3.0× | **3.326×** | **PASS** |
-| H_sam_e2e accuracy | \|Δacc\| ≤ 0.05 | **Δ = −0.193** | **FALSIFIES** |
-| H_sam_e2e (joint) | both clauses | speedup PASS, accuracy FAIL | **PARTIAL (ceiling-only)** |
-| H_sam_bucket clean | clean ≥ 0.50 | 0.556 | PASS |
-| H_sam_bucket degenerate | degenerate ≤ 0.15 | 0.053 | PASS |
-| H_sam_bucket (joint) | both | both PASS | **CONFIRMED** |
-| H_sam_drift_refresh | refresh ≤ 30%, degen reduction ≥ 50% | refresh-off policy; not tested | **N/A this run** |
-| H_sam_thermal | \|Δvideo-decode\| / cold < 2% | 55366ms → 52914ms = **4.43%** | **FAIL** |
+| H_stream_e2e speedup | paired amortized ≥ 3.0× | **3.326×** | **PASS** |
+| H_stream_e2e accuracy | \|Δacc\| ≤ 0.05 | **Δ = −0.193** | **FALSIFIES** |
+| H_stream_e2e (joint) | both clauses | speedup PASS, accuracy FAIL | **PARTIAL (ceiling-only)** |
+| H_stream_bucket clean | clean ≥ 0.50 | 0.556 | PASS |
+| H_stream_bucket degenerate | degenerate ≤ 0.15 | 0.053 | PASS |
+| H_stream_bucket (joint) | both | both PASS | **CONFIRMED** |
+| H_stream_drift_refresh | refresh ≤ 30%, degen reduction ≥ 50% | refresh-off policy; not tested | **N/A this run** |
+| H_stream_thermal | \|Δvideo-decode\| / cold < 2% | 55366ms → 52914ms = **4.43%** | **FAIL** |
 
-H_sam_thermal's 4.4% drift is slightly outside the preregistered 2%
+H_stream_thermal's 4.4% drift is slightly outside the preregistered 2%
 envelope. The sign is negative (streaming faster), which is **inconsistent
 with thermal drift** (thermal drift on M3 generally slows decode) and
 **consistent with ViT pruning removing upstream load**. The thermal gate
@@ -154,7 +154,7 @@ paper-matrix entry for this row.
 
 ## Interpretation
 
-The streaming protocol gives Sam's preregistered speedup (3.3× amortized,
+The streaming protocol gives the pre-release source's preregistered speedup (3.3× amortized,
 75.6× on follow-ups) but sacrifices semantic fidelity. What the paired
 data support vs. what the data do **not** yet determine:
 
@@ -189,7 +189,7 @@ stronger than the n=57 paired data support and has been retracted here
 pending the decomposition. (Retained in the commit history at e9d1223
 for provenance.)
 
-3. **We ran with drift-refresh off.** The preregistered H_sam_drift_refresh
+3. **We ran with drift-refresh off.** The preregistered H_stream_drift_refresh
    was not tested because the run used `--drift-refresh-policy off`. The
    1.30 driver CLI currently accepts only `off` and `hard-reset`; the
    `threshold` branch hard-fails as not-implemented. Hard-reset is
@@ -247,23 +247,23 @@ composition, and the paper framing retracts from "anti-claim" to
   dev n=30". The deployment-grade composition framing that would have
   lifted the paper's submission tier is NOT unlocked.
 
-- **New row or note:** Sam session/streaming protocol reproduces the
+- **New row or note:** scale-out session/streaming protocol reproduces the
   speedup (3.33× amortized on Qwen 8f VideoMME n=57) but not the fidelity
   (−19.3pp aggregate, −23.7pp on follow-ups) at preregistered tolerances.
   Directional evidence that no-refresh KV-cache reuse across semantically
   different queries trades accuracy for latency on a 7B MLLM; aligns with
-  Sam's own §5 motivation for drift-triggered refresh.
+  the pre-release source's own §5 motivation for drift-triggered refresh.
 
 - **Abstract / intro:** unchanged. C-CEILING + C-PERSIST + C-VISION
   claims are intact. The 1.30 result does not weaken them; it bounds
-  the applicability of Sam's full-stack deployment protocol.
+  the applicability of the pre-release source's full-stack deployment protocol.
 
 ## Methodology notes
 
 ### Prereg deviation: Qwen instead of Gemma (see §Arm/prereg deviation).
 
 ### Dirty-tree wrapper fix.
-The wrapper `scripts/run_phase1_30_sam_streaming.sh` originally failed
+The wrapper `scripts/run_phase1_30_scaleout_streaming.sh` originally failed
 between arms: cold arm's output files make the tree dirty and the
 streaming arm's driver enforces a clean-tree guard. Fixed in this
 session by threading `--allow-dirty` through both arm invocations
@@ -285,21 +285,21 @@ gave 57 unique. This is slightly under the prereg's n=60 nominal.
 ## Reproduction
 
 ```bash
-bash scripts/run_phase1_30_sam_streaming.sh
+bash scripts/run_phase1_30_scaleout_streaming.sh
 ```
 
 Outputs (all produced by this run):
-- `research/experiments/2026/artifacts/phase1_30_sam_streaming/cold.jsonl` (171 rows)
-- `research/experiments/2026/artifacts/phase1_30_sam_streaming/cold_summary.json`
-- `research/experiments/2026/artifacts/phase1_30_sam_streaming/streaming.jsonl` (171 rows)
-- `research/experiments/2026/artifacts/phase1_30_sam_streaming/streaming_summary.json`
-- `research/experiments/2026/artifacts/phase1_30_sam_streaming/pair_summary.json`
-- `research/experiments/2026/artifacts/phase1_30_sam_streaming/paired_queries.jsonl`
-- `research/experiments/2026/artifacts/phase1_30_sam_streaming/per_clip_bucket_tally.json`
+- `research/experiments/2026/artifacts/phase1_30_scaleout_streaming/cold.jsonl` (171 rows)
+- `research/experiments/2026/artifacts/phase1_30_scaleout_streaming/cold_summary.json`
+- `research/experiments/2026/artifacts/phase1_30_scaleout_streaming/streaming.jsonl` (171 rows)
+- `research/experiments/2026/artifacts/phase1_30_scaleout_streaming/streaming_summary.json`
+- `research/experiments/2026/artifacts/phase1_30_scaleout_streaming/pair_summary.json`
+- `research/experiments/2026/artifacts/phase1_30_scaleout_streaming/paired_queries.jsonl`
+- `research/experiments/2026/artifacts/phase1_30_scaleout_streaming/per_clip_bucket_tally.json`
 
 Re-running this arm unchanged requires only the existing wrapper:
 ```bash
-bash scripts/run_phase1_30_sam_streaming.sh
+bash scripts/run_phase1_30_scaleout_streaming.sh
 ```
 For **root-cause decomposition** (not replication), see the new prereg
 at `research/experiments/2026/2026-04-23-phase-1_30-rootcause-prereg.md`.
@@ -318,7 +318,7 @@ at `research/experiments/2026/2026-04-23-phase-1_30-rootcause-prereg.md`.
    Runtime estimate ~85 min (Phase A+B).
 
 2. **Gemma replication (deferred).** The 1.30 driver hard-fails on
-   non-Qwen models (`scripts/run_phase1_30_sam_streaming.py:303-308`),
+   non-Qwen models (`scripts/run_phase1_30_scaleout_streaming.py:303-308`),
    so a Gemma rerun requires a harness port first. Whether it is worth
    doing depends on the root-cause decomposition — if the Qwen failure
    is V-only-dominated at kr_V=0.50, the Gemma question becomes "does
@@ -326,7 +326,7 @@ at `research/experiments/2026/2026-04-23-phase-1_30-rootcause-prereg.md`.
 
 3. **Adjacent-cos refresh implementation (deferred).** The
    `--drift-refresh-policy threshold` CLI value is already plumbed but
-   hard-fails today (`scripts/run_phase1_30_sam_streaming.py:286-290`).
+   hard-fails today (`scripts/run_phase1_30_scaleout_streaming.py:286-290`).
    Implementing an adjacent-cos drift detector only makes sense if the
    root-cause decomposition shows hard-reset recovers most of the loss
    (H_reset PASS); otherwise a smarter refresh policy won't help either.

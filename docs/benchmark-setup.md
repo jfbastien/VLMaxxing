@@ -1,6 +1,6 @@
 # Benchmark Setup
 
-This document covers the benchmark-native asset path for whitepaper
+This document covers the benchmark-native asset path for pre-release source
 reproduction.
 
 It is separate from the local clip corpus because benchmark assets have
@@ -273,7 +273,7 @@ data/benchmarks/mvbench/
 
 - that the full benchmark is tractable on this machine
 - that every MVBench task is complete without NTU
-- that the imported whitepaper frame count or model precision can be matched
+- that the pre-release source frame count or model precision can be matched
 
 Those caveats belong in the experiment note and
 [docs/reproduction-status.md](reproduction-status.md).

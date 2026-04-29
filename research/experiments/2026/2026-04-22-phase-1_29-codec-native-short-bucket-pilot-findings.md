@@ -43,7 +43,7 @@ This is not a bug in `H264MetadataExtractor` or `classify_blocks_h264`. Both fun
 
 ## What this means for the paper
 
-The 1.29 prereg (task #98, 2026-04-20) called for "a codec-native planner run on a 30-clip subset" as "the biggest single missing Sam bridge". That framing presupposed codec labels are a drop-in replacement for pixel-diff labels. This pilot falsifies that presupposition **at the aggregation design point**; the upstream extractor is fine.
+The 1.29 prereg (task #98, 2026-04-20) called for "a codec-native planner run on a 30-clip subset" as "the biggest single missing the pre-release source bridge". That framing presupposed codec labels are a drop-in replacement for pixel-diff labels. This pilot falsifies that presupposition **at the aggregation design point**; the upstream extractor is fine.
 
 Three design responses, in increasing order of paper-body payoff:
 
@@ -58,14 +58,14 @@ Three design responses, in increasing order of paper-body payoff:
    `mean_residual_energy`), let `classify_blocks_with_planner` re-threshold it
    using the existing `static_threshold` / `shifted_threshold` machinery.
    This is the design-note's §Stage B alternative. Medium effort; preserves
-   the planner's calibration story; aligned with how Sam's whitepaper actually
+   the planner's calibration story; aligned with how the pre-release source actually
    uses codec metadata.
 
 3. **Abandon the sparse-sampling retrofit; run codec-native at native rate.**
-   This is the priority-doc's should-do #4 direction (Sam-streaming reproduction,
+   This is the priority-doc's should-do #4 direction (scale-out streaming reproduction,
    task #155 prereg). Codec metadata is designed for contiguous frames; sparse-
    sampling breaks its semantic. Full re-framing; highest paper-body payoff;
-   highest engineering cost; aligned with Sam's whitepaper claim space.
+   highest engineering cost; aligned with the pre-release source claim space.
 
 Recommendation: **pick option 2 for the paper-body row**, document option 3 as
 the natural next-step follow-up. Option 1 is a false economy — it produces

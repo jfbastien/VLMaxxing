@@ -1,12 +1,12 @@
 # Phase 1.55A — Persistent-KV follow-up latency findings (Qwen 7B-4bit, v0)
 
-**Status:** findings, 2026-04-19. Reproduction of Sam whitepaper §2.13.3
+**Status:** findings, 2026-04-19. Reproduction of pre-release source §2.13.3
 on our stack (Qwen 2.5-VL-7B-Instruct-4bit, M3 Air 16 GB). Prereg:
 `2026-04-19-phase-1_55A-persistent-kv-reproduction-prereg.md`.
 
 ## TL;DR
 
-Sam's persistent-KV claim **reproduces cleanly on Qwen 7B-4bit**. All
+the pre-release source's persistent-KV claim **reproduces cleanly on Qwen 7B-4bit**. All
 four preregistered hypotheses earn:
 
 | H | Threshold | Observed | Verdict |
@@ -23,7 +23,7 @@ and `summary.json`.
 
 - **Model.** `mlx-community/Qwen2.5-VL-7B-Instruct-4bit` via mlx-vlm.
 - **Items.** 7 short-bucket VideoMME dev clips × 3 questions each = 21
-  queries per mode, matching Sam's n=20 within 1 query.
+  queries per mode, matching the pre-release source's n=20 within 1 query.
 - **Session mode.** One `PromptCacheState()` allocated per clip,
   threaded into `generate(prompt_cache_state=state, ...)` on each of
   3 sequential queries. mlx-vlm's line-780 hook populates the state
@@ -32,7 +32,7 @@ and `summary.json`.
   items, same frames, same prompts. Timing measured with
   `time.perf_counter_ns()` around the `generate()` call only.
 - **Frames.** 8 per clip; pre-decoded once and reused across the 3
-  questions of a clip (matches Sam's feature-buffer regime).
+  questions of a clip (matches the pre-release source's feature-buffer regime).
 - **Seed.** `mx.random.seed(42)` reset before each query.
 - **Scoring.** `codec_through.answers.extract_choice` against the 4-way
   multiple-choice letters; boundary cases (no letter parsed) counted
@@ -51,7 +51,7 @@ speedup (first → follow-up, median):   47.23×
 speedup (baseline → session follow-up, median):  ~46.5×
 ```
 
-Sam reports 10–18× on Gemma 4 26B / M5 Max with ~0.8 s median
+the pre-release source reports 10–18× on Gemma 4 26B / M5 Max with ~0.8 s median
 follow-up. We observe **47× at 815 ms median follow-up**. The higher
 speedup on our side is consistent with the shape of the speedup
 identity — we have a larger *prefill / decode* ratio because our 4-bit
@@ -129,9 +129,9 @@ The first run's rejection was a **driver defect**, not a claim
 falsification. This has been recorded in the decision-log and the
 artifacts from the first run are labelled as such.
 
-## Sam whitepaper comparison
+## pre-release source comparison
 
-| Quantity | Sam §2.13.3 (Gemma 4 26B / M5 Max) | Ours (Qwen 7B-4bit / M3 Air) |
+| Quantity | the pre-release source §2.13.3 (Gemma 4 26B / M5 Max) | Ours (Qwen 7B-4bit / M3 Air) |
 |----------|-----------------------------------|------------------------------|
 | N queries | 20 (7 vids × ~3 Qs) | 21 (7 vids × 3 Qs) |
 | First-query range | 1.9 – 17.7 s | 25.0 – 40.3 s |
@@ -141,7 +141,7 @@ artifacts from the first run are labelled as such.
 | Prefix match | "prefix reuse" | **0.982 coverage** |
 | Peak RSS | not reported | 2.81 GB |
 
-The **median follow-up latency matches Sam's to the 15 ms level** —
+The **median follow-up latency matches the pre-release source to the 15 ms level** —
 a striking coincidence given we have a 4× smaller model (7B vs 26B)
 on a smaller machine. The reason is that follow-up latency is
 dominated by the short decode (the added question text is 40–90
@@ -154,11 +154,11 @@ populated.
 
 - **Claim-matrix row 11 (streaming composition):** lands as a
   strengthener for the "conversational ambient agent" deployment
-  narrative. Sam's §2.13.3 reproduces on our regime.
+  narrative. the pre-release source's §2.13.3 reproduces on our regime.
 - **SOTA framing:** we now have a **measured follow-up latency
   (~815 ms) on the hardware class most likely to be adopted** (16 GB
   Mac, 4-bit 7B model). Previous §2.13 paragraph could only reference
-  Sam's M5 Max numbers; we can now cite our own.
+  the pre-release source's M5 Max numbers; we can now cite our own.
 - **Accuracy nuance:** report −0.048 aggregate, flag the follow-up-
   stratified −0.07 as an open question that a larger n would resolve.
 
@@ -183,6 +183,6 @@ populated.
 - Prereg: `2026-04-19-phase-1_55A-persistent-kv-reproduction-prereg.md`
 - Driver: `scripts/run_kv_cache_session.py` (fix 143e782)
 - Artifacts: `research/experiments/2026/artifacts/loop_queue_20260419_155108/phase1_55A_persistent_kv_qwen/`
-- Sam §2.13.3: `~/s/codec-through-sam/whitepaper.md` lines 410-430
+- the pre-release source §2.13.3: `pre-release external source` lines 410-430
 - Claim matrix: row 11 (streaming composition)
 - Decision log: row for 1.55A to be added post-landing

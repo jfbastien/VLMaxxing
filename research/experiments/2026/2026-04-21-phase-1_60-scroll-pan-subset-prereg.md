@@ -24,9 +24,9 @@ operating point. The science goal is not "can we still win on
 scroll/pan" — it is "characterize the regime boundary so reviewers
 can calibrate the claim to their content distribution."
 
-Sam's whitepaper §SHIFTED content is the natural comparison
+The pre-release pre-release source's SHIFTED-content framing is the natural comparison
 pointer: SHIFTED is structurally narrow on VideoMME but dominates
-on scroll-like content; codec-through-sam shows 5–300× live-camera
+on scroll-like content; the pre-release external prototype reported 5–300× live-camera
 ViT savings exactly because the low end of that range is SHIFTED
 regimes. We need the **local, benchmark-grade counterpart**.
 
@@ -130,7 +130,7 @@ promotes to C-VISION paper-body as:
   scroll-detection bail-out. Paper-body adverse note.
 - **SHIFTED-DOES-NOT-BREAK** if H_vision_scroll_breaks fails
   (observed E2E ≥ 1.10×): this is a surprising non-result. Revisit
-  sam/SHIFTED positioning; C-VISION may be more robust than the
+  the pre-release source/SHIFTED positioning; C-VISION may be more robust than the
   token-merging literature suggests.
 
 Thermal gate same as 1.51V sessions 3-5: `|decode Δ| <
@@ -171,7 +171,7 @@ This phase runs **after**:
 It does NOT depend on:
 
 - 1.29 codec-native benchmark (orthogonal pipeline).
-- 1.30 Sam streaming reproduction (different protocol; scroll/pan
+- 1.30 the pre-release source streaming reproduction (different protocol; scroll/pan
   is still a sparse-sampled benchmark probe).
 - 1.55B / 1.54 decode-composition (C-VISION is
   vision-axis-only; decode-axis is a separate claim).
@@ -179,7 +179,8 @@ It does NOT depend on:
 ## Paper integration
 
 If CLEAN FAILURE CLAIM earns, add one paragraph to
-`paper/intro.md` § 4 and a table row in C-VISION section:
+`paper/arxiv/sections/08_real_applications.tex` and a table row in the
+C-VISION section:
 
 > On a 20-item scroll/pan subset (7 light / 7 medium / 6 heavy,
 > manifest `scroll_pan_subset_v1.toml`), C-VISION's operating
@@ -219,7 +220,7 @@ We will not claim, based on this phase alone:
 
 ## Future phases this unblocks
 
-- **Phase 1.60b**: egomotion / FPV subset, mirroring sam's
+- **Phase 1.60b**: egomotion / FPV subset, mirroring the pre-release source's
   live-camera SHIFTED regime at benchmark grade.
 - **Phase 1.60c**: scroll-detection bail-out policy (if the
   BROKEN DEPLOYMENT branch earns): a runtime classifier that

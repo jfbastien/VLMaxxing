@@ -36,10 +36,10 @@ current task.
   [docs/methodology/timing-harness.md](docs/methodology/timing-harness.md)
 - For current claim status, reopen conditions, and killed ideas:
   [research/decision-log.md](research/decision-log.md)
-- For the canonical imported whitepaper targets and known internal
+- For the canonical pre-release source targets and known internal
   inconsistencies:
   [docs/claim-register.md](docs/claim-register.md)
-- For exact whitepaper-reproduction status and what is still imported-only:
+- For exact source-reproduction status and what is still imported-only:
   [docs/reproduction-status.md](docs/reproduction-status.md)
 - For active roadmap and phase order:
   [PLAN.md](PLAN.md)

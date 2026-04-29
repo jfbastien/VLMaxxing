@@ -88,7 +88,7 @@ was 7.23 GB; 8f is strictly less prefill, so headroom is generous.
 Mirrors 16f holdout invocation, only `--frame-count` changes:
 
 ```
-model-path        /Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit
+model-path        $QWEN_7B_4BIT_MODEL_PATH
 benchmark         videomme
 manifest          research/benchmark_manifests/videomme_holdout_v1.toml
 frame-count       8

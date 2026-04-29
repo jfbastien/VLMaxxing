@@ -77,7 +77,7 @@ Inconclusive:
 
 Notes:
 
-- this experiment is still a local pilot, not the whitepaper's real-video or
+- this experiment is still a local pilot, not the pre-release source's real-video or
   benchmark path
 - the aim is to upgrade the suite quality before further sweeps, not to claim a
   headline reproduction

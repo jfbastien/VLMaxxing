@@ -69,7 +69,7 @@ not per-item generation targets.
 ## Configuration
 
 ```
-model-path        /Users/jfb/models/gemma-4-e4b-it-4bit
+model-path        $GEMMA_MODEL_PATH
 frame-count       8
 n                 30 per arm
 max-tokens        32
@@ -120,4 +120,4 @@ exited.
 - `research/experiments/2026/artifacts/phase1_51V_session5/exp24_tomato_holdout_8f_L2_kr050.{jsonl,log,done}` + summary
 - `research/experiments/2026/artifacts/phase1_51V_session5/queue.{log,done}`
 - Runner: `scripts/run_phase1_51V_session5.sh`
-- Findings doc: `research/experiments/2026/2026-04-??-phase-1_51V-session5-findings.md`
+- Findings doc: `research/experiments/2026/2026-04-21-phase-1_51V-session5-findings.md`

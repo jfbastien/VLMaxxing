@@ -1,10 +1,10 @@
 ---
 phase: 1.30-rootcause
 date: 2026-04-23
-parent: research/experiments/2026/2026-04-23-phase-1_30-sam-streaming-findings.md
+parent: research/experiments/2026/2026-04-23-phase-1_30-scaleout-streaming-findings.md
 prior:
-  - research/experiments/2026/2026-04-21-phase-1_30-sam-streaming-reproduction-prereg.md
-  - research/experiments/2026/2026-04-23-phase-1_30-sam-streaming-findings.md
+  - research/experiments/2026/2026-04-21-phase-1_30-scaleout-streaming-reproduction-prereg.md
+  - research/experiments/2026/2026-04-23-phase-1_30-scaleout-streaming-findings.md
   - research/experiments/2026/2026-04-23-phase-1_51V-qwen-cross-arch-findings.md
   - research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md
 status: preregistered 2026-04-23. Two-phase plan (Phase A short scout, Phase B Q0 parity; Phase C full confirmation conditional) to factorize the 1.30 negative result into V-only, K-only, and interaction components.
@@ -18,7 +18,7 @@ tracking: autonomous AFK session 2026-04-22/23 — codex round-28 review
 The 2026-04-23 1.30 findings established a **real negative** on Qwen
 2.5-VL-7B-Instruct-4bit at VideoMME 8f: 3.326× speedup PASS, but
 Δacc = −0.193 FALSIFIES the preregistered ±0.05 accuracy clause of
-H_sam_e2e. The paper-promotion rule for deployment-grade C-VISION
+H_stream_e2e. The paper-promotion rule for deployment-grade C-VISION
 composition does not trigger.
 
 A negative result without a root cause is not a paper claim — it is
@@ -176,11 +176,11 @@ the streaming arms amortize less with more unique queries.
 ## Non-goals
 
 - **No adjacent-cos implementation.** The `--drift-refresh-policy threshold`
-  CLI path hard-fails in `scripts/run_phase1_30_sam_streaming.py:286-290`.
+  CLI path hard-fails in `scripts/run_phase1_30_scaleout_streaming.py:286-290`.
   Implementing adjacent-cos refresh is a separate follow-up that only
   makes sense if H_reset **PASSES** in Phase A.
 - **No Gemma replication.** The 1.30 driver hard-fails on
-  `model_type != qwen2_5_vl` (`scripts/run_phase1_30_sam_streaming.py:303-308`).
+  `model_type != qwen2_5_vl` (`scripts/run_phase1_30_scaleout_streaming.py:303-308`).
   Porting 1.30 to Gemma is a separate phase whose value depends on what
   Phase A says about Qwen. If the failure is V-only-dominated on Qwen
   at kr_V=0.50, Gemma at the same kr_V may or may not reproduce — that's

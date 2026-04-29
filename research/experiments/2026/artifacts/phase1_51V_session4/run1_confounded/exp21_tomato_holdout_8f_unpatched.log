@@ -1,4 +1,4 @@
-loading model: /Users/jfb/models/gemma-4-e4b-it-4bit
+loading model: <model:gemma-4-e4b-it-4bit>
 [rss before load] 417 MiB
 [model weight dtypes] unavailable (model.parameters() returned empty)
 [rss after load] 4000 MiB
@@ -7,5 +7,5 @@ loading model: /Users/jfb/models/gemma-4-e4b-it-4bit
 [  1/30] tomato:direction:0225-07                 dense=False pruned=False agree=True kept=2048/2048 dense_e2e=18024ms pruned_e2e=15895ms dense_gen=8946ms pruned_gen=6760ms dense_toks=2 pruned_toks=2 rss=4000MiB
 Prefill:   0%|          | 0/2189 [00:00<?, ?tok/s]Prefill:  94%|█████████▎| 2048/2189 [00:06<00:00, 315.36tok/s]Prefill: 100%|█████████▉| 2188/2189 [00:06<00:00, 313.02tok/s]Prefill: 100%|█████████▉| 2188/2189 [00:06<00:00, 313.65tok/s]
 Prefill:   0%|          | 0/2189 [00:00<?, ?tok/s]Prefill:  94%|█████████▎| 2048/2189 [00:06<00:00, 319.27tok/s]Prefill: 100%|█████████▉| 2188/2189 [00:06<00:00, 315.97tok/s]Prefill: 100%|█████████▉| 2188/2189 [00:06<00:00, 316.87tok/s]
-/Users/jfb/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/multiprocessing/resource_tracker.py:279: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+<user-local>/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/multiprocessing/resource_tracker.py:279: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
   warnings.warn('resource_tracker: There appear to be %d '

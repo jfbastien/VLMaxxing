@@ -30,7 +30,7 @@ What drift we actually measure:
 
   Under the planner's defaults (MEAN stat, 3.0/8.0 thresholds) the
   STATIC class is "tokens the planner would have said are reusable."
-  Per Sam's research_queue lines 14-29, a cache-substitute forward pass
+  Per the pre-release external research queue lines 14-29, a cache-substitute forward pass
   at those positions drifts from a fresh encode because ViT global
   attention mixes NOVEL neighbors' content into the output tokens.
   Adjacent-frame fresh-vs-fresh cosine is the direct measurement of

@@ -72,7 +72,7 @@ Weighted mean of n=30 cells: (−0.067 × 30 + −0.033 × 30) / 60 = −0.050.
 ## Configuration
 
 ```
-model-path         /Users/jfb/models/gemma-4-e4b-it-4bit
+model-path         $GEMMA_MODEL_PATH
 frame-count        8
 n                  60 per arm (pooled dev + holdout)
 max-tokens         32
@@ -125,4 +125,4 @@ Single autonomous-session bucket; well under the 2-hour attention budget.
 - `research/experiments/2026/artifacts/phase1_51V_exp10_n60/exp10n60_b_vplus_novelty030.{jsonl,log,done,_summary.json}`
 - `research/experiments/2026/artifacts/phase1_51V_exp10_n60/queue.{log,done}`
 - Runner: `scripts/run_phase1_51V_exp10_n60.sh`
-- Findings doc: `research/experiments/2026/2026-04-??-phase-1_51V-exp10-n60-findings.md`
+- Findings doc: `research/experiments/2026/2026-04-21-phase-1_51V-exp10-n60-findings.md`

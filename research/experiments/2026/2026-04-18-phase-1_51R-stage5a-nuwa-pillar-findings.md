@@ -8,7 +8,7 @@ accuracy gap at kr=0.50.
 
 Informed anchor selection (nuwa_pillar: 2×2 grid-center + corners +
 mid-axis) preserves more question-relevant tokens than plain top-k
-novelty, and at kr=0.50 (Sam's reference point, inside the prereg
+novelty, and at kr=0.50 (the pre-release source's reference point, inside the prereg
 {0.3..0.7} band) should *recover* the -10pp aggregate accuracy drop
 seen at kr=0.10 anchor=none. Falsification: nuwa_pillar at kr=0.50
 produces aggregate accuracy within 3pp of dense, and e2e speedup
@@ -96,7 +96,7 @@ doing worse than the preserved-structure-plus-top-k-novelty baseline.
    (max_min_diversity) and Stage 5c (gemma_structural) also fail,
    the 1.51R narrative is "duration-conditional partial repro
    bounded by the arithmetic ceiling; anchor-selection ablation
-   shows informed selection does not recover accuracy at Sam's
+   shows informed selection does not recover accuracy at the pre-release source's
    reference kr=0.50." Medium-bucket kr=0.10 anchor=none remains
    the only earned operating point.
 

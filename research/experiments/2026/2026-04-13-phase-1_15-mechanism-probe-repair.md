@@ -6,7 +6,7 @@ Hypothesis:
 
 - after repairing the synthetic probe geometry and measuring cosine in
   float32/float64, the local mechanism results will move closer to the imported
-  whitepaper shape: repeated-image identity will stay exact, the partial-change
+  pre-release source shape: repeated-image identity will stay exact, the partial-change
   minimum will land on the target token or its immediate neighborhood, and
   boundary-safe within-block shifts through `14 px` will remain highly similar
 
@@ -126,12 +126,12 @@ Most likely implication:
 
 - the Phase `1.1` mismatch was partly probe design, but not only probe design
 - the local MLX `4-bit` path still looks weaker than the imported PyTorch/MPS
-  float32 whitepaper path on locality and shift-strength
+  float32 pre-release source path on locality and shift-strength
 
 Next follow-up:
 
 - compare the same repaired probes on a higher-precision local runtime before
-  treating this as a conceptual disagreement with the whitepaper
+  treating this as a conceptual disagreement with the pre-release source
 
 ## Links
 

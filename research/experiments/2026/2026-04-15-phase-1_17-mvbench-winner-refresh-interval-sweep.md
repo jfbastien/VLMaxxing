@@ -87,4 +87,4 @@ Pending.
 
 - [phase 1.11 MVBench motion dev grid](2026-04-14-phase-1_11-planner-grid-mvbench-motion-dev.md)
 - [phase 1.49 TOMATO refresh sweep](2026-04-14-phase-1_49-tomato-direction-refresh-sweep.md)
-- [execution plan round 7](../../../docs/execution-plan-round-7.md)
+- [experiment registry](../registry.md)

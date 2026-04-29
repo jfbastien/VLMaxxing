@@ -12,6 +12,12 @@ This subtree is the actual manuscript workspace.
 - `sections/90_references.tex`: manual `thebibliography` used by the
   current lightweight build
 
+Generated JSON snapshots under `generated/data/` are intentionally tracked
+because they are the audit surface for plotted and tabulated cells. Generated
+figures/tables are reproducible from those snapshots plus the canonical
+artifacts named inside them; checkout-specific provenance snippets remain
+untracked until the final clean-tag freeze.
+
 ## Build Flow
 
 1. `make paper-doctor`

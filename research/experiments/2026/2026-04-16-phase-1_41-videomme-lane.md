@@ -10,7 +10,7 @@ Objective:
 - run both dense-only baselines and the current cached winner
   (`max_abs(8,32) static+shifted age=4`) on a dev + holdout split.
 - this is claim #8 in `paper/claim-matrix.md` — required for paper
-  venue readiness per the revised whitepaper and codex reviews. Per
+  venue readiness per the revised pre-release source and codex reviews. Per
   round-17 one-paper reframe, VideoMME is also the benchmark that
   Lane B (Gemma big-numbers, phase 1.51/1.52) targets for its
   headline result.
@@ -31,12 +31,12 @@ doesn't inform the planner design.
 
 Hypotheses:
 
-- **H1 (cached = dense on Qwen)**: sam reports 100% byte-identical
+- **H1 (cached = dense on Qwen)**: the pre-release source reports 100% byte-identical
   agreement on 300 VideoMME questions at 32 frames on Qwen 2.5-VL-7B.
   On our stack with the same default thresholds (STATIC < 3,
   SHIFTED < 8), cached accuracy should match dense accuracy within
   0.5pp on the local evaluation.
-- **H2 (reuse ratio varies by content)**: sam reports 52% average
+- **H2 (reuse ratio varies by content)**: the pre-release source reports 52% average
   token reuse on VideoMME (lower than TOMATO's 83% because content
   is more dynamic). Local reuse should be in a similar range.
 - **H3 (our planner policy adds no regression)**: `max_abs(8,32)
@@ -60,9 +60,9 @@ Inconclusive:
 
 - VideoMME videos fail to download or decode on M3 Air.
 
-## Operational plan (from sam's infrastructure)
+## Operational plan (from the pre-release source's infrastructure)
 
-Sam's operational path for VideoMME:
+the pre-release source's operational path for VideoMME:
 
 1. Duration-stratified evaluation: 100 items per duration bucket
    (short < 2 min, medium 4–15 min, long 30–60 min) = 300 total.
@@ -70,7 +70,7 @@ Sam's operational path for VideoMME:
    per bucket = 60 items) for dev, 60 for holdout.
 2. Frame extraction at 32 frames using uniform sampling (same as our
    existing `np.linspace` approach).
-3. VideoMME parquet loading: sam uses a custom loader; we need to
+3. VideoMME parquet loading: the pre-release source uses a custom loader; we need to
    adapt our `run_benchmark_track_a.py` with a VideoMME loader
    parallel to the TOMATO/MVBench loaders.
 
@@ -101,7 +101,7 @@ its own.
 ## Result
 
 Partial: manifest infrastructure + Gemma 1.51R Stage 1–5 evidence
-(Gemma dense accuracy ~0.40 on dev n=30, matches Sam's relative band
+(Gemma dense accuracy ~0.40 on dev n=30, matches the pre-release source's relative band
 on 4B-class model). Qwen Track A result pending.
 
 ## Interpretation
@@ -112,4 +112,4 @@ Pending.
 
 - [paper/claim-matrix.md](../../../paper/claim-matrix.md) claim #8
 - [docs/benchmark-taxonomy.md](../../../docs/benchmark-taxonomy.md) VideoMME entry
-- [seed/whitepaper/whitepaper-revised-2026-04-16.md](../../../seed/whitepaper/whitepaper-revised-2026-04-16.md) §2.7
+- [docs/claim-register.md](../../../docs/claim-register.md) imported VideoMME target

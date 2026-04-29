@@ -17,10 +17,10 @@ build/
 dist/
 htmlcov/
 
-data/
-results/
-runs/
-tmp/
+/data/
+/results/
+/runs/
+/tmp/
 .tmp/
 research/cache/
 paper/arxiv/build/

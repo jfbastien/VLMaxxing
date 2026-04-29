@@ -35,7 +35,7 @@ embeddings from the configured pruning policy.
 
 ## Required driver change
 
-`scripts/run_phase1_30_sam_streaming.py` now exposes the required flag:
+`scripts/run_phase1_30_scaleout_streaming.py` now exposes the required flag:
 
 ```
 --reset-cache-between-queries
@@ -78,10 +78,10 @@ Failure on any condition aborts before the full `~5-6 h` streaming run.
     nominally but was suppressed by cache reuse)
 - Cold reference: reuse landed `1.30W` cold control if available, or
   rerun (fresh cold dense Q0 + dense follow-ups; ~4-5h)
-- Runner: `scripts/run_phase1_30_sam_streaming.py` with
+- Runner: `scripts/run_phase1_30_scaleout_streaming.py` with
   `--reset-cache-between-queries`
 - Wrapper: `scripts/run_phase1_30AC_cache_invalidated_followups.sh`
-- Analysis: `scripts/analyze_phase1_30_sam_streaming_pair.py`
+- Analysis: `scripts/analyze_phase1_30_scaleout_streaming_pair.py`
   (existing analyzer reads `vision_pruning_active` from streaming rows;
   no analyzer change needed)
 

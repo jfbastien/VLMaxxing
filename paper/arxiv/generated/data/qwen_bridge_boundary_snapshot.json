@@ -1,0 +1,100 @@
+{
+  "rows": [
+    {
+      "active_fraction": 0.0,
+      "degenerates": 0,
+      "delta": -0.05847953216374269,
+      "follow_up_delta": -0.08771929824561403,
+      "label": "cache reuse",
+      "n": 171,
+      "q0_delta": 0.0,
+      "sessions": 57,
+      "source": "research/experiments/2026/artifacts/phase1_30AD_instrumented_w_rerun/pair_summary.json",
+      "speedup": 3.021799187874183
+    },
+    {
+      "active_fraction": 1.0,
+      "degenerates": 0,
+      "delta": -0.05847953216374269,
+      "follow_up_delta": -0.08771929824561403,
+      "label": "cache invalidated",
+      "n": 171,
+      "q0_delta": 0.0,
+      "sessions": 57,
+      "source": "research/experiments/2026/artifacts/phase1_30AC_cache_invalidated_followups/pair_summary.json",
+      "speedup": 1.0639436559411126
+    },
+    {
+      "active_fraction": null,
+      "degenerates": 0,
+      "delta": -0.05847953216374269,
+      "follow_up_delta": -0.08771929824561403,
+      "label": "dense Q0 reference",
+      "n": 171,
+      "q0_delta": 0.0,
+      "sessions": 57,
+      "source": "research/experiments/2026/artifacts/phase1_30W_q0_dense_followup_pruned_full/pair_summary.json",
+      "speedup": 2.78689457089909
+    },
+    {
+      "active_fraction": 0.0,
+      "degenerates": 0,
+      "delta": -0.1296296296296296,
+      "follow_up_delta": -0.1388888888888889,
+      "label": "long kr=0.67",
+      "n": 54,
+      "q0_delta": -0.1111111111111111,
+      "sessions": 18,
+      "source": "research/experiments/2026/artifacts/phase1_30Z_long_q0_kr067_20260424/pair_summary.json",
+      "speedup": 3.124741257991454
+    },
+    {
+      "active_fraction": 0.0,
+      "degenerates": 1,
+      "delta": -0.18518518518518517,
+      "follow_up_delta": -0.2222222222222222,
+      "label": "long kr=0.75",
+      "n": 54,
+      "q0_delta": -0.1111111111111111,
+      "sessions": 18,
+      "source": "research/experiments/2026/artifacts/phase1_30AB_long_q0_kr075/pair_summary.json",
+      "speedup": 3.369847174636072
+    },
+    {
+      "active_fraction": 0.0,
+      "degenerates": 0,
+      "delta": -0.18518518518518517,
+      "follow_up_delta": -0.2222222222222222,
+      "label": "long kr=0.80",
+      "n": 54,
+      "q0_delta": -0.1111111111111111,
+      "sessions": 18,
+      "source": "research/experiments/2026/artifacts/phase1_30AB_long_q0_kr080/pair_summary.json",
+      "speedup": 3.3772804592179564
+    },
+    {
+      "active_fraction": 0.0,
+      "degenerates": 0,
+      "delta": -0.1296296296296296,
+      "follow_up_delta": -0.19444444444444445,
+      "label": "long kr=0.85",
+      "n": 54,
+      "q0_delta": 0.0,
+      "sessions": 18,
+      "source": "research/experiments/2026/artifacts/phase1_30AB_long_q0_kr085/pair_summary.json",
+      "speedup": 3.3505835209362695
+    },
+    {
+      "active_fraction": 0.0,
+      "degenerates": 0,
+      "delta": -0.1296296296296296,
+      "follow_up_delta": -0.19444444444444445,
+      "label": "long kr=0.90",
+      "n": 54,
+      "q0_delta": 0.0,
+      "sessions": 18,
+      "source": "research/experiments/2026/artifacts/phase1_30AB_long_q0_kr090/pair_summary.json",
+      "speedup": 3.340060769536236
+    }
+  ]
+}

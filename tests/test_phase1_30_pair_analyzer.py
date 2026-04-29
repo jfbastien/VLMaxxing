@@ -98,7 +98,7 @@ def test_phase1_30_pair_analyzer_reports_follow_up_activity(tmp_path: Path) -> N
     subprocess.run(
         [
             sys.executable,
-            "scripts/analyze_phase1_30_sam_streaming_pair.py",
+            "scripts/analyze_phase1_30_scaleout_streaming_pair.py",
             "--cold-jsonl",
             str(cold_jsonl),
             "--streaming-jsonl",

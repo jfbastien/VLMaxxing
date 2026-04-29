@@ -46,7 +46,7 @@ evidence:
   1. `cold_dense`
   2. `streaming_duration_conditioned`
 - Runner:
-  `scripts/run_phase1_30_sam_streaming.py`
+  `scripts/run_phase1_30_scaleout_streaming.py`
 - Wrapper:
   `scripts/run_phase1_30AA_duration_conditioned_union.sh`
 

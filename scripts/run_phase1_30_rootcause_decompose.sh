@@ -52,7 +52,7 @@ run_arm() {
   shift
   echo
   echo "=== $name ==="
-  "$PY" scripts/run_phase1_30_sam_streaming.py \
+  "$PY" scripts/run_phase1_30_scaleout_streaming.py \
     "${MANIFEST_ARGS[@]}" \
     --frame-count 8 \
     --max-tokens 32 \

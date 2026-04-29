@@ -193,7 +193,7 @@ What is now established:
 
 What the smoke run does not establish:
 
-- any meaningful reproduction of the whitepaper TOMATO agreement headline
+- any meaningful reproduction of the pre-release source TOMATO agreement headline
 - whether cached answers stay close enough to dense on a real local subset to
   count as generalized reproduction
 
@@ -213,7 +213,7 @@ Run B interpretation:
 
 - this local stack does not yet support a generalized TOMATO reproduction claim
   under default same-position reuse and thresholds `(3, 8)`
-- the current evidence is weaker than the imported whitepaper story in two
+- the current evidence is weaker than the pre-release source story in two
   ways:
   - agreement on the local `30`-item slice is only `0.833`
   - the local dense baseline itself is also weak at `0.300`

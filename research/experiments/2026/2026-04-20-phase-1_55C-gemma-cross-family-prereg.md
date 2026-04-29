@@ -25,13 +25,13 @@ interleaved-attention, Qwen tokenizer decoder) or a generic property
 of 4-bit-quantized VLMs under cache reuse.
 
 Gemma 4 is the cleanest cross-family: our stack already uses
-Gemma 4-E4B-4bit for the Phase 1.51R novelty-pruning lane; Sam's
-whitepaper §2.13.3 persistent-KV result was measured on Gemma 4 26B.
+Gemma 4-E4B-4bit for the Phase 1.51R novelty-pruning lane; the pre-release source's
+pre-release source §2.13.3 persistent-KV result was measured on Gemma 4 26B.
 
 ## Hypotheses
 
-Gemma 4-E4B is an order smaller than Sam's 26B — we cannot replicate
-Sam's exact numbers. What we CAN test:
+Gemma 4-E4B is an order smaller than the pre-release source's 26B — we cannot replicate
+the pre-release source's exact numbers. What we CAN test:
 
 **H1-Gemma (speedup scales).** Median follow-up latency < 1.5 s at
 20f; speedup vs first-query ≥ 50×. Calibrates our expectation that
@@ -83,7 +83,7 @@ Requires:
    work correctly with Gemma's attention (Gemma 4 uses multimodal
    attention interleaving; the prefix-matching invariant may not hold
    across image tokens without custom handling).
-3. VideoMME compatible prompt for Gemma (Sam's whitepaper prompt is
+3. VideoMME compatible prompt for Gemma (the pre-release source prompt is
    Gemma-native; we should mirror §2.13.3's exact prompt).
 
 Runtime estimate: ~30 min implementation + ~30-60 min run at 20f
@@ -95,5 +95,5 @@ Runtime estimate: ~30 min implementation + ~30-60 min run at 20f
   the same prefill axis as Qwen 7B/3B 20f.
 - NOT a temperature probe on Gemma (follow-up if clean-letter
   geometry is observed; deferred).
-- NOT targeting Sam's 26B numbers — we are at E4B (4B), cross-family
+- NOT targeting the pre-release source's 26B numbers — we are at E4B (4B), cross-family
   generalization of the 3-D decomposition is the scientific goal.

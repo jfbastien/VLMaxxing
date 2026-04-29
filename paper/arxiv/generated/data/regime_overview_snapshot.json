@@ -1,0 +1,23 @@
+{
+  "figure": "regime_overview",
+  "purpose": "conceptual denominator map for anti-recomputation regimes",
+  "c_vision": {
+    "speedup_range": "1.113--1.407x",
+    "denominator": "first-query E2E"
+  },
+  "c_persist": {
+    "raw_16f_speedup": 91.06331752551472,
+    "adaptive_all_query_speedup_min": 15.279848121041772,
+    "adaptive_all_query_speedup_max": 35.97143025796818,
+    "denominator": "after-ingest follow-up / repaired-session latency"
+  },
+  "routing": {
+    "denominator": "effective fresh frames under dense backend",
+    "speedup_claim": false
+  },
+  "streaming": {
+    "denominator": "scale-out component counters and E2E timing",
+    "artifact_harmonization_pending": true,
+    "gemma_26b_followup_status": "blocked_by_cache_correctness_smoke"
+  }
+}

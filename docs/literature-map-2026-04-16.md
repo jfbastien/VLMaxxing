@@ -5,7 +5,7 @@ Parent: [PLAN.md](../PLAN.md)
 Current verified table: [related-work-table.md](related-work-table.md)
 
 This document records the research-position map after CodecSight
-(2604.06036v3) and CoPE-VideoLM (2602.13191). Whitepaper reproduction
+(2604.06036v3) and CoPE-VideoLM (2602.13191). Pre-release source reproduction
 remains the methodological foundation. The broader **candidate paper
 slot** is a training-free, anti-recomputation
 temporal routing method targeting a better quality–compute Pareto
@@ -158,7 +158,7 @@ table in [related-work-table.md](related-work-table.md)):
 |---|---|---|---|
 | **FastV** (ECCV 2024 Oral) | Decoder-internal (layer K) | Intra-modal attention | Algorithmically orthogonal; implementation on MLX is non-trivial because fused SDPA does not currently expose attention scores (requires mlx-vlm fork) |
 | **FrameFusion** (2025) | Post-encoder; video-native | Similarity + importance (two-stage) | torch; MLX port TBD. Strongest video-native comparator |
-| **VisionZip** (CVPR 2025) | Post-encoder | CLS-attention | torch only, Qwen2-VL port exists, Qwen2.5-VL TBD |
+| **VisionZip** (CVPR 2025) | Post-encoder | encoder-dependent attention score: CLS-token attention for CLS encoders, average received attention otherwise | torch only, Qwen2-VL port exists, Qwen2.5-VL TBD |
 | **SparseVLM** (ICML 2025) | Decoder-internal (every LLM layer) | Cross-modal (text-visual attention) | torch only (HF hooks per layer) |
 | **FastVID** | Post-encoder, spans temporal groups | Density clustering | torch only (hardwired into lmms-eval fork of `modeling_qwen2_5_vl.py`) |
 | **VScan** (TMLR 2026) | Two-stage: ViT token merge + LLM mid-layer prune | Intra-modal (ViT) + cross-modal | torch only, modifies both forward passes |
@@ -230,7 +230,7 @@ comparison):
 ### TurboQuant / PolarQuant — KV compression
 
 - Fewer bits per cache entry. Orthogonal to fewer entries (our axis).
-- Stacks cleanly. Our whitepaper already gestured at this.
+- Stacks cleanly. Our pre-release source already gestured at this.
 
 ### Historical / conceptual ancestors
 
@@ -249,7 +249,7 @@ comparison):
 > via temporal feature reuse composed with novelty-pruning, measured
 > on VideoMME with Gemma 4-E4B-4bit, validated on temporal-reasoning
 > benchmarks (TOMATO, MVBench) with Qwen 2.5-VL-7B-4bit. One paper,
-> co-authored with Sam, results-first with method content in an
+> co-authored with the pre-release source, results-first with method content in an
 > appendix.**
 
 The paper's SOTA-facing claim is the **multiplicative big-number
@@ -263,8 +263,8 @@ is summarized in the table below plus `paper/claim-matrix.md`.
 
 1. Multiplicative end-to-end speedup ≥ 1.8× on VideoMME with Gemma
    via novelty-pruning alone (phase 1.51 pending). THE headline.
-   **[REPRODUCTION TARGET, not a Sam whitepaper claim.]** Sam's
-   whitepaper reports 5.4× prefill and 4.2× e2e (Qwen 32f talking-
+   **[REPRODUCTION TARGET, not a pre-release pre-release source claim.]** The source.s
+   pre-release source implementationrts 5.4× prefill and 4.2× e2e (Qwen 32f talking-
    head) on larger models / different regimes; 1.8× was our
    internal preregistered e2e gate for "the mechanism delivers a
    real multiplicative win on our regime." Arithmetic-ceiling
@@ -272,7 +272,7 @@ is summarized in the table below plus `paper/claim-matrix.md`.
    kr=0.10 aggregate; 32-frame lifts the ceiling (short-32 earned
    1.663×, medium-32 1.565×, long-32 1.234× — all at Δacc=-0.10).
 2. Multiplicative composition: temporal reuse + novelty-pruning
-   compose as measured (phase 1.52 pending). Tests whether Sam's
+   compose as measured (phase 1.52 pending). Tests whether The source.s
    4–5× Gemma 4 26B composition transfers to Gemma 4 4B on M3 Air.
 3. Routing quality: codec-derived pixel-diff proxies are valid
    routing signals (phase 1.36 oracle DONE — r=0.233 to r=0.504,

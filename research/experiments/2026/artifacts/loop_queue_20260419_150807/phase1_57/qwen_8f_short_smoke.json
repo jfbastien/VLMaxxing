@@ -92,7 +92,7 @@
   "frame_count": 8,
   "group_filter": "short",
   "manifest": [
-    "/Users/jfb/s/codec-through/research/benchmark_manifests/videomme_dev_v1.toml"
+    "<repo-root>/research/benchmark_manifests/videomme_dev_v1.toml"
   ],
   "model": "qwen2.5-vl-7b-4bit",
   "model_content_sha256": "c97c97c8c6d4b5e8070fe54625ca4cf566052aea9f5ddb7e2057857522b30e56",

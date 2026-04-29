@@ -73,7 +73,7 @@ ceiling). Rationale: dev 16f was 7.227 GB / item stable. **Falsification:**
 Mirrors 16f dev invocation (`2026-04-19-phase-1_41-qwen-videomme-16f-prereg.md:94-102`):
 
 ```
-model-path        /Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit (script default)
+model-path        $QWEN_7B_4BIT_MODEL_PATH (script default)
 benchmark         videomme
 manifest          research/benchmark_manifests/videomme_holdout_v1.toml
 frame-count       16

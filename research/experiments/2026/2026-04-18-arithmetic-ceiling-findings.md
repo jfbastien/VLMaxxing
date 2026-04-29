@@ -74,7 +74,7 @@ reachable via 1.51R alone because V and D are not touched.
 - Short videos: V dominates fixed cost (66%). 1.51V has a real lever —
   a 35% V reduction would buy ~13% e2e on short items.
 - Long videos: D (video frame decoding) dominates (86% of e2e). No
-  amount of V or G reduction clears 1.10× on this bucket. Sam's 1.8×
+  amount of V or G reduction clears 1.10× on this bucket. the pre-release source's 1.8×
   target is arithmetically unreachable on long VideoMME items
   without touching D itself (sparser frame sampling, faster decoder).
 - Medium is in between, with V/fixed = 42%.
@@ -84,7 +84,7 @@ target (1.51V+1.51R composed ≥ 1.5× e2e) is plausible only on the
 short/medium slice. Aggregate 1.5× requires also reducing D on long
 videos, which is neither 1.51R nor 1.51V.
 
-**4. Sam's ~1.8× reference is likely dominated by short-clip
+**4. the pre-release source's ~1.8× reference is likely dominated by short-clip
 benchmarks or by different hardware where G is a larger fraction.**
 On Gemma 4-E4B-4bit + MLX + M3 Air + 8-frame VideoMME, the D
 dominance on long items (86%) is the binding constraint. This is

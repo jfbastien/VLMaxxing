@@ -93,7 +93,7 @@ it must decode the full H.264 stream to recover macroblock metadata,
 while pixel only needs the 8 sparse-sampled frames. The paper framing
 should NOT cite 1.29 as a latency win — it is a **geometry-matching**
 win, not a compute-time win. Native-rate codec-native only becomes a
-latency win when it is co-located with a streaming decoder (Sam's §5
+latency win when it is co-located with a streaming decoder (the pre-release source's §5
 deployment geometry), not when bolted on top of a frame-sampling pipeline.
 
 ## Hypothesis verdicts
@@ -147,14 +147,14 @@ differences don't propagate to output differences. Consistent with 1.51V's
 finding that kr=0.50 keeps the answer intact even though half the
 ViT group budget is discarded.
 
-### What this means for Sam's codec-native claim
+### What this means for the pre-release source's codec-native claim
 
-Sam's whitepaper §4 argues that codec-native metadata can stand in for
+the pre-release source §4 argues that codec-native metadata can stand in for
 pixel-diff as a scoring signal for the planner. The previous pilot
 falsified this at the sparse-sampling aggregation step; the current
 run validates it *at the planner-decision level* once the aggregation
 is replaced with continuous-score + calibration. This is directly
-supportive of Sam's claim as written, with the clarification that:
+supportive of the pre-release source's claim as written, with the clarification that:
 
 1. **Calibration matters.** Uncalibrated codec thresholds (the
    original 1.29 prereg's global thresholds) likely underperform per-item
@@ -162,7 +162,7 @@ supportive of Sam's claim as written, with the clarification that:
    codec-quantile vs live-pixel) is the natural follow-up.
 
 2. **The extract cost is not negligible at sparse sampling.** 17s per
-   item is much larger than the ~10-20ms pixel-diff cost. Sam's
+   item is much larger than the ~10-20ms pixel-diff cost. the pre-release source's
    claimed "near-zero overhead" applies only at native-rate streaming,
    where the codec metadata is already in hand and no re-decode is needed.
 

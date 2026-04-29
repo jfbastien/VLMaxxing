@@ -3,7 +3,7 @@ phase: 1.30-rootcause
 date: 2026-04-23
 parent:
   - research/experiments/2026/2026-04-23-phase-1_30-rootcause-prereg.md
-  - research/experiments/2026/2026-04-23-phase-1_30-sam-streaming-findings.md
+  - research/experiments/2026/2026-04-23-phase-1_30-scaleout-streaming-findings.md
 artifacts:
   - research/experiments/2026/artifacts/phase1_30_rootcause_short_codex_20260423/
 status: CLOSED-SCOUT. Phase A and Phase B completed. Phase C is not triggered because Phase A is unambiguous: H_V PASS, H_K FAIL, H_interaction FAIL, H_reset PASS, H_path PASS.
@@ -14,7 +14,7 @@ tracking: codex takeover 2026-04-23 after interrupted Claude Phase A run
 
 ## Question
 
-The paired Sam-style 1.30 run reproduced large amortized speedup on Qwen
+The paired scale-out-style 1.30 run reproduced large amortized speedup on Qwen
 2.5-VL-7B-4bit VideoMME 8f, but failed the preregistered accuracy budget:
 
 - paired cold vs streaming, dev+holdout union: 3.326x speedup PASS
@@ -31,10 +31,8 @@ This decomposition asks why. The preregistered hypotheses split the loss into:
 
 ## Execution
 
-The first Phase A attempt was interrupted with partial artifacts. It is preserved
-outside the active artifact namespace at:
-
-- `/tmp/claude/phase1_30_rootcause_short_interrupted_20260423_1813`
+The first Phase A attempt was interrupted with partial artifacts outside the
+active artifact namespace. Those scratch artifacts are not release inputs.
 
 The completed rerun used a fresh output directory:
 
@@ -151,7 +149,7 @@ This is better science than the earlier "composition failed" statement:
   safe, and hard reset recovers the short-scout q23 loss.
 - C-VISION remains a valid first-pass mechanism at its audited aggregate
   operating points, but this diagnostic shows a sharp item/protocol-local
-  accuracy cliff when it is used as the Q0 leg of the Sam-style session bridge.
+  accuracy cliff when it is used as the Q0 leg of the scale-out-style session bridge.
 - Naive deployment composition should not use the L=2, kr_V=0.50 V path blindly
   as an admission policy. The practical fix is not "avoid C-PERSIST"; it is to
   make the V leg adaptive or more conservative before composing.
@@ -180,7 +178,7 @@ preserving enough speedup to matter.
 
 The paper should frame 1.30 as:
 
-- speedup reproduced locally on Qwen 7B 8f under the Sam-style session protocol
+- speedup reproduced locally on Qwen 7B 8f under the scale-out-style session protocol
 - accuracy falsified at the preregistered budget
 - root-cause localized to V-only Q0 pruning under this operating point, with a
   smaller K-only follow-up term and no evidence of non-additive V+K collapse
@@ -188,7 +186,7 @@ The paper should frame 1.30 as:
   policy or safer operating point
 
 This is an anti-overclaim result, not an appendix shrug. It says exactly where
-the bridge from local C-VISION/C-PERSIST to Sam-style deployment breaks.
+the bridge from local C-VISION/C-PERSIST to scale-out-style deployment breaks.
 
 ## Reopen / next experiments
 

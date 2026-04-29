@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Persistent KV-cache follow-up-latency session driver (Phase 1.55A).
 
-Protocol from Sam whitepaper §2.13.3: per video, run N sequential
+Protocol from the pre-release external source §2.13.3: per video, run N sequential
 questions while threading ``PromptCacheState`` so the common
 system+image+instruction prefix is reused across queries. We report
 first-query vs. follow-up-query latency, prefix-hit coverage, accuracy

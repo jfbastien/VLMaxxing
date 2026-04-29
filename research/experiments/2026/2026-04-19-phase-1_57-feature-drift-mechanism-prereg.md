@@ -1,7 +1,7 @@
 # Phase 1.57 — Feature-drift mechanism study (PREREG)
 
 **Status:** preregistration, 2026-04-19. Promoted from planning
-pointer in `2026-04-19-codex-round-21-sam-imports.md` to real
+pointer in `2026-04-19-codex-round-21-scaleout-imports.md` to real
 prereg following external review (2026-04-19 Codex round-22).
 
 ## What changed in scope
@@ -9,7 +9,7 @@ prereg following external review (2026-04-19 Codex round-22).
 Earlier drafts framed 1.57 as "attention-entropy logging." External
 review flagged that this is the wrong proxy.
 
-Sam's current research queue (`~/s/codec-through-sam/research_queue.md`
+the pre-release source's current research queue (`pre-release external research queue`
 lines 14-29) documents that the dominant cache-miss phenomenon on
 Gemma 4 is **attention-propagation drift in STATIC tokens**,
 observed directly in per-class feature-space cosine between cache-
@@ -43,7 +43,7 @@ that fully explains:
   LLM sees the same features) — already observed across 8f/16f/32f
 - why Gemma is approximate under identity cache — the LLM sees
   drifted features but is robust enough to produce accurate answers
-- why our novelty-pruning is a different lever than Sam's —
+- why our novelty-pruning is a different lever than the pre-release source mechanism —
   pruning STATIC tokens is safe *because* they are already drifted
   and contribute less useful information than a cache-substitute
   framing suggests
@@ -60,14 +60,14 @@ Per-token cosine between cache-substituted features and fresh
 ViT encode, stratified by STATIC / SHIFTED / NOVEL class:
 
 - STATIC mean cos ∈ [0.60, 0.85] on VideoMME dev n=10 long-bucket
-  items (reproducing Sam's finding in our env).
+  items (reproducing the pre-release source's finding in our env).
 - NOVEL mean cos = 1.000 ± 0.001 (trivially — we re-encoded them
   fresh; anything else is a bug).
-- SHIFTED mean cos ∈ [0.50, 0.99] (wide band; Sam reports high
+- SHIFTED mean cos ∈ [0.50, 0.99] (wide band; the pre-release source reports high
   variance).
 
 **Falsification:** STATIC cos > 0.90 or < 0.50 → our
-instrumentation disagrees with Sam's direction; investigate
+instrumentation disagrees with the pre-release source's direction; investigate
 bit-level config before treating the number as meaningful.
 
 ### H2 (drift-by-class stratification on Qwen)
@@ -86,12 +86,12 @@ thought we measured.
 
 On Gemma, STATIC mean cos **decreases monotonically** as frame
 count increases 8f → 16f → 32f. If each additional frame adds
-~0.01 attention-drift per Sam's framing, we expect STATIC cos to
+~0.01 attention-drift per the pre-release source's framing, we expect STATIC cos to
 drop roughly linearly.
 
 **Falsification:** flat or non-monotonic → drift hypothesis is
 wrong and a different mechanism explains the 16f non-monotonic
-bucket scaling on Qwen (which, under Sam's drift framing, would
+bucket scaling on Qwen (which, under the pre-release source's drift framing, would
 not have occurred on Qwen at all since Qwen STATIC cos is ≈ 1).
 
 ### H4 (attention-entropy is a WEAKER proxy than cosine)
@@ -149,15 +149,15 @@ Not an experiment runtime estimate — just scope for planning.
 - Whether drift is causally load-bearing for accuracy — 1.57
   shows the correlation. Causal claim requires an intervention
   study (e.g., artificial drift injection).
-- Whether Sam's specific numbers reproduce on our stack — we
-  use Sam's framing but measure on our regime (Qwen 7B 4-bit,
+- Whether the pre-release source's specific numbers reproduce on our stack — we
+  use the pre-release source's framing but measure on our regime (Qwen 7B 4-bit,
   Gemma 4-E4B 4-bit, 8-32 frames).
 
 ## Cross-references
 
-- `~/s/codec-through-sam/research_queue.md` lines 14-29
+- `pre-release external research queue` lines 14-29
   (authoritative drift-by-class finding).
-- `2026-04-19-codex-round-21-sam-imports.md` (now superseded for
+- `2026-04-19-codex-round-21-scaleout-imports.md` (now superseded for
   1.57; that file was a planning note).
 - Claim #11 (streaming reproduction — mechanism strengthener).
 - Claim #8 (VideoMME frame scaling — non-monotonic buckets).

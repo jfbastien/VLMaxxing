@@ -154,4 +154,4 @@ our search strategy.
 - [phase 1.10 TOMATO motion dev](2026-04-14-phase-1_10-planner-grid-tomato-motion-dev.md)
 - [phase 1.11 MVBench motion dev](2026-04-14-phase-1_11-planner-grid-mvbench-motion-dev.md)
 - [phase 1.12 holdout evaluation](2026-04-14-phase-1_12-grid-winners-holdout.md)
-- [execution plan round 7](../../../docs/execution-plan-round-7.md)
+- [experiment registry](../registry.md)

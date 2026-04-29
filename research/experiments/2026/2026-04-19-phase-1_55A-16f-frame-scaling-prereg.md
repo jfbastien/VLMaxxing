@@ -8,7 +8,7 @@
 
 ## Purpose
 
-The 8f 1.55A run established Sam §2.13.3 reproduces on Qwen 7B-4bit /
+The 8f 1.55A run established the pre-release source §2.13.3 reproduces on Qwen 7B-4bit /
 M3 Air with **first-query prefill ≈ 3270 tokens, follow-up decode ≈
 40-90 tokens**. The speedup identity is:
 
@@ -20,7 +20,7 @@ speedup ≈ first_query_latency / follow_up_latency
 Under this model, **doubling prefill tokens should roughly double
 speedup** (provided decode-time of the question suffix is unchanged).
 This is a direct test of whether persistent-KV savings are prefill-
-dominated as Sam's mechanism claims, vs. dominated by some other
+dominated as the pre-release source's mechanism claims, vs. dominated by some other
 component (e.g. ViT feature extraction, kernel launch overhead).
 
 ## Hypotheses
@@ -86,7 +86,7 @@ and investigate.
 | Outcome | Decision |
 |---------|----------|
 | All 4 H' earn | Append to 1.55A findings as "frame-scaling confirmed"; paper gets a scaling curve |
-| H1' rejects low | Reopen Sam §2.13.3 mechanism — prefill is not the dominant first-query cost at our regime |
+| H1' rejects low | Reopen the pre-release source §2.13.3 mechanism — prefill is not the dominant first-query cost at our regime |
 | H1' rejects high | Report as surprise finding; investigate whether large prefix-hit reduces other first-query costs (e.g. KV cache allocation) |
 | H2' rejects | Deployment narrative caveat: follow-up latency degrades with prompt length on Qwen 7B-4bit |
 | H3'/H4' reject | Report; unlikely given 8f result |

@@ -47,16 +47,15 @@ object / state / action centric — gating on question classification,
 not on every item, to prevent prompt-growth from erasing the compute
 gain.
 
-### Why Sam matters here
+### Why the pre-release source matters here
 
-Sam's codec-native extractor (see phase 1.29 rewrite,
+the pre-release source's codec-native extractor (see phase 1.29 rewrite,
 `2026-04-16-phase-1_29-mv-only-signal-path.md`) is the substrate that
 makes a low-cost motion / state timeline plausible. Skip-MB and
 B-frame correctness let the extractor propagate object identity across
 frames cheaply without re-running a full detector on every frame.
 
-Sam's live pipeline (`seed/original_repo/experiments/codec_pipeline.py`
-and `exp_live_stream_demo.py`) already models decoder-integrated
+The pre-release live pipeline prototype already modeled decoder-integrated
 classification. A sidecar produced inside that decoder pass would
 close the loop: the paper's "real codec-guided system" becomes a
 system that also emits an LLM-consumable structured memory.
@@ -129,7 +128,7 @@ system that also emits an LLM-consumable structured memory.
 
 ### Prerequisites
 
-1. Phase 1.29 (Sam codec-native extractor port) landed, because the
+1. Phase 1.29 (the pre-release source codec-native extractor port) landed, because the
    cheap entity-propagation substrate relies on codec metadata.
 2. MVBench subset-level scoring lane, so H1 / H2 can be evaluated per
    subset rather than only in aggregate.
@@ -169,13 +168,13 @@ assuming generator is already on disk. Pilot + dev are ~20 min.
   VideoQA with question-aware textual context from other frames.
 - SG-VLM (arxiv 2509.11862) — scene-graph grounding for frozen-VLM
   VideoQA.
-- Sam whitepaper §3 (codec-native extractor substrate)
+- pre-release source §3 (codec-native extractor substrate)
 - Phase 1.29 rewrite
   (`research/experiments/2026/2026-04-16-phase-1_29-mv-only-signal-path.md`)
   — the codec substrate this branch rides on.
 - `paper/framing.md` — new future-work bullet `machine-oriented
   object / state delta sidecars`.
-- Project memory `project_sam_imports_2026-04-18.md` — Codex review
+- Project memory `private pre-release-source import note` — Codex review
   that named this branch as a new deferred phase.
 
 ### Result

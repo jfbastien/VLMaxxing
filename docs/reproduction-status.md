@@ -1,13 +1,13 @@
-# Whitepaper Reproduction Status
+# Pre-release source Reproduction Status
 
-This file tracks which imported whitepaper claims are reproduced locally on this
+This file tracks which pre-release source claims are reproduced locally on this
 repo and machine, which are only partially supported, and which remain
 imported-only.
 
 Canonical imported targets:
 
-- **Original whitepaper**: the frozen target for WP-2.1 through WP-5.
-- **Revised whitepaper (2026-04-16)**: adds VideoMME (WP-2.7),
+- **Original pre-release source**: the frozen target for WP-2.1 through WP-5.
+- **Revised pre-release source (2026-04-16)**: adds VideoMME (WP-2.7),
   strict-parse audit (WP-2.8), cross-arch (WP-2.9), thinking amplification
   (WP-2.10), wall-clock (WP-4.1), and composition (WP-5.1). See
   [claim-register.md](claim-register.md) for the full table.
@@ -21,13 +21,13 @@ Current bottom line:
 - reproduced locally: the Track A substrate, a narrow synthetic
   answer-stability slice, a narrow real-video slice, and supportive hosted
   MVBench benchmark evidence
-- not reproduced locally yet: the whitepaper's mechanism section at imported
+- not reproduced locally yet: the pre-release source's mechanism section at imported
   strength, TOMATO on this stack, refresh drift, and the imported
   compression/throughput headline. A local measured sparse-execution envelope
   now exists, but it is hardware- and model-conditioned boundary evidence
   rather than a reproduction of the M5 stackup.
 - mechanism interpretation currently compares a local `MLX 4-bit` path against
-  an imported `PyTorch/MPS float32` whitepaper path; treat remaining gaps as
+  an imported `PyTorch/MPS float32` pre-release source path; treat remaining gaps as
   stack-specific until a higher-precision local follow-up lands
 - benchmark interpretation is different: the imported benchmark path is also
   Qwen `7B` via `mlx-vlm`, so local benchmark caveats are subset policy,
@@ -36,12 +36,12 @@ Current bottom line:
 
 ## Status Table
 
-| Whitepaper area | Current status | Prereg outcome | Local evidence | Next required step |
+| Pre-release source area | Current status | Prereg outcome | Local evidence | Next required step |
 | --- | --- | --- | --- | --- |
 | Dense-path determinism and cache-path transparency | Reproduced locally | Accepted | [2026-04-13-phase-0_5-feasibility.md](../research/experiments/2026/2026-04-13-phase-0_5-feasibility.md), [2026-04-13-phase-0_75-cache-identity.md](../research/experiments/2026/2026-04-13-phase-0_75-cache-identity.md), and [2026-04-14-phase-1_46-benchmark-path-controls.md](../research/experiments/2026/2026-04-14-phase-1_46-benchmark-path-controls.md) now cover both the local bring-up path and a direct Qwen `7B` benchmark-runner identity smoke | Keep as Track A control for later runs |
 | §2.1 exact ViT output identity on two re-encodes | Reproduced locally | Inconclusive in `1.1`, strengthened by `1.15` | [2026-04-13-phase-1_1-direct-mechanism-reproduction.md](../research/experiments/2026/2026-04-13-phase-1_1-direct-mechanism-reproduction.md) plus [2026-04-13-phase-1_15-mechanism-probe-repair.md](../research/experiments/2026/2026-04-13-phase-1_15-mechanism-probe-repair.md) both keep repeated-image identity exact | keep as a direct mechanistic control |
 | §2.2 partial-change attention locality | Partial only | Inconclusive | [2026-04-13-phase-1_1-direct-mechanism-reproduction.md](../research/experiments/2026/2026-04-13-phase-1_1-direct-mechanism-reproduction.md) plus [2026-04-13-phase-1_15-mechanism-probe-repair.md](../research/experiments/2026/2026-04-13-phase-1_15-mechanism-probe-repair.md) show that the earlier mismatch was partly probe design, but the repaired local MLX `4-bit` probe still misses the target-neighborhood and far-field acceptance bands from the imported PyTorch/MPS `float32` story | compare the repaired probes on a higher-precision local runtime before treating the mismatch as conceptual disagreement |
-| §2.3 localized motion preserves embeddings | Partial only | Inconclusive | [2026-04-13-phase-1_1-direct-mechanism-reproduction.md](../research/experiments/2026/2026-04-13-phase-1_1-direct-mechanism-reproduction.md) plus [2026-04-13-phase-1_15-mechanism-probe-repair.md](../research/experiments/2026/2026-04-13-phase-1_15-mechanism-probe-repair.md) show that the catastrophic `8 px` collapse was mostly a boundary artifact, but the repaired `8 px` and `14 px` shifts still remain weaker than the imported whitepaper-strength local-shift story on the local MLX `4-bit` path | run a precision/runtime comparison, then decide whether the remaining gap is stack-specific or method-specific |
+| §2.3 localized motion preserves embeddings | Partial only | Inconclusive | [2026-04-13-phase-1_1-direct-mechanism-reproduction.md](../research/experiments/2026/2026-04-13-phase-1_1-direct-mechanism-reproduction.md) plus [2026-04-13-phase-1_15-mechanism-probe-repair.md](../research/experiments/2026/2026-04-13-phase-1_15-mechanism-probe-repair.md) show that the catastrophic `8 px` collapse was mostly a boundary artifact, but the repaired `8 px` and `14 px` shifts still remain weaker than the pre-release source-strength local-shift story on the local MLX `4-bit` path | run a precision/runtime comparison, then decide whether the remaining gap is stack-specific or method-specific |
 | §2.4 scored real-video quality slice | Reproduced locally, narrow | Accepted with caveat | [2026-04-13-phase-1_3-crosscheck-real-video-slice.md](../research/experiments/2026/2026-04-13-phase-1_3-crosscheck-real-video-slice.md) contains a `6`-item endpoint-oriented real-video slice on the predecessor cross-check clips with `6/6` dense and `6/6` cached accuracy on Qwen `3B`; this is a generalized slice, not the imported real-video suite shape | expand beyond endpoint scene facts, then connect the result to TOMATO and MVBench |
 | §2.5 TOMATO agreement on Qwen 7B | Partial only | Inconclusive on the `30`-item subset | [2026-04-13-phase-1_4-tomato-benchmark-subset.md](../research/experiments/2026/2026-04-13-phase-1_4-tomato-benchmark-subset.md), [2026-04-14-phase-1_45-benchmark-diagnostics.md](../research/experiments/2026/2026-04-14-phase-1_45-benchmark-diagnostics.md), [2026-04-14-phase-1_46-benchmark-path-controls.md](../research/experiments/2026/2026-04-14-phase-1_46-benchmark-path-controls.md), [2026-04-14-phase-1_47-benchmark-first-frame-ablation.md](../research/experiments/2026/2026-04-14-phase-1_47-benchmark-first-frame-ablation.md), and [2026-04-14-phase-1_8-motion-frame-budget-baselines.md](../research/experiments/2026/2026-04-14-phase-1_8-motion-frame-budget-baselines.md) show that the local benchmark-native TOMATO path is online, that strict and loose rescoring matched on the saved `30`-item slice with `0` parse failures, and that cache-path transparency controls exist on the MLX `7B` stack; the first-frame ablation collapsed from `0.300` to `0.067`, and matched motion-slice frame-budget baselines show a real dev budget win for `mean + max_age = 4` that does not yet survive cleanly on holdout | keep TOMATO as the primary diagnosis lane: targeted planner and refresh sweeps on the disagreement items, then revisit larger reruns only if those controls materially change the result |
 | §2.6 MVBench agreement slice | Reproduced locally, weaker than imported | Accepted on the `54`-item hosted subset | [2026-04-13-phase-1_5-mvbench-benchmark-subset.md](../research/experiments/2026/2026-04-13-phase-1_5-mvbench-benchmark-subset.md), [2026-04-14-phase-1_45-benchmark-diagnostics.md](../research/experiments/2026/2026-04-14-phase-1_45-benchmark-diagnostics.md), [2026-04-14-phase-1_46-benchmark-path-controls.md](../research/experiments/2026/2026-04-14-phase-1_46-benchmark-path-controls.md), [2026-04-14-phase-1_47-benchmark-first-frame-ablation.md](../research/experiments/2026/2026-04-14-phase-1_47-benchmark-first-frame-ablation.md), and [2026-04-14-phase-1_9-mvbench-motion-frame-budget-baselines.md](../research/experiments/2026/2026-04-14-phase-1_9-mvbench-motion-frame-budget-baselines.md) show that the hosted predecessor-style MVBench slice is runnable locally, that the first `54` hosted items reach `0.870` agreement with zero parse failures, and that the MVBench motion dense frame-budget curve peaks at `4` frames (`0.733`) and is non-monotonic in frame count (`8` frames drops to `0.600`); dense and cached are statistically indistinguishable on the original `54`-item slice (`3` improvements, `2` regressions, exact paired `p = 1.0`), while the first-frame ablation stays relatively high at `0.519`, which supports a content-conditioned contrast rather than a parser-driven one | keep the hosted-slice caveat explicit, then use MVBench as the broader-content comparator while TOMATO remains the harder diagnosis target |
@@ -69,7 +69,7 @@ Current bottom line:
 
 ## What To Do Next
 
-If the goal is honest whitepaper reproduction rather than new method work, the
+If the goal is honest pre-release source reproduction rather than new method work, the
 highest-leverage next steps are:
 
 1. ✅ ~~add benchmark-path identity on the Qwen `7B` TOMATO and MVBench runner~~

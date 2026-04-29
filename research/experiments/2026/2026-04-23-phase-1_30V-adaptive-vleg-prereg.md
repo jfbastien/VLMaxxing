@@ -11,7 +11,7 @@ scope: Q0-only adaptive V-leg diagnostic on the same ten short-scout items used 
 
 ## Motivation
 
-Phase 1.30 root-cause localized the Sam-style Qwen 7B 8f composition loss
+Phase 1.30 root-cause localized the scale-out-style Qwen 7B 8f composition loss
 primarily to the V-only Q0 pruning leg at `L=2`, `kr_V=0.50`. The immediate
 scientific question is whether that is an unavoidable C-VISION/Qwen failure on
 these items or simply an over-aggressive operating point.

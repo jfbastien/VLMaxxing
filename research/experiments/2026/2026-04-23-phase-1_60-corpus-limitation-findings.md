@@ -53,7 +53,7 @@ The dev-30 audit found `max_sf = 0.108` on `videomme:medium:407-1`. The 60-item 
 
 ## Why this is a corpus property, not a failure
 
-Sam's whitepaper framing explicitly partitions regimes:
+the pre-release source framing explicitly partitions regimes:
 
 - **SHIFTED-dominated** content (live camera feed, sustained pan, scrolling captions, dolly / tracking shots, egomotion) is where the 5-300× ViT savings claim concentrates. Measured shifted-fraction in such regimes is by construction high — often > 0.50 (most of the inter-frame content is same-object-moved rather than novel or static).
 - **NOVEL-dominated** content (scene cuts, montages, edited TV) is where shifted-fraction is low by construction, because successive frames show *different* content rather than moved content. This is the VideoMME regime.
@@ -62,7 +62,9 @@ VideoMME is a benchmark corpus assembled from edited YouTube clips — montage-h
 
 This matches existing project knowledge:
 - `memory/project_feature_drift_qwen_2026-04-19.md` records Qwen STATIC cos 0.562/0.607/0.638 (8/16/32f), i.e. natural VideoMME content is content-cut-dominated; shifted fraction low by construction.
-- `paper/intro.md` C-VISION section already flags "three benchmark corpora, mostly static content" as a deployment-envelope hedge.
+- `paper/arxiv/sections/08_real_applications.tex` and
+  `paper/arxiv/sections/09_limitations_reproducibility.tex` already flag the
+  bounded benchmark envelope as a deployment hedge.
 
 ## What this means for the paper
 
@@ -79,7 +81,7 @@ These edits land as a separate doc-sync commit once this findings doc is committ
 
 ## What this does NOT mean
 
-- **It does not** mean scroll/pan regimes can't break Sam's ViT pruning claim. They might. We just can't measure that against VideoMME.
+- **It does not** mean scroll/pan regimes can't break the pre-release source's ViT pruning claim. They might. We just can't measure that against VideoMME.
 - **It does not** invalidate the C-VISION safety claim — we have 1.51V V_red = 39-43% at L=2 kr=0.50 across all three benchmarks with Δacc bounded in a paired test. That claim stands on a montage-corpus, which is what most video benchmarks are.
 - **It does not** close egomotion-benchmark integration permanently. If a reviewer demands it, Path B (EgoSchema + 1.57 + 1.60 redo) is ~6-10 h and re-opens cleanly.
 

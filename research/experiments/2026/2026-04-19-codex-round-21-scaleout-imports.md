@@ -1,25 +1,25 @@
-# Codex round-21 — Sam-inspired extensions: survey + action plan
+# Codex round-21 — pre-release scale-out extensions: survey + action plan
 
 **Status:** planning note, 2026-04-19. Lists five extensions Codex
-round-21 flagged as under-explored relative to Sam's system. Each
-subsection reports: (a) what Sam's checked-in whitepaper actually
+round-21 flagged as under-explored relative to the pre-release scale-out
+source. Each subsection reports: (a) what that source actually
 claims, (b) what Codex is asking us to consider, (c) whether it is
 actionable on our current hardware, (d) our decision (preregister /
 defer / reject-with-reason).
 
-**Scientific-honesty note.** An Explore subagent audited Sam's
-`paper/whitepaper.md` and `paper/whitepaper-revised-2026-04-16.md`
-against the five topic labels. Only one (attention-context drift)
-maps to a direct whitepaper claim. The other four are Codex-round-21
-hypotheses prompted by Sam's system, not reproductions of documented
-whitepaper claims. We frame them as such throughout. We will not
-cite "Sam's whitepaper says X" when the whitepaper does not say X.
+**Scientific-honesty note.** An Explore subagent audited the
+pre-release external source against the five topic labels.
+Only one (attention-context drift) maps to a direct pre-release source claim.
+The other four are Codex-round-21 hypotheses prompted by the scale-out
+system, not reproductions of documented pre-release source claims. We frame
+them as such throughout. We will not cite "the pre-release source says X" when
+the pre-release source does not say X.
 
 ## 1. Streaming protocol (continuous vs request/response)
 
-- **Sam's whitepaper:** Does not explicitly frame the system as a
+- **Pre-release source:** Does not explicitly frame the system as a
   streaming server. Reuses features at the I-frame boundary
-  (`whitepaper-revised-2026-04-16.md:234`: "periodically re-encode
+  (pre-release external source line 234: "periodically re-encode
   all tokens at I-frame boundaries"), which is compatible with a
   streaming pipeline but does not require one.
 - **Codex round-21:** Our per-item subprocess benchmark driver
@@ -40,9 +40,9 @@ cite "Sam's whitepaper says X" when the whitepaper does not say X.
 
 ## 2. Persistent KV-cache across items
 
-- **Sam's whitepaper:** Caches **ViT output embeddings** (vision-side)
+- **Pre-release source:** Caches **ViT output embeddings** (vision-side)
   at unchanged-token granularity
-  (`whitepaper-revised-2026-04-16.md:228-230`). Does **not** discuss
+  (pre-release external source lines 228-230). Does **not** discuss
   LLM KV reuse across clip/session boundaries.
 - **Codex round-21:** Proposes a session-scoped LLM KV-cache that
   survives across clip boundaries, letting us amortize prefill once
@@ -65,14 +65,13 @@ cite "Sam's whitepaper says X" when the whitepaper does not say X.
 
 ## 3. Attention-context drift (not positional-encoding drift) as the failure mode
 
-- **Sam's whitepaper:** Explicit, line 234 of `whitepaper-revised-
-  2026-04-16.md`: "To prevent error accumulation from global
+- **Pre-release source:** Explicit, line 234: "To prevent error accumulation from global
   **attention context drift (~0.01 per frame)**, periodically re-
   encode all tokens at I-frame boundaries." The quoted drift rate
   was imported without our own measurement.
 - **Codex round-21:** We may be conflating attention-map drift with
   PE-update drift. The two have different mitigations: attention
-  drift needs re-encode (Sam's fix); PE drift would need temporal
+  drift needs re-encode (the source's fix); PE drift would need temporal
   RoPE key correction. Our 1.49 refresh sweep shows *that* refresh
   works on 8-frame windows (1-every-N recovers agreement) but does
   not diagnose the *mechanism*.
@@ -94,7 +93,7 @@ cite "Sam's whitepaper says X" when the whitepaper does not say X.
 
 ## 4. Live-decode marginal cost (amortization)
 
-- **Sam's whitepaper:** Silent on decode economics. Does not
+- **Pre-release source:** Silent on decode economics. Does not
   discuss whether decode is amortized across sessions.
 - **Codex round-21:** Our per-item driver charges full video decode
   against every inference. On a production streaming server decode
@@ -118,9 +117,9 @@ cite "Sam's whitepaper says X" when the whitepaper does not say X.
 
 ## 5. VLM-signaled adaptive refresh
 
-- **Sam's whitepaper:** Does not discuss VLM-output-conditioned
+- **Pre-release source:** Does not discuss VLM-output-conditioned
   refresh. Refresh is I-frame-periodic
-  (`whitepaper-revised-2026-04-16.md:234-240`).
+  (pre-release external source lines 234-240).
 - **Codex round-21:** Suggests routing refresh decisions off VLM
   signals (attention entropy, generation confidence, top-k logprob
   margin) instead of pixel-domain or structural anchors. Hypothesis:
@@ -165,7 +164,8 @@ edits.
 
 ## Links
 
-- Sam whitepaper: `paper/whitepaper-revised-2026-04-16.md`
+- Pre-release external source: summarized in
+  `../../../docs/claim-register.md`
 - Existing 1.30 harness prereg:
   `2026-04-16-phase-1_30-streaming-window-harness.md`
 - Phase 1.54 decode acceleration prereg:

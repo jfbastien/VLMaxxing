@@ -44,7 +44,7 @@ The Spearman ρ = +0.40 says the codec signal preserves the *ordering* of how-st
 
 ## What this supports and what it does NOT support
 
-**SUPPORTS:** A paper-body claim of the form *"continuous codec-score, quantile-calibrated to match the pixel-diff aggregate per-class distribution, reproduces the aggregate distribution within 8pp."* This is a weaker claim than Sam's whitepaper implies but it is defensible on this evidence.
+**SUPPORTS:** A paper-body claim of the form *"continuous codec-score, quantile-calibrated to match the pixel-diff aggregate per-class distribution, reproduces the aggregate distribution within 8pp."* This is a weaker claim than the pre-release source implies but it is defensible on this evidence.
 
 **DOES NOT SUPPORT:** A per-block / per-item label-fidelity claim of the form *"codec labels match pixel-diff labels at the block level."* The per-item divergence (16–25pp across all 5 items) rules out per-block fidelity at the ~10pp band.
 

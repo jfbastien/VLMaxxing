@@ -7,7 +7,7 @@ Prereg: `2026-04-19-phase-1_55A-16f-frame-scaling-prereg.md`.
 ## TL;DR
 
 All four preregistered hypotheses earn. The speedup scales **linearly
-with prefill tokens**, exactly as Sam §2.13.3's prefill-dominance model
+with prefill tokens**, exactly as the pre-release source §2.13.3's prefill-dominance model
 predicts.
 
 | H' | Threshold | Observed | Verdict |
@@ -132,11 +132,11 @@ one frame-count, one hardware regime (Qwen 7B-4bit / M3 Air). Now:
 dominance and demonstrating the deployment narrative holds across at
 least the 3.2k–6.5k prompt-token range.
 
-### Scaling curve for Sam §2.13.3 comparison
+### Scaling curve for the pre-release source §2.13.3 comparison
 
 | System | Prefill (est) | First-query | Follow-up | Speedup |
 |---|---|---|---|---|
-| Sam §2.13.3 (Gemma 4 26B / M5 Max) | ~4k-8k | 1.9-17.7 s | 0.8 s | 10-18× |
+| the pre-release source §2.13.3 (Gemma 4 26B / M5 Max) | ~4k-8k | 1.9-17.7 s | 0.8 s | 10-18× |
 | 1.55A 8f (Qwen 7B-4bit / M3 Air) | ~3.3k | 38.5 s | 0.82 s | **47×** |
 | 1.55A 16f (Qwen 7B-4bit / M3 Air) | ~6.5k | 73.5 s | 0.81 s | **91×** |
 

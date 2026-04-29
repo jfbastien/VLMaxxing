@@ -65,5 +65,5 @@
   "degenerate_queries": 9,
   "parse_failures": 9,
   "refresh_events": 0,
-  "refresh_trace_path": "research/experiments/2026/artifacts/phase1_30_sam_streaming/streaming_summary_refresh_trace.json"
+  "refresh_trace_path": "research/experiments/2026/artifacts/phase1_30_scaleout_streaming/streaming_summary_refresh_trace.json"
 }

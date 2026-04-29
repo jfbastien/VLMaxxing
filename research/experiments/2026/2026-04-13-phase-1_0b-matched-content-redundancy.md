@@ -5,7 +5,7 @@
 Claim register target:
 
 - `WP-2.4` supporting context
-- whitepaper content-class redundancy story for talking-head, surveillance, and
+- pre-release source content-class redundancy story for talking-head, surveillance, and
   FPV or egomotion-like clips
 
 Reproduction mode:
@@ -57,7 +57,7 @@ Inconclusive:
 Notes:
 
 - this is not yet benchmark evidence
-- the cross-check set is useful for whitepaper reproduction, but it is still
+- the cross-check set is useful for pre-release source reproduction, but it is still
   local-only and not stable enough for primary paper evidence
 - `xiph_hall_monitor_cif` is included as a stable surveillance-like anchor, not
   as a substitute for the predecessor surveillance clip
@@ -91,7 +91,7 @@ Imported-order check:
 - FPV-like egomotion has the lowest `reused_ratio`
 - the predecessor surveillance clip lands between them
 
-Notable comparison against the imported whitepaper shape:
+Notable comparison against the pre-release source shape:
 
 - the local cross-check talking-head clip remains very high-reuse
 - the local cross-check surveillance clip remains intermediate
@@ -103,7 +103,7 @@ Notable comparison against the imported whitepaper shape:
 
 ## Interpretation
 
-This is a successful generalized reproduction of the whitepaper's content-class
+This is a successful generalized reproduction of the pre-release source's content-class
 redundancy ordering on this machine. It is not yet strict reproduction because
 the YouTube cross-check bitstreams are not guaranteed to match the predecessor's
 historical downloads, but the class structure and the clip-specific ordering are
@@ -112,12 +112,12 @@ now locally grounded rather than imported-only.
 The `hall_monitor` comparison is useful in its own right. A fixed-camera
 surveillance-style proxy can still land near the talking-head reuse regime when
 the scene is extremely stable, while the predecessor surveillance clip sits
-closer to the whitepaper's intended "moderate motion under a fixed viewpoint"
+closer to the pre-release source's intended "moderate motion under a fixed viewpoint"
 bucket. That means future surveillance conclusions should not collapse all fixed
 camera footage into one reuse number.
 
 ## Links
 
-- [docs/claim-register.md](../../docs/claim-register.md)
+- [docs/claim-register.md](../../../docs/claim-register.md)
 - [2026-04-13-phase-1_0-local-redundancy.md](2026-04-13-phase-1_0-local-redundancy.md)
-- [docs/reproduction-status.md](../../docs/reproduction-status.md)
+- [docs/reproduction-status.md](../../../docs/reproduction-status.md)

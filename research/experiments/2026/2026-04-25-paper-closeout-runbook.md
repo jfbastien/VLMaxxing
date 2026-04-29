@@ -28,7 +28,7 @@ Current readiness:
 - `1.55G`: ready
 - `1.55H`: ready (post-primary boundary probe, not auto-queued)
 - `1.58`: **blocked locally by policy + assets**; bf16 checkpoint missing at
-  `/Users/jfb/models/Qwen2.5-VL-7B-Instruct`, and the current laptop plan caps
+  `$QWEN_BF16_MODEL_PATH`, and the current laptop plan caps
   autonomous runs at roughly `10 GB` RSS, well below the preregistered `~14 GB`
   feasibility ceiling for the bf16 lane
 
@@ -267,7 +267,7 @@ After every completed experiment:
 
 Blocked locally until **both**:
 
-- `/Users/jfb/models/Qwen2.5-VL-7B-Instruct` exists
+- `$QWEN_BF16_MODEL_PATH` exists
 - the operator explicitly decides to relax the local memory ceiling above the
   current `~10 GB` plan and re-open a bf16 run that was preregistered around
   a much looser `<14 GB` feasibility band

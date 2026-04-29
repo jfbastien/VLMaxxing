@@ -48,7 +48,7 @@ Group distribution among the top 10 shifted-fraction items: 4 short, 5 medium, 1
 
 VideoMME's corpus curation favours **scene-composition variety**: most clips are montages of static shots with cuts (giving high `novel` and `static` fractions, low `shifted`). Genuine sustained camera motion — TV pans, scrolling captions, dolly shots, egomotion — is rare in the 900-video corpus and vanishingly rare in our 57-video dev subset.
 
-This is also consistent with Sam's whitepaper §SHIFTED framing: SHIFTED content dominates **live-camera** regimes (the 5-300× ViT savings end of his range) and is structurally narrow on benchmark corpora. VideoMME is a benchmark corpus; the absence of scroll-heavy items is a feature of the corpus, not a methodology bug.
+This is also consistent with the pre-release source §SHIFTED framing: SHIFTED content dominates **live-camera** regimes (the 5-300× ViT savings end of that report) and is structurally narrow on benchmark corpora. VideoMME is a benchmark corpus; the absence of scroll-heavy items is a feature of the corpus, not a methodology bug.
 
 ## Synthesis fallback — why it is not trivial
 

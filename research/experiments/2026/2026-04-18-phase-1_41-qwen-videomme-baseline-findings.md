@@ -81,11 +81,11 @@ have more decode work) and worth logging:
 
 ## Cross-check: regime-gap framing
 
-This is a **4B-class VLM on 8 frames**. Sam's whitepaper numbers
+This is a **4B-class VLM on 8 frames**. the pre-release source numbers
 (`docs/literature-map-2026-04-16.md`) anchor on **Gemma 26B at 32 frames**
 (full-frames, 5.4× prefill) and Qwen 2.5-VL-7B at **32 frames**
 (4.2× e2e on talking-head). Our VideoMME dense number is the
-*regime-appropriate* 8-frame baseline, not a reproduction of Sam's
+*regime-appropriate* 8-frame baseline, not a reproduction of the pre-release source's
 32-frame numbers. This matches the regime-gap knowledge note in
 memory `project_gemma_token_geometry_2026-04-18.md` and the
 `docs/literature-map-2026-04-16.md:266` qualifier.

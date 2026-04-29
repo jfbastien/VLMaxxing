@@ -88,4 +88,4 @@ Pending.
 
 - [phase 1.11 MVBench motion dev grid](2026-04-14-phase-1_11-planner-grid-mvbench-motion-dev.md)
 - [phase 1.16 cross-benchmark transfer](2026-04-15-phase-1_16-cross-benchmark-winner-transfer.md)
-- [execution plan round 7](../../../docs/execution-plan-round-7.md)
+- [experiment registry](../registry.md)

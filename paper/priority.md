@@ -111,13 +111,13 @@ others).
    Without green CI the paper claims of reproducibility look sloppy.
 
 4. **Attention-propagation-drift vocabulary discipline.** Codex
-   round-21 flagged that Sam's §234 attributes the refresh requirement
+   round-21 flagged that the pre-release source attributes the refresh requirement
    to attention-context drift (~0.01/frame), NOT positional-encoding
    drift. `publishability-status.md:283` landed the reconciliation.
    Now landed in `framing.md` Reviewer-Facing Limitations §7 this
    round (round-24). A direct PE-drift ablation is NOT required for
    submission provided the paper says "attention-propagation drift"
-   when citing Sam and treats 1.57 (adjacent-frame ViT cosine) as a
+   when citing the pre-release source and treats 1.57 (adjacent-frame ViT cosine) as a
    **lower-bound proxy** rather than a direct cache-substitute
    measurement.
 
@@ -188,7 +188,7 @@ in its own dimension.
    mechanism evidence. The remaining optional follow-up is broader
    benchmark coverage on Qwen, not proof-of-transfer.
 
-4. **Local paired streaming-protocol reproduction of Sam's N=60 line.**
+4. **Local paired streaming-protocol reproduction of the pre-release N=60 line.**
    **CLOSEOUT QUEUE EXECUTED 2026-04-25; THE `kr_Q0 = 0.67` LONG-BUCKET
    CANDIDATE IS FALSIFIED.** The 1.30Z generalization test on the full
    long bucket (n=18 sessions / 54 paired queries) returned
@@ -310,7 +310,7 @@ in its own dimension.
    `scripts/run_phase1_58_bf16_control.sh` and
    `scripts/analyze_phase1_58_bf16_control.py`; remaining blockers are
    now concrete rather than abstract: the local preflight confirms the
-   bf16 checkpoint is absent at `/Users/jfb/models/Qwen2.5-VL-7B-Instruct`,
+   bf16 checkpoint is absent at the configured `$QWEN_BF16_MODEL_PATH`,
    and the current single-laptop plan keeps autonomous runs near a `10 GB`
    RSS ceiling. Since the prereg's own feasibility bar was much looser
    (`<14 GB`), this lane is blocked locally even if the weights appear unless
@@ -340,8 +340,8 @@ collection.
    `research/experiments/2026/2026-04-21-phase-1_41-qwen-videomme-16f-holdout-findings.md`.
 
 8. **1.29 local codec-native benchmark slice.** **Promoted from future
-   per codex round-26** — this is the biggest single missing Sam bridge.
-   Sam's H.264-metadata pipeline already exists in-repo (task #114
+   per codex round-26** — this is the biggest single missing scale-out bridge.
+   The H.264-metadata pipeline already exists in-repo (task #114
    `h264_metadata.py` port landed); the remaining gap is running it on
    a 30-clip subset and measuring MV/CBF agreement vs our pixel-diff
    baseline. Closing this elevates the paper's codec-through thesis
@@ -412,7 +412,7 @@ collection.
 Capture ideas as we find them; park until paper draft is submitted OR
 a must-do slot opens.
 
-- **1.30 Sam session/streaming bridge — INITIAL NEGATIVE, THEN 1.30W
+- **1.30 session/streaming bridge — INITIAL NEGATIVE, THEN 1.30W
   NEAR-MISS 2026-04-24.** The original reproduction landed as a paired
   cold-vs-streaming Qwen 2.5-VL-7B-4bit VideoMME 8f **dev+holdout union
   n=57 sessions / 171 queries**: cold 0.561 / streaming 0.368 →

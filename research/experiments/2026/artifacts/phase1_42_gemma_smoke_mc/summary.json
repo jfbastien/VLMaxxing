@@ -15,8 +15,8 @@
     "git_dirty": false,
     "git_sha": "d2956ba310c56cb8750e9d256027a051f13e4e29",
     "huggingface_hub": "1.10.1",
-    "mlx_vlm_module": "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
-    "model_path": "/Users/jfb/models/gemma-4-e4b-it-4bit",
+    "mlx_vlm_module": "<repo-root>/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
+    "model_path": "<model:gemma-4-e4b-it-4bit>",
     "platform": "darwin",
     "python": "3.12.12"
   },

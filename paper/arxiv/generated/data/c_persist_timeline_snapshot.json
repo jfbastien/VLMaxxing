@@ -1,0 +1,10 @@
+{
+  "adaptive_q3_elapsed_s": 0.675185291,
+  "adaptive_q3_tail_prompt_tokens": 50.0,
+  "fixed_q3_elapsed_s": 6.652006416,
+  "fixed_q3_tail_prompt_tokens": 451.0,
+  "paired_q3_fixed_over_adaptive_speedup": 9.499639841646504,
+  "paired_q3_tail_token_reduction": 0.8891352549889135,
+  "phase": "1.55F-stage-timing",
+  "source": "research/experiments/2026/artifacts/phase1_55F_stage_timing/stage_timing_summary.json"
+}

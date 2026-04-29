@@ -37,9 +37,9 @@ This phase answers that with a fixed-rate sweep:
   - `Q0`: one of `0.75`, `0.80`, `0.85`, `0.90`
   - `Q2/Q3`: configured at `kr=0.50`, but expected to remain cache-served
     unless instrumentation proves otherwise
-- Runner: `scripts/run_phase1_30_sam_streaming.py`
+- Runner: `scripts/run_phase1_30_scaleout_streaming.py`
 - Wrapper: `scripts/run_phase1_30AB_long_q0_candidate.sh <rate>`
-- Analysis: `scripts/analyze_phase1_30_sam_streaming_pair.py`
+- Analysis: `scripts/analyze_phase1_30_scaleout_streaming_pair.py`
 
 Estimated runtime:
 

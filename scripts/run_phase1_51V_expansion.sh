@@ -49,7 +49,8 @@ run_exp() {
   fi
 }
 
-COMMON="--model-path /Users/jfb/models/gemma-4-e4b-it-4bit --max-tokens 32 --rss-guard-mb 10000"
+: "${GEMMA_MODEL_PATH:?Set GEMMA_MODEL_PATH to the Gemma 4 E4B 4-bit model path or model id}"
+COMMON="--model-path $GEMMA_MODEL_PATH --max-tokens 32 --rss-guard-mb 10000"
 
 log "=== Phase 1.51V expansion queue start ==="
 

@@ -24,8 +24,9 @@ evaluation, and they become first-class scale-out tests only when the same
 artifact standards and matched baselines are available.
 By design, sparse routing uses pixel-diff on sampled decoded frames, while the
 separate streaming lane uses H.264 metadata at native frame rate, including
-FFmpeg-exported motion-vector side data and `codecview`-style inspection paths
-\cite{ffmpegcodecs,ffmpegfilters}. The signals are protocol-specific, not
+FFmpeg motion-vector side data exported with \texttt{-flags2 +export\_mvs}
+or \texttt{export\_side\_data=mvs}, plus \texttt{codecview=mv=pf+bf+bb}
+inspection paths \cite{ffmpegcodecs,ffmpegfilters}. The signals are protocol-specific, not
 interchangeable.
 
 \subsection{Models, Hardware, and Preprocessing}

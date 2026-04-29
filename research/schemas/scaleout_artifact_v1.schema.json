@@ -1,0 +1,433 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codec-through.local/schemas/scaleout_artifact_v1.schema.json",
+  "title": "Scale-out artifact row v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "experiment_id",
+    "protocol_id",
+    "run_id",
+    "phase",
+    "row_role",
+    "arm",
+    "baseline_arm",
+    "policy",
+    "model_id",
+    "model_sha",
+    "quantization",
+    "runtime",
+    "runtime_commit",
+    "hardware",
+    "os_version",
+    "mlx_version",
+    "metal_version",
+    "command_line",
+    "memory_definition",
+    "video_id",
+    "event_id",
+    "item_id",
+    "pair_key",
+    "q_index",
+    "turn_index",
+    "prompt_frame_count",
+    "frame_ids",
+    "frame_hashes",
+    "baseline_frame_ids",
+    "baseline_frame_hashes",
+    "frame_selection_hash",
+    "raw_prompt",
+    "baseline_raw_prompt",
+    "prompt_hash",
+    "baseline_prompt_hash",
+    "input_ids_hash",
+    "baseline_input_ids_hash",
+    "raw_response",
+    "baseline_raw_response",
+    "session_choice",
+    "baseline_choice",
+    "choice_diff",
+    "session_correct",
+    "baseline_correct",
+    "correctness_diff",
+    "session_parse_failure",
+    "baseline_parse_failure",
+    "parse_failure",
+    "text_identical",
+    "decode_ms",
+    "vision_ms",
+    "prefill_ms",
+    "repair_prefill_ms",
+    "generate_ms",
+    "end_to_end_ms",
+    "baseline_end_to_end_ms",
+    "vit_calls",
+    "baseline_vit_calls",
+    "peak_memory_gb",
+    "cache_topology",
+    "prefix_hit",
+    "prefix_coverage",
+    "prompt_tokens",
+    "baseline_prompt_tokens",
+    "generation_tokens",
+    "seed",
+    "temperature",
+    "top_p",
+    "commit_sha"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "scaleout_artifact_v1"
+    },
+    "experiment_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "protocol_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "phase": {
+      "type": "string",
+      "minLength": 1
+    },
+    "row_role": {
+      "type": "string",
+      "minLength": 1
+    },
+    "arm": {
+      "type": "string",
+      "minLength": 1
+    },
+    "baseline_arm": {
+      "type": "string",
+      "minLength": 1
+    },
+    "comparator_arm": {
+      "type": ["string", "null"]
+    },
+    "policy": {
+      "type": "string",
+      "minLength": 1
+    },
+    "baseline_policy": {
+      "type": ["string", "null"]
+    },
+    "policy_params": {
+      "type": ["object", "null"]
+    },
+    "model_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "model_sha": {
+      "type": ["string", "null"]
+    },
+    "quantization": {
+      "type": ["string", "null"]
+    },
+    "runtime": {
+      "type": "string",
+      "minLength": 1
+    },
+    "runtime_commit": {
+      "type": "string",
+      "minLength": 1
+    },
+    "hardware": {
+      "type": "string",
+      "minLength": 1
+    },
+    "os_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mlx_version": {
+      "type": ["string", "null"]
+    },
+    "metal_version": {
+      "type": ["string", "null"]
+    },
+    "command_line": {
+      "type": "string",
+      "minLength": 1
+    },
+    "memory_definition": {
+      "type": "string",
+      "minLength": 1
+    },
+    "video_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "event_id": {
+      "type": ["string", "null"]
+    },
+    "item_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pair_key": {
+      "type": "string",
+      "minLength": 1
+    },
+    "q_index": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "source_q_index": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "turn_index": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "prompt_frame_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "frame_ids": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "frame_hashes": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "baseline_frame_ids": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "baseline_frame_hashes": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "frame_selection_hash": {
+      "type": "string",
+      "minLength": 1
+    },
+    "frames_sha256": {
+      "type": ["string", "null"]
+    },
+    "raw_prompt": {
+      "type": "string"
+    },
+    "baseline_raw_prompt": {
+      "type": "string"
+    },
+    "prompt_hash": {
+      "type": "string",
+      "minLength": 1
+    },
+    "baseline_prompt_hash": {
+      "type": "string",
+      "minLength": 1
+    },
+    "input_ids_hash": {
+      "type": "string",
+      "minLength": 1
+    },
+    "baseline_input_ids_hash": {
+      "type": "string",
+      "minLength": 1
+    },
+    "raw_response": {
+      "type": "string"
+    },
+    "baseline_raw_response": {
+      "type": "string"
+    },
+    "session_choice": {
+      "type": ["string", "null"]
+    },
+    "baseline_choice": {
+      "type": ["string", "null"]
+    },
+    "choice_diff": {
+      "type": "boolean"
+    },
+    "session_correct": {
+      "type": "boolean"
+    },
+    "baseline_correct": {
+      "type": "boolean"
+    },
+    "correctness_diff": {
+      "type": "boolean"
+    },
+    "session_parse_failure": {
+      "type": "boolean"
+    },
+    "baseline_parse_failure": {
+      "type": "boolean"
+    },
+    "parse_failure": {
+      "type": "boolean"
+    },
+    "text_identical": {
+      "type": "boolean"
+    },
+    "decode_ms": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "vision_ms": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "prefill_ms": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "repair_prefill_ms": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "generate_ms": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "end_to_end_ms": {
+      "type": "number",
+      "minimum": 0
+    },
+    "baseline_end_to_end_ms": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "elapsed_ms": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "baseline_elapsed_ms": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "vit_calls": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "baseline_vit_calls": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "peak_memory_gb": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "cache_topology": {
+      "type": "object"
+    },
+    "prefix_hit": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "prefix_coverage": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "prompt_tokens": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "baseline_prompt_tokens": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "generation_tokens": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "seed": {
+      "type": ["integer", "null"]
+    },
+    "temperature": {
+      "type": ["number", "null"]
+    },
+    "top_p": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "evidence_budget": {
+      "type": ["string", "null"]
+    },
+    "cadence_sec": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "fps": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "last_k": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "selected_frame_indices": {
+      "type": ["array", "null"],
+      "items": { "type": "integer" }
+    },
+    "event_time_s": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "observation_window_s": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "stale_cache_case_id": {
+      "type": ["string", "null"]
+    },
+    "changed_answer_expected": {
+      "type": ["boolean", "null"]
+    },
+    "claim_id": {
+      "type": ["string", "null"]
+    },
+    "source_artifact_path": {
+      "type": ["string", "null"]
+    },
+    "source_artifact_sha256": {
+      "type": ["string", "null"]
+    },
+    "export_row_count": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "expected_row_count": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "exactness_match": {
+      "type": ["boolean", "null"]
+    },
+    "ci_method": {
+      "type": ["string", "null"]
+    },
+    "ci95": {
+      "type": ["array", "null"],
+      "items": { "type": "number" },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "provenance_note": {
+      "type": ["string", "null"]
+    },
+    "stage_timings_ms": {
+      "type": ["object", "null"]
+    },
+    "commit_sha": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

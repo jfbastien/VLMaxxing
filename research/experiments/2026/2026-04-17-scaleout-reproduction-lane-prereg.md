@@ -1,4 +1,4 @@
-# Sam-reproduction lane — preregistered (2026-04-17)
+# pre-release reproduction lane — preregistered (2026-04-17)
 
 **State**: **pilot n=1 landed 2026-04-18 as preregistered null** (1.51R
 end-to-end 1.01× vs 1.8× target on `videomme:long:669-1`). Scale-up
@@ -12,32 +12,32 @@ architecture fidelity, composition, and novelty-pruning speedup)
 VideoMME videos first)
 **Motivation**: Codex round-17 flagged that phase 1.51 as written is
 a TOMATO/MVBench-centric novelty-pruning expansion, NOT a faithful
-local reproduction of Sam's main headline path. This note adds the
-faithful-reproduction lane so the paper can claim "we reproduced Sam's
+local reproduction of the pre-release source's main headline path. This note adds the
+faithful-reproduction lane so the paper can claim "we reproduced the pre-release source's
 Gemma + VideoMME novelty-pruning result locally" in addition to
 "we extended it to TOMATO/MVBench."
 
-## What Sam measured (from whitepaper §2.11)
+## What the pre-release source measured (from pre-release source §2.11)
 
-Sam's whitepaper reports:
+the pre-release source reports:
 
 - **Model**: Gemma 4 26B on M5 Max hardware.
 - **Benchmark**: VideoMME test split.
 - **Mechanism**: hard spatial pruning (per-frame novelty score;
   preserve static-anchor tokens; drop the rest before LLM prefill).
 - **Result**: 4-5× end-to-end speedup at accuracy within some band
-  of Gemma-dense. Exact accuracy delta is measured in Sam's table,
+  of Gemma-dense. Exact accuracy delta is measured in the pre-release source table,
   which should be cited in the paper.
 
 ## What we will measure locally (reproduction)
 
-**Model**: Gemma 4-E4B-4bit (smaller model than Sam's 26B; the one
+**Model**: Gemma 4-E4B-4bit (smaller model than the pre-release source's 26B; the one
 that fits on M3 Air 16 GB).
 **Benchmark**: VideoMME test split N=30 (matched manifest to what
 phase 1.41 uses for Qwen).
-**Mechanism**: same as Sam's — anchor-selection + novelty-ranked
+**Mechanism**: same as the pre-release source: anchor-selection + novelty-ranked
 prune, keep top-K tokens per frame.
-**Target claim**: reproduce the SIGN and ORDER-OF-MAGNITUDE of Sam's
+**Target claim**: reproduce the SIGN and ORDER-OF-MAGNITUDE of the pre-release source's
 result on the smaller model at M3 Air scale. Exact multiples may
 differ (smaller model → larger prefill fraction → potentially larger
 speedup; or smaller model → tighter accuracy floor → smaller usable
@@ -56,7 +56,7 @@ through the harness and supports `cached_image_features`.
 Scope: 1 item smoke + N=30 on one benchmark (TOMATO).
 Runtime: ≈ 1.5 h GPU after integration code lands.
 
-### Phase 1.51R — Sam novelty-pruning reproduction on Gemma + VideoMME (NEW)
+### Phase 1.51R — the pre-release source's novelty-pruning reproduction on Gemma + VideoMME (NEW)
 
 **Primary reproduction phase.** Runs independently of 1.42 temporal
 reuse integration (novelty-pruning is a fresh code path at the LLM
@@ -81,20 +81,20 @@ Runtime budget: ≈ 6-8 h GPU wall time cold-cache (Gemma features
 not in the current feature cache, each dev cell does dense feature
 extraction once).
 
-**Success criterion for "Sam reproduction":**
+**Success criterion for "pre-release reproduction":**
 
 1. At least one (anchor-arm × keep-rate) cell on VideoMME achieves
    end-to-end speedup ≥ 1.8× over Gemma-dense-8 at accuracy within
    0.10 of dense-8.
 2. The speedup scales monotonically with (1 − keep_rate) at high
-   keep rates (keep ≥ 0.5) — qualitative agreement with Sam's
+   keep rates (keep ≥ 0.5) — qualitative agreement with the pre-release source's
    measurement that dropping more tokens → more speedup until
    accuracy falls off.
-3. The sign of the accuracy-vs-speedup Pareto matches Sam's report
+3. The sign of the accuracy-vs-speedup Pareto matches the pre-release source's report
    (monotonically decreasing accuracy at monotonically increasing
    speedup, rather than e.g. a noisy scatter).
 
-If all three hold → **claim: the Sam novelty-pruning result
+If all three hold → **claim: the pre-release source's novelty-pruning result
 reproduces on Gemma 4-E4B-4bit at M3 Air scale.**
 If (1) holds but (2) or (3) fails → partial reproduction; paper
 cites it as "sign matches, mechanism has a different scaling
@@ -123,7 +123,7 @@ Runtime: ≈ 2-3 h GPU wall time after 1.51R holdout lands.
 ### Phase 1.51E — Novelty-pruning extension on TOMATO/MVBench (the existing 1.51)
 
 The already-registered phase 1.51 stays; it's an expansion lane
-(does Sam's mechanism port to temporal-reasoning benchmarks on the
+(does the pre-release source's mechanism port to temporal-reasoning benchmarks on the
 smaller Gemma?). Rename-in-place: phase 1.51 → phase 1.51E
 ("extension") to distinguish from 1.51R ("reproduction"). Both
 run; both contribute to the paper. Reproduction is prioritized.
@@ -138,13 +138,13 @@ Runtime: ≈ 2 h GPU wall time, cold-cache.
 ## What the paper says from this lane
 
 - §Results will have a VideoMME table with: Qwen-dense-8, Qwen +
-  Planner 2.0, Gemma-dense-8, Gemma + novelty-pruning (Sam's
+  Planner 2.0, Gemma-dense-8, Gemma + novelty-pruning (the pre-release source's
   reproduction), Gemma + combined (phase 1.52R if applicable).
-- §Discussion will cite Sam's 4-5× number on Gemma 4 26B with M5 Max
+- §Discussion will cite the pre-release source's 4-5× number on Gemma 4 26B with M5 Max
   and compare to our measured speedup on Gemma 4-E4B with M3 Air,
   explaining the deviation as a model-size / hardware-class shift.
 - If reproduction fails: §Discussion cites the null as evidence
-  that Sam's mechanism is either model-size-sensitive or
+  that the pre-release source's mechanism is either model-size-sensitive or
   hardware-specific; paper does NOT claim reproduction, but the
   negative result is still publishable.
 
@@ -156,7 +156,7 @@ Runtime: ≈ 2 h GPU wall time, cold-cache.
 3. Phase 1.42 v0 Gemma smoke (claim 7 partial, ≈ 1.5 h) — establishes
    Gemma works on the harness. Can actually run in parallel with
    1.41 if we're careful about MLX queue.
-4. **Phase 1.51R Sam reproduction on Gemma + VideoMME** (claim 11,
+4. **Phase 1.51R pre-release reproduction on Gemma + VideoMME** (claim 11,
    ≈ 6-8 h) — the BIG NUMBERS result. If this lands as preregistered,
    the paper has its headline.
 5. Phase 1.52R combined (claim 10, ≈ 2-3 h) — multiplicative
@@ -170,26 +170,26 @@ Runtime: ≈ 2 h GPU wall time, cold-cache.
 Total runtime budget: **~22-30 hours of MLX wall time** from user
 unpack to full reproduction + expansion + Lane-A completeness.
 
-## Open questions (need user/Sam input)
+## Open questions (need user/the pre-release source input)
 
-1. **Anchor selection details**: Sam's whitepaper §2.11 describes
+1. **Anchor selection details**: the pre-release source §2.11 describes
    the anchor concept (preserve static tokens; drop novel ones) but
    the exact anchor extraction procedure is a few possible
    implementations. We should either (a) pick the simplest
    well-specified option and report what we did, or (b) pull the
-   canonical anchor extraction from Sam's reference code if available.
-   **Request**: access to Sam's reference implementation if possible,
+   canonical anchor extraction from the pre-release source's reference code if available.
+   **Request**: access to the pre-release source's reference implementation if possible,
    or explicit confirmation that we're free to choose our own anchor.
-2. **Keep-rate range**: Sam's paper reports a single operating point
+2. **Keep-rate range**: the pre-release source reports a single operating point
    (some keep rate that gives 4-5×). We should sweep 5 rates. Does
-   Sam have guidance on the well-behaved rate region or the typical
+   the pre-release source have guidance on the well-behaved rate region or the typical
    accuracy knee location?
-3. **Reproduction credit**: the paper should credit Sam's concept
-   even where our measured speedup differs from Sam's reported
+3. **Reproduction credit**: the paper should credit the pre-release source's concept
+   even where our measured speedup differs from the pre-release source's reported
    4-5×. **Proposed language**: "novelty-pruning of visual tokens
-   pre-prefill, following Sam's whitepaper §2.11; our Gemma 4-E4B-4bit
-   measurement at M3 Air is [X.Y]× vs Sam's 4-5× on Gemma 4 26B at
-   M5 Max." (Sam co-authors the paper, so this is primarily a
+   pre-prefill, following the pre-release source §2.11; our Gemma 4-E4B-4bit
+   measurement at M3 Air is [X.Y]× vs the pre-release source's 4-5× on Gemma 4 26B at
+   M5 Max." (the pre-release source co-authors the paper, so this is primarily a
    methods-section tone choice.)
 
 ## Related docs

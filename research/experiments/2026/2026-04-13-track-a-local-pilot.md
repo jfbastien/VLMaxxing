@@ -150,7 +150,7 @@ Important limitation:
   dense and cached would be expected to separate if reuse were too aggressive
 - the pilot is synthetic-only and does not yet include scored natural-video items
 - this pilot therefore supports **answer stability relative to the dense path**
-  more strongly than it supports broad semantic adequacy or whitepaper-level
+  more strongly than it supports broad semantic adequacy or pre-release-source-level
   reproduction
 
 Operational finding:

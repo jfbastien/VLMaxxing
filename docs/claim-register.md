@@ -1,20 +1,20 @@
-# Whitepaper Claim Register
+# Pre-release source Claim Register
 
-This file freezes the imported whitepaper targets that this repo is trying to
+This file freezes the pre-release source targets that this repo is trying to
 reproduce.
 
-It exists because the imported whitepaper markdown contains internal
+It exists because the pre-release source markdown contains internal
 inconsistencies. Without a frozen claim register, "did we reproduce the
-whitepaper?" is ambiguous.
+pre-release source?" is ambiguous.
 
 Canonical imported references:
 
-- **Original whitepaper**: the frozen target this repo was initially built
+- **Original pre-release source**: the frozen target this repo was initially built
   against.
-- **Revised whitepaper (2026-04-16)**: adds VideoMME, Gemma 4 cross-arch,
+- **Revised pre-release source (2026-04-16)**: adds VideoMME, Gemma 4 cross-arch,
   wall-clock, strict-parse audit, and an expanded comparison table. Imported
   and audited in
-  [2026-04-16-seed-audit-revised-whitepaper.md](../research/experiments/2026/2026-04-16-seed-audit-revised-whitepaper.md).
+  [2026-04-16-pre-release-source-audit.md](../research/experiments/2026/2026-04-16-pre-release-source-audit.md).
 
 The raw seed files are intentionally absent from the release tree. This register
 is the durable source of truth; git history preserves the raw imports for
@@ -22,19 +22,19 @@ forensic review.
 
 The repo is canonically targeting **both**: the original WP-2.1 through
 WP-5 claims remain active, PLUS the new WP-2.7 through WP-5.1 claims
-from the revised whitepaper (registered below). Claims from the revised
-whitepaper are treated with the same "useful hypotheses, not trusted
+from the revised pre-release source (registered below). Claims from the revised
+pre-release source are treated with the same "useful hypotheses, not trusted
 claims" epistemics as the original.
 
 Repo rule:
 
-- use this register, not ad hoc readings of either whitepaper, when
+- use this register, not ad hoc readings of either pre-release source, when
   deciding whether a claim is reproduced, partially reproduced, or still
   imported-only
 
 ## Current Imported Inconsistencies
 
-The imported whitepaper still contains conflicting statements that matter for
+The pre-release source still contains conflicting statements that matter for
 reproduction planning:
 
 - TOMATO delta:
@@ -56,9 +56,9 @@ wording.
 
 Important runtime distinction:
 
-- mechanism sections in the imported whitepaper use Qwen `3B` on
+- mechanism sections in the pre-release source use Qwen `3B` on
   `PyTorch/MPS float32`
-- benchmark sections in the imported whitepaper use Qwen `7B` via `mlx-vlm`
+- benchmark sections in the pre-release source use Qwen `7B` via `mlx-vlm`
 - benchmark reproduction caveats in this repo should therefore focus on subset
   policy, quantization, package versions, and preprocessing rather than on a
   generic `MLX versus PyTorch` mismatch
@@ -78,24 +78,24 @@ Important runtime distinction:
 | `WP-4` | Q-table pre-filter correlation | useful supporting reproduction target, not the first milestone | deferred reproduction target |
 | `WP-5` | Compression and speed stackup | partial local measured sparse-execution evidence now exists, but the imported compression/speed stackup remains unreproduced | explicitly gated |
 | | | | |
-| **From revised whitepaper (2026-04-16)** | | | |
+| **From revised pre-release source (2026-04-16)** | | | |
 | | | | |
 | **NOTE on claim-ID stability**: our `WP-*` IDs are semantic labels | | | |
-| assigned at import time, NOT mirrors of sam's section numbers. | | | |
-| Sam's sections may renumber across revisions (e.g., sam §2.10 was | | | |
+| assigned at import time, NOT mirrors of the pre-release source's section numbers. | | | |
+| Source sections may renumber across revisions (e.g., source §2.10 was | | | |
 | thinking amplification at our import date but is now hard spatial | | | |
 | pruning in the latest revision). Our IDs are frozen to the meaning | | | |
-| we registered; new sam claims get new WP-* IDs. | | | |
+| we registered; new source claims get new WP-* IDs. | | | |
 | | | | |
 | `WP-2.7` | VideoMME evaluation (Qwen 100% on 300q; Gemma 4 90%/−3.3% on 60q) | local reproduction requires VideoMME lane + at minimum Qwen evaluation at 32 frames | generalized reproduction target |
 | `WP-2.8` | Strict-parse audit (413 Qwen items, 0 parse failures, byte-identical) | our local parser already shows 0 failures on our saved slices (84 items exact + ~60 motion items approximate); scaling to 413+ is the remaining step | generalized reproduction target |
-| `WP-2.9` | Cross-architecture generalization — **scoped to spectrum, not binary**. Sam's whitepaper §2.7 groups InternVL3 with all-global but §2.9 and §2.10 group it with windowed-attention in the same document (lines 171 / 243). The empirical data (Qwen 100% byte-identical, InternVL3 95% strict, Gemma 4 88% byte-identical) supports a spectrum conditioned on attention-window fraction AND pretraining, not a topology-determined binary. | requires a second architecture family (Gemma 4 4B on M3 Air is the candidate; not a direct reproduction of sam's 26B). Test with thinking=False first; thinking-on as supplementary stress test. | generalized reproduction target — **scoped** |
-| `WP-2.12` | EgoSchema low-reuse robustness (Sam: N=100 Qwen, 100% byte-identical at 29.9% mean token reuse) | Sam's strongest counterexample to "caching only helps high-reuse content." Local reproduction at N=30 on Qwen2.5-VL-7B 4-bit would close the low-reuse-robustness gap the current paper has. | new phase 1.43 |
-| `WP-4.2` | Combined temporal+spatial pipeline, end-to-end measured, 4–5× sustained across 32/64/128 frames (Sam, Gemma 4 26B on M5 Max) | Sam's most distinctive empirical contribution; measured, not projected. Citable as "Sam 2026 reports," with hardware/model caveat. Our Phase 1.45 would test whether the arithmetic composes on Qwen2.5-VL-7B 4-bit at M3 Air. | deferred local reproduction |
+| `WP-2.9` | Cross-architecture generalization — **scoped to spectrum, not binary**. The pre-release source §2.7 groups InternVL3 with all-global but §2.9 and §2.10 group it with windowed-attention in the same document (lines 171 / 243). The empirical data (Qwen 100% byte-identical, InternVL3 95% strict, Gemma 4 88% byte-identical) supports a spectrum conditioned on attention-window fraction AND pretraining, not a topology-determined binary. | requires a second architecture family (Gemma 4 4B on M3 Air is the candidate; not a direct reproduction of the source's 26B run). Test with thinking=False first; thinking-on as supplementary stress test. | generalized reproduction target — **scoped** |
+| `WP-2.12` | EgoSchema low-reuse robustness (pre-release source: N=100 Qwen, 100% byte-identical at 29.9% mean token reuse) | The pre-release source's strongest counterexample to "caching only helps high-reuse content." Local reproduction at N=30 on Qwen2.5-VL-7B 4-bit would close the low-reuse-robustness gap the current paper has. | new phase 1.43 |
+| `WP-4.2` | Combined temporal+spatial pipeline, end-to-end measured, 4–5× sustained across 32/64/128 frames (pre-release scale-out source, Gemma 4 26B on M5 Max) | The pre-release source's most distinctive empirical contribution; measured, not projected. Citable as a pre-release scale-out report, with hardware/model caveat. Our Phase 1.45 would test whether the arithmetic composes on Qwen2.5-VL-7B 4-bit at M3 Air. | deferred local reproduction |
 | `WP-2.10` | Thinking-amplification finding (agreement drops with thinking enabled on Gemma 4) | requires Gemma 4 thinking-on/off comparison. Supplementary to WP-2.9. | deferred reproduction target |
-| `WP-2.11` | Hard spatial pruning (Gemma 4 with token reduction) | new in latest sam revision; not in our original import. Deferred behind temporal reuse mainline. | deferred |
+| `WP-2.11` | Hard spatial pruning (Gemma 4 with token reduction) | new in latest source revision; not in our original import. Deferred behind temporal reuse mainline. | deferred |
 | `WP-4.1` | Wall-clock throughput (M5 Max: 6.0× ViT, 4.2× E2E, 130 fps on 32-frame conferencing) | NOT directly reproducible on M3 Air 16GB; the local measured sparse-execution harness now provides hardware-conditioned boundary evidence, not the imported M5 throughput claim | generalized reproduction target (hardware-conditioned) |
-| `WP-5.1` | Composition projection (~175× with TurboQuant) | projected, not measured, even by sam; explicitly marked as future work in their §5 | explicitly gated |
+| `WP-5.1` | Composition projection (~175× with TurboQuant) | projected, not measured, even by the pre-release source; explicitly marked as future work in source §5 | explicitly gated |
 
 ## Strict Versus Generalized Reproduction
 

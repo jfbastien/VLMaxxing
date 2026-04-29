@@ -55,7 +55,7 @@ unless expanded. First use should follow this pattern:
 | safe | no observed paired drift, within tested criterion, certified for this finite envelope | "Safe" implies more than the experiments prove. |
 | exact | no observed paired drift, identity-preserved on these rows | "Exact" should mean byte/logit identity, not only answer identity. |
 | pooled n=60 | n=60 composition audit | "Pooled" asks readers to infer what was pooled. |
-| imported deployment-scale evidence | scale-out operational evidence, pending artifact harmonization | Keeps Sam's lane first-class without overclaiming. |
+| imported deployment-scale evidence | scale-out operational evidence, pending artifact harmonization | Keeps the scale-out lane first-class without overclaiming. |
 
 ## Fun Budget
 

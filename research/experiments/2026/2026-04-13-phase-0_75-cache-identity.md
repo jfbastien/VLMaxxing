@@ -149,7 +149,7 @@ What remains out of scope:
 
 ## Links
 
-- [PLAN.md](../../../../PLAN.md)
-- [docs/methodology/preprocessing.md](../../../../docs/methodology/preprocessing.md)
+- [PLAN.md](../../../PLAN.md)
+- [docs/methodology/preprocessing.md](../../../docs/methodology/preprocessing.md)
 - [research/experiments/2026/2026-04-13-phase-0_5-feasibility.md](2026-04-13-phase-0_5-feasibility.md)
 - [phase0_75.json](artifacts/phase0_75.json)

@@ -88,7 +88,7 @@ Each entry has:
   "more frames helps with a more-aggressive policy at iso fresh
   budget." Phase 1.28 H1 at iso-budget (tighter thresholds at 16
   frames targeting fresh~4) is still open.
-- **link**: [phase 1.28 MVBench holdout](experiments/2026/2026-04-15-phase-1_28-iso-token-budget-coverage.md)
+- **link**: [phase 1.28 MVBench holdout](experiments/2026/2026-04-16-phase-1_28-iso-token-budget-coverage.md)
 
 ### falsified_2026-04-16_sticky-dynamic-alone-on-tomato-motion-dev
 
@@ -212,10 +212,10 @@ Each entry has:
   prereg).
 - **link**: [Stage 5 cross-arm synthesis](experiments/2026/2026-04-18-phase-1_51R-stage5-cross-arm-synthesis.md)
 
-### falsified_2026-04-14_static-position-same-position-reuse-matches-whitepaper
+### falsified_2026-04-14_static-position-same-position-reuse-matches-pre-release source
 
 - **hypothesis**: naive same-position STATIC+SHIFTED reuse
-  reproduces the whitepaper's 100% TOMATO and MVBench agreement
+  reproduces the pre-release source's 100% TOMATO and MVBench agreement
   claims on our local Qwen 7B MLX 4-bit stack.
 - **rejected by**: phase 1.4 (TOMATO 30-item, 0.833 agreement) and
   phase 1.5 (MVBench 54-item, 0.870 agreement).
@@ -249,7 +249,7 @@ Each entry has:
   accumulates at least one `intra_flag`/CBF bit, locking the max
   to NOVEL. Does NOT rule out (a) threshold-fraction aggregation
   rules, (b) continuous codec-score with planner re-thresholding,
-  (c) native-rate codec-through per Sam-streaming protocol (task
+  (c) native-rate codec-through per scale-out streaming protocol (task
   #155 prereg). The upstream `H264MetadataExtractor` and
   `classify_blocks_h264` are correct at native rate (task #114
   regression tests pass); the falsification is an aggregation-

@@ -83,12 +83,12 @@ time. Reports on the same `phase1_51R_32frame_pilot/` artifact dir.
 If aggregate e2e lands in [1.5×, 2.0×] with Δacc ∈ [-0.15, -0.05],
 **H1 and H2 earn and the regime-gap hypothesis is confirmed at n=10
 on long bucket**, which is the bucket where the 8-frame ceiling caps
-at 1.10× (the bucket Sam's 1.8× cannot reach without regime match).
+at 1.10× (the bucket the pre-release source's 1.8× cannot reach without regime match).
 
 ## Cross-references
 
 - `2026-04-18-phase-1_51R-stage6-regime-match-prereg.md` — prereg.
 - `2026-04-18-arithmetic-ceiling-findings.md` — ceiling model.
-- `2026-04-18-sam-regime-gap-note.md` — regime-gap thesis.
+- `2026-04-18-scaleout-regime-gap-note.md` — regime-gap thesis.
 - `artifacts/phase1_51R_32frame_smoke/long_kr010_n1_32frame_summary.json`
   — authoritative numbers.

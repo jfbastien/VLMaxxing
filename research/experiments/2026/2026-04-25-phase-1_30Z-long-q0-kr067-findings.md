@@ -32,7 +32,7 @@ duration-conditioned union rerun.
 - Manifest: `research/benchmark_manifests/videomme_long_dev_holdout_v1.toml`
 - Arms: `cold_dense` (reused, already committed) and
   `streaming_q0_kr067_followup_kr050`
-- Runner: `scripts/run_phase1_30_sam_streaming.py`
+- Runner: `scripts/run_phase1_30_scaleout_streaming.py`
 - Wrapper: `scripts/run_phase1_30Z_long_q0_kr067.sh`
 - Output dir:
   `research/experiments/2026/artifacts/phase1_30Z_long_q0_kr067_20260424/`

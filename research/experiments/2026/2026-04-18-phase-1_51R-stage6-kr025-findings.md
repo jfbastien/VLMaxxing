@@ -122,9 +122,9 @@ This has implications for the paper framing:
 - Paper claim 5 is earned at per-token level (per_tok speedup is what
   the mechanism literally delivers; 1.69× at kr=0.25 without
   architectural change).
-- The "Sam 1.8× e2e gap" is a regime gap, not a mechanism gap — the
+- The "the pre-release source 1.8× e2e gap" is a regime gap, not a mechanism gap — the
   ceiling analysis makes this quantitative and pre-registers when
-  matched regime will or won't produce Sam-like numbers.
+  matched regime will or won't produce scale-out-like numbers.
 
 ## Next actions
 

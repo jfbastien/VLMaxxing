@@ -7,7 +7,7 @@ requires swap or rejecting long bucket).
 
 **Provenance.** Third candidate mechanism from the 2026-04-19 16f
 findings (non-monotonic bucket scaling). Not a reproduction of
-any whitepaper claim; it tests a local hypothesis about 4bit-
+any pre-release source claim; it tests a local hypothesis about 4bit-
 induced long-context quality regression.
 
 ## Motivation

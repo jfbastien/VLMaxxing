@@ -29,7 +29,7 @@ training time, the same observation should apply:
 
 - Video pre-training batches contain enormous temporal redundancy
   (single clip, multiple consecutive frames, ~80-99% static in
-  many content regimes per whitepaper §1.)
+  many content regimes per pre-release source §1.)
 - During backprop, gradients flow through the ViT encoder on
   every frame. If the forward pass already had ≈98% `STATIC`
   tokens, the gradient contribution at those tokens is near-
@@ -43,12 +43,12 @@ training time, the same observation should apply:
 ## What we already know (cheap)
 
 - The method's inference-time gains on *conferencing* video are
-  29× (Sam § 3.3).
+  29× (the pre-release source § 3.3).
 - ViT FLOPs on a 30B dense video model (e.g., InternVL3-78B) are
   the dominant pretrain cost on video-specific stages per
   published training reports.
 - Training requires gradient correctness. Cache-substitute forward
-  at ≈0.67-0.80 STATIC cos (per Sam research_queue lines 14-29)
+  at ≈0.67-0.80 STATIC cos (per the pre-release source research_queue lines 14-29)
   is not bit-identical; that may or may not matter for training
   convergence.
 
@@ -83,7 +83,7 @@ not actionable without resources.
   substituting activations during forward.
 - **TurboQuant** (2026): KV quantization during training, not
   forward-only; orthogonal mechanism that could compose.
-- **StreamingVLM** (Oct 2025, referenced in whitepaper § Landscape):
+- **StreamingVLM** (Oct 2025, referenced in pre-release source § Landscape):
   trained specifically for streaming regimes — a different cut.
 
 ## Decision

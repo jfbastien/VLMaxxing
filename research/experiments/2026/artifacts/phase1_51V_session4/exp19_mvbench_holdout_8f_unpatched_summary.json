@@ -31,7 +31,7 @@
   "median_dense_generate_ms": 7547.443896,
   "median_pruned_end_to_end_ms": 14470.177125999999,
   "median_pruned_generate_ms": 7216.811708499999,
-  "model_path": "/Users/jfb/models/gemma-4-e4b-it-4bit",
+  "model_path": "<model:gemma-4-e4b-it-4bit>",
   "n_frames": 8,
   "n_items": 30,
   "per_token_generate_speedup_mean": 1.0420913161218655,

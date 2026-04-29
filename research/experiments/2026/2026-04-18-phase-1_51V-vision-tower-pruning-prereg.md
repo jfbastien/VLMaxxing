@@ -14,7 +14,7 @@ on end-to-end speedup: `e2e ≤ (D + P + V + G) / (D + P + V + G/s)` where
 `D = decode`, `P = processor`, `V = vision-tower forward pass`,
 `G = LLM prefill+generate`, and `s = per-phase speedup`. Measured on
 Gemma 4-E4B-4bit 8-frame VideoMME dev n=30 (Stage 2b, ceiling analysis):
-fixed-fraction = 0.714 aggregate, ceiling@∞ = 1.462× aggregate. Sam's
+fixed-fraction = 0.714 aggregate, ceiling@∞ = 1.462× aggregate. the pre-release source's
 1.8× target is arithmetically unreachable at this 8-frame geometry
 without also touching `V` (short/medium) or `D` (long).
 
@@ -35,7 +35,7 @@ fundamentally bounded by.
 Prune visual tokens *inside* Gemma's vision tower at early layers,
 measure the effect on `V` (vision-tower wall-clock) and on downstream
 accuracy, and quantify whether the combined 1.51R + 1.51V pipeline
-reaches Sam's 1.8× e2e target on VideoMME at a fixed accuracy
+reaches the pre-release source's 1.8× e2e target on VideoMME at a fixed accuracy
 tolerance.
 
 ### Why this is the right follow-up to 1.51R
@@ -45,7 +45,7 @@ tolerance.
   is not an implementation bug; it is a geometry fact.
 - On larger models the ceiling is looser because `G` dominates; we
   are on a 4-bit quantized 4B-param model, so `V / (D+V+G)` is a
-  larger fraction of total latency than on the 7B+ models in Sam's
+  larger fraction of total latency than on the 7B+ models in the pre-release source's
   measurements.
 - 1.51V is the only path to `V` reduction without swapping the vision
   tower, and it composes cleanly with 1.51R's prefill savings.
@@ -87,7 +87,7 @@ no concurrency with 5a/5b/5c.
   costs no more than 10pp absolute accuracy on VideoMME N=30, which
   is the same accuracy-cost budget 1.51R runs at its winning
   operating point. Below this bar the mechanism is not viable.
-- **H3 (1.51V + 1.51R composition clears Sam's target)**: composed
+- **H3 (1.51V + 1.51R composition clears the pre-release source's target)**: composed
   pipeline at 1.51V @ 50% tokens + 1.51R @ kr=0.50 reaches e2e ≥ 1.5×
   on VideoMME N=30 with combined accuracy cost ≤ 15pp. 1.8× is the
   stretch target; 1.5× is the "ceiling lifted substantially above
@@ -180,8 +180,8 @@ composed + holdout).
 - Task #87 (this prereg).
 - Task #88 (arithmetic-ceiling empirical validation + paper figure) —
   the ceiling figure will be a natural home for 1.51V results.
-- Sam whitepaper §4 (where vision-tower acceleration is discussed in
-  passing; Sam's own pipeline does not prune inside the vision tower
+- pre-release source §4 (where vision-tower acceleration is discussed in
+  passing; the pre-release source's own pipeline does not prune inside the vision tower
   but acknowledges the arithmetic).
 
 ### Result

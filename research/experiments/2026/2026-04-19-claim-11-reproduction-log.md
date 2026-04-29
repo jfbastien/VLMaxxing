@@ -9,11 +9,11 @@ row 11 now carries a compressed digest + pointer here.
 **Provenance.** Extracted 2026-04-19 from `paper/claim-matrix.md`
 pre-compression. No new facts; formatting and ordering only.
 
-## Stage 1 — Sam's reference kr, n=30 null (2026-04-18)
+## Stage 1 — the pre-release source's reference kr, n=30 null (2026-04-18)
 
 - **Configuration:** kr=0.5, anchor=none, n=30 VideoMME dev.
 - **Result:** aggregate e2e=1.00×, gen=1.01× — **preregistered
-  NULL** at Sam's implicit operating point. Full statistical power
+  NULL** at the pre-release source's implicit operating point. Full statistical power
   at n=30.
 
 ## Stage 2b — kr=0.10 with Task #89 instrumentation (2026-04-18)
@@ -50,7 +50,7 @@ pre-compression. No new facts; formatting and ordering only.
 - **Ceiling@∞ = 1.462×** (even with s→∞, aggregate cannot exceed).
 - **Fixed cost D+P+V = 71.4% of e2e.** Decode 66.9%, vision 15.2%.
 - **Long items:** D alone = 85.7% of e2e, ceiling@∞ 1.098×.
-- **Implication.** Sam's 1.8× is arithmetically unreachable on
+- **Implication.** the pre-release source's 1.8× is arithmetically unreachable on
   long-video items without touching D (sparser frame sampling or
   faster decoder — Phase 1.54 territory). Phase 1.51V is the
   short/medium lever.
@@ -116,7 +116,7 @@ kr=0.25). The 8-frame kr × gemma_structural matrix is now closed.
 - **Ceiling@∞ on mean long-32 item = 1.312×** — token pruning
   cannot exceed this regardless of s on our pipeline.
 - **Phase 1.54 is the load-bearing lane** for aggregate SOTA on
-  long bucket. Sam's 1.8× long claim is NOT reproducible if
+  long bucket. the pre-release source's 1.8× long claim is NOT reproducible if
   wall-clock includes video decode; generate-only speedup 5.02×
   exceeds 1.8× — scope-definition, not mechanism failure.
 
@@ -194,7 +194,7 @@ kr=0.25). The 8-frame kr × gemma_structural matrix is now closed.
 ## Overall verdict for claim #11
 
 - **DURATION-CONDITIONAL PARTIAL REPRODUCTION.**
-- Sam's 1.8× e2e does **not** reproduce at Sam's implicit operating
+- the pre-release source's 1.8× e2e does **not** reproduce at the pre-release source's implicit operating
   point (Stage 1 kr=0.5: 1.00×).
 - Aggressive pruning (kr=0.10) gives e2e=1.12× aggregate on 8f,
   1.389× on 32f (time-weighted), at -10pp accuracy aggregate.
@@ -207,7 +207,7 @@ kr=0.25). The 8-frame kr × gemma_structural matrix is now closed.
   speedup is bounded by `1/(fixed_frac + (1-fixed_frac)/s)` with
   ≤5.2% median error across 7 regimes.
 - **Paper fallback:** publish as "duration-conditional partial
-  reproduction + pre-registered null at Sam's kr" with the
+  reproduction + pre-registered null at the pre-release source's kr" with the
   duration × kr grid as the headline figure and C-CEILING as the
   analytical contribution.
 

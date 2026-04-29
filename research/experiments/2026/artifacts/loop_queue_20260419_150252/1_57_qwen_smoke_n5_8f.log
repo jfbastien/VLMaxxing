@@ -1,4 +1,4 @@
-cmd: /Users/jfb/s/codec-through/.venv/bin/python3 /Users/jfb/s/codec-through/scripts/measure_feature_drift.py --model mlx-community/Qwen2.5-VL-7B-Instruct-4bit --manifest /Users/jfb/s/codec-through/research/benchmark_manifests/videomme_dev_v1.toml --n-items 5 --frames 8 --output /Users/jfb/s/codec-through/research/experiments/2026/artifacts/loop_queue_20260419_150252/phase1_57/qwen_8f_smoke_n5.json
+cmd: <repo-root>/.venv/bin/python3 <repo-root>/scripts/measure_feature_drift.py --model mlx-community/Qwen2.5-VL-7B-Instruct-4bit --manifest <repo-root>/research/benchmark_manifests/videomme_dev_v1.toml --n-items 5 --frames 8 --output <repo-root>/research/experiments/2026/artifacts/loop_queue_20260419_150252/phase1_57/qwen_8f_smoke_n5.json
 usage: measure_feature_drift.py [-h] [--model {qwen,gemma}] --manifest
                                 MANIFEST [--frame-count FRAME_COUNT]
                                 [--group {short,medium,long}]

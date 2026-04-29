@@ -14,7 +14,6 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 
 PY="${PYTHON:-./.venv/bin/python}"
-LOG="${PAPER_RESTART_LOG:-/tmp/claude/paper_restart.log}"
 
 echo "[restart] $(date) — starting deep-mechanism queue from 1.63G"
 "$PY" scripts/run_paper_deep_mechanism_queue.py --auto-commit --start-at 1.63G
