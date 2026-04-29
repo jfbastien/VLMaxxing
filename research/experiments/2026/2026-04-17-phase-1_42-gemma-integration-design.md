@@ -88,7 +88,8 @@ Justification: the point of phase 1.42 is to establish claim #7 (architecture fi
    - Add `--model-family {qwen, gemma}` CLI flag with auto-detect from model path (fallback `qwen`).
    - Add `_mix_gemma_features(sample, features, planner_config, reuse_classes, max_age, ...)` — returns `(mixed, raw_reused_ratios, active_reused_ratios)`.
    - In `_select_cached_features`, dispatch on `model_family`: qwen → `_mix_qwen_features`, gemma → `_mix_gemma_features`.
-   - Handle `DEFAULT_MODEL_PATH` correctly when user passes `--model-path ~/models/gemma-4-e4b-it-4bit`.
+   - Handle `DEFAULT_MODEL_PATH` correctly when user passes
+     `--model-path "$HOME/models/gemma-4-e4b-it-4bit"`.
 2. `scripts/run_benchmark_track_a.py` — frame input path:
    - Verify `prepare_inputs(processor, images=frames, prompts=...)` works for Gemma (mlx-vlm supports it generically; confirmed via `.venv/lib/python3.12/site-packages/mlx_vlm/models/gemma4/gemma4.py:100-106`).
    - `cached_image_features` kwarg is already supported in Gemma forward pass (same file, lines 100-106).
@@ -101,7 +102,7 @@ Justification: the point of phase 1.42 is to establish claim #7 (architecture fi
 
 File: `tests/test_gemma_track_a_smoke.py` (importorskip MLX):
 
-1. Load `~/models/gemma-4-e4b-it-4bit`.
+1. Load `$HOME/models/gemma-4-e4b-it-4bit`.
 2. Call `_compute_cached_features` on 2 frames of a small TOMATO video.
 3. Assert features shape is `(2 * 256, hidden_size)` (or whatever the per-item Gemma token count × hidden_size is; the validated current path is 256×hidden_size).
 4. Call `_mix_gemma_features` with whole-frame threshold that should trigger full reuse on near-identical frames.
@@ -145,7 +146,9 @@ When phase 1.42 v0 runs (post-halo-sweep + post-Gemma-smoke):
 
 ## Related memories / references
 
-- `~/models/gemma-4-e4b-it-4bit/config.json`: `patch_size=16`, `pooling_kernel_size=3`; use the live cached-feature geometry (35×35 patches pooled to 133 cached tokens) rather than stale metadata fields.
+- `$HOME/models/gemma-4-e4b-it-4bit/config.json`: `patch_size=16`,
+  `pooling_kernel_size=3`; use the live cached-feature geometry (35×35 patches
+  pooled to 133 cached tokens) rather than stale metadata fields.
 - `.venv/lib/python3.12/site-packages/mlx_vlm/models/gemma4/gemma4.py:100-106`: `cached_image_features` kwarg supported.
 - the pre-release source §2.7: "architecture-conditioned reuse fidelity is a spectrum, not a binary (windowed-exact vs all-global-approximate)."
 - Phase 1.51 prereg (novelty-pruning on Gemma): `research/experiments/2026/2026-04-17-phase-1_51-novelty-pruning-gemma-prereg.md`.

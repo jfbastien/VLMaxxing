@@ -212,6 +212,10 @@ block_row, block_col, mean, max_abs, cpf, top_k_mean, cosine_distance`.
 - `scripts/feature_change_oracle.py` — driver (commit f1f34ca and
   subsequent refinements in 8920e36)
 
+The `results/` files were local-only ignored outputs. Re-run or re-materialize
+them under `research/experiments/2026/artifacts/` before using this oracle as
+release claim-bearing evidence.
+
 Coverage caveat: 45 cache hits / 15 cache misses on each benchmark.
 The 15 misses are items whose cached features predate the v2
 cache-key rewrite (phase 1.32 model-content hash fix) and were not

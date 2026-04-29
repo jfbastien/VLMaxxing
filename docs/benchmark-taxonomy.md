@@ -36,8 +36,8 @@ presence here does not imply a local result.
   - `tomato_motion_holdout_v1.toml` (15 disjoint items, same groups)
     — phase 1.12 holdout
 - **Why we use it**: our current strongest motion-reasoning test,
-  and the benchmark the source pre-release source claims near-perfect
-  agreement on.
+  and the benchmark where the imported target claims near-perfect
+  agreement.
 - **Status**: **active**, primary temporal-reasoning benchmark.
 - **Open**: Phase 1.20 N=30 enlargement required for cross-paper
   comparability.
@@ -94,16 +94,16 @@ presence here does not imply a local result.
 - **Task format**: multiple choice.
 - **Scorer**: exact-match.
 - **Frame structure**: short / medium / long / very long.
-- **Why we might use it**: once a stable Track A positive survives
-  both TOMATO N=30 and MVBench N=30 holdout, Video-MME is the
-  broader external-validity check.
-- **Status**: **deferred operationally** (after N=30 and Planner 2.0
-  complete), but required for paper venue readiness per
-  `paper/claim-matrix.md` claim #8. Schedule phase 1.41 after
-  the N=30 + Planner 2.0 tranche, before paper submission.
-  Do not use as a diagnosis benchmark; the task heterogeneity
-  dilutes failure-mode signal — its role is breadth validation,
-  not mechanism diagnosis.
+- **Why we use it**: broader external-validity check after the TOMATO
+  and MVBench mechanism slices; also the paper-facing benchmark for
+  frame-count and C-VISION denominator evidence.
+- **Status**: **active / evaluated**. Phase 1.41 earned the Qwen
+  VideoMME breadth gate at 8f and strengthened it at 16f/32f; disjoint
+  16f holdout landed later. The dev-split 16f long-bucket regression
+  did not replicate on holdout, so VideoMME supports breadth and
+  denominator accounting, not a universal frame-scaling law.
+  Do not use it as the primary diagnosis benchmark; the task
+  heterogeneity dilutes failure-mode signal.
 
 ### EgoSchema (arXiv 2308.09126) — low-reuse long egocentric robustness
 

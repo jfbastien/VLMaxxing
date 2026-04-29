@@ -25,7 +25,8 @@ artifact standards and matched baselines are available.
 By design, sparse routing uses pixel-diff on sampled decoded frames, while the
 separate streaming lane uses H.264 metadata at native frame rate, including
 FFmpeg motion-vector side data exported with \texttt{-flags2 +export\_mvs}
-or \texttt{export\_side\_data=mvs}, plus \texttt{codecview=mv=pf+bf+bb}
+or current-build CLI \texttt{-export\_side\_data +mvs} / libavcodec
+\texttt{export\_side\_data=mvs}, plus \texttt{codecview=mv=pf+bf+bb}
 inspection paths \cite{ffmpegcodecs,ffmpegfilters}. The signals are protocol-specific, not
 interchangeable.
 

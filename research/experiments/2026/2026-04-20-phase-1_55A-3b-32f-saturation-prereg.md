@@ -31,7 +31,7 @@ from **"qualitatively different failure geometry across capacities"**.
 ## Protocol
 
 Identical to 1.55A-3B-24f but with `--frame-count 32`.
-- `--model-path ~/models/Qwen2.5-VL-3B-Instruct-4bit`
+- `--model-path "$HOME/models/Qwen2.5-VL-3B-Instruct-4bit"`
 - `--frame-count 32`
 - Same 7 short-bucket VideoMME clips × 3 Qs = 21 queries per mode.
 - Temperature 0 (greedy).

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Audit tracked artifacts for partial-snapshot integrity.
 
-Current scope (narrowed per 2026-04-16 audit):
+Current scope:
 
 1. Every tracked `*_summary.json` with both `completed_item_ids` and
    `requested_item_ids` present: flag rows where
@@ -10,6 +10,8 @@ Current scope (narrowed per 2026-04-16 audit):
 2. Every `*_summary.json` with zero completed items but a non-zero
    `cached_accuracy` / `dense_accuracy` / `agreement` is flagged
    (sanity guard against malformed summaries).
+3. Paper figure/data snapshots must cite source paths that exist in the
+   checkout and are tracked by git.
 
 Not yet implemented (see TODOs in code):
 
@@ -31,11 +33,21 @@ in-flight.
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 from pathlib import Path  # noqa: I001
 
 ARTIFACTS_ROOT = Path("research/experiments/2026/artifacts")
 EXPERIMENTS_ROOT = Path("research/experiments/2026")
+PAPER_DATA_ROOTS = (Path("paper/figures"), Path("paper/arxiv/generated/data"))
+SOURCE_KEYS = {
+    "source",
+    "artifact",
+    "patched_source",
+    "reference_source",
+    "metrics_source",
+    "summary_source",
+}
 
 
 def _check_summary(path: Path) -> list[str]:
@@ -103,9 +115,58 @@ def _scan_note_references() -> list[str]:
     return problems
 
 
+def _tracked_paths() -> set[str]:
+    output = subprocess.check_output(["git", "ls-files"], text=True)
+    return set(output.splitlines())
+
+
+def _iter_source_paths(payload: object) -> list[str]:
+    paths: list[str] = []
+    if isinstance(payload, dict):
+        for key, value in payload.items():
+            if key in SOURCE_KEYS and isinstance(value, str):
+                paths.append(value)
+            elif key == "source_paths" and isinstance(value, list):
+                paths.extend(str(item) for item in value)
+            else:
+                paths.extend(_iter_source_paths(value))
+    elif isinstance(payload, list):
+        for value in payload:
+            paths.extend(_iter_source_paths(value))
+    return paths
+
+
+def _is_repo_path(path: str) -> bool:
+    return path.startswith(("docs/", "paper/", "research/", "scripts/", "src/", "tests/"))
+
+
+def _scan_paper_data_sources() -> list[str]:
+    problems: list[str] = []
+    tracked = _tracked_paths()
+    for root in PAPER_DATA_ROOTS:
+        if not root.exists():
+            continue
+        for path in root.glob("*.json"):
+            try:
+                payload = json.loads(path.read_text())
+            except json.JSONDecodeError as exc:
+                problems.append(f"{path}: JSON decode error: {exc}")
+                continue
+            for source in _iter_source_paths(payload):
+                if not _is_repo_path(source):
+                    continue
+                source_path = Path(source)
+                if not source_path.exists():
+                    problems.append(f"{path}: cites missing source path {source}")
+                elif source not in tracked:
+                    problems.append(f"{path}: cites untracked source path {source}")
+    return problems
+
+
 def main() -> int:
     problems: list[str] = []
     problems.extend(_scan_summaries())
+    problems.extend(_scan_paper_data_sources())
     # Note-reference check is noisy for preregs that reference
     # pending artifacts; skip for now but leave the hook in place.
     # problems.extend(_scan_note_references())

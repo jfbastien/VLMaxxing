@@ -69,8 +69,9 @@ Validated enough to guide work:
 - pixel diff is the current semantic-validation baseline
 - bounded measured sparse-vision execution now exists, but broad sparse-backend
   coverage and sparse LM prefill remain open systems work
-- imported target claims are tracked in the claim register; raw seed imports are
-  intentionally absent from the release tree because git history preserves them
+- imported target claims are tracked in the claim register; raw historical
+  source imports are intentionally absent from the release tree because git
+  history preserves them
 
 Deprioritized until new evidence appears:
 

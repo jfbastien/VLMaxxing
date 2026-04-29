@@ -43,7 +43,7 @@ Hypotheses:
 
 Acceptance band:
 
-- scouting produces `docs/fastv-composition-plan.md` with:
+- scouting produces a FastV composition implementation sketch with:
   - hook point map
   - MLX API touch list
   - 1–2 day vs 1–2 week classification
@@ -62,8 +62,10 @@ Inconclusive:
 
 Planned sources to read:
 
-- FastV paper (FastV: Fast Video Understanding via Fast Vision Token
-  Reduction, CVPR 2024)
+- FastV / *An Image is Worth 1/2 Tokens After Layer 2:
+  Plug-and-Play Inference Acceleration for Large Vision-Language Models*,
+  ECCV 2024 Oral, pp. 19-35, doi:10.1007/978-3-031-73004-7_2;
+  arXiv:2403.06764
 - mlx-vlm attention mask exposure in Qwen2.5-VL
 - current composition precedents in the experiment registry and claim matrix
 
@@ -72,15 +74,18 @@ Runtime: ~1 hr research + 30 min writing.
 ## Execution
 
 Completed 2026-04-16 as a research-only scouting pass. No code was
-written, no mlx-vlm fork was made. Scouting report committed to
-`docs/fastv-composition-plan.md`.
+written, no mlx-vlm fork was made. The historical scouting report was later
+removed from the release tree because current claim status is covered by
+`paper/claim-matrix.md` and `docs/related-work-table.md`; the original sketch
+remains in git history.
 
 ## Result
 
-Preregistration outcome: **Accepted with caveat** — the scouting
-output is a clean design doc (`docs/fastv-composition-plan.md`) and
-covers all preregistered deliverables, but the `trivially portable`
-claim was too strong and had to be corrected per 2026-04-16 audit.
+Preregistration outcome: **Accepted with caveat** — the scouting output
+covered all preregistered deliverables, but the `trivially portable` claim was
+too strong and had to be corrected per 2026-04-16 audit. The standalone design
+doc was later removed from the release tree as historical, non-claim-bearing
+planning material.
 
 Key findings:
 

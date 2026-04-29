@@ -42,7 +42,7 @@ autoregression"**.
 ## Protocol
 
 Identical to 1.55A persistent-KV 20f run but with non-greedy sampling.
-- `--model-path ~/models/Qwen2.5-VL-7B-Instruct-4bit`
+- `--model-path "$HOME/models/Qwen2.5-VL-7B-Instruct-4bit"`
 - `--frame-count 20`
 - Same 7 short-bucket VideoMME clips × 3 Qs = 21 queries per mode.
 - `--temperature 0.7 --min-p 0.05` (both session and baseline).

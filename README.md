@@ -14,7 +14,7 @@ The repo is organized around a small set of claim-bearing regimes:
 - **candidate C-STREAM**: native-rate streaming state reuse is still pending a
   harmonized artifact bundle and matched baselines.
 
-Historical seed imports and old review packets are not part of the release
+Historical source imports and old review packets are not part of the release
 surface. The durable imported-target summary is in
 [docs/claim-register.md](docs/claim-register.md), local reproduction status is
 in [docs/reproduction-status.md](docs/reproduction-status.md), and raw history

@@ -4,7 +4,8 @@ Last updated: 2026-04-29.
 
 This file is the active roadmap only. Historical phase detail lives in dated
 experiment notes and [research/experiments/registry.md](research/experiments/registry.md).
-Git history preserves removed seed imports and superseded strategy notes.
+Git history preserves removed historical source imports and superseded strategy
+notes.
 
 ## Current Position
 
@@ -46,8 +47,9 @@ Git history preserves removed seed imports and superseded strategy notes.
 4. **Release hygiene.**
    - default repo should foreground code, tests, checked artifacts, manuscript
      tooling, validators, schemas, and concise reproduction docs
-   - historical seed imports, stale review packets, and one-off legacy harnesses
-     should stay out of the release tree because git history is sufficient
+   - historical source imports, stale review packets, and one-off legacy
+     harnesses should stay out of the release tree because git history is
+     sufficient
 
 ## Source Of Truth
 

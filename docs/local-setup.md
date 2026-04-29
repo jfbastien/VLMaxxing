@@ -90,7 +90,7 @@ Why this order:
 - `Qwen2.5-VL-7B` is the closest confirmation path to the imported predecessor results
 
 This repo does not require a specific model directory layout, but the current
-local convention is `~/models/<model-name>/`.
+local convention is `${MODEL_ROOT:-$HOME/models}/<model-name>/`.
 
 Gemma note:
 

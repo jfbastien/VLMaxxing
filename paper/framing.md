@@ -154,13 +154,14 @@ headline cells plus a matched Qwen transfer point) + C-CEILING
 (analytical framework) is paper-grade for an efficiency-focused venue
 (NeurIPS / ICML efficiency workshop or ICLR Tiny Papers). The systems
 angle is real, but a systems venue like MLSys still wants more: a
-measured sparse backend, a clean systems baseline such as screenshot
+broader sparse backend, a clean systems baseline such as screenshot
 polling, and a broader streaming evaluation. Main-track readiness now
-depends on broader asks: (a) one measured sparse-path end-to-end delta,
-(b) a cleaner local bridge into the streaming / deployment regime,
-(c) a decoder-integrated codec-native / native-rate systems bridge, and
-(d) a scroll/pan or egomotion regime-boundary probe on a corpus that
-actually contains that motion regime.
+depends on broader asks: (a) sparse-backend coverage beyond the bounded
+measured sparse-vision envelope, including sparse LM prefill if claimed,
+(b) a cleaner local bridge into the streaming / deployment regime, (c) a
+decoder-integrated codec-native / native-rate systems bridge, and (d) a
+scroll/pan or egomotion regime-boundary probe on a corpus that actually
+contains that motion regime.
 
 ## Protocol matters — non-interchangeable evaluation regimes
 
@@ -355,9 +356,9 @@ stage-bounded acceleration, including the vision-axis analog
 **attention-propagation drift** as the fidelity mechanism — NOT
 positional-encoding drift. The local stack proves the mechanism at
 small scale under strict prereg/falsification discipline; the separate
-streaming stack reports scale-out companion evidence under operational protocols. The paper
-reports the **labeled evidence union** under a single analytical theory, with
-honest accounting of where each number came from.
+scale-out lane reports companion evidence only after checked operational
+protocol bundles land. The paper reports the **labeled evidence union** under a
+single analytical theory, with honest accounting of where each number came from.
 
 Weak streaming case-study claims without matched baselines (e.g.
 single-cell streaming anecdotes) are **appendix-bound** — they do not
@@ -376,13 +377,13 @@ codec-through locally:
   planner-substitution bridge now survives both calibration-mode and
   calibration-source ablations, but the offline extraction path is still not a
   systems win
-- sparse-execution measured delta for claim 5 (dense timing infra exists
-  on dense; sparse path unwritten)
+- broad sparse-backend coverage beyond the bounded measured sparse-vision
+  envelope
 - broader cross-architecture C-VISION coverage beyond the matched Qwen
   VideoMME point
 
-These are the four largest outstanding bridges between the repos; the
-three contributions above stand *without* them.
+These are the largest outstanding bridges between local mechanism evidence and
+future scale-out claims; the three contributions above stand *without* them.
 
 ## Reviewer-Facing Limitations (shared fidelity vocabulary)
 
@@ -450,9 +451,10 @@ revised pre-release source §8 and codex 2026-04-16 review, the paper must state
    [`publishability-status.md`](publishability-status.md) §Attention-
    context-drift-vs-PE-drift for the Codex round-21 reconciliation.
 
-## Measured Sparse-Execution Reporting Template (from the scale-out source, for future use)
+## Broader Sparse-Backend Reporting Template
 
-When measured sparse execution lands, report:
+The local paper now has bounded measured sparse-vision evidence. When broader
+sparse-backend or scale-out reporting lands, report:
 
 | Metric | Content types | Unit |
 |---|---|---|
@@ -567,7 +569,8 @@ Near-term paper path:
   temporal-coverage-metrics doc)
 - matched dense frame-budget baselines PLUS novelty-ranked dense (phase
   1.34) and event-window oracle (phase 1.35)
-- careful sparse-execution timing only after the sparse path exists
+- measured sparse-vision timing with broader sparse-backend and sparse LM
+  prefill coverage still open
 
 Follow-on systems work (belongs in the one-paper discussion, NOT
 a separate systems paper per the round-17 reframe):
@@ -717,9 +720,10 @@ Classical codecs (H.264/H.265, VVC, AV1) optimize for the
 human-visual-system rate-distortion objective. A growing body of
 standards work targets machine consumption instead:
 
-- **MPEG-AI Part 2 / VCM** (Video Coding for Machines): ongoing
-  standardization work aiming to define bitstream syntax, decoding, and
-  descriptors optimized for downstream machine tasks, not human viewing.
+- **MPEG-AI Part 2 / VCM** (Video Coding for Machines): ISO/IEC DIS
+  23888-2, Draft International Standard in enquiry stage 40.20 as of the
+  current ISO page, aiming to define bitstream syntax, decoding, and descriptors
+  optimized for downstream machine tasks, not human viewing.
 - **JPEG AI**: learned image codec standardization activity with
   machine-task rate-distortion as a first-class objective.
 - **DCVC-RT** (Deep Contextual Video Compression — Real-Time): the

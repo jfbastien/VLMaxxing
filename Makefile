@@ -19,6 +19,7 @@ check:
 	uv run ruff check .
 	uv run mypy src tests
 	uv run pytest
+	uv run python scripts/audit_artifact_integrity.py
 
 paper-doctor:
 	$(PAPER_PYTHON) paper/arxiv/scripts/doctor.py

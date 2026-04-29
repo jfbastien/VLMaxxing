@@ -64,9 +64,9 @@ Example:
 ```markdown
 ## Artifacts
 
-- `results/novelty_ranked_dense/tomato_holdout_n6.json` (N=30, commit 8920e36)
-- `results/novelty_ranked_dense/tomato_holdout_n8.json` (N=30, commit e715cc5)
-- `research/experiments/2026/artifacts/phase1_21_mvbench_motion_holdout_v2_dense_summary.json` (N=30, commit d1e6...)
+- `research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_dense/frame_6_summary.json` (N=30, commit short-SHA)
+- `research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_dense/frame_8_summary.json` (N=30, commit short-SHA)
+- `research/experiments/2026/artifacts/phase1_21_mvbench_motion_holdout_v2_dense/frame_8_summary.json` (N=30, commit short-SHA)
 ```
 
 This makes "did this number come from the commit I think it did?"

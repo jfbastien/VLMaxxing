@@ -31,7 +31,8 @@ the specific tokenizer/decoder distribution.
 
 ## Protocol
 
-Identical to 1.55A 20f but with `--model-path ~/models/Qwen2.5-VL-3B-Instruct-4bit`.
+Identical to 1.55A 20f but with
+`--model-path "$HOME/models/Qwen2.5-VL-3B-Instruct-4bit"`.
 Same 7 short-bucket VideoMME clips × 3 Qs = 21 queries per mode.
 Same `--frame-count 20`. Temperature 0 (greedy).
 

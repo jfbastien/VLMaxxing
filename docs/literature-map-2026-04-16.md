@@ -181,10 +181,12 @@ citing in a paper table.
 
 Our slot on the same axes:
 `(pre-ViT / frame-domain / training-free / cross-frame)` —
-genuinely orthogonal to every method above on the signal-source axis
-(they all use attention; we use frame-domain pixel statistics) and
-orthogonal to FastV/SparseVLM/VScan/VLCache on the stage axis (we
-prune before they see tokens).
+adjacent post-token methods operate after visual tokens or cache state
+exists, using attention-derived scores, density clustering, feature
+similarity/importance, scan-and-merge policies, or cache-reuse signals.
+Our routing signal is frame-domain pixel/codec change before dense
+tokenization, so the stage and signal-source axes remain different from
+FastV/SparseVLM/VScan/VLCache and adjacent video-token reducers.
 
 Headline compute-reduction numbers (orientation only — numbers come
 from heterogeneous model stacks and benchmarks, not a head-to-head
@@ -243,49 +245,20 @@ comparison):
   lineage. Good for historical framing in the paper intro.
 - **MPEG VCM / JPEG AI** — long-term machine-first codec framing.
 
-## Candidate paper slot (target, not current claim) — round-17 reframe
+## Current paper slot
 
-> **Training-free multiplicative end-to-end speedup for video VLMs
-> via temporal feature reuse composed with novelty-pruning, measured
-> on VideoMME with Gemma 4-E4B-4bit, validated on temporal-reasoning
-> benchmarks (TOMATO, MVBench) with Qwen 2.5-VL-7B-4bit. One paper,
-> co-authored with the pre-release source, results-first with method content in an
-> appendix.**
+> **Training-free anti-recomputation for video VLMs:** component speedups are
+> bounded by the wall-clock share they own, same-video follow-up queries can
+> collapse to sub-second after-ingest latency inside a tested cache-reuse
+> envelope, and bounded measured sparse-vision execution produces first-query
+> wall-clock gains without claiming a broad sparse backend.
 
-The paper's SOTA-facing claim is the **multiplicative big-number
-speedup** (lane B). The routing / bounded-staleness method content
-(lane A) is supporting evidence that explains *why* the speedup
-is correct and not a content-specific lucky shot.
-
-The following six claims were the 2026-04-16 target decomposition. They are
-preserved to explain the positioning map; current evidence status is mixed and
-is summarized in the table below plus `paper/claim-matrix.md`.
-
-1. Multiplicative end-to-end speedup ≥ 1.8× on VideoMME with Gemma
-   via novelty-pruning alone (phase 1.51 pending). THE headline.
-   **[REPRODUCTION TARGET, not a pre-release pre-release source claim.]** The source.s
-   pre-release source implementationrts 5.4× prefill and 4.2× e2e (Qwen 32f talking-
-   head) on larger models / different regimes; 1.8× was our
-   internal preregistered e2e gate for "the mechanism delivers a
-   real multiplicative win on our regime." Arithmetic-ceiling
-   analysis shows 4B-class / 8-frame is bounded to ≤1.46× at
-   kr=0.10 aggregate; 32-frame lifts the ceiling (short-32 earned
-   1.663×, medium-32 1.565×, long-32 1.234× — all at Δacc=-0.10).
-2. Multiplicative composition: temporal reuse + novelty-pruning
-   compose as measured (phase 1.52 pending). Tests whether The source.s
-   4–5× Gemma 4 26B composition transfers to Gemma 4 4B on M3 Air.
-3. Routing quality: codec-derived pixel-diff proxies are valid
-   routing signals (phase 1.36 oracle DONE — r=0.233 to r=0.504,
-   content-conditional, weak-to-moderate).
-4. Bounded-staleness + concentration-aware routing repairs
-   temporal failures on TOMATO + MVBench (phase 1.20/1.21 DONE
-   at N=30; phase 1.37B halo-veto RETIRED 2026-04-17 as
-   preregistered null — NO-LIFT on TOMATO dev, HURTS on MVBench dev).
-5. VideoMME validation on Qwen (phase 1.41 pending asset unpack).
-6. Real sparse execution converts the proxy gain into measured
-   speedup (Track B, claim 5 in the matrix). Bounded measured sparse-vision
-   cells now exist; broad sparse-backend and sparse LM prefill coverage remain
-   open.
+The old 2026-04-16 target aimed at an unearned SOTA-style composition claim.
+The current paper no longer leads with that framing: C-CEILING, C-PERSIST, and
+bounded C-VISION are the claim-bearing surface. Candidate C-STREAM remains a
+deployment/streaming lane until validated scale-out artifacts and matched
+baselines land. The current evidence status is summarized below plus
+`paper/claim-matrix.md`.
 
 ### Current evidence level (last partial refresh 2026-04-29)
 

@@ -1,231 +1,238 @@
 {
+  "composition_cells": [
+    {
+      "error_pp": 1.43,
+      "label": "VideoMME n=60 composition audit",
+      "observed_e2e": 1.042,
+      "predicted_e2e": 1.027662622471693,
+      "product": 0.0269,
+      "source_paths": [
+        "research/experiments/2026/2026-04-21-phase-1_51V-exp10-n60-findings.md",
+        "research/experiments/2026/artifacts/phase1_51V_exp10_n60/exp10n60_a_vonly_ref_summary.json",
+        "research/experiments/2026/artifacts/phase1_51V_exp10_n60/exp10n60_b_vplus_novelty030_summary.json"
+      ],
+      "split": "composition",
+      "v_red": 0.43,
+      "v_share": 0.0626
+    }
+  ],
+  "cross_arch_cells": [
+    {
+      "error_pp": 0.1,
+      "label": "Qwen VideoMME 8f dev",
+      "observed_e2e": 1.044,
+      "predicted_e2e": 1.043,
+      "product": 0.041,
+      "source_paths": [
+        "research/experiments/2026/2026-04-23-phase-1_51V-qwen-cross-arch-findings.md",
+        "research/experiments/2026/artifacts/phase1_51V_qwen_cross_arch/videomme_dev30_8f_unpatched_summary.json",
+        "research/experiments/2026/artifacts/phase1_51V_qwen_cross_arch/videomme_dev30_8f_L2_kr050_summary.json",
+        "research/experiments/2026/artifacts/phase1_51V_qwen_cross_arch/pair_analysis.txt"
+      ],
+      "split": "cross-arch",
+      "v_red": 0.398,
+      "v_share": 0.103
+    }
+  ],
   "dev_cells": [
     {
+      "error_pp": 1.8,
       "label": "VideoMME 8f dev",
-      "split": "dev",
-      "v_share": 0.152,
-      "v_red": 0.39,
-      "predicted_e2e": 1.062,
       "observed_e2e": 1.08,
+      "predicted_e2e": 1.062,
+      "product": 0.0593,
       "source_paths": [
         "research/experiments/2026/2026-04-21-phase-1_51V-expansion-findings.md",
         "research/experiments/2026/artifacts/phase1_51V_expansion/exp01_videomme_8f_unpatched_summary.json",
         "research/experiments/2026/artifacts/phase1_51V_expansion/exp02_videomme_8f_L2_kr050_summary.json"
       ],
-      "error_pp": 1.8,
-      "product": 0.0593
+      "split": "dev",
+      "v_red": 0.39,
+      "v_share": 0.152
     },
     {
+      "error_pp": 1.5,
       "label": "VideoMME 16f dev",
-      "split": "dev",
-      "v_share": 0.243,
-      "v_red": 0.39,
-      "predicted_e2e": 1.105,
       "observed_e2e": 1.12,
+      "predicted_e2e": 1.105,
+      "product": 0.0948,
       "source_paths": [
         "research/experiments/2026/2026-04-21-phase-1_51V-expansion-findings.md",
         "research/experiments/2026/artifacts/phase1_51V_expansion/exp11_videomme_16f_unpatched_summary.json",
         "research/experiments/2026/artifacts/phase1_51V_expansion/exp12_videomme_16f_L2_kr050_summary.json"
       ],
-      "error_pp": 1.5,
-      "product": 0.0948
+      "split": "dev",
+      "v_red": 0.39,
+      "v_share": 0.243
     },
     {
+      "error_pp": -2.7,
       "label": "MVBench 8f dev",
-      "split": "dev",
-      "v_share": 0.478,
-      "v_red": 0.4,
-      "predicted_e2e": 1.237,
       "observed_e2e": 1.21,
+      "predicted_e2e": 1.237,
+      "product": 0.1912,
       "source_paths": [
         "research/experiments/2026/2026-04-21-phase-1_51V-expansion-findings.md",
         "research/experiments/2026/artifacts/phase1_51V_expansion/exp05_mvbench_8f_unpatched_summary.json",
         "research/experiments/2026/artifacts/phase1_51V_expansion/exp06_mvbench_8f_L2_kr050_summary.json"
       ],
-      "error_pp": -2.7,
-      "product": 0.1912
+      "split": "dev",
+      "v_red": 0.4,
+      "v_share": 0.478
     },
     {
+      "error_pp": 2.6,
       "label": "TOMATO 8f dev",
-      "split": "dev",
-      "v_share": 0.407,
-      "v_red": 0.427,
-      "predicted_e2e": 1.214,
       "observed_e2e": 1.24,
+      "predicted_e2e": 1.214,
+      "product": 0.1738,
       "source_paths": [
         "research/experiments/2026/2026-04-21-phase-1_51V-expansion-findings.md",
         "research/experiments/2026/artifacts/phase1_51V_expansion/exp07_tomato_8f_unpatched_summary.json",
         "research/experiments/2026/artifacts/phase1_51V_expansion/exp08_tomato_8f_L2_kr050_summary.json"
       ],
-      "error_pp": 2.6,
-      "product": 0.1738
+      "split": "dev",
+      "v_red": 0.427,
+      "v_share": 0.407
     }
   ],
   "holdout_cells": [
     {
+      "error_pp": 4.48,
       "label": "VideoMME 8f holdout",
-      "split": "holdout",
-      "v_share": 0.1545,
-      "v_red": 0.413,
-      "predicted_e2e": 1.0681575297361703,
       "observed_e2e": 1.113,
+      "predicted_e2e": 1.0681575297361703,
+      "product": 0.0638,
       "source_paths": [
         "research/experiments/2026/2026-04-21-phase-1_51V-session3-findings.md",
         "research/experiments/2026/artifacts/phase1_51V_session3/exp17_videomme_holdout_8f_unpatched_summary.json",
         "research/experiments/2026/artifacts/phase1_51V_session3/exp18_videomme_holdout_8f_L2_kr050_summary.json"
       ],
-      "error_pp": 4.48,
-      "product": 0.0638
+      "split": "holdout",
+      "v_red": 0.413,
+      "v_share": 0.1545
     },
     {
+      "error_pp": 13.65,
       "label": "MVBench 8f holdout",
-      "split": "holdout",
-      "v_share": 0.4521,
-      "v_red": 0.471,
-      "predicted_e2e": 1.270549712226843,
       "observed_e2e": 1.407,
+      "predicted_e2e": 1.270549712226843,
+      "product": 0.2129,
       "source_paths": [
         "research/experiments/2026/2026-04-21-phase-1_51V-session4-findings.md",
         "research/experiments/2026/artifacts/phase1_51V_session4/exp19_mvbench_holdout_8f_unpatched_summary.json",
         "research/experiments/2026/artifacts/phase1_51V_session4/exp20_mvbench_holdout_8f_L2_kr050_summary.json"
       ],
-      "error_pp": 13.65,
-      "product": 0.2129
+      "split": "holdout",
+      "v_red": 0.471,
+      "v_share": 0.4521
     },
     {
+      "error_pp": 3.88,
       "label": "TOMATO 8f holdout",
-      "split": "holdout",
-      "v_share": 0.3839,
-      "v_red": 0.35,
-      "predicted_e2e": 1.155221311522755,
       "observed_e2e": 1.194,
+      "predicted_e2e": 1.155221311522755,
+      "product": 0.1344,
       "source_paths": [
         "research/experiments/2026/2026-04-21-phase-1_51V-session5-findings.md",
         "research/experiments/2026/artifacts/phase1_51V_session5/exp23_tomato_holdout_8f_unpatched_summary.json",
         "research/experiments/2026/artifacts/phase1_51V_session5/exp24_tomato_holdout_8f_L2_kr050_summary.json"
       ],
-      "error_pp": 3.88,
-      "product": 0.1344
-    }
-  ],
-  "cross_arch_cells": [
-    {
-      "label": "Qwen VideoMME 8f dev",
-      "split": "cross-arch",
-      "v_share": 0.103,
-      "v_red": 0.398,
-      "predicted_e2e": 1.043,
-      "observed_e2e": 1.044,
-      "source_paths": [
-        "research/experiments/2026/2026-04-22-phase-1_57-qwen-bridge-findings.md",
-        "research/experiments/2026/artifacts/phase1_57/qwen_8f_dev30.json"
-      ],
-      "error_pp": 0.1,
-      "product": 0.041
+      "split": "holdout",
+      "v_red": 0.35,
+      "v_share": 0.3839
     }
   ],
   "measured_sparse_cells": [
     {
+      "error_pp": -0.5,
       "label": "Qwen sparse vision 8f n=60",
-      "split": "measured sparse",
-      "v_share": 0.0998,
-      "v_red": 0.448,
-      "predicted_e2e": 1.047,
       "observed_e2e": 1.042,
+      "predicted_e2e": 1.047,
+      "product": 0.0447,
       "source_paths": [
-        "research/experiments/2026/2026-04-29-phase-1_63E-track-b-frame-scaling-findings.md",
+        "research/experiments/2026/2026-04-27-phase-1_63E-8f-findings.md",
         "research/experiments/2026/artifacts/phase1_63E_track_b_frame_scaling/pair_summary_8f.json"
       ],
-      "error_pp": -0.5,
-      "product": 0.0447
+      "split": "measured sparse",
+      "v_red": 0.448,
+      "v_share": 0.0998
     },
     {
+      "error_pp": 6.3,
       "label": "Gemma sparse vision 8f n=60",
-      "split": "measured sparse",
-      "v_share": 0.0785,
-      "v_red": 0.482,
-      "predicted_e2e": 1.039,
       "observed_e2e": 1.102,
+      "predicted_e2e": 1.039,
+      "product": 0.0378,
       "source_paths": [
-        "research/experiments/2026/2026-04-29-phase-1_63G-gemma-track-b-findings.md",
+        "research/experiments/2026/2026-04-27-phase-1_63G-gemma-track-b-prereg.md",
+        "research/experiments/2026/2026-04-29-phase-1_63G-format-diagnostic-findings.md",
         "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/pair_summary_8f.json"
       ],
-      "error_pp": 6.3,
-      "product": 0.0378
+      "split": "measured sparse",
+      "v_red": 0.482,
+      "v_share": 0.0785
     },
     {
+      "error_pp": -3.2,
       "label": "Gemma sparse vision 16f n=60",
-      "split": "measured sparse",
-      "v_share": 0.1556,
-      "v_red": 0.406,
-      "predicted_e2e": 1.067,
       "observed_e2e": 1.035,
+      "predicted_e2e": 1.067,
+      "product": 0.0632,
       "source_paths": [
-        "research/experiments/2026/2026-04-29-phase-1_63G-gemma-track-b-findings.md",
+        "research/experiments/2026/2026-04-27-phase-1_63G-gemma-track-b-prereg.md",
+        "research/experiments/2026/2026-04-29-phase-1_63G-format-diagnostic-findings.md",
         "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/pair_summary_16f.json"
       ],
-      "error_pp": -3.2,
-      "product": 0.0632
+      "split": "measured sparse",
+      "v_red": 0.406,
+      "v_share": 0.1556
     },
     {
+      "error_pp": 0.9,
       "label": "Gemma sparse vision 32f n=60",
-      "split": "measured sparse",
-      "v_share": 0.242,
-      "v_red": 0.433,
-      "predicted_e2e": 1.117,
       "observed_e2e": 1.126,
+      "predicted_e2e": 1.117,
+      "product": 0.1048,
       "source_paths": [
-        "research/experiments/2026/2026-04-29-phase-1_63G-gemma-track-b-findings.md",
+        "research/experiments/2026/2026-04-27-phase-1_63G-gemma-track-b-prereg.md",
+        "research/experiments/2026/2026-04-29-phase-1_63G-format-diagnostic-findings.md",
         "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/pair_summary_32f.json"
       ],
-      "error_pp": 0.9,
-      "product": 0.1048
+      "split": "measured sparse",
+      "v_red": 0.433,
+      "v_share": 0.242
     },
     {
+      "error_pp": -1.2,
       "label": "Gemma sparse vision 32f short",
-      "split": "measured sparse",
-      "v_share": 0.5856,
-      "v_red": 0.422,
-      "predicted_e2e": 1.328,
       "observed_e2e": 1.316,
+      "predicted_e2e": 1.328,
+      "product": 0.2471,
       "source_paths": [
-        "research/experiments/2026/2026-04-29-phase-1_63G-gemma-track-b-findings.md",
+        "research/experiments/2026/2026-04-27-phase-1_63G-gemma-track-b-prereg.md",
+        "research/experiments/2026/2026-04-29-phase-1_63G-format-diagnostic-findings.md",
         "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/scaling_summary.json"
       ],
-      "error_pp": -1.2,
-      "product": 0.2471
+      "split": "measured sparse",
+      "v_red": 0.422,
+      "v_share": 0.5856
     },
     {
+      "error_pp": 1.1,
       "label": "Qwen sparse vision 16f kr=0.85",
-      "split": "measured sparse",
-      "v_share": 0.149,
-      "v_red": 0.136,
-      "predicted_e2e": 1.021,
       "observed_e2e": 1.032,
+      "predicted_e2e": 1.021,
+      "product": 0.0203,
       "source_paths": [
         "research/experiments/2026/2026-04-29-phase-1_63H-16f-kr-sweep-findings.md",
         "research/experiments/2026/artifacts/phase1_63H_16f_kr_sweep/pair_summary_kr085_16f.json"
       ],
-      "error_pp": 1.1,
-      "product": 0.0203
+      "split": "measured sparse",
+      "v_red": 0.136,
+      "v_share": 0.149
     }
   ],
-  "composition_cells": [
-    {
-      "label": "VideoMME n=60 composition audit",
-      "split": "composition",
-      "v_share": 0.0626,
-      "v_red": 0.43,
-      "predicted_e2e": 1.027662622471693,
-      "observed_e2e": 1.042,
-      "source_paths": [
-        "research/experiments/2026/2026-04-21-phase-1_51V-exp10-n60-findings.md",
-        "research/experiments/2026/artifacts/phase1_51V_exp10_n60/summary.json"
-      ],
-      "error_pp": 1.43,
-      "product": 0.0269
-    }
-  ],
-  "worst_abs_error_pp": 13.65,
-  "median_abs_error_pp": 1.8
+  "median_abs_error_pp": 1.8,
+  "worst_abs_error_pp": 13.65
 }

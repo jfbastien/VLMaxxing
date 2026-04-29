@@ -11,12 +11,14 @@ smoke results, matched low-FPS or screenshot-polling baselines, and exact source
 paths.
 
 The local Qwen session/streaming bridge explains why this gate matters. The
-best landed bridge restores aggregate first-query correctness and reaches
-2.7869$\times$ paired speedup, but still misses the follow-up fidelity target.
-Instrumentation also shows that follow-up vision pruning is inactive in that
-family: follow-up image tokens are cache-served rather than actively pruned. The
-right interpretation is dense-first-query admission plus K-cache reuse, not a
-validated native-rate sparse-vision backend.
+1.30W dense-Q0 reference restores aggregate first-query correctness and reaches
+2.79$\times$ paired speedup, missing the preregistered 3.0$\times$ rescue
+floor. The later 1.30AD instrumented cache-reuse rerun preserves the same
+aggregate boundary and reaches 3.02$\times$, but still misses the follow-up
+fidelity target. Instrumentation also shows that follow-up vision pruning is
+inactive in that family: follow-up image tokens are cache-served rather than
+actively pruned. The right interpretation is dense-first-query admission plus
+K-cache reuse, not a validated native-rate sparse-vision backend.
 
 \begin{table}[H]
 \centering

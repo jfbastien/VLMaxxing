@@ -193,7 +193,10 @@ uv run python scripts/run_novelty_ranked_dense.py \
 
 ## Paper implications
 
-- **Claim #9 SUPPORTED on both benchmarks.** Cached base policy
+- **Claim #9 SUPPORTED on both benchmarks as a local historical comparator.**
+  The raw novelty-ranked JSONs were written under ignored `results/`; re-run or
+  re-materialize them under `research/experiments/2026/artifacts/` before using
+  this comparator as release claim-bearing evidence. Cached base policy
   beats the best novelty-ranked cell at equal-or-lower effective
   fresh-frame budget on both TOMATO and MVBench holdout N=30.
   Suggested paper sentence: *"A matched-budget novelty-ranked
@@ -225,9 +228,13 @@ uv run python scripts/run_novelty_ranked_dense.py \
 - `results/novelty_ranked_dense/mvbench_holdout_n6.json` (N=30, commit 3804ee6)
 - `results/novelty_ranked_dense/mvbench_holdout_n8.json` (N=30, commit 3804ee6)
 
+These `results/` files were local-only ignored outputs, not checked release
+artifacts.
+
 TOMATO and MVBench uniform dense baselines:
 
-- `research/experiments/2026/artifacts/phase1_21_mvbench_motion_holdout_v2_dense_summary.json` (per phase 1.21)
+- `research/experiments/2026/artifacts/phase1_21_mvbench_motion_holdout_v2_dense/frame_4_summary.json`
+  through `frame_8_summary.json` (per phase 1.21)
 - TOMATO uniform dense numbers cited from phase 1.20 note (commit 42b06eb).
 
 ## Status

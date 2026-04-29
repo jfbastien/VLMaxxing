@@ -44,7 +44,7 @@ Gemma geometry rather than the stale `16×16 / 256` assumption.
 ```bash
 uv run python scripts/measure_feature_drift.py \
   --model gemma \
-  --model-path ~/models/gemma-4-e4b-it-4bit \
+  --model-path "$HOME/models/gemma-4-e4b-it-4bit" \
   --manifest research/benchmark_manifests/videomme_dev_v1.toml \
   --group long \
   --frame-count 8 \
@@ -52,7 +52,7 @@ uv run python scripts/measure_feature_drift.py \
 
 uv run python scripts/measure_feature_drift.py \
   --model gemma \
-  --model-path ~/models/gemma-4-e4b-it-4bit \
+  --model-path "$HOME/models/gemma-4-e4b-it-4bit" \
   --manifest research/benchmark_manifests/videomme_dev_v1.toml \
   --group long \
   --frame-count 16 \
@@ -60,7 +60,7 @@ uv run python scripts/measure_feature_drift.py \
 
 uv run python scripts/measure_feature_drift.py \
   --model gemma \
-  --model-path ~/models/gemma-4-e4b-it-4bit \
+  --model-path "$HOME/models/gemma-4-e4b-it-4bit" \
   --manifest research/benchmark_manifests/videomme_dev_v1.toml \
   --group long \
   --frame-count 32 \

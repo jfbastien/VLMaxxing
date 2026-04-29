@@ -16,6 +16,11 @@ Use the current [decision log](decision-log.md),
 artifact logs may still contain machine-local paths captured at execution time;
 those are provenance fields, not reproduction instructions.
 
+Some older checked artifacts were path-normalized for OSS release in commit
+`b15213c`: absolute local paths and private model roots were replaced by
+placeholders such as `<repo-root>` and `<model:...>`. Treat those fields as
+privacy-preserving provenance metadata, not byte-for-byte raw terminal logs.
+
 ## Experiment Note Template
 
 Each experiment note should contain these sections in this order:

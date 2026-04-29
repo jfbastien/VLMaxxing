@@ -1439,10 +1439,7 @@
   ],
   "max_observed_peak_gb": 13.614139964,
   "missing_required_families": [],
-  "missing_source_dirs": [
-    "research/experiments/2026/artifacts/phase1_55F_16f_short_adaptive",
-    "research/experiments/2026/artifacts/phase1_63_track_b_sparse_vit"
-  ],
+  "missing_source_dirs": [],
   "n_cells": 78,
   "n_cells_over_10gb": 28,
   "n_cells_over_9gb": 32,

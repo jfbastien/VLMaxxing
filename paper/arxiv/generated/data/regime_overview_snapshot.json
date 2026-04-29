@@ -3,17 +3,32 @@
   "purpose": "conceptual denominator map for anti-recomputation regimes",
   "c_vision": {
     "speedup_range": "1.113--1.407x",
-    "denominator": "first-query E2E"
+    "denominator": "first-query E2E",
+    "source_paths": [
+      "research/experiments/2026/artifacts/phase1_51V_session3/exp18_videomme_holdout_8f_L2_kr050_summary.json",
+      "research/experiments/2026/artifacts/phase1_51V_session4/exp20_mvbench_holdout_8f_L2_kr050_summary.json",
+      "research/experiments/2026/artifacts/phase1_51V_session5/exp24_tomato_holdout_8f_L2_kr050_summary.json"
+    ]
   },
   "c_persist": {
     "raw_16f_speedup": 91.06331752551472,
     "adaptive_all_query_speedup_min": 15.279848121041772,
     "adaptive_all_query_speedup_max": 35.97143025796818,
-    "denominator": "after-ingest follow-up / repaired-session latency"
+    "denominator": "after-ingest follow-up / repaired-session latency",
+    "source_paths": [
+      "research/experiments/2026/artifacts/phase1_55A_16f_frame_scaling/summary.json",
+      "research/experiments/2026/artifacts/phase1_55F_q3_post_q2_state/summary_k1_n7.json",
+      "research/experiments/2026/artifacts/phase1_55F_medium_adaptive_replication/summary_k1_n10.json",
+      "research/experiments/2026/artifacts/phase1_55F_long_adaptive_replication/summary_k1_n7.json",
+      "research/experiments/2026/artifacts/phase1_55F_32f_short_adaptive_replication/summary_k1_n7.json"
+    ]
   },
   "routing": {
     "denominator": "effective fresh frames under dense backend",
-    "speedup_claim": false
+    "speedup_claim": false,
+    "source_paths": [
+      "paper/arxiv/generated/data/lane_a_snapshot.json"
+    ]
   },
   "streaming": {
     "denominator": "scale-out component counters and E2E timing",

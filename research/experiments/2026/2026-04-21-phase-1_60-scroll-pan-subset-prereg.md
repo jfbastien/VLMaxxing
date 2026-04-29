@@ -24,7 +24,7 @@ operating point. The science goal is not "can we still win on
 scroll/pan" — it is "characterize the regime boundary so reviewers
 can calibrate the claim to their content distribution."
 
-The pre-release pre-release source's SHIFTED-content framing is the natural comparison
+The pre-release source's SHIFTED-content framing is the natural comparison
 pointer: SHIFTED is structurally narrow on VideoMME but dominates
 on scroll-like content; the pre-release external prototype reported 5–300× live-camera
 ViT savings exactly because the low end of that range is SHIFTED

@@ -145,16 +145,21 @@ test. Rules:
 - If both B-dev and B-holdout are passed in the same tranche, that
   is standard holdout, not transfer.
 
-## Forward link
+## Wall-clock extensions
 
-When Track B lands, this document can be extended to add:
+Measured sparse-vision evidence now exists, but the original Pareto frontier
+notation is still about answer quality versus effective fresh-frame budget.
+When adding wall-clock rows, keep them in a separate denominator regime and
+report:
 
 - latency (wall-clock prefill + generation)
 - peak memory
 - measured vision-encode FLOP skip
 - measured cross-axis composition gain (e.g., our method × FastV)
 
-Until then, do not cite Track B numbers.
+Do not cite Track B numbers as semantic Pareto wins. Cite them only as
+measured wall-clock evidence with setup, thermal pairing, and component-share
+denominators visible.
 
 ## Related
 

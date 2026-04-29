@@ -12,8 +12,8 @@ further toward prefill-dominance).
 
 Note: the "~1.8× end-to-end" figure previously cited here was an internal
 preregistered reproduction target, not a release claim. Historical imported
-targets are summarized in docs/claim-register.md; raw seed imports are not part
-of the release tree.
+targets are summarized in docs/claim-register.md; raw imported sources are not
+part of the release tree.
 
 Architecture:
 - Loads Gemma 4 via ``mlx_vlm.load``.

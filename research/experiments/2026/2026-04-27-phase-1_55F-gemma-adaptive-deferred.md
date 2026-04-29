@@ -1,7 +1,7 @@
 # Phase 1.55F-Gemma — Adaptive C-PERSIST Cross-Architecture Probe (DEFERRED)
 
 Gemma 4-E4B-IT-4bit weights are present locally under
-`~/models/gemma-4-e4b-it-4bit`, and prior Gemma 4-bit runs fit this 16 GB
+`$HOME/models/gemma-4-e4b-it-4bit`, and prior Gemma 4-bit runs fit this 16 GB
 unified-memory laptop under the repo's 9-10 GB RSS policy.
 
 Do **not** run the Qwen selective re-prefill/adaptive driver on Gemma 4.

@@ -117,8 +117,10 @@
       "predicted_e2e": 1.043,
       "observed_e2e": 1.044,
       "source_paths": [
-        "research/experiments/2026/2026-04-22-phase-1_57-qwen-bridge-findings.md",
-        "research/experiments/2026/artifacts/phase1_57/qwen_8f_dev30.json"
+        "research/experiments/2026/2026-04-23-phase-1_51V-qwen-cross-arch-findings.md",
+        "research/experiments/2026/artifacts/phase1_51V_qwen_cross_arch/videomme_dev30_8f_unpatched_summary.json",
+        "research/experiments/2026/artifacts/phase1_51V_qwen_cross_arch/videomme_dev30_8f_L2_kr050_summary.json",
+        "research/experiments/2026/artifacts/phase1_51V_qwen_cross_arch/pair_analysis.txt"
       ],
       "error_pp": 0.1,
       "product": 0.041
@@ -133,7 +135,7 @@
       "predicted_e2e": 1.047,
       "observed_e2e": 1.042,
       "source_paths": [
-        "research/experiments/2026/2026-04-29-phase-1_63E-track-b-frame-scaling-findings.md",
+        "research/experiments/2026/2026-04-27-phase-1_63E-8f-findings.md",
         "research/experiments/2026/artifacts/phase1_63E_track_b_frame_scaling/pair_summary_8f.json"
       ],
       "error_pp": -0.5,
@@ -147,7 +149,8 @@
       "predicted_e2e": 1.039,
       "observed_e2e": 1.102,
       "source_paths": [
-        "research/experiments/2026/2026-04-29-phase-1_63G-gemma-track-b-findings.md",
+        "research/experiments/2026/2026-04-27-phase-1_63G-gemma-track-b-prereg.md",
+        "research/experiments/2026/2026-04-29-phase-1_63G-format-diagnostic-findings.md",
         "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/pair_summary_8f.json"
       ],
       "error_pp": 6.3,
@@ -161,7 +164,8 @@
       "predicted_e2e": 1.067,
       "observed_e2e": 1.035,
       "source_paths": [
-        "research/experiments/2026/2026-04-29-phase-1_63G-gemma-track-b-findings.md",
+        "research/experiments/2026/2026-04-27-phase-1_63G-gemma-track-b-prereg.md",
+        "research/experiments/2026/2026-04-29-phase-1_63G-format-diagnostic-findings.md",
         "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/pair_summary_16f.json"
       ],
       "error_pp": -3.2,
@@ -175,7 +179,8 @@
       "predicted_e2e": 1.117,
       "observed_e2e": 1.126,
       "source_paths": [
-        "research/experiments/2026/2026-04-29-phase-1_63G-gemma-track-b-findings.md",
+        "research/experiments/2026/2026-04-27-phase-1_63G-gemma-track-b-prereg.md",
+        "research/experiments/2026/2026-04-29-phase-1_63G-format-diagnostic-findings.md",
         "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/pair_summary_32f.json"
       ],
       "error_pp": 0.9,
@@ -189,7 +194,8 @@
       "predicted_e2e": 1.328,
       "observed_e2e": 1.316,
       "source_paths": [
-        "research/experiments/2026/2026-04-29-phase-1_63G-gemma-track-b-findings.md",
+        "research/experiments/2026/2026-04-27-phase-1_63G-gemma-track-b-prereg.md",
+        "research/experiments/2026/2026-04-29-phase-1_63G-format-diagnostic-findings.md",
         "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/scaling_summary.json"
       ],
       "error_pp": -1.2,
@@ -220,7 +226,8 @@
       "observed_e2e": 1.042,
       "source_paths": [
         "research/experiments/2026/2026-04-21-phase-1_51V-exp10-n60-findings.md",
-        "research/experiments/2026/artifacts/phase1_51V_exp10_n60/summary.json"
+        "research/experiments/2026/artifacts/phase1_51V_exp10_n60/exp10n60_a_vonly_ref_summary.json",
+        "research/experiments/2026/artifacts/phase1_51V_exp10_n60/exp10n60_b_vplus_novelty030_summary.json"
       ],
       "error_pp": 1.43,
       "product": 0.0269

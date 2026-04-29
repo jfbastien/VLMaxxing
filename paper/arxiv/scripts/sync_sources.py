@@ -28,6 +28,14 @@ import matplotlib.pyplot as plt  # noqa: E402
 MANUSCRIPT_ROOT = REPO_ROOT / "paper" / "arxiv"
 GENERATED = MANUSCRIPT_ROOT / "generated"
 ARTIFACTS = REPO_ROOT / "research" / "experiments" / "2026" / "artifacts"
+SOURCE_KEYS = {
+    "source",
+    "artifact",
+    "patched_source",
+    "reference_source",
+    "metrics_source",
+    "summary_source",
+}
 
 
 def _run(cmd: list[str], cwd: Path | None = None) -> str:
@@ -59,6 +67,50 @@ def _short_sha(sha: str, length: int = 7) -> str:
     return f"{base[:length]}{suffix}"
 
 
+def _iter_source_paths(payload: object) -> list[str]:
+    paths: list[str] = []
+    if isinstance(payload, dict):
+        for key, value in payload.items():
+            if key in SOURCE_KEYS and isinstance(value, str):
+                paths.append(value)
+            elif key == "source_paths" and isinstance(value, list):
+                paths.extend(str(item) for item in value)
+            else:
+                paths.extend(_iter_source_paths(value))
+    elif isinstance(payload, list):
+        for value in payload:
+            paths.extend(_iter_source_paths(value))
+    return paths
+
+
+def _tracked_paths() -> set[str]:
+    return set(_run(["git", "ls-files"]).splitlines())
+
+
+def _is_repo_source(path: str) -> bool:
+    return path.startswith(("docs/", "paper/", "research/", "scripts/", "src/", "tests/"))
+
+
+def _validate_source_paths(payload: object, *, context: str) -> None:
+    tracked = _tracked_paths()
+    problems: list[str] = []
+    for source in _iter_source_paths(payload):
+        if not _is_repo_source(source):
+            continue
+        source_path = REPO_ROOT / source
+        if not source_path.exists():
+            problems.append(f"missing source path {source}")
+        elif source not in tracked:
+            problems.append(f"untracked source path {source}")
+    if problems:
+        joined = "\n  - ".join(problems)
+        raise FileNotFoundError(f"{context} has invalid source paths:\n  - {joined}")
+
+
+def _load_json(path: Path) -> dict:
+    return json.loads(path.read_text())
+
+
 def _ensure_dirs() -> None:
     for path in [
         REPO_ROOT / ".tmp" / "matplotlib",
@@ -83,7 +135,11 @@ def _sync_curated_paper_figures() -> None:
             (GENERATED / "figures" / source_png.name).write_bytes(source_png.read_bytes())
         source_json = REPO_ROOT / "paper" / "figures" / f"{stem}_data.json"
         if source_json.exists():
-            (GENERATED / "data" / source_json.name).write_text(source_json.read_text())
+            payload = _load_json(source_json)
+            _validate_source_paths(payload, context=source_json.relative_to(REPO_ROOT).as_posix())
+            (GENERATED / "data" / source_json.name).write_text(
+                json.dumps(payload, indent=2, sort_keys=True) + "\n"
+            )
 
 
 def _draw_overview_box(
@@ -303,16 +359,32 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
     overview = {
         "figure": "regime_overview",
         "purpose": "conceptual denominator map for anti-recomputation regimes",
-        "c_vision": {"speedup_range": "1.113--1.407x", "denominator": "first-query E2E"},
+        "c_vision": {
+            "speedup_range": "1.113--1.407x",
+            "denominator": "first-query E2E",
+            "source_paths": [
+                "research/experiments/2026/artifacts/phase1_51V_session3/exp18_videomme_holdout_8f_L2_kr050_summary.json",
+                "research/experiments/2026/artifacts/phase1_51V_session4/exp20_mvbench_holdout_8f_L2_kr050_summary.json",
+                "research/experiments/2026/artifacts/phase1_51V_session5/exp24_tomato_holdout_8f_L2_kr050_summary.json",
+            ],
+        },
         "c_persist": {
             "raw_16f_speedup": qwen_16f["speedup"],
             "adaptive_all_query_speedup_min": repair["all_query_speedup_min"],
             "adaptive_all_query_speedup_max": repair["all_query_speedup_max"],
             "denominator": "after-ingest follow-up / repaired-session latency",
+            "source_paths": [
+                qwen_16f["source"],
+                *[
+                    cell["summary_source"]
+                    for cell in snapshot["selective_reprefill"]["adaptive_cells"]
+                ],
+            ],
         },
         "routing": {
             "denominator": "effective fresh frames under dense backend",
             "speedup_claim": False,
+            "source_paths": ["paper/arxiv/generated/data/lane_a_snapshot.json"],
         },
         "streaming": {
             "denominator": "scale-out component counters and E2E timing",
@@ -323,10 +395,6 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
     (GENERATED / "data" / "regime_overview_snapshot.json").write_text(
         json.dumps(overview, indent=2) + "\n"
     )
-
-
-def _load_json(path: Path) -> dict:
-    return json.loads(path.read_text())
 
 
 def _artifact_json(path: Path) -> dict:
@@ -622,6 +690,13 @@ def _dense_curve(prefix: str, frame_counts: list[int]) -> dict[str, float]:
     return values
 
 
+def _dense_curve_sources(prefix: str, frame_counts: list[int]) -> list[str]:
+    return [
+        (ARTIFACTS / prefix / f"frame_{frame_count}_summary.json").relative_to(REPO_ROOT).as_posix()
+        for frame_count in frame_counts
+    ]
+
+
 def _lane_a_snapshot() -> dict:
     tomato_base_path = (
         ARTIFACTS
@@ -647,10 +722,18 @@ def _lane_a_snapshot() -> dict:
                 "phase1_20_tomato_motion_holdout_v2_dense",
                 [4, 6, 8],
             ),
+            "uniform_dense_source_paths": _dense_curve_sources(
+                "phase1_20_tomato_motion_holdout_v2_dense",
+                [4, 6, 8],
+            ),
         },
         "mvbench": {
             "cached_base": _cached_point(mvbench_base_path),
             "uniform_dense": _dense_curve(
+                "phase1_21_mvbench_motion_holdout_v2_dense",
+                [4, 6, 8],
+            ),
+            "uniform_dense_source_paths": _dense_curve_sources(
                 "phase1_21_mvbench_motion_holdout_v2_dense",
                 [4, 6, 8],
             ),
@@ -1796,6 +1879,9 @@ def _write_memory_characterization_table() -> None:
     summary = _artifact_json(
         ARTIFACTS / "phase1_66_memory_characterization" / "memory_characterization_summary.json"
     )
+    if summary.get("missing_source_dirs"):
+        missing = ", ".join(summary["missing_source_dirs"])
+        raise FileNotFoundError(f"memory characterization has missing source dirs: {missing}")
     family_labels = {
         "C-PERSIST/1.55": "After-ingest follow-up reuse",
         "C-VISION/1.30": "Composition/admission boundary",
@@ -1880,6 +1966,8 @@ def main() -> int:
     paired_drift_snapshot = _paired_drift_snapshot()
     _write_paired_drift_table(paired_drift_snapshot)
     _sync_curated_paper_figures()
+    for path in (GENERATED / "data").glob("*.json"):
+        _validate_source_paths(_load_json(path), context=path.relative_to(REPO_ROOT).as_posix())
     primary = _git_info(REPO_ROOT)
     _write_build_meta(primary)
     _write_repo_provenance_table(primary)

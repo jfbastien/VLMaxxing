@@ -89,27 +89,33 @@ SOURCE_PATHS: dict[str, list[str]] = {
         "research/experiments/2026/artifacts/phase1_51V_session5/exp24_tomato_holdout_8f_L2_kr050_summary.json",
     ],
     "Qwen VideoMME 8f dev": [
-        "research/experiments/2026/2026-04-22-phase-1_57-qwen-bridge-findings.md",
-        "research/experiments/2026/artifacts/phase1_57/qwen_8f_dev30.json",
+        "research/experiments/2026/2026-04-23-phase-1_51V-qwen-cross-arch-findings.md",
+        "research/experiments/2026/artifacts/phase1_51V_qwen_cross_arch/videomme_dev30_8f_unpatched_summary.json",
+        "research/experiments/2026/artifacts/phase1_51V_qwen_cross_arch/videomme_dev30_8f_L2_kr050_summary.json",
+        "research/experiments/2026/artifacts/phase1_51V_qwen_cross_arch/pair_analysis.txt",
     ],
     "Qwen sparse vision 8f n=60": [
-        "research/experiments/2026/2026-04-29-phase-1_63E-track-b-frame-scaling-findings.md",
+        "research/experiments/2026/2026-04-27-phase-1_63E-8f-findings.md",
         "research/experiments/2026/artifacts/phase1_63E_track_b_frame_scaling/pair_summary_8f.json",
     ],
     "Gemma sparse vision 8f n=60": [
-        "research/experiments/2026/2026-04-29-phase-1_63G-gemma-track-b-findings.md",
+        "research/experiments/2026/2026-04-27-phase-1_63G-gemma-track-b-prereg.md",
+        "research/experiments/2026/2026-04-29-phase-1_63G-format-diagnostic-findings.md",
         "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/pair_summary_8f.json",
     ],
     "Gemma sparse vision 16f n=60": [
-        "research/experiments/2026/2026-04-29-phase-1_63G-gemma-track-b-findings.md",
+        "research/experiments/2026/2026-04-27-phase-1_63G-gemma-track-b-prereg.md",
+        "research/experiments/2026/2026-04-29-phase-1_63G-format-diagnostic-findings.md",
         "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/pair_summary_16f.json",
     ],
     "Gemma sparse vision 32f n=60": [
-        "research/experiments/2026/2026-04-29-phase-1_63G-gemma-track-b-findings.md",
+        "research/experiments/2026/2026-04-27-phase-1_63G-gemma-track-b-prereg.md",
+        "research/experiments/2026/2026-04-29-phase-1_63G-format-diagnostic-findings.md",
         "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/pair_summary_32f.json",
     ],
     "Gemma sparse vision 32f short": [
-        "research/experiments/2026/2026-04-29-phase-1_63G-gemma-track-b-findings.md",
+        "research/experiments/2026/2026-04-27-phase-1_63G-gemma-track-b-prereg.md",
+        "research/experiments/2026/2026-04-29-phase-1_63G-format-diagnostic-findings.md",
         "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/scaling_summary.json",
     ],
     "Qwen sparse vision 16f kr=0.85": [
@@ -118,7 +124,8 @@ SOURCE_PATHS: dict[str, list[str]] = {
     ],
     "VideoMME n=60 composition audit": [
         "research/experiments/2026/2026-04-21-phase-1_51V-exp10-n60-findings.md",
-        "research/experiments/2026/artifacts/phase1_51V_exp10_n60/summary.json",
+        "research/experiments/2026/artifacts/phase1_51V_exp10_n60/exp10n60_a_vonly_ref_summary.json",
+        "research/experiments/2026/artifacts/phase1_51V_exp10_n60/exp10n60_b_vplus_novelty030_summary.json",
     ],
 }
 

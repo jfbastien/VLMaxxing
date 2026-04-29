@@ -148,7 +148,8 @@ authoritative in the per-phase notes under
   status: completed
   authoritative_note: research/experiments/2026/2026-04-15-phase-1_23-fastv-composition-scouting.md
   authoritative_artifacts:
-    - docs/fastv-composition-plan.md
+    - historical scout document removed from the release tree; see git history
+      if the original phase-1.23 implementation sketch is needed
   current_best_policy: n/a (scouting)
   supersedes: []
   paper_relevance: historical (infrastructure scouting)
@@ -425,15 +426,10 @@ authoritative in the per-phase notes under
   status: completed
   authoritative_note: research/experiments/2026/2026-04-17-phase-1_34-novelty-ranked-dense.md
   authoritative_artifacts:
-    - results/novelty_ranked_dense/tomato_holdout_n4.json
-    - results/novelty_ranked_dense/tomato_holdout_n6.json
-    - results/novelty_ranked_dense/tomato_holdout_n8.json
-    - results/novelty_ranked_dense/mvbench_holdout_n4.json
-    - results/novelty_ranked_dense/mvbench_holdout_n6.json
-    - results/novelty_ranked_dense/mvbench_holdout_n8.json
+    - phase note records the exact local-only ignored results tree and commit IDs; regenerate or re-materialize before using as release claim-bearing evidence
   current_best_policy: n/a (stronger baseline, not a new policy)
   supersedes: []
-  paper_relevance: primary (stronger matched-budget comparator, claim #9)
+  paper_relevance: historical comparator unless the ignored results files are regenerated or re-materialized as checked artifacts
   prereg_outcome: Accepted (Planner 2.0 cached dominates every novelty cell at equal-or-lower budget; novelty hurts on TOMATO N>=6 and saturates on MVBench N>=6)
 
 - phase_id: 1.35
@@ -449,13 +445,10 @@ authoritative in the per-phase notes under
   status: completed
   authoritative_note: research/experiments/2026/2026-04-17-phase-1_36-feature-change-oracle.md
   authoritative_artifacts:
-    - results/feature_change_oracle/tomato_n30.json
-    - results/feature_change_oracle/tomato_n30.parquet
-    - results/feature_change_oracle/mvbench_n30.json
-    - results/feature_change_oracle/mvbench_n30.parquet
+    - phase note records the exact local-only ignored results tree and commit IDs; regenerate or re-materialize before using as release claim-bearing evidence
   current_best_policy: n/a (oracle/diagnostic, not a routing policy)
   supersedes: []
-  paper_relevance: primary (claim #2 lower-bound on pixel->feature fidelity)
+  paper_relevance: diagnostic / historical unless the ignored results files are regenerated or re-materialized as checked artifacts
   prereg_outcome: Accepted with caveat (Pearson r=0.23-0.50 caps below the r>=0.7 preregistered target; 45/60 item coverage due to cache-key rewrite; the finding reframes claim as a ranking/diagnosis study rather than a leaderboard)
 
 - phase_id: 1.37
@@ -530,15 +523,13 @@ authoritative in the per-phase notes under
   status: completed
   authoritative_note: research/experiments/2026/2026-04-17-phase-1_50-track-b-dense-baseline.md
   authoritative_artifacts:
-    - results/track_b/tomato_mc_n10.json
-    - results/track_b/tomato_mc_n30.json
-    - results/track_b/mvbench_mc_n30.json
+    - phase note records the exact local-only ignored results tree and commit IDs; current release-facing sparse-vision claims use checked 1.63 artifacts
     - historical dense-baseline driver removed from the OSS release tree;
       current measured sparse-vision claims use the 1.63 drivers below
   current_best_policy: n/a (wall-clock baseline, not a policy)
   supersedes: []
-  paper_relevance: primary (claim #5 dense reference; sparse-execution half still blocked)
-  prereg_outcome: Accepted with caveat (dense baseline paper-grade on TOMATO N=30 + MVBench N=30 holdout; cross-benchmark vision-cache ceiling 20-23% end-to-end; sparse-execution delta still not measured)
+  paper_relevance: historical dense reference; current paper-facing measured sparse-vision claims use checked 1.63 artifacts
+  prereg_outcome: Accepted with caveat (dense baseline paper-grade on TOMATO N=30 + MVBench N=30 holdout in the local results tree; cross-benchmark vision-cache ceiling 20-23% end-to-end; superseded for current sparse-vision reporting by checked 1.63 artifacts)
 
 - phase_id: 1.51R
   status: CLOSED 2026-04-21 null on own axis — Stage 5 anchor sweep (2026-04-18) showed all three anchor arms at kr=0.50 on VideoMME dev n=30 bounded by the arithmetic E2E ceiling (<1.10× at s=∞); gemma_structural and max_min_diversity earn acc bar (-3.3pp), nuwa_pillar fails (-16.7pp). Post-1.51V composition re-runs (EXP09/EXP10 from 1.51V expansion 2026-04-21): EXP09 (gemma_structural kr=0.5) replicates own-axis null (own-pair E2E 0.990×, acc -6.7pp, agree 0.50); EXP10 (anchor=none kr=0.3) shows +4.7pp own-pair E2E lift over V-alone with agg acc preserved BUT agreement drops 0.90→0.63 ("noisy preserve"). EXP10 cell flagged as n=60 follow-up lane with promotion rule: ≥4pp lift AND agreement ≥0.75 AND acc within -0.067.
@@ -653,7 +644,7 @@ authoritative in the per-phase notes under
     - research/experiments/2026/artifacts/phase1_55A_3b_40f_temperature/baseline_qwen7b_n7.jsonl
   current_best_policy: "persistent-KV session (PromptCacheState one-per-clip) — 7B-4bit: 8f 47.2×/815ms/Δ=−0.048; 16f 91.1×/807ms/Δ=0.000; 18f 70.3×/1102ms/Δ=−0.238 (4-basin); 20f 94.4×/905ms/Δ=−0.381 (2-basin); 24f 121.6×/864ms/Δ=−0.429 (single attractor); 32f 149.9×/1008ms/Δ=−0.429 (saturated). **7B/20f temperature probe (T=0.7, top_p=1.0, min_p=0.05, seed=42): 117.0×/907ms/Δ=−0.429 — Δacc temperature-invariant within 1/21 noise floor (greedy −0.381, temp −0.429; diff 0.048); basin prevalence 13/14→8/14 but clean-drift share stayed 1/14 (dispersed mass landed in novel `自动生成` Chinese attractor, NOT in clean letters); H-distribution-collapse EARNED on both prereg conditions (Δacc≤−0.35 AND basin≥0.50). 7B basin is distribution-level, not sampler-level.** **3B-4bit cross-arch 3-point: 20f 136.1×/412ms/Δ=−0.048 (MATCHED); 24f 154.2×/423ms/Δ=−0.190 (SHIFTED-RAMP); 32f 213.0×/484ms/Δ=−0.190 (PLATEAUED — identical Δacc to 24f, 3B saturated at a ~2.3× shallower ceiling than 7B). 28/28 3B follow-ups emit clean 2-token letter answers — no basin collapse at any 3B prefill.** **3B/20f temperature probe (T=0.7, top_p=1.0, min_p=0.05, seed=42): 130.8×/385ms/Δ=−0.095 — H2-3B-temp.null-robust EARNED (Δacc inside envelope [−0.15, +0.05] AND 14/14 clean-letter follow-ups); Δacc shifts by exactly 1/21 vs greedy 3B/20f (−0.048 → −0.095), identical noise-floor signature to 7B temperature probe (−0.381 → −0.429, 1/21 shift). Sampler-invariance verified at BOTH ceilings.** 7B: monotonic-saturating ramp 16f→24f through progressive basin collapse, Δacc ceiling −0.43 (distribution-level). 3B: ramp shifted ~2-3k tokens later, Δacc ceiling −0.19 (architecture-specific), failure geometry is clean-letter drift (architecture-specific)."
   supersedes: ["1.55"]
-  paper_relevance: primary (reproduces pre-release pre-release source §2.13.3 on Qwen 7B-4bit / M3 Air; prefill-dominance mechanism confirmed on 6-point scaling curve; 18f+20f bisections reveal the 7B fidelity transition is a monotonic-saturating ramp through progressive basin collapse — clean → 4-basin → 2-basin → single-attractor; 3B cross-arch 3-point (20f matched, 24f shifted-ramp, 32f plateaued) decomposes the mechanism into **three orthogonal architectural dimensions: threshold onset (capacity-modulated), saturation ceiling (architecture-specific −0.43 vs −0.19), failure geometry (architecture-specific basin collapse vs clean-letter drift)**)
+  paper_relevance: primary (reproduces pre-release source §2.13.3 on Qwen 7B-4bit / M3 Air; prefill-dominance mechanism confirmed on 6-point scaling curve; 18f+20f bisections reveal the 7B fidelity transition is a monotonic-saturating ramp through progressive basin collapse — clean → 4-basin → 2-basin → single-attractor; 3B cross-arch 3-point (20f matched, 24f shifted-ramp, 32f plateaued) decomposes the mechanism into **three orthogonal architectural dimensions: threshold onset (capacity-modulated), saturation ceiling (architecture-specific −0.43 vs −0.19), failure geometry (architecture-specific basin collapse vs clean-letter drift)**)
   prereg_outcome: H1/H1'/H1''/H1'''/H1''''/H1''''' all earn (speedup 47×→91×→70×→94×→122×→150×; 18f dip is median-inflation from long-garbage gen tokens, not cache-reuse failure). H3/H3'/H3''/H3'''/H3''''/H3''''' all earn (prefix ≥0.99). H4/H4'/H4''/H4'''/H4''''/H4''''' all earn (peak RSS ≤ 4.2 GB). H2/H2' earn at 8f/16f; **H2''/H2'''/H2''''/H2''''' REJECT at 32f/24f/20f/18f on 7B**. 18f is mid-ramp with 4-basin diversity (Δ = −0.238). 20f is mid-ramp with 2-basin dominance (Δ = −0.381). 24f/32f saturate to 14/14 `addCriterion` (Δ = −0.429). **3B cross-arch 20f: H2-3B.matched (Δ = −0.048); 3B cross-arch 24f: H2-3B-24.shifted-ramp (Δ = −0.190, inside (−0.30, −0.05)); 3B cross-arch 32f: H2-3B-32.plateaued (Δ = −0.190, inside (−0.25, −0.10] — most-surprising pre-registered sub-outcome; Δacc numerically identical to 24f, 3B saturated ~2.3× shallower than 7B). All three 3B runs: 28/28 follow-ups emit clean 2-token letter answers — no addCriterion, no long-garbage, ever. **7B/20f temperature probe: H1-temp 117×, H2-temp.distribution-collapse EARNED (Δacc=−0.429 ✓, basin=0.571 ✓; H2-temp.greedy-commit FALSIFIED on both conditions). H3-temp prefix 0.993, H4-temp RSS 1.61 GB. Temperature + min-p redistribute basin mass WITHIN the pathological-attractor set (plain `addCriterion` 9→4; Java-code `addCriterion(…)` 4→4 rigid; novel `自动生成` 0→5; clean letter 1→1 unchanged) — 7B basin is distribution-level, not sampler-level.** **3B/20f temperature probe: H1-3B-temp 130.8×, H2-3B-temp.null-robust EARNED on both preregistered conditions (Δacc=−0.095 ∈ [−0.15, +0.05] ✓ AND 14/14 clean-letter follow-ups ≥ 12/14 ✓); H2-3B-temp.hidden-basin FALSIFIED (0/14 non-letter follow-ups); H2-3B-temp.sampler-dispersion NOT TRIGGERED (inside envelope). H3-3B-temp prefix 0.993, H4-3B-temp RSS 2.36 GB. Δacc temperature-shift is exactly 1/21 (−0.048 → −0.095) — identical noise-floor signature to 7B probe. 3B clean-letter distribution is sampler-invariant; temperature shuffles argmax on a few queries but NEVER exposes non-letter content.** Three-dimensional mechanism decomposition FINALIZED AND TEMPERATURE-VERIFIED AT BOTH CEILINGS: threshold onset (capacity-modulated), saturation ceiling (architecture-specific), failure geometry (architecture-specific AT DISTRIBUTION LEVEL on both 7B and 3B — distribution-level sampler-invariance is cross-architecture).**
   runtime_estimate: 17 min @ 8f + 35 min @ 16f + 38 min @ 18f + 42 min @ 20f + 55 min @ 24f + 76 min @ 32f + 27 min @ 3B-20f + 31 min @ 3B-24f + 50 min @ 3B-32f + 48 min @ 7B-20f-temp + 24 min @ 3B-20f-temp = ~7.3 h total across 6 frame counts + 3 cross-arch points + 2 sampler probes (both architectures)
   notes: |

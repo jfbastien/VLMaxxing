@@ -16,9 +16,9 @@ Canonical imported references:
   and audited in
   [2026-04-16-pre-release-source-audit.md](../research/experiments/2026/2026-04-16-pre-release-source-audit.md).
 
-The raw seed files are intentionally absent from the release tree. This register
-is the durable source of truth; git history preserves the raw imports for
-forensic review.
+The raw imported-source files are intentionally absent from the release tree.
+This register is the durable source of truth; git history preserves the raw
+imports for forensic review.
 
 The repo is canonically targeting **both**: the original WP-2.1 through
 WP-5 claims remain active, PLUS the new WP-2.7 through WP-5.1 claims

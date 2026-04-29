@@ -2,7 +2,7 @@
 # Phase 1.58 bf16 control runner.
 #
 # Usage:
-#   QWEN_BF16_MODEL_PATH=~/models/Qwen2.5-VL-7B-Instruct \
+#   QWEN_BF16_MODEL_PATH="$HOME/models/Qwen2.5-VL-7B-Instruct" \
 #   .venv/bin/bash scripts/run_phase1_58_bf16_control.sh
 
 set -euo pipefail

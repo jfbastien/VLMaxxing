@@ -64,7 +64,7 @@ from 3B 32f=213× and 3B 40f=191×; may be non-monotonic like
 ## Parameters
 
 - **Model:** Qwen 2.5-VL-3B-Instruct-4bit
-  (`~/models/Qwen2.5-VL-3B-Instruct-4bit`).
+  (`$HOME/models/Qwen2.5-VL-3B-Instruct-4bit`).
 - **Frame count:** 36.
 - **Clips:** 7 short-bucket VideoMME clips (037, 100, 116, 120,
   158, 160, 210) × 3 Qs = 21 queries.

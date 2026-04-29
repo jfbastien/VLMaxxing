@@ -97,18 +97,12 @@ others).
    P0 before submission; any sentence a reviewer cross-checks across two
    docs must agree.
 
-3. **Main CI green on `main`.** This is currently a real blocker again.
-   The latest failing GitHub run (`24914182731`, 2026-04-24) dies in
-   `uv run ruff format --check .` before lint / mypy / pytest even run.
-   The concrete failures are formatting drift in:
-   `scripts/analyze_phase1_30_rootcause.py`,
-   `scripts/measure_feature_drift.py`,
-   `scripts/phase1_30_rootcause_q0_compare.py`,
-   `scripts/run_benchmark_track_a.py`,
-   `src/codec_through/phase1_30_admission_frontier.py`,
-   `src/codec_through/qwen_selective_reprefill.py`, and
-   `src/codec_through/selective_reprefill_policy.py`.
-   Without green CI the paper claims of reproducibility look sloppy.
+3. **Main CI green on `main`.** Local release checks are green in the current
+   cleanup tree (`make check`, `git diff --check`, `make paper-doctor`, and
+   `make paper-bundle`). Remote CI should be rerun after the release-hygiene
+   branch lands; without green CI the paper claims of reproducibility look
+   sloppy. The PDF build is a separate local toolchain issue in this sandbox:
+   Tectonic panics before TeX compilation, while the source bundle builds.
 
 4. **Attention-propagation-drift vocabulary discipline.** Codex
    round-21 flagged that the pre-release source attributes the refresh requirement

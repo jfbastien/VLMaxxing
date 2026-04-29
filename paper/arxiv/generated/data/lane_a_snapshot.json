@@ -12,7 +12,12 @@
       "4.0": 0.5,
       "6.0": 0.5666666666666667,
       "8.0": 0.6333333333333333
-    }
+    },
+    "uniform_dense_source_paths": [
+      "research/experiments/2026/artifacts/phase1_21_mvbench_motion_holdout_v2_dense/frame_4_summary.json",
+      "research/experiments/2026/artifacts/phase1_21_mvbench_motion_holdout_v2_dense/frame_6_summary.json",
+      "research/experiments/2026/artifacts/phase1_21_mvbench_motion_holdout_v2_dense/frame_8_summary.json"
+    ]
   },
   "source_policy": {
     "default_snapshot": "clean_tree_only",
@@ -44,6 +49,11 @@
       "4.0": 0.13333333333333333,
       "6.0": 0.26666666666666666,
       "8.0": 0.3333333333333333
-    }
+    },
+    "uniform_dense_source_paths": [
+      "research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_dense/frame_4_summary.json",
+      "research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_dense/frame_6_summary.json",
+      "research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_dense/frame_8_summary.json"
+    ]
   }
 }

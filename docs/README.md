@@ -49,8 +49,6 @@ This file only routes work inside `docs/`.
 - [methodology/temporal-coverage-metrics.md](methodology/temporal-coverage-metrics.md)
   — budget-placement metrics (instrumentation pending)
 - [methodology/feature-replay.md](methodology/feature-replay.md)
-- [fastv-composition-plan.md](fastv-composition-plan.md) — phase 1.23
-  scouting output
 
 ### Foundation
 
@@ -63,6 +61,6 @@ This file only routes work inside `docs/`.
 - [benchmark-setup.md](benchmark-setup.md)
 - [local-setup.md](local-setup.md)
 
-Historical seed imports, review packets, and superseded strategy notes are not
+Historical source imports, review packets, and superseded strategy notes are not
 kept in the release tree. Use the status docs above for current claims; use git
 history only when auditing the provenance of a removed import.

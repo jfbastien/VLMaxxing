@@ -24,13 +24,11 @@ DEFAULT_SOURCE_DIRS = [
     ARTIFACT_ROOT / "phase1_55F_medium_adaptive_replication",
     ARTIFACT_ROOT / "phase1_55F_long_adaptive_replication",
     ARTIFACT_ROOT / "phase1_55F_32f_short_adaptive_replication",
-    ARTIFACT_ROOT / "phase1_55F_16f_short_adaptive",
     ARTIFACT_ROOT / "phase1_55G_k1_medium_replication",
     ARTIFACT_ROOT / "phase1_55H_k1_32f_short_probe",
     ARTIFACT_ROOT / "phase1_55I_k1_long_replication",
     ARTIFACT_ROOT / "phase1_55J_k1_sampler_variation",
     ARTIFACT_ROOT / "phase1_55K_adaptive_temperature_sweep",
-    ARTIFACT_ROOT / "phase1_63_track_b_sparse_vit",
     ARTIFACT_ROOT / "phase1_63E_track_b_frame_scaling",
     ARTIFACT_ROOT / "phase1_63G_gemma_track_b",
 ]
@@ -216,7 +214,7 @@ def _write_csv(path: Path, cells: list[dict[str, Any]]) -> None:
     ]
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fields)
+        writer = csv.DictWriter(handle, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         for cell in cells:
             writer.writerow({field: cell.get(field) for field in fields})

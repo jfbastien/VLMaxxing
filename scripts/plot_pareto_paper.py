@@ -29,8 +29,8 @@ import matplotlib.pyplot as plt
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 ARTIFACTS = REPO_ROOT / "research" / "experiments" / "2026" / "artifacts"
-NOVELTY = REPO_ROOT / "results" / "novelty_ranked_dense"
 FIGURES = REPO_ROOT / "paper" / "figures"
+PHASE1_34_NOTE = "research/experiments/2026/2026-04-17-phase-1_34-novelty-ranked-dense.md"
 
 
 @dataclass(frozen=True)
@@ -50,6 +50,7 @@ class DenseLine:
     marker: str
     color: str
     linestyle: str
+    source_paths: list[str]
 
 
 def load_cached_summary(path: Path, label: str, *, marker: str, color: str) -> CachedPoint:
@@ -70,15 +71,15 @@ def load_cached_summary(path: Path, label: str, *, marker: str, color: str) -> C
 
 
 def load_novelty_points(benchmark: str, frame_counts: list[int]) -> DenseLine:
-    xs: list[float] = []
-    ys: list[float] = []
-    for n in frame_counts:
-        path = NOVELTY / f"{benchmark}_holdout_n{n}.json"
-        if not path.exists():
-            raise FileNotFoundError(f"missing novelty summary: {path}")
-        payload = json.loads(path.read_text())
-        xs.append(float(n))
-        ys.append(float(payload["accuracy"]))
+    # The raw phase-1.34 JSONs were local-only under ignored `results/`.
+    # Keep this figure rebuildable from the checked phase note without
+    # pretending these are canonical raw artifacts.
+    curated = {
+        "tomato": {4: 4 / 30, 6: 5 / 30, 8: 7 / 30},
+        "mvbench": {4: 17 / 30, 6: 17 / 30, 8: 17 / 30},
+    }
+    xs = [float(n) for n in frame_counts]
+    ys = [float(curated[benchmark][n]) for n in frame_counts]
     return DenseLine(
         label="novelty-ranked dense-N",
         xs=xs,
@@ -86,6 +87,7 @@ def load_novelty_points(benchmark: str, frame_counts: list[int]) -> DenseLine:
         marker="s",
         color="tab:orange",
         linestyle="--",
+        source_paths=[PHASE1_34_NOTE],
     )
 
 
@@ -97,6 +99,11 @@ UNIFORM_DENSE: dict[str, DenseLine] = {
         marker="o",
         color="tab:blue",
         linestyle="-",
+        source_paths=[
+            "research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_dense/frame_4_summary.json",
+            "research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_dense/frame_6_summary.json",
+            "research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_dense/frame_8_summary.json",
+        ],
     ),
     "mvbench": DenseLine(
         label="uniform dense-N (phase 1.21)",
@@ -105,6 +112,11 @@ UNIFORM_DENSE: dict[str, DenseLine] = {
         marker="o",
         color="tab:blue",
         linestyle="-",
+        source_paths=[
+            "research/experiments/2026/artifacts/phase1_21_mvbench_motion_holdout_v2_dense/frame_4_summary.json",
+            "research/experiments/2026/artifacts/phase1_21_mvbench_motion_holdout_v2_dense/frame_6_summary.json",
+            "research/experiments/2026/artifacts/phase1_21_mvbench_motion_holdout_v2_dense/frame_8_summary.json",
+        ],
     ),
 }
 
@@ -209,25 +221,38 @@ def main() -> None:
             "cached_base": {
                 "cached_accuracy": tomato_base.cached_accuracy,
                 "effective_fresh_frames": tomato_base.effective_fresh_frames,
+                "source_paths": [
+                    "research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_cached_clean/max_abs-8.0-32.0-static+shifted-age4_summary.json"
+                ],
             },
             "uniform_dense": dict(
                 zip(UNIFORM_DENSE["tomato"].xs, UNIFORM_DENSE["tomato"].ys, strict=True)
             ),
+            "uniform_dense_source_paths": UNIFORM_DENSE["tomato"].source_paths,
             "novelty_dense": dict(zip(tomato_novelty.xs, tomato_novelty.ys, strict=True)),
+            "novelty_dense_source_paths": tomato_novelty.source_paths,
         },
         "mvbench": {
             "cached_base": {
                 "cached_accuracy": mvbench_base.cached_accuracy,
                 "effective_fresh_frames": mvbench_base.effective_fresh_frames,
+                "source_paths": [
+                    "research/experiments/2026/artifacts/phase1_21_mvbench_motion_holdout_v2_cached_nosticky/max_abs-8.0-32.0-static+shifted-age4_summary.json"
+                ],
             },
             "cached_sticky4": {
                 "cached_accuracy": mvbench_sticky.cached_accuracy,
                 "effective_fresh_frames": mvbench_sticky.effective_fresh_frames,
+                "source_paths": [
+                    "research/experiments/2026/artifacts/phase1_21_mvbench_motion_holdout_v2_cached/max_abs-8.0-32.0-static+shifted-age4-sticky4_summary.json"
+                ],
             },
             "uniform_dense": dict(
                 zip(UNIFORM_DENSE["mvbench"].xs, UNIFORM_DENSE["mvbench"].ys, strict=True)
             ),
+            "uniform_dense_source_paths": UNIFORM_DENSE["mvbench"].source_paths,
             "novelty_dense": dict(zip(mvbench_novelty.xs, mvbench_novelty.ys, strict=True)),
+            "novelty_dense_source_paths": mvbench_novelty.source_paths,
         },
     }
     summary_path = FIGURES / "pareto_holdout_n30_data.json"
