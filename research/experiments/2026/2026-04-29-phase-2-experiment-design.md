@@ -32,10 +32,10 @@ Total scope is the *complete* set of experiments needed to close the paper to re
 | A6 | 1.55L Many-turn C-PERSIST drift | local | 8 | scripted; stateless-query horizon | "two follow-ups" reviewer attack — biggest |
 | A7 | 1.55K-extended seeds | local | 7.5 | scripted after seed plumbing | sampler-seed robustness |
 | **Track A total** | | | **~28h** | (compute) + ~5h impl |  |
-| B0 | 26B cache-correctness smoke | Sam | 1.5 | blocked on Sam | gating gate for C1 |
-| B1 | 26B C-PERSIST replication | Sam | 8 | conditional on B0 | C-PERSIST scale-out |
-| B2 | 26B many-turn streaming horizon | Sam | 10 | conditional on B0 | streaming first-class |
-| B3 | Matched streaming baselines | Sam | 8 | conditional on B0 | C-STREAM real comparator |
+| B0b | Expanded 26B cache-correctness gate | Sam | 1.5 | blocked on Sam | gating gate for C1 |
+| B1 | 26B C-PERSIST replication | Sam | 8 | conditional on B0b | C-PERSIST scale-out |
+| B2 | 26B many-turn streaming horizon | Sam | 10 | conditional on B0b | streaming first-class |
+| B3 | Matched streaming baselines | Sam | 8 | can run before B0b if cache path unused | C-STREAM real comparator |
 | B4 | 26B sparse-ViT / C-CEILING | Sam | 8 | conditional on runtime support | C-CEILING at scale |
 | B5 | 1,937 re-export | Sam | 1.5 | doc + tooling | reproducibility |
 | **Track B total** | | | **~37h** |  |  |
@@ -44,7 +44,7 @@ Local execution order is A1 → A2 → A3 → A4 → A6 → A7 → A5. A6/A7 are
 highest-value local reviewer-defense cells and do not depend on A5; the
 cache-distance probe is intentionally last because a valid non-comparable-cache
 H1 outcome should not block the cache-horizon and seed-sweep evidence. If Sam
-can run in parallel, B0 should land before any of B1–B4 because
+can run in parallel, B0b should land before B1/B2 because
 cache-correctness is gating.
 
 ## Codex's review distilled (so we share a target)
@@ -206,26 +206,37 @@ interpreted separately from K=1 repair turns.
 
 ## Track B — Sam (M5 MBP, 128 GB, 26B runtime)
 
-These are best-effort spec sheets for Sam; we won't run them locally. Codex's bundle (C0–C5) is the canonical list; I'm refining the schema and prerequisites.
+These are best-effort spec sheets for Sam; we won't run them locally. The
+canonical execution contract is
+`research/experiments/2026/2026-04-29-sam-scaleout-handoff.md`, and returned
+JSONLs must validate with `scripts/validate_sam_scaleout_artifact.py` against
+`research/schemas/sam_scaleout_artifact_v1.schema.json`.
 
-### B0. 26B cache-correctness smoke
+### B0b. Expanded 26B cache-correctness gate
 
 **Question.** Does Sam's 26B runtime preserve answer identity across cross-turn warm follow-ups?
 
 **Why.** Sam's last cache-correctness smoke failed on 3/5 cross-turn follow-up items (per paper line 72–74). Until this passes, *no* C-PERSIST claim from 26B is admissible.
 
-**Protocol.** 5 short videos × 3 questions each. Three arms per video:
+**Protocol.** Minimum 7 videos × 3 questions each = 21 cross-turn rows. Three arms per video:
 1. Dense deterministic replay (Q1, Q2, Q3 from cold cache)
 2. Within-turn cache replay (Q1 → cache → Q1' produces same output)
 3. Cross-turn warm follow-up (Q1 → cache → Q2 produces same output as cold-Q2-on-same-cache-state)
 
-Schema per row: `item_id, q_index, arm, model_id="26B", runtime_commit, frame_count, choice, correct, raw_output, parse_failure, elapsed_ms`.
+Use canonical labels `baseline_arm=cold_dense`,
+`arm=within_turn_cache_replay`, and `arm=cross_turn_warm`.
 
-**Gate.** All 15 cross-turn warm rows must match cold rows. Anything less = 26B C-PERSIST remains blocked.
+Schema per row must include raw prompts/outputs, prompt/input/frame hashes,
+cache topology, prefix metadata, parse failures by arm, per-stage timings,
+memory definition, exact runtime/model metadata, and command line.
+
+**Gate.** All 21+ cross-turn warm rows must have zero choice/correctness/text
+diffs, zero parse failures, matching prompt/input/frame hashes, and positive
+prefix metadata on follow-ups. Anything less = 26B C-PERSIST remains blocked.
 
 **Time.** ~1.5h. **Status.** Sam-only, blocking gate.
 
-### B1. 26B C-PERSIST replication (conditional on B0 PASS)
+### B1. 26B C-PERSIST replication (conditional on B0b PASS)
 
 **Question.** Do 26B cache reuse and adaptive repair reproduce the 7B result envelope (15.28–35.97× speedup, 0/93 paired drift)?
 
@@ -247,7 +258,13 @@ Schema per row: `item_id, q_index, arm, model_id="26B", runtime_commit, frame_co
 
 **Question.** What does same-video reuse measure against compared to: screenshot polling, low-FPS dense, recency/last-K, and Sam's adaptive repair?
 
-**Protocol.** Same videos, events, and questions across all four protocols. Include one stale-cache failure case (a question whose answer changed between turns 1 and 5).
+**Protocol.** Same recordings, event ids/timestamps, observation windows,
+questions, answer keys, scoring, and artifact schema across screenshot polling,
+low-FPS dense, recency/last-K, and Sam policy. Every row records cadence/FPS or
+last-K, selected frame indices/ids/hashes, evidence budget, and event time.
+Include one stale-cache failure case (a question whose answer changed between
+turns 1 and 5). B3 can run even if B0b blocks cross-turn PromptCacheState as
+long as the compared policy does not rely on that broken cache path.
 
 **Time.** ~8h. **Promotes C-STREAM from "partner evidence" to "same-graph science"** per Codex.
 
@@ -265,7 +282,14 @@ Schema per row: `item_id, q_index, arm, model_id="26B", runtime_commit, frame_co
 
 **Question.** Is the 1,937 exactness claim from the original Sam protocol still reproducible with full per-row provenance?
 
-**Protocol.** Re-export the data Sam used for the 1,937 number with: item IDs, raw paired outputs, parse_failure, CIs, model/runtime/hardware metadata, exact commit, prompt_hash, frame_count, policy. This is a documentation+tooling task, not a new experiment.
+**Protocol.** Re-export the data Sam used for the 1,937 number with: item IDs,
+raw paired outputs, parse_failure split by arm, CIs,
+model/runtime/hardware metadata, exact commit, command line, prompt_hash,
+frame ids/hashes, frame_count, policy, source artifact path/hash, and
+provenance note. This is a documentation+tooling task, not a new experiment.
+Keep the paper claim bounded unless the stronger raw-paired artifact exists:
+0 accuracy delta on 1,937 sparse-sampled items, and byte-identical raw-paired
+verification on 513 rows.
 
 **Time.** ~1.5h.
 
@@ -295,8 +319,8 @@ Schema per row: `item_id, q_index, arm, model_id="26B", runtime_commit, frame_co
 7. **A7 1.55K-extended seeds** (1h impl + 7.5h run = 8.5h) → universal sampler
 
 **Sam track (in parallel):**
-- **B0 cache-correctness smoke** as soon as Sam can — gating gate
-- **B1, B2, B3, B4, B5** in any order after B0 passes, prioritized by Codex's review (B2 is the headline)
+- **B0b expanded cache-correctness gate** as soon as Sam can — gating gate
+- **B3 and B5** can run early; **B1/B2** wait for B0b; **B4** waits for real sparse-ViT support
 
 ## Each experiment will get a wrapper script
 
@@ -327,4 +351,4 @@ deep-mechanism queue.
 
 ## Bottom line for the editor
 
-If we land A1–A6 and Sam lands B0–B2, the paper has all five contributions (C-PERSIST, C-CEILING, C-VISION, C-STREAM, plus 1.30 attribution) backed by gate-grade evidence at the configuration boundaries. If A4 finds a real Qwen kr gate-pass, we can lead C-VISION with two architectures showing zero-drift sparse vision execution. If A6 stays drift-bounded through 50 turns, the C-PERSIST headline goes from "two follow-ups" to "tested at scale". Both are paper-defining.
+If we land A1–A6 and Sam lands B0b–B2, the paper has all five contributions (C-PERSIST, C-CEILING, C-VISION, C-STREAM, plus 1.30 attribution) backed by gate-grade evidence at the configuration boundaries. If A4 finds a real Qwen kr gate-pass, we can lead C-VISION with two architectures showing zero-drift sparse vision execution. If A6 stays drift-bounded through 50 turns, the C-PERSIST headline goes from "two follow-ups" to "tested at scale". Both are paper-defining.

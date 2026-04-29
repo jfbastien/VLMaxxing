@@ -21,25 +21,66 @@ diffs, timing, memory, and confidence intervals.
 Rows should validate against
 `research/schemas/sam_scaleout_artifact_v1.schema.json`.
 
-## B0 — Cache-Correctness Smoke
+## Acceptance Contract
+
+Sam's results become same-graph evidence only if the raw row JSONL validates
+against `research/schemas/sam_scaleout_artifact_v1.schema.json` and the
+phase-specific gates below. The schema is intentionally provenance-heavy:
+stage timings, prompt/input/frame hashes, parse failures by arm, cache
+topology, runtime metadata, command line, and memory definition are required on
+every paired row.
+
+Use `scripts/validate_sam_scaleout_artifact.py` before handing artifacts back
+to this repo. The validator enforces the base schema and the B0b/B3/B5 gates
+that are easy to overclaim by prose.
+
+## B0b — Expanded Cache-Correctness Gate
 
 Hypothesis: the 26B runtime's prompt-cache semantics match the local paired
 protocol closely enough to support C-PERSIST replication.
 
 Protocol:
-- 3 videos, 3 questions each, deterministic decoding.
-- Arms: cold dense baseline and persistent-cache session.
-- Require identical prompt text and frame selection between arms.
+- Minimum: 7 videos x 3 questions = 21 cross-turn rows.
+- Deterministic decoding.
+- Arm labels: `baseline_arm=cold_dense`, `arm=within_turn_cache_replay`, and
+  `arm=cross_turn_warm`.
+- Require identical prompt text and frame selection between paired arms.
+- Require raw prompt, raw response, frame ids/hashes, prompt hashes,
+  input-id hashes, cache-topology metadata, prefix-hit metadata, and per-arm
+  stage timings on every row.
 - Export one JSONL row per paired query.
 
 Gate:
 - 0 parse failures.
-- 0 choice diffs across the 9 paired queries.
-- Prefix-hit metadata is non-null and positive on follow-ups.
+- 0 choice diffs, 0 correctness diffs, and 0 raw-text diffs across all paired
+  rows.
+- Identical prompt hashes, input-id hashes, and frame hashes between paired
+  arms.
+- Prefix-hit and prefix-coverage metadata are non-null and positive on
+  follow-up rows.
 
 Interpretation:
-- Pass gates B1/B2. Fail means Sam's runtime needs cache debugging before its
-  numbers can be used as first-class evidence.
+- Pass gates B1/B2. Fail means Sam's runtime needs cache debugging before
+  cross-turn C-PERSIST numbers can be used as first-class evidence.
+
+Validation command:
+
+```bash
+python scripts/validate_sam_scaleout_artifact.py \
+  --jsonl sam_b0b_cache_correctness.jsonl \
+  --phase B0b \
+  --min-rows 21 \
+  --require-zero-choice-diffs \
+  --require-zero-correctness-diffs \
+  --require-zero-text-diffs \
+  --require-zero-parse-failures \
+  --require-matching-input-hash \
+  --require-matching-prompt-hash \
+  --require-matching-frame-hashes \
+  --require-positive-prefix-on-followups \
+  --require-b0b-protocol \
+  --summary-output sam_b0b_cache_correctness_summary.json
+```
 
 Expected runtime: 10-30 minutes.
 
@@ -47,6 +88,8 @@ Expected runtime: 10-30 minutes.
 
 Hypothesis: adaptive/fixed C-PERSIST is not a Qwen-7B/MLX-local artifact; the
 same answer-stability envelope appears at 26B scale.
+
+Prerequisite: B0b passes. If B0b fails, B1 is blocked.
 
 Protocol:
 - Use the same 7 short clips as local 1.55F where possible.
@@ -72,6 +115,8 @@ Expected runtime: 1-3 hours depending on 26B decode speed.
 Hypothesis: the practical value of C-PERSIST at 26B is a measured horizon, not
 only a two-follow-up result.
 
+Prerequisite: B0b passes. If B0b fails, B2 is blocked.
+
 Protocol:
 - Same stateless repeated-query design as local 1.55L unless Sam's runtime
   already has a true conversational-history harness.
@@ -95,9 +140,16 @@ Baselines:
 - Screenshot polling / fixed-cadence dense.
 - Low-FPS dense.
 - Recency / last-K frames.
+- Sam policy.
 
 Protocol:
-- Use the same videos/questions as B1/B2 where possible.
+- Use the same recordings, event ids/timestamps, observation windows,
+  questions, answer keys, scoring, and artifact schema across all arms.
+- Record the evidence budget on every row: cadence, FPS, last-K, selected frame
+  indices, selected frame ids/hashes, and observation window.
+- Use the same videos/questions as B1/B2 where possible, but B3 may run even
+  if B0b blocks cross-turn PromptCacheState, as long as the compared policy
+  does not depend on the broken cache path.
 - Export the same paired JSONL schema.
 - Include at least one stale-cache failure case where recency/polling and
   C-PERSIST disagree; raw outputs are required.
@@ -106,6 +158,19 @@ Interpretation:
 - If low-FPS dense is competitive, add low-FPS + C-PERSIST/adaptive as a
   follow-up before claiming dominance.
 - If recency wins on specific items, use them as limitations/failure cases.
+
+Validation command:
+
+```bash
+python scripts/validate_sam_scaleout_artifact.py \
+  --jsonl sam_b3_streaming_baselines.jsonl \
+  --phase B3 \
+  --min-rows 1 \
+  --require-arms screenshot_polling,low_fps_dense,recency_last_k,sam_policy \
+  --require-zero-parse-failures \
+  --require-b3-matched-events \
+  --summary-output sam_b3_streaming_baselines_summary.json
+```
 
 Expected runtime: 4-8 hours for a minimal bundle.
 
@@ -130,6 +195,70 @@ Gate:
 - Actual-vs-predicted residual within +/-0.05x.
 
 Expected runtime: 3-8 hours depending on 26B vision cost.
+
+## B5 — S4 Exactness Re-Export / Accounting Cleanup
+
+Hypothesis: Sam's original S4 evidence can be re-exported with enough per-row
+provenance to support the bounded paper claim without importing inconsistent
+accounting.
+
+Current admissible bound:
+- Supported: 0 accuracy delta on 1,937 sparse-sampled items.
+- Supported: byte-identical raw-paired verification on 513 rows.
+- Not supported until re-exported with raw paired rows: byte-identical
+  exactness over all 1,937 rows or any finer breakdowns from inconsistent S4
+  accounting.
+
+Protocol:
+- Export `sam_b5_s4_accuracy_1937.jsonl` with 1,937 paired rows, item ids,
+  parse failures split by arm, raw paired responses, correctness fields, CIs,
+  model/runtime/hardware metadata, commit, command line, prompt hash, frame
+  ids/hashes, frame count, policy, source artifact path/hash, and provenance
+  note.
+- Export `sam_b5_s4_raw_paired_513.jsonl` with the 513 raw-paired rows used
+  for byte-identical verification.
+- If Sam can re-export all 1,937 rows with raw paired responses, treat that as
+  a new stronger artifact and validate it explicitly; do not infer it from the
+  older accounting.
+- If the 1,937-row source cannot provide raw paired responses, it cannot pass
+  this schema as same-graph evidence; keep the paper claim bounded to imported
+  zero-accuracy-delta support plus the 513 raw-paired exactness audit.
+
+Validation commands:
+
+```bash
+python scripts/validate_sam_scaleout_artifact.py \
+  --jsonl sam_b5_s4_accuracy_1937.jsonl \
+  --phase B5 \
+  --expected-row-count 1937 \
+  --require-zero-correctness-diffs \
+  --require-zero-parse-failures \
+  --require-b5-provenance \
+  --summary-output sam_b5_s4_accuracy_1937_summary.json
+
+python scripts/validate_sam_scaleout_artifact.py \
+  --jsonl sam_b5_s4_raw_paired_513.jsonl \
+  --phase B5 \
+  --expected-row-count 513 \
+  --require-zero-choice-diffs \
+  --require-zero-correctness-diffs \
+  --require-zero-text-diffs \
+  --require-zero-parse-failures \
+  --require-b5-provenance \
+  --summary-output sam_b5_s4_raw_paired_513_summary.json
+```
+
+Expected runtime: 1-2 hours if the source artifacts already exist.
+
+## Run Order
+
+1. Run B0b first. Stop B1/B2 if it fails.
+2. Run B3 matched streaming baselines early; they are useful even if B0b blocks
+   cross-turn C-PERSIST, provided the compared policies do not use the broken
+   cache path.
+3. Run B5 re-export/accounting cleanup before importing any S4 breakdowns.
+4. Run B1 and B2 only after B0b passes.
+5. Run B4 only if the 26B runtime has real sparse/compact ViT execution.
 
 ## Deliverables
 
