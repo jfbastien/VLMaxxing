@@ -1,0 +1,28 @@
+{
+  "n_rows": 450,
+  "phases": {
+    "B2": 450
+  },
+  "arms": {
+    "fixed_k1_after_setup": 150,
+    "adaptive_post_prev_repaired": 150,
+    "scheduled_refresh_every_10_turns": 150
+  },
+  "policies": {
+    "fixed_k1_after_setup": 150,
+    "adaptive_post_prev_repaired": 150,
+    "scheduled_refresh_every_10_turns": 150
+  },
+  "choice_diffs": 0,
+  "correctness_diffs": 0,
+  "text_diffs": 112,
+  "parse_failures": 0,
+  "session_parse_failures": 0,
+  "baseline_parse_failures": 0,
+  "input_hash_mismatches": 0,
+  "prompt_hash_mismatches": 0,
+  "frame_hash_mismatches": 0,
+  "schema_or_gate_errors": 0,
+  "first_errors": [],
+  "pass": true
+}

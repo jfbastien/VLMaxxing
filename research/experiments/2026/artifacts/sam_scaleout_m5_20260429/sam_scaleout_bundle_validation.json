@@ -11,17 +11,19 @@
     },
     {
       "filename": "sam_b1_cpersist_replication.jsonl",
-      "present": false,
+      "present": true,
       "required_for_minimum": false,
-      "passed": true,
-      "summary_path": null
+      "passed": false,
+      "returncode": 1,
+      "summary_path": "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b1_cpersist_replication_validation_summary.json"
     },
     {
       "filename": "sam_b2_many_turn_horizon.jsonl",
-      "present": false,
+      "present": true,
       "required_for_minimum": false,
       "passed": true,
-      "summary_path": null
+      "returncode": 0,
+      "summary_path": "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b2_many_turn_horizon_validation_summary.json"
     },
     {
       "filename": "sam_b3_streaming_baselines.jsonl",
@@ -33,10 +35,11 @@
     },
     {
       "filename": "sam_b4_sparse_vit_ceiling.jsonl",
-      "present": false,
+      "present": true,
       "required_for_minimum": false,
       "passed": true,
-      "summary_path": null
+      "returncode": 0,
+      "summary_path": "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b4_sparse_vit_ceiling_validation_summary.json"
     },
     {
       "filename": "sam_b5_s4_accuracy_1937.jsonl",
