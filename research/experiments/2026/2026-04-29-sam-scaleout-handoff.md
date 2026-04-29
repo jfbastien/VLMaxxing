@@ -34,6 +34,10 @@ Use `scripts/validate_sam_scaleout_artifact.py` before handing artifacts back
 to this repo. The validator enforces the base schema and the B0b/B3/B5 gates
 that are easy to overclaim by prose.
 
+For the shortest operator-facing version, give Sam:
+`research/experiments/2026/2026-04-29-sam-scaleout-operator-prompt.md`.
+It names the required JSONL files and the one bundle-validation command.
+
 ## B0b — Expanded Cache-Correctness Gate
 
 Hypothesis: the 26B runtime's prompt-cache semantics match the local paired
@@ -268,6 +272,13 @@ For each run, provide:
 - The exact repo commit and command line.
 - A short note describing any parse failures and at least one representative
   raw response for each failure class.
+- A bundle-level validation summary produced by:
+
+```bash
+python scripts/validate_sam_scaleout_bundle.py \
+  --bundle-dir <artifact_dir> \
+  --summary-output <artifact_dir>/sam_scaleout_bundle_validation.json
+```
 
 This bundle is sufficient for this repo to import Sam evidence as same-graph
 scale-out data rather than as un-audited companion evidence.
