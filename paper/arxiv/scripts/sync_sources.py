@@ -1862,9 +1862,14 @@ def _write_measured_sparse_execution_tables(snapshot: dict) -> None:
     ]
     for row in measured["gemma_rows"]:
         parse = f"{row['dense_parse_failures']}/{row['sparse_parse_failures']}"
-        interp = "clean ceiling cell" if row["pass_ceiling"] else "ceiling miss"
-        if not row["pass_format"]:
-            interp += "; matched parse failures"
+        if row["pass_ceiling"] and row["pass_format"]:
+            interp = "clean ceiling cell"
+        elif row["pass_ceiling"]:
+            interp = "ceiling-consistent; matched parse failures"
+        else:
+            interp = "ceiling miss"
+            if not row["pass_format"]:
+                interp += "; matched parse failures"
         gemma_lines.append(
             f"{row['frame_count']}f & {row['n']} & "
             f"{row['accuracy_delta']:+.3f} & "
