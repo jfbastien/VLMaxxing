@@ -1,0 +1,24 @@
+{
+  "n_rows": 10,
+  "phases": {
+    "B4": 10
+  },
+  "arms": {
+    "hard_prune_post_vit_kr050": 10
+  },
+  "policies": {
+    "hard_prune_keep_ratio_0.5": 10
+  },
+  "choice_diffs": 0,
+  "correctness_diffs": 0,
+  "text_diffs": 10,
+  "parse_failures": 0,
+  "session_parse_failures": 0,
+  "baseline_parse_failures": 0,
+  "input_hash_mismatches": 10,
+  "prompt_hash_mismatches": 0,
+  "frame_hash_mismatches": 0,
+  "schema_or_gate_errors": 0,
+  "first_errors": [],
+  "pass": true
+}

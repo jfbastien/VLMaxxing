@@ -1,0 +1,66 @@
+[provenance] {
+  "run_id": "sam_b4_1777502803_44bf4511",
+  "model_id": "google/gemma-4-26B-A4B-it",
+  "model_sha": "7d4c97e54145f8ffd1a4dd1b4986a5015a517842",
+  "quantization": "bf16_native",
+  "runtime": "mlx_vlm-0.4.4",
+  "runtime_commit": "pypi",
+  "hardware": "Apple M5 Max | 128.0 GB unified | Darwin 25.4.0",
+  "os_version": "Darwin 25.4.0",
+  "mlx_version": "unknown",
+  "metal_version": "Metal 4",
+  "command_line": "scripts/run_sam_b4_track_b_hard_prune.py",
+  "memory_definition": "ru_maxrss bytes (macOS) -> GB",
+  "commit_sha": "8492aef15f4bbae93216230062c463bc62c0e46a"
+}
+[loader] loading google/gemma-4-26B-A4B-it via Gemma4VLM
+  Loading google/gemma-4-26B-A4B-it (thinking=False)...
+Fetching 9 files:   0%|          | 0/9 [00:00<?, ?it/s]Fetching 9 files: 100%|██████████| 9/9 [00:00<00:00, 187804.66it/s]
+  Loaded in 5.9s
+[loader] loaded in 5.9s
+[video 1/5 fFjv93ACGo8] frames=8
+  [run] dense vs hard-prune kr=0.5
+Prefill:   0%|          | 0/2088 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2088 [00:03<00:00, 624.77tok/s]Prefill: 100%|█████████▉| 2087/2088 [00:03<00:00, 610.90tok/s]
+  [done] dense 5646ms vs pruned 4821ms -> 1.171x
+[video 1/5 fFjv93ACGo8] frames=32
+  [run] dense vs hard-prune kr=0.5
+Prefill:   0%|          | 0/8280 [00:00<?, ?tok/s]Prefill:  25%|██▍       | 2048/8280 [00:09<00:29, 210.55tok/s]Prefill:  49%|████▉     | 4096/8280 [00:10<00:09, 443.62tok/s]Prefill:  74%|███████▍  | 6144/8280 [00:11<00:03, 690.69tok/s]Prefill:  99%|█████████▉| 8192/8280 [00:12<00:00, 940.48tok/s]Prefill: 100%|█████████▉| 8279/8280 [00:12<00:00, 640.40tok/s]
+Prefill:   0%|          | 0/4184 [00:00<?, ?tok/s]Prefill:  49%|████▉     | 2048/4184 [00:00<00:00, 3614.45tok/s]Prefill:  98%|█████████▊| 4096/4184 [00:01<00:00, 2782.13tok/s]Prefill: 100%|█████████▉| 4183/4184 [00:01<00:00, 2613.46tok/s]
+  [done] dense 14351ms vs pruned 13747ms -> 1.044x
+[video 2/5 N1cdUjctpG8] frames=8
+  [run] dense vs hard-prune kr=0.5
+Prefill:   0%|          | 0/2088 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2088 [00:03<00:00, 681.51tok/s]Prefill: 100%|█████████▉| 2087/2088 [00:03<00:00, 664.12tok/s]
+  [done] dense 3835ms vs pruned 5275ms -> 0.727x
+[video 2/5 N1cdUjctpG8] frames=32
+  [run] dense vs hard-prune kr=0.5
+Prefill:   0%|          | 0/8280 [00:00<?, ?tok/s]Prefill:  25%|██▍       | 2048/8280 [00:09<00:28, 222.03tok/s]Prefill:  49%|████▉     | 4096/8280 [00:10<00:08, 476.72tok/s]Prefill:  74%|███████▍  | 6144/8280 [00:10<00:02, 745.07tok/s]Prefill:  99%|█████████▉| 8192/8280 [00:11<00:00, 1006.80tok/s]Prefill: 100%|█████████▉| 8279/8280 [00:12<00:00, 684.40tok/s] 
+Prefill:   0%|          | 0/4184 [00:00<?, ?tok/s]Prefill:  49%|████▉     | 2048/4184 [00:00<00:00, 3616.52tok/s]Prefill:  98%|█████████▊| 4096/4184 [00:01<00:00, 2870.66tok/s]Prefill: 100%|█████████▉| 4183/4184 [00:01<00:00, 2688.13tok/s]
+  [done] dense 13522ms vs pruned 12946ms -> 1.044x
+[video 3/5 HIjX8OPuf-w] frames=8
+  [run] dense vs hard-prune kr=0.5
+Prefill:   0%|          | 0/2088 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2088 [00:03<00:00, 664.13tok/s]Prefill: 100%|█████████▉| 2087/2088 [00:03<00:00, 648.17tok/s]
+  [done] dense 3911ms vs pruned 5202ms -> 0.752x
+[video 3/5 HIjX8OPuf-w] frames=32
+  [run] dense vs hard-prune kr=0.5
+Prefill:   0%|          | 0/8280 [00:00<?, ?tok/s]Prefill:  25%|██▍       | 2048/8280 [00:08<00:26, 232.28tok/s]Prefill:  49%|████▉     | 4096/8280 [00:09<00:08, 494.70tok/s]Prefill:  74%|███████▍  | 6144/8280 [00:10<00:02, 764.63tok/s]Prefill:  99%|█████████▉| 8192/8280 [00:11<00:00, 1023.33tok/s]Prefill: 100%|█████████▉| 8279/8280 [00:11<00:00, 703.74tok/s] 
+Prefill:   0%|          | 0/4184 [00:00<?, ?tok/s]Prefill:  49%|████▉     | 2048/4184 [00:00<00:00, 2739.84tok/s]Prefill:  98%|█████████▊| 4096/4184 [00:01<00:00, 2311.93tok/s]Prefill: 100%|█████████▉| 4183/4184 [00:01<00:00, 2205.36tok/s]
+  [done] dense 13117ms vs pruned 14178ms -> 0.925x
+[video 4/5 HwnB8aCn8yE] frames=8
+  [run] dense vs hard-prune kr=0.5
+Prefill:   0%|          | 0/2088 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2088 [00:04<00:00, 511.00tok/s]Prefill: 100%|█████████▉| 2087/2088 [00:04<00:00, 500.32tok/s]
+  [done] dense 4932ms vs pruned 5798ms -> 0.851x
+[video 4/5 HwnB8aCn8yE] frames=32
+  [run] dense vs hard-prune kr=0.5
+Prefill:   0%|          | 0/8280 [00:00<?, ?tok/s]Prefill:  25%|██▍       | 2048/8280 [00:10<00:31, 197.11tok/s]Prefill:  49%|████▉     | 4096/8280 [00:11<00:09, 425.33tok/s]Prefill:  74%|███████▍  | 6144/8280 [00:12<00:03, 662.14tok/s]Prefill:  99%|█████████▉| 8192/8280 [00:13<00:00, 901.04tok/s]Prefill: 100%|█████████▉| 8279/8280 [00:13<00:00, 610.43tok/s]
+Prefill:   0%|          | 0/4184 [00:00<?, ?tok/s]Prefill:  49%|████▉     | 2048/4184 [00:00<00:00, 3019.98tok/s]Prefill:  98%|█████████▊| 4096/4184 [00:01<00:00, 2377.50tok/s]Prefill: 100%|█████████▉| 4183/4184 [00:01<00:00, 2239.64tok/s]
+  [done] dense 14973ms vs pruned 14363ms -> 1.042x
+[video 5/5 24i4ncHuf6A] frames=8
+  [run] dense vs hard-prune kr=0.5
+Prefill:   0%|          | 0/2088 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2088 [00:03<00:00, 579.84tok/s]Prefill: 100%|█████████▉| 2087/2088 [00:03<00:00, 568.30tok/s]
+  [done] dense 4362ms vs pruned 5762ms -> 0.757x
+[video 5/5 24i4ncHuf6A] frames=32
+  [run] dense vs hard-prune kr=0.5
+Prefill:   0%|          | 0/8280 [00:00<?, ?tok/s]Prefill:  25%|██▍       | 2048/8280 [00:10<00:32, 189.25tok/s]Prefill:  49%|████▉     | 4096/8280 [00:11<00:10, 402.50tok/s]Prefill:  74%|███████▍  | 6144/8280 [00:13<00:03, 609.26tok/s]Prefill:  99%|█████████▉| 8192/8280 [00:14<00:00, 792.69tok/s]Prefill: 100%|█████████▉| 8279/8280 [00:14<00:00, 559.09tok/s]
+Prefill:   0%|          | 0/4184 [00:00<?, ?tok/s]Prefill:  49%|████▉     | 2048/4184 [00:00<00:00, 2810.93tok/s]Prefill:  98%|█████████▊| 4096/4184 [00:01<00:00, 2158.24tok/s]Prefill: 100%|█████████▉| 4183/4184 [00:02<00:00, 2047.33tok/s]
+  [done] dense 16228ms vs pruned 16533ms -> 0.982x
+[wrote] 10 rows -> /Users/sam/repos/codec-through-jfb/research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b4_sparse_vit_ceiling.jsonl
