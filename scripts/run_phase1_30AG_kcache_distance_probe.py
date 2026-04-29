@@ -166,24 +166,78 @@ def _reuse_q0_to_current_cache(
     return q0_cache, metadata
 
 
-def _cache_arrays(entry: Any, name: str) -> mx.array | None:
+def _scalar_offset(value: Any) -> int:
+    if isinstance(value, int):
+        return value
+    if isinstance(value, np.integer):
+        return int(value)
+    item = getattr(value, "item", None)
+    if callable(item):
+        try:
+            return int(item())
+        except (TypeError, ValueError):
+            pass
+    array = np.asarray(value)
+    if array.size != 1:
+        raise ValueError(
+            "batched/vector cache offsets are unsupported in 1.30AG; "
+            f"got offset shape {array.shape}"
+        )
+    return int(array.reshape(-1)[0])
+
+
+def _cache_window(entry: Any, name: str) -> dict[str, Any] | None:
     value = getattr(entry, name, None)
     if value is None:
         return None
-    return value
-
-
-def _distance_for_arrays(left: mx.array, right: mx.array) -> dict[str, float]:
-    if len(left.shape) < 3 or len(right.shape) < 3:
-        raise ValueError(f"expected cache tensors with >=3 dims, got {left.shape}, {right.shape}")
-    if int(left.shape[2]) != int(right.shape[2]):
+    if len(value.shape) < 3:
+        raise ValueError(f"expected cache tensor with >=3 dims, got {value.shape}")
+    buffer_tokens = int(value.shape[-2])
+    raw_offset = getattr(entry, "offset", buffer_tokens)
+    valid_tokens = _scalar_offset(raw_offset)
+    if valid_tokens < 0 or valid_tokens > buffer_tokens:
         raise ValueError(
-            "cache-token length mismatch in K/V distance probe: "
-            f"{left.shape[2]} != {right.shape[2]}"
+            f"invalid cache offset for {name}: offset={valid_tokens}, buffer_tokens={buffer_tokens}"
         )
-    common_len = int(left.shape[2])
-    left_common = left
-    right_common = right
+    slices = [slice(None)] * len(value.shape)
+    slices[-2] = slice(0, valid_tokens)
+    return {
+        "array": value[tuple(slices)],
+        "valid_tokens": valid_tokens,
+        "buffer_tokens": buffer_tokens,
+    }
+
+
+def _token_prefix(array: mx.array, common_tokens: int) -> mx.array:
+    slices = [slice(None)] * len(array.shape)
+    slices[-2] = slice(0, common_tokens)
+    return array[tuple(slices)]
+
+
+def _distance_for_windows(left: dict[str, Any], right: dict[str, Any]) -> dict[str, Any]:
+    left_array = left["array"]
+    right_array = right["array"]
+    if len(left_array.shape) < 3 or len(right_array.shape) < 3:
+        raise ValueError(
+            f"expected cache tensors with >=3 dims, got {left_array.shape}, {right_array.shape}"
+        )
+    if tuple(left_array.shape[:-2]) != tuple(right_array.shape[:-2]) or int(
+        left_array.shape[-1]
+    ) != int(right_array.shape[-1]):
+        raise ValueError(
+            "cache non-token shape mismatch in K/V distance probe: "
+            f"{left_array.shape} != {right_array.shape}"
+        )
+    left_tokens = int(left["valid_tokens"])
+    right_tokens = int(right["valid_tokens"])
+    common_len = min(left_tokens, right_tokens)
+    if common_len <= 0:
+        raise ValueError(
+            "cache distance probe cannot compare empty valid cache windows: "
+            f"{left_tokens} vs {right_tokens}"
+        )
+    left_common = _token_prefix(left_array, common_len)
+    right_common = _token_prefix(right_array, common_len)
     l_flat = left_common.reshape(-1)
     r_flat = right_common.reshape(-1)
     dot = mx.sum(l_flat * r_flat)
@@ -194,11 +248,15 @@ def _distance_for_arrays(left: mx.array, right: mx.array) -> dict[str, float]:
     mx.eval(cosine, mean_abs, rms)
     return {
         "cosine": float(cosine.item()),
+        "cosine_distance": float(1.0 - cosine.item()),
         "mean_abs": float(mean_abs.item()),
         "rms": float(rms.item()),
         "common_tokens": common_len,
-        "left_tokens": int(left.shape[2]),
-        "right_tokens": int(right.shape[2]),
+        "left_tokens": left_tokens,
+        "right_tokens": right_tokens,
+        "left_buffer_tokens": int(left["buffer_tokens"]),
+        "right_buffer_tokens": int(right["buffer_tokens"]),
+        "same_valid_token_length": left_tokens == right_tokens,
     }
 
 
@@ -207,13 +265,13 @@ def _cache_distance(left: list[Any], right: list[Any]) -> dict[str, Any]:
     for layer_idx, (left_entry, right_entry) in enumerate(zip(left, right, strict=True)):
         row: dict[str, Any] = {"layer": layer_idx}
         for name in ("keys", "values"):
-            left_array = _cache_arrays(left_entry, name)
-            right_array = _cache_arrays(right_entry, name)
-            if left_array is None or right_array is None:
+            left_window = _cache_window(left_entry, name)
+            right_window = _cache_window(right_entry, name)
+            if left_window is None or right_window is None:
                 row[f"{name}_available"] = False
                 continue
             row[f"{name}_available"] = True
-            metric = _distance_for_arrays(left_array, right_array)
+            metric = _distance_for_windows(left_window, right_window)
             for metric_name, metric_value in metric.items():
                 row[f"{name}_{metric_name}"] = metric_value
         layer_rows.append(row)
@@ -226,9 +284,24 @@ def _cache_distance(left: list[Any], right: list[Any]) -> dict[str, Any]:
             float(row[f"{name}_mean_abs"]) for row in layer_rows if row.get(f"{name}_available")
         ]
         rms = [float(row[f"{name}_rms"]) for row in layer_rows if row.get(f"{name}_available")]
+        cosine_distances = [
+            float(row[f"{name}_cosine_distance"])
+            for row in layer_rows
+            if row.get(f"{name}_available")
+        ]
+        token_mismatches = [
+            row
+            for row in layer_rows
+            if row.get(f"{name}_available") and not row.get(f"{name}_same_valid_token_length")
+        ]
         aggregate[f"{name}_mean_cosine"] = float(np.mean(cosines)) if cosines else None
+        aggregate[f"{name}_mean_cosine_distance"] = (
+            float(np.mean(cosine_distances)) if cosine_distances else None
+        )
         aggregate[f"{name}_mean_abs"] = float(np.mean(mean_abs)) if mean_abs else None
         aggregate[f"{name}_mean_rms"] = float(np.mean(rms)) if rms else None
+        aggregate[f"{name}_n_token_length_mismatch_layers"] = len(token_mismatches)
+        aggregate[f"{name}_all_same_valid_token_length"] = len(token_mismatches) == 0
     return aggregate
 
 
@@ -455,6 +528,18 @@ def main() -> int:
             "mean_pruned_keys_cosine": _class_mean("pruned_vs_dense.keys_mean_cosine"),
             "mean_reuse_values_cosine": _class_mean("reuse_vs_dense.values_mean_cosine"),
             "mean_pruned_values_cosine": _class_mean("pruned_vs_dense.values_mean_cosine"),
+            "mean_reuse_keys_cosine_distance": _class_mean(
+                "reuse_vs_dense.keys_mean_cosine_distance"
+            ),
+            "mean_pruned_keys_cosine_distance": _class_mean(
+                "pruned_vs_dense.keys_mean_cosine_distance"
+            ),
+            "mean_reuse_values_cosine_distance": _class_mean(
+                "reuse_vs_dense.values_mean_cosine_distance"
+            ),
+            "mean_pruned_values_cosine_distance": _class_mean(
+                "pruned_vs_dense.values_mean_cosine_distance"
+            ),
             "mean_reuse_keys_mean_abs": _class_mean("reuse_vs_dense.keys_mean_abs"),
             "mean_pruned_keys_mean_abs": _class_mean("pruned_vs_dense.keys_mean_abs"),
         }
@@ -478,11 +563,39 @@ def main() -> int:
         _mean("reuse_vs_dense.values_mean_abs"),
         _mean("pruned_vs_dense.values_mean_abs"),
     )
-    pass_h1_capture = bool(
+    keys_cosine_distance_gap = _relative_gap(
+        _mean("reuse_vs_dense.keys_mean_cosine_distance"),
+        _mean("pruned_vs_dense.keys_mean_cosine_distance"),
+    )
+    values_cosine_distance_gap = _relative_gap(
+        _mean("reuse_vs_dense.values_mean_cosine_distance"),
+        _mean("pruned_vs_dense.values_mean_cosine_distance"),
+    )
+    same_valid_lengths = bool(
+        output_rows
+        and all(row["reuse_vs_dense"]["keys_all_same_valid_token_length"] for row in output_rows)
+        and all(row["reuse_vs_dense"]["values_all_same_valid_token_length"] for row in output_rows)
+        and all(row["pruned_vs_dense"]["keys_all_same_valid_token_length"] for row in output_rows)
+        and all(row["pruned_vs_dense"]["values_all_same_valid_token_length"] for row in output_rows)
+    )
+    n_token_length_mismatch_rows = sum(
+        1
+        for row in output_rows
+        if not (
+            row["reuse_vs_dense"]["keys_all_same_valid_token_length"]
+            and row["reuse_vs_dense"]["values_all_same_valid_token_length"]
+            and row["pruned_vs_dense"]["keys_all_same_valid_token_length"]
+            and row["pruned_vs_dense"]["values_all_same_valid_token_length"]
+        )
+    )
+    pass_h1_cache_states_captured = bool(
         output_rows
         and all(row["reuse_vs_dense"]["keys_mean_cosine"] is not None for row in output_rows)
+        and all(row["reuse_vs_dense"]["values_mean_cosine"] is not None for row in output_rows)
         and all(row["pruned_vs_dense"]["keys_mean_cosine"] is not None for row in output_rows)
+        and all(row["pruned_vs_dense"]["values_mean_cosine"] is not None for row in output_rows)
     )
+    pass_h1_capture = pass_h1_cache_states_captured and same_valid_lengths
     pass_h2_distance_report = all(
         int(selection_metadata["selected_by_drift_class"].get(name, 0)) > 0
         for name in ("shared_drift", "reuse_only_drift", "invalidated_only_drift", "stable")
@@ -491,11 +604,13 @@ def main() -> int:
         by_drift_class[name].get("mean_reuse_keys_mean_abs") is not None
         for name in ("shared_drift", "reuse_only_drift", "invalidated_only_drift", "stable")
     )
+    pass_h1_same_valid_lengths = same_valid_lengths
     pass_h4_saturation_test = (
-        keys_mean_abs_gap is not None
-        and values_mean_abs_gap is not None
-        and keys_mean_abs_gap <= 0.10
-        and values_mean_abs_gap <= 0.10
+        pass_h1_same_valid_lengths
+        and keys_cosine_distance_gap is not None
+        and values_cosine_distance_gap is not None
+        and keys_cosine_distance_gap <= 0.10
+        and values_cosine_distance_gap <= 0.10
     )
 
     summary = {
@@ -509,14 +624,24 @@ def main() -> int:
         "mean_pruned_keys_cosine": _mean("pruned_vs_dense.keys_mean_cosine"),
         "mean_reuse_values_cosine": _mean("reuse_vs_dense.values_mean_cosine"),
         "mean_pruned_values_cosine": _mean("pruned_vs_dense.values_mean_cosine"),
+        "mean_reuse_keys_cosine_distance": _mean("reuse_vs_dense.keys_mean_cosine_distance"),
+        "mean_pruned_keys_cosine_distance": _mean("pruned_vs_dense.keys_mean_cosine_distance"),
+        "mean_reuse_values_cosine_distance": _mean("reuse_vs_dense.values_mean_cosine_distance"),
+        "mean_pruned_values_cosine_distance": _mean("pruned_vs_dense.values_mean_cosine_distance"),
         "mean_reuse_keys_mean_abs": _mean("reuse_vs_dense.keys_mean_abs"),
         "mean_pruned_keys_mean_abs": _mean("pruned_vs_dense.keys_mean_abs"),
         "mean_reuse_values_mean_abs": _mean("reuse_vs_dense.values_mean_abs"),
         "mean_pruned_values_mean_abs": _mean("pruned_vs_dense.values_mean_abs"),
+        "keys_cosine_distance_relative_gap": keys_cosine_distance_gap,
+        "values_cosine_distance_relative_gap": values_cosine_distance_gap,
         "keys_mean_abs_relative_gap": keys_mean_abs_gap,
         "values_mean_abs_relative_gap": values_mean_abs_gap,
+        "all_same_valid_token_lengths": same_valid_lengths,
+        "n_token_length_mismatch_rows": n_token_length_mismatch_rows,
         "by_drift_class": by_drift_class,
+        "pass_H1_cache_states_captured": pass_h1_cache_states_captured,
         "pass_H1_capture": pass_h1_capture,
+        "pass_H1_same_valid_lengths": pass_h1_same_valid_lengths,
         "pass_H2_distance_report": pass_h2_distance_report,
         "pass_H3_outcome_link": pass_h3_outcome_link,
         "pass_H4_saturation_test": pass_h4_saturation_test,

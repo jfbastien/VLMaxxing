@@ -30,6 +30,13 @@ Definitions:
 - `oracle` additionally uses answer-aware dense features
   (`dense_answer_margin`, `answer_letter_logprob`, `baseline_correct`).
 
+Important caveat: on the current 228-row artifact, `top_second_gap` is
+empirically identical to `dense_answer_margin` because the upstream 1.65 probe
+rejects rows where the dense logit argmax disagrees with the recorded dense
+choice. The `label-free` variant is therefore label-free by field list, but not
+a deployable guard on this artifact. A genuinely label-free rerun would need
+`--allow-logit-choice-mismatch` or a feature set that removes `top_second_gap`.
+
 Interpretation:
 
 The richer predictor does not produce a defensible deployable guard. The oracle

@@ -49,6 +49,28 @@ def _duration_from_item_id(item_id: str) -> str:
     return parts[1] if len(parts) >= 3 else "unknown"
 
 
+def _top_second_gap(row: dict[str, Any]) -> float:
+    logprobs = {str(k): float(v) for k, v in row["candidate_logprobs"].items()}
+    ranked = sorted(logprobs.values(), reverse=True)
+    return ranked[0] - ranked[1] if len(ranked) >= 2 else 0.0
+
+
+def _top_gap_margin_equivalence(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    diffs = [abs(_top_second_gap(row) - float(row["dense_answer_margin"])) for row in rows]
+    if not diffs:
+        return {
+            "n": 0,
+            "exact_match_fraction": None,
+            "max_abs_difference": None,
+        }
+    exact = [diff <= 1e-9 for diff in diffs]
+    return {
+        "n": len(diffs),
+        "exact_match_fraction": sum(exact) / len(exact),
+        "max_abs_difference": max(diffs),
+    }
+
+
 def _standardize(train: np.ndarray, test: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     mean = train.mean(axis=0)
     std = train.std(axis=0)
@@ -89,12 +111,10 @@ def _features(rows: list[dict[str, Any]], *, variant: str) -> tuple[np.ndarray, 
     matrix: list[list[float]] = []
     for row in rows:
         logprobs = {str(k): float(v) for k, v in row["candidate_logprobs"].items()}
-        ranked = sorted(logprobs.values(), reverse=True)
-        top_second_gap = ranked[0] - ranked[1] if len(ranked) >= 2 else 0.0
         duration = _duration_from_item_id(str(row["item_id"]))
         source = str(row["source"])
         common = {
-            "top_second_gap": float(top_second_gap),
+            "top_second_gap": _top_second_gap(row),
             "candidate_entropy": _entropy_from_logprobs(logprobs),
             "prompt_tokens": float(row.get("prompt_tokens", 0.0)),
             "q_index_is_2": 1.0 if int(row["q_index"]) == 2 else 0.0,
@@ -365,11 +385,15 @@ def main() -> int:
         "auc_lower_ci_floor": args.auc_lower_ci_floor,
         "safe_filter_precision_floor": args.precision_floor,
         "safe_filter_coverage_floor": args.coverage_floor,
+        "top_second_gap_vs_dense_answer_margin": _top_gap_margin_equivalence(rows),
         "interpretation": (
             "The margin_only and oracle variants use answer-aware dense features "
             "and are mechanism evidence only. The label_free variant excludes "
             "gold-answer and dense-correctness features and is the only guard-like "
-            "variant."
+            "variant. If top_second_gap equals dense_answer_margin on a scored "
+            "artifact, the upstream logit-choice filter has made this nominally "
+            "label-free feature empirically answer-aware; use the equivalence "
+            "metadata to qualify the result."
         ),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)

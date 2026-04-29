@@ -82,7 +82,13 @@ Local execution order (A1 → A2 → A3 → A4 → A5 → A6 → A7) is what I r
 - `label_free`: top-second spread, 4-way entropy, q_index, source, duration, prompt tokens.
 - `oracle`: label-free features plus answer-aware dense features (`dense_answer_margin`, `answer_letter_logprob`, `baseline_correct`).
 
-The label-free variant is the only one that can support guard-like language. The oracle variant is explanatory only.
+The label-free variant is the only one that can support guard-like language,
+but only if its features are empirically independent of the dense answer margin.
+On the current 1.65 artifact, `top_second_gap` equals `dense_answer_margin`
+because rows with dense-logit/discrete-choice disagreement are filtered out
+upstream; treat that variant as a negative scout, not deployed-guard evidence,
+unless 1.65 is rerun with `--allow-logit-choice-mismatch` or `top_second_gap`
+is removed.
 
 **Expected outcome.**
 - AUC ≥ 0.80 with safe-filter precision ≥ 0.85: predictor scout becomes a useful "when reuse fails" appendix. Paper "future work" promise upgraded to "limited but functional runtime guard."
@@ -161,6 +167,11 @@ Cells: `{10t, 20t, 50t} × {fixed_k1, adaptive_post_q2, refresh10}` plus turn-ma
 **Time.** 10t × 7 clips ≈ 1.5h, 20t × 7 ≈ 3h, 50t × 7 ≈ 7h. With adaptive + dense control + 2 refresh policies that's `12 cells × {1.5h, 3h, 7h scaled by horizon}` ≈ ~12h sequential, ~8h with reuse of the cold dense baseline across cells.
 
 **Status.** Scripted. It is a stateless repeated-query horizon; a true conversational-history benchmark remains a separate Sam-scale/deployment experiment.
+
+**Findings-doc requirement.** When 1.55L lands, describe it as a **stateless
+same-video cache-horizon stress test**, not a many-turn conversation. The prompt
+text is reset to the current question each turn; only the cache state is carried
+forward.
 
 **Paper impact.** Single biggest tightening: converts "many-turn is future work" to "tested through 50 turns with measured refresh interval".
 

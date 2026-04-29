@@ -1,7 +1,7 @@
 {
   "auc_lower_ci_floor": 0.65,
   "input": "research/experiments/2026/artifacts/phase1_65_logit_margin_failure_predictor/scored_rows.jsonl",
-  "interpretation": "The margin_only and oracle variants use answer-aware dense features and are mechanism evidence only. The label_free variant excludes gold-answer and dense-correctness features and is the only guard-like variant.",
+  "interpretation": "The margin_only and oracle variants use answer-aware dense features and are mechanism evidence only. The label_free variant excludes gold-answer and dense-correctness features and is the only guard-like variant. If top_second_gap equals dense_answer_margin on a scored artifact, the upstream logit-choice filter has made this nominally label-free feature empirically answer-aware; use the equivalence metadata to qualify the result.",
   "n_rows": 228,
   "n_test_drift": 16,
   "n_test_rows": 46,
@@ -15,6 +15,11 @@
   "phase": "1.65v2",
   "safe_filter_coverage_floor": 0.15,
   "safe_filter_precision_floor": 0.85,
+  "top_second_gap_vs_dense_answer_margin": {
+    "exact_match_fraction": 1.0,
+    "max_abs_difference": 0.0,
+    "n": 228
+  },
   "variants": {
     "label_free": {
       "coefficients": {

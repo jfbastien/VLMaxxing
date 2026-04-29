@@ -48,20 +48,27 @@ accuracy lands at the same boundary.
   - 1.30AD cache-reuse path
   - 1.30AC cache-invalidated V-pruned path
 - Compute layer-wise cosine distance to the dense reference cache for K and V
-  tensors separately, plus an aggregate mean distance.
+  tensors separately, using each cache entry's valid `offset` window rather than
+  the padded backing buffer.
+- Report cache-token length parity. If a policy changes the valid K/V cache
+  length relative to the dense reference, the probe may still emit diagnostic
+  common-prefix distances, but the saturation gate fails because full-cache
+  cosine distances are no longer physically comparable.
 - Join cache-distance summaries to row-level follow-up drift outcomes.
 
 ## Gates
 
-- H1-capture: all three cache states captured for >=20 sessions without shape
-  mismatch.
+- H1-capture: all three cache states captured for >=20 sessions without
+  non-token shape mismatch, and all valid K/V cache windows have the same token
+  length as the dense reference.
 - H2-distance-report: layer-wise K and V cosine distances reported for both
   policies.
 - H3-outcome-link: report distance distributions for stable, shared-drift,
   reuse-only-drift, and invalidated-only-drift rows.
-- H4-saturation-test: if both policies' aggregate distances are within 10% of
-  each other while their row drift sets remain non-identical, mark the
-  saturation hypothesis as supported. If not, mark it as unresolved.
+- H4-saturation-test: if both policies' aggregate cosine distances
+  (`1 - cosine`) are within 10% of each other while their row drift sets remain
+  non-identical, mark the saturation hypothesis as supported. If not, mark it
+  as unresolved.
 
 ## Interpretation
 
