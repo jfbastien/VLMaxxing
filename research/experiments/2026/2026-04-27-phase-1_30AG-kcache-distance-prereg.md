@@ -37,8 +37,8 @@ accuracy lands at the same boundary.
 
 ## Protocol
 
-- Select a deterministic 20-session subset from the 1.30AD/1.30AC paired
-  artifacts, stratified by:
+- Select a deterministic 20-follow-up-row subset from the 1.30AD/1.30AC
+  paired artifacts, stratified by:
   - shared drift rows
   - cache-reuse-only drift rows
   - cache-invalidated-only drift rows
@@ -58,7 +58,7 @@ accuracy lands at the same boundary.
 
 ## Gates
 
-- H1-capture: all three cache states captured for >=20 sessions without
+- H1-capture: all three cache states captured for >=20 unique follow-up rows without
   non-token shape mismatch, and all valid K/V cache windows have the same token
   length as the dense reference.
 - H2-distance-report: layer-wise K and V cosine distances reported for both

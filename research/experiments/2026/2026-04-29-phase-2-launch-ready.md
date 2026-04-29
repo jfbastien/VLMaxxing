@@ -1,6 +1,6 @@
 ---
 date: 2026-04-29
-status: phase-2 chain verified launch-ready after Codex fix at 7c8d002
+status: phase-2 chain verified launch-ready after prelaunch hardening
 related:
   - research/experiments/2026/2026-04-29-phase-2-codex-review.md
   - research/experiments/2026/2026-04-29-phase-2-experiment-design.md
@@ -8,7 +8,10 @@ related:
 
 # Phase 2 — launch verification (post-fix)
 
-After my peer review (3df0bfb) flagged P0 issues in A5 (1.30AG) and a P1 leakage caveat in A2 (1.65v2), Codex landed fix commit 7c8d002 addressing every concern. A focused sub-agent re-audit verifies all three P0 fixes are correct and the prereg is aligned with the code.
+After peer review flagged P0 issues in A5 (1.30AG), a P1 leakage caveat in A2
+(1.65v2), and phase-2 launch hazards, Codex landed fixes addressing the
+verified concerns. A focused sub-agent re-audit verifies the A5 P0 fixes are
+correct and the prereg is aligned with the code.
 
 ## P0 verification — 1.30AG cache-distance probe
 
@@ -26,14 +29,28 @@ Prereg lines 50-56, 62-63, 68-71 now explicitly require valid-offset windows, to
 - **1.55L** design doc adds explicit "Findings-doc requirement" block: 1.55L must be reported as a **stateless same-video cache-horizon stress test**, not a many-turn conversation.
 - **paper-update-notes-v2** adopts boundary-evidence framing: "matched parse-failure caveats" for Gemma, "fidelity-safe but low-gain" for Qwen kr=0.85, "MLX cap mitigated panics; observed peaks reached 13.61 GB" for memory.
 
-## Remaining P1 (acceptable, not blocking)
+## Additional prelaunch hardening
 
-- 1.30AG `_full_prompt_cache(pruned)` not wrapped in try/finally; if it raises, model is left in `keep_rate=0.50`. Audit notes the next iteration's `_full_prompt_cache(dense)` resets `keep_rate=1.0`, so the bug only manifests if exception escapes the outer loop. Don't block; flag for a follow-up fix if 1.30AG runs cleanly.
+- 1.30AG `_full_prompt_cache(pruned)` is wrapped in `try/finally`, so the Qwen
+  vision tower returns to dense mode even if the pruned capture raises.
+- Phase-2 wrappers default to `RSS_GUARD_MB=12000`, matching the 12 GB MLX
+  memory-limit mitigation rather than the older 9 GB guard.
+- A3's low-FPS wrapper is executable, so direct chain execution cannot fail with
+  `PermissionError`.
+- A6 now emits all-turn, follow-up-only, and post-repair-only summaries, and
+  the chain gates on row/cell/chain/turn/grid completeness rather than
+  scientific success.
+- A7 now summarizes only the expected seed × temperature grid and records
+  ignored stale seed summaries; the chain gates on expected grid and row counts.
+- A5 is last in the chain so a valid non-comparable-cache outcome cannot block
+  A6/A7.
 
 ## Launch plan
 
-- **Codex's recommendation** (post-fix): run the chain normally fail-closed; use `--continue-on-failure` only if I want A6/A7 to proceed even when A5 reveals non-comparable cache lengths.
-- **My recommendation**: launch with `--auto-commit --continue-on-failure`. Reasons: A5 may legitimately report `pass_H1_capture=False` due to V-pruning length mismatch (a valid scientific outcome), and we shouldn't block A6/A7 on that. The fail-closed default would treat it as failure-to-run.
+- **Recommendation**: launch with `--auto-commit --continue-on-failure`.
+  Reordering makes A6/A7 safe from A5, but `--continue-on-failure` still keeps
+  the queue moving if an earlier systems baseline produces a valid negative or
+  infrastructure failure.
 
 ## Launch command
 
@@ -53,9 +70,9 @@ with `dangerouslyDisableSandbox: true` per the deep-mechanism queue precedent (C
 | A2 (already landed) | <1 min |
 | A3 1.62D low-FPS | ~3.5h |
 | A4 1.63I Qwen kr fine-bracket | ~9h |
-| A5 1.30AG cache-distance | ~2h |
 | A6 1.55L many-turn | ~8h |
 | A7 1.55K extended seeds | ~7.5h |
+| A5 1.30AG cache-distance | ~2h |
 | **Total local chain** | **~30h** |
 
 ## Post-chain manual steps

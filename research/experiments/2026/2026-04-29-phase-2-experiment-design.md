@@ -40,7 +40,12 @@ Total scope is the *complete* set of experiments needed to close the paper to re
 | B5 | 1,937 re-export | Sam | 1.5 | doc + tooling | reproducibility |
 | **Track B total** | | | **~37h** |  |  |
 
-Local execution order (A1 → A2 → A3 → A4 → A5 → A6 → A7) is what I recommend; if Sam can run in parallel, B0 should land before any of B1–B4 because cache-correctness is gating.
+Local execution order is A1 → A2 → A3 → A4 → A6 → A7 → A5. A6/A7 are the
+highest-value local reviewer-defense cells and do not depend on A5; the
+cache-distance probe is intentionally last because a valid non-comparable-cache
+H1 outcome should not block the cache-horizon and seed-sweep evidence. If Sam
+can run in parallel, B0 should land before any of B1–B4 because
+cache-correctness is gating.
 
 ## Codex's review distilled (so we share a target)
 
@@ -173,6 +178,12 @@ same-video cache-horizon stress test**, not a many-turn conversation. The prompt
 text is reset to the current question each turn; only the cache state is carried
 forward.
 
+**Summary requirements.** Report all-turn metrics for compatibility, but use
+`followup_only` (turn_index > 0) as the drift-gate basis so the cold turn does
+not dilute cache-reuse drift. Also report `post_repair_only`
+(`cache_source == "post_previous_repaired"`) so adaptive/refresh policies can be
+interpreted separately from K=1 repair turns.
+
 **Paper impact.** Single biggest tightening: converts "many-turn is future work" to "tested through 50 turns with measured refresh interval".
 
 ### A7. 1.55K-extended — Multi-seed sampler robustness
@@ -294,7 +305,10 @@ Following the established pattern (`scripts/run_paper_deep_mechanism_restart.sh`
 2. A Python analyzer that consumes its JSONLs and writes a `<phase>_summary.json` with `pass_*` gate keys.
 3. A findings markdown doc once the cell lands.
 
-The wrapper script `scripts/run_phase2_local_chain.py` chains A1–A7 in order, with `--start-at <phase>` resume support and auto-commit of artifact directories. Same pattern as the deep-mechanism queue.
+The wrapper script `scripts/run_phase2_local_chain.py` chains A1–A7 in the
+order A1 → A2 → A3 → A4 → A6 → A7 → A5, with `--start-at <phase>` resume
+support and auto-commit of artifact directories. Same pattern as the
+deep-mechanism queue.
 
 ## Open questions for the user
 

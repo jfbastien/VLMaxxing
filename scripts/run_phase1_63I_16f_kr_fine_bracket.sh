@@ -14,7 +14,7 @@ MODEL_PATH="${PHASE1_63I_MODEL_PATH:-$HOME/models/Qwen2.5-VL-7B-Instruct-4bit}"
 MANIFEST="${PHASE1_63I_MANIFEST:-research/benchmark_manifests/videomme_combined_v1_n60.toml}"
 OUT_DIR="${PHASE1_63I_OUT_DIR:-research/experiments/2026/artifacts/phase1_63I_16f_kr_fine_bracket}"
 DENSE_REFERENCE_DIR="${PHASE1_63I_DENSE_REFERENCE_DIR:-research/experiments/2026/artifacts/phase1_63E_track_b_frame_scaling}"
-RSS_GUARD_MB="${RSS_GUARD_MB:-9000}"
+RSS_GUARD_MB="${RSS_GUARD_MB:-12000}"
 KEEP_RATES="${PHASE1_63I_KEEP_RATES:-0.78 0.80 0.82}"
 LAYER="${PHASE1_63I_LAYER:-2}"
 

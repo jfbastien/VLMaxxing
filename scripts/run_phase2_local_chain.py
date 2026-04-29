@@ -71,6 +71,32 @@ def _steps() -> list[Step]:
             required_gates=("complete",),
         ),
         Step(
+            name="A6-1.55L-many-turn-cpersist",
+            command=("scripts/run_phase1_55L_many_turn_cpersist.sh",),
+            artifact_paths=(ARTIFACT_ROOT / "phase1_55L_many_turn_cpersist",),
+            summary_path=ARTIFACT_ROOT / "phase1_55L_many_turn_cpersist" / "summary.json",
+            timeout_s=14 * 60 * 60,
+            commit_message="research(1.55L): land many-turn C-PERSIST horizon",
+            required_gates=(
+                "pass_complete_row_counts",
+                "pass_complete_cells",
+                "pass_complete_chain_counts",
+                "pass_complete_turn_coverage",
+                "pass_complete_policy_horizon_grid",
+            ),
+        ),
+        Step(
+            name="A7-1.55K-extended-seed-sweep",
+            command=("scripts/run_phase1_55K_extended_seed_sweep.sh",),
+            artifact_paths=(ARTIFACT_ROOT / "phase1_55K_extended_seed_sweep",),
+            summary_path=ARTIFACT_ROOT
+            / "phase1_55K_extended_seed_sweep"
+            / "extended_seed_sweep_summary.json",
+            timeout_s=9 * 60 * 60,
+            commit_message="research(1.55K): land sampler seed sweep",
+            required_gates=("pass_expected_grid", "pass_expected_row_counts"),
+        ),
+        Step(
             name="A5-1.30AG-kcache-distance",
             command=("scripts/run_phase1_30AG_kcache_distance_probe.sh",),
             artifact_paths=(ARTIFACT_ROOT / "phase1_30AG_kcache_distance_probe",),
@@ -84,24 +110,6 @@ def _steps() -> list[Step]:
                 "pass_H2_distance_report",
                 "pass_H3_outcome_link",
             ),
-        ),
-        Step(
-            name="A6-1.55L-many-turn-cpersist",
-            command=("scripts/run_phase1_55L_many_turn_cpersist.sh",),
-            artifact_paths=(ARTIFACT_ROOT / "phase1_55L_many_turn_cpersist",),
-            summary_path=ARTIFACT_ROOT / "phase1_55L_many_turn_cpersist" / "summary.json",
-            timeout_s=14 * 60 * 60,
-            commit_message="research(1.55L): land many-turn C-PERSIST horizon",
-        ),
-        Step(
-            name="A7-1.55K-extended-seed-sweep",
-            command=("scripts/run_phase1_55K_extended_seed_sweep.sh",),
-            artifact_paths=(ARTIFACT_ROOT / "phase1_55K_extended_seed_sweep",),
-            summary_path=ARTIFACT_ROOT
-            / "phase1_55K_extended_seed_sweep"
-            / "extended_seed_sweep_summary.json",
-            timeout_s=9 * 60 * 60,
-            commit_message="research(1.55K): land sampler seed sweep",
         ),
     ]
 
@@ -287,6 +295,21 @@ def main() -> int:
             if args.continue_on_failure:
                 continue
             return int(exc.returncode)
+        except OSError as exc:
+            record.update(
+                {
+                    "status": "failed-launch",
+                    "returncode": None,
+                    "elapsed_s": time.perf_counter() - start,
+                    "error": str(exc),
+                }
+            )
+            STATUS_PATH.write_text(json.dumps(_status_payload(records), indent=2) + "\n")
+            if args.auto_commit and args.commit_failed_artifacts:
+                _auto_commit(step)
+            if args.continue_on_failure:
+                continue
+            return 1
 
         try:
             summary = _validate_summary(step)

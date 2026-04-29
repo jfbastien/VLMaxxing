@@ -590,6 +590,13 @@ def main() -> int:
             and row["pruned_vs_dense"]["values_all_same_valid_token_length"]
         )
     )
+    n_unique_followup_rows = len(
+        {(str(row["video_id"]), int(row["q_index"])) for row in output_rows}
+    )
+    capture_row_floor = 20
+    pass_h1_row_count = (
+        len(output_rows) >= capture_row_floor and n_unique_followup_rows >= capture_row_floor
+    )
     pass_h1_cache_states_captured = bool(
         output_rows
         and all(row["reuse_vs_dense"]["keys_mean_cosine"] is not None for row in output_rows)
@@ -597,7 +604,7 @@ def main() -> int:
         and all(row["pruned_vs_dense"]["keys_mean_cosine"] is not None for row in output_rows)
         and all(row["pruned_vs_dense"]["values_mean_cosine"] is not None for row in output_rows)
     )
-    pass_h1_capture = pass_h1_cache_states_captured and same_valid_lengths
+    pass_h1_capture = pass_h1_row_count and pass_h1_cache_states_captured and same_valid_lengths
     pass_h2_distance_report = all(
         int(selection_metadata["selected_by_drift_class"].get(name, 0)) > 0
         for name in ("shared_drift", "reuse_only_drift", "invalidated_only_drift", "stable")
@@ -618,6 +625,8 @@ def main() -> int:
     summary = {
         "phase": "1.30AG",
         "n_rows": len(output_rows),
+        "n_unique_followup_rows": n_unique_followup_rows,
+        "capture_row_floor": capture_row_floor,
         "max_pairs_requested": args.max_pairs,
         "selection": selection_metadata,
         "vision_tower_layer": args.vision_tower_layer,
@@ -641,6 +650,7 @@ def main() -> int:
         "all_same_valid_token_lengths": same_valid_lengths,
         "n_token_length_mismatch_rows": n_token_length_mismatch_rows,
         "by_drift_class": by_drift_class,
+        "pass_H1_row_count": pass_h1_row_count,
         "pass_H1_cache_states_captured": pass_h1_cache_states_captured,
         "pass_H1_capture": pass_h1_capture,
         "pass_H1_same_valid_lengths": pass_h1_same_valid_lengths,

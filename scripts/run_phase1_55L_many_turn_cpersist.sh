@@ -11,11 +11,18 @@ OUT_DIR="${PHASE1_55L_OUT_DIR:-research/experiments/2026/artifacts/phase1_55L_ma
 VIDEO_IDS="${PHASE1_55L_VIDEO_IDS:-037,100,116,120,158,160,210}"
 TURN_COUNTS="${PHASE1_55L_TURN_COUNTS:-10,20,50}"
 POLICIES="${PHASE1_55L_POLICIES:-fixed_k1,adaptive_post_q2,refresh10}"
-RSS_GUARD_MB="${RSS_GUARD_MB:-9000}"
+RSS_GUARD_MB="${RSS_GUARD_MB:-12000}"
 
 if [[ -f "$OUT_DIR/summary.json" ]]; then
-  echo "[1.55L] reusing complete artifact in $OUT_DIR"
-  exit 0
+  if "$PY" scripts/validate_phase1_55l_summary.py \
+    --summary "$OUT_DIR/summary.json" \
+    --video-ids "$VIDEO_IDS" \
+    --turn-counts "$TURN_COUNTS" \
+    --policies "$POLICIES"; then
+    echo "[1.55L] reusing complete artifact in $OUT_DIR"
+    exit 0
+  fi
+  echo "[1.55L] existing summary is stale or incomplete; rerunning"
 fi
 if [[ -d "$OUT_DIR" ]]; then
   echo "[1.55L] incomplete artifact directory exists; rerunning and overwriting JSONL outputs"

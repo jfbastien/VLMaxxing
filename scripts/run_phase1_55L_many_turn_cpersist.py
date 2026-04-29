@@ -270,6 +270,21 @@ def _bucket_summaries(rows: list[dict[str, Any]], bucket_size: int = 10) -> list
     return out
 
 
+def _expected_post_repair_rows(policy: str, horizon: int, n_videos: int) -> int:
+    if policy == "fixed_k1" or horizon <= 1:
+        return 0
+    if policy == "adaptive_post_q2":
+        return n_videos * max(horizon - 2, 0)
+    if policy.startswith("refresh"):
+        interval = int(policy.removeprefix("refresh"))
+        k1_followup_turns = {1}
+        k1_followup_turns.update(
+            turn_index for turn_index in range(1, horizon) if turn_index % interval == 0
+        )
+        return n_videos * max((horizon - 1) - len(k1_followup_turns), 0)
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--video-ids", type=str, default=",".join(DEFAULT_SHORT_VIDEO_IDS))
@@ -288,7 +303,7 @@ def main() -> int:
     parser.add_argument("--top-p", type=float, default=1.0)
     parser.add_argument("--min-p", type=float, default=0.0)
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--rss-guard-mb", type=int, default=9000)
+    parser.add_argument("--rss-guard-mb", type=int, default=12000)
     args = parser.parse_args()
 
     video_ids = [vid.strip() for vid in args.video_ids.split(",") if vid.strip()]
@@ -581,18 +596,50 @@ def main() -> int:
             rows_for_cell = [
                 row for row in paired_rows if row["policy"] == policy and row["horizon"] == horizon
             ]
+            followup_rows_for_cell = [row for row in rows_for_cell if int(row["turn_index"]) > 0]
+            post_repair_rows_for_cell = [
+                row for row in rows_for_cell if row.get("cache_source") == "post_previous_repaired"
+            ]
             payload = _summarize_cell(rows_for_cell)
             payload["policy"] = policy
             payload["horizon"] = horizon
+            payload["expected_n"] = len(video_ids) * horizon
+            payload["expected_followup_only_n"] = len(video_ids) * max(horizon - 1, 0)
+            payload["expected_post_repair_only_n"] = _expected_post_repair_rows(
+                policy, horizon, len(video_ids)
+            )
+            payload["all_turns"] = _summarize_cell(rows_for_cell)
+            payload["followup_only"] = _summarize_cell(followup_rows_for_cell)
+            payload["post_repair_only"] = _summarize_cell(post_repair_rows_for_cell)
             payload["turn_buckets"] = _bucket_summaries(rows_for_cell)
+            payload["followup_turn_buckets"] = _bucket_summaries(followup_rows_for_cell)
+            payload["post_repair_turn_buckets"] = _bucket_summaries(post_repair_rows_for_cell)
+            drift_basis = payload["followup_only"] or payload["all_turns"]
+            payload["drift_gate_basis"] = (
+                "followup_only" if payload["followup_only"] else "all_turns"
+            )
+            payload["pass_three_percent_drift_all_turns"] = (
+                payload["all_turns"].get("choice_drift_rate", 1.0) <= 0.03
+                and payload["all_turns"].get("correctness_drift_rate", 1.0) <= 0.03
+            )
+            payload["pass_three_percent_drift_followup_only"] = (
+                payload["followup_only"].get("choice_drift_rate", 1.0) <= 0.03
+                and payload["followup_only"].get("correctness_drift_rate", 1.0) <= 0.03
+            )
+            payload["pass_three_percent_drift_post_repair_only"] = not payload[
+                "post_repair_only"
+            ] or (
+                payload["post_repair_only"].get("choice_drift_rate", 1.0) <= 0.03
+                and payload["post_repair_only"].get("correctness_drift_rate", 1.0) <= 0.03
+            )
             payload["pass_three_percent_drift"] = (
-                payload.get("choice_drift_rate", 1.0) <= 0.03
-                and payload.get("correctness_drift_rate", 1.0) <= 0.03
+                drift_basis.get("choice_drift_rate", 1.0) <= 0.03
+                and drift_basis.get("correctness_drift_rate", 1.0) <= 0.03
             )
             payload["cliff_bucket_detected"] = any(
                 bucket.get("choice_drift_rate", 0.0) > 0.10
                 or bucket.get("correctness_drift_rate", 0.0) > 0.10
-                for bucket in payload["turn_buckets"]
+                for bucket in payload["followup_turn_buckets"]
             )
             cell_summaries.append(payload)
 
@@ -604,6 +651,75 @@ def main() -> int:
             if cell["policy"] == policy and cell["pass_three_percent_drift"]
         ]
         longest_safe_by_policy[policy] = max(safe) if safe else None
+
+    expected_baseline_rows = len(video_ids) * sum(turn_counts)
+    expected_session_rows = len(policies) * expected_baseline_rows
+    expected_paired_rows = expected_session_rows
+    expected_cell_count = len(policies) * len(turn_counts)
+    expected_cell_rows = {
+        (policy, horizon): len(video_ids) * horizon
+        for policy in policies
+        for horizon in turn_counts
+    }
+    expected_policy_horizon_grid = {
+        (policy, horizon) for policy in policies for horizon in turn_counts
+    }
+    observed_policy_horizon_grid = {
+        (str(cell["policy"]), int(cell["horizon"])) for cell in cell_summaries
+    }
+    pass_complete_cells = (
+        len(cell_summaries) == expected_cell_count
+        and all(
+            int(cell.get("n", -1)) == expected_cell_rows[(cell["policy"], int(cell["horizon"]))]
+            for cell in cell_summaries
+        )
+        and all(
+            int(cell.get("followup_only", {}).get("n", -1))
+            == len(video_ids) * (int(cell["horizon"]) - 1)
+            for cell in cell_summaries
+        )
+        and all(
+            int(cell.get("post_repair_only", {}).get("n", 0))
+            == int(cell["expected_post_repair_only_n"])
+            for cell in cell_summaries
+        )
+    )
+    baseline_chains = {(str(row["video_id"]), int(row["horizon"])) for row in baseline_rows}
+    session_chains = {
+        (str(row["policy"]), str(row["video_id"]), int(row["horizon"])) for row in session_rows
+    }
+    paired_chains = {
+        (str(row["policy"]), str(row["video_id"]), int(row["horizon"])) for row in paired_rows
+    }
+    pass_complete_row_counts = (
+        len(baseline_rows) == expected_baseline_rows
+        and len(session_rows) == expected_session_rows
+        and len(paired_rows) == expected_paired_rows
+    )
+    pass_complete_chain_counts = (
+        len(baseline_chains) == len(video_ids) * len(turn_counts)
+        and len(session_chains) == len(policies) * len(video_ids) * len(turn_counts)
+        and len(paired_chains) == len(policies) * len(video_ids) * len(turn_counts)
+    )
+    pass_complete_policy_horizon_grid = observed_policy_horizon_grid == expected_policy_horizon_grid
+    pass_complete_turn_coverage = all(
+        {
+            int(row["turn_index"])
+            for row in paired_rows
+            if row["policy"] == policy and row["video_id"] == vid and int(row["horizon"]) == horizon
+        }
+        == set(range(horizon))
+        for policy in policies
+        for vid in video_ids
+        for horizon in turn_counts
+    )
+    pass_complete_horizon_policy_grid = (
+        pass_complete_row_counts
+        and pass_complete_cells
+        and pass_complete_chain_counts
+        and pass_complete_turn_coverage
+        and pass_complete_policy_horizon_grid
+    )
 
     summary = {
         "phase": "1.55L",
@@ -622,6 +738,19 @@ def main() -> int:
         "n_baseline_rows": len(baseline_rows),
         "n_session_rows": len(session_rows),
         "n_paired_rows": len(paired_rows),
+        "expected_baseline_rows": expected_baseline_rows,
+        "expected_session_rows": expected_session_rows,
+        "expected_paired_rows": expected_paired_rows,
+        "expected_cell_count": expected_cell_count,
+        "n_baseline_chains": len(baseline_chains),
+        "n_session_chains": len(session_chains),
+        "n_paired_chains": len(paired_chains),
+        "pass_complete_row_counts": pass_complete_row_counts,
+        "pass_complete_cells": pass_complete_cells,
+        "pass_complete_chain_counts": pass_complete_chain_counts,
+        "pass_complete_turn_coverage": pass_complete_turn_coverage,
+        "pass_complete_policy_horizon_grid": pass_complete_policy_horizon_grid,
+        "pass_complete_horizon_policy_grid": pass_complete_horizon_policy_grid,
         "longest_safe_horizon_by_policy": longest_safe_by_policy,
         "cells": cell_summaries,
         "paths": {

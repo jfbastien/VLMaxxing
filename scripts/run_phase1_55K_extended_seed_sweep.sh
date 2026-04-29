@@ -11,7 +11,7 @@ cd "$(dirname "$0")/.."
 
 PY="${PYTHON:-./.venv/bin/python}"
 MODEL_PATH="${MODEL_PATH:-$HOME/models/Qwen2.5-VL-7B-Instruct-4bit}"
-RSS_GUARD_MB="${RSS_GUARD_MB:-9000}"
+RSS_GUARD_MB="${RSS_GUARD_MB:-12000}"
 OUT_DIR="${PHASE1_55K_EXT_OUT_DIR:-research/experiments/2026/artifacts/phase1_55K_extended_seed_sweep}"
 TEMPERATURES="${PHASE1_55K_EXT_TEMPERATURES:-0.5 1.0 1.5}"
 SEEDS="${PHASE1_55K_EXT_SEEDS:-42 99 2026}"
@@ -67,4 +67,7 @@ done
 
 "$PY" scripts/summarize_phase1_55k_extended_seed_sweep.py \
   --artifact-dir "$OUT_DIR" \
+  --expected-seeds "$SEEDS" \
+  --expected-temperatures "$TEMPERATURES" \
+  --expected-n-pairs 21 \
   --output "$OUT_DIR/extended_seed_sweep_summary.json"

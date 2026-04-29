@@ -14,7 +14,7 @@ PY="${PYTHON:-./.venv/bin/python}"
 MODEL_PATH="${PHASE1_62D_MODEL_PATH:-$HOME/models/Qwen2.5-VL-7B-Instruct-4bit}"
 OUT_DIR="${PHASE1_62D_OUT_DIR:-research/experiments/2026/artifacts/phase1_62D_lowfps_dense_videomme}"
 REFERENCE_DIR="${PHASE1_62D_REFERENCE_DIR:-research/experiments/2026/artifacts/phase1_30W_q0_dense_followup_pruned_full}"
-RSS_GUARD_MB="${RSS_GUARD_MB:-9000}"
+RSS_GUARD_MB="${RSS_GUARD_MB:-12000}"
 
 mkdir -p "$OUT_DIR"
 
