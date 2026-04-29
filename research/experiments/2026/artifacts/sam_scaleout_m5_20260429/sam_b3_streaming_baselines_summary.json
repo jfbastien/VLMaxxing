@@ -1,0 +1,30 @@
+{
+  "n_rows": 88,
+  "phases": {
+    "B3": 88
+  },
+  "arms": {
+    "screenshot_polling": 22,
+    "low_fps_dense": 22,
+    "recency_last_k": 22,
+    "sam_policy": 22
+  },
+  "policies": {
+    "streaming_screenshot_polling": 22,
+    "streaming_low_fps_dense": 22,
+    "streaming_recency_last_k": 22,
+    "streaming_sam_policy": 22
+  },
+  "choice_diffs": 33,
+  "correctness_diffs": 33,
+  "text_diffs": 88,
+  "parse_failures": 0,
+  "session_parse_failures": 0,
+  "baseline_parse_failures": 0,
+  "input_hash_mismatches": 88,
+  "prompt_hash_mismatches": 0,
+  "frame_hash_mismatches": 88,
+  "schema_or_gate_errors": 0,
+  "first_errors": [],
+  "pass": true
+}

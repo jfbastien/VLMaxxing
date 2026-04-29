@@ -1,0 +1,198 @@
+[provenance] {
+  "run_id": "sam_b3_1777500565_5bfff66e",
+  "model_id": "google/gemma-4-26B-A4B-it",
+  "model_sha": "7d4c97e54145f8ffd1a4dd1b4986a5015a517842",
+  "quantization": "bf16_native",
+  "runtime": "mlx_vlm-0.4.4",
+  "runtime_commit": "pypi",
+  "hardware": "Apple M5 Max | 128.0 GB unified | Darwin 25.4.0",
+  "os_version": "Darwin 25.4.0",
+  "mlx_version": "unknown",
+  "metal_version": "Metal 4",
+  "command_line": "scripts/run_sam_b3_streaming_baselines.py",
+  "memory_definition": "ru_maxrss bytes (macOS) -> GB",
+  "commit_sha": "7ad325cd888f20e2288c483e4a343d18eaf4f036"
+}
+[events] detecting per-video event timestamps
+  [twitter] duration=64.43s fps=30.0 events=11 ts=[1.5, 3.0, np.float64(16.0), np.float64(18.0), np.float64(19.0), np.float64(20.5), np.float64(22.5), np.float64(23.5), np.float64(24.5), np.float64(37.0), np.float64(40.5)]
+  [terminal] duration=44.00s fps=30.0 events=11 ts=[1.5, 3.0, np.float64(8.56), 11.0, np.float64(12.71), np.float64(16.87), np.float64(21.02), np.float64(25.18), np.float64(29.33), np.float64(33.49), np.float64(37.64)]
+[loader] loading google/gemma-4-26B-A4B-it ...
+Fetching 9 files:   0%|          | 0/9 [00:00<?, ?it/s]Fetching 9 files: 100%|██████████| 9/9 [00:00<00:00, 226040.34it/s]
+[loader] loaded in 4.7s
+[event twitter #0 t=1.50s]
+  [fresh_oracle_dense] 8 frames
+Prefill:   0%|          | 0/2102 [00:00<?, ?tok/s]Prefill:  97%|█████████▋| 2048/2102 [00:01<00:00, 1062.29tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:02<00:00, 1021.54tok/s]
+  [screenshot_polling] 1 frames
+  [low_fps_dense] 4 frames
+  [recency_last_k] 4 frames
+  [sam_policy] 4 frames
+  [event 0 done] arms emitted
+[event twitter #1 t=3.00s]
+  [fresh_oracle_dense] 8 frames
+Prefill:   0%|          | 0/2102 [00:00<?, ?tok/s]Prefill:  97%|█████████▋| 2048/2102 [00:02<00:00, 935.34tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:02<00:00, 905.25tok/s]
+  [screenshot_polling] 1 frames
+  [low_fps_dense] 4 frames
+  [recency_last_k] 4 frames
+  [sam_policy] 4 frames
+  [event 1 done] arms emitted
+[event twitter #2 t=16.00s]
+  [fresh_oracle_dense] 8 frames
+Prefill:   0%|          | 0/2102 [00:00<?, ?tok/s]Prefill:  97%|█████████▋| 2048/2102 [00:02<00:00, 896.45tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:02<00:00, 867.73tok/s]
+  [screenshot_polling] 1 frames
+  [low_fps_dense] 4 frames
+  [recency_last_k] 4 frames
+  [sam_policy] 4 frames
+  [event 2 done] arms emitted
+[event twitter #3 t=18.00s]
+  [fresh_oracle_dense] 8 frames
+Prefill:   0%|          | 0/2102 [00:00<?, ?tok/s]Prefill:  97%|█████████▋| 2048/2102 [00:02<00:00, 859.71tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:02<00:00, 830.77tok/s]
+  [screenshot_polling] 1 frames
+  [low_fps_dense] 4 frames
+  [recency_last_k] 4 frames
+  [sam_policy] 4 frames
+  [event 3 done] arms emitted
+[event twitter #4 t=19.00s]
+  [fresh_oracle_dense] 8 frames
+Prefill:   0%|          | 0/2102 [00:00<?, ?tok/s]Prefill:  97%|█████████▋| 2048/2102 [00:02<00:00, 744.81tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:02<00:00, 725.38tok/s]
+  [screenshot_polling] 1 frames
+  [low_fps_dense] 4 frames
+  [recency_last_k] 4 frames
+  [sam_policy] 4 frames
+  [event 4 done] arms emitted
+[event twitter #5 t=20.50s]
+  [fresh_oracle_dense] 8 frames
+Prefill:   0%|          | 0/2102 [00:00<?, ?tok/s]Prefill:  97%|█████████▋| 2048/2102 [00:03<00:00, 614.50tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:03<00:00, 601.36tok/s]
+  [screenshot_polling] 1 frames
+  [low_fps_dense] 4 frames
+  [recency_last_k] 4 frames
+  [sam_policy] 4 frames
+  [event 5 done] arms emitted
+[event twitter #6 t=22.50s]
+  [fresh_oracle_dense] 8 frames
+Prefill:   0%|          | 0/2102 [00:00<?, ?tok/s]Prefill:  97%|█████████▋| 2048/2102 [00:03<00:00, 579.58tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:03<00:00, 569.01tok/s]
+  [screenshot_polling] 1 frames
+  [low_fps_dense] 4 frames
+  [recency_last_k] 4 frames
+  [sam_policy] 4 frames
+  [event 6 done] arms emitted
+[event twitter #7 t=23.50s]
+  [fresh_oracle_dense] 8 frames
+Prefill:   0%|          | 0/2102 [00:00<?, ?tok/s]Prefill:  97%|█████████▋| 2048/2102 [00:03<00:00, 533.55tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:04<00:00, 523.06tok/s]
+  [screenshot_polling] 1 frames
+  [low_fps_dense] 4 frames
+  [recency_last_k] 4 frames
+  [sam_policy] 4 frames
+  [event 7 done] arms emitted
+[event twitter #8 t=24.50s]
+  [fresh_oracle_dense] 8 frames
+Prefill:   0%|          | 0/2102 [00:00<?, ?tok/s]Prefill:  97%|█████████▋| 2048/2102 [00:06<00:00, 328.04tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:06<00:00, 321.06tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:06<00:00, 323.06tok/s]
+  [screenshot_polling] 1 frames
+  [low_fps_dense] 4 frames
+  [recency_last_k] 4 frames
+  [sam_policy] 4 frames
+  [event 8 done] arms emitted
+[event twitter #9 t=37.00s]
+  [fresh_oracle_dense] 8 frames
+Prefill:   0%|          | 0/2102 [00:00<?, ?tok/s]Prefill:  97%|█████████▋| 2048/2102 [00:05<00:00, 361.68tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:05<00:00, 351.94tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:05<00:00, 354.72tok/s]
+  [screenshot_polling] 1 frames
+  [low_fps_dense] 4 frames
+  [recency_last_k] 4 frames
+  [sam_policy] 4 frames
+  [event 9 done] arms emitted
+[event twitter #10 t=40.50s]
+  [fresh_oracle_dense] 8 frames
+Prefill:   0%|          | 0/2102 [00:00<?, ?tok/s]Prefill:  97%|█████████▋| 2048/2102 [00:05<00:00, 388.18tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:05<00:00, 378.86tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:05<00:00, 381.52tok/s]
+  [screenshot_polling] 1 frames
+  [low_fps_dense] 4 frames
+  [recency_last_k] 4 frames
+  [sam_policy] 4 frames
+  [event 10 done] arms emitted
+[event terminal #0 t=1.50s]
+  [fresh_oracle_dense] 8 frames
+Prefill:   0%|          | 0/2102 [00:00<?, ?tok/s]Prefill:  97%|█████████▋| 2048/2102 [00:04<00:00, 427.66tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:05<00:00, 415.56tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:05<00:00, 419.01tok/s]
+  [screenshot_polling] 1 frames
+  [low_fps_dense] 4 frames
+  [recency_last_k] 4 frames
+  [sam_policy] 4 frames
+  [event 0 done] arms emitted
+[event terminal #1 t=3.00s]
+  [fresh_oracle_dense] 8 frames
+Prefill:   0%|          | 0/2102 [00:00<?, ?tok/s]Prefill:  97%|█████████▋| 2048/2102 [00:04<00:00, 442.78tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:04<00:00, 432.75tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:04<00:00, 435.63tok/s]
+  [screenshot_polling] 1 frames
+  [low_fps_dense] 4 frames
+  [recency_last_k] 4 frames
+  [sam_policy] 4 frames
+  [event 1 done] arms emitted
+[event terminal #2 t=8.56s]
+  [fresh_oracle_dense] 8 frames
+Prefill:   0%|          | 0/2102 [00:00<?, ?tok/s]Prefill:  97%|█████████▋| 2048/2102 [00:04<00:00, 457.31tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:04<00:00, 446.42tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:04<00:00, 449.53tok/s]
+  [screenshot_polling] 1 frames
+  [low_fps_dense] 4 frames
+  [recency_last_k] 4 frames
+  [sam_policy] 4 frames
+  [event 2 done] arms emitted
+[event terminal #3 t=11.00s]
+  [fresh_oracle_dense] 8 frames
+Prefill:   0%|          | 0/2102 [00:00<?, ?tok/s]Prefill:  97%|█████████▋| 2048/2102 [00:04<00:00, 452.47tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:04<00:00, 439.58tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:04<00:00, 443.25tok/s]
+  [screenshot_polling] 1 frames
+  [low_fps_dense] 4 frames
+  [recency_last_k] 4 frames
+  [sam_policy] 4 frames
+  [event 3 done] arms emitted
+[event terminal #4 t=12.71s]
+  [fresh_oracle_dense] 8 frames
+Prefill:   0%|          | 0/2102 [00:00<?, ?tok/s]Prefill:  97%|█████████▋| 2048/2102 [00:04<00:00, 418.33tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:05<00:00, 410.47tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:05<00:00, 412.72tok/s]
+  [screenshot_polling] 1 frames
+  [low_fps_dense] 4 frames
+  [recency_last_k] 4 frames
+  [sam_policy] 4 frames
+  [event 4 done] arms emitted
+[event terminal #5 t=16.87s]
+  [fresh_oracle_dense] 8 frames
+Prefill:   0%|          | 0/2102 [00:00<?, ?tok/s]Prefill:  97%|█████████▋| 2048/2102 [00:04<00:00, 450.21tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:04<00:00, 441.17tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:04<00:00, 443.76tok/s]
+  [screenshot_polling] 1 frames
+  [low_fps_dense] 4 frames
+  [recency_last_k] 4 frames
+  [sam_policy] 4 frames
+  [event 5 done] arms emitted
+[event terminal #6 t=21.02s]
+  [fresh_oracle_dense] 8 frames
+Prefill:   0%|          | 0/2102 [00:00<?, ?tok/s]Prefill:  97%|█████████▋| 2048/2102 [00:04<00:00, 508.18tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:04<00:00, 498.11tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:04<00:00, 501.00tok/s]
+  [screenshot_polling] 1 frames
+  [low_fps_dense] 4 frames
+  [recency_last_k] 4 frames
+  [sam_policy] 4 frames
+  [event 6 done] arms emitted
+[event terminal #7 t=25.18s]
+  [fresh_oracle_dense] 8 frames
+Prefill:   0%|          | 0/2102 [00:00<?, ?tok/s]Prefill:  97%|█████████▋| 2048/2102 [00:04<00:00, 506.38tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:04<00:00, 498.17tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:04<00:00, 500.53tok/s]
+  [screenshot_polling] 1 frames
+  [low_fps_dense] 4 frames
+  [recency_last_k] 4 frames
+  [sam_policy] 4 frames
+  [event 7 done] arms emitted
+[event terminal #8 t=29.33s]
+  [fresh_oracle_dense] 8 frames
+Prefill:   0%|          | 0/2102 [00:00<?, ?tok/s]Prefill:  97%|█████████▋| 2048/2102 [00:03<00:00, 515.07tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:04<00:00, 505.55tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:04<00:00, 508.28tok/s]
+  [screenshot_polling] 1 frames
+  [low_fps_dense] 4 frames
+  [recency_last_k] 4 frames
+  [sam_policy] 4 frames
+  [event 8 done] arms emitted
+[event terminal #9 t=33.49s]
+  [fresh_oracle_dense] 8 frames
+Prefill:   0%|          | 0/2102 [00:00<?, ?tok/s]Prefill:  97%|█████████▋| 2048/2102 [00:04<00:00, 511.13tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:04<00:00, 500.28tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:04<00:00, 503.39tok/s]
+  [screenshot_polling] 1 frames
+  [low_fps_dense] 4 frames
+  [recency_last_k] 4 frames
+  [sam_policy] 4 frames
+  [event 9 done] arms emitted
+[event terminal #10 t=37.64s]
+  [fresh_oracle_dense] 8 frames
+Prefill:   0%|          | 0/2102 [00:00<?, ?tok/s]Prefill:  97%|█████████▋| 2048/2102 [00:04<00:00, 490.39tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:04<00:00, 482.48tok/s]Prefill: 100%|█████████▉| 2101/2102 [00:04<00:00, 484.75tok/s]
+  [screenshot_polling] 1 frames
+  [low_fps_dense] 4 frames
+  [recency_last_k] 4 frames
+  [sam_policy] 4 frames
+  [event 10 done] arms emitted
+[wrote] 88 rows -> /Users/sam/repos/codec-through-jfb/research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b3_streaming_baselines.jsonl
