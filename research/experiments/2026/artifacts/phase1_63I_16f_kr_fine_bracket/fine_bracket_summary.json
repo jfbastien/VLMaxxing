@@ -1,0 +1,86 @@
+{
+  "best_fidelity_safe_keep_rate": null,
+  "best_full_pass_keep_rate": null,
+  "cells": [
+    {
+      "accuracy_delta": -0.09999999999999998,
+      "accuracy_delta_ci95": [
+        -0.21666666666666662,
+        0.016666666666666607
+      ],
+      "actual_e2e_speedup": 1.247050667422639,
+      "actual_minus_predicted": 0.19152725847128016,
+      "choice_agreement": 0.75,
+      "keep_rate": 0.78,
+      "mean_keep_rate": 0.75,
+      "n_paired_items": 60,
+      "pass_ceiling_explained": false,
+      "pass_complete_pairing": true,
+      "pass_e2e_positive": true,
+      "pass_fidelity": false,
+      "pass_format": true,
+      "pass_sparse_vision": true,
+      "predicted_e2e_speedup": 1.0555234089513588,
+      "summary_path": "research/experiments/2026/artifacts/phase1_63I_16f_kr_fine_bracket/pair_summary_kr078_16f.json",
+      "vision_reduction": 0.3530999531909902,
+      "vision_share_dense": 0.14897403920166546
+    },
+    {
+      "accuracy_delta": -0.016666666666666607,
+      "accuracy_delta_ci95": [
+        -0.09999999999999998,
+        0.06666666666666665
+      ],
+      "actual_e2e_speedup": 1.1618969877270875,
+      "actual_minus_predicted": 0.12107499098664132,
+      "choice_agreement": 0.85,
+      "keep_rate": 0.8,
+      "mean_keep_rate": 0.8125,
+      "n_paired_items": 60,
+      "pass_ceiling_explained": false,
+      "pass_complete_pairing": true,
+      "pass_e2e_positive": true,
+      "pass_fidelity": true,
+      "pass_format": false,
+      "pass_sparse_vision": true,
+      "predicted_e2e_speedup": 1.0408219967404462,
+      "summary_path": "research/experiments/2026/artifacts/phase1_63I_16f_kr_fine_bracket/pair_summary_kr080_16f.json",
+      "vision_reduction": 0.2632735251303854,
+      "vision_share_dense": 0.14897403920166546
+    },
+    {
+      "accuracy_delta": -0.016666666666666607,
+      "accuracy_delta_ci95": [
+        -0.09999999999999998,
+        0.06666666666666665
+      ],
+      "actual_e2e_speedup": 1.2398626648499438,
+      "actual_minus_predicted": 0.19692296185409153,
+      "choice_agreement": 0.85,
+      "keep_rate": 0.82,
+      "mean_keep_rate": 0.8125,
+      "n_paired_items": 60,
+      "pass_ceiling_explained": false,
+      "pass_complete_pairing": true,
+      "pass_e2e_positive": true,
+      "pass_fidelity": true,
+      "pass_format": false,
+      "pass_sparse_vision": true,
+      "predicted_e2e_speedup": 1.0429397029958523,
+      "summary_path": "research/experiments/2026/artifacts/phase1_63I_16f_kr_fine_bracket/pair_summary_kr082_16f.json",
+      "vision_reduction": 0.27636894609013485,
+      "vision_share_dense": 0.14897403920166546
+    }
+  ],
+  "complete": false,
+  "fidelity_safe_keep_rates": [],
+  "headline_pass": false,
+  "keep_rates": [
+    0.78,
+    0.8,
+    0.82
+  ],
+  "n_cells": 3,
+  "passing_keep_rates": [],
+  "phase": "1.63I"
+}
