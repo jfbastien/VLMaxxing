@@ -1,0 +1,238 @@
+{
+  "phase": "phase2-local-chain",
+  "records": [
+    {
+      "name": "A1-1.63G-format-diagnostic",
+      "command": [
+        "scripts/run_phase1_63G_format_diagnostic.sh"
+      ],
+      "status": "completed",
+      "summary_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_63G_gemma_track_b/format_diagnostic_summary.json",
+      "elapsed_s": 0.040582916990388185,
+      "summary": {
+        "artifact_dir": "research/experiments/2026/artifacts/phase1_63G_gemma_track_b",
+        "cells": [
+          {
+            "dense_only_parse_failures": [],
+            "dense_parse_failures": 11,
+            "dense_permissive_recoverable": 0,
+            "examples": [
+              {
+                "dense_parse_failure": true,
+                "dense_permissive_choice": null,
+                "dense_text_snippet": "I am sorry, but you have not provided the video or any context about the video you are referring to. Therefore, I cannot watch the video or know what",
+                "item_id": "videomme:long:712-3",
+                "sparse_parse_failure": true,
+                "sparse_permissive_choice": null,
+                "sparse_text_snippet": "I am sorry, but you have not provided the video or any context about the video you are referring to. Therefore, I cannot watch the video or know what"
+              },
+              {
+                "dense_parse_failure": true,
+                "dense_permissive_choice": null,
+                "dense_text_snippet": "I am sorry, but I cannot answer your question. The images you provided are screenshots from various football matches, and they do not contain enough context or information to",
+                "item_id": "videomme:long:756-2",
+                "sparse_parse_failure": true,
+                "sparse_permissive_choice": null,
+                "sparse_text_snippet": "I am sorry, but I cannot answer your question. The images you provided are screenshots from various football matches, and they do not contain enough context or information to"
+              },
+              {
+                "dense_parse_failure": true,
+                "dense_permissive_choice": null,
+                "dense_text_snippet": "I am sorry, but the images provided are video stills from basketball games. They do not contain any text, scoreboards, or information regarding the score after a",
+                "item_id": "videomme:long:892-1",
+                "sparse_parse_failure": true,
+                "sparse_permissive_choice": null,
+                "sparse_text_snippet": "I am sorry, but the images provided are video stills from basketball games. They do not contain any text, scoreboards, or information regarding the score after a"
+              },
+              {
+                "dense_parse_failure": true,
+                "dense_permissive_choice": null,
+                "dense_text_snippet": "I do not have access to the video you are referring to, so I cannot watch it and determine the correct answer. Please provide more context about the video scene",
+                "item_id": "videomme:medium:415-3",
+                "sparse_parse_failure": true,
+                "sparse_permissive_choice": null,
+                "sparse_text_snippet": "I do not have access to the video you are referring to, so I cannot watch it and determine the correct answer. Please provide more context about the video scene"
+              },
+              {
+                "dense_parse_failure": true,
+                "dense_permissive_choice": null,
+                "dense_text_snippet": "<|channel>thought Here's a thinking process to arrive at the answer: 1. **Analyze the Request:** The user has provided several video stills (",
+                "item_id": "videomme:medium:484-2",
+                "sparse_parse_failure": true,
+                "sparse_permissive_choice": null,
+                "sparse_text_snippet": "<|channel>thought Here's a thinking process to arrive at the answer: 1. **Analyze the Request:** The user has provided several video stills ("
+              },
+              {
+                "dense_parse_failure": true,
+                "dense_permissive_choice": null,
+                "dense_text_snippet": "<|channel>thought Here's a thinking process to arrive at the answer: 1. **Analyze the Request:** The user has provided a series of images",
+                "item_id": "videomme:medium:486-2",
+                "sparse_parse_failure": true,
+                "sparse_permissive_choice": null,
+                "sparse_text_snippet": "<|channel>thought Here's a thinking process to arrive at the answer: 1. **Analyze the Request:** The user has provided a series of images"
+              },
+              {
+                "dense_parse_failure": true,
+                "dense_permissive_choice": null,
+                "dense_text_snippet": "I am sorry, but the video clips you provided do not contain any information about Portugal's GDP for the years 2020 or 20",
+                "item_id": "videomme:short:062-3",
+                "sparse_parse_failure": true,
+                "sparse_permissive_choice": null,
+                "sparse_text_snippet": "I am sorry, but the video clips you provided do not contain any information about Portugal's GDP for the years 2020 or 20"
+              },
+              {
+                "dense_parse_failure": true,
+                "dense_permissive_choice": null,
+                "dense_text_snippet": "The provided images are stills from various videos or presentations and do not contain enough context to definitively answer what appears after the red door opens in the video. However",
+                "item_id": "videomme:short:066-3",
+                "sparse_parse_failure": true,
+                "sparse_permissive_choice": null,
+                "sparse_text_snippet": "The provided images are stills from various videos or presentations and do not contain enough context to definitively answer what appears after the red door opens in the video. However"
+              },
+              {
+                "dense_parse_failure": true,
+                "dense_permissive_choice": null,
+                "dense_text_snippet": "The provided images are stills from the movie *Kung Fu Panda 4*. In the images, particularly the one showing the action sequence (the fourth image),",
+                "item_id": "videomme:short:100-2",
+                "sparse_parse_failure": true,
+                "sparse_permissive_choice": null,
+                "sparse_text_snippet": "The provided images are stills from the movie *Kung Fu Panda 4*. In the images, particularly the one showing the action sequence (the fourth image),"
+              },
+              {
+                "dense_parse_failure": true,
+                "dense_permissive_choice": null,
+                "dense_text_snippet": "The score shown in the image is **QAT 0 - 2 SEN**. * **QAT** (Qatar) has scored 0 goals",
+                "item_id": "videomme:short:158-3",
+                "sparse_parse_failure": true,
+                "sparse_permissive_choice": null,
+                "sparse_text_snippet": "The score shown in the image is **QAT 0 - 2 SEN**. * **QAT** (Qatar) has scored 0 goals"
+              }
+            ],
+            "frame_count": 8,
+            "matched_parse_failures": 11,
+            "n_items": 60,
+            "paired_accuracy_delta": 0.0,
+            "paired_choice_agreement": 1.0,
+            "parse_failure_jaccard": 1.0,
+            "pass_format_original": false,
+            "permissive_recoverable_any": 0,
+            "sparse_only_parse_failures": [],
+            "sparse_parse_failures": 11,
+            "sparse_permissive_recoverable": 0
+          },
+          {
+            "dense_only_parse_failures": [],
+            "dense_parse_failures": 3,
+            "dense_permissive_recoverable": 0,
+            "examples": [
+              {
+                "dense_parse_failure": true,
+                "dense_permissive_choice": null,
+                "dense_text_snippet": "I am sorry, but the provided images are video stills showing basketball games and close-ups of individuals. There is no accompanying text, scoreboard, or context within",
+                "item_id": "videomme:long:892-1",
+                "sparse_parse_failure": true,
+                "sparse_permissive_choice": null,
+                "sparse_text_snippet": "I am sorry, but the provided images are video stills showing basketball games and close-ups of individuals. There is no accompanying text, scoreboard, or context within"
+              },
+              {
+                "dense_parse_failure": true,
+                "dense_permissive_choice": null,
+                "dense_text_snippet": "The video you are referring to is the one showing the **Balearic Islands (Spain)** map, which is the first image you provided. The animal shown",
+                "item_id": "videomme:medium:354-3",
+                "sparse_parse_failure": true,
+                "sparse_permissive_choice": null,
+                "sparse_text_snippet": "The video you are referring to is the one showing the **Balearic Islands (Spain)** map, which is the first image you provided. The animal shown"
+              },
+              {
+                "dense_parse_failure": true,
+                "dense_permissive_choice": null,
+                "dense_text_snippet": "The provided images are stills from various football match broadcasts and do not contain enough context or clear action sequences to definitively identify the scorer of the final goal based on the",
+                "item_id": "videomme:short:293-1",
+                "sparse_parse_failure": true,
+                "sparse_permissive_choice": null,
+                "sparse_text_snippet": "The provided images are stills from various football match broadcasts and do not contain enough context or clear action sequences to definitively identify the scorer of the final goal based on the"
+              }
+            ],
+            "frame_count": 16,
+            "matched_parse_failures": 3,
+            "n_items": 60,
+            "paired_accuracy_delta": 0.0,
+            "paired_choice_agreement": 1.0,
+            "parse_failure_jaccard": 1.0,
+            "pass_format_original": false,
+            "permissive_recoverable_any": 0,
+            "sparse_only_parse_failures": [],
+            "sparse_parse_failures": 3,
+            "sparse_permissive_recoverable": 0
+          },
+          {
+            "dense_only_parse_failures": [],
+            "dense_parse_failures": 4,
+            "dense_permissive_recoverable": 0,
+            "examples": [
+              {
+                "dense_parse_failure": true,
+                "dense_permissive_choice": null,
+                "dense_text_snippet": "I am sorry, but I cannot answer your question. The images you provided are screenshots from various football matches and do not contain enough context or information to determine how",
+                "item_id": "videomme:long:756-2",
+                "sparse_parse_failure": true,
+                "sparse_permissive_choice": null,
+                "sparse_text_snippet": "I am sorry, but I cannot answer your question. The images you provided are screenshots from various football matches and do not contain enough context or information to determine how"
+              },
+              {
+                "dense_parse_failure": true,
+                "dense_permissive_choice": null,
+                "dense_text_snippet": "I am sorry, but the provided images are video stills from basketball games and close-up shots of individuals. **None of the images contain a scoreboard or any",
+                "item_id": "videomme:long:892-1",
+                "sparse_parse_failure": true,
+                "sparse_permissive_choice": null,
+                "sparse_text_snippet": "I am sorry, but the provided images are video stills from basketball games and close-up shots of individuals. **None of the images contain a scoreboard or any"
+              },
+              {
+                "dense_parse_failure": true,
+                "dense_permissive_choice": null,
+                "dense_text_snippet": "The video segment featuring the Balearic Islands map shows the location of the islands, including Mallorca, Minorca, Ibiza, and Formentera. The animal shown",
+                "item_id": "videomme:medium:354-3",
+                "sparse_parse_failure": true,
+                "sparse_permissive_choice": null,
+                "sparse_text_snippet": "The video segment featuring the Balearic Islands map shows the location of the islands, including Mallorca, Minorca, Ibiza, and Formentera. The animal shown"
+              },
+              {
+                "dense_parse_failure": true,
+                "dense_permissive_choice": null,
+                "dense_text_snippet": "The video you are referring to is not provided, so I cannot watch it or determine who hit the third ball. Please provide the video you are asking about.",
+                "item_id": "videomme:medium:441-1",
+                "sparse_parse_failure": true,
+                "sparse_permissive_choice": null,
+                "sparse_text_snippet": "The video you are referring to is not provided, so I cannot watch it or determine who hit the third ball. Please provide the video you are asking about."
+              }
+            ],
+            "frame_count": 32,
+            "matched_parse_failures": 4,
+            "n_items": 60,
+            "paired_accuracy_delta": 0.0,
+            "paired_choice_agreement": 1.0,
+            "parse_failure_jaccard": 1.0,
+            "pass_format_original": false,
+            "permissive_recoverable_any": 0,
+            "sparse_only_parse_failures": [],
+            "sparse_parse_failures": 4,
+            "sparse_permissive_recoverable": 0
+          }
+        ],
+        "frame_counts": [
+          8,
+          16,
+          32
+        ],
+        "interpretation": "If matched_failure_diagnostic passes and parser_not_fixable passes, Gemma Track B should be framed as zero paired drift under matched dense/sparse format failures, not as format-clean C-VISION.",
+        "pass_matched_failure_diagnostic": true,
+        "pass_parser_not_fixable": true,
+        "phase": "1.63G-format-diagnostic",
+        "total_failure_items": 18,
+        "total_permissive_recoverable_items": 0
+      }
+    }
+  ],
+  "updated_at_unix_s": 1777423948.89343
+}
