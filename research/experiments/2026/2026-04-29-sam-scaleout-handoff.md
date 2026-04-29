@@ -12,9 +12,12 @@ diffs, timing, memory, and confidence intervals.
 ## Hardware / Runtime
 
 - Machine: Sam's M5 MacBook Pro with 128 GB unified memory.
-- Primary model: the exact 26B Gemma/Qwen-family model used in
-  `~/s/codec-through-sam`; record full model id, quantization, runtime commit,
-  and Metal/macOS versions.
+- Primary model: the exact 26B Gemma/Qwen-family model used in Sam's prior
+  scale-out work. Run from `codec-through`; if prior `codec-through-sam` code
+  is used as reference or called by a wrapper, record the reference commit and
+  runtime provenance in the findings note.
+- Record full model id, model hash, quantization, runtime commit, Sam's
+  `codec-through` commit, and Metal/macOS versions.
 - Do not inherit this repo's 12 GB MLX memory cap. That cap is a local M3
   mitigation for a Metal panic and would invalidate the scale-out run.
 
@@ -187,8 +190,8 @@ Expected runtime: 4-8 hours for a minimal bundle.
 Hypothesis: the arithmetic ceiling that predicts local sparse-ViT wall-clock
 also predicts scale-out behavior when Sam's runtime actually skips ViT work.
 
-Only run if `codec-through-sam` has a real compact/sparse vision path. Do not
-count dense-with-zeros as Track B.
+Only run if Sam's runtime has a real compact/sparse vision path. Do not count
+dense-with-zeros as Track B.
 
 Protocol:
 - 8f and 32f first.

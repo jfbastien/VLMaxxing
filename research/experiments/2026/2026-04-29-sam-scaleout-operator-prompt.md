@@ -1,29 +1,52 @@
 # 2026-04-29 Sam Scale-Out Operator Prompt
 
-Use this as the short instruction for Sam's coding agent in
-`~/s/codec-through-sam` with this repo available for schema and validation.
+Use this as the short instruction for Sam's coding agent on the M5 128 GB
+machine. `codec-through` is the canonical execution, artifact, validation, and
+commit repo for this bundle. `codec-through-sam` may be used only as reference
+or prototype code if needed.
+
+## Bootstrap
+
+From Sam's machine:
+
+```bash
+git clone git@github.com:jfbastien/codec-through.git
+cd codec-through
+git checkout <branch-or-commit-containing-this-handoff>
+claude
+```
+
+Then give Claude the one-shot request below. If `codec-through` is already
+cloned, update that clone instead of creating a second one. Run from the
+`codec-through` repo root.
 
 ## One-Shot Request
 
 Please run the Sam scale-out bundle described in:
 
-`/Users/jfb/s/codec-through/research/experiments/2026/2026-04-29-sam-scaleout-handoff.md`
+`research/experiments/2026/2026-04-29-sam-scaleout-handoff.md`
+
+Use `codec-through` as the artifact repo. If code from `codec-through-sam` is
+needed, port or call it from this repo and record that provenance in the
+findings note; do not make `codec-through-sam` the returned artifact home.
 
 Return one committed artifact bundle that validates with:
 
 ```bash
-python /Users/jfb/s/codec-through/scripts/validate_sam_scaleout_bundle.py \
-  --bundle-dir <YOUR_ARTIFACT_DIR> \
-  --summary-output <YOUR_ARTIFACT_DIR>/sam_scaleout_bundle_validation.json
+python scripts/validate_sam_scaleout_bundle.py \
+  --bundle-dir research/experiments/2026/artifacts/<sam-scaleout-run-id> \
+  --summary-output research/experiments/2026/artifacts/<sam-scaleout-run-id>/sam_scaleout_bundle_validation.json
 ```
 
 Commit the raw JSONLs, summaries, validation output, command logs, and a short
-findings note in `codec-through-sam`. Send back the commit SHA, artifact
-directory path, and the bundle validation summary.
+findings note in `codec-through`. Send back the `codec-through` commit SHA,
+artifact directory path, and the bundle validation summary.
 
 ## Required File Names
 
 Put these files in one artifact directory:
+
+`research/experiments/2026/artifacts/<sam-scaleout-run-id>/`
 
 - `sam_b0b_cache_correctness.jsonl`
 - `sam_b3_streaming_baselines.jsonl`
@@ -54,10 +77,10 @@ Dense-with-zeroed-tokens is not Track B and must not be exported as B4.
 ## Non-Negotiable Artifact Rules
 
 - Validate every row against
-  `/Users/jfb/s/codec-through/research/schemas/sam_scaleout_artifact_v1.schema.json`.
+  `research/schemas/sam_scaleout_artifact_v1.schema.json`.
 - Do not port the local 12 GB MLX memory cap to the 128 GB M5 machine.
 - Record exact model id, model hash, quantization, runtime commit, macOS,
-  Metal, MLX/runtime version, Sam repo `commit_sha`, command line, and memory
+  Metal, MLX/runtime version, `codec-through` `commit_sha`, command line, and memory
   definition.
 - Include raw paired prompts/responses, parse failures split by arm, prompt
   hashes, input-id hashes, frame ids/hashes, cache topology, prefix coverage,
@@ -73,8 +96,8 @@ Dense-with-zeroed-tokens is not Track B and must not be exported as B4.
 
 ## What We Need Back
 
-- The `codec-through-sam` commit SHA.
-- The artifact directory path.
+- The `codec-through` commit SHA.
+- The artifact directory path under `research/experiments/2026/artifacts/`.
 - `sam_scaleout_bundle_validation.json`.
 - One short note with: which phases ran, which gates passed/failed, any parse
   failures, and any runtime/cache implementation deviations from the handoff.
