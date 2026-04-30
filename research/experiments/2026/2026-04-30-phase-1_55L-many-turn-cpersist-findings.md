@@ -23,6 +23,27 @@ two-follow-up envelope used by the broad 0/93 result?
 - Fixed \(K=1\): 3/343 choice drift and 2/343 correctness drift at the 50-turn
   horizon; below the 3% gate but no longer drift-free.
 
+### Fixed \(K=1\) horizon=50 turn-bucket distribution
+
+The 5 fixed \(K=1\) drift events are spread across early-to-mid turns, not
+concentrated at the latest buckets:
+
+| Turn bucket | n  | Choice diffs | Correctness diffs |
+|-------------|----|--------------|-------------------|
+| 0–10        | 63 | 1            | 1                 |
+| 10–20       | 70 | 1            | 1                 |
+| 20–30       | 70 | 0            | 0                 |
+| 30–40       | 70 | 1            | 0                 |
+| 40–50       | 70 | 0            | 0                 |
+
+Source: `summary.json:cells[].followup_turn_buckets` for `policy=fixed_k1, horizon=50`.
+
+This is a **paper-prose correction**: the existing C-PERSIST many-turn paragraph
+in `paper/arxiv/sections/07_results_cross_architecture.tex` describes this as
+"the expected late leakage", which suggests temporal monotonic accumulation that
+the bucket data does not show. See `2026-05-01-paper-editor-feedback.md` §(1)
+for the suggested wording change.
+
 ## Interpretation
 
 This closes the simplest horizon attack on the two-follow-up C-PERSIST claim:
