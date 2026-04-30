@@ -129,51 +129,20 @@ different stages of the per-query budget:
 
 | mechanism | what it caps | per-stage gain on 32 f Gemma 26B | when it applies |
 |---|---|---|---|
-| **hard-prune (B4)** | LLM prefill tokens | per-frame compute drops 414 → 275 ms (0.65 ×) | first-pass / cold-dense path, all queries |
-| **prefix-snapshot (M5-5b @ 32f)** | per-query LM prefill cost | 14–19 s/query → 234–983 ms/query (26 × median, 83 × peak) | follow-up queries on the same video |
+| **hard-prune (B4-adjacent)** | LLM prefill tokens | **measured fixed-frame medians: 8f 0.757× (slower), 32f 1.042× (essentially flat)** | first-pass / cold-dense path |
+| **prefix-snapshot (M5-5b @ 32f)** | per-query LM prefill cost | 14–19 s/query → 234–983 ms/query (26.59× median, 83.49× peak) | follow-up queries on the same video |
 
-On a multi-query workload (1 first-pass + K follow-ups):
-
-```
-naive_cold_dense_total      = (K + 1) * cold_first_pass
-hard_prune_total            = (K + 1) * (cold_first_pass / 1.5)
-prefix_snapshot_total       = cold_first_pass + warm_prefix + K * snapshot_followup
-composed_total              = (cold_first_pass / 1.5) + warm_prefix + K * snapshot_followup
-```
-
-For K = 5, 32 f, Gemma 4 26B-A4B / M5:
-
-| approach | total time (s) | × vs naive |
-|---|---:|---:|
-| naive cold dense | 6 × 15 = 90 s | 1.0 × |
-| hard-prune only | 6 × 10 = 60 s | 1.5 × |
-| prefix-snapshot only | 15 + 18 + 5 × 0.5 = 35.5 s | **2.5 ×** |
-| **composed** | 10 + 18 + 5 × 0.5 = 30.5 s | **3.0 ×** |
-
-For K = 50 (long streaming session):
-
-| approach | total time (s) | × vs naive |
-|---|---:|---:|
-| naive cold dense | 51 × 15 = 765 s | 1.0 × |
-| hard-prune only | 51 × 10 = 510 s | 1.5 × |
-| prefix-snapshot only | 15 + 18 + 50 × 0.5 = 58 s | **13.2 ×** |
-| **composed** | 10 + 18 + 50 × 0.5 = 53 s | **14.4 ×** |
-
-For very large K (K → ∞):
-
-| approach | per-query asymptote | × vs naive |
-|---|---:|---:|
-| naive cold dense | 15 s | 1.0 × |
-| hard-prune only | 10 s | 1.5 × |
-| prefix-snapshot only | 0.5 s | **30 ×** |
-| **composed** | 0.5 s | **30 ×** (saturates: hard-prune is on first-pass only) |
-
-The composition saturates as K grows because hard-prune affects only
-the first-pass and the warm-prefix steps (both one-time costs); per-
-follow-up cost is dominated by generate, which neither mechanism
-shrinks. **At deployment scale (long streaming sessions), the headline
-gain is the prefix-snapshot factor; hard-prune adds a fixed-cost
-reduction at the front.**
+> **Composition tables removed.** The earlier draft of this section
+> chained the prefix-snapshot result with a hypothetical "1.5× from
+> hard-prune at fixed wall clock" to project K=5/K=50/K=∞ totals.
+> That chaining is unsupported: the B4-adjacent artifact's actually-
+> measured fixed-frame numbers are flat to negative (0.757× at 8f,
+> 1.042× at 32f), and the "1.5× ingestion-density" reframe (commit
+> f0e8d74 on Sam's branch, never cherry-picked) was rejected. If a
+> future experiment earns a real fixed-wall-clock-variable-frames
+> speedup for hard-prune, that data should be cited; until then,
+> **only the prefix-snapshot factor (26.59× median per-follow-up)
+> is supported here**.
 
 ## What this means for the paper
 

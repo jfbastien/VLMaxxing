@@ -86,11 +86,13 @@ def _deepcopy_cache(cache_list: list[Any]) -> list[Any]:
     return new_list
 
 
-def make_prefix_snapshot(harness: Any, img_paths: list[str],
-                          sentinel_question_a: str = "Q.",
-                          sentinel_question_b: str = "X.",
-                          single_shot_prefill: bool = False,
-                          ) -> dict[str, Any]:
+def make_prefix_snapshot(
+    harness: Any,
+    img_paths: list[str],
+    sentinel_question_a: str = "Q.",
+    sentinel_question_b: str = "X.",
+    single_shot_prefill: bool = False,
+) -> dict[str, Any]:
     """Build a prefix snapshot for the given vision input.
 
     Parameters
@@ -169,8 +171,8 @@ def make_prefix_snapshot(harness: Any, img_paths: list[str],
         pos = 0
         while pos < n_prefix:
             n_to_process = min(chunk, n_prefix - pos)
-            slc_ids = input_ids_full[:, pos:pos + n_to_process]
-            slc_emb = inputs_embeds[:, pos:pos + n_to_process]
+            slc_ids = input_ids_full[:, pos : pos + n_to_process]
+            slc_emb = inputs_embeds[:, pos : pos + n_to_process]
             harness.model.language_model(
                 inputs=slc_ids,
                 inputs_embeds=slc_emb,
@@ -192,11 +194,15 @@ def make_prefix_snapshot(harness: Any, img_paths: list[str],
     }
 
 
-def run_turn_with_snapshot(snapshot: dict[str, Any], harness: Any,
-                            img_paths: list[str], question: str,
-                            *, max_tokens: int = 32,
-                            single_shot_prefill: bool = False,
-                            ) -> dict[str, Any]:
+def run_turn_with_snapshot(
+    snapshot: dict[str, Any],
+    harness: Any,
+    img_paths: list[str],
+    question: str,
+    *,
+    max_tokens: int = 32,
+    single_shot_prefill: bool = False,
+) -> dict[str, Any]:
     """Run a single turn against the prefix snapshot.
 
     Restores the snapshot into a fresh working cache, prefills only
@@ -246,8 +252,8 @@ def run_turn_with_snapshot(snapshot: dict[str, Any], harness: Any,
             while pos < new_ids.shape[1] - 1:
                 n_to_process = min(chunk, new_ids.shape[1] - 1 - pos)
                 harness.model.language_model(
-                    inputs=new_ids[:, pos:pos + n_to_process],
-                    inputs_embeds=inputs_embeds[:, pos:pos + n_to_process],
+                    inputs=new_ids[:, pos : pos + n_to_process],
+                    inputs_embeds=inputs_embeds[:, pos : pos + n_to_process],
                     cache=working_cache,
                     n_to_process=n_to_process,
                 )
