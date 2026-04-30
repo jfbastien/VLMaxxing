@@ -2,15 +2,15 @@
 \centering
 \caption{Many-turn C-PERSIST stress on seven 20f short VideoMME videos. The stress cycles the same three questions through a 50-turn stateless question schedule, so it tests cache-horizon stability under repeated follow-ups rather than natural dialogue. The 560 dense baseline rows are deterministic replicas of 21 unique stateless dense runs for turn-matched pairing, not independent timing samples.}
 \label{tab:c-persist-many-turn}
-\small
+\scriptsize
 \renewcommand{\arraystretch}{1.14}
-\begin{tabularx}{\linewidth}{@{}l r r r r X@{}}
+\begin{tabularx}{\linewidth}{@{}p{0.18\linewidth} r r r r X@{}}
 \toprule
-Policy & Horizon & Follow-ups & Choice/correct drift & Median FU & Interpretation \\
+Policy & Horizon & Follow-ups & Choice/correct drift & Median follow-up & Gate / post-repair check \\
 \midrule
-fixed \(K=1\) & 50 & 343 & 3/2 & 7.362\,s & passes 3\% gate but has nonzero late drift; no pathologies \\
-adaptive post-\(Q2\) & 50 & 343 & 0/0 & 0.771\,s & post-repair choice/correct 0/336 / 0/336; no cliff \\
-scheduled refresh-10 & 50 & 343 & 0/0 & 0.706\,s & post-repair choice/correct 0/308 / 0/308; no cliff \\
+fixed \(K=1\) & 50 & 343 & 3/2 & 7.362\,s & passes 3\% gate but has nonzero repeated-question drift; no pathologies \\
+adaptive repair & 50 & 343 & 0/0 & 0.771\,s & post-repair drift 0/336 / 0/336; no cliff \\
+scheduled refresh-10 & 50 & 343 & 0/0 & 0.706\,s & post-repair drift 0/308 / 0/308; no cliff \\
 \bottomrule
 \end{tabularx}
 \end{table}

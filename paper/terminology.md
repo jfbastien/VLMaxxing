@@ -36,14 +36,14 @@ unless expanded. First use should follow this pattern:
   end-to-end latency only in proportion to that component's dense wall-clock
   share.
 - **persistent follow-up reuse (C-PERSIST)**: later questions about the same
-  video reuse already-paid prompt/KV state and are judged by follow-up latency
-  plus paired drift.
+  video reuse already-paid prompt / key--value (KV) state and are judged by
+  follow-up latency plus paired drift.
 - **first-pass vision pruning (C-VISION)**: training-free pruning inside the
   VLM vision tower during the first query on a fresh video.
 - **streaming state reuse (candidate C-STREAM)**: online/native-rate reuse of
   repeated visual state in a streaming or live deployment. Do not make this a
   fourth headline contribution until the scale-out lane has matched
-  artifacts, cache-correctness smoke tests, and baselines.
+  artifacts, cache-correctness checks, and baselines.
 
 ## Terms To Avoid In Main Text
 

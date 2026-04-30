@@ -14,6 +14,178 @@ therefore not one number. They are regime-dependent by construction.
 \draftnote{Run \texttt{make paper-sync} to generate the headline results table.}
 }
 
+\noindent The detailed results now follow reviewer impact: after-ingest
+C-PERSIST first, because it is the big-number regime; then first-pass C-VISION
+and its stage-share ceiling; then the composition and paired-drift boundaries
+that explain why the regimes do not multiply.
+
+\subsection{C-PERSIST: After-Ingest Reuse Is The Big-Number Regime}
+
+Persistent key/value (KV) attention cache reuse answers a different question:
+once the first query on a video has already paid the full prompt cost, how cheap
+can the next question become? Every result in this subsection is therefore an
+after-ingest follow-up result: request-level savings depend on how many later
+questions reuse the same video state, and the first query still pays full
+freight. On Qwen2.5-VL-7B-4bit, the answer is already large enough to matter.
+At 8 frames, follow-up latency drops to 815\,ms median with 47.2$\times$
+speedup and $-0.048$ aggregate accuracy delta. At 16 frames the speedup rises
+to 91.1$\times$ while the accuracy delta returns to 0. Within the current
+$\leq$16f tested envelope, the regime is fast and empirically bounded: the
+accepted region contains one clean point at 16f and one slightly worse but still
+within tolerance at 8f. Past that point the curve keeps rising, but the fidelity
+boundary appears.
+
+\begin{figure}[H]
+  \centering
+  \IfFileExists{generated/figures/c_persist_safe_budget.png}{
+    \includegraphics[width=0.97\linewidth]{generated/figures/c_persist_safe_budget.png}
+  }{
+    \fbox{\parbox{0.9\linewidth}{Run \texttt{make paper-sync} to sync the C-PERSIST tested-envelope figure.}}
+  }
+\caption{C-PERSIST tested follow-up-reuse envelope. The local result is not one
+  persistent-KV curve but two different architectural stories: 7B stays inside
+  the current tested envelope through 16 frames / 6.5k prefill tokens, while 3B
+  trades exactness for a much wider pre-basin plateau through 36 frames /
+  14.5k prefill tokens before the basin opens.}
+  \label{fig:c-persist-safe-budget}
+\end{figure}
+
+The 7B and 3B stories are therefore not interchangeable. 7B gives the clean
+sub-second 16f point and a tested envelope through 16f. 3B does not. What 3B
+gives instead is a wider pre-basin plateau: $\Delta$acc holds at $-0.19$
+through 24f, 32f, and 36f before basin onset appears beyond 14.5k prefill
+tokens. The useful mechanism is not an architecture-specific ``saturation
+ceiling'' but a threshold story: onset depth moves with architecture, while
+basin geometry remains the object to avoid or repair.
+
+That repair path is now local evidence, not just future work. Selective
+re-prefill refreshes a small visual tail before a follow-up query. The simple
+fixed policy is \(K=1\): refresh only the newest visual frame and reuse the
+rest of the video prefix. It is now broad rather than anecdotal. Across 20f
+short, medium, and long VideoMME slices plus a 32f short slice, fixed \(K=1\)
+has no observed paired choice or correctness drift on 93 paired queries, no
+observed pathological follow-up outputs on 62 repaired follow-ups, and
+9.48--20.37$\times$ same-class follow-up speedup. The 32f point is important
+because longer prefixes make the saved prefill work larger; \(K=1\) becomes
+more useful as the prefix gets deeper, not less. The long-bucket point is also
+important but weaker as an accuracy claim: it preserves a hard low-baseline
+cell exactly on the observed rows (7/21), so it is evidence for fidelity
+repair under a difficult regime, not for high long-bucket model quality.
+Paired drift is a reuse-preservation test, not a generosity discount for a weak
+baseline: preserving the same hard examples exactly still constrains the cache
+policy even when the frozen model's cold long-video accuracy is poor.
+
+\IfFileExists{generated/tables/c_persist_repair.tex}{
+\input{generated/tables/c_persist_repair.tex}
+}{
+\draftnote{Run \texttt{make paper-sync} to generate the C-PERSIST repair table.}
+}
+
+The stronger repair result is adaptive. A failed variant that refreshed one
+newest frame at the second follow-up and then omitted refresh at the third
+(\(Q2=K1,Q3=K0\) in the notation of Section~\ref{sec:method}) fell back to
+the original unrepaired state and collapsed every
+third query into the pathological basin: \(\Delta\)acc \(=-0.0952\), paired
+correctness diffs 4/21, paired choice diffs 6/21, and pathological-like
+outputs on 7/7 third follow-ups. The repaired adaptive variant changes only
+the inheritance rule: refresh one newest frame at the second follow-up, then
+let the third follow-up inherit the repaired cache state with no additional
+visual re-prefill.
+
+That rule now has breadth. Across 20f short, medium, and long VideoMME slices
+plus the 32f short slice, adaptive repair has no observed paired choice or
+correctness drift on 93 paired queries, no observed pathological follow-up
+outputs, and 14.90--35.92$\times$ same-class follow-up speedup
+(15.28--35.97$\times$ cold-all-query / repaired-follow-up ratio). The
+rule-of-three upper bound on a query-level unseen paired-drift rate is about
+3.2\%. At the session level the conservative count is 0/31 sessions with any
+paired drift, or a rule-of-three bound of about 9.7\%. Each tested session has
+two follow-up questions after the cold first query. The 32f short cell is the
+largest local efficiency point in the draft at 35.92$\times$ same-class
+follow-up speedup (35.97$\times$ cold-all-query ratio), but the reason is not
+magic: the third follow-up inherits the repaired state instead of paying
+another newest-frame re-prefill.
+
+A timing attribution on the existing short-slice artifacts makes that concrete.
+On the seven paired third follow-ups, fixed \(K=1\) has to re-prefill the
+newest-frame tail again: median latency 6.65\,s, median tail prompt
+451 tokens, and median prefix coverage 0.944. Adaptive repair reuses the
+already-repaired cache and appends mostly the question text: median latency
+0.675\,s, median tail prompt 50 tokens, and median prefix coverage 0.994. The
+paired median third-follow-up fixed/adaptive speedup is therefore
+9.50$\times$, with an 88.9\% median tail-token reduction. This explains why
+adaptive dominates fixed \(K=1\) without changing the fidelity contract.
+
+The result is also not just a greedy-decoding artifact. A practical
+sampler-temperature sweep on the same short-slice adaptive mechanism cell
+tests \(T\in\{0.0,0.5,0.7,1.0,1.5\}\). It keeps baseline quality in range,
+finds no pathological follow-up outputs, and preserves large after-ingest
+speedups across the sweep. Two warm-sampler cells have small nonzero paired
+diffs, so the correct claim is bounded: this defends the adaptive mechanism
+against the simplest ``only works at \(T=0\)'' criticism, but it is not the
+full 0/93 breadth result and not a universal stochastic robustness theorem.
+
+\IfFileExists{generated/tables/c_persist_sampler_stability.tex}{
+\input{generated/tables/c_persist_sampler_stability.tex}
+}{
+\draftnote{Run \texttt{make paper-sync} to generate the C-PERSIST sampler table.}
+}
+
+It is also not a single-seed coincidence. An extended cross-product on the
+same seven-clip tranche evaluates three sampler seeds
+\(\{42, 99, 2026\}\) at three temperatures \(\{0.5, 1.0, 1.5\}\). All nine
+cells pass the preregistered fidelity, format, and baseline-quality gates,
+with maximum \(|\Delta\)acc\(| \le 0.048\) and zero pathological follow-up
+hits across \(189\) paired follow-up rows in aggregate. The cold-over-
+follow-up speedup stays in the \(24.8\)--\(25.2\times\) band where measured.
+The reviewer-defense framing therefore widens to ``adaptive C-PERSIST on
+this tranche is sampler-robust across nine \((\text{seed}, T)\) cells,'' and
+keeps the same scope caveat: this is the short slice, not benchmark
+generalization, and not first-query work.
+
+\IfFileExists{generated/tables/c_persist_sampler_seed_sweep.tex}{
+\input{generated/tables/c_persist_sampler_seed_sweep.tex}
+}{
+\draftnote{Run \texttt{make paper-sync} to generate the C-PERSIST seed-sweep table.}
+}
+
+The follow-up envelope is no longer limited to two-turn sessions. A separate
+many-turn stress test repeats the same three VideoMME short questions across
+10-, 20-, and 50-turn schedules on seven 20-frame videos. This is deliberately
+not a natural-dialogue benchmark: the dense baseline rows are deterministic
+replicas of 21 unique stateless dense runs, which makes them valid for
+turn-matched drift pairing but not independent timing samples. Under that
+stress, adaptive repair and scheduled refresh both have 0/343 follow-up paired
+choice drift and 0/343 paired correctness drift at the 50-turn horizon, with
+median follow-up latency below 0.8\,s. Fixed \(K=1\) remains below the 3\%
+drift gate but shows the expected leakage in the repeated-question schedule:
+3/343 choice diffs and 2/343 correctness diffs. The result changes the
+C-PERSIST claim from ``only two follow-ups were tried'' to ``no cliff through
+50 repeated-question turns under the tested stress,'' while leaving true
+conversational stability as future work.
+
+\IfFileExists{generated/tables/c_persist_many_turn.tex}{
+\input{generated/tables/c_persist_many_turn.tex}
+}{
+\draftnote{Run \texttt{make paper-sync} to generate the C-PERSIST many-turn table.}
+}
+
+\begin{figure}[H]
+  \centering
+  \IfFileExists{generated/figures/c_persist_timeline.pdf}{
+    \includegraphics[width=0.98\linewidth]{generated/figures/c_persist_timeline.pdf}
+  }{
+    \fbox{\parbox{0.9\linewidth}{Run \texttt{make paper-sync} to sync the C-PERSIST timing figure.}}
+  }
+  \caption{Adaptive C-PERSIST timing attribution. Fixed \(K=1\) repairs the
+  newest-frame tail again at the third follow-up, while the adaptive policy
+  inherits the cache repaired after the second follow-up and mostly appends the
+  new question text. The visual shows the short-slice timing mechanism behind
+  the 9.50\(\times\) paired third-follow-up speedup; the broader 0/93 fidelity
+  result is reported in the text and Table~\ref{tab:c-persist-repair}.}
+  \label{fig:c-persist-timeline}
+\end{figure}
+
 \subsection{C-VISION: First-Pass Gains Are Real, But Share-Limited}
 
 Fresh-video first-pass gains are smaller because they are share-limited. Gemma
@@ -65,7 +237,7 @@ work.
   }{
     \fbox{\parbox{0.9\linewidth}{Run \texttt{make paper-sync} to sync the C-VISION ceiling figure.}}
   }
-  \caption{C-VISION share-model validation. The rendered paper-facing figure shows
+  \caption{C-VISION share-model validation. The figure shows
   Gemma dev and holdout cells, the matched Qwen cross-architecture point,
   measured sparse-vision cells, and the n=60 stacked-regime composition audit. The n=60
   point matters because it closes the intuitive ``stacking should multiply''
@@ -74,10 +246,12 @@ work.
   shows the same denominator binding on a second architecture. \(V_{\mathrm{share}}\)
   is measured from the dense baseline timing, \(V_{\mathrm{red}}\) from the
   pruned run, and the predicted speedup is then compared with the independently
-  observed end-to-end speedup. The purple Qwen measured sparse-vision point is the first
-  Qwen real-skipped-work boundary point: the timing model holds, while
-  fidelity does not. The clean measured sparse-execution cell is the Gemma
-  32f-short bucket reported in Table~\ref{tab:headline-results}.}
+  observed end-to-end speedup. The purple measured-sparse markers separate two
+  Qwen boundary cases: 8f \(kr=0.50\) validates the ceiling but fails fidelity,
+  while 16f \(kr=0.85\) restores the fidelity/format gate at only
+  1.032$\times$ because vision reduction falls to 13.6\%. The clean measured
+  sparse-execution cell is the Gemma 32f-short bucket reported in
+  Table~\ref{tab:headline-results}.}
   \label{fig:vshare-ceiling}
 \end{figure}
 
@@ -137,169 +311,6 @@ benchmark-invariant first-pass gain. \(V_{\mathrm{share}}\) governs magnitude,
 while \(V_{\mathrm{red}}\) itself is benchmark- and configuration-conditional
 within the measured 0.350--0.471 range. That softening is not a retreat. It is
 what the holdouts and the cross-arch probe earned.
-
-\subsection{C-PERSIST: After-Ingest Reuse Is The Big-Number Regime}
-
-Persistent-KV answers a different question: once the first query on a video has
-already paid the full prompt cost, how cheap can the next question become?
-Every result in this subsection is therefore an after-ingest follow-up result:
-request-level savings depend on how many later questions reuse the same video
-state, and the first query still pays full freight. On Qwen2.5-VL-7B-4bit, the
-answer is already large enough to matter. At 8 frames,
-follow-up latency drops to 815\,ms median with 47.2$\times$ speedup and
-$-0.048$ aggregate accuracy delta. At 16 frames the speedup rises to
-91.1$\times$ while the accuracy delta returns to 0. Within the current
-$\leq$16f tested envelope, the regime is fast and empirically bounded: the
-accepted region contains one clean point at 16f and one slightly worse but
-still within tolerance at 8f. Past that point the curve keeps rising, but the
-fidelity boundary appears.
-
-\begin{figure}[H]
-  \centering
-  \IfFileExists{generated/figures/c_persist_safe_budget.png}{
-    \includegraphics[width=0.97\linewidth]{generated/figures/c_persist_safe_budget.png}
-  }{
-    \fbox{\parbox{0.9\linewidth}{Run \texttt{make paper-sync} to sync the C-PERSIST tested-envelope figure.}}
-  }
-\caption{C-PERSIST tested follow-up-reuse envelope. The local result is not one
-  persistent-KV curve but two different architectural stories: 7B stays inside
-  the current tested envelope through 16 frames / 6.5k prefill tokens, while 3B
-  trades exactness for a much wider pre-basin plateau through 36 frames /
-  14.5k prefill tokens before the basin opens.}
-  \label{fig:c-persist-safe-budget}
-\end{figure}
-
-The 7B and 3B stories are therefore not interchangeable. 7B gives the clean
-sub-second 16f point and a tested envelope through 16f. 3B does not. What 3B
-gives instead is a wider pre-basin plateau: $\Delta$acc holds at $-0.19$
-through 24f, 32f, and 36f before basin onset appears beyond 14.5k prefill
-tokens. The useful mechanism is not an architecture-specific ``saturation
-ceiling'' but a threshold story: onset depth moves with architecture, while
-basin geometry remains the object to avoid or repair.
-
-That repair path is now local evidence, not just future work. Selective
-re-prefill refreshes a small visual tail before a follow-up query. The simple
-fixed policy is \(K=1\): refresh only the newest visual frame and reuse the
-rest of the video prefix. It is now broad rather than anecdotal. Across 20f
-short, medium, and long VideoMME slices plus a 32f short slice, fixed \(K=1\)
-has no observed paired choice or correctness drift on 93 paired queries, no
-observed pathological follow-up outputs on 62 repaired follow-ups, and
-9.48--20.37$\times$ same-class follow-up speedup. The 32f point is important
-because longer prefixes make the saved prefill work larger; \(K=1\) becomes
-more useful as the prefix gets deeper, not less. The long-bucket point is also
-important but weaker as an accuracy claim: it preserves a hard low-baseline
-cell exactly on the observed rows (7/21), so it is evidence for fidelity
-repair under a difficult regime, not for high long-bucket model quality.
-Paired drift is a reuse-preservation test, not a generosity discount for a weak
-baseline: preserving the same hard examples exactly still constrains the cache
-policy even when the frozen model's cold long-video accuracy is poor.
-
-\IfFileExists{generated/tables/c_persist_repair.tex}{
-\input{generated/tables/c_persist_repair.tex}
-}{
-\draftnote{Run \texttt{make paper-sync} to generate the C-PERSIST repair table.}
-}
-
-The stronger repair result is adaptive. The failed adaptive variant
-\(Q2=K1,Q3=K0\) fell back to the original unrepaired state and collapsed every
-third query into the pathological basin: \(\Delta\)acc \(=-0.0952\), paired
-correctness diffs 4/21, paired choice diffs 6/21, and pathological-like
-outputs on 7/7 Q3 follow-ups. The repaired adaptive variant changes only the
-inheritance rule: refresh one newest frame at \(Q2\), then let \(Q3\) inherit
-the repaired post-\(Q2\) cache state with \(K=0\).
-
-That rule now has breadth. Across 20f short, medium, and long VideoMME slices
-plus the 32f short slice, adaptive post-\(Q2\) repair has no observed paired
-choice or correctness drift on 93 paired queries, no observed pathological
-follow-up outputs, and 14.90--35.92$\times$ same-class follow-up speedup
-(15.28--35.97$\times$ cold-all-query / repaired-follow-up ratio). The rule-of-three upper
-bound on a query-level unseen paired-drift rate is about 3.2\%. At the
-session level the conservative count is 0/31 sessions with any paired drift,
-or a rule-of-three bound of about 9.7\%. Each tested session has two follow-up
-questions after the cold first query. The 32f short cell is the largest
-local efficiency point in the draft at 35.92$\times$ same-class follow-up
-speedup (35.97$\times$ cold-all-query ratio), but the reason is not magic: Q3
-inherits the repaired state instead of paying another newest-frame re-prefill.
-
-A timing attribution on the existing short-slice artifacts makes that concrete.
-On the seven paired Q3 follow-ups, fixed \(K=1\) has to re-prefill the
-newest-frame tail again: median Q3 latency 6.65\,s, median tail prompt
-451 tokens, and median prefix coverage 0.944. Adaptive Q3 reuses the
-post-\(Q2\) repaired cache and appends mostly the question text: median Q3
-latency 0.675\,s, median tail prompt 50 tokens, and median prefix coverage
-0.994. The paired median Q3 fixed/adaptive speedup is therefore
-9.50$\times$, with an 88.9\% median tail-token reduction. This explains why
-adaptive dominates fixed \(K=1\) without changing the fidelity contract.
-
-The result is also not just a greedy-decoding artifact. A practical
-sampler-temperature sweep on the same short-slice adaptive mechanism cell
-tests \(T\in\{0.0,0.5,0.7,1.0,1.5\}\). It keeps baseline quality in range,
-finds no pathological follow-up outputs, and preserves large after-ingest
-speedups across the sweep. Two warm-sampler cells have small nonzero paired
-diffs, so the correct claim is bounded: this defends the adaptive mechanism
-against the simplest ``only works at \(T=0\)'' criticism, but it is not the
-full 0/93 breadth result and not a universal stochastic robustness theorem.
-
-\IfFileExists{generated/tables/c_persist_sampler_stability.tex}{
-\input{generated/tables/c_persist_sampler_stability.tex}
-}{
-\draftnote{Run \texttt{make paper-sync} to generate the C-PERSIST sampler table.}
-}
-
-It is also not a single-seed coincidence. An extended cross-product on the
-same seven-clip tranche evaluates three sampler seeds
-\(\{42, 99, 2026\}\) at three temperatures \(\{0.5, 1.0, 1.5\}\). All nine
-cells pass the preregistered fidelity, format, and baseline-quality gates,
-with maximum \(|\Delta\)acc\(| \le 0.048\) and zero pathological follow-up
-hits across \(189\) paired follow-up rows in aggregate. The cold-over-
-follow-up speedup stays in the \(24.8\)--\(25.2\times\) band where measured.
-The reviewer-defense framing therefore widens to ``adaptive C-PERSIST on
-this tranche is sampler-robust across nine \((\text{seed}, T)\) cells,'' and
-keeps the same scope caveat: this is the short slice, not benchmark
-generalization, and not first-query work.
-
-\IfFileExists{generated/tables/c_persist_sampler_seed_sweep.tex}{
-\input{generated/tables/c_persist_sampler_seed_sweep.tex}
-}{
-\draftnote{Run \texttt{make paper-sync} to generate the C-PERSIST seed-sweep table.}
-}
-
-The follow-up envelope is no longer limited to two-turn sessions. A separate
-many-turn stress test repeats the same three VideoMME short questions across
-10-, 20-, and 50-turn schedules on seven 20-frame videos. This is deliberately
-not a natural-dialogue benchmark: the dense baseline rows are deterministic
-replicas of 21 unique stateless dense runs, which makes them valid for
-turn-matched drift pairing but not independent timing samples. Under that
-stress, adaptive post-\(Q2\) reuse and scheduled refresh both have 0/343
-follow-up paired choice drift and 0/343 paired correctness drift at the 50-turn
-horizon, with median follow-up latency below 0.8\,s. Fixed \(K=1\) remains
-below the 3\% drift gate but shows the expected late leakage: 3/343 choice
-diffs and 2/343 correctness diffs. The result changes the C-PERSIST claim from
-``only two follow-ups were tried'' to ``no cliff through 50 repeated-question
-turns under the tested stress,'' while leaving true conversational stability as
-future work.
-
-\IfFileExists{generated/tables/c_persist_many_turn.tex}{
-\input{generated/tables/c_persist_many_turn.tex}
-}{
-\draftnote{Run \texttt{make paper-sync} to generate the C-PERSIST many-turn table.}
-}
-
-\begin{figure}[H]
-  \centering
-  \IfFileExists{generated/figures/c_persist_timeline.pdf}{
-    \includegraphics[width=0.98\linewidth]{generated/figures/c_persist_timeline.pdf}
-  }{
-    \fbox{\parbox{0.9\linewidth}{Run \texttt{make paper-sync} to sync the C-PERSIST timing figure.}}
-  }
-  \caption{Adaptive C-PERSIST timing attribution. Fixed \(K=1\) repairs the
-  newest-frame tail again at \(Q3\), while adaptive \(Q3\) inherits the
-  post-\(Q2\) repaired cache and mostly appends the new question text. The
-  visual shows the short-slice timing mechanism behind the 9.50\(\times\)
-  paired Q3 speedup; the broader 0/93 fidelity result is reported in the text
-  and Table~\ref{tab:c-persist-repair}.}
-  \label{fig:c-persist-timeline}
-\end{figure}
 
 \subsection{What Stacks and What Does Not}
 

@@ -197,10 +197,9 @@ were cache-served. That choice is deliberate.
 
 \begin{table}[H]
 \centering
-\caption{Runtime contract implied by the evidence. The table is not a product
-API; it is the minimum interface a future stack needs to reproduce the same
-kind of claim without confusing semantic reuse, real skipped work, and
-correctness.}
+\caption{Runtime hooks and validation gates required to turn each reuse
+mechanism into a systems claim without confusing semantic reuse, real skipped
+work, and correctness.}
 \label{tab:runtime-contract}
 \scriptsize
 \renewcommand{\arraystretch}{1.12}
@@ -217,7 +216,7 @@ tail re-prefill, cache-state source labels & paired choice/correctness drift,
 pathological outputs, setup and follow-up latency & cache basin, wrong
 inheritance source, silent cache-topology corruption \\
 Candidate streaming state reuse & stream-time staleness signals, shift/rebuild
-events, raw source media, matched simple baselines & cache-correctness smoke,
+events, raw source media, matched simple baselines & cache-correctness check,
 low-FPS/screenshot/recency comparisons, stale-cache case & stale freshness,
 compute denial, proxy loses to simple dense baseline \\
 Routing/control lane & frame-selection logs, novelty-ranked dense controls,

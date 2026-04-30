@@ -322,7 +322,7 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
             0.385,
             "Streaming",
             "live state",
-            "candidate C-STREAM;\nvalidated mixed bundle",
+            "candidate C-STREAM;\nchecked mixed bundle",
             "#fff7ed",
             "#d97706",
             "dashed",
@@ -416,7 +416,7 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
         "streaming": {
             "denominator": "scale-out component counters and E2E timing",
             "artifact_harmonization_pending": False,
-            "status": "validated_mixed_bundle_candidate_regime",
+            "status": "checked_mixed_bundle_candidate_regime",
             "gemma_26b_followup_status": (
                 "default_cache_path_blocked_prefix_snapshot_small_n_positive"
             ),
@@ -593,7 +593,7 @@ def _render_c_persist_timeline_figure() -> None:
         cached_w=0.17,
         tail_w=0.025,
         tail_color="#fdba74",
-        label="post-Q2 repaired cache",
+        label="repaired cache",
         tail_label=f"{adaptive_q3['median_tail_prompt_tokens']:.0f}",
     )
 
@@ -911,9 +911,9 @@ def _write_lane_a_table(snapshot: dict) -> None:
         r"\begin{table}[H]",
         r"\centering",
         (
-            r"\caption{Clean-tree automated snapshot of the Qwen holdout "
-            r"frontier from canonical artifact summaries. Dirty-tree "
-            r"supplementary variants are intentionally excluded.}"
+            r"\caption{Automated snapshot of the Qwen holdout frontier from "
+            r"canonical artifact summaries. Supplementary non-canonical "
+            r"variants are intentionally excluded.}"
         ),
         r"\label{tab:lane-a-holdout}",
         r"\begin{tabular}{lllrrrl}",
@@ -1384,8 +1384,8 @@ def _write_c_persist_repair_table(snapshot: dict) -> None:
         r"\centering",
         (
             r"\caption{Selective re-prefill repair frontier. Fixed \(K=1\) is "
-            r"the no-coordination baseline; the adaptive post-\(Q2\) state "
-            r"policy is the primary broad repair result. Gains are reported as "
+            r"the no-coordination baseline; adaptive repaired-cache inheritance "
+            r"is the primary broad repair result. Gains are reported as "
             r"cold follow-up or all-query latency divided by repaired-session "
             r"latency. Setup-inclusive values are retained in generated data "
             r"when artifacts record cache-build setup time, but this compact "
@@ -1400,7 +1400,7 @@ def _write_c_persist_repair_table(snapshot: dict) -> None:
             r"{@{}l X >{\raggedright\arraybackslash}p{0.22\linewidth} X@{}}"
         ),
         r"\toprule",
-        (r"Policy & Scope & FU median; cold gain & Validation signal \\"),
+        (r"Policy & Scope & Follow-up median / cold gain & Validation signal \\"),
         r"\midrule",
         (
             r"Fixed \(K=1\) & 20f short/medium/long + 32f short & "
@@ -1414,7 +1414,8 @@ def _write_c_persist_repair_table(snapshot: dict) -> None:
             f"n={fixed['n_pairs']}: \\(\\leq\\)3.2\\% \\\\"
         ),
         (
-            r"Adaptive post-\(Q2\) & 20f short/medium/long + 32f short & "
+            r"Adaptive repaired-cache inheritance & "
+            r"20f short/medium/long + 32f short & "
             f"\\shortstack[l]{{{adaptive['latency_min_s']:.2f}--{adaptive['latency_max_s']:.2f}s\\\\"
             f"{adaptive['speedup_min']:.2f}--"
             f"{adaptive['speedup_max']:.2f}$\\times$ same-class\\\\"
@@ -1423,7 +1424,8 @@ def _write_c_persist_repair_table(snapshot: dict) -> None:
             f"paired drift: sess {adaptive['paired_correctness_diffs']}/{adaptive['n_sessions']}; "
             f"choice {adaptive['paired_choice_diffs']}/{adaptive['n_pairs']}; "
             f"correct {adaptive['paired_correctness_diffs']}/{adaptive['n_pairs']}; "
-            "Q3 inherits post-Q2 repaired state; paired Q3 fixed/adaptive "
+            "third follow-up inherits the repaired state; paired third-follow-up "
+            "fixed/adaptive "
             "speedup 9.50$\\times$ \\\\"
         ),
         r"\bottomrule",
@@ -1504,7 +1506,7 @@ def _write_qwen_bridge_boundary_table(snapshot: dict) -> None:
             r"through different any-paired-drift sets; only cache reuse preserves "
             r"the three-query speed profile. The speedup column is paired "
             r"three-query amortized end-to-end speedup versus cold all-query "
-            r"execution. Follow-up V active is the measured follow-up "
+            r"execution. Follow-up vision active is the measured follow-up "
             r"vision-pruning activity fraction; -- means the row was not "
             r"instrumented.}"
         ),
@@ -1516,7 +1518,7 @@ def _write_qwen_bridge_boundary_table(snapshot: dict) -> None:
         r"\toprule",
         (
             r"Policy & Sessions & Queries & \(\Delta\)acc & Q0 \(\Delta\) & "
-            r"Follow-up \(\Delta\) & 3-query E2E & Follow-up V active & Degens \\"
+            r"Follow-up \(\Delta\) & 3-query E2E & Follow-up vision active & Degenerate outputs \\"
         ),
         r"\midrule",
     ]
@@ -1713,9 +1715,9 @@ def _write_headline_table(snapshot: dict) -> None:
         r"\label{tab:headline-results}",
         r"\scriptsize",
         r"\renewcommand{\arraystretch}{1.14}",
-        r"\begin{tabularx}{\linewidth}{@{}l X p{0.14\linewidth} c X l@{}}",
+        r"\begin{tabularx}{\linewidth}{@{}l X p{0.16\linewidth} c X l@{}}",
         r"\toprule",
-        r"Regime & Setting & Denom. & Gain & Fidelity & Evidence \\",
+        r"Regime & Setting & Speedup denominator & Gain & Validation / notes & Evidence \\",
         r"\midrule",
         (
             "After-ingest & Qwen same-video follow-up, 16f & "
@@ -1808,21 +1810,21 @@ def _write_measured_sparse_execution_tables(snapshot: dict) -> None:
         r"\begin{tabularx}{\linewidth}{@{}l r r r r r r r X@{}}",
         r"\toprule",
         (
-            r"Frames & \(n\) & \(\Delta\)acc & Agree & Parse & "
-            r"\(V_{\mathrm{red}}\) & Obs. & Gap & Interpretation \\"
+            r"Frames & \(n\) & \(\Delta\)acc & Agree & Parse fails & "
+            r"\(V_{\mathrm{red}}\) & Observed & Residual & Ceiling / format verdict \\"
         ),
         r"\midrule",
     ]
     for row in measured["gemma_rows"]:
         parse = f"{row['dense_parse_failures']}/{row['sparse_parse_failures']}"
         if row["pass_ceiling"] and row["pass_format"]:
-            interp = "clean ceiling cell"
+            interp = "ceiling + format pass"
         elif row["pass_ceiling"]:
-            interp = "ceiling-consistent; matched parse failures"
+            interp = "ceiling pass; format not clean (matched parse failures)"
         else:
             interp = "ceiling miss"
             if not row["pass_format"]:
-                interp += "; matched parse failures"
+                interp += "; format not clean (matched parse failures)"
         gemma_lines.append(
             f"{row['frame_count']}f & {row['n']} & "
             f"{row['accuracy_delta']:+.3f} & "
@@ -1849,8 +1851,8 @@ def _write_measured_sparse_execution_tables(snapshot: dict) -> None:
         r"\begin{tabularx}{\linewidth}{@{}l r r r r r r r X@{}}",
         r"\toprule",
         (
-            r"Setting & \(n\) & \(\Delta\)acc & Agree & Parse & "
-            r"\(V_{\mathrm{red}}\) & Obs. & Gap & Interpretation \\"
+            r"Setting & \(n\) & \(\Delta\)acc & Agree & Parse fails & "
+            r"\(V_{\mathrm{red}}\) & Observed & Residual & Ceiling / quality verdict \\"
         ),
         r"\midrule",
     ]
@@ -1882,7 +1884,7 @@ def _write_c_persist_sampler_table() -> None:
         r"\centering",
         (
             r"\caption{Adaptive C-PERSIST sampler-temperature sweep on the "
-            r"short-slice mechanism cell. This is reviewer-defense evidence "
+            r"short-slice mechanism cell. This is robustness evidence "
             r"against a greedy-decoding artifact, not the full 0/93 breadth "
             r"claim and not a universal stochastic robustness theorem.}"
         ),
@@ -1916,7 +1918,7 @@ def _many_turn_snapshot() -> dict[str, object]:
     cells = {(str(cell["policy"]), int(cell["horizon"])): cell for cell in summary["cells"]}
     policy_labels = {
         "fixed_k1": r"fixed \(K=1\)",
-        "adaptive_post_q2": r"adaptive post-\(Q2\)",
+        "adaptive_post_q2": r"adaptive repair",
         "refresh10": r"scheduled refresh-10",
     }
     rows = []
@@ -2028,22 +2030,30 @@ def _write_c_persist_many_turn_table() -> None:
             r"independent timing samples.}"
         ),
         r"\label{tab:c-persist-many-turn}",
-        r"\small",
+        r"\scriptsize",
         r"\renewcommand{\arraystretch}{1.14}",
-        r"\begin{tabularx}{\linewidth}{@{}l r r r r X@{}}",
+        (
+            r"\begin{tabularx}{\linewidth}"
+            r"{@{}p{0.18\linewidth} r r r r X@{}}"
+        ),
         r"\toprule",
-        r"Policy & Horizon & Follow-ups & Choice/correct drift & Median FU & Interpretation \\",
+        (
+            r"Policy & Horizon & Follow-ups & Choice/correct drift & "
+            r"Median follow-up & Gate / post-repair check \\"
+        ),
         r"\midrule",
     ]
     for row in snapshot["rows"]:
         if row["post_repair_n"]:
             interpretation = (
-                f"post-repair choice/correct {row['post_repair_choice_drift']}/"
+                f"post-repair drift {row['post_repair_choice_drift']}/"
                 f"{row['post_repair_n']} / {row['post_repair_correctness_drift']}/"
                 f"{row['post_repair_n']}; no cliff"
             )
         elif row["choice_drift"]:
-            interpretation = "passes 3\\% gate but has nonzero late drift; no pathologies"
+            interpretation = (
+                "passes 3\\% gate but has nonzero repeated-question drift; no pathologies"
+            )
         else:
             interpretation = "passes 3\\% gate with no observed drift"
         lines.append(
@@ -2142,6 +2152,13 @@ def _scaleout_bundle_snapshot() -> dict[str, object]:
     prefix8_rows = _load_jsonl(prefix8_path)
     prefix32_rows = _load_jsonl(prefix32_path)
 
+    def _mc_row_count(rows: list[dict]) -> int:
+        return sum(
+            1
+            for row in rows
+            if row.get("session_choice") is not None or row.get("baseline_choice") is not None
+        )
+
     b3_path = base / "sam_b3_streaming_baselines.jsonl"
     b3_summary = _artifact_json(base / "sam_b3_streaming_baselines_summary.json")
     b3_rows = _load_jsonl(b3_path)
@@ -2203,6 +2220,8 @@ def _scaleout_bundle_snapshot() -> dict[str, object]:
                 "correctness_diffs": int(prefix8_summary["correctness_diffs"]),
                 "text_diffs": int(prefix8_summary["text_diffs"]),
                 "parse_failures": int(prefix8_summary["parse_failures"]),
+                "mc_rows": _mc_row_count(prefix8_rows),
+                "open_ended_rows": len(prefix8_rows) - _mc_row_count(prefix8_rows),
                 "median_speedup": _median_ratio(prefix8_rows, "baseline_elapsed_ms", "elapsed_ms"),
                 "median_elapsed_s": _median_value(prefix8_rows, "elapsed_ms") / 1000.0,
                 "source": _source_path_label(prefix8_path),
@@ -2214,6 +2233,8 @@ def _scaleout_bundle_snapshot() -> dict[str, object]:
                 "correctness_diffs": int(prefix32_summary["correctness_diffs"]),
                 "text_diffs": int(prefix32_summary["text_diffs"]),
                 "parse_failures": int(prefix32_summary["parse_failures"]),
+                "mc_rows": _mc_row_count(prefix32_rows),
+                "open_ended_rows": len(prefix32_rows) - _mc_row_count(prefix32_rows),
                 "median_speedup": _median_ratio(prefix32_rows, "baseline_elapsed_ms", "elapsed_ms"),
                 "median_elapsed_s": _median_value(prefix32_rows, "elapsed_ms") / 1000.0,
                 "source": _source_path_label(prefix32_path),
@@ -2304,31 +2325,39 @@ def _write_scaleout_bundle_table() -> None:
         r"\renewcommand{\arraystretch}{1.16}",
         r"\begin{tabularx}{\linewidth}{@{}p{0.22\linewidth} X p{0.25\linewidth}@{}}",
         r"\toprule",
-        r"Probe & Result & Paper meaning \\",
+        r"Probe & Result & Claim status \\",
         r"\midrule",
         (
             "Default 26B cache reuse & "
             f"{snapshot['default_cache_path']['text_diffs']}/"
             f"{snapshot['default_cache_path']['n']} text diffs; "
             f"{snapshot['default_cache_path']['choice_diffs']} choice diffs; "
-            "cross-turn path fails cache-correctness smoke & "
+            f"{snapshot['default_cache_path']['parse_failures']} parse failures; "
+            "cross-turn path fails cache-correctness test & "
             "diagnostic boundary; do not promote default cache reuse \\\\"
         ),
         (
             "Correctness guard & "
             f"{snapshot['guarded_correctness_control']['text_diffs']}/"
             f"{snapshot['guarded_correctness_control']['n']} text diffs under "
-            "RotatingKV full-refill guard & correctness control, not a speedup \\\\"
+            "RotatingKV full-refill guard; "
+            f"{snapshot['guarded_correctness_control']['parse_failures']} parse failures & "
+            "correctness control, not a speedup \\\\"
         ),
         (
             "26B prefix snapshot & "
-            f"8f: {prefix8['median_speedup']:.2f}$\\times$, "
+            f"8f after warm: {prefix8['median_speedup']:.2f}$\\times$, "
             f"choice/correct {prefix8['choice_diffs']}/{prefix8['n']} / "
-            f"{prefix8['correctness_diffs']}/{prefix8['n']}; "
-            f"32f: {prefix32['median_speedup']:.2f}$\\times$, "
+            f"{prefix8['correctness_diffs']}/{prefix8['n']}, text diffs "
+            f"{prefix8['text_diffs']}/{prefix8['n']}, parse "
+            f"{prefix8['parse_failures']}/{prefix8['n']}, ground-truth MC "
+            f"{prefix8['mc_rows']}/{prefix8['n']}; "
+            f"32f after warm: {prefix32['median_speedup']:.2f}$\\times$, "
             f"choice/correct {prefix32['choice_diffs']}/{prefix32['n']} / "
-            f"{prefix32['correctness_diffs']}/{prefix32['n']} & "
-            "positive small-N scale-out C-PERSIST row; "
+            f"{prefix32['correctness_diffs']}/{prefix32['n']}, text diffs "
+            f"{prefix32['text_diffs']}/{prefix32['n']}, ground-truth MC "
+            f"{prefix32['mc_rows']}/{prefix32['n']} & "
+            "positive small-N scale-out C-PERSIST row; excludes warm setup; "
             "wrapper-specific and not byte-identical \\\\"
         ),
         (
@@ -2340,14 +2369,15 @@ def _write_scaleout_bundle_table() -> None:
             "throughput axis remains separate \\\\"
         ),
         (
-            "Post-ViT hard prune & "
-            f"{b4_parts}; choice/correct {b4['choice_diffs']}/{b4['n']} / "
-            f"{b4['correctness_diffs']}/{b4['n']} & overhead boundary; "
-            "not real sparse-ViT speedup \\\\"
+            "Post-vision-tower hard prune & "
+            f"{b4_parts}; text diffs {b4['text_diffs']}/{b4['n']}; "
+            "timing-only descriptive prompts & overhead boundary; no correctness gate; "
+            "not real sparse vision-tower speedup \\\\"
         ),
         (
             "Sparse exactness export & "
-            f"zero correctness delta on {snapshot['exactness_export']['accuracy_rows']} "
+            "zero correctness delta on "
+            f"{snapshot['exactness_export']['accuracy_rows']:,} "
             f"logged rows; byte-identical raw-paired text on "
             f"{snapshot['exactness_export']['raw_rows']} rows & denominator-safe "
             "artifact harmonization \\\\"

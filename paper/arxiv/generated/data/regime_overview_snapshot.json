@@ -35,7 +35,7 @@
   "streaming": {
     "denominator": "scale-out component counters and E2E timing",
     "artifact_harmonization_pending": false,
-    "status": "validated_mixed_bundle_candidate_regime",
+    "status": "checked_mixed_bundle_candidate_regime",
     "gemma_26b_followup_status": "default_cache_path_blocked_prefix_snapshot_small_n_positive",
     "source_paths": [
       "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b0b_cache_correctness_summary.json",

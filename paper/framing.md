@@ -29,8 +29,9 @@ It is NOT the place for raw experimental detail. Evidence lives in:
 Last material update: 2026-04-27 (adaptive C-PERSIST breadth landed across
 20f short/medium/long plus 32f short at n=93 / 0 observed paired drift,
 14.90×--35.92× same-class follow-up speedup, and a 15.28×--35.97×
-cold-all-query ratio; stage-timing attribution shows adaptive Q3 avoids the fixed-K last-frame
-re-prefill; 1.30AC/AD close the cache-reuse/composition boundary as same net
+cold-all-query ratio; stage-timing attribution shows adaptive repair avoids
+the fixed-K last-frame re-prefill at the third follow-up; 1.30AC/AD close the
+cache-reuse/composition boundary as same net
 aggregate loss through different any-paired-drift sets).
 
 ## Current Manuscript Position (2026-04-27)
@@ -115,10 +116,11 @@ duration-conditional partial reproduction + 1.55D frontier-partial):
    partial-only at 3B basin at 40f — disperses to pre-basin plateau,
    not to baseline). The repair story is now broad on Qwen: fixed K=1
    selective re-prefill gives 0/93 observed paired drift at 9.48×--20.37×
-   same-class follow-up speedup, while adaptive post-Q2-state reuse gives
+   same-class follow-up speedup, while adaptive repaired-cache inheritance gives
    0/93 observed paired drift at 14.90×--35.92× same-class follow-up speedup
    (15.28×--35.97× cold-all-query ratio). Stage timing explains the adaptive gain:
-   Q3 reuses the post-Q2 cache and avoids the fixed-K last-frame re-prefill.
+   the third follow-up reuses the repaired cache and avoids the fixed-K
+   last-frame re-prefill.
    Tested deployment-regime table in [`paper/claim-matrix.md`](claim-matrix.md)
    provides paper-grade practitioner guidance; paired-fidelity boundary result
    in its own right.
@@ -292,7 +294,7 @@ boundary as much as the positives:
 
 Candidate C-STREAM is now a checked mixed bundle, not pending and not a fourth
 headline. Do not promote numeric streaming rows unless they are backed by raw
-paired outputs, cache-correctness smokes, source paths, and matched baselines;
+paired outputs, cache-correctness checks, source paths, and matched baselines;
 the current bundle is useful because it includes both positive prefix-snapshot
 rows and negative/baseline-pressure rows.
 
@@ -601,7 +603,7 @@ Closest to current evidence:
   (1) pre-LLM visual token pruning, which should reduce forward,
   backward, and activation-memory costs during multimodal fine-tuning;
   and (2) temporal redundancy compression before the expensive
-  transformer stack. By contrast, **post-ViT feature caching does not
+  transformer stack. By contrast, **post-vision-tower feature caching does not
   directly transfer to end-to-end training when the vision encoder is
   trainable** because reused cached features break or approximate the
   gradient path. A gradient-faithful training formulation for

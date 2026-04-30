@@ -56,9 +56,11 @@
       "choice_diffs": 0,
       "correctness_diffs": 0,
       "frames": 8,
+      "mc_rows": 5,
       "median_elapsed_s": 0.2960294580552727,
       "median_speedup": 9.109961067877824,
       "n": 21,
+      "open_ended_rows": 16,
       "parse_failures": 2,
       "source": "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot.jsonl",
       "text_diffs": 6
@@ -67,9 +69,11 @@
       "choice_diffs": 0,
       "correctness_diffs": 0,
       "frames": 32,
+      "mc_rows": 3,
       "median_elapsed_s": 0.6169690410606563,
       "median_speedup": 26.587668019428758,
       "n": 9,
+      "open_ended_rows": 6,
       "parse_failures": 0,
       "source": "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f.jsonl",
       "text_diffs": 2

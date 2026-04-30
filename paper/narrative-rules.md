@@ -65,7 +65,7 @@ Current wording:
 
 Promotion requirements:
 
-- cache-correctness fix and expanded smoke test after the S0 run found only 2/5
+- cache-correctness fix and expanded test after the S0 run found only 2/5
   cross-turn follow-up agreement
 - exact model/runtime/hardware provenance
 - raw paired outputs with item IDs
@@ -96,9 +96,10 @@ Avoid:
 - "sampler-invariant" for one warmer-sampler point
 
 Many-turn status: a controlled repeated-question stress has now landed. On
-seven 20f short VideoMME videos, adaptive post-Q2 reuse and scheduled refresh
-show no observed paired drift through the 50-turn stateless question cycle;
-fixed \(K=1\) stays below the 3% gate but shows small late drift. Do not
+seven 20f short VideoMME videos, adaptive repaired-cache inheritance and
+scheduled refresh show no observed paired drift through the 50-turn stateless
+question cycle; fixed \(K=1\) stays below the 3% gate but shows nonzero
+repeated-question drift. Do not
 rewrite this as natural-dialogue stability: the test cycles the same questions,
 and the dense baseline rows are deterministic replicas for turn-matched pairing.
 The open experiment is true conversational drift with novel follow-ups.
@@ -107,23 +108,23 @@ The open experiment is true conversational drift with novel follow-ups.
 
 Do not leave readers with "huh, why?"
 
-- Adaptive beats fixed \(K=1\) because Q3 inherits the post-Q2 repaired
-  cache and re-prefills mostly question text, while fixed \(K=1\) pays the
-  newest-frame tail again. Existing stage timing shows paired median Q3
-  fixed/adaptive speedup 9.50x and 88.9% tail-token reduction.
+- Adaptive beats fixed \(K=1\) because the third follow-up inherits the
+  repaired cache and re-prefills mostly question text, while fixed \(K=1\)
+  pays the newest-frame tail again. Existing stage timing shows paired median
+  third-follow-up fixed/adaptive speedup 9.50x and 88.9% tail-token reduction.
 - 1.30AC and 1.30AD reach the same aggregate loss through different row sets.
   Current evidence supports an aggregate boundary, not identical failures.
   If feature concentration is not enough, run the K-cache distance probe.
 - Measured sparse execution should be framed as ceiling-model validation for
-  measured ViT-only skipped work, not as a huge end-to-end speedup. The current
+  measured vision-tower skipped work, not as a huge end-to-end speedup. The current
   1.63E 8f point validates the ceiling but fails fidelity, so it is boundary
   evidence; Gemma 32f short is the cleanest current timed-skip cell.
 - Candidate C-STREAM is a checked mixed artifact bundle, not a fourth headline.
   The default 26B cache path is unsafe, the prefix-snapshot rows are positive
   but small-N and wrapper-specific, fixed-evidence stream baselines favor
   low-FPS dense over the current event-window proxy, and the throughput axis
-  remains a separate future promotion gate.
-  evidence until a fidelity-preserving operating point lands.
+  remains a separate future promotion gate until a fidelity-preserving
+  operating point lands.
 
 ## Training Claim Boundary
 
@@ -139,7 +140,7 @@ Not permitted yet:
 
 > This method directly reduces VLM training compute.
 
-Reason: cached post-ViT features do not preserve the gradient path when the
+Reason: cached post-vision-tower features do not preserve the gradient path when the
 vision encoder is trainable. A training-speedup claim needs a model-native
 delta/sidecar training experiment.
 

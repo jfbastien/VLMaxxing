@@ -6,14 +6,14 @@
 \renewcommand{\arraystretch}{1.16}
 \begin{tabularx}{\linewidth}{@{}p{0.22\linewidth} X p{0.25\linewidth}@{}}
 \toprule
-Probe & Result & Paper meaning \\
+Probe & Result & Claim status \\
 \midrule
-Default 26B cache reuse & 16/42 text diffs; 2 choice diffs; cross-turn path fails cache-correctness smoke & diagnostic boundary; do not promote default cache reuse \\
-Correctness guard & 0/42 text diffs under RotatingKV full-refill guard & correctness control, not a speedup \\
-26B prefix snapshot & 8f: 9.11$\times$, choice/correct 0/21 / 0/21; 32f: 26.59$\times$, choice/correct 0/9 / 0/9 & positive small-N scale-out C-PERSIST row; wrapper-specific and not byte-identical \\
+Default 26B cache reuse & 16/42 text diffs; 2 choice diffs; 4 parse failures; cross-turn path fails cache-correctness test & diagnostic boundary; do not promote default cache reuse \\
+Correctness guard & 0/42 text diffs under RotatingKV full-refill guard; 4 parse failures & correctness control, not a speedup \\
+26B prefix snapshot & 8f after warm: 9.11$\times$, choice/correct 0/21 / 0/21, text diffs 6/21, parse 2/21, ground-truth MC 5/21; 32f after warm: 26.59$\times$, choice/correct 0/9 / 0/9, text diffs 2/9, ground-truth MC 3/9 & positive small-N scale-out C-PERSIST row; excludes warm setup; wrapper-specific and not byte-identical \\
 Fixed-evidence stream baselines & low-FPS dense 17/22 beats screenshot 13/22, event-window proxy 13/22, recency 12/22 & baseline pressure; throughput axis remains separate \\
-Post-ViT hard prune & 8f 0.757$\times$, 32f 1.042$\times$; choice/correct 0/10 / 0/10 & overhead boundary; not real sparse-ViT speedup \\
-Sparse exactness export & zero correctness delta on 1937 logged rows; byte-identical raw-paired text on 513 rows & denominator-safe artifact harmonization \\
+Post-vision-tower hard prune & 8f 0.757$\times$, 32f 1.042$\times$; text diffs 10/10; timing-only descriptive prompts & overhead boundary; no correctness gate; not real sparse vision-tower speedup \\
+Sparse exactness export & zero correctness delta on 1,937 logged rows; byte-identical raw-paired text on 513 rows & denominator-safe artifact harmonization \\
 \bottomrule
 \end{tabularx}
 \end{table}

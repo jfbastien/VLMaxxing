@@ -33,7 +33,7 @@
       "correctness_drift": 0,
       "followup_n": 343,
       "horizon": 50,
-      "label": "adaptive post-\\(Q2\\)",
+      "label": "adaptive repair",
       "median_followup_s": 0.7706537090000001,
       "pass_three_percent": true,
       "pathological": 0,

@@ -27,7 +27,7 @@ untracked until the final clean-tag freeze.
 
 `paper-sync` regenerates:
 
-- the Lane A Pareto figure and table from canonical
+- the routing Pareto figure and table from canonical
   `research/experiments/2026/artifacts/...` summaries
 - a headline anti-recomputation figure and table covering:
   - first-pass Gemma vision-pruning holdout cells from canonical artifacts

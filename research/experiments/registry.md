@@ -41,18 +41,18 @@ Entries are ordered by phase_id (chronological within each 1.x range).
 ```yaml
 - phase_id: 1.55L
   status: completed
-  authoritative_note: research/experiments/2026/2026-04-29-phase-2-experiment-design.md
+  authoritative_note: research/experiments/2026/2026-04-30-phase-1_55L-many-turn-cpersist-findings.md
   authoritative_artifacts:
     - research/experiments/2026/artifacts/phase1_55L_many_turn_cpersist/summary.json
     - research/experiments/2026/artifacts/phase1_55L_many_turn_cpersist/paired_many_turn.jsonl
-  current_best_policy: "adaptive post-Q2 and refresh-10 — no observed paired drift through 50-turn repeated-question stress; fixed K=1 shows small late drift but stays below 3% gate"
+  current_best_policy: "adaptive repaired-cache inheritance and refresh-10 — no observed paired drift through 50-turn repeated-question stress; fixed K=1 shows nonzero repeated-question drift but stays below 3% gate"
   supersedes: []
   paper_relevance: primary (controlled C-PERSIST horizon stress)
   prereg_outcome: Accepted with caveat
 
 - phase_id: 1.62D
   status: completed (4f arm only)
-  authoritative_note: research/experiments/2026/2026-04-29-phase-2-experiment-design.md
+  authoritative_note: research/experiments/2026/2026-04-30-phase-1_62D-lowfps-dense-findings.md
   authoritative_artifacts:
     - research/experiments/2026/artifacts/phase1_62D_lowfps_dense_videomme/lowfps_4f_vs_8f_summary.json
     - research/experiments/2026/artifacts/phase1_62D_lowfps_dense_videomme/cold_dense_4f_summary.json
@@ -63,7 +63,7 @@ Entries are ordered by phase_id (chronological within each 1.x range).
 
 - phase_id: 1.63I
   status: completed
-  authoritative_note: research/experiments/2026/2026-04-29-phase-2-experiment-design.md
+  authoritative_note: research/experiments/2026/2026-04-30-phase-1_63I-qwen-kr-bracket-findings.md
   authoritative_artifacts:
     - research/experiments/2026/artifacts/phase1_63I_16f_kr_fine_bracket/fine_bracket_summary.json
   current_best_policy: "no full gate pass; kr=0.80/0.82 are format-caveated high-gain candidates, kr=0.85 remains the format-clean low-gain boundary"
@@ -86,10 +86,18 @@ Entries are ordered by phase_id (chronological within each 1.x range).
   authoritative_note: research/experiments/2026/2026-04-30-sam-integration-and-next-experiments.md
   authoritative_artifacts:
     - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/README.md
+    - research/experiments/2026/2026-04-29-phase-B0b-sam-cache-correctness-findings.md
+    - research/experiments/2026/2026-04-29-phase-B3-sam-streaming-baselines-findings.md
+    - research/experiments/2026/2026-04-29-phase-B4-sam-track-b-hard-prune-findings.md
+    - research/experiments/2026/2026-04-29-phase-B5-sam-s4-reexport-findings.md
+    - research/experiments/2026/2026-04-29-phase-M5-5b-sam-prefix-snapshot-fix-findings.md
+    - research/experiments/2026/2026-04-29-phase-M5-comp-sam-prefix-snapshot-32f-composition-findings.md
     - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b0b_cache_correctness_summary.json
     - research/experiments/2026/artifacts/sam_scaleout_m5_r2_20260430/sam_b0b_cache_correctness_summary.json
     - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_summary.json
+    - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f_summary.json
     - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b3_streaming_baselines_summary.json
+    - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b4_sparse_vit_ceiling_summary.json
     - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b5_s4_accuracy_1937_summary.json
     - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b5_s4_raw_paired_513_summary.json
   current_best_policy: "candidate C-STREAM remains mixed: default cache path blocked, prefix snapshot positive small-N, low-FPS dense wins fixed-evidence baseline"
@@ -213,7 +221,7 @@ authoritative in the per-phase notes under
   status: completed
   authoritative_note: research/experiments/2026/2026-04-15-phase-1_23-fastv-composition-scouting.md
   authoritative_artifacts:
-    - historical scout document removed from the release tree; see git history
+    - historical scout document removed from the public artifact tree; see git history
       if the original phase-1.23 implementation sketch is needed
   current_best_policy: n/a (scouting)
   supersedes: []
@@ -592,7 +600,7 @@ authoritative in the per-phase notes under
   authoritative_note: research/experiments/2026/2026-04-17-phase-1_50-track-b-dense-baseline.md
   authoritative_artifacts:
     - phase note records the exact local-only ignored results tree and commit IDs; current release-facing sparse-vision claims use checked 1.63 artifacts
-    - historical dense-baseline driver removed from the OSS release tree;
+    - historical dense-baseline driver removed from the public artifact tree;
       current measured sparse-vision claims use the 1.63 drivers below
   current_best_policy: n/a (wall-clock baseline, not a policy)
   supersedes: []
@@ -987,7 +995,7 @@ authoritative in the per-phase notes under
   supersedes: []
   paper_relevance: deferred (cross-family generalization of 3-D decomposition remains open; claim matrix now declares this an open question)
   prereg_outcome: Gate #2 of the prereg ("verify PromptCacheState + find_prefix_length work with Gemma's attention") FALSIFIED at realistic video prefill. Gemma 4 uses RotatingKVCache(max_size=512, keep=0) on 4/5 layers per sliding_window_pattern=5; 20-frame prefill = 5120 image tokens rotates sliding layers ~10×; mlx-vlm/generate.py:689-697 performs naive physical-position truncation (c.keys[:, :, :prefix_len, :]) that silently corrupts post-rotation KV. H1-H4 UNTESTED (cannot be tested correctly with current driver).
-  runtime_estimate: 0h executed; ~2-4h fork + smoke test to unblock (Option A in findings doc); ~30-60min run once driver is correctness-preserving
+  runtime_estimate: 0h executed; ~2-4h fork + cache-correctness test to unblock (Option A in findings doc); ~30-60min run once driver is correctness-preserving
   notes: Discovered during pre-run driver verification 2026-04-20. The prereg's assumption of drop-in mlx-vlm compatibility was wrong — Gemma 4's sliding-window attention architecture is fundamentally incompatible with linear-cache prefix truncation. Three options documented (A: cache-type-aware fork with RotatingKVCache.is_trimmable() guard, B: partial-layer cache reuse losing most speedup, C: prefix ≤ 512 tokens = non-starter for video). Recommended disposition: DO NOT run with current driver (would produce plausible-looking garbage on silent-wrong-answer path); defer behind 1.55D (Qwen-only, known-compatible); revisit after 1.55D or rescope to Gemma 2 (non-sliding) as cross-family target. Paper Claim #14 (3-D decomposition) remains Qwen-family-only this draft; cross-family generalization declared an open question with explicit mlx-vlm sliding-window caveat.
 
 - phase_id: 1.55D

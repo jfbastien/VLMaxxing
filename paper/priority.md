@@ -17,7 +17,7 @@ See `paper/framing.md` for the three major contributions (C-CEILING,
 C-PERSIST, C-VISION) these priorities map to. The canonical paper-facing
 narrative now lives in `paper/arxiv/sections/01_abstract.tex` and
 `paper/arxiv/sections/02_introduction.tex`; superseded Markdown scratchpads
-were removed from the release tree.
+were removed from the public artifact tree.
 
 Narrative update 2026-04-26B: the manuscript should present the central
 scientific object as the quality-compute frontier of fresh visual evidence over
@@ -239,7 +239,7 @@ in its own dimension.
    driver was infra-falsified, but that is no longer the live state.
    Repo-local v2 now runs the intended multimodal tail-reprefill regime.
    **Fixed K=1** now spans 20f short, medium, long, plus 32f short. The
-   adaptive post-Q2-state policy now spans the same breadth and is the current
+   adaptive repaired-cache inheritance policy now spans the same breadth and is the current
    headline result.
 
    | run | regime | n_paired | paired diffs | speedup (same-class) | pathology | RSS |
@@ -249,7 +249,7 @@ in its own dimension.
    | 1.55I K=1 | 20f long, 7 clips | 21 | 0/21 / 0/21 | 11.24× | 0/14 follow-up, 0/7 Q3 | 5.940 GB |
    | 1.55H K=1 | 32f short, 7 clips | 21 | 0/21 / 0/21 | 20.37× | 0/14 follow-up, 0/7 Q3 | 5.821 GB |
    | **fixed combined** | 20f short/medium/long + 32f short | **93** | **0/93 / 0/93** | 9.48-20.37× | **0/62 follow-up, 0/31 Q3** | 4.9-6.1 GB |
-   | **1.55F adaptive breadth** | 20f short/medium/long + 32f short, post-Q2 state | **93** | **0/93 / 0/93** | **14.90-35.92× same-class** (**15.28-35.97× all-query**) | **0/62 follow-up, 0/31 Q3** | 1.44-6.09 GB |
+   | **1.55F adaptive breadth** | 20f short/medium/long + 32f short, repaired-cache inheritance | **93** | **0/93 / 0/93** | **14.90-35.92× same-class** (**15.28-35.97× all-query**) | **0/62 follow-up, 0/31 Q3** | 1.44-6.09 GB |
 
    RSS in this table is the summary-level peak reported by each run summary.
    The separate 1.66 memory characterization reads row-level JSONL memory
@@ -275,7 +275,7 @@ in its own dimension.
    clearest mechanism result: the 1.55E Q3 catastrophe was caused by inheriting
    the wrong cache state, not by adaptive repair being impossible. Stage timing
    explains the additional speedup over fixed K=1: adaptive Q3 reuses the
-   post-Q2-repaired cache and re-prefills only the question tail, while fixed
+   repaired cache and re-prefills only the question tail, while fixed
    K=1 re-prefills the last-frame block on every Q3.
 
    Pending follow-ups, in order of paper leverage:
@@ -284,7 +284,7 @@ in its own dimension.
      paired drift remains flat or accumulates after the current two-follow-up
      sessions.
    - **Sampler sweep closed for the short mechanism cell (1.55K)** — adaptive
-     reuse was tested at \(T=0.0,0.5,0.7,1.0,1.5\). It is reviewer-defense
+     reuse was tested at \(T=0.0,0.5,0.7,1.0,1.5\). It is robustness
      evidence that the mechanism is not greedy-only; because the sweep is one
      short-cell tranche and has small nonzero diffs at \(T=0.7/1.0\), the
      remaining paper claim should be "practical temperature sweep," not

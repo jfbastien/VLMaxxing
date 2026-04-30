@@ -49,7 +49,7 @@ about 9.7\%. The claim remains ``no observed paired drift,'' not
 population-level exactness. The
 long-bucket cell also preserves a weak 7/21 cold baseline; that is fidelity
 evidence under a hard regime, not evidence that the model itself understands
-long VideoMME well. The adaptive \(Q3\)-from-post-\(Q2\)-state result is now
+long VideoMME well. The adaptive repaired-cache inheritance result is now
 the stronger breadth result rather than a short-only curiosity: it covers the
 same 93 paired queries with no observed paired drift and 14.90--35.92$\times$
 same-class follow-up speedup; the cold-all-query versus repaired-follow-up
@@ -59,7 +59,7 @@ were too tight relative to later observed memory; the paper should report the
 observed memory envelope rather than retroactively calling those runs failures.
 The original breadth result is finite-horizon because those sessions contain
 two follow-up questions. The separate many-turn stress closes the easiest
-version of that attack: adaptive post-\(Q2\) and scheduled refresh have no
+version of that attack: adaptive repaired-cache inheritance and scheduled refresh have no
 observed drift through a 50-turn repeated-question cycle on seven short videos.
 That is still not a natural-dialogue stability proof; it is a controlled
 cache-horizon stress with deterministic dense replicas for turn-matched
@@ -75,7 +75,7 @@ The related-work bar for this lane is also higher than ``we reused a KV
 cache.'' Prefix caching, RadixAttention, CacheBlend-style repair, SparseVILA,
 and HERMES all make parts of that sentence prior art. The manuscript's current
 claim is narrower: video-specific visual-tail repair, paired-drift accounting,
-the cache-basin failure mode, and the post-\(Q2\) inheritance rule on this
+the cache-basin failure mode, and the repaired-cache inheritance rule on this
 local stack. A submission version should still add at least one matched
 head-to-head against the closest persistent-video or visual-token sparsity
 baselines.
@@ -97,7 +97,7 @@ large, not because it already closes the full systems-reviewer checklist. The
 checked scale-out bundle is now real and useful, but mixed: default 26B
 cross-turn cache reuse is unsafe, a topology-aware prefix snapshot is positive
 only at small \(N\), fixed-evidence stream baselines favor low-FPS dense over
-the current event-window proxy, and post-ViT hard pruning shows that policy
+the current event-window proxy, and post-vision-tower hard pruning shows that policy
 overhead can erase any expected win if vision work was not actually skipped.
 The Qwen composition bridge now exists and is useful precisely because it is
 diagnosed rather than promoted:

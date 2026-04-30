@@ -12,15 +12,15 @@ with no observed paired choice or correctness drift on 93 paired queries,
 including 62 repaired follow-ups. Same-class follow-up speedup is
 14.90--35.92$\times$ when cold follow-ups are compared with repaired
 follow-ups; the cold-all-query versus repaired-follow-up ratio is
-15.28--35.97$\times$. The mechanism is concrete: adaptive \(Q3\) inherits the
-post-\(Q2\) repaired cache, so it appends mostly the new question instead of
-repairing the newest-frame tail again. This is not first-query speedup: the
-first query still pays full freight, and the tested sessions have two
-follow-up questions per video. A separate many-turn stress on seven 20-frame
-short videos then cycles the same questions through 50 turns: adaptive
-post-\(Q2\) reuse and scheduled refresh have no observed paired drift on 343
+15.28--35.97$\times$. The mechanism is concrete: the second follow-up inherits
+the cache repaired after the first follow-up, so it appends mostly the new
+question instead of repairing the newest-frame tail again. This is not
+first-query speedup: the first query still pays full freight, and the tested
+sessions have two follow-up questions per video. A separate many-turn stress on
+seven 20-frame short videos then cycles the same questions through 50 turns:
+adaptive repair and scheduled refresh have no observed paired drift on 343
 follow-ups, while fixed \(K=1\) remains below the 3\% drift gate but shows
-nonzero late drift.
+nonzero choice/correctness drift in the repeated-question schedule.
 
 The central question is where a runtime must buy fresh visual evidence over
 time, and where cached state is enough to remain on its regime-specific
@@ -36,9 +36,10 @@ wall-clock share it actually accelerates. This is why the n=60 composition
 audit is a ceiling-matched null rather than a multiplier.
 
 \emph{Persistent follow-up reuse (C-PERSIST)} is the name we give to this
-after-ingest regime. It reuses the already-paid prompt/KV state for later
-questions about the same video. Unrepaired reuse eventually enters a cache
-basin, a failure region where reused state drives repeated answer drift or
+after-ingest regime. It reuses the already-paid prompt/key--value (KV)
+attention state for later questions about the same video. Unrepaired reuse
+eventually enters a cache basin, a failure region where reused state drives
+repeated answer drift or
 pathological outputs. Selective re-prefill refreshes a small newest-frame
 visual tail and restores the tested follow-up contract. Fixed \(K=1\) remains
 the no-coordination baseline at 9.48--20.37$\times$ same-class speedup with no

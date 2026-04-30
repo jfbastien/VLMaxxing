@@ -25,7 +25,8 @@ Another family reduces visual cost after tokens already exist. FastV
 \cite{sttm}, SparseVILA \cite{sparsevila}, and LLaVA-PruMerge
 \cite{llavaprumerge} prune, retrieve, or merge visual tokens using
 attention-derived, density, query-aware, or feature-similarity signals. ToMe
-\cite{tome} is the older training-free ViT token-merging ancestor, and
+\cite{tome} is the older training-free Vision Transformer (ViT)
+token-merging ancestor, and
 EvoPrune \cite{evoprune} is a late-breaking MLLM example of pruning inside
 the visual encoder itself. Those methods are adjacent but not identical to our
 setting. Their signal usually lives after visual tokens exist, or changes the
@@ -58,7 +59,7 @@ CacheBlend \cite{cacheblend} is even closer to the repair pattern: it reuses
 bulk cached KV for RAG contexts and selectively recomputes part of the cache to
 restore quality. Our contribution is the video-VLM instantiation and boundary:
 which visual tail to refresh, the cache-basin failure mode, the paired-drift
-contract, and the post-\(Q2\) inheritance rule that separates the failed and
+contract, and the repaired-cache inheritance rule that separates the failed and
 successful adaptive variants.
 
 Efficient VLM architectures such as FastVLM \cite{fastvlm} attack the same

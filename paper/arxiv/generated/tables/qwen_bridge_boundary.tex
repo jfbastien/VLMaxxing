@@ -1,13 +1,13 @@
 \begin{table}[H]
 \centering
-\caption{Qwen composition boundary. The tested admission family does not produce a deployable composition point. Dense-Q0 cache reuse and cache invalidation reach the same net aggregate loss through different any-paired-drift sets; only cache reuse preserves the three-query speed profile. The speedup column is paired three-query amortized end-to-end speedup versus cold all-query execution. Follow-up V active is the measured follow-up vision-pruning activity fraction; -- means the row was not instrumented.}
+\caption{Qwen composition boundary. The tested admission family does not produce a deployable composition point. Dense-Q0 cache reuse and cache invalidation reach the same net aggregate loss through different any-paired-drift sets; only cache reuse preserves the three-query speed profile. The speedup column is paired three-query amortized end-to-end speedup versus cold all-query execution. Follow-up vision active is the measured follow-up vision-pruning activity fraction; -- means the row was not instrumented.}
 \label{tab:qwen-bridge-boundary}
 \small
 \renewcommand{\arraystretch}{1.18}
 \resizebox{\linewidth}{!}{%
 \begin{tabular}{@{}l r r r r r r r r@{}}
 \toprule
-Policy & Sessions & Queries & \(\Delta\)acc & Q0 \(\Delta\) & Follow-up \(\Delta\) & 3-query E2E & Follow-up V active & Degens \\
+Policy & Sessions & Queries & \(\Delta\)acc & Q0 \(\Delta\) & Follow-up \(\Delta\) & 3-query E2E & Follow-up vision active & Degenerate outputs \\
 \midrule
 cache reuse & 57 & 171 & -0.058 & +0.000 & -0.088 & 3.02$\times$ & 0.0 & 0 \\
 cache invalidated & 57 & 171 & -0.058 & +0.000 & -0.088 & 1.06$\times$ & 1.0 & 0 \\

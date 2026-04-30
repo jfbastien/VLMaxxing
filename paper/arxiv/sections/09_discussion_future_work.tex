@@ -166,7 +166,7 @@ There is also a training-compute hypothesis: if future VLMs learn from
 state-update streams rather than dense RGB frame stacks, they may spend the
 same training FLOPs on more temporal coverage, more queries per clip, or harder
 event windows. We do not measure that here. The caveat is important:
-post-ViT feature caching does not directly become an end-to-end training
+post-vision-tower feature caching does not directly become an end-to-end training
 speedup when the vision encoder is trainable, because cached features
 approximate or break the gradient path. The training version likely needs
 model-native delta encoders, differentiable refresh gates, or teacher/student

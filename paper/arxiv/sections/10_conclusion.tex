@@ -14,15 +14,15 @@ Same-video
 follow-up queries admit much larger multipliers: raw persistent-KV reuse
 reaches sub-second latency inside the \(\leq 16\)f tested envelope, while
 selective re-prefill repairs the deeper cache-reuse basin at higher latency.
-Adaptive
-post-\(Q2\) repair now gives no observed paired drift across 93 paired queries
+Adaptive repair now gives no observed paired drift across 93 paired queries
 at 3.20--6.51\,s repaired follow-up median and 14.90--35.92$\times$
 same-class follow-up speedup; the cold-all-query versus repaired-follow-up
 ratio is 15.28--35.97$\times$. Fixed \(K=1\) remains the no-coordination
 baseline at 9.48--20.37$\times$ same-class follow-up speedup on the same
 breadth. The many-turn stress adds the missing horizon check: adaptive and
 scheduled-refresh reuse stay drift-free through a 50-turn repeated-question
-cycle, while fixed \(K=1\) shows small late drift but no cliff. Candidate
+cycle, while fixed \(K=1\) shows nonzero repeated-question drift but no cliff.
+Candidate
 C-STREAM remains the right scale-out target: perception-rate streaming state
 reuse under a native-rate protocol. The checked 26B/M5 bundle is now mixed
 evidence rather than pending evidence: default cache reuse is unsafe,
