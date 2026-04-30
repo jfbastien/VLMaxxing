@@ -1,6 +1,16 @@
 # 2026-04-29 Phase B5 — Sam S4 exactness re-export
 
-- **Status:** **closed-earned** for both bounded claims
+> **⚠️ NEVER MERGE THE TWO CLAIMS.** This phase produces two
+> separate-and-distinct bounded claims. The "1,937-row zero-
+> correctness-delta" sentence and the "513-row byte-identical"
+> sentence must remain SEPARATE in any paper text or downstream
+> documentation. They cover different artifacts, support different
+> propositions, and merging them ("byte-identical on 1,937"
+> would be one such merger) reproduces the overstatement this
+> re-export was meant to correct.
+
+- **Status:** **closed-earned** for both bounded claims (treated
+  separately; never merged into a single sentence).
 - **Verdict:** the two bounded S4 claims now have schema-validated paired
   rows in this repo. Both pass their phase-specific validator gates.
   Nothing was re-run; this is artifact provenance plumbing.

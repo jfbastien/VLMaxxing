@@ -1,14 +1,24 @@
 # 2026-04-29 Phase B3 — Sam matched streaming baselines
 
+> **⚠️ READ FIRST — `arm=sam_policy` is a T0-anchor proxy, NOT the full mechanism.**
+> The JSONL `arm=sam_policy` string is a proxy for the throughput-axis
+> cache-shift mechanism that's evaluated under the E3 protocol on
+> sectional-scroll recordings. Do NOT cite this row's accuracy
+> numbers as evidence for or against the full codec-through cache-
+> shift mechanism. The proxy uses a T0-anchor frame selection
+> (start-of-clip anchor + observation-window samples) and does not
+> exercise the per-frame MV cache update or rebuild-trigger logic
+> that the production mechanism has.
+
 - **Status:** **closed-earned** for the protocol; **closed-partial** for
   the codec-through claim (the `sam_policy` row in this run uses a
-  T0-anchored simplification, not the full cache-shift mechanism — see
+  T0-anchor proxy, not the full cache-shift mechanism — see
   *Caveats* below).
 - **Verdict:** at matched 4-frame evidence budget on 22 events across
   twitter + terminal scroll recordings, **`low_fps_dense` (4 uniform
   frames over a 4 s observation window) is the strongest baseline,
   matching the fresh-oracle answer 17/22 (77.3%).** All other arms —
-  including the simplified `sam_policy` proxy used here — are
+  including the simplified `sam_policy` (T0-anchor proxy) used here — are
   competitive but lower. Reviewer-defense framing for the paper:
   cannot claim "we beat all simple baselines" at matched fixed-frame
   evidence budget; we **can** claim sam_policy is comparable to
@@ -26,7 +36,7 @@ LLM-as-judge YES/NO grading. `session_correct = True` ⇔ judge said
 |--------------------|---------------:|----------------:|---------------:|--------------------------:|
 | `low_fps_dense`     | **77.3%** | 72.7% | 81.8% | **72.7%** |
 | `screenshot_polling`| 59.1%     | 45.5% | 72.7% | 63.6% |
-| `sam_policy` (proxy)| 59.1%     | 72.7% | 45.5% | 54.5% |
+| `sam_policy` (T0-anchor proxy)| 59.1%     | 72.7% | 45.5% | 54.5% |
 | `recency_last_k`    | 54.5%     | 36.4% | 72.7% | 54.5% |
 
 `stale-cache subset` is the 11 events where a prior detected event
@@ -87,7 +97,7 @@ beyond the model load):**
 | `screenshot_polling` | 1 frame at `t_event` |
 | `low_fps_dense` | 4 uniform frames over `[t_event-4s, t_event]` |
 | `recency_last_k` | 4 frames at `t_event - 0..1.5 s`, 0.5 s spacing |
-| `sam_policy` (proxy) | T0 anchor (start of clip) + 2 mid-window samples + `t_event` |
+| `sam_policy` (T0-anchor proxy) | T0 anchor (start of clip) + 2 mid-window samples + `t_event` |
 
 ## Smoking-gun examples
 

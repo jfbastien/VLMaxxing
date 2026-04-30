@@ -3,7 +3,8 @@
 - **Status:** **closed-arch-blocked** — gate FAILED
 - **Verdict:** mlx-vlm 0.4.4 `PromptCacheState` cross-turn cache reuse on
   Gemma 4 26B-A4B is silently divergent from cold-dense recomputation on
-  **16 of 21 paired rows (76%)**. Within-turn cache replay path passes
+  **14 of 19 paired rows (74%)** after excluding 2 matched parse
+  failures (raw count: 16 of 21). Within-turn cache replay path passes
   cleanly (21/21 byte-identical).
 - **Implication for downstream:**
   - **B1 (C-PERSIST replication) — BLOCKED** (gated on B0b pass per
@@ -136,7 +137,8 @@ answer, different MC letter).
   10–18× / 47–150× follow-up speedup numbers are about wall-clock and
   remain measured-true; what they cannot claim — and what the
   whitepaper currently misstates — is that the *answers* match the
-  cold-dense baseline. They don't, on a non-trivial fraction (~76% on
+  cold-dense baseline. They don't, on a non-trivial fraction (~74%
+  excluding matched parse failures, ~76% raw, on
   these 21 rows). The §2.13.3 prose needs to be qualified; the speedup
   remains a real result, but as a *speed* result, not a *correctness-
   preserving speed* result.
