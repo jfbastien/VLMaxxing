@@ -1,12 +1,12 @@
 ---
-date: 2026-04-30 (initial); updated 2026-05-01 (rerun showed bug is not in the analyzer)
+date: 2026-04-30 (initial); updated 2026-05-01 (rerun + math review tightened the diagnosis to "candidate pending finite audit")
 phase: 1.30AG (K/V cache-distance mechanism probe)
-status: capture-earned (H1+H2+H3 PASS); H4 saturation gate FAILS because the captured K cache contains non-finite elements at every layer — bug is upstream of the analyzer reduction, not in it. **Distance numbers remain NOT release-claim-bearing.**
+status: capture-earned (H1+H2+H3 PASS); H4 saturation gate FAILS with NaN cosine at every K layer. **Two hypotheses remain live and the artifact does not yet discriminate**: (a) upstream cache contains non-finite elements, OR (b) `mx.sum(x*x)` overflows in bf16 because MLX's `mean` reduction does not upcast. Distance numbers remain NOT release-claim-bearing.
 related:
   - 2026-04-23-phase-1_30-mechanism-decomposition-prereg.md
 ---
 
-# Phase 1.30AG — K/V cache-distance probe (cache itself is NaN-poisoned; analyzer is faithful)
+# Phase 1.30AG — K/V cache-distance probe (NaN cosine: cause undecided; finite-audit patch is the next step)
 
 ## Question
 
@@ -103,71 +103,92 @@ sum-form run:
 | `mean_reuse_keys_mean_abs` | 1.7352934e-05 | 1.7352934e-05 |
 | `pass_H4_saturation_test` | False | False |
 
-So the reduction style is not the root cause. The mean-form fix +
-its CPU-side regression test were **reverted**.
+The mean-form fix + its CPU-side regression test were **reverted**
+because the rerun showed bit-identical NaN counts.
 
-The actual root cause is upstream: the captured K (and most V) cache
-tensors contain non-finite elements before any reduction. The
-decisive evidence is the reuse arm:
+**Two hypotheses remain live and the artifact does not yet
+discriminate.** This is a correction to the earlier 2026-05-01 draft
+that asserted the upstream-cache-NaN hypothesis as confirmed.
 
-- `reuse_vs_dense.keys_mean_abs = 0.0` on every row — confirms the
-  reuse-arm cache and the dense reference are bit-identical buffers.
-- `reuse_vs_dense.keys_cosine = NaN` on every row — bit-identical
-  finite buffers cannot produce NaN cosine.
+(a) **Upstream cache contains non-finite elements** — what the
+earlier draft claimed.
 
-The combination is only consistent with `l - r` short-circuiting to
-zero (same-buffer subtraction in IEEE; works even when the buffer
-contains NaN), while `l * l` and `l * r` do propagate NaN through
-multiplication. The pruned arm's `keys_mean_abs = +inf` confirms at
-least one element of the diff is non-finite — `mean(...inf...) / N
-= inf` only if the sum sees an `inf` element directly.
+(b) **`mx.sum(x*x)` overflows in bf16** in the cosine denominator —
+identical finite vectors of shape ~3300×7×128 = ~3M bf16 elements
+can produce `dot = sum(l*r) → +inf`, `denom = sqrt(sum(l*l)) *
+sqrt(sum(r*r)) = inf * inf → +inf`, and therefore `cosine = inf/inf
+→ NaN`. `mean_abs = mean(|l - r|)` correctly returns 0 because the
+two vectors are bit-identical so `l - r = 0` everywhere. `rms = 0`
+agrees.
 
-Cross-layer pattern: in both runs, K-side cosine is NaN at every
-layer, V-side cosine is finite at layer 1 only. That points at a
-specific structural source of NaN in the K cache and to a lesser
-extent the V cache, layer 0 specifically. Plausible candidates that
-still need verification:
+Why the earlier "same-buffer subtraction shortcut" inference was
+**wrong as stated**: under IEEE 754, `NaN - NaN = NaN` (not zero).
+MLX does not enable fast-math reassociation by default, so even if
+`l` and `r` reference the same memory, the elementwise subtraction
+produces NaN at any NaN positions; `mean(abs(NaN))` would be NaN, not
+0. The observed `reuse_keys_mean_abs = 0.0 on 533/560 layers exactly`
+is therefore strong evidence that the underlying buffers are finite,
+not NaN-poisoned — pointing at hypothesis (b), not (a).
 
-- pre-allocated K-cache buffer padding beyond `valid_tokens` is
-  uninitialized (or sentinel-NaN), and the slice
-  `value[..., 0:valid_tokens, :]` is not actually narrowing the tensor
-  view in the reduction path (lazy view + stride math).
-- Qwen 2.5-VL 4-bit MLX cache stores layer-0 K with NaN sentinels in
-  unused positions (mask, padding, or fp16 underflow from the 4-bit
-  dequant path).
-- the rotary-embedding / RoPE pre-multiplied K values overflow
-  bf16 specifically at layer 0 of this model.
+Why the mean-form rerun **does not discriminate**: MLX's
+`mx.mean(a)` is implemented as `sum(a) * (1/N)` and the `sum` for
+fp16/bf16 inputs does not upcast its accumulator. Verified against
+`ml-explore/mlx@main mlx/ops.cpp`: the `out_type` switch in
+`array sum(...)` only promotes integer/bool dtypes; floats keep their
+input dtype. So `mean(x*x)` overflows on the same input where
+`sum(x*x)` overflows. Bit-identical post-fix output is fully
+consistent with overflow.
 
-Without instrumented reads of the live cache (e.g. a small probe
-patch that prints `mx.any(mx.isnan(l_flat)).item()` and
-`mx.max(mx.abs(l_flat)).item()` for one layer × one row before
-reduction) we cannot pick between these. That diagnostic patch is
-the next step if the user wants this probe revived.
+Cross-layer pattern: K-side cosine NaN at every layer (0/560 finite),
+V-side cosine finite at layer 1 only (~10% finite). The pruned arm's
+`keys_mean_abs = +inf` on every layer is consistent with the diff
+`(l - r)` containing at least one bf16-overflow-magnitude element
+when one side is the dense cache and the other is the pruned cache,
+because the pruned vision-tower path can plausibly produce
+larger-magnitude K values at the cut layers. Both observations are
+also consistent with hypothesis (a). The artifact does not separate.
 
 ## What the rerun establishes
 
 - The bug is reproducible end-to-end and not flaky.
-- It is not in the cosine reduction style.
-- It is in the captured cache tensors themselves at the point the
-  probe reduces them.
+- It is not the sum-vs-mean reduction-style choice.
+- The bit-identical mean-form output is **not** a discriminator
+  between hypothesis (a) and (b) given how MLX implements `mean`.
 - The earlier "fp32 cast crashed with NSException" was sandbox-side
-  (Metal init blocked); the actual rerun under sandbox-off completed
-  in 30 minutes and reproduced the same NaN pattern. The crash was
-  not informative about memory pressure.
+  (Metal init blocked), not memory pressure. Disregard that clue.
 
-## Path forward
+## Path forward — finite-audit diagnostic
 
-1. Add a read-only NaN-audit print to the probe for one row at one
-   layer before each reduction; confirm whether the non-finite
-   elements live inside `[0:valid_tokens]` or only in the buffer tail.
-2. If they live in the valid window, the cache itself is the bug —
-   inspect the mlx-vlm cache write path or the rotary embedding for
-   NaN-producing ops.
-3. If they live only in the buffer tail and the slice is not
-   narrowing the view, fix the narrowing (e.g. force materialize via
-   `mx.contiguous` or copy before reduction) and rerun.
+A small read-only telemetry patch on `_distance_for_windows` is the
+required discriminator. For each `(left, right)` window emit:
 
-The probe code is checked in unmodified after the revert.
+- `l_has_nan = bool(mx.any(mx.isnan(l_flat)))` and same for `r_flat`.
+- `l_has_inf = bool(mx.any(mx.isinf(l_flat)))` and same for `r_flat`.
+- `l_max_abs = float(mx.max(mx.abs(l_flat)))` and same for `r_flat`.
+- For one tail slice past `valid_tokens` (positions
+  `[valid_tokens, buffer_tokens)`), the same three audits — bypassing
+  the `_token_prefix` slice to verify the slice actually narrows the
+  view in the reduction path.
+- A single fp32 control cosine: `cos_fp32 =
+  cosine_sum_form(l_flat.astype(mx.float32),
+  r_flat.astype(mx.float32))` per layer.
+
+JSON serialization tightened: `json.dumps(..., allow_nan=False)`
+with explicit `nonfinite_count` int field for any metric that would
+have been NaN/inf.
+
+**If `l_has_nan == False` and `cos_fp32` is finite** while bf16
+cosine is NaN, hypothesis (b) is confirmed (overflow). Fix is to do
+the cosine-only reduction in fp32 (the rest of the metrics stay
+bf16). Wall cost of the fp32 cosine alone is small because cosine is
+a single scalar per layer per row.
+
+**If `l_has_nan == True` inside the valid window**, hypothesis (a) is
+confirmed. Then trace the cache production (4-bit dequant path,
+RoPE pre-multiplication, mlx-vlm cache write) for the NaN source.
+
+Wall-clock cost of the audit patch: 8 reductions × 28 layers × 20
+rows = ~4500 small ops, negligible against the 30-min capture.
 
 ## Interpretation (what we can and cannot say)
 

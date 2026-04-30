@@ -1308,7 +1308,7 @@ authoritative in the per-phase notes under
   notes: This is an oracle-feature predictor scout, not a deployed guard. It deliberately excludes Q0 rows and all 1.55F/adaptive rows to avoid learning admission/source/policy identity instead of within-1.30 follow-up stability; rows where the dense logit argmax disagrees with the artifact dense choice are rejected before analysis.
 
 - phase_id: 1.30AG
-  status: completed 2026-04-30 (capture earned; rerun 2026-05-01 confirmed bug is upstream of analyzer)
+  status: completed 2026-04-30 (capture earned); diagnosis remains UNDECIDED 2026-05-01 between upstream-cache-NaN vs bf16 cosine-reduction overflow
   authoritative_note: research/experiments/2026/2026-04-30-phase-1_30AG-kcache-distance-probe-findings.md
   authoritative_artifacts:
     - research/experiments/2026/artifacts/phase1_30AG_kcache_distance_probe/kcache_distance_rows.jsonl
@@ -1316,30 +1316,36 @@ authoritative in the per-phase notes under
   current_best_policy: |
     20 paired rows captured balanced 5-per-class across {shared, reuse_only,
     invalidated_only, stable} drift classes; H1 capture, H2 distance reporting,
-    and H3 outcome linkage gates PASS. H4 saturation gate FAILS because the
-    captured K cache contains non-finite elements at every layer before any
-    reduction (decisive evidence: reuse_keys_mean_abs = 0.0 co-occurring with
-    reuse_keys_cosine = NaN, plus pruned_keys_mean_abs = +inf). A mean-form
-    reduction variant was tried and produced bit-identical NaN counts, so the
-    bug is not in the analyzer. Distance numbers remain NOT release-claim-bearing.
+    H3 outcome linkage gates PASS. H4 saturation gate FAILS with NaN cosine
+    at every K layer. Two hypotheses remain live and the artifact does not yet
+    discriminate: (a) upstream cache contains non-finite elements; (b) bf16
+    cosine reduction overflows -- identical finite ~3M-element vectors give
+    sum(x*x) -> +inf, denom = inf*inf, cosine = inf/inf = NaN. The mean-form
+    rerun is NOT a discriminator: MLX mean(a) = sum(a)*(1/N) without
+    accumulator upcast (verified against ml-explore/mlx@main mlx/ops.cpp).
+    The earlier "same-buffer subtraction shortcuts NaN" inference is wrong
+    under IEEE 754 (NaN - NaN = NaN, not zero) so reuse_keys_mean_abs = 0.0
+    is in fact stronger evidence FOR finite buffers + overflow-only than for
+    upstream-NaN. Distance numbers remain NOT release-claim-bearing.
   supersedes: []
-  paper_relevance: optional mechanism closure (blocked on instrumented diagnostic of cache contents)
+  paper_relevance: optional mechanism closure (gated on a finite-audit diagnostic that adds isnan/isinf/max_abs telemetry + a per-layer fp32 control cosine)
   prereg_outcome: |
-    capture-earned, headline FAIL on upstream NaN in the captured cache. Forward
-    work: small read-only NaN-audit patch on the probe (one row at one layer,
-    print mx.any(mx.isnan(l_flat)) and mx.max(mx.abs(l_flat)) before reduction)
-    to determine whether the non-finite elements live inside the valid token
-    window or only in the pre-allocated buffer tail. ~10 min code, ~30 min rerun.
-  runtime_estimate: ~30-40 min for diagnostic rerun after instrumented patch
+    capture-earned, headline FAIL on a numerical pathology that is reproducible
+    end-to-end and is NOT in the sum-vs-mean reduction style. Forward work:
+    finite-audit telemetry patch on _distance_for_windows + fp32 control cosine
+    + strict allow_nan=False JSON, then a 30-min sandbox-off rerun. Outcome:
+    if bf16 cosine NaN co-occurs with l_has_nan=False AND finite fp32 cosine,
+    overflow is confirmed and the fix is fp32 for cosine only (other metrics
+    stay bf16). If l_has_nan=True inside the valid window, trace the cache
+    production for the NaN source.
+  runtime_estimate: ~10 min code, ~30 min sandbox-off rerun, then findings update
   notes: |
     Named 1.30AG because 1.30AE already denotes the skipped duration-conditioned
     union candidate. K-side cosine NaN at every layer (0/560 finite); V-side
-    cosine finite at layer 1 only (~10% finite, consistent with structural
-    layer-0 NaN source). Layer 1 reuse_values_cosine ~0.999 indicates the
-    reuse-arm cache is bit-similar to dense at the layers where reduction does
-    survive. The earlier "fp32 cast crashed with NSException" diagnosis was a
-    sandbox artifact (Metal init blocked); the actual production rerun under
-    sandbox-off completed in 30 minutes and reproduced the same NaN pattern.
+    cosine finite at layer 1 only (~10% finite). The earlier "fp32 cast crashed
+    with NSException" diagnosis was a sandbox artifact (Metal init blocked),
+    not memory pressure. The earlier upstream-NaN claim has been retracted in
+    the findings doc revision.
 
 - phase_id: 1.66
   status: completed 2026-04-29
