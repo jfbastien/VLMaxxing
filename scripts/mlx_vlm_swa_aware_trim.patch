@@ -1,0 +1,80 @@
+--- /tmp/mlx_vlm_generate_BACKUP.py	2026-04-29 20:42:30
++++ /opt/homebrew/lib/python3.14/site-packages/mlx_vlm/generate.py	2026-04-29 20:42:51
+@@ -671,31 +671,55 @@
+     if prompt_cache_state is not None and prompt_cache_state.cache is not None:
+         prefix_len = prompt_cache_state.find_prefix_length(full_input_ids_list)
+         if prefix_len > 0 and prefix_len < input_ids.shape[1]:
+-            reused_prefix_len = prefix_len
+-            # Trim to only new tokens
+-            input_ids = input_ids[:, prefix_len:]
+-            # Only skip vision if no image tokens in the new (trimmed) tokens
+-            image_token_id = getattr(model.config, "image_token_id", None) or getattr(
+-                model.config, "image_token_index", None
++            # Topology-aware trim: use mlx_lm's per-cache-class trim
++            # protocol. For full-attention KVCache this is a clean
++            # positional slice. For RotatingKVCache (sliding-window
++            # attention, e.g. Gemma 3/4 SWA layers), the cache reports
++            # is_trimmable()=False once the buffer has wrapped --
++            # the rotated buffer cannot be safely sliced to a positional
++            # prefix. The previous inline implementation here did
++            # `c.keys[:, :, :prefix_len, :]` for every cache type,
++            # which silently corrupted SWA layers and produced wrong
++            # outputs on cross-turn cache reuse for mixed-topology
++            # models (e.g. Gemma 4 26B-A4B / Gemma 3, see
++            # https://github.com/Blaizzy/mlx-vlm bug repro).
++            from mlx_lm.models.cache import (
++                can_trim_prompt_cache,
++                trim_prompt_cache,
+             )
+-            new_ids = input_ids.flatten().tolist()
+-            has_image_in_new = image_token_id is not None and image_token_id in new_ids
+-            if not has_image_in_new:
+-                pixel_values = None
+-                kwargs.pop("cached_image_features", None)
+-            # Reuse the saved KV cache (trimmed to prefix length)
++
+             kv_cache = prompt_cache_state.cache
+-            # Trim cache to prefix_len in case it includes generated tokens
+-            for c in kv_cache:
+-                if hasattr(c, "keys") and c.keys is not None:
+-                    cached_len = c.keys.shape[2]
+-                    if cached_len > prefix_len:
+-                        c.keys = c.keys[:, :, :prefix_len, :]
+-                        c.values = c.values[:, :, :prefix_len, :]
+-                        if hasattr(c, "offset"):
+-                            c.offset = prefix_len
+-            kwargs["prompt_cache"] = kv_cache
++            current_offset = max(
++                (getattr(c, "offset", 0) for c in kv_cache), default=0
++            )
++            trim_amount = max(0, current_offset - prefix_len)
+ 
++            if trim_amount == 0 or can_trim_prompt_cache(kv_cache):
++                # Safe to reuse: trim cache (no-op if trim_amount==0)
++                # and trim input_ids to only the new tokens.
++                if trim_amount > 0:
++                    trim_prompt_cache(kv_cache, trim_amount)
++                reused_prefix_len = prefix_len
++                input_ids = input_ids[:, prefix_len:]
++                # Only skip vision if no image tokens in the new tokens
++                image_token_id = getattr(
++                    model.config, "image_token_id", None
++                ) or getattr(model.config, "image_token_index", None)
++                new_ids = input_ids.flatten().tolist()
++                has_image_in_new = (
++                    image_token_id is not None and image_token_id in new_ids
++                )
++                if not has_image_in_new:
++                    pixel_values = None
++                    kwargs.pop("cached_image_features", None)
++                kwargs["prompt_cache"] = kv_cache
++            # else: cache cannot be safely trimmed (e.g.
++            # RotatingKVCache has wrapped). Surrender cache reuse for
++            # this turn -- leave input_ids intact, do NOT set
++            # prompt_cache, and fall through to the cold-dense path
++            # below. The caller pays full prefill cost but gets a
++            # correctness-clean output instead of a silently-wrong one.
++
+     if thinking_budget is not None:
+         thinking_start_token_id = tokenizer.encode(
+             thinking_start_token, add_special_tokens=False
