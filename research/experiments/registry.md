@@ -1237,15 +1237,34 @@ authoritative in the per-phase notes under
   notes: No new MLX generation; this is a mechanism attribution over existing JSONL timings and tail-token counts. The preregistered Q3 speedup gate is >=3x so the analyzer does not mark a clear measured attribution as a false failure solely because it is below a more aggressive 5x heuristic.
 
 - phase_id: 1.55K
-  status: completed 2026-04-29
+  status: completed 2026-04-29 (base) + completed 2026-04-30 (extended seed sweep)
   authoritative_note: research/experiments/2026/2026-04-27-phase-1_55K-adaptive-temperature-sweep-prereg.md
-  authoritative_artifacts: [research/experiments/2026/artifacts/phase1_55K_adaptive_temperature_sweep/]
-  current_best_policy: adaptive short-cell sampler sweep across T=0.0/0.5/0.7/1.0/1.5; no pathological hits, large speedups, small nonzero diffs at T=0.7/1.0
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_55K_adaptive_temperature_sweep/
+    - research/experiments/2026/artifacts/phase1_55K_extended_seed_sweep/extended_seed_sweep_summary.json
+  current_best_policy: |
+    adaptive short-cell sampler sweep across T=0.0/0.5/0.7/1.0/1.5 (base);
+    extended cross-product across (seed × T) ∈ {42, 99, 2026} × {0.5, 1.0, 1.5}
+    closes 9/9 cells with max |Δacc|=0.048, 0/189 pathological format hits,
+    baseline floor 0.667, cold/follow-up speedup 24.8–25.2×.
   supersedes: [1.55J]
-  paper_relevance: reviewer-defense (tests whether adaptive C-PERSIST headline is greedy-only)
-  prereg_outcome: landed as practical reviewer-defense against greedy-only artifact; not full 0/93 breadth and not universal sampler invariance
+  paper_relevance: reviewer-defense (tests whether adaptive C-PERSIST headline is greedy-only AND single-seed-only)
+  prereg_outcome: |
+    base sweep landed as practical reviewer-defense against greedy-only
+    artifact; the extended seed sweep (Phase 2 chain step A7) closes the
+    single-seed-coincidence concern across three seeds at three temperatures
+    on the same short tranche. Neither covers the full 0/93 breadth nor
+    benchmark generalization; both apply only to the seven-clip short slice.
   runtime_estimate: complete
-  notes: Uses identical sampler settings for session and baseline arms; T=0.0 greedy 1.55F is included as reference when present. The summary hard-gates sampler-robustness on absolute cold-baseline accuracy >=14/21 in every temperature cell so mutual sampler collapse cannot masquerade as cache robustness.
+  notes: |
+    Uses identical sampler settings for session and baseline arms; T=0.0 greedy
+    1.55F is included as reference when present. The summary hard-gates
+    sampler-robustness on absolute cold-baseline accuracy >=14/21 in every
+    temperature cell so mutual sampler collapse cannot masquerade as cache
+    robustness. The extended seed sweep findings are recorded in
+    research/experiments/2026/2026-04-30-phase-1_55K-extended-seed-sweep-findings.md
+    and the paper-side reviewer-defense table is generated as
+    paper/arxiv/generated/tables/c_persist_sampler_seed_sweep.tex.
 
 - phase_id: 1.30AF
   status: completed 2026-04-29
@@ -1281,15 +1300,33 @@ authoritative in the per-phase notes under
   notes: This is an oracle-feature predictor scout, not a deployed guard. It deliberately excludes Q0 rows and all 1.55F/adaptive rows to avoid learning admission/source/policy identity instead of within-1.30 follow-up stability; rows where the dense logit argmax disagrees with the artifact dense choice are rejected before analysis.
 
 - phase_id: 1.30AG
-  status: preregistered / conditional
-  authoritative_note: research/experiments/2026/2026-04-27-phase-1_30AG-kcache-distance-prereg.md
-  authoritative_artifacts: []
-  current_best_policy: conditional K-cache distance probe for 1.30AC/1.30AD aggregate-equivalence mechanism
+  status: completed 2026-04-30 (capture earned; analyzer NaN bug blocks distance interpretation)
+  authoritative_note: research/experiments/2026/2026-04-30-phase-1_30AG-kcache-distance-probe-findings.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_30AG_kcache_distance_probe/kcache_distance_rows.jsonl
+    - research/experiments/2026/artifacts/phase1_30AG_kcache_distance_probe/kcache_distance_summary.json
+  current_best_policy: |
+    20 paired rows captured balanced 5-per-class across {shared, reuse_only,
+    invalidated_only, stable} drift classes; H1 capture, H2 distance reporting,
+    and H3 outcome linkage gates PASS. H4 saturation gate FAILS because
+    _distance_for_windows reduces sum(x*x) over flattened bf16/fp16 cache
+    windows large enough to overflow, producing NaN cosine and inf mean_abs.
+    Distance numbers are NOT release-claim-bearing in this run.
   supersedes: []
-  paper_relevance: optional mechanism closure (only if 1.30AF feature attribution is diffuse)
-  prereg_outcome: pending
-  runtime_estimate: ~2h if implemented/launched
-  notes: Named 1.30AG because 1.30AE already denotes the skipped duration-conditioned union candidate. This is not in the default deep-mechanism queue; launch only if row/feature/margin attribution fails to explain the equal aggregate loss.
+  paper_relevance: optional mechanism closure (blocked on numerically stable analyzer)
+  prereg_outcome: |
+    capture-earned, headline FAIL on analyzer numerical-stability bug. Forward
+    work: patch _distance_for_windows reduction to a numerically stable form
+    (sqrt(mean) preferred over fp32 cast on this machine) + add a CPU-side
+    regression test + re-run (~40 min wall).
+  runtime_estimate: ~40min for re-run after analyzer fix
+  notes: |
+    Named 1.30AG because 1.30AE already denotes the skipped duration-conditioned
+    union candidate. The probe code is checked in unmodified; row-level
+    distances are kept as-is in the artifact for traceability. The reuse-vs-dense
+    keys_mean_abs = 0.0 confirms the cache state is captured correctly; only the
+    cosine reduction is broken. See findings doc for diagnosis and candidate
+    fixes.
 
 - phase_id: 1.66
   status: completed 2026-04-29
