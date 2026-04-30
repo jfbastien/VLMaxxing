@@ -1,6 +1,6 @@
 \begin{table}[H]
 \centering
-\caption{Measured sparse vision execution on Qwen. The 8f point validates the timing model but fails fidelity. At 16f, increasing the keep rate monotonically recovers accuracy and format, ending at a fidelity-safe but low-gain point that no longer clears the vision-reduction gate.}
+\caption{Measured sparse vision execution on Qwen. The 8f point validates the timing model but fails fidelity. At 16f, increasing the keep rate monotonically recovers accuracy and format, ending at a point inside the tested fidelity/format gates that no longer clears the vision-reduction gate.}
 \label{tab:qwen-measured-sparse-vision}
 \scriptsize
 \renewcommand{\arraystretch}{1.12}
@@ -11,7 +11,7 @@ Setting & \(n\) & \(\Delta\)acc & Agree & Parse fails & \(V_{\mathrm{red}}\) & O
 8f, kr=0.50 & 60 & -0.067 & 71.7\% & 0 & 44.8\% & 1.042$\times$ & -0.005 & ceiling-validating fidelity fail \\
 16f, kr=0.65 & 60 & -0.283 & 46.7\% & 11 & 36.1\% & 1.093$\times$ & +0.036 & recovery sweep \\
 16f, kr=0.75 & 60 & -0.100 & 75.0\% & 0 & 27.0\% & 1.065$\times$ & +0.023 & recovery sweep \\
-16f, kr=0.85 & 60 & -0.050 & 81.7\% & 0 & 13.6\% & 1.032$\times$ & +0.011 & fidelity-safe low-gain boundary \\
+16f, kr=0.85 & 60 & -0.050 & 81.7\% & 0 & 13.6\% & 1.032$\times$ & +0.011 & within fidelity/format gates; low-gain boundary \\
 \bottomrule
 \end{tabularx}
 \end{table}

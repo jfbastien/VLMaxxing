@@ -1,15 +1,14 @@
-\section{Candidate C-STREAM and Deployment Evidence}
+\section{Native-Rate Streaming as a Deployment Target}
 
-Native-rate streaming is the natural scale-out setting for anti-recomputation:
+Streaming state reuse is the natural scale-out target for anti-recomputation:
 the model revisits nearly the same visual state while deciding when to keep,
-shift, rebuild, or invalidate cached state. We keep this lane visible because it
-is scientifically important, but it is not a fourth headline contribution yet.
-The current manuscript uses the 26B/M5 scale-out lane only through checked
-artifact bundles: raw paired rows, cache-correctness checks, matched
-low-FPS / screenshot / recency baselines, bounded exactness exports, and source
-manifests. The result is mixed in the scientifically useful way. It shows which
-mechanisms are plausible, which simple baselines are serious, and which cache
-paths are unsafe.
+shift, rebuild, or invalidate cached state. We do not claim a standardized
+C-STREAM result yet; here we report boundary evidence from a checked 26B/M5
+bundle: cache-correctness failures, small-\(N\) prefix-snapshot wins, strong
+low-FPS / screenshot / recency baselines, denominator-safe exactness exports,
+and source manifests. The result is mixed in the scientifically useful way. It
+shows which mechanisms are plausible, which simple baselines are serious, and
+which cache paths are unsafe.
 
 Unlike sparse-sampled benchmark runs, the streaming lane tests cache lifetime:
 when to keep state, shift it, rebuild it, or declare it stale. The current
@@ -18,7 +17,7 @@ signals, sectional cache shifts, and event/inflection triggers. Those
 mechanisms are why the lane is not merely an application demo. Its claims stay
 separately labeled because native streams add evaluation problems that
 VideoMME, MVBench, and TOMATO under-test: query cadence, scroll/pan, live-world
-updates, stale-cache failure, fixed-ViT-budget perception rate, and cache
+updates, stale-cache failure, fixed-vision-budget perception rate, and cache
 topology under mixed sliding-window/full-attention attention.
 
 The local Qwen session/streaming bridge explains why this gate matters. The
@@ -62,6 +61,18 @@ fires, while a 1\,Hz polling baseline either spends 22--64$\times$ more vision
 calls for the same coverage or sees one frame every 22--64 seconds at matched
 vision cost. That axis still needs checked native mechanism-quality validation
 before it becomes a headline.
+
+The recovery path is therefore specific, not rhetorical. C-STREAM needs a
+policy that wins on the axis native streams actually own: higher
+perception-rate at the same vision budget while preserving event-window
+answers. The current proxy failed because its event windows were not enough to
+beat a simple four-frame dense baseline; the default cache path failed because
+mixed sliding-window/full-attention cache topology made cross-turn state
+semantically unsafe; and post-vision-tower pruning failed as systems evidence
+because it skipped work after the expensive stage had already run. A positive
+C-STREAM result should combine topology-safe state reuse, an event/staleness
+gate that beats low-FPS dense under matched event windows, and a stale-cache
+failure case that shows when the runtime deliberately buys fresh evidence.
 
 \IfFileExists{generated/tables/scaleout_bundle_status.tex}{
 \input{generated/tables/scaleout_bundle_status.tex}

@@ -1081,7 +1081,9 @@ def _measured_sparse_execution_snapshot() -> dict[str, object]:
                 "predicted_e2e": float(row["predicted_e2e_speedup_from_vision_only"]),
                 "residual": float(row["actual_minus_predicted_e2e_speedup"]),
                 "interpretation": (
-                    "fidelity-safe low-gain boundary" if kr_label == "0.85" else "recovery sweep"
+                    "within fidelity/format gates; low-gain boundary"
+                    if kr_label == "0.85"
+                    else "recovery sweep"
                 ),
                 "source": _source_path_label(path),
             }
@@ -1781,7 +1783,7 @@ def _write_headline_table(snapshot: dict) -> None:
             f"{qwen_sparse_safe['observed_e2e']:.3f}$\\times$ & "
             f"$\\Delta$acc {qwen_sparse_safe['accuracy_delta']:+.3f}; "
             f"vision reduction {qwen_sparse_safe['vision_reduction'] * 100:.1f}\\%; "
-            "parse failures 0 & fidelity-safe low-gain boundary \\\\"
+            "parse failures 0 & within fidelity/format gates; low-gain boundary \\\\"
         ),
         r"\bottomrule",
         r"\end{tabularx}",
@@ -1842,7 +1844,7 @@ def _write_measured_sparse_execution_tables(snapshot: dict) -> None:
             r"\caption{Measured sparse vision execution on Qwen. The 8f point "
             r"validates the timing model but fails fidelity. At 16f, increasing "
             r"the keep rate monotonically recovers accuracy and format, ending "
-            r"at a fidelity-safe but low-gain point that no longer clears the "
+            r"at a point inside the tested fidelity/format gates that no longer clears the "
             r"vision-reduction gate.}"
         ),
         r"\label{tab:qwen-measured-sparse-vision}",
@@ -1982,7 +1984,7 @@ def _write_c_persist_seed_sweep_table() -> None:
             r"\(\{42, 99, 2026\}\) at three temperatures "
             r"\(\{0.5, 1.0, 1.5\}\) on the same seven-clip 21-paired tranche. "
             r"All nine cells pass the preregistered fidelity, format, and "
-            r"baseline-quality gates. This is reviewer-defense evidence that "
+            r"baseline-quality gates. This is robustness evidence that "
             r"the sampler-temperature result is not a single-seed coincidence "
             r"on the short tranche; it is not the full 0/93 breadth claim and "
             r"not benchmark generalization beyond this slice.}"
@@ -2316,9 +2318,9 @@ def _write_scaleout_bundle_table() -> None:
         r"\centering",
         (
             r"\caption{Checked scale-out artifact bundle. These rows make "
-            r"candidate C-STREAM more concrete, but they do not promote it to "
-            r"a fourth headline: cache correctness, matched baselines, and "
-            r"native mechanism quality remain the gates.}"
+            r"native-rate streaming state reuse more concrete, while "
+            r"cache correctness, matched baselines, and native mechanism quality "
+            r"remain open standardization gates.}"
         ),
         r"\label{tab:scaleout-bundle}",
         r"\scriptsize",

@@ -44,10 +44,9 @@ regime where the biggest local multipliers already exist, but also where cache
 reuse enters a measurable basin unless the visual tail is repaired. The third
 is \emph{first-pass vision pruning (C-VISION)}: measured first-pass gains on
 fresh videos via training-free vision-tower pruning. Qwen routing then plays a
-different role: it is the mechanism-validation backbone and the negative-result
-ledger; local novelty-ranked diagnostics suggest that fresh-compute placement
-is not captured by novelty magnitude alone, but those diagnostics remain
-outside the release claim surface until their raw outputs are checked in.
+different role: it is mechanism and boundary evidence. It shows when temporal
+substitution preserves answers, and keeps novelty-ranked and pixel-to-feature
+diagnostics as interpretation until their raw artifacts are public.
 
 The larger target is not a bigger threshold sweep and not a new codec in this
 paper. The current experiments are a measurement instrument: they ask which
@@ -107,9 +106,8 @@ claim.}
 @{}}
 \toprule
 Regime & Reused work & Denominator / evidence class & Headline evidence \\
-\midrule
-Fresh-video first pass & vision-tower work inside the first query & first-query wall-clock; local clean/advisory cells plus measured sparse-execution envelopes & VideoMME clean 1.113$\times$; MVBench/TOMATO advisory; measured sparse vision: Gemma 32f short 1.316$\times$ with 0/20 drift, Qwen conservative boundary 1.032$\times$ \\
 After-ingest follow-up & prompt / key--value (KV) prefix for later questions on the same video & follow-up latency and paired drift; first query still pays full freight & raw 16f reuse reaches 91.1$\times$; adaptive repair spans short/medium/long and 32f-short with 0/93 drift at 14.90--35.92$\times$; many-turn stress reaches 50 turns on repeated questions \\
+Fresh-video first pass & vision-tower work inside the first query & first-query wall-clock; local clean/advisory cells plus measured sparse-execution envelopes & VideoMME clean 1.113$\times$; MVBench/TOMATO advisory; measured sparse vision: Gemma 32f short 1.316$\times$ with 0/20 drift, Qwen conservative boundary 1.032$\times$ \\
 Candidate C-STREAM & repeated visual state in a native-rate or live pipeline & checked mixed artifact bundle; separate protocol & default 26B cache path blocked; prefix-snapshot rows positive but small-\(N\); fixed-evidence stream baselines favor low-FPS dense over the current proxy \\
 \bottomrule
 \end{tabularx}
@@ -119,8 +117,8 @@ The table is a workload map. The contributions below are the analytical and
 empirical pieces that explain those workloads without collapsing them into a
 single multiplier. We make three contributions:
 \begin{itemize}[leftmargin=1.5em]
-\item We derive and validate \textbf{stage-share ceiling (C-CEILING)}: a stage-share ceiling for
-end-to-end gain. The same arithmetic explains both the modest first-pass
+\item We derive and validate \textbf{stage-share ceiling (C-CEILING)}: a
+guardrail for end-to-end gain. The same arithmetic explains both the modest first-pass
 multipliers and the n=60 composition audit, where the observed
 1.042$\times$ stacked result lands almost exactly where the measured share
 terms predict.

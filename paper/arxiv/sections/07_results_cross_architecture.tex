@@ -14,10 +14,10 @@ therefore not one number. They are regime-dependent by construction.
 \draftnote{Run \texttt{make paper-sync} to generate the headline results table.}
 }
 
-\noindent The detailed results now follow reviewer impact: after-ingest
-C-PERSIST first, because it is the big-number regime; then first-pass C-VISION
-and its stage-share ceiling; then the composition and paired-drift boundaries
-that explain why the regimes do not multiply.
+\noindent We present results in systems order: the high-leverage after-ingest
+regime first, the first-pass sparse-vision regime and its share ceiling second,
+and then the composition and paired-drift boundaries that prevent multiplying
+headline numbers.
 
 \subsection{C-PERSIST: After-Ingest Reuse Is The Big-Number Regime}
 
@@ -136,10 +136,12 @@ same seven-clip tranche evaluates three sampler seeds
 \(\{42, 99, 2026\}\) at three temperatures \(\{0.5, 1.0, 1.5\}\). All nine
 cells pass the preregistered fidelity, format, and baseline-quality gates,
 with maximum \(|\Delta\)acc\(| \le 0.048\) and zero pathological follow-up
-hits across \(189\) paired follow-up rows in aggregate. The cold-over-
-follow-up speedup stays in the \(24.8\)--\(25.2\times\) band where measured.
-The reviewer-defense framing therefore widens to ``adaptive C-PERSIST on
-this tranche is sampler-robust across nine \((\text{seed}, T)\) cells,'' and
+hits across \(189\) paired follow-up rows in aggregate. The measured
+cold-over-follow-up speedup remains large but seed-dependent
+(17.37--25.84$\times$), so the seed sweep is a fidelity and format robustness
+check rather than a tight timing-variance claim. The framing therefore widens
+to ``adaptive C-PERSIST on this tranche is sampler-robust across nine
+\((\text{seed}, T)\) cells,'' and
 keeps the same scope caveat: this is the short slice, not benchmark
 generalization, and not first-query work.
 
@@ -158,7 +160,7 @@ turn-matched drift pairing but not independent timing samples. Under that
 stress, adaptive repair and scheduled refresh both have 0/343 follow-up paired
 choice drift and 0/343 paired correctness drift at the 50-turn horizon, with
 median follow-up latency below 0.8\,s. Fixed \(K=1\) remains below the 3\%
-drift gate but shows the expected leakage in the repeated-question schedule:
+drift gate but shows sparse nonzero drift in the repeated-question schedule:
 3/343 choice diffs and 2/343 correctness diffs. The result changes the
 C-PERSIST claim from ``only two follow-ups were tried'' to ``no cliff through
 50 repeated-question turns under the tested stress,'' while leaving true
@@ -222,8 +224,8 @@ gap.
 
 Qwen exposes the architecture/configuration boundary. Aggressive 16f pruning
 at \(kr=0.50\) collapses format and fidelity. Raising the keep rate recovers
-the model monotonically; \(kr=0.85\) is fidelity-, format-, and
-ceiling-consistent, but the price is that vision-time reduction falls to
+the model monotonically; \(kr=0.85\) is inside the tested fidelity/format
+gates and ceiling-consistent, but the price is that vision-time reduction falls to
 13.6\% and the observed end-to-end gain is only 1.032$\times$. The right
 paper claim is therefore an envelope: Gemma supplies the strongest measured
 sparse-execution cell, while Qwen shows that the same timed-skip idea is

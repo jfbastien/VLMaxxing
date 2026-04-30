@@ -161,7 +161,7 @@
       {
         "accuracy_delta": -0.04999999999999993,
         "choice_agreement": 0.8166666666666667,
-        "interpretation": "fidelity-safe low-gain boundary",
+        "interpretation": "within fidelity/format gates; low-gain boundary",
         "model": "Qwen2.5-VL-7B",
         "n": 60,
         "observed_e2e": 1.0319578243211913,

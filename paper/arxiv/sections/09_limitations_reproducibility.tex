@@ -86,14 +86,14 @@ dense backend. It should not be inflated into a measured sparse-execution
 speedup claim until the backend actually skips timed work. The same caution now
 applies to the Qwen VideoMME frame-count story: the dev-split 16f long-bucket
 regression does not replicate on disjoint holdout, so the manuscript treats it
-as a dev-only shape rather than a universal scaling law. The 1.57 feature-drift
+as a dev-only shape rather than a universal scaling law. The feature-drift
 geometry itself now reproduces on holdout at 8f and 16f; what failed to
 transfer was the downstream long-bucket accuracy shape, not the drift signal.
 
 The streaming/deployment lane remains the least harmonized evidence class in
 the paper, even though it is the clearest candidate for a future C-STREAM claim.
 It is there because it names the practical regime where redundancy can become
-large, not because it already closes the full systems-reviewer checklist. The
+large, not because it already closes the full systems checklist. The
 checked scale-out bundle is now real and useful, but mixed: default 26B
 cross-turn cache reuse is unsafe, a topology-aware prefix snapshot is positive
 only at small \(N\), fixed-evidence stream baselines favor low-FPS dense over
@@ -127,7 +127,7 @@ answer-aware, so the result should not be sold as a runtime guard. The next
 proof step is direct cache-state instrumentation plus genuinely independent
 state features. A related
 local codec-native bridge remains scientifically interesting, and the latest
-1.29 results now provide semantic
+the codec-native planner-substitution results now provide semantic
 planner-substitution evidence: MAX-over-span sparse sampling is hard-falsified,
 but the continuous-score redesign matches dense choices on VideoMME dev
 all-duration \(n=30\) and later calibration-mode/source ablations are neutral

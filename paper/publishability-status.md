@@ -194,7 +194,8 @@ What we CANNOT yet honestly say in HN-headline form:
 
 - "**N%** faster" for a broad sparse backend — the local measured-sparse-vision
   path has landed as a bounded envelope, not a broad backend claim. Gemma has a
-  clean 32f-short cell; Qwen has a fidelity-safe low-gain boundary. Sparse LM
+  clean 32f-short cell; Qwen has a low-gain boundary inside the tested
+  fidelity/format gates. Sparse LM
   prefill and broad fidelity-preserving curves remain out of scope.
 - "**N%** less energy" — no energy instrumentation. Projected proportional
   to wall-clock at fixed memory.
@@ -310,7 +311,7 @@ runnable tonight vs. impl-gated.
 | split-landed | 1.42 Gemma topology lane | complete on the preregistered N=30 pair | Gemma 4-E4B-4bit | landed 2026-04-24: TOMATO pass (`agreement=0.933`, `dense_acc=cached_acc=0.267`), MVBench strict-agreement fail (`agreement=0.733`, `dense_acc=cached_acc=0.200`); further work is interpretation or third-architecture breadth, not implementation |
 | blocked | 1.43 EgoSchema breadth gate | ~2 h | Qwen 2.5-VL-7B-4bit | loader + manifest unwritten |
 | superseded | 1.52R original composition gate (1.42 × 1.51R) | obsolete | Gemma 4-E4B-4bit | original gate superseded: 1.42 split-landed and 1.51R closed own-axis null; current composition evidence comes from 1.51V EXP10 and future scale-out bundle gates |
-| landed-boundary | Claim-5 measured sparse-execution envelope | landed 2026-04-29; broader curve remains open | Gemma 4-E4B and Qwen 2.5-VL-7B-4bit | Gemma 32f short is the clean timed-skip cell (1.316×, 0/20 paired drift, parse failures 0/0). Gemma 8/16/32f full sweep has matched parse-failure caveats. Qwen 16f kr=0.85 is fidelity-safe but low-gain; broad sparse backend and sparse LM prefill remain larger engineering work. |
+| landed-boundary | Claim-5 measured sparse-execution envelope | landed 2026-04-29; broader curve remains open | Gemma 4-E4B and Qwen 2.5-VL-7B-4bit | Gemma 32f short is the clean timed-skip cell (1.316×, 0/20 paired drift, parse failures 0/0). Gemma 8/16/32f full sweep has matched parse-failure caveats. Qwen 16f kr=0.85 is inside the tested fidelity/format gates but low-gain; broad sparse backend and sparse LM prefill remain larger engineering work. |
 
 **Runnable next with setup**: natural-dialogue many-turn C-PERSIST stability,
 direct cache-state instrumentation for the 1.30 boundary, and native streaming
