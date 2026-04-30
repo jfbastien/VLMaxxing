@@ -121,7 +121,7 @@ def _peak_rss_gb() -> float:
 
 
 def base_provenance_for(source_root: Path, command_line: str) -> dict[str, Any]:
-    versions = runtime_versions()
+    runtime_versions()
     return {
         "run_id": f"sam_b5_{int(time.time())}_{uuid.uuid4().hex[:8]}",
         "model_id": "google/gemma-4-26B-A4B-it",

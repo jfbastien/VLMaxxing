@@ -86,10 +86,12 @@ def _deepcopy_cache(cache_list: list[Any]) -> list[Any]:
     return new_list
 
 
-def make_prefix_snapshot(harness: Any, img_paths: list[str],
-                          sentinel_question_a: str = "Q.",
-                          sentinel_question_b: str = "X.",
-                          ) -> dict[str, Any]:
+def make_prefix_snapshot(
+    harness: Any,
+    img_paths: list[str],
+    sentinel_question_a: str = "Q.",
+    sentinel_question_b: str = "X.",
+) -> dict[str, Any]:
     """Build a prefix snapshot for the given vision input.
 
     Parameters
@@ -121,9 +123,11 @@ def make_prefix_snapshot(harness: Any, img_paths: list[str],
     ids_b_list = ids_b.flatten().tolist()
     n_prefix = _find_prefix_divergence(ids_a_list, ids_b_list)
     if n_prefix == 0:
-        raise RuntimeError("could not find common prefix between sentinel "
-                           "tokenizations; chat template may not be "
-                           "deterministic")
+        raise RuntimeError(
+            "could not find common prefix between sentinel "
+            "tokenizations; chat template may not be "
+            "deterministic"
+        )
 
     # Step 2: Run prefill of just the prefix portion through the model
     # to populate a fresh cache. Use the language_model directly so we
@@ -138,12 +142,12 @@ def make_prefix_snapshot(harness: Any, img_paths: list[str],
     # embeddings replaced; for this we pass the FULL inputs (including
     # the sentinel question) but cap prefill at n_prefix.
     input_ids_full, pixel_values, mask, _formatted = harness.format_inputs(
-        img_paths, sentinel_question_a)
+        img_paths, sentinel_question_a
+    )
 
     # Vision encode + embedding lookup -- mlx-vlm bundles this in
     # get_input_embeddings.
-    embedding_output = harness.model.get_input_embeddings(
-        input_ids_full, pixel_values, mask=mask)
+    embedding_output = harness.model.get_input_embeddings(input_ids_full, pixel_values, mask=mask)
     inputs_embeds = embedding_output.inputs_embeds
 
     # Prefill the first n_prefix tokens through the language model.
@@ -153,8 +157,8 @@ def make_prefix_snapshot(harness: Any, img_paths: list[str],
     t0 = time.perf_counter()
     while pos < n_prefix:
         n_to_process = min(chunk, n_prefix - pos)
-        slc_ids = input_ids_full[:, pos:pos + n_to_process]
-        slc_emb = inputs_embeds[:, pos:pos + n_to_process]
+        slc_ids = input_ids_full[:, pos : pos + n_to_process]
+        slc_emb = inputs_embeds[:, pos : pos + n_to_process]
         harness.model.language_model(
             inputs=slc_ids,
             inputs_embeds=slc_emb,
@@ -177,9 +181,14 @@ def make_prefix_snapshot(harness: Any, img_paths: list[str],
     }
 
 
-def run_turn_with_snapshot(snapshot: dict[str, Any], harness: Any,
-                            img_paths: list[str], question: str,
-                            *, max_tokens: int = 32) -> dict[str, Any]:
+def run_turn_with_snapshot(
+    snapshot: dict[str, Any],
+    harness: Any,
+    img_paths: list[str],
+    question: str,
+    *,
+    max_tokens: int = 32,
+) -> dict[str, Any]:
     """Run a single turn against the prefix snapshot.
 
     Restores the snapshot into a fresh working cache, prefills only
@@ -194,11 +203,9 @@ def run_turn_with_snapshot(snapshot: dict[str, Any], harness: Any,
     n_prefix = snapshot["n_prefix_tokens"]
 
     # Tokenize the full prompt and slice off the cached prefix.
-    input_ids_full, pixel_values, mask, _formatted = harness.format_inputs(
-        img_paths, question)
+    input_ids_full, pixel_values, mask, _formatted = harness.format_inputs(img_paths, question)
     if input_ids_full.shape[1] <= n_prefix:
-        raise RuntimeError("question tokens fit entirely inside the prefix; "
-                           "this should not happen")
+        raise RuntimeError("question tokens fit entirely inside the prefix; this should not happen")
 
     new_ids = input_ids_full[:, n_prefix:]
 
@@ -209,8 +216,7 @@ def run_turn_with_snapshot(snapshot: dict[str, Any], harness: Any,
     # use the cached image features via cached_image_features kwarg if
     # passed. For our purposes, the new tokens contain only text
     # (question + assistant marker), so no vision needed.
-    embedding_output = harness.model.get_input_embeddings(
-        new_ids, None, mask=None)
+    embedding_output = harness.model.get_input_embeddings(new_ids, None, mask=None)
     inputs_embeds = embedding_output.inputs_embeds
 
     # Prefill the new tokens through the working cache.
@@ -223,8 +229,8 @@ def run_turn_with_snapshot(snapshot: dict[str, Any], harness: Any,
         while pos < new_ids.shape[1] - 1:
             n_to_process = min(chunk, new_ids.shape[1] - 1 - pos)
             harness.model.language_model(
-                inputs=new_ids[:, pos:pos + n_to_process],
-                inputs_embeds=inputs_embeds[:, pos:pos + n_to_process],
+                inputs=new_ids[:, pos : pos + n_to_process],
+                inputs_embeds=inputs_embeds[:, pos : pos + n_to_process],
                 cache=working_cache,
                 n_to_process=n_to_process,
             )
@@ -232,10 +238,9 @@ def run_turn_with_snapshot(snapshot: dict[str, Any], harness: Any,
             pos += n_to_process
         # The last token is fed to _step in the generation loop.
         last_token = new_ids[:, -1:]
-        last_emb = inputs_embeds[:, -1:]
+        inputs_embeds[:, -1:]
     else:
         last_token = new_ids
-        last_emb = inputs_embeds
 
     # Generate using the working cache via stream_generate. We feed it
     # the last token only and pre-populated prompt_cache.
@@ -251,8 +256,7 @@ def run_turn_with_snapshot(snapshot: dict[str, Any], harness: Any,
         "temperature": 0.0,
         "prompt_cache": working_cache,
     }
-    for resp in harness.stream_generate(
-            harness.model, harness.processor, "", **kwargs):
+    for resp in harness.stream_generate(harness.model, harness.processor, "", **kwargs):
         if t_first is None:
             t_first = time.perf_counter()
         if resp.text:

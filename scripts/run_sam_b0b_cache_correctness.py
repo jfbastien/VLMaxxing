@@ -53,6 +53,8 @@ if not os.environ.get("HF_TOKEN"):
         "Aborting per B0b spec -- do not attempt to download."
     )
 
+import contextlib
+
 import mlx.core as mx
 import numpy as np
 from PIL import Image
@@ -241,10 +243,8 @@ def extract_frames(
         if os.path.exists(tmp_path) and os.path.getsize(tmp_path) > 0:
             frames.append(np.array(Image.open(tmp_path).convert("RGB")))
         if os.path.exists(tmp_path):
-            try:
+            with contextlib.suppress(OSError):
                 os.unlink(tmp_path)
-            except OSError:
-                pass
     return frames, [float(ts) for ts in timestamps]
 
 
@@ -259,10 +259,8 @@ def save_frame_jpgs(frames: list[np.ndarray], tag: str) -> list[str]:
 
 def cleanup_paths(paths: list[str]) -> None:
     for p in paths:
-        try:
+        with contextlib.suppress(OSError):
             os.unlink(p)
-        except OSError:
-            pass
 
 
 # ---------------------------------------------------------------------------
@@ -274,8 +272,8 @@ class Harness:
     def __init__(self, model_id: str) -> None:
         warnings.filterwarnings("ignore")
         from mlx_vlm import load
+        from mlx_vlm.generate import PromptCacheState, stream_generate
         from mlx_vlm.prompt_utils import apply_chat_template
-        from mlx_vlm.generate import stream_generate, PromptCacheState
 
         print(f"[loader] loading {model_id} ...", flush=True)
         t0 = time.time()
@@ -659,10 +657,10 @@ def main() -> int:
     # are fixed follow-ups. Q1 stays MC; Q2/Q3 are open. Parse-failure logic
     # is per arm.
     if args.smoke:
-        questions_per_video = [items[0]["q1_text"]]
+        [items[0]["q1_text"]]
     else:
         # We use 3 questions per video. Q1 is MC; Q2/Q3 are the two FOLLOWUPS.
-        questions_per_video = None  # constructed below per video
+        pass  # constructed below per video
 
     rows: list[dict[str, Any]] = []
 
@@ -715,7 +713,7 @@ def main() -> int:
         # cache from the previous turn).
         cross_results: dict[str, dict[str, Any]] = {}
         cross_cache = h.PromptCacheState()
-        print(f"  [cross_turn_warm] q0_setup (cache primer)", flush=True)
+        print("  [cross_turn_warm] q0_setup (cache primer)", flush=True)
         _setup = h.run(
             it["frame_paths"],
             SETUP_QUESTION,

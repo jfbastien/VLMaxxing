@@ -53,6 +53,8 @@ from typing import Any
 if not os.environ.get("HF_TOKEN"):
     raise SystemExit("HF_TOKEN required (gated Gemma weights). Aborting.")
 
+import contextlib
+
 import mlx.core as mx
 import numpy as np
 from PIL import Image
@@ -213,10 +215,8 @@ def extract_frames(
         if os.path.exists(tmp_path) and os.path.getsize(tmp_path) > 0:
             frames.append(np.array(Image.open(tmp_path).convert("RGB")))
         if os.path.exists(tmp_path):
-            try:
+            with contextlib.suppress(OSError):
                 os.unlink(tmp_path)
-            except OSError:
-                pass
     return frames, [float(t) for t in timestamps]
 
 
@@ -231,18 +231,16 @@ def save_jpgs(frames: list[np.ndarray], tag: str) -> list[str]:
 
 def cleanup(paths: list[str]) -> None:
     for p in paths:
-        try:
+        with contextlib.suppress(OSError):
             os.unlink(p)
-        except OSError:
-            pass
 
 
 class Harness:
     def __init__(self, model_id: str) -> None:
         warnings.filterwarnings("ignore")
         from mlx_vlm import load
+        from mlx_vlm.generate import PromptCacheState, stream_generate
         from mlx_vlm.prompt_utils import apply_chat_template
-        from mlx_vlm.generate import stream_generate, PromptCacheState
 
         print(f"[loader] loading {model_id}", flush=True)
         t0 = time.time()
@@ -623,7 +621,6 @@ def main() -> int:
             prompt_cache_state=cache_long,
             max_tokens=args.max_tokens,
         )
-        prior_q_text = SETUP_QUESTION
         for q_label, q_text in qs:
             print(f"  [adaptive_post_prev_repaired] {q_label}", flush=True)
             # The "repair" approximation: re-run prior_q briefly to
@@ -631,7 +628,6 @@ def main() -> int:
             adaptive[q_label] = h.run(
                 it["frame_paths"], q_text, prompt_cache_state=cache_long, max_tokens=args.max_tokens
             )
-            prior_q_text = q_text
             gc.collect()
         del cache_long
         gc.collect()

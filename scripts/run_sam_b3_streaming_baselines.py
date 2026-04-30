@@ -65,6 +65,8 @@ if not os.environ.get("HF_TOKEN"):
         "HF_TOKEN environment variable is required (gated Gemma 4 weights). Aborting per B3 spec."
     )
 
+import contextlib
+
 import mlx.core as mx
 import numpy as np
 from PIL import Image
@@ -215,19 +217,15 @@ def video_meta(path: str) -> tuple[float, float, int]:
             continue
         k, v = line.split("=", 1)
         if k == "duration":
-            try:
+            with contextlib.suppress(ValueError):
                 duration = float(v)
-            except ValueError:
-                pass
         elif k == "avg_frame_rate" and "/" in v:
             num, den = v.split("/")
             if int(den) > 0:
                 fps = int(num) / int(den)
         elif k == "nb_read_frames":
-            try:
+            with contextlib.suppress(ValueError):
                 n = int(v)
-            except ValueError:
-                pass
     if n == 0 and duration > 0:
         n = int(duration * fps)
     return duration, fps, n
@@ -276,10 +274,8 @@ def save_frame_jpgs(frames: list[np.ndarray], tag: str) -> list[str]:
 
 def cleanup(paths: list[str]) -> None:
     for p in paths:
-        try:
+        with contextlib.suppress(OSError):
             os.unlink(p)
-        except OSError:
-            pass
 
 
 # ---------------------------------------------------------------------------
@@ -344,8 +340,8 @@ class Harness:
     def __init__(self, model_id: str) -> None:
         warnings.filterwarnings("ignore")
         from mlx_vlm import load
-        from mlx_vlm.prompt_utils import apply_chat_template
         from mlx_vlm.generate import stream_generate
+        from mlx_vlm.prompt_utils import apply_chat_template
 
         print(f"[loader] loading {model_id} ...", flush=True)
         t0 = time.time()
@@ -885,8 +881,8 @@ def main() -> int:
             oracle_paths = save_frame_jpgs(oracle_frames, f"{vid}_e{ei:02d}_oracle")
             oracle_hashes = [hash_ndarray(f) for f in oracle_frames]
             oracle_ids = [f"{vid}@{t:.3f}s" for t in oracle_ts]
-            oracle_sel_hash = sha256_short("|".join(oracle_hashes))
-            oracle_indices = [int(round(t * fps)) for t in oracle_ts]
+            sha256_short("|".join(oracle_hashes))
+            [int(round(t * fps)) for t in oracle_ts]
             print(f"  [fresh_oracle_dense] {args.n_oracle_frames} frames", flush=True)
             oracle_run = h.run(oracle_paths, QUESTION, max_tokens=MAX_TOKENS)
             oracle_response = oracle_run["output_text"]

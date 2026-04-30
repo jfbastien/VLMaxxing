@@ -53,6 +53,8 @@ SDAMICO_EXPERIMENTS = Path("/Users/sam/repos/codec-through/experiments")
 if str(SDAMICO_EXPERIMENTS) not in sys.path:
     sys.path.insert(0, str(SDAMICO_EXPERIMENTS))
 
+import contextlib  # noqa: E402
+
 import numpy as np  # noqa: E402
 
 SCHEMA_VERSION = "sam_scaleout_artifact_v1"
@@ -210,10 +212,8 @@ def extract_frames(
         if os.path.exists(tmp_path) and os.path.getsize(tmp_path) > 0:
             frames.append(np.array(Image.open(tmp_path).convert("RGB")))
         if os.path.exists(tmp_path):
-            try:
+            with contextlib.suppress(OSError):
                 os.unlink(tmp_path)
-            except OSError:
-                pass
     return frames, [float(t) for t in timestamps]
 
 
@@ -489,10 +489,7 @@ def main() -> int:
             # C-CEILING (modified for hard-prune which reduces prefill, not
             # vision): we report observed prefill reduction and the E2E
             # speedup ratio.
-            if baseline_ms > 0:
-                e2e_speedup = baseline_ms / max(pruned_ms, 1.0)
-            else:
-                e2e_speedup = float("nan")
+            e2e_speedup = baseline_ms / max(pruned_ms, 1.0) if baseline_ms > 0 else float("nan")
 
             # Vision share is a constant: ViT runs fully both times. We
             # record vit_ms in stage_timings_ms and note that vision_ms

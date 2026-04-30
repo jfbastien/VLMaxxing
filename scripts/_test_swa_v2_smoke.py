@@ -30,11 +30,17 @@ if str(SCRIPTS) not in sys.path:
 # Reuse harness from the B0b runner.
 sys.path.insert(0, str(SCRIPTS))
 from run_sam_b0b_cache_correctness import (  # noqa: E402
-    Harness, find_videomme_video, extract_frames, save_frame_jpgs,
-    cleanup_paths, VIDEOMME_DIR_DEFAULT, MODEL_ID_DEFAULT,
+    MODEL_ID_DEFAULT,
+    VIDEOMME_DIR_DEFAULT,
+    Harness,
+    cleanup_paths,
+    extract_frames,
+    find_videomme_video,
+    save_frame_jpgs,
 )
 from swa_aware_cache_v2 import (  # noqa: E402
-    make_prefix_snapshot, run_turn_with_snapshot,
+    make_prefix_snapshot,
+    run_turn_with_snapshot,
 )
 
 QUESTION = "What color is most prominent in the scene?"
@@ -46,9 +52,9 @@ def main() -> int:
 
     # Pick first VideoMME video.
     import pyarrow.parquet as pq
+
     parquet = VIDEOMME_DIR_DEFAULT / "videomme/test-00000-of-00001.parquet"
-    df = pq.read_table(parquet).to_pandas().sort_values(
-        "question_id").reset_index(drop=True)
+    df = pq.read_table(parquet).to_pandas().sort_values("question_id").reset_index(drop=True)
     video_id = str(df.iloc[0]["videoID"])
     video_path = find_videomme_video(video_id, VIDEOMME_DIR_DEFAULT)
     if not video_path:
@@ -71,30 +77,31 @@ def main() -> int:
     # Arm 2: prefix snapshot
     print("\n[prefix_snapshot] building snapshot...")
     snapshot = make_prefix_snapshot(h, paths)
-    print(f"  n_prefix_tokens={snapshot['n_prefix_tokens']} "
-          f"warm_ms={snapshot['warm_ms']:.0f}")
+    print(f"  n_prefix_tokens={snapshot['n_prefix_tokens']} warm_ms={snapshot['warm_ms']:.0f}")
 
     print("\n[prefix_snapshot] running turn 1 (Q1) ...")
-    snap_run = run_turn_with_snapshot(snapshot, h, paths, QUESTION,
-                                       max_tokens=32)
+    snap_run = run_turn_with_snapshot(snapshot, h, paths, QUESTION, max_tokens=32)
     print(f"  output: {snap_run['output_text']!r}")
-    print(f"  wall: {snap_run['wall_ms']:.0f} ms "
-          f"({snap_run['n_new_tokens_prefilled']} new tokens prefilled, "
-          f"prefill_ms={snap_run['prefill_ms']:.0f})")
+    print(
+        f"  wall: {snap_run['wall_ms']:.0f} ms "
+        f"({snap_run['n_new_tokens_prefilled']} new tokens prefilled, "
+        f"prefill_ms={snap_run['prefill_ms']:.0f})"
+    )
 
     print("\n[prefix_snapshot] running turn 2 (same Q again, fresh restore) ...")
-    snap_run2 = run_turn_with_snapshot(snapshot, h, paths, QUESTION,
-                                        max_tokens=32)
+    snap_run2 = run_turn_with_snapshot(snapshot, h, paths, QUESTION, max_tokens=32)
     print(f"  output: {snap_run2['output_text']!r}")
-    print(f"  wall: {snap_run2['wall_ms']:.0f} ms "
-          f"({snap_run2['n_new_tokens_prefilled']} new tokens prefilled)")
+    print(
+        f"  wall: {snap_run2['wall_ms']:.0f} ms "
+        f"({snap_run2['n_new_tokens_prefilled']} new tokens prefilled)"
+    )
 
     # Comparisons
     byte_id_t1 = cold["output_text"] == snap_run["output_text"]
     byte_id_t2 = cold["output_text"] == snap_run2["output_text"]
     snap_t1_speedup = cold_ms / max(snap_run["wall_ms"], 1)
     snap_t2_speedup = cold_ms / max(snap_run2["wall_ms"], 1)
-    print(f"\n=== summary ===")
+    print("\n=== summary ===")
     print(f"  cold       : {cold['output_text']!r} ({cold_ms:.0f} ms)")
     print(f"  snapshot t1: byte-id={byte_id_t1} speedup={snap_t1_speedup:.2f}x")
     print(f"  snapshot t2: byte-id={byte_id_t2} speedup={snap_t2_speedup:.2f}x")
