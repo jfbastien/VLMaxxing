@@ -1,0 +1,29 @@
+[provenance] {
+  "run_id": "sam_b0b_1777513248_7289893a",
+  "model_id": "google/gemma-4-26B-A4B-it",
+  "model_sha": "7d4c97e54145f8ffd1a4dd1b4986a5015a517842",
+  "quantization": "bf16_native",
+  "runtime": "mlx_vlm-0.4.4",
+  "runtime_commit": "pypi",
+  "hardware": "Apple M5 Max | 128.0 GB unified | Darwin 25.4.0",
+  "os_version": "Darwin 25.4.0",
+  "mlx_version": "unknown",
+  "metal_version": "Metal 4",
+  "command_line": "scripts/run_sam_b0b_cache_correctness.py --smoke --out research/experiments/2026/artifacts/sam_scaleout_m5_r2_20260430/sam_b0b_cache_correctness_smoke.jsonl",
+  "memory_definition": "ru_maxrss bytes (macOS) -> GB",
+  "commit_sha": "8568fc4a65e745b30163045c164d5ccfb06edca1"
+}
+[setup] resolving 1 videos + extracting frames
+[loader] loading google/gemma-4-26B-A4B-it ...
+Fetching 9 files:   0%|          | 0/9 [00:00<?, ?it/s]Fetching 9 files: 100%|██████████| 9/9 [00:00<00:00, 214481.45it/s]
+[loader] loaded in 5.3s
+[video 1/1] fFjv93ACGo8
+  [cold_dense] q1_mc
+Prefill:   0%|          | 0/2155 [00:00<?, ?tok/s]Prefill:  95%|█████████▌| 2048/2155 [00:01<00:00, 1122.56tok/s]Prefill: 100%|█████████▉| 2154/2155 [00:01<00:00, 1087.32tok/s]
+  [within_turn_cache_replay] q1_mc
+Prefill:   0%|          | 0/2155 [00:00<?, ?tok/s]Prefill:  95%|█████████▌| 2048/2155 [00:01<00:00, 1129.02tok/s]Prefill: 100%|█████████▉| 2154/2155 [00:01<00:00, 1096.64tok/s]
+  [cross_turn_warm] q0_setup (cache primer)
+Prefill:   0%|          | 0/2084 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2084 [00:01<00:00, 1118.74tok/s]Prefill: 100%|█████████▉| 2083/2084 [00:01<00:00, 1076.94tok/s]
+  [cross_turn_warm] q1_mc (turn 1)
+Prefill:   0%|          | 0/2155 [00:00<?, ?tok/s]Prefill:  95%|█████████▌| 2048/2155 [00:01<00:00, 1091.66tok/s]Prefill: 100%|█████████▉| 2154/2155 [00:02<00:00, 1061.96tok/s]
+[wrote] 2 rows -> research/experiments/2026/artifacts/sam_scaleout_m5_r2_20260430/sam_b0b_cache_correctness_smoke.jsonl

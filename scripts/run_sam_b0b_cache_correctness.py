@@ -69,11 +69,16 @@ import mlx.core as mx
 # reuse the cache cross-turn whenever any RotatingKVCache is present.
 # The result: B0b's correctness gate can pass; the C-PERSIST speedup
 # claim on Gemma 26B remains BLOCKED until the upstream fix.
-import mlx_vlm.generate as _gen  # noqa: E402
-import numpy as np
+import importlib  # noqa: E402
+
 from mlx_lm.models.cache import RotatingKVCache  # noqa: E402
 from PIL import Image
 
+# Note: `mlx_vlm.generate` is shadowed by the top-level `generate`
+# function exported in mlx_vlm/__init__.py, so `import mlx_vlm.generate`
+# returns the function, not the module. Use importlib to fetch the
+# actual submodule.
+_gen = importlib.import_module("mlx_vlm.generate")
 _orig_stream_generate = _gen.stream_generate
 
 # Sticky module-level flag. The runner reads this AFTER every
