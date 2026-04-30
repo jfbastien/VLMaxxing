@@ -28,6 +28,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 MANUSCRIPT_ROOT = REPO_ROOT / "paper" / "arxiv"
 GENERATED = MANUSCRIPT_ROOT / "generated"
 ARTIFACTS = REPO_ROOT / "research" / "experiments" / "2026" / "artifacts"
+PDF_METADATA = {"CreationDate": None, "ModDate": None}
 SOURCE_KEYS = {
     "source",
     "artifact",
@@ -121,6 +122,10 @@ def _ensure_dirs() -> None:
         GENERATED / "data",
     ]:
         path.mkdir(parents=True, exist_ok=True)
+
+
+def _save_pdf(fig: plt.Figure, path: Path, **kwargs: object) -> None:
+    fig.savefig(path, metadata=PDF_METADATA, **kwargs)
 
 
 def _sync_curated_paper_figures() -> None:
@@ -355,7 +360,7 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
     out_png = GENERATED / "figures" / "regime_overview.png"
     out_pdf = GENERATED / "figures" / "regime_overview.pdf"
     fig.savefig(out_png, dpi=220, bbox_inches="tight")
-    fig.savefig(out_pdf, bbox_inches="tight")
+    _save_pdf(fig, out_pdf, bbox_inches="tight")
     overview = {
         "figure": "regime_overview",
         "purpose": "conceptual denominator map for anti-recomputation regimes",
@@ -629,7 +634,7 @@ def _render_c_persist_timeline_figure() -> None:
     out_png = GENERATED / "figures" / "c_persist_timeline.png"
     out_pdf = GENERATED / "figures" / "c_persist_timeline.pdf"
     fig.savefig(out_png, dpi=220, bbox_inches="tight")
-    fig.savefig(out_pdf, bbox_inches="tight")
+    _save_pdf(fig, out_pdf, bbox_inches="tight")
     plt.close(fig)
     (GENERATED / "data" / "c_persist_timeline_snapshot.json").write_text(
         json.dumps(
@@ -839,7 +844,7 @@ def _render_lane_a_figure(snapshot: dict) -> None:
     png_path = GENERATED / "figures" / "lane_a_pareto.png"
     pdf_path = GENERATED / "figures" / "lane_a_pareto.pdf"
     fig.savefig(png_path, dpi=220, bbox_inches="tight")
-    fig.savefig(pdf_path, bbox_inches="tight")
+    _save_pdf(fig, pdf_path, bbox_inches="tight")
     plt.close(fig)
 
     (GENERATED / "data" / "lane_a_snapshot.json").write_text(
@@ -1653,7 +1658,7 @@ def _render_headline_figure(snapshot: dict) -> None:
     fig.tight_layout()
     (GENERATED / "figures" / "headline_results.png").parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(GENERATED / "figures" / "headline_results.png", dpi=220, bbox_inches="tight")
-    fig.savefig(GENERATED / "figures" / "headline_results.pdf", bbox_inches="tight")
+    _save_pdf(fig, GENERATED / "figures" / "headline_results.pdf", bbox_inches="tight")
     plt.close(fig)
 
     (GENERATED / "data" / "headline_snapshot.json").write_text(
