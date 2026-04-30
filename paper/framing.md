@@ -174,8 +174,10 @@ way to overclaim.
    score. This is what C-VISION and the 1.51R partial reproduction
    measure. It is *not* streaming, and it is *not* live camera.
 2. **Native-rate streaming.** Frames arrive at source rate; the model
-   must keep up. Candidate C-STREAM lives here, but numeric scale-out rows stay
-   pending until a validated artifact bundle lands.
+   must keep up. Candidate C-STREAM lives here. A checked mixed bundle now
+   exists, but it is still bounded evidence rather than a fourth headline:
+   default cache reuse is unsafe, prefix-snapshot reuse is positive small-N,
+   and simple fixed-evidence baselines are serious.
 3. **After-ingest persistent-KV reuse.** Same video, follow-up
    question. The first query pays full prefill; subsequent queries reuse
    the KV and return in sub-second wall-clock. This is what C-PERSIST
@@ -288,14 +290,16 @@ boundary as much as the positives:
 
 ## Streaming evidence: case-study vs scale-out lane (not interchangeable)
 
-Candidate C-STREAM remains pending. Do not promote numeric streaming rows until
-raw paired outputs, cache-correctness smokes, source paths, and matched
-baselines are checked into this repo.
+Candidate C-STREAM is now a checked mixed bundle, not pending and not a fourth
+headline. Do not promote numeric streaming rows unless they are backed by raw
+paired outputs, cache-correctness smokes, source paths, and matched baselines;
+the current bundle is useful because it includes both positive prefix-snapshot
+rows and negative/baseline-pressure rows.
 
-**Sparse exactness** is a separate pending artifact-bundle row, not part of
-the deployment-multiplier bucket. Historical audits supported zero
-accuracy delta on 1,937 sparse-sampled Qwen items, but direct
-byte-identical raw-paired verification covered 513 items. Do not write
+**Sparse exactness** is a separate artifact-bundle row, not part of the
+deployment-multiplier bucket. Historical audits supported zero accuracy delta
+on 1,937 sparse-sampled Qwen items, but direct byte-identical raw-paired
+verification covered 513 items. Do not write
 "byte-identical on 1,937" unless the validated bundle re-exports or reruns the missing
 raw paired rows.
 
@@ -343,12 +347,12 @@ streaming bundle occupy disjoint regimes by design:
 
 | Axis                  | local mechanism stack                 | candidate streaming bundle                                          |
 |-----------------------|--------------------------------------------|------------------------------------------------------------|
-| Model size            | 4 B-class, 4-bit quantized                 | TBD by validated bundle |
+| Model size            | 4 B-class / 7B local, mostly quantized     | 26B-class scale-out rows plus local artifacts |
 | Protocol              | sparse-sampled benchmark QA                | native-rate streaming / live deployment |
-| Eval regime           | N = 30 / 60 holdout, paired, thermally controlled | pending raw paired rows and matched baselines |
-| Classifier            | pixel-diff proxy on sampled decoded frames | likely codec-native MV/residual at native rate, bundle-defined |
+| Eval regime           | N = 30 / 60 holdout, paired, thermally controlled | checked raw paired rows and matched fixed-evidence baselines, still mixed |
+| Classifier            | pixel-diff proxy on sampled decoded frames | MV/residual side-channels, event windows, prefix snapshots |
 | Focus                 | mechanism isolation, prereg falsification  | full stack and deployment-style state reuse |
-| Strongest numbers     | 1.08–1.24× E2E dev; 1.113× VideoMME 8 f holdout; sub-second follow-up inside tested envelope | pending validated artifact bundle |
+| Strongest numbers     | 1.113× VideoMME 8 f holdout; Gemma 32f short 1.316×; adaptive C-PERSIST 0/93 + many-turn stress | prefix-snapshot 8f/32f positive small-N; exactness export bounded to 1,937 zero-delta / 513 byte-identical |
 
 The shared frame is **C-CEILING** (`1/(fixed + (1−fixed)/s)` on any
 stage-bounded acceleration, including the vision-axis analog
@@ -356,9 +360,10 @@ stage-bounded acceleration, including the vision-axis analog
 **attention-propagation drift** as the fidelity mechanism — NOT
 positional-encoding drift. The local stack proves the mechanism at
 small scale under strict prereg/falsification discipline; the separate
-scale-out lane reports companion evidence only after checked operational
-protocol bundles land. The paper reports the **labeled evidence union** under a
-single analytical theory, with honest accounting of where each number came from.
+scale-out lane now reports checked mixed evidence only with its cache,
+baseline, and source-manifest caveats attached. The paper reports the
+**labeled evidence union** under a single analytical theory, with honest
+accounting of where each number came from.
 
 Weak streaming case-study claims without matched baselines (e.g.
 single-cell streaming anecdotes) are **appendix-bound** — they do not

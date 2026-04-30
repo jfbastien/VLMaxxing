@@ -195,6 +195,38 @@ follow-up pruning. The completed long-bucket continuations measured that
 boundary in the current prompt-cache path: all tested follow-up image tokens
 were cache-served. That choice is deliberate.
 
+\begin{table}[H]
+\centering
+\caption{Runtime contract implied by the evidence. The table is not a product
+API; it is the minimum interface a future stack needs to reproduce the same
+kind of claim without confusing semantic reuse, real skipped work, and
+correctness.}
+\label{tab:runtime-contract}
+\scriptsize
+\renewcommand{\arraystretch}{1.12}
+\begin{tabularx}{\linewidth}{@{}p{0.18\linewidth} X X X@{}}
+\toprule
+Regime & Runtime hook & Validation gate & Failure mode to log \\
+\midrule
+Fresh-video vision pruning & vision-tower keep masks, token geometry, per-stage
+timing & paired accuracy/format, \(V_{\mathrm{share}}\), \(V_{\mathrm{red}}\),
+and ceiling residual & format collapse, low \(V_{\mathrm{share}}\), policy
+overhead \\
+After-ingest follow-up reuse & stable prefix-cache semantics, newest-frame
+tail re-prefill, cache-state source labels & paired choice/correctness drift,
+pathological outputs, setup and follow-up latency & cache basin, wrong
+inheritance source, silent cache-topology corruption \\
+Candidate streaming state reuse & stream-time staleness signals, shift/rebuild
+events, raw source media, matched simple baselines & cache-correctness smoke,
+low-FPS/screenshot/recency comparisons, stale-cache case & stale freshness,
+compute denial, proxy loses to simple dense baseline \\
+Routing/control lane & frame-selection logs, novelty-ranked dense controls,
+effective-fresh-frame accounting & quality frontier under dense backend; no
+speed claim & confusing answer preservation with timed work skipped \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
 \begin{sectiontodo}{Add the overview figure and final algorithm box}
 The prose now matches the paper's current scope, but the final manuscript still
 needs a compact visual that makes three distinctions obvious: first-pass

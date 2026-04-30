@@ -304,7 +304,7 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
             0.635,
             "C-PERSIST",
             "prompt + KV",
-            "same-video follow-up; first query paid",
+            "same-video follow-up;\n50-turn stress measured",
             "#dcfce7",
             "#16a34a",
             "solid",
@@ -322,7 +322,7 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
             0.385,
             "Streaming",
             "live state",
-            "candidate C-STREAM;\npending artifact bundle",
+            "candidate C-STREAM;\nvalidated mixed bundle",
             "#fff7ed",
             "#d97706",
             "dashed",
@@ -397,6 +397,7 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
             "raw_16f_speedup": qwen_16f["speedup"],
             "adaptive_all_query_speedup_min": repair["all_query_speedup_min"],
             "adaptive_all_query_speedup_max": repair["all_query_speedup_max"],
+            "many_turn_horizon": 50,
             "denominator": "after-ingest follow-up / repaired-session latency",
             "source_paths": [
                 qwen_16f["source"],
@@ -404,6 +405,7 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
                     cell["summary_source"]
                     for cell in snapshot["selective_reprefill"]["adaptive_cells"]
                 ],
+                "research/experiments/2026/artifacts/phase1_55L_many_turn_cpersist/summary.json",
             ],
         },
         "routing": {
@@ -413,8 +415,17 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
         },
         "streaming": {
             "denominator": "scale-out component counters and E2E timing",
-            "artifact_harmonization_pending": True,
-            "gemma_26b_followup_status": "blocked_by_cache_correctness_smoke",
+            "artifact_harmonization_pending": False,
+            "status": "validated_mixed_bundle_candidate_regime",
+            "gemma_26b_followup_status": (
+                "default_cache_path_blocked_prefix_snapshot_small_n_positive"
+            ),
+            "source_paths": [
+                "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b0b_cache_correctness_summary.json",
+                "research/experiments/2026/artifacts/sam_scaleout_m5_r2_20260430/sam_b0b_cache_correctness_summary.json",
+                "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_summary.json",
+                "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b3_streaming_baselines_summary.json",
+            ],
         },
     }
     (GENERATED / "data" / "regime_overview_snapshot.json").write_text(
@@ -1899,6 +1910,107 @@ def _write_c_persist_sampler_table() -> None:
     (GENERATED / "tables" / "c_persist_sampler_stability.tex").write_text("\n".join(lines) + "\n")
 
 
+def _many_turn_snapshot() -> dict[str, object]:
+    path = ARTIFACTS / "phase1_55L_many_turn_cpersist" / "summary.json"
+    summary = _artifact_json(path)
+    cells = {(str(cell["policy"]), int(cell["horizon"])): cell for cell in summary["cells"]}
+    policy_labels = {
+        "fixed_k1": r"fixed \(K=1\)",
+        "adaptive_post_q2": r"adaptive post-\(Q2\)",
+        "refresh10": r"scheduled refresh-10",
+    }
+    rows = []
+    for policy in ["fixed_k1", "adaptive_post_q2", "refresh10"]:
+        cell = cells[(policy, 50)]
+        follow = cell["followup_only"]
+        post = cell.get("post_repair_only") or {}
+        rows.append(
+            {
+                "policy": policy,
+                "label": policy_labels[policy],
+                "horizon": 50,
+                "followup_n": int(follow["n"]),
+                "choice_drift": int(follow["choice_drift"]),
+                "correctness_drift": int(follow["correctness_drift"]),
+                "pathological": int(follow["pathological"]),
+                "median_followup_s": float(follow["median_elapsed_ms"]) / 1000.0,
+                "post_repair_n": int(post.get("n", 0)),
+                "post_repair_choice_drift": int(post.get("choice_drift", 0)),
+                "post_repair_correctness_drift": int(post.get("correctness_drift", 0)),
+                "post_repair_median_s": (
+                    float(post["median_elapsed_ms"]) / 1000.0
+                    if "median_elapsed_ms" in post
+                    else None
+                ),
+                "pass_three_percent": bool(cell["pass_three_percent_drift_followup_only"]),
+                "cliff": bool(cell["cliff_bucket_detected"]),
+            }
+        )
+    return {
+        "phase": summary["phase"],
+        "history_mode": summary["history_mode"],
+        "frame_count": int(summary["frame_count"]),
+        "video_ids": summary["video_ids"],
+        "n_baseline_chains": int(summary["n_baseline_chains"]),
+        "n_baseline_rows": int(summary["n_baseline_rows"]),
+        "n_paired_rows": int(summary["n_paired_rows"]),
+        "policies": summary["policies"],
+        "turn_counts": summary["turn_counts"],
+        "rows": rows,
+        "source_paths": [
+            _source_path_label(path),
+            summary["paths"]["baseline_jsonl"],
+            summary["paths"]["paired_jsonl"],
+            summary["paths"]["session_jsonl"],
+        ],
+    }
+
+
+def _write_c_persist_many_turn_table() -> None:
+    snapshot = _many_turn_snapshot()
+    lines = [
+        r"\begin{table}[H]",
+        r"\centering",
+        (
+            r"\caption{Many-turn C-PERSIST stress on seven 20f short VideoMME "
+            r"videos. The stress cycles the same three questions through a "
+            r"50-turn stateless question schedule, so it tests cache-horizon "
+            r"stability under repeated follow-ups rather than natural dialogue. "
+            r"The 560 dense baseline rows are deterministic replicas of 21 "
+            r"unique stateless dense runs for turn-matched pairing, not "
+            r"independent timing samples.}"
+        ),
+        r"\label{tab:c-persist-many-turn}",
+        r"\small",
+        r"\renewcommand{\arraystretch}{1.14}",
+        r"\begin{tabularx}{\linewidth}{@{}l r r r r X@{}}",
+        r"\toprule",
+        r"Policy & Horizon & Follow-ups & Choice/correct drift & Median FU & Interpretation \\",
+        r"\midrule",
+    ]
+    for row in snapshot["rows"]:
+        if row["post_repair_n"]:
+            interpretation = (
+                f"post-repair choice/correct {row['post_repair_choice_drift']}/"
+                f"{row['post_repair_n']} / {row['post_repair_correctness_drift']}/"
+                f"{row['post_repair_n']}; no cliff"
+            )
+        elif row["choice_drift"]:
+            interpretation = "passes 3\\% gate but has nonzero late drift; no pathologies"
+        else:
+            interpretation = "passes 3\\% gate with no observed drift"
+        lines.append(
+            f"{row['label']} & {row['horizon']} & {row['followup_n']} & "
+            f"{row['choice_drift']}/{row['correctness_drift']} & "
+            f"{row['median_followup_s']:.3f}\\,s & {interpretation} \\\\"
+        )
+    lines.extend([r"\bottomrule", r"\end{tabularx}", r"\end{table}"])
+    (GENERATED / "tables" / "c_persist_many_turn.tex").write_text("\n".join(lines) + "\n")
+    (GENERATED / "data" / "c_persist_many_turn_snapshot.json").write_text(
+        json.dumps(snapshot, indent=2, sort_keys=True) + "\n"
+    )
+
+
 def _write_memory_characterization_table() -> None:
     summary = _artifact_json(
         ARTIFACTS / "phase1_66_memory_characterization" / "memory_characterization_summary.json"
@@ -1935,6 +2047,272 @@ def _write_memory_characterization_table() -> None:
         )
     lines.extend([r"\bottomrule", r"\end{tabularx}", r"\end{table}"])
     (GENERATED / "tables" / "memory_characterization.tex").write_text("\n".join(lines) + "\n")
+
+
+def _load_jsonl(path: Path) -> list[dict]:
+    return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+
+
+def _median_ratio(rows: list[dict], numerator: str, denominator: str) -> float:
+    values = [
+        float(row[numerator]) / float(row[denominator])
+        for row in rows
+        if isinstance(row.get(numerator), (int, float))
+        and isinstance(row.get(denominator), (int, float))
+        and float(row[denominator]) > 0
+    ]
+    if not values:
+        raise ValueError(f"no ratios for {numerator}/{denominator}")
+    values.sort()
+    mid = len(values) // 2
+    if len(values) % 2:
+        return values[mid]
+    return (values[mid - 1] + values[mid]) / 2.0
+
+
+def _median_value(rows: list[dict], key: str) -> float:
+    values = [float(row[key]) for row in rows if isinstance(row.get(key), (int, float))]
+    if not values:
+        raise ValueError(f"no numeric values for {key}")
+    values.sort()
+    mid = len(values) // 2
+    if len(values) % 2:
+        return values[mid]
+    return (values[mid - 1] + values[mid]) / 2.0
+
+
+def _scaleout_bundle_snapshot() -> dict[str, object]:
+    base = ARTIFACTS / "sam_scaleout_m5_20260429"
+    r2 = ARTIFACTS / "sam_scaleout_m5_r2_20260430"
+
+    b0_default = _artifact_json(base / "sam_b0b_cache_correctness_summary.json")
+    b0_guard = _artifact_json(r2 / "sam_b0b_cache_correctness_summary.json")
+
+    prefix8_path = base / "sam_m5_5b_swa_prefix_snapshot.jsonl"
+    prefix32_path = base / "sam_m5_5b_swa_prefix_snapshot_32f.jsonl"
+    prefix8_summary = _artifact_json(base / "sam_m5_5b_swa_prefix_snapshot_summary.json")
+    prefix32_summary = _artifact_json(base / "sam_m5_5b_swa_prefix_snapshot_32f_summary.json")
+    prefix8_rows = _load_jsonl(prefix8_path)
+    prefix32_rows = _load_jsonl(prefix32_path)
+
+    b3_path = base / "sam_b3_streaming_baselines.jsonl"
+    b3_summary = _artifact_json(base / "sam_b3_streaming_baselines_summary.json")
+    b3_rows = _load_jsonl(b3_path)
+    by_arm: dict[str, list[dict]] = {}
+    for row in b3_rows:
+        by_arm.setdefault(str(row["arm"]), []).append(row)
+    b3_table = []
+    for arm, label in [
+        ("low_fps_dense", "low-FPS dense"),
+        ("screenshot_polling", "screenshot polling"),
+        ("sam_policy", "event-window proxy"),
+        ("recency_last_k", "recency last-K"),
+    ]:
+        rows = by_arm[arm]
+        b3_table.append(
+            {
+                "arm": arm,
+                "label": label,
+                "n": len(rows),
+                "oracle_matches": sum(1 for row in rows if not bool(row["correctness_diff"])),
+                "parse_failures": sum(1 for row in rows if bool(row["parse_failure"])),
+            }
+        )
+
+    b4_summary = _artifact_json(base / "sam_b4_sparse_vit_ceiling_summary.json")
+    b4_rows = _load_jsonl(base / "sam_b4_sparse_vit_ceiling.jsonl")
+    b4_by_frames: dict[int, list[dict]] = {}
+    for row in b4_rows:
+        b4_by_frames.setdefault(int(row["prompt_frame_count"]), []).append(row)
+
+    b5_accuracy = _artifact_json(base / "sam_b5_s4_accuracy_1937_summary.json")
+    b5_raw = _artifact_json(base / "sam_b5_s4_raw_paired_513_summary.json")
+
+    return {
+        "default_cache_path": {
+            "n": int(b0_default["n_rows"]),
+            "text_diffs": int(b0_default["text_diffs"]),
+            "choice_diffs": int(b0_default["choice_diffs"]),
+            "correctness_diffs": int(b0_default["correctness_diffs"]),
+            "parse_failures": int(b0_default["parse_failures"]),
+            "pass": bool(b0_default["pass"]),
+            "source": _source_path_label(base / "sam_b0b_cache_correctness_summary.json"),
+        },
+        "guarded_correctness_control": {
+            "n": int(b0_guard["n_rows"]),
+            "text_diffs": int(b0_guard["text_diffs"]),
+            "choice_diffs": int(b0_guard["choice_diffs"]),
+            "correctness_diffs": int(b0_guard["correctness_diffs"]),
+            "parse_failures": int(b0_guard["parse_failures"]),
+            "pass": bool(b0_guard["pass"]),
+            "policy": "full_refill_guard_rotating_kv",
+            "source": _source_path_label(r2 / "sam_b0b_cache_correctness_summary.json"),
+        },
+        "prefix_snapshot": [
+            {
+                "frames": 8,
+                "n": int(prefix8_summary["n_rows"]),
+                "choice_diffs": int(prefix8_summary["choice_diffs"]),
+                "correctness_diffs": int(prefix8_summary["correctness_diffs"]),
+                "text_diffs": int(prefix8_summary["text_diffs"]),
+                "parse_failures": int(prefix8_summary["parse_failures"]),
+                "median_speedup": _median_ratio(prefix8_rows, "baseline_elapsed_ms", "elapsed_ms"),
+                "median_elapsed_s": _median_value(prefix8_rows, "elapsed_ms") / 1000.0,
+                "source": _source_path_label(prefix8_path),
+            },
+            {
+                "frames": 32,
+                "n": int(prefix32_summary["n_rows"]),
+                "choice_diffs": int(prefix32_summary["choice_diffs"]),
+                "correctness_diffs": int(prefix32_summary["correctness_diffs"]),
+                "text_diffs": int(prefix32_summary["text_diffs"]),
+                "parse_failures": int(prefix32_summary["parse_failures"]),
+                "median_speedup": _median_ratio(prefix32_rows, "baseline_elapsed_ms", "elapsed_ms"),
+                "median_elapsed_s": _median_value(prefix32_rows, "elapsed_ms") / 1000.0,
+                "source": _source_path_label(prefix32_path),
+            },
+        ],
+        "streaming_baselines": {
+            "summary": {
+                "n": int(b3_summary["n_rows"]),
+                "choice_diffs": int(b3_summary["choice_diffs"]),
+                "correctness_diffs": int(b3_summary["correctness_diffs"]),
+                "parse_failures": int(b3_summary["parse_failures"]),
+            },
+            "arms": b3_table,
+            "source": _source_path_label(b3_path),
+        },
+        "post_vit_hard_prune": {
+            "n": int(b4_summary["n_rows"]),
+            "choice_diffs": int(b4_summary["choice_diffs"]),
+            "correctness_diffs": int(b4_summary["correctness_diffs"]),
+            "text_diffs": int(b4_summary["text_diffs"]),
+            "parse_failures": int(b4_summary["parse_failures"]),
+            "by_frames": [
+                {
+                    "frames": frames,
+                    "n": len(rows),
+                    "median_speedup": _median_ratio(rows, "baseline_elapsed_ms", "elapsed_ms"),
+                }
+                for frames, rows in sorted(b4_by_frames.items())
+            ],
+            "source": _source_path_label(base / "sam_b4_sparse_vit_ceiling.jsonl"),
+        },
+        "exactness_export": {
+            "accuracy_rows": int(b5_accuracy["n_rows"]),
+            "accuracy_correctness_diffs": int(b5_accuracy["correctness_diffs"]),
+            "accuracy_parse_failures": int(b5_accuracy["parse_failures"]),
+            "raw_rows": int(b5_raw["n_rows"]),
+            "raw_text_diffs": int(b5_raw["text_diffs"]),
+            "raw_choice_diffs": int(b5_raw["choice_diffs"]),
+            "raw_parse_failures": int(b5_raw["parse_failures"]),
+            "source_paths": [
+                _source_path_label(base / "sam_b5_s4_accuracy_1937_summary.json"),
+                _source_path_label(base / "sam_b5_s4_raw_paired_513_summary.json"),
+            ],
+        },
+        "source_paths": [
+            _source_path_label(base / "sam_b0b_cache_correctness_summary.json"),
+            _source_path_label(r2 / "sam_b0b_cache_correctness_summary.json"),
+            _source_path_label(base / "sam_m5_5b_swa_prefix_snapshot_summary.json"),
+            _source_path_label(base / "sam_m5_5b_swa_prefix_snapshot_32f_summary.json"),
+            _source_path_label(base / "sam_b3_streaming_baselines_summary.json"),
+            _source_path_label(base / "sam_b4_sparse_vit_ceiling_summary.json"),
+            _source_path_label(base / "sam_b5_s4_accuracy_1937_summary.json"),
+            _source_path_label(base / "sam_b5_s4_raw_paired_513_summary.json"),
+        ],
+    }
+
+
+def _write_scaleout_bundle_table() -> None:
+    snapshot = _scaleout_bundle_snapshot()
+    prefix8, prefix32 = snapshot["prefix_snapshot"]
+    low_fps = next(
+        row for row in snapshot["streaming_baselines"]["arms"] if row["arm"] == "low_fps_dense"
+    )
+    screenshot = next(
+        row for row in snapshot["streaming_baselines"]["arms"] if row["arm"] == "screenshot_polling"
+    )
+    proxy = next(
+        row for row in snapshot["streaming_baselines"]["arms"] if row["arm"] == "sam_policy"
+    )
+    recency = next(
+        row for row in snapshot["streaming_baselines"]["arms"] if row["arm"] == "recency_last_k"
+    )
+    b4 = snapshot["post_vit_hard_prune"]
+    b4_parts = ", ".join(
+        f"{row['frames']}f {row['median_speedup']:.3f}$\\times$" for row in b4["by_frames"]
+    )
+    lines = [
+        r"\begin{table}[H]",
+        r"\centering",
+        (
+            r"\caption{Checked scale-out artifact bundle. These rows make "
+            r"candidate C-STREAM more concrete, but they do not promote it to "
+            r"a fourth headline: cache correctness, matched baselines, and "
+            r"native mechanism quality remain the gates.}"
+        ),
+        r"\label{tab:scaleout-bundle}",
+        r"\scriptsize",
+        r"\renewcommand{\arraystretch}{1.16}",
+        r"\begin{tabularx}{\linewidth}{@{}p{0.22\linewidth} X p{0.25\linewidth}@{}}",
+        r"\toprule",
+        r"Probe & Result & Paper meaning \\",
+        r"\midrule",
+        (
+            "Default 26B cache reuse & "
+            f"{snapshot['default_cache_path']['text_diffs']}/"
+            f"{snapshot['default_cache_path']['n']} text diffs; "
+            f"{snapshot['default_cache_path']['choice_diffs']} choice diffs; "
+            "cross-turn path fails cache-correctness smoke & "
+            "diagnostic boundary; do not promote default cache reuse \\\\"
+        ),
+        (
+            "Correctness guard & "
+            f"{snapshot['guarded_correctness_control']['text_diffs']}/"
+            f"{snapshot['guarded_correctness_control']['n']} text diffs under "
+            "RotatingKV full-refill guard & correctness control, not a speedup \\\\"
+        ),
+        (
+            "26B prefix snapshot & "
+            f"8f: {prefix8['median_speedup']:.2f}$\\times$, "
+            f"choice/correct {prefix8['choice_diffs']}/{prefix8['n']} / "
+            f"{prefix8['correctness_diffs']}/{prefix8['n']}; "
+            f"32f: {prefix32['median_speedup']:.2f}$\\times$, "
+            f"choice/correct {prefix32['choice_diffs']}/{prefix32['n']} / "
+            f"{prefix32['correctness_diffs']}/{prefix32['n']} & "
+            "positive small-N scale-out C-PERSIST row; "
+            "wrapper-specific and not byte-identical \\\\"
+        ),
+        (
+            "Fixed-evidence stream baselines & "
+            f"low-FPS dense {low_fps['oracle_matches']}/{low_fps['n']} beats "
+            f"screenshot {screenshot['oracle_matches']}/{screenshot['n']}, "
+            f"event-window proxy {proxy['oracle_matches']}/{proxy['n']}, "
+            f"recency {recency['oracle_matches']}/{recency['n']} & baseline pressure; "
+            "throughput axis remains separate \\\\"
+        ),
+        (
+            "Post-ViT hard prune & "
+            f"{b4_parts}; choice/correct {b4['choice_diffs']}/{b4['n']} / "
+            f"{b4['correctness_diffs']}/{b4['n']} & overhead boundary; "
+            "not real sparse-ViT speedup \\\\"
+        ),
+        (
+            "Sparse exactness export & "
+            f"zero correctness delta on {snapshot['exactness_export']['accuracy_rows']} "
+            f"logged rows; byte-identical raw-paired text on "
+            f"{snapshot['exactness_export']['raw_rows']} rows & denominator-safe "
+            "artifact harmonization \\\\"
+        ),
+        r"\bottomrule",
+        r"\end{tabularx}",
+        r"\end{table}",
+    ]
+    (GENERATED / "tables" / "scaleout_bundle_status.tex").write_text("\n".join(lines) + "\n")
+    (GENERATED / "data" / "scaleout_bundle_snapshot.json").write_text(
+        json.dumps(snapshot, indent=2, sort_keys=True) + "\n"
+    )
 
 
 def _write_build_meta(primary: dict[str, str]) -> None:
@@ -1983,7 +2361,9 @@ def main() -> int:
     _write_measured_sparse_execution_tables(headline_snapshot)
     _write_c_persist_repair_table(headline_snapshot)
     _write_c_persist_sampler_table()
+    _write_c_persist_many_turn_table()
     _write_memory_characterization_table()
+    _write_scaleout_bundle_table()
     _render_c_persist_timeline_figure()
     qwen_bridge_snapshot = _qwen_bridge_boundary_snapshot()
     _write_qwen_bridge_boundary_table(qwen_bridge_snapshot)

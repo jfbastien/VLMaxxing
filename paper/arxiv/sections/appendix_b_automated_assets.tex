@@ -3,19 +3,21 @@
 The manuscript tooling automates only the paper elements that have stable,
 checked-in inputs: the Lane~A holdout figure and table, headline
 anti-recomputation assets, measured sparse-vision tables, C-PERSIST repair and
-sampler tables, memory characterization, paired-drift summaries, and draft repo
-provenance generated from the current checkout.
+sampler/many-turn tables, the scale-out bundle status table, memory
+characterization, paired-drift summaries, and draft repo provenance generated
+from the current checkout.
 
 The sync step deliberately does not read sibling checkouts or free-form
-deployment markdown. Candidate C-STREAM and scale-out rows remain manual and
-visibly pending until a validated local artifact bundle lands. That keeps the
-draft useful for incoming experiments without letting stale screenshots or
-partner prose become release evidence.
+deployment markdown. Candidate C-STREAM rows are generated only from checked
+local artifacts, and they stay visibly bounded when the bundle is mixed. That
+keeps the draft useful for incoming experiments without letting stale
+screenshots or partner prose become release evidence.
 
 \begin{sectiontodo}{Expand automation only where the evidence surface is stable}
-Good next targets are a generated novelty-ranked dense table, setup-inclusive
-C-PERSIST rows once cache-build setup time is recorded, and a schema-validated
-C-STREAM artifact import. Do not automate from free-form markdown when a
+Good next targets are a generated novelty-ranked dense table,
+setup-inclusive C-PERSIST rows once cache-build setup time is recorded, and a
+native streaming quality table once the policy beats matched baselines. Do not
+automate from free-form markdown when a
 canonical artifact is missing; either add the artifact or keep the text pending.
 
 \textcolor{todoBorder}{Source pointers: \path{paper/arxiv/scripts/sync_sources.py},

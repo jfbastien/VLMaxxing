@@ -140,9 +140,11 @@ LaTeX section files are the canonical manuscript sources.
   (16f clean; 8f slightly worse but still inside the criterion). The repaired
   basin headline is adaptive selective re-prefill: **0/93** observed paired
   drift with **15.28×–35.97×** all-query speedup.
-- **Candidate C-STREAM:** pending validated artifact bundle. Do not include
-  numeric deployment rows in release claims until raw paired outputs, cache
-  smokes, source paths, and matched baselines are checked in.
+- **Candidate C-STREAM:** checked mixed artifact bundle. Keep it as bounded
+  scale-out evidence, not a fourth headline: default cache reuse is unsafe,
+  prefix-snapshot reuse is positive but small-N, fixed-evidence baselines favor
+  low-FPS dense over the current event-window proxy, and exactness denominators
+  must remain separate.
 - **Qwen routing:** audited Pareto win/tie on MVBench and TOMATO holdouts
   at much lower effective fresh-frame budgets, with local novelty-ranked
   diagnostics suggesting that fresh-compute placement is not captured by
@@ -300,7 +302,7 @@ runnable tonight vs. impl-gated.
 |------|-------|---------|-------|----------------|
 | should-do #3 | **1.51V Qwen cross-arch probe** (L=2, kr=0.50, VideoMME 8f n=30 thermally paired, 2 arms) | **CLOSED 2026-04-23** | Qwen 2.5-VL-7B-4bit | **landed** — `V_red = 0.398`, `E2E = 1.044× observed vs 1.043× predicted`, aggregate `Δacc = −0.033`; C-VISION upgrades to two-architecture mechanism evidence |
 | should-do #4 | Local paired streaming-protocol reproduction (1.30) + root-cause decomposition | CLOSED-BOUNDARY 2026-04-26 for current policy | Qwen 2.5-VL-7B-Instruct-4bit (driver hard-fails on non-Qwen at `run_phase1_30_scaleout_streaming.py:303-308`) | The 1.30W dense-Q0 reference lands paired cold 0.561 / streaming 0.503 (Δacc = −0.0585) / 2.79× with aggregate Q0 parity and clean format, but misses the preregistered `3.0×` rescue floor. The later 1.30AD instrumented cache-reuse rerun preserves the same aggregate boundary and reaches 3.02×, while proving follow-up vision pruning is inactive (`vision_pruning_active_fraction=0.0`, all follow-up image tokens cache-served). The failure is therefore fidelity/follow-up state, not a deployable sparse-vision speed win. 1.30X's Δacc=0.0 / 3.078× point is oracle-only. 1.30Z/AB falsify every tested long-Q0 keep rate from 0.67 through 0.90; high keep rates restore aggregate Q0 accuracy but still lose follow-ups by ~19pp. |
-| should-do #5 | **1.55 selective re-prefill frontier** (recover Δacc at 20f/32f while clawing back speed) | Breadth landed; many-turn / sampler / cross-architecture follow-ups remain | Qwen 2.5-VL-7B-4bit | **Fixed K=1 now has broad local evidence** — no observed paired drift on n=93 across 20f short/medium/long plus 32f short (one-sided rule-of-three upper bound ≈3.2%), 9.48×–20.37× same-class median follow-up speedup, and 0/62 pathological follow-up outputs. **Adaptive post-Q2-state reuse is now the headline repair lane** — 0/93 paired drift, 14.90×–35.92× same-class follow-up speedup, and a 15.28×–35.97× cold-all-query ratio. Stage timing shows adaptive Q3 avoids fixed-K's repeated last-frame re-prefill. **1.55E (`Q2=K1`, `Q3=K0`)** remains the bounded negative that proves cache-source inheritance is the mechanism. **1.55B** remains the separate persistent-KV × 1.54 composition phase. |
+| should-do #5 | **Selective re-prefill frontier** (recover Δacc at 20f/32f while clawing back speed) | Breadth + sampler + many-turn stress landed; natural dialogue and cross-architecture follow-ups remain | Qwen 2.5-VL-7B-4bit | **Fixed K=1 now has broad local evidence** — no observed paired drift on n=93 across 20f short/medium/long plus 32f short (one-sided rule-of-three upper bound ≈3.2%), 9.48×–20.37× same-class median follow-up speedup, and 0/62 pathological follow-up outputs. **Adaptive post-Q2-state reuse is now the headline repair lane** — 0/93 paired drift, 14.90×–35.92× same-class follow-up speedup, and a 15.28×–35.97× cold-all-query ratio. Stage timing shows adaptive Q3 avoids fixed-K's repeated last-frame re-prefill. **Many-turn stress landed** — adaptive and scheduled-refresh variants are drift-free through a 50-turn repeated-question cycle; fixed K=1 has small late drift but stays below the 3% gate. **The remaining horizon gap is true conversational stability**, not the basic 10/20/50-turn cache stress. |
 | should-do #6 | **1.58 bf16 KV control at 20f** (discriminate quantization vs attention-OOD) | ~3.5-4 h (bf16 8f n=30 + bf16 16f n=30) | Qwen 2.5-VL-7B bf16 | **wrapper-landed; preflight still blocks execution** — `scripts/run_phase1_58_bf16_control.sh` + analyzer landed, but the local bf16 checkpoint is absent and the current 16 GB laptop plan caps autonomous runs near `10 GB` RSS, well below the prereg's looser `<14 GB` feasibility band |
 | should-do #8 | **1.29 codec-native bridge (reframed)** | landed semantically; slow offline extraction | Qwen 2.5-VL-7B-4bit | **planner-substitution evidence landed** — MAX-over-span sparse sampling is HARD-FALSIFIED, while the continuous-score redesign reaches codec-dense agreement 1.000 on VideoMME dev all-duration n=30 with zero aggregate accuracy delta and zero parse failures. Later calibration-mode and calibration-source ablations are neutral on the local slices we ran. This is not a latency claim: offline codec extraction totals 7290s; the remaining gate is streaming decoder integration / native-rate systems evaluation. |
 | future | **1.60 scroll/pan subset** (20 items stratified by scroll intensity, L=2 kr=0.50 paired) | n/a on VideoMME; ~70-90 min after a real subset exists | Gemma 4-E4B-4bit or matched C-VISION stack | **closed as natural-VideoMME corpus limitation** — wider 60-item VideoMME scan found 0/60 items above `shifted_fraction >= 0.30` (max 0.125), so this only reopens with EgoSchema/EPIC-Kitchens/Ego4D or a labeled synthetic scroll/pan set |
@@ -310,11 +312,11 @@ runnable tonight vs. impl-gated.
 | superseded | 1.52R original composition gate (1.42 × 1.51R) | obsolete | Gemma 4-E4B-4bit | original gate superseded: 1.42 split-landed and 1.51R closed own-axis null; current composition evidence comes from 1.51V EXP10 and future scale-out bundle gates |
 | landed-boundary | Claim-5 measured sparse-execution envelope | landed 2026-04-29; broader curve remains open | Gemma 4-E4B and Qwen 2.5-VL-7B-4bit | Gemma 32f short is the clean timed-skip cell (1.316×, 0/20 paired drift, parse failures 0/0). Gemma 8/16/32f full sweep has matched parse-failure caveats. Qwen 16f kr=0.85 is fidelity-safe but low-gain; broad sparse backend and sparse LM prefill remain larger engineering work. |
 
-**Runnable next with setup**: many-turn C-PERSIST stability,
-direct cache-state instrumentation for the 1.30 boundary, and scale-out
-artifact-compatible 26B replication are now higher leverage than more VideoMME
-breadth. `1.58` remains blocked by the missing bf16 checkpoint and the current
-local memory policy.
+**Runnable next with setup**: natural-dialogue many-turn C-PERSIST stability,
+direct cache-state instrumentation for the 1.30 boundary, and native streaming
+quality/baseline closure are now higher leverage than more VideoMME breadth.
+`1.58` remains blocked by the missing bf16 checkpoint and the current local
+memory policy.
 
 **Aggregate forward cost once blockers clear**: ~20 h benchmark-only
 @ 8f (excludes implementation); ~40 h @ 32f.
@@ -328,10 +330,10 @@ queue once infra is in place.
 
 | Venue | Fit today | What would need to land |
 |---|---|---|
-| **arXiv preprint (current anti-recomputation draft)** | **Ready today** as a multi-regime anti-recomputation paper with clean, advisory, and artifact-pending status stated explicitly. | No new science gate for the local claims. Keep provenance tight, finalize manuscript framing, and keep candidate C-STREAM pending until its artifact bundle lands. |
-| **NeurIPS / ICLR / CVPR efficiency workshop** | **Defensible today** as the current anti-recomputation paper if the provenance remains tight and clean/advisory/pending rows stay visibly distinct. | Stronger with broader measured sparse-backend coverage, many-turn C-PERSIST stress, and a cleaner local streaming bridge. |
-| **Main track (NeurIPS/ICML/CVPR)** | **Not ready yet.** The paper now has a better three-regime story than the old venue rows implied and does include bounded measured sparse-vision evidence, but it still lacks broad fidelity-preserving sparse-backend coverage, broader apples-to-apples comparison against adjacent methods, and a cleaner bridge from local benchmark evidence into deployment-style streaming evaluation. | Broader measured sparse-backend coverage, many-turn C-PERSIST stability, broader first-pass coverage on the second architecture, a decoder-integrated codec-native / native-rate systems bridge, a scroll/pan/egomotion probe on a corpus that actually contains that regime, and tighter head-to-head positioning against the closest trained and training-free baselines. |
-| **Systems conference (MLSys/OSDI)** | **Not ready yet.** The deployment evidence is interesting, but the current paper still does not characterize a full sparse backend or benchmark the streaming path against a clean systems baseline such as screenshot polling. | Sparse execution characterization, screenshot-polling baseline, broader streaming or event-detection evaluation, and ideally a decoder-integrated codec-native streaming bridge. |
+| **arXiv preprint (current anti-recomputation draft)** | **Ready today** as a multi-regime anti-recomputation paper with clean, advisory, bounded, and mixed scale-out status stated explicitly. | No new science gate for the local claims. Keep provenance tight, finalize manuscript framing, and keep candidate C-STREAM as a mixed bounded bundle rather than a fourth headline. |
+| **NeurIPS / ICLR / CVPR efficiency workshop** | **Defensible today** as the current anti-recomputation paper if the provenance remains tight and clean/advisory/boundary rows stay visibly distinct. | Stronger with broader measured sparse-backend coverage, true conversational many-turn C-PERSIST stress, and a native streaming policy that beats simple baselines. |
+| **Main track (NeurIPS/ICML/CVPR)** | **Not ready yet.** The paper now has a better three-regime story and includes bounded measured sparse-vision evidence plus controlled many-turn C-PERSIST stress, but it still lacks broad fidelity-preserving sparse-backend coverage, broader apples-to-apples comparison against adjacent methods, and a first-class native streaming result. | Broader measured sparse-backend coverage, natural-dialogue C-PERSIST stability, broader first-pass coverage on the second architecture, a decoder-integrated codec-native / native-rate systems bridge, a scroll/pan/egomotion probe on a corpus that actually contains that regime, and tighter head-to-head positioning against the closest trained and training-free baselines. |
+| **Systems conference (MLSys/OSDI)** | **Not ready yet.** The deployment evidence is interesting and now has checked artifacts, but the current native-streaming proxy loses to low-FPS dense at fixed evidence budget and the throughput axis is not yet quality-closed. | Sparse execution characterization, native streaming baselines, broader streaming/event-detection evaluation, and ideally a decoder-integrated codec-native streaming bridge. |
 
 ## What is safe to say in a one-paragraph abstract TODAY
 
@@ -352,9 +354,10 @@ queue once infra is in place.
 > boundary: a bounded-staleness planner preserves the quality-compute
 > frontier, while local novelty-ranked diagnostics suggest that
 > fresh-compute placement is not captured by novelty magnitude alone.
-> Candidate C-STREAM remains pending until a validated streaming artifact bundle
-> supplies raw paired outputs, cache-correctness smokes, source paths, and
-> matched baselines.
+> Candidate C-STREAM is now a checked mixed bundle rather than a headline:
+> default cache reuse is unsafe, prefix snapshots give small-N positive rows,
+> and fixed-evidence stream baselines favor low-FPS dense over the current
+> event-window proxy.
 
 ## What is NOT safe to say today
 

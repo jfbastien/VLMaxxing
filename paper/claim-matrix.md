@@ -66,7 +66,7 @@ envelope from Phase 1.55A four-regime probe (Qwen 2.5-VL, n=21 per cell):
 
 **Crossing the tested threshold triggers a bracketed basin onset:**
 
-- **7B basin onset at ~8,000 prefill tokens (20f)**; saturated single-token `addCriterion` attractor by 24f. Sampler-invariant (temperature does not recover clean letters).
+- **7B basin onset at ~8,000 prefill tokens (20f)**; saturated single-token `addCriterion` attractor by 24f. Tested temperature changes do not recover clean letters.
 - **3B basin onset bracketed to (36f, 40f] ≈ (14,500, 16,100] prefill tokens** — ~11% depth window, SHARP. Sampler-dispersible at 40f, but only to the pre-basin plateau noise floor (Δacc=−0.19), NOT to baseline.
 - **Failure geometry is cross-architectural:** non-letter attractor emergence on both models once basin is entered (7B `addCriterion`; 3B empty/"The").
 
@@ -81,10 +81,22 @@ n=93 short/medium/long + 32f-short tranche** (`Δacc = 0.0`, paired diffs
 bound ≈3.2% on an unseen paired-diff rate). The canonical fixed-K same-class
 speed range is `9.48×–20.37×`. The adaptive post-Q2-state policy is now the
 strongest broad repair lane (`0/93` paired diffs, `15.28×–35.97×` all-query
-speedup, `14.90×–35.92×` same-class speedup). The remaining scope gaps are
-many-turn stability, sampler robustness, cross-architecture C-PERSIST once
-Gemma cache semantics are safe, and cache-state causal instrumentation, not
-basic runnability.
+speedup, `14.90×–35.92×` same-class speedup). The many-turn stress now extends
+the cache-horizon evidence: adaptive post-Q2 and scheduled refresh are
+drift-free through a 50-turn repeated-question cycle on seven 20f short videos,
+while fixed `K=1` stays below the 3% drift gate but shows small late drift.
+The remaining scope gaps are natural-dialogue many-turn stability,
+cross-architecture C-PERSIST once Gemma cache semantics are safe, and
+cache-state causal instrumentation, not basic runnability.
+
+**2026-04-30 scale-out bundle update:** candidate C-STREAM is no longer
+artifact-pending, but it remains a mixed bounded evidence lane rather than a
+fourth headline. The checked 26B/M5 bundle shows default mixed-topology
+cross-turn cache reuse is unsafe; a topology-aware prefix snapshot gives
+positive small-N follow-up rows; fixed-evidence screen/UI baselines favor
+low-FPS dense over the current event-window proxy; and exactness claims must
+separate zero correctness delta on 1,937 logged rows from byte-identical
+raw-paired text on 513 rows.
 
 ## V_share Governs 1.51V Gains (claim 15, ceiling validation)
 
@@ -141,10 +153,11 @@ methods paper. Both lanes must contribute evidence.
 - Claims 14 and 15 now provide the strongest paper-facing numbers.
 - Role in the paper: the main results section, not an appendix or future-work placeholder.
 - Currently earned: local C-VISION first-pass gains and Qwen C-PERSIST
-  follow-up-query gains. 26B follow-up reuse remains blocked until a validated
-  cache-safe cross-turn artifact bundle lands. What remains open is
-  broader composition, broad sparse-backend coverage, and C-STREAM artifact harmonization,
-  not whether the paper has a headline result.
+  follow-up-query gains. 26B default cache reuse is blocked by cache semantics,
+  while the checked prefix-snapshot rows are positive small-N scale-out evidence.
+  What remains open is broader composition, broad sparse-backend coverage, and
+  native C-STREAM quality/baseline closure, not whether the paper has a
+  headline result.
 
 Prose must never conflate lane-A-earned with lane-B-prospective. When a claim sits in both lanes (e.g., claim 5 sparse-execution delta measured on either Qwen or Gemma), name the architecture explicitly.
 

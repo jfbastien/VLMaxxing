@@ -1,0 +1,127 @@
+{
+  "default_cache_path": {
+    "choice_diffs": 2,
+    "correctness_diffs": 0,
+    "n": 42,
+    "parse_failures": 4,
+    "pass": false,
+    "source": "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b0b_cache_correctness_summary.json",
+    "text_diffs": 16
+  },
+  "exactness_export": {
+    "accuracy_correctness_diffs": 0,
+    "accuracy_parse_failures": 0,
+    "accuracy_rows": 1937,
+    "raw_choice_diffs": 0,
+    "raw_parse_failures": 0,
+    "raw_rows": 513,
+    "raw_text_diffs": 0,
+    "source_paths": [
+      "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b5_s4_accuracy_1937_summary.json",
+      "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b5_s4_raw_paired_513_summary.json"
+    ]
+  },
+  "guarded_correctness_control": {
+    "choice_diffs": 0,
+    "correctness_diffs": 0,
+    "n": 42,
+    "parse_failures": 4,
+    "pass": true,
+    "policy": "full_refill_guard_rotating_kv",
+    "source": "research/experiments/2026/artifacts/sam_scaleout_m5_r2_20260430/sam_b0b_cache_correctness_summary.json",
+    "text_diffs": 0
+  },
+  "post_vit_hard_prune": {
+    "by_frames": [
+      {
+        "frames": 8,
+        "median_speedup": 0.757058501927775,
+        "n": 5
+      },
+      {
+        "frames": 32,
+        "median_speedup": 1.0424332173963105,
+        "n": 5
+      }
+    ],
+    "choice_diffs": 0,
+    "correctness_diffs": 0,
+    "n": 10,
+    "parse_failures": 0,
+    "source": "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b4_sparse_vit_ceiling.jsonl",
+    "text_diffs": 10
+  },
+  "prefix_snapshot": [
+    {
+      "choice_diffs": 0,
+      "correctness_diffs": 0,
+      "frames": 8,
+      "median_elapsed_s": 0.2960294580552727,
+      "median_speedup": 9.109961067877824,
+      "n": 21,
+      "parse_failures": 2,
+      "source": "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot.jsonl",
+      "text_diffs": 6
+    },
+    {
+      "choice_diffs": 0,
+      "correctness_diffs": 0,
+      "frames": 32,
+      "median_elapsed_s": 0.6169690410606563,
+      "median_speedup": 26.587668019428758,
+      "n": 9,
+      "parse_failures": 0,
+      "source": "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f.jsonl",
+      "text_diffs": 2
+    }
+  ],
+  "source_paths": [
+    "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b0b_cache_correctness_summary.json",
+    "research/experiments/2026/artifacts/sam_scaleout_m5_r2_20260430/sam_b0b_cache_correctness_summary.json",
+    "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_summary.json",
+    "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f_summary.json",
+    "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b3_streaming_baselines_summary.json",
+    "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b4_sparse_vit_ceiling_summary.json",
+    "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b5_s4_accuracy_1937_summary.json",
+    "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b5_s4_raw_paired_513_summary.json"
+  ],
+  "streaming_baselines": {
+    "arms": [
+      {
+        "arm": "low_fps_dense",
+        "label": "low-FPS dense",
+        "n": 22,
+        "oracle_matches": 17,
+        "parse_failures": 0
+      },
+      {
+        "arm": "screenshot_polling",
+        "label": "screenshot polling",
+        "n": 22,
+        "oracle_matches": 13,
+        "parse_failures": 0
+      },
+      {
+        "arm": "sam_policy",
+        "label": "event-window proxy",
+        "n": 22,
+        "oracle_matches": 13,
+        "parse_failures": 0
+      },
+      {
+        "arm": "recency_last_k",
+        "label": "recency last-K",
+        "n": 22,
+        "oracle_matches": 12,
+        "parse_failures": 0
+      }
+    ],
+    "source": "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b3_streaming_baselines.jsonl",
+    "summary": {
+      "choice_diffs": 33,
+      "correctness_diffs": 33,
+      "n": 88,
+      "parse_failures": 0
+    }
+  }
+}

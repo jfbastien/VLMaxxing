@@ -5,9 +5,11 @@ The manuscript uses evidence classes and labels them differently in the text.
 artifacts and backs the automated headline assets, the persistent-KV curve, and
 the Qwen routing section. \emph{Advisory evidence} is checked in but misses a
 clean promotion gate such as thermal pairing or a strict quality band.
-\emph{Pending C-STREAM evidence} is not automated until a validated local bundle
-lands. \emph{Hypotheses or moving results} may be discussed for context, but
-they are not allowed into the default automated manuscript snapshot.
+\emph{Scale-out bounded evidence} is automated only when the checked local
+bundle supplies raw paired rows, cache-correctness smokes, matched baselines,
+and source manifests. \emph{Hypotheses or moving results} may be discussed for
+context, but they are not allowed into the default automated manuscript
+snapshot.
 
 This appendix is where that distinction becomes audit-friendly. The repo
 provenance table below records the commit pins observed by the manuscript sync
@@ -45,14 +47,16 @@ Measured sparse-vision tables & real timed vision-tower work skipped under Gemma
 C-PERSIST figure & C-PERSIST tested envelope; after-ingest same-video follow-up & local & Phase 1.55A artifacts; Qwen 7B/3B-4bit, MLX / M3 Air 16 GB \\
 C-PERSIST repair & 20f/32f same-video selective re-prefill & local bounded recovery & Phases 1.55D/E/F/G/H/I plus adaptive mechanism and stage-timing artifacts; Qwen 7B-4bit, VideoMME short/medium/long + 32f short \\
 C-PERSIST sampler sweep & adaptive short-cell practical temperature robustness & local reviewer-defense evidence & Phase 1.55K artifacts; Qwen 7B-4bit, VideoMME short slice, \(T\in\{0.0,0.5,0.7,1.0,1.5\}\) \\
+C-PERSIST many-turn stress & 50-turn repeated-question cache horizon & local bounded stress & Phase 1.55L artifacts; Qwen 7B-4bit, seven VideoMME short videos, 20f, stateless question cycle \\
 Routing frontier & sparse routing under dense backend & local clean & Phase 1.20/21 checked artifacts and generated lane-A snapshot; Qwen 7B-4bit, MLX \\
 Gemma routing boundary & second-architecture semantic substitution & local boundary & Phase 1.42 artifacts; Gemma 4-E4B-4bit, TOMATO/MVBench motion holdouts \\
 Qwen stacked boundary & session/streaming composition plus cache-boundary attribution & local negative / boundary & Phase 1.30 root-cause + W/X/Y/Z/AB/AC/AD/AF artifacts; Qwen 7B-4bit, VideoMME dev+holdout \\
+Low-FPS dense baseline & 4f dense versus 8f dense on composition corpus & local baseline / ambiguous & Phase 1.62D artifacts; Qwen 7B-4bit, 57 sessions / 171 queries \\
 Paired drift table & paired choice/correctness drift summary & local analysis & Phase 1.61 drift summary built from landed 1.30, 1.42, and 1.55A artifacts \\
-Logit-margin scout & dense answer-margin signal is insufficient as a high-precision drift guard & local negative / future guard feature & Phase 1.65 artifacts; 228 scored Qwen paired rows \\
+Stability predictor scouts & dense margin and richer features are insufficient as deployable drift guards & local negative / future guard feature & Phase 1.65 and 1.65v2 artifacts; 228 scored Qwen paired rows \\
 Memory envelope & process working-set characterization across landed families & local reproducibility evidence & Phase 1.66 memory characterization; 78 cells across follow-up reuse, admission/composition, and measured sparse vision \\
 Method / limitations & codec-native planner bridge; semantic planner substitution & local semantic evidence & Phase 1.29B artifacts; Qwen 7B-4bit, VideoMME dev/short slices; offline extraction, not latency \\
-Candidate C-STREAM & native-rate streaming, live camera, and deployment-style follow-up & pending validated artifact bundle & hold until checked local bundle provides raw paired outputs, cache-correctness smoke, matched baselines, and source-path manifest \\
+Candidate C-STREAM bundle & 26B cache-correctness, prefix snapshot, fixed-evidence stream baselines, exactness export, and post-ViT hard-prune boundary & scale-out bounded / mixed & Checked M5 bundle under \path{research/experiments/2026/artifacts/sam_scaleout_m5_20260429/} and r2 correctness guard; not a fourth headline \\
 \bottomrule
 \end{tabularx}
 \end{table}

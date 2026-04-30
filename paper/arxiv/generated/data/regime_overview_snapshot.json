@@ -14,13 +14,15 @@
     "raw_16f_speedup": 91.06331752551472,
     "adaptive_all_query_speedup_min": 15.279848121041772,
     "adaptive_all_query_speedup_max": 35.97143025796818,
+    "many_turn_horizon": 50,
     "denominator": "after-ingest follow-up / repaired-session latency",
     "source_paths": [
       "research/experiments/2026/artifacts/phase1_55A_16f_frame_scaling/summary.json",
       "research/experiments/2026/artifacts/phase1_55F_q3_post_q2_state/summary_k1_n7.json",
       "research/experiments/2026/artifacts/phase1_55F_medium_adaptive_replication/summary_k1_n10.json",
       "research/experiments/2026/artifacts/phase1_55F_long_adaptive_replication/summary_k1_n7.json",
-      "research/experiments/2026/artifacts/phase1_55F_32f_short_adaptive_replication/summary_k1_n7.json"
+      "research/experiments/2026/artifacts/phase1_55F_32f_short_adaptive_replication/summary_k1_n7.json",
+      "research/experiments/2026/artifacts/phase1_55L_many_turn_cpersist/summary.json"
     ]
   },
   "routing": {
@@ -32,7 +34,14 @@
   },
   "streaming": {
     "denominator": "scale-out component counters and E2E timing",
-    "artifact_harmonization_pending": true,
-    "gemma_26b_followup_status": "blocked_by_cache_correctness_smoke"
+    "artifact_harmonization_pending": false,
+    "status": "validated_mixed_bundle_candidate_regime",
+    "gemma_26b_followup_status": "default_cache_path_blocked_prefix_snapshot_small_n_positive",
+    "source_paths": [
+      "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b0b_cache_correctness_summary.json",
+      "research/experiments/2026/artifacts/sam_scaleout_m5_r2_20260430/sam_b0b_cache_correctness_summary.json",
+      "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_summary.json",
+      "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b3_streaming_baselines_summary.json"
+    ]
   }
 }

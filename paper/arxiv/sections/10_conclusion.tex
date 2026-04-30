@@ -20,12 +20,16 @@ at 3.20--6.51\,s repaired follow-up median and 14.90--35.92$\times$
 same-class follow-up speedup; the cold-all-query versus repaired-follow-up
 ratio is 15.28--35.97$\times$. Fixed \(K=1\) remains the no-coordination
 baseline at 9.48--20.37$\times$ same-class follow-up speedup on the same
-breadth. Candidate C-STREAM remains the right scale-out target:
-perception-rate streaming state reuse under a native-rate protocol. It is
-pending rather than headline evidence until the incoming bundle supplies raw
-paired artifacts, matched baselines, cache-correctness smokes, and source-path
-provenance. The 26B follow-up-latency probe is a cautionary row rather than a
-win until those cache semantics are correct.
+breadth. The many-turn stress adds the missing horizon check: adaptive and
+scheduled-refresh reuse stay drift-free through a 50-turn repeated-question
+cycle, while fixed \(K=1\) shows small late drift but no cliff. Candidate
+C-STREAM remains the right scale-out target: perception-rate streaming state
+reuse under a native-rate protocol. The checked 26B/M5 bundle is now mixed
+evidence rather than pending evidence: default cache reuse is unsafe,
+prefix-snapshot follow-up rows are positive but small-\(N\), fixed-evidence
+baselines favor low-FPS dense over the current event-window proxy, and
+exactness claims must keep the 1,937 zero-accuracy-delta and 513 byte-identical
+denominators separate.
 
 The scientific value is in the boundaries as much as in the wins.
 Local diagnostics suggest fresh-compute placement over time is not captured by
@@ -33,9 +37,10 @@ novelty magnitude alone,
 aggregate accuracy can hide answer-identity drift, and semantic substitution
 must not be confused with measured sparse execution.
 
-What remains is a broader fidelity-preserving sparse-backend curve, cleaner
-systems baselines, many-turn follow-up stress tests, and direct cache-state
-instrumentation that explains why reused prompt-cache state drifts. The n=60 composition audit, the long-bucket
+What remains is a broader fidelity-preserving sparse-backend curve, natural
+multi-turn dialogue stress, cleaner native-streaming systems baselines, and
+direct cache-state instrumentation that explains why reused prompt-cache state
+drifts. The n=60 composition audit, the long-bucket
 admission sweep, and the cache-invalidated follow-up test already closed the
 multiply-the-headlines temptation: the gains do not stack naively. The useful question now is
 where each ceiling moves in the architectures and deployment protocols people

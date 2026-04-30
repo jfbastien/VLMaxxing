@@ -1,0 +1,83 @@
+{
+  "frame_count": 20,
+  "history_mode": "stateless_question_cycle",
+  "n_baseline_chains": 21,
+  "n_baseline_rows": 560,
+  "n_paired_rows": 1680,
+  "phase": "1.55L",
+  "policies": [
+    "fixed_k1",
+    "adaptive_post_q2",
+    "refresh10"
+  ],
+  "rows": [
+    {
+      "choice_drift": 3,
+      "cliff": false,
+      "correctness_drift": 2,
+      "followup_n": 343,
+      "horizon": 50,
+      "label": "fixed \\(K=1\\)",
+      "median_followup_s": 7.361972875,
+      "pass_three_percent": true,
+      "pathological": 0,
+      "policy": "fixed_k1",
+      "post_repair_choice_drift": 0,
+      "post_repair_correctness_drift": 0,
+      "post_repair_median_s": null,
+      "post_repair_n": 0
+    },
+    {
+      "choice_drift": 0,
+      "cliff": false,
+      "correctness_drift": 0,
+      "followup_n": 343,
+      "horizon": 50,
+      "label": "adaptive post-\\(Q2\\)",
+      "median_followup_s": 0.7706537090000001,
+      "pass_three_percent": true,
+      "pathological": 0,
+      "policy": "adaptive_post_q2",
+      "post_repair_choice_drift": 0,
+      "post_repair_correctness_drift": 0,
+      "post_repair_median_s": 0.767896354,
+      "post_repair_n": 336
+    },
+    {
+      "choice_drift": 0,
+      "cliff": false,
+      "correctness_drift": 0,
+      "followup_n": 343,
+      "horizon": 50,
+      "label": "scheduled refresh-10",
+      "median_followup_s": 0.70596375,
+      "pass_three_percent": true,
+      "pathological": 0,
+      "policy": "refresh10",
+      "post_repair_choice_drift": 0,
+      "post_repair_correctness_drift": 0,
+      "post_repair_median_s": 0.6914671040000001,
+      "post_repair_n": 308
+    }
+  ],
+  "source_paths": [
+    "research/experiments/2026/artifacts/phase1_55L_many_turn_cpersist/summary.json",
+    "research/experiments/2026/artifacts/phase1_55L_many_turn_cpersist/baseline_many_turn.jsonl",
+    "research/experiments/2026/artifacts/phase1_55L_many_turn_cpersist/paired_many_turn.jsonl",
+    "research/experiments/2026/artifacts/phase1_55L_many_turn_cpersist/session_many_turn.jsonl"
+  ],
+  "turn_counts": [
+    10,
+    20,
+    50
+  ],
+  "video_ids": [
+    "037",
+    "100",
+    "116",
+    "120",
+    "158",
+    "160",
+    "210"
+  ]
+}

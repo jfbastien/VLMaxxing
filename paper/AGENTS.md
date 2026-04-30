@@ -43,7 +43,8 @@ mechanism-validation backbone:
 
 The streaming lane remains important, but it is not just decoration. Use it for:
 
-- deployment-scale evidence only after a checked, validated artifact bundle lands
+- bounded deployment-scale evidence from checked validated bundles, with
+  positive, negative, and baseline-pressure rows kept visibly separate
 - streaming / deployment motivation
 - bounded case studies when the evidence is qualitative or lacks a matched
   wall-clock baseline

@@ -95,9 +95,13 @@ Avoid:
 - "exact" unless it is byte/logit/row identity
 - "sampler-invariant" for one warmer-sampler point
 
-Open experiment: run a many-turn follow-up horizon sweep. Current C-PERSIST
-sessions contain two follow-ups. We do not know whether 10, 20, or 50
-follow-ups gradually accumulate drift, or which repair schedule prevents it.
+Many-turn status: a controlled repeated-question stress has now landed. On
+seven 20f short VideoMME videos, adaptive post-Q2 reuse and scheduled refresh
+show no observed paired drift through the 50-turn stateless question cycle;
+fixed \(K=1\) stays below the 3% gate but shows small late drift. Do not
+rewrite this as natural-dialogue stability: the test cycles the same questions,
+and the dense baseline rows are deterministic replicas for turn-matched pairing.
+The open experiment is true conversational drift with novel follow-ups.
 
 ## Results That Need Mechanistic Explanations
 
@@ -113,6 +117,12 @@ Do not leave readers with "huh, why?"
 - Measured sparse execution should be framed as ceiling-model validation for
   measured ViT-only skipped work, not as a huge end-to-end speedup. The current
   1.63E 8f point validates the ceiling but fails fidelity, so it is boundary
+  evidence; Gemma 32f short is the cleanest current timed-skip cell.
+- Candidate C-STREAM is a checked mixed artifact bundle, not a fourth headline.
+  The default 26B cache path is unsafe, the prefix-snapshot rows are positive
+  but small-N and wrapper-specific, fixed-evidence stream baselines favor
+  low-FPS dense over the current event-window proxy, and the throughput axis
+  remains a separate future promotion gate.
   evidence until a fidelity-preserving operating point lands.
 
 ## Training Claim Boundary

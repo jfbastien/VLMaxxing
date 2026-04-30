@@ -16,7 +16,11 @@ follow-ups; the cold-all-query versus repaired-follow-up ratio is
 post-\(Q2\) repaired cache, so it appends mostly the new question instead of
 repairing the newest-frame tail again. This is not first-query speedup: the
 first query still pays full freight, and the tested sessions have two
-follow-up questions per video.
+follow-up questions per video. A separate many-turn stress on seven 20-frame
+short videos then cycles the same questions through 50 turns: adaptive
+post-\(Q2\) reuse and scheduled refresh have no observed paired drift on 343
+follow-ups, while fixed \(K=1\) remains below the 3\% drift gate but shows
+nonzero late drift.
 
 The central question is where a runtime must buy fresh visual evidence over
 time, and where cached state is enough to remain on its regime-specific
@@ -61,9 +65,13 @@ aggregate accuracy can hide answer-identity drift, and semantic substitution is
 not itself a measured sparse backend.
 
 Candidate C-STREAM is the native-rate version of the same question, but it is
-not yet a headline claim. The release tree now treats 26B streaming rows as
-pending until a validated artifact bundle supplies raw paired outputs,
-cache-correctness smokes, source paths, and matched baselines.
+not yet a headline claim. A checked 26B/M5 artifact bundle now makes the lane
+more concrete and more bounded: default mixed sliding-window/full-attention
+cache reuse fails a cross-turn correctness smoke, a topology-aware prefix
+snapshot gives positive small-\(N\) follow-up rows, fixed-evidence streaming
+baselines favor low-FPS dense over the current event-window proxy, and the
+large exactness export separates zero accuracy delta on 1,937 rows from
+byte-identical raw-paired text on 513 rows.
 
 The broader implication is not that pixel differencing is the final interface.
 The experiments are a requirements probe for future VLM-native media streams:

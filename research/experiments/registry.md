@@ -36,6 +36,68 @@ Entries are ordered by phase_id (chronological within each 1.x range).
 
 ## Registry
 
+### Recent phase-2 additions (2026-04-29 to 2026-04-30)
+
+```yaml
+- phase_id: 1.55L
+  status: completed
+  authoritative_note: research/experiments/2026/2026-04-29-phase-2-experiment-design.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_55L_many_turn_cpersist/summary.json
+    - research/experiments/2026/artifacts/phase1_55L_many_turn_cpersist/paired_many_turn.jsonl
+  current_best_policy: "adaptive post-Q2 and refresh-10 — no observed paired drift through 50-turn repeated-question stress; fixed K=1 shows small late drift but stays below 3% gate"
+  supersedes: []
+  paper_relevance: primary (controlled C-PERSIST horizon stress)
+  prereg_outcome: Accepted with caveat
+
+- phase_id: 1.62D
+  status: completed (4f arm only)
+  authoritative_note: research/experiments/2026/2026-04-29-phase-2-experiment-design.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_62D_lowfps_dense_videomme/lowfps_4f_vs_8f_summary.json
+    - research/experiments/2026/artifacts/phase1_62D_lowfps_dense_videomme/cold_dense_4f_summary.json
+  current_best_policy: "4f dense is 1.21x faster but overall accuracy delta is ambiguous; short bucket is a hard negative"
+  supersedes: []
+  paper_relevance: diagnostic baseline
+  prereg_outcome: Inconclusive
+
+- phase_id: 1.63I
+  status: completed
+  authoritative_note: research/experiments/2026/2026-04-29-phase-2-experiment-design.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_63I_16f_kr_fine_bracket/fine_bracket_summary.json
+  current_best_policy: "no full gate pass; kr=0.80/0.82 are format-caveated high-gain candidates, kr=0.85 remains the format-clean low-gain boundary"
+  supersedes: []
+  paper_relevance: diagnostic boundary
+  prereg_outcome: Rejected for promotion
+
+- phase_id: 1.65v2
+  status: completed
+  authoritative_note: research/experiments/2026/2026-04-29-phase-1_65v2-richer-predictor-findings.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_65v2_richer_predictor/prediction_summary.json
+  current_best_policy: "no deployable guard; margin and richer dense-side features have signal but fail coverage/precision gates"
+  supersedes: [1.65]
+  paper_relevance: diagnostic negative
+  prereg_outcome: Rejected
+
+- phase_id: scaleout-m5-20260429
+  status: completed (mixed bundle)
+  authoritative_note: research/experiments/2026/2026-04-30-sam-integration-and-next-experiments.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/README.md
+    - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b0b_cache_correctness_summary.json
+    - research/experiments/2026/artifacts/sam_scaleout_m5_r2_20260430/sam_b0b_cache_correctness_summary.json
+    - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_summary.json
+    - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b3_streaming_baselines_summary.json
+    - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b5_s4_accuracy_1937_summary.json
+    - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b5_s4_raw_paired_513_summary.json
+  current_best_policy: "candidate C-STREAM remains mixed: default cache path blocked, prefix snapshot positive small-N, low-FPS dense wins fixed-evidence baseline"
+  supersedes: []
+  paper_relevance: scale-out bounded evidence
+  prereg_outcome: Accepted with caveat
+```
+
 ### Foundation (phases 1.0–1.9)
 
 Registry entries for the foundation phases (cache-path identity,

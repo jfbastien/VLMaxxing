@@ -216,8 +216,7 @@ follow-up outputs, and 14.90--35.92$\times$ same-class follow-up speedup
 bound on a query-level unseen paired-drift rate is about 3.2\%. At the
 session level the conservative count is 0/31 sessions with any paired drift,
 or a rule-of-three bound of about 9.7\%. Each tested session has two follow-up
-questions after the cold first query; many-turn conversational stability
-remains a separate stress test. The 32f short cell is the largest
+questions after the cold first query. The 32f short cell is the largest
 local efficiency point in the draft at 35.92$\times$ same-class follow-up
 speedup (35.97$\times$ cold-all-query ratio), but the reason is not magic: Q3
 inherits the repaired state instead of paying another newest-frame re-prefill.
@@ -245,6 +244,27 @@ full 0/93 breadth result and not a universal stochastic robustness theorem.
 \input{generated/tables/c_persist_sampler_stability.tex}
 }{
 \draftnote{Run \texttt{make paper-sync} to generate the C-PERSIST sampler table.}
+}
+
+The follow-up envelope is no longer limited to two-turn sessions. A separate
+many-turn stress test repeats the same three VideoMME short questions across
+10-, 20-, and 50-turn schedules on seven 20-frame videos. This is deliberately
+not a natural-dialogue benchmark: the dense baseline rows are deterministic
+replicas of 21 unique stateless dense runs, which makes them valid for
+turn-matched drift pairing but not independent timing samples. Under that
+stress, adaptive post-\(Q2\) reuse and scheduled refresh both have 0/343
+follow-up paired choice drift and 0/343 paired correctness drift at the 50-turn
+horizon, with median follow-up latency below 0.8\,s. Fixed \(K=1\) remains
+below the 3\% drift gate but shows the expected late leakage: 3/343 choice
+diffs and 2/343 correctness diffs. The result changes the C-PERSIST claim from
+``only two follow-ups were tried'' to ``no cliff through 50 repeated-question
+turns under the tested stress,'' while leaving true conversational stability as
+future work.
+
+\IfFileExists{generated/tables/c_persist_many_turn.tex}{
+\input{generated/tables/c_persist_many_turn.tex}
+}{
+\draftnote{Run \texttt{make paper-sync} to generate the C-PERSIST many-turn table.}
 }
 
 \begin{figure}[H]
@@ -278,15 +298,15 @@ The newest local bridge makes the same warning concrete. On Qwen2.5-VL-7B-4bit
 at 8 frames, the original session/streaming stack that combines \(L=2\),
 \(kr_V=0.50\) vision pruning with persistent-KV reuse over a VideoMME
 dev+holdout union (\(n=57\) sessions, 171 queries) was a hard negative. The
-1.30W dense-Q0 reference improves the failure mode but remains a near-miss
+dense-first-query reference improves the failure mode but remains a near-miss
 rather than a promotion: cold aggregate accuracy is 0.561 and the streaming path
 is 0.503, a \(-0.0585\) delta with 95\% paired CI roughly \([-0.117, 0.000]\),
 at 2.79$\times$ paired amortized end-to-end speedup. The later instrumented
 cache-reuse rerun preserves the faster 3.02$\times$ speed profile while showing
 that follow-up vision pruning is inactive under prompt-cache reuse. The
-important repair is that aggregate Q0 correctness returns to parity, with zero
-parse failures and zero degenerate outputs. The remaining loss is follow-up
-state damage.
+important repair is that aggregate first-query correctness returns to parity,
+with zero parse failures and zero degenerate outputs. The remaining loss is
+follow-up state damage.
 
 The long-bucket sweep closes the tested admission family. None of the tested
 Q0 keep rates \(\{0.67,0.75,0.80,0.85,0.90\}\) reaches the target
@@ -323,6 +343,26 @@ answers, or the replacement strategy recomputes enough visual work to lose the
 speedup while still perturbing the answer. The right next mechanism test is
 not another admission-rate sweep; it is cache-state distance or other
 per-example attribution.
+
+A low-FPS dense baseline is the corresponding ``why not just sample fewer
+frames?'' control. On the same 57-session / 171-query VideoMME union, 4f dense
+is 1.21$\times$ faster than the 8f dense reference, but the overall accuracy
+delta is ambiguous rather than clean: \(-0.0526\), 95\% paired CI
+\([-0.1228,0.0175]\), with no parse failures and 72.5\% choice agreement. The
+short bucket is the hard failure (\(-0.193\), CI \([-0.316,-0.070]\)), while
+medium and long are inconclusive or neutral. This baseline matters because it
+is not a strawman. Some workloads can buy speed by lowering frame count; the
+paper's stronger claim is that low-FPS dense is an accuracy-risky baseline that
+does not replace cache repair or measured sparse execution.
+
+The richer drift-prediction scout is also negative in the useful direction.
+Dense answer margin has signal but not enough coverage to be a deployable
+guard, and adding entropy, duration, turn index, prompt length, and policy
+source does not close the gap on the held-out split. The nominal label-free
+feature is empirically answer-aware in this artifact because its
+top-second-gap feature is identical to the dense answer margin. We therefore
+do not claim a learned cache-validity guard. The result says the next guard
+needs genuinely independent state features, not just denser logprob plumbing.
 
 The key compositional result is negative and useful: the n=60
 stacked-regime experiment is a ceiling-matched null, not a

@@ -5,50 +5,77 @@ the model revisits nearly the same visual state while deciding when to keep,
 shift, rebuild, or invalidate cached state. We keep this lane visible because it
 is scientifically important, but it is not a fourth headline contribution yet.
 The current release tree no longer reads a sibling deployment checkout or
-free-form partner markdown. C-STREAM becomes claim-bearing only after a
-validated local artifact bundle provides raw paired outputs, cache-correctness
-smoke results, matched low-FPS or screenshot-polling baselines, and exact source
-paths.
+free-form partner markdown. The checked 26B/M5 bundle now gives candidate
+C-STREAM a real artifact surface: raw paired rows, cache-correctness smokes,
+matched low-FPS / screenshot / recency baselines, bounded exactness exports,
+and source manifests. The result is mixed in the scientifically useful way. It
+shows which mechanisms are plausible, which simple baselines are serious, and
+which cache paths are unsafe.
+
+Unlike sparse-sampled benchmark runs, the streaming lane tests cache lifetime:
+when to keep state, shift it, rebuild it, or declare it stale. The current
+scale-out stack exercises motion-vector and residual side-channel staleness
+signals, sectional cache shifts, and event/inflection triggers. Those
+mechanisms are why the lane is not merely an application demo. Its claims stay
+separately labeled because native streams add evaluation problems that
+VideoMME, MVBench, and TOMATO under-test: query cadence, scroll/pan, live-world
+updates, stale-cache failure, fixed-ViT-budget perception rate, and cache
+topology under mixed sliding-window/full-attention attention.
 
 The local Qwen session/streaming bridge explains why this gate matters. The
-1.30W dense-Q0 reference restores aggregate first-query correctness and reaches
-2.79$\times$ paired speedup, missing the preregistered 3.0$\times$ rescue
-floor. The later 1.30AD instrumented cache-reuse rerun preserves the same
+dense-first-query reference restores aggregate first-query correctness and
+reaches 2.79$\times$ paired speedup, missing the preregistered 3.0$\times$
+rescue floor. The later instrumented cache-reuse rerun preserves the same
 aggregate boundary and reaches 3.02$\times$, but still misses the follow-up
 fidelity target. Instrumentation also shows that follow-up vision pruning is
 inactive in that family: follow-up image tokens are cache-served rather than
 actively pruned. The right interpretation is dense-first-query admission plus
 K-cache reuse, not a validated native-rate sparse-vision backend.
 
-\begin{table}[H]
-\centering
-\caption{Release-safe status for candidate C-STREAM. Numeric deployment rows
-are intentionally absent until the incoming scale-out bundle is checked into
-this repo with raw paired artifacts and matched baselines.}
-\label{tab:real-apps}
-\footnotesize
-\renewcommand{\arraystretch}{1.16}
-\begin{tabularx}{\linewidth}{@{}p{0.24\linewidth} X p{0.22\linewidth}@{}}
-\toprule
-Lane & Current status & Evidence class \\
-\midrule
-Local Qwen session/streaming bridge & Boundary result: speed side is real, but
-follow-up fidelity remains short of the promotion gate and follow-up vision
-pruning is inactive. & checked local boundary \\
-26B native-rate streaming & Pending import of a validated artifact bundle with
-raw paired rows, cache-correctness smoke, and matched baselines. & pending
-C-STREAM evidence \\
-Live camera / UI case studies & Useful for protocol design and workload
-motivation; not release evidence for multipliers without raw counters and
-baselines. & qualitative / pending \\
-\bottomrule
-\end{tabularx}
-\end{table}
+The 26B rows explain why cache-correctness is a gate rather than bureaucracy.
+The default cross-turn cache path over mixed sliding-window and full-attention
+layers fails the cache-correctness smoke: it can move fast while producing
+divergent text and answer choices. A correctness guard that fully refills
+rotating-cache layers passes, but that is a control, not a speedup. A
+topology-aware prefix snapshot is the current positive scale-out follow-up row:
+at 8f it gives a 9.11$\times$ median paired speedup with 0/21 paired choice or
+correctness diffs; at 32f it gives a 26.59$\times$ median paired speedup with
+0/9 choice or correctness-field diffs. These are small-\(N\),
+wrapper-specific rows, not proof that ordinary PromptCacheState is safe.
 
-\begin{sectiontodo}{Land the C-STREAM artifact bundle before promotion}
-Import only schema-validated artifacts, not sibling markdown or screenshots.
-The bundle should carry raw paired outputs, stream/cold baselines,
-cache-correctness smokes, low-FPS or screenshot-polling comparisons, hardware
-metadata, and a source-path manifest. Once that lands, this section can replace
-the pending rows with earned C-STREAM claims.
+The streaming baselines cut in the other direction. At a fixed 4-frame evidence
+budget on 22 screen/UI events, low-FPS dense matches the fresh oracle on 17/22
+events, beating screenshot polling (13/22), recency last-\(K\) (12/22), and the
+current event-window proxy (13/22). That does not kill C-STREAM; it clarifies
+the denominator. Fixed-evidence quality is not where the current proxy wins.
+The separate throughput axis remains the reason to study native streams: over
+the same recording duration, event-driven state reuse can perceive at decode
+cadence with far fewer vision fires, while a 1\,Hz polling baseline either
+spends 22--64$\times$ more vision calls for the same coverage or sees one frame
+every 22--64 seconds at matched vision cost. That axis still needs native
+mechanism-quality validation before it becomes a headline.
+
+\IfFileExists{generated/tables/scaleout_bundle_status.tex}{
+\input{generated/tables/scaleout_bundle_status.tex}
+}{
+\draftnote{Run \texttt{make paper-sync} to generate the scale-out bundle table.}
+}
+
+The scale-out bundle also adds two useful boundary checks. First, the large
+feature-reuse export is now denominator-safe: zero correctness delta is logged
+on 1,937 sparse-sampled rows, while byte-identical raw-paired text is verified
+on 513 rows. Those are separate claims. Second, post-ViT hard pruning on the
+26B stack is a negative systems result: because the full vision tower has
+already run, policy overhead can dominate, so the row is not evidence for real
+sparse-ViT speedup. It is a reminder that the paper's C-CEILING arithmetic
+assumes the accelerated stage is actually skipped and the policy overhead is
+small.
+
+\begin{sectiontodo}{Promote C-STREAM only after native mechanism quality lands}
+The checked bundle is enough to make C-STREAM a serious candidate regime, not
+enough to make it an equal headline. The next promotion gate is a native
+streaming policy that beats low-FPS dense, screenshot polling, and recency under
+the same quality envelope; includes at least one stale-cache failure case;
+records raw paired outputs and source media; and passes cache-correctness under
+the runtime's real cache topology.
 \end{sectiontodo}

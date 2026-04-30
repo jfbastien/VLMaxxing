@@ -57,9 +57,13 @@ ratio is 15.28--35.97$\times$. Its remaining caveats are different. The long and
 32f cells passed the science gates but exceeded preregistered RSS gates that
 were too tight relative to later observed memory; the paper should report the
 observed memory envelope rather than retroactively calling those runs failures.
-The result is also finite-horizon: the current sessions contain two follow-up
-questions, so many-turn drift remains an explicit stress test rather than a
-settled property.
+The original breadth result is finite-horizon because those sessions contain
+two follow-up questions. The separate many-turn stress closes the easiest
+version of that attack: adaptive post-\(Q2\) and scheduled refresh have no
+observed drift through a 50-turn repeated-question cycle on seven short videos.
+That is still not a natural-dialogue stability proof; it is a controlled
+cache-horizon stress with deterministic dense replicas for turn-matched
+pairing.
 
 \IfFileExists{generated/tables/memory_characterization.tex}{
 \input{generated/tables/memory_characterization.tex}
@@ -86,13 +90,17 @@ as a dev-only shape rather than a universal scaling law. The 1.57 feature-drift
 geometry itself now reproduces on holdout at 8f and 16f; what failed to
 transfer was the downstream long-bucket accuracy shape, not the drift signal.
 
-The streaming/deployment lane is the least harmonized evidence class in the
-paper, even though it is the clearest candidate for a future C-STREAM claim. It
-is there because it names the practical regime where redundancy can become
+The streaming/deployment lane remains the least harmonized evidence class in
+the paper, even though it is the clearest candidate for a future C-STREAM claim.
+It is there because it names the practical regime where redundancy can become
 large, not because it already closes the full systems-reviewer checklist. The
-paper still needs a validated artifact bundle, screenshot-polling baseline, and
-broader UI coverage before that lane can carry a headline. The Qwen composition
-bridge now exists and is useful precisely because it is diagnosed rather than promoted:
+checked scale-out bundle is now real and useful, but mixed: default 26B
+cross-turn cache reuse is unsafe, a topology-aware prefix snapshot is positive
+only at small \(N\), fixed-evidence stream baselines favor low-FPS dense over
+the current event-window proxy, and post-ViT hard pruning shows that policy
+overhead can erase any expected win if vision work was not actually skipped.
+The Qwen composition bridge now exists and is useful precisely because it is
+diagnosed rather than promoted:
 the original stack reproduced speedup but lost accuracy,
 dense-first-query admission restores Q0 aggregate correctness but misses the
 3-query rescue gate, and the offline admission frontier contains an oracle
@@ -109,13 +117,15 @@ cache reuse, while any-paired-drift sets differ. That is informative even
 before the tensor-level mechanism is isolated: it falsifies a single-row-set
 explanation and localizes the boundary to follow-up state quality rather than
 first-query aggregate correctness alone. The current post-hoc attribution
-passes its preregistered gates, but it is not a causal tensor probe. A dense
-logit-margin scout adds a useful negative: answer-letter margin has signal
-(held-out AUC about 0.71), but margin alone is insufficient as a
-high-precision drift guard and would require a dense pass anyway. The next
-proof step is direct cache-state instrumentation plus richer per-example
-features such as entropy, turn index, duration, cold correctness, and policy
-source. A related
+passes its preregistered gates, but it is not a causal tensor probe. Dense
+logit-margin and richer-feature scouts add a useful negative: answer-letter
+margin has signal (held-out AUC about 0.71), but margin alone gives too little
+coverage for a high-precision guard, and adding entropy, turn index, duration,
+prompt length, and policy source still fails the preregistered deployable-guard
+bar. The nominal label-free feature in that artifact is empirically
+answer-aware, so the result should not be sold as a runtime guard. The next
+proof step is direct cache-state instrumentation plus genuinely independent
+state features. A related
 local codec-native bridge remains scientifically interesting, and the latest
 1.29 results now provide semantic
 planner-substitution evidence: MAX-over-span sparse sampling is hard-falsified,
@@ -145,6 +155,13 @@ The dual failure also matters: an input can hide a task-critical change below
 the refresh trigger and cause stale reuse rather than excessive recompute. A
 real robustness suite needs both denial-of-savings and denial-of-freshness
 cases.
+
+Simple dense baselines are also not strawmen. A 4f cold-dense baseline over the
+same 57-session / 171-query VideoMME union is only 1.21$\times$ faster than 8f
+and has ambiguous overall accuracy delta, but it is a real competitor in some
+duration buckets and a hard short-bucket failure. That is why future C-STREAM
+and C-VISION claims need matched low-FPS dense controls rather than only
+same-method ablations.
 
 Finally, equal aggregate accuracy is not the same as identical behavior. The
 Gemma routing split makes this visible: TOMATO passes the agreement gate, while
@@ -192,8 +209,10 @@ sparse-vision 32f-short operating point plus broader zero-drift sweep with
 format caveats & Expose keep masks and per-stage timing, but make
 rotating/sliding cache behavior explicit. \\
 Candidate C-STREAM & Native-rate streaming state reuse under a separate
-protocol & Export artifact-compatible paired rows, baselines, and
-cache-correctness smokes before promoting the lane to evidence. \\
+protocol; checked bundle with cache-correctness, prefix snapshot, fixed-evidence
+baselines, and exactness export & Promote only after the native streaming
+policy beats low-FPS/screenshot/recency baselines under the same quality
+envelope and cache topology. \\
 \bottomrule
 \end{tabularx}
 \end{table}
