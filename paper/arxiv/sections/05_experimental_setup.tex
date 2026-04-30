@@ -11,12 +11,13 @@ These are the cleanest settings for testing whether training-free temporal
 reuse preserves answers at lower effective fresh-frame budgets under a fixed
 dense backend.
 
-The first-pass speedup story uses Gemma 4-E4B-4bit on Video-MME
-\cite{videomme}, MVBench, and TOMATO at 8-frame settings, plus dev-expansion
-cells and deeper frame-count probes. The after-ingest persistent-KV story uses
-repeated follow-up questions on Video-MME sessions across short, medium, long,
-and deeper 32-frame slices, where the same video is queried multiple times and
-prompt reuse is therefore meaningful.
+The first-pass speedup story uses the MLX-community
+\texttt{gemma-4-e4b-4bit} conversion of Google Gemma 4-E4B on Video-MME
+\cite{gemma4e4b,gemma4e4bmlx,videomme}, MVBench, and TOMATO at 8-frame
+settings, plus dev-expansion cells and deeper frame-count probes. The
+after-ingest persistent-KV story uses repeated follow-up questions on Video-MME
+sessions across short, medium, long, and deeper 32-frame slices, where the same
+video is queried multiple times and prompt reuse is therefore meaningful.
 
 The scale-out streaming and UI studies are kept separate from those benchmark
 claims. They are native-rate deployment evidence, not replacements for the main
@@ -32,13 +33,15 @@ interchangeable.
 
 \subsection{Models, Hardware, and Preprocessing}
 
-The Qwen routing and persistent-KV experiments use Qwen2.5-VL-7B-Instruct-4bit,
-a frozen open-weight video VLM, through MLX-VLM on Apple Silicon. The dense
-wall-clock baseline and the persistent-KV scaling curve use the same local
-stack on an M3 Air with 16\,GB unified memory. The first-pass vision-pruning
-results use Gemma 4-E4B-4bit, a separate open VLM family, on the same general
-MLX environment. The scale-out streaming evaluation uses a separate RTSP and
-screen-recording pipeline with Gemma 4 26B.
+The Qwen routing and persistent-KV experiments use Qwen2.5-VL-7B-Instruct-4bit
+\cite{qwen25vl}, a frozen open-weight video VLM, through MLX-VLM
+\cite{mlxvlm} on Apple Silicon. The dense wall-clock baseline and the
+persistent-KV scaling curve use the same local stack on an M3 Air with
+16\,GB unified memory. The first-pass vision-pruning results use the
+MLX-community 4-bit conversion of Gemma 4-E4B \cite{gemma4e4b,gemma4e4bmlx},
+a separate open VLM family, on the same general MLX environment. The scale-out
+streaming evaluation uses a separate RTSP and screen-recording pipeline with a
+Gemma 4 26B/A4B-family stack.
 
 For benchmark comparability, the main-path runs use uniform global sampling at
 8 frames and square-pad plus resize to 560\,$\times$\,560. The routing planner
@@ -61,13 +64,13 @@ Lane & Model/runtime & Primary protocol & Main reported metric \\
 Routing & Qwen2.5-VL-7B-Instruct-4bit, MLX-VLM & TOMATO and MVBench
 semantic-substitution holdouts & Accuracy/agreement at effective fresh-frame
 budget \\
-First-pass pruning & Gemma 4-E4B-4bit and matched Qwen probes, MLX & Fresh-video
+First-pass pruning & mlx-community/gemma-4-e4b-4bit and matched Qwen probes, MLX & Fresh-video
 first query at 8f plus selected frame-count probes & First-query E2E, \(V_{\mathrm{share}}\),
 \(V_{\mathrm{red}}\), accuracy delta \\
 After-ingest reuse & Qwen2.5-VL-7B-Instruct-4bit, MLX-VLM & VideoMME sessions
 with one cold query and two follow-ups & Paired drift, follow-up latency,
 repair speedup \\
-Scale-out streaming & Separate Gemma 4 26B RTSP / screen-recording stack &
+Scale-out streaming & Separate Gemma 4 26B/A4B-family RTSP / screen-recording stack &
 Native-rate partner protocol & ViT-call reduction, throughput, diagnostics,
 artifact-harmonization status \\
 \bottomrule

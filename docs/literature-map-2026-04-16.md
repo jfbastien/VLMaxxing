@@ -309,7 +309,8 @@ citations.
 - Eventful Transformers: https://arxiv.org/abs/2308.13494
 - CoViAR: https://arxiv.org/abs/1712.00636
 - TempCompass: https://arxiv.org/abs/2403.00476
-- TOMATO: https://arxiv.org/abs/2410.23266 (original spec)
+- TOMATO: https://openreview.net/forum?id=fCi4o83Mfs (ICLR 2025 Poster);
+  https://arxiv.org/abs/2410.23266
 - StreamingVLM: https://arxiv.org/abs/2510.09608
 - TurboQuant: https://arxiv.org/abs/2504.19874
 - STTM: https://arxiv.org/abs/2507.07990 (ICCV 2025, training-free post-ViT temporal merge)

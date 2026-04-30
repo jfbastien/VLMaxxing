@@ -3,11 +3,12 @@
 The closest systems neighbor is CodecSight \cite{codecsight}, which also tries
 to avoid unnecessary visual processing by using compressed-video structure
 before the rest of the model consumes the content. The difference is both in
-signal and in target. CodecSight uses decoder-native motion vectors and
-residuals and is evaluated on streaming anomaly detection; our current local
-implementation uses a pixel-domain proxy because that is what our MLX stack can
-exercise today, and our main benchmark evaluations target temporal-reasoning QA
-on TOMATO \cite{tomato} and MVBench \cite{mvbench}.
+signal and in target. CodecSight uses decoder-native motion vectors with
+optional residuals; its default NVDEC runtime uses motion vectors because
+residuals are not exposed. It is evaluated on streaming anomaly detection; our
+current local implementation uses a pixel-domain proxy because that is what our
+MLX stack can exercise today, and our main benchmark evaluations target
+temporal-reasoning QA on TOMATO \cite{tomato} and MVBench \cite{mvbench}.
 
 Trained codec-native approaches answer a different question. CoPE-VideoLM
 \cite{copevideolm}, Deja Vu \cite{dejavu}, and older compressed-video pipelines

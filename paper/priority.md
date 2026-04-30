@@ -432,8 +432,8 @@ a must-do slot opens.
   paper-relevant move is an admission policy (skip pruning on risky Q0),
   not another blind fixed-kr composition run.
 
-- **1.42 Gemma temporal-reuse (`_mix_gemma_features`).** Second-arch
-  fidelity test for claim #7 (architecture-conditioned reuse).
+- **1.42 Gemma temporal-reuse boundary.** Second-arch fidelity test for
+  claim #7 (architecture-conditioned reuse).
   **LANDED 2026-04-24 as a split result.** Infrastructure and mechanism
   work are both complete: the Track A Gemma mixing path, cached-feature
   extraction, checked launchers, and the 1.57 mechanism lane are now in
@@ -444,16 +444,18 @@ a must-do slot opens.
   `dense_acc=cached_acc=0.200`) while preserving aggregate accuracy
   exactly. This means claim #7 is no longer blocked on execution; it is
   blocked only if we want to upgrade it beyond a benchmark-conditional
-	  spectrum story. Gemma measured-sparse-execution baselines are now exploratory rather
-  than claim-bearing because the prereg promotion rule required both
-  holdout cells to pass.
+  spectrum story. Gemma measured-sparse-execution baselines are now
+  exploratory rather than claim-bearing because the prereg promotion rule
+  required both holdout cells to pass.
 
 - **1.43 EgoSchema breadth gate.** Long-form egocentric. Blocked on
   loader + manifest build. Runtime unknown (3-min clips at 22 s
   inter-frame gap; likely 2-3× VideoMME per-item cost).
 
-- **1.52R composition (temporal × spatial).** Depends on 1.42 landing
-  AND 1.51R re-run on V-patched.
+- **1.52R original composition gate (temporal × spatial).** Superseded.
+  The original gate assumed a clean 1.42 pass and a promotable 1.51R path;
+  1.42 split-landed and 1.51R closed own-axis null. Current composition
+  evidence belongs to 1.51V EXP10 and future scale-out bundle gates.
 
 - **Phase 1.60 scroll/pan subset** (CLOSED 2026-04-23 as a VideoMME
   corpus limitation). Codex rounds 24-25 identified scroll/pan as a

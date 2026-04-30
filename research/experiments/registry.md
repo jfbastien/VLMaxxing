@@ -1,11 +1,14 @@
 # Experiment Registry (Machine-Readable)
 
-Last updated: 2026-04-29
+Last updated: 2026-04-30
 
-This is the primary source of per-phase experiment state. Other docs
-(PLAN.md, paper/framing.md, docs/related-work-table.md) narrate and contextualize;
-if they contradict this
-registry on a phase's status or current_best_policy, fix them.
+This is the primary source of per-phase experiment state. It is the phase
+ledger, not the paper claim ledger. Use `paper/claim-matrix.md` for
+paper-facing claim status, `docs/claim-register.md` for imported pre-release
+target definitions, and `docs/reproduction-status.md` for reproduction/import
+status. Other docs (PLAN.md, paper/framing.md, docs/related-work-table.md)
+narrate and contextualize; if they contradict this registry on a phase's
+status or current_best_policy, fix them.
 
 Limitation: this is structured Markdown, not a real machine-parseable
 ledger. Treat YAML blocks as structured prose, not as a database.
@@ -477,7 +480,7 @@ authoritative in the per-phase notes under
   notes: originally filed as "phase 1.37 Planner 2.1"; renamed 2026-04-17 after external review flagged that "child-veto" was the name of a distinct mechanism (within-block subtoken guard) and should not be reused for the neighbor-halo variant. Closed 2026-04-17 as preregistered null: TOMATO control rank-1 at cached_accuracy 0.233 with all cells within 1/30 MRU; MVBench control sole rank-1 at 0.800 with 7/8 halo cells losing 0.067-0.100. Halo moves only the agreement knob on TOMATO while draining fresh-frame budget, and actively hurts accuracy on MVBench.
 
 - phase_id: 1.41
-  status: EARNED 2026-04-18 (8f); strengthened 2026-04-19 (16f, 32f); **holdout 16f EARNED 2026-04-21** — Qwen 2.5-VL-7B-Instruct-4bit dense on `videomme_dev_v1.toml` n=30 AND `videomme_holdout_v1.toml` n=30 at 16f, parse_failures=0, agreement=1.000 at all frame counts on both splits. Holdout 16f aggregate 0.700 (21/30); per-bucket short 0.600 / medium 0.600 / **long 0.900**. Claim 8 (VideoMME breadth gate) satisfied dev+holdout. **Non-monotone long-bucket regression at 16f is DEV-ONLY and did NOT replicate on holdout** (dev 8f long 0.300 → dev 16f long 0.100; holdout 16f long 0.900 — per-bucket item-draw effect exceeds frame-scaling signal). Paper claim "16f long-bucket regresses" must soften to dev-only. Phase 1.57 feature-drift mechanism (dev-measured) stays intact; its 16f co-saturation framing remains local to dev. 32f adds prompt-length 2× and latency 2× for zero aggregate acc lift over 16f — NOT Pareto-efficient at this model/benchmark.
+  status: EARNED 2026-04-18 (8f); strengthened 2026-04-19 (16f, 32f); **holdout 16f EARNED 2026-04-21** — Qwen 2.5-VL-7B-Instruct-4bit dense on `videomme_dev_v1.toml` n=30 AND `videomme_holdout_v1.toml` n=30 at 16f, parse_failures=0, agreement=1.000 at all frame counts on both splits. Holdout 16f aggregate 0.700 (21/30); per-bucket short 0.600 / medium 0.600 / **long 0.900**. Claim 8 (VideoMME breadth gate) satisfied dev+holdout. **Non-monotone long-bucket regression at 16f is DEV-ONLY and did NOT replicate on holdout** (dev 8f long 0.300 → dev 16f long 0.100; holdout 16f long 0.900 — per-bucket item-draw effect exceeds frame-scaling signal). Paper claim "16f long-bucket regresses" must soften to dev-only. Phase 1.57 drift geometry now covers Qwen dev plus 8f/16f holdout re-check; the 16f co-saturation framing remains local to dev because 32f holdout drift was not computed. 32f adds prompt-length 2× and latency 2× for zero aggregate acc lift over 16f — NOT Pareto-efficient at this model/benchmark.
   authoritative_note: research/experiments/2026/2026-04-16-phase-1_41-videomme-lane.md + research/experiments/2026/2026-04-19-phase-1_41-qwen-videomme-16f-prereg.md + research/experiments/2026/2026-04-19-phase-1_41-qwen-videomme-32f-long-prereg.md + research/experiments/2026/2026-04-19-phase-1_57-feature-drift-mechanism-prereg.md
   authoritative_artifacts:
     - scripts/build_videomme_manifest.py
@@ -496,18 +499,21 @@ authoritative in the per-phase notes under
   current_best_policy: Qwen 2.5-VL-7B-4bit dense at 16f is the paper-reporting default on VideoMME dev (best per-bucket accuracy at Pareto-efficient frame count: short 0.800 / medium 0.700 / long 0.100, agg 0.567). 32f is NOT recommended for paper reporting (flat aggregate, 2× latency).
   supersedes: []
   paper_relevance: primary (claim #8 VideoMME breadth gate; also feeds claim #15 C-VISION frame-count sweep denominator via V_share measurements at 8f/16f/32f)
-  prereg_outcome: EARNED at 8f (2026-04-18); STRENGTHENED at 16f+32f (2026-04-19); **holdout 16f CLOSED 2026-04-21** — H1 pass (agg 0.700, at upper edge of [0.50, 0.70]), H2 FALSIFIES (long-bucket regression dev-only; holdout 16f long 0.90 vs dev 16f long 0.10 / dev 8f long 0.30), H3/H4/H5 pass. Three-frame-count × two-split per-bucket surface mapped. Mechanism (1.57 feature-drift as lower-bound proxy, dev-measured): drift rises sub-linearly 8f→32f, co-saturates with accuracy at 16f on long bucket — drift is a co-indicator of dev-split capacity plateau, not the binding cross-split constraint.
+  prereg_outcome: EARNED at 8f (2026-04-18); STRENGTHENED at 16f+32f (2026-04-19); **holdout 16f CLOSED 2026-04-21** — H1 pass (agg 0.700, at upper edge of [0.50, 0.70]), H2 FALSIFIES (long-bucket regression dev-only; holdout 16f long 0.90 vs dev 16f long 0.10 / dev 8f long 0.30), H3/H4/H5 pass. Three-frame-count × two-split per-bucket surface mapped. Mechanism (1.57 feature-drift as lower-bound proxy): Qwen drift geometry transfers to holdout at 8f/16f with max class-statistic delta <= 5pp; 32f remains dev-only. Dev drift rises sub-linearly 8f→32f and co-saturates with dev accuracy at 16f on the long bucket, so drift is a co-indicator of dev-split capacity plateau, not the binding cross-split constraint.
   notes: VideoMME videos hosted on HF `lmms-lab/Video-MME` as 20 chunked zip archives (~101 GB full corpus); paper protocol uses 57 unique videoIDs (dev+holdout manifests, one overlap). `scripts/fetch_videomme_subset.py` walks chunks one-at-a-time (peak disk ~5 GB staging + ~3-15 GB extracted subset). See `docs/videomme-download-handoff.md` for env gotchas (HF xet backend must be disabled; SOCKS proxy env vars must be cleared). Phase 1.58 (bf16 quantization ablation) is the remaining open mechanism question for 32f plateau — deferred pending 1.51V primary axis.
 
 - phase_id: 1.42
-  status: proposed
-  authoritative_note: research/experiments/2026/2026-04-17-phase-1_42-gemma-architecture-topology-prereg.md
-  authoritative_artifacts: []
-  current_best_policy: n/a (second-architecture fidelity test, not a policy)
+  status: completed split 2026-04-24
+  authoritative_note: research/experiments/2026/2026-04-17-phase-1_42-gemma-architecture-topology-prereg.md + research/experiments/2026/2026-04-24-phase-1_42-gemma-findings.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_42_gemma_tomato_motion_holdout_v2_mc_cached/
+    - research/experiments/2026/artifacts/phase1_42_gemma_mvbench_motion_holdout_v2_mc_cached/
+    - research/experiments/2026/artifacts/phase1_42_gemma_smoke_mc/
+  current_best_policy: n/a (second-architecture fidelity boundary, not a policy; transferred Planner 2.0 base policy)
   supersedes: []
   paper_relevance: primary (claim #7 architecture-conditioned reuse fidelity — takes evidence from N=1 to N=2 architectures)
-  prereg_outcome: (pending; blocked on _mix_gemma_features harness integration)
-  notes: Gemma 4-E4B-IT-4bit verified to load on M3 Air 16 GB; all-global vision encoder + learned 2D positional + standard RoPE LLM is architecturally distinct from Qwen's windowed-global + M-RoPE-V
+  prereg_outcome: Split result. TOMATO motion holdout N=30 passes fidelity gate (dense_acc=cached_acc=0.2667, agreement=0.9333, parse failures 0); MVBench motion holdout N=30 fails strict agreement despite tied aggregate accuracy (dense_acc=cached_acc=0.2000, agreement=0.7333, parse failures 0). Claim #7 is strengthened to a benchmark-conditioned architecture spectrum, not a universal all-global-high-fidelity rule.
+  notes: Gemma 4-E4B-IT-4bit verified to load on M3 Air 16 GB. The run uses explicit multiple-choice scoring because Gemma's local free-form path was parse-hostile despite matching dense/cached prefill logits on the smoke item. Corrected cached-feature geometry is 133 pooled tokens/frame on the live 560x560 Gemma path.
 
 - phase_id: 1.43
   status: proposed
@@ -572,15 +578,15 @@ authoritative in the per-phase notes under
   notes: Critical implementation bugs found and fixed 2026-04-20 — (1) Python `__call__` is looked up on the type, not the instance, so `encoder.__call__ = new_call` is silently a no-op. Fixed with `_PrunedEncoderWrapper` class-level `__call__`. (2) Helpers assumed B=1 but Gemma-4 vision tower batches frames in leading dim (B=N_frames). Generalized to per-frame pruning via `mx.take_along_axis` and batched one-hot matmul. (3) Cross-session thermal drift on M3 Air inflated standalone n=30 vision_ms by ~27% (decode_ms proxy: +6.5% drift vs control). **Authoritative V_red = 39.0% (paired EXP01/EXP02, thermally-paired within-session, decode drift < 2% — the strictest pairing the expansion batch can produce).** A cross-session composition-dense-arm normalization gave 42.2% on the earlier 2026-04-20 tranche (decode +0.2% vs a prior session's control); the 3.2pp delta sits inside the thermal-drift bracket and both readings attest the same mechanism, but per Codex round-22 the paired 39.0% is the paper-facing number. See `research/experiments/2026/2026-04-21-phase-1_51V-expansion-findings.md` §Reproduction-of-prior-claim for the reconciliation. **Architectural ceiling** (scatter-back preserves pooler geometry): pruned tokens scattered back to original length, so LM prompt token count is unchanged (2181 tokens), LM prefill + generate get zero speedup from 1.51V. E2E upper bound = `1 / (1 - V_share × V_red)` = 1.16× at V_red=100% on 8-frame VideoMME dev, cutting to 1.06× at V_red=39.0% × V_share=15.2% (8f). Reaching H3's 1.5× requires either (a) post-pool token merging that cuts LM prompt, (b) bypass scatter-back with a new pooler, or (c) composition with persistent-KV (CLOSED on 1.55 lane) or 1.51R (null on novelty axis).
 
 - phase_id: 1.52R
-  status: proposed
+  status: superseded / not launched under original gate
   authoritative_note: research/experiments/2026/2026-04-17-phase-1_52-combined-temporal-spatial-prereg.md
   authoritative_artifacts: []
   current_best_policy: n/a
-  supersedes: []
-  paper_relevance: primary (multiplicative composition — temporal reuse AND novelty-pruning stacked — paper-table headline number)
-  prereg_outcome: (pending; blocked on 1.42 and 1.51R passes)
-  runtime_estimate: ~2-3h at 8f n=30 per arm (dense+pruned); ~6-8h at 32f
-  notes: three-way gate preregistered (multiplicative / additive / interference); PoRe (arxiv 2508.17807) reserved as a composable axis under phase 1.52R holdout (see 1.51 prereg §Composable Arm) — NOT phase 1.53 (1.53 is now the object-state delta sidecar, preregistered 2026-04-18).
+  supersedes: [1.52]
+  paper_relevance: historical composition prereg; current composition evidence comes from 1.51V EXP10 and scale-out bundle gates, not this original proposed headline path
+  prereg_outcome: Not launched under original gate. The prerequisites changed meaning: 1.42 landed as a split architecture boundary rather than a clean Gemma pass, and 1.51R closed as an own-axis null while 1.51V became the primary Gemma first-pass story.
+  runtime_estimate: obsolete
+  notes: The original three-way gate (multiplicative / additive / interference) remains useful design context but is not a live paper-table promise. Any future composition claim should use a fresh prereg tied to the current C-VISION/C-PERSIST/scale-out evidence surface.
 
 - phase_id: 1.55
   status: superseded
@@ -1048,18 +1054,21 @@ authoritative in the per-phase notes under
   notes: Codex-round-21 hypothesis extending the pre-release scale-out system. Three H: signal beats pixel-MEAN at matched compute, random-ablation rules out correlate-of-activity, signal needs lower refresh rate at matched accuracy. Paper language constrained to "VLM-signaled" until Phase 1.44 lands; no "confidence-conditioned" framing until earned.
 
 - phase_id: 1.57
-  status: findings-landed (Qwen complete; Gemma path deferred)
-  authoritative_note: research/experiments/2026/2026-04-19-phase-1_57-feature-drift-findings.md
+  status: findings-landed (Qwen + Gemma complete)
+  authoritative_note: research/experiments/2026/2026-04-19-phase-1_57-feature-drift-findings.md + research/experiments/2026/2026-04-24-phase-1_57-gemma-feature-drift-findings.md + research/experiments/2026/2026-04-23-phase-1_57-holdout-recheck-findings.md
   authoritative_artifacts:
     - research/experiments/2026/artifacts/phase1_57/qwen_8f_dev30.json
     - research/experiments/2026/artifacts/phase1_57/qwen_16f_dev30.json
     - research/experiments/2026/artifacts/phase1_57/qwen_32f_dev30.json
+    - research/experiments/2026/artifacts/phase1_57_gemma/gemma_8f_long.json
+    - research/experiments/2026/artifacts/phase1_57_gemma/gemma_16f_long.json
+    - research/experiments/2026/artifacts/phase1_57_gemma/gemma_32f_long.json
   current_best_policy: n/a
   supersedes: []
-  paper_relevance: primary (feature-drift mechanism; three-frame sweep landed on Qwen 7B-4bit; adjudicates the 16f→32f long-bucket plateau via drift-accuracy co-saturation)
-  prereg_outcome: Qwen 8f/16f/32f landed on videomme_dev_v1 n=30. H2 FALSIFIED (STATIC cos 0.562/0.607/0.638, all below [0.95, 1.00] prereg band). H3 EARNED under adjacent-frame measurement (monotonic rise). Per-bucket stratification reveals attention-mixing ceiling is bucket-dependent. Cross-ref to 1.41 rejects H-drift-compounds (long-bucket), supports H-saturation. Gemma path deferred (needs inline ViT encode wiring). H1/H4 NOT TESTED.
+  paper_relevance: primary mechanism (feature-drift geometry for Qwen frame scaling and Gemma architecture-conditioned reuse; lower-bound adjacent-frame proxy, not true cache-substitute measurement)
+  prereg_outcome: Qwen 8f/16f/32f landed on videomme_dev_v1 n=30. H2 FALSIFIED (STATIC cos 0.562/0.607/0.638, all below [0.95, 1.00] prereg band). H3 EARNED under adjacent-frame measurement (monotonic rise). Per-bucket stratification reveals attention-mixing ceiling is bucket-dependent. Gemma long-bucket path landed 2026-04-24 with corrected 133 pooled-token geometry: STATIC cosine 0.7689/0.7940/0.8074 at 8f/16f/32f, H1 EARNED and preregistered monotonic-decrease H3 FALSIFIED in the opposite direction.
   runtime_estimate: ~45-60min total (Gemma + Qwen, 8/16/32 frames × N items, feature-tap extraction only — no generation)
-  notes: Qwen side landed 2026-04-19. Measurement methodology is adjacent-frame fresh-vs-fresh (not the pre-release cache-substitute); findings doc documents the reason and the lower-bound interpretation. Per-bucket drift co-saturates with per-bucket accuracy at 16f on long bucket — empirical support for H-saturation over H-drift-compounds for the long-bucket plateau. Short-bucket drift still accelerating at 32f while short-bucket acc is flat — drift is co-indicator, not binding constraint. Gemma deferred, 1.58 (bf16) still open.
+  notes: Measurement methodology is adjacent-frame fresh-vs-fresh (not the pre-release cache-substitute); findings docs document the lower-bound interpretation. Qwen long-bucket drift co-saturates with dev accuracy at 16f, but the 16f long-bucket accuracy shape does not replicate on holdout. Gemma's cached-feature path is substantially higher-cosine than Qwen at matched long-bucket frame counts and improves with denser sampling, but 1.42 shows that higher feature cosine does not guarantee answer-identity stability. Phase 1.58 (bf16) remains open.
 
 - phase_id: 1.58
   status: proposed (deferred)

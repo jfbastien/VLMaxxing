@@ -11,6 +11,12 @@ table in the primary source as of the listed date. Seed-derived or unverified
 methods do not belong in this table; keep them in private scratch notes until a
 primary source check is complete.
 
+Benchmark and runtime references used by the manuscript but not listed as
+comparison methods: TOMATO is ICLR 2025 Poster on OpenReview and arXiv
+2410.23266; Qwen2.5-VL is arXiv 2502.13923; Gemma 4 E4B is cited through the
+Google Hugging Face model card plus the MLX-community 4-bit conversion; MLX-VLM
+is cited through the project repository.
+
 ## Columns
 
 | column | meaning |
