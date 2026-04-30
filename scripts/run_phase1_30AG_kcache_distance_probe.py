@@ -203,8 +203,10 @@ def _cache_window(entry: Any, name: str) -> dict[str, Any] | None:
     slices[-2] = slice(0, valid_tokens)
     return {
         "array": value[tuple(slices)],
+        "raw_array": value,
         "valid_tokens": valid_tokens,
         "buffer_tokens": buffer_tokens,
+        "dtype": str(value.dtype),
     }
 
 
@@ -212,6 +214,28 @@ def _token_prefix(array: mx.array, common_tokens: int) -> mx.array:
     slices = [slice(None)] * len(array.shape)
     slices[-2] = slice(0, common_tokens)
     return array[tuple(slices)]
+
+
+def _finite_or_none(value: float) -> float | None:
+    """Replace NaN/Inf with None so allow_nan=False JSON dumps cleanly."""
+    import math
+
+    if math.isnan(value) or math.isinf(value):
+        return None
+    return float(value)
+
+
+def _audit_flat(flat: mx.array) -> dict[str, Any]:
+    """Read-only NaN/Inf/max-abs telemetry on a flattened cache window."""
+    has_nan = mx.any(mx.isnan(flat))
+    has_inf = mx.any(mx.isinf(flat))
+    max_abs = mx.max(mx.abs(flat))
+    mx.eval(has_nan, has_inf, max_abs)
+    return {
+        "has_nan": bool(has_nan.item()),
+        "has_inf": bool(has_inf.item()),
+        "max_abs": _finite_or_none(float(max_abs.item())),
+    }
 
 
 def _distance_for_windows(left: dict[str, Any], right: dict[str, Any]) -> dict[str, Any]:
@@ -240,22 +264,78 @@ def _distance_for_windows(left: dict[str, Any], right: dict[str, Any]) -> dict[s
     right_common = _token_prefix(right_array, common_len)
     l_flat = left_common.reshape(-1)
     r_flat = right_common.reshape(-1)
+
+    # Pre-reduction finite-audit telemetry on the *valid* window plus a
+    # buffer-tail audit past valid_tokens, to discriminate "cache contains
+    # NaN/Inf" from "bf16 cosine reduction overflows."
+    l_audit = _audit_flat(l_flat)
+    r_audit = _audit_flat(r_flat)
+    left_raw = left.get("raw_array")
+    right_raw = right.get("raw_array")
+    left_buffer = int(left["buffer_tokens"])
+    right_buffer = int(right["buffer_tokens"])
+    if left_raw is not None and left_buffer > left_tokens:
+        slices = [slice(None)] * len(left_raw.shape)
+        slices[-2] = slice(left_tokens, left_buffer)
+        l_tail = left_raw[tuple(slices)].reshape(-1)
+        l_tail_audit = _audit_flat(l_tail)
+    else:
+        l_tail_audit = {"has_nan": False, "has_inf": False, "max_abs": None}
+    if right_raw is not None and right_buffer > right_tokens:
+        slices = [slice(None)] * len(right_raw.shape)
+        slices[-2] = slice(right_tokens, right_buffer)
+        r_tail = right_raw[tuple(slices)].reshape(-1)
+        r_tail_audit = _audit_flat(r_tail)
+    else:
+        r_tail_audit = {"has_nan": False, "has_inf": False, "max_abs": None}
+
+    # Native-dtype reductions (the hypothesis-(b) overflow surface).
     dot = mx.sum(l_flat * r_flat)
     denom = mx.sqrt(mx.sum(l_flat * l_flat)) * mx.sqrt(mx.sum(r_flat * r_flat))
     cosine = dot / mx.maximum(denom, mx.array(1e-12))
     mean_abs = mx.mean(mx.abs(l_flat - r_flat))
     rms = mx.sqrt(mx.mean((l_flat - r_flat) * (l_flat - r_flat)))
     mx.eval(cosine, mean_abs, rms)
+
+    # fp32 control cosine: the discriminator. If valid-window inputs are finite
+    # and cosine_native is NaN while cosine_fp32 is finite, hypothesis (b)
+    # (overflow) is confirmed.
+    l_fp32 = l_flat.astype(mx.float32)
+    r_fp32 = r_flat.astype(mx.float32)
+    dot_fp32 = mx.sum(l_fp32 * r_fp32)
+    denom_fp32 = mx.sqrt(mx.sum(l_fp32 * l_fp32)) * mx.sqrt(mx.sum(r_fp32 * r_fp32))
+    cosine_fp32 = dot_fp32 / mx.maximum(denom_fp32, mx.array(1e-12))
+    mx.eval(cosine_fp32)
+
+    cosine_value = _finite_or_none(float(cosine.item()))
+    cosine_fp32_value = _finite_or_none(float(cosine_fp32.item()))
+    mean_abs_value = _finite_or_none(float(mean_abs.item()))
+    rms_value = _finite_or_none(float(rms.item()))
+    nonfinite_count = sum(
+        1 for v in (cosine_value, cosine_fp32_value, mean_abs_value, rms_value) if v is None
+    )
+
     return {
-        "cosine": float(cosine.item()),
-        "cosine_distance": float(1.0 - cosine.item()),
-        "mean_abs": float(mean_abs.item()),
-        "rms": float(rms.item()),
+        "cosine": cosine_value,
+        "cosine_distance": (None if cosine_value is None else float(1.0 - cosine_value)),
+        "cosine_fp32": cosine_fp32_value,
+        "cosine_fp32_distance": (
+            None if cosine_fp32_value is None else float(1.0 - cosine_fp32_value)
+        ),
+        "mean_abs": mean_abs_value,
+        "rms": rms_value,
+        "nonfinite_count": nonfinite_count,
         "common_tokens": common_len,
         "left_tokens": left_tokens,
         "right_tokens": right_tokens,
-        "left_buffer_tokens": int(left["buffer_tokens"]),
-        "right_buffer_tokens": int(right["buffer_tokens"]),
+        "left_buffer_tokens": left_buffer,
+        "right_buffer_tokens": right_buffer,
+        "left_dtype": str(left.get("dtype", "?")),
+        "right_dtype": str(right.get("dtype", "?")),
+        "left_audit": l_audit,
+        "right_audit": r_audit,
+        "left_tail_audit": l_tail_audit,
+        "right_tail_audit": r_tail_audit,
         "same_valid_token_length": left_tokens == right_tokens,
     }
 
@@ -277,31 +357,83 @@ def _cache_distance(left: list[Any], right: list[Any]) -> dict[str, Any]:
         layer_rows.append(row)
     aggregate: dict[str, Any] = {"layers": layer_rows}
     for name in ("keys", "values"):
-        cosines = [
-            float(row[f"{name}_cosine"]) for row in layer_rows if row.get(f"{name}_available")
-        ]
-        mean_abs = [
-            float(row[f"{name}_mean_abs"]) for row in layer_rows if row.get(f"{name}_available")
-        ]
-        rms = [float(row[f"{name}_rms"]) for row in layer_rows if row.get(f"{name}_available")]
-        cosine_distances = [
-            float(row[f"{name}_cosine_distance"])
-            for row in layer_rows
-            if row.get(f"{name}_available")
-        ]
+
+        def _finite_values(field: str, _name: str = name) -> list[float]:
+            out: list[float] = []
+            for row in layer_rows:
+                if not row.get(f"{_name}_available"):
+                    continue
+                value = row.get(f"{_name}_{field}")
+                if value is None:
+                    continue
+                out.append(float(value))
+            return out
+
+        cosines = _finite_values("cosine")
+        cosines_fp32 = _finite_values("cosine_fp32")
+        mean_abs = _finite_values("mean_abs")
+        rms = _finite_values("rms")
+        cosine_distances = _finite_values("cosine_distance")
+        cosine_fp32_distances = _finite_values("cosine_fp32_distance")
         token_mismatches = [
             row
             for row in layer_rows
             if row.get(f"{name}_available") and not row.get(f"{name}_same_valid_token_length")
         ]
+        n_available = sum(1 for row in layer_rows if row.get(f"{name}_available"))
+        nonfinite_layers = sum(
+            int(row.get(f"{name}_nonfinite_count") or 0)
+            for row in layer_rows
+            if row.get(f"{name}_available")
+        )
+        valid_has_nan_layers = sum(
+            1
+            for row in layer_rows
+            if row.get(f"{name}_available")
+            and (
+                (row.get(f"{name}_left_audit") or {}).get("has_nan")
+                or (row.get(f"{name}_right_audit") or {}).get("has_nan")
+            )
+        )
+        valid_has_inf_layers = sum(
+            1
+            for row in layer_rows
+            if row.get(f"{name}_available")
+            and (
+                (row.get(f"{name}_left_audit") or {}).get("has_inf")
+                or (row.get(f"{name}_right_audit") or {}).get("has_inf")
+            )
+        )
+        tail_has_nan_layers = sum(
+            1
+            for row in layer_rows
+            if row.get(f"{name}_available")
+            and (
+                (row.get(f"{name}_left_tail_audit") or {}).get("has_nan")
+                or (row.get(f"{name}_right_tail_audit") or {}).get("has_nan")
+            )
+        )
         aggregate[f"{name}_mean_cosine"] = float(np.mean(cosines)) if cosines else None
+        aggregate[f"{name}_mean_cosine_fp32"] = (
+            float(np.mean(cosines_fp32)) if cosines_fp32 else None
+        )
         aggregate[f"{name}_mean_cosine_distance"] = (
             float(np.mean(cosine_distances)) if cosine_distances else None
+        )
+        aggregate[f"{name}_mean_cosine_fp32_distance"] = (
+            float(np.mean(cosine_fp32_distances)) if cosine_fp32_distances else None
         )
         aggregate[f"{name}_mean_abs"] = float(np.mean(mean_abs)) if mean_abs else None
         aggregate[f"{name}_mean_rms"] = float(np.mean(rms)) if rms else None
         aggregate[f"{name}_n_token_length_mismatch_layers"] = len(token_mismatches)
         aggregate[f"{name}_all_same_valid_token_length"] = len(token_mismatches) == 0
+        aggregate[f"{name}_n_available_layers"] = n_available
+        aggregate[f"{name}_n_finite_cosine_layers"] = len(cosines)
+        aggregate[f"{name}_n_finite_cosine_fp32_layers"] = len(cosines_fp32)
+        aggregate[f"{name}_total_nonfinite_metric_count"] = nonfinite_layers
+        aggregate[f"{name}_valid_window_nan_layers"] = valid_has_nan_layers
+        aggregate[f"{name}_valid_window_inf_layers"] = valid_has_inf_layers
+        aggregate[f"{name}_buffer_tail_nan_layers"] = tail_has_nan_layers
     return aggregate
 
 
@@ -487,12 +619,16 @@ def main() -> int:
                 "pruned_vs_dense": _cache_distance(pruned_cache, dense_cache),
             }
             output_rows.append(row)
-            handle.write(json.dumps(row, sort_keys=True) + "\n")
+            handle.write(json.dumps(row, sort_keys=True, allow_nan=False) + "\n")
             handle.flush()
+            reuse_cos = row["reuse_vs_dense"].get("keys_mean_cosine")
+            pruned_cos = row["pruned_vs_dense"].get("keys_mean_cosine")
+            reuse_cos_str = f"{reuse_cos:.4f}" if isinstance(reuse_cos, float) else "n/a"
+            pruned_cos_str = f"{pruned_cos:.4f}" if isinstance(pruned_cos, float) else "n/a"
             print(
                 f"[1.30AG] {video_id} q={q_index}: "
-                f"reuse K cos={row['reuse_vs_dense']['keys_mean_cosine']:.4f}, "
-                f"pruned K cos={row['pruned_vs_dense']['keys_mean_cosine']:.4f}"
+                f"reuse K cos={reuse_cos_str}, "
+                f"pruned K cos={pruned_cos_str}"
             )
             del dense_cache, reuse_cache, pruned_cache
             gc.collect()
@@ -665,7 +801,7 @@ def main() -> int:
         "wall_time_s": (time.perf_counter_ns() - t0) / 1e9,
     }
     summary_path = args.output_dir / "kcache_distance_summary.json"
-    summary_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
+    summary_path.write_text(json.dumps(summary, indent=2, sort_keys=True, allow_nan=False) + "\n")
     print(f"[1.30AG] wrote {summary_path}")
     return 0
 
