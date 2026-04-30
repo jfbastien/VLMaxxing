@@ -27,7 +27,7 @@ The 12 GB MLX memory cap from local jfb runs is **not** applied here.
 | **B1** | `sam_b1_cpersist_replication.jsonl` (42 rows) | **closed-arch-blocked (diagnostic)** | gate-pass on numbers, ~80% text-divergence | [`2026-04-29-phase-B1-…`](../../2026-04-29-phase-B1-sam-cpersist-replication-findings.md) |
 | **B2** | `sam_b2_many_turn_horizon.jsonl` (450 rows) | **closed-arch-blocked (diagnostic)** | adaptive arm passes ≤3% drift gate at horizon=50, but at 0.84× speedup | [`2026-04-29-phase-B2-…`](../../2026-04-29-phase-B2-sam-many-turn-horizon-findings.md) |
 | **B3** | `sam_b3_streaming_baselines.jsonl` (88 rows) | **closed-earned (protocol) / closed-partial (sam_policy)** | **PASS** | [`2026-04-29-phase-B3-…`](../../2026-04-29-phase-B3-sam-streaming-baselines-findings.md) |
-| **B4** | `sam_b4_sparse_vit_ceiling.jsonl` (10 rows) | **closed-arch-blocked** (strict B4) / **closed-earned at the right axis** (≥32f) | non-conformant; ~1.5× ingestion density at 32f | [`2026-04-29-phase-B4-…`](../../2026-04-29-phase-B4-sam-track-b-hard-prune-findings.md) |
+| **B4** | `sam_b4_sparse_vit_ceiling.jsonl` (10 rows) | **closed-arch-blocked** (strict B4) / **closed-negative** (post-ViT hard-prune at fixed frames) | non-conformant; **8f median 0.757× (slower); 32f median 1.042× (essentially flat); 0/10 byte-identical** | [`2026-04-29-phase-B4-…`](../../2026-04-29-phase-B4-sam-track-b-hard-prune-findings.md) |
 | **B5** | `sam_b5_s4_accuracy_1937.jsonl` (1937 rows) + `sam_b5_s4_raw_paired_513.jsonl` (513 rows) | **closed-earned** | **PASS** (both) | [`2026-04-29-phase-B5-…`](../../2026-04-29-phase-B5-sam-s4-reexport-findings.md) |
 | **bundle** | `sam_scaleout_bundle_validation.json` | overall fails on B0b (intentional; that is the gate), B3+B5 pass cleanly | n/a | (this README) |
 
@@ -53,13 +53,18 @@ The 12 GB MLX memory cap from local jfb runs is **not** applied here.
   same ViT cost. **This is the headline frame-rate-at-fixed-compute
   claim; the C-PERSIST follow-up cache is a different mechanism that
   does not deliver this on this stack.**
-- **Hard-prune (B4) is a real Track B win at the right axis on this
-  stack.** Per-frame compute drops from 414 ms (dense, 32f) to 275 ms
-  (pruned, 32f, kr=0.50) → **~1.5× more frames at matched wall-clock
-  budget at 32f-class regimes**. Does NOT pay off below 32f (cascade
-  overhead exceeds prefill savings). Strict-B4 conformance still
-  requires sparse-ViT execution; this is Track-B-via-prefill rather
-  than B4 proper.
+- **Hard-prune (B4-adjacent) is a flat-or-negative result at fixed
+  frames** on this stack. Measured median speedups are 8f: **0.757×
+  (slower; 30% overhead from the post-ViT prune cascade)**, 32f:
+  **1.042× (essentially flat)**, with 0/10 byte-identical paired
+  rows. The artifact does NOT support a "1.5× ingestion-density"
+  reframe — that axis assumes you'd use the saved prefill budget to
+  push more frames at fixed wall-clock, but the only data we collected
+  is fixed-frame query speedup, where the headline number is 1.042×.
+  Future work could test the ingestion-density framing by actually
+  running 48f-pruned vs 32f-dense at matched compute; until then,
+  this is non-conformant Track B (post-ViT hard-prune ≠ sparse-ViT)
+  with a flat-to-negative observed speedup.
 - **B3 streaming baselines.** At matched 4-frame evidence budget,
   `low_fps_dense` 77.3 % > `sam_policy_proxy` 59.1 % ≈
   `screenshot_polling` 59.1 % > `recency_last_k` 54.5 %. **Reviewer-
@@ -78,14 +83,17 @@ The two cache levels and the prune mechanism compose orthogonally:
 | mechanism | axis | what it caps | measured factor on this stack |
 |---|---|---|---|
 | streaming cache (E3) | ViT-fire-rate | how often the ViT fires per second of video | **22–64×** ViT reduction at matched temporal coverage |
-| hard-prune (B4) | per-prompt prefill tokens | how many visual tokens enter the LLM per query | **~1.5×** more frames at matched wall-clock at 32f-class regimes |
+| hard-prune (B4-adj) | per-prompt prefill tokens | how many visual tokens enter the LLM per query | **flat-to-negative** at fixed frames on this stack: 8f 0.757×, 32f 1.042×; ingestion-density reframe is not supported by the collected artifact (would require fixed-wall-clock variable-frames experiment) |
 | C-PERSIST (B0b/B1/B2) | per-query LLM prefill amortization | repeat-the-prompt-prefix cost across queries | **0×** at deployment-grade quality on this stack (broken cross-turn cache) |
 
-**Combined paper claim should be:** "more frames at fixed compute, by
-ViT-fire-rate reduction × prefill-token reduction." Each axis cited
-separately with its measured factor. The C-PERSIST axis does NOT
-contribute to this claim on this stack until the SWA-aware cache fix
-lands.
+**Combined paper claim should be:** "more frames at fixed compute,
+primarily via ViT-fire-rate reduction (E3, 22-64× at matched
+temporal coverage). Per-prompt prefill-token reduction (hard-prune)
+is flat-to-negative on this stack at fixed frames; the
+ingestion-density reframe is a hypothesis that would need its own
+fixed-wall-clock variable-frames experiment to confirm. The
+C-PERSIST follow-up axis does not contribute to deployment-grade
+speedup on Gemma 4 26B until the SWA-aware cache fix lands."
 
 ## Source
 

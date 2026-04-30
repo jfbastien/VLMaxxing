@@ -22,7 +22,22 @@ for the why; this doc is just the what.
 - **Add new**: S0 (Gemma 26B Track B kr-bracket), S1 (Qwen 7B
   C-PERSIST at 32f and 64f), S2 (M5 memory envelope).
 
-## Step 0 — branch + sync
+## Step 0a — finish the current Sam run first, THEN start r2
+
+If Sam still has a run going on `sam/scaleout-m5-20260429`, **let it
+finish, commit and push the artifacts, then read this doc**. r2 is
+explicitly built on top of what's already in your run, not a parallel
+branch. Do not interrupt a productive M5 job to start r2.
+
+When the current run is done:
+
+1. Commit any uncommitted artifacts on `sam/scaleout-m5-20260429`.
+2. `git push origin sam/scaleout-m5-20260429` so we can cherry-pick
+   anything new from your branch (we already imported B0b/B1/B2/B3/B4-adj/B5
+   on main as of this doc; if you've added more since, we will pick
+   the new commits selectively before you start r2).
+
+## Step 0b — branch + sync
 
 ```bash
 cd ~/path/to/codec-through
@@ -33,29 +48,29 @@ git switch -c sam/scaleout-m5-r2-20260430
 ```
 
 After the pull, verify the cherry-picks landed and our local fixes
-are present:
+are present (commit-presence checks, since `git log -10` will keep
+moving as new commits land):
 
 ```bash
-git log --oneline -10
-# expect to see (in order, newest first):
-#   68e5294 sam-scaleout-m5: bundle finalization
-#   a872ee0 sam-scaleout-m5: B3 -- matched streaming baselines
-#   9318f63 sam-scaleout-m5: B3 runner
-#   5b70d82 sam-scaleout-m5: B5
-#   851e1fa sam-scaleout-m5: B0b -- gate FAILED on cross_turn_warm
-#   0a06a5e sam-scaleout-m5: B0b runner
-#   ac97708 sam-scaleout-m5: bundle scaffolding
-#   cb098fe fix(phase2): chain process-group kill + 1.55L baseline dedup
-#   e1aa8bc research(1.63I): land Qwen 16f keep-rate fine bracket
-#   fccfa2f research(1.62D): land 4f cold-dense baseline (4f arm complete)
+# Sam B0b/B1/B2/B3/B4-adj/B5 commits all present?
+git rev-list --count main ^$(git merge-base origin/sam/scaleout-m5-20260429 main) \
+  -- 'research/experiments/2026/artifacts/sam_scaleout_m5_20260429/**'
+# expect: > 0
 
+# Local fixes preserved?
 grep -c "unique_baselines" scripts/run_phase1_55L_many_turn_cpersist.py
 # expect: 3
 grep -c "start_new_session" scripts/run_phase2_local_chain.py
 # expect: 1
+
+# Artifact files actually exist on disk?
+test -f research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b2_many_turn_horizon.jsonl && echo OK B2
+test -f research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b1_cpersist_replication.jsonl && echo OK B1
+test -f research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b4_sparse_vit_ceiling.jsonl && echo OK B4
 ```
 
-If any of those checks fail, stop — main is in an unexpected state.
+If any of those checks fail, stop — main is in an unexpected state
+and you should sync with the team before proceeding.
 
 ## What NOT to re-run
 
@@ -68,7 +83,8 @@ the JSONL or summaries is fine.
 | B5 513 | PASS — 513 byte-identical raw paired | `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b5_s4_raw_paired_513.jsonl` |
 | B3 protocol | PASS schema; partial mechanism — `low_fps_dense` 17/22 wins matched 4-frame budget | `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b3_streaming_baselines.jsonl` |
 | **B1 (broken-cache diagnostic)** | DIAGNOSTIC — DO NOT cite as 26B C-PERSIST speedup. 10× speedup numbers were measured on the same broken cache path B0b caught. Findings doc IS honest (`closed-arch-blocked`). | `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b1_cpersist_replication*` |
-| **B4-adjacent (post-ViT hard prune)** | NEGATIVE — hard-prune does NOT pay off on this stack. 8f median 0.757× (slower); 32f 1.042×. Useful null evidence + C-CEILING limitations data. NOT strict sparse-ViT Track B. | `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b4_sparse_vit_ceiling*` |
+| **B2 (many-turn horizon)** | DIAGNOSTIC — `correct` fields in B2 mean **text-identical-to-cold-dense**, not ground-truth correctness (every row has `session_correct=False, baseline_correct=False, session_choice=None`). Adaptive arm achieves 99% text agreement after the first turn but at 0.84× speedup; fixed_k1 has 28× speedup but 33% text agreement (broken cache). Cite as text-stability data, never as semantic correctness. | `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b2_many_turn_horizon*` |
+| **B4-adjacent (post-ViT hard prune)** | NEGATIVE at fixed frames: 8f median **0.757× (slower; 30% overhead)**; 32f median **1.042× (essentially flat)**; 0/10 byte-identical. The earlier "~1.5× ingestion-density" reframe in some docs is NOT supported by this artifact (would need fixed-wall-clock variable-frames experiment). NOT strict sparse-ViT Track B. | `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b4_sparse_vit_ceiling*` |
 
 ## Step 1 — install a CORRECTNESS-CONTROL guard (do not pursue a speedup-preserving shim)
 
@@ -141,9 +157,25 @@ cache reuse. The current runner emits hard-coded
 `policy="prompt_cache_state_cross_turn_chained"`, `vit_calls=0`,
 `prefix_hit=cross["n_input_tokens"]`, `prefix_coverage=1.0` regardless
 of whether the cache was actually reused (lines 743-761 of
-`scripts/run_sam_b0b_cache_correctness.py`). Replace that block with
-guard-aware metadata, and add a `cache_guard_triggered` field to
-`make_row` (~3 lines change to the make_row signature too):
+`scripts/run_sam_b0b_cache_correctness.py`).
+
+**Important schema constraint:** `research/schemas/sam_scaleout_artifact_v1.schema.json`
+declares `additionalProperties: false`. We **cannot** add a new
+field like `cache_guard_triggered`. Encode the same information in
+existing fields that already validate:
+
+- `policy`: change the string to `"full_refill_guard_rotating_kv"`
+  when the guard fires.
+- `policy_params`: a dict (already in the schema), set to
+  `{"cache_guard_triggered": true, "guard_reason": "rotating_kv_present", "cache_reuse_disabled": true}`
+  when guard fires; `null` when not.
+- `provenance_note`: prepend
+  `"[B0b r2 guard fired: cross-turn cache reuse disabled because RotatingKVCache present in prompt cache; effective path is full re-prefill] "`
+  when guard fires.
+- `vit_calls`, `prefix_hit`, `prefix_coverage`: clamp to the
+  full-refill values (`1`, `0`, `0.0`) when guard fires.
+
+Replace the cross-turn append block:
 
 ```python
 # In the cross-turn row append (was: lines 740-762):
@@ -157,6 +189,15 @@ rows.append(make_row(
         "full_refill_guard_rotating_kv"  # guard fired -> no cache reuse
         if guard_fired
         else "prompt_cache_state_cross_turn_chained"
+    ),
+    policy_params=(
+        {
+            "cache_guard_triggered": True,
+            "guard_reason": "rotating_kv_present",
+            "cache_reuse_disabled": True,
+        }
+        if guard_fired
+        else None
     ),
     baseline_policy="cold_dense_no_cache",
     comparator_arm="cold_dense",
@@ -174,17 +215,23 @@ rows.append(make_row(
     vit_calls=1 if guard_fired else 0,
     prefix_hit=0 if guard_fired else cross["n_input_tokens"],
     prefix_coverage=0.0 if guard_fired else 1.0,
-    cache_guard_triggered=guard_fired,  # new field; thread through make_row
+    provenance_note=(
+        "[B0b r2 guard fired: cross-turn cache reuse disabled because "
+        "RotatingKVCache present; effective path is full re-prefill] "
+        + (base_kw.get("provenance_note") or "")
+        if guard_fired
+        else base_kw.get("provenance_note")
+    ),
 ))
 ```
 
-The `make_row` signature at line 388 needs a new
-`cache_guard_triggered: bool` parameter that lands in the row dict
-(default `False` for backward-compat with B5/B3 row emitters that
-don't use the guard). The summary aggregator should then count rows
-by `effective_policy` so the gate can distinguish "guarded full-
-refill PASSES" from "actual cache reuse PASSES" — they are different
-scientific outcomes.
+This keeps the row schema-valid AND makes the guarded vs reuse
+distinction explicit through `policy` + `policy_params`.
+
+The summary aggregator (`b0b_summarize` or whatever computes the
+`*_summary.json`) should count rows by `policy` so the gate can
+report "PASS under full-refill guard" vs "PASS under actual cache
+reuse" — they are different scientific outcomes.
 
 The same emission bug exists in `scripts/run_sam_b1_cpersist_replication.py`
 around lines 534-535 and 562-563. If you ever rerun B1 under the same
@@ -192,7 +239,7 @@ guard, apply the same patch there. **Until B1 is rerun under the
 guard, do not cite its 10× speedup numbers as a 26B C-PERSIST result
 — B1 ran on the broken cache path.**
 
-## Step 2 — smoke-validate the guard (≤30 min)
+## Step 2 — smoke-validate the guard (≤10 min)
 
 ```bash
 ./.venv/bin/python scripts/run_sam_b0b_cache_correctness.py \
@@ -200,12 +247,12 @@ guard, do not cite its 10× speedup numbers as a 26B C-PERSIST result
   --out research/experiments/2026/artifacts/sam_scaleout_m5_r2_20260430/sam_b0b_cache_correctness_smoke.jsonl
 ```
 
-`--smoke` sets `n_videos=1`. With the default 3 questions per video,
-this gives 1 video × 3 questions × {within_turn, cross_turn} = 6 rows
-plus 3 cold_dense baselines = 9 rows total. Runs in ~5–10 minutes on
-M5.
+**`--smoke` sets `n_videos=1` AND filters questions to just `q1_mc`**
+(the multiple-choice question). So a smoke run is exactly **1 video ×
+1 question × {within_turn, cross_turn}** = 2 paired rows + 1
+`cold_dense` baseline = 3 rows total. ~5–10 minutes on M5.
 
-Pass criterion (read from the resulting `*_summary.json`):
+Pass criterion (read from the resulting `*_summary.json` and JSONL):
 - `cross_turn_warm.text_diffs == 0` — guard prevents corruption.
 - `cross_turn_warm.choice_diffs == 0` — answers identical to dense.
 - `cross_turn_warm.correctness_diffs == 0`.
@@ -215,12 +262,25 @@ Pass criterion (read from the resulting `*_summary.json`):
   never executed).
 - `cross_turn_warm` per-turn timing should be ~comparable to a cold
   prefill (the speedup is intentionally surrendered).
-- **Every cross-turn row has `cache_guard_triggered = true` and
-  `policy = "full_refill_guard_rotating_kv"`** — confirms the guard
-  fired and the metadata is honest. If any row reports
-  `policy = "prompt_cache_state_cross_turn_chained"` with
-  `cache_guard_triggered = false`, the guard didn't trigger when it
-  should have; investigate before scaling.
+- **Every cross-turn row has `policy = "full_refill_guard_rotating_kv"`
+  and `policy_params.cache_guard_triggered = true`** — confirms the
+  guard fired and the metadata is honest. If any cross-turn row reports
+  `policy = "prompt_cache_state_cross_turn_chained"` and
+  `policy_params == null`, the guard didn't trigger when it should
+  have; investigate before scaling.
+
+If you want a slightly larger smoke (e.g. to catch RSS pressure
+issues), run **without** `--smoke` but with `--n-videos 1` so all 3
+questions of a single video go through:
+
+```bash
+./.venv/bin/python scripts/run_sam_b0b_cache_correctness.py \
+  --n-videos 1 \
+  --out research/experiments/2026/artifacts/sam_scaleout_m5_r2_20260430/sam_b0b_cache_correctness_smoke3q.jsonl
+```
+
+That gives 1 vid × 3 q × {within, cross} = 6 paired + 3 baseline = 9
+rows, ~15-20 min on M5.
 
 Falsifier: any `text_diff ≥ 1` on `cross_turn_warm` would mean there
 is a SECOND bug class — most likely position-ID continuation across
@@ -254,60 +314,84 @@ second, S2 any time.
 ### S0 — Gemma 26B Track B kr-bracket cross-arch (~2-3h)
 
 Goal: produce a Track B point at 26B-A4B class that we don't have on
-the local Air. L=2, kr ∈ {0.25, 0.50, 0.75}, 8f, N=30 short+medium
-VideoMME videos, paired vs dense.
+the local Air. L=2, kr ∈ {0.25, 0.50, 0.75}, 8f, N=60 short+medium
+VideoMME videos (the same combined manifest A4 used), paired vs
+dense.
 
-Adapt `scripts/run_phase1_51V.py` (driver in main, used by our local
-A4) for the Gemma 26B path:
+`scripts/run_phase1_51V.py` reads its config from CLI flags
+(`--manifest`, `--output`, `--summary` are required; no env vars).
+Run one cell per kr:
 
 ```bash
-PHASE1_51V_MODEL_PATH=$HOME/models/Gemma-4-26B-A4B-it-mlx-bf16 \
-PHASE1_51V_MANIFEST=research/benchmark_manifests/videomme_combined_v1_n60.toml \
-PHASE1_51V_OUT_DIR=research/experiments/2026/artifacts/sam_S0_gemma26b_track_b_kr_bracket \
-./.venv/bin/python scripts/run_phase1_51V.py \
-  --frame-count 8 \
-  --vision-tower-layer 2 \
-  --vision-tower-keep-rate 0.50 \
-  --max-tokens 32 \
-  --rss-guard-mb 80000 \
-  --output ".../sparse_L2_kr050_8f.jsonl" \
-  --summary ".../sparse_L2_kr050_8f_summary.json" \
-  --allow-dirty
+OUT=research/experiments/2026/artifacts/sam_S0_gemma26b_track_b_kr_bracket
+mkdir -p "$OUT"
+for KR in 0.25 0.50 0.75; do
+  TAG="L2_kr$(printf '%03d' $(python3 -c "print(int($KR*1000))"))_8f"
+  ./.venv/bin/python scripts/run_phase1_51V.py \
+    --manifest research/benchmark_manifests/videomme_combined_v1_n60.toml \
+    --frame-count 8 \
+    --max-tokens 32 \
+    --model-path "$HOME/models/Gemma-4-26B-A4B-it-mlx-bf16" \
+    --vision-tower-layer 2 \
+    --vision-tower-keep-rate "$KR" \
+    --rss-guard-mb 80000 \
+    --output "$OUT/sparse_${TAG}.jsonl" \
+    --summary "$OUT/sparse_${TAG}_summary.json" \
+    --allow-dirty
+done
 ```
 
-(Repeat for kr=0.25 and kr=0.75; pair against an 8f dense Gemma 26B
-reference. If one doesn't exist on M5 yet, build it the same way Sam
-built B5's reference.)
+Then pair vs an 8f dense Gemma 26B reference. If a dense reference
+doesn't exist yet, run one with the same CLI but `--vision-tower-keep-rate 1.0`
+and a `dense_8f.jsonl` output, then use
+`scripts/analyze_phase1_51v_pair.py` (or the analyzer used by our
+local 1.51V; check the script tree under `scripts/` for the most
+recent pair-summary tool).
 
 Within-turn only — no cross-turn cache. Safe even before the B0b
-patch lands.
+guard lands.
 
-Risks: if Gemma 26B's 1.51V Track B harness needs adapter changes
-(e.g. processor differences), patch and document; do not silently
-mask. If kr=0.25 produces a high parse-failure rate (>20%), still
-commit the artifacts and let the analysis flag it as a Gemma 26B kr
-boundary.
+Risks:
+- `run_phase1_51V.py` was authored against Qwen 2.5-VL. The vision-
+  tower hook signatures may differ for Gemma 4 (different model class,
+  different layer module names). If you get an `AttributeError` on
+  `--vision-tower-layer`, dump the model's structure with
+  `python -c "from mlx_vlm import load; m,_=load('$MODEL_PATH'); print(m)"`
+  and adapt the hook target. Patch + document; do not silently mask.
+- If kr=0.25 produces a high parse-failure rate (>20%), still commit
+  the artifacts and let the analysis flag it as a Gemma 26B kr
+  boundary. That's still useful evidence.
 
 ### S1 — Qwen 7B C-PERSIST at 32f / 64f (~1-2h)
 
 Goal: extend C-PERSIST evidence to frame budgets we cannot collect on
-the 16 GB Air. Use the **already-fixed** baseline-deduplicated
-`scripts/run_phase1_55L_many_turn_cpersist.py` (post-cb098fe). Drop
-refresh10 to keep budget tight; keep fixed_k1 + adaptive_post_q2.
+the 16 GB Air. **Use the shell wrapper, not the .py directly** — the
+.py uses argparse defaults that would write into the local A6 path
+and clobber our running chain. The shell wrapper reads the
+`PHASE1_55L_*` env vars and translates them to CLI args:
 
 ```bash
-PHASE1_55L_OUT_DIR=research/experiments/2026/artifacts/sam_S1_qwen_long_evidence_cpersist \
+# 32f run (drop refresh10 to keep within budget)
+PHASE1_55L_OUT_DIR=research/experiments/2026/artifacts/sam_S1_qwen_long_evidence_cpersist_32f \
 PHASE1_55L_VIDEO_IDS=037,100,116 \
 PHASE1_55L_TURN_COUNTS=10,20 \
 PHASE1_55L_POLICIES=fixed_k1,adaptive_post_q2 \
 PHASE1_55L_FRAME_COUNT=32 \
-PHASE1_55L_RSS_GUARD_MB=80000 \
-./.venv/bin/python scripts/run_phase1_55L_many_turn_cpersist.py
-# Repeat with PHASE1_55L_FRAME_COUNT=64 if the 32f run looks healthy
+RSS_GUARD_MB=80000 \
+bash scripts/run_phase1_55L_many_turn_cpersist.sh
+
+# 64f run (only if 32f was healthy and didn't OOM)
+PHASE1_55L_OUT_DIR=research/experiments/2026/artifacts/sam_S1_qwen_long_evidence_cpersist_64f \
+PHASE1_55L_VIDEO_IDS=037,100,116 \
+PHASE1_55L_TURN_COUNTS=10,20 \
+PHASE1_55L_POLICIES=fixed_k1,adaptive_post_q2 \
+PHASE1_55L_FRAME_COUNT=64 \
+RSS_GUARD_MB=80000 \
+bash scripts/run_phase1_55L_many_turn_cpersist.sh
 ```
 
-Qwen has KVCache only — no SWA — so the mlx-vlm trim is safe. Sam
-does not need the SWA patch from Step 1 for S1.
+Qwen 2.5-VL-7B has KVCache only — no SWA — so the mlx-vlm trim is
+safe. Sam does not need the SWA guard from Step 1 for S1.
 
 ### S2 — M5 memory envelope (~30 min)
 
