@@ -1,0 +1,26 @@
+{
+  "n_rows": 10,
+  "phases": {
+    "M5-5": 10
+  },
+  "arms": {
+    "safe_wrapper": 5,
+    "native_cross_turn": 5
+  },
+  "policies": {
+    "SafePromptCacheState_force_cold_dense": 5,
+    "native_PromptCacheState_cross_turn_chained": 5
+  },
+  "choice_diffs": 0,
+  "correctness_diffs": 0,
+  "text_diffs": 5,
+  "parse_failures": 0,
+  "session_parse_failures": 0,
+  "baseline_parse_failures": 0,
+  "input_hash_mismatches": 0,
+  "prompt_hash_mismatches": 0,
+  "frame_hash_mismatches": 0,
+  "schema_or_gate_errors": 0,
+  "first_errors": [],
+  "pass": true
+}

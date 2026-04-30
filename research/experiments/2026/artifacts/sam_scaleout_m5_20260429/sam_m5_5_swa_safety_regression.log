@@ -1,0 +1,60 @@
+[provenance] {
+  "run_id": "sam_m55_1777507809_3a558b2a",
+  "model_id": "google/gemma-4-26B-A4B-it",
+  "model_sha": "7d4c97e54145f8ffd1a4dd1b4986a5015a517842",
+  "quantization": "bf16_native",
+  "runtime": "mlx_vlm-0.4.4",
+  "runtime_commit": "pypi",
+  "hardware": "Apple M5 Max | 128.0 GB unified | Darwin 25.4.0",
+  "os_version": "Darwin 25.4.0",
+  "mlx_version": "unknown",
+  "metal_version": null,
+  "command_line": "scripts/run_sam_m5_5_swa_safety_regression.py",
+  "memory_definition": "ru_maxrss bytes (macOS) -> GB",
+  "commit_sha": "e89647538f069b64985f1a94d04c6fd796cce3f6"
+}
+[loader] loading google/gemma-4-26B-A4B-it
+Fetching 9 files:   0%|          | 0/9 [00:00<?, ?it/s]Fetching 9 files: 100%|██████████| 9/9 [00:00<00:00, 61280.42it/s]
+[loader] loaded in 5.0s
+[topology] mixed_swa=True n_layers=30 n_full=5 n_sliding=25
+[video 1/5] fFjv93ACGo8
+  [cold_dense] What color is most prominent in the scene?
+Prefill:   0%|          | 0/2086 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2086 [00:03<00:00, 527.59tok/s]Prefill: 100%|█████████▉| 2085/2086 [00:04<00:00, 515.00tok/s]
+  [safe_wrapper] What color is most prominent in the scene?
+Prefill:   0%|          | 0/2084 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2084 [00:04<00:00, 482.87tok/s]Prefill: 100%|█████████▉| 2083/2084 [00:04<00:00, 470.37tok/s]
+Prefill:   0%|          | 0/2086 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2086 [00:04<00:00, 473.88tok/s]Prefill: 100%|█████████▉| 2085/2086 [00:04<00:00, 465.41tok/s]
+  [native_cross_turn] What color is most prominent in the scene?
+Prefill:   0%|          | 0/2084 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2084 [00:04<00:00, 498.66tok/s]Prefill: 100%|█████████▉| 2083/2084 [00:04<00:00, 489.20tok/s]
+[video 2/5] N1cdUjctpG8
+  [cold_dense] What color is most prominent in the scene?
+Prefill:   0%|          | 0/2086 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2086 [00:04<00:00, 502.93tok/s]Prefill: 100%|█████████▉| 2085/2086 [00:04<00:00, 493.58tok/s]
+  [safe_wrapper] What color is most prominent in the scene?
+Prefill:   0%|          | 0/2084 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2084 [00:04<00:00, 477.41tok/s]Prefill: 100%|█████████▉| 2083/2084 [00:04<00:00, 468.35tok/s]
+Prefill:   0%|          | 0/2086 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2086 [00:04<00:00, 483.45tok/s]Prefill: 100%|█████████▉| 2085/2086 [00:04<00:00, 474.76tok/s]
+  [native_cross_turn] What color is most prominent in the scene?
+Prefill:   0%|          | 0/2084 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2084 [00:04<00:00, 491.18tok/s]Prefill: 100%|█████████▉| 2083/2084 [00:04<00:00, 482.49tok/s]
+[video 3/5] HIjX8OPuf-w
+  [cold_dense] What color is most prominent in the scene?
+Prefill:   0%|          | 0/2086 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2086 [00:03<00:00, 536.47tok/s]Prefill: 100%|█████████▉| 2085/2086 [00:03<00:00, 525.98tok/s]
+  [safe_wrapper] What color is most prominent in the scene?
+Prefill:   0%|          | 0/2084 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2084 [00:04<00:00, 493.64tok/s]Prefill: 100%|█████████▉| 2083/2084 [00:04<00:00, 484.60tok/s]
+Prefill:   0%|          | 0/2086 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2086 [00:04<00:00, 471.79tok/s]Prefill: 100%|█████████▉| 2085/2086 [00:04<00:00, 464.44tok/s]
+  [native_cross_turn] What color is most prominent in the scene?
+Prefill:   0%|          | 0/2084 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2084 [00:04<00:00, 510.31tok/s]Prefill: 100%|█████████▉| 2083/2084 [00:04<00:00, 500.49tok/s]
+[video 4/5] HwnB8aCn8yE
+  [cold_dense] What color is most prominent in the scene?
+Prefill:   0%|          | 0/2086 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2086 [00:04<00:00, 500.29tok/s]Prefill: 100%|█████████▉| 2085/2086 [00:04<00:00, 489.07tok/s]
+  [safe_wrapper] What color is most prominent in the scene?
+Prefill:   0%|          | 0/2084 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2084 [00:04<00:00, 489.49tok/s]Prefill: 100%|█████████▉| 2083/2084 [00:04<00:00, 478.33tok/s]
+Prefill:   0%|          | 0/2086 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2086 [00:04<00:00, 460.84tok/s]Prefill: 100%|█████████▉| 2085/2086 [00:04<00:00, 452.94tok/s]
+  [native_cross_turn] What color is most prominent in the scene?
+Prefill:   0%|          | 0/2084 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2084 [00:04<00:00, 491.61tok/s]Prefill: 100%|█████████▉| 2083/2084 [00:04<00:00, 479.53tok/s]
+[video 5/5] 24i4ncHuf6A
+  [cold_dense] What color is most prominent in the scene?
+Prefill:   0%|          | 0/2086 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2086 [00:04<00:00, 489.68tok/s]Prefill: 100%|█████████▉| 2085/2086 [00:04<00:00, 479.50tok/s]
+  [safe_wrapper] What color is most prominent in the scene?
+Prefill:   0%|          | 0/2084 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2084 [00:04<00:00, 474.69tok/s]Prefill: 100%|█████████▉| 2083/2084 [00:04<00:00, 465.15tok/s]
+Prefill:   0%|          | 0/2086 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2086 [00:04<00:00, 470.61tok/s]Prefill: 100%|█████████▉| 2085/2086 [00:04<00:00, 462.74tok/s]
+  [native_cross_turn] What color is most prominent in the scene?
+Prefill:   0%|          | 0/2084 [00:00<?, ?tok/s]Prefill:  98%|█████████▊| 2048/2084 [00:04<00:00, 490.18tok/s]Prefill: 100%|█████████▉| 2083/2084 [00:04<00:00, 479.91tok/s]
+[wrote] 10 rows -> /Users/sam/repos/codec-through-jfb/research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5_swa_safety_regression.jsonl

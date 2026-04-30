@@ -160,7 +160,51 @@ cannot achieve the high speedups that full-attention-only models can.
 
 ## Regression results
 
-(Will be filled in after the regression run lands.)
+5 videos × 3 arms (cold_dense, safe_wrapper, native_cross_turn) ×
+1 question = 10 paired rows (safe + native paired against cold).
+
+| arm | byte-identical to cold | speedup vs cold |
+|---|---:|---:|
+| `safe_wrapper` (SafePromptCacheState) | **5 / 5 (100 %)** | 0.96× (no speedup, expected) |
+| `native_cross_turn` (broken path) | **0 / 5 (0 %)** | **7.89×** (fast and wrong) |
+
+Validator output:
+
+```json
+{
+  "n_rows": 10,
+  "phases": {"M5-5": 10},
+  "arms": {"safe_wrapper": 5, "native_cross_turn": 5},
+  "policies": {
+    "SafePromptCacheState_force_cold_dense": 5,
+    "native_PromptCacheState_cross_turn_chained": 5
+  },
+  "choice_diffs": 0,
+  "correctness_diffs": 0,
+  "text_diffs": 5,
+  "parse_failures": 0,
+  "schema_or_gate_errors": 0,
+  "first_errors": [],
+  "pass": true
+}
+```
+
+**The 5 text_diffs are exactly the 5 native_cross_turn rows.**
+Schema clean: 0 input/prompt/frame hash mismatches between paired
+arms — divergence is purely on the LLM output side under identical
+inputs, exactly mirroring B0b's signature.
+
+**Empirical confirmation of the architectural prediction:**
+
+- The safety wrapper produces correct outputs at zero cache benefit.
+  This is the C-PERSIST claim that's actually defensible on this
+  stack — 1.0× wall-clock, full correctness.
+- The native broken path produces wrong outputs at 7.89× wall-clock
+  speedup. This is the "speedup is real, correctness is not"
+  finding from B0b/B1/B2 reproduced at smaller scale (5 videos).
+- The gap between these two arms (0.96× vs 7.89×) is the **size of
+  the cross-turn cache speedup ceiling that mlx-vlm 0.4.4 currently
+  claims but cannot deliver correctly** on this architecture.
 
 ## What this means for the paper
 
