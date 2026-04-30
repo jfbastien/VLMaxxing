@@ -1,0 +1,276 @@
+{
+  "cells": [
+    {
+      "accuracy_delta_session_minus_baseline": 0.0,
+      "artifact_dir": "phase1_55A_16f_frame_scaling",
+      "baseline_mean_ms": 74067.8928492381,
+      "display": "7B / 16f",
+      "first_query_mean_ms": 71392.487756,
+      "follow_up_mean_ms": 892.3372529999999,
+      "frame_count": 16,
+      "model": "qwen2_5_vl_7b_4bit",
+      "setup_inclusive": [
+        {
+          "n_followups": 1,
+          "naive_total_ms": 74067.8928492381,
+          "persist_total_ms": 71392.487756,
+          "speedup": 1.0374746024032935
+        },
+        {
+          "n_followups": 2,
+          "naive_total_ms": 148135.7856984762,
+          "persist_total_ms": 72284.82500900001,
+          "speedup": 2.0493344997381144
+        },
+        {
+          "n_followups": 5,
+          "naive_total_ms": 370339.4642461905,
+          "persist_total_ms": 74961.83676800001,
+          "speedup": 4.940373398164684
+        },
+        {
+          "n_followups": 10,
+          "naive_total_ms": 740678.928492381,
+          "persist_total_ms": 79423.523033,
+          "speedup": 9.325687154228016
+        },
+        {
+          "n_followups": 50,
+          "naive_total_ms": 3703394.642461905,
+          "persist_total_ms": 115117.013153,
+          "speedup": 32.17069780589067
+        }
+      ],
+      "source": "research/experiments/2026/artifacts/phase1_55A_16f_frame_scaling/summary.json",
+      "warm_speedup": 91.06331752551472
+    },
+    {
+      "accuracy_delta_session_minus_baseline": -0.23809523809523814,
+      "artifact_dir": "phase1_55A_18f_frame_scaling",
+      "baseline_mean_ms": 79532.18244838095,
+      "display": "7B / 18f",
+      "first_query_mean_ms": 82869.57533314286,
+      "follow_up_mean_ms": 1747.7762648571427,
+      "frame_count": 18,
+      "model": "qwen2_5_vl_7b_4bit",
+      "setup_inclusive": [
+        {
+          "n_followups": 1,
+          "naive_total_ms": 79532.18244838095,
+          "persist_total_ms": 82869.57533314286,
+          "speedup": 0.9597271631796676
+        },
+        {
+          "n_followups": 2,
+          "naive_total_ms": 159064.3648967619,
+          "persist_total_ms": 84617.351598,
+          "speedup": 1.8798078868320611
+        },
+        {
+          "n_followups": 5,
+          "naive_total_ms": 397660.91224190476,
+          "persist_total_ms": 89860.68039257143,
+          "speedup": 4.425304933199443
+        },
+        {
+          "n_followups": 10,
+          "naive_total_ms": 795321.8244838095,
+          "persist_total_ms": 98599.56171685713,
+          "speedup": 8.066180119214838
+        },
+        {
+          "n_followups": 50,
+          "naive_total_ms": 3976609.122419047,
+          "persist_total_ms": 168510.61231114285,
+          "speedup": 23.598567875811415
+        }
+      ],
+      "source": "research/experiments/2026/artifacts/phase1_55A_18f_frame_scaling/summary.json",
+      "warm_speedup": 70.27968874536019
+    },
+    {
+      "accuracy_delta_session_minus_baseline": -0.380952380952381,
+      "artifact_dir": "phase1_55A_20f_frame_scaling",
+      "baseline_mean_ms": 88546.49042271428,
+      "display": "7B / 20f",
+      "first_query_mean_ms": 83798.89613699999,
+      "follow_up_mean_ms": 2237.4319167857143,
+      "frame_count": 20,
+      "model": "qwen2_5_vl_7b_4bit",
+      "setup_inclusive": [
+        {
+          "n_followups": 1,
+          "naive_total_ms": 88546.49042271428,
+          "persist_total_ms": 83798.89613699999,
+          "speedup": 1.0566546160459276
+        },
+        {
+          "n_followups": 2,
+          "naive_total_ms": 177092.98084542857,
+          "persist_total_ms": 86036.3280537857,
+          "speedup": 2.05835122036727
+        },
+        {
+          "n_followups": 5,
+          "naive_total_ms": 442732.4521135714,
+          "persist_total_ms": 92748.62380414284,
+          "speedup": 4.773466537341718
+        },
+        {
+          "n_followups": 10,
+          "naive_total_ms": 885464.9042271428,
+          "persist_total_ms": 103935.78338807142,
+          "speedup": 8.519346036206107
+        },
+        {
+          "n_followups": 50,
+          "naive_total_ms": 4427324.521135714,
+          "persist_total_ms": 193433.06005949999,
+          "speedup": 22.88814807444947
+        }
+      ],
+      "source": "research/experiments/2026/artifacts/phase1_55A_20f_frame_scaling/summary.json",
+      "warm_speedup": 94.42384980380866
+    },
+    {
+      "accuracy_delta_session_minus_baseline": -0.42857142857142855,
+      "artifact_dir": "phase1_55A_24f_frame_scaling",
+      "baseline_mean_ms": 117568.35528766668,
+      "display": "7B / 24f",
+      "first_query_mean_ms": 108913.04558914286,
+      "follow_up_mean_ms": 947.2282022142857,
+      "frame_count": 24,
+      "model": "qwen2_5_vl_7b_4bit",
+      "setup_inclusive": [
+        {
+          "n_followups": 1,
+          "naive_total_ms": 117568.35528766668,
+          "persist_total_ms": 108913.04558914286,
+          "speedup": 1.0794699078673697
+        },
+        {
+          "n_followups": 2,
+          "naive_total_ms": 235136.71057533336,
+          "persist_total_ms": 109860.27379135715,
+          "speedup": 2.1403251827125147
+        },
+        {
+          "n_followups": 5,
+          "naive_total_ms": 587841.7764383334,
+          "persist_total_ms": 112701.958398,
+          "speedup": 5.215896731469444
+        },
+        {
+          "n_followups": 10,
+          "naive_total_ms": 1175683.552876667,
+          "persist_total_ms": 117438.09940907142,
+          "speedup": 10.011091449814897
+        },
+        {
+          "n_followups": 50,
+          "naive_total_ms": 5878417.764383334,
+          "persist_total_ms": 155327.22749764286,
+          "speedup": 37.84537881146781
+        }
+      ],
+      "source": "research/experiments/2026/artifacts/phase1_55A_24f_frame_scaling/summary.json",
+      "warm_speedup": 121.57924276239355
+    },
+    {
+      "accuracy_delta_session_minus_baseline": -0.42857142857142855,
+      "artifact_dir": "phase1_55A_32f_frame_scaling",
+      "baseline_mean_ms": 160855.45285523808,
+      "display": "7B / 32f",
+      "first_query_mean_ms": 163228.9411962857,
+      "follow_up_mean_ms": 1045.8184047857144,
+      "frame_count": 32,
+      "model": "qwen2_5_vl_7b_4bit",
+      "setup_inclusive": [
+        {
+          "n_followups": 1,
+          "naive_total_ms": 160855.45285523808,
+          "persist_total_ms": 163228.9411962857,
+          "speedup": 0.9854591451512665
+        },
+        {
+          "n_followups": 2,
+          "naive_total_ms": 321710.90571047616,
+          "persist_total_ms": 164274.75960107142,
+          "speedup": 1.9583708811489133
+        },
+        {
+          "n_followups": 5,
+          "naive_total_ms": 804277.2642761904,
+          "persist_total_ms": 167412.21481542857,
+          "speedup": 4.804173131350682
+        },
+        {
+          "n_followups": 10,
+          "naive_total_ms": 1608554.5285523809,
+          "persist_total_ms": 172641.30683935713,
+          "speedup": 9.31732131783005
+        },
+        {
+          "n_followups": 50,
+          "naive_total_ms": 8042772.642761904,
+          "persist_total_ms": 214474.04303078572,
+          "speedup": 37.499981485439896
+        }
+      ],
+      "source": "research/experiments/2026/artifacts/phase1_55A_32f_frame_scaling/summary.json",
+      "warm_speedup": 149.8819332377929
+    },
+    {
+      "accuracy_delta_session_minus_baseline": -0.04761904761904767,
+      "artifact_dir": "phase1_55A_3b_20f_crossarch",
+      "baseline_mean_ms": 56446.97827371428,
+      "display": "3B / 20f",
+      "first_query_mean_ms": 53787.121095285715,
+      "follow_up_mean_ms": 426.9460150714286,
+      "frame_count": 20,
+      "model": "qwen2_5_vl_3b_4bit",
+      "setup_inclusive": [
+        {
+          "n_followups": 1,
+          "naive_total_ms": 56446.97827371428,
+          "persist_total_ms": 53787.121095285715,
+          "speedup": 1.0494515624607708
+        },
+        {
+          "n_followups": 2,
+          "naive_total_ms": 112893.95654742856,
+          "persist_total_ms": 54214.067110357144,
+          "speedup": 2.08237386650265
+        },
+        {
+          "n_followups": 5,
+          "naive_total_ms": 282234.89136857144,
+          "persist_total_ms": 55494.90515557143,
+          "speedup": 5.085780227524839
+        },
+        {
+          "n_followups": 10,
+          "naive_total_ms": 564469.7827371429,
+          "persist_total_ms": 57629.63523092857,
+          "speedup": 9.794783195750721
+        },
+        {
+          "n_followups": 50,
+          "naive_total_ms": 2822348.913685714,
+          "persist_total_ms": 74707.47583378572,
+          "speedup": 37.77866782656488
+        }
+      ],
+      "source": "research/experiments/2026/artifacts/phase1_55A_3b_20f_crossarch/summary.json",
+      "warm_speedup": 136.06995985460227
+    }
+  ],
+  "model_note": "warm_speedup is baseline_mean / follow_up_mean (per-follow-up only); setup_inclusive[i].speedup is N*baseline / (first_query + (N-1)*follow_up), the actual session-level multiplier at N follow-ups per session.",
+  "n_followups_grid": [
+    1,
+    2,
+    5,
+    10,
+    50
+  ]
+}
