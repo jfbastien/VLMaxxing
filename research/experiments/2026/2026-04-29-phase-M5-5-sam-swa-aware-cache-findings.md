@@ -1,9 +1,16 @@
 # 2026-04-29 Phase M5-5 — SWA-aware cache investigation + safety wrapper
 
-- **Status:** **investigation closed-earned;** safety wrapper landed
-  + regression-tested. The "fix the cache so cross-turn reuse delivers
-  speedup" path is **architecturally bounded** at the model-internals
-  level — beyond a wrapper.
+- **Status:** **investigation closed; speedup-ceiling derivation
+  SUPERSEDED by M5-5b.** The safety wrapper still does what it says
+  (force cold-dense, skip the broken path), but the "1.20×
+  architectural ceiling" claim in this doc is **WRONG** — see
+  `2026-04-29-phase-M5-5b-sam-prefix-snapshot-fix-findings.md` for
+  a real cross-turn reuse mechanism that delivers
+  **9.11× median wall-clock speedup at 0 choice/correctness drift**
+  on the same architecture. The error in this doc was assuming
+  cross-turn reuse REQUIRES rotating-buffer trim of an in-progress
+  cache; the prefix-snapshot approach proves it doesn't (snapshot
+  the cache BEFORE question tokens enter; never trim).
 - **Verdict:**
   1. The mlx-vlm 0.4.4 cross-turn cache bug has an architectural cause,
      not a wrapper-level cause. The SWA layers' `RotatingKVCache` cannot
