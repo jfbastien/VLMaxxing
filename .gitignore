@@ -20,6 +20,7 @@ htmlcov/
 /data/
 /results/
 /runs/
+/seed/
 /tmp/
 .tmp/
 research/cache/
