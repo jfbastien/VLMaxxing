@@ -95,15 +95,18 @@ are:
   (helps MVBench holdout; hurts TOMATO motion dev; explanatory
   variable = placement, not quantity)
 - Phase 1.27 projector-group mask completion — **COMPLETED 2026-04-14**
-- Phase 1.50 measured sparse-execution dense baseline — **COMPLETED 2026-04-17** (n=10
-  dev + N=30 holdout on BOTH benchmarks: TOMATO 61.1 s/item median
-  p95 70.2 s, MVBench 56.5 s/item median p95 60.3 s). Sparse-execution
-  path later landed as bounded local evidence in 1.63E/G/H; see
-  `paper/publishability-status.md` claim I.
-- Phase 1.34 novelty-ranked dense baseline — **COMPLETED 2026-04-17**
-  (2×3 grid N=30; cached planner dominates every novelty cell).
-- Phase 1.36 feature-change oracle — **COMPLETED 2026-04-17** (best
-  pixel stat Pearson r=0.233 to r=0.504; content-conditional).
+- Phase 1.50 dense timing baseline — **LOCAL HISTORICAL DIAGNOSTIC**
+  (n=10 dev + N=30 holdout on both benchmarks; raw timing outputs lived under
+  ignored `results/track_b/`). Use checked phase 1.63E/G/H artifacts for current
+  paper-facing measured sparse-vision claims.
+- Phase 1.34 novelty-ranked dense baseline — **LOCAL DIAGNOSTIC COMPLETED 2026-04-17**
+  (2×3 grid N=30 recorded in the phase note; raw outputs lived under ignored
+  `results/`, so regenerate or materialize them before treating the comparison
+  as paper-body evidence).
+- Phase 1.36 feature-change oracle — **LOCAL DIAGNOSTIC COMPLETED 2026-04-17**
+  (best pixel stat Pearson r=0.233 to r=0.504; content-conditional). Raw outputs
+  lived under ignored `results/feature_change_oracle/`, so regenerate or
+  materialize them before treating the exact values as paper-body evidence.
 - Phase 1.37B neighbor-halo veto — **RETIRED 2026-04-17** as a
   preregistered null. Both dev benchmarks NO-LIFT under the frozen
   promotion rule (full 9/9 cells × 2 benchmarks). On TOMATO motion

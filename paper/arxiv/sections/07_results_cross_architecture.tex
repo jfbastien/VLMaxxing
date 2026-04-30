@@ -24,8 +24,8 @@ same-video cache enters the picture. VideoMME 8f is the clean holdout anchor:
 advisory: the patched arm decodes 50\,ms faster on a 432\,ms decode window and
 also runs generation faster. A literal decode-only normalization would lower
 the observed multiplier only to about 1.40$\times$, so the row remains useful
-but high-residual. TOMATO 8f is advisory as well: the current holdout rerun
-reports 1.194$\times$ with a favorable-direction 19\,ms thermal miss.
+but high residual. TOMATO 8f is advisory as well: the current holdout rerun
+reports 1.194$\times$ with a favorable 19\,ms thermal miss.
 
 The denominator, not the absolute multiplier, is the portable claim. The same
 pruning mechanism gives smaller gains on VideoMME than on MVBench because
@@ -277,14 +277,16 @@ answer looks fine.
 The newest local bridge makes the same warning concrete. On Qwen2.5-VL-7B-4bit
 at 8 frames, the original session/streaming stack that combines \(L=2\),
 \(kr_V=0.50\) vision pruning with persistent-KV reuse over a VideoMME
-dev+holdout union (\(n=57\) sessions, 171 queries) was a hard negative. A
-dense-first-query admission successor improves the failure mode, but remains a
-near-miss rather than a promotion: cold aggregate accuracy is 0.561 and the
-streaming path is 0.503, a \(-0.0585\) delta with 95\% paired CI roughly
-\([-0.117, 0.000]\), at 3.02$\times$ paired amortized end-to-end speedup.
-The important repair is that aggregate Q0 correctness returns to parity, with
-zero parse failures and zero degenerate outputs. The remaining loss is
-follow-up state damage.
+dev+holdout union (\(n=57\) sessions, 171 queries) was a hard negative. The
+1.30W dense-Q0 reference improves the failure mode but remains a near-miss
+rather than a promotion: cold aggregate accuracy is 0.561 and the streaming path
+is 0.503, a \(-0.0585\) delta with 95\% paired CI roughly \([-0.117, 0.000]\),
+at 2.79$\times$ paired amortized end-to-end speedup. The later instrumented
+cache-reuse rerun preserves the faster 3.02$\times$ speed profile while showing
+that follow-up vision pruning is inactive under prompt-cache reuse. The
+important repair is that aggregate Q0 correctness returns to parity, with zero
+parse failures and zero degenerate outputs. The remaining loss is follow-up
+state damage.
 
 The long-bucket sweep closes the tested admission family. None of the tested
 Q0 keep rates \(\{0.67,0.75,0.80,0.85,0.90\}\) reaches the target
@@ -302,8 +304,8 @@ reuse, not active follow-up vision pruning.
 
 The mechanism is sharper than a generic failure. At high Q0 keep rates
 (\(kr_{Q0}=0.85\) and 0.90), aggregate Q0 accuracy parity returns, but
-follow-up accuracy still drops by 19.4 points. The completed dense-Q0
-cache-reuse and cache-invalidated tests make the boundary cleaner. Cache reuse
+follow-up accuracy still drops by 19.4 points. The completed dense-Q0 reference,
+cache-reuse, and cache-invalidated tests make the boundary cleaner. Cache reuse
 preserves the 3.02$\times$ three-query speed profile but leaves the same net
 \(-0.0585\) aggregate loss. Cache invalidation forces follow-up V-pruning to
 fire on every follow-up, collapses the speedup to 1.06$\times$, and lands on

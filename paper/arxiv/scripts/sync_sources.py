@@ -38,6 +38,7 @@ SOURCE_KEYS = {
     "metrics_source",
     "summary_source",
 }
+ALLOWED_SOURCE_ROOTS = ("docs/", "paper/", "research/", "scripts/", "src/", "tests/")
 
 
 def _run(cmd: list[str], cwd: Path | None = None) -> str:
@@ -92,14 +93,26 @@ def _tracked_paths() -> set[str]:
 
 
 def _is_repo_source(path: str) -> bool:
-    return path.startswith(("docs/", "paper/", "research/", "scripts/", "src/", "tests/"))
+    return path.startswith(ALLOWED_SOURCE_ROOTS)
+
+
+def _source_path_problem(path: str) -> str | None:
+    source = Path(path)
+    if source.is_absolute() or path.startswith("~"):
+        return f"non-repo source path {path}"
+    if path.startswith("results/"):
+        return f"ignored local results path {path}"
+    if not _is_repo_source(path):
+        return f"unknown source root {path}"
+    return None
 
 
 def _validate_source_paths(payload: object, *, context: str) -> None:
     tracked = _tracked_paths()
     problems: list[str] = []
     for source in _iter_source_paths(payload):
-        if not _is_repo_source(source):
+        if problem := _source_path_problem(source):
+            problems.append(problem)
             continue
         source_path = REPO_ROOT / source
         if not source_path.exists():
@@ -1373,35 +1386,32 @@ def _write_c_persist_repair_table(snapshot: dict) -> None:
         r"\renewcommand{\arraystretch}{1.20}",
         (
             r"\begin{tabularx}{\linewidth}"
-            r"{@{}l X >{\raggedright\arraybackslash}p{0.17\linewidth} c X@{}}"
+            r"{@{}l X >{\raggedright\arraybackslash}p{0.22\linewidth} X@{}}"
         ),
         r"\toprule",
-        (
-            r"Policy & Scope & session FU median; cold/session gain & "
-            r"Paired drift & Mechanism signal \\"
-        ),
+        (r"Policy & Scope & FU median; cold gain & Validation signal \\"),
         r"\midrule",
         (
             r"Fixed \(K=1\) & 20f short/medium/long + 32f short & "
-            f"{fixed['latency_min_s']:.2f}--{fixed['latency_max_s']:.2f}s / "
-            f"{fixed['speedup_min']:.2f}--{fixed['speedup_max']:.2f}$\\times$ & "
-            f"sessions {fixed['paired_correctness_diffs']}/{fixed['n_sessions']}; "
+            f"\\shortstack[l]{{{fixed['latency_min_s']:.2f}--{fixed['latency_max_s']:.2f}s\\\\"
+            f"{fixed['speedup_min']:.2f}--{fixed['speedup_max']:.2f}$\\times$}} & "
+            f"paired drift: sess {fixed['paired_correctness_diffs']}/{fixed['n_sessions']}; "
             f"choice {fixed['paired_choice_diffs']}/{fixed['n_pairs']}; "
-            f"correct {fixed['paired_correctness_diffs']}/{fixed['n_pairs']} & "
+            f"correct {fixed['paired_correctness_diffs']}/{fixed['n_pairs']}; "
             f"pathological follow-ups {fixed['pathological_follow_up_hits']}/"
             f"{fixed['n_follow_up_pairs']}; drift rule-of-three over "
             f"n={fixed['n_pairs']}: \\(\\leq\\)3.2\\% \\\\"
         ),
         (
             r"Adaptive post-\(Q2\) & 20f short/medium/long + 32f short & "
-            f"{adaptive['latency_min_s']:.2f}--{adaptive['latency_max_s']:.2f}s; "
+            f"\\shortstack[l]{{{adaptive['latency_min_s']:.2f}--{adaptive['latency_max_s']:.2f}s\\\\"
             f"{adaptive['speedup_min']:.2f}--"
-            f"{adaptive['speedup_max']:.2f}$\\times$ same-class; "
+            f"{adaptive['speedup_max']:.2f}$\\times$ same-class\\\\"
             f"{adaptive['all_query_speedup_min']:.2f}--"
-            f"{adaptive['all_query_speedup_max']:.2f}$\\times$ all-query & "
-            f"sessions {adaptive['paired_correctness_diffs']}/{adaptive['n_sessions']}; "
+            f"{adaptive['all_query_speedup_max']:.2f}$\\times$ all-query}} & "
+            f"paired drift: sess {adaptive['paired_correctness_diffs']}/{adaptive['n_sessions']}; "
             f"choice {adaptive['paired_choice_diffs']}/{adaptive['n_pairs']}; "
-            f"correct {adaptive['paired_correctness_diffs']}/{adaptive['n_pairs']} & "
+            f"correct {adaptive['paired_correctness_diffs']}/{adaptive['n_pairs']}; "
             "Q3 inherits post-Q2 repaired state; paired Q3 fixed/adaptive "
             "speedup 9.50$\\times$ \\\\"
         ),
@@ -1953,7 +1963,7 @@ def _write_repo_provenance_table(primary: dict[str, str]) -> None:
         r"\toprule",
         r"Repo & Commit & Commit date \\",
         r"\midrule",
-        f"codec-through-2 & {_short_sha(primary['sha'], 12)} & {primary['commit_date']} \\\\",
+        f"codec-through & {_short_sha(primary['sha'], 12)} & {primary['commit_date']} \\\\",
         r"\bottomrule",
         r"\end{tabular}",
         r"\end{table}",

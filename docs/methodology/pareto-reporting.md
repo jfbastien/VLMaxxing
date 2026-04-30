@@ -1,17 +1,17 @@
 # Pareto Reporting
 
-Last updated: 2026-04-17. Prior version preserved in git history;
+Last updated: 2026-04-30. Prior version preserved in git history;
 this rewrite reflects the methodology upgrade landed in phases 1.8,
 1.9, 1.10, 1.11, 1.12, 1.12.B, 1.19, 1.24, 1.50 (Track B dense
 baseline), and the 2026-04-16 / 2026-04-17 audit tranches.
 
 ## What changed relative to the previous version
 
-The previous rule said "until Track B lands, reuse is the primary
-x-axis." That rule served as a guardrail against mislabeling reuse
-as compute savings, but the project has since adopted a stronger
-comparison: **matched fresh-token-equivalent dense frame-budget
-baselines**. Those are the fair primary x-axis, not reuse.
+The previous rule treated reuse as the primary x-axis until skipped-compute
+evidence existed. That rule served as a guardrail against mislabeling reuse as
+compute savings, but the project has since adopted a stronger comparison:
+**matched fresh-token-equivalent dense frame-budget baselines**. Those are the
+fair primary x-axis, not reuse.
 
 Reuse remains a useful descriptive axis, but it is no longer the
 primary Pareto axis.

@@ -260,7 +260,7 @@ deployment/streaming lane until validated scale-out artifacts and matched
 baselines land. The current evidence status is summarized below plus
 `paper/claim-matrix.md`.
 
-### Current evidence level (last partial refresh 2026-04-29)
+### Current evidence level (last partial refresh 2026-04-30)
 
 | Claim | Status |
 |---|---|

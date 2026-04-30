@@ -48,6 +48,7 @@ SOURCE_KEYS = {
     "metrics_source",
     "summary_source",
 }
+ALLOWED_SOURCE_ROOTS = ("docs/", "paper/", "research/", "scripts/", "src/", "tests/")
 
 
 def _check_summary(path: Path) -> list[str]:
@@ -139,7 +140,18 @@ def _iter_source_paths(payload: object) -> list[str]:
 
 
 def _is_repo_path(path: str) -> bool:
-    return path.startswith(("docs/", "paper/", "research/", "scripts/", "src/", "tests/"))
+    return path.startswith(ALLOWED_SOURCE_ROOTS)
+
+
+def _source_path_problem(path: str) -> str | None:
+    source = Path(path)
+    if source.is_absolute() or path.startswith("~"):
+        return f"non-repo source path {path}"
+    if path.startswith("results/"):
+        return f"ignored local results path {path}"
+    if not _is_repo_path(path):
+        return f"unknown source root {path}"
+    return None
 
 
 def _scan_paper_data_sources() -> list[str]:
@@ -155,7 +167,8 @@ def _scan_paper_data_sources() -> list[str]:
                 problems.append(f"{path}: JSON decode error: {exc}")
                 continue
             for source in _iter_source_paths(payload):
-                if not _is_repo_path(source):
+                if problem := _source_path_problem(source):
+                    problems.append(f"{path}: {problem}")
                     continue
                 source_path = Path(source)
                 if not source_path.exists():

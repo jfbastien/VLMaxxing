@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
 """Phase 1.34 novelty-ranked dense baseline.
 
-Required for paper/claim-matrix.md claim #9: "Beats novelty-ranked dense
-at matched budget." Our cached policy wins against uniform dense-N at
-the same fresh-frame budget. The open question: is that gain from
-**smart budget placement** (the theory) or just from **smart frame
-selection**? A novelty-ranked dense-N baseline picks the N most
-informative frames up front, then runs dense compute on them — no
-caching, no reuse. If our caching beats novelty-ranked dense-N at the
-same N, the gain is real. If not, we were just confusing "better frame
-selection" with "better compute reuse."
+Regenerates the raw artifacts needed to promote paper/claim-matrix.md claim #9
+from local diagnostic to release claim-bearing evidence. The open question is
+whether a cached policy's gain comes from **smart budget placement** (the
+theory) or just from **smart frame selection**. A novelty-ranked dense-N
+baseline picks the N most informative frames up front, then runs dense compute
+on them — no caching, no reuse.
 
 Method:
 - Decode a dense grid (``--reference-frames``, default 32) of uniformly

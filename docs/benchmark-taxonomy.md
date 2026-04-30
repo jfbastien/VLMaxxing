@@ -39,8 +39,8 @@ presence here does not imply a local result.
   and the benchmark where the imported target claims near-perfect
   agreement.
 - **Status**: **active**, primary temporal-reasoning benchmark.
-- **Open**: Phase 1.20 N=30 enlargement required for cross-paper
-  comparability.
+- **Current release role**: Phase 1.20 N=30 enlargement landed and supplies
+  the clean TOMATO routing tie against dense-8 at lower effective budget.
 
 ### MVBench (arXiv 2311.17005) — broader video-reasoning benchmark
 
@@ -64,8 +64,9 @@ presence here does not imply a local result.
 - **Status**: **active** but narrower than the paper's scope. Do
   not claim our MVBench slice is representative of "MVBench" as a
   whole.
-- **Open**: Phase 1.21 N=30 enlargement required after phase 1.12.B
-  surfaced a holdout survivor.
+- **Current release role**: Phase 1.21 N=30 enlargement landed and supplies
+  the clean MVBench base-policy comparison against dense-6. The sticky4
+  refinement remains dirty-tree supplementary until rerun clean.
 
 ### TempCompass (arXiv 2403.00476) — temporal-aspect-isolation benchmark
 

@@ -1,4 +1,4 @@
-# Publishability Status — 2026-04-29
+# Publishability Status — 2026-04-30
 
 One-file answer to "what can we actually claim, in what venue, with what
 numbers, today." Kept in sync with [claim-matrix.md](claim-matrix.md) but
@@ -11,7 +11,7 @@ runtime inventories lower in this file are retained for provenance, but the
 current narrative interpretation should come from `priority.md` and the claim
 matrix.
 
-## Current Manuscript Position (2026-04-29)
+## Current Manuscript Position (2026-04-30)
 
 The draft should lead with three linked claims, not with a Qwen-only routing
 note:
@@ -27,7 +27,8 @@ note:
   tested Qwen tranche: n=93, 0 observed paired drift, 15.28×--35.97× all-query
   speedup, and 14.90×--35.92× same-class follow-up speedup.
 - **Qwen routing**: mechanism and boundary evidence showing why placement of
-  fresh computation matters more than novelty magnitude alone.
+  fresh computation matters; novelty-ranked diagnostics stay local-only until
+  their raw outputs are materialized as checked artifacts.
 
 Candidate C-STREAM is not decorative support, but it is not a release claim
 yet. The manuscript should keep native-rate streaming as a pending scale-out
@@ -123,8 +124,8 @@ LaTeX section files are the canonical manuscript sources.
 
 > **Training-free anti-recomputation for video VLMs: measured first-pass
 > speedups on Gemma, sub-second same-video follow-up queries on Qwen, and
-> routing evidence showing that fresh-compute placement cannot be reduced to
-> novelty magnitude.**
+> routing diagnostics suggesting that fresh-compute placement is not captured
+> by novelty magnitude alone.**
 
 **Concrete headline cells today:**
 
@@ -143,8 +144,9 @@ LaTeX section files are the canonical manuscript sources.
   numeric deployment rows in release claims until raw paired outputs, cache
   smokes, source paths, and matched baselines are checked in.
 - **Qwen routing:** audited Pareto win/tie on MVBench and TOMATO holdouts
-  at much lower effective fresh-frame budgets, with the mechanism lesson that
-  fresh-compute placement cannot be reduced to novelty magnitude alone.
+  at much lower effective fresh-frame budgets, with local novelty-ranked
+  diagnostics suggesting that fresh-compute placement is not captured by
+  novelty magnitude alone.
 
 **Secondary — C-PERSIST (persistent-KV tested deployment envelope):**
 
@@ -194,10 +196,10 @@ What we CANNOT yet honestly say in HN-headline form:
   prefill and broad fidelity-preserving curves remain out of scope.
 - "**N%** less energy" — no energy instrumentation. Projected proportional
   to wall-clock at fixed memory.
-- "**N%** as accurate" — accuracy is equal (0.633=0.633 on MVBench
-  dense-8 vs sticky4, clean tree) or marginally lower (0.333=0.333 on
-  TOMATO dense-8 vs base, clean tree). No accuracy trade on the clean
-  tree; the win is on the x-axis, not the y-axis.
+- "**N%** as accurate" — the clean-tree release-backed routing cells preserve
+  aggregate accuracy on TOMATO (dense-8 vs base: 0.333=0.333) and improve the
+  MVBench dense-6 comparison at lower effective budget. The MVBench sticky4
+  dense-8 tie remains dirty-tree supplementary until rerun clean.
 
 **Honest one-liner for reviewers:** "training-free anti-recomputation across
 separate denominator regimes: large after-ingest follow-up reuse, share-limited
@@ -210,9 +212,8 @@ sparse-execution validation for the measured wall-clock ceiling."
 
 | # | Claim | Numbers (cite) | Evidence path |
 |---|---|---|---|
-| A | **Pointwise Pareto win on MVBench motion holdout N=30 at matched accuracy.** | Planner 2.0 base `max_abs(8,32) static+shifted age=4` → 0.600 cached_accuracy @ 4.06 effective fresh frames, vs uniform dense-6 at 0.567 @ 6.0 (higher point estimate at fewer fresh frames; keep the n=30 caveat visible). | `research/experiments/2026/artifacts/phase1_21_mvbench_motion_holdout_v2_cached_nosticky/max_abs-8.0-32.0-static+shifted-age4_summary.json`; `paper/figures/pareto_holdout_n30_data.json` |
-| B | **Pareto tie on TOMATO motion holdout N=30 at 44% of the fresh-frame budget.** | Planner 2.0 base → 0.333 cached_accuracy @ 3.55 effective fresh frames, equal to uniform dense-8 at 0.333 @ 8.0. | `research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_cached_clean/max_abs-8.0-32.0-static+shifted-age4_summary.json`; `paper/figures/pareto_holdout_n30_data.json` |
-| C | **Sticky4 refinement matches dense-8 accuracy at 56% of budget on MVBench.** | Planner 2.0 + sticky_window=4 → 0.633 @ 4.49 vs uniform dense-8 at 0.633 @ 8.0. Strict Pareto equivalence at reduced fresh frames. | `research/experiments/2026/artifacts/phase1_21_mvbench_motion_holdout_v2_cached/max_abs-8.0-32.0-static+shifted-age4-sticky4_summary.json`; `paper/figures/pareto_holdout_n30_data.json` |
+| A | **Pointwise Pareto win on MVBench motion holdout N=30 at matched accuracy.** | Planner 2.0 base `max_abs(8,32) static+shifted age=4` → 0.600 cached_accuracy @ 4.06 effective fresh frames, vs uniform dense-6 at 0.567 @ 6.0 (higher point estimate at fewer fresh frames; keep the n=30 caveat visible). | `research/experiments/2026/artifacts/phase1_21_mvbench_motion_holdout_v2_cached_nosticky/max_abs-8.0-32.0-static+shifted-age4_summary.json`; `paper/arxiv/generated/data/lane_a_snapshot.json` |
+| B | **Pareto tie on TOMATO motion holdout N=30 at 44% of the fresh-frame budget.** | Planner 2.0 base → 0.333 cached_accuracy @ 3.55 effective fresh frames, equal to uniform dense-8 at 0.333 @ 8.0. | `research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_cached_clean/max_abs-8.0-32.0-static+shifted-age4_summary.json`; `paper/arxiv/generated/data/lane_a_snapshot.json` |
 | E | **Bounded staleness is the mechanism on TOMATO; removing age=4 causes catastrophic novelty collapse.** | TOMATO Planner 2.0 no-age: novel_blocks→0, identical-feature reuse. With age=4: recovers proxy signal. Content-conditional finding. | `research/experiments/2026/2026-04-15-phase-1_20-tomato-motion-slice-enlargement.md`; `research/experiments/2026/artifacts/phase1_planner2_reference_default_tomato_holdout_v2/mean-3.0-8.0-static+shifted-noage_summary.json`; `research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_cached_clean/max_abs-8.0-32.0-static+shifted-age4_summary.json` |
 | R | **1.51V vision-tower pruning on Gemma 4-E4B-4bit (MLX), dev n=30 at L=2 kr_V=0.50 thermally paired:** VideoMME 1.08× (8f) / 1.12× (16f), MVBench **1.21×**, TOMATO **1.24×**; dev V-red lands around 40% across the three benchmarks, but holdout spread is wider and should be described more softly in the manuscript. Scatter-back ceiling `1/(1 − V_share × V_red)` predicts E2E within 2pp on the main dev cells. Holdout replications bound the claim: VideoMME 8f **clean** at 1.113×; MVBench 8f **advisory** at 1.407×; TOMATO 8f **earned-advisory** at 1.194×. | `research/experiments/2026/2026-04-21-phase-1_51V-expansion-findings.md`; `research/experiments/2026/2026-04-21-phase-1_51V-holdout-findings.md`; `research/experiments/2026/2026-04-21-phase-1_51V-session5-findings.md`; `research/experiments/2026/artifacts/phase1_51V_session3/exp18_videomme_holdout_8f_L2_kr050_summary.json`; `research/experiments/2026/artifacts/phase1_51V_session4/exp20_mvbench_holdout_8f_L2_kr050_summary.json`; `research/experiments/2026/artifacts/phase1_51V_session5/exp24_tomato_holdout_8f_L2_kr050_summary.json` |
 | O | **Persistent-KV follow-up speedup and selective re-prefill repair on Qwen 7B-4bit.** Persistent-KV reproduces the after-ingest latency regime and bounds fidelity by token budget; selective re-prefill v2 is the local recovery frontier, with fixed K=1 and adaptive post-Q2-state reuse showing no observed paired drift on checked local repair slices. | Use the phase notes and checked repair artifacts rather than this compressed inventory when writing final manuscript prose. | `research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md`; `research/experiments/2026/2026-04-24-phase-1_55D-selective-reprefill-v2-k1-findings.md`; `research/experiments/2026/2026-04-25-phase-1_55F-q3-post-q2-state-findings.md`; `research/experiments/2026/2026-04-27-adaptive-mechanism-queue-findings.md`; `research/experiments/2026/artifacts/phase1_55D_selective_reprefill_v2/pair_metrics_k1_n7.json`; `research/experiments/2026/artifacts/phase1_55F_q3_post_q2_state/pair_metrics_k1_n7.json` |
@@ -225,6 +226,7 @@ re-materialized as checked artifacts.
 
 | # | Finding | Status |
 |---|---|---|
+| C | Sticky4 refinement matches dense-8 accuracy at 56% of budget on MVBench. | Dirty-tree artifact. Keep as supplementary/provisional discussion only until rerun clean. |
 | D | Novelty-ranked dense N=8 underperforms the cached policy on TOMATO and saturates below uniform dense on MVBench. | Phase 1.34 note records the exact local-only ignored `results/` tree and commit IDs; regenerate or re-materialize before citing as release claim-bearing evidence. |
 | F | Pixel-diff proxy to ViT feature-change correlation is non-trivial but content-conditional (Pearson r=0.233--0.504). | Phase 1.36 note records local-only ignored `results/feature_change_oracle/` outputs; diagnostic only until checked artifacts exist. |
 | G/H | Historical dense wall-clock baseline and the derived 22% vision-cache-only ceiling. | Phase 1.50 note records local-only ignored `results/track_b/` outputs. Current paper-facing sparse-vision claims should cite checked phase 1.63 artifacts instead. |
@@ -252,12 +254,7 @@ is work the user is buying forever. What the user is paying for
 |---|---|---|---|---|
 | A | MVBench motion holdout N=30 base | ≈ 90 min | ≈ 25-30 min | Qwen 2.5-VL-7B-4bit |
 | B | TOMATO motion holdout N=30 base | ≈ 120 min | ≈ 30-40 min | Qwen 2.5-VL-7B-4bit |
-| C | MVBench motion holdout N=30 sticky4 | ≈ 90 min | ≈ 25-30 min | Qwen 2.5-VL-7B-4bit |
-| D | Novelty-ranked dense 2×3 grid (TOMATO+MVBench, N={4,6,8}) | ≈ 120 min | ≈ 45-60 min | Qwen 2.5-VL-7B-4bit |
 | E | TOMATO ablation cells (6 cells × 2 benchmarks × N=30) | ≈ 6-8 h | ≈ 3-4 h | Qwen 2.5-VL-7B-4bit |
-| F | Phase 1.36 oracle (per-block Pearson, partial cache coverage) | ≈ 60 min | ≈ 20 min | Qwen 2.5-VL-7B-4bit |
-| G | Phase 1.50 dense wall-clock baseline for sparse-execution accounting N=30 pair | ≈ 2 h per benchmark (cold) | ≈ 2 h (cold; no cache win) | Qwen 2.5-VL-7B-4bit |
-| H | Derived from G, zero runtime | — | — | — |
 | J₈ | Phase 1.41 VideoMME dev n=30 @ 8f | ≈ 16 min (931 s measured) | ≈ 16 min (no feature cache) | Qwen 2.5-VL-7B-4bit |
 | J₁₆ | Phase 1.41 VideoMME dev n=30 @ 16f | ≈ 38 min (2,257 s measured) | ≈ 38 min | Qwen 2.5-VL-7B-4bit |
 | J₃₂L | Phase 1.41 VideoMME long n=10 @ 32f | ≈ 28 min (1,450 s projected from 161 s/item × 9 measured) | same | Qwen 2.5-VL-7B-4bit |
@@ -274,10 +271,20 @@ is work the user is buying forever. What the user is paying for
 | J₁₆ₕ | Phase 1.41 Qwen 16f VideoMME **holdout** n=30 (H2 falsification run, task #160) | ~38 min (same per-item cost as dev 16f; aggregate 0.700, H2 FALSIFIES the dev-only long-bucket −20pp observation — holdout long 0.900 vs dev 0.100) | 0.63 h | Qwen 2.5-VL-7B-4bit |
 | V | Phase 1.51V EXP10 n=60 composition audit (VideoMME dev+holdout combined, task #152 CLOSED-NULL) | ~3.0 h measured (n=60; lift 2.6pp FAILS ≥4pp gate, agreement 0.65 FAILS 0.75; ceiling model reproduces to 0.2pp at fixed_frac = 0.875) | 3.0 h | Gemma 4-E4B-4bit |
 
+### Local-only historical runtime (not paper-body evidence)
+
+| # | Claim | Cold-cache | Warm-cache | Model |
+|---|---|---|---|---|
+| C | MVBench motion holdout N=30 sticky4 | ≈ 90 min | ≈ 25-30 min | Qwen 2.5-VL-7B-4bit |
+| D | Novelty-ranked dense 2×3 grid (TOMATO+MVBench, N={4,6,8}) | ≈ 120 min | ≈ 45-60 min | Qwen 2.5-VL-7B-4bit |
+| F | Phase 1.36 oracle (per-block Pearson, partial cache coverage) | ≈ 60 min | ≈ 20 min | Qwen 2.5-VL-7B-4bit |
+| G | Phase 1.50 dense wall-clock baseline for sparse-execution accounting N=30 pair | ≈ 2 h per benchmark (cold) | ≈ 2 h (cold; no cache win) | Qwen 2.5-VL-7B-4bit |
+| H | Derived from G, zero runtime | — | — | — |
+
 ### Runtime cost summary
 
 **Already spent** (benchmark wall-clock, cumulative approx over project):
-- Qwen routing (TOMATO + MVBench): ~25-30 h (A+B+C+D+E+F+G, measured across many N=30 passes)
+- Qwen routing (TOMATO + MVBench): ~25-30 h total historical wall-clock; release-backed paper-body rows are A+B+E, while C/D/F/G are local-only diagnostics until rerun or materialized.
 - Gemma first-pass pruning + ceiling validation: ~10-12 h (K+M)
 - Gemma first-pass expansion + 32f probe + holdout sessions 2-5: ~10.4 h (P 4.34 h + Q 1.99 h + R 0.75 h + S 0.8 h + T 2.0 h + U 0.48 h measured)
 - Gemma EXP10 n=60 composition audit, 2026-04-21: ~3.0 h (V)
@@ -343,8 +350,8 @@ queue once infra is in place.
 > cold-all-query ratio.
 > Routing holdouts on TOMATO and MVBench then show the mechanism
 > boundary: a bounded-staleness planner preserves the quality-compute
-> frontier, beats novelty-ranked dense selection, and shows that
-> fresh-compute placement cannot be reduced to novelty magnitude alone.
+> frontier, while local novelty-ranked diagnostics suggest that
+> fresh-compute placement is not captured by novelty magnitude alone.
 > Candidate C-STREAM remains pending until a validated streaming artifact bundle
 > supplies raw paired outputs, cache-correctness smokes, source paths, and
 > matched baselines.

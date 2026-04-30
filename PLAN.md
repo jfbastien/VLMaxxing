@@ -1,6 +1,6 @@
 # Current Plan
 
-Last updated: 2026-04-29.
+Last updated: 2026-04-30.
 
 This file is the active roadmap only. Historical phase detail lives in dated
 experiment notes and [research/experiments/registry.md](research/experiments/registry.md).

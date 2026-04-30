@@ -567,8 +567,9 @@ Near-term paper path:
   budget; clean tree, commit 42b06eb).
 - budget-placement instrumentation + failure predictor (phase 1.31 +
   temporal-coverage-metrics doc)
-- matched dense frame-budget baselines PLUS novelty-ranked dense (phase
-  1.34) and event-window oracle (phase 1.35)
+- matched dense frame-budget baselines, plus novelty-ranked dense as a local
+  diagnostic until phase 1.34 raw outputs are checked in, and event-window oracle
+  (phase 1.35)
 - measured sparse-vision timing with broader sparse-backend and sparse LM
   prefill coverage still open
 

@@ -157,6 +157,9 @@ Each entry has:
   narrower claim motivates the content-class taxonomy in
   `docs/application-taxonomy.md`.
 - **link**: [phase 1.34](experiments/2026/2026-04-17-phase-1_34-novelty-ranked-dense.md)
+- **release note**: the conclusion is retained as a local diagnostic. The raw
+  phase 1.34 outputs were written under ignored `results/`, so paper-body use
+  requires rerunning or materializing the raw rows as checked artifacts.
 
 ### falsified_2026-04-18_nuwa-pillar-recovers-aggregate-accuracy-at-kr050
 

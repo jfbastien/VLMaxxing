@@ -37,8 +37,9 @@ mechanism-validation backbone:
    end-to-end speedups on fresh videos, again bounded by share × reduction.
 4. **Qwen routing** is mechanism and boundary evidence, not the headline:
    it explains where temporal reuse preserves answers, why placement of fresh
-   computation matters more than novelty magnitude alone, and which intuitive
-   fixes do not survive matched conditions.
+   computation matters, how local novelty-ranked diagnostics should be treated
+   until raw artifacts are checked in, and which intuitive fixes do not survive
+   matched conditions.
 
 The streaming lane remains important, but it is not just decoration. Use it for:
 

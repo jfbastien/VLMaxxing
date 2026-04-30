@@ -44,9 +44,10 @@ regime where the biggest local multipliers already exist, but also where cache
 reuse enters a measurable basin unless the visual tail is repaired. The third
 is \emph{first-pass vision pruning (C-VISION)}: measured first-pass gains on
 fresh videos via training-free vision-tower pruning. Qwen routing then plays a
-different role: it is the mechanism-validation backbone and the
-negative-result ledger showing that fresh-compute placement cannot be reduced
-to novelty magnitude alone.
+different role: it is the mechanism-validation backbone and the negative-result
+ledger; local novelty-ranked diagnostics suggest that fresh-compute placement
+is not captured by novelty magnitude alone, but those diagnostics remain
+outside the release claim surface until their raw outputs are checked in.
 
 The larger target is not a bigger threshold sweep and not a new codec in this
 paper. The current experiments are a measurement instrument: they ask which
@@ -149,9 +150,10 @@ headline multiplication.
 
 Qwen routing and its preserved nulls are what keep that framing honest. The
 holdout planner results show a real quality--compute frontier under a frozen
-dense backend, novelty-ranked dense baselines show that quantity alone is the
-wrong variable, and the VideoMME frame-count probes show that ``more frames''
-is not a linear quality knob on the Qwen stack. The dev-split 16-frame
+dense backend, local novelty-ranked dense diagnostics suggest that quantity
+alone is the wrong variable, and the VideoMME frame-count probes show that
+``more frames'' is not a linear quality knob on the Qwen stack. The dev-split
+16-frame
 long-bucket regression does \emph{not} replicate on disjoint holdout; that is
 exactly the kind of boundary the paper keeps instead of smoothing away.
 The same discipline now applies to paired drift: several runs preserve

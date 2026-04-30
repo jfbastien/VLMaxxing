@@ -60,7 +60,7 @@ source_page = "https://media.xiph.org/video/derf/"
 download_url = "https://media.xiph.org/video/derf/y4m/hall_monitor_cif.y4m"
 local_path = "data/corpus/raw/hall_monitor_cif.y4m"
 license = "Xiph/Derf public test media; see per-sequence copyright/readme links"
-intended_use = "stable surveillance-like proxy for whitepaper reproduction"
+intended_use = "stable surveillance-like proxy for claim-register reproduction"
 needs_local_encode = true
 
 [[clip]]

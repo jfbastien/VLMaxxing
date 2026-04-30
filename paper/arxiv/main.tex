@@ -16,7 +16,6 @@
 \usepackage{caption}
 \usepackage{subcaption}
 \usepackage{float}
-\usepackage{comment}
 
 \definecolor{todoBorder}{HTML}{9B2226}
 \definecolor{todoBg}{HTML}{FFF4F4}
@@ -40,7 +39,8 @@
 }
 
 \newif\ifshowtodos
-\showtodosfalse
+\showtodostrue
+\newbox\sectiontodobox
 
 \ifshowtodos
   \newenvironment{sectiontodo}[1]
@@ -59,7 +59,9 @@
     \par\medskip\noindent{\small\color{accentBlue}\textbf{Draft note.} #1}\par\medskip
   }
 \else
-  \excludecomment{sectiontodo}
+  \newenvironment{sectiontodo}[1]
+    {\par\setbox\sectiontodobox=\vbox\bgroup\hsize=\linewidth\small}
+    {\egroup}
   \newcommand{\draftnote}[1]{}
 \fi
 
