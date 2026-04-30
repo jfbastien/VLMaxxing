@@ -59,6 +59,47 @@ import mlx.core as mx
 import numpy as np
 from PIL import Image
 
+# --- BEGIN B0b r2 correctness-control guard ---
+# Background: mlx_vlm/generate.py:671-697 (mlx-vlm 0.4.4) flat-slices
+# c.keys[:, :, :prefix_len, :] for every prompt-cache entry. That is
+# correct for KVCache (Qwen, full-attention everywhere) but corrupts
+# RotatingKVCache (Gemma 4 SWA layers -- slot 0 of a rotated buffer is
+# not the oldest temporal token). Combined with the input_ids trim on
+# the same path, partial-cache reuse on Gemma 4 26B-A4B is unsafe.
+#
+# Until a topology-aware vendor patch lands, this guard refuses to
+# reuse the cache cross-turn whenever any RotatingKVCache is present.
+# The result: B0b's correctness gate can pass; the C-PERSIST speedup
+# claim on Gemma 26B remains BLOCKED until the upstream fix.
+import mlx_vlm.generate as _gen  # noqa: E402
+from mlx_lm.models.cache import RotatingKVCache  # noqa: E402
+
+_orig_stream_generate = _gen.stream_generate
+
+# Sticky module-level flag. The runner reads this AFTER every
+# stream_generate call to decide whether to emit "cache-reuse" or
+# "guarded full-refill" metadata for that row. Reset by the runner
+# before the next call.
+B0B_GUARD_TRIGGERED = False
+
+
+def _correctness_guard_stream_generate(*args, **kwargs):
+    global B0B_GUARD_TRIGGERED
+    B0B_GUARD_TRIGGERED = False
+    cache_state = kwargs.get("prompt_cache_state")
+    if cache_state is not None and getattr(cache_state, "cache", None):
+        if any(isinstance(c, RotatingKVCache) for c in cache_state.cache):
+            # Refuse cross-turn cache reuse on mixed-topology models.
+            # Force full re-prefill. mlx-vlm sees no cache, takes the
+            # cold path, and produces a correctness-clean output.
+            kwargs["prompt_cache_state"] = None
+            B0B_GUARD_TRIGGERED = True
+    return _orig_stream_generate(*args, **kwargs)
+
+
+_gen.stream_generate = _correctness_guard_stream_generate
+# --- END B0b r2 correctness-control guard ---
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_VERSION = "sam_scaleout_artifact_v1"
 PHASE = "B0b"
@@ -444,6 +485,7 @@ def make_row(
     baseline_arm: str,
     policy: str,
     baseline_policy: str,
+    policy_params: dict[str, Any] | None = None,
     comparator_arm: str | None,
     frame_ids: list[str],
     frame_hashes: list[str],
@@ -496,7 +538,7 @@ def make_row(
         "comparator_arm": comparator_arm,
         "policy": policy,
         "baseline_policy": baseline_policy,
-        "policy_params": None,
+        "policy_params": policy_params,
         "model_id": base_provenance["model_id"],
         "model_sha": base_provenance["model_sha"],
         "quantization": base_provenance["quantization"],
@@ -817,14 +859,41 @@ def main() -> int:
                 )
             )
 
-            # Cross-turn row.
+            # Cross-turn row. Read the guard flag set by
+            # _correctness_guard_stream_generate during the cross-turn
+            # call -- if it fired, encode "guarded full re-prefill" via
+            # policy / policy_params / vit_calls / prefix_hit /
+            # prefix_coverage / provenance_note. Otherwise emit the
+            # original cache-reuse metadata.
+            guard_fired = bool(B0B_GUARD_TRIGGERED)
+            cross_kw = {**base_kw}
+            if guard_fired:
+                cross_kw["provenance_note"] = (
+                    "[B0b r2 guard fired: cross-turn cache reuse "
+                    "disabled because RotatingKVCache present in prompt "
+                    "cache; effective path is full re-prefill] "
+                    + (base_kw.get("provenance_note") or "")
+                )
             rows.append(
                 make_row(
-                    **base_kw,
+                    **cross_kw,
                     pair_key=f"v={it['video_id']}/q={q_idx}/cross",
                     arm="cross_turn_warm",
                     baseline_arm="cold_dense",
-                    policy="prompt_cache_state_cross_turn_chained",
+                    policy=(
+                        "full_refill_guard_rotating_kv"
+                        if guard_fired
+                        else "prompt_cache_state_cross_turn_chained"
+                    ),
+                    policy_params=(
+                        {
+                            "cache_guard_triggered": True,
+                            "guard_reason": "rotating_kv_present",
+                            "cache_reuse_disabled": True,
+                        }
+                        if guard_fired
+                        else None
+                    ),
                     baseline_policy="cold_dense_no_cache",
                     comparator_arm="cold_dense",
                     input_ids_hash=cross["input_ids_hash"],
@@ -838,9 +907,9 @@ def main() -> int:
                     generate_ms=cross["generate_ms"],
                     repair_prefill_ms=None,
                     end_to_end_ms=cross["wall_time_ms"],
-                    vit_calls=0,  # cache reuse -> no fresh ViT
-                    prefix_hit=cross["n_input_tokens"],
-                    prefix_coverage=1.0,
+                    vit_calls=1 if guard_fired else 0,
+                    prefix_hit=0 if guard_fired else cross["n_input_tokens"],
+                    prefix_coverage=0.0 if guard_fired else 1.0,
                 )
             )
 
