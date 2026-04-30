@@ -1,0 +1,73 @@
+{
+  "label": "phase1_55K_ext_seed42_temperature_1.5",
+  "n_pairs": 21,
+  "n_sessions": 7,
+  "n_follow_up_pairs": 14,
+  "session_n_correct": 16,
+  "baseline_n_correct": 16,
+  "session_accuracy": 0.7619047619047619,
+  "baseline_accuracy": 0.7619047619047619,
+  "paired_correctness_diffs": 0,
+  "paired_choice_diffs": 1,
+  "pathological_follow_up_hits": 0,
+  "pathological_q3_hits": 0,
+  "accuracy_delta_session_minus_baseline": 0.0,
+  "accuracy_delta_session_minus_baseline_ci95": [
+    0.0,
+    0.0
+  ],
+  "follow_up_accuracy_delta_session_minus_baseline": 0.0,
+  "follow_up_accuracy_delta_session_minus_baseline_ci95": [
+    0.0,
+    0.0
+  ],
+  "q3_accuracy_delta_session_minus_baseline": 0.0,
+  "q3_accuracy_delta_session_minus_baseline_ci95": [
+    0.0,
+    0.0
+  ],
+  "session_follow_up_median_ms": 3399.094395,
+  "session_follow_up_setup_amortized_median_ms": 48023.3028335,
+  "baseline_follow_up_median_ms": 85028.1201455,
+  "baseline_all_query_median_ms": 85134.672041,
+  "n_follow_up_rows_with_cache_build_ms": 7,
+  "n_sessions_with_cache_build_ms": 7,
+  "session_cache_build_total_median_ms": 87247.154083,
+  "session_total_median_ms_including_cache_build": 179414.160917,
+  "baseline_total_median_ms": 259142.227166,
+  "speedup_follow_up_median_cold_over_session": 25.01493346891886,
+  "speedup_all_query_median_cold_over_session_follow_up": 25.046280611162608,
+  "speedup_follow_up_median_cold_over_session_setup_amortized": 1.7705596060374726,
+  "speedup_all_query_median_cold_over_session_follow_up_setup_amortized": 1.7727783600425735,
+  "speedup_session_total_median_cold_over_session_including_cache_build": 1.4443800079185696,
+  "q_index_breakdown": {
+    "q1": {
+      "n": 7,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    },
+    "q2": {
+      "n": 7,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    },
+    "q3": {
+      "n": 7,
+      "correctness_diffs": 0,
+      "choice_diffs": 1,
+      "pathological_hits": 0
+    }
+  },
+  "mismatches": [
+    {
+      "item_id": "videomme:short:120-3",
+      "q_index": 2,
+      "session_choice": "D",
+      "baseline_choice": "A",
+      "session_correct": false,
+      "baseline_correct": false
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "label": "phase1_55K_ext_seed42_temperature_0.5",
+  "n_pairs": 21,
+  "n_sessions": 7,
+  "n_follow_up_pairs": 14,
+  "session_n_correct": 17,
+  "baseline_n_correct": 17,
+  "session_accuracy": 0.8095238095238095,
+  "baseline_accuracy": 0.8095238095238095,
+  "paired_correctness_diffs": 0,
+  "paired_choice_diffs": 0,
+  "pathological_follow_up_hits": 0,
+  "pathological_q3_hits": 0,
+  "accuracy_delta_session_minus_baseline": 0.0,
+  "accuracy_delta_session_minus_baseline_ci95": [
+    0.0,
+    0.0
+  ],
+  "follow_up_accuracy_delta_session_minus_baseline": 0.0,
+  "follow_up_accuracy_delta_session_minus_baseline_ci95": [
+    0.0,
+    0.0
+  ],
+  "q3_accuracy_delta_session_minus_baseline": 0.0,
+  "q3_accuracy_delta_session_minus_baseline_ci95": [
+    0.0,
+    0.0
+  ],
+  "session_follow_up_median_ms": 3425.408166,
+  "session_follow_up_setup_amortized_median_ms": 49114.017666499996,
+  "baseline_follow_up_median_ms": 85896.269417,
+  "baseline_all_query_median_ms": 86301.823583,
+  "n_follow_up_rows_with_cache_build_ms": 7,
+  "n_sessions_with_cache_build_ms": 7,
+  "session_cache_build_total_median_ms": 88047.541709,
+  "session_total_median_ms_including_cache_build": 182579.058917,
+  "baseline_total_median_ms": 258700.20075,
+  "speedup_follow_up_median_cold_over_session": 25.076214352961287,
+  "speedup_all_query_median_cold_over_session_follow_up": 25.194610218897925,
+  "speedup_follow_up_median_cold_over_session_setup_amortized": 1.7489155540127739,
+  "speedup_all_query_median_cold_over_session_follow_up_setup_amortized": 1.7571729555707942,
+  "speedup_session_total_median_cold_over_session_including_cache_build": 1.4169215368100045,
+  "q_index_breakdown": {
+    "q1": {
+      "n": 7,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    },
+    "q2": {
+      "n": 7,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    },
+    "q3": {
+      "n": 7,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    }
+  },
+  "mismatches": []
+}

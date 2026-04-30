@@ -1,0 +1,64 @@
+{
+  "label": "phase1_55K_ext_seed99_temperature_1.5",
+  "n_pairs": 21,
+  "n_sessions": 7,
+  "n_follow_up_pairs": 14,
+  "session_n_correct": 15,
+  "baseline_n_correct": 15,
+  "session_accuracy": 0.7142857142857143,
+  "baseline_accuracy": 0.7142857142857143,
+  "paired_correctness_diffs": 0,
+  "paired_choice_diffs": 0,
+  "pathological_follow_up_hits": 0,
+  "pathological_q3_hits": 0,
+  "accuracy_delta_session_minus_baseline": 0.0,
+  "accuracy_delta_session_minus_baseline_ci95": [
+    0.0,
+    0.0
+  ],
+  "follow_up_accuracy_delta_session_minus_baseline": 0.0,
+  "follow_up_accuracy_delta_session_minus_baseline_ci95": [
+    0.0,
+    0.0
+  ],
+  "q3_accuracy_delta_session_minus_baseline": 0.0,
+  "q3_accuracy_delta_session_minus_baseline_ci95": [
+    0.0,
+    0.0
+  ],
+  "session_follow_up_median_ms": 4666.443999499999,
+  "session_follow_up_setup_amortized_median_ms": 60291.5015415,
+  "baseline_follow_up_median_ms": 89107.998625,
+  "baseline_all_query_median_ms": 92498.718125,
+  "n_follow_up_rows_with_cache_build_ms": 7,
+  "n_sessions_with_cache_build_ms": 7,
+  "session_cache_build_total_median_ms": 101875.4595,
+  "session_total_median_ms_including_cache_build": 219920.47541800002,
+  "baseline_total_median_ms": 288142.964541,
+  "speedup_follow_up_median_cold_over_session": 19.09548226327108,
+  "speedup_all_query_median_cold_over_session_follow_up": 19.82209968338012,
+  "speedup_follow_up_median_cold_over_session_setup_amortized": 1.4779528846808525,
+  "speedup_all_query_median_cold_over_session_follow_up_setup_amortized": 1.5341916482430122,
+  "speedup_session_total_median_cold_over_session_including_cache_build": 1.3102143581370966,
+  "q_index_breakdown": {
+    "q1": {
+      "n": 7,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    },
+    "q2": {
+      "n": 7,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    },
+    "q3": {
+      "n": 7,
+      "correctness_diffs": 0,
+      "choice_diffs": 0,
+      "pathological_hits": 0
+    }
+  },
+  "mismatches": []
+}
