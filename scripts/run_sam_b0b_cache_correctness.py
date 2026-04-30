@@ -56,8 +56,6 @@ if not os.environ.get("HF_TOKEN"):
 import contextlib
 
 import mlx.core as mx
-import numpy as np
-from PIL import Image
 
 # --- BEGIN B0b r2 correctness-control guard ---
 # Background: mlx_vlm/generate.py:671-697 (mlx-vlm 0.4.4) flat-slices
@@ -72,7 +70,9 @@ from PIL import Image
 # The result: B0b's correctness gate can pass; the C-PERSIST speedup
 # claim on Gemma 26B remains BLOCKED until the upstream fix.
 import mlx_vlm.generate as _gen  # noqa: E402
+import numpy as np
 from mlx_lm.models.cache import RotatingKVCache  # noqa: E402
+from PIL import Image
 
 _orig_stream_generate = _gen.stream_generate
 
@@ -87,13 +87,16 @@ def _correctness_guard_stream_generate(*args, **kwargs):
     global B0B_GUARD_TRIGGERED
     B0B_GUARD_TRIGGERED = False
     cache_state = kwargs.get("prompt_cache_state")
-    if cache_state is not None and getattr(cache_state, "cache", None):
-        if any(isinstance(c, RotatingKVCache) for c in cache_state.cache):
-            # Refuse cross-turn cache reuse on mixed-topology models.
-            # Force full re-prefill. mlx-vlm sees no cache, takes the
-            # cold path, and produces a correctness-clean output.
-            kwargs["prompt_cache_state"] = None
-            B0B_GUARD_TRIGGERED = True
+    if (
+        cache_state is not None
+        and getattr(cache_state, "cache", None)
+        and any(isinstance(c, RotatingKVCache) for c in cache_state.cache)
+    ):
+        # Refuse cross-turn cache reuse on mixed-topology models.
+        # Force full re-prefill. mlx-vlm sees no cache, takes the
+        # cold path, and produces a correctness-clean output.
+        kwargs["prompt_cache_state"] = None
+        B0B_GUARD_TRIGGERED = True
     return _orig_stream_generate(*args, **kwargs)
 
 
