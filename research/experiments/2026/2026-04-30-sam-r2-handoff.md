@@ -88,6 +88,8 @@ the JSONL or summaries is fine.
 | **M5-4 (frame-count scaling)** | EXPLORATORY — 15 rows, 3 vids × 5 frame counts (8/16/32/64/128), Gemma 26B-A4B cold-dense. Fills the C-CEILING 26B/scale-out cell. Single-arm; no cross-turn cache; immune to the SWA bug. | `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_4_frame_count_scaling*` |
 | **M5-5 (SWA safety wrapper)** | DIAGNOSTIC — confirms the architectural-bug analysis (mlx-vlm flat-trim corrupts RotatingKVCache). Doc explicitly self-marks SUPERSEDED by M5-5b for the speedup-ceiling claim; the safety regression (5/5 byte-identical at ~0.96× wall) stands. | `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5_swa_safety_regression*` |
 | **M5-5b (SWA prefix-snapshot fix)** ⭐ | **CROSS-ARCH C-PERSIST RESULT.** 21 paired rows, Gemma 26B-A4B, 8f. **0/21 choice diffs, 0/21 correctness diffs, 15/21 byte-identical (71%), 6/21 paraphrase-level drift, median per-turn speedup 9.11× (range 3.59–12.83×), median amortized over 3 Q/video ~2.0× (warm-cost included).** Cite as: "Gemma 26B-A4B C-PERSIST via topology-aware prefix-snapshot reuse, 9.11× per-follow-up / ~2× amortized, answer-preserving with paraphrase-level text drift." Do NOT cite as byte-identical (it's 15/21). Caveats noted in this round's commit: (a) runner docstring lies "≥20/21 byte-identical gate" but actual is 15/21 (informational not gate); (b) provenance fields under-populated (mlx_version=unknown, metal_version=null in artifact, but findings doc claims specific versions); (c) prefix-boundary equality assertion missing from `swa_aware_cache_v2.run_turn_with_snapshot`. Sam should fix all three on his next M5 run. | `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot*` + `scripts/swa_aware_cache_v2.py` |
+| **M5-5b single-shot prefill ablation** | DIAGNOSTIC — varies prefill kernel call shape (single-shot vs chunked), not cache-reuse mechanism. 21 rows, **16/21 byte-identical (single-shot moves it from 15/21 to 16/21 — i.e., does NOT eliminate paraphrase-level drift), 0/21 choice/correctness diffs, 2/21 shared parse failures, median speedup 8.94×.** Falsifies the "chunked-prefill numerical noise causes paraphrase divergence" hypothesis. Cite as supporting evidence for the M5-5b mechanism, not as a separate speedup result. | `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_singleshot*` |
+| **M5-comp (32f prefix-snapshot)** ⭐⭐ | **HEADLINE 32f RESULT.** 9 paired rows, Gemma 26B-A4B, 32f. **0/9 choice diffs, 0/9 correctness-field diffs, 7/9 byte-identical, 2/9 paraphrase, median per-follow-up speedup 26.59× (range 13.62–83.49×).** Cite as: "Gemma 26B-A4B prefix-snapshot at 32f delivers 26.59× median per-follow-up wall-clock speedup, 0/9 choice diffs across 9 paired rows; correctness label exists for the 3 MC rows (q=0), follow-up rows (q=1, q=2) carry only equality-vs-cold-dense not independent ground truth." **Do NOT cite this as "inside the Qwen 47×-150× band"** — that comparison was struck from the corrected findings doc; Gemma 26B's mixed-SWA cell measures a different architecture and prompt regime than Qwen 7B-4bit's full-attention cell. **Do NOT cite the "~1.5× ingestion density" composition story** — the underlying B4-adjacent artifact shows 8f 0.757× and 32f 1.042× (flat to negative); the ingestion-density reframe is unsupported. | `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f*` + `2026-04-29-phase-M5-comp-*-findings.md` |
 
 ## Step 1 — install a CORRECTNESS-CONTROL guard (do not pursue a speedup-preserving shim)
 
@@ -317,6 +319,19 @@ turns, since Gemma uses absolute positions and the old prefix's
 positions would need to chain into the new turn's. If smoke fails,
 stop, write a fresh findings note, and pursue the position-ID
 hypothesis before going further.
+
+### Validator flag warning for guarded rows
+
+`scripts/validate_sam_scaleout_artifact.py:431` exposes a
+`--require-positive-prefix-on-followups` gate, and the bundle
+validator at `scripts/validate_sam_scaleout_bundle.py:46` passes
+this flag to per-artifact validation by default. **For r2-guarded
+B0b rows this gate WILL FAIL by design** — the correctness-control
+guard sets `prefix_hit=0, prefix_coverage=0.0` on every cross-turn
+row precisely because no cache reuse occurred. Pass guarded B0b
+rows through the validator **without** that flag (or with a
+per-artifact override that recognises `policy=full_refill_guard_*`
+as exempt). Document the exemption in the bundle README.
 
 ## Step 3 — full B0b rerun (after smoke passes; ~1h on M5)
 

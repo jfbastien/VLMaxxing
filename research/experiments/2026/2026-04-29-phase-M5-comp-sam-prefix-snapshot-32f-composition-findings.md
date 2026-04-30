@@ -1,19 +1,34 @@
 # 2026-04-29 Phase M5-comp — Prefix-snapshot at 32f + composition story
 
-- **Status:** **closed-earned.**
-- **Headline:** at 32 f on Gemma 4 26B-A4B / M5 Max, the SWA-aware
-  prefix-snapshot mechanism (M5-5b) delivers **median 26.59× wall-
-  clock speedup** at zero choice / correctness drift, with peaks up
-  to **83.49×** on short follow-up questions. **The 26B / SWA cell
-  now lands inside JF's Qwen 7B-4bit C-PERSIST claim band of
-  47×–150×.**
-- **Composition picture:** prefix-snapshot (M5-5b LM-prefix reuse)
-  and hard-prune (B4 prefill-token reduction) are
-  **mechanism-orthogonal at workload level**: hard-prune reduces
-  first-pass cost (~1.5× ingestion density at fixed wall, per B4);
-  prefix-snapshot reduces follow-up cost (~26× at 32f). On a
-  multi-query workload they apply at different stages and add
-  complementary gains.
+- **Status:** **closed-earned** for the per-turn speedup mechanism
+  on Gemma 26B-A4B; **needs framing corrections** before paper-grade
+  citation (see "Corrections vs the original headline" below).
+- **Headline (corrected):** at 32 frames on Gemma 4 26B-A4B / M5
+  Max, the SWA-aware prefix-snapshot mechanism delivers **median
+  26.59× per-follow-up wall-clock speedup**, range 13.62×–83.49×
+  across 9 paired rows. **All 9 rows: 0 choice diffs, 0
+  correctness-field diffs**, but only the q=0 MC rows (3 of 9)
+  carry ground-truth labels — the 6 follow-up rows (q=1, q=2) are
+  open-ended and have no ground-truth correctness signal in the
+  artifact (they do have answer-letter / text equality vs cold dense).
+  7/9 byte-identical, 2/9 paraphrase-level drift.
+- **Cross-architecture cell, NOT inside the Qwen 47×–150× band.**
+  Earlier prose claimed Gemma 26B "lands inside the Qwen 7B-4bit
+  C-PERSIST claim band of 47×–150×". That comparison is wrong:
+  26.59× < 47×. The two cells measure different architectures
+  (Gemma 4 26B-A4B with mixed SWA topology vs Qwen 2.5-VL-7B-4bit
+  with full attention everywhere) and different prompt regimes; the
+  magnitudes are not comparable as "inside a band". The honest
+  framing is: "26.59× median per-follow-up at 32f on Gemma 26B
+  mixed-attention; distinct from Qwen 7B-4bit's full-attention
+  47–150× regime."
+- **Composition framing (corrected):** prefix-snapshot at the
+  follow-up stage and the post-ViT hard-prune (B4-adjacent) at
+  the first-pass stage are workload-orthogonal in principle, but
+  the B4-adjacent artifact does NOT support the "~1.5× ingestion
+  density" reframe (its measured fixed-frame medians are 8f 0.757×
+  and 32f 1.042× — flat to negative). Compose only with the
+  measured numbers; do not chain through a hypothetical reframe.
 
 ## 32f prefix-snapshot result table (3 videos × 3 questions = 9 paired rows)
 
@@ -163,12 +178,15 @@ reduction at the front.**
 ## What this means for the paper
 
 - **§2.13.3 (sdamico whitepaper) C-PERSIST cross-architecture
-  claim**: now defensible at 26 B / Gemma 4 with measured median
-  **26.59 × at 32 f** (range 13.62 × – 83.49 ×) at zero choice /
-  correctness drift. Architecture-conditional qualifier:
-  "via SWA-aware prefix-snapshot wrapper; default mlx-vlm
-  PromptCacheState is broken on mixed-SWA topologies, see B0b /
-  M5-5 / M5-5b."
+  claim**: defensible at 26 B / Gemma 4 with measured median
+  **26.59 × per-follow-up at 32 f** (range 13.62 × – 83.49 ×) and
+  0/9 choice diffs across 9 paired rows. Architecture-conditional
+  qualifier required:
+  "via SWA-aware prefix-snapshot wrapper, not default mlx-vlm
+  PromptCacheState (which is broken on mixed-SWA topologies, see
+  B0b / M5-5 / M5-5b). Correctness measured on the 3 MC rows;
+  follow-up rows have answer/text equality vs cold dense but no
+  independent ground-truth label."
 - **§7 cross-architecture (jfb)**: the C-PERSIST cell can now have
   a 26 B row alongside Qwen 7B. Speedup magnitudes are smaller (full-
   attention layer fraction 17 % vs 100 %) but architecturally
