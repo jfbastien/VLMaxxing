@@ -240,8 +240,13 @@ def _distance_for_windows(left: dict[str, Any], right: dict[str, Any]) -> dict[s
     right_common = _token_prefix(right_array, common_len)
     l_flat = left_common.reshape(-1)
     r_flat = right_common.reshape(-1)
-    dot = mx.sum(l_flat * r_flat)
-    denom = mx.sqrt(mx.sum(l_flat * l_flat)) * mx.sqrt(mx.sum(r_flat * r_flat))
+    # Use mean-form (mathematically identical to sum-form for cosine: the N
+    # factor cancels in the dot/denom ratio) so a rare near-bf16-max element
+    # in the live K/V cache cannot make sum(x*x) overflow to inf and propagate
+    # NaN into cosine. Reproduced in tests/test_phase1_30AG_distance_reduction.py
+    # against fp16; the sum-form path returns NaN at the same scale.
+    dot = mx.mean(l_flat * r_flat)
+    denom = mx.sqrt(mx.mean(l_flat * l_flat)) * mx.sqrt(mx.mean(r_flat * r_flat))
     cosine = dot / mx.maximum(denom, mx.array(1e-12))
     mean_abs = mx.mean(mx.abs(l_flat - r_flat))
     rms = mx.sqrt(mx.mean((l_flat - r_flat) * (l_flat - r_flat)))
