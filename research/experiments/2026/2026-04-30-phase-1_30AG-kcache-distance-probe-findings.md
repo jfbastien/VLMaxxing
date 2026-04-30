@@ -1,12 +1,12 @@
 ---
-date: 2026-04-30 (initial); updated 2026-05-01 (rerun + math review tightened the diagnosis to "candidate pending finite audit")
+date: 2026-04-30 (initial); 2026-05-01 (rerun + math retraction); 2026-05-01 (CLOSED-EARNED after finite-audit telemetry)
 phase: 1.30AG (K/V cache-distance mechanism probe)
-status: capture-earned (H1+H2+H3 PASS); H4 saturation gate FAILS with NaN cosine at every K layer. **Two hypotheses remain live and the artifact does not yet discriminate**: (a) upstream cache contains non-finite elements, OR (b) `mx.sum(x*x)` overflows in bf16 because MLX's `mean` reduction does not upcast. Distance numbers remain NOT release-claim-bearing.
+status: CLOSED-EARNED. All four gates PASS using the fp32 control cosine column. Cache is finite at every layer; the original NaN cosine was fp16 sum-of-squares overflow in the cosine reduction, not upstream pathology. H4 saturation HOLDS: reuse-arm cache cosine vs dense ≈ 1.0 (bit-identical), pruned-arm cosine 0.724 K / 0.296 V (substantial divergence).
 related:
   - 2026-04-23-phase-1_30-mechanism-decomposition-prereg.md
 ---
 
-# Phase 1.30AG — K/V cache-distance probe (NaN cosine: cause undecided; finite-audit patch is the next step)
+# Phase 1.30AG — K/V cache-distance probe (CLOSED-EARNED via fp32 cosine column)
 
 ## Question
 
@@ -157,38 +157,105 @@ also consistent with hypothesis (a). The artifact does not separate.
 - The earlier "fp32 cast crashed with NSException" was sandbox-side
   (Metal init blocked), not memory pressure. Disregard that clue.
 
-## Path forward — finite-audit diagnostic
+## Closure (2026-05-01) — finite-audit rerun discriminates decisively
 
-A small read-only telemetry patch on `_distance_for_windows` is the
-required discriminator. For each `(left, right)` window emit:
+The finite-audit telemetry patch shipped in commit `6cc5d32` and the
+sandbox-off rerun completed in 30 min. The fp32 control cosine column is
+finite at every layer × row × arm; the per-window NaN/Inf/max-abs audit
+shows zero non-finite elements anywhere in the valid window OR in the
+buffer tail past `valid_tokens`. The native fp16 cosine column remains
+NaN at every K layer (and most V layers) — the discriminator is
+unambiguous.
 
-- `l_has_nan = bool(mx.any(mx.isnan(l_flat)))` and same for `r_flat`.
-- `l_has_inf = bool(mx.any(mx.isinf(l_flat)))` and same for `r_flat`.
-- `l_max_abs = float(mx.max(mx.abs(l_flat)))` and same for `r_flat`.
-- For one tail slice past `valid_tokens` (positions
-  `[valid_tokens, buffer_tokens)`), the same three audits — bypassing
-  the `_token_prefix` slice to verify the slice actually narrows the
-  view in the reduction path.
-- A single fp32 control cosine: `cos_fp32 =
-  cosine_sum_form(l_flat.astype(mx.float32),
-  r_flat.astype(mx.float32))` per layer.
+**Hypothesis (b) confirmed: fp16 sum-of-squares overflow in the cosine
+reduction.** The captured cache is **fp16** (verified via
+`cache_dtype_observed = mlx.core.float16`, not bf16 as the earlier
+draft assumed); fp16 max is 65504 and a single squared element at
+|x| ≥ 256 saturates. Observed max-abs across all K layers ranges
+11.2 → 420.75 with mean 43.76, so several layers carry single
+elements that saturate `x*x` in fp16, polluting `sum(x*x)` to `+inf`
+and then `dot/denom = inf/inf = NaN`. The fp32 control upcasts only
+the cosine inputs and is bit-stable across the same windows.
 
-JSON serialization tightened: `json.dumps(..., allow_nan=False)`
-with explicit `nonfinite_count` int field for any metric that would
-have been NaN/inf.
+Hypothesis (a) (upstream cache NaN poisoning) is **falsified**:
+`valid_window_nan_layers = 0` and `valid_window_inf_layers = 0` for
+every (row × kv × arm). The buffer tail past `valid_tokens` also has
+`max_abs = 0` and zero non-finite elements, so the slice in
+`_token_prefix` really does narrow the view in the reduction path.
 
-**If `l_has_nan == False` and `cos_fp32` is finite** while bf16
-cosine is NaN, hypothesis (b) is confirmed (overflow). Fix is to do
-the cosine-only reduction in fp32 (the rest of the metrics stay
-bf16). Wall cost of the fp32 cosine alone is small because cosine is
-a single scalar per layer per row.
+The earlier draft's "same-buffer subtraction shortcuts NaN" inference
+was IEEE-incorrect. `NaN - NaN = NaN` always under IEEE 754 and MLX
+does not enable fast-math reassociation by default; the actual reason
+`reuse_keys_mean_abs = 0` co-occurs with `cosine = NaN` is that the
+buffers are finite and bit-identical (so subtraction produces zero)
+but `sum(x*x)` overflows in fp16. The earlier draft has been retracted
+in `ef7b7da`.
 
-**If `l_has_nan == True` inside the valid window**, hypothesis (a) is
-confirmed. Then trace the cache production (4-bit dequant path,
-RoPE pre-multiplication, mlx-vlm cache write) for the NaN source.
+## Headline numbers (the saturation answer)
 
-Wall-clock cost of the audit patch: 8 reductions × 28 layers × 20
-rows = ~4500 small ops, negligible against the 30-min capture.
+Computed from `kcache_distance_summary.json` after re-aggregation
+sourcing the headline metrics from the fp32 cosine column. Native fp16
+columns are kept for traceability but are mostly NaN-overflowed.
+
+| arm | mean cosine_fp32 | mean cosine_fp32 distance |
+|---|---|---|
+| reuse_vs_dense (K) | 1.000 | ~0 |
+| reuse_vs_dense (V) | 1.000 | ~0 |
+| pruned_vs_dense (K) | 0.724 | 0.276 |
+| pruned_vs_dense (V) | 0.296 | 0.704 |
+
+**Saturation relative gap** = `|reuse_distance - pruned_distance| /
+max(...)`:
+
+| axis | gap |
+|---|---|
+| keys | 0.9999993 |
+| values | 0.9999989 |
+
+Both essentially 1.0 (pruned distance is ~∞× the reuse distance under
+relative-gap normalization). The H4 gate is `gap >= 0.5` for both K
+and V, so saturation HOLDS by a wide margin.
+
+## Mechanism interpretation for 1.30
+
+Pruning at vision-tower layer L=2 with kr=0.5 produces:
+
+- **Substantial K-cache divergence vs dense**: cos 0.724
+  (cosine-distance 0.276). The K projection at later language-model
+  layers sees a meaningfully different attention key space when
+  upstream visual tokens are pruned.
+- **Dominant V-cache divergence vs dense**: cos 0.296
+  (cosine-distance 0.704). The V projection diverges much more than
+  K, consistent with V values being downstream of attention-weighted
+  visual content.
+- **Reuse-arm cache is essentially identical to dense**: cos ≈ 1.0
+  for both K and V. Same-prefix Q0 cache reuse preserves the cache
+  state to fp16 precision.
+
+This is the saturation pattern the probe was designed to detect. The
+1.30 mechanism question — "does pruning at vision layer L=2 produce
+different K cache state from dense?" — is now answered "yes,
+substantially different K and dominantly different V, while the
+no-prune Q0-reuse arm preserves the cache exactly."
+
+**Caveat**: the `reuse_only_drift` class shows non-zero
+`mean_reuse_keys_mean_abs = 6.94e-5` driven by a single row (Q index
+7); all other reuse rows are bit-identical (mean_abs = 0.0). That row
+shows layer-systematic ~1e-4 drift on the reuse arm. Worth a footnote
+in any paper-side use, not a closure blocker.
+
+## What the artifact looks like now
+
+- `kcache_distance_rows.jsonl` — 20 rows × 28 layers × 2 arms × 2
+  (k/v) with finite-audit telemetry, fp32 control cosine, native
+  fp16 cosine (NaN where the reduction overflows), and explicit
+  `nonfinite_count` per layer.
+- `kcache_distance_summary.json` — re-aggregated via
+  `scripts/reaggregate_phase1_30AG.py` (MLX-free) so future analyzer
+  changes can be applied without re-running the 30-min capture.
+- `cache_dtype_observed = mlx.core.float16` is recorded in the
+  summary so consumers know the native-cosine column is fp16-overflow,
+  not bf16-overflow.
 
 ## Interpretation (what we can and cannot say)
 

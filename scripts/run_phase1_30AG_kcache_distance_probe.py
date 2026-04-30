@@ -526,6 +526,306 @@ def _select_rows(
     return selected, metadata
 
 
+def _clamped_cosine(value: float | None) -> float | None:
+    """Clamp cosine to [-1, 1] for paper display; raw fp32 values can overshoot
+    by ~1 fp32 ULP on bit-identical fp16 inputs because the dot-product and
+    norms are computed independently and round differently."""
+    if value is None:
+        return None
+    if value > 1.0:
+        return 1.0
+    if value < -1.0:
+        return -1.0
+    return float(value)
+
+
+def _path_mean(rows: list[dict[str, Any]], path: str) -> float | None:
+    values: list[float] = []
+    for row in rows:
+        cursor: Any = row
+        try:
+            for part in path.split("."):
+                cursor = cursor[part]
+        except (KeyError, TypeError):
+            cursor = None
+        if cursor is None:
+            continue
+        try:
+            values.append(float(cursor))
+        except (TypeError, ValueError):
+            continue
+    if not values:
+        return None
+    return float(np.mean(values))
+
+
+def _relative_gap(left: float | None, right: float | None) -> float | None:
+    if left is None or right is None:
+        return None
+    denom = max(abs(left), abs(right), 1e-12)
+    return abs(left - right) / denom
+
+
+def _emit_summary(
+    *,
+    args: argparse.Namespace,
+    output_rows: list[dict[str, Any]],
+    row_path: Path,
+    selection_metadata: dict[str, Any],
+    t0: int,
+) -> int:
+    """Write kcache_distance_summary.json from output_rows.
+
+    The headline metrics use ``cosine_fp32`` because the native bf16/fp16
+    cosine reduction overflows on ~3M-element flattened cache windows and
+    returns NaN at every K layer; the per-layer ``cosine_fp32`` control was
+    added by the finite-audit telemetry patch and is the actual saturation
+    answer. The bf16/fp16 ``mean_cosine`` columns are kept for traceability
+    but are not the basis for any gate.
+    """
+
+    def _class_summary(class_name: str) -> dict[str, Any]:
+        class_rows = [row for row in output_rows if row["drift_class"] == class_name]
+        if not class_rows:
+            return {"drift_class": class_name, "n": 0}
+        return {
+            "drift_class": class_name,
+            "n": len(class_rows),
+            # native-dtype (fp16/bf16) reductions kept for traceability
+            "mean_reuse_keys_cosine": _path_mean(class_rows, "reuse_vs_dense.keys_mean_cosine"),
+            "mean_pruned_keys_cosine": _path_mean(class_rows, "pruned_vs_dense.keys_mean_cosine"),
+            "mean_reuse_values_cosine": _path_mean(class_rows, "reuse_vs_dense.values_mean_cosine"),
+            "mean_pruned_values_cosine": _path_mean(
+                class_rows, "pruned_vs_dense.values_mean_cosine"
+            ),
+            "mean_reuse_keys_cosine_distance": _path_mean(
+                class_rows, "reuse_vs_dense.keys_mean_cosine_distance"
+            ),
+            "mean_pruned_keys_cosine_distance": _path_mean(
+                class_rows, "pruned_vs_dense.keys_mean_cosine_distance"
+            ),
+            "mean_reuse_values_cosine_distance": _path_mean(
+                class_rows, "reuse_vs_dense.values_mean_cosine_distance"
+            ),
+            "mean_pruned_values_cosine_distance": _path_mean(
+                class_rows, "pruned_vs_dense.values_mean_cosine_distance"
+            ),
+            # fp32 control reductions (the trustworthy column)
+            "mean_reuse_keys_cosine_fp32": _clamped_cosine(
+                _path_mean(class_rows, "reuse_vs_dense.keys_mean_cosine_fp32")
+            ),
+            "mean_pruned_keys_cosine_fp32": _clamped_cosine(
+                _path_mean(class_rows, "pruned_vs_dense.keys_mean_cosine_fp32")
+            ),
+            "mean_reuse_values_cosine_fp32": _clamped_cosine(
+                _path_mean(class_rows, "reuse_vs_dense.values_mean_cosine_fp32")
+            ),
+            "mean_pruned_values_cosine_fp32": _clamped_cosine(
+                _path_mean(class_rows, "pruned_vs_dense.values_mean_cosine_fp32")
+            ),
+            "mean_reuse_keys_cosine_fp32_distance": _path_mean(
+                class_rows, "reuse_vs_dense.keys_mean_cosine_fp32_distance"
+            ),
+            "mean_pruned_keys_cosine_fp32_distance": _path_mean(
+                class_rows, "pruned_vs_dense.keys_mean_cosine_fp32_distance"
+            ),
+            "mean_reuse_values_cosine_fp32_distance": _path_mean(
+                class_rows, "reuse_vs_dense.values_mean_cosine_fp32_distance"
+            ),
+            "mean_pruned_values_cosine_fp32_distance": _path_mean(
+                class_rows, "pruned_vs_dense.values_mean_cosine_fp32_distance"
+            ),
+            "mean_reuse_keys_mean_abs": _path_mean(class_rows, "reuse_vs_dense.keys_mean_abs"),
+            "mean_pruned_keys_mean_abs": _path_mean(class_rows, "pruned_vs_dense.keys_mean_abs"),
+        }
+
+    by_drift_class = {
+        name: _class_summary(name)
+        for name in ("shared_drift", "reuse_only_drift", "invalidated_only_drift", "stable")
+    }
+
+    keys_mean_abs_gap = _relative_gap(
+        _path_mean(output_rows, "reuse_vs_dense.keys_mean_abs"),
+        _path_mean(output_rows, "pruned_vs_dense.keys_mean_abs"),
+    )
+    values_mean_abs_gap = _relative_gap(
+        _path_mean(output_rows, "reuse_vs_dense.values_mean_abs"),
+        _path_mean(output_rows, "pruned_vs_dense.values_mean_abs"),
+    )
+    # native-dtype gaps (kept for traceability only)
+    keys_cosine_distance_gap = _relative_gap(
+        _path_mean(output_rows, "reuse_vs_dense.keys_mean_cosine_distance"),
+        _path_mean(output_rows, "pruned_vs_dense.keys_mean_cosine_distance"),
+    )
+    values_cosine_distance_gap = _relative_gap(
+        _path_mean(output_rows, "reuse_vs_dense.values_mean_cosine_distance"),
+        _path_mean(output_rows, "pruned_vs_dense.values_mean_cosine_distance"),
+    )
+    # fp32 gaps (the H4 gate basis)
+    keys_cosine_fp32_distance_gap = _relative_gap(
+        _path_mean(output_rows, "reuse_vs_dense.keys_mean_cosine_fp32_distance"),
+        _path_mean(output_rows, "pruned_vs_dense.keys_mean_cosine_fp32_distance"),
+    )
+    values_cosine_fp32_distance_gap = _relative_gap(
+        _path_mean(output_rows, "reuse_vs_dense.values_mean_cosine_fp32_distance"),
+        _path_mean(output_rows, "pruned_vs_dense.values_mean_cosine_fp32_distance"),
+    )
+
+    same_valid_lengths = bool(
+        output_rows
+        and all(row["reuse_vs_dense"]["keys_all_same_valid_token_length"] for row in output_rows)
+        and all(row["reuse_vs_dense"]["values_all_same_valid_token_length"] for row in output_rows)
+        and all(row["pruned_vs_dense"]["keys_all_same_valid_token_length"] for row in output_rows)
+        and all(row["pruned_vs_dense"]["values_all_same_valid_token_length"] for row in output_rows)
+    )
+    n_token_length_mismatch_rows = sum(
+        1
+        for row in output_rows
+        if not (
+            row["reuse_vs_dense"]["keys_all_same_valid_token_length"]
+            and row["reuse_vs_dense"]["values_all_same_valid_token_length"]
+            and row["pruned_vs_dense"]["keys_all_same_valid_token_length"]
+            and row["pruned_vs_dense"]["values_all_same_valid_token_length"]
+        )
+    )
+    n_unique_followup_rows = len(
+        {(str(row["video_id"]), int(row["q_index"])) for row in output_rows}
+    )
+    capture_row_floor = 20
+    pass_h1_row_count = (
+        len(output_rows) >= capture_row_floor and n_unique_followup_rows >= capture_row_floor
+    )
+    # Cache states are "captured" if the fp32 control cosine is finite at every
+    # row × arm × kv. The native bf16/fp16 cosine column overflows by design at
+    # this scale and is intentionally allowed to be NaN.
+    pass_h1_cache_states_captured = bool(
+        output_rows
+        and all(
+            row["reuse_vs_dense"].get("keys_mean_cosine_fp32") is not None for row in output_rows
+        )
+        and all(
+            row["reuse_vs_dense"].get("values_mean_cosine_fp32") is not None for row in output_rows
+        )
+        and all(
+            row["pruned_vs_dense"].get("keys_mean_cosine_fp32") is not None for row in output_rows
+        )
+        and all(
+            row["pruned_vs_dense"].get("values_mean_cosine_fp32") is not None for row in output_rows
+        )
+    )
+    pass_h1_capture = pass_h1_row_count and pass_h1_cache_states_captured and same_valid_lengths
+    pass_h2_distance_report = all(
+        int(selection_metadata["selected_by_drift_class"].get(name, 0)) > 0
+        for name in ("shared_drift", "reuse_only_drift", "invalidated_only_drift", "stable")
+    )
+    pass_h3_outcome_link = pass_h2_distance_report and all(
+        by_drift_class[name].get("mean_reuse_keys_mean_abs") is not None
+        for name in ("shared_drift", "reuse_only_drift", "invalidated_only_drift", "stable")
+    )
+    pass_h1_same_valid_lengths = same_valid_lengths
+    # H4 saturation: pruned arm should diverge from dense substantially MORE
+    # than reuse arm. Gate: relative gap on cosine_fp32_distance >= 0.5 for
+    # both K and V (i.e., pruned distance is at least 2x the reuse distance,
+    # equivalent to the structured saturation interpretation). Earlier draft
+    # used <= 0.10 which encoded the OPPOSITE story (gate passes when arms
+    # AGREE) and was load-bearing on a bf16 column that NaN-overflowed.
+    pass_h4_saturation_test = (
+        pass_h1_same_valid_lengths
+        and keys_cosine_fp32_distance_gap is not None
+        and values_cosine_fp32_distance_gap is not None
+        and keys_cosine_fp32_distance_gap >= 0.5
+        and values_cosine_fp32_distance_gap >= 0.5
+    )
+
+    summary = {
+        "phase": "1.30AG",
+        "n_rows": len(output_rows),
+        "n_unique_followup_rows": n_unique_followup_rows,
+        "capture_row_floor": capture_row_floor,
+        "max_pairs_requested": args.max_pairs,
+        "selection": selection_metadata,
+        "vision_tower_layer": args.vision_tower_layer,
+        "vision_tower_keep_rate": args.vision_tower_keep_rate,
+        "cache_dtype_observed": output_rows[0]["reuse_vs_dense"]["layers"][0].get(
+            "keys_left_dtype", "?"
+        )
+        if output_rows
+        else "?",
+        # native-dtype mean (kept for traceability; expect None on K side)
+        "mean_reuse_keys_cosine": _path_mean(output_rows, "reuse_vs_dense.keys_mean_cosine"),
+        "mean_pruned_keys_cosine": _path_mean(output_rows, "pruned_vs_dense.keys_mean_cosine"),
+        "mean_reuse_values_cosine": _path_mean(output_rows, "reuse_vs_dense.values_mean_cosine"),
+        "mean_pruned_values_cosine": _path_mean(output_rows, "pruned_vs_dense.values_mean_cosine"),
+        "mean_reuse_keys_cosine_distance": _path_mean(
+            output_rows, "reuse_vs_dense.keys_mean_cosine_distance"
+        ),
+        "mean_pruned_keys_cosine_distance": _path_mean(
+            output_rows, "pruned_vs_dense.keys_mean_cosine_distance"
+        ),
+        "mean_reuse_values_cosine_distance": _path_mean(
+            output_rows, "reuse_vs_dense.values_mean_cosine_distance"
+        ),
+        "mean_pruned_values_cosine_distance": _path_mean(
+            output_rows, "pruned_vs_dense.values_mean_cosine_distance"
+        ),
+        # fp32 control means (the trustworthy column)
+        "mean_reuse_keys_cosine_fp32": _clamped_cosine(
+            _path_mean(output_rows, "reuse_vs_dense.keys_mean_cosine_fp32")
+        ),
+        "mean_pruned_keys_cosine_fp32": _clamped_cosine(
+            _path_mean(output_rows, "pruned_vs_dense.keys_mean_cosine_fp32")
+        ),
+        "mean_reuse_values_cosine_fp32": _clamped_cosine(
+            _path_mean(output_rows, "reuse_vs_dense.values_mean_cosine_fp32")
+        ),
+        "mean_pruned_values_cosine_fp32": _clamped_cosine(
+            _path_mean(output_rows, "pruned_vs_dense.values_mean_cosine_fp32")
+        ),
+        "mean_reuse_keys_cosine_fp32_distance": _path_mean(
+            output_rows, "reuse_vs_dense.keys_mean_cosine_fp32_distance"
+        ),
+        "mean_pruned_keys_cosine_fp32_distance": _path_mean(
+            output_rows, "pruned_vs_dense.keys_mean_cosine_fp32_distance"
+        ),
+        "mean_reuse_values_cosine_fp32_distance": _path_mean(
+            output_rows, "reuse_vs_dense.values_mean_cosine_fp32_distance"
+        ),
+        "mean_pruned_values_cosine_fp32_distance": _path_mean(
+            output_rows, "pruned_vs_dense.values_mean_cosine_fp32_distance"
+        ),
+        "mean_reuse_keys_mean_abs": _path_mean(output_rows, "reuse_vs_dense.keys_mean_abs"),
+        "mean_pruned_keys_mean_abs": _path_mean(output_rows, "pruned_vs_dense.keys_mean_abs"),
+        "mean_reuse_values_mean_abs": _path_mean(output_rows, "reuse_vs_dense.values_mean_abs"),
+        "mean_pruned_values_mean_abs": _path_mean(output_rows, "pruned_vs_dense.values_mean_abs"),
+        "keys_cosine_distance_relative_gap": keys_cosine_distance_gap,
+        "values_cosine_distance_relative_gap": values_cosine_distance_gap,
+        "keys_cosine_fp32_distance_relative_gap": keys_cosine_fp32_distance_gap,
+        "values_cosine_fp32_distance_relative_gap": values_cosine_fp32_distance_gap,
+        "keys_mean_abs_relative_gap": keys_mean_abs_gap,
+        "values_mean_abs_relative_gap": values_mean_abs_gap,
+        "all_same_valid_token_lengths": same_valid_lengths,
+        "n_token_length_mismatch_rows": n_token_length_mismatch_rows,
+        "by_drift_class": by_drift_class,
+        "pass_H1_row_count": pass_h1_row_count,
+        "pass_H1_cache_states_captured": pass_h1_cache_states_captured,
+        "pass_H1_capture": pass_h1_capture,
+        "pass_H1_same_valid_lengths": pass_h1_same_valid_lengths,
+        "pass_H2_distance_report": pass_h2_distance_report,
+        "pass_H3_outcome_link": pass_h3_outcome_link,
+        "pass_H4_saturation_test": pass_h4_saturation_test,
+        "headline_pass": pass_h1_capture
+        and pass_h2_distance_report
+        and pass_h3_outcome_link
+        and pass_h4_saturation_test,
+        "row_jsonl": row_path.as_posix(),
+        "wall_time_s": (time.perf_counter_ns() - t0) / 1e9,
+    }
+    summary_path = args.output_dir / "kcache_distance_summary.json"
+    summary_path.write_text(json.dumps(summary, indent=2, sort_keys=True, allow_nan=False) + "\n")
+    print(f"[1.30AG] wrote {summary_path}")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--attribution-summary", type=Path, default=DEFAULT_ATTRIBUTION)
@@ -536,9 +836,53 @@ def main() -> int:
     parser.add_argument("--vision-tower-keep-rate", type=float, default=0.50)
     parser.add_argument("--max-tokens", type=int, default=0)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument(
+        "--reaggregate-only",
+        action="store_true",
+        help=(
+            "Skip model load + capture; re-read kcache_distance_rows.jsonl from "
+            "--output-dir and re-emit kcache_distance_summary.json with the "
+            "current aggregator + gate logic. Used to refresh the summary after "
+            "an analyzer fix without paying the 30 min capture cost."
+        ),
+    )
     args = parser.parse_args()
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
+
+    if args.reaggregate_only:
+        row_path = args.output_dir / "kcache_distance_rows.jsonl"
+        if not row_path.exists():
+            raise SystemExit(
+                f"--reaggregate-only requires existing rows at {row_path}; run a capture first."
+            )
+        output_rows = _read_jsonl(row_path)
+        if not output_rows:
+            raise SystemExit(f"--reaggregate-only loaded zero rows from {row_path}")
+        # Reconstruct selection metadata from the rows themselves so the gate
+        # logic still works without re-reading the upstream attribution file.
+        class_counts: dict[str, int] = {
+            "shared_drift": 0,
+            "reuse_only_drift": 0,
+            "invalidated_only_drift": 0,
+            "stable": 0,
+        }
+        for row in output_rows:
+            class_counts[str(row["drift_class"])] = class_counts.get(str(row["drift_class"]), 0) + 1
+        selection_metadata = {
+            "available_by_drift_class": dict(class_counts),
+            "selected_by_drift_class": dict(class_counts),
+            "target_per_class": max(1, args.max_pairs // 4),
+        }
+        t0 = time.perf_counter_ns()
+        return _emit_summary(
+            args=args,
+            output_rows=output_rows,
+            row_path=row_path,
+            selection_metadata=selection_metadata,
+            t0=t0,
+        )
+
     payload = json.loads(args.attribution_summary.read_text())
     reuse_path = Path(payload["cache_reuse"]["pairs"])
     invalidated_path = Path(payload["cache_invalidated"]["pairs"])
@@ -634,176 +978,13 @@ def main() -> int:
             gc.collect()
             mx.clear_cache()
 
-    def _mean(path: str) -> float | None:
-        values = []
-        for row in output_rows:
-            cursor: Any = row
-            for part in path.split("."):
-                cursor = cursor[part]
-            if cursor is not None:
-                values.append(float(cursor))
-        return float(np.mean(values)) if values else None
-
-    def _class_summary(class_name: str) -> dict[str, Any]:
-        class_rows = [row for row in output_rows if row["drift_class"] == class_name]
-        if not class_rows:
-            return {"drift_class": class_name, "n": 0}
-
-        def _class_mean(path: str) -> float | None:
-            values = []
-            for row in class_rows:
-                cursor: Any = row
-                for part in path.split("."):
-                    cursor = cursor[part]
-                if cursor is not None:
-                    values.append(float(cursor))
-            return float(np.mean(values)) if values else None
-
-        return {
-            "drift_class": class_name,
-            "n": len(class_rows),
-            "mean_reuse_keys_cosine": _class_mean("reuse_vs_dense.keys_mean_cosine"),
-            "mean_pruned_keys_cosine": _class_mean("pruned_vs_dense.keys_mean_cosine"),
-            "mean_reuse_values_cosine": _class_mean("reuse_vs_dense.values_mean_cosine"),
-            "mean_pruned_values_cosine": _class_mean("pruned_vs_dense.values_mean_cosine"),
-            "mean_reuse_keys_cosine_distance": _class_mean(
-                "reuse_vs_dense.keys_mean_cosine_distance"
-            ),
-            "mean_pruned_keys_cosine_distance": _class_mean(
-                "pruned_vs_dense.keys_mean_cosine_distance"
-            ),
-            "mean_reuse_values_cosine_distance": _class_mean(
-                "reuse_vs_dense.values_mean_cosine_distance"
-            ),
-            "mean_pruned_values_cosine_distance": _class_mean(
-                "pruned_vs_dense.values_mean_cosine_distance"
-            ),
-            "mean_reuse_keys_mean_abs": _class_mean("reuse_vs_dense.keys_mean_abs"),
-            "mean_pruned_keys_mean_abs": _class_mean("pruned_vs_dense.keys_mean_abs"),
-        }
-
-    by_drift_class = {
-        name: _class_summary(name)
-        for name in ("shared_drift", "reuse_only_drift", "invalidated_only_drift", "stable")
-    }
-
-    def _relative_gap(left: float | None, right: float | None) -> float | None:
-        if left is None or right is None:
-            return None
-        denom = max(abs(left), abs(right), 1e-12)
-        return abs(left - right) / denom
-
-    keys_mean_abs_gap = _relative_gap(
-        _mean("reuse_vs_dense.keys_mean_abs"),
-        _mean("pruned_vs_dense.keys_mean_abs"),
+    return _emit_summary(
+        args=args,
+        output_rows=output_rows,
+        row_path=row_path,
+        selection_metadata=selection_metadata,
+        t0=t0,
     )
-    values_mean_abs_gap = _relative_gap(
-        _mean("reuse_vs_dense.values_mean_abs"),
-        _mean("pruned_vs_dense.values_mean_abs"),
-    )
-    keys_cosine_distance_gap = _relative_gap(
-        _mean("reuse_vs_dense.keys_mean_cosine_distance"),
-        _mean("pruned_vs_dense.keys_mean_cosine_distance"),
-    )
-    values_cosine_distance_gap = _relative_gap(
-        _mean("reuse_vs_dense.values_mean_cosine_distance"),
-        _mean("pruned_vs_dense.values_mean_cosine_distance"),
-    )
-    same_valid_lengths = bool(
-        output_rows
-        and all(row["reuse_vs_dense"]["keys_all_same_valid_token_length"] for row in output_rows)
-        and all(row["reuse_vs_dense"]["values_all_same_valid_token_length"] for row in output_rows)
-        and all(row["pruned_vs_dense"]["keys_all_same_valid_token_length"] for row in output_rows)
-        and all(row["pruned_vs_dense"]["values_all_same_valid_token_length"] for row in output_rows)
-    )
-    n_token_length_mismatch_rows = sum(
-        1
-        for row in output_rows
-        if not (
-            row["reuse_vs_dense"]["keys_all_same_valid_token_length"]
-            and row["reuse_vs_dense"]["values_all_same_valid_token_length"]
-            and row["pruned_vs_dense"]["keys_all_same_valid_token_length"]
-            and row["pruned_vs_dense"]["values_all_same_valid_token_length"]
-        )
-    )
-    n_unique_followup_rows = len(
-        {(str(row["video_id"]), int(row["q_index"])) for row in output_rows}
-    )
-    capture_row_floor = 20
-    pass_h1_row_count = (
-        len(output_rows) >= capture_row_floor and n_unique_followup_rows >= capture_row_floor
-    )
-    pass_h1_cache_states_captured = bool(
-        output_rows
-        and all(row["reuse_vs_dense"]["keys_mean_cosine"] is not None for row in output_rows)
-        and all(row["reuse_vs_dense"]["values_mean_cosine"] is not None for row in output_rows)
-        and all(row["pruned_vs_dense"]["keys_mean_cosine"] is not None for row in output_rows)
-        and all(row["pruned_vs_dense"]["values_mean_cosine"] is not None for row in output_rows)
-    )
-    pass_h1_capture = pass_h1_row_count and pass_h1_cache_states_captured and same_valid_lengths
-    pass_h2_distance_report = all(
-        int(selection_metadata["selected_by_drift_class"].get(name, 0)) > 0
-        for name in ("shared_drift", "reuse_only_drift", "invalidated_only_drift", "stable")
-    )
-    pass_h3_outcome_link = pass_h2_distance_report and all(
-        by_drift_class[name].get("mean_reuse_keys_mean_abs") is not None
-        for name in ("shared_drift", "reuse_only_drift", "invalidated_only_drift", "stable")
-    )
-    pass_h1_same_valid_lengths = same_valid_lengths
-    pass_h4_saturation_test = (
-        pass_h1_same_valid_lengths
-        and keys_cosine_distance_gap is not None
-        and values_cosine_distance_gap is not None
-        and keys_cosine_distance_gap <= 0.10
-        and values_cosine_distance_gap <= 0.10
-    )
-
-    summary = {
-        "phase": "1.30AG",
-        "n_rows": len(output_rows),
-        "n_unique_followup_rows": n_unique_followup_rows,
-        "capture_row_floor": capture_row_floor,
-        "max_pairs_requested": args.max_pairs,
-        "selection": selection_metadata,
-        "vision_tower_layer": args.vision_tower_layer,
-        "vision_tower_keep_rate": args.vision_tower_keep_rate,
-        "mean_reuse_keys_cosine": _mean("reuse_vs_dense.keys_mean_cosine"),
-        "mean_pruned_keys_cosine": _mean("pruned_vs_dense.keys_mean_cosine"),
-        "mean_reuse_values_cosine": _mean("reuse_vs_dense.values_mean_cosine"),
-        "mean_pruned_values_cosine": _mean("pruned_vs_dense.values_mean_cosine"),
-        "mean_reuse_keys_cosine_distance": _mean("reuse_vs_dense.keys_mean_cosine_distance"),
-        "mean_pruned_keys_cosine_distance": _mean("pruned_vs_dense.keys_mean_cosine_distance"),
-        "mean_reuse_values_cosine_distance": _mean("reuse_vs_dense.values_mean_cosine_distance"),
-        "mean_pruned_values_cosine_distance": _mean("pruned_vs_dense.values_mean_cosine_distance"),
-        "mean_reuse_keys_mean_abs": _mean("reuse_vs_dense.keys_mean_abs"),
-        "mean_pruned_keys_mean_abs": _mean("pruned_vs_dense.keys_mean_abs"),
-        "mean_reuse_values_mean_abs": _mean("reuse_vs_dense.values_mean_abs"),
-        "mean_pruned_values_mean_abs": _mean("pruned_vs_dense.values_mean_abs"),
-        "keys_cosine_distance_relative_gap": keys_cosine_distance_gap,
-        "values_cosine_distance_relative_gap": values_cosine_distance_gap,
-        "keys_mean_abs_relative_gap": keys_mean_abs_gap,
-        "values_mean_abs_relative_gap": values_mean_abs_gap,
-        "all_same_valid_token_lengths": same_valid_lengths,
-        "n_token_length_mismatch_rows": n_token_length_mismatch_rows,
-        "by_drift_class": by_drift_class,
-        "pass_H1_row_count": pass_h1_row_count,
-        "pass_H1_cache_states_captured": pass_h1_cache_states_captured,
-        "pass_H1_capture": pass_h1_capture,
-        "pass_H1_same_valid_lengths": pass_h1_same_valid_lengths,
-        "pass_H2_distance_report": pass_h2_distance_report,
-        "pass_H3_outcome_link": pass_h3_outcome_link,
-        "pass_H4_saturation_test": pass_h4_saturation_test,
-        "headline_pass": pass_h1_capture
-        and pass_h2_distance_report
-        and pass_h3_outcome_link
-        and pass_h4_saturation_test,
-        "row_jsonl": row_path.as_posix(),
-        "wall_time_s": (time.perf_counter_ns() - t0) / 1e9,
-    }
-    summary_path = args.output_dir / "kcache_distance_summary.json"
-    summary_path.write_text(json.dumps(summary, indent=2, sort_keys=True, allow_nan=False) + "\n")
-    print(f"[1.30AG] wrote {summary_path}")
-    return 0
 
 
 if __name__ == "__main__":

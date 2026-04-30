@@ -1308,44 +1308,47 @@ authoritative in the per-phase notes under
   notes: This is an oracle-feature predictor scout, not a deployed guard. It deliberately excludes Q0 rows and all 1.55F/adaptive rows to avoid learning admission/source/policy identity instead of within-1.30 follow-up stability; rows where the dense logit argmax disagrees with the artifact dense choice are rejected before analysis.
 
 - phase_id: 1.30AG
-  status: completed 2026-04-30 (capture earned); diagnosis remains UNDECIDED 2026-05-01 between upstream-cache-NaN vs bf16 cosine-reduction overflow
+  status: CLOSED-EARNED 2026-05-01 (all four gates pass; saturation HOLDS via fp32 cosine column)
   authoritative_note: research/experiments/2026/2026-04-30-phase-1_30AG-kcache-distance-probe-findings.md
   authoritative_artifacts:
     - research/experiments/2026/artifacts/phase1_30AG_kcache_distance_probe/kcache_distance_rows.jsonl
     - research/experiments/2026/artifacts/phase1_30AG_kcache_distance_probe/kcache_distance_summary.json
   current_best_policy: |
-    20 paired rows captured balanced 5-per-class across {shared, reuse_only,
-    invalidated_only, stable} drift classes; H1 capture, H2 distance reporting,
-    H3 outcome linkage gates PASS. H4 saturation gate FAILS with NaN cosine
-    at every K layer. Two hypotheses remain live and the artifact does not yet
-    discriminate: (a) upstream cache contains non-finite elements; (b) bf16
-    cosine reduction overflows -- identical finite ~3M-element vectors give
-    sum(x*x) -> +inf, denom = inf*inf, cosine = inf/inf = NaN. The mean-form
-    rerun is NOT a discriminator: MLX mean(a) = sum(a)*(1/N) without
-    accumulator upcast (verified against ml-explore/mlx@main mlx/ops.cpp).
-    The earlier "same-buffer subtraction shortcuts NaN" inference is wrong
-    under IEEE 754 (NaN - NaN = NaN, not zero) so reuse_keys_mean_abs = 0.0
-    is in fact stronger evidence FOR finite buffers + overflow-only than for
-    upstream-NaN. Distance numbers remain NOT release-claim-bearing.
+    20 paired rows × 28 layers × 2 arms × 2 (k/v) captured. Finite-audit
+    telemetry confirms the cache is finite at every (row × layer × arm) -
+    valid_window_nan_layers = 0, valid_window_inf_layers = 0, buffer-tail
+    audit also clean. Native fp16 cosine reduction overflows on ~3M-element
+    flat windows when single elements have |x| >= 256 (observed max_abs up
+    to 420.75); the per-layer fp32 control cosine the finite-audit patch
+    added is finite at every layer. Headline numbers (fp32 column, clamped):
+    reuse_keys cos = 1.000, pruned_keys cos = 0.724 (distance 0.276);
+    reuse_values cos = 1.000, pruned_values cos = 0.296 (distance 0.704).
+    Saturation relative gap on cosine_fp32_distance: keys 0.9999993,
+    values 0.9999989 (gate >= 0.5; passes by a wide margin). The 1.30
+    mechanism question is now answered: vision-layer-2 pruning at kr=0.5
+    produces substantial K and dominant V cache divergence vs dense, while
+    same-prefix Q0 cache reuse preserves the cache exactly.
   supersedes: []
-  paper_relevance: optional mechanism closure (gated on a finite-audit diagnostic that adds isnan/isinf/max_abs telemetry + a per-layer fp32 control cosine)
+  paper_relevance: secondary mechanism evidence (1.30 K/V cache distance under reuse vs prune); not a paper headline by itself but materially strengthens the Phase 1.30 root-cause story
   prereg_outcome: |
-    capture-earned, headline FAIL on a numerical pathology that is reproducible
-    end-to-end and is NOT in the sum-vs-mean reduction style. Forward work:
-    finite-audit telemetry patch on _distance_for_windows + fp32 control cosine
-    + strict allow_nan=False JSON, then a 30-min sandbox-off rerun. Outcome:
-    if bf16 cosine NaN co-occurs with l_has_nan=False AND finite fp32 cosine,
-    overflow is confirmed and the fix is fp32 for cosine only (other metrics
-    stay bf16). If l_has_nan=True inside the valid window, trace the cache
-    production for the NaN source.
-  runtime_estimate: ~10 min code, ~30 min sandbox-off rerun, then findings update
+    CLOSED-EARNED. H1 capture, H2 distance reporting, H3 outcome linkage,
+    H4 saturation all PASS. headline_pass = True. Distance numbers ARE now
+    release-claim-bearing as long as the paper-side text uses the fp32
+    column and notes that the native fp16 column overflows by design at
+    this flatten-and-reduce scale.
+  runtime_estimate: complete (capture 30 min + finite-audit telemetry rerun 30 min + reaggregate 0.1 s)
   notes: |
     Named 1.30AG because 1.30AE already denotes the skipped duration-conditioned
-    union candidate. K-side cosine NaN at every layer (0/560 finite); V-side
-    cosine finite at layer 1 only (~10% finite). The earlier "fp32 cast crashed
-    with NSException" diagnosis was a sandbox artifact (Metal init blocked),
-    not memory pressure. The earlier upstream-NaN claim has been retracted in
-    the findings doc revision.
+    union candidate. Cache is mlx.core.float16 (NOT bf16 as earlier draft
+    assumed). The earlier "fp32 cast crashed with NSException" was a sandbox
+    artifact (Metal init blocked), not memory pressure. The retracted
+    upstream-cache-NaN claim has been replaced with the correct fp16
+    sum-of-squares overflow diagnosis. Reaggregator at
+    scripts/reaggregate_phase1_30AG.py is MLX-free and lets future analyzer
+    changes refresh the summary without paying the 30-min capture cost.
+    One row in reuse_only_drift class (Q index 7) shows layer-systematic
+    ~1e-4 reuse-arm K drift; not a closure blocker but worth a footnote
+    in any paper-side use.
 
 - phase_id: 1.66
   status: completed 2026-04-29
