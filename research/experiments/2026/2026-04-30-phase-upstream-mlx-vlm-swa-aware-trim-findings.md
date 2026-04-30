@@ -1,7 +1,7 @@
 ---
 date: 2026-04-30
 phase: upstream-fix-1 (sam-r2 follow-up)
-status: closed-earned (local patch verified); upstream PR pending
+status: smoke-verified candidate; full B0b unguarded reproduction deferred; upstream PR pending
 related:
   - 2026-04-30-phase-B0b-r2-sam-correctness-control-findings.md
   - 2026-04-29-phase-M5-5-sam-swa-aware-cache-findings.md
@@ -10,11 +10,16 @@ related:
 
 # 2026-04-30 Upstream fix — topology-aware trim in mlx-vlm `generate.py`
 
-- **Status:** **closed-earned (local patch verified).** The
-  topology-aware trim patch lands cross-turn cache reuse correctness
-  AT THE LIBRARY LEVEL on Gemma 4 26B-A4B / mlx-vlm 0.4.4. With the
-  patch applied, no runtime monkey-patch is needed in our runners;
-  cross-turn output is byte-identical to cold dense.
+- **Status:** **smoke-verified candidate.** The topology-aware trim
+  patch is a real fix (calls `mlx_lm.models.cache.trim_prompt_cache`
+  + `can_trim_prompt_cache`, which respects `RotatingKVCache.is_trimmable()`)
+  and a single-video smoke shows cross-turn output matching cold
+  dense on Gemma 4 26B-A4B / mlx-vlm 0.4.4. **The full B0b suite
+  has NOT been re-run with the patch applied and the runtime guard
+  removed**, so the "fixes correctness at the library level" claim
+  is upper-bounded by smoke evidence, not the 42-row paired gate.
+  Treat as a local patch proposal; full-suite reproduction is the
+  gate for retiring the runtime guard.
 - **Upstream PR:** pending submission to mlx-vlm (track separately;
   this commit lands the patch in our repo + an apply helper).
 
@@ -120,7 +125,7 @@ python3 scripts/run_sam_b0b_cache_correctness.py --smoke \
 
 ## What this means for the paper
 
-- **Correctness story is closed at the library level on mixed-SWA
+- **Correctness story is smoke-verified at the library level on mixed-SWA
   models** with this patch. The C-PERSIST cross-turn cache reuse on
   Gemma 4 26B-A4B is *no longer silently broken* once the patch
   ships upstream; users get either a correct fast path

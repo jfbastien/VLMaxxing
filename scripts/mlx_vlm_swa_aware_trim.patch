@@ -48,7 +48,7 @@
 +                (getattr(c, "offset", 0) for c in kv_cache), default=0
 +            )
 +            trim_amount = max(0, current_offset - prefix_len)
- 
+
 +            if trim_amount == 0 or can_trim_prompt_cache(kv_cache):
 +                # Safe to reuse: trim cache (no-op if trim_amount==0)
 +                # and trim input_ids to only the new tokens.
