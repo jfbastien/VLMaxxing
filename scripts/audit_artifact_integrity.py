@@ -126,7 +126,9 @@ def _iter_source_paths(payload: object) -> list[str]:
         for key, value in payload.items():
             if key in SOURCE_KEYS and isinstance(value, str):
                 paths.append(value)
-            elif key == "source_paths" and isinstance(value, list):
+            elif (key == "source_paths" or key.endswith("_source_paths")) and isinstance(
+                value, list
+            ):
                 paths.extend(str(item) for item in value)
             else:
                 paths.extend(_iter_source_paths(value))

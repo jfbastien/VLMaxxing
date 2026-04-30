@@ -14,6 +14,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -74,7 +75,9 @@ def _iter_source_paths(payload: object) -> list[str]:
         for key, value in payload.items():
             if key in SOURCE_KEYS and isinstance(value, str):
                 paths.append(value)
-            elif key == "source_paths" and isinstance(value, list):
+            elif (key == "source_paths" or key.endswith("_source_paths")) and isinstance(
+                value, list
+            ):
                 paths.extend(str(item) for item in value)
             else:
                 paths.extend(_iter_source_paths(value))
@@ -106,6 +109,10 @@ def _validate_source_paths(payload: object, *, context: str) -> None:
     if problems:
         joined = "\n  - ".join(problems)
         raise FileNotFoundError(f"{context} has invalid source paths:\n  - {joined}")
+
+
+def _run_artifact_integrity() -> None:
+    _run([sys.executable, "scripts/audit_artifact_integrity.py"], cwd=REPO_ROOT)
 
 
 def _load_json(path: Path) -> dict:
@@ -1356,8 +1363,10 @@ def _write_c_persist_repair_table(snapshot: dict) -> None:
             r"the no-coordination baseline; the adaptive post-\(Q2\) state "
             r"policy is the primary broad repair result. Gains are reported as "
             r"cold follow-up or all-query latency divided by repaired-session "
-            r"latency. Setup-inclusive fields are emitted when artifacts record "
-            r"cache-build setup time; these checked-in cells predate that field.}"
+            r"latency. Setup-inclusive values are retained in generated data "
+            r"when artifacts record cache-build setup time, but this compact "
+            r"table reports follow-up denominators because the checked-in cells "
+            r"predate setup-amortized metrics.}"
         ),
         r"\label{tab:c-persist-repair}",
         r"\scriptsize",
@@ -1973,6 +1982,7 @@ def main() -> int:
     _sync_curated_paper_figures()
     for path in (GENERATED / "data").glob("*.json"):
         _validate_source_paths(_load_json(path), context=path.relative_to(REPO_ROOT).as_posix())
+    _run_artifact_integrity()
     primary = _git_info(REPO_ROOT)
     _write_build_meta(primary)
     _write_repo_provenance_table(primary)

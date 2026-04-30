@@ -16,6 +16,7 @@
 \usepackage{caption}
 \usepackage{subcaption}
 \usepackage{float}
+\usepackage{comment}
 
 \definecolor{todoBorder}{HTML}{9B2226}
 \definecolor{todoBg}{HTML}{FFF4F4}
@@ -38,21 +39,29 @@
   \newcommand{\ScaleoutRepoCommitDate}{pending artifact bundle}
 }
 
-\newenvironment{sectiontodo}[1]
-{
-  \par\medskip
-  \noindent{\color{todoBorder}\rule{\linewidth}{0.8pt}}\par
-  \noindent{\color{todoBorder}\bfseries TODO: #1}\par\smallskip
-  \begingroup\small\raggedright\color{black}
-}
-{
-  \par\endgroup
-  \noindent{\color{todoBorder}\rule{\linewidth}{0.8pt}}\par\medskip
-}
+\newif\ifshowtodos
+\showtodosfalse
 
-\newcommand{\draftnote}[1]{%
-  \par\medskip\noindent{\small\color{accentBlue}\textbf{Draft note.} #1}\par\medskip
-}
+\ifshowtodos
+  \newenvironment{sectiontodo}[1]
+  {
+    \par\medskip
+    \noindent{\color{todoBorder}\rule{\linewidth}{0.8pt}}\par
+    \noindent{\color{todoBorder}\bfseries TODO: #1}\par\smallskip
+    \begingroup\small\raggedright\color{black}
+  }
+  {
+    \par\endgroup
+    \noindent{\color{todoBorder}\rule{\linewidth}{0.8pt}}\par\medskip
+  }
+
+  \newcommand{\draftnote}[1]{%
+    \par\medskip\noindent{\small\color{accentBlue}\textbf{Draft note.} #1}\par\medskip
+  }
+\else
+  \excludecomment{sectiontodo}
+  \newcommand{\draftnote}[1]{}
+\fi
 
 \title{VLMaxxing through FrameMogging\thanks{Look, they said attention was all you needed, well we got your attention with this title.}\\Training-Free Anti-Recomputation for Video Vision-Language Models}
 \author{

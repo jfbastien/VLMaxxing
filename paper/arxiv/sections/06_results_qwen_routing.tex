@@ -67,72 +67,30 @@ is architecture-conditioned \emph{and} benchmark-conditioned. This is why the
 paper reports paired answer drift instead of treating equal aggregate accuracy
 as proof that reuse is semantically identical.
 
-\subsection{Novelty Magnitude Alone Is Not Enough}
+\subsection{Local Diagnostics Stay Out of the Release Claim Surface}
 
-The most important baseline in this repo is not another cached policy; it is a
-non-cached novelty-ranked dense baseline. This baseline asks whether the cached
-planner is merely doing smart frame selection in disguise. It is not.
+Two local diagnostics sharpen the mechanism story but are not paper-body claim
+evidence in this release snapshot. The novelty-ranked dense baseline tests
+whether the cached planner is merely selecting visually novel frames; the
+feature-change oracle correlates blockwise pixel statistics with blockwise ViT
+feature change on cached dense features. Both were useful for interpretation,
+but their raw outputs live under ignored local \texttt{results/} trees. We
+therefore keep them in the experiment ledger until they are regenerated or
+re-materialized as checked artifacts.
 
-\begin{table}[H]
-\centering
-\caption{Novelty-ranked dense baseline from the preregistered dense-selection
-ablation. This is the control that tests whether the cached planner is merely
-selecting visually novel frames.}
-\label{tab:novelty-ranked-dense}
-\begin{tabular}{llrr}
-\toprule
-Benchmark & $N$ & Uniform dense & Novelty-ranked dense \\
-\midrule
-TOMATO & 4 & 0.133 & 0.133 \\
-TOMATO & 6 & 0.267 & 0.167 \\
-TOMATO & 8 & 0.333 & 0.233 \\
-MVBench & 4 & 0.500 & 0.567 \\
-MVBench & 6 & 0.567 & 0.567 \\
-MVBench & 8 & 0.633 & 0.567 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-On TOMATO, novelty ranking hurts once the budget rises above four frames. On
-MVBench, it helps at $N=4$ but then saturates and fails to improve with larger
-budgets. The cached base policy beats every novelty-ranked dense cell on both
-benchmarks. The point is not that novelty is useless. It is that the evidence
-points to temporal placement, not novelty magnitude alone, as the missing
-variable.
-
-\subsection{Pixel Statistics Predict Features Only Weakly}
-
-To understand why routing can still work when pixel statistics are crude, we
-ran a feature-change oracle that correlates blockwise pixel statistics with
-blockwise ViT feature change on cached dense features.
-
-\begin{table}[H]
-\centering
-\caption{Best point-prediction correlations from the feature-change oracle.}
-\label{tab:feature-oracle}
-\begin{tabular}{lccc}
-\toprule
-Benchmark & Best statistic & Pearson $r$ & Spearman $r$ \\
-\midrule
-TOMATO & mean & 0.233 & 0.177 \\
-MVBench & changed-pixel fraction & 0.504 & 0.489 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-These are weak-to-moderate correlations. That is the point. The best routing
-statistic in the planner, \texttt{max\_abs}, is not the best point predictor on
-either benchmark. Routing and point prediction are different objectives: the
-planner only needs a signal that spends scarce refresh budget in the right part
-of the clip often enough to preserve the answer.
+The current release claim does not depend on those local diagnostics. It is
+weaker and cleaner: the checked Qwen cells show that temporal placement can
+preserve answer accuracy at substantially lower effective fresh-frame budget on
+the motion slices, while the paper reports C-VISION and C-PERSIST separately
+when it needs measured wall-clock evidence.
 
 \paragraph{Takeaway.}
 Codec-like and pixel-domain signals do not need to be semantic oracles to be
 useful. They need to be good enough freshness or uncertainty oracles that the
-runtime buys new visual evidence in the right temporal neighborhood. That is
-why novelty-ranked dense selection is the critical baseline: it tests whether
-the policy is merely buying the most changed frames, or whether it is placing a
-limited fresh-evidence budget where the question can still be answered.
+runtime buys new visual evidence in the right temporal neighborhood. The
+stronger novelty-ranked and pixel-to-feature diagnostics remain useful
+mechanism checks, but they should not be promoted until their artifacts are
+checked into the release evidence surface.
 
 \begin{sectiontodo}{Finish the mechanism appendix boundary}
 The routing section is now in the right role, but three things still need

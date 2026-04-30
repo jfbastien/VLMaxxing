@@ -215,7 +215,7 @@ authoritative in the per-phase notes under
   authoritative_artifacts: []
   current_best_policy: n/a
   supersedes: []
-  paper_relevance: superseded (BLOCK_SIZE=28 is already projector-input granularity on Qwen 2.5-VL; the pre-release Gemma hard-spatial-pruning WP-2.11 is the better spatial follow-on if needed)
+  paper_relevance: superseded (BLOCK_SIZE=28 is already projector-input granularity on Qwen 2.5-VL; any spatial-pruning follow-on should be a separately measured Gemma path, not a claim imported by name)
   prereg_outcome: not run (mechanism is a no-op on current stack)
 
 - phase_id: 1.28
@@ -1243,31 +1243,3 @@ authoritative in the per-phase notes under
   the prereg note.
 - When PLAN.md or paper/framing.md changes, re-verify that its claims agree with
   this registry. If they disagree, fix the prose and cite back to this registry.
-
-## Forward-queue runtime budget (benchmark wall-clock only)
-
-Only counts dense-generate + pruned-generate passes; excludes
-implementation, debugging, analysis, and CI time. Estimates are at
-8-frame regime unless noted; scale ~4× for 32-frame.
-
-| phase | status | runtime at 8f | runtime at 32f | blocked on |
-|-------|--------|---------------|----------------|------------|
-| 1.57  | proposed — P1 **first** | ~45-60min (all frame counts, feature-tap only, no generation) | (same run covers 8/16/32) | scripts/measure_feature_drift.py (scaffold planned; no fork needed) |
-| 1.55A | proposed — P1 **second** | ~17min (7 items × 3 queries, 4bit Qwen) | n/a (short-bucket only) | scripts/run_kv_cache_session.py (uses existing mlx-vlm PromptCacheState) |
-| 1.56  | deferred-design — P2 **third** | ~45min | ~2h | Phase 1.44 margin logging + RefreshPolicy API |
-| 1.52R | pending | ~2-3h | ~6-8h | 1.42 + 1.51R sweep completion |
-| 1.55B | deferred | ~65min (composition + controls) | ~2.5h | 1.54 landing + 1.55A earning |
-| 1.58  | deferred | ~1h bf16 8f | ~3h bf16 16f (no 32f) | bf16 Qwen checkpoint download (~15 GB), prereg RSS feasibility, and a deliberate override of the tighter 10 GB local run policy |
-| 1.59  | research_note | n/a on M3 Air | n/a on M3 Air | external hardware |
-| 1.30  | closed-scout (2026-04-23 dev+holdout paired run negative; short root-cause localized to V-only Q0 pruning) | complete | n/a | fixed-rate adaptive V-leg rescue failed in 1.30V; next composition path requires admission policy |
-| 1.30V | closed-negative | complete | n/a | adaptive/no-prune admission design needed before more 1.30 composition runs |
-| 1.30-rootcause-A | complete 2026-04-23 | ~1h40m observed for six arms? see artifact wall_s per arm | n/a | — |
-| 1.30-rootcause-B | complete 2026-04-23 | ~7min observed | n/a | H_path PASS 10/10 |
-| 1.30-rootcause-C | not triggered | n/a | n/a | H_interaction FAIL and margins not ambiguous |
-| 1.55  | superseded | — | — | — (replaced by 1.55A/1.55B) |
-
-**Bottom-line forward benchmark time**: ~7-9h at 8f, ~15-18h at
-32f, to clear the Codex round-21 + 16f-follow-up forward queue
-end-to-end (assuming all gating implementation and checkpoint
-downloads land first; that work is NOT included here — user
-asked for runtime only).

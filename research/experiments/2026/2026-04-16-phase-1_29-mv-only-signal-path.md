@@ -186,8 +186,9 @@ pilot).
 - Pre-release CodecSight strategy notes are preserved in git history; current
   release-facing positioning is in [paper/framing.md](../../../paper/framing.md)
   and [docs/related-work-table.md](../../../docs/related-work-table.md).
-- Project memory `private pre-release-source import note` — Codex review
-  that prioritized this rewrite over other the pre-release source imports
+- [docs/claim-register.md](../../../docs/claim-register.md) and
+  [research/decision-log.md](../../decision-log.md) — public release-facing
+  ledgers for imported-target status and current prioritization.
 
 ### Result
 

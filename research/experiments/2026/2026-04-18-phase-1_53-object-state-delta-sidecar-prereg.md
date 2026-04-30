@@ -174,8 +174,9 @@ assuming generator is already on disk. Pilot + dev are ~20 min.
   — the codec substrate this branch rides on.
 - `paper/framing.md` — new future-work bullet `machine-oriented
   object / state delta sidecars`.
-- Project memory `private pre-release-source import note` — Codex review
-  that named this branch as a new deferred phase.
+- [docs/claim-register.md](../../../docs/claim-register.md) and
+  [research/decision-log.md](../../decision-log.md) — public release-facing
+  ledgers for imported-target status and deferred branches.
 
 ### Result
 
