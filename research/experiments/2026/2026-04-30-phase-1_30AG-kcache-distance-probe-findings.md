@@ -1,12 +1,12 @@
 ---
-date: 2026-04-30
+date: 2026-04-30 (initial); updated 2026-05-01 (rerun showed bug is not in the analyzer)
 phase: 1.30AG (K/V cache-distance mechanism probe)
-status: capture-earned (H1+H2+H3 PASS); H4 saturation gate FAILED on analyzer-side numerical-stability bug; **distance numbers NOT release-claim-bearing pending analyzer fix + rerun**
+status: capture-earned (H1+H2+H3 PASS); H4 saturation gate FAILS because the captured K cache contains non-finite elements at every layer — bug is upstream of the analyzer reduction, not in it. **Distance numbers remain NOT release-claim-bearing.**
 related:
   - 2026-04-23-phase-1_30-mechanism-decomposition-prereg.md
 ---
 
-# Phase 1.30AG — K/V cache-distance probe (cosine reduction broken; structure earned)
+# Phase 1.30AG — K/V cache-distance probe (cache itself is NaN-poisoned; analyzer is faithful)
 
 ## Question
 
@@ -84,42 +84,90 @@ The `reuse_vs_dense` side has bit-identical tensors
 finite-arithmetic reduction, so the per-layer cosine column is
 unreliable.
 
-## Diagnosis (provisional)
+## Diagnosis (revised 2026-05-01 after rerun)
 
-`scripts/run_phase1_30AG_kcache_distance_probe.py:_distance_for_windows`
-computes the cosine via:
+The initial diagnosis blamed an `mx.sum(x*x)` overflow in
+`scripts/run_phase1_30AG_kcache_distance_probe.py:_distance_for_windows`.
+A mean-form variant (`mx.sum` → `mx.mean`, mathematically equivalent
+for cosine because the N factor cancels in the ratio) was landed and
+the probe was re-run with sandbox off. The rerun's per-layer cosine
+counts and aggregate means were **bit-identical** to the original
+sum-form run:
 
-```
-dot   = mx.sum(l_flat * r_flat)
-denom = mx.sqrt(mx.sum(l_flat * l_flat)) * mx.sqrt(mx.sum(r_flat * r_flat))
-cosine = dot / mx.maximum(denom, mx.array(1e-12))
-```
+| field | sum-form | mean-form |
+|---|---|---|
+| reuse_keys cosine finite | 0/560 | 0/560 |
+| reuse_values cosine finite | 19/560 | 19/560 |
+| pruned_keys cosine finite | 0/560 | 0/560 |
+| pruned_values cosine finite | 58/560 | 58/560 |
+| `mean_reuse_keys_mean_abs` | 1.7352934e-05 | 1.7352934e-05 |
+| `pass_H4_saturation_test` | False | False |
 
-with `l_flat`, `r_flat` flattened from large bf16/fp16 cache windows.
-On the order of `3295 * num_kv_heads * head_dim` elements per layer,
-`sum(x * x)` can saturate the bf16/fp16 dynamic range and return
-`+inf`. Then `inf / inf = NaN`, which propagates to `cosine_distance`
-and the per-class summary. The same overflow path explains
-`pruned_vs_dense.keys_mean_abs = +inf` (it uses `mx.mean(mx.abs(l - r))`
-on the same flattened tensor).
+So the reduction style is not the root cause. The mean-form fix +
+its CPU-side regression test were **reverted**.
 
-Two candidate fixes:
+The actual root cause is upstream: the captured K (and most V) cache
+tensors contain non-finite elements before any reduction. The
+decisive evidence is the reuse arm:
 
-1. **fp32 cast before reduction**: `l_flat = left_common.reshape(-1).astype(mx.float32)`
-   then proceed. Tried in this session; produced an MLX-runtime abort
-   (`libc++abi: terminating due to uncaught exception of type NSException`)
-   on the first prefill, plausibly memory pressure from doubling the
-   flattened tensor size on the same machine that was already at ~5.5 GB
-   peak RSS for the rest of the chain.
-2. **Normalize via `sqrt(mean(x*x))` instead of `sqrt(sum(x*x))`**:
-   `l_unit = l_flat / max(sqrt(mean(l*l)), 1e-12)`, then
-   `cosine = mean(l_unit * r_unit)`. Algebraically equivalent and keeps
-   intermediate magnitudes bounded. Patch was drafted but **not
-   verified end-to-end** in this session, so it is **not landed**.
+- `reuse_vs_dense.keys_mean_abs = 0.0` on every row — confirms the
+  reuse-arm cache and the dense reference are bit-identical buffers.
+- `reuse_vs_dense.keys_cosine = NaN` on every row — bit-identical
+  finite buffers cannot produce NaN cosine.
 
-The probe code is currently checked in unmodified; the row-level
-distances are kept as-is in the artifact for traceability. Forward
-work needs both: (a) fix the analyzer reduction, (b) re-run the probe.
+The combination is only consistent with `l - r` short-circuiting to
+zero (same-buffer subtraction in IEEE; works even when the buffer
+contains NaN), while `l * l` and `l * r` do propagate NaN through
+multiplication. The pruned arm's `keys_mean_abs = +inf` confirms at
+least one element of the diff is non-finite — `mean(...inf...) / N
+= inf` only if the sum sees an `inf` element directly.
+
+Cross-layer pattern: in both runs, K-side cosine is NaN at every
+layer, V-side cosine is finite at layer 1 only. That points at a
+specific structural source of NaN in the K cache and to a lesser
+extent the V cache, layer 0 specifically. Plausible candidates that
+still need verification:
+
+- pre-allocated K-cache buffer padding beyond `valid_tokens` is
+  uninitialized (or sentinel-NaN), and the slice
+  `value[..., 0:valid_tokens, :]` is not actually narrowing the tensor
+  view in the reduction path (lazy view + stride math).
+- Qwen 2.5-VL 4-bit MLX cache stores layer-0 K with NaN sentinels in
+  unused positions (mask, padding, or fp16 underflow from the 4-bit
+  dequant path).
+- the rotary-embedding / RoPE pre-multiplied K values overflow
+  bf16 specifically at layer 0 of this model.
+
+Without instrumented reads of the live cache (e.g. a small probe
+patch that prints `mx.any(mx.isnan(l_flat)).item()` and
+`mx.max(mx.abs(l_flat)).item()` for one layer × one row before
+reduction) we cannot pick between these. That diagnostic patch is
+the next step if the user wants this probe revived.
+
+## What the rerun establishes
+
+- The bug is reproducible end-to-end and not flaky.
+- It is not in the cosine reduction style.
+- It is in the captured cache tensors themselves at the point the
+  probe reduces them.
+- The earlier "fp32 cast crashed with NSException" was sandbox-side
+  (Metal init blocked); the actual rerun under sandbox-off completed
+  in 30 minutes and reproduced the same NaN pattern. The crash was
+  not informative about memory pressure.
+
+## Path forward
+
+1. Add a read-only NaN-audit print to the probe for one row at one
+   layer before each reduction; confirm whether the non-finite
+   elements live inside `[0:valid_tokens]` or only in the buffer tail.
+2. If they live in the valid window, the cache itself is the bug —
+   inspect the mlx-vlm cache write path or the rotary embedding for
+   NaN-producing ops.
+3. If they live only in the buffer tail and the slice is not
+   narrowing the view, fix the narrowing (e.g. force materialize via
+   `mx.contiguous` or copy before reduction) and rerun.
+
+The probe code is checked in unmodified after the revert.
 
 ## Interpretation (what we can and cannot say)
 
