@@ -1,0 +1,15 @@
+\begin{table}[H]
+\centering
+\caption{Adaptive C-PERSIST sampler-seed cross-product on the short-slice mechanism cell. Three sampler seeds \(\{42, 99, 2026\}\) at three temperatures \(\{0.5, 1.0, 1.5\}\) on the same seven-clip 21-paired tranche. All nine cells pass the preregistered fidelity, format, and baseline-quality gates. This is reviewer-defense evidence that the sampler-temperature result is not a single-seed coincidence on the short tranche; it is not the full 0/93 breadth claim and not benchmark generalization beyond this slice.}
+\label{tab:c-persist-sampler-seed-sweep}
+\small
+\begin{tabular}{@{}r r r r r r@{}}
+\toprule
+\(T\) & Seed cells & Max \(|\Delta\)acc\(|\) & Max choice diffs & Max correctness diffs & Min baseline acc \\
+\midrule
+0.5 & 3 pass & 0.048 & 1/21 & 1/21 & 0.762 \\
+1.0 & 3 pass & 0.048 & 1/21 & 1/21 & 0.714 \\
+1.5 & 3 pass & 0.000 & 1/21 & 0/21 & 0.667 \\
+\bottomrule
+\end{tabular}
+\end{table}
