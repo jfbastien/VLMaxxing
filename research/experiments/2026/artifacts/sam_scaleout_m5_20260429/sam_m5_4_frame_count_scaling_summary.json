@@ -1,0 +1,24 @@
+{
+  "n_rows": 15,
+  "phases": {
+    "M5-4": 15
+  },
+  "arms": {
+    "cold_dense": 15
+  },
+  "policies": {
+    "cold_dense_no_cache": 15
+  },
+  "choice_diffs": 0,
+  "correctness_diffs": 0,
+  "text_diffs": 0,
+  "parse_failures": 0,
+  "session_parse_failures": 0,
+  "baseline_parse_failures": 0,
+  "input_hash_mismatches": 0,
+  "prompt_hash_mismatches": 0,
+  "frame_hash_mismatches": 0,
+  "schema_or_gate_errors": 0,
+  "first_errors": [],
+  "pass": true
+}
