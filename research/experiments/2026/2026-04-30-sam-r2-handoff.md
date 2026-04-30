@@ -85,6 +85,9 @@ the JSONL or summaries is fine.
 | **B1 (broken-cache diagnostic)** | DIAGNOSTIC — DO NOT cite as 26B C-PERSIST speedup. 10× speedup numbers were measured on the same broken cache path B0b caught. Findings doc IS honest (`closed-arch-blocked`). | `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b1_cpersist_replication*` |
 | **B2 (many-turn horizon)** | DIAGNOSTIC — `correct` fields in B2 mean **text-identical-to-cold-dense**, not ground-truth correctness (every row has `session_correct=False, baseline_correct=False, session_choice=None`). Adaptive arm achieves 99% text agreement after the first turn but at 0.84× speedup; fixed_k1 has 28× speedup but 33% text agreement (broken cache). Cite as text-stability data, never as semantic correctness. | `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b2_many_turn_horizon*` |
 | **B4-adjacent (post-ViT hard prune)** | NEGATIVE at fixed frames: 8f median **0.757× (slower; 30% overhead)**; 32f median **1.042× (essentially flat)**; 0/10 byte-identical. The earlier "~1.5× ingestion-density" reframe in some docs is NOT supported by this artifact (would need fixed-wall-clock variable-frames experiment). NOT strict sparse-ViT Track B. | `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b4_sparse_vit_ceiling*` |
+| **M5-4 (frame-count scaling)** | EXPLORATORY — 15 rows, 3 vids × 5 frame counts (8/16/32/64/128), Gemma 26B-A4B cold-dense. Fills the C-CEILING 26B/scale-out cell. Single-arm; no cross-turn cache; immune to the SWA bug. | `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_4_frame_count_scaling*` |
+| **M5-5 (SWA safety wrapper)** | DIAGNOSTIC — confirms the architectural-bug analysis (mlx-vlm flat-trim corrupts RotatingKVCache). Doc explicitly self-marks SUPERSEDED by M5-5b for the speedup-ceiling claim; the safety regression (5/5 byte-identical at ~0.96× wall) stands. | `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5_swa_safety_regression*` |
+| **M5-5b (SWA prefix-snapshot fix)** ⭐ | **CROSS-ARCH C-PERSIST RESULT.** 21 paired rows, Gemma 26B-A4B, 8f. **0/21 choice diffs, 0/21 correctness diffs, 15/21 byte-identical (71%), 6/21 paraphrase-level drift, median per-turn speedup 9.11× (range 3.59–12.83×), median amortized over 3 Q/video ~2.0× (warm-cost included).** Cite as: "Gemma 26B-A4B C-PERSIST via topology-aware prefix-snapshot reuse, 9.11× per-follow-up / ~2× amortized, answer-preserving with paraphrase-level text drift." Do NOT cite as byte-identical (it's 15/21). Caveats noted in this round's commit: (a) runner docstring lies "≥20/21 byte-identical gate" but actual is 15/21 (informational not gate); (b) provenance fields under-populated (mlx_version=unknown, metal_version=null in artifact, but findings doc claims specific versions); (c) prefix-boundary equality assertion missing from `swa_aware_cache_v2.run_turn_with_snapshot`. Sam should fix all three on his next M5 run. | `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot*` + `scripts/swa_aware_cache_v2.py` |
 
 ## Step 1 — install a CORRECTNESS-CONTROL guard (do not pursue a speedup-preserving shim)
 
@@ -175,7 +178,33 @@ existing fields that already validate:
 - `vit_calls`, `prefix_hit`, `prefix_coverage`: clamp to the
   full-refill values (`1`, `0`, `0.0`) when guard fires.
 
-Replace the cross-turn append block:
+**Two-step patch to make_row first** (the current signature does not
+accept `policy_params` and hardcodes it to `None` at line 499). Add
+the kwarg so the call site can actually pass it through:
+
+```python
+# In make_row (around line 435), add to the signature:
+def make_row(
+    *,
+    base_provenance: dict[str, Any],
+    ...
+    policy: str,
+    baseline_policy: str,
+    policy_params: dict[str, Any] | None = None,   # NEW
+    comparator_arm: str | None,
+    ...
+) -> dict[str, Any]:
+    ...
+    row = {
+        ...
+        "policy": policy,
+        "baseline_policy": baseline_policy,
+        "policy_params": policy_params,            # was: None
+        ...
+    }
+```
+
+Now replace the cross-turn append block:
 
 ```python
 # In the cross-turn row append (was: lines 740-762):
@@ -311,56 +340,34 @@ These are safe to run on M5 while the B0b patch is being smoke-tested
 and they don't share state with B0b. Recommended order: S0 first, S1
 second, S2 any time.
 
-### S0 — Gemma 26B Track B kr-bracket cross-arch (~2-3h)
+### S0 — Gemma 26B Track B kr-bracket cross-arch (DEFERRED in r2)
 
-Goal: produce a Track B point at 26B-A4B class that we don't have on
-the local Air. L=2, kr ∈ {0.25, 0.50, 0.75}, 8f, N=60 short+medium
-VideoMME videos (the same combined manifest A4 used), paired vs
-dense.
+**Status: deferred unless paper specifically asks.** The runner
+`scripts/run_phase1_51V.py` is **Qwen-only** — it explicitly raises
+`SystemExit` at line 294 if `model.config.model_type != "qwen2_5_vl"`.
+Sam cannot run it on Gemma 26B without first generalizing the hook
+target to gemma4's vision-tower module path. That is not a one-line
+change; it's an adapter port that should land as its own commit
+(separate review, separate test).
 
-`scripts/run_phase1_51V.py` reads its config from CLI flags
-(`--manifest`, `--output`, `--summary` are required; no env vars).
-Run one cell per kr:
+Also, **M5-5b already gives us cross-architecture C-PERSIST evidence
+on Gemma 26B-A4B** (9.11× per-turn, 0/21 choice diffs, 0/21
+correctness diffs, 15/21 byte-identical, n=21 paired). That was the
+science S0 was reaching for via a different mechanism. Spending M5
+budget on a 1.51V port for Track B vision-tower kr-bracket is
+lower-priority now.
 
-```bash
-OUT=research/experiments/2026/artifacts/sam_S0_gemma26b_track_b_kr_bracket
-mkdir -p "$OUT"
-for KR in 0.25 0.50 0.75; do
-  TAG="L2_kr$(printf '%03d' $(python3 -c "print(int($KR*1000))"))_8f"
-  ./.venv/bin/python scripts/run_phase1_51V.py \
-    --manifest research/benchmark_manifests/videomme_combined_v1_n60.toml \
-    --frame-count 8 \
-    --max-tokens 32 \
-    --model-path "$HOME/models/Gemma-4-26B-A4B-it-mlx-bf16" \
-    --vision-tower-layer 2 \
-    --vision-tower-keep-rate "$KR" \
-    --rss-guard-mb 80000 \
-    --output "$OUT/sparse_${TAG}.jsonl" \
-    --summary "$OUT/sparse_${TAG}_summary.json" \
-    --allow-dirty
-done
-```
+If the paper's reviewer process asks for a Gemma Track B kr-bracket
+specifically (sparse-ViT C-VISION cross-arch), the path is:
+1. Generalize `run_phase1_51V.py` to support Gemma 4 (pre-LM hook on
+   the gemma4 vision-tower; touch the model_type gate).
+2. Land the adapter as a `fix(1.51V): generalize vision-tower hook for
+   gemma4` commit, with a smoke-test on Gemma 4-E4B at 8f locally.
+3. Then run the kr-sweep on M5 against Gemma 26B with the patched
+   runner.
 
-Then pair vs an 8f dense Gemma 26B reference. If a dense reference
-doesn't exist yet, run one with the same CLI but `--vision-tower-keep-rate 1.0`
-and a `dense_8f.jsonl` output, then use
-`scripts/analyze_phase1_51v_pair.py` (or the analyzer used by our
-local 1.51V; check the script tree under `scripts/` for the most
-recent pair-summary tool).
-
-Within-turn only — no cross-turn cache. Safe even before the B0b
-guard lands.
-
-Risks:
-- `run_phase1_51V.py` was authored against Qwen 2.5-VL. The vision-
-  tower hook signatures may differ for Gemma 4 (different model class,
-  different layer module names). If you get an `AttributeError` on
-  `--vision-tower-layer`, dump the model's structure with
-  `python -c "from mlx_vlm import load; m,_=load('$MODEL_PATH'); print(m)"`
-  and adapt the hook target. Patch + document; do not silently mask.
-- If kr=0.25 produces a high parse-failure rate (>20%), still commit
-  the artifacts and let the analysis flag it as a Gemma 26B kr
-  boundary. That's still useful evidence.
+For r2, **skip S0 and rely on M5-5b for the cross-arch C-PERSIST
+result**. Re-prioritize if needed.
 
 ### S1 — Qwen 7B C-PERSIST at 32f / 64f (~1-2h)
 
