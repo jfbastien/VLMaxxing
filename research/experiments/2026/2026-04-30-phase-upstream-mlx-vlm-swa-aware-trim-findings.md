@@ -1,25 +1,27 @@
 ---
 date: 2026-04-30
 phase: upstream-fix-1 (sam-r2 follow-up)
-status: smoke-verified candidate; full B0b unguarded reproduction deferred; upstream PR pending
+status: closed-earned (full B0b unguarded reproduction confirmed); upstream PR pending
 related:
   - 2026-04-30-phase-B0b-r2-sam-correctness-control-findings.md
+  - 2026-04-30-phase-B0b-r2-followup-sam-unguarded-patched-findings.md
   - 2026-04-29-phase-M5-5-sam-swa-aware-cache-findings.md
   - 2026-04-29-phase-M5-5b-sam-prefix-snapshot-fix-findings.md
 ---
 
 # 2026-04-30 Upstream fix — topology-aware trim in mlx-vlm `generate.py`
 
-- **Status:** **smoke-verified candidate.** The topology-aware trim
-  patch is a real fix (calls `mlx_lm.models.cache.trim_prompt_cache`
-  + `can_trim_prompt_cache`, which respects `RotatingKVCache.is_trimmable()`)
-  and a single-video smoke shows cross-turn output matching cold
-  dense on Gemma 4 26B-A4B / mlx-vlm 0.4.4. **The full B0b suite
-  has NOT been re-run with the patch applied and the runtime guard
-  removed**, so the "fixes correctness at the library level" claim
-  is upper-bounded by smoke evidence, not the 42-row paired gate.
-  Treat as a local patch proposal; full-suite reproduction is the
-  gate for retiring the runtime guard.
+- **Status:** **closed-earned (full B0b unguarded reproduction
+  confirmed).** Per the closure path JF documented in `223c8fb`, the
+  full 42-row B0b suite was re-run with the patch applied AND the
+  runtime guard disabled (`B0B_DISABLE_RUNTIME_GUARD=1`). Result:
+  **42/42 text-identical, 0 choice diffs, 0 correctness diffs**,
+  same as the guarded r2 run, with median cross-turn wall-clock
+  0.98× of cold dense (the patched library surrendered cache reuse
+  cleanly, fell through to the cold-dense path, and produced
+  correct outputs). See companion findings doc
+  `2026-04-30-phase-B0b-r2-followup-sam-unguarded-patched-findings.md`
+  for the regression artifacts.
 - **Upstream PR:** pending submission to mlx-vlm (track separately;
   this commit lands the patch in our repo + an apply helper).
 
@@ -61,9 +63,10 @@ boundary where the previous code was producing wrong outputs.
 
 ## Verification
 
-Empirical regression: with the patch applied to the system mlx-vlm
-0.4.4 and the runtime monkey-patch from
-`run_sam_b0b_cache_correctness.py` REMOVED, the cross-turn smoke ran:
+### Stage 1 — single-video smoke (initial verification)
+
+With the patch applied to the system mlx-vlm 0.4.4 and the runtime
+monkey-patch from `run_sam_b0b_cache_correctness.py` REMOVED:
 
 | arm | output | byte-identical to cold? |
 |---|---|---|
@@ -77,7 +80,34 @@ Compare to the SAME setup without the patch (B0b r1):
 | `cold_dense` | "The most prominent color in the scene is green." | (baseline) |
 | `cross_turn_warm` (broken library, no guard) | "The most prominent color in the scene is **red**." | **NO** |
 
-The library patch fixes the bug at its root.
+### Stage 2 — full 42-row B0b regression (closure)
+
+Per JF's framing-downgrade in `223c8fb`, the closure gate was the
+full 42-row B0b paired suite with the patch applied AND the runtime
+guard disabled. The runner now supports the env-var
+`B0B_DISABLE_RUNTIME_GUARD=1` to opt out of the in-runner monkey-
+patch; running with that env var + the library patch in place
+re-uses mlx-vlm's `stream_generate` directly with no runner-level
+intervention.
+
+| metric | r2 guarded | r2-followup unguarded + library patch |
+|---|---:|---:|
+| n_rows | 42 | 42 |
+| **text_identical to cold** | **42/42 (100%)** | **42/42 (100%)** |
+| choice_diffs | 0/42 | 0/42 |
+| correctness_diffs | 0/42 | 0/42 |
+| parse_failures | 4/42 (matched) | 4/42 (matched, identical) |
+| `policy` on cross-turn rows | `full_refill_guard_rotating_kv` (21/21) | `prompt_cache_state_cross_turn_chained` (21/21) — guard didn't fire because it wasn't installed |
+| cross-turn median speedup | 1.00× (cold-dense path via runner guard) | **0.98× (cold-dense path via library surrender)** |
+| how correctness was achieved | runtime monkey-patch in runner | mlx-vlm patched library, `can_trim_prompt_cache` → False → fall through to cold-dense |
+
+The wall-clock median of 0.98× confirms the patched library actually
+surrendered the cache (cross-turn ran at cold-dense speed, no faster).
+The 42/42 byte-identical match confirms it surrendered correctly.
+
+The library patch fixes the bug at its root and reproduces the
+correctness guarantee at full B0b scale without any runner-level
+intervention.
 
 ## Patch artifacts
 
@@ -125,8 +155,11 @@ python3 scripts/run_sam_b0b_cache_correctness.py --smoke \
 
 ## What this means for the paper
 
-- **Correctness story is smoke-verified at the library level on mixed-SWA
-  models** with this patch. The C-PERSIST cross-turn cache reuse on
+- **Correctness story is full-regression verified at the library level on mixed-SWA
+  models** with this patch (full B0b 42-row paired suite, mlx-vlm 0.4.4 +
+  scripts/mlx_vlm_swa_aware_trim.patch, B0B_DISABLE_RUNTIME_GUARD=1 — see
+  the 2026-04-30 phase-B0b-r2-followup-sam-unguarded-patched-findings.md
+  companion doc). The C-PERSIST cross-turn cache reuse on
   Gemma 4 26B-A4B is *no longer silently broken* once the patch
   ships upstream; users get either a correct fast path
   (full-attention-only) or a correct slow path (mixed-SWA).
@@ -143,13 +176,11 @@ python3 scripts/run_sam_b0b_cache_correctness.py --smoke \
 
 ## Caveats
 
-- **Single-video smoke test only.** The full B0b 7-video run with
-  the patch (no runtime guard) was not re-executed in this commit;
-  the smoke is sufficient to demonstrate the patch works because the
-  same code path fires on every cross-turn call. Future work: when
-  the patch lands upstream, re-run B0b without the runtime guard and
-  confirm 42/42 byte-identical (current B0b r2 result is 42/42 with
-  the runtime guard; behavior should be identical).
+- **Full B0b suite verified.** The 42/42 result above is the full
+  B0b 7-videos × 3-questions × {within, cross} matrix at the same
+  scale as B0b r2. The library patch reproduces the correctness
+  guarantee without any runner-level intervention. The earlier
+  "single-video smoke only" caveat is closed.
 - **`current_offset = max(c.offset for c in kv_cache)`** assumes
   per-layer offsets are in sync after a prior turn's prefill. They
   are — this is mlx-vlm's existing invariant. The patch documents

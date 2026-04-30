@@ -105,7 +105,14 @@ def _correctness_guard_stream_generate(*args, **kwargs):
     return _orig_stream_generate(*args, **kwargs)
 
 
-_gen.stream_generate = _correctness_guard_stream_generate
+# Optional opt-out for the runtime guard so the upstream library patch
+# (scripts/mlx_vlm_swa_aware_trim.patch) can be tested standalone.
+# Setting B0B_DISABLE_RUNTIME_GUARD=1 leaves mlx-vlm's stream_generate
+# as-is, so any failure to surrender cache reuse on RotatingKVCache
+# falls on the LIBRARY, not the runner. Use this only when the patched
+# library is in place; otherwise expect cross-turn corruption.
+if not os.environ.get("B0B_DISABLE_RUNTIME_GUARD"):
+    _gen.stream_generate = _correctness_guard_stream_generate
 # --- END B0b r2 correctness-control guard ---
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
