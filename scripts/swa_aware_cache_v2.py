@@ -221,6 +221,33 @@ def run_turn_with_snapshot(
     if input_ids_full.shape[1] <= n_prefix:
         raise RuntimeError("question tokens fit entirely inside the prefix; this should not happen")
 
+    # Prefix-boundary equality assertion: the first n_prefix tokens of this
+    # turn MUST match the snapshot's prefix tokens. Catches chat-template
+    # drift, image-token boundary shifts, wrong img_paths, tokenizer-version
+    # skew. Without this, a prefix mismatch silently corrupts outputs and
+    # looks like a cache bug.
+    snapshot_prefix_ids = snapshot.get("prefix_input_ids")
+    if snapshot_prefix_ids is not None:
+        snap_list = snapshot_prefix_ids.flatten().tolist()
+        new_full_list = input_ids_full.flatten().tolist()
+        if len(snap_list) < n_prefix or snap_list[:n_prefix] != new_full_list[:n_prefix]:
+            mismatch_idx = next(
+                (
+                    i
+                    for i in range(n_prefix)
+                    if i >= len(snap_list)
+                    or i >= len(new_full_list)
+                    or snap_list[i] != new_full_list[i]
+                ),
+                n_prefix,
+            )
+            raise RuntimeError(
+                f"prefix-boundary equality assertion FAILED at token "
+                f"{mismatch_idx}/{n_prefix}: snapshot's cached KV state "
+                f"is for a different prefix. Verify img_paths, chat "
+                f"template, tokenizer, sentinel-prefix detection."
+            )
+
     new_ids = input_ids_full[:, n_prefix:]
 
     # Embed the new tokens. Vision was already done at snapshot time,
