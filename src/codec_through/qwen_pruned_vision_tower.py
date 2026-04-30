@@ -39,6 +39,15 @@ from .qwen_vision_pruning import (
 class QwenVisionPruneConfig:
     layer_idx: int
     keep_rate: float
+    # score_mode controls how merged-token groups are ranked at layer_idx
+    # before the keep-rate quota is applied. "magnitude_norm" (default) is the
+    # original 1.51V Qwen scorer (FasterVLM-style L2-norm of the group's mean
+    # hidden state). "uniform_random" is a deterministic-seeded competitor
+    # baseline used by the 1.51VC positioning experiment to test whether
+    # structured magnitude pruning earns its keep over random selection at
+    # matched keep-rate.
+    score_mode: str = "magnitude_norm"
+    score_seed: int = 42
 
 
 def _dense_cu_seqlens(grid_thw: mx.array) -> mx.array:
@@ -53,11 +62,25 @@ def _dense_cu_seqlens(grid_thw: mx.array) -> mx.array:
     return mx.pad(cu, (1, 0), mode="constant", constant_values=0)
 
 
-def _group_scores(group_hidden_states: mx.array) -> np.ndarray:
-    mean_hidden = mx.mean(group_hidden_states.astype(mx.float32), axis=1)
-    scores = mx.linalg.norm(mean_hidden, axis=-1)
-    mx.eval(scores)
-    return np.asarray(scores, dtype=np.float32)
+def _group_scores(
+    group_hidden_states: mx.array,
+    *,
+    mode: str = "magnitude_norm",
+    seed: int = 42,
+) -> np.ndarray:
+    if mode == "magnitude_norm":
+        mean_hidden = mx.mean(group_hidden_states.astype(mx.float32), axis=1)
+        scores = mx.linalg.norm(mean_hidden, axis=-1)
+        mx.eval(scores)
+        return np.asarray(scores, dtype=np.float32)
+    if mode == "uniform_random":
+        # Deterministic seeded random. Same seed across calls for reproducibility.
+        n_groups = int(group_hidden_states.shape[0])
+        rng = np.random.default_rng(int(seed))
+        return rng.random(size=n_groups, dtype=np.float32)
+    raise ValueError(
+        f"unknown score_mode {mode!r}; expected one of: magnitude_norm, uniform_random"
+    )
 
 
 def _scatter_groups(
@@ -170,7 +193,11 @@ class _QwenPrunedVisionWrapper:
                     total_groups, model.spatial_merge_unit, hidden
                 )
                 group_rotary = rotary_pos_emb.reshape(total_groups, model.spatial_merge_unit, -1)
-                scores = _group_scores(group_hidden_states)
+                scores = _group_scores(
+                    group_hidden_states,
+                    mode=config.score_mode,
+                    seed=config.score_seed,
+                )
                 groups_per_frame = qwen_groups_per_frame(
                     np.asarray(grid_thw.tolist(), dtype=np.int64),
                     spatial_merge_size=model.spatial_merge_size,

@@ -280,6 +280,25 @@ def main() -> int:
     parser.add_argument("--rss-guard-mb", type=int, default=0)
     parser.add_argument("--vision-tower-layer", type=int, default=2)
     parser.add_argument("--vision-tower-keep-rate", type=float, default=1.0)
+    parser.add_argument(
+        "--score-mode",
+        type=str,
+        default="magnitude_norm",
+        choices=("magnitude_norm", "uniform_random"),
+        help=(
+            "How to rank merged-token groups at the prune layer. "
+            "'magnitude_norm' is the default 1.51V Qwen scorer "
+            "(FasterVLM-style L2 norm of group mean hidden state). "
+            "'uniform_random' is the 1.51VC competitor-positioning baseline "
+            "(deterministic-seeded random scores at matched keep-rate)."
+        ),
+    )
+    parser.add_argument(
+        "--score-seed",
+        type=int,
+        default=42,
+        help="Seed for --score-mode uniform_random (ignored otherwise).",
+    )
     args = parser.parse_args()
 
     runner = _load_runner_module()
@@ -304,6 +323,8 @@ def main() -> int:
             QwenVisionPruneConfig(
                 layer_idx=args.vision_tower_layer,
                 keep_rate=args.vision_tower_keep_rate,
+                score_mode=args.score_mode,
+                score_seed=args.score_seed,
             ),
         )
 
