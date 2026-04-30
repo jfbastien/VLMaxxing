@@ -1,0 +1,24 @@
+{
+  "n_rows": 9,
+  "phases": {
+    "M5-5b": 9
+  },
+  "arms": {
+    "prefix_snapshot": 9
+  },
+  "policies": {
+    "swa_aware_cache_v2_prefix_snapshot": 9
+  },
+  "choice_diffs": 0,
+  "correctness_diffs": 0,
+  "text_diffs": 2,
+  "parse_failures": 0,
+  "session_parse_failures": 0,
+  "baseline_parse_failures": 0,
+  "input_hash_mismatches": 9,
+  "prompt_hash_mismatches": 0,
+  "frame_hash_mismatches": 0,
+  "schema_or_gate_errors": 0,
+  "first_errors": [],
+  "pass": true
+}

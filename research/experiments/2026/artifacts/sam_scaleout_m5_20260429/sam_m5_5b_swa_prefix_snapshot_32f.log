@@ -1,0 +1,55 @@
+[provenance] {
+  "run_id": "sam_m55b_1777510160_fb2324d5",
+  "model_id": "google/gemma-4-26B-A4B-it",
+  "model_sha": "7d4c97e54145f8ffd1a4dd1b4986a5015a517842",
+  "quantization": "bf16_native",
+  "runtime": "mlx_vlm-0.4.4",
+  "runtime_commit": "pypi",
+  "hardware": "Apple M5 Max | 128.0 GB unified | Darwin 25.4.0",
+  "os_version": "Darwin 25.4.0",
+  "mlx_version": "unknown",
+  "metal_version": null,
+  "command_line": "scripts/run_sam_m5_5b_swa_prefix_snapshot.py --n-frames 32 --n-videos 3 --out research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f.jsonl",
+  "memory_definition": "ru_maxrss bytes (macOS) -> GB",
+  "commit_sha": "b5ba27fb0b3073aa66b0b929cec7fa93be198890"
+}
+[loader] loading google/gemma-4-26B-A4B-it ...
+Fetching 9 files:   0%|          | 0/9 [00:00<?, ?it/s]Fetching 9 files: 100%|██████████| 9/9 [00:00<00:00, 123361.88it/s]
+[loader] loaded in 3.9s
+[video 1/3] fFjv93ACGo8
+  [cold_dense] q1_mc
+Prefill:   0%|          | 0/8347 [00:00<?, ?tok/s]Prefill:  25%|██▍       | 2048/8347 [00:09<00:28, 222.76tok/s]Prefill:  49%|████▉     | 4096/8347 [00:09<00:08, 480.80tok/s]Prefill:  74%|███████▎  | 6144/8347 [00:10<00:02, 754.51tok/s]Prefill:  98%|█████████▊| 8192/8347 [00:11<00:00, 1024.61tok/s]Prefill: 100%|█████████▉| 8346/8347 [00:12<00:00, 694.19tok/s] 
+  [cold_dense] q2_color
+Prefill:   0%|          | 0/8278 [00:00<?, ?tok/s]Prefill:  25%|██▍       | 2048/8278 [00:09<00:28, 220.10tok/s]Prefill:  49%|████▉     | 4096/8278 [00:10<00:08, 475.05tok/s]Prefill:  74%|███████▍  | 6144/8278 [00:10<00:02, 747.86tok/s]Prefill:  99%|█████████▉| 8192/8278 [00:11<00:00, 1017.07tok/s]Prefill: 100%|█████████▉| 8277/8278 [00:12<00:00, 685.62tok/s] 
+  [cold_dense] q3_people
+Prefill:   0%|          | 0/8284 [00:00<?, ?tok/s]Prefill:  25%|██▍       | 2048/8284 [00:09<00:29, 213.04tok/s]Prefill:  49%|████▉     | 4096/8284 [00:10<00:09, 461.66tok/s]Prefill:  74%|███████▍  | 6144/8284 [00:11<00:02, 730.02tok/s]Prefill:  99%|█████████▉| 8192/8284 [00:12<00:00, 995.28tok/s]Prefill: 100%|█████████▉| 8283/8284 [00:12<00:00, 668.40tok/s]
+  [snapshot] warming prefix cache ...
+    n_prefix=8260 warm_ms=13552
+  [snapshot] q1_mc
+  [snapshot] q2_color
+  [snapshot] q3_people
+[video 2/3] N1cdUjctpG8
+  [cold_dense] q1_mc
+Prefill:   0%|          | 0/8336 [00:00<?, ?tok/s]Prefill:  25%|██▍       | 2048/8336 [00:09<00:28, 221.89tok/s]Prefill:  49%|████▉     | 4096/8336 [00:10<00:08, 473.16tok/s]Prefill:  74%|███████▎  | 6144/8336 [00:11<00:02, 732.64tok/s]Prefill:  98%|█████████▊| 8192/8336 [00:12<00:00, 980.49tok/s]Prefill: 100%|█████████▉| 8335/8336 [00:12<00:00, 673.80tok/s]
+  [cold_dense] q2_color
+Prefill:   0%|          | 0/8278 [00:00<?, ?tok/s]Prefill:  25%|██▍       | 2048/8278 [00:10<00:33, 188.44tok/s]Prefill:  49%|████▉     | 4096/8278 [00:11<00:10, 407.89tok/s]Prefill:  74%|███████▍  | 6144/8278 [00:12<00:03, 644.55tok/s]Prefill:  99%|█████████▉| 8192/8278 [00:13<00:00, 879.96tok/s]Prefill: 100%|█████████▉| 8277/8278 [00:14<00:00, 590.92tok/s]
+  [cold_dense] q3_people
+Prefill:   0%|          | 0/8284 [00:00<?, ?tok/s]Prefill:  25%|██▍       | 2048/8284 [00:11<00:34, 180.71tok/s]Prefill:  49%|████▉     | 4096/8284 [00:12<00:10, 389.11tok/s]Prefill:  74%|███████▍  | 6144/8284 [00:13<00:03, 608.12tok/s]Prefill:  99%|█████████▉| 8192/8284 [00:14<00:00, 828.15tok/s]Prefill: 100%|█████████▉| 8283/8284 [00:14<00:00, 560.36tok/s]
+  [snapshot] warming prefix cache ...
+    n_prefix=8260 warm_ms=17206
+  [snapshot] q1_mc
+  [snapshot] q2_color
+  [snapshot] q3_people
+[video 3/3] HIjX8OPuf-w
+  [cold_dense] q1_mc
+Prefill:   0%|          | 0/8325 [00:00<?, ?tok/s]Prefill:  25%|██▍       | 2048/8325 [00:12<00:37, 169.56tok/s]Prefill:  49%|████▉     | 4096/8325 [00:13<00:11, 362.01tok/s]Prefill:  74%|███████▍  | 6144/8325 [00:14<00:03, 563.07tok/s]Prefill:  98%|█████████▊| 8192/8325 [00:15<00:00, 760.05tok/s]Prefill: 100%|█████████▉| 8324/8325 [00:16<00:00, 519.61tok/s]
+  [cold_dense] q2_color
+Prefill:   0%|          | 0/8278 [00:00<?, ?tok/s]Prefill:  25%|██▍       | 2048/8278 [00:13<00:41, 149.75tok/s]Prefill:  49%|████▉     | 4096/8278 [00:14<00:13, 320.60tok/s]Prefill:  74%|███████▍  | 6144/8278 [00:16<00:04, 502.95tok/s]Prefill:  99%|█████████▉| 8192/8278 [00:17<00:00, 682.95tok/s]Prefill: 100%|█████████▉| 8277/8278 [00:17<00:00, 462.95tok/s]
+  [cold_dense] q3_people
+Prefill:   0%|          | 0/8284 [00:00<?, ?tok/s]Prefill:  25%|██▍       | 2048/8284 [00:14<00:44, 139.04tok/s]Prefill:  49%|████▉     | 4096/8284 [00:16<00:14, 296.24tok/s]Prefill:  74%|███████▍  | 6144/8284 [00:17<00:04, 463.30tok/s]Prefill:  99%|█████████▉| 8192/8284 [00:19<00:00, 632.49tok/s]Prefill: 100%|█████████▉| 8283/8284 [00:19<00:00, 428.91tok/s]
+  [snapshot] warming prefix cache ...
+    n_prefix=8260 warm_ms=22563
+  [snapshot] q1_mc
+  [snapshot] q2_color
+  [snapshot] q3_people
+[wrote] 9 rows -> research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f.jsonl
