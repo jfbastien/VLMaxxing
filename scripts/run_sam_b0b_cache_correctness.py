@@ -55,8 +55,6 @@ if not os.environ.get("HF_TOKEN"):
 
 import contextlib
 
-import mlx.core as mx
-
 # --- BEGIN B0b r2 correctness-control guard ---
 # Background: mlx_vlm/generate.py:671-697 (mlx-vlm 0.4.4) flat-slices
 # c.keys[:, :, :prefix_len, :] for every prompt-cache entry. That is
@@ -71,6 +69,8 @@ import mlx.core as mx
 # claim on Gemma 26B remains BLOCKED until the upstream fix.
 import importlib  # noqa: E402
 
+import mlx.core as mx
+import numpy as np  # noqa: E402
 from mlx_lm.models.cache import RotatingKVCache  # noqa: E402
 from PIL import Image
 
