@@ -1,0 +1,2526 @@
+{
+  "experiment": "vit_attention_baseline",
+  "model": "Qwen/Qwen2.5-VL-7B-Instruct",
+  "num_images": 15,
+  "vit_config": {
+    "num_layers": 32,
+    "spatial_merge_size": 2,
+    "fullatt_block_indexes": [
+      7,
+      15,
+      23,
+      31
+    ]
+  },
+  "aggregate_layer_correlations": {
+    "0": {
+      "mean_spearman": -0.0049,
+      "std_spearman": 0.0165,
+      "n": 15
+    },
+    "1": {
+      "mean_spearman": -0.0048,
+      "std_spearman": 0.0279,
+      "n": 15
+    },
+    "2": {
+      "mean_spearman": -0.0065,
+      "std_spearman": 0.0751,
+      "n": 15
+    },
+    "3": {
+      "mean_spearman": 0.0338,
+      "std_spearman": 0.0631,
+      "n": 15
+    },
+    "4": {
+      "mean_spearman": 0.1127,
+      "std_spearman": 0.0499,
+      "n": 15
+    },
+    "5": {
+      "mean_spearman": -0.0257,
+      "std_spearman": 0.0302,
+      "n": 15
+    },
+    "6": {
+      "mean_spearman": 0.052,
+      "std_spearman": 0.0366,
+      "n": 15
+    },
+    "7": {
+      "mean_spearman": 0.2813,
+      "std_spearman": 0.0938,
+      "n": 15
+    },
+    "8": {
+      "mean_spearman": 0.0499,
+      "std_spearman": 0.0685,
+      "n": 15
+    },
+    "9": {
+      "mean_spearman": 0.1223,
+      "std_spearman": 0.1125,
+      "n": 15
+    },
+    "10": {
+      "mean_spearman": 0.1774,
+      "std_spearman": 0.0962,
+      "n": 15
+    },
+    "11": {
+      "mean_spearman": 0.0799,
+      "std_spearman": 0.0831,
+      "n": 15
+    },
+    "12": {
+      "mean_spearman": 0.089,
+      "std_spearman": 0.0893,
+      "n": 15
+    },
+    "13": {
+      "mean_spearman": 0.0825,
+      "std_spearman": 0.0569,
+      "n": 15
+    },
+    "14": {
+      "mean_spearman": 0.1318,
+      "std_spearman": 0.0515,
+      "n": 15
+    },
+    "15": {
+      "mean_spearman": 0.451,
+      "std_spearman": 0.0296,
+      "n": 15
+    },
+    "16": {
+      "mean_spearman": 0.2026,
+      "std_spearman": 0.0499,
+      "n": 15
+    },
+    "17": {
+      "mean_spearman": 0.3383,
+      "std_spearman": 0.0386,
+      "n": 15
+    },
+    "18": {
+      "mean_spearman": 0.427,
+      "std_spearman": 0.0384,
+      "n": 15
+    },
+    "19": {
+      "mean_spearman": 0.3897,
+      "std_spearman": 0.0686,
+      "n": 15
+    },
+    "20": {
+      "mean_spearman": 0.4601,
+      "std_spearman": 0.0475,
+      "n": 15
+    },
+    "21": {
+      "mean_spearman": 0.3669,
+      "std_spearman": 0.0682,
+      "n": 15
+    },
+    "22": {
+      "mean_spearman": 0.443,
+      "std_spearman": 0.045,
+      "n": 15
+    },
+    "23": {
+      "mean_spearman": 0.7588,
+      "std_spearman": 0.0506,
+      "n": 15
+    },
+    "24": {
+      "mean_spearman": 0.3881,
+      "std_spearman": 0.0849,
+      "n": 15
+    },
+    "25": {
+      "mean_spearman": 0.3773,
+      "std_spearman": 0.063,
+      "n": 15
+    },
+    "26": {
+      "mean_spearman": 0.3554,
+      "std_spearman": 0.0808,
+      "n": 15
+    },
+    "27": {
+      "mean_spearman": 0.4559,
+      "std_spearman": 0.0462,
+      "n": 15
+    },
+    "28": {
+      "mean_spearman": 0.4783,
+      "std_spearman": 0.039,
+      "n": 15
+    },
+    "29": {
+      "mean_spearman": 0.5266,
+      "std_spearman": 0.0679,
+      "n": 15
+    },
+    "30": {
+      "mean_spearman": 0.6579,
+      "std_spearman": 0.0217,
+      "n": 15
+    }
+  },
+  "aggregate_signal_correlations": {
+    "jpeg_surviving_ac": {
+      "mean_spearman": 0.1885,
+      "std_spearman": 0.0675,
+      "n": 15
+    },
+    "pixel_variance": {
+      "mean_spearman": 0.2375,
+      "std_spearman": 0.0213,
+      "n": 15
+    }
+  },
+  "per_image": {
+    "fpv_drone_01_q75": {
+      "image": "fpv_drone_01_q75",
+      "image_size": [
+        1280,
+        720
+      ],
+      "token_grid": [
+        26,
+        46
+      ],
+      "num_tokens": 1196,
+      "vit_time_ms": 2128.0,
+      "layer_correlations": {
+        "0": {
+          "spearman": -0.0155,
+          "pearson": 0.0048
+        },
+        "1": {
+          "spearman": -0.0338,
+          "pearson": 0.0309
+        },
+        "2": {
+          "spearman": 0.0862,
+          "pearson": 0.0333
+        },
+        "3": {
+          "spearman": 0.0857,
+          "pearson": 0.0983
+        },
+        "4": {
+          "spearman": 0.0906,
+          "pearson": 0.0397
+        },
+        "5": {
+          "spearman": -0.0181,
+          "pearson": -0.0642
+        },
+        "6": {
+          "spearman": 0.0089,
+          "pearson": 0.0209
+        },
+        "7": {
+          "spearman": 0.2211,
+          "pearson": 0.2098
+        },
+        "8": {
+          "spearman": -0.0144,
+          "pearson": -0.0235
+        },
+        "9": {
+          "spearman": 0.0957,
+          "pearson": 0.0778
+        },
+        "10": {
+          "spearman": 0.1451,
+          "pearson": 0.1172
+        },
+        "11": {
+          "spearman": 0.0478,
+          "pearson": 0.0185
+        },
+        "12": {
+          "spearman": 0.0776,
+          "pearson": 0.0343
+        },
+        "13": {
+          "spearman": 0.1213,
+          "pearson": 0.0389
+        },
+        "14": {
+          "spearman": 0.1606,
+          "pearson": 0.0991
+        },
+        "15": {
+          "spearman": 0.472,
+          "pearson": 0.3948
+        },
+        "16": {
+          "spearman": 0.2822,
+          "pearson": 0.255
+        },
+        "17": {
+          "spearman": 0.3759,
+          "pearson": 0.4284
+        },
+        "18": {
+          "spearman": 0.4597,
+          "pearson": 0.4423
+        },
+        "19": {
+          "spearman": 0.4793,
+          "pearson": 0.4292
+        },
+        "20": {
+          "spearman": 0.5414,
+          "pearson": 0.4406
+        },
+        "21": {
+          "spearman": 0.4356,
+          "pearson": 0.4308
+        },
+        "22": {
+          "spearman": 0.5143,
+          "pearson": 0.4392
+        },
+        "23": {
+          "spearman": 0.7987,
+          "pearson": 0.6806
+        },
+        "24": {
+          "spearman": 0.4969,
+          "pearson": 0.4411
+        },
+        "25": {
+          "spearman": 0.4774,
+          "pearson": 0.4444
+        },
+        "26": {
+          "spearman": 0.4761,
+          "pearson": 0.4424
+        },
+        "27": {
+          "spearman": 0.512,
+          "pearson": 0.4498
+        },
+        "28": {
+          "spearman": 0.5118,
+          "pearson": 0.4472
+        },
+        "29": {
+          "spearman": 0.5988,
+          "pearson": 0.4628
+        },
+        "30": {
+          "spearman": 0.6222,
+          "pearson": 0.4588
+        }
+      },
+      "signal_correlations": {
+        "pixel_variance": {
+          "spearman": 0.2443,
+          "pearson": 0.2227
+        },
+        "jpeg_surviving_ac": {
+          "spearman": 0.2195,
+          "pearson": 0.1809
+        }
+      },
+      "attention_stats": {
+        "final_mean": 1.0,
+        "final_std": 0.997802,
+        "final_min": 0.113244,
+        "final_max": 10.841875,
+        "dynamic_range": 95.74
+      }
+    },
+    "fpv_drone_01_q95": {
+      "image": "fpv_drone_01_q95",
+      "image_size": [
+        1280,
+        720
+      ],
+      "token_grid": [
+        26,
+        46
+      ],
+      "num_tokens": 1196,
+      "vit_time_ms": 1598.5,
+      "layer_correlations": {
+        "0": {
+          "spearman": -0.0003,
+          "pearson": -0.0013
+        },
+        "1": {
+          "spearman": -0.0283,
+          "pearson": 0.0369
+        },
+        "2": {
+          "spearman": 0.0515,
+          "pearson": 0.0153
+        },
+        "3": {
+          "spearman": 0.0757,
+          "pearson": 0.0875
+        },
+        "4": {
+          "spearman": 0.0522,
+          "pearson": 0.0147
+        },
+        "5": {
+          "spearman": -0.054,
+          "pearson": -0.0624
+        },
+        "6": {
+          "spearman": -0.0142,
+          "pearson": 0.0178
+        },
+        "7": {
+          "spearman": 0.2173,
+          "pearson": 0.2353
+        },
+        "8": {
+          "spearman": -0.033,
+          "pearson": -0.0164
+        },
+        "9": {
+          "spearman": 0.067,
+          "pearson": 0.0585
+        },
+        "10": {
+          "spearman": 0.1068,
+          "pearson": 0.0923
+        },
+        "11": {
+          "spearman": -0.0031,
+          "pearson": -0.0069
+        },
+        "12": {
+          "spearman": 0.0151,
+          "pearson": 0.0083
+        },
+        "13": {
+          "spearman": 0.0514,
+          "pearson": 0.0003
+        },
+        "14": {
+          "spearman": 0.1104,
+          "pearson": 0.0642
+        },
+        "15": {
+          "spearman": 0.4689,
+          "pearson": 0.4189
+        },
+        "16": {
+          "spearman": 0.2282,
+          "pearson": 0.2041
+        },
+        "17": {
+          "spearman": 0.3369,
+          "pearson": 0.3683
+        },
+        "18": {
+          "spearman": 0.432,
+          "pearson": 0.3965
+        },
+        "19": {
+          "spearman": 0.4389,
+          "pearson": 0.3894
+        },
+        "20": {
+          "spearman": 0.5269,
+          "pearson": 0.4017
+        },
+        "21": {
+          "spearman": 0.4097,
+          "pearson": 0.3903
+        },
+        "22": {
+          "spearman": 0.4907,
+          "pearson": 0.4015
+        },
+        "23": {
+          "spearman": 0.7876,
+          "pearson": 0.6664
+        },
+        "24": {
+          "spearman": 0.4656,
+          "pearson": 0.3986
+        },
+        "25": {
+          "spearman": 0.4562,
+          "pearson": 0.4026
+        },
+        "26": {
+          "spearman": 0.4675,
+          "pearson": 0.4002
+        },
+        "27": {
+          "spearman": 0.4892,
+          "pearson": 0.4072
+        },
+        "28": {
+          "spearman": 0.4917,
+          "pearson": 0.4074
+        },
+        "29": {
+          "spearman": 0.5888,
+          "pearson": 0.4227
+        },
+        "30": {
+          "spearman": 0.6305,
+          "pearson": 0.4176
+        }
+      },
+      "signal_correlations": {
+        "pixel_variance": {
+          "spearman": 0.2517,
+          "pearson": 0.2397
+        },
+        "jpeg_surviving_ac": {
+          "spearman": 0.237,
+          "pearson": 0.2116
+        }
+      },
+      "attention_stats": {
+        "final_mean": 1.0,
+        "final_std": 1.045147,
+        "final_min": 0.104856,
+        "final_max": 12.45579,
+        "dynamic_range": 118.79
+      }
+    },
+    "fpv_drone_02_q75": {
+      "image": "fpv_drone_02_q75",
+      "image_size": [
+        1280,
+        720
+      ],
+      "token_grid": [
+        26,
+        46
+      ],
+      "num_tokens": 1196,
+      "vit_time_ms": 1583.0,
+      "layer_correlations": {
+        "0": {
+          "spearman": 0.0202,
+          "pearson": 0.0073
+        },
+        "1": {
+          "spearman": -0.0034,
+          "pearson": 0.0091
+        },
+        "2": {
+          "spearman": 0.0579,
+          "pearson": 0.0723
+        },
+        "3": {
+          "spearman": 0.0788,
+          "pearson": 0.1272
+        },
+        "4": {
+          "spearman": 0.1221,
+          "pearson": 0.0878
+        },
+        "5": {
+          "spearman": -0.023,
+          "pearson": -0.0432
+        },
+        "6": {
+          "spearman": 0.0339,
+          "pearson": 0.0039
+        },
+        "7": {
+          "spearman": 0.2631,
+          "pearson": 0.2068
+        },
+        "8": {
+          "spearman": -0.0164,
+          "pearson": -0.0164
+        },
+        "9": {
+          "spearman": 0.0559,
+          "pearson": 0.0257
+        },
+        "10": {
+          "spearman": 0.0903,
+          "pearson": 0.0795
+        },
+        "11": {
+          "spearman": 0.0152,
+          "pearson": 0.0357
+        },
+        "12": {
+          "spearman": 0.0118,
+          "pearson": 0.0022
+        },
+        "13": {
+          "spearman": 0.0704,
+          "pearson": 0.0519
+        },
+        "14": {
+          "spearman": 0.116,
+          "pearson": 0.0779
+        },
+        "15": {
+          "spearman": 0.4515,
+          "pearson": 0.4154
+        },
+        "16": {
+          "spearman": 0.2716,
+          "pearson": 0.2524
+        },
+        "17": {
+          "spearman": 0.383,
+          "pearson": 0.4422
+        },
+        "18": {
+          "spearman": 0.5103,
+          "pearson": 0.4878
+        },
+        "19": {
+          "spearman": 0.492,
+          "pearson": 0.4837
+        },
+        "20": {
+          "spearman": 0.526,
+          "pearson": 0.4823
+        },
+        "21": {
+          "spearman": 0.4772,
+          "pearson": 0.4802
+        },
+        "22": {
+          "spearman": 0.4971,
+          "pearson": 0.4809
+        },
+        "23": {
+          "spearman": 0.7703,
+          "pearson": 0.6858
+        },
+        "24": {
+          "spearman": 0.5281,
+          "pearson": 0.4802
+        },
+        "25": {
+          "spearman": 0.4904,
+          "pearson": 0.4788
+        },
+        "26": {
+          "spearman": 0.4633,
+          "pearson": 0.4759
+        },
+        "27": {
+          "spearman": 0.51,
+          "pearson": 0.4789
+        },
+        "28": {
+          "spearman": 0.5514,
+          "pearson": 0.4824
+        },
+        "29": {
+          "spearman": 0.6354,
+          "pearson": 0.4963
+        },
+        "30": {
+          "spearman": 0.6525,
+          "pearson": 0.4916
+        }
+      },
+      "signal_correlations": {
+        "pixel_variance": {
+          "spearman": 0.2065,
+          "pearson": 0.2329
+        },
+        "jpeg_surviving_ac": {
+          "spearman": 0.183,
+          "pearson": 0.1478
+        }
+      },
+      "attention_stats": {
+        "final_mean": 1.0,
+        "final_std": 1.033965,
+        "final_min": 0.096228,
+        "final_max": 11.184031,
+        "dynamic_range": 116.22
+      }
+    },
+    "fpv_drone_02_q95": {
+      "image": "fpv_drone_02_q95",
+      "image_size": [
+        1280,
+        720
+      ],
+      "token_grid": [
+        26,
+        46
+      ],
+      "num_tokens": 1196,
+      "vit_time_ms": 1594.8,
+      "layer_correlations": {
+        "0": {
+          "spearman": -0.0136,
+          "pearson": -0.0157
+        },
+        "1": {
+          "spearman": -0.0249,
+          "pearson": -0.0244
+        },
+        "2": {
+          "spearman": 0.0555,
+          "pearson": 0.0666
+        },
+        "3": {
+          "spearman": 0.0743,
+          "pearson": 0.1059
+        },
+        "4": {
+          "spearman": 0.1025,
+          "pearson": 0.057
+        },
+        "5": {
+          "spearman": -0.0398,
+          "pearson": -0.0735
+        },
+        "6": {
+          "spearman": 0.0499,
+          "pearson": 0.0178
+        },
+        "7": {
+          "spearman": 0.2757,
+          "pearson": 0.2093
+        },
+        "8": {
+          "spearman": -0.0042,
+          "pearson": -0.0059
+        },
+        "9": {
+          "spearman": 0.0604,
+          "pearson": 0.0298
+        },
+        "10": {
+          "spearman": 0.0803,
+          "pearson": 0.0672
+        },
+        "11": {
+          "spearman": 0.0224,
+          "pearson": 0.0281
+        },
+        "12": {
+          "spearman": 0.035,
+          "pearson": 0.0201
+        },
+        "13": {
+          "spearman": 0.0656,
+          "pearson": 0.0456
+        },
+        "14": {
+          "spearman": 0.114,
+          "pearson": 0.0717
+        },
+        "15": {
+          "spearman": 0.4825,
+          "pearson": 0.4164
+        },
+        "16": {
+          "spearman": 0.216,
+          "pearson": 0.2069
+        },
+        "17": {
+          "spearman": 0.3307,
+          "pearson": 0.3924
+        },
+        "18": {
+          "spearman": 0.4587,
+          "pearson": 0.4203
+        },
+        "19": {
+          "spearman": 0.4706,
+          "pearson": 0.4156
+        },
+        "20": {
+          "spearman": 0.5014,
+          "pearson": 0.4139
+        },
+        "21": {
+          "spearman": 0.4297,
+          "pearson": 0.4088
+        },
+        "22": {
+          "spearman": 0.4599,
+          "pearson": 0.4154
+        },
+        "23": {
+          "spearman": 0.7617,
+          "pearson": 0.6585
+        },
+        "24": {
+          "spearman": 0.4711,
+          "pearson": 0.4125
+        },
+        "25": {
+          "spearman": 0.4442,
+          "pearson": 0.4168
+        },
+        "26": {
+          "spearman": 0.4216,
+          "pearson": 0.4128
+        },
+        "27": {
+          "spearman": 0.4667,
+          "pearson": 0.4189
+        },
+        "28": {
+          "spearman": 0.5166,
+          "pearson": 0.4259
+        },
+        "29": {
+          "spearman": 0.5843,
+          "pearson": 0.4358
+        },
+        "30": {
+          "spearman": 0.6536,
+          "pearson": 0.4357
+        }
+      },
+      "signal_correlations": {
+        "pixel_variance": {
+          "spearman": 0.2383,
+          "pearson": 0.2258
+        },
+        "jpeg_surviving_ac": {
+          "spearman": 0.1971,
+          "pearson": 0.1657
+        }
+      },
+      "attention_stats": {
+        "final_mean": 1.0,
+        "final_std": 1.098786,
+        "final_min": 0.058132,
+        "final_max": 12.688899,
+        "dynamic_range": 218.28
+      }
+    },
+    "fpv_drone_03_q75": {
+      "image": "fpv_drone_03_q75",
+      "image_size": [
+        1280,
+        720
+      ],
+      "token_grid": [
+        26,
+        46
+      ],
+      "num_tokens": 1196,
+      "vit_time_ms": 1574.3,
+      "layer_correlations": {
+        "0": {
+          "spearman": -0.0153,
+          "pearson": -0.0545
+        },
+        "1": {
+          "spearman": -0.02,
+          "pearson": -0.0106
+        },
+        "2": {
+          "spearman": 0.066,
+          "pearson": 0.0358
+        },
+        "3": {
+          "spearman": 0.1142,
+          "pearson": 0.1309
+        },
+        "4": {
+          "spearman": 0.1211,
+          "pearson": 0.068
+        },
+        "5": {
+          "spearman": -0.0373,
+          "pearson": -0.0411
+        },
+        "6": {
+          "spearman": 0.0108,
+          "pearson": 0.0299
+        },
+        "7": {
+          "spearman": 0.1626,
+          "pearson": 0.1419
+        },
+        "8": {
+          "spearman": -0.0027,
+          "pearson": 0.0071
+        },
+        "9": {
+          "spearman": 0.0361,
+          "pearson": 0.0469
+        },
+        "10": {
+          "spearman": 0.0986,
+          "pearson": 0.1148
+        },
+        "11": {
+          "spearman": 0.0113,
+          "pearson": 0.0262
+        },
+        "12": {
+          "spearman": -0.018,
+          "pearson": 0.0238
+        },
+        "13": {
+          "spearman": 0.0047,
+          "pearson": 0.0342
+        },
+        "14": {
+          "spearman": 0.112,
+          "pearson": 0.1019
+        },
+        "15": {
+          "spearman": 0.3966,
+          "pearson": 0.2932
+        },
+        "16": {
+          "spearman": 0.2841,
+          "pearson": 0.2998
+        },
+        "17": {
+          "spearman": 0.3316,
+          "pearson": 0.4884
+        },
+        "18": {
+          "spearman": 0.4111,
+          "pearson": 0.5024
+        },
+        "19": {
+          "spearman": 0.4615,
+          "pearson": 0.4996
+        },
+        "20": {
+          "spearman": 0.4955,
+          "pearson": 0.5041
+        },
+        "21": {
+          "spearman": 0.4655,
+          "pearson": 0.5007
+        },
+        "22": {
+          "spearman": 0.4581,
+          "pearson": 0.5081
+        },
+        "23": {
+          "spearman": 0.7199,
+          "pearson": 0.5426
+        },
+        "24": {
+          "spearman": 0.4666,
+          "pearson": 0.5061
+        },
+        "25": {
+          "spearman": 0.4176,
+          "pearson": 0.5086
+        },
+        "26": {
+          "spearman": 0.425,
+          "pearson": 0.5106
+        },
+        "27": {
+          "spearman": 0.5137,
+          "pearson": 0.5212
+        },
+        "28": {
+          "spearman": 0.52,
+          "pearson": 0.5242
+        },
+        "29": {
+          "spearman": 0.6222,
+          "pearson": 0.5359
+        },
+        "30": {
+          "spearman": 0.661,
+          "pearson": 0.5365
+        }
+      },
+      "signal_correlations": {
+        "pixel_variance": {
+          "spearman": 0.213,
+          "pearson": 0.1087
+        },
+        "jpeg_surviving_ac": {
+          "spearman": 0.1492,
+          "pearson": 0.0942
+        }
+      },
+      "attention_stats": {
+        "final_mean": 1.0,
+        "final_std": 1.003366,
+        "final_min": 0.076755,
+        "final_max": 11.843433,
+        "dynamic_range": 154.3
+      }
+    },
+    "fpv_drone_03_q95": {
+      "image": "fpv_drone_03_q95",
+      "image_size": [
+        1280,
+        720
+      ],
+      "token_grid": [
+        26,
+        46
+      ],
+      "num_tokens": 1196,
+      "vit_time_ms": 1594.7,
+      "layer_correlations": {
+        "0": {
+          "spearman": -0.0144,
+          "pearson": -0.0583
+        },
+        "1": {
+          "spearman": -0.0473,
+          "pearson": -0.0338
+        },
+        "2": {
+          "spearman": 0.0542,
+          "pearson": 0.0393
+        },
+        "3": {
+          "spearman": 0.1133,
+          "pearson": 0.1439
+        },
+        "4": {
+          "spearman": 0.1141,
+          "pearson": 0.07
+        },
+        "5": {
+          "spearman": -0.0521,
+          "pearson": -0.0393
+        },
+        "6": {
+          "spearman": 0.034,
+          "pearson": 0.0505
+        },
+        "7": {
+          "spearman": 0.1592,
+          "pearson": 0.1234
+        },
+        "8": {
+          "spearman": 0.0066,
+          "pearson": 0.0146
+        },
+        "9": {
+          "spearman": 0.042,
+          "pearson": 0.0455
+        },
+        "10": {
+          "spearman": 0.1128,
+          "pearson": 0.1297
+        },
+        "11": {
+          "spearman": -0.0065,
+          "pearson": 0.0158
+        },
+        "12": {
+          "spearman": -0.0089,
+          "pearson": 0.033
+        },
+        "13": {
+          "spearman": 0.0183,
+          "pearson": 0.0436
+        },
+        "14": {
+          "spearman": 0.0999,
+          "pearson": 0.0895
+        },
+        "15": {
+          "spearman": 0.4301,
+          "pearson": 0.3026
+        },
+        "16": {
+          "spearman": 0.2644,
+          "pearson": 0.2493
+        },
+        "17": {
+          "spearman": 0.2899,
+          "pearson": 0.434
+        },
+        "18": {
+          "spearman": 0.416,
+          "pearson": 0.4542
+        },
+        "19": {
+          "spearman": 0.4553,
+          "pearson": 0.4558
+        },
+        "20": {
+          "spearman": 0.4969,
+          "pearson": 0.4552
+        },
+        "21": {
+          "spearman": 0.435,
+          "pearson": 0.449
+        },
+        "22": {
+          "spearman": 0.4416,
+          "pearson": 0.4556
+        },
+        "23": {
+          "spearman": 0.732,
+          "pearson": 0.5279
+        },
+        "24": {
+          "spearman": 0.4356,
+          "pearson": 0.4538
+        },
+        "25": {
+          "spearman": 0.4085,
+          "pearson": 0.4542
+        },
+        "26": {
+          "spearman": 0.4018,
+          "pearson": 0.4542
+        },
+        "27": {
+          "spearman": 0.4985,
+          "pearson": 0.4667
+        },
+        "28": {
+          "spearman": 0.5127,
+          "pearson": 0.4718
+        },
+        "29": {
+          "spearman": 0.5994,
+          "pearson": 0.4841
+        },
+        "30": {
+          "spearman": 0.663,
+          "pearson": 0.4816
+        }
+      },
+      "signal_correlations": {
+        "pixel_variance": {
+          "spearman": 0.227,
+          "pearson": 0.1113
+        },
+        "jpeg_surviving_ac": {
+          "spearman": 0.1506,
+          "pearson": 0.0865
+        }
+      },
+      "attention_stats": {
+        "final_mean": 1.0,
+        "final_std": 1.006486,
+        "final_min": 0.073664,
+        "final_max": 13.318111,
+        "dynamic_range": 180.79
+      }
+    },
+    "surveillance_01_q75": {
+      "image": "surveillance_01_q75",
+      "image_size": [
+        1280,
+        720
+      ],
+      "token_grid": [
+        26,
+        46
+      ],
+      "num_tokens": 1196,
+      "vit_time_ms": 1602.6,
+      "layer_correlations": {
+        "0": {
+          "spearman": 0.0239,
+          "pearson": 0.0204
+        },
+        "1": {
+          "spearman": 0.0508,
+          "pearson": 0.016
+        },
+        "2": {
+          "spearman": 0.0533,
+          "pearson": 0.003
+        },
+        "3": {
+          "spearman": 0.0685,
+          "pearson": 0.0228
+        },
+        "4": {
+          "spearman": 0.0364,
+          "pearson": -0.005
+        },
+        "5": {
+          "spearman": -0.0544,
+          "pearson": -0.0473
+        },
+        "6": {
+          "spearman": 0.017,
+          "pearson": 0.0843
+        },
+        "7": {
+          "spearman": 0.2105,
+          "pearson": 0.0901
+        },
+        "8": {
+          "spearman": 0.0206,
+          "pearson": 0.0431
+        },
+        "9": {
+          "spearman": -0.0224,
+          "pearson": 0.0358
+        },
+        "10": {
+          "spearman": 0.0975,
+          "pearson": 0.0854
+        },
+        "11": {
+          "spearman": 0.0012,
+          "pearson": 0.0551
+        },
+        "12": {
+          "spearman": 0.0273,
+          "pearson": 0.0353
+        },
+        "13": {
+          "spearman": 0.0042,
+          "pearson": 0.0045
+        },
+        "14": {
+          "spearman": 0.0435,
+          "pearson": 0.0551
+        },
+        "15": {
+          "spearman": 0.4168,
+          "pearson": 0.2535
+        },
+        "16": {
+          "spearman": 0.1345,
+          "pearson": 0.0919
+        },
+        "17": {
+          "spearman": 0.2891,
+          "pearson": 0.201
+        },
+        "18": {
+          "spearman": 0.3732,
+          "pearson": 0.1982
+        },
+        "19": {
+          "spearman": 0.2999,
+          "pearson": 0.1934
+        },
+        "20": {
+          "spearman": 0.4132,
+          "pearson": 0.1845
+        },
+        "21": {
+          "spearman": 0.285,
+          "pearson": 0.1845
+        },
+        "22": {
+          "spearman": 0.3755,
+          "pearson": 0.1916
+        },
+        "23": {
+          "spearman": 0.6838,
+          "pearson": 0.3904
+        },
+        "24": {
+          "spearman": 0.2542,
+          "pearson": 0.1805
+        },
+        "25": {
+          "spearman": 0.3274,
+          "pearson": 0.1845
+        },
+        "26": {
+          "spearman": 0.2517,
+          "pearson": 0.1811
+        },
+        "27": {
+          "spearman": 0.3836,
+          "pearson": 0.1946
+        },
+        "28": {
+          "spearman": 0.417,
+          "pearson": 0.2005
+        },
+        "29": {
+          "spearman": 0.4637,
+          "pearson": 0.2096
+        },
+        "30": {
+          "spearman": 0.6772,
+          "pearson": 0.2201
+        }
+      },
+      "signal_correlations": {
+        "pixel_variance": {
+          "spearman": 0.2346,
+          "pearson": 0.2108
+        },
+        "jpeg_surviving_ac": {
+          "spearman": 0.1012,
+          "pearson": 0.1554
+        }
+      },
+      "attention_stats": {
+        "final_mean": 1.0,
+        "final_std": 1.095377,
+        "final_min": 0.080858,
+        "final_max": 20.197357,
+        "dynamic_range": 249.79
+      }
+    },
+    "surveillance_02_q75": {
+      "image": "surveillance_02_q75",
+      "image_size": [
+        1280,
+        720
+      ],
+      "token_grid": [
+        26,
+        46
+      ],
+      "num_tokens": 1196,
+      "vit_time_ms": 1619.1,
+      "layer_correlations": {
+        "0": {
+          "spearman": 0.0201,
+          "pearson": 0.008
+        },
+        "1": {
+          "spearman": 0.0575,
+          "pearson": 0.0122
+        },
+        "2": {
+          "spearman": 0.0482,
+          "pearson": -0.0038
+        },
+        "3": {
+          "spearman": 0.0881,
+          "pearson": 0.0324
+        },
+        "4": {
+          "spearman": 0.033,
+          "pearson": -0.0039
+        },
+        "5": {
+          "spearman": -0.0824,
+          "pearson": -0.0644
+        },
+        "6": {
+          "spearman": 0.0668,
+          "pearson": 0.1042
+        },
+        "7": {
+          "spearman": 0.1761,
+          "pearson": 0.0477
+        },
+        "8": {
+          "spearman": 0.0303,
+          "pearson": 0.0389
+        },
+        "9": {
+          "spearman": -0.0095,
+          "pearson": 0.0415
+        },
+        "10": {
+          "spearman": 0.1164,
+          "pearson": 0.107
+        },
+        "11": {
+          "spearman": 0.0365,
+          "pearson": 0.0759
+        },
+        "12": {
+          "spearman": 0.0278,
+          "pearson": 0.033
+        },
+        "13": {
+          "spearman": 0.0324,
+          "pearson": 0.0248
+        },
+        "14": {
+          "spearman": 0.076,
+          "pearson": 0.0845
+        },
+        "15": {
+          "spearman": 0.4106,
+          "pearson": 0.2259
+        },
+        "16": {
+          "spearman": 0.1583,
+          "pearson": 0.1002
+        },
+        "17": {
+          "spearman": 0.2863,
+          "pearson": 0.2619
+        },
+        "18": {
+          "spearman": 0.3747,
+          "pearson": 0.2815
+        },
+        "19": {
+          "spearman": 0.2963,
+          "pearson": 0.2767
+        },
+        "20": {
+          "spearman": 0.44,
+          "pearson": 0.2744
+        },
+        "21": {
+          "spearman": 0.2855,
+          "pearson": 0.2723
+        },
+        "22": {
+          "spearman": 0.3649,
+          "pearson": 0.2697
+        },
+        "23": {
+          "spearman": 0.6552,
+          "pearson": 0.3988
+        },
+        "24": {
+          "spearman": 0.2605,
+          "pearson": 0.2599
+        },
+        "25": {
+          "spearman": 0.3367,
+          "pearson": 0.2657
+        },
+        "26": {
+          "spearman": 0.2425,
+          "pearson": 0.262
+        },
+        "27": {
+          "spearman": 0.3942,
+          "pearson": 0.2733
+        },
+        "28": {
+          "spearman": 0.4497,
+          "pearson": 0.2831
+        },
+        "29": {
+          "spearman": 0.4692,
+          "pearson": 0.2927
+        },
+        "30": {
+          "spearman": 0.691,
+          "pearson": 0.2919
+        }
+      },
+      "signal_correlations": {
+        "pixel_variance": {
+          "spearman": 0.185,
+          "pearson": 0.1513
+        },
+        "jpeg_surviving_ac": {
+          "spearman": 0.0206,
+          "pearson": 0.1044
+        }
+      },
+      "attention_stats": {
+        "final_mean": 1.0,
+        "final_std": 1.08331,
+        "final_min": 0.081469,
+        "final_max": 21.835136,
+        "dynamic_range": 268.02
+      }
+    },
+    "surveillance_03_q75": {
+      "image": "surveillance_03_q75",
+      "image_size": [
+        1280,
+        720
+      ],
+      "token_grid": [
+        26,
+        46
+      ],
+      "num_tokens": 1196,
+      "vit_time_ms": 1598.5,
+      "layer_correlations": {
+        "0": {
+          "spearman": 0.0065,
+          "pearson": -0.0033
+        },
+        "1": {
+          "spearman": 0.0172,
+          "pearson": -0.0105
+        },
+        "2": {
+          "spearman": 0.0066,
+          "pearson": -0.032
+        },
+        "3": {
+          "spearman": 0.054,
+          "pearson": 0.0079
+        },
+        "4": {
+          "spearman": 0.0411,
+          "pearson": -0.0024
+        },
+        "5": {
+          "spearman": -0.0582,
+          "pearson": -0.0484
+        },
+        "6": {
+          "spearman": 0.0279,
+          "pearson": 0.0785
+        },
+        "7": {
+          "spearman": 0.206,
+          "pearson": 0.078
+        },
+        "8": {
+          "spearman": -0.0254,
+          "pearson": 0.0104
+        },
+        "9": {
+          "spearman": -0.0168,
+          "pearson": 0.0283
+        },
+        "10": {
+          "spearman": 0.0561,
+          "pearson": 0.0681
+        },
+        "11": {
+          "spearman": -0.007,
+          "pearson": 0.0387
+        },
+        "12": {
+          "spearman": -0.0026,
+          "pearson": 0.0129
+        },
+        "13": {
+          "spearman": 0.0142,
+          "pearson": -0.0011
+        },
+        "14": {
+          "spearman": 0.0395,
+          "pearson": 0.0386
+        },
+        "15": {
+          "spearman": 0.4167,
+          "pearson": 0.221
+        },
+        "16": {
+          "spearman": 0.1387,
+          "pearson": 0.0922
+        },
+        "17": {
+          "spearman": 0.2698,
+          "pearson": 0.2423
+        },
+        "18": {
+          "spearman": 0.3988,
+          "pearson": 0.2726
+        },
+        "19": {
+          "spearman": 0.2988,
+          "pearson": 0.2642
+        },
+        "20": {
+          "spearman": 0.4333,
+          "pearson": 0.2646
+        },
+        "21": {
+          "spearman": 0.2676,
+          "pearson": 0.2559
+        },
+        "22": {
+          "spearman": 0.3607,
+          "pearson": 0.257
+        },
+        "23": {
+          "spearman": 0.675,
+          "pearson": 0.4094
+        },
+        "24": {
+          "spearman": 0.2717,
+          "pearson": 0.248
+        },
+        "25": {
+          "spearman": 0.3174,
+          "pearson": 0.2518
+        },
+        "26": {
+          "spearman": 0.2369,
+          "pearson": 0.247
+        },
+        "27": {
+          "spearman": 0.3783,
+          "pearson": 0.2595
+        },
+        "28": {
+          "spearman": 0.4304,
+          "pearson": 0.2665
+        },
+        "29": {
+          "spearman": 0.4569,
+          "pearson": 0.2796
+        },
+        "30": {
+          "spearman": 0.6777,
+          "pearson": 0.2773
+        }
+      },
+      "signal_correlations": {
+        "pixel_variance": {
+          "spearman": 0.2552,
+          "pearson": 0.1341
+        },
+        "jpeg_surviving_ac": {
+          "spearman": 0.1043,
+          "pearson": 0.1609
+        }
+      },
+      "attention_stats": {
+        "final_mean": 1.0,
+        "final_std": 1.080198,
+        "final_min": 0.131241,
+        "final_max": 20.274174,
+        "dynamic_range": 154.48
+      }
+    },
+    "talking_head_01_q75": {
+      "image": "talking_head_01_q75",
+      "image_size": [
+        1280,
+        720
+      ],
+      "token_grid": [
+        26,
+        46
+      ],
+      "num_tokens": 1196,
+      "vit_time_ms": 1583.1,
+      "layer_correlations": {
+        "0": {
+          "spearman": -0.0223,
+          "pearson": -0.0241
+        },
+        "1": {
+          "spearman": -0.0131,
+          "pearson": 0.0034
+        },
+        "2": {
+          "spearman": -0.1066,
+          "pearson": -0.0152
+        },
+        "3": {
+          "spearman": -0.0377,
+          "pearson": 0.0279
+        },
+        "4": {
+          "spearman": 0.178,
+          "pearson": 0.1178
+        },
+        "5": {
+          "spearman": 0.0012,
+          "pearson": -0.0269
+        },
+        "6": {
+          "spearman": 0.0854,
+          "pearson": 0.0601
+        },
+        "7": {
+          "spearman": 0.3624,
+          "pearson": 0.2768
+        },
+        "8": {
+          "spearman": 0.1195,
+          "pearson": 0.0617
+        },
+        "9": {
+          "spearman": 0.2775,
+          "pearson": 0.2425
+        },
+        "10": {
+          "spearman": 0.3162,
+          "pearson": 0.2455
+        },
+        "11": {
+          "spearman": 0.1886,
+          "pearson": 0.1277
+        },
+        "12": {
+          "spearman": 0.2116,
+          "pearson": 0.1456
+        },
+        "13": {
+          "spearman": 0.1562,
+          "pearson": 0.092
+        },
+        "14": {
+          "spearman": 0.191,
+          "pearson": 0.1366
+        },
+        "15": {
+          "spearman": 0.4541,
+          "pearson": 0.3087
+        },
+        "16": {
+          "spearman": 0.1836,
+          "pearson": 0.2005
+        },
+        "17": {
+          "spearman": 0.3969,
+          "pearson": 0.5073
+        },
+        "18": {
+          "spearman": 0.4774,
+          "pearson": 0.5674
+        },
+        "19": {
+          "spearman": 0.3843,
+          "pearson": 0.5587
+        },
+        "20": {
+          "spearman": 0.4381,
+          "pearson": 0.5567
+        },
+        "21": {
+          "spearman": 0.3592,
+          "pearson": 0.5486
+        },
+        "22": {
+          "spearman": 0.4684,
+          "pearson": 0.559
+        },
+        "23": {
+          "spearman": 0.7941,
+          "pearson": 0.7456
+        },
+        "24": {
+          "spearman": 0.3898,
+          "pearson": 0.5573
+        },
+        "25": {
+          "spearman": 0.3621,
+          "pearson": 0.5537
+        },
+        "26": {
+          "spearman": 0.3526,
+          "pearson": 0.553
+        },
+        "27": {
+          "spearman": 0.4803,
+          "pearson": 0.5591
+        },
+        "28": {
+          "spearman": 0.4883,
+          "pearson": 0.5628
+        },
+        "29": {
+          "spearman": 0.5228,
+          "pearson": 0.5789
+        },
+        "30": {
+          "spearman": 0.6884,
+          "pearson": 0.5782
+        }
+      },
+      "signal_correlations": {
+        "pixel_variance": {
+          "spearman": 0.2514,
+          "pearson": 0.2505
+        },
+        "jpeg_surviving_ac": {
+          "spearman": 0.2474,
+          "pearson": 0.2714
+        }
+      },
+      "attention_stats": {
+        "final_mean": 1.0,
+        "final_std": 1.139643,
+        "final_min": 0.076268,
+        "final_max": 9.773289,
+        "dynamic_range": 128.14
+      }
+    },
+    "talking_head_01_q95": {
+      "image": "talking_head_01_q95",
+      "image_size": [
+        1280,
+        720
+      ],
+      "token_grid": [
+        26,
+        46
+      ],
+      "num_tokens": 1196,
+      "vit_time_ms": 1608.5,
+      "layer_correlations": {
+        "0": {
+          "spearman": -0.028,
+          "pearson": -0.0277
+        },
+        "1": {
+          "spearman": -0.0179,
+          "pearson": -0.015
+        },
+        "2": {
+          "spearman": -0.1073,
+          "pearson": -0.0075
+        },
+        "3": {
+          "spearman": -0.0212,
+          "pearson": 0.0322
+        },
+        "4": {
+          "spearman": 0.1655,
+          "pearson": 0.1215
+        },
+        "5": {
+          "spearman": 0.027,
+          "pearson": -0.0086
+        },
+        "6": {
+          "spearman": 0.0988,
+          "pearson": 0.0519
+        },
+        "7": {
+          "spearman": 0.4183,
+          "pearson": 0.2991
+        },
+        "8": {
+          "spearman": 0.1305,
+          "pearson": 0.0562
+        },
+        "9": {
+          "spearman": 0.2431,
+          "pearson": 0.2051
+        },
+        "10": {
+          "spearman": 0.2871,
+          "pearson": 0.2229
+        },
+        "11": {
+          "spearman": 0.1768,
+          "pearson": 0.1039
+        },
+        "12": {
+          "spearman": 0.1866,
+          "pearson": 0.1273
+        },
+        "13": {
+          "spearman": 0.1303,
+          "pearson": 0.0754
+        },
+        "14": {
+          "spearman": 0.1836,
+          "pearson": 0.1285
+        },
+        "15": {
+          "spearman": 0.4953,
+          "pearson": 0.3389
+        },
+        "16": {
+          "spearman": 0.1734,
+          "pearson": 0.1974
+        },
+        "17": {
+          "spearman": 0.3441,
+          "pearson": 0.51
+        },
+        "18": {
+          "spearman": 0.4064,
+          "pearson": 0.5758
+        },
+        "19": {
+          "spearman": 0.3352,
+          "pearson": 0.5726
+        },
+        "20": {
+          "spearman": 0.4227,
+          "pearson": 0.5691
+        },
+        "21": {
+          "spearman": 0.3223,
+          "pearson": 0.566
+        },
+        "22": {
+          "spearman": 0.448,
+          "pearson": 0.5729
+        },
+        "23": {
+          "spearman": 0.8098,
+          "pearson": 0.7669
+        },
+        "24": {
+          "spearman": 0.344,
+          "pearson": 0.5691
+        },
+        "25": {
+          "spearman": 0.3218,
+          "pearson": 0.5681
+        },
+        "26": {
+          "spearman": 0.3083,
+          "pearson": 0.5666
+        },
+        "27": {
+          "spearman": 0.4348,
+          "pearson": 0.5714
+        },
+        "28": {
+          "spearman": 0.437,
+          "pearson": 0.5756
+        },
+        "29": {
+          "spearman": 0.461,
+          "pearson": 0.5858
+        },
+        "30": {
+          "spearman": 0.6402,
+          "pearson": 0.5845
+        }
+      },
+      "signal_correlations": {
+        "pixel_variance": {
+          "spearman": 0.2637,
+          "pearson": 0.2454
+        },
+        "jpeg_surviving_ac": {
+          "spearman": 0.2475,
+          "pearson": 0.2979
+        }
+      },
+      "attention_stats": {
+        "final_mean": 1.0,
+        "final_std": 1.151578,
+        "final_min": 0.080932,
+        "final_max": 9.090847,
+        "dynamic_range": 112.33
+      }
+    },
+    "talking_head_02_q75": {
+      "image": "talking_head_02_q75",
+      "image_size": [
+        1280,
+        720
+      ],
+      "token_grid": [
+        26,
+        46
+      ],
+      "num_tokens": 1196,
+      "vit_time_ms": 1591.7,
+      "layer_correlations": {
+        "0": {
+          "spearman": 0.003,
+          "pearson": -0.0163
+        },
+        "1": {
+          "spearman": -0.0051,
+          "pearson": -0.0103
+        },
+        "2": {
+          "spearman": -0.0933,
+          "pearson": -0.0318
+        },
+        "3": {
+          "spearman": -0.0555,
+          "pearson": -0.0024
+        },
+        "4": {
+          "spearman": 0.1597,
+          "pearson": 0.0949
+        },
+        "5": {
+          "spearman": -0.0085,
+          "pearson": -0.0315
+        },
+        "6": {
+          "spearman": 0.0843,
+          "pearson": 0.0507
+        },
+        "7": {
+          "spearman": 0.3459,
+          "pearson": 0.2482
+        },
+        "8": {
+          "spearman": 0.1235,
+          "pearson": 0.062
+        },
+        "9": {
+          "spearman": 0.2634,
+          "pearson": 0.2276
+        },
+        "10": {
+          "spearman": 0.2935,
+          "pearson": 0.2346
+        },
+        "11": {
+          "spearman": 0.1775,
+          "pearson": 0.1159
+        },
+        "12": {
+          "spearman": 0.1994,
+          "pearson": 0.1417
+        },
+        "13": {
+          "spearman": 0.1413,
+          "pearson": 0.0928
+        },
+        "14": {
+          "spearman": 0.1863,
+          "pearson": 0.1358
+        },
+        "15": {
+          "spearman": 0.4443,
+          "pearson": 0.2933
+        },
+        "16": {
+          "spearman": 0.1755,
+          "pearson": 0.2018
+        },
+        "17": {
+          "spearman": 0.3835,
+          "pearson": 0.5332
+        },
+        "18": {
+          "spearman": 0.455,
+          "pearson": 0.5855
+        },
+        "19": {
+          "spearman": 0.3775,
+          "pearson": 0.5763
+        },
+        "20": {
+          "spearman": 0.429,
+          "pearson": 0.5748
+        },
+        "21": {
+          "spearman": 0.3551,
+          "pearson": 0.5652
+        },
+        "22": {
+          "spearman": 0.4588,
+          "pearson": 0.5731
+        },
+        "23": {
+          "spearman": 0.8008,
+          "pearson": 0.7426
+        },
+        "24": {
+          "spearman": 0.389,
+          "pearson": 0.5775
+        },
+        "25": {
+          "spearman": 0.3452,
+          "pearson": 0.569
+        },
+        "26": {
+          "spearman": 0.3527,
+          "pearson": 0.5709
+        },
+        "27": {
+          "spearman": 0.4789,
+          "pearson": 0.5771
+        },
+        "28": {
+          "spearman": 0.4877,
+          "pearson": 0.5802
+        },
+        "29": {
+          "spearman": 0.5136,
+          "pearson": 0.5967
+        },
+        "30": {
+          "spearman": 0.6741,
+          "pearson": 0.5952
+        }
+      },
+      "signal_correlations": {
+        "pixel_variance": {
+          "spearman": 0.2327,
+          "pearson": 0.2485
+        },
+        "jpeg_surviving_ac": {
+          "spearman": 0.2275,
+          "pearson": 0.2549
+        }
+      },
+      "attention_stats": {
+        "final_mean": 1.0,
+        "final_std": 1.134347,
+        "final_min": 0.08466,
+        "final_max": 9.168453,
+        "dynamic_range": 108.3
+      }
+    },
+    "talking_head_02_q95": {
+      "image": "talking_head_02_q95",
+      "image_size": [
+        1280,
+        720
+      ],
+      "token_grid": [
+        26,
+        46
+      ],
+      "num_tokens": 1196,
+      "vit_time_ms": 1587.2,
+      "layer_correlations": {
+        "0": {
+          "spearman": -0.0022,
+          "pearson": -0.0124
+        },
+        "1": {
+          "spearman": -0.0087,
+          "pearson": -0.0045
+        },
+        "2": {
+          "spearman": -0.1081,
+          "pearson": -0.0298
+        },
+        "3": {
+          "spearman": -0.0476,
+          "pearson": -0.0037
+        },
+        "4": {
+          "spearman": 0.1501,
+          "pearson": 0.0922
+        },
+        "5": {
+          "spearman": 0.0073,
+          "pearson": -0.0325
+        },
+        "6": {
+          "spearman": 0.0958,
+          "pearson": 0.0391
+        },
+        "7": {
+          "spearman": 0.4065,
+          "pearson": 0.27
+        },
+        "8": {
+          "spearman": 0.1296,
+          "pearson": 0.0558
+        },
+        "9": {
+          "spearman": 0.2297,
+          "pearson": 0.1998
+        },
+        "10": {
+          "spearman": 0.2813,
+          "pearson": 0.2085
+        },
+        "11": {
+          "spearman": 0.1734,
+          "pearson": 0.0897
+        },
+        "12": {
+          "spearman": 0.1742,
+          "pearson": 0.1082
+        },
+        "13": {
+          "spearman": 0.1292,
+          "pearson": 0.0596
+        },
+        "14": {
+          "spearman": 0.1638,
+          "pearson": 0.0942
+        },
+        "15": {
+          "spearman": 0.4683,
+          "pearson": 0.3049
+        },
+        "16": {
+          "spearman": 0.1636,
+          "pearson": 0.1799
+        },
+        "17": {
+          "spearman": 0.3389,
+          "pearson": 0.539
+        },
+        "18": {
+          "spearman": 0.3951,
+          "pearson": 0.5997
+        },
+        "19": {
+          "spearman": 0.3425,
+          "pearson": 0.5907
+        },
+        "20": {
+          "spearman": 0.3987,
+          "pearson": 0.5909
+        },
+        "21": {
+          "spearman": 0.2958,
+          "pearson": 0.585
+        },
+        "22": {
+          "spearman": 0.4154,
+          "pearson": 0.5919
+        },
+        "23": {
+          "spearman": 0.7937,
+          "pearson": 0.7774
+        },
+        "24": {
+          "spearman": 0.33,
+          "pearson": 0.5909
+        },
+        "25": {
+          "spearman": 0.3037,
+          "pearson": 0.5868
+        },
+        "26": {
+          "spearman": 0.2838,
+          "pearson": 0.587
+        },
+        "27": {
+          "spearman": 0.4179,
+          "pearson": 0.5908
+        },
+        "28": {
+          "spearman": 0.4345,
+          "pearson": 0.5948
+        },
+        "29": {
+          "spearman": 0.4476,
+          "pearson": 0.6087
+        },
+        "30": {
+          "spearman": 0.6362,
+          "pearson": 0.6046
+        }
+      },
+      "signal_correlations": {
+        "pixel_variance": {
+          "spearman": 0.2443,
+          "pearson": 0.242
+        },
+        "jpeg_surviving_ac": {
+          "spearman": 0.2407,
+          "pearson": 0.2505
+        }
+      },
+      "attention_stats": {
+        "final_mean": 1.0,
+        "final_std": 1.183748,
+        "final_min": 0.085168,
+        "final_max": 9.088638,
+        "dynamic_range": 106.71
+      }
+    },
+    "talking_head_03_q75": {
+      "image": "talking_head_03_q75",
+      "image_size": [
+        1280,
+        720
+      ],
+      "token_grid": [
+        26,
+        46
+      ],
+      "num_tokens": 1196,
+      "vit_time_ms": 1606.5,
+      "layer_correlations": {
+        "0": {
+          "spearman": -0.0078,
+          "pearson": -0.0067
+        },
+        "1": {
+          "spearman": 0.0048,
+          "pearson": -0.0007
+        },
+        "2": {
+          "spearman": -0.0782,
+          "pearson": -0.035
+        },
+        "3": {
+          "spearman": -0.05,
+          "pearson": 0.0167
+        },
+        "4": {
+          "spearman": 0.1607,
+          "pearson": 0.1116
+        },
+        "5": {
+          "spearman": -0.0029,
+          "pearson": -0.018
+        },
+        "6": {
+          "spearman": 0.0776,
+          "pearson": 0.0491
+        },
+        "7": {
+          "spearman": 0.3737,
+          "pearson": 0.2676
+        },
+        "8": {
+          "spearman": 0.1279,
+          "pearson": 0.065
+        },
+        "9": {
+          "spearman": 0.253,
+          "pearson": 0.2256
+        },
+        "10": {
+          "spearman": 0.2846,
+          "pearson": 0.2313
+        },
+        "11": {
+          "spearman": 0.1779,
+          "pearson": 0.1259
+        },
+        "12": {
+          "spearman": 0.1989,
+          "pearson": 0.1431
+        },
+        "13": {
+          "spearman": 0.1514,
+          "pearson": 0.0936
+        },
+        "14": {
+          "spearman": 0.1956,
+          "pearson": 0.1392
+        },
+        "15": {
+          "spearman": 0.4694,
+          "pearson": 0.3055
+        },
+        "16": {
+          "spearman": 0.1794,
+          "pearson": 0.2012
+        },
+        "17": {
+          "spearman": 0.3713,
+          "pearson": 0.531
+        },
+        "18": {
+          "spearman": 0.4448,
+          "pearson": 0.5976
+        },
+        "19": {
+          "spearman": 0.3796,
+          "pearson": 0.594
+        },
+        "20": {
+          "spearman": 0.4403,
+          "pearson": 0.5887
+        },
+        "21": {
+          "spearman": 0.3611,
+          "pearson": 0.5829
+        },
+        "22": {
+          "spearman": 0.4598,
+          "pearson": 0.5907
+        },
+        "23": {
+          "spearman": 0.8029,
+          "pearson": 0.7594
+        },
+        "24": {
+          "spearman": 0.3781,
+          "pearson": 0.5934
+        },
+        "25": {
+          "spearman": 0.3403,
+          "pearson": 0.5872
+        },
+        "26": {
+          "spearman": 0.3445,
+          "pearson": 0.59
+        },
+        "27": {
+          "spearman": 0.4632,
+          "pearson": 0.5936
+        },
+        "28": {
+          "spearman": 0.4813,
+          "pearson": 0.5962
+        },
+        "29": {
+          "spearman": 0.4861,
+          "pearson": 0.6099
+        },
+        "30": {
+          "spearman": 0.6735,
+          "pearson": 0.6078
+        }
+      },
+      "signal_correlations": {
+        "pixel_variance": {
+          "spearman": 0.2504,
+          "pearson": 0.2145
+        },
+        "jpeg_surviving_ac": {
+          "spearman": 0.2514,
+          "pearson": 0.268
+        }
+      },
+      "attention_stats": {
+        "final_mean": 1.0,
+        "final_std": 1.14169,
+        "final_min": 0.102351,
+        "final_max": 9.234277,
+        "dynamic_range": 90.22
+      }
+    },
+    "talking_head_03_q95": {
+      "image": "talking_head_03_q95",
+      "image_size": [
+        1280,
+        720
+      ],
+      "token_grid": [
+        26,
+        46
+      ],
+      "num_tokens": 1196,
+      "vit_time_ms": 1606.2,
+      "layer_correlations": {
+        "0": {
+          "spearman": -0.0281,
+          "pearson": -0.0093
+        },
+        "1": {
+          "spearman": 0.0005,
+          "pearson": 0.0047
+        },
+        "2": {
+          "spearman": -0.083,
+          "pearson": -0.0207
+        },
+        "3": {
+          "spearman": -0.0338,
+          "pearson": 0.012
+        },
+        "4": {
+          "spearman": 0.1639,
+          "pearson": 0.105
+        },
+        "5": {
+          "spearman": 0.0096,
+          "pearson": -0.0336
+        },
+        "6": {
+          "spearman": 0.1025,
+          "pearson": 0.0437
+        },
+        "7": {
+          "spearman": 0.4205,
+          "pearson": 0.2711
+        },
+        "8": {
+          "spearman": 0.1565,
+          "pearson": 0.0637
+        },
+        "9": {
+          "spearman": 0.2599,
+          "pearson": 0.2206
+        },
+        "10": {
+          "spearman": 0.2939,
+          "pearson": 0.2143
+        },
+        "11": {
+          "spearman": 0.1863,
+          "pearson": 0.1009
+        },
+        "12": {
+          "spearman": 0.1988,
+          "pearson": 0.1253
+        },
+        "13": {
+          "spearman": 0.147,
+          "pearson": 0.0688
+        },
+        "14": {
+          "spearman": 0.1854,
+          "pearson": 0.1084
+        },
+        "15": {
+          "spearman": 0.4875,
+          "pearson": 0.3014
+        },
+        "16": {
+          "spearman": 0.1855,
+          "pearson": 0.1984
+        },
+        "17": {
+          "spearman": 0.3469,
+          "pearson": 0.5434
+        },
+        "18": {
+          "spearman": 0.3919,
+          "pearson": 0.5912
+        },
+        "19": {
+          "spearman": 0.3344,
+          "pearson": 0.5835
+        },
+        "20": {
+          "spearman": 0.3988,
+          "pearson": 0.5825
+        },
+        "21": {
+          "spearman": 0.3197,
+          "pearson": 0.5772
+        },
+        "22": {
+          "spearman": 0.4314,
+          "pearson": 0.5834
+        },
+        "23": {
+          "spearman": 0.7968,
+          "pearson": 0.7559
+        },
+        "24": {
+          "spearman": 0.3409,
+          "pearson": 0.583
+        },
+        "25": {
+          "spearman": 0.3099,
+          "pearson": 0.5817
+        },
+        "26": {
+          "spearman": 0.3023,
+          "pearson": 0.5815
+        },
+        "27": {
+          "spearman": 0.4172,
+          "pearson": 0.5842
+        },
+        "28": {
+          "spearman": 0.4451,
+          "pearson": 0.5889
+        },
+        "29": {
+          "spearman": 0.4494,
+          "pearson": 0.5986
+        },
+        "30": {
+          "spearman": 0.628,
+          "pearson": 0.5947
+        }
+      },
+      "signal_correlations": {
+        "pixel_variance": {
+          "spearman": 0.2641,
+          "pearson": 0.2257
+        },
+        "jpeg_surviving_ac": {
+          "spearman": 0.2505,
+          "pearson": 0.278
+        }
+      },
+      "attention_stats": {
+        "final_mean": 1.0,
+        "final_std": 1.204623,
+        "final_min": 0.095497,
+        "final_max": 9.668688,
+        "dynamic_range": 101.25
+      }
+    }
+  }
+}

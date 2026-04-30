@@ -1,0 +1,825 @@
+{
+  "surveillance": {
+    "video": "surveillance",
+    "description": "Cars, pedestrians \u2014 moderate motion in localized areas",
+    "pairs": [
+      {
+        "ref_frame": 1,
+        "cur_frame": 2,
+        "cur_type": "B",
+        "n_tokens": 400,
+        "classification": {
+          "STATIC": 335,
+          "RELOCATED": 0,
+          "NOVEL": 65
+        },
+        "stats_by_class": {
+          "STATIC": {
+            "count": 335,
+            "sim_A_mean": 0.930584728717804,
+            "sim_A_min": 0.2415463775396347,
+            "sim_B_mean": 0.930584728717804,
+            "sim_B_min": 0.2415463775396347,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          },
+          "RELOCATED": {
+            "count": 0,
+            "sim_A_mean": 0,
+            "sim_B_mean": 0,
+            "improvement_mean": 0,
+            "improvement_max": 0
+          },
+          "NOVEL": {
+            "count": 65,
+            "sim_A_mean": 0.9484549760818481,
+            "sim_A_min": 0.5162481665611267,
+            "sim_B_mean": 0.9484549760818481,
+            "sim_B_min": 0.5162481665611267,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          }
+        },
+        "overall": {
+          "sim_A_mean": 0.933488667011261,
+          "sim_B_mean": 0.933488667011261,
+          "improvement_mean": 0.0,
+          "improvement_max": 0.0
+        },
+        "rescue_candidates": 0,
+        "rescue_avg_improvement": 0.0
+      },
+      {
+        "ref_frame": 4,
+        "cur_frame": 5,
+        "cur_type": "B",
+        "n_tokens": 400,
+        "classification": {
+          "STATIC": 355,
+          "RELOCATED": 0,
+          "NOVEL": 45
+        },
+        "stats_by_class": {
+          "STATIC": {
+            "count": 355,
+            "sim_A_mean": 0.9431576728820801,
+            "sim_A_min": 0.16869992017745972,
+            "sim_B_mean": 0.9431576728820801,
+            "sim_B_min": 0.16869992017745972,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          },
+          "RELOCATED": {
+            "count": 0,
+            "sim_A_mean": 0,
+            "sim_B_mean": 0,
+            "improvement_mean": 0,
+            "improvement_max": 0
+          },
+          "NOVEL": {
+            "count": 45,
+            "sim_A_mean": 0.949101448059082,
+            "sim_A_min": 0.6048999428749084,
+            "sim_B_mean": 0.949101448059082,
+            "sim_B_min": 0.6048999428749084,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          }
+        },
+        "overall": {
+          "sim_A_mean": 0.9438263177871704,
+          "sim_B_mean": 0.9438263177871704,
+          "improvement_mean": 0.0,
+          "improvement_max": 0.0
+        },
+        "rescue_candidates": 0,
+        "rescue_avg_improvement": 0.0
+      },
+      {
+        "ref_frame": 10,
+        "cur_frame": 11,
+        "cur_type": "B",
+        "n_tokens": 400,
+        "classification": {
+          "STATIC": 356,
+          "RELOCATED": 0,
+          "NOVEL": 44
+        },
+        "stats_by_class": {
+          "STATIC": {
+            "count": 356,
+            "sim_A_mean": 0.9366891980171204,
+            "sim_A_min": 0.34804412722587585,
+            "sim_B_mean": 0.9366891980171204,
+            "sim_B_min": 0.34804412722587585,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          },
+          "RELOCATED": {
+            "count": 0,
+            "sim_A_mean": 0,
+            "sim_B_mean": 0,
+            "improvement_mean": 0,
+            "improvement_max": 0
+          },
+          "NOVEL": {
+            "count": 44,
+            "sim_A_mean": 0.915065586566925,
+            "sim_A_min": 0.5691633820533752,
+            "sim_B_mean": 0.915065586566925,
+            "sim_B_min": 0.5691633820533752,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          }
+        },
+        "overall": {
+          "sim_A_mean": 0.9343106150627136,
+          "sim_B_mean": 0.9343106150627136,
+          "improvement_mean": 0.0,
+          "improvement_max": 0.0
+        },
+        "rescue_candidates": 0,
+        "rescue_avg_improvement": 0.0
+      },
+      {
+        "ref_frame": 10,
+        "cur_frame": 15,
+        "cur_type": "B",
+        "n_tokens": 400,
+        "classification": {
+          "STATIC": 282,
+          "RELOCATED": 0,
+          "NOVEL": 118
+        },
+        "stats_by_class": {
+          "STATIC": {
+            "count": 282,
+            "sim_A_mean": 0.87456214427948,
+            "sim_A_min": 0.10496189445257187,
+            "sim_B_mean": 0.87456214427948,
+            "sim_B_min": 0.10496189445257187,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          },
+          "RELOCATED": {
+            "count": 0,
+            "sim_A_mean": 0,
+            "sim_B_mean": 0,
+            "improvement_mean": 0,
+            "improvement_max": 0
+          },
+          "NOVEL": {
+            "count": 118,
+            "sim_A_mean": 0.8396113514900208,
+            "sim_A_min": 0.1314995139837265,
+            "sim_B_mean": 0.8396113514900208,
+            "sim_B_min": 0.1314995139837265,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          }
+        },
+        "overall": {
+          "sim_A_mean": 0.8642517328262329,
+          "sim_B_mean": 0.8642517328262329,
+          "improvement_mean": 0.0,
+          "improvement_max": 0.0
+        },
+        "rescue_candidates": 0,
+        "rescue_avg_improvement": 0.0
+      },
+      {
+        "ref_frame": 10,
+        "cur_frame": 20,
+        "cur_type": "B",
+        "n_tokens": 400,
+        "classification": {
+          "STATIC": 290,
+          "RELOCATED": 0,
+          "NOVEL": 110
+        },
+        "stats_by_class": {
+          "STATIC": {
+            "count": 290,
+            "sim_A_mean": 0.840079665184021,
+            "sim_A_min": 0.10820722579956055,
+            "sim_B_mean": 0.840079665184021,
+            "sim_B_min": 0.10820722579956055,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          },
+          "RELOCATED": {
+            "count": 0,
+            "sim_A_mean": 0,
+            "sim_B_mean": 0,
+            "improvement_mean": 0,
+            "improvement_max": 0
+          },
+          "NOVEL": {
+            "count": 110,
+            "sim_A_mean": 0.7388792634010315,
+            "sim_A_min": 0.16517521440982819,
+            "sim_B_mean": 0.7388792634010315,
+            "sim_B_min": 0.16517521440982819,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          }
+        },
+        "overall": {
+          "sim_A_mean": 0.8122495412826538,
+          "sim_B_mean": 0.8122495412826538,
+          "improvement_mean": 0.0,
+          "improvement_max": 0.0
+        },
+        "rescue_candidates": 0,
+        "rescue_avg_improvement": 0.0
+      }
+    ]
+  },
+  "talking_head": {
+    "video": "talking_head",
+    "description": "Face, lips \u2014 very small motion, mostly static",
+    "pairs": [
+      {
+        "ref_frame": 1,
+        "cur_frame": 2,
+        "cur_type": "B",
+        "n_tokens": 400,
+        "classification": {
+          "STATIC": 384,
+          "RELOCATED": 0,
+          "NOVEL": 16
+        },
+        "stats_by_class": {
+          "STATIC": {
+            "count": 384,
+            "sim_A_mean": 0.9666394591331482,
+            "sim_A_min": 0.4307658076286316,
+            "sim_B_mean": 0.9666394591331482,
+            "sim_B_min": 0.4307658076286316,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          },
+          "RELOCATED": {
+            "count": 0,
+            "sim_A_mean": 0,
+            "sim_B_mean": 0,
+            "improvement_mean": 0,
+            "improvement_max": 0
+          },
+          "NOVEL": {
+            "count": 16,
+            "sim_A_mean": 0.9581806659698486,
+            "sim_A_min": 0.7194787859916687,
+            "sim_B_mean": 0.9581806659698486,
+            "sim_B_min": 0.7194787859916687,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          }
+        },
+        "overall": {
+          "sim_A_mean": 0.9663011431694031,
+          "sim_B_mean": 0.9663011431694031,
+          "improvement_mean": 0.0,
+          "improvement_max": 0.0
+        },
+        "rescue_candidates": 0,
+        "rescue_avg_improvement": 0.0
+      },
+      {
+        "ref_frame": 4,
+        "cur_frame": 5,
+        "cur_type": "B",
+        "n_tokens": 400,
+        "classification": {
+          "STATIC": 398,
+          "RELOCATED": 0,
+          "NOVEL": 2
+        },
+        "stats_by_class": {
+          "STATIC": {
+            "count": 398,
+            "sim_A_mean": 0.9359906315803528,
+            "sim_A_min": 0.3136056661605835,
+            "sim_B_mean": 0.9359906315803528,
+            "sim_B_min": 0.3136056661605835,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          },
+          "RELOCATED": {
+            "count": 0,
+            "sim_A_mean": 0,
+            "sim_B_mean": 0,
+            "improvement_mean": 0,
+            "improvement_max": 0
+          },
+          "NOVEL": {
+            "count": 2,
+            "sim_A_mean": 0.9879623651504517,
+            "sim_A_min": 0.9809882640838623,
+            "sim_B_mean": 0.9879623651504517,
+            "sim_B_min": 0.9809882640838623,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          }
+        },
+        "overall": {
+          "sim_A_mean": 0.9362504482269287,
+          "sim_B_mean": 0.9362504482269287,
+          "improvement_mean": 0.0,
+          "improvement_max": 0.0
+        },
+        "rescue_candidates": 0,
+        "rescue_avg_improvement": 0.0
+      },
+      {
+        "ref_frame": 10,
+        "cur_frame": 11,
+        "cur_type": "B",
+        "n_tokens": 400,
+        "classification": {
+          "STATIC": 398,
+          "RELOCATED": 0,
+          "NOVEL": 2
+        },
+        "stats_by_class": {
+          "STATIC": {
+            "count": 398,
+            "sim_A_mean": 0.9770047068595886,
+            "sim_A_min": 0.2863095998764038,
+            "sim_B_mean": 0.9770047068595886,
+            "sim_B_min": 0.2863095998764038,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          },
+          "RELOCATED": {
+            "count": 0,
+            "sim_A_mean": 0,
+            "sim_B_mean": 0,
+            "improvement_mean": 0,
+            "improvement_max": 0
+          },
+          "NOVEL": {
+            "count": 2,
+            "sim_A_mean": 0.9882074594497681,
+            "sim_A_min": 0.9865648150444031,
+            "sim_B_mean": 0.9882074594497681,
+            "sim_B_min": 0.9865648150444031,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          }
+        },
+        "overall": {
+          "sim_A_mean": 0.9770606756210327,
+          "sim_B_mean": 0.9770606756210327,
+          "improvement_mean": 0.0,
+          "improvement_max": 0.0
+        },
+        "rescue_candidates": 0,
+        "rescue_avg_improvement": 0.0
+      },
+      {
+        "ref_frame": 10,
+        "cur_frame": 15,
+        "cur_type": "B",
+        "n_tokens": 400,
+        "classification": {
+          "STATIC": 387,
+          "RELOCATED": 0,
+          "NOVEL": 13
+        },
+        "stats_by_class": {
+          "STATIC": {
+            "count": 387,
+            "sim_A_mean": 0.8901405334472656,
+            "sim_A_min": 0.16984166204929352,
+            "sim_B_mean": 0.8901405334472656,
+            "sim_B_min": 0.16984166204929352,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          },
+          "RELOCATED": {
+            "count": 0,
+            "sim_A_mean": 0,
+            "sim_B_mean": 0,
+            "improvement_mean": 0,
+            "improvement_max": 0
+          },
+          "NOVEL": {
+            "count": 13,
+            "sim_A_mean": 0.8922314047813416,
+            "sim_A_min": 0.47971925139427185,
+            "sim_B_mean": 0.8922314047813416,
+            "sim_B_min": 0.47971925139427185,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          }
+        },
+        "overall": {
+          "sim_A_mean": 0.8902084827423096,
+          "sim_B_mean": 0.8902084827423096,
+          "improvement_mean": 0.0,
+          "improvement_max": 0.0
+        },
+        "rescue_candidates": 0,
+        "rescue_avg_improvement": 0.0
+      },
+      {
+        "ref_frame": 10,
+        "cur_frame": 20,
+        "cur_type": "P",
+        "n_tokens": 400,
+        "classification": {
+          "STATIC": 364,
+          "RELOCATED": 0,
+          "NOVEL": 36
+        },
+        "stats_by_class": {
+          "STATIC": {
+            "count": 364,
+            "sim_A_mean": 0.8499196767807007,
+            "sim_A_min": 0.181387260556221,
+            "sim_B_mean": 0.8499196767807007,
+            "sim_B_min": 0.181387260556221,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          },
+          "RELOCATED": {
+            "count": 0,
+            "sim_A_mean": 0,
+            "sim_B_mean": 0,
+            "improvement_mean": 0,
+            "improvement_max": 0
+          },
+          "NOVEL": {
+            "count": 36,
+            "sim_A_mean": 0.8985614776611328,
+            "sim_A_min": 0.4494832456111908,
+            "sim_B_mean": 0.8985614776611328,
+            "sim_B_min": 0.4494832456111908,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          }
+        },
+        "overall": {
+          "sim_A_mean": 0.854297399520874,
+          "sim_B_mean": 0.854297399520874,
+          "improvement_mean": 0.0,
+          "improvement_max": 0.0
+        },
+        "rescue_candidates": 0,
+        "rescue_avg_improvement": 0.0
+      }
+    ]
+  },
+  "fpv_drone": {
+    "video": "fpv_drone",
+    "description": "Full-frame motion \u2014 global camera movement",
+    "pairs": [
+      {
+        "ref_frame": 1,
+        "cur_frame": 2,
+        "cur_type": "B",
+        "n_tokens": 400,
+        "classification": {
+          "STATIC": 108,
+          "RELOCATED": 1,
+          "NOVEL": 291
+        },
+        "stats_by_class": {
+          "STATIC": {
+            "count": 108,
+            "sim_A_mean": 0.6826273798942566,
+            "sim_A_min": 0.2209472507238388,
+            "sim_B_mean": 0.6826273798942566,
+            "sim_B_min": 0.2209472507238388,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          },
+          "RELOCATED": {
+            "count": 1,
+            "sim_A_mean": 0.19869939982891083,
+            "sim_A_min": 0.19869939982891083,
+            "sim_B_mean": 0.8206687569618225,
+            "sim_B_min": 0.8206687569618225,
+            "improvement_mean": 0.6219693422317505,
+            "improvement_max": 0.6219693422317505,
+            "improvement_min": 0.6219693422317505,
+            "n_improved": 1,
+            "n_degraded": 0
+          },
+          "NOVEL": {
+            "count": 291,
+            "sim_A_mean": 0.6643617749214172,
+            "sim_A_min": 0.1313645839691162,
+            "sim_B_mean": 0.6643617749214172,
+            "sim_B_min": 0.1313645839691162,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          }
+        },
+        "overall": {
+          "sim_A_mean": 0.6681294441223145,
+          "sim_B_mean": 0.6696842908859253,
+          "improvement_mean": 0.001554923364892602,
+          "improvement_max": 0.6219693422317505
+        },
+        "rescue_candidates": 20,
+        "rescue_avg_improvement": 0.18372328728437423
+      },
+      {
+        "ref_frame": 4,
+        "cur_frame": 5,
+        "cur_type": "B",
+        "n_tokens": 400,
+        "classification": {
+          "STATIC": 194,
+          "RELOCATED": 12,
+          "NOVEL": 194
+        },
+        "stats_by_class": {
+          "STATIC": {
+            "count": 194,
+            "sim_A_mean": 0.70579993724823,
+            "sim_A_min": 0.12840254604816437,
+            "sim_B_mean": 0.70579993724823,
+            "sim_B_min": 0.12840254604816437,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          },
+          "RELOCATED": {
+            "count": 12,
+            "sim_A_mean": 0.501204788684845,
+            "sim_A_min": 0.20918111503124237,
+            "sim_B_mean": 0.4423975944519043,
+            "sim_B_min": 0.16564907133579254,
+            "improvement_mean": -0.0588071346282959,
+            "improvement_max": 0.3114824891090393,
+            "improvement_min": -0.5166628956794739,
+            "n_improved": 5,
+            "n_degraded": 7
+          },
+          "NOVEL": {
+            "count": 194,
+            "sim_A_mean": 0.6465404033660889,
+            "sim_A_min": 0.1333272010087967,
+            "sim_B_mean": 0.6465404033660889,
+            "sim_B_min": 0.1333272010087967,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          }
+        },
+        "overall": {
+          "sim_A_mean": 0.6709211468696594,
+          "sim_B_mean": 0.6691570281982422,
+          "improvement_mean": -0.0017642140155658126,
+          "improvement_max": 0.3114824891090393
+        },
+        "rescue_candidates": 6,
+        "rescue_avg_improvement": 0.1067731703321139
+      },
+      {
+        "ref_frame": 10,
+        "cur_frame": 11,
+        "cur_type": "B",
+        "n_tokens": 400,
+        "classification": {
+          "STATIC": 205,
+          "RELOCATED": 12,
+          "NOVEL": 183
+        },
+        "stats_by_class": {
+          "STATIC": {
+            "count": 205,
+            "sim_A_mean": 0.7513720393180847,
+            "sim_A_min": 0.21481281518936157,
+            "sim_B_mean": 0.7513720393180847,
+            "sim_B_min": 0.21481281518936157,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          },
+          "RELOCATED": {
+            "count": 12,
+            "sim_A_mean": 0.5236267447471619,
+            "sim_A_min": 0.2993292808532715,
+            "sim_B_mean": 0.4499470293521881,
+            "sim_B_min": 0.2005852609872818,
+            "improvement_mean": -0.07367965579032898,
+            "improvement_max": 0.22644025087356567,
+            "improvement_min": -0.5444063544273376,
+            "n_improved": 6,
+            "n_degraded": 6
+          },
+          "NOVEL": {
+            "count": 183,
+            "sim_A_mean": 0.6446207165718079,
+            "sim_A_min": 0.16713744401931763,
+            "sim_B_mean": 0.6446207165718079,
+            "sim_B_min": 0.16713744401931763,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          }
+        },
+        "overall": {
+          "sim_A_mean": 0.6957008838653564,
+          "sim_B_mean": 0.6934905052185059,
+          "improvement_mean": -0.0022103895898908377,
+          "improvement_max": 0.22644025087356567
+        },
+        "rescue_candidates": 14,
+        "rescue_avg_improvement": 0.194804952612945
+      },
+      {
+        "ref_frame": 10,
+        "cur_frame": 15,
+        "cur_type": "B",
+        "n_tokens": 400,
+        "classification": {
+          "STATIC": 31,
+          "RELOCATED": 1,
+          "NOVEL": 368
+        },
+        "stats_by_class": {
+          "STATIC": {
+            "count": 31,
+            "sim_A_mean": 0.6512740850448608,
+            "sim_A_min": 0.041599493473768234,
+            "sim_B_mean": 0.6512740850448608,
+            "sim_B_min": 0.041599493473768234,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          },
+          "RELOCATED": {
+            "count": 1,
+            "sim_A_mean": 0.730521023273468,
+            "sim_A_min": 0.730521023273468,
+            "sim_B_mean": 0.5666207671165466,
+            "sim_B_min": 0.5666207671165466,
+            "improvement_mean": -0.1639002561569214,
+            "improvement_max": -0.1639002561569214,
+            "improvement_min": -0.1639002561569214,
+            "n_improved": 0,
+            "n_degraded": 1
+          },
+          "NOVEL": {
+            "count": 368,
+            "sim_A_mean": 0.5820813775062561,
+            "sim_A_min": 0.09438610821962357,
+            "sim_B_mean": 0.5820813775062561,
+            "sim_B_min": 0.09438610821962357,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          }
+        },
+        "overall": {
+          "sim_A_mean": 0.5878148674964905,
+          "sim_B_mean": 0.5874051451683044,
+          "improvement_mean": -0.00040975064621306956,
+          "improvement_max": 0.0
+        },
+        "rescue_candidates": 10,
+        "rescue_avg_improvement": 0.11739157065749169
+      },
+      {
+        "ref_frame": 10,
+        "cur_frame": 20,
+        "cur_type": "P",
+        "n_tokens": 400,
+        "classification": {
+          "STATIC": 25,
+          "RELOCATED": 1,
+          "NOVEL": 374
+        },
+        "stats_by_class": {
+          "STATIC": {
+            "count": 25,
+            "sim_A_mean": 0.6931669116020203,
+            "sim_A_min": 0.28915613889694214,
+            "sim_B_mean": 0.6931669116020203,
+            "sim_B_min": 0.28915613889694214,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          },
+          "RELOCATED": {
+            "count": 1,
+            "sim_A_mean": 0.6238757371902466,
+            "sim_A_min": 0.6238757371902466,
+            "sim_B_mean": 0.1571914553642273,
+            "sim_B_min": 0.1571914553642273,
+            "improvement_mean": -0.4666842818260193,
+            "improvement_max": -0.4666842818260193,
+            "improvement_min": -0.4666842818260193,
+            "n_improved": 0,
+            "n_degraded": 1
+          },
+          "NOVEL": {
+            "count": 374,
+            "sim_A_mean": 0.5593571662902832,
+            "sim_A_min": 0.02896319516003132,
+            "sim_B_mean": 0.5593571662902832,
+            "sim_B_min": 0.02896319516003132,
+            "improvement_mean": 0.0,
+            "improvement_max": 0.0,
+            "improvement_min": 0.0,
+            "n_improved": 0,
+            "n_degraded": 0
+          }
+        },
+        "overall": {
+          "sim_A_mean": 0.5678815245628357,
+          "sim_B_mean": 0.566714882850647,
+          "improvement_mean": -0.001166710746474564,
+          "improvement_max": 0.0
+        },
+        "rescue_candidates": 15,
+        "rescue_avg_improvement": 0.10967920422554016
+      }
+    ]
+  }
+}
