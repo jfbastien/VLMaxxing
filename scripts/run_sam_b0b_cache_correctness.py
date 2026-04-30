@@ -50,7 +50,8 @@ from typing import Any
 if not os.environ.get("HF_TOKEN"):
     raise SystemExit(
         "HF_TOKEN environment variable is required (gated Gemma 4 weights). "
-        "Aborting per B0b spec -- do not attempt to download.")
+        "Aborting per B0b spec -- do not attempt to download."
+    )
 
 import mlx.core as mx
 import numpy as np
@@ -64,8 +65,7 @@ PROTOCOL_ID = "sam_scaleout_handoff_20260429"
 
 # Default external VideoMME data location (sdamico repo). The 26B/M5 stack
 # inherits this dataset; the JF mirror does not duplicate it.
-VIDEOMME_DIR_DEFAULT = Path(
-    "/Users/sam/repos/codec-through/experiments/videomme_data")
+VIDEOMME_DIR_DEFAULT = Path("/Users/sam/repos/codec-through/experiments/videomme_data")
 ARTIFACT_DIR = REPO_ROOT / "research/experiments/2026/artifacts/sam_scaleout_m5_20260429"
 DEFAULT_OUT = ARTIFACT_DIR / "sam_b0b_cache_correctness.jsonl"
 
@@ -92,9 +92,10 @@ MAX_TOKENS = 32  # short -- we just need correctness comparison.
 # Provenance + hashing helpers
 # ---------------------------------------------------------------------------
 
+
 def peak_rss_gb() -> float:
     # ru_maxrss on macOS is in BYTES (Linux = KB); we are macOS-only here.
-    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / (1024 ** 3)
+    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / (1024**3)
 
 
 def sha256_short(s: str | bytes) -> str:
@@ -118,7 +119,11 @@ def repo_commit_sha(path: Path) -> str:
     try:
         out = subprocess.run(
             ["git", "-C", str(path), "rev-parse", "HEAD"],
-            capture_output=True, text=True, timeout=5, check=True)
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=True,
+        )
         return out.stdout.strip()
     except (subprocess.SubprocessError, OSError):
         return "unknown"
@@ -134,6 +139,7 @@ def runtime_versions() -> dict[str, str]:
             out[pkg] = "missing"
     try:
         import mlx_lm
+
         out["mlx_lm"] = getattr(mlx_lm, "__version__", "unknown")
     except ImportError:
         out["mlx_lm"] = "missing"
@@ -143,15 +149,18 @@ def runtime_versions() -> dict[str, str]:
 def hardware_descriptor() -> str:
     try:
         chip = subprocess.run(
-            ["sysctl", "-n", "machdep.cpu.brand_string"],
-            capture_output=True, text=True, timeout=5).stdout.strip()
+            ["sysctl", "-n", "machdep.cpu.brand_string"], capture_output=True, text=True, timeout=5
+        ).stdout.strip()
     except Exception:  # noqa: BLE001
         chip = "unknown"
     try:
-        mem_bytes = int(subprocess.run(
-            ["sysctl", "-n", "hw.memsize"],
-            capture_output=True, text=True, timeout=5).stdout.strip() or 0)
-        mem_gb = mem_bytes / (1024 ** 3)
+        mem_bytes = int(
+            subprocess.run(
+                ["sysctl", "-n", "hw.memsize"], capture_output=True, text=True, timeout=5
+            ).stdout.strip()
+            or 0
+        )
+        mem_gb = mem_bytes / (1024**3)
     except Exception:  # noqa: BLE001
         mem_gb = 0.0
     return f"{chip} | {mem_gb:.1f} GB unified | Darwin {platform.release()}"
@@ -160,8 +169,8 @@ def hardware_descriptor() -> str:
 def metal_version() -> str | None:
     try:
         out = subprocess.run(
-            ["system_profiler", "SPDisplaysDataType"],
-            capture_output=True, text=True, timeout=10).stdout
+            ["system_profiler", "SPDisplaysDataType"], capture_output=True, text=True, timeout=10
+        ).stdout
         for line in out.splitlines():
             if "Metal Support" in line:
                 return line.split(":", 1)[1].strip()
@@ -174,6 +183,7 @@ def metal_version() -> str | None:
 # Frame extraction (deterministic timestamps + per-frame hash)
 # ---------------------------------------------------------------------------
 
+
 def find_videomme_video(video_id: str, videomme_dir: Path) -> str | None:
     for ext in (".mp4", ".mkv", ".webm", ".avi"):
         for p in videomme_dir.rglob(f"{video_id}{ext}"):
@@ -181,12 +191,24 @@ def find_videomme_video(video_id: str, videomme_dir: Path) -> str | None:
     return None
 
 
-def extract_frames(video_path: str, n_frames: int = 8, max_size: int = 560
-                   ) -> tuple[list[np.ndarray], list[float]]:
+def extract_frames(
+    video_path: str, n_frames: int = 8, max_size: int = 560
+) -> tuple[list[np.ndarray], list[float]]:
     result = subprocess.run(
-        ["ffprobe", "-v", "quiet", "-show_entries", "format=duration",
-         "-of", "default=noprint_wrappers=1:nokey=1", video_path],
-        capture_output=True, text=True, timeout=15)
+        [
+            "ffprobe",
+            "-v",
+            "quiet",
+            "-show_entries",
+            "format=duration",
+            "-of",
+            "default=noprint_wrappers=1:nokey=1",
+            video_path,
+        ],
+        capture_output=True,
+        text=True,
+        timeout=15,
+    )
     try:
         duration = float(result.stdout.strip())
     except (ValueError, AttributeError):
@@ -197,13 +219,25 @@ def extract_frames(video_path: str, n_frames: int = 8, max_size: int = 560
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
             tmp_path = tmp.name
         subprocess.run(
-            ["ffmpeg", "-v", "quiet", "-y", "-ss", f"{float(ts):.3f}",
-             "-i", video_path, "-vframes", "1",
-             "-vf",
-             f"scale={max_size}:{max_size}:force_original_aspect_ratio=decrease,"
-             f"pad={max_size}:{max_size}:(ow-iw)/2:(oh-ih)/2",
-             tmp_path],
-            capture_output=True, timeout=30)
+            [
+                "ffmpeg",
+                "-v",
+                "quiet",
+                "-y",
+                "-ss",
+                f"{float(ts):.3f}",
+                "-i",
+                video_path,
+                "-vframes",
+                "1",
+                "-vf",
+                f"scale={max_size}:{max_size}:force_original_aspect_ratio=decrease,"
+                f"pad={max_size}:{max_size}:(ow-iw)/2:(oh-ih)/2",
+                tmp_path,
+            ],
+            capture_output=True,
+            timeout=30,
+        )
         if os.path.exists(tmp_path) and os.path.getsize(tmp_path) > 0:
             frames.append(np.array(Image.open(tmp_path).convert("RGB")))
         if os.path.exists(tmp_path):
@@ -235,12 +269,14 @@ def cleanup_paths(paths: list[str]) -> None:
 # Harness
 # ---------------------------------------------------------------------------
 
+
 class Harness:
     def __init__(self, model_id: str) -> None:
         warnings.filterwarnings("ignore")
         from mlx_vlm import load
         from mlx_vlm.prompt_utils import apply_chat_template
         from mlx_vlm.generate import stream_generate, PromptCacheState
+
         print(f"[loader] loading {model_id} ...", flush=True)
         t0 = time.time()
         self.model, self.processor = load(model_id)
@@ -270,24 +306,35 @@ class Harness:
                 "n_full": sum(1 for t in layer_types if "full" in str(t)),
             }
 
-    def format_inputs(self, img_paths: list[str], question_text: str
-                      ) -> tuple[mx.array, mx.array, mx.array | None, str]:
+    def format_inputs(
+        self, img_paths: list[str], question_text: str
+    ) -> tuple[mx.array, mx.array, mx.array | None, str]:
         formatted = self.apply_template(
-            self.processor, self.model.config, question_text,
-            num_images=len(img_paths), enable_thinking=False)
+            self.processor,
+            self.model.config,
+            question_text,
+            num_images=len(img_paths),
+            enable_thinking=False,
+        )
         inputs = self.processor(
-            text=[formatted], images=img_paths,
-            return_tensors="np", add_special_tokens=False)
+            text=[formatted], images=img_paths, return_tensors="np", add_special_tokens=False
+        )
         input_ids = mx.array(inputs["input_ids"])
         pixel_values = mx.array(inputs["pixel_values"])
         mask = mx.array(inputs["attention_mask"]) if "attention_mask" in inputs else None
         return input_ids, pixel_values, mask, formatted
 
-    def run(self, img_paths: list[str], question_text: str, *,
-            prompt_cache_state: Any = None, max_tokens: int = MAX_TOKENS
-            ) -> dict[str, Any]:
-        input_ids, pixel_values, mask, formatted_prompt = (
-            self.format_inputs(img_paths, question_text))
+    def run(
+        self,
+        img_paths: list[str],
+        question_text: str,
+        *,
+        prompt_cache_state: Any = None,
+        max_tokens: int = MAX_TOKENS,
+    ) -> dict[str, Any]:
+        input_ids, pixel_values, mask, formatted_prompt = self.format_inputs(
+            img_paths, question_text
+        )
         n_input = int(input_ids.shape[1])
         kwargs = {
             "max_tokens": max_tokens,
@@ -307,8 +354,7 @@ class Harness:
         decode_pieces_ms = []
         t_start = time.perf_counter()
         t_first = None
-        for resp in self.stream_generate(
-                self.model, self.processor, "", **kwargs):
+        for resp in self.stream_generate(self.model, self.processor, "", **kwargs):
             if t_first is None:
                 t_first = time.perf_counter()
                 prefill_ms = (t_first - t_start) * 1000.0
@@ -324,8 +370,9 @@ class Harness:
             token_ids.append(tok_int)
             decode_pieces_ms.append(time.perf_counter())
         wall = time.perf_counter() - t_start
-        generate_ms = ((decode_pieces_ms[-1] - t_first) * 1000.0
-                       if decode_pieces_ms and t_first else None)
+        generate_ms = (
+            (decode_pieces_ms[-1] - t_first) * 1000.0 if decode_pieces_ms and t_first else None
+        )
         return {
             "output_text": "".join(text_pieces),
             "formatted_prompt": formatted_prompt,
@@ -345,8 +392,10 @@ class Harness:
 # B0b orchestration
 # ---------------------------------------------------------------------------
 
+
 def load_first_n_videomme(parquet_path: Path, n: int) -> list[dict[str, Any]]:
     import pyarrow.parquet as pq
+
     df = pq.read_table(parquet_path).to_pandas()
     df = df.sort_values("question_id").reset_index(drop=True)
     seen: dict[str, bool] = {}
@@ -355,14 +404,16 @@ def load_first_n_videomme(parquet_path: Path, n: int) -> list[dict[str, Any]]:
         if row["videoID"] in seen:
             continue
         seen[row["videoID"]] = True
-        items.append({
-            "video_id": str(row["videoID"]),
-            "duration": str(row["duration"]),
-            "q1_text": str(row["question"]),
-            "options": list(row["options"]),
-            "answer_letter": str(row["answer"]),
-            "question_id": str(row["question_id"]),
-        })
+        items.append(
+            {
+                "video_id": str(row["videoID"]),
+                "duration": str(row["duration"]),
+                "q1_text": str(row["question"]),
+                "options": list(row["options"]),
+                "answer_letter": str(row["answer"]),
+                "question_id": str(row["question_id"]),
+            }
+        )
         if len(items) >= n:
             break
     return items
@@ -383,31 +434,53 @@ def parsed_correct(text: str, options: list[str], answer_letter: str) -> bool:
     return parsed == answer_letter.strip().upper()
 
 
-def make_row(*, base_provenance: dict[str, Any],
-             video_id: str, item_id: str, q_index: int, turn_index: int,
-             pair_key: str, arm: str, baseline_arm: str, policy: str,
-             baseline_policy: str, comparator_arm: str | None,
-             frame_ids: list[str], frame_hashes: list[str],
-             baseline_frame_ids: list[str], baseline_frame_hashes: list[str],
-             frame_selection_hash: str,
-             raw_prompt: str, baseline_raw_prompt: str,
-             input_ids_hash: str, baseline_input_ids_hash: str,
-             raw_response: str, baseline_raw_response: str,
-             session_choice: str | None, baseline_choice: str | None,
-             session_correct: bool, baseline_correct: bool,
-             session_parse_failure: bool, baseline_parse_failure: bool,
-             prompt_tokens: int, baseline_prompt_tokens: int,
-             generation_tokens: int,
-             prefill_ms: float | None, generate_ms: float | None,
-             repair_prefill_ms: float | None,
-             end_to_end_ms: float, baseline_end_to_end_ms: float | None,
-             vit_calls: int | None, baseline_vit_calls: int | None,
-             peak_memory_gb: float | None,
-             cache_topology: dict[str, Any],
-             prefix_hit: int | None, prefix_coverage: float | None,
-             stage_timings_ms: dict[str, Any] | None,
-             provenance_note: str | None,
-             ) -> dict[str, Any]:
+def make_row(
+    *,
+    base_provenance: dict[str, Any],
+    video_id: str,
+    item_id: str,
+    q_index: int,
+    turn_index: int,
+    pair_key: str,
+    arm: str,
+    baseline_arm: str,
+    policy: str,
+    baseline_policy: str,
+    comparator_arm: str | None,
+    frame_ids: list[str],
+    frame_hashes: list[str],
+    baseline_frame_ids: list[str],
+    baseline_frame_hashes: list[str],
+    frame_selection_hash: str,
+    raw_prompt: str,
+    baseline_raw_prompt: str,
+    input_ids_hash: str,
+    baseline_input_ids_hash: str,
+    raw_response: str,
+    baseline_raw_response: str,
+    session_choice: str | None,
+    baseline_choice: str | None,
+    session_correct: bool,
+    baseline_correct: bool,
+    session_parse_failure: bool,
+    baseline_parse_failure: bool,
+    prompt_tokens: int,
+    baseline_prompt_tokens: int,
+    generation_tokens: int,
+    prefill_ms: float | None,
+    generate_ms: float | None,
+    repair_prefill_ms: float | None,
+    end_to_end_ms: float,
+    baseline_end_to_end_ms: float | None,
+    vit_calls: int | None,
+    baseline_vit_calls: int | None,
+    peak_memory_gb: float | None,
+    cache_topology: dict[str, Any],
+    prefix_hit: int | None,
+    prefix_coverage: float | None,
+    stage_timings_ms: dict[str, Any] | None,
+    provenance_note: str | None,
+) -> dict[str, Any]:
     """Construct a fully schema-compliant row."""
     derived_choice_diff = session_choice != baseline_choice
     derived_correctness_diff = bool(session_correct) != bool(baseline_correct)
@@ -523,8 +596,9 @@ def main() -> int:
     ap.add_argument("--hf-snapshot", default=HF_SNAPSHOT_DEFAULT)
     ap.add_argument("--videomme-dir", type=Path, default=VIDEOMME_DIR_DEFAULT)
     ap.add_argument("--out", type=Path, default=DEFAULT_OUT)
-    ap.add_argument("--smoke", action="store_true",
-                    help="1 video × 1 question for harness validation")
+    ap.add_argument(
+        "--smoke", action="store_true", help="1 video × 1 question for harness validation"
+    )
     args = ap.parse_args()
 
     if args.smoke:
@@ -557,31 +631,26 @@ def main() -> int:
 
     items = load_first_n_videomme(parquet, args.n_videos)
     if len(items) < args.n_videos:
-        raise SystemExit(
-            f"Only found {len(items)} unique videos; need {args.n_videos}")
+        raise SystemExit(f"Only found {len(items)} unique videos; need {args.n_videos}")
 
     # Resolve videos and pre-extract frames.
-    print(f"[setup] resolving {len(items)} videos + extracting frames",
-          flush=True)
+    print(f"[setup] resolving {len(items)} videos + extracting frames", flush=True)
     for it in items:
         video_path = find_videomme_video(it["video_id"], args.videomme_dir)
         if not video_path:
             raise SystemExit(f"Video missing: {it['video_id']}")
-        frames, timestamps = extract_frames(
-            video_path, n_frames=args.n_frames)
+        frames, timestamps = extract_frames(video_path, n_frames=args.n_frames)
         if len(frames) != args.n_frames:
             raise SystemExit(
-                f"Expected {args.n_frames} frames for {it['video_id']}, "
-                f"got {len(frames)}")
+                f"Expected {args.n_frames} frames for {it['video_id']}, got {len(frames)}"
+            )
         it["video_path"] = video_path
         it["frames"] = frames
         it["timestamps"] = timestamps
         it["frame_paths"] = save_frame_jpgs(frames, it["video_id"])
         it["frame_hashes"] = [hash_ndarray(f) for f in frames]
-        it["frame_ids"] = [f"{it['video_id']}@{ts:.3f}s"
-                           for ts in timestamps]
-        it["frame_selection_hash"] = sha256_short(
-            "|".join(it["frame_hashes"]))
+        it["frame_ids"] = [f"{it['video_id']}@{ts:.3f}s" for ts in timestamps]
+        it["frame_selection_hash"] = sha256_short("|".join(it["frame_hashes"]))
 
     # Load model once.
     h = Harness(args.model_id)
@@ -598,12 +667,11 @@ def main() -> int:
     rows: list[dict[str, Any]] = []
 
     for vi, it in enumerate(items):
-        print(f"[video {vi+1}/{len(items)}] {it['video_id']}", flush=True)
+        print(f"[video {vi + 1}/{len(items)}] {it['video_id']}", flush=True)
         # Build question list.
         q1_with_options = (
             f"{it['q1_text']}\n"
-            + "\n".join(f"{chr(ord('A') + i)}. {o}"
-                         for i, o in enumerate(it["options"]))
+            + "\n".join(f"{chr(ord('A') + i)}. {o}" for i, o in enumerate(it["options"]))
             + "\nAnswer with a single letter (A/B/C/D)."
         )
         if args.smoke:
@@ -632,9 +700,12 @@ def main() -> int:
         for q_label, q_text in qs:
             print(f"  [within_turn_cache_replay] {q_label}", flush=True)
             cache_state = h.PromptCacheState()
-            r = h.run(it["frame_paths"], q_text,
-                      prompt_cache_state=cache_state,
-                      max_tokens=args.max_tokens)
+            r = h.run(
+                it["frame_paths"],
+                q_text,
+                prompt_cache_state=cache_state,
+                max_tokens=args.max_tokens,
+            )
             within_results[q_label] = r
             del cache_state
             gc.collect()
@@ -645,14 +716,20 @@ def main() -> int:
         cross_results: dict[str, dict[str, Any]] = {}
         cross_cache = h.PromptCacheState()
         print(f"  [cross_turn_warm] q0_setup (cache primer)", flush=True)
-        _setup = h.run(it["frame_paths"], SETUP_QUESTION,
-                       prompt_cache_state=cross_cache,
-                       max_tokens=args.max_tokens)
+        _setup = h.run(
+            it["frame_paths"],
+            SETUP_QUESTION,
+            prompt_cache_state=cross_cache,
+            max_tokens=args.max_tokens,
+        )
         for ti, (q_label, q_text) in enumerate(qs):
-            print(f"  [cross_turn_warm] {q_label} (turn {ti+1})", flush=True)
-            r = h.run(it["frame_paths"], q_text,
-                      prompt_cache_state=cross_cache,
-                      max_tokens=args.max_tokens)
+            print(f"  [cross_turn_warm] {q_label} (turn {ti + 1})", flush=True)
+            r = h.run(
+                it["frame_paths"],
+                q_text,
+                prompt_cache_state=cross_cache,
+                max_tokens=args.max_tokens,
+            )
             cross_results[q_label] = r
             gc.collect()
         del cross_cache
@@ -670,24 +747,27 @@ def main() -> int:
             within_choice = parse_letter(within["output_text"], n_options)
             cross_choice = parse_letter(cross["output_text"], n_options)
 
-            cold_correct = (q_label == "q1_mc" and
-                            cold_choice == it["answer_letter"].strip().upper())
-            within_correct = (q_label == "q1_mc" and
-                              within_choice == it["answer_letter"].strip().upper())
-            cross_correct = (q_label == "q1_mc" and
-                             cross_choice == it["answer_letter"].strip().upper())
+            cold_correct = q_label == "q1_mc" and cold_choice == it["answer_letter"].strip().upper()
+            within_correct = (
+                q_label == "q1_mc" and within_choice == it["answer_letter"].strip().upper()
+            )
+            cross_correct = (
+                q_label == "q1_mc" and cross_choice == it["answer_letter"].strip().upper()
+            )
 
             # parse_failure is "did the arm produce a parseable choice when
             # the question expected a letter?". For non-MC follow-ups, parse
             # failure is False (text is the answer).
-            cold_pf = (q_label == "q1_mc" and cold_choice is None)
-            within_pf = (q_label == "q1_mc" and within_choice is None)
-            cross_pf = (q_label == "q1_mc" and cross_choice is None)
+            cold_pf = q_label == "q1_mc" and cold_choice is None
+            within_pf = q_label == "q1_mc" and within_choice is None
+            cross_pf = q_label == "q1_mc" and cross_choice is None
 
             base_kw = dict(
                 base_provenance=base_provenance,
-                video_id=it["video_id"], item_id=it["video_id"],
-                q_index=q_idx, turn_index=q_idx,
+                video_id=it["video_id"],
+                item_id=it["video_id"],
+                q_index=q_idx,
+                turn_index=q_idx,
                 frame_ids=it["frame_ids"],
                 frame_hashes=it["frame_hashes"],
                 baseline_frame_ids=it["frame_ids"],
@@ -708,58 +788,63 @@ def main() -> int:
                 stage_timings_ms=None,
                 provenance_note=(
                     f"q_label={q_label}; cold_dense baseline run alongside "
-                    f"within_turn_cache_replay and cross_turn_warm arms."),
+                    f"within_turn_cache_replay and cross_turn_warm arms."
+                ),
             )
 
             # Within-turn row.
-            rows.append(make_row(
-                **base_kw,
-                pair_key=f"v={it['video_id']}/q={q_idx}/within",
-                arm="within_turn_cache_replay",
-                baseline_arm="cold_dense",
-                policy="prompt_cache_state_within_turn",
-                baseline_policy="cold_dense_no_cache",
-                comparator_arm="cold_dense",
-                input_ids_hash=within["input_ids_hash"],
-                raw_response=within["output_text"],
-                session_choice=within_choice,
-                session_correct=within_correct,
-                session_parse_failure=within_pf,
-                prompt_tokens=within["n_input_tokens"],
-                generation_tokens=within["n_output_tokens"],
-                prefill_ms=within["prefill_ms"],
-                generate_ms=within["generate_ms"],
-                repair_prefill_ms=None,
-                end_to_end_ms=within["wall_time_ms"],
-                vit_calls=1,
-                prefix_hit=0,
-                prefix_coverage=0.0,
-            ))
+            rows.append(
+                make_row(
+                    **base_kw,
+                    pair_key=f"v={it['video_id']}/q={q_idx}/within",
+                    arm="within_turn_cache_replay",
+                    baseline_arm="cold_dense",
+                    policy="prompt_cache_state_within_turn",
+                    baseline_policy="cold_dense_no_cache",
+                    comparator_arm="cold_dense",
+                    input_ids_hash=within["input_ids_hash"],
+                    raw_response=within["output_text"],
+                    session_choice=within_choice,
+                    session_correct=within_correct,
+                    session_parse_failure=within_pf,
+                    prompt_tokens=within["n_input_tokens"],
+                    generation_tokens=within["n_output_tokens"],
+                    prefill_ms=within["prefill_ms"],
+                    generate_ms=within["generate_ms"],
+                    repair_prefill_ms=None,
+                    end_to_end_ms=within["wall_time_ms"],
+                    vit_calls=1,
+                    prefix_hit=0,
+                    prefix_coverage=0.0,
+                )
+            )
 
             # Cross-turn row.
-            rows.append(make_row(
-                **base_kw,
-                pair_key=f"v={it['video_id']}/q={q_idx}/cross",
-                arm="cross_turn_warm",
-                baseline_arm="cold_dense",
-                policy="prompt_cache_state_cross_turn_chained",
-                baseline_policy="cold_dense_no_cache",
-                comparator_arm="cold_dense",
-                input_ids_hash=cross["input_ids_hash"],
-                raw_response=cross["output_text"],
-                session_choice=cross_choice,
-                session_correct=cross_correct,
-                session_parse_failure=cross_pf,
-                prompt_tokens=cross["n_input_tokens"],
-                generation_tokens=cross["n_output_tokens"],
-                prefill_ms=cross["prefill_ms"],
-                generate_ms=cross["generate_ms"],
-                repair_prefill_ms=None,
-                end_to_end_ms=cross["wall_time_ms"],
-                vit_calls=0,  # cache reuse -> no fresh ViT
-                prefix_hit=cross["n_input_tokens"],
-                prefix_coverage=1.0,
-            ))
+            rows.append(
+                make_row(
+                    **base_kw,
+                    pair_key=f"v={it['video_id']}/q={q_idx}/cross",
+                    arm="cross_turn_warm",
+                    baseline_arm="cold_dense",
+                    policy="prompt_cache_state_cross_turn_chained",
+                    baseline_policy="cold_dense_no_cache",
+                    comparator_arm="cold_dense",
+                    input_ids_hash=cross["input_ids_hash"],
+                    raw_response=cross["output_text"],
+                    session_choice=cross_choice,
+                    session_correct=cross_correct,
+                    session_parse_failure=cross_pf,
+                    prompt_tokens=cross["n_input_tokens"],
+                    generation_tokens=cross["n_output_tokens"],
+                    prefill_ms=cross["prefill_ms"],
+                    generate_ms=cross["generate_ms"],
+                    repair_prefill_ms=None,
+                    end_to_end_ms=cross["wall_time_ms"],
+                    vit_calls=0,  # cache reuse -> no fresh ViT
+                    prefix_hit=cross["n_input_tokens"],
+                    prefix_coverage=1.0,
+                )
+            )
 
         # Frame jpgs are large; release after each video.
         cleanup_paths(it["frame_paths"])

@@ -63,10 +63,8 @@ PHASE = "B1"
 EXPERIMENT_ID = "sam_scaleout_b1_cpersist_replication_20260429"
 PROTOCOL_ID = "sam_scaleout_handoff_20260429"
 
-VIDEOMME_DIR_DEFAULT = Path(
-    "/Users/sam/repos/codec-through/experiments/videomme_data")
-ARTIFACT_DIR = REPO_ROOT / (
-    "research/experiments/2026/artifacts/sam_scaleout_m5_20260429")
+VIDEOMME_DIR_DEFAULT = Path("/Users/sam/repos/codec-through/experiments/videomme_data")
+ARTIFACT_DIR = REPO_ROOT / ("research/experiments/2026/artifacts/sam_scaleout_m5_20260429")
 DEFAULT_OUT = ARTIFACT_DIR / "sam_b1_cpersist_replication.jsonl"
 
 MODEL_ID_DEFAULT = "google/gemma-4-26B-A4B-it"
@@ -81,7 +79,7 @@ MAX_TOKENS = 32
 
 
 def peak_rss_gb() -> float:
-    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / (1024 ** 3)
+    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / (1024**3)
 
 
 def sha256_short(s: str | bytes) -> str:
@@ -105,7 +103,11 @@ def repo_commit_sha(p: Path) -> str:
     try:
         return subprocess.run(
             ["git", "-C", str(p), "rev-parse", "HEAD"],
-            capture_output=True, text=True, check=True, timeout=5).stdout.strip()
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=5,
+        ).stdout.strip()
     except Exception:  # noqa: BLE001
         return "unknown"
 
@@ -122,14 +124,20 @@ def runtime_versions() -> dict[str, str]:
 
 
 def hardware_descriptor() -> str:
-    chip = subprocess.run(
-        ["sysctl", "-n", "machdep.cpu.brand_string"],
-        capture_output=True, text=True, timeout=5).stdout.strip() or "unknown"
+    chip = (
+        subprocess.run(
+            ["sysctl", "-n", "machdep.cpu.brand_string"], capture_output=True, text=True, timeout=5
+        ).stdout.strip()
+        or "unknown"
+    )
     try:
-        mem = int(subprocess.run(
-            ["sysctl", "-n", "hw.memsize"],
-            capture_output=True, text=True, timeout=5).stdout.strip() or 0)
-        mem_gb = mem / (1024 ** 3)
+        mem = int(
+            subprocess.run(
+                ["sysctl", "-n", "hw.memsize"], capture_output=True, text=True, timeout=5
+            ).stdout.strip()
+            or 0
+        )
+        mem_gb = mem / (1024**3)
     except Exception:  # noqa: BLE001
         mem_gb = 0.0
     return f"{chip} | {mem_gb:.1f} GB unified | Darwin {platform.release()}"
@@ -138,8 +146,8 @@ def hardware_descriptor() -> str:
 def metal_version() -> str | None:
     try:
         out = subprocess.run(
-            ["system_profiler", "SPDisplaysDataType"],
-            capture_output=True, text=True, timeout=10).stdout
+            ["system_profiler", "SPDisplaysDataType"], capture_output=True, text=True, timeout=10
+        ).stdout
         for line in out.splitlines():
             if "Metal Support" in line:
                 return line.split(":", 1)[1].strip()
@@ -155,12 +163,24 @@ def find_videomme_video(video_id: str, vmme_dir: Path) -> str | None:
     return None
 
 
-def extract_frames(video_path: str, n_frames: int = 8, max_size: int = 560
-                   ) -> tuple[list[np.ndarray], list[float]]:
+def extract_frames(
+    video_path: str, n_frames: int = 8, max_size: int = 560
+) -> tuple[list[np.ndarray], list[float]]:
     out = subprocess.run(
-        ["ffprobe", "-v", "quiet", "-show_entries", "format=duration",
-         "-of", "default=noprint_wrappers=1:nokey=1", video_path],
-        capture_output=True, text=True, timeout=15)
+        [
+            "ffprobe",
+            "-v",
+            "quiet",
+            "-show_entries",
+            "format=duration",
+            "-of",
+            "default=noprint_wrappers=1:nokey=1",
+            video_path,
+        ],
+        capture_output=True,
+        text=True,
+        timeout=15,
+    )
     try:
         duration = float(out.stdout.strip())
     except (ValueError, AttributeError):
@@ -171,17 +191,32 @@ def extract_frames(video_path: str, n_frames: int = 8, max_size: int = 560
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
             tmp_path = tmp.name
         subprocess.run(
-            ["ffmpeg", "-v", "quiet", "-y", "-ss", f"{ts:.3f}",
-             "-i", video_path, "-vframes", "1",
-             "-vf",
-             f"scale={max_size}:{max_size}:force_original_aspect_ratio=decrease,"
-             f"pad={max_size}:{max_size}:(ow-iw)/2:(oh-ih)/2", tmp_path],
-            capture_output=True, timeout=30)
+            [
+                "ffmpeg",
+                "-v",
+                "quiet",
+                "-y",
+                "-ss",
+                f"{ts:.3f}",
+                "-i",
+                video_path,
+                "-vframes",
+                "1",
+                "-vf",
+                f"scale={max_size}:{max_size}:force_original_aspect_ratio=decrease,"
+                f"pad={max_size}:{max_size}:(ow-iw)/2:(oh-ih)/2",
+                tmp_path,
+            ],
+            capture_output=True,
+            timeout=30,
+        )
         if os.path.exists(tmp_path) and os.path.getsize(tmp_path) > 0:
             frames.append(np.array(Image.open(tmp_path).convert("RGB")))
         if os.path.exists(tmp_path):
-            try: os.unlink(tmp_path)
-            except OSError: pass
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
     return frames, [float(t) for t in timestamps]
 
 
@@ -196,8 +231,10 @@ def save_jpgs(frames: list[np.ndarray], tag: str) -> list[str]:
 
 def cleanup(paths: list[str]) -> None:
     for p in paths:
-        try: os.unlink(p)
-        except OSError: pass
+        try:
+            os.unlink(p)
+        except OSError:
+            pass
 
 
 class Harness:
@@ -206,6 +243,7 @@ class Harness:
         from mlx_vlm import load
         from mlx_vlm.prompt_utils import apply_chat_template
         from mlx_vlm.generate import stream_generate, PromptCacheState
+
         print(f"[loader] loading {model_id}", flush=True)
         t0 = time.time()
         self.model, self.processor = load(model_id)
@@ -221,35 +259,48 @@ class Harness:
         if layer_types is None:
             self.cache_topology = {
                 "n_layers": getattr(text_cfg, "num_hidden_layers", 0),
-                "sliding_window": sliding, "layer_types": "uniform"}
+                "sliding_window": sliding,
+                "layer_types": "uniform",
+            }
         else:
             self.cache_topology = {
                 "n_layers": len(layer_types),
                 "sliding_window": sliding,
                 "layer_types": list(layer_types),
                 "n_swa": sum(1 for t in layer_types if "sliding" in str(t)),
-                "n_full": sum(1 for t in layer_types if "full" in str(t))}
+                "n_full": sum(1 for t in layer_types if "full" in str(t)),
+            }
 
-    def format(self, img_paths: list[str], q: str
-               ) -> tuple[mx.array, mx.array, mx.array | None, str]:
+    def format(
+        self, img_paths: list[str], q: str
+    ) -> tuple[mx.array, mx.array, mx.array | None, str]:
         formatted = self.apply_template(
-            self.processor, self.model.config, q,
-            num_images=len(img_paths), enable_thinking=False)
+            self.processor, self.model.config, q, num_images=len(img_paths), enable_thinking=False
+        )
         inputs = self.processor(
-            text=[formatted], images=img_paths,
-            return_tensors="np", add_special_tokens=False)
+            text=[formatted], images=img_paths, return_tensors="np", add_special_tokens=False
+        )
         input_ids = mx.array(inputs["input_ids"])
         pixel_values = mx.array(inputs["pixel_values"])
         mask = mx.array(inputs["attention_mask"]) if "attention_mask" in inputs else None
         return input_ids, pixel_values, mask, formatted
 
-    def run(self, img_paths: list[str], q: str, *,
-            prompt_cache_state: Any = None, max_tokens: int = MAX_TOKENS
-            ) -> dict[str, Any]:
+    def run(
+        self,
+        img_paths: list[str],
+        q: str,
+        *,
+        prompt_cache_state: Any = None,
+        max_tokens: int = MAX_TOKENS,
+    ) -> dict[str, Any]:
         input_ids, pixel_values, mask, formatted = self.format(img_paths, q)
         n_input = int(input_ids.shape[1])
-        kwargs = {"max_tokens": max_tokens, "input_ids": input_ids,
-                  "pixel_values": pixel_values, "temperature": 0.0}
+        kwargs = {
+            "max_tokens": max_tokens,
+            "input_ids": input_ids,
+            "pixel_values": pixel_values,
+            "temperature": 0.0,
+        }
         if mask is not None:
             kwargs["mask"] = mask
         if prompt_cache_state is not None:
@@ -257,22 +308,26 @@ class Harness:
         text_pieces, token_ids = [], []
         first_t = None
         t0 = time.perf_counter()
-        for resp in self.stream_generate(
-                self.model, self.processor, "", **kwargs):
+        for resp in self.stream_generate(self.model, self.processor, "", **kwargs):
             if first_t is None:
                 first_t = time.perf_counter()
             if resp.text:
                 text_pieces.append(resp.text)
-            try: token_ids.append(int(resp.token))
-            except Exception: token_ids.append(resp.token)  # noqa: BLE001
+            try:
+                token_ids.append(int(resp.token))
+            except Exception:
+                token_ids.append(resp.token)  # noqa: BLE001
         wall = (time.perf_counter() - t0) * 1000.0
         prefill = ((first_t - t0) * 1000.0) if first_t else None
-        return {"output_text": "".join(text_pieces),
-                "n_input_tokens": n_input,
-                "n_output_tokens": len(token_ids),
-                "input_ids_hash": hash_ids(input_ids.flatten().tolist()),
-                "wall_ms": wall, "prefill_ms": prefill,
-                "generate_ms": wall - prefill if prefill else None}
+        return {
+            "output_text": "".join(text_pieces),
+            "n_input_tokens": n_input,
+            "n_output_tokens": len(token_ids),
+            "input_ids_hash": hash_ids(input_ids.flatten().tolist()),
+            "wall_ms": wall,
+            "prefill_ms": prefill,
+            "generate_ms": wall - prefill if prefill else None,
+        }
 
 
 def parse_letter(text: str, n: int = 4) -> str | None:
@@ -284,56 +339,150 @@ def parse_letter(text: str, n: int = 4) -> str | None:
 
 
 ROW_KEYS = (
-    "schema_version","experiment_id","protocol_id","run_id","phase",
-    "row_role","arm","baseline_arm","comparator_arm","policy",
-    "baseline_policy","policy_params","model_id","model_sha","quantization",
-    "runtime","runtime_commit","hardware","os_version","mlx_version",
-    "metal_version","command_line","memory_definition","video_id",
-    "event_id","item_id","pair_key","q_index","source_q_index",
-    "turn_index","prompt_frame_count","frame_ids","frame_hashes",
-    "baseline_frame_ids","baseline_frame_hashes","frame_selection_hash",
-    "frames_sha256","raw_prompt","baseline_raw_prompt","prompt_hash",
-    "baseline_prompt_hash","input_ids_hash","baseline_input_ids_hash",
-    "raw_response","baseline_raw_response","session_choice",
-    "baseline_choice","choice_diff","session_correct","baseline_correct",
-    "correctness_diff","session_parse_failure","baseline_parse_failure",
-    "parse_failure","text_identical","decode_ms","vision_ms","prefill_ms",
-    "repair_prefill_ms","generate_ms","end_to_end_ms",
-    "baseline_end_to_end_ms","elapsed_ms","baseline_elapsed_ms","vit_calls",
-    "baseline_vit_calls","peak_memory_gb","cache_topology","prefix_hit",
-    "prefix_coverage","prompt_tokens","baseline_prompt_tokens",
-    "generation_tokens","seed","temperature","top_p","evidence_budget",
-    "cadence_sec","fps","last_k","selected_frame_indices","event_time_s",
-    "observation_window_s","stale_cache_case_id","changed_answer_expected",
-    "claim_id","source_artifact_path","source_artifact_sha256",
-    "export_row_count","expected_row_count","exactness_match","ci_method",
-    "ci95","provenance_note","stage_timings_ms","commit_sha")
+    "schema_version",
+    "experiment_id",
+    "protocol_id",
+    "run_id",
+    "phase",
+    "row_role",
+    "arm",
+    "baseline_arm",
+    "comparator_arm",
+    "policy",
+    "baseline_policy",
+    "policy_params",
+    "model_id",
+    "model_sha",
+    "quantization",
+    "runtime",
+    "runtime_commit",
+    "hardware",
+    "os_version",
+    "mlx_version",
+    "metal_version",
+    "command_line",
+    "memory_definition",
+    "video_id",
+    "event_id",
+    "item_id",
+    "pair_key",
+    "q_index",
+    "source_q_index",
+    "turn_index",
+    "prompt_frame_count",
+    "frame_ids",
+    "frame_hashes",
+    "baseline_frame_ids",
+    "baseline_frame_hashes",
+    "frame_selection_hash",
+    "frames_sha256",
+    "raw_prompt",
+    "baseline_raw_prompt",
+    "prompt_hash",
+    "baseline_prompt_hash",
+    "input_ids_hash",
+    "baseline_input_ids_hash",
+    "raw_response",
+    "baseline_raw_response",
+    "session_choice",
+    "baseline_choice",
+    "choice_diff",
+    "session_correct",
+    "baseline_correct",
+    "correctness_diff",
+    "session_parse_failure",
+    "baseline_parse_failure",
+    "parse_failure",
+    "text_identical",
+    "decode_ms",
+    "vision_ms",
+    "prefill_ms",
+    "repair_prefill_ms",
+    "generate_ms",
+    "end_to_end_ms",
+    "baseline_end_to_end_ms",
+    "elapsed_ms",
+    "baseline_elapsed_ms",
+    "vit_calls",
+    "baseline_vit_calls",
+    "peak_memory_gb",
+    "cache_topology",
+    "prefix_hit",
+    "prefix_coverage",
+    "prompt_tokens",
+    "baseline_prompt_tokens",
+    "generation_tokens",
+    "seed",
+    "temperature",
+    "top_p",
+    "evidence_budget",
+    "cadence_sec",
+    "fps",
+    "last_k",
+    "selected_frame_indices",
+    "event_time_s",
+    "observation_window_s",
+    "stale_cache_case_id",
+    "changed_answer_expected",
+    "claim_id",
+    "source_artifact_path",
+    "source_artifact_sha256",
+    "export_row_count",
+    "expected_row_count",
+    "exactness_match",
+    "ci_method",
+    "ci95",
+    "provenance_note",
+    "stage_timings_ms",
+    "commit_sha",
+)
 
 
 def make_row(prov: dict[str, Any], **kw: Any) -> dict[str, Any]:
     row = {k: None for k in ROW_KEYS}
-    row.update({
-        "schema_version": SCHEMA_VERSION, "experiment_id": EXPERIMENT_ID,
-        "protocol_id": PROTOCOL_ID, "run_id": prov["run_id"],
-        "phase": PHASE, "row_role": "paired",
-        "model_id": prov["model_id"], "model_sha": prov["model_sha"],
-        "quantization": prov["quantization"], "runtime": prov["runtime"],
-        "runtime_commit": prov["runtime_commit"],
-        "hardware": prov["hardware"], "os_version": prov["os_version"],
-        "mlx_version": prov["mlx_version"],
-        "metal_version": prov["metal_version"],
-        "command_line": prov["command_line"],
-        "memory_definition": prov["memory_definition"],
-        "frame_ids": [], "frame_hashes": [], "baseline_frame_ids": [],
-        "baseline_frame_hashes": [], "raw_prompt": "",
-        "baseline_raw_prompt": "", "raw_response": "",
-        "baseline_raw_response": "", "choice_diff": False,
-        "session_correct": False, "baseline_correct": False,
-        "correctness_diff": False, "session_parse_failure": False,
-        "baseline_parse_failure": False, "parse_failure": False,
-        "text_identical": False, "end_to_end_ms": 0.0, "seed": 0,
-        "temperature": 0.0, "cache_topology": {},
-        "selected_frame_indices": None, "commit_sha": prov["commit_sha"]})
+    row.update(
+        {
+            "schema_version": SCHEMA_VERSION,
+            "experiment_id": EXPERIMENT_ID,
+            "protocol_id": PROTOCOL_ID,
+            "run_id": prov["run_id"],
+            "phase": PHASE,
+            "row_role": "paired",
+            "model_id": prov["model_id"],
+            "model_sha": prov["model_sha"],
+            "quantization": prov["quantization"],
+            "runtime": prov["runtime"],
+            "runtime_commit": prov["runtime_commit"],
+            "hardware": prov["hardware"],
+            "os_version": prov["os_version"],
+            "mlx_version": prov["mlx_version"],
+            "metal_version": prov["metal_version"],
+            "command_line": prov["command_line"],
+            "memory_definition": prov["memory_definition"],
+            "frame_ids": [],
+            "frame_hashes": [],
+            "baseline_frame_ids": [],
+            "baseline_frame_hashes": [],
+            "raw_prompt": "",
+            "baseline_raw_prompt": "",
+            "raw_response": "",
+            "baseline_raw_response": "",
+            "choice_diff": False,
+            "session_correct": False,
+            "baseline_correct": False,
+            "correctness_diff": False,
+            "session_parse_failure": False,
+            "baseline_parse_failure": False,
+            "parse_failure": False,
+            "text_identical": False,
+            "end_to_end_ms": 0.0,
+            "seed": 0,
+            "temperature": 0.0,
+            "cache_topology": {},
+            "selected_frame_indices": None,
+            "commit_sha": prov["commit_sha"],
+        }
+    )
     row.update(kw)
     return row
 
@@ -360,31 +509,38 @@ def main() -> int:
     versions = runtime_versions()
     prov = {
         "run_id": f"sam_b1_{int(time.time())}_{uuid.uuid4().hex[:8]}",
-        "model_id": args.model_id, "model_sha": args.hf_snapshot,
+        "model_id": args.model_id,
+        "model_sha": args.hf_snapshot,
         "quantization": "bf16_native",
         "runtime": f"mlx_vlm-{versions['mlx_vlm']}",
-        "runtime_commit": "pypi", "hardware": hardware_descriptor(),
+        "runtime_commit": "pypi",
+        "hardware": hardware_descriptor(),
         "os_version": f"Darwin {platform.release()}",
         "mlx_version": versions.get("mlx", "unknown"),
         "metal_version": metal_version(),
         "command_line": " ".join(sys.argv),
         "memory_definition": "ru_maxrss bytes (macOS) -> GB",
-        "commit_sha": repo_commit_sha(REPO_ROOT)}
+        "commit_sha": repo_commit_sha(REPO_ROOT),
+    }
     print(f"[provenance] {json.dumps(prov, indent=2)}", flush=True)
 
     # Load VideoMME items.
     import pyarrow.parquet as pq
-    df = pq.read_table(parquet).to_pandas().sort_values(
-        "question_id").reset_index(drop=True)
+
+    df = pq.read_table(parquet).to_pandas().sort_values("question_id").reset_index(drop=True)
     seen, items = {}, []
     for _, row in df.iterrows():
         if row["videoID"] in seen:
             continue
         seen[row["videoID"]] = True
-        items.append({"video_id": str(row["videoID"]),
-                      "q1_text": str(row["question"]),
-                      "options": list(row["options"]),
-                      "answer_letter": str(row["answer"])})
+        items.append(
+            {
+                "video_id": str(row["videoID"]),
+                "q1_text": str(row["question"]),
+                "options": list(row["options"]),
+                "answer_letter": str(row["answer"]),
+            }
+        )
         if len(items) >= args.n_videos:
             break
     if len(items) < args.n_videos:
@@ -409,26 +565,27 @@ def main() -> int:
     rows: list[dict[str, Any]] = []
 
     for vi, it in enumerate(items):
-        print(f"[video {vi+1}/{len(items)}] {it['video_id']}", flush=True)
+        print(f"[video {vi + 1}/{len(items)}] {it['video_id']}", flush=True)
         # Build the 3 questions.
         q1_with_options = (
             f"{it['q1_text']}\n"
-            + "\n".join(f"{chr(ord('A') + i)}. {o}"
-                        for i, o in enumerate(it["options"]))
-            + "\nAnswer with a single letter (A/B/C/D).")
+            + "\n".join(f"{chr(ord('A') + i)}. {o}" for i, o in enumerate(it["options"]))
+            + "\nAnswer with a single letter (A/B/C/D)."
+        )
         if args.smoke:
             qs = [("q1_mc", q1_with_options)]
         else:
-            qs = [("q1_mc", q1_with_options),
-                  ("q2_color", FOLLOWUPS[0]),
-                  ("q3_people", FOLLOWUPS[1])]
+            qs = [
+                ("q1_mc", q1_with_options),
+                ("q2_color", FOLLOWUPS[0]),
+                ("q3_people", FOLLOWUPS[1]),
+            ]
 
         # Cold-dense baseline per Q.
         cold: dict[str, dict[str, Any]] = {}
         for q_label, q_text in qs:
             print(f"  [cold_dense] {q_label}", flush=True)
-            cold[q_label] = h.run(it["frame_paths"], q_text,
-                                  max_tokens=args.max_tokens)
+            cold[q_label] = h.run(it["frame_paths"], q_text, max_tokens=args.max_tokens)
             gc.collect()
 
         # Fixed K=1: cache built during Q0 setup, then ONE follow-up Q.
@@ -438,15 +595,17 @@ def main() -> int:
         # we rebuild the setup cache for each Q (cheap for the protocol).
         fixed_k1: dict[str, dict[str, Any]] = {}
         for q_label, q_text in qs:
-            print(f"  [fixed_k1] {q_label} (rebuild setup -> 1-step follow-up)",
-                  flush=True)
+            print(f"  [fixed_k1] {q_label} (rebuild setup -> 1-step follow-up)", flush=True)
             cache = h.PromptCacheState()
-            _setup = h.run(it["frame_paths"], SETUP_QUESTION,
-                           prompt_cache_state=cache,
-                           max_tokens=args.max_tokens)
-            fixed_k1[q_label] = h.run(it["frame_paths"], q_text,
-                                       prompt_cache_state=cache,
-                                       max_tokens=args.max_tokens)
+            _setup = h.run(
+                it["frame_paths"],
+                SETUP_QUESTION,
+                prompt_cache_state=cache,
+                max_tokens=args.max_tokens,
+            )
+            fixed_k1[q_label] = h.run(
+                it["frame_paths"], q_text, prompt_cache_state=cache, max_tokens=args.max_tokens
+            )
             del cache
             gc.collect()
 
@@ -458,17 +617,20 @@ def main() -> int:
         # "post-Q2" form.
         adaptive: dict[str, dict[str, Any]] = {}
         cache_long = h.PromptCacheState()
-        _setup_long = h.run(it["frame_paths"], SETUP_QUESTION,
-                            prompt_cache_state=cache_long,
-                            max_tokens=args.max_tokens)
+        _setup_long = h.run(
+            it["frame_paths"],
+            SETUP_QUESTION,
+            prompt_cache_state=cache_long,
+            max_tokens=args.max_tokens,
+        )
         prior_q_text = SETUP_QUESTION
         for q_label, q_text in qs:
             print(f"  [adaptive_post_prev_repaired] {q_label}", flush=True)
             # The "repair" approximation: re-run prior_q briefly to
             # update cache state, then ask q_text with that updated cache.
-            adaptive[q_label] = h.run(it["frame_paths"], q_text,
-                                       prompt_cache_state=cache_long,
-                                       max_tokens=args.max_tokens)
+            adaptive[q_label] = h.run(
+                it["frame_paths"], q_text, prompt_cache_state=cache_long, max_tokens=args.max_tokens
+            )
             prior_q_text = q_text
             gc.collect()
         del cache_long
@@ -483,91 +645,115 @@ def main() -> int:
             cb_choice = parse_letter(cb["output_text"], n_opts)
             f1_choice = parse_letter(f1["output_text"], n_opts)
             ad_choice = parse_letter(ad["output_text"], n_opts)
-            cb_correct = (q_label == "q1_mc" and cb_choice == it["answer_letter"].strip().upper())
-            f1_correct = (q_label == "q1_mc" and f1_choice == it["answer_letter"].strip().upper())
-            ad_correct = (q_label == "q1_mc" and ad_choice == it["answer_letter"].strip().upper())
+            cb_correct = q_label == "q1_mc" and cb_choice == it["answer_letter"].strip().upper()
+            f1_correct = q_label == "q1_mc" and f1_choice == it["answer_letter"].strip().upper()
+            ad_correct = q_label == "q1_mc" and ad_choice == it["answer_letter"].strip().upper()
             cb_pf = q_label == "q1_mc" and cb_choice is None
             f1_pf = q_label == "q1_mc" and f1_choice is None
             ad_pf = q_label == "q1_mc" and ad_choice is None
 
             common = dict(
-                video_id=it["video_id"], item_id=it["video_id"],
-                q_index=q_idx, turn_index=q_idx,
+                video_id=it["video_id"],
+                item_id=it["video_id"],
+                q_index=q_idx,
+                turn_index=q_idx,
                 prompt_frame_count=len(it["frame_ids"]),
-                frame_ids=it["frame_ids"], frame_hashes=it["frame_hashes"],
+                frame_ids=it["frame_ids"],
+                frame_hashes=it["frame_hashes"],
                 baseline_frame_ids=it["frame_ids"],
                 baseline_frame_hashes=it["frame_hashes"],
                 frame_selection_hash=it["frame_sel_hash"],
                 frames_sha256=it["frame_sel_hash"],
-                raw_prompt=q_text, baseline_raw_prompt=q_text,
+                raw_prompt=q_text,
+                baseline_raw_prompt=q_text,
                 prompt_hash=sha256_short(q_text),
                 baseline_prompt_hash=sha256_short(q_text),
                 baseline_input_ids_hash=cb["input_ids_hash"],
                 baseline_raw_response=cb["output_text"],
-                baseline_choice=cb_choice, baseline_correct=cb_correct,
+                baseline_choice=cb_choice,
+                baseline_correct=cb_correct,
                 baseline_parse_failure=cb_pf,
                 baseline_prompt_tokens=cb["n_input_tokens"],
                 baseline_end_to_end_ms=cb["wall_ms"],
-                baseline_vit_calls=1, baseline_arm="cold_dense",
+                baseline_vit_calls=1,
+                baseline_arm="cold_dense",
                 baseline_policy="cold_dense_no_cache",
                 comparator_arm="cold_dense",
                 cache_topology=h.cache_topology,
                 peak_memory_gb=peak_rss_gb(),
             )
 
-            rows.append(make_row(prov, **common,
-                pair_key=f"v={it['video_id']}/q={q_idx}/fixed_k1",
-                arm="fixed_k1_cache_reuse",
-                policy="prompt_cache_state_after_setup_one_step_followup",
-                input_ids_hash=f1["input_ids_hash"],
-                raw_response=f1["output_text"],
-                session_choice=f1_choice, session_correct=f1_correct,
-                session_parse_failure=f1_pf,
-                choice_diff=f1_choice != cb_choice,
-                correctness_diff=f1_correct != cb_correct,
-                parse_failure=f1_pf or cb_pf,
-                text_identical=f1["output_text"] == cb["output_text"],
-                end_to_end_ms=f1["wall_ms"],
-                elapsed_ms=f1["wall_ms"],
-                baseline_elapsed_ms=cb["wall_ms"],
-                prefill_ms=f1["prefill_ms"], generate_ms=f1["generate_ms"],
-                vit_calls=0, prefix_hit=f1["n_input_tokens"],
-                prefix_coverage=1.0,
-                prompt_tokens=f1["n_input_tokens"],
-                generation_tokens=f1["n_output_tokens"],
-                provenance_note=(
-                    "B1 fixed-K=1 approximation: setup cache built via Q0, "
-                    "then one follow-up turn reuses it. Runs against the "
-                    "B0b-broken cross-turn cache path; expected to reproduce "
-                    "the same fidelity loss. Diagnostic, not a clean "
-                    "replication.")))
+            rows.append(
+                make_row(
+                    prov,
+                    **common,
+                    pair_key=f"v={it['video_id']}/q={q_idx}/fixed_k1",
+                    arm="fixed_k1_cache_reuse",
+                    policy="prompt_cache_state_after_setup_one_step_followup",
+                    input_ids_hash=f1["input_ids_hash"],
+                    raw_response=f1["output_text"],
+                    session_choice=f1_choice,
+                    session_correct=f1_correct,
+                    session_parse_failure=f1_pf,
+                    choice_diff=f1_choice != cb_choice,
+                    correctness_diff=f1_correct != cb_correct,
+                    parse_failure=f1_pf or cb_pf,
+                    text_identical=f1["output_text"] == cb["output_text"],
+                    end_to_end_ms=f1["wall_ms"],
+                    elapsed_ms=f1["wall_ms"],
+                    baseline_elapsed_ms=cb["wall_ms"],
+                    prefill_ms=f1["prefill_ms"],
+                    generate_ms=f1["generate_ms"],
+                    vit_calls=0,
+                    prefix_hit=f1["n_input_tokens"],
+                    prefix_coverage=1.0,
+                    prompt_tokens=f1["n_input_tokens"],
+                    generation_tokens=f1["n_output_tokens"],
+                    provenance_note=(
+                        "B1 fixed-K=1 approximation: setup cache built via Q0, "
+                        "then one follow-up turn reuses it. Runs against the "
+                        "B0b-broken cross-turn cache path; expected to reproduce "
+                        "the same fidelity loss. Diagnostic, not a clean "
+                        "replication."
+                    ),
+                )
+            )
 
-            rows.append(make_row(prov, **common,
-                pair_key=f"v={it['video_id']}/q={q_idx}/adaptive",
-                arm="adaptive_post_prev_repaired",
-                policy="prompt_cache_state_chained_post_prev",
-                input_ids_hash=ad["input_ids_hash"],
-                raw_response=ad["output_text"],
-                session_choice=ad_choice, session_correct=ad_correct,
-                session_parse_failure=ad_pf,
-                choice_diff=ad_choice != cb_choice,
-                correctness_diff=ad_correct != cb_correct,
-                parse_failure=ad_pf or cb_pf,
-                text_identical=ad["output_text"] == cb["output_text"],
-                end_to_end_ms=ad["wall_ms"],
-                elapsed_ms=ad["wall_ms"],
-                baseline_elapsed_ms=cb["wall_ms"],
-                prefill_ms=ad["prefill_ms"], generate_ms=ad["generate_ms"],
-                repair_prefill_ms=None,
-                vit_calls=0, prefix_hit=ad["n_input_tokens"],
-                prefix_coverage=1.0,
-                prompt_tokens=ad["n_input_tokens"],
-                generation_tokens=ad["n_output_tokens"],
-                provenance_note=(
-                    "B1 adaptive-post-previous approximation: cache extends "
-                    "across SETUP -> Q1 -> Q2 -> Q3 sequence. Each Q reuses "
-                    "the cumulative cross-turn cache. Runs against the "
-                    "B0b-broken path; diagnostic only.")))
+            rows.append(
+                make_row(
+                    prov,
+                    **common,
+                    pair_key=f"v={it['video_id']}/q={q_idx}/adaptive",
+                    arm="adaptive_post_prev_repaired",
+                    policy="prompt_cache_state_chained_post_prev",
+                    input_ids_hash=ad["input_ids_hash"],
+                    raw_response=ad["output_text"],
+                    session_choice=ad_choice,
+                    session_correct=ad_correct,
+                    session_parse_failure=ad_pf,
+                    choice_diff=ad_choice != cb_choice,
+                    correctness_diff=ad_correct != cb_correct,
+                    parse_failure=ad_pf or cb_pf,
+                    text_identical=ad["output_text"] == cb["output_text"],
+                    end_to_end_ms=ad["wall_ms"],
+                    elapsed_ms=ad["wall_ms"],
+                    baseline_elapsed_ms=cb["wall_ms"],
+                    prefill_ms=ad["prefill_ms"],
+                    generate_ms=ad["generate_ms"],
+                    repair_prefill_ms=None,
+                    vit_calls=0,
+                    prefix_hit=ad["n_input_tokens"],
+                    prefix_coverage=1.0,
+                    prompt_tokens=ad["n_input_tokens"],
+                    generation_tokens=ad["n_output_tokens"],
+                    provenance_note=(
+                        "B1 adaptive-post-previous approximation: cache extends "
+                        "across SETUP -> Q1 -> Q2 -> Q3 sequence. Each Q reuses "
+                        "the cumulative cross-turn cache. Runs against the "
+                        "B0b-broken path; diagnostic only."
+                    ),
+                )
+            )
 
         cleanup(it["frame_paths"])
         del it["frames"]

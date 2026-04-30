@@ -56,8 +56,7 @@ EXPERIMENT_ID = "sam_scaleout_b5_s4_reexport_20260429"
 PROTOCOL_ID = "sam_scaleout_handoff_20260429"
 
 DEFAULT_SOURCE_ROOT = Path("/Users/sam/repos/codec-through")
-DEFAULT_BUNDLE_DIR = REPO_ROOT / (
-    "research/experiments/2026/artifacts/sam_scaleout_m5_20260429")
+DEFAULT_BUNDLE_DIR = REPO_ROOT / ("research/experiments/2026/artifacts/sam_scaleout_m5_20260429")
 
 # Origin sdamico commit that landed the S4 audit JSONLs.
 SDAMICO_S4_COMMIT = "30a1810"
@@ -86,15 +85,18 @@ def runtime_versions() -> dict[str, str]:
 def hardware_descriptor() -> str:
     try:
         chip = subprocess.run(
-            ["sysctl", "-n", "machdep.cpu.brand_string"],
-            capture_output=True, text=True, timeout=5).stdout.strip()
+            ["sysctl", "-n", "machdep.cpu.brand_string"], capture_output=True, text=True, timeout=5
+        ).stdout.strip()
     except Exception:  # noqa: BLE001
         chip = "unknown"
     try:
-        mem_bytes = int(subprocess.run(
-            ["sysctl", "-n", "hw.memsize"],
-            capture_output=True, text=True, timeout=5).stdout.strip() or 0)
-        mem_gb = mem_bytes / (1024 ** 3)
+        mem_bytes = int(
+            subprocess.run(
+                ["sysctl", "-n", "hw.memsize"], capture_output=True, text=True, timeout=5
+            ).stdout.strip()
+            or 0
+        )
+        mem_gb = mem_bytes / (1024**3)
     except Exception:  # noqa: BLE001
         mem_gb = 0.0
     return f"{chip} | {mem_gb:.1f} GB unified | Darwin {platform.release()}"
@@ -104,18 +106,21 @@ def repo_commit_sha(path: Path) -> str:
     try:
         out = subprocess.run(
             ["git", "-C", str(path), "rev-parse", "HEAD"],
-            capture_output=True, text=True, timeout=5, check=True)
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=True,
+        )
         return out.stdout.strip()
     except (subprocess.SubprocessError, OSError):
         return "unknown"
 
 
 def _peak_rss_gb() -> float:
-    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / (1024 ** 3)
+    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / (1024**3)
 
 
-def base_provenance_for(source_root: Path, command_line: str
-                         ) -> dict[str, Any]:
+def base_provenance_for(source_root: Path, command_line: str) -> dict[str, Any]:
     versions = runtime_versions()
     return {
         "run_id": f"sam_b5_{int(time.time())}_{uuid.uuid4().hex[:8]}",
@@ -136,8 +141,7 @@ def base_provenance_for(source_root: Path, command_line: str
     }
 
 
-def empty_row(*, base_provenance: dict[str, Any], **overrides: Any
-               ) -> dict[str, Any]:
+def empty_row(*, base_provenance: dict[str, Any], **overrides: Any) -> dict[str, Any]:
     """Construct a schema-compliant row with sensible B5 defaults; overrides
     fill in the per-row fields."""
     row = {
@@ -253,8 +257,9 @@ def load_jsonl(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
-def reexport_accuracy_1937(source_root: Path, base_provenance: dict[str, Any]
-                            ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+def reexport_accuracy_1937(
+    source_root: Path, base_provenance: dict[str, Any]
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """Re-export ALL 1937 rows for the zero-accuracy-delta claim. Some rows
     have raw paired responses (513 of them, mostly Qwen TOMATO 60 + MVBench
     53 + VideoMME 300 + EgoSchema 100); others are boolean-only and we can
@@ -267,8 +272,7 @@ def reexport_accuracy_1937(source_root: Path, base_provenance: dict[str, Any]
         path = s4_dir / f"{bm}.jsonl"
         all_source_rows[bm] = load_jsonl(path)
         sha_by_file[str(path)] = file_sha256(path)
-    audit_summary = json.loads(
-        (s4_dir / "audit_summary.json").read_text(encoding="utf-8"))
+    audit_summary = json.loads((s4_dir / "audit_summary.json").read_text(encoding="utf-8"))
 
     # Per the S4 findings doc, the 1,937 number breaks down as
     #   TOMATO 1,484 + MVBench 53 + VideoMME 300 + EgoSchema 100.
@@ -277,8 +281,7 @@ def reexport_accuracy_1937(source_root: Path, base_provenance: dict[str, Any]
     # actually claims. For MVBench, the paper attributes the 53 paired
     # rows (mvbench_7b_3.json) to the 1,937; the 160 boolean-only rows
     # (mvbench_7b_10.json) are out of scope.
-    target_counts = {"tomato": 1484, "mvbench": 53,
-                     "videomme": 300, "egoschema": 100}
+    target_counts = {"tomato": 1484, "mvbench": 53, "videomme": 300, "egoschema": 100}
     expected_total = sum(target_counts.values())
     assert expected_total == 1937, expected_total
 
@@ -291,17 +294,15 @@ def reexport_accuracy_1937(source_root: Path, base_provenance: dict[str, Any]
             # 1,000-named-file). The S4 export tags each row with a
             # source_file marker we can use; if not present, fall back to
             # selecting the rows lacking raw paired text.
-            paired = [r for r in rows
-                      if r.get("dense_response") and r.get("cached_response")]
+            paired = [r for r in rows if r.get("dense_response") and r.get("cached_response")]
             boolean_only = [r for r in rows if r not in paired]
             if len(boolean_only) >= target:
                 use = boolean_only[:target]
             else:
-                use = boolean_only + paired[:target - len(boolean_only)]
+                use = boolean_only + paired[: target - len(boolean_only)]
             selected.extend((bm, r) for r in use)
         elif bm == "mvbench":
-            paired = [r for r in rows
-                      if r.get("dense_response") and r.get("cached_response")]
+            paired = [r for r in rows if r.get("dense_response") and r.get("cached_response")]
             use = paired[:target]
             if len(use) < target:
                 # Fall back to whatever rows we have
@@ -311,8 +312,7 @@ def reexport_accuracy_1937(source_root: Path, base_provenance: dict[str, Any]
             use = rows[:target]
             selected.extend((bm, r) for r in use)
     if len(selected) != 1937:
-        raise SystemExit(
-            f"Expected 1937 rows after selection; got {len(selected)}")
+        raise SystemExit(f"Expected 1937 rows after selection; got {len(selected)}")
 
     # Bootstrap CI for accuracy-delta claim. From audit: every
     # accuracy-delta is identically zero so the CI is short-circuited
@@ -323,23 +323,29 @@ def reexport_accuracy_1937(source_root: Path, base_provenance: dict[str, Any]
     out: list[dict[str, Any]] = []
     for bm, src in selected:
         path = str(s4_dir / f"{bm}.jsonl")
-        item_id = str(src.get("item_id") or
-                      f"{bm}__{src.get('q_index', '')}__{src.get('split', '')}__{src.get('gt', '')}")
-        has_raw_paired = bool(
-            src.get("dense_response") and src.get("cached_response"))
+        item_id = str(
+            src.get("item_id")
+            or f"{bm}__{src.get('q_index', '')}__{src.get('split', '')}__{src.get('gt', '')}"
+        )
+        has_raw_paired = bool(src.get("dense_response") and src.get("cached_response"))
         provenance = (
             "imported S4 row; raw paired responses present"
-            if has_raw_paired else
-            "imported S4 row; only loose-match boolean recoverable; "
-            "byte-identical claim NOT supported on this row")
+            if has_raw_paired
+            else "imported S4 row; only loose-match boolean recoverable; "
+            "byte-identical claim NOT supported on this row"
+        )
         d_resp = src.get("dense_response") or ""
         c_resp = src.get("cached_response") or ""
-        baseline_correct = bool(src.get("accuracy_dense") or
-                                 src.get("bl_correct") or
-                                 (src.get("accuracy_baseline") in (1, True)))
-        session_correct = bool(src.get("accuracy_cached") or
-                                src.get("ca_correct") or
-                                (src.get("accuracy_session") in (1, True)))
+        baseline_correct = bool(
+            src.get("accuracy_dense")
+            or src.get("bl_correct")
+            or (src.get("accuracy_baseline") in (1, True))
+        )
+        session_correct = bool(
+            src.get("accuracy_cached")
+            or src.get("ca_correct")
+            or (src.get("accuracy_session") in (1, True))
+        )
         # delta_accuracy is supposed to be 0 for every row in the 1,937
         # claim by construction; we still record it so the validator can
         # detect any source-side contamination.
@@ -350,34 +356,32 @@ def reexport_accuracy_1937(source_root: Path, base_provenance: dict[str, Any]
             comparator_arm="dense",
             policy="cached_features_swap_at_static_boundary",
             baseline_policy="dense_recompute",
-            video_id=str(src.get("video_id") or
-                         src.get("split") or bm),
+            video_id=str(src.get("video_id") or src.get("split") or bm),
             item_id=item_id,
             pair_key=f"{bm}__{item_id}",
             raw_prompt=src.get("prompt") or "",
             baseline_raw_prompt=src.get("prompt") or "",
-            prompt_hash=src.get("prompt_hash") or sha256_short(
-                src.get("prompt") or item_id),
-            baseline_prompt_hash=src.get("prompt_hash") or sha256_short(
-                src.get("prompt") or item_id),
+            prompt_hash=src.get("prompt_hash") or sha256_short(src.get("prompt") or item_id),
+            baseline_prompt_hash=src.get("prompt_hash")
+            or sha256_short(src.get("prompt") or item_id),
             input_ids_hash=sha256_short(item_id + "|cached"),
             baseline_input_ids_hash=sha256_short(item_id + "|dense"),
-            raw_response=d_resp if has_raw_paired else
-                          f"<unavailable bl_loose={src.get('bl_correct') or src.get('accuracy_dense')}>",
-            baseline_raw_response=c_resp if has_raw_paired else
-                                   f"<unavailable ca_loose={src.get('ca_correct') or src.get('accuracy_cached')}>",
-            session_choice=src.get("cached_choice") or src.get("ca_loose")
-                            or None,
-            baseline_choice=src.get("dense_choice") or src.get("bl_loose")
-                             or None,
+            raw_response=d_resp
+            if has_raw_paired
+            else f"<unavailable bl_loose={src.get('bl_correct') or src.get('accuracy_dense')}>",
+            baseline_raw_response=c_resp
+            if has_raw_paired
+            else f"<unavailable ca_loose={src.get('ca_correct') or src.get('accuracy_cached')}>",
+            session_choice=src.get("cached_choice") or src.get("ca_loose") or None,
+            baseline_choice=src.get("dense_choice") or src.get("bl_loose") or None,
             choice_diff=False,
             session_correct=session_correct,
             baseline_correct=baseline_correct,
             correctness_diff=session_correct != baseline_correct,
             session_parse_failure=bool(src.get("parse_failure_cached")),
             baseline_parse_failure=bool(src.get("parse_failure_dense")),
-            parse_failure=bool(src.get("parse_failure_cached")) or
-                            bool(src.get("parse_failure_dense")),
+            parse_failure=bool(src.get("parse_failure_cached"))
+            or bool(src.get("parse_failure_dense")),
             text_identical=(has_raw_paired and d_resp == c_resp),
             end_to_end_ms=0.0,
             baseline_end_to_end_ms=None,
@@ -398,10 +402,8 @@ def reexport_accuracy_1937(source_root: Path, base_provenance: dict[str, Any]
         "source_files": list(sha_by_file.keys()),
         "expected_row_count": 1937,
         "exported_row_count": len(out),
-        "rows_with_raw_paired": sum(
-            1 for r in out if r["text_identical"] is True),
-        "rows_byte_identical": sum(
-            1 for r in out if r["exactness_match"] is True),
+        "rows_with_raw_paired": sum(1 for r in out if r["text_identical"] is True),
+        "rows_byte_identical": sum(1 for r in out if r["exactness_match"] is True),
         "ci_method": ci_method,
         "ci95": ci95,
         "audit_summary": audit_summary,
@@ -409,9 +411,9 @@ def reexport_accuracy_1937(source_root: Path, base_provenance: dict[str, Any]
     return out, summary
 
 
-def reexport_raw_paired_513(source_root: Path,
-                             base_provenance: dict[str, Any]
-                             ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+def reexport_raw_paired_513(
+    source_root: Path, base_provenance: dict[str, Any]
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """Export the 513 rows that have raw paired responses + are byte-
     identical (TOMATO 60 + MVBench 53 + VideoMME 300 + EgoSchema 100)."""
     s4_dir = source_root / "research/2026-04-26-s4-1937-exactness"
@@ -425,8 +427,10 @@ def reexport_raw_paired_513(source_root: Path,
         for src in rows:
             if not (src.get("dense_response") and src.get("cached_response")):
                 continue
-            item_id = str(src.get("item_id") or
-                          f"{bm}__{src.get('q_index', '')}__{src.get('split', '')}__{src.get('gt', '')}")
+            item_id = str(
+                src.get("item_id")
+                or f"{bm}__{src.get('q_index', '')}__{src.get('split', '')}__{src.get('gt', '')}"
+            )
             d_resp = src["dense_response"]
             c_resp = src["cached_response"]
             text_identical = d_resp == c_resp
@@ -437,16 +441,14 @@ def reexport_raw_paired_513(source_root: Path,
                 comparator_arm="dense",
                 policy="cached_features_swap_at_static_boundary",
                 baseline_policy="dense_recompute",
-                video_id=str(src.get("video_id") or
-                             src.get("split") or bm),
+                video_id=str(src.get("video_id") or src.get("split") or bm),
                 item_id=item_id,
                 pair_key=f"{bm}__{item_id}",
                 raw_prompt=src.get("prompt") or "",
                 baseline_raw_prompt=src.get("prompt") or "",
-                prompt_hash=src.get("prompt_hash") or sha256_short(
-                    src.get("prompt") or item_id),
-                baseline_prompt_hash=src.get("prompt_hash") or sha256_short(
-                    src.get("prompt") or item_id),
+                prompt_hash=src.get("prompt_hash") or sha256_short(src.get("prompt") or item_id),
+                baseline_prompt_hash=src.get("prompt_hash")
+                or sha256_short(src.get("prompt") or item_id),
                 input_ids_hash=sha256_short(item_id + "|cached"),
                 baseline_input_ids_hash=sha256_short(item_id + "|dense"),
                 raw_response=d_resp,
@@ -456,27 +458,26 @@ def reexport_raw_paired_513(source_root: Path,
                 choice_diff=src.get("cached_choice") != src.get("dense_choice"),
                 session_correct=bool(src.get("accuracy_cached")),
                 baseline_correct=bool(src.get("accuracy_dense")),
-                correctness_diff=(bool(src.get("accuracy_cached"))
-                                   != bool(src.get("accuracy_dense"))),
+                correctness_diff=(
+                    bool(src.get("accuracy_cached")) != bool(src.get("accuracy_dense"))
+                ),
                 session_parse_failure=bool(src.get("parse_failure_cached")),
                 baseline_parse_failure=bool(src.get("parse_failure_dense")),
-                parse_failure=(bool(src.get("parse_failure_cached"))
-                                or bool(src.get("parse_failure_dense"))),
+                parse_failure=(
+                    bool(src.get("parse_failure_cached")) or bool(src.get("parse_failure_dense"))
+                ),
                 text_identical=text_identical,
                 end_to_end_ms=0.0,
                 baseline_end_to_end_ms=None,
                 claim_id="S4_byte_identical_513",
                 source_artifact_path=str(s4_dir / f"{bm}.jsonl"),
-                source_artifact_sha256=sha_by_file[
-                    str(s4_dir / f"{bm}.jsonl")],
+                source_artifact_sha256=sha_by_file[str(s4_dir / f"{bm}.jsonl")],
                 export_row_count=513,
                 expected_row_count=513,
                 exactness_match=text_identical,
-                ci_method=("paired_session_bootstrap_seed42_n1000_"
-                           "short_circuit_zero"),
+                ci_method=("paired_session_bootstrap_seed42_n1000_short_circuit_zero"),
                 ci95=[0.0, 0.0],
-                provenance_note=("imported S4 paired-response row "
-                                 "(byte-identical claim subset)"),
+                provenance_note=("imported S4 paired-response row (byte-identical claim subset)"),
             )
             out.append(row)
     if len(out) != 513:
@@ -501,8 +502,8 @@ def main() -> int:
 
     if not (args.source_root / "research/2026-04-26-s4-1937-exactness").exists():
         raise SystemExit(
-            f"Source S4 dir missing: "
-            f"{args.source_root}/research/2026-04-26-s4-1937-exactness")
+            f"Source S4 dir missing: {args.source_root}/research/2026-04-26-s4-1937-exactness"
+        )
 
     args.bundle_dir.mkdir(parents=True, exist_ok=True)
     base = base_provenance_for(args.source_root, " ".join(sys.argv))
@@ -516,8 +517,7 @@ def main() -> int:
             f.write(json.dumps(r) + "\n")
     print(f"[wrote] {len(rows_1937)} rows -> {out_1937}", flush=True)
 
-    print("[B5] re-exporting 513 byte-identical raw-paired rows ...",
-          flush=True)
+    print("[B5] re-exporting 513 byte-identical raw-paired rows ...", flush=True)
     rows_513, summary_513 = reexport_raw_paired_513(args.source_root, base)
     out_513 = args.bundle_dir / "sam_b5_s4_raw_paired_513.jsonl"
     with out_513.open("w", encoding="utf-8") as f:
@@ -527,9 +527,9 @@ def main() -> int:
 
     summary_path = args.bundle_dir / "sam_b5_s4_export_summary.json"
     summary_path.write_text(
-        json.dumps({"accuracy_1937": summary_1937,
-                    "raw_paired_513": summary_513}, indent=2),
-        encoding="utf-8")
+        json.dumps({"accuracy_1937": summary_1937, "raw_paired_513": summary_513}, indent=2),
+        encoding="utf-8",
+    )
     print(f"[wrote] export summary -> {summary_path}", flush=True)
 
     print(f"[B5 done] peak_rss={_peak_rss_gb():.2f} GB", flush=True)
