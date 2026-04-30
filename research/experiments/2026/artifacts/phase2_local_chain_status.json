@@ -1715,7 +1715,126 @@
         ],
         "unexpected_seed_summaries_ignored": []
       }
+    },
+    {
+      "name": "A5-1.30AG-kcache-distance",
+      "command": [
+        "scripts/run_phase1_30AG_kcache_distance_probe.sh"
+      ],
+      "status": "completed",
+      "summary_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/phase1_30AG_kcache_distance_probe/kcache_distance_summary.json",
+      "elapsed_s": 2402.242367333005,
+      "summary": {
+        "all_same_valid_token_lengths": true,
+        "by_drift_class": {
+          "invalidated_only_drift": {
+            "drift_class": "invalidated_only_drift",
+            "mean_pruned_keys_cosine": NaN,
+            "mean_pruned_keys_cosine_distance": NaN,
+            "mean_pruned_keys_mean_abs": Infinity,
+            "mean_pruned_values_cosine": NaN,
+            "mean_pruned_values_cosine_distance": NaN,
+            "mean_reuse_keys_cosine": NaN,
+            "mean_reuse_keys_cosine_distance": NaN,
+            "mean_reuse_keys_mean_abs": 0.0,
+            "mean_reuse_values_cosine": NaN,
+            "mean_reuse_values_cosine_distance": NaN,
+            "n": 5
+          },
+          "reuse_only_drift": {
+            "drift_class": "reuse_only_drift",
+            "mean_pruned_keys_cosine": NaN,
+            "mean_pruned_keys_cosine_distance": NaN,
+            "mean_pruned_keys_mean_abs": Infinity,
+            "mean_pruned_values_cosine": NaN,
+            "mean_pruned_values_cosine_distance": NaN,
+            "mean_reuse_keys_cosine": NaN,
+            "mean_reuse_keys_cosine_distance": NaN,
+            "mean_reuse_keys_mean_abs": 6.941173757825579e-05,
+            "mean_reuse_values_cosine": NaN,
+            "mean_reuse_values_cosine_distance": NaN,
+            "n": 5
+          },
+          "shared_drift": {
+            "drift_class": "shared_drift",
+            "mean_pruned_keys_cosine": NaN,
+            "mean_pruned_keys_cosine_distance": NaN,
+            "mean_pruned_keys_mean_abs": Infinity,
+            "mean_pruned_values_cosine": NaN,
+            "mean_pruned_values_cosine_distance": NaN,
+            "mean_reuse_keys_cosine": NaN,
+            "mean_reuse_keys_cosine_distance": NaN,
+            "mean_reuse_keys_mean_abs": 0.0,
+            "mean_reuse_values_cosine": NaN,
+            "mean_reuse_values_cosine_distance": NaN,
+            "n": 5
+          },
+          "stable": {
+            "drift_class": "stable",
+            "mean_pruned_keys_cosine": NaN,
+            "mean_pruned_keys_cosine_distance": NaN,
+            "mean_pruned_keys_mean_abs": Infinity,
+            "mean_pruned_values_cosine": NaN,
+            "mean_pruned_values_cosine_distance": NaN,
+            "mean_reuse_keys_cosine": NaN,
+            "mean_reuse_keys_cosine_distance": NaN,
+            "mean_reuse_keys_mean_abs": 0.0,
+            "mean_reuse_values_cosine": NaN,
+            "mean_reuse_values_cosine_distance": NaN,
+            "n": 5
+          }
+        },
+        "capture_row_floor": 20,
+        "headline_pass": false,
+        "keys_cosine_distance_relative_gap": NaN,
+        "keys_mean_abs_relative_gap": NaN,
+        "max_pairs_requested": 20,
+        "mean_pruned_keys_cosine": NaN,
+        "mean_pruned_keys_cosine_distance": NaN,
+        "mean_pruned_keys_mean_abs": Infinity,
+        "mean_pruned_values_cosine": NaN,
+        "mean_pruned_values_cosine_distance": NaN,
+        "mean_pruned_values_mean_abs": Infinity,
+        "mean_reuse_keys_cosine": NaN,
+        "mean_reuse_keys_cosine_distance": NaN,
+        "mean_reuse_keys_mean_abs": 1.7352934394563946e-05,
+        "mean_reuse_values_cosine": NaN,
+        "mean_reuse_values_cosine_distance": NaN,
+        "mean_reuse_values_mean_abs": 1.824189509664263e-05,
+        "n_rows": 20,
+        "n_token_length_mismatch_rows": 0,
+        "n_unique_followup_rows": 20,
+        "pass_H1_cache_states_captured": true,
+        "pass_H1_capture": true,
+        "pass_H1_row_count": true,
+        "pass_H1_same_valid_lengths": true,
+        "pass_H2_distance_report": true,
+        "pass_H3_outcome_link": true,
+        "pass_H4_saturation_test": false,
+        "phase": "1.30AG",
+        "row_jsonl": "research/experiments/2026/artifacts/phase1_30AG_kcache_distance_probe/kcache_distance_rows.jsonl",
+        "selection": {
+          "available_by_drift_class": {
+            "invalidated_only_drift": 25,
+            "reuse_only_drift": 19,
+            "shared_drift": 20,
+            "stable": 50
+          },
+          "selected_by_drift_class": {
+            "invalidated_only_drift": 5,
+            "reuse_only_drift": 5,
+            "shared_drift": 5,
+            "stable": 5
+          },
+          "target_per_class": 5
+        },
+        "values_cosine_distance_relative_gap": NaN,
+        "values_mean_abs_relative_gap": NaN,
+        "vision_tower_keep_rate": 0.5,
+        "vision_tower_layer": 2,
+        "wall_time_s": 2394.751012958
+      }
     }
   ],
-  "updated_at_unix_s": 1777552111.8284469
+  "updated_at_unix_s": 1777554514.262649
 }
