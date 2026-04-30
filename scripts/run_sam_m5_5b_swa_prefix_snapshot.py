@@ -272,6 +272,48 @@ def make_row(prov, **kw):
     return row
 
 
+def cold_dense_run(harness: Any, img_paths: list[str], question: str,
+                    *, max_tokens: int = MAX_TOKENS,
+                    single_shot_prefill: bool = False) -> dict[str, Any]:
+    """Cold-dense run with optional single-shot prefill (for the
+    byte-identical comparison vs prefix-snapshot)."""
+    formatted = harness.apply_template(
+        harness.processor, harness.model.config, question,
+        num_images=len(img_paths), enable_thinking=False)
+    inputs = harness.processor(
+        text=[formatted], images=img_paths,
+        return_tensors="np", add_special_tokens=False)
+    input_ids = mx.array(inputs["input_ids"])
+    pixel_values = mx.array(inputs["pixel_values"])
+    mask = mx.array(inputs["attention_mask"]) if "attention_mask" in inputs else None
+    n_input = int(input_ids.shape[1])
+    kwargs = {"max_tokens": max_tokens, "input_ids": input_ids,
+              "pixel_values": pixel_values, "temperature": 0.0}
+    if mask is not None:
+        kwargs["mask"] = mask
+    if single_shot_prefill:
+        kwargs["prefill_step_size"] = None
+    text_pieces, token_ids = [], []
+    first_t = None
+    t0 = time.perf_counter()
+    for resp in harness.stream_generate(
+            harness.model, harness.processor, "", **kwargs):
+        if first_t is None:
+            first_t = time.perf_counter()
+        if resp.text:
+            text_pieces.append(resp.text)
+        try: token_ids.append(int(resp.token))
+        except Exception: token_ids.append(resp.token)  # noqa: BLE001
+    wall = (time.perf_counter() - t0) * 1000.0
+    prefill = ((first_t - t0) * 1000.0) if first_t else None
+    return {"output_text": "".join(text_pieces),
+            "n_input_tokens": n_input,
+            "n_output_tokens": len(token_ids),
+            "input_ids_hash": hash_ids(input_ids.flatten().tolist()),
+            "wall_time_ms": wall, "prefill_ms": prefill,
+            "generate_ms": wall - prefill if prefill else None}
+
+
 def parse_letter(text: str, n: int = 4) -> str | None:
     t = text.strip().upper()
     for letter in [chr(ord("A") + i) for i in range(n)]:
@@ -289,6 +331,10 @@ def main():
     ap.add_argument("--hf-snapshot", default=HF_SNAPSHOT_DEFAULT)
     ap.add_argument("--videomme-dir", type=Path, default=VIDEOMME_DIR_DEFAULT)
     ap.add_argument("--out", type=Path, default=DEFAULT_OUT)
+    ap.add_argument("--single-shot-prefill", action="store_true",
+                    help="Use prefill_step_size=None on both arms to "
+                         "eliminate chunked-prefill BF16 noise as a "
+                         "source of paraphrase divergence.")
     args = ap.parse_args()
 
     parquet = args.videomme_dir / "videomme/test-00000-of-00001.parquet"
@@ -359,24 +405,25 @@ def main():
         cold = {}
         for q_label, q_text in qs:
             print(f"  [cold_dense] {q_label}", flush=True)
-            cold[q_label] = h.run(paths, q_text, max_tokens=args.max_tokens)
+            cold[q_label] = cold_dense_run(
+                h, paths, q_text, max_tokens=args.max_tokens,
+                single_shot_prefill=args.single_shot_prefill)
             gc.collect()
 
         # Build prefix snapshot once for this video.
-        print("  [snapshot] warming prefix cache ...", flush=True)
-        snapshot = make_prefix_snapshot(h, paths)
-        print(
-            f"    n_prefix={snapshot['n_prefix_tokens']} warm_ms={snapshot['warm_ms']:.0f}",
-            flush=True,
-        )
+        print(f"  [snapshot] warming prefix cache ...", flush=True)
+        snapshot = make_prefix_snapshot(
+            h, paths, single_shot_prefill=args.single_shot_prefill)
+        print(f"    n_prefix={snapshot['n_prefix_tokens']} "
+              f"warm_ms={snapshot['warm_ms']:.0f}", flush=True)
 
         # Run each Q against the snapshot.
         snap_runs = {}
         for q_label, q_text in qs:
             print(f"  [snapshot] {q_label}", flush=True)
             snap_runs[q_label] = run_turn_with_snapshot(
-                snapshot, h, paths, q_text, max_tokens=args.max_tokens
-            )
+                snapshot, h, paths, q_text, max_tokens=args.max_tokens,
+                single_shot_prefill=args.single_shot_prefill)
             gc.collect()
 
         # Emit rows.

@@ -1,0 +1,82 @@
+[provenance] {
+  "run_id": "sam_m55b_1777509910_bff78c13",
+  "model_id": "google/gemma-4-26B-A4B-it",
+  "model_sha": "7d4c97e54145f8ffd1a4dd1b4986a5015a517842",
+  "quantization": "bf16_native",
+  "runtime": "mlx_vlm-0.4.4",
+  "runtime_commit": "pypi",
+  "hardware": "Apple M5 Max | 128.0 GB unified | Darwin 25.4.0",
+  "os_version": "Darwin 25.4.0",
+  "mlx_version": "unknown",
+  "metal_version": null,
+  "command_line": "scripts/run_sam_m5_5b_swa_prefix_snapshot.py --single-shot-prefill --out research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_singleshot.jsonl",
+  "memory_definition": "ru_maxrss bytes (macOS) -> GB",
+  "commit_sha": "668da2a11efc289e33ba2c27d444cfceecaf27fa"
+}
+[loader] loading google/gemma-4-26B-A4B-it ...
+Fetching 9 files:   0%|          | 0/9 [00:00<?, ?it/s]Fetching 9 files: 100%|██████████| 9/9 [00:00<00:00, 157944.50it/s]
+[loader] loaded in 4.4s
+[video 1/7] fFjv93ACGo8
+  [cold_dense] q1_mc
+  [cold_dense] q2_color
+  [cold_dense] q3_people
+  [snapshot] warming prefix cache ...
+    n_prefix=2068 warm_ms=2171
+  [snapshot] q1_mc
+  [snapshot] q2_color
+  [snapshot] q3_people
+[video 2/7] N1cdUjctpG8
+  [cold_dense] q1_mc
+  [cold_dense] q2_color
+  [cold_dense] q3_people
+  [snapshot] warming prefix cache ...
+    n_prefix=2068 warm_ms=2386
+  [snapshot] q1_mc
+  [snapshot] q2_color
+  [snapshot] q3_people
+[video 3/7] HIjX8OPuf-w
+  [cold_dense] q1_mc
+  [cold_dense] q2_color
+  [cold_dense] q3_people
+  [snapshot] warming prefix cache ...
+    n_prefix=2068 warm_ms=2312
+  [snapshot] q1_mc
+  [snapshot] q2_color
+  [snapshot] q3_people
+[video 4/7] HwnB8aCn8yE
+  [cold_dense] q1_mc
+  [cold_dense] q2_color
+  [cold_dense] q3_people
+  [snapshot] warming prefix cache ...
+    n_prefix=2068 warm_ms=2298
+  [snapshot] q1_mc
+  [snapshot] q2_color
+  [snapshot] q3_people
+[video 5/7] 24i4ncHuf6A
+  [cold_dense] q1_mc
+  [cold_dense] q2_color
+  [cold_dense] q3_people
+  [snapshot] warming prefix cache ...
+    n_prefix=2068 warm_ms=2308
+  [snapshot] q1_mc
+  [snapshot] q2_color
+  [snapshot] q3_people
+[video 6/7] 40BlVzjxu-I
+  [cold_dense] q1_mc
+  [cold_dense] q2_color
+  [cold_dense] q3_people
+  [snapshot] warming prefix cache ...
+    n_prefix=2068 warm_ms=2334
+  [snapshot] q1_mc
+  [snapshot] q2_color
+  [snapshot] q3_people
+[video 7/7] 0ay2Qy3wBe8
+  [cold_dense] q1_mc
+  [cold_dense] q2_color
+  [cold_dense] q3_people
+  [snapshot] warming prefix cache ...
+    n_prefix=2068 warm_ms=2464
+  [snapshot] q1_mc
+  [snapshot] q2_color
+  [snapshot] q3_people
+[wrote] 21 rows -> research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_singleshot.jsonl

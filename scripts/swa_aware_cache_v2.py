@@ -86,12 +86,11 @@ def _deepcopy_cache(cache_list: list[Any]) -> list[Any]:
     return new_list
 
 
-def make_prefix_snapshot(
-    harness: Any,
-    img_paths: list[str],
-    sentinel_question_a: str = "Q.",
-    sentinel_question_b: str = "X.",
-) -> dict[str, Any]:
+def make_prefix_snapshot(harness: Any, img_paths: list[str],
+                          sentinel_question_a: str = "Q.",
+                          sentinel_question_b: str = "X.",
+                          single_shot_prefill: bool = False,
+                          ) -> dict[str, Any]:
     """Build a prefix snapshot for the given vision input.
 
     Parameters
@@ -150,24 +149,36 @@ def make_prefix_snapshot(
     embedding_output = harness.model.get_input_embeddings(input_ids_full, pixel_values, mask=mask)
     inputs_embeds = embedding_output.inputs_embeds
 
-    # Prefill the first n_prefix tokens through the language model.
-    # Chunk to avoid memory pressure.
-    chunk = 512
-    pos = 0
+    # Prefill the prefix tokens through the language model.
     t0 = time.perf_counter()
-    while pos < n_prefix:
-        n_to_process = min(chunk, n_prefix - pos)
-        slc_ids = input_ids_full[:, pos : pos + n_to_process]
-        slc_emb = inputs_embeds[:, pos : pos + n_to_process]
+    if single_shot_prefill:
+        # Single-shot prefill -- no chunking. Eliminates BF16
+        # chunked-vs-single-shot numerical drift at the cost of higher
+        # peak memory.
         harness.model.language_model(
-            inputs=slc_ids,
-            inputs_embeds=slc_emb,
+            inputs=input_ids_full[:, :n_prefix],
+            inputs_embeds=inputs_embeds[:, :n_prefix],
             cache=cache_list,
-            n_to_process=n_to_process,
+            n_to_process=n_prefix,
         )
-        # Force evaluation so cache state is materialized
         mx.eval([c.state for c in cache_list])
-        pos += n_to_process
+    else:
+        # Chunked prefill (default mlx-vlm behavior). Lower peak
+        # memory; subject to chunked-vs-single-shot BF16 noise.
+        chunk = 512
+        pos = 0
+        while pos < n_prefix:
+            n_to_process = min(chunk, n_prefix - pos)
+            slc_ids = input_ids_full[:, pos:pos + n_to_process]
+            slc_emb = inputs_embeds[:, pos:pos + n_to_process]
+            harness.model.language_model(
+                inputs=slc_ids,
+                inputs_embeds=slc_emb,
+                cache=cache_list,
+                n_to_process=n_to_process,
+            )
+            mx.eval([c.state for c in cache_list])
+            pos += n_to_process
     warm_ms = (time.perf_counter() - t0) * 1000.0
 
     # Step 3: Deep-copy the cache as the immutable snapshot.
@@ -181,14 +192,11 @@ def make_prefix_snapshot(
     }
 
 
-def run_turn_with_snapshot(
-    snapshot: dict[str, Any],
-    harness: Any,
-    img_paths: list[str],
-    question: str,
-    *,
-    max_tokens: int = 32,
-) -> dict[str, Any]:
+def run_turn_with_snapshot(snapshot: dict[str, Any], harness: Any,
+                            img_paths: list[str], question: str,
+                            *, max_tokens: int = 32,
+                            single_shot_prefill: bool = False,
+                            ) -> dict[str, Any]:
     """Run a single turn against the prefix snapshot.
 
     Restores the snapshot into a fresh working cache, prefills only
@@ -222,20 +230,29 @@ def run_turn_with_snapshot(
     # Prefill the new tokens through the working cache.
     t0 = time.perf_counter()
     if new_ids.shape[1] > 1:
-        # Chunked prefill on the new tokens (usually short, but
-        # following mlx-vlm's pattern for safety).
-        chunk = 512
-        pos = 0
-        while pos < new_ids.shape[1] - 1:
-            n_to_process = min(chunk, new_ids.shape[1] - 1 - pos)
+        if single_shot_prefill:
+            # Single-shot: process all but last token in one go.
             harness.model.language_model(
-                inputs=new_ids[:, pos : pos + n_to_process],
-                inputs_embeds=inputs_embeds[:, pos : pos + n_to_process],
+                inputs=new_ids[:, :-1],
+                inputs_embeds=inputs_embeds[:, :-1],
                 cache=working_cache,
-                n_to_process=n_to_process,
+                n_to_process=new_ids.shape[1] - 1,
             )
             mx.eval([c.state for c in working_cache])
-            pos += n_to_process
+        else:
+            # Chunked prefill (mlx-vlm default).
+            chunk = 512
+            pos = 0
+            while pos < new_ids.shape[1] - 1:
+                n_to_process = min(chunk, new_ids.shape[1] - 1 - pos)
+                harness.model.language_model(
+                    inputs=new_ids[:, pos:pos + n_to_process],
+                    inputs_embeds=inputs_embeds[:, pos:pos + n_to_process],
+                    cache=working_cache,
+                    n_to_process=n_to_process,
+                )
+                mx.eval([c.state for c in working_cache])
+                pos += n_to_process
         # The last token is fed to _step in the generation loop.
         last_token = new_ids[:, -1:]
         inputs_embeds[:, -1:]
