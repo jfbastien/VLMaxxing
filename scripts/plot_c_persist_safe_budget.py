@@ -4,14 +4,14 @@ Emits:
 
 - ``paper/figures/c_persist_safe_budget.png`` — two-panel figure. Left
   panel: Δacc vs frame-count for 7B and 3B Qwen 2.5-VL-4bit on the
-  Phase 1.55A persistent-KV probe. Right panel: follow-up speedup
+  persistent-KV frame-scaling probe. Right panel: follow-up speedup
   (dense / session) vs frame-count for the same two architectures.
   Tested/tolerated thresholds (7B ≤16f, 3B ≤36f) are shaded.
 - ``paper/figures/c_persist_safe_budget_data.json`` — the full per-cell
   numbers used to render the figure.
 
 Numbers are transcribed from claim-matrix.md row 14 (C-PERSIST) and the
-Phase 1.55A findings docs:
+persistent-KV findings docs:
 
 - 7B 8f/16f: `2026-04-19-phase-1_55A-persistent-kv-findings.md` + derived ramp
 - 7B 18/20/24/32f: `2026-04-19-phase-1_55A-{18,20,24,32}f-frame-scaling-findings.md`
@@ -198,7 +198,7 @@ def plot() -> None:
     ax_speed.legend(loc="lower right", fontsize=8)
 
     fig.suptitle(
-        "C-PERSIST tested envelope (Phase 1.55A four-regime probe, n=21/cell)\n"
+        "C-PERSIST tested envelope (persistent-KV frame-scaling probe, n=21/cell)\n"
         "Observed basin onset is deeper for the tested 3B point than the tested 7B point",
         fontsize=12,
     )

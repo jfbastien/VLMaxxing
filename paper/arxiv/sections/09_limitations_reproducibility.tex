@@ -93,43 +93,46 @@ transfer was the downstream long-bucket accuracy shape, not the drift signal.
 The streaming/deployment lane remains the least harmonized evidence class in
 the paper, even though it is the clearest candidate for a future C-STREAM claim.
 It is there because it names the practical regime where redundancy can become
-large, not because it already closes the full systems checklist. The
-checked scale-out bundle is now real and useful, but mixed: default 26B
-cross-turn cache reuse is unsafe, a topology-aware prefix snapshot is positive
-only at small \(N\), fixed-evidence stream baselines favor low-FPS dense over
-the current event-window proxy, and post-vision-tower hard pruning shows that policy
-overhead can erase any expected win if vision work was not actually skipped.
-The Qwen composition bridge now exists and is useful precisely because it is
-diagnosed rather than promoted:
-the original stack reproduced speedup but lost accuracy,
-dense-first-query admission restores Q0 aggregate correctness but misses the
+large, not because it already closes the full systems checklist. The checked
+scale-out bundle is now real and useful, but mixed: default 26B cross-turn
+cache reuse is unsafe, a topology-aware prefix snapshot is positive only at
+small \(N\), fixed-evidence stream baselines favor low-FPS dense over the
+current event-window proxy, and post-vision-tower hard pruning shows that
+policy overhead can erase any expected win if vision work was not actually
+skipped.
+
+The Qwen composition bridge is useful precisely because it is diagnosed rather
+than promoted. The original stack reproduced speedup but lost accuracy.
+Dense-first-query admission restores Q0 aggregate correctness but misses the
 3-query rescue gate, and the offline admission frontier contains an oracle
 rescue point but no deployable format-clean policy in the current endpoint
-family. The long-bucket admission sweep then
-falsifies every tested Q0 keep rate from 0.67 to 0.90 and empirically confirms
-that follow-up vision pruning is inactive under prompt-cache reuse in that arm.
-At high keep rates, aggregate Q0 accuracy recovers while follow-up accuracy
-still drops, so the failure is downstream of first-query aggregate correctness
-and tied to the follow-up state. The completed cache-invalidated follow-up test
-sharpens the boundary: forcing follow-up V-pruning to be active collapses the
-speedup to 1.06$\times$ and still lands on the same net aggregate loss as
-cache reuse, while any-paired-drift sets differ. A direct cache-distance probe
-now adds tensor evidence: fp32 cosine shows no-prune reuse is dense-like
+family. The long-bucket admission sweep then falsifies every tested Q0 keep
+rate from 0.67 to 0.90 and empirically confirms that follow-up vision pruning
+is inactive under prompt-cache reuse in that arm.
+
+The boundary is now mechanistic, not just aggregate. At high keep rates,
+aggregate Q0 accuracy recovers while follow-up accuracy still drops, so the
+failure is downstream of first-query aggregate correctness and tied to the
+follow-up state. The completed cache-invalidated follow-up test sharpens the
+boundary: forcing follow-up V-pruning to be active collapses the speedup to
+1.06$\times$ and still lands on the same net aggregate loss as cache reuse,
+while any-paired-drift sets differ. A direct cache-distance probe adds tensor
+evidence: fp32 cosine shows no-prune reuse is dense-like
 (\(K/V\approx1.0\)), while the pruned path diverges (\(K=0.724\),
 \(V=0.296\)); the native fp16 cosine columns are a numerical-overflow caution
-on finite cache windows, not release-bearing distances. This falsifies a
-single-state explanation and localizes the boundary to follow-up state quality
-rather than first-query aggregate correctness alone, but it still is not a
-deployable row-level drift guard. Dense logit-margin and richer-feature scouts
-add a useful negative: answer-letter margin has signal (held-out AUC about
-0.71), but margin alone gives too little coverage for a high-precision guard,
-and adding entropy, turn index, duration, prompt length, and policy source
-still fails the preregistered deployable-guard bar. The nominal label-free
-feature in that artifact is empirically answer-aware, so the result should not
-be sold as a runtime guard. The next proof step is causal intervention or
-genuinely independent state features. A related
-local codec-native bridge remains scientifically interesting, and the latest
-the codec-native planner-substitution results now provide semantic
+on finite cache windows, not release-bearing distances.
+
+This still does not give us a deployable row-level drift guard. Dense
+logit-margin and richer-feature scouts add a useful negative: answer-letter
+margin has signal (held-out AUC about 0.71), but margin alone gives too little
+coverage for a high-precision guard, and adding entropy, turn index, duration,
+prompt length, and policy source still fails the preregistered deployable-guard
+bar. The nominal label-free feature in that artifact is empirically
+answer-aware, so the result should not be sold as a runtime guard. The next
+proof step is causal intervention or genuinely independent state features.
+
+A related local codec-native bridge remains scientifically interesting, and
+the latest codec-native planner-substitution results now provide semantic
 planner-substitution evidence: MAX-over-span sparse sampling is hard-falsified,
 but the continuous-score redesign matches dense choices on VideoMME dev
 all-duration \(n=30\) and later calibration-mode/source ablations are neutral

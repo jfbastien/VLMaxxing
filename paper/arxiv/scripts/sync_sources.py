@@ -665,8 +665,8 @@ def _render_c_persist_timeline_figure() -> None:
     ax.text(
         0.02,
         0.08,
-        "Timing attribution from existing 1.55F/1.55D short-slice artifacts; "
-        "fidelity breadth is reported separately.",
+        "Timing attribution from short-slice fixed and adaptive repair artifacts; "
+        "phase IDs stay in provenance.",
         fontsize=6.8,
         color="#475569",
     )
@@ -1732,21 +1732,21 @@ def _write_headline_table(snapshot: dict) -> None:
         r"Regime & Setting & Speedup denominator & Gain & Validation / notes & Evidence \\",
         r"\midrule",
         (
-            "After-ingest & Qwen same-video follow-up, 16f & "
+            "After-ingest & Qwen raw warm follow-up reuse, 16f & "
             "cold/cached follow-up & "
             f"{kv_by_frame[16]['speedup']:.1f}$\\times$ & "
             f"{kv_by_frame[16]['follow_up_median_s']:.3f}\\,s median; "
             f"$\\Delta$acc {kv_by_frame[16]['accuracy_delta']:+.3f} & local clean \\\\"
         ),
         (
-            "After-ingest & Qwen same-video follow-up, 8f & "
+            "After-ingest & Qwen raw warm follow-up reuse, 8f & "
             "cold/cached follow-up & "
             f"{kv_by_frame[8]['speedup']:.1f}$\\times$ & "
             f"{kv_by_frame[8]['follow_up_median_s']:.3f}\\,s median; "
             f"$\\Delta$acc {kv_by_frame[8]['accuracy_delta']:+.3f} & local within criterion \\\\"
         ),
         (
-            "After-ingest & Qwen adaptive re-prefill, 20f/32f breadth & "
+            "After-ingest & Qwen repaired basin escape, adaptive & "
             "cold/repaired follow-up median & "
             f"{adaptive_repair['speedup_min']:.2f}--"
             f"{adaptive_repair['speedup_max']:.2f}$\\times$ & "
@@ -1757,7 +1757,7 @@ def _write_headline_table(snapshot: dict) -> None:
             "local repair breadth \\\\"
         ),
         (
-            "After-ingest & Qwen fixed K=1 re-prefill, 20f/32f breadth & "
+            "After-ingest & Qwen repaired basin escape, fixed K=1 & "
             "cold/repaired follow-up & "
             f"{fixed_repair['speedup_min']:.2f}--"
             f"{fixed_repair['speedup_max']:.2f}$\\times$ & "
@@ -2406,17 +2406,17 @@ def _write_scaleout_bundle_table() -> None:
         (
             "26B prefix snapshot & "
             f"8f after warm: {prefix8['median_speedup']:.2f}$\\times$, "
-            f"choice/correct {prefix8['choice_diffs']}/{prefix8['n']} / "
-            f"{prefix8['correctness_diffs']}/{prefix8['n']}, text diffs "
+            f"MC choice/correct {prefix8['choice_diffs']}/{prefix8['mc_rows']} / "
+            f"{prefix8['correctness_diffs']}/{prefix8['mc_rows']}, "
+            f"{prefix8['open_ended_rows']} open-ended equality rows, text diffs "
             f"{prefix8['text_diffs']}/{prefix8['n']}, parse "
-            f"{prefix8['parse_failures']}/{prefix8['n']}, ground-truth MC "
-            f"{prefix8['mc_rows']}/{prefix8['n']}; "
+            f"{prefix8['parse_failures']}/{prefix8['n']}; "
             f"32f after warm: {prefix32['median_speedup']:.2f}$\\times$, "
-            f"choice/correct {prefix32['choice_diffs']}/{prefix32['n']} / "
-            f"{prefix32['correctness_diffs']}/{prefix32['n']}, text diffs "
+            f"MC choice/correct {prefix32['choice_diffs']}/{prefix32['mc_rows']} / "
+            f"{prefix32['correctness_diffs']}/{prefix32['mc_rows']}, "
+            f"{prefix32['open_ended_rows']} open-ended equality rows, text diffs "
             f"{prefix32['text_diffs']}/{prefix32['n']}, parse "
-            f"{prefix32['parse_failures']}/{prefix32['n']}, ground-truth MC "
-            f"{prefix32['mc_rows']}/{prefix32['n']} & "
+            f"{prefix32['parse_failures']}/{prefix32['n']} & "
             "positive small-N scale-out C-PERSIST row; excludes warm setup; "
             "wrapper-specific and not byte-identical \\\\"
         ),
@@ -2458,8 +2458,12 @@ def _write_build_meta(primary: dict[str, str]) -> None:
         f"\\newcommand{{\\PrimaryRepoCommitDate}}{{{primary['commit_date']}}}",
         r"\newcommand{\UpstreamRepoSHA}{not used}",
         r"\newcommand{\UpstreamRepoCommitDate}{not used}",
-        r"\newcommand{\ScaleoutRepoSHA}{pending artifact bundle}",
-        r"\newcommand{\ScaleoutRepoCommitDate}{pending artifact bundle}",
+        (
+            "\\newcommand{\\ScaleoutRepoSHA}{"
+            f"checked in primary repo at {_short_sha(primary['sha'])}"
+            "}"
+        ),
+        f"\\newcommand{{\\ScaleoutRepoCommitDate}}{{{primary['commit_date']}}}",
     ]
     (GENERATED / "tex" / "build_meta.tex").write_text("\n".join(lines) + "\n")
 
@@ -2479,6 +2483,10 @@ def _write_repo_provenance_table(primary: dict[str, str]) -> None:
         r"Repo & Commit & Commit date \\",
         r"\midrule",
         f"codec-through & {_short_sha(primary['sha'], 12)} & {primary['commit_date']} \\\\",
+        (
+            "scale-out checked artifacts & "
+            f"primary repo {_short_sha(primary['sha'], 12)} & {primary['commit_date']} \\\\"
+        ),
         r"\bottomrule",
         r"\end{tabular}",
         r"\end{table}",
