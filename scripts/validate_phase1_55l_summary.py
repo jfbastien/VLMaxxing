@@ -27,6 +27,7 @@ def main() -> int:
     parser.add_argument("--video-ids", required=True)
     parser.add_argument("--turn-counts", required=True)
     parser.add_argument("--policies", required=True)
+    parser.add_argument("--prompt-variant-mode")
     args = parser.parse_args()
 
     if not args.summary.exists():
@@ -41,6 +42,8 @@ def main() -> int:
         mismatches.append("turn_counts")
     if summary.get("policies") != _parse_csv(args.policies):
         mismatches.append("policies")
+    if args.prompt_variant_mode and summary.get("prompt_variant_mode") != args.prompt_variant_mode:
+        mismatches.append("prompt_variant_mode")
     for gate in (
         "pass_complete_row_counts",
         "pass_complete_cells",
@@ -50,6 +53,8 @@ def main() -> int:
     ):
         if not summary.get(gate):
             mismatches.append(gate)
+    if args.prompt_variant_mode and not summary.get("pass_prompt_hash_pairing"):
+        mismatches.append("pass_prompt_hash_pairing")
 
     if mismatches:
         print("[1.55L] existing summary is incompatible/incomplete: " + ", ".join(mismatches))

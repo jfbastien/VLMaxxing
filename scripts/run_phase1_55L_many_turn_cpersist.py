@@ -3,19 +3,23 @@
 
 This extends the existing same-video follow-up protocol beyond the three-query
 VideoMME sessions by cycling the per-video question bank for 10/20/50 turns.
-It is intentionally not a conversational-history benchmark: the dense control
-and cached arms see the same stateless question sequence, so any drift is
-attributable to cache policy rather than accumulated chat text.
+The default mode intentionally preserves the non-conversational A6 schedule:
+the dense control and cached arms see the same stateless question sequence, so
+any drift is attributable to cache policy rather than accumulated chat text.
+Optional prompt-variant modes add controlled prompt variation while preserving
+paired dense/cached prompt-hash equality.
 """
 
 from __future__ import annotations
 
 import argparse
 import gc
+import hashlib
 import json
 import statistics
 import sys
 import time
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -53,11 +57,93 @@ from codec_through.qwen_selective_reprefill import (  # noqa: E402
 )
 
 DEFAULT_OUTPUT_DIR = Path("research/experiments/2026/artifacts/phase1_55L_many_turn_cpersist")
+PROMPT_HASH_KIND = "input_ids_sha256"
+DEFAULT_PROMPT_PREFIX_TEMPLATES: tuple[str, ...] = (
+    "Following up on that, {question}",
+    "Building on the same video, {question}",
+    "Now answer a fresh detail about this clip: {question}",
+    "Looking at the same scene, {question}",
+    "One more question about this clip: {question}",
+)
+DEFAULT_DENSE_ANCHOR_TEMPLATE = (
+    "Previous dense answer: {previous_answer}\n"
+    "Using the same video, answer this follow-up question:\n{question}"
+)
 
 
 def _jsonl_write(handle: Any, row: dict[str, Any]) -> None:
     handle.write(json.dumps(row, sort_keys=True) + "\n")
     handle.flush()
+
+
+def _prompt_hash(sample: Any) -> str:
+    input_ids = np.asarray(sample.input_ids.tolist(), dtype=np.int64).reshape(-1)
+    return hashlib.sha256(input_ids.tobytes()).hexdigest()
+
+
+def _parse_templates(raw: str) -> list[str]:
+    if not raw.strip():
+        return list(DEFAULT_PROMPT_PREFIX_TEMPLATES)
+    stripped = raw.strip()
+    if stripped.startswith("["):
+        parsed = json.loads(stripped)
+        if not isinstance(parsed, list) or not all(isinstance(item, str) for item in parsed):
+            raise ValueError("--prompt-prefix-templates JSON must be a list of strings")
+        return [item for item in parsed if item]
+    separator = "||" if "||" in stripped else ","
+    return [part.strip() for part in stripped.split(separator) if part.strip()]
+
+
+def _format_template(template: str, *, question: str, turn_index: int, source_q_index: int) -> str:
+    if "{question}" in template:
+        return template.format(
+            question=question,
+            turn_index=turn_index,
+            source_q_index=source_q_index,
+        )
+    return f"{template}{question}"
+
+
+def _turn_item(
+    item: Any,
+    *,
+    mode: str,
+    templates: list[str],
+    dense_anchor_template: str,
+    turn_index: int,
+    source_q_index: int,
+    previous_dense_response: str | None,
+) -> tuple[Any, str | None, str | None]:
+    if mode == "stateless_question_cycle":
+        return item, None, None
+    if mode == "templated_prefix":
+        template = templates[turn_index % len(templates)]
+        return (
+            replace(
+                item,
+                question=_format_template(
+                    template,
+                    question=item.question,
+                    turn_index=turn_index,
+                    source_q_index=source_q_index,
+                ),
+            ),
+            template,
+            None,
+        )
+    if mode == "dense_anchored":
+        if turn_index == 0:
+            return item, None, None
+        if previous_dense_response is None:
+            raise RuntimeError("dense_anchored turn requested before dense anchor existed")
+        question = dense_anchor_template.format(
+            previous_answer=previous_dense_response,
+            question=item.question,
+            turn_index=turn_index,
+            source_q_index=source_q_index,
+        )
+        return replace(item, question=question), dense_anchor_template, previous_dense_response
+    raise ValueError(f"unknown prompt variant mode: {mode}")
 
 
 def _spatial_merge_size(model: Any) -> int:
@@ -304,11 +390,47 @@ def main() -> int:
     parser.add_argument("--min-p", type=float, default=0.0)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--rss-guard-mb", type=int, default=12000)
+    parser.add_argument(
+        "--prompt-variant-mode",
+        choices=("stateless_question_cycle", "templated_prefix", "dense_anchored"),
+        default="stateless_question_cycle",
+        help=(
+            "Prompt schedule. stateless_question_cycle preserves A6 exactly; "
+            "templated_prefix varies text with fixed templates; dense_anchored "
+            "injects the previous canonical dense response into the next prompt."
+        ),
+    )
+    parser.add_argument(
+        "--prompt-prefix-templates",
+        type=str,
+        default="",
+        help=(
+            "Templates for --prompt-variant-mode templated_prefix. Use JSON list or "
+            "'||'-separated strings. Each template may contain {question}, "
+            "{turn_index}, and {source_q_index}."
+        ),
+    )
+    parser.add_argument(
+        "--dense-anchor-template",
+        type=str,
+        default=DEFAULT_DENSE_ANCHOR_TEMPLATE,
+        help=(
+            "Template for --prompt-variant-mode dense_anchored. Must contain "
+            "{previous_answer} and {question}; may also contain {turn_index} and "
+            "{source_q_index}."
+        ),
+    )
     args = parser.parse_args()
 
     video_ids = [vid.strip() for vid in args.video_ids.split(",") if vid.strip()]
     turn_counts = [int(value) for value in args.turn_counts.split(",") if value.strip()]
     policies = [value.strip() for value in args.policies.split(",") if value.strip()]
+    prompt_templates = _parse_templates(args.prompt_prefix_templates)
+    if args.prompt_variant_mode == "dense_anchored" and (
+        "{previous_answer}" not in args.dense_anchor_template
+        or "{question}" not in args.dense_anchor_template
+    ):
+        raise SystemExit("--dense-anchor-template must contain {previous_answer} and {question}")
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"[1.55L] loading model from {args.model_path}")
@@ -334,57 +456,136 @@ def main() -> int:
     session_rows: list[dict[str, Any]] = []
     paired_rows: list[dict[str, Any]] = []
 
-    # Baseline phase is stateless_question_cycle with a fixed seed: outputs only
-    # depend on (vid, source_q_index). Compute each unique baseline once and
-    # replicate the row per (horizon, turn_index) so the analyzer's pairing
-    # logic (baseline_by_key[(vid, horizon, turn_index)]) is unchanged.
+    # Baseline phase for the original A6 mode is stateless_question_cycle with
+    # a fixed seed: outputs only depend on (vid, source_q_index). Prompt-varying
+    # modes cannot use this dedup key because turn text is no longer identical;
+    # they precompute one canonical dense row per (vid, turn_index) up to the
+    # maximum requested horizon.
     unique_baselines: dict[tuple[str, int], dict[str, Any]] = {}
-    n_unique_total = sum(len(question_bank[vid]) for vid in video_ids)
-    n_unique_done = 0
-    for vid in video_ids:
-        questions = question_bank[vid]
-        for source_q_index, item in enumerate(questions):
-            sample = _prepare_sample(
-                processor,
-                item,
-                frame_count=args.frame_count,
-                frame_cache=frame_cache,
-            )
-            result = _run_query(
-                model,
-                processor,
-                sample,
-                max_tokens=args.max_tokens,
-                prompt_cache_state=None,
-                temperature=args.temperature,
-                top_p=args.top_p,
-                min_p=args.min_p,
-                seed=args.seed,
-            )
-            choice, correct = _score_answer(result["text"], item)
-            unique_baselines[(vid, source_q_index)] = {
-                "video_id": vid,
-                "duration": item.group,
-                "source_q_index": source_q_index,
-                "item_id": item.item_id,
-                "choice": choice,
-                "correct": correct,
-                "response": str(result["text"]).strip()[:400],
-                "elapsed_ms": float(result["elapsed_ms"]),
-                "peak_memory_gb": float(result["peak_memory_gb"]),
-                "pathological": _is_pathological_like_response(result["text"]),
-            }
-            n_unique_done += 1
-            print(
-                f"[1.55L] baseline unique {vid} q{source_q_index} "
-                f"({n_unique_done}/{n_unique_total}): "
-                f"{result['elapsed_ms']:.0f} ms correct={correct}"
-            )
-            check_memory_mb = _peak_rss_gb() * 1000
-            if check_memory_mb > args.rss_guard_mb:
-                raise MemoryError(
-                    f"RSS guard exceeded: {check_memory_mb:.0f} MB > {args.rss_guard_mb} MB"
+    turn_baselines: dict[tuple[str, int], dict[str, Any]] = {}
+    turn_items: dict[tuple[str, int], Any] = {}
+    max_horizon = max(turn_counts)
+    if args.prompt_variant_mode == "stateless_question_cycle":
+        n_unique_total = sum(len(question_bank[vid]) for vid in video_ids)
+        n_unique_done = 0
+        for vid in video_ids:
+            questions = question_bank[vid]
+            for source_q_index, item in enumerate(questions):
+                sample = _prepare_sample(
+                    processor,
+                    item,
+                    frame_count=args.frame_count,
+                    frame_cache=frame_cache,
                 )
+                result = _run_query(
+                    model,
+                    processor,
+                    sample,
+                    max_tokens=args.max_tokens,
+                    prompt_cache_state=None,
+                    temperature=args.temperature,
+                    top_p=args.top_p,
+                    min_p=args.min_p,
+                    seed=args.seed,
+                )
+                choice, correct = _score_answer(result["text"], item)
+                unique_baselines[(vid, source_q_index)] = {
+                    "video_id": vid,
+                    "duration": item.group,
+                    "source_q_index": source_q_index,
+                    "item_id": item.item_id,
+                    "prompt_variant_mode": args.prompt_variant_mode,
+                    "prompt_template": None,
+                    "anchor_response_excerpt": None,
+                    "prompt_hash": _prompt_hash(sample),
+                    "prompt_hash_kind": PROMPT_HASH_KIND,
+                    "choice": choice,
+                    "correct": correct,
+                    "response": str(result["text"]).strip()[:400],
+                    "elapsed_ms": float(result["elapsed_ms"]),
+                    "peak_memory_gb": float(result["peak_memory_gb"]),
+                    "pathological": _is_pathological_like_response(result["text"]),
+                }
+                n_unique_done += 1
+                print(
+                    f"[1.55L] baseline unique {vid} q{source_q_index} "
+                    f"({n_unique_done}/{n_unique_total}): "
+                    f"{result['elapsed_ms']:.0f} ms correct={correct}"
+                )
+                check_memory_mb = _peak_rss_gb() * 1000
+                if check_memory_mb > args.rss_guard_mb:
+                    raise MemoryError(
+                        f"RSS guard exceeded: {check_memory_mb:.0f} MB > {args.rss_guard_mb} MB"
+                    )
+    else:
+        n_turn_total = len(video_ids) * max_horizon
+        n_turn_done = 0
+        for vid in video_ids:
+            questions = question_bank[vid]
+            previous_dense_response: str | None = None
+            for turn_index in range(max_horizon):
+                source_q_index = turn_index % len(questions)
+                item, prompt_template, anchor_response = _turn_item(
+                    questions[source_q_index],
+                    mode=args.prompt_variant_mode,
+                    templates=prompt_templates,
+                    dense_anchor_template=args.dense_anchor_template,
+                    turn_index=turn_index,
+                    source_q_index=source_q_index,
+                    previous_dense_response=previous_dense_response,
+                )
+                sample = _prepare_sample(
+                    processor,
+                    item,
+                    frame_count=args.frame_count,
+                    frame_cache=frame_cache,
+                )
+                result = _run_query(
+                    model,
+                    processor,
+                    sample,
+                    max_tokens=args.max_tokens,
+                    prompt_cache_state=None,
+                    temperature=args.temperature,
+                    top_p=args.top_p,
+                    min_p=args.min_p,
+                    seed=args.seed,
+                )
+                choice, correct = _score_answer(result["text"], item)
+                response = str(result["text"]).strip()
+                turn_items[(vid, turn_index)] = item
+                turn_baselines[(vid, turn_index)] = {
+                    "video_id": vid,
+                    "duration": item.group,
+                    "turn_index": turn_index,
+                    "source_q_index": source_q_index,
+                    "item_id": item.item_id,
+                    "prompt_variant_mode": args.prompt_variant_mode,
+                    "prompt_template": prompt_template,
+                    "anchor_response_excerpt": (
+                        str(anchor_response).strip()[:200] if anchor_response is not None else None
+                    ),
+                    "prompt_hash": _prompt_hash(sample),
+                    "prompt_hash_kind": PROMPT_HASH_KIND,
+                    "choice": choice,
+                    "correct": correct,
+                    "response": response[:400],
+                    "elapsed_ms": float(result["elapsed_ms"]),
+                    "peak_memory_gb": float(result["peak_memory_gb"]),
+                    "pathological": _is_pathological_like_response(result["text"]),
+                }
+                previous_dense_response = response
+                n_turn_done += 1
+                print(
+                    f"[1.55L] baseline turn {vid} t={turn_index + 1} "
+                    f"({n_turn_done}/{n_turn_total}): "
+                    f"{result['elapsed_ms']:.0f} ms correct={correct}"
+                )
+                check_memory_mb = _peak_rss_gb() * 1000
+                if check_memory_mb > args.rss_guard_mb:
+                    raise MemoryError(
+                        f"RSS guard exceeded: {check_memory_mb:.0f} MB > {args.rss_guard_mb} MB"
+                    )
 
     with baseline_path.open("w") as bf:
         for horizon in turn_counts:
@@ -392,10 +593,14 @@ def main() -> int:
                 questions = question_bank[vid]
                 for turn_index in range(horizon):
                     source_q_index = turn_index % len(questions)
-                    unique = unique_baselines[(vid, source_q_index)]
+                    unique = (
+                        unique_baselines[(vid, source_q_index)]
+                        if args.prompt_variant_mode == "stateless_question_cycle"
+                        else turn_baselines[(vid, turn_index)]
+                    )
                     row = {
                         "mode": "baseline",
-                        "history_mode": "stateless_question_cycle",
+                        "history_mode": args.prompt_variant_mode,
                         "horizon": horizon,
                         "turn_index": turn_index,
                         **unique,
@@ -416,13 +621,19 @@ def main() -> int:
                     repaired_prompt_tokens: int | None = None
                     repaired_generation_tokens: int | None = None
                     for turn_index in range(horizon):
-                        item = questions[turn_index % len(questions)]
+                        source_q_index = turn_index % len(questions)
+                        item = (
+                            questions[source_q_index]
+                            if args.prompt_variant_mode == "stateless_question_cycle"
+                            else turn_items[(vid, turn_index)]
+                        )
                         sample = _prepare_sample(
                             processor,
                             item,
                             frame_count=args.frame_count,
                             frame_cache=frame_cache,
                         )
+                        session_prompt_hash = _prompt_hash(sample)
                         base_cache_build_ms: float | None = None
                         shared_prefix_tokens: int | None = None
                         if turn_index == 0:
@@ -558,14 +769,17 @@ def main() -> int:
                         )
                         row = {
                             "mode": "session",
-                            "history_mode": "stateless_question_cycle",
+                            "history_mode": args.prompt_variant_mode,
                             "policy": policy,
                             "horizon": horizon,
                             "video_id": vid,
                             "duration": item.group,
                             "turn_index": turn_index,
-                            "source_q_index": turn_index % len(questions),
+                            "source_q_index": source_q_index,
                             "item_id": item.item_id,
+                            "prompt_variant_mode": args.prompt_variant_mode,
+                            "prompt_hash": session_prompt_hash,
+                            "prompt_hash_kind": PROMPT_HASH_KIND,
                             "reprefill_k": effective_k,
                             "cache_source": cache_source,
                             "shared_prefix_tokens": shared_prefix_tokens,
@@ -585,8 +799,16 @@ def main() -> int:
                         session_rows.append(row)
                         _jsonl_write(sf, row)
                         base = baseline_by_key[(vid, horizon, turn_index)]
+                        if row["prompt_hash"] != base["prompt_hash"]:
+                            raise RuntimeError(
+                                "session/baseline prompt hash mismatch for "
+                                f"vid={vid} horizon={horizon} turn={turn_index}: "
+                                f"{row['prompt_hash']} != {base['prompt_hash']}"
+                            )
                         paired = {
                             **row,
+                            "baseline_prompt_hash": base["prompt_hash"],
+                            "baseline_prompt_hash_kind": base["prompt_hash_kind"],
                             "baseline_choice": base["choice"],
                             "baseline_correct": base["correct"],
                             "baseline_elapsed_ms": base["elapsed_ms"],
@@ -730,17 +952,29 @@ def main() -> int:
         for vid in video_ids
         for horizon in turn_counts
     )
+    pass_prompt_hash_pairing = all(
+        row.get("prompt_hash") == row.get("baseline_prompt_hash") for row in paired_rows
+    )
     pass_complete_horizon_policy_grid = (
         pass_complete_row_counts
         and pass_complete_cells
         and pass_complete_chain_counts
         and pass_complete_turn_coverage
         and pass_complete_policy_horizon_grid
+        and pass_prompt_hash_pairing
     )
 
     summary = {
         "phase": "1.55L",
-        "history_mode": "stateless_question_cycle",
+        "history_mode": args.prompt_variant_mode,
+        "prompt_variant_mode": args.prompt_variant_mode,
+        "prompt_hash_kind": PROMPT_HASH_KIND,
+        "prompt_prefix_templates": (
+            prompt_templates if args.prompt_variant_mode == "templated_prefix" else []
+        ),
+        "dense_anchor_template": (
+            args.dense_anchor_template if args.prompt_variant_mode == "dense_anchored" else None
+        ),
         "frame_count": args.frame_count,
         "turn_counts": turn_counts,
         "policies": policies,
@@ -766,6 +1000,7 @@ def main() -> int:
         "pass_complete_cells": pass_complete_cells,
         "pass_complete_chain_counts": pass_complete_chain_counts,
         "pass_complete_turn_coverage": pass_complete_turn_coverage,
+        "pass_prompt_hash_pairing": pass_prompt_hash_pairing,
         "pass_complete_policy_horizon_grid": pass_complete_policy_horizon_grid,
         "pass_complete_horizon_policy_grid": pass_complete_horizon_policy_grid,
         "longest_safe_horizon_by_policy": longest_safe_by_policy,

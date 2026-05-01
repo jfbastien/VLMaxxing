@@ -91,19 +91,15 @@ local implementation that exposes the method's actual attention/token scores,
 or a carefully bounded literature comparison. The current `magnitude_norm`
 scorer is our structured scorer; it must not be rebranded as FastV/FasterVLM.
 
-## Item 3 — Dialogue-like C-PERSIST, not launch-ready
+## Item 3 — Dialogue-like C-PERSIST, ready for controlled dense-anchored stress
 
-**2026-05-01 validation update.** The launch plan in this section is retained
-for provenance but is superseded for immediate execution. The preregistered
-1.55M artifact is a
-diverse-prompt / templated-prefix stress, **not** natural dialogue and not yet
-content-conditional shared-answer dialogue. The current A6 driver has no
-`--prompt-prefix-templates` support and still deduplicates cold baselines by
-`(video_id, source_q_index)`, which is only valid for repeated prompt text. A
-true content-conditional run needs a driver patch that keys baselines by exact
-rendered prompt hash and injects the same canonical dense answer into both
-arms. A true natural-dialogue result additionally needs a reviewed 7-clip ×
-20-turn corpus before compute.
+**2026-05-01 readiness update.** The controlled dense-anchored path is now
+launch-ready via `scripts/run_phase1_55M_dense_anchored_cpersist.sh`. The A6
+driver preserves its default stateless mode, and adds `--prompt-variant-mode
+dense_anchored`, which keys baselines by exact rendered prompt hash and injects
+the previous canonical dense answer into both arms. This is still **not** human
+natural dialogue. A true natural-dialogue result additionally needs a reviewed
+7-clip × 20-turn corpus before compute.
 
 **Two valid variants.**
 
@@ -121,15 +117,15 @@ choice or correctness drift exceeds the 3% gate at any horizon ≤ 20.
 
 **Why this matters.** A6 explicitly labels itself "deliberately not a natural-dialogue benchmark" because the same three questions cycle. A reviewer can reasonably ask whether drift accumulates faster when the dialogue has actual content dependencies (Q3 references Q2's answer, etc.). Closing this gap is the single most defensible claim-strengthening move for C-PERSIST.
 
-**Minimum driver changes before launch.**
+**Driver invariants.**
 
 - Baseline rows must be keyed by exact rendered prompt hash, not
   `(video_id, source_q_index)`.
 - The rendered prompt hash must be recorded in raw rows and paired rows.
 - Any prior-answer text used in turn `k+1` must come from a canonical dense
   pre-pass and be injected into both arms before generation.
-- A smoke run must prove dense and cached arms see identical prompt hashes for
-  every paired turn before the full run starts.
+- The driver hard-fails if dense and cached arms do not see identical prompt
+  hashes for a paired turn.
 
 **Pitfalls + mitigations.**
 
@@ -137,14 +133,21 @@ choice or correctness drift exceeds the 3% gate at any horizon ≤ 20.
 - *Curator bias.* Curate dialogues blinded to the cache policies to avoid "easy" turns. A 50/50 split between content-referential and content-independent turns helps.
 - *Memory pressure.* 20-turn schedule × 3 policies × 7 clips = 420 session-runs on a 16 GB Mac. Same memory footprint as A6 (~10 GB peak); should fit.
 
-**Wall clock estimate.** ~4 h on M3 16 GB after the driver patch and corpus or
-synthetic prompt pack exist.
+**Launch command.**
+
+```bash
+bash scripts/run_phase1_55M_dense_anchored_cpersist.sh
+```
+
+**Wall clock estimate.** ~4 h on M3 16 GB.
 
 **Paper outcome.** Content-conditional stress would close most of the
 stateless-repetition objection. True natural dialogue would close it more
 cleanly, but only if the corpus is curated and reviewed before launch.
 
-**Decision required.** (a) approve curating the 7-clip × 20-turn dialogue pack, (b) approve ~4 h compute on the user's Mac, (c) decide whether to start the curation work in this session or defer.
+**Decision required.** Approve ~4 h compute for the controlled dense-anchored
+run. Curated natural dialogue remains a stronger future variant, not a blocker
+for this controlled stress.
 
 ## Item 4 — C-STREAM throughput-axis closure (the 4th-headline path)
 
@@ -199,9 +202,9 @@ Three independent paths forward, ordered by paper-impact-per-compute:
 
 1. **Item 2 (multi-seed random_keep)** — highest immediate ROI. No new code;
    2–4 h for the missing seeds.
-2. **Item 3 (dialogue-like C-PERSIST)** — highest remaining C-PERSIST payoff,
-   but not ready until the prompt-hash / dense-anchor patch and corpus choice
-   are reviewed.
+2. **Item 3 (dialogue-like C-PERSIST)** — highest remaining C-PERSIST payoff.
+   The controlled dense-anchored path is now ready; true natural dialogue still
+   needs corpus curation.
 3. **Item 4 (C-STREAM throughput-axis)** — only if a 4th headline is the goal. ~20-32 h compute. Real gamble.
 
 Items 1 and 5 are already done or nearly done. The user gets to pick which of 2 / 3 / 4 to fund.
@@ -245,9 +248,9 @@ Revised near-term recommendation:
    in the paper. Hypothesis: `magnitude_norm` stays at least 10 pp above the
    random_keep seed distribution at matched keep-rate. Runtime: about
    3–5 hours for seeds `42 137 999 2024` on the local Qwen 7B 8f dev30 cell.
-2. **Run true natural-dialogue C-PERSIST only after curation.** If no curated
-   corpus is ready, defer rather than spending 4 hours on a result that will
-   still need narrow wording.
+2. **Run controlled dense-anchored C-PERSIST now if we want the low-risk
+   C-PERSIST hardening result.** If the paper needs literal human natural
+   dialogue, curate a corpus first; otherwise use the dense-anchored wording.
 3. **Ask Sam for a 32f prefix-snapshot expansion only if M5 time is cheap.**
    It would harden the Gemma 26B cross-architecture result from 9 rows toward
    the 21-row B0b-style set. It is not required for the current paper claim.
@@ -292,10 +295,11 @@ high keep-rates.
 **Conclusion:** the Qwen C-CEILING evidence remains single-cell and should be
 framed as timing/arithmetic validation with a fidelity caveat, not as a
 fidelity-clean Qwen claim. The "E3" kr sweep (kr=0.25 and kr=0.75 at Qwen 8f)
-is a real, non-redundant experiment, but its gates must keep timing agreement
-separate from fidelity. A faster alternative is to reuse the existing 1.63E
-Qwen 8f kr=0.50 cell as the sole Qwen-side timing evidence point and avoid
-claiming a clean Qwen kr curve.
+is a real, non-redundant experiment, and is now launch-ready via
+`scripts/run_phase1_63J_qwen_8f_kr_sweep.sh`, but its gates must keep timing
+agreement separate from fidelity. A faster alternative is to reuse the existing
+1.63E Qwen 8f kr=0.50 cell as the sole Qwen-side timing evidence point and
+avoid claiming a clean Qwen kr curve.
 
 **Lesson logged.** This is a variant of an earlier issue in this same
 session: a co-scientist agent posted plausible-looking numbers that
