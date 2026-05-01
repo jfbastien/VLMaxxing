@@ -94,13 +94,16 @@ Entries are ordered by phase_id (chronological within each 1.x range).
     - research/experiments/2026/2026-04-29-phase-M5-comp-sam-prefix-snapshot-32f-composition-findings.md
     - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b0b_cache_correctness_summary.json
     - research/experiments/2026/artifacts/sam_scaleout_m5_r2_20260430/sam_b0b_cache_correctness_summary.json
+    - research/experiments/2026/artifacts/sam_scaleout_m5_r2_20260430/sam_b0b_cache_correctness.jsonl
+    - research/experiments/2026/artifacts/sam_scaleout_m5_r2_followup_20260430/sam_b0b_cache_correctness_unguarded_patched_summary.json
+    - research/experiments/2026/artifacts/sam_scaleout_m5_r2_followup_20260430/sam_b0b_cache_correctness_unguarded_patched.jsonl
     - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_summary.json
     - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f_summary.json
     - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b3_streaming_baselines_summary.json
     - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b4_sparse_vit_ceiling_summary.json
     - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b5_s4_accuracy_1937_summary.json
     - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b5_s4_raw_paired_513_summary.json
-  current_best_policy: "candidate C-STREAM remains mixed: default cache path blocked, prefix snapshot positive small-N, low-FPS dense wins fixed-evidence baseline"
+  current_best_policy: "candidate C-STREAM remains mixed: default cache path blocked; patched topology-aware B0b path is full-regression correctness-clean but falls back to cold-dense speed; prefix snapshot positive small-N; low-FPS dense wins fixed-evidence baseline"
   supersedes: []
   paper_relevance: scale-out bounded evidence
   prereg_outcome: Accepted with caveat

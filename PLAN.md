@@ -1,6 +1,6 @@
 # Current Plan
 
-Last updated: 2026-04-30.
+Last updated: 2026-05-01.
 
 This file is the active roadmap only. Historical phase detail lives in dated
 experiment notes and [research/experiments/registry.md](research/experiments/registry.md).
@@ -12,24 +12,27 @@ notes.
 - **C-CEILING** is earned as the accounting frame: end-to-end gains are bounded
   by dense component share times component reduction.
 - **C-PERSIST** is earned for same-video follow-up latency inside the tested
-  envelope. It is not a full-session throughput or energy claim until
-  setup-inclusive artifacts land.
+  envelope. Warm follow-up multipliers remain the headline denominator, while
+  setup-inclusive tables now expose the serving economics by session length.
 - **C-VISION** has bounded measured sparse-vision evidence. Do not describe it
   as a broad sparse backend or sparse LM prefill result.
-- **Candidate C-STREAM** is pending. It should become paper-facing only through
-  checked, schema-validated streaming artifacts with matched baselines.
-- 26B follow-up reuse remains diagnostic until the cache-correctness and raw
-  paired-artifact gates pass.
+- **Candidate C-STREAM** has a checked mixed/boundary bundle. It is
+  paper-facing as a candidate scale-out regime, not as a fourth headline:
+  default cache reuse is unsafe, topology-aware correctness can be restored
+  without speed, prefix snapshots are promising but small-\(N\), and low-FPS
+  dense remains a serious baseline.
+- 26B follow-up reuse remains diagnostic until a topology-safe path preserves
+  correctness without surrendering the speed path.
 
 ## Active Gates Before Paper/OSS Freeze
 
 1. **Finish incoming experiment bundles.**
-   - local phase-2 chain: finish current A5-and-follow-on gates and update the
+   - local phase-2 chain: finish remaining follow-on gates and update the
      registry/status docs from the artifacts
-   - scale-out bundle: import only validated artifact bundles, not sibling
+   - scale-out bundle: import only checked artifact bundles, not sibling
      markdown, personal handoff prompts, or screenshots
-   - setup-inclusive C-PERSIST: add a table/appendix row once artifacts record
-     cache-build setup time
+   - natural-dialogue C-PERSIST and one adjacent-method comparison are the
+     highest-value main-track science gaps after the current integration pass
 
 2. **Freeze artifact provenance.**
    - every paper table/figure cell needs a source artifact path or a visible
@@ -38,10 +41,11 @@ notes.
    - no paper automation should read a sibling checkout by default
 
 3. **Keep claim language bounded.**
-   - C-PERSIST: follow-up latency unless setup-inclusive/session-amortized
-     metrics are present
+   - C-PERSIST: distinguish median warm follow-up speedups from mean
+     setup-inclusive session economics
    - C-VISION: bounded measured sparse-vision envelope
-   - C-STREAM: candidate streaming state reuse until matched artifacts land
+   - C-STREAM: candidate streaming state reuse until a topology-safe fast path
+     and matched native-streaming baselines land
    - imported targets: reproduction targets only, not local evidence
 
 4. **Release hygiene.**

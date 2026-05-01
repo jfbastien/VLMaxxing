@@ -1,15 +1,23 @@
 # 2026-04-29 Phase B0b — Sam scale-out cache-correctness gate
 
-- **Status:** **closed-arch-blocked** — gate FAILED
+- **Status:** **closed-mixed** — default cache reuse FAILS; patched
+  topology-aware fallback PASSES correctness but is not a speedup path.
 - **Verdict:** mlx-vlm 0.4.4 `PromptCacheState` cross-turn cache reuse on
   Gemma 4 26B-A4B is silently divergent from cold-dense recomputation on
   **14 of 19 paired rows (74%)** after excluding 2 matched parse
   failures (raw count: 16 of 21). Within-turn cache replay path passes
-  cleanly (21/21 byte-identical).
+  cleanly (21/21 byte-identical). A later patched-library full-regression run
+  fixes correctness by refusing unsafe rotating-cache trimming: 42/42 rows are
+  text-identical, with 0 choice diffs, 0 correctness diffs, and 4 matched parse
+  failures. That closes the correctness gate, but not the speed path.
 - **Implication for downstream:**
-  - **B1 (C-PERSIST replication) — BLOCKED** (gated on B0b pass per
-    handoff contract).
-  - **B2 (many-turn streaming horizon) — BLOCKED** (same dependency).
+  - **B1 (C-PERSIST replication) — speed path still BLOCKED.** The
+    patched path is correctness-clean because it refuses unsafe rotating-cache
+    trim, so it can be used as a control but not as positive follow-up speed
+    evidence.
+  - **B2 (many-turn streaming horizon) — speed path still BLOCKED** for the
+    same reason; a many-turn correctness-only control is possible but does not
+    promote C-STREAM.
   - **B3 (matched streaming baselines) — RUNNABLE.** The handoff
     explicitly says B3 can run while B0b blocks cross-turn cache reuse,
     as long as the policies compared do not depend on the broken cache
@@ -17,6 +25,34 @@
     independent of `PromptCacheState`; the sam-policy arm will use
     within-turn cache reuse only (validated by B0b at 21/21).
   - **B5 (S4 re-export) — RUNNABLE** (artifact re-packaging, no cache).
+
+## 2026-04-30 patched-library full-regression closure
+
+The follow-up run under the topology-aware patched library path is
+correctness-clean because the patched `PromptCacheState` path refuses the
+unsafe cross-turn trim. Validator summary:
+
+```json
+{
+  "n_rows": 42,
+  "arms": {"within_turn_cache_replay": 21, "cross_turn_warm": 21},
+  "policies": {"prompt_cache_state_within_turn": 21, "prompt_cache_state_cross_turn_chained": 21},
+  "choice_diffs": 0,
+  "correctness_diffs": 0,
+  "text_diffs": 0,
+  "parse_failures": 4,
+  "input_hash_mismatches": 0,
+  "prompt_hash_mismatches": 0,
+  "frame_hash_mismatches": 0,
+  "schema_or_gate_errors": 0,
+  "pass": true
+}
+```
+
+This is the evidence used by the manuscript's scale-out row: patched
+cache-correctness is full-regression verified, but it does not earn C-STREAM
+speedup because the unsafe trim is refused and cross-turn wall-clock is roughly
+cold dense.
 
 ## Provenance
 
@@ -167,6 +203,12 @@ answer, different MC letter).
   `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b0b_cache_correctness_summary.json`
 - Run log:
   `research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b0b_cache_correctness.log`
+- Guarded full-refill JSONL and summary:
+  `research/experiments/2026/artifacts/sam_scaleout_m5_r2_20260430/sam_b0b_cache_correctness.jsonl`,
+  `research/experiments/2026/artifacts/sam_scaleout_m5_r2_20260430/sam_b0b_cache_correctness_summary.json`
+- Patched full-regression JSONL and summary:
+  `research/experiments/2026/artifacts/sam_scaleout_m5_r2_followup_20260430/sam_b0b_cache_correctness_unguarded_patched.jsonl`,
+  `research/experiments/2026/artifacts/sam_scaleout_m5_r2_followup_20260430/sam_b0b_cache_correctness_unguarded_patched_summary.json`
 - Runner: `scripts/run_sam_b0b_cache_correctness.py`
 - Validator: `scripts/validate_sam_scaleout_artifact.py`
 

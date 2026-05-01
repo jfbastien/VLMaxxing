@@ -21,6 +21,16 @@ The 12 GB MLX memory cap from local jfb runs is **not** applied here.
 
 ## Final phase ledger
 
+This ledger describes the original 2026-04-29 bundle. Later follow-up artifacts
+under `sam_scaleout_m5_r2_20260430/` and
+`sam_scaleout_m5_r2_followup_20260430/` close the B0b correctness-control path:
+the guarded/full-refill and patched-library runs both produce 0 text, choice,
+and correctness diffs on 42 rows, with 4 matched parse failures. They do not
+promote C-STREAM to a speed claim because the safe path refuses the unsafe
+cross-turn trim and runs at roughly cold-dense wall-clock. Treat the combined
+status as a checked mixed/boundary bundle: default reuse fails; correctness can
+be restored; speed-preserving topology-safe reuse remains open.
+
 | phase | file(s) | status | gate | findings doc |
 |---|---|---|---|---|
 | **B0b** | `sam_b0b_cache_correctness.jsonl` (42 rows) | **closed-arch-blocked** | **FAIL** (16/21 cross_turn_warm text-different; within-turn 21/21 pass) | [`2026-04-29-phase-B0b-…`](../../2026-04-29-phase-B0b-sam-cache-correctness-findings.md) |

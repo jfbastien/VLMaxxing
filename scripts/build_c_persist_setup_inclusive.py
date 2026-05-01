@@ -237,12 +237,13 @@ def _emit_table(snapshot: dict[str, Any]) -> str:
         r"\centering",
         (
             r"\caption{Setup-inclusive C-PERSIST session economics. "
-            r"\emph{Warm} is the per-follow-up multiplier currently "
-            r"reported elsewhere; \emph{Q=k} is the actual session-level "
-            r"speedup when a session has \(k\) total queries on the "
-            r"same video. Qwen rows use the measured cold first query plus "
-            r"\(Q-1\) follow-ups; Gemma prefix-snapshot rows use the measured "
-            r"prefix warm-up plus \(Q\) follow-up queries. "
+            r"\emph{Warm} is the mean per-follow-up multiplier on the same "
+            r"timing basis as the session columns; headline prose reports "
+            r"median follow-up speedups where stated. \emph{Q=k} is the "
+            r"actual session-level speedup when a session has \(k\) total "
+            r"queries on the same video. Qwen rows use the measured cold "
+            r"first query plus \(Q-1\) follow-ups; Gemma prefix-snapshot rows "
+            r"use the measured prefix warm-up plus \(Q\) follow-up queries. "
             r"At \(Q=1\) the cold first-query cost dominates and the "
             r"speedup approaches~1; at large \(Q\) it asymptotes to the "
             r"mean per-follow-up multiplier. \(\Delta\)acc is the paired "
@@ -257,7 +258,19 @@ def _emit_table(snapshot: dict[str, Any]) -> str:
         (r"Cell & $\Delta$acc & Warm & " + header_n + r" \\"),
         r"\midrule",
     ]
+    last_setup_model: str | None = None
     for cell in snapshot["cells"]:
+        setup_model = cell["setup_model"]
+        if setup_model != last_setup_model:
+            if last_setup_model is not None:
+                lines.append(r"\midrule")
+            group = (
+                "Local Qwen C-PERSIST: cold first query + follow-ups"
+                if setup_model == "first_query_then_followups"
+                else "Gemma 26B prefix snapshots: warm snapshot + follow-ups"
+            )
+            lines.append(rf"\multicolumn{{{3 + len(n_grid)}}}{{@{{}}l}}{{\emph{{{group}}}}} \\")
+            last_setup_model = setup_model
         n_speedups = " & ".join(
             _format_speedup(entry["speedup"]) for entry in cell["setup_inclusive"]
         )

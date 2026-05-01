@@ -1399,10 +1399,10 @@ def _write_c_persist_repair_table(snapshot: dict) -> None:
             r"the no-coordination baseline; adaptive repaired-cache inheritance "
             r"is the primary broad repair result. Gains are reported as "
             r"cold follow-up or all-query latency divided by repaired-session "
-            r"latency. Setup-inclusive values are retained in generated data "
-            r"when artifacts record cache-build setup time, but this compact "
-            r"table reports follow-up denominators because the checked-in cells "
-            r"predate setup-amortized metrics.}"
+            r"latency. Setup-inclusive session economics are reported "
+            r"separately in Table~\ref{tab:c-persist-setup-inclusive}; this "
+            r"compact table keeps the median follow-up denominators used for "
+            r"the repair fidelity frontier.}"
         ),
         r"\label{tab:c-persist-repair}",
         r"\scriptsize",

@@ -1,4 +1,4 @@
-# Publishability Status — 2026-04-30
+# Publishability Status — 2026-05-01
 
 One-file answer to "what can we actually claim, in what venue, with what
 numbers, today." Kept in sync with [claim-matrix.md](claim-matrix.md) but
@@ -11,7 +11,7 @@ runtime inventories lower in this file are retained for provenance, but the
 current narrative interpretation should come from `priority.md` and the claim
 matrix.
 
-## Current Manuscript Position (2026-04-30)
+## Current Manuscript Position (2026-05-01)
 
 The draft should lead with three linked claims, not with a Qwen-only routing
 note:
@@ -31,10 +31,13 @@ note:
   their raw outputs are materialized as checked artifacts.
 
 Candidate C-STREAM is not decorative support, but it is not a release claim
-yet. The manuscript should keep native-rate streaming as a pending scale-out
-lane until artifact-compatible protocols, raw paired rows, cache-correctness
-smokes, source paths, and matched baselines make it first-class in the same
-evidence graph.
+yet. The manuscript now has a checked mixed/boundary bundle: default cross-turn
+cache reuse is unsafe, a topology-aware patched path restores correctness by
+refusing unsafe reuse, prefix snapshots are promising but small-\(N\) and
+warm-only, and low-FPS dense remains a serious baseline. C-STREAM becomes
+first-class only after a topology-safe fast path, raw paired rows, source
+paths, stale-cache failures, and matched native-streaming baselines land in the
+same evidence graph.
 
 ## One paper, multiple evidence regimes
 

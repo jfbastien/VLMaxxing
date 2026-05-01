@@ -11,8 +11,9 @@ The repo is organized around a small set of claim-bearing regimes:
   inside a tested cache-reuse envelope.
 - **C-VISION**: bounded measured sparse-vision execution exists; broad sparse
   backends and sparse LM prefill remain open.
-- **candidate C-STREAM**: native-rate streaming state reuse is still pending a
-  harmonized artifact bundle and matched baselines.
+- **candidate C-STREAM**: native-rate streaming state reuse has a checked
+  mixed/boundary bundle, but it is not an earned headline until a native policy
+  beats matched baselines under cache-correctness and stale-cache tests.
 
 Historical source imports and old review packets are not part of the release
 surface. The durable imported-target summary is in
