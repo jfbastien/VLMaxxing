@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Build the matched keep-rate random baseline paper table for Qwen C-VISION.
 
-Reads three Phase 1.51V Qwen 7B 8f VideoMME dev30 summaries:
+Reads Phase 1.51V/1.51VC Qwen 7B 8f VideoMME dev30 summaries:
 - unpatched (dense reference)
 - magnitude_norm L=2 kr=0.5 (the paper-headline scorer)
-- uniform_random L=2 kr=0.5 seed=42 (the trivial random-keep baseline)
+- uniform_random L=2 kr=0.5 seed=* (the trivial random-keep baseline)
 
 and emits:
 - ``paper/arxiv/generated/data/competitor_positioning_snapshot.json`` with
@@ -28,6 +28,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
+import statistics
 from pathlib import Path
 from typing import Any
 
@@ -36,34 +38,40 @@ ARTIFACTS = REPO_ROOT / "research" / "experiments" / "2026" / "artifacts"
 GENERATED_DATA = REPO_ROOT / "paper" / "arxiv" / "generated" / "data"
 GENERATED_TABLES = REPO_ROOT / "paper" / "arxiv" / "generated" / "tables"
 
-CELLS = [
-    {
-        "label": "Unpatched (dense reference)",
-        "summary_path": (
-            ARTIFACTS / "phase1_51V_qwen_cross_arch" / "videomme_dev30_8f_unpatched_summary.json"
-        ),
-        "kr_label": "1.00",
-        "scorer_label": "(no pruning)",
-    },
-    {
-        "label": "magnitude\\_norm (structured scorer)",
-        "summary_path": (
-            ARTIFACTS / "phase1_51V_qwen_cross_arch" / "videomme_dev30_8f_L2_kr050_summary.json"
-        ),
-        "kr_label": "0.50",
-        "scorer_label": "L2-norm of group mean hidden state",
-    },
-    {
-        "label": "uniform\\_random (matched keep-rate)",
-        "summary_path": (
-            ARTIFACTS
-            / "phase1_51VC_random_keep_baseline"
-            / "videomme_dev30_8f_L2_kr050_uniform_random_seed42_summary.json"
-        ),
-        "kr_label": "0.50",
-        "scorer_label": "deterministic seeded random keep",
-    },
-]
+DENSE_CELL = {
+    "label": "Unpatched (dense reference)",
+    "summary_path": (
+        ARTIFACTS / "phase1_51V_qwen_cross_arch" / "videomme_dev30_8f_unpatched_summary.json"
+    ),
+    "kr_label": "1.00",
+    "scorer_label": "(no pruning)",
+}
+MAGNITUDE_CELL = {
+    "label": "magnitude\\_norm (structured scorer)",
+    "summary_path": (
+        ARTIFACTS / "phase1_51V_qwen_cross_arch" / "videomme_dev30_8f_L2_kr050_summary.json"
+    ),
+    "kr_label": "0.50",
+    "scorer_label": "L2-norm of group mean hidden state",
+}
+RANDOM_GLOB = (
+    ARTIFACTS
+    / "phase1_51VC_random_keep_baseline"
+    / "videomme_dev30_8f_L2_kr050_uniform_random_seed*_summary.json"
+)
+
+
+def _static_cells() -> list[dict[str, Any]]:
+    return [
+        {
+            **DENSE_CELL,
+            "row_kind": "dense",
+        },
+        {
+            **MAGNITUDE_CELL,
+            "row_kind": "structured",
+        },
+    ]
 
 
 def _load(cell: dict[str, Any]) -> dict[str, Any] | None:
@@ -73,10 +81,125 @@ def _load(cell: dict[str, Any]) -> dict[str, Any] | None:
     return json.loads(path.read_text())
 
 
+def _seed_from_path(path: Path) -> int:
+    match = re.search(r"_seed(\d+)_summary\.json$", path.name)
+    if not match:
+        raise ValueError(f"could not parse uniform_random seed from {path}")
+    return int(match.group(1))
+
+
+def _summary_metric(summary: dict[str, Any], key: str) -> float:
+    return float(summary[key])
+
+
+def _row_from_summary(
+    *,
+    cell: dict[str, Any],
+    summary: dict[str, Any],
+    dense_acc: float,
+) -> dict[str, Any]:
+    accuracy = float(summary["dense_accuracy"])
+    return {
+        "label": cell["label"],
+        "row_kind": cell["row_kind"],
+        "scorer_label": cell["scorer_label"],
+        "kr_label": cell["kr_label"],
+        "n_items": int(summary["n_items"]),
+        "n_items_label": str(int(summary["n_items"])),
+        "frame_count": int(summary["frame_count"]),
+        "accuracy": accuracy,
+        "delta_vs_dense": accuracy - dense_acc,
+        "parse_failures": int(summary["dense_parse_failures"]),
+        "mean_kept_groups": float(summary["mean_kept_groups"]),
+        "mean_total_groups": float(summary["mean_total_groups"]),
+        "mean_effective_keep_rate": float(summary["mean_effective_keep_rate"]),
+        "mean_vision_ms": float(summary["mean_dense_vision_ms"]),
+        "mean_end_to_end_ms": float(summary["mean_dense_end_to_end_ms"]),
+        "mean_decode_ms": float(summary["mean_decode_ms"]),
+        "mean_peak_memory_gb": float(summary["mean_peak_memory_gb"]),
+        "source": str(cell["summary_path"].relative_to(REPO_ROOT).as_posix()),
+    }
+
+
+def _random_row(dense_acc: float) -> dict[str, Any]:
+    paths = sorted(RANDOM_GLOB.parent.glob(RANDOM_GLOB.name))
+    if not paths:
+        return {
+            "label": "uniform\\_random (matched keep-rate)",
+            "row_kind": "random",
+            "scorer_label": "deterministic seeded random keep",
+            "kr_label": "0.50",
+            "missing": True,
+        }
+    summaries = [json.loads(path.read_text()) for path in paths]
+    seeds = [_seed_from_path(path) for path in paths]
+    accuracies = [_summary_metric(summary, "dense_accuracy") for summary in summaries]
+    label = (
+        "uniform\\_random (matched keep-rate)"
+        if len(paths) == 1
+        else f"uniform\\_random mean ({len(paths)} seeds)"
+    )
+    row = {
+        "label": label,
+        "row_kind": "random",
+        "scorer_label": "deterministic seeded random keep",
+        "kr_label": "0.50",
+        "n_runs": len(paths),
+        "seeds": seeds,
+        "n_items": int(summaries[0]["n_items"]),
+        "n_items_label": (
+            str(int(summaries[0]["n_items"]))
+            if len(paths) == 1
+            else f"{int(summaries[0]['n_items'])}$\\times${len(paths)}"
+        ),
+        "frame_count": int(summaries[0]["frame_count"]),
+        "accuracy": float(statistics.mean(accuracies)),
+        "accuracy_min": float(min(accuracies)),
+        "accuracy_max": float(max(accuracies)),
+        "delta_vs_dense": float(statistics.mean(accuracies) - dense_acc),
+        "parse_failures": float(
+            statistics.mean(
+                _summary_metric(summary, "dense_parse_failures") for summary in summaries
+            )
+        ),
+        "mean_kept_groups": float(
+            statistics.mean(_summary_metric(summary, "mean_kept_groups") for summary in summaries)
+        ),
+        "mean_total_groups": float(
+            statistics.mean(_summary_metric(summary, "mean_total_groups") for summary in summaries)
+        ),
+        "mean_effective_keep_rate": float(
+            statistics.mean(
+                _summary_metric(summary, "mean_effective_keep_rate") for summary in summaries
+            )
+        ),
+        "mean_vision_ms": float(
+            statistics.mean(
+                _summary_metric(summary, "mean_dense_vision_ms") for summary in summaries
+            )
+        ),
+        "mean_end_to_end_ms": float(
+            statistics.mean(
+                _summary_metric(summary, "mean_dense_end_to_end_ms") for summary in summaries
+            )
+        ),
+        "mean_decode_ms": float(
+            statistics.mean(_summary_metric(summary, "mean_decode_ms") for summary in summaries)
+        ),
+        "mean_peak_memory_gb": float(
+            statistics.mean(
+                _summary_metric(summary, "mean_peak_memory_gb") for summary in summaries
+            )
+        ),
+        "source_paths": [str(path.relative_to(REPO_ROOT).as_posix()) for path in paths],
+    }
+    return row
+
+
 def _build_snapshot() -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
     dense_acc: float | None = None
-    for cell in CELLS:
+    for cell in _static_cells():
         summary = _load(cell)
         if summary is None:
             rows.append(
@@ -91,26 +214,14 @@ def _build_snapshot() -> dict[str, Any]:
         accuracy = float(summary["dense_accuracy"])
         if dense_acc is None:
             dense_acc = accuracy
-        rows.append(
-            {
-                "label": cell["label"],
-                "scorer_label": cell["scorer_label"],
-                "kr_label": cell["kr_label"],
-                "n_items": int(summary["n_items"]),
-                "frame_count": int(summary["frame_count"]),
-                "accuracy": accuracy,
-                "delta_vs_dense": (accuracy - dense_acc) if dense_acc is not None else 0.0,
-                "parse_failures": int(summary["dense_parse_failures"]),
-                "mean_kept_groups": float(summary["mean_kept_groups"]),
-                "mean_total_groups": float(summary["mean_total_groups"]),
-                "mean_effective_keep_rate": float(summary["mean_effective_keep_rate"]),
-                "mean_vision_ms": float(summary["mean_dense_vision_ms"]),
-                "mean_end_to_end_ms": float(summary["mean_dense_end_to_end_ms"]),
-                "mean_decode_ms": float(summary["mean_decode_ms"]),
-                "mean_peak_memory_gb": float(summary["mean_peak_memory_gb"]),
-                "source": str(cell["summary_path"].relative_to(REPO_ROOT).as_posix()),
-            }
-        )
+        rows.append(_row_from_summary(cell=cell, summary=summary, dense_acc=dense_acc))
+    if dense_acc is not None:
+        rows.append(_random_row(dense_acc))
+    structured = next((row for row in rows if row.get("row_kind") == "structured"), None)
+    random = next((row for row in rows if row.get("row_kind") == "random"), None)
+    structured_random_gap = None
+    if structured and random and not random.get("missing"):
+        structured_random_gap = float(structured["accuracy"] - random["accuracy"])
     snapshot = {
         "model": "Qwen 2.5-VL-7B-Instruct-4bit (MLX)",
         "manifest": "research/benchmark_manifests/videomme_dev_v1.toml",
@@ -121,10 +232,11 @@ def _build_snapshot() -> dict[str, Any]:
             "matched keep-rate competitor positioning at (n=30 items, 8 frames, "
             "vision-tower layer L=2). Delta accuracy is reported relative to the unpatched "
             "dense reference row. uniform_random uses a deterministic per-call "
-            "rng.default_rng(seed=42) to draw scores at the merged-group axis; "
-            "the keep-rate selection then proceeds through the same window-aligned "
-            "prune planner the magnitude_norm scorer feeds."
+            "rng.default_rng(seed) to draw scores at the merged-group axis; the keep-rate "
+            "selection then proceeds through the same window-aligned prune planner the "
+            "magnitude_norm scorer feeds."
         ),
+        "structured_minus_random_accuracy_gap": structured_random_gap,
         "rows": rows,
     }
     return snapshot
@@ -136,6 +248,14 @@ def _delta(value: float) -> str:
 
 
 def _emit_table(snapshot: dict[str, Any]) -> str:
+    gap = snapshot.get("structured_minus_random_accuracy_gap")
+    gap_sentence = (
+        r"The structured-vs-random gap is "
+        + f"{gap * 100:+.1f}"
+        + r"\,pp over the random seed set present in the artifact directory. "
+        if isinstance(gap, float)
+        else ""
+    )
     lines = [
         r"\begin{table}[H]",
         r"\centering",
@@ -146,8 +266,9 @@ def _emit_table(snapshot: dict[str, Any]) -> str:
             r"\emph{magnitude\_norm} row is the structured Qwen scorer; the "
             r"\emph{uniform\_random} row is a trivial baseline at the same "
             r"keep-rate, not a matched-runtime peer method. The \(\Delta\)acc column is "
-            r"relative to dense; the structured-vs-random gap in this seed is "
-            r"+16.7\,pp. Wall-clock columns are measured and need not match.}"
+            r"relative to dense. "
+            + gap_sentence
+            + r"Wall-clock columns are measured and need not match.}"
         ),
         r"\label{tab:competitor-positioning}",
         r"\small",
@@ -163,7 +284,7 @@ def _emit_table(snapshot: dict[str, Any]) -> str:
         lines.append(
             f"{row['label']} & "
             f"{row['kr_label']} & "
-            f"{row['n_items']} & "
+            f"{row['n_items_label']} & "
             f"{row['accuracy']:.3f} & "
             f"{_delta(row['delta_vs_dense'])} & "
             f"{row['mean_vision_ms']:.0f} & "

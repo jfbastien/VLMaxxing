@@ -2,7 +2,7 @@
   "frame_count": 8,
   "manifest": "research/benchmark_manifests/videomme_dev_v1.toml",
   "model": "Qwen 2.5-VL-7B-Instruct-4bit (MLX)",
-  "model_note": "matched keep-rate competitor positioning at (n=30 items, 8 frames, vision-tower layer L=2). Delta accuracy is reported relative to the unpatched dense reference row. uniform_random uses a deterministic per-call rng.default_rng(seed=42) to draw scores at the merged-group axis; the keep-rate selection then proceeds through the same window-aligned prune planner the magnitude_norm scorer feeds.",
+  "model_note": "matched keep-rate competitor positioning at (n=30 items, 8 frames, vision-tower layer L=2). Delta accuracy is reported relative to the unpatched dense reference row. uniform_random uses a deterministic per-call rng.default_rng(seed) to draw scores at the merged-group axis; the keep-rate selection then proceeds through the same window-aligned prune planner the magnitude_norm scorer feeds.",
   "n_items": 30,
   "rows": [
     {
@@ -19,7 +19,9 @@
       "mean_total_groups": 3200.0,
       "mean_vision_ms": 8789.749995733333,
       "n_items": 30,
+      "n_items_label": "30",
       "parse_failures": 0,
+      "row_kind": "dense",
       "scorer_label": "(no pruning)",
       "source": "research/experiments/2026/artifacts/phase1_51V_qwen_cross_arch/videomme_dev30_8f_unpatched_summary.json"
     },
@@ -37,12 +39,16 @@
       "mean_total_groups": 3200.0,
       "mean_vision_ms": 5293.522180633333,
       "n_items": 30,
+      "n_items_label": "30",
       "parse_failures": 0,
+      "row_kind": "structured",
       "scorer_label": "L2-norm of group mean hidden state",
       "source": "research/experiments/2026/artifacts/phase1_51V_qwen_cross_arch/videomme_dev30_8f_L2_kr050_summary.json"
     },
     {
       "accuracy": 0.3333333333333333,
+      "accuracy_max": 0.3333333333333333,
+      "accuracy_min": 0.3333333333333333,
       "delta_vs_dense": -0.2,
       "frame_count": 8,
       "kr_label": "0.50",
@@ -55,10 +61,19 @@
       "mean_total_groups": 3200.0,
       "mean_vision_ms": 4124.376365266667,
       "n_items": 30,
-      "parse_failures": 0,
+      "n_items_label": "30",
+      "n_runs": 1,
+      "parse_failures": 0.0,
+      "row_kind": "random",
       "scorer_label": "deterministic seeded random keep",
-      "source": "research/experiments/2026/artifacts/phase1_51VC_random_keep_baseline/videomme_dev30_8f_L2_kr050_uniform_random_seed42_summary.json"
+      "seeds": [
+        42
+      ],
+      "source_paths": [
+        "research/experiments/2026/artifacts/phase1_51VC_random_keep_baseline/videomme_dev30_8f_L2_kr050_uniform_random_seed42_summary.json"
+      ]
     }
   ],
+  "structured_minus_random_accuracy_gap": 0.16666666666666669,
   "vision_tower_layer": 2
 }

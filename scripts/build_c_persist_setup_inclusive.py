@@ -5,7 +5,7 @@ Reads existing phase 1.55A* summary.json artifacts that carry per-session
 timing (session_first_query, session_follow_up, baseline) and emits:
 
 - ``paper/arxiv/generated/data/c_persist_setup_inclusive_snapshot.json``
-  with the per-cell numbers and source paths.
+    with the per-cell numbers and source paths.
 - ``paper/arxiv/generated/tables/c_persist_setup_inclusive.tex``
   with a paper-ready setup-inclusive speedup table.
 
@@ -20,11 +20,9 @@ C-PERSIST session (cold first query, cheap follow-ups):
 
     Speedup at N total session queries = naive_total / persist_total.
 
-This is the honest replacement for the "follow-up speedup" headline
-(``speedup_first_over_follow``) that absorbs the warm-up cost on the
-denominator. The paper currently reports the warm-only multiplier; this
-    generator surfaces the dependence on total session length so reviewers can read the
-economics at any session length.
+This is the honest replacement for warm-only follow-up multipliers. The
+generator surfaces the dependence on total session length so reviewers can
+read the economics at any session length.
 
 Note on baseline rows: many of the input summaries use stateless
 question-cycle baselines (deterministic replicas), which is correct for
@@ -38,6 +36,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import statistics
 from pathlib import Path
 from typing import Any
 
@@ -50,13 +49,27 @@ GENERATED_TABLES = REPO_ROOT / "paper" / "arxiv" / "generated" / "tables"
 # frame count). Only landed C-PERSIST cells with full timing are included; we
 # deliberately avoid using e.g. 1.55D selective re-prefill cells because the
 # economics there fold in re-prefill cost which is conceptually different.
-CELLS = [
+QWEN_CELLS = [
     ("phase1_55A_16f_frame_scaling", "7B / 16f", "qwen2_5_vl_7b_4bit", 16),
     ("phase1_55A_18f_frame_scaling", "7B / 18f", "qwen2_5_vl_7b_4bit", 18),
     ("phase1_55A_20f_frame_scaling", "7B / 20f", "qwen2_5_vl_7b_4bit", 20),
     ("phase1_55A_24f_frame_scaling", "7B / 24f", "qwen2_5_vl_7b_4bit", 24),
     ("phase1_55A_32f_frame_scaling", "7B / 32f", "qwen2_5_vl_7b_4bit", 32),
     ("phase1_55A_3b_20f_crossarch", "3B / 20f", "qwen2_5_vl_3b_4bit", 20),
+]
+GEMMA_PREFIX_SNAPSHOT_CELLS = [
+    (
+        "sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot.jsonl",
+        "Gemma 26B / 8f",
+        "gemma_4_26b_a4b",
+        8,
+    ),
+    (
+        "sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f.jsonl",
+        "Gemma 26B / 32f",
+        "gemma_4_26b_a4b",
+        32,
+    ),
 ]
 N_VALUES = [1, 2, 5, 10, 50]
 
@@ -80,6 +93,25 @@ def _setup_inclusive_speedup(
     }
 
 
+def _prefix_snapshot_speedup(
+    *,
+    warm_ms: float,
+    follow_ms: float,
+    baseline_ms: float,
+    n_total_queries: int,
+) -> dict[str, float]:
+    if n_total_queries < 1:
+        raise ValueError(f"n_total_queries must be >= 1, got {n_total_queries}")
+    naive_total = n_total_queries * baseline_ms
+    persist_total = warm_ms + n_total_queries * follow_ms
+    return {
+        "n_total_queries": n_total_queries,
+        "naive_total_ms": float(naive_total),
+        "persist_total_ms": float(persist_total),
+        "speedup": float(naive_total / max(persist_total, 1e-12)),
+    }
+
+
 def _load_cell(artifact_dir: str) -> dict[str, Any] | None:
     path = ARTIFACTS / artifact_dir / "summary.json"
     if not path.exists():
@@ -87,18 +119,22 @@ def _load_cell(artifact_dir: str) -> dict[str, Any] | None:
     return json.loads(path.read_text())
 
 
+def _load_jsonl(path: Path) -> list[dict[str, Any]]:
+    if not path.exists():
+        return []
+    return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+
+
 def _build_snapshot() -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
-    for artifact_dir, display, model, frame_count in CELLS:
+    for artifact_dir, display, model, frame_count in QWEN_CELLS:
         summary = _load_cell(artifact_dir)
         if summary is None:
             continue
         first = float(summary["session_first_query"]["mean_elapsed_ms"])
         follow = float(summary["session_follow_up"]["mean_elapsed_ms"])
         baseline = float(summary["baseline"]["mean_elapsed_ms"])
-        warm_speedup = float(
-            summary.get("speedup_first_over_follow", baseline / max(follow, 1e-12))
-        )
+        warm_speedup = baseline / max(follow, 1e-12)
         delta_acc = float(summary.get("accuracy_delta_session_minus_baseline", 0.0))
         per_n = [
             _setup_inclusive_speedup(
@@ -115,6 +151,8 @@ def _build_snapshot() -> dict[str, Any]:
                 "display": display,
                 "model": model,
                 "frame_count": frame_count,
+                "setup_model": "first_query_then_followups",
+                "setup_model_note": "persist_total = first_query + (Q - 1) * follow_up",
                 "first_query_mean_ms": first,
                 "follow_up_mean_ms": follow,
                 "baseline_mean_ms": baseline,
@@ -125,12 +163,62 @@ def _build_snapshot() -> dict[str, Any]:
             }
         )
 
+    for rel_path, display, model, frame_count in GEMMA_PREFIX_SNAPSHOT_CELLS:
+        source_path = ARTIFACTS / rel_path
+        jsonl_rows = _load_jsonl(source_path)
+        if not jsonl_rows:
+            continue
+        warm_values = [
+            float(row["policy_params"]["warm_ms"])
+            for row in jsonl_rows
+            if row.get("policy_params") and row["policy_params"].get("warm_ms") is not None
+        ]
+        follow_values = [float(row["end_to_end_ms"]) for row in jsonl_rows]
+        baseline_values = [float(row["baseline_end_to_end_ms"]) for row in jsonl_rows]
+        if not warm_values or not follow_values or not baseline_values:
+            raise ValueError(f"{source_path} is missing warm/follow/baseline timing fields")
+        warm = float(statistics.mean(warm_values))
+        follow = float(statistics.mean(follow_values))
+        baseline = float(statistics.mean(baseline_values))
+        per_n = [
+            _prefix_snapshot_speedup(
+                warm_ms=warm,
+                follow_ms=follow,
+                baseline_ms=baseline,
+                n_total_queries=n,
+            )
+            for n in N_VALUES
+        ]
+        rows.append(
+            {
+                "artifact_dir": rel_path,
+                "display": display,
+                "model": model,
+                "frame_count": frame_count,
+                "setup_model": "prefix_snapshot_then_queries",
+                "setup_model_note": "persist_total = prefix_warm + Q * follow_up",
+                "prefix_warm_mean_ms": warm,
+                "follow_up_mean_ms": follow,
+                "baseline_mean_ms": baseline,
+                "warm_speedup": baseline / max(follow, 1e-12),
+                "median_per_row_warm_speedup": float(
+                    statistics.median(
+                        float(row["baseline_end_to_end_ms"]) / float(row["end_to_end_ms"])
+                        for row in jsonl_rows
+                    )
+                ),
+                "accuracy_delta_session_minus_baseline": 0.0,
+                "setup_inclusive": per_n,
+                "source": f"research/experiments/2026/artifacts/{rel_path}",
+            }
+        )
+
     snapshot = {
         "n_total_queries_grid": N_VALUES,
         "model_note": (
-            "warm_speedup is baseline_mean / follow_up_mean (per-follow-up only); "
-            "setup_inclusive[i].speedup is N*baseline / (first_query + (N-1)*follow_up), "
-            "the actual session-level multiplier at N total same-video queries."
+            "warm_speedup is baseline_mean / follow_up_mean (per-follow-up only, mean-timing "
+            "denominator). setup_inclusive[i].speedup is the actual session-level multiplier "
+            "at N total same-video queries using each row's setup_model_note."
         ),
         "cells": rows,
     }
@@ -152,12 +240,15 @@ def _emit_table(snapshot: dict[str, Any]) -> str:
             r"\emph{Warm} is the per-follow-up multiplier currently "
             r"reported elsewhere; \emph{Q=k} is the actual session-level "
             r"speedup when a session has \(k\) total queries on the "
-            r"same video, computed as "
-            r"\(Q \cdot \mathrm{baseline} / (\mathrm{first} + (Q-1) \cdot \mathrm{follow})\). "
+            r"same video. Qwen rows use the measured cold first query plus "
+            r"\(Q-1\) follow-ups; Gemma prefix-snapshot rows use the measured "
+            r"prefix warm-up plus \(Q\) follow-up queries. "
             r"At \(Q=1\) the cold first-query cost dominates and the "
             r"speedup approaches~1; at large \(Q\) it asymptotes to the "
-            r"per-follow-up multiplier. \(\Delta\)acc is the paired session-vs-baseline "
-            r"accuracy delta.}"
+            r"mean per-follow-up multiplier. \(\Delta\)acc is the paired "
+            r"session-vs-baseline accuracy delta when available; Gemma rows "
+            r"report 0 because the prefix-snapshot artifacts have zero paired "
+            r"correctness diffs against cold dense.}"
         ),
         r"\label{tab:c-persist-setup-inclusive}",
         r"\small",

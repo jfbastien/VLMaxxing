@@ -128,6 +128,15 @@ def _run_artifact_integrity() -> None:
     _run([sys.executable, "scripts/audit_artifact_integrity.py"], cwd=REPO_ROOT)
 
 
+def _run_auxiliary_table_builders() -> None:
+    """Regenerate standalone tables that are sourced by the manuscript."""
+    for script in [
+        "scripts/build_c_persist_setup_inclusive.py",
+        "scripts/build_competitor_positioning_table.py",
+    ]:
+        _run([sys.executable, script], cwd=REPO_ROOT)
+
+
 def _load_json(path: Path) -> dict:
     return json.loads(path.read_text())
 
@@ -2479,6 +2488,7 @@ def _write_repo_provenance_table(primary: dict[str, str]) -> None:
 
 def main() -> int:
     _ensure_dirs()
+    _run_auxiliary_table_builders()
     snapshot = _lane_a_snapshot()
     _render_lane_a_figure(snapshot)
     _write_lane_a_table(snapshot)

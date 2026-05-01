@@ -104,11 +104,14 @@ what works and what does not, and it belongs in the paper as mechanism
 and boundary evidence rather than as the headline result.
 
 **Candidate C-STREAM (NOT applications/support).** Native-rate streaming is the
-scale-out regime for the same anti-recomputation thesis, but numeric deployment
-rows stay pending until they are imported as validated artifacts rather than
-sibling prose. Sparse-sampled QA stays pixel-diff by design; native-rate
-streaming may use H.264 metadata by design. The shared frame is C-CEILING
-arithmetic plus cache-state correctness, not a cross-repo multiplier.
+scale-out regime for the same anti-recomputation thesis, but the current
+validated artifacts are boundary evidence rather than a fourth headline:
+default cache reuse is unsafe on mixed-SWA Gemma, correctness-safe fallback
+gives up speed, prefix snapshots are warm-session evidence on small-N rows,
+and the screen-streaming proxy loses to low-FPS dense at matched evidence.
+Sparse-sampled QA stays pixel-diff by design; native-rate streaming may use
+H.264 metadata by design. The shared frame is C-CEILING arithmetic plus
+cache-state correctness, not a cross-repo multiplier.
 
 1.51R novelty-pruning does NOT carry the headline. It appears as
 (a) the EXP10 n=60 composition-appendix gate (≥4 pp E2E lift over

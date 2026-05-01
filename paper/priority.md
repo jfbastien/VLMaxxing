@@ -280,19 +280,24 @@ in its own dimension.
    repaired cache and re-prefills only the question tail, while fixed
    K=1 re-prefills the last-frame block on every Q3.
 
-   Pending follow-ups, in order of paper leverage:
+   Follow-up status, in order of remaining paper leverage:
 
-   - **Many-turn stability stress** — 10/20/50 follow-ups to test whether
-     paired drift remains flat or accumulates after the current two-follow-up
-     sessions.
+   - **Many-turn stability stress closed for repeated-question prompts
+     (1.55L)** — 10/20/50 follow-ups across fixed_k1, adaptive_post_q2,
+     and refresh10 now pass the preregistered gates. The remaining
+     strengthening experiment is content-conditional or natural-dialogue
+     prompting, not another repeated-question short-bucket rerun.
    - **Sampler sweep closed for the short mechanism cell (1.55K)** — adaptive
-     reuse was tested at \(T=0.0,0.5,0.7,1.0,1.5\). It is robustness
-     evidence that the mechanism is not greedy-only; because the sweep is one
-     short-cell tranche and has small nonzero diffs at \(T=0.7/1.0\), the
-     remaining paper claim should be "practical temperature sweep," not
-     universal sampler invariance.
-   - **Cross-architecture C-PERSIST** — blocked on Gemma sliding-window /
-     RotatingKVCache prompt-cache semantics, not on model availability.
+     reuse was tested across the extended seed/temperature grid through
+     \(T=1.5\). It is robustness evidence that the mechanism is not
+     greedy-only; the bounded paper claim should remain "practical
+     temperature sweep on the tested tranche," not universal sampler
+     invariance.
+   - **Cross-architecture C-PERSIST correctness closed at the runtime
+     boundary** — Gemma mixed-SWA default prompt-cache trimming is unsafe,
+     but the topology-aware library patch is full-regression verified and
+     prefix-snapshot reuse gives a correctness-clean warm-follow-up path.
+     This is not evidence that the guarded fallback is fast.
 
    **Do not confuse this with 1.55B**, which is the later persistent-KV
    × decode-acceleration composition phase and still depends on 1.54

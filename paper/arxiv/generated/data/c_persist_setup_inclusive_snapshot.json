@@ -41,8 +41,10 @@
           "speedup": 32.17069780589067
         }
       ],
+      "setup_model": "first_query_then_followups",
+      "setup_model_note": "persist_total = first_query + (Q - 1) * follow_up",
       "source": "research/experiments/2026/artifacts/phase1_55A_16f_frame_scaling/summary.json",
-      "warm_speedup": 91.06331752551472
+      "warm_speedup": 83.00437149768766
     },
     {
       "accuracy_delta_session_minus_baseline": -0.23809523809523814,
@@ -85,8 +87,10 @@
           "speedup": 23.598567875811415
         }
       ],
+      "setup_model": "first_query_then_followups",
+      "setup_model_note": "persist_total = first_query + (Q - 1) * follow_up",
       "source": "research/experiments/2026/artifacts/phase1_55A_18f_frame_scaling/summary.json",
-      "warm_speedup": 70.27968874536019
+      "warm_speedup": 45.50478459259866
     },
     {
       "accuracy_delta_session_minus_baseline": -0.380952380952381,
@@ -129,8 +133,10 @@
           "speedup": 22.88814807444947
         }
       ],
+      "setup_model": "first_query_then_followups",
+      "setup_model_note": "persist_total = first_query + (Q - 1) * follow_up",
       "source": "research/experiments/2026/artifacts/phase1_55A_20f_frame_scaling/summary.json",
-      "warm_speedup": 94.42384980380866
+      "warm_speedup": 39.57505466799625
     },
     {
       "accuracy_delta_session_minus_baseline": -0.42857142857142855,
@@ -173,8 +179,10 @@
           "speedup": 37.84537881146781
         }
       ],
+      "setup_model": "first_query_then_followups",
+      "setup_model_note": "persist_total = first_query + (Q - 1) * follow_up",
       "source": "research/experiments/2026/artifacts/phase1_55A_24f_frame_scaling/summary.json",
-      "warm_speedup": 121.57924276239355
+      "warm_speedup": 124.11830117899076
     },
     {
       "accuracy_delta_session_minus_baseline": -0.42857142857142855,
@@ -217,8 +225,10 @@
           "speedup": 37.499981485439896
         }
       ],
+      "setup_model": "first_query_then_followups",
+      "setup_model_note": "persist_total = first_query + (Q - 1) * follow_up",
       "source": "research/experiments/2026/artifacts/phase1_55A_32f_frame_scaling/summary.json",
-      "warm_speedup": 149.8819332377929
+      "warm_speedup": 153.80820620401778
     },
     {
       "accuracy_delta_session_minus_baseline": -0.04761904761904767,
@@ -261,11 +271,107 @@
           "speedup": 37.77866782656488
         }
       ],
+      "setup_model": "first_query_then_followups",
+      "setup_model_note": "persist_total = first_query + (Q - 1) * follow_up",
       "source": "research/experiments/2026/artifacts/phase1_55A_3b_20f_crossarch/summary.json",
-      "warm_speedup": 136.06995985460227
+      "warm_speedup": 132.21104374114051
+    },
+    {
+      "accuracy_delta_session_minus_baseline": 0.0,
+      "artifact_dir": "sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot.jsonl",
+      "baseline_mean_ms": 2726.017464151872,
+      "display": "Gemma 26B / 8f",
+      "follow_up_mean_ms": 400.4182738218723,
+      "frame_count": 8,
+      "median_per_row_warm_speedup": 9.109961067877824,
+      "model": "gemma_4_26b_a4b",
+      "prefix_warm_mean_ms": 2792.666202444317,
+      "setup_inclusive": [
+        {
+          "n_total_queries": 1,
+          "naive_total_ms": 2726.017464151872,
+          "persist_total_ms": 3193.0844762661895,
+          "speedup": 0.8537254446019296
+        },
+        {
+          "n_total_queries": 2,
+          "naive_total_ms": 5452.034928303744,
+          "persist_total_ms": 3593.5027500880615,
+          "speedup": 1.517192362847124
+        },
+        {
+          "n_total_queries": 5,
+          "naive_total_ms": 13630.08732075936,
+          "persist_total_ms": 4794.757571553679,
+          "speedup": 2.8427062510154624
+        },
+        {
+          "n_total_queries": 10,
+          "naive_total_ms": 27260.17464151872,
+          "persist_total_ms": 6796.84894066304,
+          "speedup": 4.0107077381742515
+        },
+        {
+          "n_total_queries": 50,
+          "naive_total_ms": 136300.8732075936,
+          "persist_total_ms": 22813.57989353793,
+          "speedup": 5.974549976095665
+        }
+      ],
+      "setup_model": "prefix_snapshot_then_queries",
+      "setup_model_note": "persist_total = prefix_warm + Q * follow_up",
+      "source": "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot.jsonl",
+      "warm_speedup": 6.8079247186519565
+    },
+    {
+      "accuracy_delta_session_minus_baseline": 0.0,
+      "artifact_dir": "sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f.jsonl",
+      "baseline_mean_ms": 15075.958648114465,
+      "display": "Gemma 26B / 32f",
+      "follow_up_mean_ms": 565.2993006709343,
+      "frame_count": 32,
+      "median_per_row_warm_speedup": 26.587668019428758,
+      "model": "gemma_4_26b_a4b",
+      "prefix_warm_mean_ms": 17773.85620834927,
+      "setup_inclusive": [
+        {
+          "n_total_queries": 1,
+          "naive_total_ms": 15075.958648114465,
+          "persist_total_ms": 18339.155509020202,
+          "speedup": 0.8220639516742896
+        },
+        {
+          "n_total_queries": 2,
+          "naive_total_ms": 30151.91729622893,
+          "persist_total_ms": 18904.45480969114,
+          "speedup": 1.5949635998374265
+        },
+        {
+          "n_total_queries": 5,
+          "naive_total_ms": 75379.79324057233,
+          "persist_total_ms": 20600.35271170394,
+          "speedup": 3.65915061239441
+        },
+        {
+          "n_total_queries": 10,
+          "naive_total_ms": 150759.58648114465,
+          "persist_total_ms": 23426.84921505861,
+          "speedup": 6.435333454241788
+        },
+        {
+          "n_total_queries": 50,
+          "naive_total_ms": 753797.9324057233,
+          "persist_total_ms": 46038.82124189598,
+          "speedup": 16.37309366469523
+        }
+      ],
+      "setup_model": "prefix_snapshot_then_queries",
+      "setup_model_note": "persist_total = prefix_warm + Q * follow_up",
+      "source": "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f.jsonl",
+      "warm_speedup": 26.66898513799916
     }
   ],
-  "model_note": "warm_speedup is baseline_mean / follow_up_mean (per-follow-up only); setup_inclusive[i].speedup is N*baseline / (first_query + (N-1)*follow_up), the actual session-level multiplier at N total same-video queries.",
+  "model_note": "warm_speedup is baseline_mean / follow_up_mean (per-follow-up only, mean-timing denominator). setup_inclusive[i].speedup is the actual session-level multiplier at N total same-video queries using each row's setup_model_note.",
   "n_total_queries_grid": [
     1,
     2,

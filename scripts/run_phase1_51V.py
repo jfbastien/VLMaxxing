@@ -402,6 +402,10 @@ def main() -> int:
             "vision_tower_patched": vt_patched,
             "vision_tower_layer": args.vision_tower_layer if vt_patched else None,
             "vision_tower_keep_rate": args.vision_tower_keep_rate if vt_patched else None,
+            "score_mode": args.score_mode if vt_patched else None,
+            "score_seed": args.score_seed
+            if vt_patched and args.score_mode == "uniform_random"
+            else None,
             "rss_guard_mb": args.rss_guard_mb if args.rss_guard_mb > 0 else None,
             "final_rss_mb": rss_mb(),
         }

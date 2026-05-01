@@ -283,18 +283,15 @@ analyzer's numerical path.
   numerically clean? The fp32 closure above answers yes: reuse is
   dense-like while the pruned path diverges strongly.
 
-## Next steps
+## Remaining caution
 
-1. Patch `_distance_for_windows` to do reductions in a
-   numerically stable form (`sqrt(mean)` route preferred over
-   the fp32 cast given the OOM hint).
-2. Add a CPU-side regression test on a small synthetic tensor pair
-   (identical / orthogonal / scaled) to lock the reduction.
-3. Re-run A5 (`bash scripts/run_phase1_30AG_kcache_distance_probe.sh`,
-   ~40 min).
-4. If H4 still fails after the fix, that is a real null and should
-   feed back into the 1.30 root-cause Phase B/C plan rather than
-   blocking the chain.
+- Treat the native fp16 cosine columns as diagnostic provenance only.
+  The release-bearing metric is the fp32 control cosine emitted by the
+  finite-audit rerun.
+- If this probe is extended to new models, keep the finite-audit fields
+  and strict JSON emission enabled so non-finite cache tensors and
+  reduction overflow fail loudly instead of becoming silent mechanism
+  evidence.
 
 ## Cross-references
 

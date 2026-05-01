@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Phase 1.51VC competitor-positioning baseline:
-# uniform_random keep at matched (L=2, kr=0.5) on the same Qwen 7B 16f
-# VideoMME holdout cell as Phase 1.51V Qwen cross-arch dev30, so the result
-# is paired against the existing magnitude_norm baseline at fixed corpus +
-# fixed dense reference + fixed keep-rate.
+# uniform_random keep at matched (L=2, kr=0.5) on the same Qwen 7B 8f
+# VideoMME dev30 cell as Phase 1.51V Qwen cross-arch. The result is paired
+# against the existing magnitude_norm baseline at fixed corpus, fixed dense
+# reference, and fixed keep-rate.
 #
 # Usage:
 #   bash scripts/run_phase1_51VC_random_keep_baseline.sh

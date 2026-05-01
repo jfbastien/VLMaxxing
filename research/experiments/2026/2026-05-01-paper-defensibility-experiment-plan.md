@@ -144,3 +144,42 @@ Items 1 and 5 are already done or nearly done. The user gets to pick which of 2 
 - Item 4's 32f arms are the most fragile. Stage them after 8f/16f and bail at 14 GB RSS.
 - All new experiments run with `B0B_DISABLE_RUNTIME_GUARD` set deliberately if and only if cache reuse correctness is the test (not the case for items 2/3/4).
 - Sandbox off is required for any MLX-Metal-backed run; Item 5 already proves this.
+
+## 2026-05-01 supervisor-review addendum
+
+The post-integration review tightened the plan in three places:
+
+1. **Natural dialogue should not be faked.** A templated prompt-variation
+   run is still useful, but it is not a natural-dialogue benchmark. If run
+   locally, label it "dense-anchored content-conditional prompt variation":
+   every cached and dense arm must receive the exact same rendered prompt
+   hash at each turn, and any prior answer text spliced into turn \(k+1\)
+   must come from a canonical dense pre-pass. This isolates cache-policy
+   drift from self-conditioning drift. A true natural-dialogue result needs
+   a curated 7-clip × 20-turn corpus with reviewed prompts before compute.
+2. **Do not run a named FastV/FasterVLM proxy unless the implemented metric
+   is faithful.** The current Qwen MLX path does not expose decoder attention
+   scores through the fused attention kernels, and an attention-output
+   magnitude scorer would be a new proxy, not FastV. The landed
+   `uniform_random` row is therefore only a sanity baseline. The cheap
+   hardening path is a multi-seed random_keep sweep; a true adjacent-method
+   comparison remains a separate implementation/reproduction project.
+3. **C-STREAM already has a short negative pilot.** Sam B3 is the cheap trial:
+   `low_fps_dense` wins 17/22 versus `sam_policy` 13/22 at matched evidence.
+   A one-hour rerun is unlikely to promote C-STREAM; it can only validate
+   harness mechanics. Promotion still requires the larger throughput-axis
+   experiment with matched low-FPS/screenshot/recency baselines and stale-cache
+   cases. Until then C-STREAM stays candidate evidence.
+
+Revised near-term recommendation:
+
+1. **Run the multi-seed random_keep sweep** if the random sanity table remains
+   in the paper. Hypothesis: `magnitude_norm` stays at least 10 pp above the
+   random_keep seed distribution at matched keep-rate. Runtime: about
+   3–5 hours for seeds `42 137 999 2024` on the local Qwen 7B 8f dev30 cell.
+2. **Run true natural-dialogue C-PERSIST only after curation.** If no curated
+   corpus is ready, defer rather than spending 4 hours on a result that will
+   still need narrow wording.
+3. **Ask Sam for a 32f prefix-snapshot expansion only if M5 time is cheap.**
+   It would harden the Gemma 26B cross-architecture result from 9 rows toward
+   the 21-row B0b-style set. It is not required for the current paper claim.
