@@ -19,13 +19,26 @@ This file consolidates the remaining experiments that codex and the paper editor
 
 **Numbers landed (see `paper/arxiv/generated/tables/c_persist_setup_inclusive.tex`):**
 
-| Cell | Δacc | Warm (per-follow-up) | N=1 | N=2 | N=10 | N=50 |
+| Cell | Δacc | Warm (per-follow-up) | Q=1 | Q=2 | Q=10 | Q=50 |
 |---|---|---|---|---|---|---|
-| 7B / 16f | 0.00 | 91.06× | 1.04 | 2.05 | 9.33 | 32.17 |
-| 7B / 24f | -0.43 | 121.58× | 1.08 | 2.14 | 10.01 | 37.85 |
-| 3B / 20f | -0.05 | 136.07× | 1.05 | 2.08 | 9.79 | 37.78 |
+| 7B / 16f | 0.00 | 83.00× | 1.04 | 2.05 | 9.33 | 32.17 |
+| 7B / 24f | -0.43 | 124.12× | 1.08 | 2.14 | 10.01 | 37.85 |
+| 3B / 20f | -0.05 | 132.21× | 1.05 | 2.08 | 9.79 | 37.78 |
 
-**Paper outcome.** Honestly defends C-PERSIST against the "but the 91× hides the warm-up cost" reviewer criticism. The N=10 column is plausibly the most relevant single number for serving (a chat session of 10 follow-ups on the same video) and shows ~9–10×, well clear of trivial-baseline territory.
+Numbers refreshed 2026-05-01 after `ee41f3f` fixed the warm-column denominator
+to share the mean-timing basis used by the Q=k columns. Earlier text in this
+doc and in commit `82b1ad8` quoted 91.06× / 121.58× / 136.07× from the
+`speedup_first_over_follow` artifact field, which was a per-row median that
+did not match the mean-timing total used elsewhere — those numbers are
+superseded.
+
+**Paper outcome.** Honestly defends C-PERSIST against the "but the warm
+multiplier hides the warm-up cost" reviewer criticism. The Q=10 column is
+plausibly the most relevant single number for serving (a chat session of 10
+follow-ups on the same video) and shows ~9–10×, well clear of trivial-baseline
+territory. Gemma 26B prefix-snapshot rows under the
+`prefix_snapshot_then_queries` model now also live in the same table per
+`ee41f3f`.
 
 **No further compute.** Recommendation to paper editor in `2026-05-01-paper-editor-feedback.md`.
 
