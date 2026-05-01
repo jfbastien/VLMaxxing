@@ -64,17 +64,13 @@ Native-rate streaming bundle & 26B cache-correctness, prefix snapshot, fixed-evi
 \end{tabularx}
 \end{table}
 
-\begin{sectiontodo}{Freeze this provisional manifest into a submission artifact map}
-Before submission, this appendix should expand the provisional manifest above
-into a frozen claim-to-artifact map for every table and figure in the paper,
-including final hardware strings, exact artifact bundle paths, and any rows
-that still move between main text and appendix.
-
-\textcolor{todoBorder}{Source pointers: \path{paper/claim-matrix.md},
-\path{docs/reproduction-status.md},
-\path{paper/publishability-status.md}, and the locally generated
-repo-provenance table produced by \texttt{make paper-sync}.}
-\end{sectiontodo}
+This appendix is the release-facing traceability manifest. The durable claim
+ledgers remain \path{paper/claim-matrix.md},
+\path{docs/reproduction-status.md}, and \path{paper/publishability-status.md};
+the table above records the paper-facing artifact families, while the generated
+repo-provenance table below records the checkout used for this PDF. A frozen
+submission bundle should regenerate this appendix from a clean release tag and
+then lock any remaining advisory rows to explicit artifact-status labels.
 
 \IfFileExists{generated/tables/repo_provenance.tex}{
 \input{generated/tables/repo_provenance.tex}

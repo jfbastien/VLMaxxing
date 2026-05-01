@@ -1,16 +1,20 @@
 \section{Manuscript Completion Checklist}
 
-\begin{sectiontodo}{Use this appendix as the pre-submission checklist}
-Before submission, this checklist should be rewritten as a final appendix item
-or deleted. It currently exists to keep the paper honest while the science is
-still moving.
+This checklist is a release-freeze guard for the draft artifact, not evidence
+for an additional claim. The manuscript can keep moving while new experiments
+land, but a public source bundle should satisfy each item before the generated
+provenance is treated as final.
 \begin{itemize}[leftmargin=1.5em]
 \item Freeze the target venue template and stop building on the temporary draft style.
-\item Replace every visible TODO box in the main text with final prose or move it to an internal checklist.
-\item Rerun or drop every supplementary result that still fails the paper-grade provenance bar, especially the provisional MVBench higher-stability refinement.
-\item Regenerate manual tables from canonical artifacts where stable artifact paths now exist.
-\item Keep clean, advisory, artifact-pending, and dev-only evidence visibly distinct in the final manuscript.
+\item Replace any visible draft-note boxes with final prose, or move the note to
+  the internal paper checklist if the underlying science is still open.
+\item Rerun, demote, or drop supplementary rows that do not meet the
+  paper-grade provenance bar.
+\item Regenerate tables and figures from canonical artifacts wherever stable
+  artifact paths exist.
+\item Keep clean, advisory, artifact-pending, and dev-only evidence
+  visibly distinct in the final manuscript and source traceability appendix.
 \item Finalize the public code, artifact, and data-release wording.
-\item Build the final arXiv source bundle from a clean tree and verify that no local-only metadata leaks into it.
+\item Build the final arXiv source bundle from a clean tree and verify that the
+  generated provenance reports the release commit without a dirty suffix.
 \end{itemize}
-\end{sectiontodo}

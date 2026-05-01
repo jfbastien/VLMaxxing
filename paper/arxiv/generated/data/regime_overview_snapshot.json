@@ -1,10 +1,14 @@
 {
   "figure": "regime_overview",
-  "purpose": "conceptual denominator map for anti-recomputation regimes",
+  "purpose": "opening stateful-video infographic for anti-recomputation regimes",
+  "social_summary": "Video VLMs should not pay for the same visual state twice; C-PERSIST, C-VISION, and candidate C-STREAM touch different stages and must keep separate denominators.",
   "c_vision": {
-    "speedup_range": "1.113--1.407x",
+    "clean_sparse_execution": "Gemma 32f short 1.316x, 0/20 paired drift",
+    "qwen_boundary": "Qwen 16f kr=0.85 restores aggregate/format gate at 1.032x",
     "denominator": "first-query E2E",
     "source_paths": [
+      "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/pair_summary_32f.json",
+      "research/experiments/2026/artifacts/phase1_63H_16f_kr_sweep/pair_summary_kr085_16f.json",
       "research/experiments/2026/artifacts/phase1_51V_session3/exp18_videomme_holdout_8f_L2_kr050_summary.json",
       "research/experiments/2026/artifacts/phase1_51V_session4/exp20_mvbench_holdout_8f_L2_kr050_summary.json",
       "research/experiments/2026/artifacts/phase1_51V_session5/exp24_tomato_holdout_8f_L2_kr050_summary.json"
@@ -12,6 +16,8 @@
   },
   "c_persist": {
     "raw_16f_speedup": 91.06331752551472,
+    "adaptive_same_class_speedup_min": 14.900364922524298,
+    "adaptive_same_class_speedup_max": 35.91713547628348,
     "adaptive_all_query_speedup_min": 15.279848121041772,
     "adaptive_all_query_speedup_max": 35.97143025796818,
     "many_turn_horizon": 50,

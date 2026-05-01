@@ -98,7 +98,9 @@ correctness drift on 93 paired queries, no observed pathological follow-up
 outputs, and 14.90--35.92$\times$ same-class follow-up speedup
 (15.28--35.97$\times$ cold-all-query / repaired-follow-up ratio). The
 rule-of-three upper bound on a query-level unseen paired-drift rate is about
-3.2\%. At the session level the conservative count is 0/31 sessions with any
+3.2\% over the full 93-query contract. Restricted to repaired follow-up turns,
+the denominator is 0/62 and the corresponding rule-of-three bound is about
+4.8\%. At the session level the conservative count is 0/31 sessions with any
 paired drift, or a rule-of-three bound of about 9.7\%. Each tested session has
 two follow-up questions after the cold first query. The 32f short cell is the
 largest local efficiency point in the current tested envelope at
@@ -215,7 +217,8 @@ advisory: the patched arm decodes 50\,ms faster on a 432\,ms decode window and
 also runs generation faster. A literal decode-only normalization would lower
 the observed multiplier only to about 1.40$\times$, so the row remains useful
 but high residual. TOMATO 8f is advisory as well: the current holdout rerun
-reports 1.194$\times$ with a favorable 19\,ms thermal miss.
+reports 1.194$\times$ with a favorable 119.7\,ms decode delta, which misses
+the 100\,ms advisory gate by 19.7\,ms in the favorable direction.
 
 The denominator, not the absolute multiplier, is the portable claim. The same
 pruning mechanism gives smaller gains on VideoMME than on MVBench because
@@ -239,9 +242,10 @@ failures, 42.2\% vision-time reduction, and a \(-0.012\)\(\times\) ceiling
 gap.
 
 Qwen exposes the architecture/configuration boundary. Aggressive 16f pruning
-at \(kr=0.50\) collapses format and fidelity. Raising the keep rate recovers
-the model monotonically; \(kr=0.85\) is inside the tested fidelity/format
-gates and ceiling-consistent, but the price is that vision-time reduction falls to
+at \(kr=0.50\) collapses format and aggregate accuracy. Raising the keep rate
+recovers the model monotonically; \(kr=0.85\) is inside the tested aggregate
+accuracy and format gates, not a paired-identity gate, and is ceiling-consistent.
+The price is that vision-time reduction falls to
 13.6\% and the observed end-to-end gain is only 1.032$\times$. The right
 paper claim is therefore an envelope: Gemma supplies the strongest measured
 sparse-execution cell, while Qwen shows that the same timed-skip idea is
@@ -251,9 +255,9 @@ work.
 A trivial random-keep sanity baseline confirms that the Qwen scorer is not
 arbitrary. At the same 8f, \(L=2\), \(kr=0.50\) keep-rate on VideoMME dev30,
 the structured magnitude scorer reaches 0.500 accuracy versus 0.333 for a
-deterministic uniform-random keep policy, with dense at 0.533. That is a
+single deterministic uniform-random keep seed, with dense at 0.533. That is a
 +16.7\,pp structured-vs-random gap at matched keep-rate, not a peer-method
-comparison and not a matched-runtime claim.
+comparison, not a multi-seed random baseline, and not a matched-runtime claim.
 
 \IfFileExists{generated/tables/competitor_positioning.tex}{
 \input{generated/tables/competitor_positioning.tex}
@@ -279,7 +283,7 @@ comparison and not a matched-runtime claim.
   pruned run, and the predicted speedup is then compared with the independently
   observed end-to-end speedup. The purple measured-sparse markers separate two
   Qwen boundary cases: 8f \(kr=0.50\) validates the ceiling but fails fidelity,
-  while 16f \(kr=0.85\) restores the fidelity/format gate at only
+  while 16f \(kr=0.85\) restores the aggregate-accuracy/format gate at only
   1.032$\times$ because vision reduction falls to 13.6\%. The clean measured
   sparse-execution cell is the Gemma 32f-short bucket reported in
   Table~\ref{tab:headline-results}.}

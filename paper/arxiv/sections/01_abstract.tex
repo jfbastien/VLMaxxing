@@ -56,7 +56,8 @@ the runtime skips timed vision-tower work at 1.316$\times$ first-query speedup
 with no paired drift on 20 items and no parse failures. The full Gemma 8/16/32f sweep
 has zero paired answer drift but matched dense/sparse parse failures in some
 cells; Qwen is configuration-sensitive, with aggressive pruning failing
-fidelity and a conservative 16f operating point restoring fidelity at
+fidelity and a conservative 16f operating point restoring aggregate accuracy
+and format gates at
 1.032$\times$ with only 13.6\% vision-time reduction. These are measured
 sparse-execution envelopes, not a license to multiply every component win.
 The routing audits explain why those numbers are not the whole story:

@@ -83,9 +83,12 @@ preserved, reused cache state can still damage later answers.
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{generated/figures/regime_overview.pdf}
-  \caption{Denominator map for the paper. Stable visual state and fresh
-  residual evidence recur across regimes, but each reuse policy touches a
-  different stage and therefore has a different denominator.}
+  \caption{Opening model for the paper. Video has persistent state; the
+  runtime should reuse that state where the validation gate allows it and buy
+  fresh evidence where the scene, query, or cache topology requires it.
+  C-PERSIST supplies the after-ingest follow-up win, C-VISION supplies bounded
+  measured first-query skipped work under C-CEILING, and candidate C-STREAM
+  remains the state-update target rather than a fourth headline.}
   \label{fig:regime-overview}
 \end{figure}
 

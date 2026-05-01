@@ -249,6 +249,16 @@ def _delta(value: float) -> str:
 
 def _emit_table(snapshot: dict[str, Any]) -> str:
     gap = snapshot.get("structured_minus_random_accuracy_gap")
+    random_row = next((row for row in snapshot["rows"] if row.get("row_kind") == "random"), {})
+    n_random_runs = int(random_row.get("n_runs", 0)) if not random_row.get("missing") else 0
+    random_scope_sentence = (
+        "The current artifact set contains one random seed, so this is a "
+        "single-seed sanity check rather than a robust random baseline. "
+        if n_random_runs == 1
+        else f"The random row averages {n_random_runs} seeds. "
+        if n_random_runs > 1
+        else ""
+    )
     gap_sentence = (
         r"The structured-vs-random gap is "
         + f"{gap * 100:+.1f}"
@@ -267,6 +277,7 @@ def _emit_table(snapshot: dict[str, Any]) -> str:
             r"\emph{uniform\_random} row is a trivial baseline at the same "
             r"keep-rate, not a matched-runtime peer method. The \(\Delta\)acc column is "
             r"relative to dense. "
+            + random_scope_sentence
             + gap_sentence
             + r"Wall-clock columns are measured and need not match.}"
         ),

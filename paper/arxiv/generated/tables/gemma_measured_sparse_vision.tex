@@ -1,16 +1,17 @@
 \begin{table}[H]
 \centering
-\caption{Measured sparse vision execution on Gemma. The timed path skips real vision-tower work. All three frame budgets have zero paired accuracy delta and 100\% choice agreement, but the full sweep is not format-clean because dense and sparse arms share parse failures; the clean operating point is the 32f short bucket described in the text.}
+\caption{Measured sparse vision execution on Gemma. The timed path skips real vision-tower work. All three frame budgets have zero paired accuracy delta and 100\% choice agreement, but the full sweep is not format-clean because dense and sparse arms share parse failures. The final row exposes the 32f short bucket that supplies the clean 1.316\(\times\) headline cell.}
 \label{tab:gemma-measured-sparse-vision}
 \scriptsize
 \renewcommand{\arraystretch}{1.12}
 \begin{tabularx}{\linewidth}{@{}l r r r r r r r X@{}}
 \toprule
-Frames & \(n\) & \(\Delta\)acc & Agree & Parse fails & \(V_{\mathrm{red}}\) & Observed & Residual & Ceiling / format verdict \\
+Frames / slice & \(n\) & \(\Delta\)acc & Agree & Parse fails & \(V_{\mathrm{red}}\) & Observed & Residual & Ceiling / format verdict \\
 \midrule
 8f & 60 & +0.000 & 100\% & 11/11 & 48.2\% & 1.102$\times$ & +0.062 & ceiling miss; format not clean (matched parse failures) \\
 16f & 60 & +0.000 & 100\% & 3/3 & 40.6\% & 1.035$\times$ & -0.032 & ceiling pass; format not clean (matched parse failures) \\
 32f & 60 & +0.000 & 100\% & 4/4 & 43.3\% & 1.126$\times$ & +0.009 & ceiling pass; format not clean (matched parse failures) \\
+32f short & 20 & +0.000 & 100\% & 0/0 & 42.2\% & 1.316$\times$ & -0.012 & clean sparse-execution operating point \\
 \bottomrule
 \end{tabularx}
 \end{table}

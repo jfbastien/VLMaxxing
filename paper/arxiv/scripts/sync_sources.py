@@ -188,13 +188,15 @@ def _draw_overview_box(
     size: float = 9,
     weight: str = "normal",
     linestyle: str = "solid",
+    color: str = "#111827",
+    lw: float = 1.0,
 ):
     rect = mpatches.FancyBboxPatch(
         xy,
         width,
         height,
         boxstyle="round,pad=0.02,rounding_size=0.035",
-        linewidth=1.0,
+        linewidth=lw,
         edgecolor=edge,
         facecolor=face,
         linestyle=linestyle,
@@ -209,6 +211,7 @@ def _draw_overview_box(
             va="center",
             fontsize=size,
             weight=weight,
+            color=color,
         )
     return rect
 
@@ -230,173 +233,343 @@ def _draw_overview_arrow(
 
 
 def _render_regime_overview_figure(snapshot: dict) -> None:
-    """Render a compact conceptual map of the paper's denominator regimes."""
+    """Render the paper's opening visual as a vector-first explainer."""
 
     repair = snapshot["selective_reprefill"]["adaptive"]
     persistent = snapshot["persistent_kv"]
     qwen_16f = next(row for row in persistent["rows"] if int(row["frame_count"]) == 16)
+    measured = snapshot["measured_sparse_execution"]
+    gemma_short = measured["gemma_32f_short"]
+    qwen_safe = next(row for row in measured["qwen_rows"] if row["setting"] == "16f, kr=0.85")
 
     plt.rcParams.update(
         {
             "font.family": "DejaVu Sans",
             "figure.facecolor": "white",
             "axes.facecolor": "white",
+            "pdf.fonttype": 42,
+            "ps.fonttype": 42,
+            "svg.fonttype": "none",
+            "svg.hashsalt": "codec-through-regime-overview",
         }
     )
-    fig, ax = plt.subplots(figsize=(7.4, 3.8))
-    ax.set_xlim(0, 1)
-    ax.set_ylim(0, 1)
-    ax.axis("off")
+    fig, axes = plt.subplots(2, 3, figsize=(7.45, 6.0))
+    panel_axes = axes.flatten()
+    for idx, ax in enumerate(panel_axes, start=1):
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
+        ax.axis("off")
+        _draw_overview_box(ax, (0.02, 0.02), 0.96, 0.96, face="#ffffff", edge="#0f172a", lw=0.9)
+        _draw_overview_box(
+            ax,
+            (0.045, 0.865),
+            0.08,
+            0.09,
+            face="#111827",
+            edge="#111827",
+            text=str(idx),
+            color="white",
+            size=9,
+            weight="bold",
+        )
 
-    ax.text(0.04, 0.925, "Video state over time", fontsize=10.0, weight="bold")
+    def panel_title(ax, title: str, *, color: str = "#111827", x: float = 0.15) -> None:
+        ax.text(x, 0.90, title, fontsize=8.2, weight="bold", color=color, va="top")
+
+    def draw_grid(
+        ax,
+        x: float,
+        y: float,
+        *,
+        w: float = 0.25,
+        h: float = 0.25,
+        rows: int = 5,
+        cols: int = 5,
+        highlight: list[tuple[int, int, str]] | None = None,
+        fill: str = "#f8fafc",
+    ) -> None:
+        _draw_overview_box(ax, (x, y), w, h, face=fill, edge="#111827", lw=0.8)
+        for i in range(1, cols):
+            ax.plot([x + w * i / cols, x + w * i / cols], [y, y + h], color="#94a3b8", lw=0.45)
+        for j in range(1, rows):
+            ax.plot([x, x + w], [y + h * j / rows, y + h * j / rows], color="#94a3b8", lw=0.45)
+        for row, col, color in highlight or []:
+            cell_w = w / cols
+            cell_h = h / rows
+            ax.add_patch(
+                mpatches.Rectangle(
+                    (x + col * cell_w, y + (rows - 1 - row) * cell_h),
+                    cell_w,
+                    cell_h,
+                    facecolor=color,
+                    edgecolor="none",
+                    alpha=0.88,
+                )
+            )
+
+    # 1. Core premise.
+    ax = panel_axes[0]
+    panel_title(ax, "STATELESS", color="#b91c1c", x=0.18)
+    ax.text(0.18, 0.79, "recompute frames", fontsize=6.7, color="#334155")
+    ax.text(0.66, 0.90, "STATEFUL", fontsize=8.2, weight="bold", color="#166534", va="top")
+    ax.text(0.64, 0.79, "process changes", fontsize=6.7, color="#334155")
+    ax.plot([0.51, 0.51], [0.17, 0.78], color="#0f172a", lw=0.8)
+    for k, y in enumerate([0.67, 0.49, 0.31]):
+        draw_grid(ax, 0.17, y - 0.045, w=0.15, h=0.10, rows=4, cols=5)
+        _draw_overview_arrow(ax, (0.34, y), (0.43, y), color="#334155", lw=0.9)
+        _draw_overview_box(
+            ax, (0.43, y - 0.045), 0.08, 0.09, face="#f8fafc", edge="#111827", text="ViT", size=6.5
+        )
+        ax.text(0.10, y - 0.015, f"t{k}", fontsize=7.5, color="#334155")
+        draw_grid(
+            ax,
+            0.63,
+            y - 0.045,
+            w=0.15,
+            h=0.10,
+            rows=4,
+            cols=5,
+            highlight=[(1, (k + 1) % 5, "#22c55e")] if k else [],
+        )
+        _draw_overview_arrow(ax, (0.80, y), (0.88, y), color="#166534", lw=0.9)
+        _draw_overview_box(
+            ax, (0.88, y - 0.045), 0.06, 0.09, face="#ecfdf5", edge="#166534", text="Δ", size=7.2
+        )
+    ax.text(0.15, 0.13, "pay again", fontsize=7.0, color="#b91c1c", weight="bold")
+    ax.text(0.65, 0.13, "reuse state", fontsize=7.0, color="#166534", weight="bold")
+
+    # 2. Codec analogy.
+    ax = panel_axes[1]
+    panel_title(ax, "Codecs already do this")
+    for i, y in enumerate([0.70, 0.55, 0.40]):
+        draw_grid(
+            ax,
+            0.14,
+            y,
+            w=0.23,
+            h=0.12,
+            rows=4,
+            cols=5,
+            highlight=[(2, i + 1, "#3b82f6"), (1, 3, "#ef4444")] if i else [],
+            fill="#fff",
+        )
+        _draw_overview_arrow(ax, (0.43, y + 0.06), (0.56, y + 0.06), color="#64748b", lw=0.9)
+    ax.text(0.58, 0.73, "predict", fontsize=7.0, color="#334155")
+    ax.text(0.58, 0.58, "motion vectors\n+ residuals", fontsize=7.0, color="#334155")
+    ax.text(0.58, 0.43, "encode what\nchanged", fontsize=7.0, color="#334155")
+    _draw_overview_box(
+        ax, (0.22, 0.18), 0.18, 0.12, face="#eef2ff", edge="#334155", text="video HW", size=7
+    )
+    _draw_overview_arrow(ax, (0.40, 0.24), (0.58, 0.24), color="#64748b", lw=0.9)
+    ax.text(0.58, 0.27, "analogy, not a\ncodec-native claim", fontsize=6.6, color="#64748b")
+
+    # 3. What VLM systems often do.
+    ax = panel_axes[2]
+    panel_title(ax, "VLMs often throw state away")
+    ax.text(0.15, 0.70, "video", fontsize=7.0, color="#334155")
+    _draw_overview_box(
+        ax, (0.13, 0.52), 0.15, 0.12, face="#f8fafc", edge="#111827", text="▶", size=10
+    )
+    _draw_overview_arrow(ax, (0.31, 0.58), (0.43, 0.58), color="#334155", lw=0.9)
+    for i in range(3):
+        _draw_overview_box(
+            ax,
+            (0.43 + i * 0.018, 0.50 + i * 0.018),
+            0.12,
+            0.12,
+            face="#fff",
+            edge="#64748b",
+            lw=0.6,
+        )
+    _draw_overview_arrow(ax, (0.61, 0.58), (0.72, 0.58), color="#334155", lw=0.9)
+    _draw_overview_box(
+        ax, (0.72, 0.52), 0.10, 0.12, face="#f8fafc", edge="#111827", text="ViT", size=7
+    )
+    _draw_overview_arrow(ax, (0.84, 0.58), (0.92, 0.58), color="#b91c1c", lw=1.0)
+    ax.text(0.88, 0.68, "discard\nstate", fontsize=6.8, color="#b91c1c", ha="center")
     ax.text(
-        0.04,
-        0.855,
-        "Stable state persists;\nmotion is the residual.",
-        fontsize=7.8,
-        color="#4b5563",
+        0.50,
+        0.30,
+        "rediscover the same scene\non the next query",
+        fontsize=8.0,
+        color="#b91c1c",
+        ha="center",
+        weight="bold",
+    )
+    ax.plot([0.28, 0.72], [0.24, 0.24], color="#b91c1c", lw=1.0)
+
+    # 4. C-PERSIST.
+    ax = panel_axes[3]
+    panel_title(ax, "C-PERSIST: ingest once", color="#166534")
+    ys = [0.70, 0.52, 0.34]
+    for i, y in enumerate(ys, start=1):
+        ax.text(0.13, y, f"Q{i}", fontsize=7.8, va="center", color="#334155")
+        _draw_overview_arrow(ax, (0.24, y), (0.34, y), color="#334155", lw=0.9)
+        if i == 1:
+            text = "full\ncompute"
+            face = "#fee2e2"
+            edge = "#b91c1c"
+        elif i == 2:
+            text = "repair\nsmall tail"
+            face = "#dcfce7"
+            edge = "#166534"
+        else:
+            text = "reuse repaired\nstate"
+            face = "#dcfce7"
+            edge = "#166534"
+        _draw_overview_box(
+            ax, (0.36, y - 0.055), 0.18, 0.11, face=face, edge=edge, text=text, size=6.4
+        )
+    ax.text(
+        0.67,
+        0.67,
+        f"{qwen_16f['speedup']:.1f}x",
+        fontsize=14,
+        weight="bold",
+        color="#166534",
+        ha="center",
+    )
+    ax.text(0.67, 0.56, "raw warm\nfollow-up", fontsize=7.0, ha="center", color="#334155")
+    ax.plot([0.61, 0.84], [0.47, 0.47], color="#cbd5e1", lw=0.8)
+    ax.text(
+        0.75,
+        0.41,
+        f"{repair['speedup_min']:.2f}-{repair['speedup_max']:.2f}x",
+        fontsize=8.3,
+        weight="bold",
+        color="#166534",
+        ha="center",
+    )
+    ax.text(
+        0.75,
+        0.29,
+        "repaired\nfollow-up\n0/93 paired drift",
+        fontsize=6.1,
+        ha="center",
+        color="#334155",
+    )
+    ax.text(0.14, 0.13, "first query still pays the ingest cost", fontsize=6.8, color="#64748b")
+
+    # 5. C-VISION + C-CEILING.
+    ax = panel_axes[4]
+    panel_title(ax, "C-VISION: skip real vision work", color="#0369a1")
+    draw_grid(ax, 0.12, 0.58, w=0.22, h=0.16, rows=4, cols=6)
+    _draw_overview_arrow(ax, (0.37, 0.66), (0.50, 0.66), color="#0369a1", lw=0.9)
+    draw_grid(
+        ax,
+        0.52,
+        0.58,
+        w=0.22,
+        h=0.16,
+        rows=4,
+        cols=6,
+        highlight=[(1, 1, "#38bdf8"), (2, 2, "#38bdf8"), (1, 4, "#38bdf8")],
+    )
+    ax.text(0.43, 0.73, "keep\nwhat matters", fontsize=6.5, color="#0369a1", ha="center")
+    _draw_overview_box(ax, (0.13, 0.40), 0.63, 0.08, face="#eff6ff", edge="#0369a1")
+    ax.add_patch(
+        mpatches.Rectangle((0.13, 0.40), 0.25, 0.08, facecolor="#bae6fd", edgecolor="none")
+    )
+    ax.text(0.15, 0.425, "vision share", fontsize=6.2, color="#0f172a")
+    ax.text(0.47, 0.425, "fixed work", fontsize=6.2, color="#0f172a")
+    ax.text(
+        0.15,
+        0.31,
+        f"Gemma 32f short: {gemma_short['observed_e2e']:.3f}x, 0/20 drift",
+        fontsize=6.7,
+        color="#0369a1",
+        weight="bold",
+    )
+    ax.text(
+        0.15,
+        0.22,
+        f"Qwen boundary: {qwen_safe['observed_e2e']:.3f}x aggregate/format",
+        fontsize=6.5,
+        color="#475569",
+    )
+    ax.text(
+        0.15, 0.13, "C-CEILING: stage share caps E2E", fontsize=6.7, color="#4f46e5", weight="bold"
     )
 
-    frame_w = 0.12
-    frame_h = 0.39
-    for idx in range(4):
-        x = 0.055 + idx * 0.074
-        y = 0.24 + idx * 0.041
-        _draw_overview_box(ax, (x, y), frame_w, frame_h, face="#f8fafc", edge="#64748b")
+    # 6. Candidate C-STREAM.
+    ax = panel_axes[5]
+    panel_title(ax, "Toward state-update streams", color="#166534")
+    ax.text(0.15, 0.74, "frames\n(pixels)", fontsize=7.0, color="#475569", ha="center")
+    for i in range(36):
+        x = 0.18 + (i % 6) * 0.018
+        y = 0.35 + (i // 6) * 0.045
         ax.add_patch(
-            mpatches.Rectangle(
-                (x + 0.015, y + 0.04),
-                frame_w - 0.03,
-                frame_h - 0.08,
-                facecolor="#dbeafe",
-                alpha=0.55,
-                edgecolor="none",
-            )
+            mpatches.Rectangle((x, y), 0.007, 0.007, facecolor="#94a3b8", edgecolor="none")
         )
-        ax.add_patch(
-            mpatches.Rectangle(
-                (x + 0.06 + 0.018 * idx, y + 0.17 + 0.01 * idx),
-                0.055,
-                0.10,
-                facecolor="#f97316",
-                alpha=0.90,
-                edgecolor="#9a3412",
-                linewidth=0.6,
-            )
-        )
-        ax.text(x + frame_w / 2, y - 0.035, f"t+{idx}", ha="center", fontsize=8)
-
-    ax.text(0.07, 0.15, "stable state", fontsize=7.5, color="#1d4ed8", weight="bold")
-    ax.text(0.07, 0.126, "reuse/cache", fontsize=7.0, color="#1d4ed8")
-    ax.text(0.25, 0.15, "fresh residual", fontsize=7.5, color="#c2410c", weight="bold")
-    ax.text(0.25, 0.126, "spend work", fontsize=7.0, color="#c2410c")
-    _draw_overview_arrow(ax, (0.16, 0.17), (0.13, 0.32), color="#1d4ed8", lw=1.2)
-    _draw_overview_arrow(ax, (0.33, 0.17), (0.34, 0.52), color="#c2410c", lw=1.2)
-
-    ax.plot([0.41, 0.41], [0.08, 0.91], color="#cbd5e1", linewidth=1.0)
-    ax.text(0.435, 0.91, "Regime denominators", fontsize=10.0, weight="bold")
-    ax.text(0.435, 0.855, "Regime", fontsize=7.4, color="#475569", weight="bold")
-    ax.text(0.58, 0.855, "Touched work", fontsize=7.4, color="#475569", weight="bold")
-    ax.text(0.745, 0.855, "Denominator / status", fontsize=7.4, color="#475569", weight="bold")
-
-    rails = [
-        (
-            0.76,
-            "C-VISION",
-            "vision tower",
-            "first-query E2E; share-limited",
-            "#e0f2fe",
-            "#0284c7",
-            "solid",
-        ),
-        (
-            0.635,
-            "C-PERSIST",
-            "prompt + KV",
-            "same-video follow-up;\n50-turn stress measured",
-            "#dcfce7",
-            "#16a34a",
-            "solid",
-        ),
-        (
-            0.51,
-            "Routing",
-            "frame choice",
-            "quality frontier; dense backend control",
-            "#f1f5f9",
-            "#64748b",
-            "dashed",
-        ),
-        (
-            0.385,
-            "Streaming",
-            "live state",
-            "candidate C-STREAM;\nchecked mixed bundle",
-            "#fff7ed",
-            "#d97706",
-            "dashed",
-        ),
+    ax.plot([0.43, 0.43], [0.18, 0.78], color="#0f172a", lw=0.8)
+    items = [
+        (0.62, 0.70, "#22c55e", "objects"),
+        (0.62, 0.55, "#3b82f6", "motion"),
+        (0.62, 0.40, "#8b5cf6", "cache"),
     ]
-    for y, label, mechanism, denom, face, edge, linestyle in rails:
-        _draw_overview_box(
-            ax,
-            (0.435, y),
-            0.12,
-            0.068,
-            face=face,
-            edge=edge,
-            text=label,
-            size=7.4,
-            weight="bold",
-            linestyle=linestyle,
+    for x, y, color, label in items:
+        ax.add_patch(
+            mpatches.RegularPolygon(
+                (x, y),
+                4,
+                radius=0.04,
+                orientation=0.78,
+                facecolor=color,
+                edgecolor="#0f172a",
+                lw=0.5,
+                alpha=0.85,
+            )
         )
-        _draw_overview_arrow(ax, (0.565, y + 0.034), (0.58, y + 0.034), color=edge)
-        _draw_overview_box(
-            ax,
-            (0.59, y),
-            0.13,
-            0.068,
-            face="#ffffff",
-            edge=edge,
-            text=mechanism,
-            size=7.1,
-            linestyle=linestyle,
-        )
-        ax.text(0.745, y + 0.034, denom, fontsize=6.8, color="#334155", va="center")
-
-    ax.text(0.435, 0.255, "C-CEILING", fontsize=9.6, weight="bold")
-    ax.text(0.435, 0.225, "Do not multiply rows; denominators differ.", fontsize=7.6)
+        _draw_overview_arrow(ax, (x + 0.07, y), (0.83, y), color="#334155", lw=0.8)
+        ax.text(0.84, y, label, fontsize=6.6, color="#334155", va="center")
     _draw_overview_box(
         ax,
-        (0.435, 0.12),
-        0.48,
-        0.068,
-        face="#eef2ff",
-        edge="#4f46e5",
-        text=(
-            "general: E2E = 1 / (fixed + accelerated / s)\nvision case: 1 / (1 - V_share * V_red)"
-        ),
-        size=6.7,
+        (0.52, 0.17),
+        0.33,
+        0.10,
+        face="#ecfdf5",
+        edge="#166534",
+        text="candidate C-STREAM\nchecked mixed bundle",
+        size=6.6,
     )
+    ax.text(0.52, 0.08, "not a fourth headline yet", fontsize=6.5, color="#b91c1c")
 
     fig.suptitle(
-        "Anti-recomputation regimes: reuse stable state, buy fresh evidence",
-        fontsize=10.5,
+        "Video VLMs should not pay for the same visual state twice",
+        fontsize=11.5,
         weight="bold",
-        y=0.985,
+        y=0.996,
     )
-    fig.tight_layout()
+    fig.text(
+        0.5,
+        0.965,
+        "Same anti-recomputation family, different denominators and validation gates",
+        ha="center",
+        fontsize=8.0,
+        color="#475569",
+    )
+    fig.subplots_adjust(left=0.02, right=0.985, top=0.935, bottom=0.025, wspace=0.035, hspace=0.065)
     out_png = GENERATED / "figures" / "regime_overview.png"
     out_pdf = GENERATED / "figures" / "regime_overview.pdf"
-    fig.savefig(out_png, dpi=220, bbox_inches="tight")
+    out_svg = GENERATED / "figures" / "regime_overview.svg"
+    fig.savefig(out_png, dpi=240, bbox_inches="tight")
+    fig.savefig(out_svg, bbox_inches="tight", metadata={"Date": "2026-05-02"})
     _save_pdf(fig, out_pdf, bbox_inches="tight")
     overview = {
         "figure": "regime_overview",
-        "purpose": "conceptual denominator map for anti-recomputation regimes",
+        "purpose": "opening stateful-video infographic for anti-recomputation regimes",
+        "social_summary": (
+            "Video VLMs should not pay for the same visual state twice; "
+            "C-PERSIST, C-VISION, and candidate C-STREAM touch different "
+            "stages and must keep separate denominators."
+        ),
         "c_vision": {
-            "speedup_range": "1.113--1.407x",
+            "clean_sparse_execution": "Gemma 32f short 1.316x, 0/20 paired drift",
+            "qwen_boundary": "Qwen 16f kr=0.85 restores aggregate/format gate at 1.032x",
             "denominator": "first-query E2E",
             "source_paths": [
+                "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/pair_summary_32f.json",
+                "research/experiments/2026/artifacts/phase1_63H_16f_kr_sweep/pair_summary_kr085_16f.json",
                 "research/experiments/2026/artifacts/phase1_51V_session3/exp18_videomme_holdout_8f_L2_kr050_summary.json",
                 "research/experiments/2026/artifacts/phase1_51V_session4/exp20_mvbench_holdout_8f_L2_kr050_summary.json",
                 "research/experiments/2026/artifacts/phase1_51V_session5/exp24_tomato_holdout_8f_L2_kr050_summary.json",
@@ -404,6 +577,8 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
         },
         "c_persist": {
             "raw_16f_speedup": qwen_16f["speedup"],
+            "adaptive_same_class_speedup_min": repair["speedup_min"],
+            "adaptive_same_class_speedup_max": repair["speedup_max"],
             "adaptive_all_query_speedup_min": repair["all_query_speedup_min"],
             "adaptive_all_query_speedup_max": repair["all_query_speedup_max"],
             "many_turn_horizon": 50,
@@ -1091,7 +1266,7 @@ def _measured_sparse_execution_snapshot() -> dict[str, object]:
                 "predicted_e2e": float(row["predicted_e2e_speedup_from_vision_only"]),
                 "residual": float(row["actual_minus_predicted_e2e_speedup"]),
                 "interpretation": (
-                    "within fidelity/format gates; low-gain boundary"
+                    "within aggregate-accuracy/format gates; low-gain boundary"
                     if kr_label == "0.85"
                     else "recovery sweep"
                 ),
@@ -1423,7 +1598,8 @@ def _write_c_persist_repair_table(snapshot: dict) -> None:
             f"correct {fixed['paired_correctness_diffs']}/{fixed['n_pairs']}; "
             f"pathological follow-ups {fixed['pathological_follow_up_hits']}/"
             f"{fixed['n_follow_up_pairs']}; drift rule-of-three over "
-            f"n={fixed['n_pairs']}: \\(\\leq\\)3.2\\% \\\\"
+            f"n={fixed['n_pairs']}: \\(\\leq\\)3.2\\%; follow-up subset "
+            f"0/{fixed['n_follow_up_pairs']} \\(\\leq\\)4.8\\% \\\\"
         ),
         (
             r"Adaptive repaired-cache inheritance & "
@@ -1436,6 +1612,8 @@ def _write_c_persist_repair_table(snapshot: dict) -> None:
             f"paired drift: sess {adaptive['paired_correctness_diffs']}/{adaptive['n_sessions']}; "
             f"choice {adaptive['paired_choice_diffs']}/{adaptive['n_pairs']}; "
             f"correct {adaptive['paired_correctness_diffs']}/{adaptive['n_pairs']}; "
+            f"follow-up subset 0/{adaptive['n_follow_up_pairs']} "
+            "\\(\\leq\\)4.8\\%; "
             "third follow-up inherits the repaired state; paired third-follow-up "
             "fixed/adaptive "
             "speedup 9.50$\\times$ \\\\"
@@ -1793,7 +1971,8 @@ def _write_headline_table(snapshot: dict) -> None:
             f"{qwen_sparse_safe['observed_e2e']:.3f}$\\times$ & "
             f"$\\Delta$acc {qwen_sparse_safe['accuracy_delta']:+.3f}; "
             f"vision reduction {qwen_sparse_safe['vision_reduction'] * 100:.1f}\\%; "
-            "parse failures 0 & within fidelity/format gates; low-gain boundary \\\\"
+            "parse failures 0; agreement 81.7\\% & "
+            "aggregate/format gate; low-gain boundary \\\\"
         ),
         r"\bottomrule",
         r"\end{tabularx}",
@@ -1813,8 +1992,8 @@ def _write_measured_sparse_execution_tables(snapshot: dict) -> None:
             r"path skips real vision-tower work. All three frame budgets have "
             r"zero paired accuracy delta and 100\% choice agreement, but the "
             r"full sweep is not format-clean because dense and sparse arms "
-            r"share parse failures; the clean operating point is the 32f short "
-            r"bucket described in the text.}"
+            r"share parse failures. The final row exposes the 32f short bucket "
+            r"that supplies the clean 1.316\(\times\) headline cell.}"
         ),
         r"\label{tab:gemma-measured-sparse-vision}",
         r"\scriptsize",
@@ -1822,7 +2001,7 @@ def _write_measured_sparse_execution_tables(snapshot: dict) -> None:
         r"\begin{tabularx}{\linewidth}{@{}l r r r r r r r X@{}}",
         r"\toprule",
         (
-            r"Frames & \(n\) & \(\Delta\)acc & Agree & Parse fails & "
+            r"Frames / slice & \(n\) & \(\Delta\)acc & Agree & Parse fails & "
             r"\(V_{\mathrm{red}}\) & Observed & Residual & Ceiling / format verdict \\"
         ),
         r"\midrule",
@@ -1845,6 +2024,16 @@ def _write_measured_sparse_execution_tables(snapshot: dict) -> None:
             f"{row['observed_e2e']:.3f}$\\times$ & "
             f"{row['residual']:+.3f} & {interp} \\\\"
         )
+    short = measured["gemma_32f_short"]
+    gemma_lines.append(
+        f"32f short & {short['n']} & "
+        f"{short['accuracy_delta']:+.3f} & "
+        f"{short['choice_agreement'] * 100:.0f}\\% & "
+        f"{short['dense_parse_failures']}/{short['sparse_parse_failures']} & "
+        f"{short['vision_reduction'] * 100:.1f}\\% & "
+        f"{short['observed_e2e']:.3f}$\\times$ & "
+        f"{short['residual']:+.3f} & clean sparse-execution operating point \\\\"
+    )
     gemma_lines.extend([r"\bottomrule", r"\end{tabularx}", r"\end{table}"])
 
     qwen_lines = [
@@ -1853,8 +2042,9 @@ def _write_measured_sparse_execution_tables(snapshot: dict) -> None:
         (
             r"\caption{Measured sparse vision execution on Qwen. The 8f point "
             r"validates the timing model but fails fidelity. At 16f, increasing "
-            r"the keep rate monotonically recovers accuracy and format, ending "
-            r"at a point inside the tested fidelity/format gates that no longer clears the "
+            r"the keep rate monotonically recovers aggregate accuracy and "
+            r"format, ending at a point inside those tested gates but not "
+            r"paired answer identity; it also no longer clears the "
             r"vision-reduction gate.}"
         ),
         r"\label{tab:qwen-measured-sparse-vision}",

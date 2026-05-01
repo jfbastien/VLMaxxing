@@ -89,7 +89,8 @@ For the per-claim breakdown, see
 Per Codex rounds 25–26 (2026-04-21), the paper spine is these three
 first-class contributions — ordered ahead of the Qwen routing lane,
 which is reframed as the mechanism-validation backbone + null ledger
-(claims 1/2/6/9 earned + halo-veto 1.37B retired + 1.51R VideoMME
+(claims 6 and 8 release-surface earned; claims 1/2/9 diagnostic/local-only
+until raw artifacts are materialized; halo-veto 1.37B retired + 1.51R VideoMME
 duration-conditional partial reproduction + 1.55D frontier-partial):
 
 1. **C-CEILING (claim 13): Arithmetic ceiling model for token-pruning

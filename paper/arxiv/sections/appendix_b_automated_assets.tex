@@ -14,13 +14,11 @@ local artifacts, and they stay visibly bounded when the bundle is mixed. That
 keeps the draft useful for incoming experiments without letting stale
 screenshots or partner prose become release evidence.
 
-\begin{sectiontodo}{Expand automation only where the evidence surface is stable}
-Good next targets are a generated novelty-ranked dense table and a native
-streaming quality table once the policy beats matched baselines. Do not
-automate from free-form markdown when a
-canonical artifact is missing; either add the artifact or keep the text pending.
+The same rule governs future automation. A novelty-ranked dense table and a
+native streaming quality table should be generated once their canonical
+artifacts are stable; they should not be generated from free-form markdown or
+screenshots. If a canonical artifact is missing, the corresponding claim should
+remain pending or advisory rather than being promoted by a table.
 
-\textcolor{todoBorder}{Source pointers: \path{paper/arxiv/scripts/sync_sources.py},
-\path{paper/arxiv/scripts/build.py},
-\path{paper/arxiv/generated/}.}
-\end{sectiontodo}
+Source pointers: \path{paper/arxiv/scripts/sync_sources.py},
+\path{paper/arxiv/scripts/build.py}, and \path{paper/arxiv/generated/}.
