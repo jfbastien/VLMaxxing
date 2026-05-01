@@ -28,9 +28,11 @@ This file consolidates the remaining experiments that codex and the paper editor
 Numbers refreshed 2026-05-01 after `ee41f3f` fixed the warm-column denominator
 to share the mean-timing basis used by the Q=k columns. Earlier text in this
 doc and in commit `82b1ad8` quoted 91.06× / 121.58× / 136.07× from the
-`speedup_first_over_follow` artifact field, which was a per-row median that
-did not match the mean-timing total used elsewhere — those numbers are
-superseded.
+`speedup_first_over_follow` artifact field, which is the ratio of median
+first-query timing to median follow-up timing. That remains valid as an
+after-ingest median speedup, but it does not share the mean-timing denominator
+used by the setup-inclusive Q=k totals — those Warm-column values are
+superseded for this table.
 
 **Paper outcome.** Honestly defends C-PERSIST against the "but the warm
 multiplier hides the warm-up cost" reviewer criticism. The Q=10 column is
@@ -43,6 +45,16 @@ territory. Gemma 26B prefix-snapshot rows under the
 **No further compute.** Recommendation to paper editor in `2026-05-01-paper-editor-feedback.md`.
 
 ## Item 2 — Competitor positioning table + one matched local baseline
+
+**2026-05-01 validation update.** The launch plan in this section is retained
+for provenance but is superseded for immediate execution. The currently landed
+paper table is a
+`uniform_random` sanity baseline, not a peer-method comparison. Do **not**
+launch a "FastV-spirit" scorer based on attention-output magnitude and call it
+FastV/FasterVLM: the current MLX fused-attention path does not expose the
+attention weights those methods use. A faithful peer comparison remains a
+separate engineering/reproduction project. The low-risk local follow-up is
+only the multi-seed `uniform_random` robustness sweep.
 
 **Hypothesis.** Even without re-running peer methods (FastV, FasterVLM, SparseVILA, HERMES) on identical hardware, a disciplined comparison table that quotes their reported numbers under the C-CEILING constraint (component speedup × stage share = e2e bound) is enough to position our results. Adding ONE additional local visual-token-pruning baseline that we run ourselves under matched conditions removes the "no head-to-head" objection.
 
@@ -70,6 +82,18 @@ territory. Gemma 26B prefix-snapshot rows under the
 **Decision required from user before launch.** (a) confirm FasterVLM is the right local baseline (vs FastV), (b) confirm the 1.51V cell choice (Qwen 7B 16f VideoMME holdout), (c) confirm we cite peer numbers from their papers without re-running them.
 
 ## Item 3 — Natural-dialogue many-turn C-PERSIST
+
+**2026-05-01 validation update.** The launch plan in this section is retained
+for provenance but is superseded for immediate execution. The preregistered
+1.55M artifact is a
+diverse-prompt / templated-prefix stress, **not** natural dialogue and not yet
+content-conditional shared-answer dialogue. The current A6 driver has no
+`--prompt-prefix-templates` support and still deduplicates cold baselines by
+`(video_id, source_q_index)`, which is only valid for repeated prompt text. A
+true content-conditional run needs a driver patch that keys baselines by exact
+rendered prompt hash and injects the same canonical dense answer into both
+arms. A true natural-dialogue result additionally needs a reviewed 7-clip ×
+20-turn corpus before compute.
 
 **Hypothesis.** Adaptive post-Q2 cache reuse holds at zero observed paired drift for at least 20 turns when the schedule is a *natural multi-turn dialogue* (each turn references the prior answer or asks a content-conditioned follow-up), not the repeated-question stateless cycle that A6 (1.55L) tested. Falsification = paired choice or correctness drift exceeds the 3% gate at any horizon ≤ 20.
 
@@ -196,3 +220,22 @@ Revised near-term recommendation:
 3. **Ask Sam for a 32f prefix-snapshot expansion only if M5 time is cheap.**
    It would harden the Gemma 26B cross-architecture result from 9 rows toward
    the 21-row B0b-style set. It is not required for the current paper claim.
+
+## 2026-05-01 launch-readiness correction
+
+The proposed Qwen C-CEILING "E3" kr sweep should **not** be launched as new
+GPU compute before reusing existing artifacts. The repo already contains a
+VideoMME 8f Qwen kr curve under
+`research/experiments/2026/artifacts/phase1_51V_expansion/`:
+
+| cell | n | Δacc vs dense | parse failures | actual E2E× | predicted E2E× | actual - predicted |
+|---|---:|---:|---:|---:|---:|---:|
+| kr=0.25 | 30 | -0.067 | 3 | 1.088 | 1.104 | -0.016 |
+| kr=0.50 | 30 | -0.067 | 3 | 1.078 | 1.063 | +0.015 |
+| kr=0.75 | 30 | -0.033 | 4 | 1.058 | 1.030 | +0.028 |
+
+These cells are not a replacement for the n=60 `1.63E` combined-manifest
+result, but they are enough to show the Qwen 8f C-CEILING arithmetic is already
+multi-cell within ±0.05 on a checked local artifact set. The next action is
+analysis/integration, not another 3-hour duplicate run, unless the editor
+specifically needs n=60 combined-manifest parity.
