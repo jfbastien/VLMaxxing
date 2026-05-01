@@ -91,7 +91,7 @@ local implementation that exposes the method's actual attention/token scores,
 or a carefully bounded literature comparison. The current `magnitude_norm`
 scorer is our structured scorer; it must not be rebranded as FastV/FasterVLM.
 
-## Item 3 — Dialogue-like C-PERSIST, ready for controlled dense-anchored stress
+## Item 3 — Controlled dense-anchored C-PERSIST stress, ready to launch
 
 **2026-05-01 readiness update.** The controlled dense-anchored path is now
 launch-ready via `scripts/run_phase1_55M_dense_anchored_cpersist.sh`. The A6
@@ -103,17 +103,19 @@ natural dialogue. A true natural-dialogue result additionally needs a reviewed
 
 **Two valid variants.**
 
-- **Dense-anchored content-conditional stress.** Synthetic turns reference the
-  canonical dense answer from turn `k` when constructing turn `k+1`. Both dense
-  and cached arms receive the exact same rendered prompt text at each turn.
-  This is controlled prompt-variation evidence, not human natural dialogue.
+- **Dense-answer-anchored prompt-variation stress.** Synthetic turns reference
+  the canonical dense answer from turn `k` when constructing turn `k+1`. Both
+  dense and cached arms receive the exact same rendered prompt text at each
+  turn. This is controlled prompt-variation evidence, not human natural
+  dialogue.
 - **True natural-dialogue stress.** A reviewed 7-clip × 20-turn dialogue corpus
   supplies content-dependent turns. This is the stronger reviewer-defense
   result, but it needs curation before GPU time.
 
 **Hypothesis.** Adaptive post-Q2 cache reuse and refresh10 stay within the 3%
-paired drift gate through 20 content-dependent turns. Falsification = paired
-choice or correctness drift exceeds the 3% gate at any horizon ≤ 20.
+paired drift gate through 20 dense-answer-anchored prompt-variation turns.
+Falsification = paired choice or correctness drift exceeds the 3% gate at any
+horizon ≤ 20.
 
 **Why this matters.** A6 explicitly labels itself "deliberately not a natural-dialogue benchmark" because the same three questions cycle. A reviewer can reasonably ask whether drift accumulates faster when the dialogue has actual content dependencies (Q3 references Q2's answer, etc.). Closing this gap is the single most defensible claim-strengthening move for C-PERSIST.
 
