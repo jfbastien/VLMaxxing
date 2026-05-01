@@ -19,9 +19,9 @@ as the first thing reviewers notice.
 
 ## What to run
 
-Use the existing M5-5b prefix-snapshot runner. Do not change the mechanism.
-Run 7 videos, 32 frames, single-shot prefill, and write to new filenames so the
-existing 9-row artifact stays preserved.
+Use the wrapper. It runs the existing M5-5b prefix-snapshot mechanism, validates
+the artifact, and runs preflight. It writes to new filenames so the existing
+9-row artifact stays preserved.
 
 ```bash
 git fetch origin
@@ -29,25 +29,7 @@ git switch main
 git pull --ff-only origin main
 git switch -c sam/scaleout-m5-32f-expansion-20260501
 
-HF_TOKEN=... python3 scripts/run_sam_m5_5b_swa_prefix_snapshot.py \
-  --n-videos 7 \
-  --n-frames 32 \
-  --single-shot-prefill \
-  --out research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f_n21.jsonl
-
-python3 scripts/validate_sam_scaleout_artifact.py \
-  --jsonl research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f_n21.jsonl \
-  --phase M5-5b \
-  --min-rows 21 \
-  --require-zero-choice-diffs \
-  --require-zero-correctness-diffs \
-  --require-zero-parse-failures \
-  --require-matching-prompt-hash \
-  --require-matching-frame-hashes \
-  --require-positive-prefix-on-followups \
-  --summary-output research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f_n21_summary.json
-
-bash scripts/preflight_ci.sh
+HF_TOKEN=... bash scripts/run_sam_m5_5b_32f_expansion.sh
 git add \
   research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f_n21.jsonl \
   research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f_n21_summary.json

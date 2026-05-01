@@ -1,7 +1,7 @@
 ---
 date: 2026-05-01
 phase: cstream-staged-preflight
-status: design ready; implementation blocked on native c_stream arm
+status: cheap Stage 0 candidate preflight ready; native Stage 0 validator ready; native runner still blocked
 related:
   - 2026-04-29-phase-B3-sam-streaming-baselines-findings.md
   - 2026-05-01-paper-defensibility-experiment-plan.md
@@ -16,42 +16,71 @@ passes. The existing B3 runner is a matched-baseline proxy, not native
 C-STREAM: its `sam_policy` arm uses representative-frame selection, and B3
 already showed the cheap negative signal (`low_fps_dense` 17/22 vs proxy 13/22).
 
-A one-hour run can still be useful, but only as a native-harness preflight. It
-cannot promote C-STREAM by itself.
+A one-hour run can still be useful as a stop/go preflight for the current Qwen
+session-streaming candidate. It cannot promote C-STREAM by itself.
 
-## Stage 0 — one-hour native-harness preflight
+## Stage 0A — one-hour candidate preflight
 
-Implement this only after a real `c_stream_native` arm exists.
+Ready command:
+
+```bash
+bash scripts/run_cstream_stage0_preflight.sh
+```
+
+This uses `scripts/run_phase1_30_scaleout_streaming.py` on a tiny VideoMME dev
+slice (`CSTREAM_STAGE0_N_SEEDS=2`, 8 frames by default), compares cold dense
+against the current Qwen session-streaming candidate, and writes
+`research/experiments/2026/artifacts/cstream_stage0_preflight/stage0_summary.json`.
+
+The validator is `scripts/validate_cstream_stage0_preflight.py`. It reports
+`go_to_stage1=true` only if all gates pass.
+
+This is intentionally a cheap candidate preflight. Passing it says "do not
+kill C-STREAM yet." It does not prove the event-window native mechanism.
 
 Scope:
 
-- 2 recordings.
-- 6–8 matched events.
+- 2 VideoMME session seeds by default.
+- 6 matched question rows by default.
 - 8 frames only.
-- Arms: `fresh_oracle_dense`, `low_fps_dense`, `screenshot_polling`,
-  `recency_last_K`, `c_stream_native`.
-- Include at least one stale-cache case by construction.
-- Emit raw paired JSONL plus cache-correctness sidecar.
-- Record per-frame update/rebuild stats, `vit_calls`, decode / routing /
-  vision / prefill / generation timings, and source media paths.
+- Arms: cold dense vs current Qwen session-streaming candidate.
+- Emit raw cold/streaming JSONL, paired queries, pair summary, and stage summary.
+- Record decode / processor / query / end-to-end timings, prefix coverage, image
+  token reuse, parse failures, and degeneracy.
 
 Hard stop if any condition is true:
 
 - Wall time exceeds 60 minutes.
-- Any schema error, parse failure, missing raw response, missing source media
-  path, or missing event/window metadata.
-- `c_stream_native` is still representative-frame selection rather than a real
-  per-frame cache update/rebuild mechanism.
-- No stale-cache case appears.
-- `c_stream_native` loses to both `screenshot_polling` and `recency_last_K`.
-- `c_stream_native` loses to `low_fps_dense` by more than 1 event on the tiny
-  sample.
-- ViT-fire reduction is less than 2x vs `low_fps_dense`.
-- Cache-correctness sidecar shows any deterministic choice/correctness drift.
+- Fewer than 6 paired rows.
+- Any cold or streaming parse failure.
+- Any degenerate streaming response.
+- Streaming accuracy drops by more than 10 percentage points vs cold dense.
+- Amortized speedup is below 1.0x.
+- Follow-up image-token reuse is not fully instrumented.
+- Follow-up image-token reuse fraction is below 0.90.
 
-Continue only if mechanics pass and native looks plausibly competitive:
-complete schema, no parse failures, at least 2x ViT-fire reduction, no obvious
-quality cliff.
+Continue only if `stage0_summary.json` has `go_to_stage1=true`.
+
+## Stage 0B — native event-window artifact gate
+
+The native runner is not implemented yet, but its artifact gate is ready. A
+future native event-window runner must emit schema-valid
+`sam_scaleout_artifact_v1` rows and pass:
+
+```bash
+python3 scripts/validate_sam_scaleout_artifact.py \
+  --jsonl <native-stage0.jsonl> \
+  --phase C-STREAM \
+  --min-rows 30 \
+  --require-cstream-stage0 \
+  --summary-output <native-stage0-summary.json>
+```
+
+The gate requires five arms per event (`fresh_oracle_dense`,
+`low_fps_dense`, `screenshot_polling`, `recency_last_k`,
+`c_stream_native`), 6–8 pair keys, at least 2 videos, source media hashes,
+event/window metadata, a stale-cache case, native update/rebuild/skip counts,
+and at least 2x fewer ViT calls for `c_stream_native` than `low_fps_dense`.
 
 ## Stage 1 — small signal pilot
 
@@ -83,13 +112,14 @@ Only run if Stage 0 and Stage 1 pass.
   failure case, and at least 2x ViT-fire reduction vs low-FPS dense at matched
   accuracy.
 
-## Implementation blocker
+## Implementation blocker after Stage 0
 
-Do not launch Stage 0 yet. The repo still needs:
+Stage 0A and the Stage 0B validator are ready. Do not claim either promotes
+C-STREAM. To run Stage 1 / Stage 2 as paper-grade C-STREAM, the repo still
+needs:
 
 - a real `c_stream_native` arm,
 - a stage controller that gates continuation,
-- validator/table updates for throughput-axis metrics,
 - a small event corpus with scored rows and stale-cache cases.
 
 Until those exist, rerunning B3 or a one-hour proxy would only duplicate the

@@ -258,6 +258,90 @@ def _require_b3_matched_events(rows: list[dict[str, Any]], args: argparse.Namesp
     return errors
 
 
+def _require_cstream_stage0(rows: list[dict[str, Any]]) -> list[str]:
+    errors: list[str] = []
+    required_arms = {
+        "fresh_oracle_dense",
+        "low_fps_dense",
+        "screenshot_polling",
+        "recency_last_k",
+        "c_stream_native",
+    }
+    observed_arms = {str(row.get("arm")) for row in rows}
+    missing = sorted(required_arms.difference(observed_arms))
+    extra = sorted(observed_arms.difference(required_arms))
+    if missing:
+        errors.append(f"C-STREAM Stage 0 missing arms: {missing}")
+    if extra:
+        errors.append(f"C-STREAM Stage 0 unexpected arms: {extra}")
+
+    by_pair_key: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        by_pair_key[str(row.get("pair_key"))].append(row)
+    pair_key_count = len(by_pair_key)
+    if pair_key_count < 6 or pair_key_count > 8:
+        errors.append(f"C-STREAM Stage 0 expected 6-8 pair_keys, saw {pair_key_count}")
+    video_count = len({row.get("video_id") for row in rows})
+    if video_count < 2:
+        errors.append(f"C-STREAM Stage 0 expected at least 2 videos, saw {video_count}")
+
+    required_metadata = (
+        "event_id",
+        "event_time_s",
+        "observation_window_s",
+        "evidence_budget",
+        "selected_frame_indices",
+        "source_media_path",
+        "source_media_sha256",
+    )
+    for line_index, row in enumerate(rows, start=1):
+        for field in required_metadata:
+            value = row.get(field)
+            if value is None or value == "" or value == []:
+                errors.append(f"line {line_index}: C-STREAM Stage 0 missing {field}")
+        if not str(row.get("raw_response") or "").strip():
+            errors.append(f"line {line_index}: C-STREAM Stage 0 empty raw_response")
+
+    stale_rows = [
+        row
+        for row in rows
+        if row.get("stale_cache_case_id") and row.get("changed_answer_expected") is True
+    ]
+    if not stale_rows:
+        errors.append("C-STREAM Stage 0 requires at least one changed-answer stale-cache case")
+
+    for pair_key, group in by_pair_key.items():
+        rows_by_arm = {str(row.get("arm")): row for row in group}
+        missing_for_pair = sorted(required_arms.difference(rows_by_arm))
+        if missing_for_pair:
+            errors.append(f"C-STREAM Stage 0 pair_key={pair_key!r} missing {missing_for_pair}")
+            continue
+        cstream = rows_by_arm["c_stream_native"]
+        low_fps = rows_by_arm["low_fps_dense"]
+        policy = str(cstream.get("policy") or "")
+        if policy == "representative_frame_selection" or "representative" in policy:
+            errors.append(f"C-STREAM Stage 0 pair_key={pair_key!r} uses representative policy")
+        native_frames = cstream.get("native_frames_processed")
+        prompt_frames = cstream.get("prompt_frame_count")
+        if native_frames is None or prompt_frames is None or native_frames <= prompt_frames:
+            errors.append(f"C-STREAM Stage 0 pair_key={pair_key!r} lacks native frame processing")
+        for field in ("native_update_count", "native_rebuild_count", "native_skip_count"):
+            if cstream.get(field) is None:
+                errors.append(f"C-STREAM Stage 0 pair_key={pair_key!r} missing {field}")
+        cstream_vit_calls = cstream.get("vit_calls")
+        low_fps_vit_calls = low_fps.get("vit_calls")
+        if (
+            cstream_vit_calls is None
+            or low_fps_vit_calls is None
+            or cstream_vit_calls <= 0
+            or low_fps_vit_calls / cstream_vit_calls < 2.0
+        ):
+            errors.append(f"C-STREAM Stage 0 pair_key={pair_key!r} fails >=2x ViT-call gate")
+        if _derived_choice_diff(cstream) or _derived_correctness_diff(cstream):
+            errors.append(f"C-STREAM Stage 0 pair_key={pair_key!r} c_stream_native drifted")
+    return errors
+
+
 def _phase_errors(rows: list[dict[str, Any]], args: argparse.Namespace) -> list[str]:
     errors: list[str] = []
 
@@ -349,6 +433,9 @@ def _phase_errors(rows: list[dict[str, Any]], args: argparse.Namespace) -> list[
             errors.append("B3 requires at least one changed-answer stale-cache case")
         errors.extend(_require_b3_matched_events(rows, args))
 
+    if args.require_cstream_stage0:
+        errors.extend(_require_cstream_stage0(rows))
+
     if args.require_b5_provenance:
         for key in (
             "claim_id",
@@ -432,6 +519,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--require-b0b-protocol", action="store_true")
     parser.add_argument("--require-b3-matched-events", action="store_true")
     parser.add_argument("--require-b5-provenance", action="store_true")
+    parser.add_argument("--require-cstream-stage0", action="store_true")
     return parser.parse_args()
 
 

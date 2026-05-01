@@ -390,6 +390,32 @@
     "changed_answer_expected": {
       "type": ["boolean", "null"]
     },
+    "source_media_path": {
+      "type": ["string", "null"]
+    },
+    "source_media_sha256": {
+      "type": ["string", "null"]
+    },
+    "native_frames_processed": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "native_update_count": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "native_rebuild_count": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "native_skip_count": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "low_fps_dense_vit_calls": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
     "claim_id": {
       "type": ["string", "null"]
     },
