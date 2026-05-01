@@ -5,9 +5,11 @@
 #   HF_TOKEN=... bash scripts/run_sam_m5_5b_32f_expansion.sh
 #   bash scripts/submit_sam_m5_5b_32f_expansion.sh
 #
-# Auto-skips the branch switch if already on the target branch. Stages the two
-# generated *_32f_n21 artifacts explicitly (never -A). Prompts before commit and
-# push so Sam can audit; pass --yes to skip the prompts.
+# Auto-skips the branch switch if already on the target branch. Otherwise it
+# fetches origin and bases the handoff branch on origin/main (or tracks an
+# existing origin/$BRANCH). Stages the two generated *_32f_n21 artifacts
+# explicitly (never -A). Prompts before commit and push so Sam can audit; pass
+# --yes to skip the prompts.
 
 set -euo pipefail
 
@@ -33,16 +35,40 @@ if [[ ! -f "$JSONL" || ! -f "$SUMMARY" ]]; then
   exit 2
 fi
 
+if ! git diff --cached --quiet; then
+  echo "[sam-submit] existing staged changes detected; refusing to mix artifacts" >&2
+  echo "[sam-submit] unstage or commit them before rerunning this helper" >&2
+  git diff --cached --stat >&2
+  exit 2
+fi
+
 current_branch="$(git rev-parse --abbrev-ref HEAD)"
 if [[ "$current_branch" != "$BRANCH" ]]; then
+  git fetch origin main
   if git rev-parse --verify --quiet "$BRANCH" >/dev/null; then
     git switch "$BRANCH"
+  elif git rev-parse --verify --quiet "origin/$BRANCH" >/dev/null; then
+    git switch --track -c "$BRANCH" "origin/$BRANCH"
   else
-    git switch -c "$BRANCH"
+    git switch -c "$BRANCH" origin/main
   fi
 fi
 
 git add -- "$JSONL" "$SUMMARY"
+
+staged_names="$(git diff --cached --name-only)"
+expected_names="$(printf "%s\n%s\n" "$JSONL" "$SUMMARY" | sort)"
+actual_names="$(printf "%s\n" "$staged_names" | sort)"
+if [[ "$actual_names" != "$expected_names" ]]; then
+  echo "[sam-submit] staged file set is not exactly the expected artifacts" >&2
+  echo "[sam-submit] expected:" >&2
+  printf "  %s\n" "$JSONL" "$SUMMARY" >&2
+  echo "[sam-submit] actual:" >&2
+  while IFS= read -r staged_name; do
+    printf "  %s\n" "$staged_name" >&2
+  done <<< "$staged_names"
+  exit 2
+fi
 
 echo
 echo "[sam-submit] staged for $BRANCH:"

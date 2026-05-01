@@ -204,7 +204,8 @@ Three independent paths forward, ordered by paper-impact-per-compute:
 
 1. **Item 2 (multi-seed random_keep)** — highest immediate ROI. No new code;
    2–4 h for the missing seeds.
-2. **Item 3 (dialogue-like C-PERSIST)** — highest remaining C-PERSIST payoff.
+2. **Item 3 (controlled dense-anchored C-PERSIST)** — highest remaining
+   C-PERSIST payoff.
    The controlled dense-anchored path is now ready; true natural dialogue still
    needs corpus curation.
 3. **Item 4 (C-STREAM throughput-axis)** — only if a 4th headline is the goal. ~20-32 h compute. Real gamble.
@@ -224,7 +225,7 @@ The post-integration review tightened the plan in three places:
 
 1. **Natural dialogue should not be faked.** A templated prompt-variation
    run is still useful, but it is not a natural-dialogue benchmark. If run
-   locally, label it "dense-anchored content-conditional prompt variation":
+   locally, label it "dense-answer-anchored prompt variation":
    every cached and dense arm must receive the exact same rendered prompt
    hash at each turn, and any prior answer text spliced into turn \(k+1\)
    must come from a canonical dense pre-pass. This isolates cache-policy

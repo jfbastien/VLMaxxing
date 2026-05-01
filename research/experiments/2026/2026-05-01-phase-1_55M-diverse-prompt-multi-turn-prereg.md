@@ -22,7 +22,7 @@ This is **not** a human natural-dialogue benchmark. There is no curated multi-tu
 
 It **is** a step beyond A6's "repeated question" framing in three respects:
 - Each turn's prompt token sequence is unique after the first turn.
-- Prompt variation is content-conditional on the prior dense answer, not just a fixed prefix.
+- Prompt variation is anchored on the prior canonical dense answer, not just a fixed prefix.
 - The driver records prompt hashes and hard-fails if the dense and cached arms see different prompt text.
 - The fidelity gate is the same as A6 (3% paired drift, 0 pathological), so a clean pass extends C-PERSIST coverage at no claim inflation.
 
@@ -105,7 +105,7 @@ JSONL outputs in `phase1_55M_dense_anchored_cpersist/`.
 A curated natural-dialogue corpus would still be stronger. If supplied, it
 should use the same prompt-hash pairing and dense-anchor invariants. Do not
 call this 1.55M result "natural dialogue" in the paper; call it controlled
-dense-anchored content-conditional prompt variation.
+dense-answer-anchored prompt variation.
 
 ## Cross-references
 

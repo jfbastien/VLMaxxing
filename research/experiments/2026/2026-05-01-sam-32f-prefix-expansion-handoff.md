@@ -28,7 +28,7 @@ branch. New filenames preserve the existing 9-row artifact.
 # 1. Run the experiment (writes *_32f_n21.jsonl + summary, validates, runs preflight)
 HF_TOKEN=... bash scripts/run_sam_m5_5b_32f_expansion.sh
 
-# 2. Submit results (creates branch, stages exact files, prompts y/N, commits, pushes)
+# 2. Submit results (bases branch on origin/main, stages exact files, prompts y/N, commits, pushes)
 bash scripts/submit_sam_m5_5b_32f_expansion.sh
 ```
 
@@ -37,6 +37,9 @@ prior 9-row M5-5b run; no new model. The check is unconditional even if the
 snapshot is already cached locally. Pass `--yes` to the submit script to skip
 the confirmation prompt. The branch name defaults to
 `sam/scaleout-m5-32f-expansion-20260501`; override via `SAM_M5_5B_BRANCH=...`.
+The submit helper refuses to proceed if unrelated files are already staged. If
+the handoff branch already exists on `origin`, it checks out a local tracking
+branch instead of creating a competing branch from the current checkout.
 
 If you prefer to do the git ceremony manually after step 1, the equivalent flow
 is `git switch -c <branch>; git add <jsonl> <summary>; git commit -m '...';

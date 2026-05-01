@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Phase 1.55M — dense-anchored content-conditional C-PERSIST stress.
+# Phase 1.55M — dense-answer-anchored prompt-variation C-PERSIST stress.
 #
 # This is not a human natural-dialogue benchmark. It is the controlled
-# dialogue-like variant: turn k+1 injects the canonical dense answer from turn k
-# into both dense and cached arms, and the driver hard-fails if paired prompt
-# hashes diverge.
+# prompt-variation variant: turn k+1 injects the canonical dense answer from
+# turn k into both dense and cached arms, and the driver hard-fails if paired
+# prompt hashes diverge.
 
 set -euo pipefail
 
