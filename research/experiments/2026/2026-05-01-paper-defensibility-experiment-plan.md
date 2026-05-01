@@ -44,7 +44,7 @@ territory. Gemma 26B prefix-snapshot rows under the
 
 **No further compute.** Recommendation to paper editor in `2026-05-01-paper-editor-feedback.md`.
 
-## Item 2 — Competitor positioning table + one matched local baseline
+## Item 2 — Random-keep robustness and the separate peer-method gap
 
 **2026-05-01 validation update.** The launch plan in this section is retained
 for provenance but is superseded for immediate execution. The currently landed
@@ -56,32 +56,42 @@ attention weights those methods use. A faithful peer comparison remains a
 separate engineering/reproduction project. The low-risk local follow-up is
 only the multi-seed `uniform_random` robustness sweep.
 
-**Hypothesis.** Even without re-running peer methods (FastV, FasterVLM, SparseVILA, HERMES) on identical hardware, a disciplined comparison table that quotes their reported numbers under the C-CEILING constraint (component speedup × stage share = e2e bound) is enough to position our results. Adding ONE additional local visual-token-pruning baseline that we run ourselves under matched conditions removes the "no head-to-head" objection.
+**Immediate runnable experiment.** Run the existing 1.51VC `uniform_random`
+baseline across seeds `42,137,999,2024` at the already-landed Qwen 7B 8f
+VideoMME dev30 cell, L=2, kr=0.50. Seed 42 is already present under
+`research/experiments/2026/artifacts/phase1_51VC_random_keep_baseline/`; the
+wrapper skips completed seeds unless `PHASE1_51VC_FORCE=1`.
 
-**Falsification of the hypothesis** = at the closest matched cell (model class × frame count × benchmark), our reported e2e Δacc/speedup envelope does not improve on or differ from the chosen baseline.
+**Hypothesis.** `magnitude_norm` stays at least 10 percentage points above the
+random-keep seed distribution at matched keep-rate. Falsification = random
+seeds overlap or beat the structured scorer often enough that the sanity table
+cannot be described as a robust structured-vs-random gap.
 
-**Local baseline candidate.** FasterVLM's training-free token reduction at the same vision-tower cut layer (L=2) used by phase 1.51V. Reuses the existing `codec_through.qwen_pruned_vision_tower` infrastructure. Matched against a single Qwen 7B 16f cell on VideoMME holdout (n=30) for a single keep-rate choice.
+**Launch command.**
+
+```bash
+bash scripts/run_phase1_51VC_random_keep_multiseed.sh
+```
 
 **Gates.**
 
-- Paired Δacc within ±0.05 vs uniform-dense reference.
-- Per-paired choice/correctness diffs ≤ 1/30 absolute (loose, since this is positioning evidence, not headline).
-- Wall-clock prefill + e2e logged per row.
-- Comparison table cites measured `e2e_speedup_actual` / `e2e_speedup_predicted` against the existing C-CEILING model so reviewers see we apply the same arithmetic to the competitor.
+- All requested seed summaries exist and pair against the same dense Qwen 8f
+  reference.
+- The generated positioning snapshot reports the seed distribution rather than
+  a single lucky random seed.
+- Caption and findings wording keep saying `uniform_random` is a trivial
+  sanity baseline, not a matched-runtime peer method.
 
-**Pitfalls + mitigations.**
+**Wall clock estimate.** 3–5 h for the full four-seed set, likely 2–4 h for
+the three missing seeds because seed 42 already exists.
 
-- *Different selection metric* — FasterVLM uses CLS-attention to rank tokens; our 1.51V uses gemma_structural / nuwa anchors. Run the FasterVLM scoring at the same cut layer rather than the original CLS-head layer to keep apples-to-apples on the prefill point. State the difference in the table caption.
-- *Ranking equivalence* — at fixed keep-rate, with identical kept count, the only axis we control is *which tokens* survive. Ensure the FasterVLM scorer is implemented as a drop-in selection function passed into `qwen_pruned_vision_tower` so the surrounding code is identical.
-- *Single cell can be cherry-picked* — choose the cell from the existing 1.51V results that already has clean dense-vs-pruned baseline (Qwen 7B 16f VideoMME holdout). State the cell choice up front.
+**Separate peer-method gap.** A named adjacent-method comparison
+(FastV/FasterVLM/HERMES/SparseVILA) remains open. It requires either a faithful
+local implementation that exposes the method's actual attention/token scores,
+or a carefully bounded literature comparison. The current `magnitude_norm`
+scorer is our structured scorer; it must not be rebranded as FastV/FasterVLM.
 
-**Wall clock estimate.** ~1.5 h for the FasterVLM cell on M3 16 GB (n=30 holdout, 16f Qwen 7B). Comparison-table generator: 30 min wall.
-
-**Paper outcome.** A new `paper/arxiv/generated/tables/competitor_positioning.tex` that puts our headline cells next to FasterVLM (run locally), FastV (cited reported), HERMES (cited reported), and SparseVILA (cited reported), each with C-CEILING-decomposed e2e numbers and explicit `predicted` vs `actual` columns. This is the single most valuable item if external reviewers are likely to ask "where's the comparison?"
-
-**Decision required from user before launch.** (a) confirm FasterVLM is the right local baseline (vs FastV), (b) confirm the 1.51V cell choice (Qwen 7B 16f VideoMME holdout), (c) confirm we cite peer numbers from their papers without re-running them.
-
-## Item 3 — Natural-dialogue many-turn C-PERSIST
+## Item 3 — Dialogue-like C-PERSIST, not launch-ready
 
 **2026-05-01 validation update.** The launch plan in this section is retained
 for provenance but is superseded for immediate execution. The preregistered
@@ -95,16 +105,31 @@ rendered prompt hash and injects the same canonical dense answer into both
 arms. A true natural-dialogue result additionally needs a reviewed 7-clip ×
 20-turn corpus before compute.
 
-**Hypothesis.** Adaptive post-Q2 cache reuse holds at zero observed paired drift for at least 20 turns when the schedule is a *natural multi-turn dialogue* (each turn references the prior answer or asks a content-conditioned follow-up), not the repeated-question stateless cycle that A6 (1.55L) tested. Falsification = paired choice or correctness drift exceeds the 3% gate at any horizon ≤ 20.
+**Two valid variants.**
+
+- **Dense-anchored content-conditional stress.** Synthetic turns reference the
+  canonical dense answer from turn `k` when constructing turn `k+1`. Both dense
+  and cached arms receive the exact same rendered prompt text at each turn.
+  This is controlled prompt-variation evidence, not human natural dialogue.
+- **True natural-dialogue stress.** A reviewed 7-clip × 20-turn dialogue corpus
+  supplies content-dependent turns. This is the stronger reviewer-defense
+  result, but it needs curation before GPU time.
+
+**Hypothesis.** Adaptive post-Q2 cache reuse and refresh10 stay within the 3%
+paired drift gate through 20 content-dependent turns. Falsification = paired
+choice or correctness drift exceeds the 3% gate at any horizon ≤ 20.
 
 **Why this matters.** A6 explicitly labels itself "deliberately not a natural-dialogue benchmark" because the same three questions cycle. A reviewer can reasonably ask whether drift accumulates faster when the dialogue has actual content dependencies (Q3 references Q2's answer, etc.). Closing this gap is the single most defensible claim-strengthening move for C-PERSIST.
 
-**Method.**
+**Minimum driver changes before launch.**
 
-- 7-clip × 20-turn natural dialogue corpus on the same VideoMME short tranche A6 used. Each clip gets a hand-curated 20-turn dialogue with content dependencies (turn k+1 may reference turn k's answer, ask follow-up "and then what?", "what color was the X you mentioned?", etc.). Curated by a human or by GPT-4 with manual review; not auto-generated by the same model under test.
-- Three policies: `fixed_k1`, `adaptive_post_q2`, `refresh10` (same as A6).
-- Cold baseline: each turn cold-prefilled, deterministic.
-- Gates: same 3% gate per cell, plus a stricter pathological-format gate (≤ 1/140 hits).
+- Baseline rows must be keyed by exact rendered prompt hash, not
+  `(video_id, source_q_index)`.
+- The rendered prompt hash must be recorded in raw rows and paired rows.
+- Any prior-answer text used in turn `k+1` must come from a canonical dense
+  pre-pass and be injected into both arms before generation.
+- A smoke run must prove dense and cached arms see identical prompt hashes for
+  every paired turn before the full run starts.
 
 **Pitfalls + mitigations.**
 
@@ -112,9 +137,12 @@ arms. A true natural-dialogue result additionally needs a reviewed 7-clip ×
 - *Curator bias.* Curate dialogues blinded to the cache policies to avoid "easy" turns. A 50/50 split between content-referential and content-independent turns helps.
 - *Memory pressure.* 20-turn schedule × 3 policies × 7 clips = 420 session-runs on a 16 GB Mac. Same memory footprint as A6 (~10 GB peak); should fit.
 
-**Wall clock estimate.** 7 clips × 3 policies × 20 turns × ~7 s/turn ≈ 50 min compute, plus the cold-baseline arm at 7 × 20 × ~75 s ≈ 175 min. Total ~3.8 h on M3 16 GB. About 4 h with overhead.
+**Wall clock estimate.** ~4 h on M3 16 GB after the driver patch and corpus or
+synthetic prompt pack exist.
 
-**Paper outcome.** Either confirms C-PERSIST extends to natural dialogue (much stronger headline) or surfaces a paired drift cliff that the paper must mark as a real boundary. Both are paper-grade.
+**Paper outcome.** Content-conditional stress would close most of the
+stateless-repetition objection. True natural dialogue would close it more
+cleanly, but only if the corpus is curated and reviewed before launch.
 
 **Decision required.** (a) approve curating the 7-clip × 20-turn dialogue pack, (b) approve ~4 h compute on the user's Mac, (c) decide whether to start the curation work in this session or defer.
 
@@ -169,8 +197,11 @@ Hypothesis (b) (bf16 cosine sum-of-squares overflow) is confirmed at the first-r
 
 Three independent paths forward, ordered by paper-impact-per-compute:
 
-1. **Item 2 (competitor positioning)** — highest ROI. ~2 h total compute. Single most defensible move.
-2. **Item 3 (natural-dialogue many-turn C-PERSIST)** — second-highest. ~4 h compute. Closes the conversational-stability gap at low cost.
+1. **Item 2 (multi-seed random_keep)** — highest immediate ROI. No new code;
+   2–4 h for the missing seeds.
+2. **Item 3 (dialogue-like C-PERSIST)** — highest remaining C-PERSIST payoff,
+   but not ready until the prompt-hash / dense-anchor patch and corpus choice
+   are reviewed.
 3. **Item 4 (C-STREAM throughput-axis)** — only if a 4th headline is the goal. ~20-32 h compute. Real gamble.
 
 Items 1 and 5 are already done or nearly done. The user gets to pick which of 2 / 3 / 4 to fund.
@@ -244,12 +275,13 @@ exist in the repo.** Direct inspection of every `*_summary.json` under
   0.99–1.01×, not the claimed 1.058–1.088×.
 
 The retracted table is therefore a fabricated artifact. The Qwen-side
-C-CEILING evidence that genuinely exists in the repo as of this writing
-is a **single** clean Qwen cell:
+C-CEILING timing evidence that genuinely exists in the repo as of this
+writing is a **single** Qwen cell with excellent predicted-vs-actual
+timing agreement but a fidelity caveat:
 
-| cell | n | actual E2E× | predicted E2E× | actual − predicted |
-|---|---:|---:|---:|---:|
-| Qwen 8f kr=0.50 (1.63E) | 60 | 1.042 | 1.047 | −0.005 |
+| cell | artifact | n | actual E2E× | predicted E2E× | actual − predicted | fidelity |
+|---|---|---:|---:|---:|---:|---|
+| Qwen 8f kr=0.50 (1.63E) | `research/experiments/2026/artifacts/phase1_63E_track_b_frame_scaling/pair_summary_8f.json` | 60 | 1.042 | 1.047 | −0.005 | `pass_fidelity=false`, Δacc=−0.0667, choice agreement=0.7167 |
 
 Plus a regime-broken Qwen 16f kr=0.50 cell in 1.63E (22/60 parse
 failures, Δacc=−0.42 — fidelity contract is broken before C-CEILING
@@ -257,15 +289,13 @@ applies, so its +0.058 deviation is uninformative) and three 16f
 fine-bracket cells in 1.63I that are similarly fidelity-broken at the
 high keep-rates.
 
-**Conclusion:** the Qwen C-CEILING evidence remains single-cell at
-fidelity-clean operating points. The "E3" kr sweep (kr=0.25 and
-kr=0.75 at Qwen 8f) is a real, non-redundant experiment, not duplicate
-GPU compute. It would extend C-CEILING from one Qwen cell to three,
-which is the bar the original Gemma side cleared. A faster
-alternative is to reuse the existing 1.63E Qwen 8f kr=0.50 cell as the
-sole Qwen-side evidence point and update the claim-matrix wording to
-say "C-CEILING is validated cross-architecture at one Qwen cell and
-seven Gemma cells" — accurate but weaker than the multi-cell story.
+**Conclusion:** the Qwen C-CEILING evidence remains single-cell and should be
+framed as timing/arithmetic validation with a fidelity caveat, not as a
+fidelity-clean Qwen claim. The "E3" kr sweep (kr=0.25 and kr=0.75 at Qwen 8f)
+is a real, non-redundant experiment, but its gates must keep timing agreement
+separate from fidelity. A faster alternative is to reuse the existing 1.63E
+Qwen 8f kr=0.50 cell as the sole Qwen-side timing evidence point and avoid
+claiming a clean Qwen kr curve.
 
 **Lesson logged.** This is a variant of an earlier issue in this same
 session: a co-scientist agent posted plausible-looking numbers that

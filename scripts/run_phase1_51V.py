@@ -288,7 +288,8 @@ def main() -> int:
         help=(
             "How to rank merged-token groups at the prune layer. "
             "'magnitude_norm' is the default 1.51V Qwen scorer "
-            "(FasterVLM-style L2 norm of group mean hidden state). "
+            "(L2 norm of group-mean hidden state; not a faithful FastV/"
+            "FasterVLM attention-weight implementation). "
             "'uniform_random' is the 1.51VC competitor-positioning baseline "
             "(deterministic-seeded random scores at matched keep-rate)."
         ),
