@@ -19,24 +19,28 @@ as the first thing reviewers notice.
 
 ## What to run
 
-Use the wrapper. It runs the existing M5-5b prefix-snapshot mechanism, validates
-the artifact, and runs preflight. It writes to new filenames so the existing
-9-row artifact stays preserved.
+Two commands. First wrapper runs the M5-5b prefix-snapshot mechanism, validates
+the artifact, and runs preflight. Second wrapper stages the two generated
+artifacts, prompts for confirmation, then commits and pushes to the handoff
+branch. New filenames preserve the existing 9-row artifact.
 
 ```bash
-git fetch origin
-git switch main
-git pull --ff-only origin main
-git switch -c sam/scaleout-m5-32f-expansion-20260501
-
+# 1. Run the experiment (writes *_32f_n21.jsonl + summary, validates, runs preflight)
 HF_TOKEN=... bash scripts/run_sam_m5_5b_32f_expansion.sh
-git add \
-  research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f_n21.jsonl \
-  research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f_n21_summary.json
-git commit -m "research(sam): expand 32f prefix snapshot evidence" \
-  -m "Run the existing M5-5b SWA-aware prefix-snapshot protocol at 32 frames on the full 7-video x 3-question set. This preserves the prior 9-row artifact and adds a 21-row validation target for the Gemma 26B-A4B 32f result."
-git push -u origin sam/scaleout-m5-32f-expansion-20260501
+
+# 2. Submit results (creates branch, stages exact files, prompts y/N, commits, pushes)
+bash scripts/submit_sam_m5_5b_32f_expansion.sh
 ```
+
+`HF_TOKEN` is the same gated `google/gemma-4-26B-A4B-it` weights used in the
+prior 9-row M5-5b run; no new model. The check is unconditional even if the
+snapshot is already cached locally. Pass `--yes` to the submit script to skip
+the confirmation prompt. The branch name defaults to
+`sam/scaleout-m5-32f-expansion-20260501`; override via `SAM_M5_5B_BRANCH=...`.
+
+If you prefer to do the git ceremony manually after step 1, the equivalent flow
+is `git switch -c <branch>; git add <jsonl> <summary>; git commit -m '...';
+git push -u origin HEAD`.
 
 ## Gates
 
