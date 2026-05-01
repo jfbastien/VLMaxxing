@@ -20,7 +20,7 @@ submission-frozen artifact bundle. The final release should regenerate this
 table from a clean tag. Within the main text, numbers are written so they can
 be traced back to one phase note and one artifact family. When a result is
 excluded or downgraded on provenance grounds, the paper says so explicitly. The
-best current examples are the MVBench \texttt{sticky4} refinement, Gemma's
+best current examples are the provisional MVBench higher-stability refinement, Gemma's
 matched-parse-failure sparse-vision sweep, and Qwen's conservative low-gain
 sparse-vision boundary: all are scientifically useful, but none should be
 silently promoted beyond the finite evidence class it actually earned.
@@ -48,10 +48,13 @@ C-PERSIST figure & C-PERSIST tested envelope; after-ingest same-video follow-up 
 C-PERSIST repair & 20f/32f same-video selective re-prefill & local bounded recovery & fixed and adaptive selective re-prefill artifacts plus stage-timing attribution; Qwen 7B-4bit, VideoMME short/medium/long + 32f short \\
 C-PERSIST sampler sweep & adaptive short-cell practical temperature robustness & local robustness evidence & sampler temperature and seed-sweep artifacts; Qwen 7B-4bit, VideoMME short slice \\
 C-PERSIST many-turn stress & 50-turn repeated-question cache horizon & local bounded stress & many-turn C-PERSIST artifacts; Qwen 7B-4bit, seven VideoMME short videos, 20f, stateless question cycle \\
+C-PERSIST economics & setup-inclusive same-video session speedup after paying the first-query cost & local serving arithmetic & setup-inclusive table built from raw persistent-KV timing artifacts; Qwen 7B/3B-4bit frame-scaling cells \\
 Routing frontier & sparse routing under dense backend & local clean & checked routing artifacts and generated routing snapshot; Qwen 7B-4bit, MLX \\
 Gemma routing boundary & second-architecture semantic substitution & local boundary & Gemma 4-E4B-4bit routing-boundary artifacts; TOMATO/MVBench motion holdouts \\
 Qwen stacked boundary & session/streaming composition plus cache-boundary attribution & local negative / boundary & Qwen composition, cache-invalidation, and attribution artifacts; Qwen 7B-4bit, VideoMME dev+holdout \\
+Cache-distance probe & fp32 K/V cache-distance audit for composition boundary & local mechanism instrumentation & 20-row balanced drift-class cache-distance artifact; native fp16 cosine retained as overflow diagnostic, fp32 cosine is release-bearing \\
 Low-FPS dense baseline & 4f dense versus 8f dense on composition corpus & local baseline / ambiguous & low-FPS dense artifacts; Qwen 7B-4bit, 57 sessions / 171 queries \\
+Random-keep sanity check & structured Qwen scorer versus uniform random keep at matched keep-rate & local sanity baseline & Qwen 8f VideoMME dev30 dense, magnitude-score, and deterministic uniform-random artifacts \\
 Paired drift table & paired choice/correctness drift summary & local analysis & paired-drift summary built from composition, Gemma routing-boundary, and persistent-cache artifacts \\
 Stability predictor scouts & dense margin and richer features are insufficient as deployable drift guards & local negative / future guard feature & stability-predictor artifacts; 228 scored Qwen paired rows \\
 Memory envelope & process working-set characterization across landed families & local reproducibility evidence & memory characterization artifacts; 78 cells across follow-up reuse, admission/composition, and measured sparse vision \\

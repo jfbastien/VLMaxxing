@@ -24,7 +24,7 @@ scheduled-refresh reuse stay drift-free through a 50-turn repeated-question
 cycle, while fixed \(K=1\) shows nonzero repeated-question drift but no cliff.
 Candidate
 C-STREAM remains the right scale-out target: perception-rate streaming state
-reuse under a native-rate protocol. The checked 26B/M5 bundle is now mixed
+reuse under a native-rate protocol. The checked 26B-class scale-out bundle is now mixed
 evidence rather than pending evidence: default cache reuse is unsafe,
 prefix-snapshot follow-up rows are positive but small-\(N\), fixed-evidence
 baselines favor low-FPS dense over the current event-window proxy, and
@@ -39,9 +39,9 @@ must not be confused with measured sparse execution.
 
 What remains is a broader fidelity-preserving sparse-backend curve, natural
 multi-turn dialogue stress, cleaner native-streaming systems baselines, and
-direct cache-state instrumentation that explains why reused prompt-cache state
-drifts. The n=60 composition audit, the long-bucket
-admission sweep, and the cache-invalidated follow-up test already closed the
+causal guard features beyond the current cache-distance probe. The n=60
+composition audit, the long-bucket admission sweep, the cache-invalidated
+follow-up test, and the direct K/V distance audit already closed the
 multiply-the-headlines temptation: the gains do not stack naively. The useful question now is
 where each ceiling moves in the architectures and deployment protocols people
 actually care about.

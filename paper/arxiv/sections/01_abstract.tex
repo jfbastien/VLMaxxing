@@ -51,9 +51,9 @@ turns frames into model tokens, during the first query on a fresh video. The
 clean VideoMME holdout cell gives 1.113$\times$ first-pass wall-clock gain
 with zero aggregate accuracy delta; advisory MVBench and TOMATO holdout cells
 are larger but carry timing and accuracy caveats. Measured sparse vision
-execution makes the first-pass story sharper: on Gemma 32f short, the runtime
-skips timed vision-tower work at 1.316$\times$ first-query speedup with no
-paired drift on 20 items and no parse failures. The full Gemma 8/16/32f sweep
+execution makes the first-pass story sharper: on Gemma 4-E4B-4bit 32f short,
+the runtime skips timed vision-tower work at 1.316$\times$ first-query speedup
+with no paired drift on 20 items and no parse failures. The full Gemma 8/16/32f sweep
 has zero paired answer drift but matched dense/sparse parse failures in some
 cells; Qwen is configuration-sensitive, with aggressive pruning failing
 fidelity and a conservative 16f operating point restoring fidelity at
@@ -65,9 +65,10 @@ magnitude alone,
 aggregate accuracy can hide answer-identity drift, and semantic substitution is
 not itself a measured sparse backend.
 
-Candidate C-STREAM is the native-rate version of the same question, but it is
-not yet a headline claim. A checked 26B/M5 artifact bundle now makes the lane
-more concrete and more bounded: default mixed sliding-window/full-attention
+Streaming state reuse (candidate C-STREAM) is the native-rate version of the
+same question, but it is not yet a headline claim. A checked 26B-class
+scale-out artifact bundle now makes the lane more concrete and more bounded:
+default mixed sliding-window/full-attention
 cache reuse fails a cross-turn correctness smoke, a topology-aware prefix
 snapshot gives positive small-\(N\) follow-up rows, fixed-evidence streaming
 baselines favor low-FPS dense over the current event-window proxy, and the

@@ -1094,9 +1094,9 @@ authoritative in the per-phase notes under
   status: completed 2026-04-27
   authoritative_note: research/experiments/2026/2026-04-26-phase-1_55J-k1-sampler-variation-prereg.md
   authoritative_artifacts: [research/experiments/2026/artifacts/phase1_55J_k1_sampler_variation/]
-  current_best_policy: fixed K=1 sampler scout at T=0.7 produced a small paired-diff count but remained within the reviewer-defense gate
+  current_best_policy: fixed K=1 sampler scout at T=0.7 produced a small paired-diff count but remained within the robustness gate
   supersedes: []
-  paper_relevance: reviewer-defense for the fixed K=1 repaired frontier; tests whether 0/n paired drift is greedy-only
+  paper_relevance: robustness check for the fixed K=1 repaired frontier; tests whether 0/n paired drift is greedy-only
   prereg_outcome: landed; superseded for adaptive headline purposes by 1.55K
   runtime_estimate: complete
   notes: The v2 explicit-tail generator now supports sampling through the same MLX sampler family used by mlx-vlm generation. This phase should not be confused with the already-landed 1.55A sampler probes, which tested naive persistent-KV basin robustness rather than repaired K=1 selective re-prefill.
@@ -1254,11 +1254,11 @@ authoritative in the per-phase notes under
     adaptive short-cell sampler sweep across T=0.0/0.5/0.7/1.0/1.5 (base);
     extended cross-product across (seed × T) ∈ {42, 99, 2026} × {0.5, 1.0, 1.5}
     closes 9/9 cells with max |Δacc|=0.048, 0/189 pathological format hits,
-    baseline floor 0.667, cold/follow-up speedup 24.8–25.2×.
+    baseline floor 0.667, cold/follow-up speedup 17.37–25.84×.
   supersedes: [1.55J]
-  paper_relevance: reviewer-defense (tests whether adaptive C-PERSIST headline is greedy-only AND single-seed-only)
+  paper_relevance: robustness check (tests whether adaptive C-PERSIST headline is greedy-only AND single-seed-only)
   prereg_outcome: |
-    base sweep landed as practical reviewer-defense against greedy-only
+    base sweep landed as practical robustness evidence against greedy-only
     artifact; the extended seed sweep (Phase 2 chain step A7) closes the
     single-seed-coincidence concern across three seeds at three temperatures
     on the same short tranche. Neither covers the full 0/93 breadth nor
@@ -1271,7 +1271,7 @@ authoritative in the per-phase notes under
     temperature cell so mutual sampler collapse cannot masquerade as cache
     robustness. The extended seed sweep findings are recorded in
     research/experiments/2026/2026-04-30-phase-1_55K-extended-seed-sweep-findings.md
-    and the paper-side reviewer-defense table is generated as
+    and the paper-side robustness table is generated as
     paper/arxiv/generated/tables/c_persist_sampler_seed_sweep.tex.
 
 - phase_id: 1.30AF
@@ -1356,7 +1356,7 @@ authoritative in the per-phase notes under
   authoritative_artifacts: [research/experiments/2026/artifacts/phase1_66_memory_characterization/]
   current_best_policy: analysis-only memory envelope over landed 1.30/1.55/1.63 artifacts; max observed peak 13.61 GB, measured sparse-execution max 10.80 GB
   supersedes: []
-  paper_relevance: reviewer-defense (turns RSS-gate misses and high-watermark cells into an explicit local-memory envelope)
+  paper_relevance: robustness check (turns RSS-gate misses and high-watermark cells into an explicit local-memory envelope)
   prereg_outcome: landed; use to distinguish MLX allocation cap from observed process working-set peaks
   runtime_estimate: complete (<1min)
   notes: Emits JSON and CSV only; it is not a model-quality claim and should be used to explain local 16 GB resource boundaries.

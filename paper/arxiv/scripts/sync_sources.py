@@ -423,6 +423,7 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
             "source_paths": [
                 "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b0b_cache_correctness_summary.json",
                 "research/experiments/2026/artifacts/sam_scaleout_m5_r2_20260430/sam_b0b_cache_correctness_summary.json",
+                "research/experiments/2026/artifacts/sam_scaleout_m5_r2_followup_20260430/sam_b0b_cache_correctness_unguarded_patched_summary.json",
                 "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_summary.json",
                 "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b3_streaming_baselines_summary.json",
             ],
@@ -1318,7 +1319,7 @@ def _paired_drift_interpretation(label: str) -> str:
 
 def _paired_drift_public_label(label: str) -> str:
     if label.startswith("1.30"):
-        return "C-VISION Q0 scout"
+        return "Qwen first-query admission scout"
     if label.startswith("1.42"):
         return "Gemma MVBench holdout"
     if label.startswith("1.55A"):
@@ -2143,9 +2144,19 @@ def _median_value(rows: list[dict], key: str) -> float:
 def _scaleout_bundle_snapshot() -> dict[str, object]:
     base = ARTIFACTS / "sam_scaleout_m5_20260429"
     r2 = ARTIFACTS / "sam_scaleout_m5_r2_20260430"
+    r2_followup = ARTIFACTS / "sam_scaleout_m5_r2_followup_20260430"
 
     b0_default = _artifact_json(base / "sam_b0b_cache_correctness_summary.json")
     b0_guard = _artifact_json(r2 / "sam_b0b_cache_correctness_summary.json")
+    b0_patched = _artifact_json(
+        r2_followup / "sam_b0b_cache_correctness_unguarded_patched_summary.json"
+    )
+    b0_patched_rows = _load_jsonl(r2_followup / "sam_b0b_cache_correctness_unguarded_patched.jsonl")
+    b0_patched_cross_rows = [
+        row
+        for row in b0_patched_rows
+        if row.get("policy") == "prompt_cache_state_cross_turn_chained"
+    ]
 
     prefix8_path = base / "sam_m5_5b_swa_prefix_snapshot.jsonl"
     prefix32_path = base / "sam_m5_5b_swa_prefix_snapshot_32f.jsonl"
@@ -2213,6 +2224,27 @@ def _scaleout_bundle_snapshot() -> dict[str, object]:
             "pass": bool(b0_guard["pass"]),
             "policy": "full_refill_guard_rotating_kv",
             "source": _source_path_label(r2 / "sam_b0b_cache_correctness_summary.json"),
+        },
+        "patched_library_closure": {
+            "n": int(b0_patched["n_rows"]),
+            "text_diffs": int(b0_patched["text_diffs"]),
+            "choice_diffs": int(b0_patched["choice_diffs"]),
+            "correctness_diffs": int(b0_patched["correctness_diffs"]),
+            "parse_failures": int(b0_patched["parse_failures"]),
+            "pass": bool(b0_patched["pass"]),
+            "policy": "prompt_cache_state_cross_turn_chained",
+            "cross_turn_median_speedup": _median_ratio(
+                b0_patched_cross_rows, "baseline_elapsed_ms", "elapsed_ms"
+            ),
+            "cross_turn_median_prefill_ms": _median_value(b0_patched_cross_rows, "prefill_ms"),
+            "source_paths": [
+                _source_path_label(
+                    r2_followup / "sam_b0b_cache_correctness_unguarded_patched_summary.json"
+                ),
+                _source_path_label(
+                    r2_followup / "sam_b0b_cache_correctness_unguarded_patched.jsonl"
+                ),
+            ],
         },
         "prefix_snapshot": [
             {
@@ -2284,6 +2316,10 @@ def _scaleout_bundle_snapshot() -> dict[str, object]:
         "source_paths": [
             _source_path_label(base / "sam_b0b_cache_correctness_summary.json"),
             _source_path_label(r2 / "sam_b0b_cache_correctness_summary.json"),
+            _source_path_label(
+                r2_followup / "sam_b0b_cache_correctness_unguarded_patched_summary.json"
+            ),
+            _source_path_label(r2_followup / "sam_b0b_cache_correctness_unguarded_patched.jsonl"),
             _source_path_label(base / "sam_m5_5b_swa_prefix_snapshot_summary.json"),
             _source_path_label(base / "sam_m5_5b_swa_prefix_snapshot_32f_summary.json"),
             _source_path_label(base / "sam_b3_streaming_baselines_summary.json"),
@@ -2310,6 +2346,7 @@ def _write_scaleout_bundle_table() -> None:
         row for row in snapshot["streaming_baselines"]["arms"] if row["arm"] == "recency_last_k"
     )
     b4 = snapshot["post_vit_hard_prune"]
+    patched = snapshot["patched_library_closure"]
     b4_parts = ", ".join(
         f"{row['frames']}f {row['median_speedup']:.3f}$\\times$" for row in b4["by_frames"]
     )
@@ -2347,6 +2384,17 @@ def _write_scaleout_bundle_table() -> None:
             "correctness control, not a speedup \\\\"
         ),
         (
+            "Patched cache-library closure & "
+            f"{patched['text_diffs']}/{patched['n']} text diffs; "
+            f"{patched['choice_diffs']} choice diffs; "
+            f"{patched['correctness_diffs']} correctness diffs; "
+            f"{patched['parse_failures']} matched parse failures; patched path "
+            f"refuses unsafe cross-turn trim; cross-turn wall-clock "
+            f"{patched['cross_turn_median_speedup']:.2f}$\\times$ vs cold dense, "
+            f"median prefill {patched['cross_turn_median_prefill_ms']:.0f} ms & "
+            "full-regression correctness closure; not a speedup path \\\\"
+        ),
+        (
             "26B prefix snapshot & "
             f"8f after warm: {prefix8['median_speedup']:.2f}$\\times$, "
             f"choice/correct {prefix8['choice_diffs']}/{prefix8['n']} / "
@@ -2357,7 +2405,8 @@ def _write_scaleout_bundle_table() -> None:
             f"32f after warm: {prefix32['median_speedup']:.2f}$\\times$, "
             f"choice/correct {prefix32['choice_diffs']}/{prefix32['n']} / "
             f"{prefix32['correctness_diffs']}/{prefix32['n']}, text diffs "
-            f"{prefix32['text_diffs']}/{prefix32['n']}, ground-truth MC "
+            f"{prefix32['text_diffs']}/{prefix32['n']}, parse "
+            f"{prefix32['parse_failures']}/{prefix32['n']}, ground-truth MC "
             f"{prefix32['mc_rows']}/{prefix32['n']} & "
             "positive small-N scale-out C-PERSIST row; excludes warm setup; "
             "wrapper-specific and not byte-identical \\\\"

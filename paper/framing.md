@@ -270,9 +270,11 @@ boundary as much as the positives:
   to certify the reused state. The cache-invalidated `1.30AC` and instrumented
   `1.30AD` successors now close this as a negative composition boundary: both
   reach the same net aggregate loss through different any-paired-drift sets, and
-  only cache reuse preserves the speed profile. The next meaningful
-  continuation is direct cache-state instrumentation or optional `0.95`
-  boundary cleanup, not a revival of `1.30AA` unchanged.
+  only cache reuse preserves the speed profile. The direct K/V distance probe
+  now adds tensor evidence: no-prune reuse is dense-like while the pruned path
+  diverges strongly. The next meaningful continuation is causal/independent
+  guard features or optional `0.95` boundary cleanup, not a revival of
+  `1.30AA` unchanged.
 - **1.60 scroll/pan regime-boundary probe: closed as a VideoMME corpus
   limitation.** We re-audited the natural corpus on a 60-item VideoMME
   stratification across 8f/16f/32f and found 0/60 items above the relaxed

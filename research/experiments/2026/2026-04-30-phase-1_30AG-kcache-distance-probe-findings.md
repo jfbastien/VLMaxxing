@@ -32,10 +32,11 @@ fixed `vision_tower_layer=2`, `vision_tower_keep_rate=0.50`,
   then headline relative-gap for `reuse_vs_dense` vs.
   `pruned_vs_dense` on K and V.
 
-## Results
+## Initial native-fp16 results (superseded by fp32 closure below)
 
 20 rows captured, 5 per class as planned. Wall time 39.9 min.
 
+The initial native-fp16 reduction path reported
 `kcache_distance_summary.json` headline gate: **`headline_pass: false`**.
 Detail:
 
@@ -47,7 +48,7 @@ Detail:
 - `pass_H3_outcome_link: true`
 - **`pass_H4_saturation_test: false`**
 
-The H4 fail is **caused by the cosine reduction returning `NaN` on
+This initial H4 fail is **caused by the cosine reduction returning `NaN` on
 every row at every layer** (and `mean_abs = inf` on the `pruned_vs_dense`
 side), not by the saturation hypothesis being scientifically false.
 This is an analyzer numerical-stability bug, not an experiment failure.
@@ -257,12 +258,12 @@ in any paper-side use, not a closure blocker.
   summary so consumers know the native-cosine column is fp16-overflow,
   not bf16-overflow.
 
-## Interpretation (what we can and cannot say)
+## Superseded native-fp16 interpretation (kept for provenance)
 
 - **Captured**: cache states captured for 20 paired rows balanced
   across 4 drift classes; per-row valid-token alignment confirmed
   (no length mismatches).
-- **Cannot interpret**: per-layer K/V cosine, the
+- **Cannot interpret from native fp16 columns alone**: per-layer K/V cosine, the
   reuse-vs-pruned saturation gap, and any K-distance ordering
   across drift classes. All those readings are NaN-poisoned.
 - **Faintly interpretable**: `reuse_vs_dense.keys_mean_abs = 0.0`
@@ -271,16 +272,16 @@ in any paper-side use, not a closure blocker.
   The pruned arm's `mean_abs = +inf` is an artifact, not a
   measurement.
 
-## Falsified hypotheses
+## Falsified hypotheses at the initial native-fp16 stage
 
-None — no scientific hypothesis is yet adjudicated, only the
+At this initial stage, none — no scientific hypothesis was yet adjudicated, only the
 analyzer's numerical path.
 
-## Open questions
+## Question answered by the fp32 closure above
 
 - Does the saturation gate H4 hold once the cosine reduction is
-  numerically clean? Without that, the 1.30 mechanism story
-  cannot use this probe.
+  numerically clean? The fp32 closure above answers yes: reuse is
+  dense-like while the pruned path diverges strongly.
 
 ## Next steps
 
@@ -309,4 +310,6 @@ analyzer's numerical path.
 - Single sampler seed (42), single keep-rate (0.50), single
   vision-tower-layer (2). The probe is mechanism instrumentation, not
   a sweep.
-- **Distance numbers are not release-claim-bearing in this run.**
+- Native fp16 distance numbers are not release-claim-bearing; the fp32
+  control cosine numbers in the closure section are release-claim-bearing
+  for this 20-row mechanism probe.

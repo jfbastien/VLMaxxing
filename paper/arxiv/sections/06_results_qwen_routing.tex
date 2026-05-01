@@ -34,18 +34,17 @@ higher absolute-accuracy point on that slice.
   }{
     \fbox{\parbox{0.9\linewidth}{Run \texttt{make paper-sync} to generate the routing frontier figure.}}
   }
-  \caption{Audited Qwen holdout frontier from canonical artifact summaries.
-  The automated manuscript snapshot intentionally excludes the MVBench
-  \texttt{sticky4} variant because the current artifact remains provisional and
-  supplementary until final rerun.}
+\caption{Audited Qwen holdout frontier from canonical artifact summaries.
+  The higher-stability MVBench refinement is excluded because its current
+  artifact remains provisional and supplementary until final rerun.}
   \label{fig:lane-a-pareto}
 \end{figure}
 
-The omitted MVBench \texttt{sticky4} refinement remains scientifically
+The omitted higher-stability MVBench refinement remains scientifically
 interesting: it reaches 0.633 accuracy at 4.49 effective fresh frames and
 therefore matches dense-8 at 56\% of the fresh-frame budget. The current
-artifact is still provisional, so the default manuscript snapshot keeps it out
-of the main figure on purpose.
+artifact is still provisional, so the paper keeps it out of the main figure on
+purpose.
 
 \subsection{A Second Architecture Shows The Boundary}
 
@@ -67,7 +66,7 @@ is architecture-conditioned \emph{and} benchmark-conditioned. This is why the
 paper reports paired answer drift instead of treating equal aggregate accuracy
 as proof that reuse is semantically identical.
 
-\subsection{Local Diagnostics Stay Out of the Release Claim Surface}
+\subsection{Local Diagnostics Are Mechanism Evidence}
 
 Two local diagnostics sharpen the mechanism story but are not paper-body claim
 evidence in this release snapshot. The novelty-ranked dense baseline tests
@@ -94,7 +93,8 @@ checked into the release evidence surface.
 \begin{sectiontodo}{Finish the mechanism appendix boundary}
 The routing section is now in the right role, but three things still need
 cleanup before submission: wire the novelty-ranked dense table to stable
-artifacts, either rerun or appendix-ize \texttt{sticky4}, and tighten the
+artifacts, either rerun or appendix-ize the higher-stability MVBench
+refinement, and tighten the
 caption language after the final venue template lands.
 
 \textcolor{todoBorder}{Source pointers: \path{paper/claim-matrix.md},

@@ -225,15 +225,17 @@ in its own dimension.
 
    Remaining follow-ups (ordered by current paper leverage):
 
-   - **Direct cache-state instrumentation** — K-cache distance or equivalent
-     per-layer state probe to explain why the AC and AD mechanisms meet the
-     same aggregate boundary.
+   - **Causal/independent guard features** — the direct K/V distance probe is
+     now landed and shows no-prune reuse remains dense-like while the pruned
+     path diverges strongly; what remains is a deployable row-level guard or
+     causal intervention.
    - **1.30AB-fine @ 0.95** — optional boundary cleanup (~30 min). Useful
      only if we need to characterize the sharp 0.90→1.0 transition.
 
    1.30X remains important, but its `Δacc = 0.0000`, `3.0781×` point is
    an **oracle upper bound**, not a deployable policy. The lane is closed
-   at the tested keep-rates pending direct cache-state instrumentation.
+   at the tested keep-rates; K/V distance instrumentation has landed, while
+   causal/independent guard features remain open.
 
 5. **1.55 selective re-prefill frontier (fidelity recovery).** The v1
    driver was infra-falsified, but that is no longer the live state.

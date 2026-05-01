@@ -2,7 +2,7 @@
   "frame_count": 8,
   "manifest": "research/benchmark_manifests/videomme_dev_v1.toml",
   "model": "Qwen 2.5-VL-7B-Instruct-4bit (MLX)",
-  "model_note": "matched keep-rate competitor positioning at (n=30 items, 8 frames, vision-tower layer L=2). \u0394acc reported relative to the unpatched dense reference row. uniform_random uses a deterministic per-call rng.default_rng(seed=42) to draw scores at the merged-group axis; the keep-rate selection then proceeds through the same window-aligned prune planner the magnitude_norm scorer feeds.",
+  "model_note": "matched keep-rate competitor positioning at (n=30 items, 8 frames, vision-tower layer L=2). Delta accuracy is reported relative to the unpatched dense reference row. uniform_random uses a deterministic per-call rng.default_rng(seed=42) to draw scores at the merged-group axis; the keep-rate selection then proceeds through the same window-aligned prune planner the magnitude_norm scorer feeds.",
   "n_items": 30,
   "rows": [
     {
@@ -28,7 +28,7 @@
       "delta_vs_dense": -0.033333333333333326,
       "frame_count": 8,
       "kr_label": "0.50",
-      "label": "magnitude_norm (paper headline)",
+      "label": "magnitude\\_norm (structured scorer)",
       "mean_decode_ms": 54524.580693133335,
       "mean_effective_keep_rate": 0.5,
       "mean_end_to_end_ms": 81862.21127393332,
@@ -46,7 +46,7 @@
       "delta_vs_dense": -0.2,
       "frame_count": 8,
       "kr_label": "0.50",
-      "label": "uniform\\_random (1.51VC competitor)",
+      "label": "uniform\\_random (matched keep-rate)",
       "mean_decode_ms": 51796.3842208,
       "mean_effective_keep_rate": 0.5,
       "mean_end_to_end_ms": 74660.19181509998,

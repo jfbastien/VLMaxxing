@@ -314,8 +314,9 @@ runnable tonight vs. impl-gated.
 | landed-boundary | Claim-5 measured sparse-execution envelope | landed 2026-04-29; broader curve remains open | Gemma 4-E4B and Qwen 2.5-VL-7B-4bit | Gemma 32f short is the clean timed-skip cell (1.316×, 0/20 paired drift, parse failures 0/0). Gemma 8/16/32f full sweep has matched parse-failure caveats. Qwen 16f kr=0.85 is inside the tested fidelity/format gates but low-gain; broad sparse backend and sparse LM prefill remain larger engineering work. |
 
 **Runnable next with setup**: natural-dialogue many-turn C-PERSIST stability,
-direct cache-state instrumentation for the 1.30 boundary, and native streaming
-quality/baseline closure are now higher leverage than more VideoMME breadth.
+causal/independent cache-state guard features beyond the landed K/V distance
+probe, and native streaming quality/baseline closure are now higher leverage
+than more VideoMME breadth.
 `1.58` remains blocked by the missing bf16 checkpoint and the current local
 memory policy.
 
@@ -589,8 +590,9 @@ items that priority.md does not carry. For the current ordering see
    pathological-like outputs on `7/7` third queries. Together, 1.55E and
    1.55F say the Q3 catastrophe was a cache-source inheritance problem,
    not adaptive repair impossibility.
-   The next paper-relevant moves are many-turn stability, sampler sweep,
-   cross-architecture cache semantics, and direct cache-state instrumentation.
+   The next paper-relevant moves are natural-dialogue stability,
+   cross-architecture cache semantics, and causal/independent guard features
+   beyond the landed K/V distance probe.
 6. **1.58 bf16 KV control at 20f** — isolates quantization as the
    C-PERSIST basin driver; ~2-4h wall once the bf16 checkpoint exists
    locally. Preflight currently marks it blocked.

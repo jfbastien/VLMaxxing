@@ -3,8 +3,8 @@
 Streaming state reuse is the natural scale-out target for anti-recomputation:
 the model revisits nearly the same visual state while deciding when to keep,
 shift, rebuild, or invalidate cached state. We do not claim a standardized
-C-STREAM result yet; here we report boundary evidence from a checked 26B/M5
-bundle: cache-correctness failures, small-\(N\) prefix-snapshot wins, strong
+C-STREAM result yet; here we report boundary evidence from a checked 26B-class
+scale-out bundle: cache-correctness failures, small-\(N\) prefix-snapshot wins, strong
 low-FPS / screenshot / recency baselines, denominator-safe exactness exports,
 and source manifests. The result is mixed in the scientifically useful way. It
 shows which mechanisms are plausible, which simple baselines are serious, and
@@ -33,10 +33,14 @@ K-cache reuse, not a validated native-rate sparse-vision backend.
 The 26B rows explain why cache-correctness is a gate rather than bureaucracy.
 The default cross-turn cache path over mixed sliding-window and full-attention
 layers fails the cache-correctness check: it can move fast while producing
-divergent text and answer choices. A correctness guard that fully refills
-rotating-cache layers passes, but that is a control, not a speedup. A
-topology-aware prefix snapshot is the current positive scale-out follow-up row,
-but its denominator is narrow: the reported 9.11$\times$ at 8f and
+divergent text and answer choices. A runner-side correctness guard that fully
+refills rotating-cache layers passes, and the patched library now passes the
+full cache-correctness regression as well: 42/42 text-identical rows, zero choice or
+correctness diffs, and four matched parse failures. That is correctness
+closure, not C-STREAM speedup. The patched path refuses unsafe cross-turn trim
+and runs at roughly cold-dense wall-clock. A topology-aware prefix snapshot is
+the current positive scale-out follow-up row, but its denominator is narrow: the
+reported 9.11$\times$ at 8f and
 26.59$\times$ at 32f are per-follow-up after the prefix snapshot is warm, not
 setup-inclusive session speedups. The 8f row has 0/21 paired choice or
 correctness diffs, but also 6/21 text diffs and 2/21 matched parse failures.

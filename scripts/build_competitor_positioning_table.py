@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Build the competitor-positioning paper table for 1.51V.
+"""Build the matched keep-rate random baseline paper table for Qwen C-VISION.
 
 Reads three Phase 1.51V Qwen 7B 8f VideoMME dev30 summaries:
 - unpatched (dense reference)
 - magnitude_norm L=2 kr=0.5 (the paper-headline scorer)
-- uniform_random L=2 kr=0.5 seed=42 (the 1.51VC trivial-baseline competitor)
+- uniform_random L=2 kr=0.5 seed=42 (the trivial random-keep baseline)
 
 and emits:
 - ``paper/arxiv/generated/data/competitor_positioning_snapshot.json`` with
@@ -12,21 +12,16 @@ and emits:
 - ``paper/arxiv/generated/tables/competitor_positioning.tex`` with a
   paper-ready three-row positioning table.
 
-Why this is the right competitor positioning evidence:
+Why this is useful positioning evidence:
 
-The codex round-36 paper-defensibility critique asked for "one matched
-runnable visual-token pruning baseline." A FasterVLM CLS-attention
-reproduction is structurally different from Qwen 2.5-VL's spatial-merge
-pruning point and would require new model surgery; running the existing
-infrastructure with a *random keep* scorer at matched keep-rate is the
-cleanest reviewer-defense move because it directly tests "does the
-structured magnitude scorer earn its keep over a trivial baseline at the
-same compute budget?" — the only honest reading of "head-to-head against
-a simple baseline."
+This is not a named peer-method comparison. It directly tests whether the
+structured magnitude scorer earns its keep over a trivial baseline at the
+same layer and keep-rate. Wall-clock is measured, not matched, because the
+random row can have different planner and generation timing.
 
-The Δacc gap between magnitude_norm and uniform_random at matched
-keep-rate is the headline number the paper should surface alongside
-peer-method citations (FastV / FasterVLM / HERMES / SparseVILA).
+The delta-accuracy gap between magnitude_norm and uniform_random at matched keep-rate
+is a sanity check the paper can surface alongside, but not instead of,
+peer-method citations.
 """
 
 from __future__ import annotations
@@ -51,7 +46,7 @@ CELLS = [
         "scorer_label": "(no pruning)",
     },
     {
-        "label": "magnitude_norm (paper headline)",
+        "label": "magnitude\\_norm (structured scorer)",
         "summary_path": (
             ARTIFACTS / "phase1_51V_qwen_cross_arch" / "videomme_dev30_8f_L2_kr050_summary.json"
         ),
@@ -59,7 +54,7 @@ CELLS = [
         "scorer_label": "L2-norm of group mean hidden state",
     },
     {
-        "label": "uniform\\_random (1.51VC competitor)",
+        "label": "uniform\\_random (matched keep-rate)",
         "summary_path": (
             ARTIFACTS
             / "phase1_51VC_random_keep_baseline"
@@ -124,7 +119,7 @@ def _build_snapshot() -> dict[str, Any]:
         "vision_tower_layer": 2,
         "model_note": (
             "matched keep-rate competitor positioning at (n=30 items, 8 frames, "
-            "vision-tower layer L=2). Δacc reported relative to the unpatched "
+            "vision-tower layer L=2). Delta accuracy is reported relative to the unpatched "
             "dense reference row. uniform_random uses a deterministic per-call "
             "rng.default_rng(seed=42) to draw scores at the merged-group axis; "
             "the keep-rate selection then proceeds through the same window-aligned "
@@ -145,16 +140,14 @@ def _emit_table(snapshot: dict[str, Any]) -> str:
         r"\begin{table}[H]",
         r"\centering",
         (
-            r"\caption{Competitor positioning at matched keep-rate. Same Qwen "
+            r"\caption{Random-keep sanity check at matched keep-rate. Same Qwen "
             r"2.5-VL-7B-Instruct-4bit, same VideoMME dev30 manifest, same "
             r"frame count, same vision-tower cut layer \(L=2\). The "
-            r"\emph{magnitude\_norm} row is the structured scorer the paper "
-            r"reports as the C-VISION pruning headline; the "
-            r"\emph{uniform\_random} row is a trivial-baseline competitor at "
-            r"matched compute. The Δacc column quantifies how much the "
-            r"structured anchor earns over random selection at the same "
-            r"keep-rate. Speedup is per-stage \emph{vision-tower wall-clock} "
-            r"reduction vs the unpatched reference.}"
+            r"\emph{magnitude\_norm} row is the structured Qwen scorer; the "
+            r"\emph{uniform\_random} row is a trivial baseline at the same "
+            r"keep-rate, not a matched-runtime peer method. The \(\Delta\)acc column is "
+            r"relative to dense; the structured-vs-random gap in this seed is "
+            r"+16.7\,pp. Wall-clock columns are measured and need not match.}"
         ),
         r"\label{tab:competitor-positioning}",
         r"\small",

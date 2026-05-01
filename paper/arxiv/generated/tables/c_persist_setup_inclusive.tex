@@ -1,11 +1,11 @@
 \begin{table}[H]
 \centering
-\caption{Setup-inclusive C-PERSIST session economics. \emph{Warm} is the per-follow-up multiplier currently reported elsewhere; \emph{N=k} is the actual session-level speedup when a session has \(k\) follow-up queries on the same video, computed as \(N \cdot \mathrm{baseline} / (\mathrm{first} + (N-1) \cdot \mathrm{follow})\). At \(N=1\) the cold first-query cost dominates and the speedup approaches~1; at large \(N\) it asymptotes to the per-follow-up multiplier. Δacc is the paired session-vs-baseline accuracy delta.}
+\caption{Setup-inclusive C-PERSIST session economics. \emph{Warm} is the per-follow-up multiplier currently reported elsewhere; \emph{Q=k} is the actual session-level speedup when a session has \(k\) total queries on the same video, computed as \(Q \cdot \mathrm{baseline} / (\mathrm{first} + (Q-1) \cdot \mathrm{follow})\). At \(Q=1\) the cold first-query cost dominates and the speedup approaches~1; at large \(Q\) it asymptotes to the per-follow-up multiplier. \(\Delta\)acc is the paired session-vs-baseline accuracy delta.}
 \label{tab:c-persist-setup-inclusive}
 \small
 \begin{tabular}{@{}l r r  r r r r r@{}}
 \toprule
-Cell & $\Delta$acc & Warm & N=1 & N=2 & N=5 & N=10 & N=50 \\
+Cell & $\Delta$acc & Warm & Q=1 & Q=2 & Q=5 & Q=10 & Q=50 \\
 \midrule
 7B / 16f & +0.00 & 91.06$\times$ & 1.04 & 2.05 & 4.94 & 9.33 & 32.17 \\
 7B / 18f & -0.24 & 70.28$\times$ & 0.96 & 1.88 & 4.43 & 8.07 & 23.60 \\

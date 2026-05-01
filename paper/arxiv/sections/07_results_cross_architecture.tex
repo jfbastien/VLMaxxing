@@ -101,7 +101,8 @@ rule-of-three upper bound on a query-level unseen paired-drift rate is about
 3.2\%. At the session level the conservative count is 0/31 sessions with any
 paired drift, or a rule-of-three bound of about 9.7\%. Each tested session has
 two follow-up questions after the cold first query. The 32f short cell is the
-largest local efficiency point in the draft at 35.92$\times$ same-class
+largest local efficiency point in the current tested envelope at
+35.92$\times$ same-class
 follow-up speedup (35.97$\times$ cold-all-query ratio), but the reason is not
 magic: the third follow-up inherits the repaired state instead of paying
 another newest-frame re-prefill.
@@ -136,7 +137,7 @@ same seven-clip tranche evaluates three sampler seeds
 \(\{42, 99, 2026\}\) at three temperatures \(\{0.5, 1.0, 1.5\}\). All nine
 cells pass the preregistered fidelity, format, and baseline-quality gates,
 with maximum \(|\Delta\)acc\(| \le 0.048\) and zero pathological follow-up
-hits across \(189\) paired follow-up rows in aggregate. The measured
+hits across \(189\) paired rows in aggregate. The measured
 cold-over-follow-up speedup remains large but seed-dependent
 (17.37--25.84$\times$), so the seed sweep is a fidelity and format robustness
 check rather than a tight timing-variance claim. The framing therefore widens
@@ -170,6 +171,21 @@ conversational stability as future work.
 \input{generated/tables/c_persist_many_turn.tex}
 }{
 \draftnote{Run \texttt{make paper-sync} to generate the C-PERSIST many-turn table.}
+}
+
+Warm-only multipliers are the right follow-up denominator, but they are not the
+whole serving economics. Table~\ref{tab:c-persist-setup-inclusive} folds the
+cold first query back into the session. On the clean 7B/16f raw reuse point, a
+single-query session is essentially neutral because the first query still pays
+full freight; the same artifact reaches 2.05$\times$ at two total queries,
+9.33$\times$ at ten total same-video queries, and 32.17$\times$ at fifty. This
+is the product-facing calculus: after-ingest reuse is valuable when sessions
+have follow-up questions, not because the first question became cheap.
+
+\IfFileExists{generated/tables/c_persist_setup_inclusive.tex}{
+\input{generated/tables/c_persist_setup_inclusive.tex}
+}{
+\draftnote{Run \texttt{make paper-sync} to generate the setup-inclusive C-PERSIST economics table.}
 }
 
 \begin{figure}[H]
@@ -232,6 +248,19 @@ sparse-execution cell, while Qwen shows that the same timed-skip idea is
 configuration-sensitive and can trade fidelity for too little saved vision
 work.
 
+A trivial random-keep sanity baseline confirms that the Qwen scorer is not
+arbitrary. At the same 8f, \(L=2\), \(kr=0.50\) keep-rate on VideoMME dev30,
+the structured magnitude scorer reaches 0.500 accuracy versus 0.333 for a
+deterministic uniform-random keep policy, with dense at 0.533. That is a
++16.7\,pp structured-vs-random gap at matched keep-rate, not a peer-method
+comparison and not a matched-runtime claim.
+
+\IfFileExists{generated/tables/competitor_positioning.tex}{
+\input{generated/tables/competitor_positioning.tex}
+}{
+\draftnote{Run \texttt{make paper-sync} to generate the random-keep sanity table.}
+}
+
 \begin{figure}[H]
   \centering
   \IfFileExists{generated/figures/v_share_v_red_ceiling.png}{
@@ -239,7 +268,7 @@ work.
   }{
     \fbox{\parbox{0.9\linewidth}{Run \texttt{make paper-sync} to sync the C-VISION ceiling figure.}}
   }
-  \caption{C-VISION share-model validation. The figure shows
+  \caption{C-CEILING share-model validation. The figure shows
   Gemma dev and holdout cells, the matched Qwen cross-architecture point,
   measured sparse-vision cells, and the n=60 stacked-regime composition audit. The n=60
   point matters because it closes the intuitive ``stacking should multiply''
@@ -367,13 +396,19 @@ row-level failure. It is stronger and narrower: two different mechanisms reach
 the same aggregate boundary, while only the cache-reuse path retains the
 wall-clock profile.
 
-This does \emph{not} prove a unique internal cause. It does isolate the
-composition problem away from Q0 aggregate correctness and toward follow-up
-state quality: either the reused K-cache state is wrong enough to hurt later
-answers, or the replacement strategy recomputes enough visual work to lose the
-speedup while still perturbing the answer. The right next mechanism test is
-not another admission-rate sweep; it is cache-state distance or other
-per-example attribution.
+The tensor-level probe now closes part of that story. A balanced 20-row
+cache-distance audit over the drift classes compares dense follow-up state with
+no-prune cache reuse and with the pruned/recomputed path. The native fp16 cosine
+columns overflowed during the reduction, producing misleading NaNs even though
+the captured cache windows were finite. The fp32 control cosine is the
+release-bearing metric: reuse K/V is essentially dense-identical
+(\(\cos \approx 1.0\)), while the pruned path diverges substantially
+(\(K=0.724\), \(V=0.296\)). Thus the two arms did not merely hide the same
+internal state under the same aggregate loss. No-prune reuse preserves the
+captured cache state, while pruning at \(L=2,kr=0.50\) materially changes the
+later K/V state, especially values. This still does not yield a deployable
+row-level drift predictor, but it explains why aggregate parity is too weak a
+composition contract.
 
 A low-FPS dense baseline is the corresponding ``why not just sample fewer
 frames?'' control. On the same 57-session / 171-query VideoMME union, 4f dense

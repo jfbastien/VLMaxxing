@@ -68,8 +68,8 @@ The scale-out streaming lane is part of the same science story, but it has a
 different protocol and is not yet a release claim. The intended end-state is a
 first-class \emph{streaming state reuse} evaluation with the same claim axes,
 artifact format, paired gates, cache-correctness checks, and baselines as
-the local runs. A checked 26B/M5 bundle now exists, and it sharpens the boundary
-rather than simply adding wins: the default cross-turn cache path is unsafe,
+the local runs. A checked 26B-class scale-out bundle now exists, and it
+sharpens the boundary rather than simply adding wins: the default cross-turn cache path is unsafe,
 a topology-aware prefix snapshot gives small-\(N\) positive follow-up rows,
 and fixed-evidence streaming baselines show that low-FPS dense is a serious
 competitor. Candidate C-STREAM is therefore a checked but mixed artifact bundle
@@ -90,11 +90,11 @@ preserved, reused cache state can still damage later answers.
 
 \begin{table}[H]
 \centering
-\caption{The three reuse regimes that carry the paper. The denominator and
-evidence class are part of the claim, because these rows must not be multiplied
-into one curve. Routing under a fixed dense backend is reported separately
-because it is mechanism-validation evidence rather than a sparse wall-clock
-claim.}
+\caption{Reuse regime map. The denominator and evidence class are part of each
+claim, because these rows must not be multiplied into one curve. Candidate
+C-STREAM is included as a deployment target and promotion gate, not as an equal
+headline; routing under a fixed dense backend is reported separately because it
+is mechanism-validation evidence rather than a sparse wall-clock claim.}
 \label{tab:three-regimes}
 \footnotesize
 \renewcommand{\arraystretch}{1.08}

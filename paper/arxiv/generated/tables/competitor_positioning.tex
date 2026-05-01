@@ -1,6 +1,6 @@
 \begin{table}[H]
 \centering
-\caption{Competitor positioning at matched keep-rate. Same Qwen 2.5-VL-7B-Instruct-4bit, same VideoMME dev30 manifest, same frame count, same vision-tower cut layer \(L=2\). The \emph{magnitude\_norm} row is the structured scorer the paper reports as the C-VISION pruning headline; the \emph{uniform\_random} row is a trivial-baseline competitor at matched compute. The Δacc column quantifies how much the structured anchor earns over random selection at the same keep-rate. Speedup is per-stage \emph{vision-tower wall-clock} reduction vs the unpatched reference.}
+\caption{Random-keep sanity check at matched keep-rate. Same Qwen 2.5-VL-7B-Instruct-4bit, same VideoMME dev30 manifest, same frame count, same vision-tower cut layer \(L=2\). The \emph{magnitude\_norm} row is the structured Qwen scorer; the \emph{uniform\_random} row is a trivial baseline at the same keep-rate, not a matched-runtime peer method. The \(\Delta\)acc column is relative to dense; the structured-vs-random gap in this seed is +16.7\,pp. Wall-clock columns are measured and need not match.}
 \label{tab:competitor-positioning}
 \small
 \begin{tabular}{@{}l c c r r r r@{}}
@@ -8,8 +8,8 @@
 Arm & kr & N & Acc & $\Delta$acc vs dense & Vision ms & E2E ms \\
 \midrule
 Unpatched (dense reference) & 1.00 & 30 & 0.533 & +0.0\,pp & 8790 & 85437 \\
-magnitude_norm (paper headline) & 0.50 & 30 & 0.500 & -3.3\,pp & 5294 & 81862 \\
-uniform\_random (1.51VC competitor) & 0.50 & 30 & 0.333 & -20.0\,pp & 4124 & 74660 \\
+magnitude\_norm (structured scorer) & 0.50 & 30 & 0.500 & -3.3\,pp & 5294 & 81862 \\
+uniform\_random (matched keep-rate) & 0.50 & 30 & 0.333 & -20.0\,pp & 4124 & 74660 \\
 \bottomrule
 \end{tabular}
 \end{table}

@@ -18,12 +18,12 @@ Naive baseline (cold every query):
 C-PERSIST session (cold first query, cheap follow-ups):
     persist_total(N) = first_query_mean_ms + (N - 1) * follow_up_mean_ms
 
-Speedup at N follow-ups per session = naive_total / persist_total.
+    Speedup at N total session queries = naive_total / persist_total.
 
 This is the honest replacement for the "follow-up speedup" headline
 (``speedup_first_over_follow``) that absorbs the warm-up cost on the
 denominator. The paper currently reports the warm-only multiplier; this
-generator surfaces the dependence on N so reviewers can read the
+    generator surfaces the dependence on total session length so reviewers can read the
 economics at any session length.
 
 Note on baseline rows: many of the input summaries use stateless
@@ -66,14 +66,14 @@ def _setup_inclusive_speedup(
     first_ms: float,
     follow_ms: float,
     baseline_ms: float,
-    n_followups: int,
+    n_total_queries: int,
 ) -> dict[str, float]:
-    if n_followups < 1:
-        raise ValueError(f"n_followups must be >= 1, got {n_followups}")
-    naive_total = n_followups * baseline_ms
-    persist_total = first_ms + (n_followups - 1) * follow_ms
+    if n_total_queries < 1:
+        raise ValueError(f"n_total_queries must be >= 1, got {n_total_queries}")
+    naive_total = n_total_queries * baseline_ms
+    persist_total = first_ms + (n_total_queries - 1) * follow_ms
     return {
-        "n_followups": n_followups,
+        "n_total_queries": n_total_queries,
         "naive_total_ms": float(naive_total),
         "persist_total_ms": float(persist_total),
         "speedup": float(naive_total / max(persist_total, 1e-12)),
@@ -105,7 +105,7 @@ def _build_snapshot() -> dict[str, Any]:
                 first_ms=first,
                 follow_ms=follow,
                 baseline_ms=baseline,
-                n_followups=n,
+                n_total_queries=n,
             )
             for n in N_VALUES
         ]
@@ -126,11 +126,11 @@ def _build_snapshot() -> dict[str, Any]:
         )
 
     snapshot = {
-        "n_followups_grid": N_VALUES,
+        "n_total_queries_grid": N_VALUES,
         "model_note": (
             "warm_speedup is baseline_mean / follow_up_mean (per-follow-up only); "
             "setup_inclusive[i].speedup is N*baseline / (first_query + (N-1)*follow_up), "
-            "the actual session-level multiplier at N follow-ups per session."
+            "the actual session-level multiplier at N total same-video queries."
         ),
         "cells": rows,
     }
@@ -142,21 +142,21 @@ def _format_speedup(s: float) -> str:
 
 
 def _emit_table(snapshot: dict[str, Any]) -> str:
-    n_grid = snapshot["n_followups_grid"]
-    header_n = " & ".join(f"N={n}" for n in n_grid)
+    n_grid = snapshot["n_total_queries_grid"]
+    header_n = " & ".join(f"Q={n}" for n in n_grid)
     lines = [
         r"\begin{table}[H]",
         r"\centering",
         (
             r"\caption{Setup-inclusive C-PERSIST session economics. "
             r"\emph{Warm} is the per-follow-up multiplier currently "
-            r"reported elsewhere; \emph{N=k} is the actual session-level "
-            r"speedup when a session has \(k\) follow-up queries on the "
+            r"reported elsewhere; \emph{Q=k} is the actual session-level "
+            r"speedup when a session has \(k\) total queries on the "
             r"same video, computed as "
-            r"\(N \cdot \mathrm{baseline} / (\mathrm{first} + (N-1) \cdot \mathrm{follow})\). "
-            r"At \(N=1\) the cold first-query cost dominates and the "
-            r"speedup approaches~1; at large \(N\) it asymptotes to the "
-            r"per-follow-up multiplier. Δacc is the paired session-vs-baseline "
+            r"\(Q \cdot \mathrm{baseline} / (\mathrm{first} + (Q-1) \cdot \mathrm{follow})\). "
+            r"At \(Q=1\) the cold first-query cost dominates and the "
+            r"speedup approaches~1; at large \(Q\) it asymptotes to the "
+            r"per-follow-up multiplier. \(\Delta\)acc is the paired session-vs-baseline "
             r"accuracy delta.}"
         ),
         r"\label{tab:c-persist-setup-inclusive}",
