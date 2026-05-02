@@ -115,11 +115,32 @@
         "vision_share_dense": 0.2420272576196171
       }
     ],
+    "qwen_8f_keep_rate_sweep": {
+      "best_fidelity_safe_keep_rate": null,
+      "n_cells": 3,
+      "passing_keep_rates": [],
+      "phase": "1.63J",
+      "source": "research/experiments/2026/artifacts/phase1_63J_qwen_8f_kr_sweep/kr_sweep_summary.json"
+    },
     "qwen_rows": [
+      {
+        "accuracy_delta": -0.21666666666666667,
+        "choice_agreement": 0.5833333333333334,
+        "interpretation": "timing-validating fidelity/format fail",
+        "model": "Qwen2.5-VL-7B",
+        "n": 60,
+        "observed_e2e": 1.0692235498457652,
+        "predicted_e2e": 1.0691839941422479,
+        "residual": 3.95557035173244e-05,
+        "setting": "8f, kr=0.25",
+        "source": "research/experiments/2026/artifacts/phase1_63J_qwen_8f_kr_sweep/pair_summary_kr025_8f.json",
+        "sparse_parse_failures": 2,
+        "vision_reduction": 0.6480698074645984
+      },
       {
         "accuracy_delta": -0.06666666666666665,
         "choice_agreement": 0.7166666666666667,
-        "interpretation": "ceiling-validating fidelity fail",
+        "interpretation": "timing-validating fidelity-contract fail",
         "model": "Qwen2.5-VL-7B",
         "n": 60,
         "observed_e2e": 1.0420945397432793,
@@ -129,6 +150,20 @@
         "source": "research/experiments/2026/artifacts/phase1_63E_track_b_frame_scaling/pair_summary_8f.json",
         "sparse_parse_failures": 0,
         "vision_reduction": 0.44829045085912533
+      },
+      {
+        "accuracy_delta": -0.08333333333333337,
+        "choice_agreement": 0.8333333333333334,
+        "interpretation": "timing-validating fidelity-contract fail; no E2E gain",
+        "model": "Qwen2.5-VL-7B",
+        "n": 60,
+        "observed_e2e": 0.9978196149057904,
+        "predicted_e2e": 1.0175048971261262,
+        "residual": -0.01968528222033583,
+        "setting": "8f, kr=0.75",
+        "source": "research/experiments/2026/artifacts/phase1_63J_qwen_8f_kr_sweep/pair_summary_kr075_8f.json",
+        "sparse_parse_failures": 0,
+        "vision_reduction": 0.1723025326232266
       },
       {
         "accuracy_delta": -0.2833333333333333,

@@ -325,50 +325,50 @@
     },
     {
       "accuracy_delta_session_minus_baseline": 0.0,
-      "artifact_dir": "sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f.jsonl",
-      "baseline_mean_ms": 15075.958648114465,
+      "artifact_dir": "sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f_n21.jsonl",
+      "baseline_mean_ms": 10096.288408873424,
       "display": "Gemma 26B / 32f",
-      "follow_up_mean_ms": 565.2993006709343,
+      "follow_up_mean_ms": 555.0432997489614,
       "frame_count": 32,
-      "median_per_row_warm_speedup": 26.587668019428758,
+      "median_per_row_warm_speedup": 18.705684134474435,
       "model": "gemma_4_26b_a4b",
-      "prefix_warm_mean_ms": 17773.85620834927,
+      "prefix_warm_mean_ms": 9429.743208357,
       "setup_inclusive": [
         {
           "n_total_queries": 1,
-          "naive_total_ms": 15075.958648114465,
-          "persist_total_ms": 18339.155509020202,
-          "speedup": 0.8220639516742896
+          "naive_total_ms": 10096.288408873424,
+          "persist_total_ms": 9984.78650810596,
+          "speedup": 1.0111671792558552
         },
         {
           "n_total_queries": 2,
-          "naive_total_ms": 30151.91729622893,
-          "persist_total_ms": 18904.45480969114,
-          "speedup": 1.5949635998374265
+          "naive_total_ms": 20192.57681774685,
+          "persist_total_ms": 10539.829807854923,
+          "speedup": 1.9158351876515227
         },
         {
           "n_total_queries": 5,
-          "naive_total_ms": 75379.79324057233,
-          "persist_total_ms": 20600.35271170394,
-          "speedup": 3.65915061239441
+          "naive_total_ms": 50481.442044367126,
+          "persist_total_ms": 12204.959707101807,
+          "speedup": 4.136141638795665
         },
         {
           "n_total_queries": 10,
-          "naive_total_ms": 150759.58648114465,
-          "persist_total_ms": 23426.84921505861,
-          "speedup": 6.435333454241788
+          "naive_total_ms": 100962.88408873425,
+          "persist_total_ms": 14980.176205846616,
+          "speedup": 6.739766121664806
         },
         {
           "n_total_queries": 50,
-          "naive_total_ms": 753797.9324057233,
-          "persist_total_ms": 46038.82124189598,
-          "speedup": 16.37309366469523
+          "naive_total_ms": 504814.42044367123,
+          "persist_total_ms": 37181.908195805074,
+          "speedup": 13.576883084785445
         }
       ],
       "setup_model": "prefix_snapshot_then_queries",
       "setup_model_note": "persist_total = prefix_warm + Q * follow_up",
-      "source": "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f.jsonl",
-      "warm_speedup": 26.66898513799916
+      "source": "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f_n21.jsonl",
+      "warm_speedup": 18.190091499960165
     }
   ],
   "model_note": "warm_speedup is baseline_mean / follow_up_mean (per-follow-up only, mean-timing denominator). setup_inclusive[i].speedup is the actual session-level multiplier at N total same-video queries using each row's setup_model_note.",

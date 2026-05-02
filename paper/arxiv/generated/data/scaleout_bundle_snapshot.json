@@ -84,14 +84,14 @@
       "choice_diffs": 0,
       "correctness_diffs": 0,
       "frames": 32,
-      "mc_rows": 3,
-      "median_elapsed_s": 0.6169690410606563,
-      "median_speedup": 26.587668019428758,
-      "n": 9,
-      "open_ended_rows": 6,
+      "mc_rows": 7,
+      "median_elapsed_s": 0.5852179590146989,
+      "median_speedup": 18.705684134474435,
+      "n": 21,
+      "open_ended_rows": 14,
       "parse_failures": 0,
-      "source": "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f.jsonl",
-      "text_diffs": 2
+      "source": "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f_n21.jsonl",
+      "text_diffs": 7
     }
   ],
   "source_paths": [
@@ -100,7 +100,7 @@
     "research/experiments/2026/artifacts/sam_scaleout_m5_r2_followup_20260430/sam_b0b_cache_correctness_unguarded_patched_summary.json",
     "research/experiments/2026/artifacts/sam_scaleout_m5_r2_followup_20260430/sam_b0b_cache_correctness_unguarded_patched.jsonl",
     "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_summary.json",
-    "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f_summary.json",
+    "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f_n21_summary.json",
     "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b3_streaming_baselines_summary.json",
     "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b4_sparse_vit_ceiling_summary.json",
     "research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b5_s4_accuracy_1937_summary.json",

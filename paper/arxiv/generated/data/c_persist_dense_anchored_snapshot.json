@@ -1,0 +1,83 @@
+{
+  "frame_count": 20,
+  "history_mode": "dense_anchored",
+  "n_baseline_rows": 140,
+  "n_paired_rows": 420,
+  "phase": "1.55M",
+  "prompt_variant_mode": "dense_anchored",
+  "rows": [
+    {
+      "choice_drift": 0,
+      "choice_drift_rate": 0.0,
+      "cliff": false,
+      "correctness_drift": 0,
+      "correctness_drift_rate": 0.0,
+      "early_choice_drift": 0,
+      "early_n": 63,
+      "followup_n": 133,
+      "horizon": 20,
+      "label": "fixed \\(K=1\\)",
+      "late_choice_drift": 0,
+      "late_n": 70,
+      "median_followup_s": 5.328834333,
+      "pass_three_percent": true,
+      "policy": "fixed_k1",
+      "speedup_vs_80s_dense": 15.012664121416215
+    },
+    {
+      "choice_drift": 6,
+      "choice_drift_rate": 0.045112781954887216,
+      "cliff": false,
+      "correctness_drift": 6,
+      "correctness_drift_rate": 0.045112781954887216,
+      "early_choice_drift": 3,
+      "early_n": 63,
+      "followup_n": 133,
+      "horizon": 20,
+      "label": "adaptive repair",
+      "late_choice_drift": 3,
+      "late_n": 70,
+      "median_followup_s": 0.698171126,
+      "pass_three_percent": false,
+      "policy": "adaptive_post_q2",
+      "speedup_vs_80s_dense": 114.58508812637434
+    },
+    {
+      "choice_drift": 6,
+      "choice_drift_rate": 0.045112781954887216,
+      "cliff": false,
+      "correctness_drift": 6,
+      "correctness_drift_rate": 0.045112781954887216,
+      "early_choice_drift": 3,
+      "early_n": 63,
+      "followup_n": 133,
+      "horizon": 20,
+      "label": "scheduled refresh-10",
+      "late_choice_drift": 3,
+      "late_n": 70,
+      "median_followup_s": 0.708953875,
+      "pass_three_percent": false,
+      "policy": "refresh10",
+      "speedup_vs_80s_dense": 112.8423199605193
+    }
+  ],
+  "source_paths": [
+    "research/experiments/2026/artifacts/phase1_55M_dense_anchored_cpersist/summary.json",
+    "research/experiments/2026/artifacts/phase1_55M_dense_anchored_cpersist/baseline_many_turn.jsonl",
+    "research/experiments/2026/artifacts/phase1_55M_dense_anchored_cpersist/paired_many_turn.jsonl",
+    "research/experiments/2026/artifacts/phase1_55M_dense_anchored_cpersist/session_many_turn.jsonl",
+    "research/experiments/2026/2026-05-02-phase-1_55M-dense-anchored-cpersist-findings.md"
+  ],
+  "turn_counts": [
+    20
+  ],
+  "video_ids": [
+    "037",
+    "100",
+    "116",
+    "120",
+    "158",
+    "160",
+    "210"
+  ]
+}

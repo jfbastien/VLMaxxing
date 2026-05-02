@@ -128,18 +128,47 @@
   ],
   "measured_sparse_cells": [
     {
-      "label": "Qwen sparse vision 8f n=60",
+      "label": "Qwen sparse vision 8f kr=0.25",
       "split": "measured sparse",
-      "v_share": 0.0998,
+      "v_share": 0.099846,
+      "v_red": 0.648,
+      "predicted_e2e": 1.069,
+      "observed_e2e": 1.069,
+      "source_paths": [
+        "research/experiments/2026/artifacts/phase1_63J_qwen_8f_kr_sweep/kr_sweep_summary.json",
+        "research/experiments/2026/artifacts/phase1_63J_qwen_8f_kr_sweep/pair_summary_kr025_8f.json"
+      ],
+      "error_pp": 0.0,
+      "product": 0.0647
+    },
+    {
+      "label": "Qwen sparse vision 8f kr=0.50",
+      "split": "measured sparse",
+      "v_share": 0.099846,
       "v_red": 0.448,
       "predicted_e2e": 1.047,
       "observed_e2e": 1.042,
       "source_paths": [
         "research/experiments/2026/2026-04-27-phase-1_63E-8f-findings.md",
-        "research/experiments/2026/artifacts/phase1_63E_track_b_frame_scaling/pair_summary_8f.json"
+        "research/experiments/2026/artifacts/phase1_63E_track_b_frame_scaling/pair_summary_8f.json",
+        "research/experiments/2026/artifacts/phase1_63J_qwen_8f_kr_sweep/kr_sweep_summary.json"
       ],
       "error_pp": -0.5,
       "product": 0.0447
+    },
+    {
+      "label": "Qwen sparse vision 8f kr=0.75",
+      "split": "measured sparse",
+      "v_share": 0.099846,
+      "v_red": 0.172,
+      "predicted_e2e": 1.018,
+      "observed_e2e": 0.998,
+      "source_paths": [
+        "research/experiments/2026/artifacts/phase1_63J_qwen_8f_kr_sweep/kr_sweep_summary.json",
+        "research/experiments/2026/artifacts/phase1_63J_qwen_8f_kr_sweep/pair_summary_kr075_8f.json"
+      ],
+      "error_pp": -2.0,
+      "product": 0.0172
     },
     {
       "label": "Gemma sparse vision 8f n=60",
