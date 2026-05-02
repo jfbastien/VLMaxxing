@@ -151,7 +151,7 @@ are:
 - Phase 1.63E/G/H measured sparse-vision execution — **COMPLETED / BOUNDED
   2026-04-29**: real skipped vision-tower work exists. Gemma supplies the
   cleanest positive cell; Qwen supplies the aggressive-keep-rate failure and
-  conservative fidelity-safe boundary. Broad sparse backend and sparse LM
+  conservative aggregate/format boundary. Broad sparse backend and sparse LM
   prefill remain open.
 
 The original §2.5 TOMATO and §2.6 MVBench reproduction rows remain "partial" /

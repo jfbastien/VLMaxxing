@@ -4,7 +4,7 @@
 \label{tab:headline-results}
 \scriptsize
 \renewcommand{\arraystretch}{1.14}
-\begin{tabularx}{\linewidth}{@{}l X p{0.16\linewidth} c X l@{}}
+\begin{tabularx}{\linewidth}{@{}p{0.10\linewidth} X p{0.135\linewidth} p{0.105\linewidth} X p{0.10\linewidth}@{}}
 \toprule
 Regime & Setting & Speedup denominator & Gain & Validation / notes & Evidence \\
 \midrule
@@ -15,7 +15,7 @@ After-ingest & Qwen repaired basin escape, fixed K=1 & cold/repaired follow-up &
 First-pass & Gemma VideoMME 8f holdout & first-query E2E & 1.113$\times$ & $\Delta$acc +0.000 & clean local \\
 First-pass & Gemma measured sparse vision, 32f short & first-query E2E & 1.316$\times$ & choice agreement 100\%; $\Delta$acc +0.000; parse failures 0/0 & clean sparse-execution cell \\
 First-pass & Gemma MVBench 8f holdout & first-query E2E & 1.407$\times$ & $\Delta$acc -0.033; favorable timing caveat & advisory local \\
-First-pass & Qwen measured sparse vision, 16f kr=0.85 & first-query E2E & 1.032$\times$ & $\Delta$acc -0.050; vision reduction 13.6\%; parse failures 0; agreement 81.7\% & aggregate/format gate; low-gain boundary \\
+First-pass & Qwen measured sparse vision, 16f kr=0.85 & first-query E2E & 1.032$\times$ & $\Delta$acc -0.050; vision reduction 13.6\%; parse failures 0; agreement 81.7\% & agg./format gate; low-gain boundary \\
 \bottomrule
 \end{tabularx}
 \end{table}

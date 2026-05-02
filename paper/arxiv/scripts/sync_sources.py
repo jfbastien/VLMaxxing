@@ -2153,7 +2153,11 @@ def _write_headline_table(snapshot: dict) -> None:
         r"\label{tab:headline-results}",
         r"\scriptsize",
         r"\renewcommand{\arraystretch}{1.14}",
-        r"\begin{tabularx}{\linewidth}{@{}l X p{0.16\linewidth} c X l@{}}",
+        (
+            r"\begin{tabularx}{\linewidth}{@{}p{0.10\linewidth} X "
+            r"p{0.135\linewidth} p{0.105\linewidth} X "
+            r"p{0.10\linewidth}@{}}"
+        ),
         r"\toprule",
         r"Regime & Setting & Speedup denominator & Gain & Validation / notes & Evidence \\",
         r"\midrule",
@@ -2220,7 +2224,7 @@ def _write_headline_table(snapshot: dict) -> None:
             f"$\\Delta$acc {qwen_sparse_safe['accuracy_delta']:+.3f}; "
             f"vision reduction {qwen_sparse_safe['vision_reduction'] * 100:.1f}\\%; "
             "parse failures 0; agreement 81.7\\% & "
-            "aggregate/format gate; low-gain boundary \\\\"
+            "agg./format gate; low-gain boundary \\\\"
         ),
         r"\bottomrule",
         r"\end{tabularx}",
