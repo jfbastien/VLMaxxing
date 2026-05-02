@@ -540,7 +540,7 @@ authoritative in the per-phase notes under
   status: completed
   authoritative_note: research/experiments/2026/2026-04-17-phase-1_34-novelty-ranked-dense.md
   authoritative_artifacts:
-    - phase note records the exact local-only ignored results tree and commit IDs; regenerate or re-materialize before using as release claim-bearing evidence
+    - phase note records the exact local-only ignored results tree and commit IDs; regenerate or re-materialize before using as manuscript claim evidence
   current_best_policy: n/a (stronger baseline, not a new policy)
   supersedes: []
   paper_relevance: historical comparator unless the ignored results files are regenerated or re-materialized as checked artifacts
@@ -559,7 +559,7 @@ authoritative in the per-phase notes under
   status: completed
   authoritative_note: research/experiments/2026/2026-04-17-phase-1_36-feature-change-oracle.md
   authoritative_artifacts:
-    - phase note records the exact local-only ignored results tree and commit IDs; regenerate or re-materialize before using as release claim-bearing evidence
+    - phase note records the exact local-only ignored results tree and commit IDs; regenerate or re-materialize before using as manuscript claim evidence
   current_best_policy: n/a (oracle/diagnostic, not a routing policy)
   supersedes: []
   paper_relevance: diagnostic / historical unless the ignored results files are regenerated or re-materialized as checked artifacts

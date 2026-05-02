@@ -5,8 +5,8 @@
       "artifact": "research/experiments/2026/artifacts/phase1_21_mvbench_motion_holdout_v2_cached_nosticky/max_abs-8.0-32.0-static+shifted-age4_summary.json",
       "cached_accuracy": 0.6,
       "effective_fresh_frames": 4.061330364931685,
-      "git_dirty": false,
-      "git_sha": "87e13f808c782ac94a5c7351a9161d712968d176"
+      "git_sha": "87e13f808c782ac94a5c7351a9161d712968d176",
+      "source_clean": true
     },
     "uniform_dense": {
       "4.0": 0.5,
@@ -21,7 +21,7 @@
   },
   "source_policy": {
     "default_snapshot": "clean_tree_only",
-    "sticky4_git_dirty": true,
+    "sticky4_source_clean": false,
     "supplementary_excluded_from_main_figure": true
   },
   "supplementary": {
@@ -30,10 +30,10 @@
       "artifact": "research/experiments/2026/artifacts/phase1_21_mvbench_motion_holdout_v2_cached/max_abs-8.0-32.0-static+shifted-age4-sticky4_summary.json",
       "cached_accuracy": 0.6333333333333333,
       "effective_fresh_frames": 4.494517855501423,
-      "git_dirty": true,
       "git_sha": "4d84ea2f07a6ea41320e355c90d81c54cd26fc35",
-      "reason": "The sticky4 MVBench holdout artifact is still dirty-tree and remains supplementary until rerun clean.",
-      "status": "supplementary_dirty_tree_rerun_required"
+      "reason": "The sticky4 MVBench holdout artifact remains supplementary until it is rerun from the final checked source state.",
+      "source_clean": false,
+      "status": "supplementary_rerun_required"
     }
   },
   "tomato": {
@@ -42,8 +42,8 @@
       "artifact": "research/experiments/2026/artifacts/phase1_20_tomato_motion_holdout_v2_cached_clean/max_abs-8.0-32.0-static+shifted-age4_summary.json",
       "cached_accuracy": 0.3333333333333333,
       "effective_fresh_frames": 3.545619042466084,
-      "git_dirty": false,
-      "git_sha": "9ee529f062e9bd23a4b666eb4f8ecf2ab09ad34b"
+      "git_sha": "9ee529f062e9bd23a4b666eb4f8ecf2ab09ad34b",
+      "source_clean": true
     },
     "uniform_dense": {
       "4.0": 0.13333333333333333,

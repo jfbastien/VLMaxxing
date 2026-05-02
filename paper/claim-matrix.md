@@ -150,8 +150,8 @@ methods paper. Both lanes must contribute evidence.
 **Qwen routing regime (TOMATO + MVBench).**
 - Claims 1, 2, 3, 4, 5, 6, 8, 9, 12 primarily exercise Qwen 2.5-VL.
 - Role in the paper: validates the routing / bounded-staleness mechanism and the "pixel-diff proxy" story. Natural home for the method appendix.
-- Currently earned for the release surface: 6 and 8. Local diagnostics complete but not
-  release claim-bearing until raw outputs are checked in: 1, 2, 9. Partial: 3
+- Currently earned for the manuscript surface: 6 and 8. Local diagnostics complete but not
+  manuscript claim evidence until raw outputs are checked in: 1, 2, 9. Partial: 3
   (sticky4 only — supplementary rerun-required; halo-veto retired 2026-04-17 as
   preregistered null on TOMATO + MVBench dev, child-veto 1.37 remaining path), 4
   (asymmetry only; placement ablations pending), 5 (bounded measured
@@ -250,7 +250,7 @@ should-do tier):
 - **Claim 3 routing-mechanism evidence** (within-block child-veto or
   halo-veto replacement path).
 - **Claim 9 novelty-ranked-dense disqualifier.**
-  Diagnostic complete; release claim requires regenerated or materialized raw
+  Diagnostic complete; manuscript claim requires regenerated or materialized raw
   outputs.
 
 **Claim 11 (Gemma novelty-pruning ≥ 1.8× own-axis e2e) — RETIRED as

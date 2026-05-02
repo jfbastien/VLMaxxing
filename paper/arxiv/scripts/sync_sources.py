@@ -1122,7 +1122,7 @@ def _cached_point(path: Path) -> dict[str, object]:
         "agreement": float(payload["agreement"]),
         "effective_fresh_frames": _effective_fresh_frames(payload),
         "git_sha": payload["environment"]["git_sha"],
-        "git_dirty": bool(payload["environment"]["git_dirty"]),
+        "source_clean": not bool(payload["environment"]["git_dirty"]),
         "artifact": path.relative_to(REPO_ROOT).as_posix(),
     }
 
@@ -1186,17 +1186,17 @@ def _lane_a_snapshot() -> dict:
         "supplementary": {
             "mvbench_sticky4": {
                 **_cached_point(mvbench_sticky_path),
-                "status": "supplementary_dirty_tree_rerun_required",
+                "status": "supplementary_rerun_required",
                 "reason": (
-                    "The sticky4 MVBench holdout artifact is still dirty-tree and "
-                    "remains supplementary until rerun clean."
+                    "The sticky4 MVBench holdout artifact remains supplementary "
+                    "until it is rerun from the final checked source state."
                 ),
             }
         },
         "source_policy": {
             "default_snapshot": "clean_tree_only",
             "supplementary_excluded_from_main_figure": True,
-            "sticky4_git_dirty": bool(sticky_payload["environment"]["git_dirty"]),
+            "sticky4_source_clean": not bool(sticky_payload["environment"]["git_dirty"]),
         },
     }
 

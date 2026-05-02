@@ -30,7 +30,8 @@ note:
   fresh computation matters; novelty-ranked diagnostics stay local-only until
   their raw outputs are materialized as checked artifacts.
 
-Candidate C-STREAM is not decorative support, but it is not a release claim
+Candidate C-STREAM is not decorative support, but it is not a main manuscript
+claim
 yet. The manuscript now has a checked mixed/boundary bundle: default cross-turn
 cache reuse is unsafe, a topology-aware patched path restores correctness by
 refusing unsafe reuse, prefix snapshots are promising but small-\(N\) and
@@ -229,7 +230,7 @@ sparse-execution validation for the measured wall-clock ceiling."
 | R | **1.51V vision-tower pruning on Gemma 4-E4B-4bit (MLX), dev n=30 at L=2 kr_V=0.50 thermally paired:** VideoMME 1.08× (8f) / 1.12× (16f), MVBench **1.21×**, TOMATO **1.24×**; dev V-red lands around 40% across the three benchmarks, but holdout spread is wider and should be described more softly in the manuscript. Scatter-back ceiling `1/(1 − V_share × V_red)` predicts E2E within 2pp on the main dev cells. Holdout replications bound the claim: VideoMME 8f **clean** at 1.113×; MVBench 8f **advisory** at 1.407×; TOMATO 8f **earned-advisory** at 1.194×. | `research/experiments/2026/2026-04-21-phase-1_51V-expansion-findings.md`; `research/experiments/2026/2026-04-21-phase-1_51V-holdout-findings.md`; `research/experiments/2026/2026-04-21-phase-1_51V-session5-findings.md`; `research/experiments/2026/artifacts/phase1_51V_session3/exp18_videomme_holdout_8f_L2_kr050_summary.json`; `research/experiments/2026/artifacts/phase1_51V_session4/exp20_mvbench_holdout_8f_L2_kr050_summary.json`; `research/experiments/2026/artifacts/phase1_51V_session5/exp24_tomato_holdout_8f_L2_kr050_summary.json` |
 | O | **Persistent-KV follow-up speedup and selective re-prefill repair on Qwen 7B-4bit.** Persistent-KV reproduces the after-ingest latency regime and bounds fidelity by token budget; selective re-prefill v2 is the local recovery frontier, with fixed K=1 and adaptive repaired-cache inheritance showing no observed paired drift on checked local repair slices. | Use the phase notes and checked repair artifacts rather than this compressed inventory when writing final manuscript prose. | `research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md`; `research/experiments/2026/2026-04-24-phase-1_55D-selective-reprefill-v2-k1-findings.md`; `research/experiments/2026/2026-04-25-phase-1_55F-q3-post-q2-state-findings.md`; `research/experiments/2026/2026-04-27-adaptive-mechanism-queue-findings.md`; `research/experiments/2026/artifacts/phase1_55D_selective_reprefill_v2/pair_metrics_k1_n7.json`; `research/experiments/2026/artifacts/phase1_55F_q3_post_q2_state/pair_metrics_k1_n7.json` |
 
-### Local-only historical comparators (not release claim-bearing yet)
+### Local-only historical comparators (not manuscript claim evidence yet)
 
 These findings can inform discussion, but should not appear as paper-body
 claim evidence until their ignored `results/` outputs are regenerated or
@@ -237,8 +238,8 @@ re-materialized as checked artifacts.
 
 | # | Finding | Status |
 |---|---|---|
-| C | Sticky4 refinement matches dense-8 accuracy at 56% of budget on MVBench. | Dirty-tree artifact. Keep as supplementary/provisional discussion only until rerun clean. |
-| D | Novelty-ranked dense N=8 underperforms the cached policy on TOMATO and saturates below uniform dense on MVBench. | Phase 1.34 note records the exact local-only ignored `results/` tree and commit IDs; regenerate or re-materialize before citing as release claim-bearing evidence. |
+| C | Sticky4 refinement matches dense-8 accuracy at 56% of budget on MVBench. | Supplementary local artifact. Keep as supplementary/provisional discussion only until rerun from the final checked source state. |
+| D | Novelty-ranked dense N=8 underperforms the cached policy on TOMATO and saturates below uniform dense on MVBench. | Phase 1.34 note records the exact local-only ignored `results/` tree and commit IDs; regenerate or re-materialize before citing as manuscript claim evidence. |
 | F | Pixel-diff proxy to ViT feature-change correlation is non-trivial but content-conditional (Pearson r=0.233--0.504). | Phase 1.36 note records local-only ignored `results/feature_change_oracle/` outputs; diagnostic only until checked artifacts exist. |
 | G/H | Historical dense wall-clock baseline and the derived 22% vision-cache-only ceiling. | Phase 1.50 note records local-only ignored `results/track_b/` outputs. Current paper-facing sparse-vision claims should cite checked phase 1.63 artifacts instead. |
 
