@@ -130,6 +130,7 @@ Entries are ordered by phase_id (chronological within each 1.x range).
     - research/experiments/2026/2026-04-29-phase-B5-sam-s4-reexport-findings.md
     - research/experiments/2026/2026-04-29-phase-M5-5b-sam-prefix-snapshot-fix-findings.md
     - research/experiments/2026/2026-04-29-phase-M5-comp-sam-prefix-snapshot-32f-composition-findings.md
+    - research/experiments/2026/2026-05-02-phase-perception-fps-headline-findings.md
     - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b0b_cache_correctness_summary.json
     - research/experiments/2026/artifacts/sam_scaleout_m5_r2_20260430/sam_b0b_cache_correctness_summary.json
     - research/experiments/2026/artifacts/sam_scaleout_m5_r2_20260430/sam_b0b_cache_correctness.jsonl
@@ -141,7 +142,7 @@ Entries are ordered by phase_id (chronological within each 1.x range).
     - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b4_sparse_vit_ceiling_summary.json
     - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b5_s4_accuracy_1937_summary.json
     - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b5_s4_raw_paired_513_summary.json
-  current_best_policy: "candidate C-STREAM remains mixed: default cache path blocked; patched topology-aware B0b path is full-regression correctness-clean but falls back to cold-dense speed; prefix snapshot positive small-N including 32f n=21 with 0 choice/correctness diffs and 7/21 text diffs; low-FPS dense wins fixed-evidence baseline"
+  current_best_policy: "candidate C-STREAM remains mixed: default cache path blocked; patched topology-aware B0b path is full-regression correctness-clean but falls back to cold-dense speed; prefix snapshot positive small-N including 32f n=21 with 0 choice/correctness diffs and 7/21 text diffs; derived perception-fps view is 27.02fps median at 8f (8/21 rows >=30fps) and 54.68fps median at 32f (19/21 rows >=30fps), after-warm only; low-FPS dense wins fixed-evidence baseline"
   supersedes: []
   paper_relevance: scale-out bounded evidence
   prereg_outcome: Accepted with caveat
