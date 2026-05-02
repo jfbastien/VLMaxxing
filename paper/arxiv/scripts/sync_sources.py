@@ -195,7 +195,7 @@ def _draw_overview_box(
         xy,
         width,
         height,
-        boxstyle="round,pad=0.02,rounding_size=0.035",
+        boxstyle="round,pad=0.004,rounding_size=0.020",
         linewidth=lw,
         edgecolor=edge,
         facecolor=face,
@@ -240,7 +240,6 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
     qwen_16f = next(row for row in persistent["rows"] if int(row["frame_count"]) == 16)
     measured = snapshot["measured_sparse_execution"]
     gemma_short = measured["gemma_32f_short"]
-    qwen_safe = next(row for row in measured["qwen_rows"] if row["setting"] == "16f, kr=0.85")
 
     plt.rcParams.update(
         {
@@ -253,28 +252,10 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
             "svg.hashsalt": "codec-through-regime-overview",
         }
     )
-    fig, axes = plt.subplots(2, 3, figsize=(7.45, 6.0))
-    panel_axes = axes.flatten()
-    for idx, ax in enumerate(panel_axes, start=1):
-        ax.set_xlim(0, 1)
-        ax.set_ylim(0, 1)
-        ax.axis("off")
-        _draw_overview_box(ax, (0.02, 0.02), 0.96, 0.96, face="#ffffff", edge="#0f172a", lw=0.9)
-        _draw_overview_box(
-            ax,
-            (0.045, 0.865),
-            0.08,
-            0.09,
-            face="#111827",
-            edge="#111827",
-            text=str(idx),
-            color="white",
-            size=9,
-            weight="bold",
-        )
-
-    def panel_title(ax, title: str, *, color: str = "#111827", x: float = 0.15) -> None:
-        ax.text(x, 0.90, title, fontsize=8.2, weight="bold", color=color, va="top")
+    fig, ax = plt.subplots(figsize=(7.45, 4.45))
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis("off")
 
     def draw_grid(
         ax,
@@ -307,253 +288,510 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
                 )
             )
 
-    # 1. Core premise.
-    ax = panel_axes[0]
-    panel_title(ax, "STATELESS", color="#b91c1c", x=0.18)
-    ax.text(0.18, 0.79, "recompute frames", fontsize=6.7, color="#334155")
-    ax.text(0.66, 0.90, "STATEFUL", fontsize=8.2, weight="bold", color="#166534", va="top")
-    ax.text(0.64, 0.79, "process changes", fontsize=6.7, color="#334155")
-    ax.plot([0.51, 0.51], [0.17, 0.78], color="#0f172a", lw=0.8)
-    for k, y in enumerate([0.67, 0.49, 0.31]):
-        draw_grid(ax, 0.17, y - 0.045, w=0.15, h=0.10, rows=4, cols=5)
-        _draw_overview_arrow(ax, (0.34, y), (0.43, y), color="#334155", lw=0.9)
+    def panel_rect(idx: int, title: str, color: str) -> tuple[float, float, float, float]:
+        col = (idx - 1) % 4
+        row = 0 if idx <= 4 else 1
+        w = 0.224
+        h = 0.335
+        gap_x = 0.020
+        x = 0.024 + col * (w + gap_x)
+        y = 0.503 if row == 0 else 0.116
+        _draw_overview_box(ax, (x, y), w, h, face="#ffffff", edge="#0f172a", lw=0.95)
         _draw_overview_box(
-            ax, (0.43, y - 0.045), 0.08, 0.09, face="#f8fafc", edge="#111827", text="ViT", size=6.5
+            ax,
+            (x + 0.012, y + h - 0.070),
+            0.046,
+            0.054,
+            face="#111827",
+            edge="#111827",
+            text=str(idx),
+            color="white",
+            size=7.6,
+            weight="bold",
+            lw=0.7,
         )
-        ax.text(0.10, y - 0.015, f"t{k}", fontsize=7.5, color="#334155")
+        ax.text(
+            x + 0.069,
+            y + h - 0.030,
+            title,
+            fontsize=7.1,
+            color=color,
+            weight="bold",
+            va="top",
+        )
+        return x, y, w, h
+
+    def px(panel: tuple[float, float, float, float], rx: float) -> float:
+        return panel[0] + panel[2] * rx
+
+    def py(panel: tuple[float, float, float, float], ry: float) -> float:
+        return panel[1] + panel[3] * ry
+
+    def local_grid(
+        panel: tuple[float, float, float, float],
+        rx: float,
+        ry: float,
+        rw: float,
+        rh: float,
+        *,
+        highlight: list[tuple[int, int, str]] | None = None,
+        rows: int = 4,
+        cols: int = 5,
+        fill: str = "#f8fafc",
+    ) -> None:
         draw_grid(
             ax,
-            0.63,
-            y - 0.045,
-            w=0.15,
-            h=0.10,
-            rows=4,
-            cols=5,
-            highlight=[(1, (k + 1) % 5, "#22c55e")] if k else [],
+            px(panel, rx),
+            py(panel, ry),
+            w=panel[2] * rw,
+            h=panel[3] * rh,
+            rows=rows,
+            cols=cols,
+            highlight=highlight,
+            fill=fill,
         )
-        _draw_overview_arrow(ax, (0.80, y), (0.88, y), color="#166534", lw=0.9)
-        _draw_overview_box(
-            ax, (0.88, y - 0.045), 0.06, 0.09, face="#ecfdf5", edge="#166534", text="Δ", size=7.2
-        )
-    ax.text(0.15, 0.13, "pay again", fontsize=7.0, color="#b91c1c", weight="bold")
-    ax.text(0.65, 0.13, "reuse state", fontsize=7.0, color="#166534", weight="bold")
 
-    # 2. Codec analogy.
-    ax = panel_axes[1]
-    panel_title(ax, "Codecs already do this")
-    for i, y in enumerate([0.70, 0.55, 0.40]):
-        draw_grid(
+    fig.suptitle(
+        "Stop paying for the same video twice",
+        fontsize=13.2,
+        weight="bold",
+        y=0.975,
+    )
+    fig.text(
+        0.5,
+        0.925,
+        (
+            "Carry state. Buy fresh evidence only where it matters. "
+            "Never multiply incompatible speedups."
+        ),
+        ha="center",
+        fontsize=7.5,
+        color="#475569",
+    )
+
+    # 1. Today vs desired runtime.
+    p = panel_rect(1, "TODAY -> TARGET", "#0f172a")
+    ax.plot([px(p, 0.50), px(p, 0.50)], [py(p, 0.20), py(p, 0.77)], color="#cbd5e1", lw=0.85)
+    ax.text(
+        px(p, 0.25),
+        py(p, 0.79),
+        "recompute",
+        fontsize=5.9,
+        ha="center",
+        color="#b91c1c",
+        weight="bold",
+    )
+    ax.text(
+        px(p, 0.75),
+        py(p, 0.79),
+        "update",
+        fontsize=5.9,
+        ha="center",
+        color="#166534",
+        weight="bold",
+    )
+    for i, yy in enumerate([0.62, 0.46, 0.30]):
+        local_grid(p, 0.11, yy, 0.22, 0.10, rows=3, cols=4)
+        _draw_overview_arrow(
             ax,
-            0.14,
-            y,
-            w=0.23,
-            h=0.12,
-            rows=4,
-            cols=5,
-            highlight=[(2, i + 1, "#3b82f6"), (1, 3, "#ef4444")] if i else [],
-            fill="#fff",
+            (px(p, 0.35), py(p, yy + 0.05)),
+            (px(p, 0.43), py(p, yy + 0.05)),
+            color="#64748b",
+            lw=0.7,
         )
-        _draw_overview_arrow(ax, (0.43, y + 0.06), (0.56, y + 0.06), color="#64748b", lw=0.9)
-    ax.text(0.58, 0.73, "predict", fontsize=7.0, color="#334155")
-    ax.text(0.58, 0.58, "motion vectors\n+ residuals", fontsize=7.0, color="#334155")
-    ax.text(0.58, 0.43, "encode what\nchanged", fontsize=7.0, color="#334155")
-    _draw_overview_box(
-        ax, (0.22, 0.18), 0.18, 0.12, face="#eef2ff", edge="#334155", text="video HW", size=7
+        _draw_overview_box(
+            ax,
+            (px(p, 0.43), py(p, yy + 0.01)),
+            p[2] * 0.06,
+            p[3] * 0.08,
+            face="#f8fafc",
+            edge="#111827",
+            text="V",
+            size=4.9,
+            lw=0.65,
+        )
+        local_grid(
+            p,
+            0.59,
+            yy,
+            0.21,
+            0.10,
+            rows=3,
+            cols=4,
+            highlight=[(1, (i + 1) % 4, "#22c55e")] if i else [],
+        )
+        _draw_overview_arrow(
+            ax,
+            (px(p, 0.81), py(p, yy + 0.05)),
+            (px(p, 0.88), py(p, yy + 0.05)),
+            color="#166534",
+            lw=0.7,
+        )
+        _draw_overview_box(
+            ax,
+            (px(p, 0.88), py(p, yy + 0.01)),
+            p[2] * 0.06,
+            p[3] * 0.08,
+            face="#ecfdf5",
+            edge="#166534",
+            text="Δ",
+            size=5.0,
+            lw=0.65,
+        )
+    ax.text(
+        px(p, 0.25),
+        py(p, 0.11),
+        "pay again",
+        fontsize=6.3,
+        ha="center",
+        color="#b91c1c",
+        weight="bold",
     )
-    _draw_overview_arrow(ax, (0.40, 0.24), (0.58, 0.24), color="#64748b", lw=0.9)
-    ax.text(0.58, 0.27, "analogy, not a\ncodec-native claim", fontsize=6.6, color="#64748b")
+    ax.text(
+        px(p, 0.75),
+        py(p, 0.11),
+        "buy changes",
+        fontsize=6.3,
+        ha="center",
+        color="#166534",
+        weight="bold",
+    )
 
-    # 3. What VLM systems often do.
-    ax = panel_axes[2]
-    panel_title(ax, "VLMs often throw state away")
-    ax.text(0.15, 0.70, "video", fontsize=7.0, color="#334155")
-    _draw_overview_box(
-        ax, (0.13, 0.52), 0.15, 0.12, face="#f8fafc", edge="#111827", text="▶", size=10
+    # 2. Codec clue.
+    p = panel_rect(2, "CODEC CLUE", "#0f172a")
+    for y, label, highlights in [
+        (0.65, "previous\nframe", []),
+        (0.47, "motion +\nresidual", [(1, 1, "#3b82f6"), (2, 3, "#ef4444")]),
+        (0.29, "changed\nblocks", [(1, 1, "#3b82f6"), (2, 3, "#ef4444")]),
+    ]:
+        local_grid(p, 0.16, y, 0.34, 0.13, rows=4, cols=5, highlight=highlights, fill="#ffffff")
+        ax.text(px(p, 0.60), py(p, y + 0.065), label, fontsize=5.9, va="center", color="#334155")
+    for y0, y1 in [(0.61, 0.54), (0.43, 0.36)]:
+        _draw_overview_arrow(
+            ax, (px(p, 0.33), py(p, y0)), (px(p, 0.33), py(p, y1)), color="#64748b", lw=0.8
+        )
+    ax.text(
+        px(p, 0.50),
+        py(p, 0.12),
+        "not a codec claim;\nit is the systems clue",
+        fontsize=5.8,
+        ha="center",
+        color="#64748b",
     )
-    _draw_overview_arrow(ax, (0.31, 0.58), (0.43, 0.58), color="#334155", lw=0.9)
+
+    # 3. The wasteful VLM loop.
+    p = panel_rect(3, "THROW STATE AWAY", "#b91c1c")
+    _draw_overview_box(
+        ax,
+        (px(p, 0.10), py(p, 0.53)),
+        p[2] * 0.20,
+        p[3] * 0.13,
+        face="#f8fafc",
+        edge="#111827",
+        text="▶",
+        size=8.0,
+        lw=0.7,
+    )
     for i in range(3):
         _draw_overview_box(
             ax,
-            (0.43 + i * 0.018, 0.50 + i * 0.018),
-            0.12,
-            0.12,
-            face="#fff",
+            (px(p, 0.38 + i * 0.045), py(p, 0.52 + i * 0.025)),
+            p[2] * 0.16,
+            p[3] * 0.13,
+            face="#ffffff",
             edge="#64748b",
-            lw=0.6,
+            lw=0.55,
         )
-    _draw_overview_arrow(ax, (0.61, 0.58), (0.72, 0.58), color="#334155", lw=0.9)
-    _draw_overview_box(
-        ax, (0.72, 0.52), 0.10, 0.12, face="#f8fafc", edge="#111827", text="ViT", size=7
+    _draw_overview_arrow(
+        ax, (px(p, 0.31), py(p, 0.59)), (px(p, 0.40), py(p, 0.59)), color="#334155", lw=0.8
     )
-    _draw_overview_arrow(ax, (0.84, 0.58), (0.92, 0.58), color="#b91c1c", lw=1.0)
-    ax.text(0.88, 0.68, "discard\nstate", fontsize=6.8, color="#b91c1c", ha="center")
+    _draw_overview_arrow(
+        ax, (px(p, 0.62), py(p, 0.59)), (px(p, 0.70), py(p, 0.59)), color="#334155", lw=0.8
+    )
+    _draw_overview_box(
+        ax,
+        (px(p, 0.70), py(p, 0.53)),
+        p[2] * 0.15,
+        p[3] * 0.12,
+        face="#f8fafc",
+        edge="#111827",
+        text="ViT",
+        size=5.7,
+        lw=0.7,
+    )
     ax.text(
-        0.50,
-        0.30,
-        "rediscover the same scene\non the next query",
-        fontsize=8.0,
-        color="#b91c1c",
+        px(p, 0.50),
+        py(p, 0.38),
+        "throw away\nstate",
+        fontsize=6.2,
         ha="center",
+        color="#b91c1c",
         weight="bold",
     )
-    ax.plot([0.28, 0.72], [0.24, 0.24], color="#b91c1c", lw=1.0)
+    ax.text(
+        px(p, 0.50),
+        py(p, 0.18),
+        "rediscover the same scene",
+        fontsize=6.3,
+        ha="center",
+        color="#b91c1c",
+        weight="bold",
+    )
+    ax.plot([px(p, 0.19), px(p, 0.81)], [py(p, 0.14), py(p, 0.14)], color="#b91c1c", lw=0.9)
 
     # 4. C-PERSIST.
-    ax = panel_axes[3]
-    panel_title(ax, "C-PERSIST: ingest once", color="#166534")
-    ys = [0.70, 0.52, 0.34]
-    for i, y in enumerate(ys, start=1):
-        ax.text(0.13, y, f"Q{i}", fontsize=7.8, va="center", color="#334155")
-        _draw_overview_arrow(ax, (0.24, y), (0.34, y), color="#334155", lw=0.9)
-        if i == 1:
-            text = "full\ncompute"
-            face = "#fee2e2"
-            edge = "#b91c1c"
-        elif i == 2:
-            text = "repair\nsmall tail"
-            face = "#dcfce7"
-            edge = "#166534"
-        else:
-            text = "reuse repaired\nstate"
-            face = "#dcfce7"
-            edge = "#166534"
+    p = panel_rect(4, "C-PERSIST", "#166534")
+    for i, (q, text, face, edge) in enumerate(
+        [
+            ("Q1", "full\ncompute", "#fee2e2", "#b91c1c"),
+            ("Q2", "repair\nsmall tail", "#dcfce7", "#166534"),
+            ("Q3", "reuse\nrepaired", "#dcfce7", "#166534"),
+        ]
+    ):
+        yy = 0.67 - i * 0.17
+        ax.text(px(p, 0.11), py(p, yy), q, fontsize=6.3, va="center", color="#334155")
+        _draw_overview_arrow(
+            ax, (px(p, 0.22), py(p, yy)), (px(p, 0.34), py(p, yy)), color="#64748b", lw=0.75
+        )
         _draw_overview_box(
-            ax, (0.36, y - 0.055), 0.18, 0.11, face=face, edge=edge, text=text, size=6.4
+            ax,
+            (px(p, 0.35), py(p, yy - 0.043)),
+            p[2] * 0.25,
+            p[3] * 0.086,
+            face=face,
+            edge=edge,
+            text=text,
+            size=4.8,
+            lw=0.7,
         )
     ax.text(
-        0.67,
-        0.67,
+        px(p, 0.79),
+        py(p, 0.63),
         f"{qwen_16f['speedup']:.1f}x",
-        fontsize=14,
-        weight="bold",
-        color="#166534",
+        fontsize=10.2,
         ha="center",
-    )
-    ax.text(0.67, 0.56, "raw warm\nfollow-up", fontsize=7.0, ha="center", color="#334155")
-    ax.plot([0.61, 0.84], [0.47, 0.47], color="#cbd5e1", lw=0.8)
-    ax.text(
-        0.75,
-        0.41,
-        f"{repair['speedup_min']:.2f}-{repair['speedup_max']:.2f}x",
-        fontsize=8.3,
-        weight="bold",
         color="#166534",
-        ha="center",
+        weight="bold",
     )
     ax.text(
-        0.75,
-        0.29,
-        "repaired\nfollow-up\n0/93 paired drift",
-        fontsize=6.1,
+        px(p, 0.79),
+        py(p, 0.50),
+        "warm follow-up\nafter ingest",
+        fontsize=5.2,
         ha="center",
         color="#334155",
     )
-    ax.text(0.14, 0.13, "first query still pays the ingest cost", fontsize=6.8, color="#64748b")
+    ax.text(
+        px(p, 0.50),
+        py(p, 0.18),
+        f"{repair['speedup_min']:.2f}-{repair['speedup_max']:.2f}x repaired",
+        fontsize=5.8,
+        ha="center",
+        color="#166534",
+        weight="bold",
+    )
+    ax.text(
+        px(p, 0.50),
+        py(p, 0.105),
+        "0/62 follow-up drift",
+        fontsize=5.3,
+        ha="center",
+        color="#166534",
+    )
 
-    # 5. C-VISION + C-CEILING.
-    ax = panel_axes[4]
-    panel_title(ax, "C-VISION: skip real vision work", color="#0369a1")
-    draw_grid(ax, 0.12, 0.58, w=0.22, h=0.16, rows=4, cols=6)
-    _draw_overview_arrow(ax, (0.37, 0.66), (0.50, 0.66), color="#0369a1", lw=0.9)
-    draw_grid(
-        ax,
-        0.52,
-        0.58,
-        w=0.22,
-        h=0.16,
+    # 5. C-VISION.
+    p = panel_rect(5, "C-VISION", "#0369a1")
+    local_grid(p, 0.10, 0.55, 0.27, 0.18, rows=4, cols=5)
+    _draw_overview_arrow(
+        ax, (px(p, 0.39), py(p, 0.64)), (px(p, 0.52), py(p, 0.64)), color="#0369a1", lw=0.8
+    )
+    local_grid(
+        p,
+        0.55,
+        0.55,
+        0.27,
+        0.18,
         rows=4,
-        cols=6,
+        cols=5,
         highlight=[(1, 1, "#38bdf8"), (2, 2, "#38bdf8"), (1, 4, "#38bdf8")],
     )
-    ax.text(0.43, 0.73, "keep\nwhat matters", fontsize=6.5, color="#0369a1", ha="center")
-    _draw_overview_box(ax, (0.13, 0.40), 0.63, 0.08, face="#eff6ff", edge="#0369a1")
-    ax.add_patch(
-        mpatches.Rectangle((0.13, 0.40), 0.25, 0.08, facecolor="#bae6fd", edgecolor="none")
-    )
-    ax.text(0.15, 0.425, "vision share", fontsize=6.2, color="#0f172a")
-    ax.text(0.47, 0.425, "fixed work", fontsize=6.2, color="#0f172a")
+    ax.text(px(p, 0.46), py(p, 0.73), "keep\nfewer", fontsize=5.5, ha="center", color="#0369a1")
     ax.text(
-        0.15,
-        0.31,
-        f"Gemma 32f short: {gemma_short['observed_e2e']:.3f}x, 0/20 drift",
-        fontsize=6.7,
+        px(p, 0.50),
+        py(p, 0.38),
+        f"{gemma_short['observed_e2e']:.3f}x E2E",
+        fontsize=8.0,
+        ha="center",
         color="#0369a1",
         weight="bold",
     )
     ax.text(
-        0.15,
-        0.22,
-        f"Qwen boundary: {qwen_safe['observed_e2e']:.3f}x aggregate/format",
-        fontsize=6.5,
-        color="#475569",
+        px(p, 0.50),
+        py(p, 0.27),
+        "first-query sparse vision; 0/20 drift",
+        fontsize=5.6,
+        ha="center",
+        color="#334155",
     )
     ax.text(
-        0.15, 0.13, "C-CEILING: stage share caps E2E", fontsize=6.7, color="#4f46e5", weight="bold"
+        px(p, 0.50),
+        py(p, 0.14),
+        "not every sparse point is safe",
+        fontsize=5.7,
+        ha="center",
+        color="#64748b",
     )
 
-    # 6. Candidate C-STREAM.
-    ax = panel_axes[5]
-    panel_title(ax, "Toward state-update streams", color="#166534")
-    ax.text(0.15, 0.74, "frames\n(pixels)", fontsize=7.0, color="#475569", ha="center")
-    for i in range(36):
-        x = 0.18 + (i % 6) * 0.018
-        y = 0.35 + (i // 6) * 0.045
-        ax.add_patch(
-            mpatches.Rectangle((x, y), 0.007, 0.007, facecolor="#94a3b8", edgecolor="none")
+    # 6. C-CEILING.
+    p = panel_rect(6, "C-CEILING", "#4f46e5")
+    _draw_overview_box(
+        ax,
+        (px(p, 0.12), py(p, 0.55)),
+        p[2] * 0.76,
+        p[3] * 0.11,
+        face="#eef2ff",
+        edge="#4f46e5",
+        lw=0.75,
+    )
+    ax.add_patch(
+        mpatches.Rectangle(
+            (px(p, 0.12), py(p, 0.55)),
+            p[2] * 0.30,
+            p[3] * 0.11,
+            facecolor="#bfdbfe",
+            edgecolor="none",
         )
-    ax.plot([0.43, 0.43], [0.18, 0.78], color="#0f172a", lw=0.8)
-    items = [
-        (0.62, 0.70, "#22c55e", "objects"),
-        (0.62, 0.55, "#3b82f6", "motion"),
-        (0.62, 0.40, "#8b5cf6", "cache"),
-    ]
-    for x, y, color, label in items:
+    )
+    ax.text(
+        px(p, 0.27), py(p, 0.605), "vision", fontsize=5.5, ha="center", va="center", color="#0f172a"
+    )
+    ax.text(
+        px(p, 0.65),
+        py(p, 0.605),
+        "fixed work",
+        fontsize=5.5,
+        ha="center",
+        va="center",
+        color="#0f172a",
+    )
+    ax.text(
+        px(p, 0.50),
+        py(p, 0.33),
+        "you only win where\ntime was spent",
+        fontsize=5.8,
+        ha="center",
+        color="#4f46e5",
+        weight="bold",
+    )
+    ax.text(
+        px(p, 0.50),
+        py(p, 0.16),
+        "this is why gains\ndo not multiply",
+        fontsize=5.6,
+        ha="center",
+        color="#334155",
+    )
+
+    # 7. Candidate C-STREAM.
+    p = panel_rect(7, "C-STREAM?", "#92400e")
+    for i, (yy, color) in enumerate([(0.66, "#22c55e"), (0.51, "#f97316"), (0.36, "#8b5cf6")]):
+        local_grid(
+            p, 0.12, yy, 0.19, 0.11, rows=3, cols=4, highlight=[(1, i + 1, color)], fill="#ffffff"
+        )
+        _draw_overview_arrow(
+            ax,
+            (px(p, 0.34), py(p, yy + 0.055)),
+            (px(p, 0.49), py(p, yy + 0.055)),
+            color="#92400e",
+            lw=0.75,
+        )
+        _draw_overview_box(
+            ax,
+            (px(p, 0.52), py(p, yy + 0.020)),
+            p[2] * 0.20,
+            p[3] * 0.07,
+            face="#fff7ed",
+            edge="#92400e",
+            text="state",
+            size=4.9,
+            lw=0.65,
+        )
+    ax.text(
+        px(p, 0.50),
+        py(p, 0.22),
+        "shift / rebuild /\ninvalidate",
+        fontsize=5.9,
+        ha="center",
+        color="#92400e",
+        weight="bold",
+    )
+    ax.text(
+        px(p, 0.50),
+        py(p, 0.10),
+        "checked mixed; not headline",
+        fontsize=5.3,
+        ha="center",
+        color="#64748b",
+    )
+
+    # 8. Bigger picture.
+    p = panel_rect(8, "STATE STREAMS", "#166534")
+    for i in range(42):
+        x = px(p, 0.13 + (i % 7) * 0.035)
+        y = py(p, 0.34 + (i // 7) * 0.060)
+        ax.add_patch(
+            mpatches.Rectangle(
+                (x, y),
+                p[2] * 0.010,
+                p[3] * 0.010,
+                facecolor="#94a3b8",
+                edgecolor="none",
+                alpha=0.75,
+            )
+        )
+    ax.plot([px(p, 0.47), px(p, 0.47)], [py(p, 0.27), py(p, 0.77)], color="#cbd5e1", lw=0.8)
+    for yy, color, label in [
+        (0.67, "#22c55e", "objects"),
+        (0.53, "#3b82f6", "motion"),
+        (0.39, "#8b5cf6", "cache"),
+    ]:
         ax.add_patch(
             mpatches.RegularPolygon(
-                (x, y),
+                (px(p, 0.59), py(p, yy)),
                 4,
-                radius=0.04,
+                radius=p[2] * 0.040,
                 orientation=0.78,
                 facecolor=color,
                 edgecolor="#0f172a",
-                lw=0.5,
-                alpha=0.85,
+                lw=0.45,
+                alpha=0.86,
             )
         )
-        _draw_overview_arrow(ax, (x + 0.07, y), (0.83, y), color="#334155", lw=0.8)
-        ax.text(0.84, y, label, fontsize=6.6, color="#334155", va="center")
+        _draw_overview_arrow(
+            ax, (px(p, 0.66), py(p, yy)), (px(p, 0.78), py(p, yy)), color="#334155", lw=0.65
+        )
+        ax.text(px(p, 0.79), py(p, yy), label, fontsize=5.0, va="center", color="#334155")
     _draw_overview_box(
         ax,
-        (0.52, 0.17),
-        0.33,
-        0.10,
+        (px(p, 0.16), py(p, 0.09)),
+        p[2] * 0.68,
+        p[3] * 0.11,
         face="#ecfdf5",
         edge="#166534",
-        text="candidate C-STREAM\nchecked mixed bundle",
-        size=6.6,
-    )
-    ax.text(0.52, 0.08, "not a fourth headline yet", fontsize=6.5, color="#b91c1c")
-
-    fig.suptitle(
-        "Video VLMs should not pay for the same visual state twice",
-        fontsize=11.5,
+        text="target: state updates",
+        size=5.6,
+        color="#166534",
         weight="bold",
-        y=0.996,
+        lw=0.8,
     )
-    fig.text(
-        0.5,
-        0.965,
-        "Same anti-recomputation family, different denominators and validation gates",
-        ha="center",
-        fontsize=8.0,
-        color="#475569",
-    )
-    fig.subplots_adjust(left=0.02, right=0.985, top=0.935, bottom=0.025, wspace=0.035, hspace=0.065)
+
+    fig.subplots_adjust(left=0.01, right=0.99, top=0.91, bottom=0.03)
     out_png = GENERATED / "figures" / "regime_overview.png"
     out_pdf = GENERATED / "figures" / "regime_overview.pdf"
     out_svg = GENERATED / "figures" / "regime_overview.svg"
     fig.savefig(out_png, dpi=240, bbox_inches="tight")
     fig.savefig(out_svg, bbox_inches="tight", metadata={"Date": "2026-05-02"})
+    out_svg.write_text("\n".join(line.rstrip() for line in out_svg.read_text().splitlines()) + "\n")
     _save_pdf(fig, out_pdf, bbox_inches="tight")
     overview = {
         "figure": "regime_overview",
