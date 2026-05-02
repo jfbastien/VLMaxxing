@@ -1,6 +1,6 @@
 \begin{table}[H]
 \centering
-\caption{Random-keep sanity check at matched keep-rate. Same Qwen 2.5-VL-7B-Instruct-4bit, same VideoMME dev30 manifest, same frame count, same vision-tower cut layer \(L=2\). The \emph{magnitude\_norm} row is the structured Qwen scorer; the \emph{uniform\_random} row is a trivial baseline at the same keep-rate, not a matched-runtime peer method. The \(\Delta\)acc column is relative to dense. The current artifact set contains one random seed, so this is a single-seed sanity check rather than a robust random baseline. The structured-vs-random gap is +16.7\,pp over the random seed set present in the artifact directory. Wall-clock columns are measured and need not match.}
+\caption{Random-keep sanity check at matched keep-rate. Same Qwen 2.5-VL-7B-Instruct-4bit, same VideoMME dev30 manifest, same frame count, same vision-tower cut layer \(L=2\). The \emph{magnitude\_norm} row is the structured Qwen scorer; the \emph{uniform\_random} row is a trivial baseline at the same keep-rate, not a matched-runtime peer method. The \(\Delta\)acc column is relative to dense. The random row averages 4 seeds. The structured-vs-random gap is +14.2\,pp over the random seed set present in the artifact directory. Wall-clock columns are measured and need not match.}
 \label{tab:competitor-positioning}
 \small
 \begin{tabular}{@{}l c c r r r r@{}}
@@ -9,7 +9,7 @@ Arm & kr & N & Acc & $\Delta$acc vs dense & Vision ms & E2E ms \\
 \midrule
 Unpatched (dense reference) & 1.00 & 30 & 0.533 & +0.0\,pp & 8790 & 85437 \\
 magnitude\_norm (structured scorer) & 0.50 & 30 & 0.500 & -3.3\,pp & 5294 & 81862 \\
-uniform\_random (matched keep-rate) & 0.50 & 30 & 0.333 & -20.0\,pp & 4124 & 74660 \\
+uniform\_random mean (4 seeds) & 0.50 & 30$\times$4 & 0.358 & -17.5\,pp & 4366 & 76581 \\
 \bottomrule
 \end{tabular}
 \end{table}
