@@ -1,6 +1,6 @@
 # Experiment Registry (Machine-Readable)
 
-Last updated: 2026-04-30
+Last updated: 2026-05-02
 
 This is the primary source of per-phase experiment state. It is the phase
 ledger, not the paper claim ledger. Use `paper/claim-matrix.md` for
@@ -48,6 +48,44 @@ Entries are ordered by phase_id (chronological within each 1.x range).
   current_best_policy: "adaptive repaired-cache inheritance and refresh-10 — no observed paired drift through 50-turn repeated-question stress; fixed K=1 shows nonzero repeated-question drift but stays below 3% gate"
   supersedes: []
   paper_relevance: primary (controlled C-PERSIST horizon stress)
+  prereg_outcome: Accepted with caveat
+
+- phase_id: 1.55M
+  status: completed
+  authoritative_note: research/experiments/2026/2026-05-02-phase-1_55M-dense-anchored-cpersist-findings.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_55M_dense_anchored_cpersist/summary.json
+    - research/experiments/2026/artifacts/phase1_55M_dense_anchored_cpersist/baseline_dense.jsonl
+    - research/experiments/2026/artifacts/phase1_55M_dense_anchored_cpersist/paired_dense_anchored.jsonl
+  current_best_policy: "fixed K=1 remains exact on 0/133 dense-answer-anchored follow-ups; adaptive and refresh-10 each show 6/133 paired drift at roughly 0.7s follow-up latency"
+  supersedes: []
+  paper_relevance: primary (C-PERSIST operating-envelope boundary)
+  prereg_outcome: Accepted with caveat / mixed
+
+- phase_id: 1.51VC
+  status: completed (uniform-random multi-seed sanity baseline)
+  authoritative_note: research/experiments/2026/2026-05-01-paper-defensibility-experiment-plan.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_51VC_random_keep_baseline/videomme_dev30_8f_L2_kr050_uniform_random_seed42_summary.json
+    - research/experiments/2026/artifacts/phase1_51VC_random_keep_baseline/videomme_dev30_8f_L2_kr050_uniform_random_seed137_summary.json
+    - research/experiments/2026/artifacts/phase1_51VC_random_keep_baseline/videomme_dev30_8f_L2_kr050_uniform_random_seed999_summary.json
+    - research/experiments/2026/artifacts/phase1_51VC_random_keep_baseline/videomme_dev30_8f_L2_kr050_uniform_random_seed2024_summary.json
+  current_best_policy: "structured magnitude_norm beats uniform-random 4-seed mean by +14.2pp at matched keep-rate; sanity baseline only, not peer-method comparison"
+  supersedes: []
+  paper_relevance: diagnostic sanity baseline
+  prereg_outcome: Accepted with caveat
+
+- phase_id: 1.63J
+  status: completed
+  authoritative_note: research/experiments/2026/artifacts/phase1_63J_qwen_8f_kr_sweep/kr_sweep_summary.json
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_63J_qwen_8f_kr_sweep/kr_sweep_summary.json
+    - research/experiments/2026/artifacts/phase1_63J_qwen_8f_kr_sweep/pair_summary_kr025_8f.json
+    - research/experiments/2026/artifacts/phase1_63E_track_b_frame_scaling/pair_summary_8f.json
+    - research/experiments/2026/artifacts/phase1_63J_qwen_8f_kr_sweep/pair_summary_kr075_8f.json
+  current_best_policy: "timing model validates across Qwen 8f keep rates, but all cells fail fidelity; use as C-CEILING timing evidence only"
+  supersedes: []
+  paper_relevance: primary for C-CEILING timing/fidelity separation; boundary for C-VISION
   prereg_outcome: Accepted with caveat
 
 - phase_id: 1.62D
@@ -98,12 +136,12 @@ Entries are ordered by phase_id (chronological within each 1.x range).
     - research/experiments/2026/artifacts/sam_scaleout_m5_r2_followup_20260430/sam_b0b_cache_correctness_unguarded_patched_summary.json
     - research/experiments/2026/artifacts/sam_scaleout_m5_r2_followup_20260430/sam_b0b_cache_correctness_unguarded_patched.jsonl
     - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_summary.json
-    - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f_summary.json
+    - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f_n21_summary.json
     - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b3_streaming_baselines_summary.json
     - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b4_sparse_vit_ceiling_summary.json
     - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b5_s4_accuracy_1937_summary.json
     - research/experiments/2026/artifacts/sam_scaleout_m5_20260429/sam_b5_s4_raw_paired_513_summary.json
-  current_best_policy: "candidate C-STREAM remains mixed: default cache path blocked; patched topology-aware B0b path is full-regression correctness-clean but falls back to cold-dense speed; prefix snapshot positive small-N; low-FPS dense wins fixed-evidence baseline"
+  current_best_policy: "candidate C-STREAM remains mixed: default cache path blocked; patched topology-aware B0b path is full-regression correctness-clean but falls back to cold-dense speed; prefix snapshot positive small-N including 32f n=21 with 0 choice/correctness diffs and 7/21 text diffs; low-FPS dense wins fixed-evidence baseline"
   supersedes: []
   paper_relevance: scale-out bounded evidence
   prereg_outcome: Accepted with caveat

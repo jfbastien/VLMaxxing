@@ -21,8 +21,11 @@ title can have the fun; technical terms should help readers stay oriented.
 | paired drift | Per-example disagreement between matched baseline and reuse runs. We split it into choice drift and correctness drift. | Say "no observed paired drift" rather than "safe" or "exact" unless the criterion is formalized. |
 | same-class speedup | Speedup comparing the same query class, usually cold follow-up latency divided by repaired/session follow-up latency. | Define near any table that mixes all-query and follow-up denominators. |
 | all-query speedup | Speedup comparing all cold queries with session execution under the artifact's convention. | Do not mix with same-class speedup without naming the denominator. |
+| warm follow-up | A later same-video query after a prefix/cache snapshot has already been built. | Use when reporting large after-ingest speedups; pair with setup-inclusive economics when serving cost matters. |
+| prefix snapshot | A topology-aware saved visual/prompt prefix that can be restored before appending a follow-up question. | Use for scale-out rows; do not equate with ordinary cache reuse or byte-identical replay. |
 | cache basin | A reuse-failure region where cached state drives repeated answer drift or pathological outputs instead of ordinary independent mistakes. | Evocative and useful; define before using in the abstract/results. |
 | selective re-prefill | Refreshing a small newest-frame visual tail while reusing the older prompt/cache state. | The repair mechanism for C-PERSIST. |
+| dense-answer-anchored stress | A prompt-variation stress where follow-up prompts include the previous canonical dense answer and dense/cached arms receive identical prompt hashes. | Use for the 1.55M boundary; it is not natural dialogue. |
 | semantic substitution | Replacing/replaying cached visual features to test answer preservation under a dense backend. | Explicitly not a measured sparse-execution speedup. |
 | measured sparse execution | A backend path that actually skips timed work in decode, vision, prefill, or generation. | Paper-facing replacement for "Track B". |
 | quality--compute frontier | Tradeoff curve between answer quality and compute/latency/fresh visual budget. | Use per regime, never as a universal curve. |
@@ -50,12 +53,13 @@ unless expanded. First use should follow this pattern:
 | Avoid | Use instead | Reason |
 | --- | --- | --- |
 | Track A | semantic-substitution routing | Internal project label. |
-| Track B | measured sparse execution | Internal project label; only okay in TODOs or repo docs. |
+| Track B | measured sparse execution | Internal project label; only okay in internal planning notes or repo docs. |
 | Lane A / Lane B | routing evidence / scale-out lane | Internal project label. |
 | safe | no observed paired drift, within tested criterion, certified for this finite envelope | "Safe" implies more than the experiments prove. |
 | exact | no observed paired drift, identity-preserved on these rows | "Exact" should mean byte/logit identity, not only answer identity. |
 | pooled n=60 | n=60 composition audit | "Pooled" asks readers to infer what was pooled. |
 | imported deployment-scale evidence | scale-out operational evidence, pending artifact harmonization | Keeps the scale-out lane first-class without overclaiming. |
+| phase IDs in prose | descriptive experiment names | Phase IDs belong in traceability docs, tables, scripts, and artifact paths, not main-text explanations. |
 
 ## Fun Budget
 

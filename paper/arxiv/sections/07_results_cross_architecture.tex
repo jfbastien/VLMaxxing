@@ -175,6 +175,24 @@ conversational stability as future work.
 \draftnote{Run \texttt{make paper-sync} to generate the C-PERSIST many-turn table.}
 }
 
+The stricter prompt-variation stress deliberately breaks the repeated-question
+assumption. Each follow-up prompt includes the previous canonical dense answer,
+and the dense and cached arms receive identical prompt hashes. Conservative
+fixed \(K=1\) remains paired-drift clean through the 20-turn horizon:
+0/133 follow-up choice drift and 0/133 correctness drift. The more aggressive
+adaptive and refresh-10 policies each show bounded but real drift, 6/133
+choice/correctness diffs (4.51\%), while keeping median follow-up latency near
+0.7\,s. Drift is split across early and late follow-ups rather than
+concentrated at the end, so the result is a measured operating envelope: no
+observed late-turn cliff through horizon 20, but no claim of universal dialogue
+stability for the aggressive policies.
+
+\IfFileExists{generated/tables/c_persist_dense_anchored.tex}{
+\input{generated/tables/c_persist_dense_anchored.tex}
+}{
+\draftnote{Run \texttt{make paper-sync} to generate the dense-answer-anchored C-PERSIST table.}
+}
+
 Warm-only multipliers are the right follow-up denominator, but they are not the
 whole serving economics. Table~\ref{tab:c-persist-setup-inclusive} folds the
 cold first query back into the session. On the clean 7B/16f raw reuse point, a
@@ -254,10 +272,10 @@ work.
 
 A trivial random-keep sanity baseline confirms that the Qwen scorer is not
 arbitrary. At the same 8f, \(L=2\), \(kr=0.50\) keep-rate on VideoMME dev30,
-the structured magnitude scorer reaches 0.500 accuracy versus 0.333 for a
-single deterministic uniform-random keep seed, with dense at 0.533. That is a
-+16.7\,pp structured-vs-random gap at matched keep-rate, not a peer-method
-comparison, not a multi-seed random baseline, and not a matched-runtime claim.
+the structured magnitude scorer reaches 0.500 accuracy versus a four-seed
+uniform-random mean of 0.358 (range 0.333--0.367), with dense at 0.533. That is
+a +14.2\,pp structured-vs-random gap at matched keep-rate, not a peer-method
+comparison and not a matched-runtime claim.
 
 \IfFileExists{generated/tables/competitor_positioning.tex}{
 \input{generated/tables/competitor_positioning.tex}
@@ -281,10 +299,11 @@ comparison, not a multi-seed random baseline, and not a matched-runtime claim.
   shows the same denominator binding on a second architecture. \(V_{\mathrm{share}}\)
   is measured from the dense baseline timing, \(V_{\mathrm{red}}\) from the
   pruned run, and the predicted speedup is then compared with the independently
-  observed end-to-end speedup. The purple measured-sparse markers separate two
-  Qwen boundary cases: 8f \(kr=0.50\) validates the ceiling but fails fidelity,
-  while 16f \(kr=0.85\) restores the aggregate-accuracy/format gate at only
-  1.032$\times$ because vision reduction falls to 13.6\%. The clean measured
+  observed end-to-end speedup. The purple measured-sparse markers include the
+  Qwen 8f keep-rate sweep, which validates the timing prediction while failing
+  the fidelity contract, plus the 16f \(kr=0.85\) point, which restores the
+  aggregate-accuracy/format gate at only 1.032$\times$ because vision reduction
+  falls to 13.6\%. The clean measured
   sparse-execution cell is the Gemma 32f-short bucket reported in
   Table~\ref{tab:headline-results}.}
   \label{fig:vshare-ceiling}
@@ -327,7 +346,7 @@ VideoMME 8f holdout & 0.154 & 0.413 & 1.068 & 1.113 & +4.5pp & clean local \\
 MVBench 8f holdout & 0.452 & 0.471 & 1.271 & 1.407 & +13.6pp & advisory local \\
 TOMATO 8f holdout & 0.384 & 0.350 & 1.155 & 1.194 & +3.9pp & advisory local \\
 Qwen VideoMME 8f dev & 0.103 & 0.398 & 1.043 & 1.044 & +0.1pp & matched cross-arch \\
-Qwen measured sparse vision 8f n=60 & 0.100 & 0.448 & 1.047 & 1.042 & -0.5pp & local boundary, fidelity fail \\
+Qwen measured sparse vision 8f \(kr=0.50\) & 0.100 & 0.448 & 1.047 & 1.042 & -0.5pp & local boundary, fidelity fail \\
 VideoMME n=60 composition audit & 0.063 & 0.430 & 1.028 & 1.042 & +1.4pp & composition null \\
 \bottomrule
 \end{tabularx}
@@ -339,8 +358,9 @@ cells can sit above or below the prediction when non-vision timing, scheduler
 jitter, or thermal state moves with the run. The holdout spread is wider than
 the first dev tranche made it look, and the matched Qwen point sits low-left
 where its smaller \(V_{\mathrm{share}}\) says it should. Gemma's 32f short cell
-is the cleanest measured sparse-execution operating point; Qwen's 16f
-\(kr=0.85\) point is the low-gain fidelity boundary. That is why the paper describes
+is the cleanest measured sparse-execution operating point; Qwen's 8f keep-rate
+sweep is a timing-validation/fidelity-failure boundary, and its 16f \(kr=0.85\)
+point is the low-gain aggregate-accuracy/format boundary. That is why the paper describes
 benchmark-, architecture-, and protocol-sensitive magnitude rather than
 benchmark-invariant first-pass gain. \(V_{\mathrm{share}}\) governs magnitude,
 while \(V_{\mathrm{red}}\) itself is benchmark- and configuration-conditional
@@ -465,43 +485,3 @@ the answer survived for the same reasons. A method that only preserves aggregate
 accuracy may still be uncertified for reuse, and a method that fails can fail by
 ordinary answer drift, by first-query admission damage, or by a cache-state
 basin. Those are different repairs.
-
-\begin{sectiontodo}{Lock the final promotion boundary for advisory cells}
-The current table, ceiling figure, and tested-envelope figure are accurate, but
-the manuscript still needs a final venue-facing decision on how aggressively to
-surface advisory rows in the main text versus the appendix. VideoMME is clean.
-MVBench and TOMATO are strong, but they should keep their caveats visible.
-
-\textcolor{todoBorder}{Source pointers: \path{paper/priority.md},
-\path{paper/claim-matrix.md},
-\path{paper/figures/v_share_v_red_ceiling_data.json},
-\path{paper/figures/c_persist_safe_budget_data.json},
-\path{research/experiments/2026/2026-04-21-phase-1_51V-exp10-n60-findings.md},
-\path{research/experiments/2026/2026-04-23-phase-1_30-scaleout-streaming-findings.md},
-\path{research/experiments/2026/2026-04-23-phase-1_30-rootcause-prereg.md},
-\path{research/experiments/2026/2026-04-24-phase-1_30W-q0-dense-followup-pruned-full-findings.md},
-\path{research/experiments/2026/2026-04-24-phase-1_30X-q0-admission-frontier-findings.md},
-\path{research/experiments/2026/2026-04-25-phase-1_30Z-long-q0-kr067-findings.md},
-\path{research/experiments/2026/2026-04-25-phase-1_30AB-long-q0-sweep-findings.md},
-\path{research/experiments/2026/artifacts/phase1_30AC_cache_invalidated_followups/},
-\path{research/experiments/2026/artifacts/phase1_30AD_instrumented_w_rerun/},
-\path{research/experiments/2026/artifacts/phase1_30AF_cache_boundary_attribution/},
-\path{research/experiments/2026/2026-04-24-phase-1_55D-selective-reprefill-v2-k1-findings.md},
-\path{research/experiments/2026/2026-04-24-phase-1_55E-q2-mandatory-q3-optional-findings.md},
-\path{research/experiments/2026/2026-04-25-phase-1_55F-q3-post-q2-state-findings.md},
-\path{research/experiments/2026/2026-04-27-adaptive-mechanism-queue-findings.md},
-\path{research/experiments/2026/artifacts/phase1_55F_medium_adaptive_replication/},
-\path{research/experiments/2026/artifacts/phase1_55F_long_adaptive_replication/},
-\path{research/experiments/2026/artifacts/phase1_55F_32f_short_adaptive_replication/},
-\path{research/experiments/2026/artifacts/phase1_55F_stage_timing/},
-\path{research/experiments/2026/2026-04-25-phase-1_55G-k1-medium-replication-findings.md},
-\path{research/experiments/2026/2026-04-25-phase-1_55I-k1-long-replication-findings.md},
-\path{research/experiments/2026/2026-04-25-phase-1_55H-k1-32f-short-probe-findings.md},
-\path{research/experiments/2026/artifacts/phase1_61_per_item_drift_summary.json},
-\path{research/experiments/2026/2026-04-23-phase-1_51V-qwen-cross-arch-findings.md},
-\path{research/experiments/2026/2026-04-21-phase-1_51V-session3-findings.md},
-\path{research/experiments/2026/2026-04-21-phase-1_51V-session4-findings.md},
-\path{research/experiments/2026/2026-04-19-phase-1_55A-persistent-kv-findings.md},
-\path{research/experiments/2026/artifacts/phase1_55A_*},
-\path{research/experiments/2026/2026-04-21-phase-1_51V-session5-findings.md}.}
-\end{sectiontodo}

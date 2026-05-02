@@ -65,7 +65,7 @@ GEMMA_PREFIX_SNAPSHOT_CELLS = [
         8,
     ),
     (
-        "sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f.jsonl",
+        "sam_scaleout_m5_20260429/sam_m5_5b_swa_prefix_snapshot_32f_n21.jsonl",
         "Gemma 26B / 32f",
         "gemma_4_26b_a4b",
         32,

@@ -429,7 +429,7 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
     )
 
     # 2. Codec clue.
-    p = panel_rect(2, "CODEC CLUE", "#0f172a")
+    p = panel_rect(2, "CHANGE CLUE", "#0f172a")
     for y, label, highlights in [
         (0.65, "previous\nframe", []),
         (0.47, "motion +\nresidual", [(1, 1, "#3b82f6"), (2, 3, "#ef4444")]),
@@ -1034,9 +1034,9 @@ def _render_c_persist_timeline_figure() -> None:
 
     ax.add_patch(
         mpatches.FancyBboxPatch(
-            (0.80, 0.33),
-            0.17,
-            0.24,
+            (0.835, 0.32),
+            0.135,
+            0.23,
             boxstyle="round,pad=0.018,rounding_size=0.03",
             facecolor="#ecfdf5",
             edgecolor="#16a34a",
@@ -1044,20 +1044,20 @@ def _render_c_persist_timeline_figure() -> None:
         )
     )
     ax.text(
-        0.885,
-        0.49,
+        0.902,
+        0.482,
         f"{speedup:.2f}x\npaired Q3\nspeedup",
-        fontsize=8.8,
+        fontsize=8.0,
         weight="bold",
         ha="center",
         va="center",
         color="#14532d",
     )
     ax.text(
-        0.885,
-        0.39,
+        0.902,
+        0.385,
         f"{token_reduction:.1f}% fewer\nQ3 tail tokens",
-        fontsize=7.2,
+        fontsize=6.7,
         ha="center",
         va="center",
         color="#166534",
@@ -1068,8 +1068,8 @@ def _render_c_persist_timeline_figure() -> None:
     ax.text(
         0.02,
         0.08,
-        "Timing attribution from short-slice fixed and adaptive repair artifacts; "
-        "phase IDs stay in provenance.",
+        "Timing attribution from checked fixed/adaptive stage-timing artifacts; "
+        "provenance in appendix.",
         fontsize=6.8,
         color="#475569",
     )
@@ -1429,7 +1429,7 @@ def _measured_sparse_execution_snapshot() -> dict[str, object]:
 
     gemma_dir = ARTIFACTS / "phase1_63G_gemma_track_b"
     qwen_dir = ARTIFACTS / "phase1_63H_16f_kr_sweep"
-    qwen_e_dir = ARTIFACTS / "phase1_63E_track_b_frame_scaling"
+    qwen_j_dir = ARTIFACTS / "phase1_63J_qwen_8f_kr_sweep"
 
     gemma_scaling = _artifact_json(gemma_dir / "scaling_summary.json")
     gemma_rows = []
@@ -1461,23 +1461,36 @@ def _measured_sparse_execution_snapshot() -> dict[str, object]:
     gemma_32f_short = gemma_32f["by_group"]["short"]
 
     qwen_rows = []
-    qwen_8f = _artifact_json(qwen_e_dir / "pair_summary_8f.json")["all"]
-    qwen_rows.append(
-        {
-            "model": "Qwen2.5-VL-7B",
-            "setting": "8f, kr=0.50",
-            "n": int(qwen_8f["n"]),
-            "accuracy_delta": float(qwen_8f["accuracy_delta_sparse_minus_dense"]),
-            "choice_agreement": float(qwen_8f["choice_agreement"]),
-            "sparse_parse_failures": int(qwen_8f["sparse_parse_failures"]),
-            "vision_reduction": float(qwen_8f["vision_reduction"]),
-            "observed_e2e": float(qwen_8f["actual_e2e_speedup_dense_over_sparse"]),
-            "predicted_e2e": float(qwen_8f["predicted_e2e_speedup_from_vision_only"]),
-            "residual": float(qwen_8f["actual_minus_predicted_e2e_speedup"]),
-            "interpretation": "ceiling-validating fidelity fail",
-            "source": _source_path_label(qwen_e_dir / "pair_summary_8f.json"),
-        }
-    )
+    qwen_8f_sweep = _artifact_json(qwen_j_dir / "kr_sweep_summary.json")
+    for cell in qwen_8f_sweep["cells"]:
+        qwen_rows.append(
+            {
+                "model": "Qwen2.5-VL-7B",
+                "setting": f"8f, kr={float(cell['keep_rate']):.2f}",
+                "n": int(cell["n_paired_items"]),
+                "accuracy_delta": float(cell["accuracy_delta"]),
+                "choice_agreement": float(cell["choice_agreement"]),
+                "sparse_parse_failures": int(
+                    _artifact_json(REPO_ROOT / cell["summary_path"])["all"][
+                        "sparse_parse_failures"
+                    ]
+                ),
+                "vision_reduction": float(cell["vision_reduction"]),
+                "observed_e2e": float(cell["actual_e2e_speedup"]),
+                "predicted_e2e": float(cell["predicted_e2e_speedup"]),
+                "residual": float(cell["actual_minus_predicted"]),
+                "interpretation": (
+                    "timing-validating fidelity/format fail"
+                    if not cell["pass_format"]
+                    else (
+                        "timing-validating fidelity-contract fail; no E2E gain"
+                        if not cell["pass_e2e_positive"]
+                        else "timing-validating fidelity-contract fail"
+                    )
+                ),
+                "source": cell["summary_path"],
+            }
+        )
     for kr_label, keep_rate in [("0.65", "065"), ("0.75", "075"), ("0.85", "085")]:
         path = qwen_dir / f"pair_summary_kr{keep_rate}_16f.json"
         row = _artifact_json(path)["all"]
@@ -1518,6 +1531,13 @@ def _measured_sparse_execution_snapshot() -> dict[str, object]:
             "source": _source_path_label(gemma_dir / "pair_summary_32f.json"),
         },
         "qwen_rows": qwen_rows,
+        "qwen_8f_keep_rate_sweep": {
+            "phase": qwen_8f_sweep["phase"],
+            "n_cells": int(qwen_8f_sweep["n_cells"]),
+            "passing_keep_rates": qwen_8f_sweep["passing_keep_rates"],
+            "best_fidelity_safe_keep_rate": qwen_8f_sweep["best_fidelity_safe_keep_rate"],
+            "source": _source_path_label(qwen_j_dir / "kr_sweep_summary.json"),
+        },
     }
 
 
@@ -2104,8 +2124,8 @@ def _render_headline_figure(snapshot: dict) -> None:
             fontsize=8.2,
         )
 
-    fig.suptitle("Anti-recomputation gains are regime-dependent", fontsize=13)
-    fig.tight_layout()
+    fig.suptitle("Anti-recomputation gains are regime-dependent", fontsize=13, y=0.985)
+    fig.tight_layout(rect=[0.0, 0.0, 1.0, 0.93])
     (GENERATED / "figures" / "headline_results.png").parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(GENERATED / "figures" / "headline_results.png", dpi=220, bbox_inches="tight")
     _save_pdf(fig, GENERATED / "figures" / "headline_results.pdf", bbox_inches="tight")
@@ -2268,12 +2288,13 @@ def _write_measured_sparse_execution_tables(snapshot: dict) -> None:
         r"\begin{table}[H]",
         r"\centering",
         (
-            r"\caption{Measured sparse vision execution on Qwen. The 8f point "
-            r"validates the timing model but fails fidelity. At 16f, increasing "
-            r"the keep rate monotonically recovers aggregate accuracy and "
-            r"format, ending at a point inside those tested gates but not "
-            r"paired answer identity; it also no longer clears the "
-            r"vision-reduction gate.}"
+            r"\caption{Measured sparse vision execution on Qwen. The 8f "
+            r"keep-rate sweep validates C-CEILING on timing but finds no "
+            r"fidelity-preserving, speed-positive operating point. At 16f, "
+            r"increasing the keep rate monotonically recovers aggregate "
+            r"accuracy and format, ending at a point inside those tested "
+            r"gates but not paired answer identity; it also no longer clears "
+            r"the vision-reduction gate.}"
         ),
         r"\label{tab:qwen-measured-sparse-vision}",
         r"\scriptsize",
@@ -2498,6 +2519,108 @@ def _write_c_persist_many_turn_table() -> None:
     )
 
 
+def _dense_anchored_cpersist_snapshot() -> dict[str, object]:
+    path = ARTIFACTS / "phase1_55M_dense_anchored_cpersist" / "summary.json"
+    summary = _artifact_json(path)
+    policy_labels = {
+        "fixed_k1": r"fixed \(K=1\)",
+        "adaptive_post_q2": "adaptive repair",
+        "refresh10": "scheduled refresh-10",
+    }
+    baseline_ms = 80000.0
+    rows = []
+    for cell in summary["cells"]:
+        follow = cell["followup_only"]
+        speedup_vs_80s_dense = baseline_ms / float(follow["median_elapsed_ms"])
+        rows.append(
+            {
+                "policy": cell["policy"],
+                "label": policy_labels[cell["policy"]],
+                "horizon": int(cell["horizon"]),
+                "followup_n": int(follow["n"]),
+                "choice_drift": int(follow["choice_drift"]),
+                "correctness_drift": int(follow["correctness_drift"]),
+                "choice_drift_rate": float(follow["choice_drift_rate"]),
+                "correctness_drift_rate": float(follow["correctness_drift_rate"]),
+                "median_followup_s": float(follow["median_elapsed_ms"]) / 1000.0,
+                "speedup_vs_80s_dense": speedup_vs_80s_dense,
+                "pass_three_percent": bool(cell["pass_three_percent_drift_followup_only"]),
+                "cliff": bool(cell["cliff_bucket_detected"]),
+                "early_choice_drift": int(cell["followup_turn_buckets"][0]["choice_drift"]),
+                "early_n": int(cell["followup_turn_buckets"][0]["n"]),
+                "late_choice_drift": int(cell["followup_turn_buckets"][1]["choice_drift"]),
+                "late_n": int(cell["followup_turn_buckets"][1]["n"]),
+            }
+        )
+    return {
+        "phase": "1.55M",
+        "history_mode": summary["history_mode"],
+        "prompt_variant_mode": summary["prompt_variant_mode"],
+        "frame_count": int(summary["frame_count"]),
+        "video_ids": summary["video_ids"],
+        "n_baseline_rows": int(summary["n_baseline_rows"]),
+        "n_paired_rows": int(summary["n_paired_rows"]),
+        "turn_counts": summary["turn_counts"],
+        "rows": rows,
+        "source_paths": [
+            _source_path_label(path),
+            summary["paths"]["baseline_jsonl"],
+            summary["paths"]["paired_jsonl"],
+            summary["paths"]["session_jsonl"],
+            "research/experiments/2026/2026-05-02-phase-1_55M-dense-anchored-cpersist-findings.md",
+        ],
+    }
+
+
+def _write_dense_anchored_cpersist_table() -> None:
+    snapshot = _dense_anchored_cpersist_snapshot()
+    lines = [
+        r"\begin{table}[H]",
+        r"\centering",
+        (
+            r"\caption{Dense-answer-anchored C-PERSIST stress. Each follow-up "
+            r"prompt includes the previous canonical dense answer and the "
+            r"dense/cached arms receive identical prompt hashes. This is a "
+            r"content-conditioned prompt-variation stress, not natural "
+            r"dialogue. The speedup column uses the findings-note 80\,s "
+            r"cold-dense reference for readability.}"
+        ),
+        r"\label{tab:c-persist-dense-anchored}",
+        r"\small",
+        r"\begin{tabularx}{\linewidth}{@{}l r r r r X@{}}",
+        r"\toprule",
+        (
+            r"Policy & Horizon & Follow-ups & Choice/correct drift & "
+            r"Median follow-up & Interpretation \\"
+        ),
+        r"\midrule",
+    ]
+    for row in snapshot["rows"]:
+        if row["pass_three_percent"]:
+            interp = "passes 3\\% gate; no observed prompt-variation drift"
+        else:
+            interp = (
+                f"fails 3\\% gate; early/late choice drift "
+                f"{row['early_choice_drift']}/{row['early_n']} and "
+                f"{row['late_choice_drift']}/{row['late_n']}; no cliff"
+            )
+        lines.append(
+            f"{row['label']} & {row['horizon']} & {row['followup_n']} & "
+            f"{row['choice_drift']}/{row['correctness_drift']} "
+            f"({row['choice_drift_rate'] * 100:.2f}\\%) & "
+            f"{row['median_followup_s']:.3f}\\,s "
+            f"($\\sim${row['speedup_vs_80s_dense']:.1f}$\\times$) & "
+            f"{interp} \\\\"
+        )
+    lines.extend([r"\bottomrule", r"\end{tabularx}", r"\end{table}"])
+    (GENERATED / "tables" / "c_persist_dense_anchored.tex").write_text(
+        "\n".join(lines) + "\n"
+    )
+    (GENERATED / "data" / "c_persist_dense_anchored_snapshot.json").write_text(
+        json.dumps(snapshot, indent=2, sort_keys=True) + "\n"
+    )
+
+
 def _write_memory_characterization_table() -> None:
     summary = _artifact_json(
         ARTIFACTS / "phase1_66_memory_characterization" / "memory_characterization_summary.json"
@@ -2586,9 +2709,11 @@ def _scaleout_bundle_snapshot() -> dict[str, object]:
     ]
 
     prefix8_path = base / "sam_m5_5b_swa_prefix_snapshot.jsonl"
-    prefix32_path = base / "sam_m5_5b_swa_prefix_snapshot_32f.jsonl"
+    prefix32_path = base / "sam_m5_5b_swa_prefix_snapshot_32f_n21.jsonl"
     prefix8_summary = _artifact_json(base / "sam_m5_5b_swa_prefix_snapshot_summary.json")
-    prefix32_summary = _artifact_json(base / "sam_m5_5b_swa_prefix_snapshot_32f_summary.json")
+    prefix32_summary = _artifact_json(
+        base / "sam_m5_5b_swa_prefix_snapshot_32f_n21_summary.json"
+    )
     prefix8_rows = _load_jsonl(prefix8_path)
     prefix32_rows = _load_jsonl(prefix32_path)
 
@@ -2748,7 +2873,7 @@ def _scaleout_bundle_snapshot() -> dict[str, object]:
             ),
             _source_path_label(r2_followup / "sam_b0b_cache_correctness_unguarded_patched.jsonl"),
             _source_path_label(base / "sam_m5_5b_swa_prefix_snapshot_summary.json"),
-            _source_path_label(base / "sam_m5_5b_swa_prefix_snapshot_32f_summary.json"),
+            _source_path_label(base / "sam_m5_5b_swa_prefix_snapshot_32f_n21_summary.json"),
             _source_path_label(base / "sam_b3_streaming_baselines_summary.json"),
             _source_path_label(base / "sam_b4_sparse_vit_ceiling_summary.json"),
             _source_path_label(base / "sam_b5_s4_accuracy_1937_summary.json"),
@@ -2927,6 +3052,7 @@ def main() -> int:
     _write_c_persist_sampler_table()
     _write_c_persist_seed_sweep_table()
     _write_c_persist_many_turn_table()
+    _write_dense_anchored_cpersist_table()
     _write_memory_characterization_table()
     _write_scaleout_bundle_table()
     _render_c_persist_timeline_figure()

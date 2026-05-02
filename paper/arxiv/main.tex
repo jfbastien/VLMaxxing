@@ -17,8 +17,6 @@
 \usepackage{subcaption}
 \usepackage{float}
 
-\definecolor{todoBorder}{HTML}{9B2226}
-\definecolor{todoBg}{HTML}{FFF4F4}
 \definecolor{accentBlue}{HTML}{1D3557}
 \definecolor{accentGold}{HTML}{B08900}
 
@@ -37,33 +35,9 @@
   \newcommand{\ScaleoutRepoSHA}{pending artifact bundle}
   \newcommand{\ScaleoutRepoCommitDate}{pending artifact bundle}
 }
+\newcommand{\DraftDate}{\PrimaryRepoCommitDate}
 
-\newif\ifshowtodos
-\showtodosfalse
-\newbox\sectiontodobox
-
-\ifshowtodos
-  \newenvironment{sectiontodo}[1]
-  {
-    \par\medskip
-    \noindent{\color{todoBorder}\rule{\linewidth}{0.8pt}}\par
-    \noindent{\color{todoBorder}\bfseries TODO: #1}\par\smallskip
-    \begingroup\small\raggedright\color{black}
-  }
-  {
-    \par\endgroup
-    \noindent{\color{todoBorder}\rule{\linewidth}{0.8pt}}\par\medskip
-  }
-
-  \newcommand{\draftnote}[1]{%
-    \par\medskip\noindent{\small\color{accentBlue}\textbf{Draft note.} #1}\par\medskip
-  }
-\else
-  \newenvironment{sectiontodo}[1]
-    {\par\setbox\sectiontodobox=\vbox\bgroup\hsize=\linewidth\small}
-    {\egroup}
-  \newcommand{\draftnote}[1]{}
-\fi
+\newcommand{\draftnote}[1]{}
 
 \title{VLMaxxing through FrameMogging\thanks{Look, they said attention was all you needed, well we got your attention with this title.}\\Training-Free Anti-Recomputation for Video Vision-Language Models}
 \author{
@@ -73,18 +47,15 @@
   Sam D'Amico\\
   \texttt{sam@impulselabs.com}
 }
-\date{Draft manuscript}
+\date{Draft manuscript, \DraftDate}
 
 \begin{document}
 \maketitle
 
 \draftnote{This is a paper draft built from current repo evidence, not a
-submission-frozen manuscript. Visible TODO boxes mark places where the text,
-citations, or figure selection still need author review as the science
-continues. The default automated snapshot is intentionally limited to
-artifact summaries; advisory, artifact-pending, or supplementary evidence is
-labeled as such in the text, and the provenance appendix records dirty
-working-tree inputs when the draft was built from them.}
+submission-frozen manuscript. Advisory, artifact-pending, or supplementary
+evidence is labeled as such in the text, and the provenance appendix records
+dirty working-tree inputs when the draft was built from them.}
 
 \begin{abstract}
 \input{sections/01_abstract}

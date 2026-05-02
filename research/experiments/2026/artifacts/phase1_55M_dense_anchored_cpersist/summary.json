@@ -440,7 +440,7 @@
     "session_jsonl": "research/experiments/2026/artifacts/phase1_55M_dense_anchored_cpersist/session_many_turn.jsonl"
   },
   "peak_rss_gb": 4.687970304,
-  "phase": "1.55L",
+  "phase": "1.55M",
   "policies": [
     "fixed_k1",
     "adaptive_post_q2",

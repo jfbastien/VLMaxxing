@@ -41,15 +41,16 @@ closure, not C-STREAM speedup. The patched path refuses unsafe cross-turn trim
 and runs at roughly cold-dense wall-clock. A topology-aware prefix snapshot is
 the current positive scale-out follow-up row, but its denominator is narrow: the
 reported 9.11$\times$ at 8f and
-26.59$\times$ at 32f are per-follow-up after the prefix snapshot is warm, not
-setup-inclusive session speedups. The 8f row has 0/21 paired choice or
+18.71$\times$ at 32f are per-follow-up medians after the prefix snapshot is
+warm, not setup-inclusive session speedups. The 8f row has 0/21 paired choice or
 correctness diffs, but also 6/21 text diffs and 2/21 matched parse failures.
 Only 5/21 rows are ground-truth multiple-choice items; the other 16 are
 open-ended equality checks.
-The 32f row has 0/9 choice or correctness-field diffs, 2/9 text diffs, and no
-parse failures, but only 3/9 rows are ground-truth multiple-choice items; the
-other six are open-ended equality checks. These are small-\(N\),
-wrapper-specific rows, not proof that ordinary PromptCacheState is safe.
+The expanded 32f row has 0/21 choice or correctness-field diffs, 7/21 text
+diffs, and no parse failures, but only 7/21 rows are ground-truth
+multiple-choice items; the other 14 are open-ended equality checks. These are
+small-\(N\), wrapper-specific rows, not proof that ordinary PromptCacheState is
+safe.
 
 The streaming baselines cut in the other direction. On 22 screen/UI events,
 low-FPS dense uses four uniformly spaced frames and matches the fresh oracle on
@@ -93,12 +94,3 @@ already run, policy overhead can dominate, so the row is not evidence for real
 sparse-ViT speedup. It is a reminder that the paper's C-CEILING arithmetic
 assumes the accelerated stage is actually skipped and the policy overhead is
 small.
-
-\begin{sectiontodo}{Promote C-STREAM only after native mechanism quality lands}
-The checked bundle is enough to make C-STREAM a serious candidate regime, not
-enough to make it an equal headline. The next promotion gate is a native
-streaming policy that beats low-FPS dense, screenshot polling, and recency under
-the same quality envelope; includes at least one stale-cache failure case;
-records raw paired outputs and source media; and passes cache-correctness under
-the runtime's real cache topology.
-\end{sectiontodo}

@@ -46,7 +46,7 @@ The drift difference is **content-conditional**: the same policies that show zer
 | adaptive_post_q2 | 3/63 (4.76%) | 3/70 (4.29%) | uniform, no late-turn cliff |
 | refresh10 | 3/63 (4.76%) | 3/70 (4.29%) | uniform, no late-turn cliff |
 
-**Critically, drift does not accumulate over turn index.** Both adaptive and refresh10 show approximately 4.3% drift in early (0-10) and late (10-20) buckets. There is no cliff that would suggest a horizon-dependent breakdown — the drift is a *constant per-turn rate* under content-conditional stress, not a degradation that worsens with horizon.
+**Critically, drift does not concentrate at the end of the horizon.** Both adaptive and refresh10 show approximately 4.3% drift in early (0-10) and late (10-20) buckets. There is no cliff that would suggest a horizon-dependent breakdown through 20 turns; this supports a bounded "no observed late-turn cliff" claim, not a proof of a stable noise floor.
 
 `cliff_bucket_detected=false` for all three policies.
 
@@ -59,7 +59,7 @@ Under dense-anchored schedule (1.55M), each turn's prompt embeds a substring fro
 - **H_A** (the language-prefix attention drift): the cached arm's visual KV cache slightly under-attends to the per-turn-novel question text because cross-attention statistics differ from the dense-arm pass, biasing decoding marginally toward the cached vocab.
 - **H_B** (the per-turn temperature-zero noise floor): even with greedy decoding, the rebuild-prefill at turn k+1 has a small probability of taking a different argmax due to numerical reordering between cached and non-cached attention weights. This is a known noise floor on Qwen 2.5-VL-7B-Instruct-4bit at T=0.
 
-H_B is consistent with the *uniform* per-bucket distribution and the *constant* rate. H_A would predict bucket-dependent rate increases with horizon (more accumulated content to drift away from), which is not observed.
+H_B is consistent with the roughly uniform per-bucket distribution. H_A would predict bucket-dependent rate increases with horizon (more accumulated content to drift away from), which is not observed in this 20-turn run.
 
 This is **not** discriminative within the current data — both hypotheses predict 4.5% drift uniformly distributed. A higher-horizon (40 or 50) dense-anchored run would discriminate: H_A predicts rate growth with horizon; H_B predicts a stable 4-5% per-turn floor.
 
@@ -88,7 +88,7 @@ The cache-reuse speedups are dramatic — adaptive_post_q2 follow-ups are 114.6�
 ## Falsification log
 
 - H1 prereg: "Adaptive post-Q2 cache reuse and refresh10 stay within 3% paired drift gate through 20 dense-answer-anchored turns." → **FALSIFIED** at 4.51% on both policies.
-- H2 prereg: "Fixed K=1 produces at least as much paired drift in 1.55M as in A6." → **FALSIFIED** in the opposite direction: fixed_k1 holds at 0% drift, while A6's fixed_k1 also held at 0% drift in the previous run.
+- H2 prereg: "Fixed K=1 produces at least as much paired drift in 1.55M as in A6." → **Not supported as written**: fixed_k1 holds at 0/133 follow-up drift in 1.55M, while A6 fixed K=1 stayed below the 3% gate but had nonzero repeated-question drift (3/343 choice, 2/343 correctness). The useful conclusion is that conservative repair remains within the gate, not that the schedules have identical drift.
 
 ## Comparison to A6 (1.55L) — what changed
 
@@ -101,7 +101,7 @@ What changes mechanically:
 
 ## What this closes
 
-This **closes** the strongest reviewer attack on A6 ("but A6 cycles the same 3 questions"). The paper now has paired-stability evidence under content-conditional prompt variation. The result is mixed (fixed_k1 PASS, adaptive/refresh10 FAIL the 3% gate by 1.5pp), and that mixed result is genuinely informative about the C-PERSIST safe regime.
+This **bounds** the strongest reviewer attack on A6 ("but A6 cycles the same 3 questions"). The paper now has paired-stability evidence under content-conditional prompt variation. The result is mixed (fixed_k1 PASS, adaptive/refresh10 FAIL the 3% gate by 1.5pp), and that mixed result is genuinely informative about the C-PERSIST operating envelope.
 
 ## What this does NOT close
 

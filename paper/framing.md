@@ -121,7 +121,10 @@ duration-conditional partial reproduction + 1.55D frontier-partial):
    0/93 observed paired drift at 14.90×--35.92× same-class follow-up speedup
    (15.28×--35.97× cold-all-query ratio). Stage timing explains the adaptive gain:
    the third follow-up reuses the repaired cache and avoids the fixed-K
-   last-frame re-prefill.
+   last-frame re-prefill. The dense-answer-anchored prompt-variation stress
+   now bounds the aggressive policies: fixed K=1 stays exact on 0/133
+   follow-ups, while adaptive repair and refresh-10 show 6/133 paired drift at
+   roughly 0.7 s follow-up latency.
    Tested deployment-regime table in [`paper/claim-matrix.md`](claim-matrix.md)
    provides paper-grade practitioner guidance; paired-fidelity boundary result
    in its own right.

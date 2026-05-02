@@ -21,8 +21,9 @@ vision-tower work at 1.316$\times$ first-query speedup with no paired drift and
 no parse failures on 20 items. The full Gemma 8/16/32f sweep has zero paired
 answer drift, but dense and sparse arms share parse failures in some cells and
 the 8f row misses the ceiling tolerance. Qwen supplies the complementary
-boundary: aggressive 16f pruning collapses fidelity and format, while
-\(kr=0.85\) restores fidelity, format, and ceiling agreement at only
+boundary: the 8f keep-rate sweep follows the timing ceiling even as every cell
+fails the fidelity contract, and aggressive 16f pruning collapses fidelity and
+format, while \(kr=0.85\) restores fidelity, format, and ceiling agreement at only
 1.032$\times$ end-to-end speedup and 13.6\% vision-time reduction. The paper
 therefore claims a measured sparse-vision envelope, not a broad
 fidelity-preserving sparse backend.
@@ -63,7 +64,12 @@ version of that attack: adaptive repaired-cache inheritance and scheduled refres
 observed drift through a 50-turn repeated-question cycle on seven short videos.
 That is still not a natural-dialogue stability proof; it is a controlled
 cache-horizon stress with deterministic dense replicas for turn-matched
-pairing.
+pairing. The dense-answer-anchored prompt-variation stress is stricter and
+changes the claim surface. Conservative fixed \(K=1\) remains exact on
+follow-ups through the 20-turn horizon (0/133 paired drift), while adaptive
+repair and scheduled refresh each show 6/133 paired choice/correctness drift.
+That is a bounded high-speed operating point, not a universal
+correctness-preserving policy.
 
 \IfFileExists{generated/tables/memory_characterization.tex}{
 \input{generated/tables/memory_characterization.tex}
@@ -230,30 +236,3 @@ sync, and advisory or artifact-pending evidence is labeled as such instead of be
 silently promoted into the headline figures. The paper builds locally with the
 checked-in \texttt{make paper-*} targets plus `tectonic` or a fuller TeX
 stack.
-
-\begin{sectiontodo}{Freeze the public artifact and release language}
-Before submission, this section still needs the final public-release sentence,
-artifact-bundle wording, and one last pass on which advisory results stay in
-main text versus move to the appendix.
-
-\textcolor{todoBorder}{Source pointers: \path{paper/priority.md},
-\path{paper/claim-matrix.md},
-\path{docs/reproduction-status.md},
-\path{docs/methodology/performance.md},
-\path{docs/clip-policy.md},
-\path{research/experiments/2026/2026-04-23-phase-1_60-corpus-limitation-findings.md},
-\path{research/experiments/2026/2026-04-23-phase-1_29B-codec-native-replication-prereg.md},
-\path{research/experiments/2026/2026-04-24-phase-1_30W-q0-dense-followup-pruned-full-findings.md},
-\path{research/experiments/2026/2026-04-25-phase-1_30Z-long-q0-kr067-findings.md},
-\path{research/experiments/2026/2026-04-25-phase-1_30AB-long-q0-sweep-findings.md},
-\path{research/experiments/2026/2026-04-24-phase-1_55D-selective-reprefill-v2-k1-findings.md},
-\path{research/experiments/2026/2026-04-25-phase-1_55G-k1-medium-replication-findings.md},
-\path{research/experiments/2026/2026-04-25-phase-1_55F-q3-post-q2-state-findings.md},
-\path{research/experiments/2026/2026-04-25-phase-1_55I-k1-long-replication-findings.md},
-\path{research/experiments/2026/2026-04-25-phase-1_55H-k1-32f-short-probe-findings.md},
-\path{research/experiments/2026/artifacts/phase1_55K_adaptive_temperature_sweep/},
-\path{research/experiments/2026/artifacts/phase1_63G_gemma_track_b/},
-\path{research/experiments/2026/artifacts/phase1_63H_16f_kr_sweep/},
-\path{research/experiments/2026/artifacts/phase1_65_logit_margin_failure_predictor/},
-\path{research/experiments/2026/artifacts/phase1_66_memory_characterization/}.}
-\end{sectiontodo}

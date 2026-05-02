@@ -98,7 +98,7 @@ is mechanism-validation evidence rather than a sparse wall-clock claim.}
 @{}}
 \toprule
 Regime & Reused work & Denominator / evidence class & Headline evidence \\
-After-ingest follow-up & prompt / key--value (KV) prefix for later questions on the same video & follow-up latency and paired drift; first query still pays full freight & raw 16f reuse reaches 91.1$\times$; adaptive repair spans short/medium/long and 32f-short with 0/93 drift at 14.90--35.92$\times$; many-turn stress reaches 50 turns on repeated questions \\
+After-ingest follow-up & prompt / key--value (KV) prefix for later questions on the same video & follow-up latency and paired drift; first query still pays full freight & raw 16f reuse reaches 91.1$\times$; adaptive repair spans short/medium/long and 32f-short with 0/93 drift at 14.90--35.92$\times$; many-turn stress reaches 50 turns on repeated questions; dense-answer-anchored prompt variation exposes the conservative/aggressive boundary \\
 Fresh-video first pass & vision-tower work inside the first query & first-query wall-clock; local clean/advisory cells plus measured sparse-execution envelopes & VideoMME clean 1.113$\times$; MVBench/TOMATO advisory; measured sparse vision: Gemma 32f short 1.316$\times$ with 0/20 drift, Qwen conservative boundary 1.032$\times$ \\
 Candidate C-STREAM & repeated visual state in a native-rate or live pipeline & checked mixed artifact bundle; separate protocol & default 26B cache path blocked; prefix-snapshot rows positive but small-\(N\); fixed-evidence stream baselines favor low-FPS dense over the current proxy \\
 \bottomrule
@@ -129,15 +129,19 @@ across the same 93-query breadth, it has no observed paired drift and reaches
 many-turn stress shows the adaptive and scheduled-refresh variants remain
 drift-free through a 50-turn repeated-question cycle on seven short videos,
 while fixed \(K=1\) shows nonzero repeated-question drift but stays below the
-3\% gate.
+3\% gate. A stricter dense-answer-anchored prompt-variation stress then
+bounds the deployment claim: conservative fixed \(K=1\) remains exact on
+follow-ups (0/133), while adaptive repair and scheduled refresh trade
+6/133 paired choice/correctness drift for roughly 0.7\,s follow-up latency.
 \item We establish \textbf{first-pass vision pruning (C-VISION)}: training-free mid-layer vision-tower
 pruning yields measured first-pass end-to-end gains on frozen Gemma video-VLM
 runs, from a clean 1.113$\times$ VideoMME holdout to advisory larger cells,
 with magnitude governed by the vision-share ceiling rather than wishful
 component-wise multiplication. The measured sparse-execution envelope then
 separates systems truth from fidelity truth: Gemma 32f short is a clean
-1.316$\times$ timed-skip cell, while Qwen needs a conservative low-gain keep
-rate to restore fidelity.
+1.316$\times$ timed-skip cell, while Qwen's 8f keep-rate sweep validates the
+timing ceiling despite fidelity failure and its conservative 16f point
+restores aggregate accuracy/format only at low gain.
 \end{itemize}
 
 Those three contributions do not compose as a naive product. C-VISION changes
@@ -158,15 +162,3 @@ The same discipline now applies to paired drift: several runs preserve
 aggregate accuracy while changing individual answers, so the paper reports
 choice diffs, correctness diffs, pathological-attractor counts, and confidence
 intervals whenever they decide the claim boundary.
-
-\begin{sectiontodo}{Tighten the opening once the final venue and title settle}
-The opening now carries the wall/background motivating example and the
-anti-recomputation agenda. The final venue pass should compress it without
-cutting that energy: this should not drift back into either a Qwen-only methods
-note or a vague ``everything stacks'' efficiency story.
-
-\textcolor{todoBorder}{Source pointers: \path{paper/priority.md},
-\path{paper/claim-matrix.md},
-\path{paper/publishability-status.md},
-\path{paper/framing.md}.}
-\end{sectiontodo}

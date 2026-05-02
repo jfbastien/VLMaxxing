@@ -94,9 +94,18 @@ SOURCE_PATHS: dict[str, list[str]] = {
         "research/experiments/2026/artifacts/phase1_51V_qwen_cross_arch/videomme_dev30_8f_L2_kr050_summary.json",
         "research/experiments/2026/artifacts/phase1_51V_qwen_cross_arch/pair_analysis.txt",
     ],
-    "Qwen sparse vision 8f n=60": [
+    "Qwen sparse vision 8f kr=0.25": [
+        "research/experiments/2026/artifacts/phase1_63J_qwen_8f_kr_sweep/kr_sweep_summary.json",
+        "research/experiments/2026/artifacts/phase1_63J_qwen_8f_kr_sweep/pair_summary_kr025_8f.json",
+    ],
+    "Qwen sparse vision 8f kr=0.50": [
         "research/experiments/2026/2026-04-27-phase-1_63E-8f-findings.md",
         "research/experiments/2026/artifacts/phase1_63E_track_b_frame_scaling/pair_summary_8f.json",
+        "research/experiments/2026/artifacts/phase1_63J_qwen_8f_kr_sweep/kr_sweep_summary.json",
+    ],
+    "Qwen sparse vision 8f kr=0.75": [
+        "research/experiments/2026/artifacts/phase1_63J_qwen_8f_kr_sweep/kr_sweep_summary.json",
+        "research/experiments/2026/artifacts/phase1_63J_qwen_8f_kr_sweep/pair_summary_kr075_8f.json",
     ],
     "Gemma sparse vision 8f n=60": [
         "research/experiments/2026/2026-04-27-phase-1_63G-gemma-track-b-prereg.md",
@@ -162,7 +171,9 @@ CROSS_ARCH_CELLS = [
 
 # Measured sparse-execution points: timed vision-tower work is actually skipped.
 SPARSE_CELLS = [
-    CeilingCell("Qwen sparse vision 8f n=60", "measured sparse", 0.0998, 0.448, 1.047, 1.042),
+    CeilingCell("Qwen sparse vision 8f kr=0.25", "measured sparse", 0.099846, 0.648, 1.069, 1.069),
+    CeilingCell("Qwen sparse vision 8f kr=0.50", "measured sparse", 0.099846, 0.448, 1.047, 1.042),
+    CeilingCell("Qwen sparse vision 8f kr=0.75", "measured sparse", 0.099846, 0.172, 1.018, 0.998),
     CeilingCell("Gemma sparse vision 8f n=60", "measured sparse", 0.0785, 0.482, 1.039, 1.102),
     CeilingCell("Gemma sparse vision 16f n=60", "measured sparse", 0.1556, 0.406, 1.067, 1.035),
     CeilingCell("Gemma sparse vision 32f n=60", "measured sparse", 0.2420, 0.433, 1.117, 1.126),
@@ -212,18 +223,18 @@ def plot() -> None:
                 ax.annotate(
                     "MVBench holdout\n+13.6pp, advisory\nnon-vision timing",
                     xy=(c.product, c.observed_e2e),
-                    xytext=(-102, -35),
+                    xytext=(-140, -52),
                     textcoords="offset points",
                     fontsize=8,
                     arrowprops={"arrowstyle": "->", "linewidth": 0.8, "color": "#5f370e"},
                     bbox={"boxstyle": "round,pad=0.25", "fc": "#fff7e6", "ec": "#8d6e00"},
                 )
                 continue
-            if c.label == "Qwen sparse vision 8f n=60":
+            if c.label == "Qwen sparse vision 8f kr=0.25":
                 ax.annotate(
-                    "real skipped vision work\nceiling holds; fidelity fails",
+                    "Qwen keep-rate sweep\npredicts timing;\nfidelity fails",
                     xy=(c.product, c.observed_e2e),
-                    xytext=(32, -18),
+                    xytext=(30, -28),
                     textcoords="offset points",
                     fontsize=8,
                     arrowprops={"arrowstyle": "->", "linewidth": 0.8, "color": "#5b2a86"},

@@ -22,6 +22,9 @@ baseline at 9.48--20.37$\times$ same-class follow-up speedup on the same
 breadth. The many-turn stress adds the missing horizon check: adaptive and
 scheduled-refresh reuse stay drift-free through a 50-turn repeated-question
 cycle, while fixed \(K=1\) shows nonzero repeated-question drift but no cliff.
+The denser prompt-variation stress draws the sharper line: fixed \(K=1\)
+remains exact on 133 dense-answer-anchored follow-ups, while adaptive and
+refresh-10 each trade 6/133 paired drift for roughly 0.7\,s follow-up latency.
 Candidate
 C-STREAM remains the right scale-out target: perception-rate streaming state
 reuse under a native-rate protocol. The checked 26B-class scale-out bundle is now mixed
@@ -55,13 +58,3 @@ one empirical step from video-as-frames toward video-as-world-state updates.
 The strongest future version is not a better pixel threshold; it is a
 model-facing media interface where change, motion, object state, sensor time,
 and uncertainty arrive as first-class evidence.
-
-\begin{sectiontodo}{Shorten this once the venue template and abstract freeze}
-The conclusion now carries both the measured paper and the larger
-VLM-native-media agenda. The final pass should make it tighter, not louder, and
-must keep the future-codec language clearly separated from current evidence.
-
-\textcolor{todoBorder}{Source pointers: \path{paper/priority.md},
-\path{paper/claim-matrix.md},
-\path{paper/publishability-status.md}.}
-\end{sectiontodo}

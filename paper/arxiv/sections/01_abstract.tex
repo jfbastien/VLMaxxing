@@ -20,7 +20,13 @@ sessions have two follow-up questions per video. A separate many-turn stress on
 seven 20-frame short videos then cycles the same questions through 50 turns:
 adaptive repair and scheduled refresh have no observed paired drift on 343
 follow-ups, while fixed \(K=1\) remains below the 3\% drift gate but shows
-nonzero choice/correctness drift in the repeated-question schedule.
+nonzero choice/correctness drift in the repeated-question schedule. A stricter
+dense-answer-anchored prompt-variation stress gives the boundary:
+conservative fixed \(K=1\) remains 0/133 on follow-ups through 20 turns,
+while adaptive repair and refresh-10 each show 6/133 paired choice/correctness
+drift (4.51\%) in exchange for roughly 0.7\,s follow-up latency. Aggressive
+reuse is therefore a high-speed operating point, not a universal
+correctness-preserving policy.
 
 The central question is where a runtime must buy fresh visual evidence over
 time, and where cached state is enough to remain on its regime-specific
@@ -55,9 +61,10 @@ execution makes the first-pass story sharper: on Gemma 4-E4B-4bit 32f short,
 the runtime skips timed vision-tower work at 1.316$\times$ first-query speedup
 with no paired drift on 20 items and no parse failures. The full Gemma 8/16/32f sweep
 has zero paired answer drift but matched dense/sparse parse failures in some
-cells; Qwen is configuration-sensitive, with aggressive pruning failing
-fidelity and a conservative 16f operating point restoring aggregate accuracy
-and format gates at
+cells; Qwen is configuration-sensitive. A Qwen 8f keep-rate sweep tracks the
+C-CEILING timing prediction tightly even when all cells fail the fidelity
+contract; a conservative 16f operating point restores aggregate accuracy and
+format gates at
 1.032$\times$ with only 13.6\% vision-time reduction. These are measured
 sparse-execution envelopes, not a license to multiply every component win.
 The routing audits explain why those numbers are not the whole story:
