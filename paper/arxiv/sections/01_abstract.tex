@@ -63,8 +63,8 @@ with no paired drift on 20 items and no parse failures. The full Gemma 8/16/32f 
 has zero paired answer drift but matched dense/sparse parse failures in some
 cells; Qwen is configuration-sensitive. A Qwen 8f keep-rate sweep tracks the
 C-CEILING timing prediction tightly even when all cells fail the fidelity
-contract; a conservative 16f operating point restores aggregate accuracy and
-format gates at
+contract; a conservative 16f operating point recovers to within the
+aggregate-accuracy and format gates at
 1.032$\times$ with only 13.6\% vision-time reduction. These are measured
 sparse-execution envelopes, not a license to multiply every component win.
 The routing audits explain why those numbers are not the whole story:

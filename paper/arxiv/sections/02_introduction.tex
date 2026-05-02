@@ -19,6 +19,9 @@ questions on the same video, and it becomes even more obvious in live streams
 where most of the scene remains stable for long stretches. The interesting
 question is no longer whether redundancy exists. It does. The question is
 where that redundancy can be removed without breaking the answer.
+The largest measured opportunity is after ingest: repaired same-video
+follow-up reuse reaches 14.90--35.92$\times$ speedup with no observed paired
+drift on 62 repaired follow-ups in the tested breadth envelope.
 
 Our central question is where a VLM must buy fresh visual evidence over time,
 and where cached state is enough to stay on the relevant regime-specific
@@ -71,12 +74,12 @@ first-class \emph{streaming state reuse} evaluation with the same claim axes,
 artifact format, paired gates, cache-correctness checks, and baselines as
 the local runs. A checked 26B-class scale-out bundle now exists, and it
 sharpens the boundary rather than simply adding wins: the default cross-turn cache path is unsafe,
-a topology-aware prefix snapshot gives small-\(N\) positive follow-up rows,
+topology-aware prefix-snapshot rows are positive at small \(N\),
 and fixed-evidence streaming baselines show that low-FPS dense is a serious
 competitor. Candidate C-STREAM is therefore a checked but mixed artifact bundle
 and a set of gates, not a multiplier to inherit. This caution is also earned by our Qwen
 session-composition experiments: they reproduce speedup without preserving the
-full fidelity contract, and later sweeps rule out the tested prompt-cache
+full fidelity contract, and the tested sweeps rule out the prompt-cache
 family as a deployable composition policy. Even when the first answer is
 preserved, reused cache state can still damage later answers.
 
@@ -97,7 +100,7 @@ is mechanism-validation evidence rather than a sparse wall-clock claim.}
   >{\raggedright\arraybackslash}X
 @{}}
 \toprule
-Regime & Reused work & Denominator / evidence class & Headline evidence \\
+Regime & Reused work & Denominator / evidence class & Evidence / boundary \\
 After-ingest follow-up & prompt / key--value (KV) prefix for later questions on the same video & follow-up latency and paired drift; first query still pays full freight & raw 16f reuse reaches 91.1$\times$; adaptive repair spans short/medium/long and 32f-short with 0/93 drift at 14.90--35.92$\times$; many-turn stress reaches 50 turns on repeated questions; dense-answer-anchored prompt variation exposes the conservative/aggressive boundary \\
 Fresh-video first pass & vision-tower work inside the first query & first-query wall-clock; local clean/advisory cells plus measured sparse-execution envelopes & VideoMME clean 1.113$\times$; MVBench/TOMATO advisory; measured sparse vision: Gemma 32f short 1.316$\times$ with 0/20 drift, Qwen conservative boundary 1.032$\times$ \\
 Candidate C-STREAM & repeated visual state in a native-rate or live pipeline & checked mixed artifact bundle; separate protocol & default 26B cache path blocked; prefix-snapshot rows positive but small-\(N\); fixed-evidence stream baselines favor low-FPS dense over the current proxy \\
@@ -123,7 +126,8 @@ across the same 93-query breadth, it has no observed paired drift and reaches
 (15.28--35.97$\times$ cold-all-query / repaired-follow-up ratio). Stress tests
 bound that win: repeated-question schedules show no adaptive cliff through 50
 turns, while dense-answer-anchored prompt variation keeps conservative
-fixed \(K=1\) exact but exposes 6/133 paired drift for aggressive policies.
+fixed \(K=1\) paired-drift clean but exposes 6/133 paired drift for aggressive
+policies.
 \item We derive and validate \textbf{stage-share ceiling (C-CEILING)}: a
 guardrail for end-to-end gain. The same arithmetic explains both the modest first-pass
 multipliers and the n=60 composition audit, where the observed
@@ -137,7 +141,7 @@ component-wise multiplication. The measured sparse-execution envelope then
 separates systems truth from fidelity truth: Gemma 32f short is a clean
 1.316$\times$ timed-skip cell, while Qwen's 8f keep-rate sweep validates the
 timing ceiling despite fidelity failure and its conservative 16f point
-restores aggregate accuracy/format only at low gain.
+recovers to within the aggregate-accuracy/format gates only at low gain.
 \end{itemize}
 
 Those three contributions do not compose as a naive product. C-VISION changes
@@ -154,7 +158,7 @@ alone is the wrong variable, and the VideoMME frame-count probes show that
 16-frame
 long-bucket regression does \emph{not} replicate on disjoint holdout; that is
 exactly the kind of boundary the paper keeps instead of smoothing away.
-The same discipline now applies to paired drift: several runs preserve
+The same discipline applies to paired drift: several runs preserve
 aggregate accuracy while changing individual answers, so the paper reports
 choice diffs, correctness diffs, pathological-attractor counts, and confidence
 intervals whenever they decide the claim boundary.

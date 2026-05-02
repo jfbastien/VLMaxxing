@@ -57,7 +57,7 @@ Entries are ordered by phase_id (chronological within each 1.x range).
     - research/experiments/2026/artifacts/phase1_55M_dense_anchored_cpersist/summary.json
     - research/experiments/2026/artifacts/phase1_55M_dense_anchored_cpersist/baseline_many_turn.jsonl
     - research/experiments/2026/artifacts/phase1_55M_dense_anchored_cpersist/paired_many_turn.jsonl
-  current_best_policy: "fixed K=1 remains exact on 0/133 dense-answer-anchored follow-ups; adaptive and refresh-10 each show 6/133 paired drift at roughly 0.7s follow-up latency"
+  current_best_policy: "fixed K=1 has 0/133 observed dense-answer-anchored follow-up drift; adaptive and refresh-10 each show 6/133 paired drift at roughly 0.7s follow-up latency"
   supersedes: []
   paper_relevance: primary (C-PERSIST operating-envelope boundary)
   prereg_outcome: Accepted with caveat / mixed

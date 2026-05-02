@@ -789,7 +789,9 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
         ),
         "c_vision": {
             "clean_sparse_execution": "Gemma 32f short 1.316x, 0/20 paired drift",
-            "qwen_boundary": "Qwen 16f kr=0.85 restores aggregate/format gate at 1.032x",
+            "qwen_boundary": (
+                "Qwen 16f kr=0.85 recovers to within aggregate/format gate at 1.032x"
+            ),
             "denominator": "first-query E2E",
             "source_paths": [
                 "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/pair_summary_32f.json",
@@ -1320,8 +1322,8 @@ def _write_lane_a_table(snapshot: dict) -> None:
         r"\begin{table}[H]",
         r"\centering",
         (
-            r"\caption{Automated snapshot of the Qwen holdout frontier from "
-            r"canonical artifact summaries. Supplementary non-canonical "
+            r"\caption{Qwen holdout frontier from canonical artifact "
+            r"summaries. Supplementary non-canonical "
             r"variants are intentionally excluded.}"
         ),
         r"\label{tab:lane-a-holdout}",
@@ -2164,7 +2166,8 @@ def _write_headline_table(snapshot: dict) -> None:
             "cold/cached follow-up & "
             f"{kv_by_frame[16]['speedup']:.1f}$\\times$ & "
             f"{kv_by_frame[16]['follow_up_median_s']:.3f}\\,s median; "
-            f"$\\Delta$acc {kv_by_frame[16]['accuracy_delta']:+.3f} & local clean \\\\"
+            f"$\\Delta$acc {kv_by_frame[16]['accuracy_delta']:+.3f} & "
+            "local aggregate-clean; unrepaired warm reuse \\\\"
         ),
         (
             "After-ingest & Qwen raw warm follow-up reuse, 8f & "
@@ -2293,8 +2296,8 @@ def _write_measured_sparse_execution_tables(snapshot: dict) -> None:
             r"\caption{Measured sparse vision execution on Qwen. The 8f "
             r"keep-rate sweep validates C-CEILING on timing but finds no "
             r"fidelity-preserving, speed-positive operating point. At 16f, "
-            r"increasing the keep rate monotonically recovers aggregate "
-            r"accuracy and format, ending at a point inside those tested "
+            r"increasing the keep rate monotonically recovers to within the "
+            r"aggregate-accuracy and format gates, ending at a point inside those tested "
             r"gates but not paired answer identity; it also no longer clears "
             r"the vision-reduction gate.}"
         ),
@@ -2347,7 +2350,7 @@ def _write_c_persist_sampler_table() -> None:
         r"\toprule",
         (
             r"\(T\) & Baseline & Session & \(\Delta\)acc & "
-            r"Choice/correct diffs & Speedup \\"
+            r"Choice diffs / correct diffs & Speedup \\"
         ),
         r"\midrule",
     ]
@@ -2357,7 +2360,7 @@ def _write_c_persist_sampler_table() -> None:
             f"{row['baseline_n_correct']}/{row['n_pairs']} & "
             f"{row['session_n_correct']}/{row['n_pairs']} & "
             f"{row['accuracy_delta_session_minus_baseline']:+.3f} & "
-            f"{row['paired_choice_diffs']}/{row['paired_correctness_diffs']} & "
+            f"{row['paired_choice_diffs']} / {row['paired_correctness_diffs']} & "
             f"{row['speedup_all_query_median_cold_over_session_follow_up']:.2f}"
             r"$\times$ \\"
         )
@@ -2644,9 +2647,9 @@ def _write_memory_characterization_table() -> None:
         r"\begin{table}[H]",
         r"\centering",
         (
-            r"\caption{Memory characterization across landed cells. The "
+            r"\caption{Memory characterization across reported cells. The "
             r"runtime mitigation configures an MLX allocation cap and avoided "
-            r"kernel panics in the clean queue, but observed process working-set "
+            r"kernel panics in the reported runs, but observed process working-set "
             r"peaks still reached 13.6\,GB.}"
         ),
         r"\label{tab:memory-characterization}",
@@ -2691,6 +2694,12 @@ def _median_value(rows: list[dict], key: str) -> float:
     values = [float(row[key]) for row in rows if isinstance(row.get(key), (int, float))]
     if not values:
         raise ValueError(f"no numeric values for {key}")
+    return _median_float(values)
+
+
+def _median_float(values: list[float]) -> float:
+    if not values:
+        raise ValueError("no values for median")
     values.sort()
     mid = len(values) // 2
     if len(values) % 2:
@@ -2722,12 +2731,47 @@ def _scaleout_bundle_snapshot() -> dict[str, object]:
     prefix8_rows = _load_jsonl(prefix8_path)
     prefix32_rows = _load_jsonl(prefix32_path)
 
-    def _mc_row_count(rows: list[dict]) -> int:
+    def _is_mc_prompt(row: dict) -> bool:
+        prompts = (str(row.get("raw_prompt") or ""), str(row.get("baseline_raw_prompt") or ""))
+        return any("Answer with a single letter" in prompt for prompt in prompts)
+
+    def _mc_prompt_count(rows: list[dict]) -> int:
+        return sum(1 for row in rows if _is_mc_prompt(row))
+
+    def _mc_parse_clean_count(rows: list[dict]) -> int:
         return sum(
             1
             for row in rows
-            if row.get("session_choice") is not None or row.get("baseline_choice") is not None
+            if _is_mc_prompt(row)
+            and row.get("session_choice") is not None
+            and row.get("baseline_choice") is not None
         )
+
+    def _mc_parse_failure_count(rows: list[dict]) -> int:
+        return sum(1 for row in rows if _is_mc_prompt(row) and bool(row.get("parse_failure")))
+
+    def _prompt_frame_fps(rows: list[dict], elapsed_key: str) -> list[float]:
+        return [
+            1000.0 * float(row["prompt_frame_count"]) / float(row[elapsed_key])
+            for row in rows
+            if isinstance(row.get("prompt_frame_count"), (int, float))
+            and isinstance(row.get(elapsed_key), (int, float))
+            and float(row[elapsed_key]) > 0.0
+        ]
+
+    def _fps_summary(rows: list[dict]) -> dict[str, float | int]:
+        snapshot_fps = _prompt_frame_fps(rows, "elapsed_ms")
+        cold_fps = _prompt_frame_fps(rows, "baseline_elapsed_ms")
+        return {
+            "prefix_snapshot_fps_median": _median_float(snapshot_fps),
+            "prefix_snapshot_fps_min": min(snapshot_fps),
+            "prefix_snapshot_fps_max": max(snapshot_fps),
+            "prefix_snapshot_rows_ge_30fps": sum(1 for value in snapshot_fps if value >= 30.0),
+            "cold_dense_fps_median": _median_float(cold_fps),
+        }
+
+    prefix8_fps = _fps_summary(prefix8_rows)
+    prefix32_fps = _fps_summary(prefix32_rows)
 
     b3_path = base / "sam_b3_streaming_baselines.jsonl"
     b3_summary = _artifact_json(base / "sam_b3_streaming_baselines_summary.json")
@@ -2811,10 +2855,13 @@ def _scaleout_bundle_snapshot() -> dict[str, object]:
                 "correctness_diffs": int(prefix8_summary["correctness_diffs"]),
                 "text_diffs": int(prefix8_summary["text_diffs"]),
                 "parse_failures": int(prefix8_summary["parse_failures"]),
-                "mc_rows": _mc_row_count(prefix8_rows),
-                "open_ended_rows": len(prefix8_rows) - _mc_row_count(prefix8_rows),
+                "mc_prompt_rows": _mc_prompt_count(prefix8_rows),
+                "mc_parse_clean_rows": _mc_parse_clean_count(prefix8_rows),
+                "mc_parse_failures": _mc_parse_failure_count(prefix8_rows),
+                "open_ended_rows": len(prefix8_rows) - _mc_prompt_count(prefix8_rows),
                 "median_speedup": _median_ratio(prefix8_rows, "baseline_elapsed_ms", "elapsed_ms"),
                 "median_elapsed_s": _median_value(prefix8_rows, "elapsed_ms") / 1000.0,
+                **prefix8_fps,
                 "source": _source_path_label(prefix8_path),
             },
             {
@@ -2824,10 +2871,13 @@ def _scaleout_bundle_snapshot() -> dict[str, object]:
                 "correctness_diffs": int(prefix32_summary["correctness_diffs"]),
                 "text_diffs": int(prefix32_summary["text_diffs"]),
                 "parse_failures": int(prefix32_summary["parse_failures"]),
-                "mc_rows": _mc_row_count(prefix32_rows),
-                "open_ended_rows": len(prefix32_rows) - _mc_row_count(prefix32_rows),
+                "mc_prompt_rows": _mc_prompt_count(prefix32_rows),
+                "mc_parse_clean_rows": _mc_parse_clean_count(prefix32_rows),
+                "mc_parse_failures": _mc_parse_failure_count(prefix32_rows),
+                "open_ended_rows": len(prefix32_rows) - _mc_prompt_count(prefix32_rows),
                 "median_speedup": _median_ratio(prefix32_rows, "baseline_elapsed_ms", "elapsed_ms"),
                 "median_elapsed_s": _median_value(prefix32_rows, "elapsed_ms") / 1000.0,
+                **prefix32_fps,
                 "source": _source_path_label(prefix32_path),
             },
         ],
@@ -2954,18 +3004,30 @@ def _write_scaleout_bundle_table() -> None:
         (
             "26B prefix snapshot & "
             f"8f after warm: {prefix8['median_speedup']:.2f}$\\times$, "
-            f"MC choice/correct {prefix8['choice_diffs']}/{prefix8['mc_rows']} / "
-            f"{prefix8['correctness_diffs']}/{prefix8['mc_rows']}, "
-            f"{prefix8['open_ended_rows']} open-ended equality rows, text diffs "
-            f"{prefix8['text_diffs']}/{prefix8['n']}, parse "
-            f"{prefix8['parse_failures']}/{prefix8['n']}; "
+            f"MC prompts {prefix8['mc_prompt_rows']} "
+            f"({prefix8['choice_diffs']}/{prefix8['mc_parse_clean_rows']} "
+            f"choice, {prefix8['correctness_diffs']}/{prefix8['mc_parse_clean_rows']} "
+            f"correct over parse-clean rows; {prefix8['mc_parse_failures']} matched "
+            "parse failures), "
+            f"{prefix8['open_ended_rows']} open-ended text-comparison rows, text diffs "
+            f"{prefix8['text_diffs']}/{prefix8['n']}, "
+            f"{prefix8['prefix_snapshot_fps_median']:.2f} fps median "
+            f"({prefix8['prefix_snapshot_rows_ge_30fps']}/{prefix8['n']} rows "
+            ">=30 fps); "
             f"32f after warm: {prefix32['median_speedup']:.2f}$\\times$, "
-            f"MC choice/correct {prefix32['choice_diffs']}/{prefix32['mc_rows']} / "
-            f"{prefix32['correctness_diffs']}/{prefix32['mc_rows']}, "
-            f"{prefix32['open_ended_rows']} open-ended equality rows, text diffs "
+            f"MC prompts {prefix32['mc_prompt_rows']} "
+            f"({prefix32['choice_diffs']}/{prefix32['mc_parse_clean_rows']} "
+            f"choice, {prefix32['correctness_diffs']}/{prefix32['mc_parse_clean_rows']} "
+            "correct), "
+            f"{prefix32['open_ended_rows']} open-ended text-comparison rows, text diffs "
             f"{prefix32['text_diffs']}/{prefix32['n']}, parse "
-            f"{prefix32['parse_failures']}/{prefix32['n']} & "
-            "positive warm-prefix snapshot row within the scale-out bundle; "
+            f"{prefix32['parse_failures']}/{prefix32['n']}, "
+            f"{prefix32['prefix_snapshot_fps_median']:.2f} fps median "
+            f"({prefix32['prefix_snapshot_rows_ge_30fps']}/{prefix32['n']} rows "
+            ">=30 fps; "
+            f"{prefix32['prefix_snapshot_fps_min']:.2f}--"
+            f"{prefix32['prefix_snapshot_fps_max']:.2f} fps) & "
+            "positive warm-prefix snapshot evidence within the scale-out bundle; "
             "excludes warm setup; wrapper-specific and not byte-identical; "
             "not standardized C-STREAM closure \\\\"
         ),

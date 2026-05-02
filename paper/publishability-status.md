@@ -1,4 +1,4 @@
-# Publishability Status — 2026-05-01
+# Publishability Status — 2026-05-03
 
 One-file answer to "what can we actually claim, in what venue, with what
 numbers, today." Kept in sync with [claim-matrix.md](claim-matrix.md) but
@@ -11,31 +11,34 @@ runtime inventories lower in this file are retained for provenance, but the
 current narrative interpretation should come from `priority.md` and the claim
 matrix.
 
-## Current Manuscript Position (2026-05-01)
+## Current Manuscript Position (2026-05-03)
 
 The manuscript should lead with three linked claims, not with a Qwen-only routing
 note:
 
-- **C-VISION**: Gemma vision-tower pruning has paper-grade first-pass
-  speedup evidence on clean and advisory holdout cells, and measured sparse
-  vision now has a bounded timed-execution envelope: Gemma 32f short is clean
-  at 1.316× with 0/20 paired drift, while Qwen recovers aggregate accuracy and
-  format only at a conservative low-gain keep rate.
 - **C-PERSIST**: persistent-KV reuse already delivers the largest local
   deployment numbers in the repo on same-video follow-up queries, and
   adaptive selective re-prefill now repairs the 20f/32f basin across the broad
   tested Qwen tranche: n=93, 0 observed paired drift, 15.28×--35.97× all-query
   speedup, and 14.90×--35.92× same-class follow-up speedup.
+- **C-CEILING / C-VISION**: C-CEILING is the denominator discipline. Gemma
+  vision-tower pruning has paper-grade first-pass speedup evidence on clean
+  and advisory holdout cells, and measured sparse vision has a bounded
+  timed-execution envelope: Gemma 32f short is clean at 1.316× with 0/20 paired
+  drift, while Qwen recovers to within aggregate-accuracy/format gates only at
+  a conservative low-gain keep rate.
 - **Qwen routing**: mechanism and boundary evidence showing why placement of
   fresh computation matters; novelty-ranked diagnostics stay local-only until
   their raw outputs are materialized as checked artifacts.
 
 Candidate C-STREAM is not decorative support, but it is not a main manuscript
 claim
-yet. The manuscript now has a checked mixed/boundary bundle: default cross-turn
+yet. The manuscript has a checked mixed/boundary bundle: default cross-turn
 cache reuse is unsafe, a topology-aware patched path restores correctness by
 refusing unsafe reuse, prefix snapshots are promising but small-\(N\) and
-warm-only, and low-FPS dense remains a serious baseline. C-STREAM becomes
+warm-only, the derived after-warm perception-fps view is 27.02 fps median at
+8f and 54.68 fps median at 32f, and low-FPS dense remains a serious baseline.
+C-STREAM becomes
 first-class only after a topology-safe fast path, raw paired rows, source
 paths, stale-cache failures, and matched native-streaming baselines land in the
 same evidence graph.
@@ -247,7 +250,7 @@ re-materialized as checked artifacts.
 
 | # | Claim | Blocker | Runtime estimate |
 |---|---|---|---|
-| I | "Method delivers broad measured sparse-path speedup" | Bounded measured sparse-vision envelope landed. Gemma 32f short is clean at 1.316× with 0/20 paired drift; full Gemma sweep has matched parse-failure caveats. Qwen kr=0.85 restores aggregate-accuracy/format/ceiling gates at 16f but is low-gain (1.032×, 13.6% vision-time reduction) and does not preserve paired answer identity. | Broad sparse backend and sparse LM prefill remain larger systems projects. |
+| I | "Method delivers broad measured sparse-path speedup" | Bounded measured sparse-vision envelope landed. Gemma 32f short is clean at 1.316× with 0/20 paired drift; full Gemma sweep has matched parse-failure caveats. Qwen kr=0.85 recovers to within aggregate-accuracy/format/ceiling gates at 16f but is low-gain (1.032×, 13.6% vision-time reduction) and does not preserve paired answer identity. | Broad sparse backend and sparse LM prefill remain larger systems projects. |
 | J | "Validated on VideoMME (de facto benchmark)" | **EARNED 2026-04-18 (8f); strengthened 2026-04-19 (16f, 32f); holdout 16f earned 2026-04-21.** Qwen 2.5-VL-7B-4bit, videomme_dev_v1.toml n=30 plus videomme_holdout_v1.toml n=30 at 16f. **8f dev**: dense_acc=0.533, parse_fail=0, agreement=1.000, RSS=6.67GB, mean e2e=31.0s. **16f dev**: dense_acc=0.567, mean e2e=75.2s. **32f dev**: dense_acc=0.533 (n=30), mean e2e=157.9s, RSS=8.52GB. **16f holdout**: dense_acc=0.700, short/medium/long = 0.600/0.600/0.900. The dev long-bucket regression did not replicate on holdout; 32f is not Pareto-efficient. Phase 1.57 Qwen drift geometry transfers to holdout at 8f/16f, while 32f drift remains dev-only. | Open: Phase 1.58 (4bit × long-context quantization) to test the one surviving mechanism candidate. Phase 1.54 (decode-accel) still open for long-item latency, not accuracy. |
 | K | "Cross-architecture generalization (Qwen windowed ↔ Gemma/InternVL3 all-global)" | Partial but no longer infrastructure-blocked: 1.42 Gemma E4B split-landed (TOMATO strict-agreement pass; MVBench aggregate-tie but strict-agreement fail), and 1.57 Gemma drift landed with corrected 133-token cached-feature geometry. Matched Qwen C-VISION transfer also exists. | Further work is interpretation, third-architecture breadth, or a stricter Gemma cache-substitute measurement; do not describe this as waiting for 1.42 to land. |
 | L | "Placement ablation (phase 1.38)" | Not run. | ≈ 30 min GPU wall time on a subset. |
@@ -312,7 +315,7 @@ runnable tonight vs. impl-gated.
 |------|-------|---------|-------|----------------|
 | should-do #3 | **1.51V Qwen cross-arch probe** (L=2, kr=0.50, VideoMME 8f n=30 thermally paired, 2 arms) | **CLOSED 2026-04-23** | Qwen 2.5-VL-7B-4bit | **landed** — `V_red = 0.398`, `E2E = 1.044× observed vs 1.043× predicted`, aggregate `Δacc = −0.033`; C-VISION upgrades to two-architecture mechanism evidence |
 | should-do #4 | Local paired streaming-protocol reproduction (1.30) + root-cause decomposition | CLOSED-BOUNDARY 2026-04-26 for current policy | Qwen 2.5-VL-7B-Instruct-4bit (driver hard-fails on non-Qwen at `run_phase1_30_scaleout_streaming.py:303-308`) | The 1.30W dense-Q0 reference lands paired cold 0.561 / streaming 0.503 (Δacc = −0.0585) / 2.79× with aggregate Q0 parity and clean format, but misses the preregistered `3.0×` rescue floor. The later 1.30AD instrumented cache-reuse rerun preserves the same aggregate boundary and reaches 3.02×, while proving follow-up vision pruning is inactive (`vision_pruning_active_fraction=0.0`, all follow-up image tokens cache-served). The failure is therefore fidelity/follow-up state, not a deployable sparse-vision speed win. 1.30X's Δacc=0.0 / 3.078× point is oracle-only. 1.30Z/AB falsify every tested long-Q0 keep rate from 0.67 through 0.90; high keep rates restore aggregate Q0 accuracy but still lose follow-ups by ~19pp. |
-| should-do #5 | **Selective re-prefill frontier** (recover Δacc at 20f/32f while clawing back speed) | Breadth + sampler + many-turn stress landed; natural dialogue and cross-architecture follow-ups remain | Qwen 2.5-VL-7B-4bit | **Fixed K=1 now has broad local evidence** — no observed paired drift on n=93 across 20f short/medium/long plus 32f short (one-sided rule-of-three upper bound ≈3.2%), 9.48×–20.37× same-class median follow-up speedup, and 0/62 pathological follow-up outputs. **Adaptive repaired-cache inheritance is now the headline repair lane under stationary same-video sessions** — 0/93 paired drift, 14.90×–35.92× same-class follow-up speedup, and a 15.28×–35.97× cold-all-query ratio. Stage timing shows adaptive second-follow-up reuse avoids fixed-K's repeated last-frame re-prefill. **Many-turn stress landed** — adaptive and scheduled-refresh variants are drift-free through a 50-turn repeated-question cycle; fixed K=1 has nonzero repeated-question drift but stays below the 3% gate. **Dense-answer-anchored stress landed** — fixed K=1 stays exact on 0/133 follow-ups, while adaptive and refresh-10 show 6/133 paired drift at roughly 0.7 s follow-up latency. The remaining horizon gap is true conversational stability, not the basic 10/20/50-turn cache stress. |
+| should-do #5 | **Selective re-prefill frontier** (recover Δacc at 20f/32f while clawing back speed) | Breadth + sampler + many-turn stress landed; natural dialogue and cross-architecture follow-ups remain | Qwen 2.5-VL-7B-4bit | **Fixed K=1 now has broad local evidence** — no observed paired drift on n=93 across 20f short/medium/long plus 32f short (one-sided rule-of-three upper bound ≈3.2%), 9.48×–20.37× same-class median follow-up speedup, and 0/62 pathological follow-up outputs. **Adaptive repaired-cache inheritance is now the headline repair lane under stationary same-video sessions** — 0/93 paired drift, 14.90×–35.92× same-class follow-up speedup, and a 15.28×–35.97× cold-all-query ratio. Stage timing shows adaptive second-follow-up reuse avoids fixed-K's repeated last-frame re-prefill. **Many-turn stress landed** — adaptive and scheduled-refresh variants are drift-free through a 50-turn repeated-question cycle; fixed K=1 has nonzero repeated-question drift but stays below the 3% gate. **Dense-answer-anchored stress landed** — fixed K=1 has 0/133 observed follow-up drift, while adaptive and refresh-10 show 6/133 paired drift at roughly 0.7 s follow-up latency. The remaining horizon gap is true conversational stability, not the basic 10/20/50-turn cache stress. |
 | should-do #6 | **1.58 bf16 KV control at 20f** (discriminate quantization vs attention-OOD) | ~3.5-4 h (bf16 8f n=30 + bf16 16f n=30) | Qwen 2.5-VL-7B bf16 | **wrapper-landed; preflight still blocks execution** — `scripts/run_phase1_58_bf16_control.sh` + analyzer landed, but the local bf16 checkpoint is absent and the current 16 GB laptop plan caps autonomous runs near `10 GB` RSS, well below the prereg's looser `<14 GB` feasibility band |
 | should-do #8 | **1.29 codec-native bridge (reframed)** | landed semantically; slow offline extraction | Qwen 2.5-VL-7B-4bit | **planner-substitution evidence landed** — MAX-over-span sparse sampling is HARD-FALSIFIED, while the continuous-score redesign reaches codec-dense agreement 1.000 on VideoMME dev all-duration n=30 with zero aggregate accuracy delta and zero parse failures. Later calibration-mode and calibration-source ablations are neutral on the local slices we ran. This is not a latency claim: offline codec extraction totals 7290s; the remaining gate is streaming decoder integration / native-rate systems evaluation. |
 | future | **1.60 scroll/pan subset** (20 items stratified by scroll intensity, L=2 kr=0.50 paired) | n/a on VideoMME; ~70-90 min after a real subset exists | Gemma 4-E4B-4bit or matched C-VISION stack | **closed as natural-VideoMME corpus limitation** — wider 60-item VideoMME scan found 0/60 items above `shifted_fraction >= 0.30` (max 0.125), so this only reopens with EgoSchema/EPIC-Kitchens/Ego4D or a labeled synthetic scroll/pan set |
@@ -581,7 +584,7 @@ items that priority.md does not carry. For the current ordering see
    falsify every tested long-Q0 keep rate from `0.67` through `0.90`, and
    the conditional union rerun was correctly skipped. Later instrumentation
    confirms the wording boundary: 1.30AD's speed comes from **Q0 admission +
-   K-cache reuse** (`vision_pruning_active_fraction=0.0`), while 1.30AC forces
+   cache-state reuse** (`vision_pruning_active_fraction=0.0`), while 1.30AC forces
    follow-up V-pruning active but falls to **1.06×**. Both land at the same net
    aggregate loss through different any-paired-drift sets. 1.30X's
    `Δacc = 0.0000`, `3.0781×` point remains an oracle upper bound, not a

@@ -88,9 +88,9 @@ Reuse without age control drifts. The planner therefore carries a
 bounded-staleness counter: even a block that continues to look reusable must be
 refreshed after its age exceeds a configured limit. The audited policy used
 in the paper sets that limit to four frame steps. That choice is not cosmetic.
-It is the main reason the planner survives TOMATO, where temporally concentrated
-evidence punishes policies that keep trusting a stale region simply because the
-local pixel difference remains small.
+It is an important guardrail on TOMATO, where temporally concentrated evidence
+punishes policies that keep trusting a stale region simply because the local
+pixel difference remains small.
 
 We summarize routing budget by converting block-level reuse into an effective
 fresh-frame count,
@@ -129,7 +129,8 @@ The other two mechanisms operate at different points in the stack.
 The Gemma path patches the vision tower after an internal layer, keeps only a
 fraction of the tokens, and scatters the result back so downstream geometry is
 unchanged. \(L\) names the internal pruning layer, and \(kr_V\) is the keep
-ratio for visual token groups after that layer. The resulting first-pass
+ratio for visual token groups after that layer; tables sometimes write \(kr\)
+when the visual-token axis is unambiguous. The resulting first-pass
 speedup is constrained by how much of total wall-clock the vision tower owns.
 More generally, if a method accelerates only
 one stage of a pipeline by a factor $s$, and all other stages are held fixed,
@@ -191,7 +192,7 @@ work. The Gemma and persistent-KV lanes do change measured wall-clock and
 therefore support speedup claims. The Qwen routing lane does not yet. The
 local session/streaming bridge is instrumented separately: unless image-token
 activity shows that follow-up vision tokens were actually recomputed, the paper
-describes that family as Q0 admission plus K-cache reuse, not as active
+describes that family as Q0 admission plus cache-state reuse, not as active
 follow-up pruning. The completed long-bucket continuations measured that
 boundary in the current prompt-cache path: all tested follow-up image tokens
 were cache-served. That choice is deliberate.

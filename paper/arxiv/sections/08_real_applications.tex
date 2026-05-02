@@ -4,7 +4,8 @@ Streaming state reuse is the natural scale-out target for anti-recomputation:
 the model revisits nearly the same visual state while deciding when to keep,
 shift, rebuild, or invalidate cached state. We do not claim a standardized
 C-STREAM result yet; here we report boundary evidence from a checked 26B-class
-scale-out bundle: cache-correctness failures, small-\(N\) prefix-snapshot wins, strong
+scale-out bundle: cache-correctness failures, positive small-\(N\)
+prefix-snapshot rows, strong
 low-FPS / screenshot / recency baselines, denominator-safe exactness exports,
 and source manifests. The result is mixed in the scientifically useful way. It
 shows which mechanisms are plausible, which simple baselines are serious, and
@@ -21,14 +22,14 @@ updates, stale-cache failure, fixed-vision-budget perception rate, and cache
 topology under mixed sliding-window/full-attention attention.
 
 The local Qwen session/streaming bridge explains why this gate matters. The
-dense-first-query reference restores aggregate first-query correctness and
+dense-first-query reference recovers aggregate first-query correctness and
 reaches 2.79$\times$ paired speedup, missing the preregistered 3.0$\times$
 rescue floor. The later instrumented cache-reuse rerun preserves the same
 aggregate boundary and reaches 3.02$\times$, but still misses the follow-up
 fidelity target. Instrumentation also shows that follow-up vision pruning is
 inactive in that family: follow-up image tokens are cache-served rather than
 actively pruned. The right interpretation is dense-first-query admission plus
-K-cache reuse, not a validated native-rate sparse-vision backend.
+cache-state reuse, not a validated native-rate sparse-vision backend.
 
 The 26B rows explain why cache-correctness is a gate rather than bureaucracy.
 The default cross-turn cache path over mixed sliding-window and full-attention
@@ -43,15 +44,13 @@ topology-aware prefix snapshot is
 the current positive scale-out follow-up row, but its denominator is narrow: the
 reported 9.11$\times$ at 8f and
 18.71$\times$ at 32f are per-follow-up medians after the prefix snapshot is
-warm, not setup-inclusive session speedups. The 8f row has 0/21 paired choice or
-correctness diffs, but also 6/21 text diffs and 2/21 matched parse failures.
-Only 5/21 rows are ground-truth multiple-choice items; the other 16 are
-open-ended equality checks.
-The expanded 32f row has 0/21 choice or correctness-field diffs, 7/21 text
-diffs, and no parse failures, but only 7/21 rows are ground-truth
-multiple-choice items; the other 14 are open-ended equality checks. These are
-small-\(N\), wrapper-specific rows, not proof that ordinary PromptCacheState is
-safe.
+warm, not setup-inclusive session speedups. The 8f row has seven
+multiple-choice prompts; five are parse-clean with 0/5 choice/correctness
+diffs, and two have matched parse failures. The other 14 rows are open-ended
+text-comparison rows, and 6/21 rows have text diffs. The expanded 32f row has seven
+multiple-choice prompts with 0/7 choice/correctness diffs, plus 14 open-ended
+text-comparison rows, 7/21 text diffs, and no parse failures. These are small-\(N\),
+wrapper-specific rows, not proof that ordinary PromptCacheState is safe.
 
 The same rows also answer a throughput question that streaming readers
 naturally ask: on the warm follow-up wall-clock denominator, how many prompt
@@ -75,12 +74,12 @@ C-STREAM; it clarifies the denominator. Fixed-evidence quality is not where the
 current proxy wins. The fps view above shows why the native-rate denominator is
 still worth measuring, but the checked bundle has not yet earned the stronger
 streaming claim. Advisory predecessor sectional-scroll instrumentation, not
-part of the checked bundle table, points in the same direction: over the same
-recording duration, event-driven state reuse can perceive at decode cadence
-with far fewer vision fires, while a 1\,Hz polling baseline either spends
-22--64$\times$ more vision calls for the same coverage or sees one frame every
-22--64 seconds at matched vision cost. That axis still needs checked native
-mechanism-quality validation before it becomes a headline.
+part of the checked bundle table, points in the same direction qualitatively:
+over the same recording duration, event-driven state reuse can perceive at
+decode cadence with far fewer vision fires than polling. Because those raw rows
+are not part of the checked bundle, we do not use their exact multiplier as
+C-STREAM evidence. That axis still needs checked native mechanism-quality
+validation before it becomes a headline.
 
 The recovery path is therefore specific, not rhetorical. C-STREAM needs a
 policy that wins on the axis native streams actually own: higher

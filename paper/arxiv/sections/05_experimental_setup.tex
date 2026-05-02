@@ -12,10 +12,10 @@ reuse preserves answers at lower effective fresh-frame budgets under a fixed
 dense backend.
 
 The first-pass speedup story uses the MLX-community
-\texttt{gemma-4-e4b-4bit} conversion of Google Gemma 4-E4B on Video-MME
+\texttt{gemma-4-e4b-4bit} conversion of Google Gemma 4-E4B on VideoMME
 \cite{gemma4e4b,gemma4e4bmlx,videomme}, MVBench, and TOMATO at 8-frame
 settings, plus dev-expansion cells and deeper frame-count probes. The
-after-ingest persistent-KV story uses repeated follow-up questions on Video-MME
+after-ingest persistent-KV story uses repeated follow-up questions on VideoMME
 sessions across short, medium, long, and deeper 32-frame slices, where the same
 video is queried multiple times and prompt reuse is therefore meaningful.
 
@@ -107,8 +107,9 @@ same item gets the same parsed answer under reuse, not merely whether the total
 score is unchanged.
 
 All automated main-text assets are generated from checked-in artifact summaries.
-If a result is clean, advisory, artifact-pending, or supplementary, the
-manuscript says so explicitly instead of letting the build silently promote it.
+If a result is canonical, advisory, supplementary, or still pending evidence,
+the manuscript says so explicitly instead of letting the build silently promote
+it.
 
 For the adaptive C-PERSIST breadth result, the denominator is both query- and
 session-visible. The combined envelope is 31 sessions \(\times\) three queries

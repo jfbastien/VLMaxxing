@@ -4,7 +4,7 @@
   "social_summary": "Video VLMs should not pay for the same visual state twice; C-PERSIST, C-VISION, and candidate C-STREAM touch different stages and must keep separate denominators.",
   "c_vision": {
     "clean_sparse_execution": "Gemma 32f short 1.316x, 0/20 paired drift",
-    "qwen_boundary": "Qwen 16f kr=0.85 restores aggregate/format gate at 1.032x",
+    "qwen_boundary": "Qwen 16f kr=0.85 recovers to within aggregate/format gate at 1.032x",
     "denominator": "first-query E2E",
     "source_paths": [
       "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/pair_summary_32f.json",

@@ -1,17 +1,9 @@
 \section{Conclusion}
 
 The paper began with a small absurdity: much of the video did not change, and
-the model paid anyway. The measured answer is not one single multiplier. Fresh
-videos admit modest but real first-pass gains, and those gains obey a
-share-limited ceiling that explains the regime and binds cleanly on the core
-ceiling checks, including the matched Qwen cross-architecture probe and the
-new measured sparse-vision envelope. Gemma now supplies the cleanest timed-skip
-cell at 32f short: 1.316$\times$ first-query speedup with no paired drift and
-no parse failures on 20 items. Qwen supplies the cautionary half of the same
-story: aggressive pruning fails, while a conservative keep rate restores
-aggregate accuracy and format at low gain.
-Same-video
-follow-up queries admit much larger multipliers: raw persistent-KV reuse
+the model paid anyway. The measured answer is not one single multiplier.
+Same-video follow-up queries admit the largest measured multipliers: raw
+persistent-KV reuse
 reaches sub-second latency inside the \(\leq 16\)f tested envelope, while
 selective re-prefill repairs the deeper cache-reuse basin at higher latency.
 Adaptive repair now gives no observed paired drift across 93 paired queries
@@ -23,8 +15,16 @@ breadth. The many-turn stress adds the missing horizon check: adaptive and
 scheduled-refresh reuse stay drift-free through a 50-turn repeated-question
 cycle, while fixed \(K=1\) shows nonzero repeated-question drift but no cliff.
 The denser prompt-variation stress draws the sharper line: fixed \(K=1\)
-remains exact on 133 dense-answer-anchored follow-ups, while adaptive and
+has no observed paired drift on 133 dense-answer-anchored follow-ups, while adaptive and
 refresh-10 each trade 6/133 paired drift for roughly 0.7\,s follow-up latency.
+Fresh videos admit smaller but real first-pass gains, and those gains obey a
+share-limited ceiling that explains the regime and binds cleanly on the core
+ceiling checks, including the matched Qwen cross-architecture probe and the
+new measured sparse-vision envelope. Gemma supplies the cleanest timed-skip
+cell at 32f short: 1.316$\times$ first-query speedup with no paired drift and
+no parse failures on 20 items. Qwen supplies the cautionary half of the same
+story: aggressive pruning fails, while a conservative keep rate recovers to
+within the aggregate-accuracy and format gates at low gain.
 Candidate
 C-STREAM remains the right scale-out target: perception-rate streaming state
 reuse under a native-rate protocol. The checked 26B-class scale-out bundle is now mixed

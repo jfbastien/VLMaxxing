@@ -19,7 +19,7 @@ effective visual budget. The MVBench statement is explicitly against the
 dense-6 point at a matched-or-lower fresh-frame budget; dense-8 remains the
 higher absolute-accuracy point on that slice.
 
-\subsection{Automated Snapshot}
+\subsection{Canonical Frontier Snapshot}
 
 \input{generated/tables/lane_a_holdout.tex}
 
@@ -32,15 +32,15 @@ higher absolute-accuracy point on that slice.
   }
 \caption{Audited Qwen holdout frontier from canonical artifact summaries.
   The higher-stability MVBench refinement is excluded because its artifact
-  status is supplementary rather than promotion-grade.}
+  status remains supplementary rather than part of the canonical evidence set.}
   \label{fig:lane-a-pareto}
 \end{figure}
 
 The omitted higher-stability MVBench refinement remains scientifically
 interesting: it reaches 0.633 accuracy at 4.49 effective fresh frames and
 therefore matches dense-8 at 56\% of the fresh-frame budget. The current
-artifact does not meet the release-grade provenance bar, so it is mechanism
-context rather than a plotted result.
+artifact is not part of the canonical evidence set, so it is mechanism context
+rather than a plotted result.
 
 \subsection{A Second Architecture Shows The Boundary}
 

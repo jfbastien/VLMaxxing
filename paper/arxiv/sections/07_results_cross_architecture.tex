@@ -54,10 +54,10 @@ tokens. The useful mechanism is not an architecture-specific ``saturation
 ceiling'' but a threshold story: onset depth moves with architecture, while
 basin geometry remains the object to avoid or repair.
 
-That repair path is now local evidence, not just future work. Selective
+That repair path is local evidence, not just future work. Selective
 re-prefill refreshes a small visual tail before a follow-up query. The simple
 fixed policy is \(K=1\): refresh only the newest visual frame and reuse the
-rest of the video prefix. It is now broad rather than anecdotal. Across 20f
+rest of the video prefix. The evidence is broad rather than anecdotal. Across 20f
 short, medium, and long VideoMME slices plus a 32f short slice, fixed \(K=1\)
 has no observed paired choice or correctness drift on 93 paired queries, no
 observed pathological follow-up outputs on 62 repaired follow-ups, and
@@ -269,8 +269,8 @@ comparison and not a matched-runtime claim.
   pruned run, and the predicted speedup is then compared with the independently
   observed end-to-end speedup. The purple measured-sparse markers include the
   Qwen 8f keep-rate sweep, which validates the timing prediction while failing
-  the fidelity contract, plus the 16f \(kr=0.85\) point, which restores the
-  aggregate-accuracy/format gate at only 1.032$\times$ because vision reduction
+  the fidelity contract, plus the 16f \(kr=0.85\) point, which recovers to
+  within the aggregate-accuracy/format gate at only 1.032$\times$ because vision reduction
   falls to 13.6\%. The clean measured
   sparse-execution cell is the Gemma 32f-short bucket reported in
   Table~\ref{tab:headline-results}.}
@@ -288,7 +288,8 @@ computed from measured share terms, not fit to the observed end-to-end
 multiplier. The newer measured sparse-execution rows are plotted in
 Figure~\ref{fig:vshare-ceiling} and tabulated in
 Tables~\ref{tab:gemma-measured-sparse-vision}
-and~\ref{tab:qwen-measured-sparse-vision}. MVBench's advisory residual is in
+and~\ref{tab:qwen-measured-sparse-vision}. Residual is observed minus
+predicted speedup. MVBench's advisory residual is in
 the favorable timing direction, so it is not used as a clean first-pass
 headline.}
 \label{tab:vshare-ceiling-residuals}
@@ -323,9 +324,14 @@ sweep is a timing-validation/fidelity-failure boundary, and its 16f \(kr=0.85\)
 point is the low-gain aggregate-accuracy/format boundary. That is why the paper describes
 benchmark-, architecture-, and protocol-sensitive magnitude rather than
 benchmark-invariant first-pass gain. \(V_{\mathrm{share}}\) governs magnitude,
-while \(V_{\mathrm{red}}\) itself is benchmark- and configuration-conditional
-within the measured 0.350--0.471 range. That softening is not a retreat. It is
-what the holdouts and the cross-arch probe earned.
+while \(V_{\mathrm{red}}\) itself is benchmark- and configuration-conditional.
+In the original holdout and cross-architecture C-CEILING cells,
+\(V_{\mathrm{red}}\) spans 0.350--0.471; the newer measured sparse-execution
+rows broaden that configuration range and are reported separately in
+Tables~\ref{tab:gemma-measured-sparse-vision}
+and~\ref{tab:qwen-measured-sparse-vision}. That softening is not a retreat. It
+is what the holdouts, measured sparse-execution rows, and cross-architecture
+probe earned.
 
 \subsection{What Stacks and What Does Not}
 
@@ -343,7 +349,7 @@ at 8 frames, the original session/streaming stack that combines \(L=2\),
 \(kr_V=0.50\) vision pruning with persistent-KV reuse over a VideoMME
 dev+holdout union (\(n=57\) sessions, 171 queries) was a hard negative. The
 dense-first-query reference improves the failure mode but remains a near-miss
-rather than a promotion: cold aggregate accuracy is 0.561 and the streaming path
+rather than a deployable policy: cold aggregate accuracy is 0.561 and the streaming path
 is 0.503, a \(-0.0585\) delta with 95\% paired CI roughly \([-0.117, 0.000]\),
 at 2.79$\times$ paired amortized end-to-end speedup. The later instrumented
 cache-reuse rerun preserves the faster 3.02$\times$ speed profile while showing
@@ -357,7 +363,7 @@ Q0 keep rates \(\{0.67,0.75,0.80,0.85,0.90\}\) reaches the target
 fidelity/speed band. More importantly, the instrumentation shows that the follow-up
 ``pruning'' arm is mechanically inactive under prompt-cache reuse:
 \texttt{vision\_pruning\_active\_fraction} is 0.0 and all follow-up image
-tokens are cache-served. The result is therefore Q0 admission plus K-cache
+tokens are cache-served. The result is therefore Q0 admission plus cache-state
 reuse, not active follow-up vision pruning.
 
 \input{generated/tables/qwen_bridge_boundary.tex}

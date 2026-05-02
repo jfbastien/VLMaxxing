@@ -8,7 +8,7 @@
 \toprule
 Regime & Setting & Speedup denominator & Gain & Validation / notes & Evidence \\
 \midrule
-After-ingest & Qwen raw warm follow-up reuse, 16f & cold/cached follow-up & 91.1$\times$ & 0.807\,s median; $\Delta$acc +0.000 & local clean \\
+After-ingest & Qwen raw warm follow-up reuse, 16f & cold/cached follow-up & 91.1$\times$ & 0.807\,s median; $\Delta$acc +0.000 & local aggregate-clean; unrepaired warm reuse \\
 After-ingest & Qwen raw warm follow-up reuse, 8f & cold/cached follow-up & 47.2$\times$ & 0.815\,s median; $\Delta$acc -0.048 & local within criterion \\
 After-ingest & Qwen repaired basin escape, adaptive & cold/repaired follow-up median & 14.90--35.92$\times$ & choice/correct diffs 0/93; cold-all-query ratio 15.28--35.97$\times$ & local repair breadth \\
 After-ingest & Qwen repaired basin escape, fixed K=1 & cold/repaired follow-up & 9.48--20.37$\times$ & choice/correct diffs 0/93; pathological follow-ups 0/62 & local repair breadth \\

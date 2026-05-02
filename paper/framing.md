@@ -122,8 +122,8 @@ duration-conditional partial reproduction + 1.55D frontier-partial):
    (15.28×--35.97× cold-all-query ratio). Stage timing explains the adaptive gain:
    the third follow-up reuses the repaired cache and avoids the fixed-K
    last-frame re-prefill. The dense-answer-anchored prompt-variation stress
-   now bounds the aggressive policies: fixed K=1 stays exact on 0/133
-   follow-ups, while adaptive repair and refresh-10 show 6/133 paired drift at
+   now bounds the aggressive policies: fixed K=1 has 0/133 observed follow-up
+   drift, while adaptive repair and refresh-10 show 6/133 paired drift at
    roughly 0.7 s follow-up latency.
    Tested deployment-regime table in [`paper/claim-matrix.md`](claim-matrix.md)
    provides paper-grade practitioner guidance; paired-fidelity boundary result
@@ -268,7 +268,7 @@ boundary as much as the positives:
   `streaming_follow_up_vision_pruning_active_fraction = 0.0` and
   `streaming_follow_up_all_image_tokens_reused_fraction = 1.0` on the
   long-bucket follow-ups. The current 1.30 family is therefore a
-  **Q0 admission + K-cache reuse** story, not a follow-up-pruning story.
+  **Q0 admission + cache-state reuse** story, not a follow-up-pruning story.
   High keep rates restore aggregate Q0 accuracy but still lose follow-up
   accuracy by ~19pp, so first-answer aggregate correctness is not sufficient
   to certify the reused state. The cache-invalidated `1.30AC` and instrumented
@@ -326,7 +326,7 @@ We claim, with current evidence:
 - the base policy family `max_abs(8,32) static+shifted age=4`
   **passes N=30 MVBench motion holdout** (cached=0.600@4.06, Pareto
   win vs dense-6; clean tree). A sticky_window=4 refinement reaches
-  0.633@4.49 (ties dense-8 at 56% budget; dirty-tree, supplementary)
+  0.633@4.49 (ties dense-8 at 56% budget; supplementary)
 - the same base policy ties dense-8 on **TOMATO motion holdout at
   N=30** (0.333@3.55 = dense-8 at 44% budget; clean tree, commit
   42b06eb). Low-accuracy regime but Pareto relationship holds.
@@ -427,7 +427,7 @@ revised pre-release source §8 and codex 2026-04-16 review, the paper must state
    is noted as future work.
 4. **Pixel diff is still the default proxy, but codec-native evidence now
    exists without a calibration caveat on the local slices we ran**: the
-   latest 1.29 results show why the bridge is hard. MAX-over-span sparse
+   1.29 results show why the bridge is hard. MAX-over-span sparse
    sampling degenerates to all-NOVEL, but continuous codec scores match dense
    choices on VideoMME dev all-duration \(n=30\), and that row is unchanged
    under both pooled/per-item threshold fitting and live-pixel/artifact
