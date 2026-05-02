@@ -252,7 +252,7 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
             "svg.hashsalt": "codec-through-regime-overview",
         }
     )
-    fig, ax = plt.subplots(figsize=(7.45, 4.45))
+    fig, ax = plt.subplots(figsize=(7.45, 4.7))
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     ax.axis("off")
@@ -292,29 +292,29 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
         col = (idx - 1) % 4
         row = 0 if idx <= 4 else 1
         w = 0.224
-        h = 0.335
+        h = 0.360
         gap_x = 0.020
         x = 0.024 + col * (w + gap_x)
-        y = 0.503 if row == 0 else 0.116
-        _draw_overview_box(ax, (x, y), w, h, face="#ffffff", edge="#0f172a", lw=0.95)
+        y = 0.520 if row == 0 else 0.090
+        _draw_overview_box(ax, (x, y), w, h, face="#ffffff", edge="#0f172a", lw=0.75)
         _draw_overview_box(
             ax,
-            (x + 0.012, y + h - 0.070),
-            0.046,
-            0.054,
+            (x + 0.013, y + h - 0.050),
+            0.028,
+            0.037,
             face="#111827",
             edge="#111827",
             text=str(idx),
             color="white",
-            size=7.6,
+            size=6.2,
             weight="bold",
             lw=0.7,
         )
         ax.text(
-            x + 0.069,
-            y + h - 0.030,
+            x + 0.052,
+            y + h - 0.024,
             title,
-            fontsize=7.1,
+            fontsize=7.35,
             color=color,
             weight="bold",
             va="top",
@@ -352,17 +352,17 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
         )
 
     fig.suptitle(
-        "Stop paying for the same video twice",
+        "Stop recomputing unchanged video state",
         fontsize=13.2,
         weight="bold",
         y=0.975,
     )
     fig.text(
         0.5,
-        0.925,
+        0.918,
         (
-            "Carry state. Buy fresh evidence only where it matters. "
-            "Never multiply incompatible speedups."
+            "Carry state. Recompute only where validation requires it. "
+            "Keep speedup denominators separate."
         ),
         ha="center",
         fontsize=7.5,
@@ -370,12 +370,12 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
     )
 
     # 1. Today vs desired runtime.
-    p = panel_rect(1, "TODAY -> TARGET", "#0f172a")
+    p = panel_rect(1, "REPEATED VIDEO", "#0f172a")
     ax.plot([px(p, 0.50), px(p, 0.50)], [py(p, 0.20), py(p, 0.77)], color="#cbd5e1", lw=0.85)
     ax.text(
         px(p, 0.25),
         py(p, 0.79),
-        "recompute",
+        "stateless",
         fontsize=5.9,
         ha="center",
         color="#b91c1c",
@@ -384,7 +384,7 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
     ax.text(
         px(p, 0.75),
         py(p, 0.79),
-        "update",
+        "stateful",
         fontsize=5.9,
         ha="center",
         color="#166534",
@@ -397,17 +397,6 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
             (px(p, 0.35), py(p, yy + 0.05)),
             (px(p, 0.43), py(p, yy + 0.05)),
             color="#64748b",
-            lw=0.7,
-        )
-        _draw_overview_box(
-            ax,
-            (px(p, 0.43), py(p, yy + 0.01)),
-            p[2] * 0.06,
-            p[3] * 0.08,
-            face="#f8fafc",
-            edge="#111827",
-            text="V",
-            size=4.9,
             lw=0.65,
         )
         local_grid(
@@ -419,24 +408,6 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
             rows=3,
             cols=4,
             highlight=[(1, (i + 1) % 4, "#22c55e")] if i else [],
-        )
-        _draw_overview_arrow(
-            ax,
-            (px(p, 0.81), py(p, yy + 0.05)),
-            (px(p, 0.88), py(p, yy + 0.05)),
-            color="#166534",
-            lw=0.7,
-        )
-        _draw_overview_box(
-            ax,
-            (px(p, 0.88), py(p, yy + 0.01)),
-            p[2] * 0.06,
-            p[3] * 0.08,
-            face="#ecfdf5",
-            edge="#166534",
-            text="Δ",
-            size=5.0,
-            lw=0.65,
         )
     ax.text(
         px(p, 0.25),
@@ -450,7 +421,7 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
     ax.text(
         px(p, 0.75),
         py(p, 0.11),
-        "buy changes",
+        "buy deltas",
         fontsize=6.3,
         ha="center",
         color="#166534",
@@ -473,14 +444,15 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
     ax.text(
         px(p, 0.50),
         py(p, 0.12),
-        "not a codec claim;\nit is the systems clue",
-        fontsize=5.8,
+        "change is local",
+        fontsize=6.2,
         ha="center",
         color="#64748b",
+        weight="bold",
     )
 
     # 3. The wasteful VLM loop.
-    p = panel_rect(3, "THROW STATE AWAY", "#b91c1c")
+    p = panel_rect(3, "VLM LOOP", "#b91c1c")
     _draw_overview_box(
         ax,
         (px(p, 0.10), py(p, 0.53)),
@@ -522,7 +494,7 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
     ax.text(
         px(p, 0.50),
         py(p, 0.38),
-        "throw away\nstate",
+        "discard\nstate",
         fontsize=6.2,
         ha="center",
         color="#b91c1c",
@@ -531,7 +503,7 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
     ax.text(
         px(p, 0.50),
         py(p, 0.18),
-        "rediscover the same scene",
+        "rebuild every query",
         fontsize=6.3,
         ha="center",
         color="#b91c1c",
@@ -543,9 +515,9 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
     p = panel_rect(4, "C-PERSIST", "#166534")
     for i, (q, text, face, edge) in enumerate(
         [
-            ("Q1", "full\ncompute", "#fee2e2", "#b91c1c"),
-            ("Q2", "repair\nsmall tail", "#dcfce7", "#166534"),
-            ("Q3", "reuse\nrepaired", "#dcfce7", "#166534"),
+            ("Q1", "full", "#fee2e2", "#b91c1c"),
+            ("Q2", "repair", "#dcfce7", "#166534"),
+            ("Q3", "reuse", "#dcfce7", "#166534"),
         ]
     ):
         yy = 0.67 - i * 0.17
@@ -561,31 +533,40 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
             face=face,
             edge=edge,
             text=text,
-            size=4.8,
+            size=5.4,
             lw=0.7,
         )
     ax.text(
         px(p, 0.79),
-        py(p, 0.63),
+        py(p, 0.65),
         f"{qwen_16f['speedup']:.1f}x",
-        fontsize=10.2,
+        fontsize=11.2,
         ha="center",
         color="#166534",
         weight="bold",
     )
     ax.text(
         px(p, 0.79),
-        py(p, 0.50),
-        "warm follow-up\nafter ingest",
-        fontsize=5.2,
+        py(p, 0.555),
+        "warm follow-up",
+        fontsize=5.6,
+        ha="center",
+        color="#166534",
+        weight="bold",
+    )
+    ax.text(
+        px(p, 0.79),
+        py(p, 0.445),
+        "Qwen-7B 16f\nafter ingest",
+        fontsize=4.8,
         ha="center",
         color="#334155",
     )
     ax.text(
         px(p, 0.50),
         py(p, 0.18),
-        f"{repair['speedup_min']:.2f}-{repair['speedup_max']:.2f}x repaired",
-        fontsize=5.8,
+        f"{repair['speedup_min']:.2f}-{repair['speedup_max']:.2f}x repaired follow-up",
+        fontsize=5.2,
         ha="center",
         color="#166534",
         weight="bold",
@@ -619,25 +600,34 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
     ax.text(
         px(p, 0.50),
         py(p, 0.38),
-        f"{gemma_short['observed_e2e']:.3f}x E2E",
-        fontsize=8.0,
+        f"{gemma_short['observed_e2e']:.3f}x",
+        fontsize=8.6,
         ha="center",
         color="#0369a1",
         weight="bold",
     )
     ax.text(
         px(p, 0.50),
-        py(p, 0.27),
-        "first-query sparse vision; 0/20 drift",
-        fontsize=5.6,
+        py(p, 0.30),
+        "first-query E2E",
+        fontsize=5.7,
+        ha="center",
+        color="#0369a1",
+        weight="bold",
+    )
+    ax.text(
+        px(p, 0.50),
+        py(p, 0.21),
+        "Gemma 32f short; 0/20 paired drift",
+        fontsize=5.1,
         ha="center",
         color="#334155",
     )
     ax.text(
         px(p, 0.50),
-        py(p, 0.14),
-        "not every sparse point is safe",
-        fontsize=5.7,
+        py(p, 0.115),
+        "bounded sparse-vision cell",
+        fontsize=5.3,
         ha="center",
         color="#64748b",
     )
@@ -676,18 +666,18 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
     )
     ax.text(
         px(p, 0.50),
-        py(p, 0.33),
-        "you only win where\ntime was spent",
-        fontsize=5.8,
+        py(p, 0.35),
+        "do not multiply",
+        fontsize=7.0,
         ha="center",
         color="#4f46e5",
         weight="bold",
     )
     ax.text(
         px(p, 0.50),
-        py(p, 0.16),
-        "this is why gains\ndo not multiply",
-        fontsize=5.6,
+        py(p, 0.19),
+        "stage share bounds every win",
+        fontsize=5.7,
         ha="center",
         color="#334155",
     )
@@ -728,14 +718,14 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
     ax.text(
         px(p, 0.50),
         py(p, 0.10),
-        "checked mixed; not headline",
+        "candidate; not headline",
         fontsize=5.3,
         ha="center",
         color="#64748b",
     )
 
     # 8. Bigger picture.
-    p = panel_rect(8, "STATE STREAMS", "#166534")
+    p = panel_rect(8, "TARGET SYSTEM", "#166534")
     for i in range(42):
         x = px(p, 0.13 + (i % 7) * 0.035)
         y = py(p, 0.34 + (i // 7) * 0.060)
@@ -778,7 +768,7 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
         p[3] * 0.11,
         face="#ecfdf5",
         edge="#166534",
-        text="target: state updates",
+        text="target: state > pixels",
         size=5.6,
         color="#166534",
         weight="bold",
