@@ -1,15 +1,15 @@
 \begin{table}[H]
 \centering
-\caption{Dense-answer-anchored C-PERSIST stress. Each follow-up prompt includes the previous canonical dense answer and the dense/cached arms receive identical prompt hashes. This is a content-conditioned prompt-variation stress, not natural dialogue. The speedup column uses the findings-note 80\,s cold-dense reference for readability.}
+\caption{Dense-answer-anchored C-PERSIST stress. Each follow-up prompt includes the previous canonical dense answer and the dense/cached arms receive identical prompt hashes. This is a content-conditioned prompt-variation stress, not natural dialogue. Parenthesized speedups in the median-follow-up column use the recorded 80\,s cold-dense reference for readability.}
 \label{tab:c-persist-dense-anchored}
-\small
-\begin{tabularx}{\linewidth}{@{}l r r r r X@{}}
+\scriptsize
+\begin{tabularx}{\linewidth}{@{}p{0.14\linewidth} r r p{0.19\linewidth} p{0.18\linewidth} X@{}}
 \toprule
-Policy & Horizon & Follow-ups & Choice/correct drift & Median follow-up & Interpretation \\
+Policy & Horizon & Follow-ups & Choice/correct drift & Median follow-up / speedup & Interpretation \\
 \midrule
-fixed \(K=1\) & 20 & 133 & 0/0 (0.00\%) & 5.329\,s ($\sim$15.0$\times$) & passes 3\% gate; no observed prompt-variation drift \\
-adaptive repair & 20 & 133 & 6/6 (4.51\%) & 0.698\,s ($\sim$114.6$\times$) & fails 3\% gate; early/late choice drift 3/63 and 3/70; no cliff \\
-scheduled refresh-10 & 20 & 133 & 6/6 (4.51\%) & 0.709\,s ($\sim$112.8$\times$) & fails 3\% gate; early/late choice drift 3/63 and 3/70; no cliff \\
+fixed \(K=1\) & 20 & 133 & choice 0/133; correct 0/133 (0.00\%) & 5.329\,s ($\sim$15.0$\times$) & passes 3\% gate; no observed prompt-variation drift \\
+adaptive repair & 20 & 133 & choice 6/133; correct 6/133 (4.51\%) & 0.698\,s ($\sim$114.6$\times$) & fails 3\% gate; early/late choice drift 3/63 and 3/70; no cliff \\
+scheduled refresh-10 & 20 & 133 & choice 6/133; correct 6/133 (4.51\%) & 0.709\,s ($\sim$112.8$\times$) & fails 3\% gate; early/late choice drift 3/63 and 3/70; no cliff \\
 \bottomrule
 \end{tabularx}
 \end{table}

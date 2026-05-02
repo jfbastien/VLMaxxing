@@ -1,6 +1,6 @@
 # Paper Claim Matrix
 
-Last updated: 2026-04-29
+Last updated: 2026-05-03
 
 This is the single-file answer to "what must be true before we can
 make each claim in the paper?" Per codex 2026-04-16 review: keep
@@ -32,7 +32,7 @@ be called codec-guided in the semantic-planner sense.
 |---|---|---|---|---|---|
 | 1 | Pixel-diff proxy has measurable (not perfect) point-predictor fidelity for ViT feature change | Phase 1.36 oracle reports per-block Pearson r by benchmark; pixel→feature correlation is non-trivial | **LOCAL DIAGNOSTIC COMPLETE, NOT RELEASE CLAIM-BEARING YET.** Phase 1.36 records best pixel-stat Pearson r=0.233 (TOMATO MEAN) to r=0.504 (MVBench CPF) on a 45/60-item cache-hit subset. Weak-to-moderate, content-dependent. The raw outputs were under ignored `results/feature_change_oracle/`, so this remains mechanism context until materialized as checked artifacts. | Regenerate or materialize the phase 1.36 raw outputs before using exact oracle numbers as paper-body evidence. | Local diagnostic until artifact-backed |
 | 2 | Naive mean-diff is too blunt on temporally concentrated evidence | Phase 1.36 oracle + Planner 2.0 ablation show that the best routing statistic is NOT the best point predictor; falsified-hypotheses ledger entry for mean-diff default | **LOCAL DIAGNOSTIC COMPLETE, NOT RELEASE CLAIM-BEARING YET.** The phase 1.36 note records MAX_ABS as 2nd-to-last as a point predictor on both benchmarks while winning in Planner 2.0 routing, which supports the mechanism story. Raw oracle outputs were ignored local files, so this can guide prose but should not be promoted as an exact paper-body table until checked in. | Regenerate or materialize the phase 1.36 raw outputs before using exact oracle numbers as paper-body evidence. | Local diagnostic until artifact-backed |
-| 3 | Concentration-aware routing (within-block child-veto, neighbor-halo veto, sticky-dynamic, age-bounded) repairs hard temporal failures | Phase 1.37 within-block child-veto OR phase 1.37B neighbor-halo veto + phase 1.26 sticky + age-bounded all evaluated on dev/holdout | Sticky4 passes MVBench holdout (1.26.B) but remains dirty-tree supplementary until rerun clean. Phase 1.37B **neighbor-halo veto RETIRED 2026-04-17 as preregistered null** — code landed (commits 2ebf90d, db10e12, 0ea69fe, 46b5d05, 2947198; `NeighborHaloVetoConfig` + `apply_neighbor_halo_veto` + 10 unit tests; Track A `--halo-veto-percentile` / `--halo-veto-neighborhood` CLI flags) and the full 9/9 cells × 2 benchmarks dev sweep landed. **TOMATO NO-LIFT**: control cached_accuracy=0.233 is rank-1 and within MRU 1/30=0.034 of every cell (halo moves only agreement 0.833→0.867–0.933 at the cost of fresh-frame budget 3.77→4.20–6.58). **MVBench NO-LIFT-NEGATIVE**: halo hurts — control is sole rank-1 at 0.800, 7/8 halo cells lose 0.067–0.100. No holdout run per the frozen promotion rule (no cell clears the 1/30 MRU bar). Phase 1.37 within-block child-veto remains preregistered but NOT YET IMPLEMENTED (distinct mechanism, lives in `_mix_qwen_features`); it is now the only remaining path toward claim 3 evidence. See registry row 1.37B and `research/experiments/2026/2026-04-17-phase-1_37B-neighbor-halo-veto-prereg.md` for full provenance. | Phase 1.37 within-block child-veto implementation + dev + holdout, plus a clean rerun for sticky4 if the refinement is used beyond supplementary discussion. Halo variant is off the table per frozen rule. | Claim on clean N=30 sticky4 or another surviving concentration-aware refinement plus at least one veto variant result; halo variant is unavailable, child-veto remains the only candidate. |
+| 3 | Concentration-aware routing (within-block child-veto, neighbor-halo veto, sticky-dynamic, age-bounded) repairs hard temporal failures | Phase 1.37 within-block child-veto OR phase 1.37B neighbor-halo veto + phase 1.26 sticky + age-bounded all evaluated on dev/holdout | Sticky4 passes MVBench holdout (1.26.B) but remains supplementary until rerun clean. Phase 1.37B **neighbor-halo veto RETIRED 2026-04-17 as preregistered null** — code landed (commits 2ebf90d, db10e12, 0ea69fe, 46b5d05, 2947198; `NeighborHaloVetoConfig` + `apply_neighbor_halo_veto` + 10 unit tests; Track A `--halo-veto-percentile` / `--halo-veto-neighborhood` CLI flags) and the full 9/9 cells × 2 benchmarks dev sweep landed. **TOMATO NO-LIFT**: control cached_accuracy=0.233 is rank-1 and within MRU 1/30=0.034 of every cell (halo moves only agreement 0.833→0.867–0.933 at the cost of fresh-frame budget 3.77→4.20–6.58). **MVBench NO-LIFT-NEGATIVE**: halo hurts — control is sole rank-1 at 0.800, 7/8 halo cells lose 0.067–0.100. No holdout run per the frozen promotion rule (no cell clears the 1/30 MRU bar). Phase 1.37 within-block child-veto remains preregistered but NOT YET IMPLEMENTED (distinct mechanism, lives in `_mix_qwen_features`); it is now the only remaining path toward claim 3 evidence. See registry row 1.37B and `research/experiments/2026/2026-04-17-phase-1_37B-neighbor-halo-veto-prereg.md` for full provenance. | Phase 1.37 within-block child-veto implementation + dev + holdout, plus a clean rerun for sticky4 if the refinement is used beyond supplementary discussion. Halo variant is off the table per frozen rule. | Claim on clean N=30 sticky4 or another surviving concentration-aware refinement plus at least one veto variant result; halo variant is unavailable, child-veto remains the only candidate. |
 | 4 | Saved budget placement matters more than quantity | Phase 1.38 temporal placement ablations show middle-event items; phase 1.28 shows 16-frame saturation | Partially supported (1.26 asymmetry, 1.28 saturation) | Phase 1.38 run | Claim when ablations + oracle + N=30 all converge |
 | 5 | Real sparse execution converts proxy gain into measured speedup | Measured sparse-execution harness: wall-clock decode/preprocess/vision/prefill/generation + peak memory + FLOPs | **LANDED AS A BOUNDED ENVELOPE, NOT A BROAD SPARSE BACKEND.** Phase 1.63G gives Gemma measured sparse vision over 8f/16f/32f with zero paired accuracy delta and 100% choice agreement at each frame count; the cleanest operating point is 32f short at 1.316× first-query E2E, 0/20 paired drift, 0/0 parse failures, and -0.012× ceiling gap. Caveat: the full Gemma sweep has matched dense/sparse parse failures and 8f misses the ceiling tolerance (+0.062×). Qwen 1.63E/H/J supplies the boundary: 8f kr∈{0.25,0.50,0.75} tightly validates timing but all cells fail fidelity; 16f kr=0.85 restores aggregate-accuracy/format/ceiling gates but gives only 1.032× E2E and 13.6% vision-time reduction. | Broader sparse-backend curve, competitor comparison, and conservative operating-point search remain open. | Sparse execution is no longer prospective: real skipped vision work exists, with one clean Gemma cell and a Qwen configuration boundary. Do not promote it as a universal fidelity-preserving backend. |
 | 6 | Method survives on temporal-reasoning benchmarks at N=30 | Phase 1.21 MVBench N=30 + phase 1.20 TOMATO N=30 | **BOTH HALVES PAPER-GRADE (clean trees).** MVBench: base 0.600@4.06 (Pareto win vs dense-6). TOMATO: base 0.333@3.55 (Pareto tie vs dense-8 at 44% budget). | Done | Full claim satisfied with clean provenance |
@@ -105,13 +105,16 @@ raw-paired text on 513 rows.
 
 ## V_share Governs 1.51V Gains (claim 15, ceiling validation)
 
-Rendered as `paper/figures/v_share_v_red_ceiling.png` (data JSON
-companion `..._data.json`). Scatter-back ceiling
-`E2E ≤ 1/(1 − share × reduction)` now has **6 core scatter points**:
-4 Gemma C-VISION vision-axis dev cells, 1 matched Qwen C-VISION
-cross-architecture dev cell, and 1 LLM-side composition-audit cell. The rendered
-figure adds 3 Gemma holdout cells (VideoMME/MVBench/TOMATO 8f) for
-**9 scatter points total**; the table below is the n=30 core:
+Rendered as `paper/arxiv/generated/figures/v_share_v_red_ceiling.png`
+(data JSON companion
+`paper/arxiv/generated/data/v_share_v_red_ceiling_data.json`). Scatter-back
+ceiling `E2E ≤ 1/(1 − share × reduction)` now has **17 plotted regimes**:
+4 Gemma C-VISION dev cells, 3 Gemma holdout cells, 1 matched Qwen
+cross-architecture cell, 1 n=60 composition-audit cell, and 8 measured sparse
+vision cells including the Qwen 8f keep-rate timing-only sweep, the Qwen 16f
+aggregate/format boundary, and Gemma sparse-vision cells. The table below is
+the original n=30/core explanation set; the paper figure is the expanded
+accounting view:
 
 | Regime                        | V_share (dense) | V_red observed | Predicted E2E | Observed E2E | Δ (obs − pred) |
 |-------------------------------|-----------------|-----------------|----------------|---------------|-----------------|
@@ -122,14 +125,14 @@ figure adds 3 Gemma holdout cells (VideoMME/MVBench/TOMATO 8f) for
 | Qwen VideoMME 8f dev          | 10.3%           | 39.8%           | 1.043×         | 1.044×        | +0.1pp          |
 | VideoMME holdout 8f (V+novelty, LLM-side) | 18.0% (G_share) | 33.4% (G_red) | 1.064×    | 1.064×        | +0.0pp          |
 
-**Formula predicts within 2.7pp across the 6 core scatter points**
+**Formula predicts within 2.7pp across the 6 original core scatter points**
 (max |Δ| 2.7pp on MVBench 8f dev; Qwen cross-arch point lands at +0.1pp).
 Mechanism generalizes across the vision axis on **two architectures**
-(Gemma and Qwen) AND across the LLM-decode axis (holdout composition audit). On the
-full 9-point figure (adding 3 holdout Gemma cells), local dev median |Δ|
-is tightened by the low-error Qwen point, while holdout max is 13.6pp
-(MVBench 8f holdout; thermal-inflated +50ms, advisory per session 4
-findings). Headline magnitude is regime-conditional on share-term:
+(Gemma and Qwen) AND across the LLM-decode axis (holdout composition audit).
+The expanded 17-regime figure also uses the Qwen 8f keep-rate sweep as
+timing-axis validation under failed fidelity; the worst residual remains the
+MVBench 8f holdout advisory row at 13.6pp. Headline magnitude is
+regime-conditional on share-term:
 vision-dominated benchmarks (TOMATO, MVBench) deliver >1.20× E2E; Qwen at
 VideoMME 8f sits near 1.04× because the vision tower owns only ~10% of
 wall-clock there; and at 32f the ceiling arithmetic says 1.14× is the
@@ -149,7 +152,7 @@ methods paper. Both lanes must contribute evidence.
 - Role in the paper: validates the routing / bounded-staleness mechanism and the "pixel-diff proxy" story. Natural home for the method appendix.
 - Currently earned for the release surface: 6 and 8. Local diagnostics complete but not
   release claim-bearing until raw outputs are checked in: 1, 2, 9. Partial: 3
-  (sticky4 only — dirty-tree supplementary; halo-veto retired 2026-04-17 as
+  (sticky4 only — supplementary rerun-required; halo-veto retired 2026-04-17 as
   preregistered null on TOMATO + MVBench dev, child-veto 1.37 remaining path), 4
   (asymmetry only; placement ablations pending), 5 (bounded measured
   sparse-execution envelope, not a broad sparse backend).

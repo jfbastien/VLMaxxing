@@ -57,17 +57,13 @@ def _git_info(repo: Path) -> dict[str, str]:
         return {"sha": "missing", "commit_date": "missing"}
     sha = _run(["git", "rev-parse", "HEAD"], cwd=repo)
     commit_date = _run(["git", "show", "-s", "--format=%cs", "HEAD"], cwd=repo)
-    if _run(["git", "status", "--short"], cwd=repo):
-        sha = f"{sha}-dirty"
     return {"sha": sha, "commit_date": commit_date}
 
 
 def _short_sha(sha: str, length: int = 7) -> str:
     if sha == "missing":
         return sha
-    suffix = "-dirty" if sha.endswith("-dirty") else ""
-    base = sha.removesuffix("-dirty")
-    return f"{base[:length]}{suffix}"
+    return sha[:length]
 
 
 def _iter_source_paths(payload: object) -> list[str]:
@@ -1860,7 +1856,7 @@ def _write_c_persist_repair_table(snapshot: dict) -> None:
             f"correct {adaptive['paired_correctness_diffs']}/{adaptive['n_pairs']}; "
             f"follow-up subset 0/{adaptive['n_follow_up_pairs']} "
             "\\(\\leq\\)4.8\\%; "
-            "third follow-up inherits the repaired state; paired third-follow-up "
+            "second follow-up inherits the repaired state; paired second-follow-up "
             "fixed/adaptive "
             "speedup 9.50$\\times$ \\\\"
         ),
@@ -2147,7 +2143,11 @@ def _write_headline_table(snapshot: dict) -> None:
     lines = [
         r"\begin{table}[H]",
         r"\centering",
-        r"\caption{Headline anti-recomputation results by regime.}",
+        (
+            r"\caption{Main local speedup cells. C-CEILING is the accounting "
+            r"guardrail for these rows; candidate C-STREAM is summarized "
+            r"separately because it is a mixed scale-out evidence lane.}"
+        ),
         r"\label{tab:headline-results}",
         r"\scriptsize",
         r"\renewcommand{\arraystretch}{1.14}",
@@ -2499,9 +2499,10 @@ def _write_c_persist_many_turn_table() -> None:
     for row in snapshot["rows"]:
         if row["post_repair_n"]:
             interpretation = (
-                f"post-repair drift {row['post_repair_choice_drift']}/"
-                f"{row['post_repair_n']} / {row['post_repair_correctness_drift']}/"
-                f"{row['post_repair_n']}; no cliff"
+                f"post-repair choice/correct "
+                f"{row['post_repair_choice_drift']}/{row['post_repair_n']} / "
+                f"{row['post_repair_correctness_drift']}/{row['post_repair_n']}; "
+                "no cliff"
             )
         elif row["choice_drift"]:
             interpretation = (
@@ -2511,7 +2512,8 @@ def _write_c_persist_many_turn_table() -> None:
             interpretation = "passes 3\\% gate with no observed drift"
         lines.append(
             f"{row['label']} & {row['horizon']} & {row['followup_n']} & "
-            f"{row['choice_drift']}/{row['correctness_drift']} & "
+            f"{row['choice_drift']}/{row['followup_n']} / "
+            f"{row['correctness_drift']}/{row['followup_n']} & "
             f"{row['median_followup_s']:.3f}\\,s & {interpretation} \\\\"
         )
     lines.extend([r"\bottomrule", r"\end{tabularx}", r"\end{table}"])
@@ -2584,16 +2586,20 @@ def _write_dense_anchored_cpersist_table() -> None:
             r"prompt includes the previous canonical dense answer and the "
             r"dense/cached arms receive identical prompt hashes. This is a "
             r"content-conditioned prompt-variation stress, not natural "
-            r"dialogue. The speedup column uses the findings-note 80\,s "
-            r"cold-dense reference for readability.}"
+            r"dialogue. Parenthesized speedups in the median-follow-up column "
+            r"use the recorded 80\,s cold-dense reference for readability.}"
         ),
         r"\label{tab:c-persist-dense-anchored}",
-        r"\small",
-        r"\begin{tabularx}{\linewidth}{@{}l r r r r X@{}}",
+        r"\scriptsize",
+        (
+            r"\begin{tabularx}{\linewidth}"
+            r"{@{}p{0.14\linewidth} r r p{0.19\linewidth} "
+            r"p{0.18\linewidth} X@{}}"
+        ),
         r"\toprule",
         (
             r"Policy & Horizon & Follow-ups & Choice/correct drift & "
-            r"Median follow-up & Interpretation \\"
+            r"Median follow-up / speedup & Interpretation \\"
         ),
         r"\midrule",
     ]
@@ -2608,7 +2614,8 @@ def _write_dense_anchored_cpersist_table() -> None:
             )
         lines.append(
             f"{row['label']} & {row['horizon']} & {row['followup_n']} & "
-            f"{row['choice_drift']}/{row['correctness_drift']} "
+            f"choice {row['choice_drift']}/{row['followup_n']}; "
+            f"correct {row['correctness_drift']}/{row['followup_n']} "
             f"({row['choice_drift_rate'] * 100:.2f}\\%) & "
             f"{row['median_followup_s']:.3f}\\,s "
             f"($\\sim${row['speedup_vs_80s_dense']:.1f}$\\times$) & "
@@ -2958,8 +2965,9 @@ def _write_scaleout_bundle_table() -> None:
             f"{prefix32['open_ended_rows']} open-ended equality rows, text diffs "
             f"{prefix32['text_diffs']}/{prefix32['n']}, parse "
             f"{prefix32['parse_failures']}/{prefix32['n']} & "
-            "positive small-N scale-out C-PERSIST row; excludes warm setup; "
-            "wrapper-specific and not byte-identical \\\\"
+            "positive warm-prefix snapshot row within the scale-out bundle; "
+            "excludes warm setup; wrapper-specific and not byte-identical; "
+            "not standardized C-STREAM closure \\\\"
         ),
         (
             "Fixed-evidence stream baselines & "
@@ -3015,7 +3023,7 @@ def _write_repo_provenance_table(primary: dict[str, str]) -> None:
         r"\centering",
         (
             r"\caption{Repo provenance captured by the manuscript sync step. "
-            r"Regenerate from a clean release tag for the frozen artifact "
+            r"Regenerate from the final release tag for the frozen artifact "
             r"bundle.}"
         ),
         r"\label{tab:repo-provenance}",

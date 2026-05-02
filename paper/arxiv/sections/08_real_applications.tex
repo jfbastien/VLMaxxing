@@ -79,11 +79,7 @@ C-STREAM result should combine topology-safe state reuse, an event/staleness
 gate that beats low-FPS dense under matched event windows, and a stale-cache
 failure case that shows when the runtime deliberately buys fresh evidence.
 
-\IfFileExists{generated/tables/scaleout_bundle_status.tex}{
 \input{generated/tables/scaleout_bundle_status.tex}
-}{
-\draftnote{Run \texttt{make paper-sync} to generate the scale-out bundle table.}
-}
 
 The scale-out bundle also adds two useful boundary checks. First, the large
 feature-reuse export is now denominator-safe: zero correctness delta is logged

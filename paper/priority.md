@@ -1,5 +1,5 @@
 ---
-date: 2026-04-23
+date: 2026-05-03
 parent: paper/framing.md
 status: living priority doc — updated each codex round + each session recap
 ---
@@ -97,12 +97,11 @@ others).
    P0 before submission; any sentence a reviewer cross-checks across two
    docs must agree.
 
-3. **Main CI green on `main`.** Local release checks are green in the current
-   cleanup tree (`make check`, `git diff --check`, `make paper-doctor`, and
-   `make paper-bundle`). Remote CI should be rerun after the release-hygiene
-   branch lands; without green CI the paper claims of reproducibility look
-   sloppy. The PDF build is a separate local toolchain issue in this sandbox:
-   Tectonic panics before TeX compilation, while the source bundle builds.
+3. **Release checks green on the final paper state.** Local release checks
+   must be rerun after the final provenance sync (`make paper-doctor`,
+   `make paper-build`, `make paper-bundle`, `git diff --check`). Remote CI
+   should be rerun after the release-hygiene branch lands; without green CI the
+   paper claims of reproducibility look sloppy.
 
 4. **Attention-propagation-drift vocabulary discipline.** Codex
    round-21 flagged that the pre-release source attributes the refresh requirement

@@ -13,7 +13,7 @@ only 3.55 effective fresh frames instead of 8.0. On MVBench motion, the same
 base policy reaches a higher point estimate than dense-6 while spending
 less visual refresh: 0.600 accuracy at 4.06 effective fresh frames versus
 0.567 at 6.0 fresh frames. At \(n=30\), that is a pointwise Pareto frontier
-observation, not a statistical victory lap. Those are not wall-clock claims.
+observation, not a powered benchmark win. Those are not wall-clock claims.
 They are benchmarked statements about preserved answer quality at lower
 effective visual budget. The MVBench statement is explicitly against the
 dense-6 point at a matched-or-lower fresh-frame budget; dense-8 remains the
@@ -21,11 +21,7 @@ higher absolute-accuracy point on that slice.
 
 \subsection{Automated Snapshot}
 
-\IfFileExists{generated/tables/lane_a_holdout.tex}{
 \input{generated/tables/lane_a_holdout.tex}
-}{
-\draftnote{Run \texttt{make paper-sync} to generate the automated holdout table.}
-}
 
 \begin{figure}[H]
   \centering
@@ -35,16 +31,16 @@ higher absolute-accuracy point on that slice.
     \fbox{\parbox{0.9\linewidth}{Run \texttt{make paper-sync} to generate the routing frontier figure.}}
   }
 \caption{Audited Qwen holdout frontier from canonical artifact summaries.
-  The higher-stability MVBench refinement is excluded because its current
-  artifact remains provisional and supplementary until final rerun.}
+  The higher-stability MVBench refinement is excluded because its artifact
+  status is supplementary rather than promotion-grade.}
   \label{fig:lane-a-pareto}
 \end{figure}
 
 The omitted higher-stability MVBench refinement remains scientifically
 interesting: it reaches 0.633 accuracy at 4.49 effective fresh frames and
 therefore matches dense-8 at 56\% of the fresh-frame budget. The current
-artifact is still provisional, so the paper keeps it out of the main figure on
-purpose.
+artifact does not meet the release-grade provenance bar, so it is mechanism
+context rather than a plotted result.
 
 \subsection{A Second Architecture Shows The Boundary}
 
@@ -68,15 +64,15 @@ as proof that reuse is semantically identical.
 
 \subsection{Local Diagnostics Are Mechanism Evidence}
 
-Two local diagnostics sharpen the mechanism story but are not paper-body claim
-evidence in this release snapshot. The novelty-ranked dense baseline tests
+Two local diagnostics sharpen the mechanism story but are not main-claim
+evidence here. The novelty-ranked dense baseline tests
 whether the cached planner is merely selecting visually novel frames; the
 feature-change oracle correlates blockwise pixel statistics with blockwise ViT
 feature change on cached dense features. These diagnostics inform the
-mechanism interpretation, but the current release claim rests on checked
+mechanism interpretation, but the reported claim rests on checked
 holdout frontier results.
 
-The current release claim does not depend on those local diagnostics. It is
+The reported claim does not depend on those local diagnostics. It is
 weaker and cleaner: the checked Qwen cells show that temporal placement can
 preserve answer accuracy at substantially lower effective fresh-frame budget on
 the motion slices, while the paper reports C-VISION and C-PERSIST separately
@@ -88,4 +84,4 @@ useful. They need to be good enough freshness or uncertainty oracles that the
 runtime buys new visual evidence in the right temporal neighborhood. The
 stronger novelty-ranked and pixel-to-feature diagnostics remain useful
 mechanism checks, but they should not be promoted until their artifacts are
-checked into the release evidence surface.
+checked into the reported evidence surface.

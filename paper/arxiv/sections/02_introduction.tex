@@ -38,16 +38,16 @@ already been rewritten to skip timed work. Reuse is three regimes with three
 different ceilings, not one multiplier that can be copied from paper to paper.
 
 That distinction changes what the paper is about. The first contribution is
-\emph{stage-share ceiling (C-CEILING)}: an arithmetic bound on how much of a
-local speedup can survive to end-to-end wall-clock. The second is
 \emph{persistent follow-up reuse (C-PERSIST)}: the after-ingest same-video
 regime where the biggest local multipliers already exist, but also where cache
-reuse enters a measurable basin unless the visual tail is repaired. The third
-is \emph{first-pass vision pruning (C-VISION)}: measured first-pass gains on
-fresh videos via training-free vision-tower pruning. Qwen routing then plays a
-different role: it is mechanism and boundary evidence. It shows when temporal
-substitution preserves answers, and keeps novelty-ranked and pixel-to-feature
-diagnostics as interpretation until their raw artifacts are public.
+reuse enters a measurable basin unless the visual tail is repaired. The second
+is \emph{stage-share ceiling (C-CEILING)}: an arithmetic guardrail on how much
+of a local speedup can survive to end-to-end wall-clock. The third is
+\emph{first-pass vision pruning (C-VISION)}: measured first-pass gains on
+fresh videos via training-free vision-tower pruning. Candidate C-STREAM stays
+in the paper as the native-rate state-update target and boundary evidence, not
+as a fourth headline; Qwen routing remains mechanism evidence under a fixed
+dense backend.
 
 The larger target is not a bigger threshold sweep and not a new codec in this
 paper. The current experiments are a measurement instrument: they ask which
@@ -66,7 +66,7 @@ already tolerate reuse, where they do not, and what a future model could learn
 as native refresh gates, delta encoders, or cache-state-aware attention.
 
 The scale-out streaming lane is part of the same science story, but it has a
-different protocol and is not yet a release claim. The intended end-state is a
+different protocol and is not yet a main claim. The intended end-state is a
 first-class \emph{streaming state reuse} evaluation with the same claim axes,
 artifact format, paired gates, cache-correctness checks, and baselines as
 the local runs. A checked 26B-class scale-out bundle now exists, and it
@@ -84,7 +84,7 @@ preserved, reused cache state can still damage later answers.
 \centering
 \caption{Reuse regime map. The denominator and evidence class are part of each
 claim, because these rows must not be multiplied into one curve. Candidate
-C-STREAM is included as a deployment target and promotion gate, not as an equal
+C-STREAM is included as a deployment target and evaluation gate, not as an equal
 headline; routing under a fixed dense backend is reported separately because it
 is mechanism-validation evidence rather than a sparse wall-clock claim.}
 \label{tab:three-regimes}
@@ -109,11 +109,6 @@ The table is a workload map. The contributions below are the analytical and
 empirical pieces that explain those workloads without collapsing them into a
 single multiplier. We make three contributions:
 \begin{itemize}[leftmargin=1.5em]
-\item We derive and validate \textbf{stage-share ceiling (C-CEILING)}: a
-guardrail for end-to-end gain. The same arithmetic explains both the modest first-pass
-multipliers and the n=60 composition audit, where the observed
-1.042$\times$ stacked result lands almost exactly where the measured share
-terms predict.
 \item We characterize \textbf{persistent follow-up reuse (C-PERSIST)}: after-ingest persistent-KV reuse on
 Qwen collapses follow-up latency to roughly conversational timescales, with a
 7B tested envelope through 16 frames / 6.5k prefill tokens, a clean 16f point,
@@ -125,14 +120,15 @@ while retaining 9.48--20.37$\times$ follow-up speedup. A state-aware adaptive
 variant repairs once and lets the next follow-up inherit that repaired state;
 across the same 93-query breadth, it has no observed paired drift and reaches
 14.90--35.92$\times$ same-class follow-up speedup
-(15.28--35.97$\times$ cold-all-query / repaired-follow-up ratio). A separate
-many-turn stress shows the adaptive and scheduled-refresh variants remain
-drift-free through a 50-turn repeated-question cycle on seven short videos,
-while fixed \(K=1\) shows nonzero repeated-question drift but stays below the
-3\% gate. A stricter dense-answer-anchored prompt-variation stress then
-bounds the deployment claim: conservative fixed \(K=1\) remains exact on
-follow-ups (0/133), while adaptive repair and scheduled refresh trade
-6/133 paired choice/correctness drift for roughly 0.7\,s follow-up latency.
+(15.28--35.97$\times$ cold-all-query / repaired-follow-up ratio). Stress tests
+bound that win: repeated-question schedules show no adaptive cliff through 50
+turns, while dense-answer-anchored prompt variation keeps conservative
+fixed \(K=1\) exact but exposes 6/133 paired drift for aggressive policies.
+\item We derive and validate \textbf{stage-share ceiling (C-CEILING)}: a
+guardrail for end-to-end gain. The same arithmetic explains both the modest first-pass
+multipliers and the n=60 composition audit, where the observed
+1.042$\times$ stacked result lands almost exactly where the measured share
+terms predict.
 \item We establish \textbf{first-pass vision pruning (C-VISION)}: training-free mid-layer vision-tower
 pruning yields measured first-pass end-to-end gains on frozen Gemma video-VLM
 runs, from a clean 1.113$\times$ VideoMME holdout to advisory larger cells,

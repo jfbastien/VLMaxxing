@@ -55,8 +55,8 @@ Entries are ordered by phase_id (chronological within each 1.x range).
   authoritative_note: research/experiments/2026/2026-05-02-phase-1_55M-dense-anchored-cpersist-findings.md
   authoritative_artifacts:
     - research/experiments/2026/artifacts/phase1_55M_dense_anchored_cpersist/summary.json
-    - research/experiments/2026/artifacts/phase1_55M_dense_anchored_cpersist/baseline_dense.jsonl
-    - research/experiments/2026/artifacts/phase1_55M_dense_anchored_cpersist/paired_dense_anchored.jsonl
+    - research/experiments/2026/artifacts/phase1_55M_dense_anchored_cpersist/baseline_many_turn.jsonl
+    - research/experiments/2026/artifacts/phase1_55M_dense_anchored_cpersist/paired_many_turn.jsonl
   current_best_policy: "fixed K=1 remains exact on 0/133 dense-answer-anchored follow-ups; adaptive and refresh-10 each show 6/133 paired drift at roughly 0.7s follow-up latency"
   supersedes: []
   paper_relevance: primary (C-PERSIST operating-envelope boundary)
@@ -253,7 +253,7 @@ authoritative in the per-phase notes under
     - research/experiments/2026/artifacts/phase1_21_mvbench_motion_holdout_v2_nosticky_pareto.json
     - research/experiments/2026/artifacts/phase1_21_sticky4_vs_dense8_holdout_v2.json
     - research/experiments/2026/artifacts/phase1_21_nosticky_vs_dense8_holdout_v2.json
-  current_best_policy: "base: max_abs(8,32) static+shifted age=4 — cached=0.600@4.06 (clean tree, Pareto win vs dense-6); sticky4 refinement: cached=0.633@4.49 (dirty tree, Pareto tie vs dense-8)"
+  current_best_policy: "base: max_abs(8,32) static+shifted age=4 — cached=0.600@4.06 (clean tree, Pareto win vs dense-6); sticky4 refinement: cached=0.633@4.49 (supplementary rerun-required, Pareto tie vs dense-8)"
   supersedes: [1.12.B (strengthened at N=30)]
   paper_relevance: primary (MVBench N=30 holdout — claim #6 MVBench half PASSED)
   prereg_outcome: Accepted (holdout v2 cells; dev v2 deferred as protocol note)
@@ -1267,7 +1267,7 @@ authoritative in the per-phase notes under
   status: completed 2026-04-29
   authoritative_note: research/experiments/2026/2026-04-29-phase-1_63H-16f-kr-sweep-findings.md
   authoritative_artifacts: [research/experiments/2026/artifacts/phase1_63H_16f_kr_sweep/]
-  current_best_policy: Qwen 16f keep-rate sweep recovers fidelity as kr rises; kr=0.85 is fidelity/format/ceiling safe but low-gain at 1.032x and 13.6% vision-time reduction
+  current_best_policy: Qwen 16f keep-rate sweep recovers aggregate accuracy and format as kr rises; kr=0.85 is aggregate-accuracy/format/ceiling safe but does not preserve paired answer identity, and remains low-gain at 1.032x and 13.6% vision-time reduction
   supersedes: []
   paper_relevance: primary boundary (Qwen measured sparse-execution configuration envelope)
   prereg_outcome: landed; useful monotone recovery curve, not a full sparse-vision gate pass

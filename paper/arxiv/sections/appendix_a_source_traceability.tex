@@ -4,7 +4,7 @@ The manuscript uses evidence classes and labels them differently in the text.
 \emph{Reproduced-here evidence} comes from checked-in \texttt{codec-through}
 artifacts and backs the automated headline assets, the persistent-KV curve, and
 the Qwen routing section. \emph{Advisory evidence} is checked in but misses a
-clean promotion gate such as thermal pairing or a strict quality band.
+clean reporting gate such as thermal pairing or a strict quality band.
 \emph{Scale-out bounded evidence} is automated only when the checked local
 bundle supplies raw paired rows, cache-correctness checks, matched baselines,
 and source manifests. \emph{Hypotheses or moving results} may be discussed for
@@ -13,14 +13,11 @@ snapshot.
 
 This appendix is where that distinction becomes audit-friendly. The repo
 provenance table below records the commit pins observed by the manuscript sync
-step. Because this draft commits generated paper assets, the primary row can
-point to the pre-commit working-tree snapshot that produced the PDF; a
-\texttt{-dirty} suffix means the PDF is a working-tree draft, not a
-submission-frozen artifact bundle. The final release should regenerate this
-table from a clean tag. Within the main text, numbers are written so they can
+step. The final release should regenerate this table from the final release tag
+after the source tree and generated assets are synchronized. Within the main text, numbers are written so they can
 be traced back to one phase note and one artifact family. When a result is
 excluded or downgraded on provenance grounds, the paper says so explicitly. The
-best current examples are the provisional MVBench higher-stability refinement, Gemma's
+best current examples are the supplementary MVBench higher-stability refinement, Gemma's
 matched-parse-failure sparse-vision sweep, and Qwen's conservative low-gain
 sparse-vision boundary: all are scientifically useful, but none should be
 silently promoted beyond the finite evidence class it actually earned.
@@ -53,7 +50,7 @@ C-PERSIST economics & setup-inclusive same-video session speedup after paying th
 Routing frontier & sparse routing under dense backend & local clean & checked routing artifacts and generated routing snapshot; Qwen 7B-4bit, MLX \\
 Gemma routing boundary & second-architecture semantic substitution & local boundary & Gemma 4-E4B-4bit routing-boundary artifacts; TOMATO/MVBench motion holdouts \\
 Qwen stacked boundary & session/streaming composition plus cache-boundary attribution & local negative / boundary & Qwen composition, cache-invalidation, and attribution artifacts; Qwen 7B-4bit, VideoMME dev+holdout \\
-Cache-distance probe & fp32 K/V cache-distance audit for composition boundary & local mechanism instrumentation & 20-row balanced drift-class cache-distance artifact; native fp16 cosine retained as overflow diagnostic, fp32 cosine is release-bearing \\
+Cache-distance probe & fp32 K/V cache-distance audit for composition boundary & local mechanism instrumentation & 20-row balanced drift-class cache-distance artifact; native fp16 cosine retained as overflow diagnostic, fp32 cosine is the reported metric \\
 Low-FPS dense baseline & 4f dense versus 8f dense on composition corpus & local baseline / ambiguous & low-FPS dense artifacts; Qwen 7B-4bit, 57 sessions / 171 queries \\
 Qwen 8f keep-rate sweep & C-CEILING timing validation under failed-fidelity sparse vision & local timing boundary & Qwen 8f keep-rate artifacts at \(kr=0.25/0.50/0.75\); timing matches prediction while fidelity fails \\
 Random-keep sanity check & structured Qwen scorer versus uniform random keep at matched keep-rate & local sanity baseline & Qwen 8f VideoMME dev30 dense, magnitude-score, and four uniform-random seeds \\
@@ -71,11 +68,7 @@ ledgers remain \path{paper/claim-matrix.md},
 \path{docs/reproduction-status.md}, and \path{paper/publishability-status.md};
 the table above records the paper-facing artifact families, while the generated
 repo-provenance table below records the checkout used for this PDF. A frozen
-submission bundle should regenerate this appendix from a clean release tag and
+submission bundle should regenerate this appendix from the final release tag and
 then lock any remaining advisory rows to explicit artifact-status labels.
 
-\IfFileExists{generated/tables/repo_provenance.tex}{
 \input{generated/tables/repo_provenance.tex}
-}{
-\draftnote{Run \texttt{make paper-sync} to generate the repo provenance table.}
-}

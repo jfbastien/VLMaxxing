@@ -22,8 +22,9 @@ no parse failures on 20 items. The full Gemma 8/16/32f sweep has zero paired
 answer drift, but dense and sparse arms share parse failures in some cells and
 the 8f row misses the ceiling tolerance. Qwen supplies the complementary
 boundary: the 8f keep-rate sweep follows the timing ceiling even as every cell
-fails the fidelity contract, and aggressive 16f pruning collapses fidelity and
-format, while \(kr=0.85\) restores fidelity, format, and ceiling agreement at only
+fails the fidelity contract, and aggressive 16f pruning collapses paired
+behavior and format, while \(kr=0.85\) restores aggregate accuracy, format, and
+ceiling agreement at only
 1.032$\times$ end-to-end speedup and 13.6\% vision-time reduction. The paper
 therefore claims a measured sparse-vision envelope, not a broad
 fidelity-preserving sparse backend.
@@ -55,9 +56,9 @@ the stronger breadth result rather than a short-only curiosity: it covers the
 same 93 paired queries with no observed paired drift and 14.90--35.92$\times$
 same-class follow-up speedup; the cold-all-query versus repaired-follow-up
 ratio is 15.28--35.97$\times$. Its remaining caveats are different. The long and
-32f cells passed the science gates but exceeded preregistered RSS gates that
-were too tight relative to later observed memory; the paper should report the
-observed memory envelope rather than retroactively calling those runs failures.
+32f cells passed the paired-fidelity gates but exceeded preregistered RSS gates
+that were too tight relative to later observed memory; we report the observed
+memory envelope separately rather than discarding the paired-fidelity result.
 The original breadth result is finite-horizon because those sessions contain
 two follow-up questions. The separate many-turn stress closes the easiest
 version of that attack: adaptive repaired-cache inheritance and scheduled refresh have no
@@ -71,20 +72,16 @@ repair and scheduled refresh each show 6/133 paired choice/correctness drift.
 That is a bounded high-speed operating point, not a universal
 correctness-preserving policy.
 
-\IfFileExists{generated/tables/memory_characterization.tex}{
 \input{generated/tables/memory_characterization.tex}
-}{
-\draftnote{Run \texttt{make paper-sync} to generate the memory characterization table.}
-}
 
 The related-work bar for this lane is also higher than ``we reused a KV
 cache.'' Prefix caching, RadixAttention, CacheBlend-style repair, SparseVILA,
 and HERMES all make parts of that sentence prior art. The manuscript's current
 claim is narrower: video-specific visual-tail repair, paired-drift accounting,
 the cache-basin failure mode, and the repaired-cache inheritance rule on this
-local stack. A submission version should still add at least one matched
-head-to-head against the closest persistent-video or visual-token sparsity
-baselines.
+local stack. A matched head-to-head against the closest persistent-video or
+visual-token sparsity baselines remains venue-hardening work rather than part
+of the current main claim.
 
 For Qwen routing, the opposite caveat applies. The holdout evidence is clean
 and useful, but it is still a quality--compute frontier result under a fixed
@@ -99,7 +96,7 @@ transfer was the downstream long-bucket accuracy shape, not the drift signal.
 The streaming/deployment lane remains the least harmonized evidence class in
 the paper, even though it is the clearest candidate for a future C-STREAM claim.
 It is there because it names the practical regime where redundancy can become
-large, not because it already closes the full systems checklist. The checked
+large, not because it already clears the full systems validation bar. The checked
 scale-out bundle is now real and useful, but mixed: default 26B cross-turn
 cache reuse is unsafe, a topology-aware prefix snapshot is positive only at
 small \(N\), fixed-evidence stream baselines favor low-FPS dense over the
@@ -126,7 +123,7 @@ while any-paired-drift sets differ. A direct cache-distance probe adds tensor
 evidence: fp32 cosine shows no-prune reuse is dense-like
 (\(K/V\approx1.0\)), while the pruned path diverges (\(K=0.724\),
 \(V=0.296\)); the native fp16 cosine columns are a numerical-overflow caution
-on finite cache windows, not release-bearing distances.
+on finite cache windows, not reported distances.
 
 This still does not give us a deployable row-level drift guard. Dense
 logit-margin and richer-feature scouts add a useful negative: answer-letter

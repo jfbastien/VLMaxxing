@@ -8,9 +8,9 @@
 \toprule
 Policy & Horizon & Follow-ups & Choice/correct drift & Median follow-up & Gate / post-repair check \\
 \midrule
-fixed \(K=1\) & 50 & 343 & 3/2 & 7.362\,s & passes 3\% gate but has nonzero repeated-question drift; no pathologies \\
-adaptive repair & 50 & 343 & 0/0 & 0.771\,s & post-repair drift 0/336 / 0/336; no cliff \\
-scheduled refresh-10 & 50 & 343 & 0/0 & 0.706\,s & post-repair drift 0/308 / 0/308; no cliff \\
+fixed \(K=1\) & 50 & 343 & 3/343 / 2/343 & 7.362\,s & passes 3\% gate but has nonzero repeated-question drift; no pathologies \\
+adaptive repair & 50 & 343 & 0/343 / 0/343 & 0.771\,s & post-repair choice/correct 0/336 / 0/336; no cliff \\
+scheduled refresh-10 & 50 & 343 & 0/343 / 0/343 & 0.706\,s & post-repair choice/correct 0/308 / 0/308; no cliff \\
 \bottomrule
 \end{tabularx}
 \end{table}
