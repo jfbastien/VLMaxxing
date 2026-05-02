@@ -13,10 +13,10 @@ related:
 - **Status:** **closed-earned as a derived view (write-up only).** No new
   runs. Recomputes
   existing M5-5b prefix-snapshot rows as `frames-per-turn / wall-clock-
-  per-turn`, the metric directly comparable to native-rate streaming
-  observation budgets (e.g. 30fps continuous video computer-use agents).
-- **Verdict:** at 32 frames/turn the snapshot path **ingests at a
-  median 54.68 fps of perception per follow-up turn** on Gemma 4
+  per-turn`, reported in the same fps units as native-rate observation
+  budgets but not a continuous-stream protocol.
+- **Verdict:** at 32 frames/turn the snapshot path **yields an effective
+  54.68 fps of prompt-frame throughput per follow-up turn** on Gemma 4
   26B-A4B / mlx-vlm 0.4.4 / M5 Max, with worst-case 23.85 fps and
   best-case 134.43 fps across 21 paired rows. At 8 frames/turn the
   median is 27.02 fps. The 32f expanded cell clears the 30fps
@@ -24,12 +24,13 @@ related:
   does not clear the threshold at the median and only 8/21 rows exceed
   30fps. The older 32f n=9 slice clears 30fps in every paired row, but
   the expanded n=21 slice does not.
-- **Why this matters for the paper:** the paper currently quotes
-  speedup-multipliers (9.11x at 8f, 26.59x at 32f from n=9). Multipliers
-  are the correct quality-vs-cost report for after-ingest C-PERSIST;
-  perception-fps is a complementary throughput denominator for readers
-  thinking about native-rate visual observation. They are the same
-  rows; the recomputed view does not add a new correctness gate.
+- **Why this matters for the paper:** the paper quotes paired speedup
+  multipliers (9.11x at 8f and 18.71x at 32f on the expanded n=21 row;
+  the predecessor 32f n=9 slice was 26.59x). Multipliers are the correct
+  quality-vs-cost report for after-ingest C-PERSIST; perception-fps is a
+  complementary throughput denominator for readers thinking about
+  native-rate visual observation. They are the same rows; the recomputed
+  view does not add a new correctness gate.
 
 ## Definition
 
@@ -88,14 +89,14 @@ The current Section 8 reads (paraphrased):
 
 Suggested addition (drop in after the existing sentence):
 
-> Reframed as ingestion throughput: the same rows ingest a median
+> Reframed as effective prompt-frame throughput: the same rows yield a median
 > 27.02 fps of perception per follow-up turn at 8 frames/turn, and
 > 54.68 fps at 32 frames/turn (n=21 each, Gemma 4 26B-A4B,
 > mlx-vlm 0.4.4, M5 Max). The 32f cell ranges 23.85 fps to 134.43
 > fps across paired rows and clears 30fps in 19/21 rows; the 8f cell
 > clears 30fps in 8/21 rows. The cold-dense baseline is 2-3 fps in
-> both cells. This is the throughput axis that maps onto native-rate
-> visual-stream observation, but only after the prefix is already
+> both cells. This uses the fps denominator that native-stream work
+> ultimately needs, but only after the prefix is already
 > warm. The first query on a fresh video still pays full cold-dense
 > freight; the gain is the after-ingest regime.
 

@@ -36,9 +36,10 @@ layers fails the cache-correctness check: it can move fast while producing
 divergent text and answer choices. A runner-side correctness guard that fully
 refills rotating-cache layers passes, and the patched library now passes the
 full cache-correctness regression as well: 42/42 text-identical rows, zero choice or
-correctness diffs, and four matched parse failures. That is correctness
-closure, not C-STREAM speedup. The patched path refuses unsafe cross-turn trim
-and runs at roughly cold-dense wall-clock. A topology-aware prefix snapshot is
+correctness diffs, and four matched parse failures. That closes this
+cache-correctness regression; it is not C-STREAM speedup. The patched path
+refuses unsafe cross-turn trim and runs at roughly cold-dense wall-clock. A
+topology-aware prefix snapshot is
 the current positive scale-out follow-up row, but its denominator is narrow: the
 reported 9.11$\times$ at 8f and
 18.71$\times$ at 32f are per-follow-up medians after the prefix snapshot is
@@ -52,20 +53,34 @@ multiple-choice items; the other 14 are open-ended equality checks. These are
 small-\(N\), wrapper-specific rows, not proof that ordinary PromptCacheState is
 safe.
 
+The same rows also answer a throughput question that streaming readers
+naturally ask: on the warm follow-up wall-clock denominator, how many prompt
+frames are effectively processed per second? The 8f prefix snapshot yields
+27.02\,fps at the median, with 8/21 paired rows above 30\,fps. The expanded 32f
+snapshot yields 54.68\,fps at the median, with 19/21 rows above 30\,fps and a
+23.85--134.43\,fps range. Cold dense sits near 2--3\,fps on the same rows.
+This is not a new correctness claim, not setup-inclusive speed, and not
+C-STREAM closure: it is the same after-warm prefix-snapshot evidence expressed
+in the fps denominator that native-stream work ultimately needs. The first query
+still pays full dense visual processing, the snapshot wrapper is required for
+the safe path, and continuous capture, stale-cache invalidation, and
+desktop-agent scroll/pan traces remain future gates.
+
 The streaming baselines cut in the other direction. On 22 screen/UI events,
 low-FPS dense uses four uniformly spaced frames and matches the fresh oracle on
 17/22 events, beating screenshot polling with one query-time frame (13/22),
 recency last-\(K\) with four recent frames (12/22), and the current
 event-window proxy with four event-window frames (13/22). That does not kill
 C-STREAM; it clarifies the denominator. Fixed-evidence quality is not where the
-current proxy wins. The separate throughput axis remains the reason to study
-native streams: advisory predecessor sectional-scroll instrumentation, not part
-of the checked bundle table, suggests that over the same recording duration
-event-driven state reuse can perceive at decode cadence with far fewer vision
-fires, while a 1\,Hz polling baseline either spends 22--64$\times$ more vision
-calls for the same coverage or sees one frame every 22--64 seconds at matched
-vision cost. That axis still needs checked native mechanism-quality validation
-before it becomes a headline.
+current proxy wins. The fps view above shows why the native-rate denominator is
+still worth measuring, but the checked bundle has not yet earned the stronger
+streaming claim. Advisory predecessor sectional-scroll instrumentation, not
+part of the checked bundle table, points in the same direction: over the same
+recording duration, event-driven state reuse can perceive at decode cadence
+with far fewer vision fires, while a 1\,Hz polling baseline either spends
+22--64$\times$ more vision calls for the same coverage or sees one frame every
+22--64 seconds at matched vision cost. That axis still needs checked native
+mechanism-quality validation before it becomes a headline.
 
 The recovery path is therefore specific, not rhetorical. C-STREAM needs a
 policy that wins on the axis native streams actually own: higher
