@@ -1,0 +1,86 @@
+{
+  "best_fidelity_safe_keep_rate": null,
+  "best_full_pass_keep_rate": null,
+  "cells": [
+    {
+      "accuracy_delta": -0.21666666666666667,
+      "accuracy_delta_ci95": [
+        -0.35000000000000003,
+        -0.08333333333333337
+      ],
+      "actual_e2e_speedup": 1.0692235498457652,
+      "actual_minus_predicted": 3.95557035173244e-05,
+      "choice_agreement": 0.5833333333333334,
+      "keep_rate": 0.25,
+      "mean_keep_rate": 0.25,
+      "n_paired_items": 60,
+      "pass_ceiling_explained": true,
+      "pass_complete_pairing": true,
+      "pass_e2e_positive": true,
+      "pass_fidelity": false,
+      "pass_format": false,
+      "pass_sparse_vision": true,
+      "predicted_e2e_speedup": 1.0691839941422479,
+      "summary_path": "research/experiments/2026/artifacts/phase1_63J_qwen_8f_kr_sweep/pair_summary_kr025_8f.json",
+      "vision_reduction": 0.6480698074645984,
+      "vision_share_dense": 0.09984616614478115
+    },
+    {
+      "accuracy_delta": -0.06666666666666665,
+      "accuracy_delta_ci95": [
+        -0.18333333333333335,
+        0.050000000000000044
+      ],
+      "actual_e2e_speedup": 1.0420945397432793,
+      "actual_minus_predicted": -0.004762885321788701,
+      "choice_agreement": 0.7166666666666667,
+      "keep_rate": 0.5,
+      "mean_keep_rate": 0.5,
+      "n_paired_items": 60,
+      "pass_ceiling_explained": true,
+      "pass_complete_pairing": true,
+      "pass_e2e_positive": true,
+      "pass_fidelity": false,
+      "pass_format": true,
+      "pass_sparse_vision": true,
+      "predicted_e2e_speedup": 1.046857425065068,
+      "summary_path": "research/experiments/2026/artifacts/phase1_63E_track_b_frame_scaling/pair_summary_8f.json",
+      "vision_reduction": 0.44829045085912533,
+      "vision_share_dense": 0.09984616614478115
+    },
+    {
+      "accuracy_delta": -0.08333333333333337,
+      "accuracy_delta_ci95": [
+        -0.16666666666666669,
+        0.0
+      ],
+      "actual_e2e_speedup": 0.9978196149057904,
+      "actual_minus_predicted": -0.01968528222033583,
+      "choice_agreement": 0.8333333333333334,
+      "keep_rate": 0.75,
+      "mean_keep_rate": 0.75,
+      "n_paired_items": 60,
+      "pass_ceiling_explained": true,
+      "pass_complete_pairing": true,
+      "pass_e2e_positive": false,
+      "pass_fidelity": false,
+      "pass_format": true,
+      "pass_sparse_vision": false,
+      "predicted_e2e_speedup": 1.0175048971261262,
+      "summary_path": "research/experiments/2026/artifacts/phase1_63J_qwen_8f_kr_sweep/pair_summary_kr075_8f.json",
+      "vision_reduction": 0.1723025326232266,
+      "vision_share_dense": 0.09984616614478115
+    }
+  ],
+  "complete": false,
+  "fidelity_safe_keep_rates": [],
+  "headline_pass": false,
+  "keep_rates": [
+    0.25,
+    0.5,
+    0.75
+  ],
+  "n_cells": 3,
+  "passing_keep_rates": [],
+  "phase": "1.63J"
+}
