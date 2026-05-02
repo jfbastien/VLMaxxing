@@ -1471,9 +1471,7 @@ def _measured_sparse_execution_snapshot() -> dict[str, object]:
                 "accuracy_delta": float(cell["accuracy_delta"]),
                 "choice_agreement": float(cell["choice_agreement"]),
                 "sparse_parse_failures": int(
-                    _artifact_json(REPO_ROOT / cell["summary_path"])["all"][
-                        "sparse_parse_failures"
-                    ]
+                    _artifact_json(REPO_ROOT / cell["summary_path"])["all"]["sparse_parse_failures"]
                 ),
                 "vision_reduction": float(cell["vision_reduction"]),
                 "observed_e2e": float(cell["actual_e2e_speedup"]),
@@ -2617,9 +2615,7 @@ def _write_dense_anchored_cpersist_table() -> None:
             f"{interp} \\\\"
         )
     lines.extend([r"\bottomrule", r"\end{tabularx}", r"\end{table}"])
-    (GENERATED / "tables" / "c_persist_dense_anchored.tex").write_text(
-        "\n".join(lines) + "\n"
-    )
+    (GENERATED / "tables" / "c_persist_dense_anchored.tex").write_text("\n".join(lines) + "\n")
     (GENERATED / "data" / "c_persist_dense_anchored_snapshot.json").write_text(
         json.dumps(snapshot, indent=2, sort_keys=True) + "\n"
     )
@@ -2715,9 +2711,7 @@ def _scaleout_bundle_snapshot() -> dict[str, object]:
     prefix8_path = base / "sam_m5_5b_swa_prefix_snapshot.jsonl"
     prefix32_path = base / "sam_m5_5b_swa_prefix_snapshot_32f_n21.jsonl"
     prefix8_summary = _artifact_json(base / "sam_m5_5b_swa_prefix_snapshot_summary.json")
-    prefix32_summary = _artifact_json(
-        base / "sam_m5_5b_swa_prefix_snapshot_32f_n21_summary.json"
-    )
+    prefix32_summary = _artifact_json(base / "sam_m5_5b_swa_prefix_snapshot_32f_n21_summary.json")
     prefix8_rows = _load_jsonl(prefix8_path)
     prefix32_rows = _load_jsonl(prefix32_path)
 
