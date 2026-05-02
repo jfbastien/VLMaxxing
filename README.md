@@ -44,7 +44,7 @@ uv run python scripts/fetch_corpus.py --tier primary --encode
 uv run python scripts/generate_synthetic_corpus.py
 ```
 
-For the paper draft:
+For the paper:
 
 ```bash
 uv sync --group dev --group research --group benchmark --group paper
@@ -72,7 +72,7 @@ make paper-build
 ```text
 .
 ├── docs/        stable methodology, setup, literature, and status
-├── paper/       arXiv draft, generated assets, and paper claim ledgers
+├── paper/       arXiv manuscript, generated assets, and paper claim ledgers
 ├── research/    dated experiment notes, registry, and checked artifacts
 ├── scripts/     reusable runners, analyzers, validators, and plotters
 ├── src/         importable codec_through package
@@ -95,4 +95,4 @@ harder to audit.
 ## License
 
 - code: [MIT](LICENSE)
-- docs, research notes, and paper-draft materials: [CC BY 4.0](LICENSE-docs)
+- docs, research notes, and paper materials: [CC BY 4.0](LICENSE-docs)

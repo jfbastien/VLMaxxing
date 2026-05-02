@@ -1,4 +1,4 @@
-# arXiv Manuscript Scaffold
+# arXiv Manuscript Workspace
 
 This subtree is the actual manuscript workspace.
 
@@ -47,7 +47,7 @@ Current local requirements:
 
 Current verified local path:
 
-- `tectonic` builds the draft PDF successfully on this machine
+- `tectonic` builds the manuscript PDF successfully on this machine
 - the paper bundle can be generated locally with `make paper-bundle`
 - CI can still use a fuller TeX Live action independently of the local setup
 
@@ -79,7 +79,7 @@ Current caveat:
 
 ## Style Choice
 
-This scaffold intentionally uses a minimal local LaTeX draft setup instead of a
+This workspace intentionally uses a minimal local LaTeX setup instead of a
 conference `.sty` file, because no official NeurIPS/CVPR/ICML style bundle is
 checked into the repo yet. Once the target venue is fixed, swap the
 `\documentclass`/style layer without changing the section split or automation.
@@ -90,7 +90,7 @@ For manuscript work, use [`../AGENTS.md`](../AGENTS.md) and
 [`../priority.md`](../priority.md) before editing prose. The LaTeX files are a
 distilled view of the science, not the claim authority.
 
-The current draft intentionally uses the manual bibliography in
+The current manuscript intentionally uses the manual bibliography in
 `sections/90_references.tex`. Do not add a parallel `.bib` file unless the build
 workflow is also converted to BibTeX/Biber.
 

@@ -13,7 +13,7 @@ This directory now has two distinct roles:
   - [`paper/narrative-rules.md`](narrative-rules.md)
 
 The manuscript is **not** meant to directly copy those markdown files into a
-paper. They are source material for humans and agents. The LaTeX draft should
+paper. They are source material for humans and agents. The LaTeX source should
 distill them into reader-facing prose for AI/VLM researchers.
 
 For paper work, use [`paper/AGENTS.md`](AGENTS.md) as the paper-local router.
