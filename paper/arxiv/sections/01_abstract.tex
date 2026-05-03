@@ -9,8 +9,8 @@ The biggest measured win comes after ingest. On frozen
 Qwen2.5-VL-7B-Instruct-4bit, adaptive same-video follow-up reuse preserves
 paired choices and correctness on the 93-query VideoMME breadth setting while
 reducing follow-up latency by 14.90--35.92$\times$. The first query is still
-cold; the win starts when later questions reuse the same video state. The
-mechanism is concrete: selective re-prefill repairs the cache basin, and the
+cold; the win starts when later questions reuse the same video state.
+Selective re-prefill repairs the cache basin, and the
 second follow-up inherits that repaired cache instead of buying the visual tail
 again. Stress tests bound the result rather than pretending it is universal:
 repeated-question schedules hold through 50 turns, while dense-answer-anchored

@@ -91,18 +91,11 @@ That rule has breadth. Across 20f short, medium, and long VideoMME slices
 plus the 32f short slice, adaptive repair has no observed paired choice or
 correctness drift on 93 paired queries, no observed pathological follow-up
 outputs, and 14.90--35.92$\times$ same-class follow-up speedup
-(15.28--35.97$\times$ cold-all-query / repaired-follow-up ratio). The
-rule-of-three upper bound on a query-level unseen paired-drift rate is about
-3.2\% over the full 93-query contract. Restricted to repaired follow-up turns,
-the count is also zero among 62 turns and the corresponding rule-of-three
-bound is about 4.8\%. At the session level the conservative count is 0/31
-sessions with any paired drift, or a rule-of-three bound of about 9.7\%. Each
-tested session has two follow-up questions after the cold first query. The 32f
-short cell is the
-largest local efficiency point in the tested envelope at
-35.92$\times$ same-class
-follow-up speedup (35.97$\times$ cold-all-query ratio), but the reason is not
-magic: the second follow-up inherits the repaired state instead of paying
+(15.28--35.97$\times$ cold-all-query / repaired-follow-up ratio). This is a
+finite tested envelope, not a population proof: the query-level rule-of-three
+bound is about 3.2\%, and the conservative session-level view is 0/31 sessions
+with any paired drift. The 32f short cell is the largest local efficiency point
+because the second follow-up inherits the repaired state instead of paying
 another newest-frame re-prefill.
 
 A timing attribution on the short-slice runs makes that concrete.
@@ -115,38 +108,27 @@ paired median second-follow-up fixed/adaptive speedup is therefore
 9.50$\times$, with an 88.9\% median tail-token reduction. This explains why
 adaptive dominates fixed \(K=1\) without changing the fidelity contract.
 
-A short-slice sampler sweep checks the easiest decoding objection. Across five
-temperatures from 0.0 to 1.5, baseline quality stays in range, pathological
-follow-up outputs are absent, and after-ingest speedups remain large. Two
-warm-sampler cells have small nonzero paired diffs, so this remains a
-short-slice robustness check, not part of the 0/93 breadth claim.
+Sampler variation does not explain the result. On the seven-clip short-slice
+mechanism cell, a five-temperature sweep and a \(3\times3\) seed/temperature
+cross-product keep baseline quality in range, preserve the fidelity and format
+gates, and retain large follow-up speedups. These are short-slice robustness
+checks, not part of the 0/93 breadth claim.
 
 \input{generated/tables/c_persist_sampler_stability.tex}
 
-A seed/temperature cross-product on the same seven clips reaches the same
-conclusion. All nine cells pass the fidelity, format, and baseline-quality
-gates, with maximum \(|\Delta\)acc\(| \le 0.048\) and zero pathological
-follow-up hits across \(189\) paired rows in aggregate. Speed remains large
-but seed-dependent (17.37--25.84$\times$), so the table supports
-fidelity/format robustness on the short slice, not tight timing variance or
-benchmark-wide stochastic stability.
-
 \input{generated/tables/c_persist_sampler_seed_sweep.tex}
 
-The follow-up envelope is no longer limited to two-turn sessions. A separate
-many-turn stress test repeats the same three VideoMME short questions across
-10-, 20-, and 50-turn schedules on seven 20-frame videos. This is deliberately
-not a natural-dialogue benchmark: the dense baseline rows are deterministic
-replicas of 21 unique stateless dense runs, which makes them valid for
-turn-matched drift pairing but not independent timing samples. Under that
-stress, adaptive repair and scheduled refresh both have 0/343 follow-up paired
-choice drift and 0/343 paired correctness drift at the 50-turn horizon, with
-median follow-up latency below 0.8\,s. Fixed \(K=1\) remains below the 3\%
-drift gate but shows sparse nonzero drift in the repeated-question schedule:
-3/343 choice diffs and 2/343 correctness diffs. The result changes the
-C-PERSIST claim from ``only two follow-ups were tried'' to ``no cliff through
-50 repeated-question turns under the tested stress,'' while leaving true
-conversational stability as future work.
+The follow-up envelope is no longer limited to two-turn sessions. A many-turn
+stress repeats the same three VideoMME short questions across 10-, 20-, and
+50-turn schedules on seven 20-frame videos. It tests cache horizon, not natural
+dialogue: the dense baseline rows are deterministic replicas of 21 unique
+stateless dense runs, which makes them valid for turn-matched drift pairing but
+not independent timing samples. Adaptive repair and scheduled refresh show
+0/343 paired choice drift and 0/343 paired correctness drift through the
+50-turn horizon, with median follow-up latency below 0.8\,s. Fixed \(K=1\)
+stays below the 3\% gate but shows sparse nonzero drift, 3/343 choice diffs and
+2/343 correctness diffs. The result removes the obvious two-follow-up cliff;
+true conversational stability remains future work.
 
 \input{generated/tables/c_persist_many_turn.tex}
 
@@ -371,19 +353,11 @@ row-level failure. It is stronger and narrower: two different mechanisms reach
 the same aggregate boundary, while only the cache-reuse path retains the
 wall-clock profile.
 
-The tensor-level probe closes part of that story. A balanced 20-row
-cache-distance audit over the drift classes compares dense follow-up state with
-no-prune cache reuse and with the pruned/recomputed path. The native fp16 cosine
-columns overflowed during the reduction, producing misleading NaNs even though
-the captured cache windows were finite. The fp32 control cosine is the
-reported metric: reuse KV state is essentially dense-identical
-(\(\cos \approx 1.0\)), while the pruned path diverges substantially
-(key cosine 0.724, value cosine 0.296). Thus the two arms did not merely hide the same
-internal state under the same aggregate loss. No-prune reuse preserves the
-captured cache state, while pruning at \(L=2,kr_V=0.50\) materially changes the
-later key/value state, especially values. This still does not yield a deployable
-row-level drift predictor, but it explains why aggregate parity is too weak a
-composition contract.
+A cache-distance audit supports the mechanism diagnosis: no-prune reuse stays
+dense-like, while the pruned/recomputed path materially diverges in later KV
+state, especially values. The probe does not give a deployable row-level drift
+predictor, but it explains why aggregate parity is too weak a composition
+contract.
 
 A low-FPS dense baseline is the corresponding ``why not just sample fewer
 frames?'' control. On the same 57-session / 171-query VideoMME union, 4f dense
@@ -408,7 +382,7 @@ features, not just denser logprob plumbing.
 The key compositional result is negative and useful: the n=60
 stacked-regime experiment is a ceiling-matched null, not a
 super-ceiling win. The observed 1.042$\times$ composition-audit result lands where the
-measured fixed-fraction terms place it. That closes the naive
+measured fixed-fraction terms place it. That closes the tempting
 ``multiply-the-headlines'' interpretation. C-VISION and C-PERSIST matter, but
 they matter on different queries and under different ceilings.
 

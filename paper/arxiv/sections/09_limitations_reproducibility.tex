@@ -55,30 +55,16 @@ post-vision-tower hard pruning shows that policy overhead can erase any
 expected win if vision work was not actually skipped.
 
 The Qwen composition bridge is useful precisely because it is diagnosed rather
-than promoted. The original stack reproduced speedup but lost accuracy.
-Dense-first-query admission restores Q0 aggregate correctness but misses the
-3-query rescue gate, and the offline admission frontier contains an oracle
-rescue point but no deployable format-clean policy in the tested endpoint
-family. The long-bucket admission sweep falsifies every tested Q0 keep rate
-from 0.67 to 0.90 and confirms that follow-up vision pruning is inactive under
-prompt-cache reuse in that arm.
-
-The boundary is mechanistic, not just aggregate. At high keep rates,
-aggregate Q0 accuracy recovers while follow-up accuracy still drops, so the
-failure is downstream of first-query aggregate correctness and tied to the
-follow-up state. The completed cache-invalidated follow-up test sharpens the
-boundary: forcing follow-up V-pruning to be active collapses the speedup to
-1.06$\times$ and still lands on the same net aggregate loss as cache reuse,
-while any-paired-drift sets differ. A direct cache-distance probe adds tensor
-evidence: fp32 cosine shows no-prune reuse is dense-like
-(both key and value cosines are approximately 1.0), while the pruned path diverges
-(key cosine 0.724, value cosine 0.296); the native fp16 cosine columns are a numerical-overflow caution
-on finite cache windows, not reported distances.
-
-This still does not give us a deployable row-level drift guard. Dense
-logit-margin has signal, but too little coverage for a high-precision guard,
-and richer-feature scouts do not close the preregistered bar. The next proof
-step is causal intervention or genuinely independent state features.
+than promoted. Dense-first-query admission restores Q0 aggregate correctness,
+but the three-query bridge still misses the rescue gate; the long-bucket
+admission sweep falsifies every tested Q0 keep rate from 0.67 to 0.90. The
+mechanistic boundary is sharper than aggregate loss: cache reuse preserves the
+speed profile but leaves follow-up-state damage, while cache invalidation makes
+follow-up V-pruning active, collapses speedup to 1.06$\times$, and still lands
+on the same net aggregate loss through different drift sets. The cache-distance
+probe supports that distinction, but it does not provide a deployable row-level
+drift guard; the next proof step is causal intervention or independent state
+features.
 
 A related local codec-native bridge remains scientifically interesting, and
 the codec-native planner-substitution results provide semantic
