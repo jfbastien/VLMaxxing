@@ -1,119 +1,69 @@
 \section{Limitations and Reproducibility}
 
-The paper makes three kinds of claim, and each one breaks differently. That is
-the main limitation to manage.
+The paper makes three kinds of claim, and each one breaks differently. For
+first-pass pruning, VideoMME is the clean holdout anchor, while MVBench and
+TOMATO keep timing caveats. Gemma supplies the cleanest measured sparse-vision
+cell: 32f short skips timed vision-tower work at 1.316$\times$ first-query
+speedup with no paired drift and no parse failures on 20 items. The broader
+Gemma sweep has matched parse-failure caveats, and Qwen supplies the boundary:
+its 8f keep-rate sweep follows the timing ceiling while failing fidelity, while
+\(kr=0.85\) at 16f recovers to within aggregate-accuracy, format, and ceiling
+gates at only 1.032$\times$. The claim is a measured sparse-vision envelope,
+not a universal sparse backend.
 
-For first-pass Gemma pruning, the evidence is now good enough for a main
-results section, but not every cell is equally clean. VideoMME is clean.
-MVBench and TOMATO are advisory because the measured gains survive, but the
-thermal caveats are still visible and should remain visible in the text.
-Architecture breadth is still asymmetric, but no longer Gemma-only. The
-first-pass measured headline cells are still Gemma-first today, while a
-matched Qwen cross-architecture probe now shows the same ceiling binding at a
-smaller absolute lift. The n=60 stacked-regime composition audit also closes one
-tempting overclaim: composition does not outrun the ceiling. The local stacked
-cell is ceiling-matched, which is useful evidence for the arithmetic and a
-null on super-ceiling composition.
-
-The measured sparse-execution story is now more concrete but still bounded.
-Gemma supplies the cleanest reported operating point: 32f short skips timed
-vision-tower work at 1.316$\times$ first-query speedup with no paired drift and
-no parse failures on 20 items. The full Gemma 8/16/32f sweep has zero paired
-answer drift, but dense and sparse arms share parse failures in some cells and
-the 8f row misses the ceiling tolerance. Qwen supplies the complementary
-boundary: the 8f keep-rate sweep follows the timing ceiling even as every cell
-fails the fidelity contract, and aggressive 16f pruning collapses paired
-behavior and format, while \(kr=0.85\) recovers to within the
-aggregate-accuracy, format, and ceiling gates at only
-1.032$\times$ end-to-end speedup and 13.6\% vision-time reduction. The paper
-therefore claims a measured sparse-vision envelope, not a broad
-fidelity-preserving sparse backend.
-
-For persistent-KV, the numbers are much larger, but the regime is narrower.
-These are \emph{after-ingest} claims: the first query on the video still pays
-full freight, and the gain only appears when subsequent questions concern that
-same video. The tested envelope is also finite. Through 16 frames the local
-curve stays inside the current 7B tested envelope, with a clean 16f point and an
-8f point that remains within the preregistered accuracy criterion despite
-\(\Delta\)acc \(=-0.048\). Beyond that, unrepaired fidelity degrades
-quickly. The 3B story is wider but weaker: it holds a tolerated $-0.19$
-pre-basin plateau through 36f / 14.5k prefill tokens rather than preserving the
-clean 7B envelope, and the current mechanism story is threshold onset plus
-basin geometry rather than an architecture-specific saturation ceiling.
-
-Selective re-prefill narrows that limitation but does not erase it. Fixed
-\(K=1\) is now a real local repair envelope, with no observed paired drift on
-93 paired queries across short, medium, long, and 32-frame short slices and no
-observed pathological outputs across 62 repaired follow-ups. The rule-of-three
-upper bound on an unseen query-level paired-drift rate is still about 3.2\%;
-the more conservative session-level view is 0/31 sessions with any drift, or
-about 9.7\%. The claim remains ``no observed paired drift,'' not
-population-level exactness. The
-long-bucket cell also preserves a weak 7/21 cold baseline; that is fidelity
-evidence under a hard regime, not evidence that the model itself understands
-long VideoMME well. The adaptive repaired-cache inheritance result is now
-the stronger breadth result rather than a short-only curiosity: it covers the
-same 93 paired queries with no observed paired drift and 14.90--35.92$\times$
-same-class follow-up speedup; the cold-all-query versus repaired-follow-up
-ratio is 15.28--35.97$\times$. Its remaining caveats are different. The long and
-32f cells passed the paired-fidelity gates but exceeded preregistered RSS gates
-that were too tight relative to later observed memory; we report the observed
-memory envelope separately rather than discarding the paired-fidelity result.
-The original breadth result is finite-horizon because those sessions contain
-two follow-up questions. The separate many-turn stress closes the easiest
-version of that attack: adaptive repaired-cache inheritance and scheduled refresh have no
-observed drift through a 50-turn repeated-question cycle on seven short videos.
-That is still not a natural-dialogue stability proof; it is a controlled
-cache-horizon stress with deterministic dense replicas for turn-matched
-pairing. The dense-answer-anchored prompt-variation stress is stricter and
-changes the claim surface. Conservative fixed \(K=1\) has no observed paired
-drift on follow-ups through the 20-turn horizon (0/133), while adaptive
-repair and scheduled refresh each show 6/133 paired choice/correctness drift.
-That is a bounded high-speed operating point, not a universal
-correctness-preserving policy.
+For persistent-KV, the larger multipliers are narrower by construction. They
+are \emph{after-ingest} claims: the first query still pays full freight, and
+the gain appears when later questions reuse the same video state. Unrepaired 7B
+reuse is clean through the tested 16f point and then enters a basin; 3B holds a
+wider but weaker pre-basin plateau. Selective re-prefill repairs that failure
+inside the tested envelope. Fixed \(K=1\) and adaptive repaired-cache
+inheritance both show no observed paired drift on the 93-query breadth setting,
+with adaptive reaching 14.90--35.92$\times$ same-class follow-up speedup. The
+sample is still finite: the query-level rule-of-three bound is about 3.2\%,
+and the session-level 0/31 view gives about 9.7\%. The many-turn stress checks
+repeated-question cache horizon, not natural dialogue; the dense-answer-anchored
+stress is stricter and exposes the speed/fidelity tradeoff, with fixed \(K=1\)
+at 0/133 and aggressive policies at 6/133 drift.
 
 \input{generated/tables/memory_characterization.tex}
 
 The related-work bar for this lane is also higher than ``we reused a KV
 cache.'' Prefix caching, RadixAttention, CacheBlend-style repair, SparseVILA,
-and HERMES all make parts of that sentence prior art. The manuscript's current
+and HERMES all make parts of that sentence prior art. The manuscript's
 claim is narrower: video-specific visual-tail repair, paired-drift accounting,
 the cache-basin failure mode, and the repaired-cache inheritance rule on this
 local stack. A matched head-to-head against the closest persistent-video or
 visual-token sparsity baselines remains venue-hardening work rather than part
-of the current main claim.
+of the main claim.
 
 For Qwen routing, the opposite caveat applies. The holdout evidence is clean
 and useful, but it is still a quality--compute frontier result under a fixed
 dense backend. It should not be inflated into a measured sparse-execution
-speedup claim until the backend actually skips timed work. The same caution now
+speedup claim until the backend actually skips timed work. The same caution
 applies to the Qwen VideoMME frame-count story: the dev-split 16f long-bucket
 regression does not replicate on disjoint holdout, so the manuscript treats it
 as a dev-split shape rather than a universal scaling law. The feature-drift
-geometry itself now reproduces on holdout at 8f and 16f; what failed to
+geometry itself reproduces on holdout at 8f and 16f; what failed to
 transfer was the downstream long-bucket accuracy shape, not the drift signal.
 
-The streaming/deployment lane remains the least harmonized evidence class in
-the paper, even though it is the clearest candidate for a future C-STREAM claim.
-It is there because it names the practical regime where redundancy can become
-large, not because it already clears the full systems validation bar. The checked
-scale-out bundle is now real and useful, but mixed: default 26B cross-turn
-cache reuse is unsafe, a topology-aware prefix snapshot is positive only at
-small \(N\), fixed-evidence stream baselines favor low-FPS dense over the
-tested event-window proxy, and post-vision-tower hard pruning shows that
-policy overhead can erase any expected win if vision work was not actually
-skipped.
+The streaming/deployment lane remains the least harmonized evidence class, but
+it names the practical regime where redundancy can become largest. The checked
+scale-out bundle is mixed: default 26B cross-turn cache reuse is unsafe, a
+topology-aware prefix snapshot is positive only at small \(N\), fixed-evidence
+stream baselines favor low-FPS dense over the tested event-window proxy, and
+post-vision-tower hard pruning shows that policy overhead can erase any
+expected win if vision work was not actually skipped.
 
 The Qwen composition bridge is useful precisely because it is diagnosed rather
 than promoted. The original stack reproduced speedup but lost accuracy.
 Dense-first-query admission restores Q0 aggregate correctness but misses the
 3-query rescue gate, and the offline admission frontier contains an oracle
-rescue point but no deployable format-clean policy in the current endpoint
-family. The long-bucket admission sweep then falsifies every tested Q0 keep
-rate from 0.67 to 0.90 and empirically confirms that follow-up vision pruning
-is inactive under prompt-cache reuse in that arm.
+rescue point but no deployable format-clean policy in the tested endpoint
+family. The long-bucket admission sweep falsifies every tested Q0 keep rate
+from 0.67 to 0.90 and confirms that follow-up vision pruning is inactive under
+prompt-cache reuse in that arm.
 
-The boundary is now mechanistic, not just aggregate. At high keep rates,
+The boundary is mechanistic, not just aggregate. At high keep rates,
 aggregate Q0 accuracy recovers while follow-up accuracy still drops, so the
 failure is downstream of first-query aggregate correctness and tied to the
 follow-up state. The completed cache-invalidated follow-up test sharpens the
@@ -126,13 +76,9 @@ evidence: fp32 cosine shows no-prune reuse is dense-like
 on finite cache windows, not reported distances.
 
 This still does not give us a deployable row-level drift guard. Dense
-logit-margin and richer-feature scouts add a useful negative: answer-letter
-margin has signal (held-out AUC about 0.71), but margin alone gives too little
-coverage for a high-precision guard, and adding entropy, turn index, duration,
-prompt length, and policy source still fails the preregistered deployable-guard
-bar. The nominal label-free feature in that artifact is empirically
-answer-aware, so the result should not be sold as a runtime guard. The next
-proof step is causal intervention or genuinely independent state features.
+logit-margin has signal, but too little coverage for a high-precision guard,
+and richer-feature scouts do not close the preregistered bar. The next proof
+step is causal intervention or genuinely independent state features.
 
 A related local codec-native bridge remains scientifically interesting, and
 the codec-native planner-substitution results provide semantic
@@ -143,7 +89,7 @@ on the local slices we ran. This remains a semantic planner result, not a
 latency win; the offline extraction path took 7290 s and the deployment path
 still needs streaming decoder integration.
 
-The current benchmark mix also under-samples scroll and pan regimes. We audited
+The tested benchmark mix also under-samples scroll and pan regimes. We audited
 this directly on a 60-item VideoMME stratification across 8f/16f/32f and found
 0/60 items above a relaxed \texttt{shifted\_fraction} \(\geq 0.30\) gate, with
 max shifted fraction 0.125. That does not certify C-VISION on sustained
@@ -171,18 +117,17 @@ duration buckets and a hard short-bucket failure. That is why future C-STREAM
 and C-VISION claims need matched low-FPS dense controls rather than only
 same-method ablations.
 
-Finally, equal aggregate accuracy is not the same as identical behavior. The
-Gemma routing split makes this visible: TOMATO passes the agreement gate, while
-MVBench preserves aggregate accuracy but changes 8/30 choices across four
-motion subgroups. The composition and selective-reprefill drift audits show the same pattern in
-different forms. Reviewers should read the paired-drift columns as part of the
-claim, not as decorative diagnostics.
+Finally, equal aggregate accuracy is not the same as identical behavior. Gemma
+MVBench preserves aggregate accuracy while changing 8/30 choices across four
+motion subgroups, and the composition and selective-reprefill drift audits show
+the same pattern in different forms. The paired-drift columns are part of the
+claim.
 
 The persistent-cache failures should also be read as attention-context or
 cache-state failures, not as positional-encoding drift claims. The recurring
 failure mode is not just stale pixels; it is incoherent internal state. Fresh
 and cached mixtures must preserve cache topology, positions, and layer
-semantics, or they can move fast while answering the wrong question. The current
+semantics, or they can move fast while answering the wrong question. These
 experiments identify when reused state changes later answers and show that
 pruned K/V state can diverge strongly from dense. They do not yet provide a
 general cache-validity guard or a unique row-level causal predictor.
@@ -191,7 +136,7 @@ Architecture exposure is another limitation and a design lesson. Qwen is the
 high-stability local family for routing and persistent-cache follow-up reuse.
 Gemma is the primary first-pass vision-pruning family and exposes a useful
 vision-tower sparse path, but Gemma adaptive persistent-cache reuse remains
-blocked by sliding-window / rotating-cache semantics in the current MLX stack.
+blocked by sliding-window / rotating-cache semantics in the tested MLX stack.
 Future VLM runtimes should expose stable cache semantics, cache invalidation
 controls, vision-tower keep masks, per-stage timing, token geometry, and
 cache-state diagnostics as first-class interfaces. Those hooks are not just
@@ -200,7 +145,7 @@ tested without risking silent cache corruption.
 
 \begin{table}[H]
 \centering
-\caption{Architecture lessons from the current evidence. This is not a model
+\caption{Architecture lessons from the tested evidence. This is not a model
 leaderboard; it is a runtime-interface lesson about which reuse claims can be
 tested cleanly.}
 \label{tab:architecture-lessons}
@@ -226,10 +171,6 @@ envelope and cache topology. \\
 \end{tabularx}
 \end{table}
 
-The paper is nevertheless being built to be reproducible. Automated main-text
-figures and tables are generated from checked-in artifact summaries or from
-checked-in paper figures, the appendix records the repo commits used for the
-sync, and advisory, supplementary, or pending evidence is labeled as such instead of being
-silently promoted into the headline figures. The paper builds locally with the
-checked-in \texttt{make paper-*} targets plus `tectonic` or a fuller TeX
-stack.
+The appendix records the artifact families, hardware, and repo commits behind
+the generated figures and tables. The paper builds locally with the checked-in
+\texttt{make paper-*} targets plus `tectonic` or a fuller TeX stack.

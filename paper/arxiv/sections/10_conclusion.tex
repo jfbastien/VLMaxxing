@@ -6,7 +6,7 @@ Same-video follow-up queries admit the largest measured multipliers: raw
 persistent-KV reuse
 reaches sub-second latency inside the \(\leq 16\)f tested envelope, while
 selective re-prefill repairs the deeper cache-reuse basin at higher latency.
-Adaptive repair now gives no observed paired drift across 93 paired queries
+Adaptive repair gives no observed paired drift across 93 paired queries
 at 3.20--6.51\,s repaired follow-up median and 14.90--35.92$\times$
 same-class follow-up speedup; the cold-all-query versus repaired-follow-up
 ratio is 15.28--35.97$\times$. Fixed \(K=1\) remains the no-coordination
@@ -20,15 +20,14 @@ refresh-10 each trade 6/133 paired drift for roughly 0.7\,s follow-up latency.
 Fresh videos admit smaller but real first-pass gains, and those gains obey a
 share-limited ceiling that explains the regime and binds cleanly on the core
 ceiling checks, including the matched Qwen cross-architecture probe and the
-new measured sparse-vision envelope. Gemma supplies the cleanest timed-skip
+measured sparse-vision envelope. Gemma supplies the cleanest timed-skip
 cell at 32f short: 1.316$\times$ first-query speedup with no paired drift and
 no parse failures on 20 items. Qwen supplies the cautionary half of the same
 story: aggressive pruning fails, while a conservative keep rate recovers to
 within the aggregate-accuracy and format gates at low gain.
-Candidate
-C-STREAM remains the right scale-out target: perception-rate streaming state
-reuse under a native-rate protocol. The checked 26B-class scale-out bundle is now mixed
-evidence rather than pending evidence: default cache reuse is unsafe,
+Candidate C-STREAM remains the right scale-out target: perception-rate streaming state
+reuse under a native-rate protocol. The checked 26B-class scale-out bundle
+remains mixed boundary evidence: default cache reuse is unsafe,
 prefix-snapshot follow-up rows are positive but small-\(N\), fixed-evidence
 baselines favor low-FPS dense over the tested event-window proxy, and
 exactness claims must keep the 1,937 zero-accuracy-delta and 513 byte-identical
@@ -42,14 +41,14 @@ must not be confused with measured sparse execution.
 
 What remains is a broader fidelity-preserving sparse-backend curve, natural
 multi-turn dialogue stress, cleaner native-streaming systems baselines, and
-causal guard features beyond the current cache-distance probe. The n=60
+causal guard features beyond the cache-distance probe. The n=60
 composition audit, the long-bucket admission sweep, the cache-invalidated
 follow-up test, and the direct K/V distance audit already closed the
-multiply-the-headlines temptation: the gains do not stack naively. The useful question now is
+multiply-the-headlines temptation: the gains do not stack naively. The useful question is
 where each ceiling moves in the architectures and deployment protocols people
 actually care about.
 
-It also leaves a larger media agenda. The current paper is not an AI-native
+It also leaves a larger media agenda. This paper is not an AI-native
 codec and does not claim one. It shows why that direction is worth studying:
 VLMs should not have to reverse-engineer every repeated frame back into state.
 Future media streams for machines could expose change, motion, uncertainty,

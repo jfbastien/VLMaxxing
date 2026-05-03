@@ -19,7 +19,7 @@ effective visual budget. The MVBench statement is explicitly against the
 dense-6 point at a matched-or-lower fresh-frame budget; dense-8 remains the
 higher absolute-accuracy point on that slice.
 
-\subsection{Canonical Frontier Snapshot}
+\subsection{Audited Frontier Snapshot}
 
 \input{generated/tables/lane_a_holdout.tex}
 
@@ -30,17 +30,16 @@ higher absolute-accuracy point on that slice.
   }{
     \fbox{\parbox{0.9\linewidth}{Run \texttt{make paper-sync} to generate the routing frontier figure.}}
   }
-\caption{Audited Qwen holdout frontier from canonical artifact summaries.
-  The higher-stability MVBench refinement is excluded because its artifact
-  status remains supplementary rather than part of the canonical evidence set.}
+\caption{Audited Qwen holdout frontier. The higher-stability MVBench
+  refinement is discussed in text but not plotted.}
   \label{fig:lane-a-pareto}
 \end{figure}
 
 The omitted higher-stability MVBench refinement remains scientifically
 interesting: it reaches 0.633 accuracy at 4.49 effective fresh frames and
-therefore matches dense-8 at 56\% of the fresh-frame budget. The current
-artifact is not part of the canonical evidence set, so it is mechanism context
-rather than a plotted result.
+therefore matches dense-8 at 56\% of the fresh-frame budget. The reported
+frontier keeps it as mechanism context rather than mixing it into the plotted
+evidence.
 
 \subsection{A Second Architecture Shows The Boundary}
 
@@ -55,7 +54,7 @@ strict agreement falls to 22/30 and misses the 0.85 gate. The eight MVBench
 mismatches spread across action localization, fine-grained action, object
 interaction, and moving direction rather than one brittle subgroup.
 
-That split is now part of the mechanism story. Qwen remains the high-stability
+That split is part of the mechanism story. Qwen remains the high-stability
 reference family for the tested routing cells. Gemma shows that feature
 similarity and aggregate accuracy are not enough: answer-level reuse fidelity
 is architecture-conditioned \emph{and} benchmark-conditioned. This is why the
@@ -83,5 +82,4 @@ Codec-like and pixel-domain signals do not need to be semantic oracles to be
 useful. They need to be good enough freshness or uncertainty oracles that the
 runtime buys new visual evidence in the right temporal neighborhood. The
 stronger novelty-ranked and pixel-to-feature diagnostics remain useful
-mechanism checks, but they should not be promoted until their artifacts are
-checked into the reported evidence surface.
+mechanism checks, but they are not needed for the headline frontier claim.

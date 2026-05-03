@@ -53,14 +53,14 @@ as a fourth headline; Qwen routing remains mechanism evidence under a fixed
 dense backend.
 
 The larger target is not a bigger threshold sweep and not a new codec in this
-paper. The current experiments are a measurement instrument: they ask which
+paper. The experiments here are a measurement instrument: they ask which
 cheap temporal signals are already useful to a frozen VLM runtime, where those
 signals fail, and what a future VLM-native media stream should expose directly.
 Codec and pixel signals are therefore treated as freshness and uncertainty
 signals, not as semantic-saliency oracles. They can say where something
 probably changed; the model and the task still decide what matters. That is
 why the VLM-native media discussion later in the paper is framed as candidate
-requirements, not as a current systems claim.
+requirements, not as a systems claim here.
 
 The same boundary applies to training. These are training-free inference
 experiments, not measured training-speedup experiments. The training-relevant
@@ -69,27 +69,21 @@ already tolerate reuse, where they do not, and what a future model could learn
 as native refresh gates, delta encoders, or cache-state-aware attention.
 
 The scale-out streaming lane is part of the same science story, but it has a
-different protocol and is not yet a main claim. The intended end-state is a
-first-class \emph{streaming state reuse} evaluation with the same claim axes,
-artifact format, paired gates, cache-correctness checks, and baselines as
-the local runs. A checked 26B-class scale-out bundle
-sharpens the boundary rather than simply adding wins: the default cross-turn cache path is unsafe,
-topology-aware prefix-snapshot rows are positive at small \(N\),
-and fixed-evidence streaming baselines show that low-FPS dense is a serious
-competitor. Candidate C-STREAM is therefore a checked but mixed evidence bundle
-and a set of gates, not a multiplier to inherit. This caution is also earned by our Qwen
-session-composition experiments: they reproduce speedup without preserving the
-full fidelity contract, and the tested sweeps rule out the prompt-cache
-family as a deployable composition policy. Even when the first answer is
-preserved, reused cache state can still damage later answers.
+different protocol. A checked 26B-class bundle sharpens the boundary rather
+than simply adding wins: the default cross-turn cache path is unsafe,
+topology-aware prefix-snapshot rows are positive at small \(N\), and
+fixed-evidence streaming baselines show that low-FPS dense is a serious
+competitor. We keep this as candidate C-STREAM: boundary evidence and gates for
+future native-rate state reuse, not a multiplier to inherit. The same warning
+shows up locally in Qwen session-composition experiments, where speedup can
+survive while the full follow-up fidelity contract does not.
 
 \begin{table}[H]
 \centering
-\caption{Reuse regime map. The denominator and evidence class are part of each
-claim, because these rows must not be multiplied into one curve. Candidate
-C-STREAM is included as a deployment target and evaluation gate, not as an equal
-headline; routing under a fixed dense backend is reported separately because it
-is mechanism-validation evidence rather than a sparse wall-clock claim.}
+\caption{Reuse regime map. Rows are separate workloads and denominators, not
+one multiplier. Candidate C-STREAM is a deployment target and boundary lane;
+routing under a fixed dense backend is mechanism evidence rather than a sparse
+wall-clock claim.}
 \label{tab:three-regimes}
 \footnotesize
 \renewcommand{\arraystretch}{\PaperTableStretch}
@@ -100,10 +94,10 @@ is mechanism-validation evidence rather than a sparse wall-clock claim.}
   >{\raggedright\arraybackslash}X
 @{}}
 \toprule
-Regime & Reused work & Denominator / evidence class & Evidence / boundary \\
+Regime & Reused work & Denominator / gate & Evidence / boundary \\
 \midrule
 After-ingest follow-up & prompt / key--value (KV) prefix for later questions on the same video & follow-up latency and paired drift; first query still pays full freight & raw 16f reuse reaches 91.1$\times$; adaptive repair spans short/medium/long and 32f-short with 0/93 drift at 14.90--35.92$\times$; many-turn stress reaches 50 turns on repeated questions; dense-answer-anchored prompt variation exposes the conservative/aggressive boundary \\
-Fresh-video first pass & vision-tower work inside the first query & first-query wall-clock; local clean/advisory cells plus measured sparse-execution envelopes & VideoMME clean 1.113$\times$; MVBench/TOMATO advisory; measured sparse vision: Gemma 32f short 1.316$\times$ with 0/20 drift, Qwen conservative boundary 1.032$\times$ \\
+Fresh-video first pass & vision-tower work inside the first query & first-query wall-clock; clean/advisory gates plus measured sparse-execution envelopes & VideoMME clean 1.113$\times$; MVBench/TOMATO advisory; measured sparse vision: Gemma 32f short 1.316$\times$ with 0/20 drift, Qwen conservative boundary 1.032$\times$ \\
 Candidate C-STREAM & repeated visual state in a native-rate or live pipeline & checked mixed evidence bundle; separate protocol & default 26B cache path blocked; prefix-snapshot rows positive but small-\(N\); fixed-evidence stream baselines favor low-FPS dense over the tested proxy \\
 \bottomrule
 \end{tabularx}

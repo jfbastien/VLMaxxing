@@ -1322,9 +1322,8 @@ def _write_lane_a_table(snapshot: dict) -> None:
         r"\begin{table}[H]",
         r"\centering",
         (
-            r"\caption{Qwen holdout frontier from canonical artifact "
-            r"summaries. Supplementary non-canonical "
-            r"variants are intentionally excluded.}"
+            r"\caption{Audited Qwen holdout frontier. The higher-stability "
+            r"MVBench refinement is discussed in text but not plotted.}"
         ),
         r"\label{tab:lane-a-holdout}",
         r"\small",
@@ -2987,7 +2986,7 @@ def _write_scaleout_bundle_table() -> None:
             f"{snapshot['default_cache_path']['choice_diffs']} choice diffs; "
             f"{snapshot['default_cache_path']['parse_failures']} parse failures; "
             "cross-turn path fails cache-correctness test & "
-            "diagnostic boundary; do not promote default cache reuse \\\\"
+            "diagnostic boundary; unsafe default path \\\\"
         ),
         (
             "Correctness guard & "
@@ -2995,7 +2994,7 @@ def _write_scaleout_bundle_table() -> None:
             f"{snapshot['guarded_correctness_control']['n']} text diffs under "
             "RotatingKV full-refill guard; "
             f"{snapshot['guarded_correctness_control']['parse_failures']} parse failures & "
-            "correctness control, not a speedup \\\\"
+            "correctness control; speed not evaluated \\\\"
         ),
         (
             "Patched cache-library closure & "
@@ -3006,7 +3005,7 @@ def _write_scaleout_bundle_table() -> None:
             f"refuses unsafe cross-turn trim; cross-turn wall-clock "
             f"{patched['cross_turn_median_speedup']:.2f}$\\times$ vs cold dense, "
             f"median prefill {patched['cross_turn_median_prefill_ms']:.0f} ms & "
-            "full-regression correctness closure; not a speedup path \\\\"
+            "full-regression correctness closure; speed path remains open \\\\"
         ),
         (
             "26B prefix snapshot & "
@@ -3034,9 +3033,8 @@ def _write_scaleout_bundle_table() -> None:
             ">=30 fps; "
             f"{prefix32['prefix_snapshot_fps_min']:.2f}--"
             f"{prefix32['prefix_snapshot_fps_max']:.2f} fps) & "
-            "positive warm-prefix snapshot evidence within the scale-out bundle; "
-            "excludes warm setup; wrapper-specific and not byte-identical; "
-            "not standardized C-STREAM closure \\\\"
+            "positive warm-prefix snapshot evidence; excludes warm setup; "
+            "wrapper-specific and not byte-identical; C-STREAM closure remains open \\\\"
         ),
         (
             "Fixed-evidence stream baselines & "

@@ -25,7 +25,7 @@ questions reuse the same video state, and the first query still pays full
 freight. On Qwen2.5-VL-7B-4bit, the answer is already large enough to matter.
 At 8 frames, follow-up latency drops to 815\,ms median with 47.2$\times$
 speedup and $-0.048$ aggregate accuracy delta. At 16 frames the speedup rises
-to 91.1$\times$ while the accuracy delta returns to 0. Within the current
+to 91.1$\times$ while the accuracy delta returns to 0. Within the tested
 $\leq$16f tested envelope, the regime is fast and empirically bounded: the
 accepted region contains one clean point at 16f and one slightly worse but still
 within tolerance at 8f. Past that point the curve keeps rising, but the fidelity
@@ -84,7 +84,7 @@ the inheritance rule: refresh one newest frame at the first follow-up, then
 let the second follow-up inherit the repaired cache state with no additional
 visual re-prefill.
 
-That rule now has breadth. Across 20f short, medium, and long VideoMME slices
+That rule has breadth. Across 20f short, medium, and long VideoMME slices
 plus the 32f short slice, adaptive repair has no observed paired choice or
 correctness drift on 93 paired queries, no observed pathological follow-up
 outputs, and 14.90--35.92$\times$ same-class follow-up speedup
@@ -206,7 +206,7 @@ cache enters the picture. VideoMME 8f is the clean holdout anchor:
 advisory: the patched arm decodes 50\,ms faster on a 432\,ms decode window and
 also runs generation faster. A literal decode only normalization would lower
 the observed multiplier only to about 1.40$\times$, so the row remains useful
-but high residual. TOMATO 8f is advisory as well: the current holdout rerun
+but high residual. TOMATO 8f is advisory as well: the holdout rerun
 reports 1.194$\times$ with a favorable 119.7\,ms decode delta, missing the
 100\,ms advisory gate by 19.7\,ms in the favorable direction.
 
@@ -382,7 +382,7 @@ row-level failure. It is stronger and narrower: two different mechanisms reach
 the same aggregate boundary, while only the cache-reuse path retains the
 wall-clock profile.
 
-The tensor-level probe now closes part of that story. A balanced 20-row
+The tensor-level probe closes part of that story. A balanced 20-row
 cache-distance audit over the drift classes compares dense follow-up state with
 no-prune cache reuse and with the pruned/recomputed path. The native fp16 cosine
 columns overflowed during the reduction, producing misleading NaNs even though

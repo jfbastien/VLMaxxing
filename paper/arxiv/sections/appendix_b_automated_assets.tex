@@ -1,24 +1,19 @@
 \section{Automated Assets and Figure Sources}
 
-The manuscript tooling automates only the paper elements that have stable,
-checked-in inputs: the routing holdout figure and table, headline
+The manuscript tooling automates paper elements with checked-in inputs: the routing holdout figure and table, headline
 anti-recomputation assets, measured sparse-vision tables, C-PERSIST repair and
 sampler/many-turn/setup-economics tables, the random-keep sanity table, the
 scale-out bundle status table, memory
 characterization, paired-drift summaries, and repo provenance generated
 from the current checkout.
 
-The sync step deliberately does not read sibling checkouts or free-form
-deployment markdown. Candidate C-STREAM rows are generated only from checked
-local artifacts, and they stay visibly bounded when the bundle is mixed. That
-keeps the manuscript useful for incoming experiments without letting stale
-screenshots or partner prose become release evidence.
+The sync step reads the checked artifact summaries used by this repo. Candidate
+C-STREAM rows are generated from the checked scale-out bundle and remain
+visibly bounded when the bundle is mixed.
 
-The same rule governs future automation. A novelty-ranked dense table and a
-native streaming quality table should be generated once their canonical
-artifacts are stable; they should not be generated from free-form markdown or
-screenshots. If a canonical artifact is missing, the corresponding claim should
-remain pending or advisory rather than being promoted by a table.
+Future novelty-ranked dense and native-streaming quality tables should follow
+the same rule: generate from checked rows, not from free-form markdown or
+screenshots.
 
 Source pointers: \path{paper/arxiv/scripts/sync_sources.py},
 \path{paper/arxiv/scripts/build.py}, and \path{paper/arxiv/generated/}.

@@ -8,10 +8,10 @@
 \toprule
 Probe & Result & Claim status \\
 \midrule
-Default 26B cache reuse & 16/42 text diffs; 2 choice diffs; 4 parse failures; cross-turn path fails cache-correctness test & diagnostic boundary; do not promote default cache reuse \\
-Correctness guard & 0/42 text diffs under RotatingKV full-refill guard; 4 parse failures & correctness control, not a speedup \\
-Patched cache-library closure & 0/42 text diffs; 0 choice diffs; 0 correctness diffs; 4 matched parse failures; patched path refuses unsafe cross-turn trim; cross-turn wall-clock 0.98$\times$ vs cold dense, median prefill 2313 ms & full-regression correctness closure; not a speedup path \\
-26B prefix snapshot & 8f after warm: 9.11$\times$, MC prompts 7 (0/5 choice, 0/5 correct over parse-clean rows; 2 matched parse failures), 14 open-ended text-comparison rows, text diffs 6/21, 27.02 fps median (8/21 rows >=30 fps); 32f after warm: 18.71$\times$, MC prompts 7 (0/7 choice, 0/7 correct), 14 open-ended text-comparison rows, text diffs 7/21, parse 0/21, 54.68 fps median (19/21 rows >=30 fps; 23.85--134.43 fps) & positive warm-prefix snapshot evidence within the scale-out bundle; excludes warm setup; wrapper-specific and not byte-identical; not standardized C-STREAM closure \\
+Default 26B cache reuse & 16/42 text diffs; 2 choice diffs; 4 parse failures; cross-turn path fails cache-correctness test & diagnostic boundary; unsafe default path \\
+Correctness guard & 0/42 text diffs under RotatingKV full-refill guard; 4 parse failures & correctness control; speed not evaluated \\
+Patched cache-library closure & 0/42 text diffs; 0 choice diffs; 0 correctness diffs; 4 matched parse failures; patched path refuses unsafe cross-turn trim; cross-turn wall-clock 0.98$\times$ vs cold dense, median prefill 2313 ms & full-regression correctness closure; speed path remains open \\
+26B prefix snapshot & 8f after warm: 9.11$\times$, MC prompts 7 (0/5 choice, 0/5 correct over parse-clean rows; 2 matched parse failures), 14 open-ended text-comparison rows, text diffs 6/21, 27.02 fps median (8/21 rows >=30 fps); 32f after warm: 18.71$\times$, MC prompts 7 (0/7 choice, 0/7 correct), 14 open-ended text-comparison rows, text diffs 7/21, parse 0/21, 54.68 fps median (19/21 rows >=30 fps; 23.85--134.43 fps) & positive warm-prefix snapshot evidence; excludes warm setup; wrapper-specific and not byte-identical; C-STREAM closure remains open \\
 Fixed-evidence stream baselines & low-FPS dense 17/22 beats screenshot 13/22, event-window proxy 13/22, recency 12/22 & baseline pressure; throughput axis remains separate \\
 Post-vision-tower hard prune & 8f 0.757$\times$, 32f 1.042$\times$; text diffs 10/10; timing-only descriptive prompts & overhead boundary; no correctness gate; not real sparse vision-tower speedup \\
 Sparse exactness export & zero correctness delta on 1,937 logged rows; byte-identical raw-paired text on 513 rows & denominator-safe reporting \\

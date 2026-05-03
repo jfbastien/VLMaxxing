@@ -57,7 +57,7 @@ refreshing a small newest-frame visual tail before a follow-up query.
 For adjacent frames, the routing path computes a per-block statistic on the RGB
 difference plane. The implementation supports mean difference, max-absolute
 difference, changed-pixel fraction, and top-$k$ mean over the block. In the
-best current audited Qwen policy, the statistic is \texttt{max\_abs}. Fixed
+audited Qwen policy, the statistic is \texttt{max\_abs}. Fixed
 thresholds partition blocks into \emph{static}, \emph{shifted}, and
 \emph{novel} regions. These names are historical planner labels, not literal
 codec semantics: today they mean low, medium, and high pixel-domain change.
@@ -73,7 +73,7 @@ bridge exists: continuous H.264-derived scores can substitute for the
 pixel-diff planner signal on VideoMME dev all-duration \(n=30\) without
 changing dense answer choices, and calibration-mode/source ablations are
 neutral on the local slices. We keep this as semantic planner-substitution
-evidence, not a latency claim, because the current offline extraction retrofit
+evidence, not a latency claim, because the offline extraction retrofit
 is much slower than the sparse frame-sampling path; a systems claim requires a
 streaming decoder-integrated path.
 
@@ -194,7 +194,7 @@ local session/streaming bridge is instrumented separately: unless image-token
 activity shows that follow-up vision tokens were actually recomputed, the paper
 describes that family as Q0 admission plus cache-state reuse, not as active
 follow-up pruning. The completed long-bucket continuations measured that
-boundary in the current prompt-cache path: all tested follow-up image tokens
+boundary in the tested prompt-cache path: all tested follow-up image tokens
 were cache-served. That choice is deliberate.
 
 \begin{table}[H]

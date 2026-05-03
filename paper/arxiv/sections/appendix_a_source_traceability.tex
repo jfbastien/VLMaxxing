@@ -5,22 +5,16 @@ The manuscript uses evidence classes and labels them differently in the text.
 artifacts and backs the automated headline assets, the persistent-KV curve, and
 the Qwen routing section. \emph{Advisory evidence} is checked in but misses a
 clean reporting gate such as thermal pairing or a strict quality band.
-\emph{Scale-out bounded evidence} is automated only when the checked local
-bundle supplies raw paired rows, cache-correctness checks, matched baselines,
-and source manifests. \emph{Hypotheses or moving results} may be discussed for
-context, but they are not allowed into the default automated manuscript
-snapshot.
+\emph{Scale-out bounded evidence} comes from checked local bundles with raw
+paired rows, cache-correctness checks, matched baselines, and source manifests.
+\emph{Hypotheses or moving results} may be discussed for context, but they do
+not support the main quantitative claims.
 
-This appendix is where that distinction becomes audit-friendly. The repo
-provenance table below records the commit pins observed by the manuscript sync
-step. A frozen submission should regenerate this table from the released source
-state after the source tree and generated assets are synchronized. Within the main text, numbers are written so they can
-be traced back to one phase note and one artifact family. When a result is
-excluded or downgraded on provenance grounds, the paper says so explicitly. The
-best current examples are the supplementary MVBench higher-stability refinement, Gemma's
-matched-parse-failure sparse-vision sweep, and Qwen's conservative low-gain
-sparse-vision boundary: all are scientifically useful, but none should be
-silently promoted beyond the finite evidence class it actually earned.
+This appendix makes that distinction audit-friendly. The manifest maps each
+main quantitative asset to its artifact family and hardware, and the provenance
+table records the commit pins observed by the manuscript sync step. A frozen
+submission should regenerate this table from the released source state after
+the source tree and generated assets are synchronized.
 
 \begin{table}[H]
 \centering
@@ -68,6 +62,6 @@ paper claim matrix, reproduction-status document, and publishability-status
 note. The table above records the artifact families used by the paper; the
 generated repo-provenance table below records the checkout used for this PDF.
 A frozen submission should regenerate this appendix from the released source
-state and lock advisory rows to explicit evidence labels.
+state.
 
 \input{generated/tables/repo_provenance.tex}

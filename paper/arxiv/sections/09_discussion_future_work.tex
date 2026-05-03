@@ -1,7 +1,7 @@
 \section{Discussion: Toward VLM-Native Media}
 
-The experiments above are intentionally conservative: frozen models, explicit
-evidence classes, no speed claim where the backend did not skip timed work.
+The experiments above are intentionally conservative: frozen models, and speed
+claims only where the backend skipped timed work.
 That conservatism should not hide the bigger implication. Existing media
 pipelines already contain cheap temporal structure, but most video VLM stacks
 consume the final RGB frames as if every frame were equally new. Anti-
@@ -14,7 +14,7 @@ Same-position reuse is the simplest regime: if a patch did not change, reuse
 its visual evidence. But video codecs also exploit a richer fact: many things
 change predictably. Objects translate, cameras pan, forward-driving cameras
 produce structured expansion, and occlusions create localized new evidence.
-The current paper earns evidence mostly for static-to-medium-motion benchmark
+This paper earns evidence mostly for static-to-medium-motion benchmark
 regimes and for same-video follow-up reuse. It does \emph{not} yet prove
 motion-compensated feature reuse, driving-specific routing, or sensor-fusion
 caching. Those directions follow naturally from the failures and ceilings we
@@ -40,19 +40,19 @@ Regime & Redundancy structure & Candidate routing policy & Evidence status / ris
 \midrule
 Static cameras, factories, surveillance, stove/countertop & stable background,
 localized entrants, rare decisive events & persistent visual memory plus
-bounded-staleness refresh around moving regions & closest to current evidence;
+bounded-staleness refresh around moving regions & closest to tested evidence;
 needs stronger application baselines and event-window recall \\
 \addlinespace[0.25em]
 Screen and UI video & exact-copy regions, glyph changes, scrolling, cursor
 motion & screen-content path with exact-copy, OCR/glyph, and high-frequency
-guards & planned specialization; current VideoMME audit under-samples scroll/pan \\
+guards & planned specialization; VideoMME audit under-samples scroll/pan \\
 \addlinespace[0.25em]
 Forward driving & structured ego-motion, border entry, independently moving
 objects & pose/flow-conditioned refresh with protected object and boundary
 regions & future lane; should not be inferred from same-position reuse \\
 \addlinespace[0.25em]
 Egocentric, FPV, drones & jerky motion, parallax, frequent occlusion & global
-stabilization or multi-reference cache before reuse & current benchmark mix is
+stabilization or multi-reference cache before reuse & tested benchmark mix is
 the wrong corpus for this claim \\
 \addlinespace[0.25em]
 Robotics / VLA & static workspace plus gripper/object/contact zones and hard
@@ -115,9 +115,9 @@ interface:
 
 \begin{table}[H]
 \centering
-\caption{How current limitations motivate future media-interface requirements.
-These are hypotheses and candidate design requirements, not current
-measured claims.}
+\caption{How observed limitations motivate future media-interface requirements.
+These are hypotheses and candidate design requirements, not measured claims in
+this paper.}
 \label{tab:media-requirements}
 \small
 \renewcommand{\arraystretch}{\PaperTableStretch}
@@ -152,11 +152,11 @@ static background memory, camera pose, object tracks and masks, motion
 uncertainty, residual surprise, text/glyph events, event-camera onset,
 depth/ToF changes, timestamps, and confidence. The model would render or
 refresh dense visual evidence only where the state update requires it. This is
-not a current codec implementation; it is the interface pressure revealed by a
+not a codec implementation; it is the interface pressure revealed by a
 paper about paying for the wall again.
 
 \paragraph{Beyond zero-change inference.}
-The current result is useful precisely because it is frozen-model and
+The result is useful precisely because it is frozen-model and
 training-free. It identifies where an existing model already tolerates reuse
 and where it does not. The model-changing version should train around those
 traces rather than ignore them: learned recache gates, codec-conditioned token
@@ -188,7 +188,7 @@ Without all four, anti-recomputation is just a metaphor.
 
 \subsection{Open Experiments}
 
-Several high-value brainstorm items remain deliberately outside the current
+Several high-value brainstorm items remain deliberately outside the tested
 evidence boundary.
 
 The near-term research questions are reader-facing, not bookkeeping. Does
