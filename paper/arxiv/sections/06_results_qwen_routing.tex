@@ -30,16 +30,17 @@ higher absolute-accuracy point on that slice.
   }{
     \fbox{\parbox{0.9\linewidth}{Figure unavailable in this source snapshot.}}
   }
-\caption{Audited Qwen holdout frontier. The higher-stability MVBench
-  refinement is discussed in text but not plotted.}
+\caption{Audited Qwen base-policy routing frontier. The points compare
+  answer quality at lower effective fresh-frame budgets; they are not
+  wall-clock speedup claims.}
   \label{fig:lane-a-pareto}
 \end{figure}
 
-The omitted higher-stability MVBench refinement remains scientifically
-interesting: it reaches 0.633 accuracy at 4.49 effective fresh frames and
-therefore matches dense-8 at 56\% of the fresh-frame budget. The reported
-frontier keeps it as mechanism context rather than mixing it into the plotted
-evidence.
+The takeaway is narrow by design: temporal placement can preserve answer
+quality while buying fewer fresh frames on these motion holdouts. This is
+mechanism evidence for anti-recomputation, not a deployable speedup claim and
+not a universal routing policy. The timed skipped-work claims remain in
+C-VISION, and the large latency claims remain in C-PERSIST.
 
 \subsection{A Second Architecture Shows The Boundary}
 

@@ -1322,8 +1322,9 @@ def _write_lane_a_table(snapshot: dict) -> None:
         r"\begin{table}[H]",
         r"\centering",
         (
-            r"\caption{Audited Qwen holdout frontier. The higher-stability "
-            r"MVBench refinement is discussed in text but not plotted.}"
+            r"\caption{Audited Qwen base-policy holdout frontier. Fresh is "
+            r"effective fresh frames; the rows compare answer quality at "
+            r"lower visual budget and are not wall-clock speedup claims.}"
         ),
         r"\label{tab:lane-a-holdout}",
         r"\small",
