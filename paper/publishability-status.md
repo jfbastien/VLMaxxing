@@ -87,7 +87,7 @@ contributions (all landed before Codex round-26 2026-04-21):
   **Measured sparse-execution envelope landed 2026-04-29**: Gemma 8/16/32f
   skips timed vision work with zero paired answer drift but matched
   parse-failure caveats; Gemma 32f short is the clean operating point at
-  1.316×. Qwen 16f keep-rate sweep recovers aggregate accuracy and format at
+  1.316×. Qwen 16f keep-rate sweep recovers to within aggregate-accuracy and format gates at
   kr=0.85 but with only 13.6% vision-time reduction, 1.032× E2E, and no paired
   answer-identity preservation.
 
@@ -155,7 +155,7 @@ LaTeX section files are the canonical manuscript sources.
 - **Candidate C-STREAM:** checked mixed artifact bundle. Keep it as bounded
   scale-out evidence, not a fourth headline: default cache reuse is unsafe,
   prefix-snapshot reuse is positive but small-N, fixed-evidence baselines favor
-  low-FPS dense over the current event-window proxy, and exactness denominators
+  low-FPS dense over the tested event-window proxy, and exactness denominators
   must remain separate.
 - **Qwen routing:** audited Pareto win/tie on MVBench and TOMATO holdouts
   at much lower effective fresh-frame budgets, with local novelty-ranked
@@ -323,7 +323,7 @@ runnable tonight vs. impl-gated.
 | split-landed | 1.42 Gemma topology lane | complete on the preregistered N=30 pair | Gemma 4-E4B-4bit | landed 2026-04-24: TOMATO pass (`agreement=0.933`, `dense_acc=cached_acc=0.267`), MVBench strict-agreement fail (`agreement=0.733`, `dense_acc=cached_acc=0.200`); further work is interpretation or third-architecture breadth, not implementation |
 | blocked | 1.43 EgoSchema breadth gate | ~2 h | Qwen 2.5-VL-7B-4bit | loader + manifest unwritten |
 | superseded | 1.52R original composition gate (1.42 × 1.51R) | obsolete | Gemma 4-E4B-4bit | original gate superseded: 1.42 split-landed and 1.51R closed own-axis null; current composition evidence comes from 1.51V EXP10 and future scale-out bundle gates |
-| landed-boundary | Claim-5 measured sparse-execution envelope | landed 2026-04-29; broader curve remains open | Gemma 4-E4B and Qwen 2.5-VL-7B-4bit | Gemma 32f short is the clean timed-skip cell (1.316×, 0/20 paired drift, parse failures 0/0). Gemma 8/16/32f full sweep has matched parse-failure caveats. Qwen 16f kr=0.85 is inside the tested aggregate-accuracy/format gates but not the paired-identity gate; broad sparse backend and sparse LM prefill remain larger engineering work. |
+| landed-boundary | Claim-5 measured sparse-execution envelope | landed 2026-04-29; broader curve remains open | Gemma 4-E4B and Qwen 2.5-VL-7B-4bit | Gemma 32f short is the clean timed-skip cell (1.316×, 0/20 paired drift, dense/sparse parse failures 0/0). Gemma 8/16/32f full sweep has matched parse-failure caveats. Qwen 16f kr=0.85 is inside the tested aggregate-accuracy/format gates but not the paired-identity gate; broad sparse backend and sparse LM prefill remain larger engineering work. |
 
 **Runnable next with setup**: natural-dialogue many-turn C-PERSIST stability,
 causal/independent cache-state guard features beyond the landed K/V distance

@@ -40,8 +40,8 @@ boundary appears.
   }
 \caption{C-PERSIST tested follow-up-reuse envelope. The local result is not one
   persistent-KV curve but two different architectural stories: 7B stays inside
-  the current tested envelope through 16 frames / 6.5k prefill tokens, while 3B
-  trades exactness for a much wider pre-basin plateau through 36 frames /
+  the tested envelope through 16 frames / 6.5k prefill tokens, while 3B
+  trades paired fidelity for a much wider pre-basin plateau through 36 frames /
   14.5k prefill tokens before the basin opens.}
   \label{fig:c-persist-safe-budget}
 \end{figure}
@@ -65,10 +65,10 @@ observed pathological follow-up outputs on 62 repaired follow-ups, and
 because longer prefixes make the saved prefill work larger; \(K=1\) becomes
 more useful as the prefix gets deeper, not less. The long-bucket point is also
 important but weaker as an accuracy claim: it preserves a hard low-baseline
-cell exactly on the observed rows (7/21), so it is evidence for fidelity
+cell with 0/21 paired drift on the observed rows, so it is evidence for fidelity
 repair under a difficult regime, not for high long-bucket model quality.
 Paired drift is a reuse-preservation test, not a generosity discount for a weak
-baseline: preserving the same hard examples exactly still constrains the cache
+baseline: preserving the same hard examples under the paired-drift contract still constrains the cache
 policy even when the frozen model's cold long-video accuracy is poor.
 
 \input{generated/tables/c_persist_repair.tex}
@@ -95,7 +95,7 @@ the denominator is 0/62 and the corresponding rule-of-three bound is about
 4.8\%. At the session level the conservative count is 0/31 sessions with any
 paired drift, or a rule-of-three bound of about 9.7\%. Each tested session has
 two follow-up questions after the cold first query. The 32f short cell is the
-largest local efficiency point in the current tested envelope at
+largest local efficiency point in the tested envelope at
 35.92$\times$ same-class
 follow-up speedup (35.97$\times$ cold-all-query ratio), but the reason is not
 magic: the second follow-up inherits the repaired state instead of paying
@@ -430,7 +430,7 @@ reported only aggregate accuracy. In the composition root-cause decomposition,
 V-only Q0 pruning changes 6/10 choices and 6/10 correctness labels on the
 short scout even though the broader C-VISION operating point can look
 aggregate-neutral elsewhere. In the Gemma second-architecture routing check,
-MVBench preserves aggregate accuracy exactly (dense and cached both 6/30) but
+MVBench ties aggregate accuracy (dense and cached both 6/30) but
 changes 8/30 answer choices across four motion subgroups. In the unrepaired
 20f persistent-KV basin, 11/21 choices and 10/21 correctness labels change,
 with 13/21 pathological-like outputs concentrated on follow-ups.

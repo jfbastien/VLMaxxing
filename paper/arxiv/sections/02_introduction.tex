@@ -72,11 +72,11 @@ The scale-out streaming lane is part of the same science story, but it has a
 different protocol and is not yet a main claim. The intended end-state is a
 first-class \emph{streaming state reuse} evaluation with the same claim axes,
 artifact format, paired gates, cache-correctness checks, and baselines as
-the local runs. A checked 26B-class scale-out bundle now exists, and it
+the local runs. A checked 26B-class scale-out bundle
 sharpens the boundary rather than simply adding wins: the default cross-turn cache path is unsafe,
 topology-aware prefix-snapshot rows are positive at small \(N\),
 and fixed-evidence streaming baselines show that low-FPS dense is a serious
-competitor. Candidate C-STREAM is therefore a checked but mixed artifact bundle
+competitor. Candidate C-STREAM is therefore a checked but mixed evidence bundle
 and a set of gates, not a multiplier to inherit. This caution is also earned by our Qwen
 session-composition experiments: they reproduce speedup without preserving the
 full fidelity contract, and the tested sweeps rule out the prompt-cache
@@ -103,7 +103,7 @@ is mechanism-validation evidence rather than a sparse wall-clock claim.}
 Regime & Reused work & Denominator / evidence class & Evidence / boundary \\
 After-ingest follow-up & prompt / key--value (KV) prefix for later questions on the same video & follow-up latency and paired drift; first query still pays full freight & raw 16f reuse reaches 91.1$\times$; adaptive repair spans short/medium/long and 32f-short with 0/93 drift at 14.90--35.92$\times$; many-turn stress reaches 50 turns on repeated questions; dense-answer-anchored prompt variation exposes the conservative/aggressive boundary \\
 Fresh-video first pass & vision-tower work inside the first query & first-query wall-clock; local clean/advisory cells plus measured sparse-execution envelopes & VideoMME clean 1.113$\times$; MVBench/TOMATO advisory; measured sparse vision: Gemma 32f short 1.316$\times$ with 0/20 drift, Qwen conservative boundary 1.032$\times$ \\
-Candidate C-STREAM & repeated visual state in a native-rate or live pipeline & checked mixed artifact bundle; separate protocol & default 26B cache path blocked; prefix-snapshot rows positive but small-\(N\); fixed-evidence stream baselines favor low-FPS dense over the current proxy \\
+Candidate C-STREAM & repeated visual state in a native-rate or live pipeline & checked mixed evidence bundle; separate protocol & default 26B cache path blocked; prefix-snapshot rows positive but small-\(N\); fixed-evidence stream baselines favor low-FPS dense over the tested proxy \\
 \bottomrule
 \end{tabularx}
 \end{table}

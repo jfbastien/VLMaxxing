@@ -13,8 +13,8 @@ snapshot.
 
 This appendix is where that distinction becomes audit-friendly. The repo
 provenance table below records the commit pins observed by the manuscript sync
-step. The final release should regenerate this table from the final release tag
-after the source tree and generated assets are synchronized. Within the main text, numbers are written so they can
+step. A frozen submission should regenerate this table from the released source
+state after the source tree and generated assets are synchronized. Within the main text, numbers are written so they can
 be traced back to one phase note and one artifact family. When a result is
 excluded or downgraded on provenance grounds, the paper says so explicitly. The
 best current examples are the supplementary MVBench higher-stability refinement, Gemma's
@@ -63,12 +63,11 @@ Native-rate streaming bundle & 26B cache-correctness, prefix snapshot, fixed-evi
 \end{tabularx}
 \end{table}
 
-This appendix is the release-facing traceability manifest. The durable claim
-ledgers remain \path{paper/claim-matrix.md},
-\path{docs/reproduction-status.md}, and \path{paper/publishability-status.md};
-the table above records the paper-facing artifact families, while the generated
-repo-provenance table below records the checkout used for this PDF. A frozen
-submission bundle should regenerate this appendix from the final release tag and
-then lock any remaining advisory rows to explicit artifact-status labels.
+This appendix is the traceability manifest. Durable claim ledgers live in the
+paper claim matrix, reproduction-status document, and publishability-status
+note. The table above records the artifact families used by the paper; the
+generated repo-provenance table below records the checkout used for this PDF.
+A frozen submission should regenerate this appendix from the released source
+state and lock advisory rows to explicit evidence labels.
 
 \input{generated/tables/repo_provenance.tex}

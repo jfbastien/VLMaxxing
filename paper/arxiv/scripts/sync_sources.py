@@ -887,17 +887,17 @@ def _render_c_persist_timeline_figure() -> None:
     ax.text(
         0.02,
         0.86,
-        "The visual tail is bought at Q2. Fixed K=1 buys it again at Q3; "
-        "adaptive Q3 mostly appends text.",
+        "The visual tail is bought at the first follow-up. Fixed K=1 buys it again; "
+        "adaptive reuse mostly appends text.",
         fontsize=7.6,
         color="#475569",
     )
 
     xs = {"q0": 0.12, "q2": 0.42, "q3": 0.72}
     for key, label in [
-        ("q0", "Q0/Q1 first query"),
-        ("q2", "Q2 repair"),
-        ("q3", "Q3 follow-up"),
+        ("q0", "First query"),
+        ("q2", "Follow-up 1 repair"),
+        ("q3", "Follow-up 2 reuse"),
     ]:
         ax.text(xs[key], 0.78, label, fontsize=8.0, weight="bold", ha="center", color="#334155")
 
@@ -2209,7 +2209,7 @@ def _write_headline_table(snapshot: dict) -> None:
             f"{gemma_sparse_short['observed_e2e']:.3f}$\\times$ & "
             f"choice agreement {gemma_sparse_short['choice_agreement'] * 100:.0f}\\%; "
             f"$\\Delta$acc {gemma_sparse_short['accuracy_delta']:+.3f}; "
-            "parse failures 0/0 & clean sparse-execution cell \\\\"
+            "dense/sparse parse failures 0/0 & clean sparse-execution cell \\\\"
         ),
         (
             "First-pass & Gemma MVBench 8f holdout & "
@@ -2254,7 +2254,7 @@ def _write_measured_sparse_execution_tables(snapshot: dict) -> None:
         r"\begin{tabularx}{\linewidth}{@{}l r r r r r r r X@{}}",
         r"\toprule",
         (
-            r"Frames / slice & \(n\) & \(\Delta\)acc & Agree & Parse fails & "
+            r"Frames / slice & \(n\) & \(\Delta\)acc & Agree & Dense/sparse parse fails & "
             r"\(V_{\mathrm{red}}\) & Observed & Residual & Ceiling / format verdict \\"
         ),
         r"\midrule",
@@ -2961,7 +2961,7 @@ def _write_scaleout_bundle_table() -> None:
         r"\begin{table}[H]",
         r"\centering",
         (
-            r"\caption{Checked scale-out artifact bundle. These rows make "
+            r"\caption{Evaluated scale-out bundle. These rows make "
             r"native-rate streaming state reuse more concrete, while "
             r"cache correctness, matched baselines, and native mechanism quality "
             r"remain open standardization gates.}"
@@ -3051,7 +3051,7 @@ def _write_scaleout_bundle_table() -> None:
             f"{snapshot['exactness_export']['accuracy_rows']:,} "
             f"logged rows; byte-identical raw-paired text on "
             f"{snapshot['exactness_export']['raw_rows']} rows & denominator-safe "
-            "artifact harmonization \\\\"
+            "reporting \\\\"
         ),
         r"\bottomrule",
         r"\end{tabularx}",
@@ -3084,9 +3084,8 @@ def _write_repo_provenance_table(primary: dict[str, str]) -> None:
         r"\begin{table}[H]",
         r"\centering",
         (
-            r"\caption{Repo provenance captured by the manuscript sync step. "
-            r"Regenerate from the final release tag for the frozen artifact "
-            r"bundle.}"
+            r"\caption{Repo provenance captured by the manuscript sync step "
+            r"for this built artifact.}"
         ),
         r"\label{tab:repo-provenance}",
         r"\begin{tabular}{lll}",

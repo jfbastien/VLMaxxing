@@ -68,8 +68,8 @@ spatial grid so cached features can be substituted back into the dense path at
 the same geometry the benchmark runner already understands.
 
 The paper's default sparse-QA routing path still uses pixel differences because
-that is the audited semantic baseline. A separate codec-native planner bridge
-now exists locally: continuous H.264-derived scores can substitute for the
+that is the audited semantic baseline. A separate local codec-native planner
+bridge exists: continuous H.264-derived scores can substitute for the
 pixel-diff planner signal on VideoMME dev all-duration \(n=30\) without
 changing dense answer choices, and calibration-mode/source ablations are
 neutral on the local slices. We keep this as semantic planner-substitution

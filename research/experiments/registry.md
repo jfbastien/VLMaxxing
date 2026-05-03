@@ -1268,7 +1268,7 @@ authoritative in the per-phase notes under
   status: completed 2026-04-29
   authoritative_note: research/experiments/2026/2026-04-29-phase-1_63H-16f-kr-sweep-findings.md
   authoritative_artifacts: [research/experiments/2026/artifacts/phase1_63H_16f_kr_sweep/]
-  current_best_policy: Qwen 16f keep-rate sweep recovers aggregate accuracy and format as kr rises; kr=0.85 is aggregate-accuracy/format/ceiling safe but does not preserve paired answer identity, and remains low-gain at 1.032x and 13.6% vision-time reduction
+  current_best_policy: Qwen 16f keep-rate sweep recovers to within aggregate-accuracy and format gates as kr rises; kr=0.85 is aggregate-accuracy/format/ceiling safe but does not preserve paired answer identity, and remains low-gain at 1.032x and 13.6% vision-time reduction
   supersedes: []
   paper_relevance: primary boundary (Qwen measured sparse-execution configuration envelope)
   prereg_outcome: landed; useful monotone recovery curve, not a full sparse-vision gate pass

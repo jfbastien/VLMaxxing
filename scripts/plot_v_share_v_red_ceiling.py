@@ -125,7 +125,7 @@ SOURCE_PATHS: dict[str, list[str]] = {
     "Gemma sparse vision 32f short": [
         "research/experiments/2026/2026-04-27-phase-1_63G-gemma-track-b-prereg.md",
         "research/experiments/2026/2026-04-29-phase-1_63G-format-diagnostic-findings.md",
-        "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/scaling_summary.json",
+        "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/pair_summary_32f.json",
     ],
     "Qwen sparse vision 16f kr=0.85": [
         "research/experiments/2026/2026-04-29-phase-1_63H-16f-kr-sweep-findings.md",

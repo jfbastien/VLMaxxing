@@ -199,7 +199,7 @@ in its own dimension.
    long-bucket candidate measures
    `streaming_follow_up_vision_pruning_active_fraction = 0.0` and
    `streaming_follow_up_all_image_tokens_reused_fraction = 1.0`. **All
-   1.30 lane wording must say "Q0 admission + K-cache reuse," never
+   1.30 lane wording must say "Q0 admission + cache-state reuse," never
    "follow-up vision pruning."**
 
    The best landed bridge result remains `1.30W` (full-union dense Q0,
@@ -217,7 +217,7 @@ in its own dimension.
      cache-reuse lane, so it is a negative composition result rather than an
      active follow-up-pruning win.
    - **1.30AD** instruments the `1.30W` path and confirms the near-miss
-     mechanism: dense Q0 + K-cache reuse gives **3.02×** but still loses
+     mechanism: dense Q0 + cache-state reuse gives **3.02×** but still loses
      follow-up accuracy. The AC/AD drift sets are not row-identical (Jaccard
      0.3125), so paper wording should say "same net aggregate boundary," not
      "byte-equivalent."

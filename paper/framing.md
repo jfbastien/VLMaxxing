@@ -26,15 +26,12 @@ It is NOT the place for raw experimental detail. Evidence lives in:
 - [research/falsified-hypotheses.md](../research/falsified-hypotheses.md) —
   what the evidence has ruled out
 
-Last material update: 2026-04-27 (adaptive C-PERSIST breadth landed across
-20f short/medium/long plus 32f short at n=93 / 0 observed paired drift,
-14.90×--35.92× same-class follow-up speedup, and a 15.28×--35.97×
-cold-all-query ratio; stage-timing attribution shows adaptive repair avoids
-the fixed-K last-frame re-prefill at the third follow-up; 1.30AC/AD close the
-cache-reuse/composition boundary as same net
-aggregate loss through different any-paired-drift sets).
+Last material update: 2026-05-03 (adaptive C-PERSIST breadth remains the
+after-ingest headline; dense-answer-anchored stress bounds aggressive reuse at
+6/133 paired drift; measured sparse execution and scale-out prefix-snapshot
+rows are integrated with denominator-safe wording).
 
-## Current Manuscript Position (2026-04-27)
+## Current Manuscript Position (2026-05-03)
 
 The manuscript should be centered on one anti-recomputation story: where a
 frozen video VLM must buy fresh visual evidence over time, and where cached
@@ -84,7 +81,7 @@ For the per-claim breakdown, see
 [`paper/claim-matrix.md`](claim-matrix.md) and
 [docs/literature-map-2026-04-16.md § Current evidence level (2026-04-16)](../docs/literature-map-2026-04-16.md).
 
-## Three Major Contributions (2026-04-23 status)
+## Three Major Contributions (2026-05-03 status)
 
 Per Codex rounds 25–26 (2026-04-21), the paper spine is these three
 first-class contributions — ordered ahead of the Qwen routing lane,
@@ -304,9 +301,9 @@ paired outputs, cache-correctness checks, source paths, and matched baselines;
 the current bundle is useful because it includes both positive prefix-snapshot
 rows and negative/baseline-pressure rows.
 
-**Sparse exactness** is a separate artifact-bundle row, not part of the
+**Sparse exactness** is a separate scale-out evidence row, not part of the
 deployment-multiplier bucket. Historical audits supported zero accuracy delta
-on 1,937 sparse-sampled Qwen items, but direct byte-identical raw-paired
+on 1,937 sparse-sampled scale-out S4 rows, but direct byte-identical raw-paired
 verification covered 513 items. Do not write
 "byte-identical on 1,937" unless the validated bundle re-exports or reruns the missing
 raw paired rows.

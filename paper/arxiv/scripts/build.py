@@ -20,6 +20,27 @@ def _run(cmd: list[str], cwd: Path | None = None) -> None:
     subprocess.run(cmd, cwd=cwd or MANUSCRIPT_ROOT, check=True)
 
 
+def _git_status_porcelain() -> str:
+    result = subprocess.run(
+        ["git", "status", "--porcelain"],
+        cwd=MANUSCRIPT_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return result.stdout.strip()
+
+
+def _ensure_clean_for_bundle() -> None:
+    status = _git_status_porcelain()
+    if status:
+        raise SystemExit(
+            "Refusing to create a source bundle from a dirty working tree. "
+            "Commit or stash tracked changes, then rebuild the bundle from "
+            "the frozen source state."
+        )
+
+
 def _sync() -> None:
     _run([sys.executable, str(SYNC_SCRIPT)])
 
@@ -108,6 +129,8 @@ def main() -> int:
     args = parser.parse_args()
 
     _sync()
+    if args.bundle:
+        _ensure_clean_for_bundle()
     if not args.skip_pdf:
         _build_pdf()
     if args.bundle:

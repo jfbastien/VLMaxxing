@@ -60,7 +60,7 @@ Current wording:
 - "different model, machine, runtime, and streaming protocol"
 - "scale-out warm follow-up latency is diagnostic only until a cache-safe
   cross-turn path passes"
-- "zero accuracy delta on 1,937 sparse-sampled Qwen items; byte-identical
+- "zero accuracy delta on 1,937 sparse-sampled scale-out S4 rows; byte-identical
   raw-paired outputs verified on 513 items"
 
 Promotion requirements:
@@ -122,7 +122,7 @@ Do not leave readers with "huh, why?"
 - Candidate C-STREAM is a checked mixed artifact bundle, not a fourth headline.
   The default 26B cache path is unsafe, the prefix-snapshot rows are positive
   but small-N and wrapper-specific, fixed-evidence stream baselines favor
-  low-FPS dense over the current event-window proxy, and the throughput axis
+  low-FPS dense over the tested event-window proxy, and the throughput axis
   remains a separate future promotion gate until a fidelity-preserving
   operating point lands.
 

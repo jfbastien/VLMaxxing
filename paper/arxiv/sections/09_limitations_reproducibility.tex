@@ -16,7 +16,7 @@ cell is ceiling-matched, which is useful evidence for the arithmetic and a
 null on super-ceiling composition.
 
 The measured sparse-execution story is now more concrete but still bounded.
-Gemma supplies the cleanest current operating point: 32f short skips timed
+Gemma supplies the cleanest reported operating point: 32f short skips timed
 vision-tower work at 1.316$\times$ first-query speedup with no paired drift and
 no parse failures on 20 items. The full Gemma 8/16/32f sweep has zero paired
 answer drift, but dense and sparse arms share parse failures in some cells and
@@ -100,7 +100,7 @@ large, not because it already clears the full systems validation bar. The checke
 scale-out bundle is now real and useful, but mixed: default 26B cross-turn
 cache reuse is unsafe, a topology-aware prefix snapshot is positive only at
 small \(N\), fixed-evidence stream baselines favor low-FPS dense over the
-current event-window proxy, and post-vision-tower hard pruning shows that
+tested event-window proxy, and post-vision-tower hard pruning shows that
 policy overhead can erase any expected win if vision work was not actually
 skipped.
 

@@ -27,7 +27,7 @@ Under controlled dense-answer-anchored prompt variation (turn k+1 prepended with
 
 All cells are paired-prompt-hash-clean (`pass_prompt_hash_pairing=true`); no pathological format hits across 420 paired session rows; complete-grid gate true.
 
-This **bounds** C-PERSIST: the conservative `fixed_k1` policy (re-prefill 1 frame per turn) survives content-conditional stress at horizon=20, but the aggressive cache-reuse policies (`adaptive_post_q2`, `refresh10`) cross the 3% gate at 4.3%/4.5%.
+This **bounds** C-PERSIST: the conservative `fixed_k1` policy (re-prefill 1 frame per turn) survives content-conditional stress at horizon=20, but the aggressive cache-reuse policies (`adaptive_post_q2`, `refresh10`) cross the 3% gate at 6/133 = 4.51%.
 
 ## Comparison with A6 (repeated-question, horizon=50)
 
@@ -36,7 +36,7 @@ This **bounds** C-PERSIST: the conservative `fixed_k1` policy (re-prefill 1 fram
 | A6 (1.55L, `b06a345`) | stateless_question_cycle (3 unique Qs cycled) | 50 | 0.00% | 0.00% |
 | **1.55M (this study)** | dense_anchored (content-conditional, prior dense answer injected) | 20 | **4.51%** | **4.51%** |
 
-The drift difference is **content-conditional**: the same policies that show zero drift through 50 repeated-question turns crack 3% within 20 dense-answer-anchored turns. The drift is small (6/133 ≈ 4.5%) but exceeds the prereg gate.
+The drift difference is **content-conditional**: the same policies that show zero drift through 50 repeated-question turns crack 3% within 20 dense-answer-anchored turns. The drift is small (6/133 = 4.51%) but exceeds the prereg gate.
 
 ## Drift distribution across turn buckets
 
@@ -46,7 +46,7 @@ The drift difference is **content-conditional**: the same policies that show zer
 | adaptive_post_q2 | 3/63 (4.76%) | 3/70 (4.29%) | uniform, no late-turn cliff |
 | refresh10 | 3/63 (4.76%) | 3/70 (4.29%) | uniform, no late-turn cliff |
 
-**Critically, drift does not concentrate at the end of the horizon.** Both adaptive and refresh10 show approximately 4.3% drift in early (0-10) and late (10-20) buckets. There is no cliff that would suggest a horizon-dependent breakdown through 20 turns; this supports a bounded "no observed late-turn cliff" claim, not a proof of a stable noise floor.
+**Critically, drift does not concentrate at the end of the horizon.** Both adaptive and refresh10 show 3/63 = 4.76% drift in the early (0-10) bucket and 3/70 = 4.29% in the late (10-20) bucket. There is no cliff that would suggest a horizon-dependent breakdown through 20 turns; this supports a bounded "no observed late-turn cliff" claim, not a proof of a stable noise floor.
 
 `cliff_bucket_detected=false` for all three policies.
 
@@ -54,14 +54,14 @@ The drift difference is **content-conditional**: the same policies that show zer
 
 Under repeated-question schedule (A6), the 3 fixed prompts cycle every 3 turns; each unique prompt shape is encountered many times, and the cache-reuse policy effectively replays the same prompt structure. Errors do not compound because the prompt distribution is deterministic.
 
-Under dense-anchored schedule (1.55M), each turn's prompt embeds a substring from the prior dense answer. The cached arms reuse the visual prefix but rebuild the question prefix; the cached attention state is *correctly anchored to the visual prefix only*, so any divergence is on the rebuild path. Two hypotheses for the residual 4.5% drift:
+Under dense-anchored schedule (1.55M), each turn's prompt embeds a substring from the prior dense answer. The cached arms reuse the visual prefix but rebuild the question prefix; the cached attention state is *correctly anchored to the visual prefix only*, so any divergence is on the rebuild path. Two hypotheses for the residual 4.51% drift:
 
 - **H_A** (the language-prefix attention drift): the cached arm's visual KV cache slightly under-attends to the per-turn-novel question text because cross-attention statistics differ from the dense-arm pass, biasing decoding marginally toward the cached vocab.
 - **H_B** (the per-turn temperature-zero noise floor): even with greedy decoding, the rebuild-prefill at turn k+1 has a small probability of taking a different argmax due to numerical reordering between cached and non-cached attention weights. This is a known noise floor on Qwen 2.5-VL-7B-Instruct-4bit at T=0.
 
 H_B is consistent with the roughly uniform per-bucket distribution. H_A would predict bucket-dependent rate increases with horizon (more accumulated content to drift away from), which is not observed in this 20-turn run.
 
-This is **not** discriminative within the current data — both hypotheses predict 4.5% drift uniformly distributed. A higher-horizon (40 or 50) dense-anchored run would discriminate: H_A predicts rate growth with horizon; H_B predicts a stable 4-5% per-turn floor.
+This is **not** discriminative within the current data — both hypotheses predict 4.51% drift uniformly distributed. A higher-horizon (40 or 50) dense-anchored run would discriminate: H_A predicts rate growth with horizon; H_B predicts a stable roughly 4--5% per-turn floor.
 
 ## Wall-clock timing
 
@@ -71,7 +71,7 @@ This is **not** discriminative within the current data — both hypotheses predi
 | adaptive_post_q2 | 698.2 ms | 114.6× faster |
 | refresh10 | 708.9 ms | 112.9× faster |
 
-The cache-reuse speedups are dramatic — adaptive_post_q2 follow-ups are 114.6× faster than cold dense passes. **The 4.3% drift cost buys a >100× wall-time speedup**, which is a defensible pareto trade if the paper frames it that way.
+The cache-reuse speedups are dramatic — adaptive_post_q2 follow-ups are 114.6× faster than cold dense passes. **The 4.51% drift cost buys a >100× wall-time speedup**, which is a defensible pareto trade if the paper frames it that way.
 
 ## Total wall time
 
@@ -79,11 +79,11 @@ The cache-reuse speedups are dramatic — adaptive_post_q2 follow-ups are 114.6�
 
 ## Honest framing for the paper
 
-**Recommended language**: "C-PERSIST holds without observable drift under repeated-question schedules through 50 turns (A6). Under controlled dense-answer-anchored prompt variation through 20 turns (1.55M), conservative re-prefill (`fixed_k1`) preserves zero-drift, while aggressive cache-reuse policies (`adaptive_post_q2`, `refresh10`) exhibit small but measurable drift of approximately 4.5% — a 100× wall-time speedup against a 4.5pp paired-correctness cost. The drift is uniform across early and late turn buckets, indicating a per-turn noise floor rather than horizon-dependent accumulation."
+**Recommended language**: "Under repeated-question schedules through 50 turns (A6), adaptive repaired-cache inheritance and refresh10 have no observed paired drift; fixed `K=1` stays below the 3% gate but shows nonzero repeated-question drift (3/343 choice, 2/343 correctness). Under controlled dense-answer-anchored prompt variation through 20 turns (1.55M), conservative re-prefill (`fixed_k1`) preserves zero-drift, while aggressive cache-reuse policies (`adaptive_post_q2`, `refresh10`) exhibit small but measurable drift of 6/133 = 4.51% — a 100× wall-time speedup against a 4.51pp paired-correctness cost. The drift is split across early and late turn buckets, indicating no observed late-turn cliff rather than horizon-dependent accumulation."
 
 **Do NOT claim**: "C-PERSIST holds under content-conditional dialogue stress" — that overstates the result for adaptive/refresh10.
 
-**Do claim**: "C-PERSIST has a structurally observable drift boundary at content-conditional prompt variation, quantified at ~4.5% paired-correctness cost on adaptive/refresh10 vs. zero on fixed_k1, with 100× wall-time speedup."
+**Do claim**: "C-PERSIST has a structurally observable drift boundary at content-conditional prompt variation, quantified at 6/133 = 4.51% paired-correctness cost on adaptive/refresh10 vs. zero on fixed_k1, with 100× wall-time speedup."
 
 ## Falsification log
 
@@ -113,7 +113,7 @@ This **bounds** the strongest reviewer attack on A6 ("but A6 cycles the same 3 q
 Adopt the "drift boundary" framing in the C-PERSIST section. Present the A6 (50-turn repeated-question) result as the strict-stationary case and 1.55M (20-turn dense-anchored) as the bound on content-conditional stress.
 
 Either:
-- **Path A**: Cite all three policies in 1.55M with the honest mixed result; pareto-frame the 4.3% drift vs 100× speedup.
+- **Path A**: Cite all three policies in 1.55M with the honest mixed result; pareto-frame the 4.51% drift vs 100× speedup.
 - **Path B**: Restrict the C-PERSIST headline to `fixed_k1` (which passes both A6 and 1.55M); demote `adaptive_post_q2` and `refresh10` to "aggressive variants with bounded but observable drift under content-conditional stress."
 
 Path A is more honest; path B is cleaner for headline framing. Editor's choice.

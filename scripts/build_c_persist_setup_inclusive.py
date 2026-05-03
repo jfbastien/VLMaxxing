@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Setup-inclusive C-PERSIST economics generator.
+"""Setup-inclusive same-video follow-up economics generator.
 
 Reads existing phase 1.55A* summary.json artifacts that carry per-session
 timing (session_first_query, session_follow_up, baseline) and emits:
@@ -236,14 +236,16 @@ def _emit_table(snapshot: dict[str, Any]) -> str:
         r"\begin{table}[H]",
         r"\centering",
         (
-            r"\caption{Setup-inclusive C-PERSIST session economics. "
+            r"\caption{Setup-inclusive same-video follow-up economics. "
             r"\emph{Warm} is the mean per-follow-up multiplier on the same "
             r"timing basis as the session columns; headline prose reports "
             r"median follow-up speedups where stated. \emph{Q=k} is the "
             r"actual session-level speedup when a session has \(k\) total "
             r"queries on the same video. Qwen rows use the measured cold "
-            r"first query plus \(Q-1\) follow-ups; Gemma prefix-snapshot rows "
-            r"use the measured prefix warm-up plus \(Q\) follow-up queries. "
+            r"first query plus \(Q-1\) C-PERSIST follow-ups; Gemma "
+            r"prefix-snapshot rows are scale-out prefix-snapshot economics "
+            r"for denominator comparison and use the measured prefix warm-up "
+            r"plus \(Q\) follow-up queries. "
             r"At \(Q=1\) the cold first-query cost dominates and the "
             r"speedup approaches~1; at large \(Q\) it asymptotes to the "
             r"mean per-follow-up multiplier. \(\Delta\)acc is the paired "

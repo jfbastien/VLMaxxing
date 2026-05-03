@@ -11,8 +11,9 @@ frozen Qwen2.5-VL-7B-Instruct-4bit, adaptive same-video follow-up reuse repairs
 with no observed paired choice or correctness drift on 93 paired queries,
 including 62 repaired follow-ups. Same-class follow-up speedup is
 14.90--35.92$\times$ when cold follow-ups are compared with repaired
-follow-ups; the cold-all-query versus repaired-follow-up ratio is
-15.28--35.97$\times$. The mechanism is concrete: the second follow-up inherits
+follow-ups within matched frame/duration cells; the cold-all-query versus
+repaired-follow-up ratio is 15.28--35.97$\times$ when the cold baseline's
+per-query cost is compared with repaired follow-up latency. The mechanism is concrete: the second follow-up inherits
 the cache repaired after the first follow-up, so it appends mostly the new
 question instead of repairing the newest-frame tail again. This is not
 first-query speedup: the first query still pays full freight, and the tested
@@ -75,12 +76,12 @@ not itself a measured sparse backend.
 
 Streaming state reuse (candidate C-STREAM) is the native-rate version of the
 same question, but it is not yet a headline claim. A checked 26B-class
-scale-out artifact bundle now makes the lane more concrete and more bounded:
+scale-out evaluation makes the lane more concrete and more bounded:
 default mixed sliding-window/full-attention
 cache reuse fails a cross-turn correctness smoke, a topology-aware prefix
 snapshot gives positive small-\(N\) follow-up rows, fixed-evidence streaming
-baselines favor low-FPS dense over the current event-window proxy, and the
-large exactness export separates zero accuracy delta on 1,937 rows from
+baselines favor low-FPS dense over the tested event-window proxy, and the
+large exactness audit separates zero accuracy delta on 1,937 rows from
 byte-identical raw-paired text on 513 rows.
 
 The broader implication is not that pixel differencing is the final interface.

@@ -12,7 +12,7 @@ shows which mechanisms are plausible, which simple baselines are serious, and
 which cache paths are unsafe.
 
 Unlike sparse-sampled benchmark runs, the streaming lane tests cache lifetime:
-when to keep state, shift it, rebuild it, or declare it stale. The current
+when to keep state, shift it, rebuild it, or declare it stale. The tested
 scale-out stack exercises motion-vector and residual side-channel staleness
 signals, sectional cache shifts, and event/inflection triggers. Those
 mechanisms are why the lane is not merely an application demo. Its claims stay
@@ -68,23 +68,23 @@ desktop-agent scroll/pan traces remain future gates.
 The streaming baselines cut in the other direction. On 22 screen/UI events,
 low-FPS dense uses four uniformly spaced frames and matches the fresh oracle on
 17/22 events, beating screenshot polling with one query-time frame (13/22),
-recency last-\(K\) with four recent frames (12/22), and the current
+recency last-\(K\) with four recent frames (12/22), and the tested
 event-window proxy with four event-window frames (13/22). That does not kill
 C-STREAM; it clarifies the denominator. Fixed-evidence quality is not where the
-current proxy wins. The fps view above shows why the native-rate denominator is
-still worth measuring, but the checked bundle has not yet earned the stronger
+tested proxy wins. The fps view above shows why the native-rate denominator is
+still worth measuring, but the evaluated bundle has not yet earned the stronger
 streaming claim. Advisory predecessor sectional-scroll instrumentation, not
 part of the checked bundle table, points in the same direction qualitatively:
 over the same recording duration, event-driven state reuse can perceive at
 decode cadence with far fewer vision fires than polling. Because those raw rows
-are not part of the checked bundle, we do not use their exact multiplier as
+are not part of the evaluated bundle, we do not use their exact multiplier as
 C-STREAM evidence. That axis still needs checked native mechanism-quality
 validation before it becomes a headline.
 
 The recovery path is therefore specific, not rhetorical. C-STREAM needs a
 policy that wins on the axis native streams actually own: higher
 perception-rate at the same vision budget while preserving event-window
-answers. The current proxy failed because its event windows were not enough to
+answers. The tested proxy failed because its event windows were not enough to
 beat a simple four-frame dense baseline; the default cache path failed because
 mixed sliding-window/full-attention cache topology made cross-turn state
 semantically unsafe; and post-vision-tower pruning failed as systems evidence
