@@ -15,8 +15,8 @@ The repo is organized around a small set of claim-bearing regimes:
   mixed/boundary bundle, but it is not an earned headline until a native policy
   beats matched baselines under cache-correctness and stale-cache tests.
 
-Historical source imports and old review packets are not part of the release
-surface. The durable imported-target summary is in
+Historical source imports and old review packets are excluded from the paper /
+arXiv release surface. The durable imported-target summary is in
 [docs/claim-register.md](docs/claim-register.md), local reproduction status is
 in [docs/reproduction-status.md](docs/reproduction-status.md), and raw history
 remains in git.

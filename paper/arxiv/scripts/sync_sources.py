@@ -531,9 +531,9 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
     p = panel_rect(4, "C-PERSIST", "#166534")
     for i, (q, text, face, edge) in enumerate(
         [
-            ("Q1", "pay once", "#fee2e2", "#b91c1c"),
-            ("Q2", "repair tail", "#dcfce7", "#166534"),
-            ("Q3", "reuse cache", "#dcfce7", "#166534"),
+            ("first", "pay once", "#fee2e2", "#b91c1c"),
+            ("next", "repair tail", "#dcfce7", "#166534"),
+            ("later", "reuse cache", "#dcfce7", "#166534"),
         ]
     ):
         yy = 0.70 - i * 0.15
@@ -907,7 +907,7 @@ def _render_c_persist_timeline_figure() -> None:
     for key, label in [
         ("q0", "First query"),
         ("q2", "Follow-up 1 repair"),
-        ("q3", "Follow-up 2 / Q3"),
+        ("q3", "Follow-up 2 reuse"),
     ]:
         ax.text(xs[key], 0.78, label, fontsize=8.0, weight="bold", ha="center", color="#334155")
 
@@ -1026,7 +1026,7 @@ def _render_c_persist_timeline_figure() -> None:
     ax.text(
         0.67,
         0.70,
-        f"Q3: {fixed_q3_s:.2f}s\nrepeat tail",
+        f"{fixed_q3_s:.2f}s\nrepeat tail",
         fontsize=7.0,
         ha="center",
         color="#7c2d12",
@@ -1034,7 +1034,7 @@ def _render_c_persist_timeline_figure() -> None:
     ax.text(
         0.68,
         0.28,
-        f"Q3: {adaptive_q3_s:.3f}s\nreuse repaired cache",
+        f"{adaptive_q3_s:.3f}s\nreuse repaired cache",
         fontsize=7.0,
         ha="center",
         color="#14532d",
@@ -1054,7 +1054,7 @@ def _render_c_persist_timeline_figure() -> None:
     ax.text(
         0.902,
         0.482,
-        f"{speedup:.2f}x\npaired Q3\nspeedup",
+        f"{speedup:.2f}x\npaired\nspeedup",
         fontsize=8.0,
         weight="bold",
         ha="center",
@@ -1064,7 +1064,7 @@ def _render_c_persist_timeline_figure() -> None:
     ax.text(
         0.902,
         0.385,
-        f"{token_reduction:.1f}% fewer\nQ3 tail tokens",
+        f"{token_reduction:.1f}% fewer\ntail tokens",
         fontsize=6.7,
         ha="center",
         va="center",
@@ -1864,7 +1864,8 @@ def _write_c_persist_repair_table(snapshot: dict) -> None:
             f"choice/correct {adaptive['paired_choice_diffs']}/{adaptive['n_pairs']} / "
             f"{adaptive['paired_correctness_diffs']}/{adaptive['n_pairs']}; "
             f"follow-up subset 0/{adaptive['n_follow_up_pairs']}; "
-            "Q3 inherits repaired state; paired Q3 speedup 9.50$\\times$ \\\\"
+            "second follow-up inherits repaired state; paired second-follow-up "
+            "speedup 9.50$\\times$ \\\\"
         ),
         r"\bottomrule",
         r"\end{tabularx}",
