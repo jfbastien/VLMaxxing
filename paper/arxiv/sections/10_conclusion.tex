@@ -1,59 +1,21 @@
 \section{Conclusion}
 
 The paper began with a small absurdity: much of the video did not change, and
-the model paid anyway. The measured answer is not one single multiplier.
-Same-video follow-up queries admit the largest measured multipliers: raw
-persistent-KV reuse
-reaches sub-second latency inside the \(\leq 16\)f tested envelope, while
-selective re-prefill repairs the deeper cache-reuse basin at higher latency.
-Adaptive repair gives no observed paired drift across 93 paired queries
-at 3.20--6.51\,s repaired follow-up median and 14.90--35.92$\times$
-same-class follow-up speedup; the cold-all-query versus repaired-follow-up
-ratio is 15.28--35.97$\times$. Fixed \(K=1\) remains the no-coordination
-baseline at 9.48--20.37$\times$ same-class follow-up speedup on the same
-breadth. The many-turn stress adds the missing horizon check: adaptive and
-scheduled-refresh reuse stay drift-free through a 50-turn repeated-question
-cycle, while fixed \(K=1\) shows nonzero repeated-question drift but no cliff.
-The denser prompt-variation stress draws the sharper line: fixed \(K=1\)
-has no observed paired drift on 133 dense-answer-anchored follow-ups, while adaptive and
-refresh-10 each trade 6/133 paired drift for roughly 0.7\,s follow-up latency.
-Fresh videos admit smaller but real first-pass gains, and those gains obey a
-share-limited ceiling that explains the regime and binds cleanly on the core
-ceiling checks, including the matched Qwen cross-architecture probe and the
-measured sparse-vision envelope. Gemma supplies the cleanest timed-skip
-cell at 32f short: 1.316$\times$ first-query speedup with no paired drift and
-no parse failures on 20 items. Qwen supplies the cautionary half of the same
-story: aggressive pruning fails, while a conservative keep rate recovers to
-within the aggregate-accuracy and format gates at low gain.
-Candidate C-STREAM remains the right scale-out target: perception-rate streaming state
-reuse under a native-rate protocol. The 26B-class scale-out bundle
-remains mixed boundary evidence: default cache reuse is unsafe,
-prefix-snapshot follow-up rows are positive but small-\(N\), fixed-evidence
-baselines favor low-FPS dense over the tested event-window proxy, and
-exactness claims must keep the 1,937 zero-accuracy-delta and 513 byte-identical
-denominators separate.
+the model paid anyway. The measured answer is not one multiplier.
+Same-video follow-up reuse is the big-number regime: after the first query
+pays, selective re-prefill and repaired-cache inheritance give
+14.90--35.92$\times$ follow-up speedup with no observed paired drift across
+the 93-query breadth setting. Fresh-video pruning is smaller but real, and its
+gains obey the stage-share ceiling. Streaming is the natural deployment target,
+but the evaluated 26B-class bundle shows why topology-safe cache reuse and strong
+low-FPS baselines are gates, not details.
 
-The scientific value is in the boundaries as much as in the wins.
-Local diagnostics suggest fresh-compute placement over time is not captured by
-novelty magnitude alone,
-aggregate accuracy can hide answer-identity drift, and semantic substitution
-must not be confused with measured sparse execution.
+The boundaries are the science. Aggregate accuracy can hide answer drift.
+Semantic substitution is not timed skipped work. Component wins do not multiply
+just because the table numbers look good next to each other.
 
-What remains is a broader fidelity-preserving sparse-backend curve, natural
-multi-turn dialogue stress, cleaner native-streaming systems baselines, and
-causal guard features beyond the cache-distance probe. The n=60
-composition audit, the long-bucket admission sweep, the cache-invalidated
-follow-up test, and the direct KV-cache distance audit already closed the
-multiply-the-headlines temptation: the gains do not stack naively. The useful question is
-where each ceiling moves in the architectures and deployment protocols people
-actually care about.
-
-It also leaves a larger media agenda. This paper is not an AI-native
-codec and does not claim one. It shows why that direction is worth studying:
-VLMs should not have to reverse-engineer every repeated frame back into state.
-Future media streams for machines could expose change, motion, uncertainty,
-objects, text, sensor time, and active tiles directly. Anti-recomputation is
-one empirical step from video-as-frames toward video-as-world-state updates.
-The strongest future version is not a better pixel threshold; it is a
-model-facing media interface where change, motion, object state, sensor time,
-and uncertainty arrive as first-class evidence.
+The larger direction is simple: VLMs should not have to rediscover repeated
+frames back into state. Future media streams for machines should expose change,
+motion, uncertainty, objects, text, sensor time, and active tiles directly.
+Anti-recomputation is one empirical step from video-as-frames toward
+video-as-world-state updates.

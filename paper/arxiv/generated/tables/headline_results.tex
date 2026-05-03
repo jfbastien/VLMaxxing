@@ -1,21 +1,22 @@
 \begin{table}[H]
 \centering
-\caption{Main local speedup cells. C-CEILING is the accounting guardrail for these rows; candidate C-STREAM is summarized separately because it is a mixed scale-out evidence lane.}
+\caption{Main speedup cells. Rows use different denominators; C-CEILING explains why they do not multiply.}
 \label{tab:headline-results}
-\scriptsize
+\tiny
+\setlength{\tabcolsep}{0pt}
 \renewcommand{\arraystretch}{\PaperTableStretch}
-\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.10\linewidth} Y >{\raggedright\arraybackslash}p{0.135\linewidth} >{\raggedright\arraybackslash}p{0.105\linewidth} Y >{\raggedright\arraybackslash}p{0.10\linewidth}@{}}
+\noindent\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.10\linewidth} >{\raggedright\arraybackslash}p{0.21\linewidth} >{\raggedright\arraybackslash}p{0.13\linewidth} >{\raggedright\arraybackslash}p{0.10\linewidth} >{\raggedright\arraybackslash}p{0.35\linewidth} >{\raggedright\arraybackslash}p{0.10\linewidth}@{}}
 \toprule
 Regime & Setting & Speedup denominator & Gain & Validation / notes & Evidence \\
 \midrule
-After-ingest & Qwen raw warm follow-up reuse, 16f & cold/cached follow-up & 91.1$\times$ & 0.807\,s median; $\Delta$acc +0.000 & local aggregate-clean; unrepaired warm reuse \\
-After-ingest & Qwen raw warm follow-up reuse, 8f & cold/cached follow-up & 47.2$\times$ & 0.815\,s median; $\Delta$acc -0.048 & local within criterion \\
-After-ingest & Qwen repaired basin escape, adaptive & cold/repaired follow-up median & 14.90--35.92$\times$ & choice 0/93; correct 0/93; cold-all-query ratio 15.28--35.97$\times$ & local repair breadth \\
-After-ingest & Qwen repaired basin escape, fixed K=1 & cold/repaired follow-up & 9.48--20.37$\times$ & choice 0/93; correct 0/93; pathological follow-ups 0/62 & local repair breadth \\
-First-pass & Gemma VideoMME 8f holdout & first-query E2E & 1.113$\times$ & $\Delta$acc +0.000 & clean local \\
-First-pass & Gemma measured sparse vision, 32f short & first-query E2E & 1.316$\times$ & choice agreement 100\%; $\Delta$acc +0.000; dense parse 0; sparse parse 0 & clean sparse-execution cell \\
-First-pass & Gemma MVBench 8f holdout & first-query E2E & 1.407$\times$ & $\Delta$acc -0.033; timing-attribution caveat & advisory local \\
-First-pass & Qwen measured sparse vision, 16f \(kr_V=0.85\) & first-query E2E & 1.032$\times$ & $\Delta$acc -0.050; vision reduction 13.6\%; parse failures 0; agreement 81.7\% & agg./format gate; low-gain boundary \\
+After-ingest & Qwen raw warm reuse, 16f & cold/cached follow-up & 91.1$\times$ & 0.807\,s median; $\Delta$acc +0.000 & aggregate-clean; unrepaired \\
+After-ingest & Qwen raw warm reuse, 8f & cold/cached follow-up & 47.2$\times$ & 0.815\,s median; $\Delta$acc -0.048 & within criterion \\
+After-ingest & Qwen repaired escape, adaptive & cold/repaired follow-up median & 14.90--35.92$\times$ & choice 0/93; correct 0/93; cold-all-query ratio 15.28--35.97$\times$ & repair breadth \\
+After-ingest & Qwen repaired escape, fixed K=1 & cold/repaired follow-up & 9.48--20.37$\times$ & choice 0/93; correct 0/93; pathological follow-ups 0/62 & repair breadth \\
+First-pass & Gemma VideoMME 8f holdout & first-query E2E & 1.113$\times$ & $\Delta$acc +0.000 & clean \\
+First-pass & Gemma sparse vision, 32f short & first-query E2E & 1.316$\times$ & choice agreement 100\%; $\Delta$acc +0.000; dense parse 0; sparse parse 0 & \PaperStack{clean}{timed-skip} \\
+First-pass & Gemma MVBench 8f holdout & first-query E2E & 1.407$\times$ & $\Delta$acc -0.033; timing-attribution caveat & advisory \\
+First-pass & Qwen sparse vision, 16f \(kr_V=0.85\) & first-query E2E & 1.032$\times$ & $\Delta$acc -0.050; vision reduction 13.6\%; parse failures 0; agreement 81.7\% & format gate; low gain \\
 \bottomrule
-\end{tabularx}
+\end{tabular}
 \end{table}

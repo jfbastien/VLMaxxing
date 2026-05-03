@@ -47,7 +47,7 @@ geometry itself reproduces on holdout at 8f and 16f; what failed to
 transfer was the downstream long-bucket accuracy shape, not the drift signal.
 
 The streaming/deployment lane remains the least harmonized evidence class, but
-it names the practical regime where redundancy can become largest. The checked
+it names the practical regime where redundancy can become largest. The
 scale-out bundle is mixed: default 26B cross-turn cache reuse is unsafe, a
 topology-aware prefix snapshot is positive only at small \(N\), fixed-evidence
 stream baselines favor low-FPS dense over the tested event-window proxy, and
@@ -163,7 +163,7 @@ sparse-vision 32f-short operating point plus broader zero-drift sweep with
 format caveats & Expose keep masks and per-stage timing, but make
 rotating/sliding cache behavior explicit. \\
 Candidate C-STREAM & Native-rate streaming state reuse under a separate
-protocol; checked bundle with cache-correctness, prefix snapshot, fixed-evidence
+protocol; evaluation bundle with cache-correctness, prefix snapshot, fixed-evidence
 baselines, and exactness export & Promote only after the native streaming
 policy beats low-FPS/screenshot/recency baselines under the same quality
 envelope and cache topology. \\
@@ -171,5 +171,5 @@ envelope and cache topology. \\
 \end{tabularx}
 \end{table}
 
-The appendix records the evidence families, hardware, and repo commits behind
-the generated figures and tables.
+The appendix records the source commit; the repository records evidence
+families, hardware, and claim provenance.

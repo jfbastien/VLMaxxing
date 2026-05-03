@@ -271,15 +271,14 @@ def _emit_table(snapshot: dict[str, Any]) -> str:
         r"\centering",
         (
             r"\caption{Random-keep sanity check at matched keep-rate. Same "
-            r"Qwen2.5-VL-7B-Instruct-4bit, same VideoMME dev30 manifest, same "
-            r"frame count, same vision-tower cut layer \(L=2\). The "
+            r"Qwen2.5-VL-7B-Instruct-4bit VideoMME dev30 setup, frame count, "
+            r"and vision-tower cut layer \(L=2\). The "
             r"\emph{magnitude\_norm} row is the structured Qwen scorer; the "
-            r"\emph{uniform\_random} row is a trivial baseline at the same "
-            r"keep-rate, not a matched-runtime peer method. The \(\Delta\)acc column is "
-            r"relative to dense. "
+            r"\emph{uniform\_random} row averages trivial-baseline seeds at "
+            r"the same keep-rate. The \(\Delta\)acc column is relative to dense. "
             + random_scope_sentence
             + gap_sentence
-            + r"Wall-clock columns are measured and need not match.}"
+            + r"Wall-clock columns are measured but not matched-runtime peer-method claims.}"
         ),
         r"\label{tab:competitor-positioning}",
         r"\small",

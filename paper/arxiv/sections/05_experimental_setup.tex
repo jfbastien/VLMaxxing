@@ -40,9 +40,8 @@ records the exact hardware for each lane.
 For benchmark comparability, the main-path runs use uniform global sampling at
 8 frames and square-pad plus resize to 560\,$\times$\,560. The routing planner
 operates on decoded RGB frames. Padding-aware reuse accounting is reported
-separately from raw padded reuse in the artifact summaries; reported
-effective-budget numbers use active-region reuse rather than trivially static
-padded borders.
+separately from raw padded reuse; reported effective-budget numbers use
+active-region reuse rather than trivially static padded borders.
 
 \begin{table}[H]
 \centering
@@ -80,7 +79,7 @@ otherwise; first-pass rows are first-query end-to-end ratios. Paired
 experiments keep clip order and compared conditions aligned, log raw per-query
 records, and label rows advisory when non-target-stage timing movement prevents
 clean attribution. The practical pairing rule is simple: compared arms use the
-same manifest, frame count, scorer, and wall-clock harness, and the advisory
+same input list, frame count, scorer, and wall-clock harness, and the advisory
 label follows the logged timing deltas. When a run is missing the
 instrumentation needed for a mechanism claim, the manuscript says so or keeps
 the result advisory.
@@ -100,8 +99,8 @@ paired-drift metrics are stricter than aggregate accuracy: they ask whether the
 same item gets the same parsed answer under reuse, not merely whether the total
 score is unchanged.
 
-Appendix~\ref{app:source-traceability} records the source commit; the repository
-keeps the detailed claim-to-artifact manifest behind the generated assets.
+Appendix~\ref{app:source-traceability} records the source commit and public
+repository.
 
 For the adaptive C-PERSIST breadth result, the denominator is both query- and
 session-visible. The combined envelope is 31 sessions \(\times\) three queries

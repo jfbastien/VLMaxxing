@@ -1,6 +1,6 @@
 \begin{table}[H]
 \centering
-\caption{Random-keep sanity check at matched keep-rate. Same Qwen2.5-VL-7B-Instruct-4bit, same VideoMME dev30 manifest, same frame count, same vision-tower cut layer \(L=2\). The \emph{magnitude\_norm} row is the structured Qwen scorer; the \emph{uniform\_random} row is a trivial baseline at the same keep-rate, not a matched-runtime peer method. The \(\Delta\)acc column is relative to dense. The random row averages 4 seeds. The structured-vs-random gap is +14.2\,pp over the four random seeds evaluated. Wall-clock columns are measured and need not match.}
+\caption{Random-keep sanity check at matched keep-rate. Same Qwen2.5-VL-7B-Instruct-4bit VideoMME dev30 setup, frame count, and vision-tower cut layer \(L=2\). The \emph{magnitude\_norm} row is the structured Qwen scorer; the \emph{uniform\_random} row averages trivial-baseline seeds at the same keep-rate. The \(\Delta\)acc column is relative to dense. The random row averages 4 seeds. The structured-vs-random gap is +14.2\,pp over the four random seeds evaluated. Wall-clock columns are measured but not matched-runtime peer-method claims.}
 \label{tab:competitor-positioning}
 \small
 \renewcommand{\arraystretch}{\PaperTableStretch}

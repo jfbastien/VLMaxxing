@@ -26,13 +26,11 @@ analytically separate because they measure different kinds of reuse.
 The session experiments are easier to read with the naming convention stated
 up front. A \emph{cold} query recomputes the full video prefix. A
 \emph{follow-up} query asks another question about the same video after that
-prefix has already been ingested. Older persistent-cache artifacts index the
-first question as \(Q1\), while the later composition artifacts call the first
-question \(Q0\); in both cases the named first question is the query that
-creates the reusable state, and later \(Q2/Q3\)-style questions are follow-ups
-in the same session. The symbol \(K\) is the number of newest visual frames
-re-prefilled before a follow-up; \(K=1\) means ``refresh one newest frame,
-reuse the rest of the prefix.'' A \emph{same-class speedup}
+prefix has already been ingested. The named first query creates reusable
+state; later same-video questions are follow-ups in the same session. The
+symbol \(K\) is the number of newest visual frames re-prefilled before a
+follow-up; \(K=1\) means ``refresh one newest frame, reuse the rest of the
+prefix.'' A \emph{same-class speedup}
 compares cold follow-up queries to session follow-up queries. An
 \emph{all-query denominator} compares all cold queries to session follow-ups;
 we report it only when the text says so explicitly. For example, a cold median
@@ -68,14 +66,10 @@ spatial grid so cached features can be substituted back into the dense path at
 the same geometry the benchmark runner already understands.
 
 The paper's default sparse-QA routing path still uses pixel differences because
-that is the audited semantic baseline. A separate local codec-native planner
-bridge exists: continuous H.264-derived scores can substitute for the
-pixel-diff planner signal on VideoMME dev all-duration \(n=30\) without
-changing dense answer choices, and calibration-mode/source ablations are
-neutral on the local slices. We keep this as semantic planner-substitution
-evidence, not a latency claim, because the offline extraction retrofit
-is much slower than the sparse frame-sampling path; a systems claim requires a
-streaming decoder-integrated path.
+that is the audited semantic baseline. A codec-native planner bridge remains
+semantic substitution evidence, not a latency claim: replacing the pixel-diff
+planner signal with H.264-derived scores can preserve local dense choices, but
+a systems claim requires a streaming decoder-integrated path.
 
 This distinction is load-bearing. Pixel differences, motion vectors, residual
 proxies, and packet structure are novelty or uncertainty signals, not
@@ -109,8 +103,7 @@ fresh visual budget the policy effectively spent.
 The paper's scientific object is not raw reuse rate. It is the
 quality--compute frontier produced by placing fresh evidence in time. In the
 Qwen routing lane, the x-axis is effective fresh frames and the y-axis is
-answer quality or dense agreement; the controls are uniform dense-$k$ frames
-and novelty-ranked dense-$k$ frames. In the first-pass lane, the x-axis is
+answer quality or dense agreement. In the first-pass lane, the x-axis is
 measured wall-clock after vision-tower pruning and the y-axis is benchmark
 accuracy. In the follow-up lane, the x-axis is session follow-up latency after
 the first query has paid full freight, and the y-axis is paired drift against
@@ -190,18 +183,13 @@ repair mechanisms.
 
 \subsection{What Is Actually Skipped}
 
-The paper keeps semantic substitution and wall-clock skipping separate. The
-Qwen routing runner can replay or substitute cached features to test whether the
-answer survives. That is enough to study the quality--compute frontier. It is
-not enough to claim an end-to-end speedup until the backend itself skips timed
-work. The Gemma and persistent-KV lanes do change measured wall-clock and
-therefore support speedup claims. The Qwen routing lane does not yet. The
-local session/streaming bridge is instrumented separately: unless image-token
-activity shows that follow-up vision tokens were actually recomputed, the paper
-describes that family as Q0 admission plus cache-state reuse, not as active
-follow-up pruning. The completed long-bucket continuations measured that
-boundary for this prompt-cache path: follow-up image tokens were cache-served.
-That choice is deliberate.
+The paper keeps semantic substitution and wall-clock skipping separate. Qwen
+routing can replay or substitute cached features to test whether the answer
+survives; it is not an end-to-end speedup claim until the backend skips timed
+work. Gemma sparse vision and persistent-KV follow-up reuse do change measured
+wall-clock and therefore support speedup claims. The Qwen session/streaming
+bridge is Q0 admission plus cache-state reuse, not active follow-up pruning:
+follow-up image tokens were cache-served.
 
 \begin{table}[H]
 \centering

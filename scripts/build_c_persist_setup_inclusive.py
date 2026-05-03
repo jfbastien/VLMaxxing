@@ -237,24 +237,12 @@ def _emit_table(snapshot: dict[str, Any]) -> str:
         r"\centering",
         (
             r"\caption{Setup-inclusive same-video follow-up economics. "
-            r"\emph{Warm} is the mean per-follow-up multiplier on the same "
-            r"timing basis as the session columns; headline prose reports "
-            r"median follow-up speedups where stated. \emph{Q=k} is the "
-            r"actual session-level speedup when a session has \(k\) total "
-            r"queries on the same video. Qwen rows use the measured cold "
-            r"first query plus \(Q-1\) C-PERSIST follow-ups; Gemma "
-            r"prefix-snapshot rows are scale-out prefix-snapshot economics "
-            r"for denominator comparison and use the measured prefix warm-up "
-            r"plus \(Q\) follow-up queries. "
-            r"Table~\ref{tab:scaleout-bundle} reports median after-warm "
-            r"prefix-snapshot multipliers for those same Gemma rows; this "
-            r"table uses mean session-economics multipliers. "
-            r"At \(Q=1\) the cold first-query cost dominates and the "
-            r"speedup approaches~1; at large \(Q\) it asymptotes to the "
-            r"mean per-follow-up multiplier. \(\Delta\)acc is the paired "
-            r"session-vs-baseline accuracy delta when available; Gemma rows "
-            r"report 0 because the prefix-snapshot artifacts have zero paired "
-            r"correctness diffs against cold dense.}"
+            r"\emph{Warm} is mean per-follow-up speedup; \(Q=k\) is session "
+            r"speedup for \(k\) same-video queries. Qwen counts one measured "
+            r"cold first query plus \(Q-1\) C-PERSIST follow-ups; Gemma counts "
+            r"prefix warm-up plus \(Q\) follow-ups for denominator comparison. "
+            r"\(\Delta\)acc is paired session-vs-baseline accuracy delta where "
+            r"available; Gemma zeros reflect zero paired correctness diffs.}"
         ),
         r"\label{tab:c-persist-setup-inclusive}",
         r"\small",

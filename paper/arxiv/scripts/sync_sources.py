@@ -1076,8 +1076,7 @@ def _render_c_persist_timeline_figure() -> None:
     ax.text(
         0.02,
         0.08,
-        "Timing attribution from checked fixed/adaptive stage-timing artifacts; "
-        "provenance in appendix.",
+        "Short-slice stage-timing attribution; broader repair contract in text.",
         fontsize=6.8,
         color="#475569",
     )
@@ -1332,9 +1331,9 @@ def _write_lane_a_table(snapshot: dict) -> None:
         r"\begin{table}[H]",
         r"\centering",
         (
-            r"\caption{Audited Qwen base-policy holdout frontier. Fresh is "
-            r"effective fresh frames; the rows compare answer quality at "
-            r"lower visual budget and are not wall-clock speedup claims.}"
+            r"\caption{Qwen base-policy holdout frontier. Fresh is effective "
+            r"fresh frames; the rows compare answer quality at lower visual "
+            r"budget, not timed skipped work.}"
         ),
         r"\label{tab:lane-a-holdout}",
         r"\small",
@@ -1828,12 +1827,9 @@ def _write_c_persist_repair_table(snapshot: dict) -> None:
         (
             r"\caption{Selective re-prefill repair frontier. Fixed \(K=1\) is "
             r"the no-coordination baseline; adaptive repaired-cache inheritance "
-            r"is the primary broad repair result. Gains are reported as "
-            r"cold follow-up or all-query latency divided by repaired-session "
-            r"latency. Setup-inclusive session economics are reported "
-            r"separately in Table~\ref{tab:c-persist-setup-inclusive}; this "
-            r"compact table keeps the median follow-up denominators used for "
-            r"the repair fidelity frontier.}"
+            r"is the broad repair policy. Gains use cold/repaired follow-up "
+            r"or all-query denominators; setup-inclusive economics are in "
+            r"Table~\ref{tab:c-persist-setup-inclusive}.}"
         ),
         r"\label{tab:c-persist-repair}",
         r"\scriptsize",
@@ -1850,9 +1846,10 @@ def _write_c_persist_repair_table(snapshot: dict) -> None:
             r"Fixed \(K=1\) & 20f short/medium/long + 32f short & "
             f"\\shortstack[l]{{{fixed['latency_min_s']:.2f}--{fixed['latency_max_s']:.2f}s\\\\"
             f"{fixed['speedup_min']:.2f}--{fixed['speedup_max']:.2f}$\\times$}} & "
-            f"paired drift: sess {fixed['paired_correctness_diffs']}/{fixed['n_sessions']}; "
-            f"choice {fixed['paired_choice_diffs']}/{fixed['n_pairs']}; "
-            f"correct {fixed['paired_correctness_diffs']}/{fixed['n_pairs']}; "
+            f"paired drift: session {fixed['paired_correctness_diffs']}/{fixed['n_sessions']}; "
+            f"choice/correct {fixed['paired_choice_diffs']}/"
+            f"{fixed['n_pairs']} / {fixed['paired_correctness_diffs']}/"
+            f"{fixed['n_pairs']}; "
             f"pathological follow-ups {fixed['pathological_follow_up_hits']}/"
             f"{fixed['n_follow_up_pairs']}; drift rule-of-three over "
             f"n={fixed['n_pairs']}: \\(\\leq\\)3.2\\%; follow-up subset "
@@ -1866,9 +1863,10 @@ def _write_c_persist_repair_table(snapshot: dict) -> None:
             f"{adaptive['speedup_max']:.2f}$\\times$ same-class\\\\"
             f"{adaptive['all_query_speedup_min']:.2f}--"
             f"{adaptive['all_query_speedup_max']:.2f}$\\times$ all-query}} & "
-            f"paired drift: sess {adaptive['paired_correctness_diffs']}/{adaptive['n_sessions']}; "
-            f"choice {adaptive['paired_choice_diffs']}/{adaptive['n_pairs']}; "
-            f"correct {adaptive['paired_correctness_diffs']}/{adaptive['n_pairs']}; "
+            f"paired drift: session {adaptive['paired_correctness_diffs']}/{adaptive['n_sessions']}; "
+            f"choice/correct {adaptive['paired_choice_diffs']}/"
+            f"{adaptive['n_pairs']} / {adaptive['paired_correctness_diffs']}/"
+            f"{adaptive['n_pairs']}; "
             f"follow-up subset 0/{adaptive['n_follow_up_pairs']} "
             "\\(\\leq\\)4.8\\%; "
             "second follow-up inherits the repaired state; paired second-follow-up "
@@ -1948,20 +1946,17 @@ def _write_qwen_bridge_boundary_table(snapshot: dict) -> None:
         r"\centering",
         (
             r"\caption{Qwen composition boundary. The tested admission family "
-            r"does not produce a deployable composition point. Dense-Q0 cache "
-            r"reuse and cache invalidation reach the same net aggregate loss "
-            r"through different any-paired-drift sets; only cache reuse preserves "
-            r"the three-query speed profile. The speedup column is paired "
-            r"three-query amortized end-to-end speedup versus cold all-query "
-            r"execution. Follow-up vision active is the measured follow-up "
-            r"vision-pruning activity fraction; -- means the row was not "
-            r"instrumented. Here \(kr_{Q0}\) is the first-query visual-token "
-            r"keep rate in the admission sweep.}"
+            r"has no deployable composition point: cache reuse and invalidation "
+            r"hit the same aggregate loss through different drift sets, and "
+            r"only cache reuse preserves the three-query speed profile. Speedup "
+            r"is paired three-query E2E versus cold all-query execution; "
+            r"follow-up vision active is the measured activity fraction; "
+            r"\(kr_{Q0}\) is first-query visual-token keep rate.}"
         ),
         r"\label{tab:qwen-bridge-boundary}",
         r"\small",
         r"\renewcommand{\arraystretch}{\PaperTableStretch}",
-        r"\resizebox{\linewidth}{!}{%",
+        r"\par\centerline{\resizebox{0.95\linewidth}{!}{%",
         r"\begin{tabular}{@{}l r r r r r r r r@{}}",
         r"\toprule",
         (
@@ -1982,7 +1977,7 @@ def _write_qwen_bridge_boundary_table(snapshot: dict) -> None:
         [
             r"\bottomrule",
             r"\end{tabular}%",
-            r"}",
+            r"}}",
             r"\end{table}",
         ]
     )
@@ -2158,39 +2153,41 @@ def _write_headline_table(snapshot: dict) -> None:
         r"\begin{table}[H]",
         r"\centering",
         (
-            r"\caption{Main local speedup cells. C-CEILING is the accounting "
-            r"guardrail for these rows; candidate C-STREAM is summarized "
-            r"separately because it is a mixed scale-out evidence lane.}"
+            r"\caption{Main speedup cells. Rows use different denominators; "
+            r"C-CEILING explains why they do not multiply.}"
         ),
         r"\label{tab:headline-results}",
-        r"\scriptsize",
+        r"\tiny",
+        r"\setlength{\tabcolsep}{0pt}",
         r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         (
-            r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.10\linewidth} Y "
-            r">{\raggedright\arraybackslash}p{0.135\linewidth} "
-            r">{\raggedright\arraybackslash}p{0.105\linewidth} Y "
+            r"\noindent\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.10\linewidth} "
+            r">{\raggedright\arraybackslash}p{0.21\linewidth} "
+            r">{\raggedright\arraybackslash}p{0.13\linewidth} "
+            r">{\raggedright\arraybackslash}p{0.10\linewidth} "
+            r">{\raggedright\arraybackslash}p{0.35\linewidth} "
             r">{\raggedright\arraybackslash}p{0.10\linewidth}@{}}"
         ),
         r"\toprule",
         r"Regime & Setting & Speedup denominator & Gain & Validation / notes & Evidence \\",
         r"\midrule",
         (
-            "After-ingest & Qwen raw warm follow-up reuse, 16f & "
+            "After-ingest & Qwen raw warm reuse, 16f & "
             "cold/cached follow-up & "
             f"{kv_by_frame[16]['speedup']:.1f}$\\times$ & "
             f"{kv_by_frame[16]['follow_up_median_s']:.3f}\\,s median; "
             f"$\\Delta$acc {kv_by_frame[16]['accuracy_delta']:+.3f} & "
-            "local aggregate-clean; unrepaired warm reuse \\\\"
+            "aggregate-clean; unrepaired \\\\"
         ),
         (
-            "After-ingest & Qwen raw warm follow-up reuse, 8f & "
+            "After-ingest & Qwen raw warm reuse, 8f & "
             "cold/cached follow-up & "
             f"{kv_by_frame[8]['speedup']:.1f}$\\times$ & "
             f"{kv_by_frame[8]['follow_up_median_s']:.3f}\\,s median; "
-            f"$\\Delta$acc {kv_by_frame[8]['accuracy_delta']:+.3f} & local within criterion \\\\"
+            f"$\\Delta$acc {kv_by_frame[8]['accuracy_delta']:+.3f} & within criterion \\\\"
         ),
         (
-            "After-ingest & Qwen repaired basin escape, adaptive & "
+            "After-ingest & Qwen repaired escape, adaptive & "
             "cold/repaired follow-up median & "
             f"{adaptive_repair['speedup_min']:.2f}--"
             f"{adaptive_repair['speedup_max']:.2f}$\\times$ & "
@@ -2200,10 +2197,10 @@ def _write_headline_table(snapshot: dict) -> None:
             f"{adaptive_repair['n_pairs']}; cold-all-query ratio "
             f"{adaptive_repair['all_query_speedup_min']:.2f}--"
             f"{adaptive_repair['all_query_speedup_max']:.2f}$\\times$ & "
-            "local repair breadth \\\\"
+            "repair breadth \\\\"
         ),
         (
-            "After-ingest & Qwen repaired basin escape, fixed K=1 & "
+            "After-ingest & Qwen repaired escape, fixed K=1 & "
             "cold/repaired follow-up & "
             f"{fixed_repair['speedup_min']:.2f}--"
             f"{fixed_repair['speedup_max']:.2f}$\\times$ & "
@@ -2212,40 +2209,40 @@ def _write_headline_table(snapshot: dict) -> None:
             f"{fixed_repair['paired_correctness_diffs']}/"
             f"{fixed_repair['n_pairs']}; pathological follow-ups "
             f"{fixed_repair['pathological_follow_up_hits']}/"
-            f"{fixed_repair['n_follow_up_pairs']} & local repair breadth \\\\"
+            f"{fixed_repair['n_follow_up_pairs']} & repair breadth \\\\"
         ),
         (
             "First-pass & Gemma VideoMME 8f holdout & "
             "first-query E2E & "
             f"{cvision_rows[0]['observed_e2e']:.3f}$\\times$ "
-            f"& $\\Delta$acc {cvision_rows[0]['acc_delta']:+.3f} & clean local \\\\"
+            f"& $\\Delta$acc {cvision_rows[0]['acc_delta']:+.3f} & clean \\\\"
         ),
         (
-            "First-pass & Gemma measured sparse vision, 32f short & "
+            "First-pass & Gemma sparse vision, 32f short & "
             "first-query E2E & "
             f"{gemma_sparse_short['observed_e2e']:.3f}$\\times$ & "
             f"choice agreement {gemma_sparse_short['choice_agreement'] * 100:.0f}\\%; "
             f"$\\Delta$acc {gemma_sparse_short['accuracy_delta']:+.3f}; "
-            "dense parse 0; sparse parse 0 & clean sparse-execution cell \\\\"
+            "dense parse 0; sparse parse 0 & \\PaperStack{clean}{timed-skip} \\\\"
         ),
         (
             "First-pass & Gemma MVBench 8f holdout & "
             "first-query E2E & "
             f"{cvision_rows[1]['observed_e2e']:.3f}$\\times$ & "
             f"$\\Delta$acc {cvision_rows[1]['acc_delta']:+.3f}; "
-            "timing-attribution caveat & advisory local \\\\"
+            "timing-attribution caveat & advisory \\\\"
         ),
         (
-            "First-pass & Qwen measured sparse vision, 16f \\(kr_V=0.85\\) & "
+            "First-pass & Qwen sparse vision, 16f \\(kr_V=0.85\\) & "
             "first-query E2E & "
             f"{qwen_sparse_safe['observed_e2e']:.3f}$\\times$ & "
             f"$\\Delta$acc {qwen_sparse_safe['accuracy_delta']:+.3f}; "
             f"vision reduction {qwen_sparse_safe['vision_reduction'] * 100:.1f}\\%; "
             "parse failures 0; agreement 81.7\\% & "
-            "agg./format gate; low-gain boundary \\\\"
+            "format gate; low gain \\\\"
         ),
         r"\bottomrule",
-        r"\end{tabularx}",
+        r"\end{tabular}",
         r"\end{table}",
     ]
     (GENERATED / "tables" / "headline_results.tex").write_text("\n".join(lines) + "\n")
@@ -2259,11 +2256,10 @@ def _write_measured_sparse_execution_tables(snapshot: dict) -> None:
         r"\centering",
         (
             r"\caption{Measured sparse vision execution on Gemma. The timed "
-            r"path skips real vision-tower work. All three frame budgets have "
-            r"zero paired accuracy delta and 100\% choice agreement, but the "
-            r"full sweep is not format-clean because dense and sparse arms "
-            r"share parse failures. The final row exposes the 32f short bucket "
-            r"that supplies the clean 1.316\(\times\) headline cell.}"
+            r"path skips real vision-tower work. Full-sweep rows preserve "
+            r"paired accuracy and agreement but share parse failures; only "
+            r"32f short is parse-clean and supplies the 1.316\(\times\) "
+            r"headline cell.}"
         ),
         r"\label{tab:gemma-measured-sparse-vision}",
         r"\scriptsize",
@@ -2330,12 +2326,10 @@ def _write_measured_sparse_execution_tables(snapshot: dict) -> None:
         r"\centering",
         (
             r"\caption{Measured sparse vision execution on Qwen. The 8f "
-            r"keep-rate sweep validates C-CEILING on timing but finds no "
-            r"fidelity-preserving, speed-positive operating point. At 16f, "
-            r"increasing the keep rate monotonically recovers to within the "
-            r"aggregate-accuracy and format gates, ending at a point inside those tested "
-            r"gates but not paired answer identity; it also no longer clears "
-            r"the vision-reduction gate.}"
+            r"sweep validates C-CEILING timing but has no fidelity-preserving, "
+            r"speed-positive point. The 16f sweep recovers aggregate accuracy "
+            r"and format at \(kr_V=0.85\), but not paired identity and not the "
+            r"vision-reduction gate.}"
         ),
         r"\label{tab:qwen-measured-sparse-vision}",
         r"\scriptsize",
@@ -2376,12 +2370,10 @@ def _write_c_persist_sampler_table() -> None:
         r"\centering",
         (
             r"\caption{Adaptive C-PERSIST sampler-temperature sweep on the "
-            r"short-slice mechanism cell. This is robustness evidence "
-            r"against a greedy-decoding artifact, not the full 0/93 breadth "
-            r"claim and not a universal stochastic robustness theorem.}"
+            r"short-slice mechanism cell.}"
         ),
         r"\label{tab:c-persist-sampler-stability}",
-        r"\small",
+        r"\scriptsize",
         r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         r"\begin{tabular}{@{}r r r r r r r@{}}",
         r"\toprule",
@@ -2472,14 +2464,8 @@ def _write_c_persist_seed_sweep_table() -> None:
         r"\centering",
         (
             r"\caption{Adaptive C-PERSIST sampler-seed cross-product on the "
-            r"short-slice mechanism cell. Three sampler seeds "
-            r"\(\{42, 99, 2026\}\) at three temperatures "
-            r"\(\{0.5, 1.0, 1.5\}\) on the same seven-clip 21-paired tranche. "
-            r"All nine cells pass the preregistered fidelity, format, and "
-            r"baseline-quality gates. This is robustness evidence that "
-            r"the sampler-temperature result is not a single-seed coincidence "
-            r"on the short tranche; it is not the full 0/93 breadth claim and "
-            r"not benchmark generalization beyond this slice.}"
+            r"seven-clip, 21-pair short-slice cell. All nine seed/temperature "
+            r"cells pass the fidelity, format, and baseline-quality gates.}"
         ),
         r"\label{tab:c-persist-sampler-seed-sweep}",
         r"\small",
@@ -3010,10 +2996,9 @@ def _write_scaleout_bundle_table() -> None:
         r"\centering",
         (
             r"\caption{Evaluated scale-out bundle on an M5 Max MacBook Pro "
-            r"with 128\,GB unified memory. These rows make native-rate "
-            r"streaming state reuse more concrete, while cache correctness, "
-            r"matched baselines, and native mechanism quality remain open "
-            r"standardization gates.}"
+            r"with 128\,GB unified memory. Rows are operational evidence; "
+            r"cache correctness, matched baselines, and native mechanism "
+            r"quality remain open gates.}"
         ),
         r"\label{tab:scaleout-bundle}",
         r"\scriptsize",
@@ -3052,7 +3037,7 @@ def _write_scaleout_bundle_table() -> None:
             f"refuses unsafe cross-turn trim; cross-turn wall-clock "
             f"{patched['cross_turn_median_speedup']:.2f}$\\times$ vs cold dense, "
             f"median prefill {patched['cross_turn_median_prefill_ms']:.0f} ms & "
-            "full-regression correctness closure; speed path remains open \\\\"
+            "correctness closure; speed path remains open \\\\"
         ),
         (
             "26B prefix snapshot (8f) & "
@@ -3066,8 +3051,7 @@ def _write_scaleout_bundle_table() -> None:
             f"{prefix8['prefix_snapshot_fps_median']:.2f} fps median "
             f"({prefix8['prefix_snapshot_rows_ge_30fps']}/{prefix8['n']} rows "
             ">=30 fps) & "
-            "positive warm-prefix snapshot; excludes warm setup; "
-            "wrapper-specific and not byte-identical \\\\"
+            "warm-prefix positive; setup excluded; wrapper-specific, not byte-identical \\\\"
         ),
         (
             "26B prefix snapshot (32f) & "
@@ -3083,8 +3067,7 @@ def _write_scaleout_bundle_table() -> None:
             ">=30 fps; "
             f"{prefix32['prefix_snapshot_fps_min']:.2f}--"
             f"{prefix32['prefix_snapshot_fps_max']:.2f} fps) & "
-            "positive warm-prefix snapshot; excludes warm setup; "
-            "wrapper-specific and not byte-identical \\\\"
+            "warm-prefix positive; setup excluded; wrapper-specific, not byte-identical \\\\"
         ),
         (
             "Fixed-evidence stream baselines & "

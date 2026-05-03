@@ -14,10 +14,10 @@ base policy reaches a higher point estimate than dense-6 while spending
 less visual refresh: 0.600 accuracy at 4.06 effective fresh frames versus
 0.567 at 6.0 fresh frames. At \(n=30\), that is a pointwise Pareto frontier
 observation, not a powered benchmark win. Those are not wall-clock claims.
-They are benchmarked statements about preserved answer quality at lower
-effective visual budget. The MVBench statement is explicitly against the
-dense-6 point at a matched-or-lower fresh-frame budget; dense-8 remains the
-higher absolute-accuracy point on that slice.
+They are statements about preserved answer quality at lower effective visual
+budget. The MVBench statement is against the dense-6 point at a
+matched-or-lower fresh-frame budget; dense-8 remains the higher
+absolute-accuracy point on that slice.
 
 \subsection{Audited Frontier Snapshot}
 
@@ -30,9 +30,7 @@ higher absolute-accuracy point on that slice.
   }{
     \fbox{\parbox{0.9\linewidth}{Figure unavailable in this source snapshot.}}
   }
-\caption{Audited Qwen base-policy routing frontier. The points compare
-  answer quality at lower effective fresh-frame budgets; they are not
-  wall-clock speedup claims.}
+\caption{Qwen base-policy routing frontier under dense-backend substitution.}
   \label{fig:lane-a-pareto}
 \end{figure}
 
@@ -69,11 +67,11 @@ evidence here. The novelty-ranked dense baseline tests
 whether the cached planner is merely selecting visually novel frames; the
 feature-change oracle correlates blockwise pixel statistics with blockwise ViT
 feature change on cached dense features. These diagnostics inform the
-mechanism interpretation, but the reported claim rests on checked
-holdout frontier results.
+mechanism interpretation, but the reported claim rests on the holdout
+frontier results.
 
 The reported claim does not depend on those local diagnostics. It is
-weaker and cleaner: the checked Qwen cells show that temporal placement can
+weaker and cleaner: the Qwen holdout cells show that temporal placement can
 preserve answer accuracy at substantially lower effective fresh-frame budget on
 the motion slices, while the paper reports C-VISION and C-PERSIST separately
 when it needs measured wall-clock evidence.
