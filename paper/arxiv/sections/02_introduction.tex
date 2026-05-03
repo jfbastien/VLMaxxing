@@ -92,7 +92,7 @@ headline; routing under a fixed dense backend is reported separately because it
 is mechanism-validation evidence rather than a sparse wall-clock claim.}
 \label{tab:three-regimes}
 \footnotesize
-\renewcommand{\arraystretch}{1.08}
+\renewcommand{\arraystretch}{\PaperTableStretch}
 \begin{tabularx}{\linewidth}{@{}
   >{\raggedright\arraybackslash}p{0.18\linewidth}
   >{\raggedright\arraybackslash}p{0.23\linewidth}
@@ -101,6 +101,7 @@ is mechanism-validation evidence rather than a sparse wall-clock claim.}
 @{}}
 \toprule
 Regime & Reused work & Denominator / evidence class & Evidence / boundary \\
+\midrule
 After-ingest follow-up & prompt / key--value (KV) prefix for later questions on the same video & follow-up latency and paired drift; first query still pays full freight & raw 16f reuse reaches 91.1$\times$; adaptive repair spans short/medium/long and 32f-short with 0/93 drift at 14.90--35.92$\times$; many-turn stress reaches 50 turns on repeated questions; dense-answer-anchored prompt variation exposes the conservative/aggressive boundary \\
 Fresh-video first pass & vision-tower work inside the first query & first-query wall-clock; local clean/advisory cells plus measured sparse-execution envelopes & VideoMME clean 1.113$\times$; MVBench/TOMATO advisory; measured sparse vision: Gemma 32f short 1.316$\times$ with 0/20 drift, Qwen conservative boundary 1.032$\times$ \\
 Candidate C-STREAM & repeated visual state in a native-rate or live pipeline & checked mixed evidence bundle; separate protocol & default 26B cache path blocked; prefix-snapshot rows positive but small-\(N\); fixed-evidence stream baselines favor low-FPS dense over the tested proxy \\

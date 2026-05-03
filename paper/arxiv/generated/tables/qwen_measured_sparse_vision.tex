@@ -3,7 +3,7 @@
 \caption{Measured sparse vision execution on Qwen. The 8f keep-rate sweep validates C-CEILING on timing but finds no fidelity-preserving, speed-positive operating point. At 16f, increasing the keep rate monotonically recovers to within the aggregate-accuracy and format gates, ending at a point inside those tested gates but not paired answer identity; it also no longer clears the vision-reduction gate.}
 \label{tab:qwen-measured-sparse-vision}
 \scriptsize
-\renewcommand{\arraystretch}{1.12}
+\renewcommand{\arraystretch}{\PaperTableStretch}
 \begin{tabularx}{\linewidth}{@{}l r r r r r r r X@{}}
 \toprule
 Setting & \(n\) & \(\Delta\)acc & Agree & Parse fails & \(V_{\mathrm{red}}\) & Observed & Residual & Ceiling / quality verdict \\

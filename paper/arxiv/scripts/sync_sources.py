@@ -1327,6 +1327,8 @@ def _write_lane_a_table(snapshot: dict) -> None:
             r"variants are intentionally excluded.}"
         ),
         r"\label{tab:lane-a-holdout}",
+        r"\small",
+        r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         r"\begin{tabular}{lllrrrl}",
         r"\toprule",
         r"Benchmark & Policy & Relation & Acc. & Fresh & Comparator & Comparator acc. \\",
@@ -1776,7 +1778,7 @@ def _write_paired_drift_table(snapshot: dict) -> None:
         ),
         r"\label{tab:paired-drift}",
         r"\small",
-        r"\renewcommand{\arraystretch}{1.12}",
+        r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         r"\begin{tabularx}{\linewidth}{@{}X r r r X@{}}",
         r"\toprule",
         r"Source & \(N\) & Choice drift & Correctness drift & Mechanism signal \\",
@@ -1825,7 +1827,7 @@ def _write_c_persist_repair_table(snapshot: dict) -> None:
         ),
         r"\label{tab:c-persist-repair}",
         r"\scriptsize",
-        r"\renewcommand{\arraystretch}{1.20}",
+        r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         (
             r"\begin{tabularx}{\linewidth}"
             r"{@{}l X >{\raggedright\arraybackslash}p{0.22\linewidth} X@{}}"
@@ -1946,7 +1948,7 @@ def _write_qwen_bridge_boundary_table(snapshot: dict) -> None:
         ),
         r"\label{tab:qwen-bridge-boundary}",
         r"\small",
-        r"\renewcommand{\arraystretch}{1.18}",
+        r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         r"\resizebox{\linewidth}{!}{%",
         r"\begin{tabular}{@{}l r r r r r r r r@{}}",
         r"\toprule",
@@ -2152,7 +2154,7 @@ def _write_headline_table(snapshot: dict) -> None:
         ),
         r"\label{tab:headline-results}",
         r"\scriptsize",
-        r"\renewcommand{\arraystretch}{1.14}",
+        r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         (
             r"\begin{tabularx}{\linewidth}{@{}p{0.10\linewidth} X "
             r"p{0.135\linewidth} p{0.105\linewidth} X "
@@ -2250,7 +2252,7 @@ def _write_measured_sparse_execution_tables(snapshot: dict) -> None:
         ),
         r"\label{tab:gemma-measured-sparse-vision}",
         r"\scriptsize",
-        r"\renewcommand{\arraystretch}{1.12}",
+        r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         r"\begin{tabularx}{\linewidth}{@{}l r r r r r r r X@{}}",
         r"\toprule",
         (
@@ -2303,7 +2305,7 @@ def _write_measured_sparse_execution_tables(snapshot: dict) -> None:
         ),
         r"\label{tab:qwen-measured-sparse-vision}",
         r"\scriptsize",
-        r"\renewcommand{\arraystretch}{1.12}",
+        r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         r"\begin{tabularx}{\linewidth}{@{}l r r r r r r r X@{}}",
         r"\toprule",
         (
@@ -2346,6 +2348,7 @@ def _write_c_persist_sampler_table() -> None:
         ),
         r"\label{tab:c-persist-sampler-stability}",
         r"\small",
+        r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         r"\begin{tabular}{@{}r r r r r r@{}}",
         r"\toprule",
         (
@@ -2445,6 +2448,7 @@ def _write_c_persist_seed_sweep_table() -> None:
         ),
         r"\label{tab:c-persist-sampler-seed-sweep}",
         r"\small",
+        r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         r"\begin{tabular}{@{}r r r r r r@{}}",
         r"\toprule",
         (
@@ -2487,7 +2491,7 @@ def _write_c_persist_many_turn_table() -> None:
         ),
         r"\label{tab:c-persist-many-turn}",
         r"\scriptsize",
-        r"\renewcommand{\arraystretch}{1.14}",
+        r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         (
             r"\begin{tabularx}{\linewidth}"
             r"{@{}p{0.18\linewidth} r r r r X@{}}"
@@ -2594,6 +2598,7 @@ def _write_dense_anchored_cpersist_table() -> None:
         ),
         r"\label{tab:c-persist-dense-anchored}",
         r"\scriptsize",
+        r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         (
             r"\begin{tabularx}{\linewidth}"
             r"{@{}p{0.14\linewidth} r r p{0.19\linewidth} "
@@ -2654,6 +2659,7 @@ def _write_memory_characterization_table() -> None:
         ),
         r"\label{tab:memory-characterization}",
         r"\small",
+        r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         r"\begin{tabularx}{\linewidth}{@{}X r r r X@{}}",
         r"\toprule",
         r"Family & Cells & Max peak & Cells \(>10\)GB & Paper meaning \\",
@@ -2968,7 +2974,7 @@ def _write_scaleout_bundle_table() -> None:
         ),
         r"\label{tab:scaleout-bundle}",
         r"\scriptsize",
-        r"\renewcommand{\arraystretch}{1.16}",
+        r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         r"\begin{tabularx}{\linewidth}{@{}p{0.22\linewidth} X p{0.25\linewidth}@{}}",
         r"\toprule",
         r"Probe & Result & Claim status \\",
@@ -3088,6 +3094,8 @@ def _write_repo_provenance_table(primary: dict[str, str]) -> None:
             r"for this built artifact.}"
         ),
         r"\label{tab:repo-provenance}",
+        r"\small",
+        r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         r"\begin{tabular}{lll}",
         r"\toprule",
         r"Repo & Commit & Commit date \\",

@@ -3,7 +3,7 @@
 \caption{Measured sparse vision execution on Gemma. The timed path skips real vision-tower work. All three frame budgets have zero paired accuracy delta and 100\% choice agreement, but the full sweep is not format-clean because dense and sparse arms share parse failures. The final row exposes the 32f short bucket that supplies the clean 1.316\(\times\) headline cell.}
 \label{tab:gemma-measured-sparse-vision}
 \scriptsize
-\renewcommand{\arraystretch}{1.12}
+\renewcommand{\arraystretch}{\PaperTableStretch}
 \begin{tabularx}{\linewidth}{@{}l r r r r r r r X@{}}
 \toprule
 Frames / slice & \(n\) & \(\Delta\)acc & Agree & Dense/sparse parse fails & \(V_{\mathrm{red}}\) & Observed & Residual & Ceiling / format verdict \\

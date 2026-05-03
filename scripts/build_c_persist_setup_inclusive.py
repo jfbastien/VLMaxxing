@@ -255,6 +255,7 @@ def _emit_table(snapshot: dict[str, Any]) -> str:
         ),
         r"\label{tab:c-persist-setup-inclusive}",
         r"\small",
+        r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         r"\begin{tabular}{@{}l r r " + " r" * len(n_grid) + r"@{}}",
         r"\toprule",
         (r"Cell & $\Delta$acc & Warm & " + header_n + r" \\"),
