@@ -22,10 +22,10 @@ once the first query on a video has already paid the full prompt cost, how cheap
 can the next question become? Every result in this subsection is therefore an
 after-ingest follow-up result: request-level savings depend on how many later
 questions reuse the same video state, and the first query still pays full
-freight. On Qwen2.5-VL-7B-4bit, the answer is already large enough to matter.
+freight. On Qwen2.5-VL-7B-Instruct-4bit, the answer is already large enough to matter.
 At 8 frames, follow-up latency drops to 815\,ms median with 47.2$\times$
 speedup and $-0.048$ aggregate accuracy delta. At 16 frames the speedup rises
-to 91.1$\times$ while the accuracy delta returns to 0. Within the tested
+to 91.1$\times$ while the accuracy delta returns to 0. Within the
 $\leq$16f tested envelope, the regime is fast and empirically bounded: the
 accepted region contains one clean point at 16f and one slightly worse but still
 within tolerance at 8f. Past that point the curve keeps rising, but the fidelity
@@ -343,7 +343,7 @@ multiply: temporal placement of fresh compute decides whether the answer
 survives, and the reused cache state can matter even when the visible first
 answer looks fine.
 
-The newest local bridge makes the same warning concrete. On Qwen2.5-VL-7B-4bit
+The newest local bridge makes the same warning concrete. On Qwen2.5-VL-7B-Instruct-4bit
 at 8 frames, the original session/streaming stack that combines \(L=2\),
 \(kr_V=0.50\) vision pruning with persistent-KV reuse over a VideoMME
 dev+holdout union (\(n=57\) sessions, 171 queries) was a hard negative. The
@@ -388,7 +388,7 @@ columns overflowed during the reduction, producing misleading NaNs even though
 the captured cache windows were finite. The fp32 control cosine is the
 reported metric: reuse KV state is essentially dense-identical
 (\(\cos \approx 1.0\)), while the pruned path diverges substantially
-(\(K=0.724\), \(V=0.296\)). Thus the two arms did not merely hide the same
+(key cosine 0.724, value cosine 0.296). Thus the two arms did not merely hide the same
 internal state under the same aggregate loss. No-prune reuse preserves the
 captured cache state, while pruning at \(L=2,kr_V=0.50\) materially changes the
 later key/value state, especially values. This still does not yield a deployable

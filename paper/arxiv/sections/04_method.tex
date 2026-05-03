@@ -131,8 +131,9 @@ The other two mechanisms operate at different points in the stack.
 The Gemma path patches the vision tower after an internal layer, keeps only a
 fraction of the tokens, and scatters the result back so downstream geometry is
 unchanged. \(L\) names the internal pruning layer, and \(kr_V\) is the keep
-ratio for visual token groups after that layer; \(K\) is reserved for
-newest-frame re-prefill in C-PERSIST. The resulting first-pass
+ratio for visual token groups after that layer; \(kr_{Q0}\) is the same keep
+ratio when applied only to the first-query admission pass in the Qwen bridge;
+\(K\) is reserved for newest-frame re-prefill in C-PERSIST. The resulting first-pass
 speedup is constrained by how much of total wall-clock the vision tower owns.
 More generally, if a method accelerates only
 one stage of a pipeline by a factor $s$, and all other stages are held fixed,
@@ -196,8 +197,8 @@ local session/streaming bridge is instrumented separately: unless image-token
 activity shows that follow-up vision tokens were actually recomputed, the paper
 describes that family as Q0 admission plus cache-state reuse, not as active
 follow-up pruning. The completed long-bucket continuations measured that
-boundary in the tested prompt-cache path: all tested follow-up image tokens
-were cache-served. That choice is deliberate.
+boundary for this prompt-cache path: follow-up image tokens were cache-served.
+That choice is deliberate.
 
 \begin{table}[H]
 \centering

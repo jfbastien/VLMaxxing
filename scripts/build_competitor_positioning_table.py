@@ -286,7 +286,7 @@ def _emit_table(snapshot: dict[str, Any]) -> str:
         r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         r"\begin{tabular}{@{}l c c r r r r@{}}",
         r"\toprule",
-        (r"Arm & kr & N & Acc & $\Delta$acc vs dense & Vision ms & E2E ms \\"),
+        (r"Arm & \(kr_V\) & N & Acc & $\Delta$acc vs dense & Vision ms & E2E ms \\"),
         r"\midrule",
     ]
     for row in snapshot["rows"]:

@@ -36,7 +36,7 @@ def _ensure_clean_for_bundle() -> None:
     if status:
         raise SystemExit(
             "Refusing to create a source bundle from a dirty working tree. "
-            "Commit or stash tracked changes, then rebuild the bundle from "
+            "Commit, stash, or remove the reported changes, then rebuild the bundle from "
             "the frozen source state."
         )
 

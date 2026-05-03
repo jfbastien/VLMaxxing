@@ -55,13 +55,13 @@ claim that all results share one denominator.}
 \toprule
 Lane & Model/runtime & Primary protocol & Main reported metric \\
 \midrule
-Routing & Qwen2.5-VL-7B-Instruct-4bit, MLX-VLM & TOMATO and MVBench
+Routing & Qwen2.5-VL-7B-Instruct-4bit, MLX-VLM / M3 Air 16\,GB & TOMATO and MVBench
 semantic-substitution holdouts & Accuracy/agreement at effective fresh-frame
 budget \\
-First-pass pruning & mlx-community/gemma-4-e4b-4bit and matched Qwen probes, MLX & Fresh-video
+First-pass pruning & mlx-community/gemma-4-e4b-4bit and matched Qwen probes, MLX / M3 Air 16\,GB & Fresh-video
 first query at 8f plus selected frame-count probes & First-query E2E, \(V_{\mathrm{share}}\),
 \(V_{\mathrm{red}}\), accuracy delta \\
-After-ingest reuse & Qwen2.5-VL-7B-Instruct-4bit, MLX-VLM & VideoMME sessions
+After-ingest reuse & Qwen2.5-VL-7B-Instruct-4bit, MLX-VLM / M3 Air 16\,GB & VideoMME sessions
 with one cold query and two follow-ups & Paired drift, follow-up latency,
 repair speedup \\
 Scale-out streaming & Gemma 4 26B/A4B-family RTSP / screen-recording stack,

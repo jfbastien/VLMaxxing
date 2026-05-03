@@ -71,8 +71,8 @@ boundary: forcing follow-up V-pruning to be active collapses the speedup to
 1.06$\times$ and still lands on the same net aggregate loss as cache reuse,
 while any-paired-drift sets differ. A direct cache-distance probe adds tensor
 evidence: fp32 cosine shows no-prune reuse is dense-like
-(both key and value cosines are approximately 1.0), while the pruned path diverges (\(K=0.724\),
-\(V=0.296\)); the native fp16 cosine columns are a numerical-overflow caution
+(both key and value cosines are approximately 1.0), while the pruned path diverges
+(key cosine 0.724, value cosine 0.296); the native fp16 cosine columns are a numerical-overflow caution
 on finite cache windows, not reported distances.
 
 This still does not give us a deployable row-level drift guard. Dense
@@ -155,7 +155,7 @@ tested cleanly.}
 \toprule
 Family & What it currently supports & Design lesson \\
 \midrule
-Qwen2.5-VL-7B & Stable routing and persistent follow-up reuse; strong
+Qwen2.5-VL-7B-Instruct & Stable routing and persistent follow-up reuse; strong
 selective re-prefill evidence; measured sparse-vision configuration boundary &
 Expose stable cache semantics, cache diagnostics, and frame-tail repair hooks. \\
 Gemma 4-E4B & First-pass vision-pruning measurements; clean measured

@@ -3,11 +3,11 @@
 Streaming state reuse is the natural scale-out target for anti-recomputation:
 the model revisits nearly the same visual state while deciding when to keep,
 shift, rebuild, or invalidate cached state. We do not claim a standardized
-C-STREAM result yet; instead, this section reports boundary evidence from a checked 26B-class
-scale-out bundle on an M5 Max MacBook Pro with 128\,GB unified memory:
+C-STREAM result yet; instead, this section reports boundary evidence from a 26B-class
+scale-out evaluation on an M5 Max MacBook Pro with 128\,GB unified memory:
 cache-correctness failures, positive small-\(N\) prefix-snapshot rows, strong
 low-FPS / screenshot / recency baselines, denominator-safe exactness exports,
-and source manifests. The result is mixed in the scientifically useful way. It
+and source-backed denominators. The result is mixed in the scientifically useful way. It
 shows which mechanisms are plausible, which simple baselines are serious, and
 which cache paths are unsafe.
 
@@ -34,8 +34,8 @@ cache-state reuse, not a validated native-rate sparse-vision backend.
 The 26B rows explain why cache-correctness is a gate rather than bureaucracy.
 The default cross-turn cache path over mixed sliding-window and full-attention
 layers fails the cache-correctness check: it can move fast while producing
-divergent text and answer choices. A runner-side correctness guard that fully
-refills rotating-cache layers passes, and the patched library now passes the
+divergent text and answer choices. A correctness guard that fully
+refills rotating-cache layers passes, and the patched cache path passes the
 full cache-correctness regression as well: 42/42 text-identical rows, zero choice or
 correctness diffs, and four matched parse failures. That closes this
 cache-correctness regression; it is not C-STREAM speedup. The patched path
@@ -53,13 +53,13 @@ text-comparison rows, 7/21 text diffs, and no parse failures. These are small-\(
 wrapper-specific rows, not proof that ordinary PromptCacheState is safe.
 
 The same rows also answer a throughput question that streaming readers
-naturally ask: on the warm follow-up wall-clock denominator, how many prompt
-frames are effectively processed per second? The 8f prefix snapshot yields
+naturally ask: what is the effective prompt-frame throughput on the warm
+follow-up wall-clock denominator? The 8f prefix snapshot yields
 27.02\,fps at the median, with 8/21 paired rows above 30\,fps. The expanded 32f
 snapshot yields 54.68\,fps at the median, with 19/21 rows above 30\,fps and a
 23.85--134.43\,fps range. Cold dense is about 3\,fps on the same rows.
-Read this on the same after-warm prefix-snapshot denominator: it is an fps view
-of those rows, not ingest throughput or setup-inclusive session speed. The
+Read this on the same after-warm prefix-snapshot denominator: it is a throughput
+view of those rows, not ingest throughput or setup-inclusive session speed. The
 first query still pays full dense visual processing, the snapshot wrapper is
 required for the safe path, and continuous capture, stale-cache invalidation,
 and desktop-agent scroll/pan traces remain future gates.
@@ -70,10 +70,10 @@ low-FPS dense uses four uniformly spaced frames and matches the fresh oracle on
 recency last-\(K\) with four recent frames (12/22), and the tested
 event-window proxy with four event-window frames (13/22). That does not kill
 C-STREAM; it clarifies the denominator. Fixed-evidence quality is not where the
-tested proxy wins. The fps view above shows why the native-rate denominator is
+tested proxy wins. The throughput view above shows why the native-rate denominator is
 still worth measuring, but the evaluated bundle has not yet earned the stronger
 streaming claim. Earlier sectional-scroll instrumentation points in the same
-direction qualitatively, but the checked bundle is the evidence
+direction qualitatively, but the evaluated rows here are the evidence
 surface for this paper.
 
 The recovery path is therefore specific, not rhetorical. C-STREAM needs a

@@ -1945,7 +1945,8 @@ def _write_qwen_bridge_boundary_table(snapshot: dict) -> None:
             r"three-query amortized end-to-end speedup versus cold all-query "
             r"execution. Follow-up vision active is the measured follow-up "
             r"vision-pruning activity fraction; -- means the row was not "
-            r"instrumented.}"
+            r"instrumented. Here \(kr_{Q0}\) is the first-query visual-token "
+            r"keep rate in the admission sweep.}"
         ),
         r"\label{tab:qwen-bridge-boundary}",
         r"\small",
