@@ -30,7 +30,7 @@ def main() -> int:
     rows = [
         ("python", sys.executable),
         ("latexmk", _check_binary("latexmk")),
-        ("pdflatex", _check_binary("pdflatex")),
+        ("xelatex", _check_binary("xelatex")),
         ("tectonic", _check_binary("tectonic")),
         ("biber", _check_binary("biber")),
         ("matplotlib", _check_module("matplotlib")),
@@ -43,11 +43,14 @@ def main() -> int:
     for name, status in rows:
         print(f"{name:<{width}} : {status}")
 
-    has_tex = any(_check_binary(name) != "missing" for name in ("latexmk", "tectonic"))
+    has_latexmk_xelatex = (
+        _check_binary("latexmk") != "missing" and _check_binary("xelatex") != "missing"
+    )
+    has_tex = has_latexmk_xelatex or _check_binary("tectonic") != "missing"
     if not has_tex:
         print()
         print("No TeX engine found. `make paper-sync` will work, but `make paper-build`")
-        print("needs either `tectonic` or `latexmk` + `pdflatex`.")
+        print("needs either `tectonic` or `latexmk` + `xelatex`.")
         print()
         print("Recommended lightweight install on macOS:")
         print("  brew install tectonic")

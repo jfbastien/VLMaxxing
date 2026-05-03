@@ -43,13 +43,14 @@ Current local requirements:
 - `matplotlib` and plotting dependencies through the `paper` dependency group
 - One TeX engine:
   - preferred lightweight local path: `tectonic`
-  - acceptable fuller path: `latexmk` + `pdflatex`
+  - acceptable fuller path: `latexmk` + `xelatex`
 
 Current verified local path:
 
-- `tectonic` builds the manuscript PDF successfully on this machine
-- the paper bundle can be generated locally with `make paper-bundle`
-- CI can still use a fuller TeX Live action independently of the local setup
+- `tectonic` builds the manuscript PDF successfully on this machine.
+- `latexmk -xelatex main.tex` is the intended explicit TeX Live build path.
+- The paper bundle can be generated locally with `make paper-bundle`.
+- CI can still use a fuller TeX Live action independently of the local setup.
 
 Install commands on macOS:
 
@@ -66,16 +67,15 @@ brew install --cask mactex-no-gui
 eval "$(/usr/libexec/path_helper)"
 ```
 
-Current caveat:
-
-- `make paper-build` is still flaky with the Homebrew `tectonic` binary on this
-  machine because the binary sometimes panics inside its Rust
-  `reqwest/system-configuration` path when launched through `make`/shell.
-  The direct script path is reliable:
+Direct script path:
 
 ```bash
 ./.venv/bin/python paper/arxiv/scripts/build.py
 ```
+
+The arXiv source bundle contains a short submission-facing `README.md` and a
+`00README` file that declares `main.tex` as the top-level source and `xelatex`
+as the intended compiler.
 
 ## Style Choice
 
