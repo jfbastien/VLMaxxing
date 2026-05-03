@@ -1,92 +1,42 @@
-Video vision-language models (VLMs) already receive evidence about what stayed
-still, what moved, and what is new. Most stacks discard that structure, hand the
-model dense RGB again, and ask it to rediscover state it could have reused. The
-factory wall did not move, the stream has cheap evidence that it did not move,
-and the stack still pays again for dense visual or prefix computation. We study
-that waste as training-free anti-recomputation.
+Video vision-language models (VLMs) keep paying for visual state the stream
+already told us was stable. The factory wall did not move, the stream has cheap
+evidence that it did not move, and the runtime still hands the model dense RGB
+or a fresh prefix again. We study that waste as training-free
+anti-recomputation: reuse state when validation says it survives, and buy fresh
+visual evidence when the scene, query, or cache topology requires it.
 
-The broadest repaired follow-up result appears after the video has already been ingested. On
-frozen Qwen2.5-VL-7B-Instruct-4bit, adaptive same-video follow-up reuse repairs
-20-frame short, medium, and long VideoMME slices plus a 32-frame short slice
-with no observed paired choice or correctness drift on 93 paired queries,
-including 62 repaired follow-ups. Same-class follow-up speedup is
-14.90--35.92$\times$ when cold follow-ups are compared with repaired
-follow-ups within matched frame/duration cells; the cold-all-query versus
-repaired-follow-up ratio is 15.28--35.97$\times$ when the cold baseline's
-per-query cost is compared with repaired follow-up latency. The mechanism is concrete: the second follow-up inherits
-the cache repaired after the first follow-up, so it appends mostly the new
-question instead of repairing the newest-frame tail again. This is not
-first-query speedup: the first query still pays full freight, and the tested
-sessions have two follow-up questions per video. A separate many-turn stress on
-seven 20-frame short videos then cycles the same questions through 50 turns:
-adaptive repair and scheduled refresh have no observed paired drift on 343
-follow-ups, while fixed \(K=1\) remains below the 3\% drift gate but shows
-nonzero choice/correctness drift in the repeated-question schedule. A stricter
-dense-answer-anchored prompt-variation stress gives the boundary:
-conservative fixed \(K=1\) remains 0/133 on follow-ups through 20 turns,
-while adaptive repair and refresh-10 each show 6/133 paired choice/correctness
-drift (4.51\%) in exchange for roughly 0.7\,s follow-up latency. Aggressive
-reuse is therefore a high-speed operating point, not a universal
-correctness-preserving policy.
+The biggest measured win comes after ingest. On frozen
+Qwen2.5-VL-7B-Instruct-4bit, adaptive same-video follow-up reuse preserves
+paired choices and correctness on the 93-query VideoMME breadth setting while
+reducing follow-up latency by 14.90--35.92$\times$. The first query is still
+cold; the win starts when later questions reuse the same video state. The
+mechanism is concrete: selective re-prefill repairs the cache basin, and the
+second follow-up inherits that repaired cache instead of buying the visual tail
+again. Stress tests bound the result rather than pretending it is universal:
+repeated-question schedules hold through 50 turns, while dense-answer-anchored
+prompt variation separates conservative fixed-\(K=1\) repair from faster
+aggressive policies that drift.
 
-The central question is where a runtime must buy fresh visual evidence over
-time, and where cached state is enough to remain on its regime-specific
-quality--compute frontier. That question only makes sense if the accounting is
-honest. We evaluate frozen
-VLMs with MLX-backed VideoMME, MVBench, and TOMATO protocols, plus a separate
-26B-class streaming protocol, and we keep the regimes separate: first-pass
-visual work on fresh videos, after-ingest follow-up questions about the same
-video, and streaming workloads that revisit nearly the same visual state. They
-are not interchangeable. \emph{Stage-share ceiling (C-CEILING)} formalizes the
-bound: a component win becomes an end-to-end win only in proportion to the
-wall-clock share it actually accelerates. This is why the n=60 composition
-audit is a ceiling-matched null rather than a multiplier.
+Fresh-video pruning is smaller but real. First-pass vision pruning
+(C-VISION) skips timed vision-tower work before the first answer is generated.
+On Gemma 4-E4B-4bit, the clean 32f short cell reaches 1.316$\times$
+first-query speedup with no paired drift or parse failures on 20 items. Qwen
+provides the cautionary half: an 8f keep-rate sweep follows the timing ceiling
+while failing fidelity, and a conservative 16f point recovers to within the
+aggregate-accuracy/format gates only at low gain.
 
-\emph{Persistent follow-up reuse (C-PERSIST)} is the name we give to this
-after-ingest regime. It reuses the already-paid prompt/key--value (KV)
-attention state for later questions about the same video. Unrepaired reuse
-eventually enters a cache basin, a failure region where reused state drives
-repeated answer drift or
-pathological outputs. Selective re-prefill refreshes a small newest-frame
-visual tail and restores the tested follow-up contract. Fixed \(K=1\) remains
-the no-coordination baseline at 9.48--20.37$\times$ same-class speedup with no
-observed paired drift on the same 93-query envelope.
+The accounting is the point. Stage-share ceiling (C-CEILING) says a component
+speedup becomes an end-to-end speedup only in proportion to the wall-clock share
+it actually accelerates. That explains why first-pass gains are modest, why the
+n=60 composition audit lands near the measured ceiling, and why C-VISION and
+after-ingest follow-up reuse do not multiply just because both numbers are in
+the paper.
 
-Fresh-video pruning is smaller but measured. \emph{First-pass vision pruning
-(C-VISION)} reduces work inside the VLM vision tower, the visual encoder that
-turns frames into model tokens, during the first query on a fresh video. The
-clean VideoMME holdout cell gives 1.113$\times$ first-pass wall-clock gain
-with zero aggregate accuracy delta; advisory MVBench and TOMATO holdout cells
-are larger but carry timing and accuracy caveats. Measured sparse vision
-execution makes the first-pass story sharper: on Gemma 4-E4B-4bit 32f short,
-the runtime skips timed vision-tower work at 1.316$\times$ first-query speedup
-with no paired drift on 20 items and no parse failures. The full Gemma 8/16/32f sweep
-has zero paired answer drift but matched dense/sparse parse failures in some
-cells; Qwen is configuration-sensitive. A Qwen 8f keep-rate sweep tracks the
-C-CEILING timing prediction tightly even when all cells fail the fidelity
-contract; a conservative 16f operating point recovers to within the
-aggregate-accuracy and format gates at
-1.032$\times$ with only 13.6\% vision-time reduction. These are measured
-sparse-execution envelopes, not a license to multiply every component win.
-The routing audits explain why those numbers are not the whole story:
-local diagnostics suggest fresh-compute placement is not captured by novelty
-magnitude alone,
-aggregate accuracy can hide answer-identity drift, and cached-feature
-substitution tests answer preservation rather than measured sparse execution.
-
-Streaming state reuse (candidate C-STREAM) is the native-rate version of the
-same question, but it is not yet a headline claim. A 26B-class
-scale-out evaluation makes the lane more concrete and more bounded:
-default mixed sliding-window/full-attention
-cache reuse fails a cross-turn correctness smoke, a topology-aware warm-prefix
-snapshot (a saved post-ingest cache state used only for follow-up timing)
-gives positive small-\(N\) follow-up rows, fixed-evidence streaming
-baselines favor low-FPS dense over the tested event-window proxy, and the
-large exactness audit separates zero accuracy delta on 1,937 rows from
-byte-identical raw-paired text on 513 rows.
-
-The broader implication is not that pixel differencing is the final interface.
-The experiments are a requirements probe for future VLM-native media streams:
-systems that expose change, motion, uncertainty, object state, sensor time, and
-active tiles directly, so the model does not have to rediscover the world from
-dense RGB every frame.
+Streaming state reuse (candidate C-STREAM) is the native-rate deployment target,
+not a headline result here. The 26B-class scale-out bundle shows the gates:
+default cross-turn cache reuse can be unsafe, topology-aware prefix snapshots
+can help after warm-up, and low-FPS dense remains a serious fixed-evidence
+baseline. The larger direction is that future VLM-native media should expose
+change, motion, uncertainty, object state, sensor time, and active tiles
+directly, so models do not have to rediscover the world from dense RGB every
+frame.

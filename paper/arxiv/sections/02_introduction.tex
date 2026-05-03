@@ -40,20 +40,19 @@ training-free policy preserves answer quality, not whether the backend has
 already been rewritten to skip timed work. Reuse is three regimes with three
 different ceilings, not one multiplier that can be copied from paper to paper.
 
-That distinction changes what the paper is about. The first contribution is
-\emph{persistent follow-up reuse (C-PERSIST)}: the after-ingest same-video
-regime where the biggest local multipliers already exist, but also where cache
-reuse enters a measurable basin unless the visual tail is repaired. The second
-is \emph{stage-share ceiling (C-CEILING)}: an arithmetic guardrail on how much
-of a local speedup can survive to end-to-end wall-clock. The third is
-\emph{first-pass vision pruning (C-VISION)}: measured first-pass gains on
-fresh videos via training-free vision-tower pruning. Candidate C-STREAM stays
-in the paper as the native-rate state-update target and boundary evidence, not
-as a fourth headline; Qwen routing remains mechanism evidence under a fixed
-dense backend.
+That distinction changes what the paper is about. We make three contributions.
+\emph{Persistent follow-up reuse (C-PERSIST)} repairs same-video after-ingest
+reuse, where the biggest multipliers live but where unrepaired caches can fall
+into a measurable basin. \emph{Stage-share ceiling (C-CEILING)} is the
+arithmetic guardrail: a local speedup survives to end-to-end wall-clock only in
+proportion to the stage it actually accelerates. \emph{First-pass vision
+pruning (C-VISION)} measures training-free vision-tower work skipped on fresh
+videos. Streaming remains the native-rate target and boundary evidence, not a
+fourth headline; Qwen routing remains mechanism evidence under a fixed dense
+backend.
 
 The larger target is not a bigger threshold sweep and not a new codec in this
-paper. The experiments here are a measurement instrument: they ask which
+paper. The experiments are a measurement instrument: they ask which
 cheap temporal signals are already useful to a frozen VLM runtime, where those
 signals fail, and what a future VLM-native media stream should expose directly.
 Codec and pixel signals are therefore treated as freshness and uncertainty
@@ -62,29 +61,18 @@ probably changed; the model and the task still decide what matters. That is
 why the VLM-native media discussion later in the paper is framed as candidate
 requirements, not as a systems claim here.
 
-The same boundary applies to training. These are training-free inference
-experiments, not measured training-speedup experiments. The training-relevant
-claim is narrower and more useful: the traces identify where frozen models
-already tolerate reuse, where they do not, and what a future model could learn
-as native refresh gates, delta encoders, or cache-state-aware attention.
-
 The scale-out streaming lane is part of the same science story, but it has a
-different protocol. A 26B-class bundle sharpens the boundary rather
-than simply adding wins: the default cross-turn cache path is unsafe,
-topology-aware warm-prefix snapshot rows (saved post-ingest cache states used
-only for follow-up timing) are positive at small \(N\), and
-fixed-evidence streaming baselines show that low-FPS dense is a serious
-competitor. We keep this as candidate C-STREAM: boundary evidence and gates for
-future native-rate state reuse, not a multiplier to inherit. The same warning
+different protocol. A 26B-class bundle sharpens the boundary rather than simply
+adding wins: the default cross-turn cache path is unsafe, topology-aware
+warm-prefix snapshots are positive at small \(N\), and fixed-evidence streaming
+baselines show that low-FPS dense is a serious competitor. The same warning
 shows up locally in Qwen session-composition experiments, where speedup can
 survive while the full follow-up fidelity contract does not.
 
 \begin{table}[H]
 \centering
 \caption{Reuse regime map. Rows are separate workloads and denominators, not
-one multiplier. Candidate C-STREAM is a deployment target and boundary lane;
-routing under a fixed dense backend is mechanism evidence rather than a sparse
-wall-clock claim.}
+one multiplier.}
 \label{tab:three-regimes}
 \footnotesize
 \renewcommand{\arraystretch}{\PaperTableStretch}
@@ -97,47 +85,26 @@ wall-clock claim.}
 \toprule
 Regime & Reused work & Denominator / gate & Evidence / boundary \\
 \midrule
-After-ingest follow-up & prompt / key--value (KV) prefix for later questions on the same video & median cold follow-up / cached-or-repaired follow-up plus paired drift; first query still pays full freight & raw 16f reuse reaches 91.1$\times$; adaptive repair spans short/medium/long and 32f-short with 0/93 drift in the breadth protocol at 14.90--35.92$\times$; many-turn stress reaches 50 turns on repeated questions; dense-answer-anchored prompt variation exposes the conservative/aggressive boundary \\
-Fresh-video first pass & vision-tower work inside the first query & first-query wall-clock; clean/advisory gates plus measured sparse-execution envelopes & VideoMME clean 1.113$\times$; MVBench/TOMATO advisory; measured sparse vision: Gemma 32f short 1.316$\times$ with 0/20 drift, Qwen conservative boundary 1.032$\times$ \\
-Candidate C-STREAM & repeated visual state in a native-rate or live pipeline & after-warm prefix-snapshot follow-up timing plus fixed-evidence quality baselines; not setup-inclusive throughput & default 26B cache path blocked; prefix-snapshot rows positive but small-\(N\); fixed-evidence stream baselines favor low-FPS dense over the tested proxy \\
+After-ingest follow-up & prompt / key--value (KV) prefix for later questions on the same video & median cold follow-up / cached-or-repaired follow-up plus paired drift; first query still pays full freight & 0/93 paired drift in breadth protocol at 14.90--35.92$\times$; stress tests expose conservative/aggressive boundary \\
+Fresh-video first pass & vision-tower work inside the first query & first-query wall-clock; clean/advisory gates plus measured sparse-execution envelopes & VideoMME clean 1.113$\times$; Gemma 32f short 1.316$\times$ timed skip; Qwen low-gain boundary \\
+Candidate C-STREAM & repeated visual state in a native-rate or live pipeline & after-warm prefix-snapshot timing plus fixed-evidence baselines; not setup-inclusive throughput & default 26B cache path blocked; prefix snapshots positive but small-\(N\); low-FPS dense is a strong baseline \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-The table is a workload map. The contributions below are the analytical and
-empirical pieces that explain those workloads without collapsing them into a
-single multiplier. We make three contributions:
+The table is the denominator map. The contributions below explain those
+workloads without collapsing them into a single multiplier:
 \begin{itemize}[leftmargin=1.5em]
-\item We characterize \textbf{persistent follow-up reuse (C-PERSIST)}: after-ingest persistent-KV reuse on
-Qwen collapses follow-up latency to roughly conversational timescales, with a
-7B tested envelope through 16 frames / 6.5k prefill tokens, a clean 16f point,
-and a wider but bounded 3B plateau through 36 frames / 14.5k prefill tokens.
-We then show that the 7B basin is repairable: selective re-prefill of a fixed
-newest-frame visual tail gives no observed paired choice or correctness drift
-on 93 paired queries spanning short, medium, long, and 32-frame short slices,
-while retaining 9.48--20.37$\times$ follow-up speedup. A state-aware adaptive
-variant repairs once and lets the next follow-up inherit that repaired state;
-across the same 93-query breadth, it has no observed paired drift and reaches
-14.90--35.92$\times$ same-class follow-up speedup
-(15.28--35.97$\times$ cold-all-query / repaired-follow-up ratio). Stress tests
-bound that win: repeated-question schedules show no adaptive cliff through 50
-turns, while dense-answer-anchored prompt variation keeps conservative
-fixed \(K=1\) paired-drift clean but exposes 6/133 paired drift for aggressive
-policies.
-\item We derive and validate \textbf{stage-share ceiling (C-CEILING)}: a
-guardrail for end-to-end gain. The same arithmetic explains both the modest first-pass
-multipliers and the n=60 composition audit, where the observed
-1.042$\times$ stacked result lands almost exactly where the measured share
-terms predict.
-\item We establish \textbf{first-pass vision pruning (C-VISION)}: training-free mid-layer vision-tower
-pruning yields measured first-pass end-to-end gains on frozen Gemma video-VLM
-runs, from a clean 1.113$\times$ VideoMME holdout to advisory larger cells,
-with magnitude governed by the vision-share ceiling rather than wishful
-component-wise multiplication. The measured sparse-execution envelope then
-separates systems truth from fidelity truth: Gemma 32f short is a clean
-1.316$\times$ timed-skip cell, while Qwen's 8f keep-rate sweep validates the
-timing ceiling despite fidelity failure and its conservative 16f point
-recovers to within the aggregate-accuracy/format gates only at low gain.
+\item \textbf{C-PERSIST:} same-video follow-up reuse with selective visual-tail
+repair. Adaptive repaired-cache inheritance preserves paired choices and
+correctness on the 93-query breadth setting and reaches 14.90--35.92$\times$
+follow-up speedup; stress tests expose the conservative/aggressive boundary.
+\item \textbf{C-CEILING:} a denominator guardrail. The same arithmetic explains
+both modest first-pass multipliers and the n=60 composition audit, where the
+observed 1.042$\times$ stacked result lands where measured share terms predict.
+\item \textbf{C-VISION:} measured first-pass vision pruning. Gemma gives a
+clean 1.316$\times$ timed-skip cell at 32f short; Qwen shows the
+fidelity/speed boundary rather than a universal sparse-backend claim.
 \end{itemize}
 
 Those three contributions do not compose as a naive product. C-VISION changes
@@ -146,15 +113,8 @@ the same video. C-CEILING says shared stage budgets cannot be spent twice. The
 paper therefore reports composition against measured ceilings, not against
 headline multiplication.
 
-Qwen routing and its preserved nulls are what keep that framing honest. The
-holdout planner results show a real quality--compute frontier under a frozen
-dense backend, local novelty-ranked dense diagnostics suggest that quantity
-alone is the wrong variable, and the VideoMME frame-count probes show that
-``more frames'' is not a linear quality knob on the Qwen stack. The dev-split
-16-frame
-long-bucket regression does \emph{not} replicate on disjoint holdout; that is
-exactly the kind of boundary the paper keeps instead of smoothing away.
-The same discipline applies to paired drift: several runs preserve
-aggregate accuracy while changing individual answers, so the paper reports
-choice diffs, correctness diffs, pathological-attractor counts, and confidence
-intervals whenever they decide the claim boundary.
+Qwen routing keeps that framing honest. It shows a quality--compute frontier
+under a frozen dense backend, not a timed sparse implementation. The same
+discipline applies to paired drift: several runs preserve aggregate accuracy
+while changing individual answers, so answer identity, correctness, and format
+are reported separately whenever they decide the claim boundary.
