@@ -790,7 +790,7 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
         "c_vision": {
             "clean_sparse_execution": "Gemma 32f short 1.316x, 0/20 paired drift",
             "qwen_boundary": (
-                "Qwen 16f kr=0.85 recovers to within aggregate/format gate at 1.032x"
+                "Qwen 16f kr_V=0.85 recovers to within aggregate/format gate at 1.032x"
             ),
             "denominator": "first-query E2E",
             "source_paths": [
@@ -897,7 +897,7 @@ def _render_c_persist_timeline_figure() -> None:
     for key, label in [
         ("q0", "First query"),
         ("q2", "Follow-up 1 repair"),
-        ("q3", "Follow-up 2 reuse"),
+        ("q3", "Follow-up 2 / Q3"),
     ]:
         ax.text(xs[key], 0.78, label, fontsize=8.0, weight="bold", ha="center", color="#334155")
 
@@ -1465,7 +1465,7 @@ def _measured_sparse_execution_snapshot() -> dict[str, object]:
         qwen_rows.append(
             {
                 "model": "Qwen2.5-VL-7B",
-                "setting": f"8f, kr={float(cell['keep_rate']):.2f}",
+                "setting": f"8f, $kr_V$={float(cell['keep_rate']):.2f}",
                 "n": int(cell["n_paired_items"]),
                 "accuracy_delta": float(cell["accuracy_delta"]),
                 "choice_agreement": float(cell["choice_agreement"]),
@@ -1494,7 +1494,7 @@ def _measured_sparse_execution_snapshot() -> dict[str, object]:
         qwen_rows.append(
             {
                 "model": "Qwen2.5-VL-7B",
-                "setting": f"16f, kr={kr_label}",
+                "setting": f"16f, $kr_V$={kr_label}",
                 "n": int(row["n"]),
                 "accuracy_delta": float(row["accuracy_delta_sparse_minus_dense"]),
                 "choice_agreement": float(row["choice_agreement"]),
@@ -1901,23 +1901,23 @@ def _qwen_bridge_boundary_snapshot() -> dict:
             ARTIFACTS / "phase1_30W_q0_dense_followup_pruned_full" / "pair_summary.json",
         ),
         _qwen_bridge_boundary_row(
-            "long kr=0.67",
+            "long \\(kr_{Q0}=0.67\\)",
             ARTIFACTS / "phase1_30Z_long_q0_kr067_20260424" / "pair_summary.json",
         ),
         _qwen_bridge_boundary_row(
-            "long kr=0.75",
+            "long \\(kr_{Q0}=0.75\\)",
             ARTIFACTS / "phase1_30AB_long_q0_kr075" / "pair_summary.json",
         ),
         _qwen_bridge_boundary_row(
-            "long kr=0.80",
+            "long \\(kr_{Q0}=0.80\\)",
             ARTIFACTS / "phase1_30AB_long_q0_kr080" / "pair_summary.json",
         ),
         _qwen_bridge_boundary_row(
-            "long kr=0.85",
+            "long \\(kr_{Q0}=0.85\\)",
             ARTIFACTS / "phase1_30AB_long_q0_kr085" / "pair_summary.json",
         ),
         _qwen_bridge_boundary_row(
-            "long kr=0.90",
+            "long \\(kr_{Q0}=0.90\\)",
             ARTIFACTS / "phase1_30AB_long_q0_kr090" / "pair_summary.json",
         ),
     ]
@@ -2224,7 +2224,7 @@ def _write_headline_table(snapshot: dict) -> None:
             "favorable timing caveat & advisory local \\\\"
         ),
         (
-            "First-pass & Qwen measured sparse vision, 16f kr=0.85 & "
+            "First-pass & Qwen measured sparse vision, 16f \\(kr_V=0.85\\) & "
             "first-query E2E & "
             f"{qwen_sparse_safe['observed_e2e']:.3f}$\\times$ & "
             f"$\\Delta$acc {qwen_sparse_safe['accuracy_delta']:+.3f}; "
@@ -2620,7 +2620,7 @@ def _write_dense_anchored_cpersist_table() -> None:
             r"dense/cached arms receive identical prompt hashes. This is a "
             r"content-conditioned prompt-variation stress, not natural "
             r"dialogue. Parenthesized speedups in the median-follow-up column "
-            r"use the recorded 80\,s cold-dense reference for readability.}"
+            r"use an approximate 80\,s cold-dense reference for readability.}"
         ),
         r"\label{tab:c-persist-dense-anchored}",
         r"\scriptsize",

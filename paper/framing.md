@@ -92,18 +92,21 @@ duration-conditional partial reproduction + 1.55D frontier-partial):
 
 1. **C-CEILING (claim 13): Arithmetic ceiling model for token-pruning
    wall-clock speedup.** Predicts E2E speedup within ≤5.2% across 7
-   regime dimensions on Gemma 4-E4B-4bit (8/32 frame counts × benchmark
-   × keep-rate × anchor arm). Formula: `e2e ≤ 1/(fixed_frac + (1 −
-   fixed_frac)/s)`. Standalone analytical contribution; validated in the
-   1.51R reproduction lane and further extended by 1.51V to a
-   vision-axis analog `1/(1 − V_share × V_red)`.
+   LLM-side/token-pruning regime dimensions on Gemma 4-E4B-4bit
+   (8/32 frame counts × duration bucket × LLM-side keep-rate × anchor arm).
+   Formula: `e2e ≤ 1/(fixed_frac + (1 − fixed_frac)/s)`. Standalone
+   analytical contribution; validated in the 1.51R reproduction lane and
+   further extended by 1.51V to a vision-axis analog
+   `1/(1 − V_share × V_red)`. The current manuscript's 17-regime
+   C-VISION scatter-back figure is the rendered accounting view and includes
+   advisory/boundary cells.
 
 2. **C-PERSIST (claim 14): Persistent follow-up reuse with paired-drift
    tested deployment envelope.** All persistent-KV claims in this paper
    are **after-ingest / follow-up-query** numbers: the user pays the
    full first-query prefill once, subsequent questions on the *same
    video* reuse the KV and return in sub-second time. These are not
-   "any-fresh-video" latencies. 7B Qwen 2.5-VL-4bit stays inside the
+   "any-fresh-video" latencies. 7B Qwen 2.5-VL-7B-4bit stays inside the
    tested envelope through ≤16f / ≤6.5k prefill tokens, with a clean 16f
    point (Δacc=0) and a slightly worse but still tolerated 8f point
    (Δacc=−0.048); 3B at ≤36f / ≤14.5k prefill sits on a tolerated
@@ -229,7 +232,7 @@ boundary as much as the positives:
 - **1.51R own-axis null at the pre-release reference kr.** At `kr_R=0.50` on
   Gemma 4-E4B-4bit VideoMME 8 f dev n=30, prefill-pruning alone yields
   `e2e=1.00×`, `gen=1.01×`. The 1.51R speedup in the main body comes
-  from `kr=0.10` with a different aggregate-accuracy story.
+  from `kr_R=0.10` with a different aggregate-accuracy story.
 - **EXP10 n=60 composition audit: preregistered NULL** on "stacking
   beats the ceiling." The observed 1.042 × E2E is ceiling-matched, not
   super-ceiling. (This is a positive result on the *ceiling law*, and a
@@ -271,7 +274,7 @@ boundary as much as the positives:
   to certify the reused state. The cache-invalidated `1.30AC` and instrumented
   `1.30AD` successors now close this as a negative composition boundary: both
   reach the same net aggregate loss through different any-paired-drift sets, and
-  only cache reuse preserves the speed profile. The direct K/V distance probe
+  only cache reuse preserves the speed profile. The direct KV-cache distance probe
   now adds tensor evidence: no-prune reuse is dense-like while the pruned path
   diverges strongly. The next meaningful continuation is causal/independent
   guard features or optional `0.95` boundary cleanup, not a revival of

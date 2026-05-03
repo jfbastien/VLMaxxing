@@ -114,10 +114,12 @@ the first query has paid full freight, and the y-axis is paired drift against
 cold follow-up answers.
 
 Those are separate frontiers, not one universal curve. A semantic-substitution
-point can show that a routing policy preserves answers at lower effective
-fresh-frame budget; it becomes a systems speedup only after the backend skips
-timed work. A persistent-cache point can show large same-video follow-up gains;
-it says nothing about first-pass latency for a fresh video. The manuscript
+point, where cached visual features are substituted into the dense runner to
+test answer preservation, can show that a routing policy preserves answers at
+lower effective fresh-frame budget; it becomes a systems speedup only after
+the backend skips timed work. A persistent-cache point can show large
+same-video follow-up gains; it says nothing about first-pass latency for a
+fresh video. The manuscript
 therefore reports quality at fixed budget, budget at fixed quality, and the
 elbow or boundary point inside each regime, rather than multiplying the best
 number from each table.
@@ -129,8 +131,8 @@ The other two mechanisms operate at different points in the stack.
 The Gemma path patches the vision tower after an internal layer, keeps only a
 fraction of the tokens, and scatters the result back so downstream geometry is
 unchanged. \(L\) names the internal pruning layer, and \(kr_V\) is the keep
-ratio for visual token groups after that layer; tables sometimes write \(kr\)
-when the visual-token axis is unambiguous. The resulting first-pass
+ratio for visual token groups after that layer; \(K\) is reserved for
+newest-frame re-prefill in C-PERSIST. The resulting first-pass
 speedup is constrained by how much of total wall-clock the vision tower owns.
 More generally, if a method accelerates only
 one stage of a pipeline by a factor $s$, and all other stages are held fixed,

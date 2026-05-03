@@ -36,7 +36,7 @@ boundary appears.
   \IfFileExists{generated/figures/c_persist_safe_budget.png}{
     \includegraphics[width=0.97\linewidth]{generated/figures/c_persist_safe_budget.png}
   }{
-    \fbox{\parbox{0.9\linewidth}{Run \texttt{make paper-sync} to sync the C-PERSIST tested-envelope figure.}}
+    \fbox{\parbox{0.9\linewidth}{Figure unavailable in this source snapshot.}}
   }
 \caption{C-PERSIST tested follow-up-reuse envelope. The local result is not one
   persistent-KV curve but two different architectural stories: 7B stays inside
@@ -185,7 +185,7 @@ have follow-up questions, not because the first question became cheap.
   \IfFileExists{generated/figures/c_persist_timeline.pdf}{
     \includegraphics[width=0.98\linewidth]{generated/figures/c_persist_timeline.pdf}
   }{
-    \fbox{\parbox{0.9\linewidth}{Run \texttt{make paper-sync} to sync the C-PERSIST timing figure.}}
+    \fbox{\parbox{0.9\linewidth}{Figure unavailable in this source snapshot.}}
   }
   \caption{Adaptive C-PERSIST timing attribution. Fixed \(K=1\) repairs the
   newest-frame tail again at the second follow-up, while the adaptive policy
@@ -232,8 +232,8 @@ failures, 42.2\% vision-time reduction, and a \(-0.012\)\(\times\) ceiling
 gap.
 
 Qwen exposes the architecture/configuration boundary. Aggressive 16f pruning
-at \(kr=0.50\) collapses format and aggregate accuracy. Raising the keep rate
-recovers the model monotonically; \(kr=0.85\) is inside the tested aggregate
+at \(kr_V=0.50\) collapses format and aggregate accuracy. Raising the keep rate
+recovers the model monotonically; \(kr_V=0.85\) is inside the tested aggregate
 accuracy and format gates, not a paired-identity gate, and is ceiling-consistent.
 The price is that vision-time reduction falls to
 13.6\% and the observed end-to-end gain is only 1.032$\times$. The right
@@ -243,7 +243,7 @@ configuration-sensitive and can trade fidelity for too little saved vision
 work.
 
 A trivial random-keep sanity baseline confirms that the Qwen scorer is not
-arbitrary. At the same 8f, \(L=2\), \(kr=0.50\) keep-rate on VideoMME dev30,
+arbitrary. At the same 8f, \(L=2\), \(kr_V=0.50\) keep-rate on VideoMME dev30,
 the structured magnitude scorer reaches 0.500 accuracy versus a four-seed
 uniform-random mean of 0.358 (range 0.333--0.367), with dense at 0.533. That is
 a +14.2\,pp structured-vs-random gap at matched keep-rate, not a peer-method
@@ -256,7 +256,7 @@ comparison and not a matched-runtime claim.
   \IfFileExists{generated/figures/v_share_v_red_ceiling.png}{
     \includegraphics[width=0.97\linewidth]{generated/figures/v_share_v_red_ceiling.png}
   }{
-    \fbox{\parbox{0.9\linewidth}{Run \texttt{make paper-sync} to sync the C-VISION ceiling figure.}}
+    \fbox{\parbox{0.9\linewidth}{Figure unavailable in this source snapshot.}}
   }
   \caption{C-CEILING share-model validation. The figure shows
   Gemma dev and holdout cells, the matched Qwen cross-architecture point,
@@ -269,7 +269,7 @@ comparison and not a matched-runtime claim.
   pruned run, and the predicted speedup is then compared with the independently
   observed end-to-end speedup. The purple measured-sparse markers include the
   Qwen 8f keep-rate sweep, which validates the timing prediction while failing
-  the fidelity contract, plus the 16f \(kr=0.85\) point, which recovers to
+  the fidelity contract, plus the 16f \(kr_V=0.85\) point, which recovers to
   within the aggregate-accuracy/format gate at only 1.032$\times$ because vision reduction
   falls to 13.6\%. The clean measured
   sparse-execution cell is the Gemma 32f-short bucket reported in
@@ -307,7 +307,7 @@ VideoMME 8f holdout & 0.154 & 0.413 & 1.068 & 1.113 & +4.5pp & clean local \\
 MVBench 8f holdout & 0.452 & 0.471 & 1.271 & 1.407 & +13.6pp & advisory local \\
 TOMATO 8f holdout & 0.384 & 0.350 & 1.155 & 1.194 & +3.9pp & advisory local \\
 Qwen VideoMME 8f dev & 0.103 & 0.398 & 1.043 & 1.044 & +0.1pp & matched cross-arch \\
-Qwen measured sparse vision 8f \(kr=0.50\) & 0.100 & 0.448 & 1.047 & 1.042 & -0.5pp & local boundary, fidelity fail \\
+Qwen measured sparse vision 8f \(kr_V=0.50\) & 0.100 & 0.448 & 1.047 & 1.042 & -0.5pp & local boundary, fidelity fail \\
 VideoMME n=60 composition audit & 0.063 & 0.430 & 1.028 & 1.042 & +1.4pp & composition null \\
 \bottomrule
 \end{tabularx}
@@ -320,7 +320,7 @@ jitter, or thermal state moves with the run. The holdout spread is wider than
 the first dev tranche made it look, and the matched Qwen point sits low-left
 where its smaller \(V_{\mathrm{share}}\) says it should. Gemma's 32f short cell
 is the cleanest measured sparse-execution operating point; Qwen's 8f keep-rate
-sweep is a timing-validation/fidelity-failure boundary, and its 16f \(kr=0.85\)
+sweep is a timing-validation/fidelity-failure boundary, and its 16f \(kr_V=0.85\)
 point is the low-gain aggregate-accuracy/format boundary. That is why the paper describes
 benchmark-, architecture-, and protocol-sensitive magnitude rather than
 benchmark-invariant first-pass gain. \(V_{\mathrm{share}}\) governs magnitude,
@@ -387,12 +387,12 @@ cache-distance audit over the drift classes compares dense follow-up state with
 no-prune cache reuse and with the pruned/recomputed path. The native fp16 cosine
 columns overflowed during the reduction, producing misleading NaNs even though
 the captured cache windows were finite. The fp32 control cosine is the
-reported metric: reuse K/V is essentially dense-identical
+reported metric: reuse KV state is essentially dense-identical
 (\(\cos \approx 1.0\)), while the pruned path diverges substantially
 (\(K=0.724\), \(V=0.296\)). Thus the two arms did not merely hide the same
 internal state under the same aggregate loss. No-prune reuse preserves the
-captured cache state, while pruning at \(L=2,kr=0.50\) materially changes the
-later K/V state, especially values. This still does not yield a deployable
+captured cache state, while pruning at \(L=2,kr_V=0.50\) materially changes the
+later key/value state, especially values. This still does not yield a deployable
 row-level drift predictor, but it explains why aggregate parity is too weak a
 composition contract.
 

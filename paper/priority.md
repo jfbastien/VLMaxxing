@@ -171,7 +171,7 @@ in its own dimension.
    n=30" caveat with favorable-drift footnote. No further TOMATO rerun
    required for paper-grade claim.
 
-3. **1.51V cross-architecture transfer probe (Qwen 2.5-VL-4bit).**
+3. **1.51V cross-architecture transfer probe (Qwen 2.5-VL-7B-4bit).**
    **CLOSED 2026-04-23.** The scatter-back ceiling now transfers from
    Gemma 4-E4B-4bit to Qwen 2.5-VL-7B-4bit at matched
    \(L=2\), \(kr_V=0.50\) on VideoMME 8f dev n=30. All preregistered
@@ -224,7 +224,7 @@ in its own dimension.
 
    Remaining follow-ups (ordered by current paper leverage):
 
-   - **Causal/independent guard features** — the direct K/V distance probe is
+   - **Causal/independent guard features** — the direct KV-cache distance probe is
      now landed and shows no-prune reuse remains dense-like while the pruned
      path diverges strongly; what remains is a deployable row-level guard or
      causal intervention.
@@ -233,7 +233,7 @@ in its own dimension.
 
    1.30X remains important, but its `Δacc = 0.0000`, `3.0781×` point is
    an **oracle upper bound**, not a deployable policy. The lane is closed
-   at the tested keep-rates; K/V distance instrumentation has landed, while
+   at the tested keep-rates; KV-cache distance instrumentation has landed, while
    causal/independent guard features remain open.
 
 5. **1.55 selective re-prefill frontier (fidelity recovery).** The v1
@@ -339,15 +339,12 @@ collection.
    No C-VISION / C-PERSIST / C-CEILING cells move. Findings:
    `research/experiments/2026/2026-04-21-phase-1_41-qwen-videomme-16f-holdout-findings.md`.
 
-8. **1.29 local codec-native benchmark slice.** **Promoted from future
-   per codex round-26** — this is the biggest single missing scale-out bridge.
-   The H.264-metadata pipeline already exists in-repo (task #114
-   `h264_metadata.py` port landed); the remaining gap is running it on
-   a 30-clip subset and measuring MV/CBF agreement vs our pixel-diff
-   baseline. Closing this elevates the paper's codec-through thesis
-   from "analog implementation" to "codec-native implementation with
-   local benchmark evidence". Runtime ~1-2 h benchmark-only; blocker is
-   harness wire-up (not a prereg — prereg landed task #98 2026-04-20).
+8. **1.29 local codec-native benchmark slice.** **Landed as local
+   codec-native planner-substitution evidence; the remaining systems gate is
+   decoder-integrated native-rate evaluation.** The H.264-metadata pipeline
+   exists in-repo (task #114 `h264_metadata.py` port landed). The original
+   30-clip subset gap has closed for the local planner-substitution lane; it
+   does not by itself close C-STREAM.
    **PRE-INTEGRATION AUDIT 2026-04-22**: full-bucket pilot (5 items
    stratified short/medium/long) exceeded session compute budget; native-
    rate H.264 extract over long-bucket VideoMME clips dominates runtime.
@@ -511,12 +508,13 @@ edits:
    on attention-propagation-drift discipline.
 3. **Ceiling model.** Reviewer cross-references C-CEILING predictions
    against observed E2E. Two counts appear in the paper and both must
-   be self-consistent: the C-CEILING **7 regime dimensions** on Gemma
-   (8/32-frame × benchmark × keep-rate × anchor arm, median 2.1% /
-   worst 5.2% error) and the C-VISION rendered view with **9 points**
-   total: 4 Gemma dev cells, 3 Gemma holdout cells, 1 matched Qwen
-   cross-architecture point, and 1 composition-audit null. Already
-   satisfied per claim-matrix row 13 and row 15.
+   stay distinct: the historical C-CEILING **7 LLM-side/token-pruning
+   regime dimensions** on Gemma (median 2.1% / worst 5.2% error) and the
+   C-VISION rendered view with **17 plotted regimes**: 4 Gemma dev cells,
+   3 Gemma holdout cells, 1 matched Qwen cross-architecture point, 1
+   composition-audit null, and 8 measured sparse-vision cells. The 17-point
+   view includes advisory and boundary residuals, so do not summarize it as
+   the old 9-point figure or as all points within 5.2%.
 4. **Safe-deployment table.** Reviewer checks the C-PERSIST 7B/3B
    envelope table. Round-23 added the "after-ingest" framing;
    currently self-consistent.

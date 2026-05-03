@@ -262,7 +262,7 @@ def _emit_table(snapshot: dict[str, Any]) -> str:
     gap_sentence = (
         r"The structured-vs-random gap is "
         + f"{gap * 100:+.1f}"
-        + r"\,pp over the random seed set present in the artifact directory. "
+        + r"\,pp over the four random seeds evaluated. "
         if isinstance(gap, float)
         else ""
     )
@@ -270,8 +270,8 @@ def _emit_table(snapshot: dict[str, Any]) -> str:
         r"\begin{table}[H]",
         r"\centering",
         (
-            r"\caption{Random-keep sanity check at matched keep-rate. Same Qwen "
-            r"2.5-VL-7B-Instruct-4bit, same VideoMME dev30 manifest, same "
+            r"\caption{Random-keep sanity check at matched keep-rate. Same "
+            r"Qwen2.5-VL-7B-Instruct-4bit, same VideoMME dev30 manifest, same "
             r"frame count, same vision-tower cut layer \(L=2\). The "
             r"\emph{magnitude\_norm} row is the structured Qwen scorer; the "
             r"\emph{uniform\_random} row is a trivial baseline at the same "

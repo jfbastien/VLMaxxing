@@ -71,7 +71,8 @@ as native refresh gates, delta encoders, or cache-state-aware attention.
 The scale-out streaming lane is part of the same science story, but it has a
 different protocol. A checked 26B-class bundle sharpens the boundary rather
 than simply adding wins: the default cross-turn cache path is unsafe,
-topology-aware prefix-snapshot rows are positive at small \(N\), and
+topology-aware warm-prefix snapshot rows (saved post-ingest cache states used
+only for follow-up timing) are positive at small \(N\), and
 fixed-evidence streaming baselines show that low-FPS dense is a serious
 competitor. We keep this as candidate C-STREAM: boundary evidence and gates for
 future native-rate state reuse, not a multiplier to inherit. The same warning

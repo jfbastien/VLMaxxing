@@ -71,15 +71,16 @@ sparse-execution envelopes, not a license to multiply every component win.
 The routing audits explain why those numbers are not the whole story:
 local diagnostics suggest fresh-compute placement is not captured by novelty
 magnitude alone,
-aggregate accuracy can hide answer-identity drift, and semantic substitution is
-not itself a measured sparse backend.
+aggregate accuracy can hide answer-identity drift, and cached-feature
+substitution tests answer preservation rather than measured sparse execution.
 
 Streaming state reuse (candidate C-STREAM) is the native-rate version of the
 same question, but it is not yet a headline claim. A checked 26B-class
 scale-out evaluation makes the lane more concrete and more bounded:
 default mixed sliding-window/full-attention
-cache reuse fails a cross-turn correctness smoke, a topology-aware prefix
-snapshot gives positive small-\(N\) follow-up rows, fixed-evidence streaming
+cache reuse fails a cross-turn correctness smoke, a topology-aware warm-prefix
+snapshot (a saved post-ingest cache state used only for follow-up timing)
+gives positive small-\(N\) follow-up rows, fixed-evidence streaming
 baselines favor low-FPS dense over the tested event-window proxy, and the
 large exactness audit separates zero accuracy delta on 1,937 rows from
 byte-identical raw-paired text on 513 rows.

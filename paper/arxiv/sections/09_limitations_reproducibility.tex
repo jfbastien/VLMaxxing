@@ -7,7 +7,7 @@ cell: 32f short skips timed vision-tower work at 1.316$\times$ first-query
 speedup with no paired drift and no parse failures on 20 items. The broader
 Gemma sweep has matched parse-failure caveats, and Qwen supplies the boundary:
 its 8f keep-rate sweep follows the timing ceiling while failing fidelity, while
-\(kr=0.85\) at 16f recovers to within aggregate-accuracy, format, and ceiling
+\(kr_V=0.85\) at 16f recovers to within aggregate-accuracy, format, and ceiling
 gates at only 1.032$\times$. The claim is a measured sparse-vision envelope,
 not a universal sparse backend.
 
@@ -71,7 +71,7 @@ boundary: forcing follow-up V-pruning to be active collapses the speedup to
 1.06$\times$ and still lands on the same net aggregate loss as cache reuse,
 while any-paired-drift sets differ. A direct cache-distance probe adds tensor
 evidence: fp32 cosine shows no-prune reuse is dense-like
-(\(K/V\approx1.0\)), while the pruned path diverges (\(K=0.724\),
+(both key and value cosines are approximately 1.0), while the pruned path diverges (\(K=0.724\),
 \(V=0.296\)); the native fp16 cosine columns are a numerical-overflow caution
 on finite cache windows, not reported distances.
 
@@ -129,7 +129,7 @@ failure mode is not just stale pixels; it is incoherent internal state. Fresh
 and cached mixtures must preserve cache topology, positions, and layer
 semantics, or they can move fast while answering the wrong question. These
 experiments identify when reused state changes later answers and show that
-pruned K/V state can diverge strongly from dense. They do not yet provide a
+pruned key/value state can diverge strongly from dense. They do not yet provide a
 general cache-validity guard or a unique row-level causal predictor.
 
 Architecture exposure is another limitation and a design lesson. Qwen is the
@@ -171,6 +171,5 @@ envelope and cache topology. \\
 \end{tabularx}
 \end{table}
 
-The appendix records the artifact families, hardware, and repo commits behind
-the generated figures and tables. The paper builds locally with the checked-in
-\texttt{make paper-*} targets plus `tectonic` or a fuller TeX stack.
+The appendix records the evidence families, hardware, and repo commits behind
+the generated figures and tables.
