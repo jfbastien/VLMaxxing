@@ -2156,8 +2156,9 @@ def _write_headline_table(snapshot: dict) -> None:
         r"\scriptsize",
         r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         (
-            r"\begin{tabularx}{\linewidth}{@{}p{0.10\linewidth} Y "
-            r"p{0.135\linewidth} p{0.105\linewidth} Y "
+            r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.10\linewidth} Y "
+            r">{\raggedright\arraybackslash}p{0.135\linewidth} "
+            r">{\raggedright\arraybackslash}p{0.105\linewidth} Y "
             r">{\raggedright\arraybackslash}p{0.10\linewidth}@{}}"
         ),
         r"\toprule",
@@ -2518,7 +2519,8 @@ def _write_c_persist_many_turn_table() -> None:
         r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         (
             r"\begin{tabularx}{\linewidth}"
-            r"{@{}p{0.18\linewidth} r r p{0.135\linewidth} r Y@{}}"
+            r"{@{}>{\raggedright\arraybackslash}p{0.18\linewidth} r r "
+            r">{\raggedright\arraybackslash}p{0.135\linewidth} r Y@{}}"
         ),
         r"\toprule",
         (
@@ -2628,8 +2630,9 @@ def _write_dense_anchored_cpersist_table() -> None:
         r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         (
             r"\begin{tabularx}{\linewidth}"
-            r"{@{}p{0.14\linewidth} r r p{0.155\linewidth} "
-            r"p{0.18\linewidth} Y@{}}"
+            r"{@{}>{\raggedright\arraybackslash}p{0.14\linewidth} r r "
+            r">{\raggedright\arraybackslash}p{0.155\linewidth} "
+            r">{\raggedright\arraybackslash}p{0.18\linewidth} Y@{}}"
         ),
         r"\toprule",
         (

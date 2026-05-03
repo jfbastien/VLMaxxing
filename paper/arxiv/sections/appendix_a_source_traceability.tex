@@ -14,22 +14,32 @@ This appendix makes that distinction audit-friendly. The manifest maps each
 main quantitative asset to its artifact family and hardware. The provenance
 table records the source revisions used for the reported evidence artifacts.
 
-\begin{table}[H]
-\centering
-\caption{Claim/protocol/evidence manifest for the main quantitative assets.}
-\label{tab:claim-protocol-manifest}
-\tiny
-\setlength{\tabcolsep}{1.5pt}
-\renewcommand{\arraystretch}{\PaperTableStretch}
-\begin{tabularx}{0.99\linewidth}{@{}
-  >{\raggedright\arraybackslash}p{0.12\linewidth}
-  >{\raggedright\arraybackslash}X
+\begingroup
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\renewcommand{\arraystretch}{1.28}
+\begin{longtable}{@{}
   >{\raggedright\arraybackslash}p{0.14\linewidth}
+  >{\raggedright\arraybackslash}p{0.39\linewidth}
+  >{\raggedright\arraybackslash}p{0.17\linewidth}
   >{\raggedright\arraybackslash}p{0.25\linewidth}
 @{}}
+\caption{Claim/protocol/evidence manifest for the main quantitative assets.}
+\label{tab:claim-protocol-manifest}\\
 \toprule
 Asset & Claim / protocol & Evidence class & Source / hardware \\
 \midrule
+\endfirsthead
+\caption[]{Claim/protocol/evidence manifest for the main quantitative assets (continued).}\\
+\toprule
+Asset & Claim / protocol & Evidence class & Source / hardware \\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r}{Continued on next page} \\
+\endfoot
+\bottomrule
+\endlastfoot
 Headline table & regime headline cells; first-pass vision-pruning holdout, measured sparse-vision envelope, and after-ingest follow-up & local clean + local advisory & checked C-VISION holdout, measured sparse-vision, and C-PERSIST repair artifacts; Gemma/Qwen local stacks, MLX / M3 Air 16 GB \\
 C-CEILING figure & C-CEILING / C-VISION scatter-back validation; first-pass holdout, n=60 stacked-regime audit, matched cross-arch probe, and measured sparse-vision boundary & local clean + local advisory + local boundary & ceiling data JSON; local Gemma and Qwen stacks plus checked-in TOMATO rerun and measured sparse-vision artifacts \\
 Measured sparse-vision tables & real timed vision-tower work skipped under Gemma and Qwen & local bounded systems evidence & Gemma 8/16/32f scaling, Qwen 16f keep-rate sweep, and Qwen 8f boundary artifacts \\
@@ -51,9 +61,8 @@ Stability predictor scouts & dense margin and richer features are insufficient a
 Memory envelope & process working-set characterization across reported families & local reproducibility evidence & memory characterization artifacts; 78 cells across follow-up reuse, admission/composition, and measured sparse vision \\
 Method / limitations & codec-native planner bridge; semantic planner substitution & local semantic evidence & Codec-native planner-substitution artifacts; Qwen 7B-4bit, VideoMME dev/short slices; offline extraction, not latency \\
 Native-rate streaming bundle & 26B cache-correctness, prefix snapshot, fixed-evidence stream baselines, exactness export, and post-vision-tower hard-prune boundary & scale-out bounded / mixed & Checked M5 Max MacBook Pro 128\,GB scale-out bundle, r2 correctness guard, patched-library closure, and expanded 32f n=21 prefix snapshot; earlier throughput-only evidence is advisory because raw paired rows are outside the release evidence set \\
-\bottomrule
-\end{tabularx}
-\end{table}
+\end{longtable}
+\endgroup
 
 This appendix is the traceability manifest. The table above records the
 artifact families used by the paper; the generated repo-provenance table below
