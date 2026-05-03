@@ -35,11 +35,26 @@ class Theme:
 
 THEME = Theme()
 
+FIGURE_SANS_STACK = [
+    "Helvetica Neue",
+    "Helvetica",
+    "Arial",
+    "Liberation Sans",
+    "Nimbus Sans",
+]
+
 
 def setup_figure_style(hashsalt: str = "codec-through-fig1-v2") -> None:
+    """Use a Helvetica-compatible paper-figure font stack.
+
+    Prefer system Helvetica/Arial-style faces over Matplotlib's bundled default
+    while preserving editable SVG text and embedded TrueType PDF text.
+    """
+
     plt.rcParams.update(
         {
-            "font.family": "DejaVu Sans",
+            "font.family": "sans-serif",
+            "font.sans-serif": FIGURE_SANS_STACK,
             "figure.facecolor": "white",
             "axes.facecolor": "white",
             "pdf.fonttype": 42,

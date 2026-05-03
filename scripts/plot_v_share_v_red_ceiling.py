@@ -6,7 +6,7 @@ landed (V_share, V_red) regime cells against the ceiling curve.
 
 Emits:
 
-- ``paper/figures/v_share_v_red_ceiling.png`` — scatter of observed
+- ``paper/figures/v_share_v_red_ceiling.{pdf,svg,png}`` — scatter of observed
   regimes overlaid on the ceiling surface. Colour encodes error
   (observed − predicted, pp).
 - ``paper/figures/v_share_v_red_ceiling_data.json`` — per-cell numbers.
@@ -32,6 +32,14 @@ import numpy as np
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 FIGURES = REPO_ROOT / "paper" / "figures"
+PDF_METADATA = {"CreationDate": None, "ModDate": None}
+FIGURE_SANS_STACK = [
+    "Helvetica Neue",
+    "Helvetica",
+    "Arial",
+    "Liberation Sans",
+    "Nimbus Sans",
+]
 
 
 @dataclass(frozen=True)
@@ -197,6 +205,19 @@ COMPOSITION_CELLS = [
 
 
 def plot() -> None:
+    plt.rcParams.update(
+        {
+            "font.family": "sans-serif",
+            "font.sans-serif": FIGURE_SANS_STACK,
+            "figure.facecolor": "white",
+            "axes.facecolor": "white",
+            "savefig.facecolor": "white",
+            "pdf.fonttype": 42,
+            "ps.fonttype": 42,
+            "svg.fonttype": "none",
+        }
+    )
+
     all_cells = DEV_CELLS + HOLDOUT_CELLS + CROSS_ARCH_CELLS + SPARSE_CELLS + COMPOSITION_CELLS
 
     fig, ax = plt.subplots(figsize=(9.5, 6.2))
@@ -280,9 +301,15 @@ def plot() -> None:
     ax.legend(loc="lower right", fontsize=9)
 
     FIGURES.mkdir(parents=True, exist_ok=True)
+    out_pdf = FIGURES / "v_share_v_red_ceiling.pdf"
+    out_svg = FIGURES / "v_share_v_red_ceiling.svg"
     out_png = FIGURES / "v_share_v_red_ceiling.png"
     fig.tight_layout()
+    fig.savefig(out_pdf, bbox_inches="tight", metadata=PDF_METADATA)
+    fig.savefig(out_svg, bbox_inches="tight")
     fig.savefig(out_png, dpi=200, bbox_inches="tight")
+    print(f"Wrote {out_pdf}")
+    print(f"Wrote {out_svg}")
     print(f"Wrote {out_png}")
 
     summary = {

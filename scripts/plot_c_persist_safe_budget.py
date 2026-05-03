@@ -2,7 +2,7 @@
 
 Emits:
 
-- ``paper/figures/c_persist_safe_budget.png`` — two-panel figure. Left
+- ``paper/figures/c_persist_safe_budget.{pdf,svg,png}`` — two-panel figure. Left
   panel: Δacc vs frame-count for 7B and 3B Qwen 2.5-VL-4bit on the
   persistent-KV frame-scaling probe. Right panel: follow-up speedup
   (dense / session) vs frame-count for the same two architectures.
@@ -36,6 +36,14 @@ import matplotlib.pyplot as plt
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 FIGURES = REPO_ROOT / "paper" / "figures"
+PDF_METADATA = {"CreationDate": None, "ModDate": None}
+FIGURE_SANS_STACK = [
+    "Helvetica Neue",
+    "Helvetica",
+    "Arial",
+    "Liberation Sans",
+    "Nimbus Sans",
+]
 
 
 @dataclass(frozen=True)
@@ -130,6 +138,19 @@ def _xs(cells: list[PersistCell]) -> list[int]:
 
 
 def plot() -> None:
+    plt.rcParams.update(
+        {
+            "font.family": "sans-serif",
+            "font.sans-serif": FIGURE_SANS_STACK,
+            "figure.facecolor": "white",
+            "axes.facecolor": "white",
+            "savefig.facecolor": "white",
+            "pdf.fonttype": 42,
+            "ps.fonttype": 42,
+            "svg.fonttype": "none",
+        }
+    )
+
     fig, (ax_acc, ax_speed) = plt.subplots(1, 2, figsize=(13, 5.2))
 
     seven_xs = _xs(SEVEN_B)
@@ -205,8 +226,14 @@ def plot() -> None:
     fig.tight_layout()
 
     FIGURES.mkdir(parents=True, exist_ok=True)
+    out_pdf = FIGURES / "c_persist_safe_budget.pdf"
+    out_svg = FIGURES / "c_persist_safe_budget.svg"
     out_png = FIGURES / "c_persist_safe_budget.png"
+    fig.savefig(out_pdf, bbox_inches="tight", metadata=PDF_METADATA)
+    fig.savefig(out_svg, bbox_inches="tight")
     fig.savefig(out_png, dpi=200, bbox_inches="tight")
+    print(f"Wrote {out_pdf}")
+    print(f"Wrote {out_svg}")
     print(f"Wrote {out_png}")
 
     summary = {

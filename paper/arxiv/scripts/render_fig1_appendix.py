@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import sys
 from pathlib import Path
@@ -54,7 +55,7 @@ from PIL import Image  # noqa: E402
 
 GENERATED = MANUSCRIPT_ROOT / "generated"
 DEFAULT_CANDIDATES = GENERATED / "figures" / "fig1_candidates" / "ranked_candidates.json"
-DEFAULT_OUT = GENERATED / "figures" / "fig1_appendix"
+DEFAULT_OUT = GENERATED / "figures" / "fig1_appendix_broadened"
 HEADLINE_SNAPSHOT = GENERATED / "data" / "headline_snapshot.json"
 CEILING_DATA = GENERATED / "data" / "v_share_v_red_ceiling_data.json"
 
@@ -265,6 +266,24 @@ def transition_stats(transition: dict[str, Any]) -> tuple[float, float, float]:
     )
     stale = float(transition.get("stale_fraction_active", 0.0))
     return reuse, fresh, stale
+
+
+def budget_percent_pair(reuse: float) -> tuple[int, int]:
+    """Integer labels for figure cards; displayed reuse + fresh sums to 100."""
+
+    reuse_pct = int(math.floor(max(0.0, min(1.0, reuse)) * 100.0 + 0.5))
+    return reuse_pct, 100 - reuse_pct
+
+
+def class_composition_line(transition: dict[str, Any]) -> str:
+    static = len(transition.get("static_boxes", []))
+    shifted = len(transition.get("shifted_boxes", []))
+    fresh = len(transition.get("fresh_boxes", []))
+    total = max(1, static + shifted + fresh)
+    static_pct = int(math.floor(static / total * 100.0 + 0.5))
+    shifted_pct = int(math.floor(shifted / total * 100.0 + 0.5))
+    fresh_pct = max(0, 100 - static_pct - shifted_pct)
+    return f"static {static_pct}% + shifted {shifted_pct}% -> reused; fresh {fresh_pct}%"
 
 
 def average_reuse(candidate: dict[str, Any]) -> float:
@@ -538,6 +557,226 @@ def render_planner_examples_gallery(candidates: list[dict[str, Any]], out_dir: P
         color=THEME.muted,
     )
     save_figure(fig, out_dir, "planner_examples_gallery", dpi=260)
+
+
+def render_routing_budget_combined(candidates: list[dict[str, Any]], out_dir: Path) -> None:
+    """Publication appendix figure: one trace plus three real-window examples."""
+
+    fig, ax = new_canvas(
+        figsize=(7.45, 4.65),
+        hashsalt="codec-through-routing-budget-combined-v2",
+    )
+    label(ax, 0.040, 0.965, "Qwen routing-budget visualized", fs=12.0, weight="bold")
+    label(
+        ax,
+        0.040,
+        0.925,
+        (
+            "A fixed-backend routing example: block classes become a reused/fresh "
+            "visual budget, not a speedup claim."
+        ),
+        fs=6.1,
+        color=THEME.muted,
+    )
+
+    # Panel A: one transition trace.
+    trace = candidates[0]
+    frames = open_images(trace["assets"]["frames"])
+    transition = trace["assets"]["transitions"][0]
+    reuse, _, stale = transition_stats(transition)
+    reuse_pct, fresh_pct = budget_percent_pair(reuse)
+
+    label(
+        ax,
+        0.040,
+        0.855,
+        "A. One real transition: planner rule -> decision budget",
+        fs=8.0,
+        weight="bold",
+    )
+    y = 0.665
+    h = 0.104
+    w = 0.160
+    xs = [0.040, 0.250, 0.460]
+    for x, title in zip(xs, ["previous", "current", "classes"], strict=True):
+        label(ax, x, y + h + 0.024, title, fs=5.5, color=THEME.muted)
+    draw_raster_frame(ax, frames[0], xs[0], y, w, h, z=2)
+    arrow(ax, xs[0] + w + 0.011, y + h / 2, xs[1] - 0.012, y + h / 2, lw=0.85)
+    draw_raster_frame(ax, frames[1], xs[1], y, w, h, z=2)
+    arrow(ax, xs[1] + w + 0.011, y + h / 2, xs[2] - 0.012, y + h / 2, lw=0.85)
+    draw_class_overlay(ax, frames[1], xs[2], y, w, h, transition)
+    arrow(ax, xs[2] + w + 0.012, y + h / 2, 0.685, y + h / 2, lw=0.85)
+
+    card_x, card_y, card_w, card_h = 0.700, 0.642, 0.255, 0.150
+    rounded_panel(
+        ax,
+        card_x,
+        card_y,
+        card_w,
+        card_h,
+        face="#ffffff",
+        edge=THEME.faint,
+        lw=1.0,
+        radius=0.008,
+    )
+    label(
+        ax,
+        card_x + 0.018,
+        card_y + card_h - 0.034,
+        f"{reuse_pct}% reused",
+        fs=9.6,
+        color=THEME.cache,
+        weight="bold",
+    )
+    label(
+        ax,
+        card_x + 0.018,
+        card_y + card_h - 0.069,
+        f"{fresh_pct}% fresh",
+        fs=8.6,
+        color=THEME.fresh,
+        weight="bold",
+    )
+    label(
+        ax,
+        card_x + 0.018,
+        card_y + card_h - 0.098,
+        f"age-expired: {int(round(stale * 100))}%",
+        fs=5.5,
+        color=THEME.muted,
+    )
+    reuse_bar(ax, card_x + 0.018, card_y + 0.024, card_w - 0.036, 0.012, reuse)
+
+    label(
+        ax,
+        0.040,
+        0.617,
+        class_composition_line(transition),
+        fs=5.8,
+        color=THEME.ink,
+        weight="bold",
+    )
+    label(
+        ax,
+        0.040,
+        0.586,
+        "Rule: reused = static + shifted while age < 4; fresh = novel + age-expired.",
+        fs=5.8,
+        color=THEME.ink,
+    )
+    legend_swatch(ax, 0.040, 0.552, "static / shifted reused", THEME.cache)
+    legend_swatch(ax, 0.255, 0.552, "fresh bought", THEME.fresh)
+    label(
+        ax,
+        0.520,
+        0.552,
+        "Block classes are freshness evidence; object relevance is still decided "
+        "by the model/task.",
+        fs=5.15,
+        color=THEME.muted,
+    )
+
+    # Panel B: examples gallery.
+    label(ax, 0.040, 0.493, "B. Same policy on three real windows", fs=8.0, weight="bold")
+    label(
+        ax,
+        0.040,
+        0.465,
+        (
+            "Selected real windows rendered with the same routing policy; budgets are "
+            "visualization summaries, not speedup claims."
+        ),
+        fs=5.8,
+        color=THEME.muted,
+    )
+    label(ax, 0.285, 0.430, "previous", fs=5.2, color=THEME.muted)
+    label(ax, 0.445, 0.430, "classes", fs=5.2, color=THEME.muted)
+    label(ax, 0.695, 0.430, "window budget", fs=5.2, color=THEME.muted)
+
+    row_ys = [0.328, 0.198, 0.068]
+    roles = ["high-reuse routing example", "VideoMME visual anchor", "lower-reuse boundary"]
+    for row_idx, (candidate, row_y) in enumerate(zip(candidates, row_ys, strict=True)):
+        frames = open_images(candidate["assets"]["frames"])
+        transitions = candidate["assets"]["transitions"]
+        fresh_idx = most_fresh_transition_index(candidate)
+        avg_reuse = average_reuse(candidate)
+        avg_reuse_pct, avg_fresh_pct = budget_percent_pair(avg_reuse)
+        shown_reuse, _, shown_stale = transition_stats(transitions[fresh_idx])
+        shown_reuse_pct, shown_fresh_pct = budget_percent_pair(shown_reuse)
+
+        label(ax, 0.040, row_y + 0.071, candidate_heading(candidate), fs=7.0, weight="bold")
+        label(ax, 0.040, row_y + 0.044, roles[row_idx], fs=5.2, color=THEME.muted)
+        label(
+            ax,
+            0.040,
+            row_y + 0.021,
+            f"{candidate['start_s']:.2f}-{candidate['end_s']:.2f}s",
+            fs=5.0,
+            color=THEME.muted,
+        )
+
+        draw_raster_frame(ax, frames[fresh_idx], 0.285, row_y + 0.010, 0.120, 0.064, z=2)
+        arrow(ax, 0.410, row_y + 0.042, 0.435, row_y + 0.042, lw=0.75)
+        draw_class_overlay(
+            ax,
+            frames[fresh_idx + 1],
+            0.445,
+            row_y + 0.010,
+            0.120,
+            0.064,
+            transitions[fresh_idx],
+        )
+
+        card_x, card_y, card_w, card_h = 0.675, row_y, 0.280, 0.096
+        rounded_panel(
+            ax,
+            card_x,
+            card_y,
+            card_w,
+            card_h,
+            face="#ffffff",
+            edge=THEME.faint,
+            lw=0.85,
+            radius=0.007,
+        )
+        label(
+            ax,
+            card_x + 0.020,
+            card_y + card_h - 0.025,
+            f"{avg_reuse_pct}% reused",
+            fs=7.1,
+            color=THEME.cache,
+            weight="bold",
+        )
+        label(
+            ax,
+            card_x + card_w - 0.020,
+            card_y + card_h - 0.025,
+            f"{avg_fresh_pct}% fresh",
+            fs=7.1,
+            color=THEME.fresh,
+            weight="bold",
+            ha="right",
+        )
+        reuse_bar(ax, card_x + 0.020, card_y + 0.042, card_w - 0.040, 0.011, avg_reuse)
+        label(
+            ax,
+            card_x + 0.020,
+            card_y + 0.026,
+            f"shown: {shown_reuse_pct}% reused / {shown_fresh_pct}% fresh",
+            fs=4.8,
+            color=THEME.muted,
+        )
+        label(
+            ax,
+            card_x + 0.020,
+            card_y + 0.011,
+            f"age-expired {int(round(shown_stale * 100))}%",
+            fs=4.8,
+            color=THEME.muted,
+        )
+
+    save_figure(fig, out_dir, "qwen_routing_budget_visualized", dpi=260)
 
 
 def render_algorithm_comparison(candidate: dict[str, Any], out_dir: Path) -> None:
@@ -921,6 +1160,16 @@ def main() -> int:
         default=GENERATED / "figures" / "fig1_candidates" / "planner_selected_candidates.json",
     )
     parser.add_argument("--render-legacy-comparison", action="store_true")
+    parser.add_argument(
+        "--render-regime-matrix",
+        action="store_true",
+        help="Also render the review-only support matrix. Requires generated data snapshots.",
+    )
+    parser.add_argument(
+        "--render-split-planner-figures",
+        action="store_true",
+        help="Also render the older separate trace/gallery figures for review.",
+    )
     args = parser.parse_args()
 
     out_dir = args.out_dir
@@ -933,10 +1182,11 @@ def main() -> int:
         "267_000p00_001p00_1fbfd15b",
     ]
     gallery_candidates = [require_candidate(pool, candidate_id) for candidate_id in gallery_ids]
-    values = headline_values()
 
-    render_planner_trace(trace_candidate, out_dir)
-    render_planner_examples_gallery(gallery_candidates, out_dir)
+    render_routing_budget_combined(gallery_candidates, out_dir)
+    if args.render_split_planner_figures:
+        render_planner_trace(trace_candidate, out_dir)
+        render_planner_examples_gallery(gallery_candidates, out_dir)
     write_selected_manifest([trace_candidate, *gallery_candidates], policy, args.selected_manifest)
 
     if args.render_legacy_comparison:
@@ -944,7 +1194,9 @@ def main() -> int:
         candidates = load_candidates(args.candidate_manifest, args.top_k, candidate_ids)
         for candidate in candidates:
             render_algorithm_comparison(candidate, out_dir)
-    render_regime_matrix(values, out_dir)
+    if args.render_regime_matrix:
+        values = headline_values()
+        render_regime_matrix(values, out_dir)
     print(f"rendered appendix/support figures to {safe_rel(out_dir)}")
     return 0
 

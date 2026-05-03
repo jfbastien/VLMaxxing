@@ -39,6 +39,35 @@ SOURCE_KEYS = {
     "summary_source",
 }
 ALLOWED_SOURCE_ROOTS = ("docs/", "paper/", "research/", "scripts/", "src/", "tests/")
+FIGURE_SANS_STACK = [
+    "Helvetica Neue",
+    "Helvetica",
+    "Arial",
+    "Liberation Sans",
+    "Nimbus Sans",
+]
+
+
+def _paper_figure_rc(hashsalt: str | None = None) -> dict[str, object]:
+    """Matplotlib rcParams for manuscript figures.
+
+    Use a Helvetica-compatible sans stack instead of Matplotlib's bundled
+    default face, while preserving editable text in SVG/PDF.
+    """
+
+    rc: dict[str, object] = {
+        "font.family": "sans-serif",
+        "font.sans-serif": FIGURE_SANS_STACK,
+        "figure.facecolor": "white",
+        "axes.facecolor": "white",
+        "savefig.facecolor": "white",
+        "pdf.fonttype": 42,
+        "ps.fonttype": 42,
+        "svg.fonttype": "none",
+    }
+    if hashsalt is not None:
+        rc["svg.hashsalt"] = hashsalt
+    return rc
 
 
 def _run(cmd: list[str], cwd: Path | None = None) -> str:
@@ -160,9 +189,10 @@ def _sync_curated_paper_figures() -> None:
         "anti_recomputation_overview",
     ]
     for stem in figure_stems:
-        source_png = REPO_ROOT / "paper" / "figures" / f"{stem}.png"
-        if source_png.exists():
-            (GENERATED / "figures" / source_png.name).write_bytes(source_png.read_bytes())
+        for suffix in ("pdf", "svg", "png"):
+            source_figure = REPO_ROOT / "paper" / "figures" / f"{stem}.{suffix}"
+            if source_figure.exists():
+                (GENERATED / "figures" / source_figure.name).write_bytes(source_figure.read_bytes())
         source_json = REPO_ROOT / "paper" / "figures" / f"{stem}_data.json"
         if source_json.exists():
             payload = _load_json(source_json)
@@ -237,17 +267,7 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
     measured = snapshot["measured_sparse_execution"]
     gemma_short = measured["gemma_32f_short"]
 
-    plt.rcParams.update(
-        {
-            "font.family": "DejaVu Sans",
-            "figure.facecolor": "white",
-            "axes.facecolor": "white",
-            "pdf.fonttype": 42,
-            "ps.fonttype": 42,
-            "svg.fonttype": "none",
-            "svg.hashsalt": "codec-through-regime-overview",
-        }
-    )
+    plt.rcParams.update(_paper_figure_rc("codec-through-regime-overview"))
     fig, ax = plt.subplots(figsize=(7.45, 4.7))
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
@@ -456,7 +476,7 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
         p[3] * 0.13,
         face="#f8fafc",
         edge="#111827",
-        text="▶",
+        text=">",
         size=8.0,
         lw=0.7,
     )
@@ -861,13 +881,7 @@ def _render_c_persist_timeline_figure() -> None:
     speedup = paired["median_fixed_over_adaptive_speedup"]
     token_reduction = paired["median_tail_token_reduction"] * 100.0
 
-    plt.rcParams.update(
-        {
-            "font.family": "DejaVu Sans",
-            "figure.facecolor": "white",
-            "axes.facecolor": "white",
-        }
-    )
+    plt.rcParams.update(_paper_figure_rc("codec-through-c-persist-timeline"))
     fig, ax = plt.subplots(figsize=(7.4, 3.2))
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
@@ -1202,14 +1216,12 @@ def _lane_a_snapshot() -> dict:
 def _render_lane_a_figure(snapshot: dict) -> None:
     plt.rcParams.update(
         {
+            **_paper_figure_rc(),
             "font.size": 11,
             "axes.titlesize": 12,
             "axes.labelsize": 11,
             "axes.spines.top": False,
             "axes.spines.right": False,
-            "figure.facecolor": "white",
-            "axes.facecolor": "white",
-            "savefig.facecolor": "white",
         }
     )
 
@@ -1990,13 +2002,11 @@ def _headline_snapshot() -> dict[str, object]:
 def _render_headline_figure(snapshot: dict) -> None:
     plt.rcParams.update(
         {
+            **_paper_figure_rc(),
             "font.size": 10.5,
             "axes.titlesize": 12,
             "axes.labelsize": 10.5,
             "axes.spines.top": False,
-            "figure.facecolor": "white",
-            "axes.facecolor": "white",
-            "savefig.facecolor": "white",
         }
     )
 
