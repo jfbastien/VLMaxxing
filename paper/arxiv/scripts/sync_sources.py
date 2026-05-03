@@ -1778,7 +1778,7 @@ def _write_paired_drift_table(snapshot: dict) -> None:
         r"\label{tab:paired-drift}",
         r"\small",
         r"\renewcommand{\arraystretch}{\PaperTableStretch}",
-        r"\begin{tabularx}{\linewidth}{@{}X r r r X@{}}",
+        r"\begin{tabularx}{\linewidth}{@{}Y r r r Y@{}}",
         r"\toprule",
         r"Source & \(N\) & Choice drift & Correctness drift & Mechanism signal \\",
         r"\midrule",
@@ -1829,7 +1829,7 @@ def _write_c_persist_repair_table(snapshot: dict) -> None:
         r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         (
             r"\begin{tabularx}{\linewidth}"
-            r"{@{}l X >{\raggedright\arraybackslash}p{0.22\linewidth} X@{}}"
+            r"{@{}l Y >{\raggedright\arraybackslash}p{0.22\linewidth} Y@{}}"
         ),
         r"\toprule",
         (r"Policy & Scope & Follow-up median / cold gain & Validation signal \\"),
@@ -2155,9 +2155,9 @@ def _write_headline_table(snapshot: dict) -> None:
         r"\scriptsize",
         r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         (
-            r"\begin{tabularx}{\linewidth}{@{}p{0.10\linewidth} X "
-            r"p{0.135\linewidth} p{0.105\linewidth} X "
-            r"p{0.10\linewidth}@{}}"
+            r"\begin{tabularx}{\linewidth}{@{}p{0.10\linewidth} Y "
+            r"p{0.135\linewidth} p{0.105\linewidth} Y "
+            r">{\raggedright\arraybackslash}p{0.10\linewidth}@{}}"
         ),
         r"\toprule",
         r"Regime & Setting & Speedup denominator & Gain & Validation / notes & Evidence \\",
@@ -2182,7 +2182,9 @@ def _write_headline_table(snapshot: dict) -> None:
             "cold/repaired follow-up median & "
             f"{adaptive_repair['speedup_min']:.2f}--"
             f"{adaptive_repair['speedup_max']:.2f}$\\times$ & "
-            f"choice/correct diffs {adaptive_repair['paired_choice_diffs']}/"
+            f"choice {adaptive_repair['paired_choice_diffs']}/"
+            f"{adaptive_repair['n_pairs']}; correct "
+            f"{adaptive_repair['paired_correctness_diffs']}/"
             f"{adaptive_repair['n_pairs']}; cold-all-query ratio "
             f"{adaptive_repair['all_query_speedup_min']:.2f}--"
             f"{adaptive_repair['all_query_speedup_max']:.2f}$\\times$ & "
@@ -2193,7 +2195,9 @@ def _write_headline_table(snapshot: dict) -> None:
             "cold/repaired follow-up & "
             f"{fixed_repair['speedup_min']:.2f}--"
             f"{fixed_repair['speedup_max']:.2f}$\\times$ & "
-            f"choice/correct diffs {fixed_repair['paired_choice_diffs']}/"
+            f"choice {fixed_repair['paired_choice_diffs']}/"
+            f"{fixed_repair['n_pairs']}; correct "
+            f"{fixed_repair['paired_correctness_diffs']}/"
             f"{fixed_repair['n_pairs']}; pathological follow-ups "
             f"{fixed_repair['pathological_follow_up_hits']}/"
             f"{fixed_repair['n_follow_up_pairs']} & local repair breadth \\\\"
@@ -2210,7 +2214,7 @@ def _write_headline_table(snapshot: dict) -> None:
             f"{gemma_sparse_short['observed_e2e']:.3f}$\\times$ & "
             f"choice agreement {gemma_sparse_short['choice_agreement'] * 100:.0f}\\%; "
             f"$\\Delta$acc {gemma_sparse_short['accuracy_delta']:+.3f}; "
-            "dense/sparse parse failures 0/0 & clean sparse-execution cell \\\\"
+            "dense parse 0; sparse parse 0 & clean sparse-execution cell \\\\"
         ),
         (
             "First-pass & Gemma MVBench 8f holdout & "
@@ -2252,16 +2256,29 @@ def _write_measured_sparse_execution_tables(snapshot: dict) -> None:
         r"\label{tab:gemma-measured-sparse-vision}",
         r"\scriptsize",
         r"\renewcommand{\arraystretch}{\PaperTableStretch}",
-        r"\begin{tabularx}{\linewidth}{@{}l r r r r r r r X@{}}",
+        (
+            r"\begin{tabularx}{\linewidth}"
+            r"{@{}l r r r >{\centering\arraybackslash}p{0.095\linewidth} "
+            r"r r r Y@{}}"
+        ),
         r"\toprule",
         (
-            r"Frames / slice & \(n\) & \(\Delta\)acc & Agree & Dense/sparse parse fails & "
+            r"Frames / slice & \(n\) & \(\Delta\)acc & Agree & "
+            r"\PaperStackHead{Parse}{fails} & "
             r"\(V_{\mathrm{red}}\) & Observed & Residual & Ceiling / format verdict \\"
         ),
         r"\midrule",
     ]
     for row in measured["gemma_rows"]:
-        parse = f"{row['dense_parse_failures']}/{row['sparse_parse_failures']}"
+        parse = (
+            r"\PaperStack{"
+            "dense "
+            f"{row['dense_parse_failures']}"
+            r"}{"
+            "sparse "
+            f"{row['sparse_parse_failures']}"
+            r"}"
+        )
         if row["pass_ceiling"] and row["pass_format"]:
             interp = "ceiling + format pass"
         elif row["pass_ceiling"]:
@@ -2283,7 +2300,13 @@ def _write_measured_sparse_execution_tables(snapshot: dict) -> None:
         f"32f short & {short['n']} & "
         f"{short['accuracy_delta']:+.3f} & "
         f"{short['choice_agreement'] * 100:.0f}\\% & "
-        f"{short['dense_parse_failures']}/{short['sparse_parse_failures']} & "
+        r"\PaperStack{"
+        "dense "
+        f"{short['dense_parse_failures']}"
+        r"}{"
+        "sparse "
+        f"{short['sparse_parse_failures']}"
+        r"} & "
         f"{short['vision_reduction'] * 100:.1f}\\% & "
         f"{short['observed_e2e']:.3f}$\\times$ & "
         f"{short['residual']:+.3f} & clean sparse-execution operating point \\\\"
@@ -2305,7 +2328,7 @@ def _write_measured_sparse_execution_tables(snapshot: dict) -> None:
         r"\label{tab:qwen-measured-sparse-vision}",
         r"\scriptsize",
         r"\renewcommand{\arraystretch}{\PaperTableStretch}",
-        r"\begin{tabularx}{\linewidth}{@{}l r r r r r r r X@{}}",
+        r"\begin{tabularx}{\linewidth}{@{}l r r r r r r r Y@{}}",
         r"\toprule",
         (
             r"Setting & \(n\) & \(\Delta\)acc & Agree & Parse fails & "
@@ -2348,11 +2371,11 @@ def _write_c_persist_sampler_table() -> None:
         r"\label{tab:c-persist-sampler-stability}",
         r"\small",
         r"\renewcommand{\arraystretch}{\PaperTableStretch}",
-        r"\begin{tabular}{@{}r r r r r r@{}}",
+        r"\begin{tabular}{@{}r r r r r r r@{}}",
         r"\toprule",
         (
             r"\(T\) & Baseline & Session & \(\Delta\)acc & "
-            r"Choice diffs / correct diffs & Speedup \\"
+            r"Choice diffs & Correct diffs & Speedup \\"
         ),
         r"\midrule",
     ]
@@ -2362,7 +2385,8 @@ def _write_c_persist_sampler_table() -> None:
             f"{row['baseline_n_correct']}/{row['n_pairs']} & "
             f"{row['session_n_correct']}/{row['n_pairs']} & "
             f"{row['accuracy_delta_session_minus_baseline']:+.3f} & "
-            f"{row['paired_choice_diffs']} / {row['paired_correctness_diffs']} & "
+            f"{row['paired_choice_diffs']} & "
+            f"{row['paired_correctness_diffs']} & "
             f"{row['speedup_all_query_median_cold_over_session_follow_up']:.2f}"
             r"$\times$ \\"
         )
@@ -2493,11 +2517,11 @@ def _write_c_persist_many_turn_table() -> None:
         r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         (
             r"\begin{tabularx}{\linewidth}"
-            r"{@{}p{0.18\linewidth} r r r r X@{}}"
+            r"{@{}p{0.18\linewidth} r r p{0.135\linewidth} r Y@{}}"
         ),
         r"\toprule",
         (
-            r"Policy & Horizon & Follow-ups & Choice/correct drift & "
+            r"Policy & Horizon & Follow-ups & \PaperStackHead{Choice drift}{Correct drift} & "
             r"Median follow-up & Gate / post-repair check \\"
         ),
         r"\midrule",
@@ -2505,8 +2529,8 @@ def _write_c_persist_many_turn_table() -> None:
     for row in snapshot["rows"]:
         if row["post_repair_n"]:
             interpretation = (
-                f"post-repair choice/correct "
-                f"{row['post_repair_choice_drift']}/{row['post_repair_n']} / "
+                f"post-repair choice {row['post_repair_choice_drift']}/"
+                f"{row['post_repair_n']}; correct "
                 f"{row['post_repair_correctness_drift']}/{row['post_repair_n']}; "
                 "no cliff"
             )
@@ -2518,8 +2542,11 @@ def _write_c_persist_many_turn_table() -> None:
             interpretation = "passes 3\\% gate with no observed drift"
         lines.append(
             f"{row['label']} & {row['horizon']} & {row['followup_n']} & "
-            f"{row['choice_drift']}/{row['followup_n']} / "
-            f"{row['correctness_drift']}/{row['followup_n']} & "
+            r"\PaperStack{"
+            f"{row['choice_drift']}/{row['followup_n']}"
+            r"}{"
+            f"{row['correctness_drift']}/{row['followup_n']}"
+            r"} & "
             f"{row['median_followup_s']:.3f}\\,s & {interpretation} \\\\"
         )
     lines.extend([r"\bottomrule", r"\end{tabularx}", r"\end{table}"])
@@ -2600,13 +2627,13 @@ def _write_dense_anchored_cpersist_table() -> None:
         r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         (
             r"\begin{tabularx}{\linewidth}"
-            r"{@{}p{0.14\linewidth} r r p{0.19\linewidth} "
-            r"p{0.18\linewidth} X@{}}"
+            r"{@{}p{0.14\linewidth} r r p{0.155\linewidth} "
+            r"p{0.18\linewidth} Y@{}}"
         ),
         r"\toprule",
         (
-            r"Policy & Horizon & Follow-ups & Choice/correct drift & "
-            r"Median follow-up / speedup & Interpretation \\"
+            r"Policy & Horizon & Follow-ups & \PaperStackHead{Choice drift}{Correct drift} & "
+            r"\PaperStackHead{Median follow-up}{speedup} & Interpretation \\"
         ),
         r"\midrule",
     ]
@@ -2621,9 +2648,12 @@ def _write_dense_anchored_cpersist_table() -> None:
             )
         lines.append(
             f"{row['label']} & {row['horizon']} & {row['followup_n']} & "
-            f"choice {row['choice_drift']}/{row['followup_n']}; "
-            f"correct {row['correctness_drift']}/{row['followup_n']} "
-            f"({row['choice_drift_rate'] * 100:.2f}\\%) & "
+            r"\PaperStack{"
+            f"{row['choice_drift']}/{row['followup_n']}"
+            r"}{"
+            f"{row['correctness_drift']}/{row['followup_n']} "
+            f"({row['choice_drift_rate'] * 100:.2f}\\%)"
+            r"} & "
             f"{row['median_followup_s']:.3f}\\,s "
             f"($\\sim${row['speedup_vs_80s_dense']:.1f}$\\times$) & "
             f"{interp} \\\\"
@@ -2659,7 +2689,7 @@ def _write_memory_characterization_table() -> None:
         r"\label{tab:memory-characterization}",
         r"\small",
         r"\renewcommand{\arraystretch}{\PaperTableStretch}",
-        r"\begin{tabularx}{\linewidth}{@{}X r r r X@{}}",
+        r"\begin{tabularx}{\linewidth}{@{}Y r r r Y@{}}",
         r"\toprule",
         r"Family & Cells & Max peak & Cells \(>10\)GB & Paper meaning \\",
         r"\midrule",
@@ -2975,7 +3005,11 @@ def _write_scaleout_bundle_table() -> None:
         r"\label{tab:scaleout-bundle}",
         r"\scriptsize",
         r"\renewcommand{\arraystretch}{\PaperTableStretch}",
-        r"\begin{tabularx}{\linewidth}{@{}p{0.22\linewidth} X p{0.25\linewidth}@{}}",
+        (
+            r"\begin{tabularx}{\linewidth}"
+            r"{@{}>{\raggedright\arraybackslash}p{0.22\linewidth} "
+            r"Y >{\raggedright\arraybackslash}p{0.25\linewidth}@{}}"
+        ),
         r"\toprule",
         r"Probe & Result & Claim status \\",
         r"\midrule",
@@ -3008,33 +3042,36 @@ def _write_scaleout_bundle_table() -> None:
             "full-regression correctness closure; speed path remains open \\\\"
         ),
         (
-            "26B prefix snapshot & "
-            f"8f after warm: {prefix8['median_speedup']:.2f}$\\times$, "
-            f"MC prompts {prefix8['mc_prompt_rows']} "
-            f"({prefix8['choice_diffs']}/{prefix8['mc_parse_clean_rows']} "
-            f"choice, {prefix8['correctness_diffs']}/{prefix8['mc_parse_clean_rows']} "
-            f"correct over parse-clean rows; {prefix8['mc_parse_failures']} matched "
-            "parse failures), "
-            f"{prefix8['open_ended_rows']} open-ended text-comparison rows, text diffs "
-            f"{prefix8['text_diffs']}/{prefix8['n']}, "
+            "26B prefix snapshot (8f) & "
+            f"after warm {prefix8['median_speedup']:.2f}$\\times$; "
+            f"MC prompts {prefix8['mc_prompt_rows']}; parse-clean MC "
+            f"choice {prefix8['choice_diffs']}/{prefix8['mc_parse_clean_rows']}, "
+            f"correct {prefix8['correctness_diffs']}/{prefix8['mc_parse_clean_rows']}; "
+            f"{prefix8['mc_parse_failures']} matched parse failures; "
+            f"{prefix8['open_ended_rows']} open-ended text-comparison rows; "
+            f"text diffs {prefix8['text_diffs']}/{prefix8['n']}; "
             f"{prefix8['prefix_snapshot_fps_median']:.2f} fps median "
             f"({prefix8['prefix_snapshot_rows_ge_30fps']}/{prefix8['n']} rows "
-            ">=30 fps); "
-            f"32f after warm: {prefix32['median_speedup']:.2f}$\\times$, "
-            f"MC prompts {prefix32['mc_prompt_rows']} "
-            f"({prefix32['choice_diffs']}/{prefix32['mc_parse_clean_rows']} "
-            f"choice, {prefix32['correctness_diffs']}/{prefix32['mc_parse_clean_rows']} "
-            "correct), "
-            f"{prefix32['open_ended_rows']} open-ended text-comparison rows, text diffs "
-            f"{prefix32['text_diffs']}/{prefix32['n']}, parse "
-            f"{prefix32['parse_failures']}/{prefix32['n']}, "
+            ">=30 fps) & "
+            "positive warm-prefix snapshot; excludes warm setup; "
+            "wrapper-specific and not byte-identical \\\\"
+        ),
+        (
+            "26B prefix snapshot (32f) & "
+            f"after warm {prefix32['median_speedup']:.2f}$\\times$; "
+            f"MC prompts {prefix32['mc_prompt_rows']}; "
+            f"choice {prefix32['choice_diffs']}/{prefix32['mc_parse_clean_rows']}, "
+            f"correct {prefix32['correctness_diffs']}/{prefix32['mc_parse_clean_rows']}; "
+            f"{prefix32['open_ended_rows']} open-ended text-comparison rows; "
+            f"text diffs {prefix32['text_diffs']}/{prefix32['n']}; "
+            f"parse {prefix32['parse_failures']}/{prefix32['n']}; "
             f"{prefix32['prefix_snapshot_fps_median']:.2f} fps median "
             f"({prefix32['prefix_snapshot_rows_ge_30fps']}/{prefix32['n']} rows "
             ">=30 fps; "
             f"{prefix32['prefix_snapshot_fps_min']:.2f}--"
             f"{prefix32['prefix_snapshot_fps_max']:.2f} fps) & "
-            "positive warm-prefix snapshot evidence; excludes warm setup; "
-            "wrapper-specific and not byte-identical; C-STREAM closure remains open \\\\"
+            "positive warm-prefix snapshot; excludes warm setup; "
+            "wrapper-specific and not byte-identical \\\\"
         ),
         (
             "Fixed-evidence stream baselines & "

@@ -4,14 +4,14 @@
 \label{tab:gemma-measured-sparse-vision}
 \scriptsize
 \renewcommand{\arraystretch}{\PaperTableStretch}
-\begin{tabularx}{\linewidth}{@{}l r r r r r r r X@{}}
+\begin{tabularx}{\linewidth}{@{}l r r r >{\centering\arraybackslash}p{0.095\linewidth} r r r Y@{}}
 \toprule
-Frames / slice & \(n\) & \(\Delta\)acc & Agree & Dense/sparse parse fails & \(V_{\mathrm{red}}\) & Observed & Residual & Ceiling / format verdict \\
+Frames / slice & \(n\) & \(\Delta\)acc & Agree & \PaperStackHead{Parse}{fails} & \(V_{\mathrm{red}}\) & Observed & Residual & Ceiling / format verdict \\
 \midrule
-8f & 60 & +0.000 & 100\% & 11/11 & 48.2\% & 1.102$\times$ & +0.062 & ceiling miss; format not clean (matched parse failures) \\
-16f & 60 & +0.000 & 100\% & 3/3 & 40.6\% & 1.035$\times$ & -0.032 & ceiling pass; format not clean (matched parse failures) \\
-32f & 60 & +0.000 & 100\% & 4/4 & 43.3\% & 1.126$\times$ & +0.009 & ceiling pass; format not clean (matched parse failures) \\
-32f short & 20 & +0.000 & 100\% & 0/0 & 42.2\% & 1.316$\times$ & -0.012 & clean sparse-execution operating point \\
+8f & 60 & +0.000 & 100\% & \PaperStack{dense 11}{sparse 11} & 48.2\% & 1.102$\times$ & +0.062 & ceiling miss; format not clean (matched parse failures) \\
+16f & 60 & +0.000 & 100\% & \PaperStack{dense 3}{sparse 3} & 40.6\% & 1.035$\times$ & -0.032 & ceiling pass; format not clean (matched parse failures) \\
+32f & 60 & +0.000 & 100\% & \PaperStack{dense 4}{sparse 4} & 43.3\% & 1.126$\times$ & +0.009 & ceiling pass; format not clean (matched parse failures) \\
+32f short & 20 & +0.000 & 100\% & \PaperStack{dense 0}{sparse 0} & 42.2\% & 1.316$\times$ & -0.012 & clean sparse-execution operating point \\
 \bottomrule
 \end{tabularx}
 \end{table}

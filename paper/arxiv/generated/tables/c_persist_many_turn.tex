@@ -4,13 +4,13 @@
 \label{tab:c-persist-many-turn}
 \scriptsize
 \renewcommand{\arraystretch}{\PaperTableStretch}
-\begin{tabularx}{\linewidth}{@{}p{0.18\linewidth} r r r r X@{}}
+\begin{tabularx}{\linewidth}{@{}p{0.18\linewidth} r r p{0.135\linewidth} r Y@{}}
 \toprule
-Policy & Horizon & Follow-ups & Choice/correct drift & Median follow-up & Gate / post-repair check \\
+Policy & Horizon & Follow-ups & \PaperStackHead{Choice drift}{Correct drift} & Median follow-up & Gate / post-repair check \\
 \midrule
-fixed \(K=1\) & 50 & 343 & 3/343 / 2/343 & 7.362\,s & passes 3\% gate but has nonzero repeated-question drift; no pathologies \\
-adaptive repair & 50 & 343 & 0/343 / 0/343 & 0.771\,s & post-repair choice/correct 0/336 / 0/336; no cliff \\
-scheduled refresh-10 & 50 & 343 & 0/343 / 0/343 & 0.706\,s & post-repair choice/correct 0/308 / 0/308; no cliff \\
+fixed \(K=1\) & 50 & 343 & \PaperStack{3/343}{2/343} & 7.362\,s & passes 3\% gate but has nonzero repeated-question drift; no pathologies \\
+adaptive repair & 50 & 343 & \PaperStack{0/343}{0/343} & 0.771\,s & post-repair choice 0/336; correct 0/336; no cliff \\
+scheduled refresh-10 & 50 & 343 & \PaperStack{0/343}{0/343} & 0.706\,s & post-repair choice 0/308; correct 0/308; no cliff \\
 \bottomrule
 \end{tabularx}
 \end{table}
