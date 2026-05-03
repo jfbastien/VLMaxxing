@@ -1830,7 +1830,8 @@ def _write_c_persist_repair_table(snapshot: dict) -> None:
         r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         (
             r"\begin{tabularx}{\linewidth}"
-            r"{@{}l Y >{\raggedright\arraybackslash}p{0.22\linewidth} Y@{}}"
+            r"{@{}>{\raggedright\arraybackslash}p{0.18\linewidth} Y "
+            r">{\raggedright\arraybackslash}p{0.22\linewidth} Y@{}}"
         ),
         r"\toprule",
         (r"Policy & Scope & Follow-up median / cold gain & Validation signal \\"),
