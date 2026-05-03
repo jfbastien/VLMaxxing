@@ -348,7 +348,7 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
         )
 
     fig.suptitle(
-        "Stop recomputing unchanged video state",
+        "Video is mostly the same. Stop paying twice.",
         fontsize=13.2,
         weight="bold",
         y=0.975,
@@ -511,12 +511,12 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
     p = panel_rect(4, "C-PERSIST", "#166534")
     for i, (q, text, face, edge) in enumerate(
         [
-            ("Q1", "full", "#fee2e2", "#b91c1c"),
-            ("Q2", "repair", "#dcfce7", "#166534"),
-            ("Q3", "reuse", "#dcfce7", "#166534"),
+            ("Q1", "pay once", "#fee2e2", "#b91c1c"),
+            ("Q2", "repair tail", "#dcfce7", "#166534"),
+            ("Q3", "reuse cache", "#dcfce7", "#166534"),
         ]
     ):
-        yy = 0.67 - i * 0.17
+        yy = 0.70 - i * 0.15
         ax.text(px(p, 0.11), py(p, yy), q, fontsize=6.3, va="center", color="#334155")
         _draw_overview_arrow(
             ax, (px(p, 0.22), py(p, yy)), (px(p, 0.34), py(p, yy)), color="#64748b", lw=0.75
@@ -529,49 +529,45 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
             face=face,
             edge=edge,
             text=text,
-            size=5.4,
+            size=4.9,
             lw=0.7,
         )
     ax.text(
-        px(p, 0.79),
-        py(p, 0.65),
-        f"{qwen_16f['speedup']:.1f}x",
-        fontsize=11.2,
+        px(p, 0.50),
+        py(p, 0.255),
+        f"{repair['speedup_min']:.2f}-{repair['speedup_max']:.2f}x",
+        fontsize=8.4,
         ha="center",
         color="#166534",
         weight="bold",
-    )
-    ax.text(
-        px(p, 0.79),
-        py(p, 0.555),
-        "warm follow-up",
-        fontsize=5.6,
-        ha="center",
-        color="#166534",
-        weight="bold",
-    )
-    ax.text(
-        px(p, 0.79),
-        py(p, 0.445),
-        "Qwen-7B 16f\nafter ingest",
-        fontsize=4.8,
-        ha="center",
-        color="#334155",
     )
     ax.text(
         px(p, 0.50),
-        py(p, 0.18),
-        f"{repair['speedup_min']:.2f}-{repair['speedup_max']:.2f}x repaired follow-up",
-        fontsize=5.2,
+        py(p, 0.195),
+        "repaired follow-up",
+        fontsize=5.0,
         ha="center",
         color="#166534",
         weight="bold",
+    )
+    _draw_overview_box(
+        ax,
+        (px(p, 0.64), py(p, 0.405)),
+        p[2] * 0.28,
+        p[3] * 0.080,
+        face="#ffffff",
+        edge="#166534",
+        text=f"raw 16f {qwen_16f['speedup']:.1f}x",
+        size=4.8,
+        color="#166534",
+        weight="bold",
+        lw=0.65,
     )
     ax.text(
         px(p, 0.50),
         py(p, 0.105),
-        "0/62 follow-up drift",
-        fontsize=5.3,
+        f"{repair['paired_choice_diffs']}/{repair['n_pairs']} observed paired drift",
+        fontsize=5.4,
         ha="center",
         color="#166534",
     )
@@ -623,7 +619,7 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
         px(p, 0.50),
         py(p, 0.115),
         "bounded sparse-vision cell",
-        fontsize=5.3,
+        fontsize=5.4,
         ha="center",
         color="#64748b",
     )
@@ -715,7 +711,7 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
         px(p, 0.50),
         py(p, 0.10),
         "candidate; not headline",
-        fontsize=5.3,
+        fontsize=5.4,
         ha="center",
         color="#64748b",
     )
