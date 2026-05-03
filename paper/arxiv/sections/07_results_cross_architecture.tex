@@ -79,8 +79,7 @@ policy even when the frozen model's cold long-video accuracy is poor.
 
 The stronger repair result is adaptive. A failed variant that refreshed one
 newest frame at the first follow-up and then omitted refresh at the second follow-up
-(\(Q2=K1,Q3=K0\) in the notation of Section~\ref{sec:method}) fell back to
-the original unrepaired state and collapsed every
+fell back to the original unrepaired state and collapsed every
 third query into the pathological basin: \(\Delta\)acc \(=-0.0952\), paired
 correctness diffs 4/21, paired choice diffs 6/21, and pathological-like
 outputs on 7/7 second follow-ups. The repaired adaptive variant changes only
@@ -293,17 +292,17 @@ VideoMME 8f dev & 0.152 & 0.390 & 1.062 & 1.080 & +1.8pp & Gemma dev \\
 VideoMME 16f dev & 0.243 & 0.390 & 1.105 & 1.120 & +1.5pp & Gemma dev \\
 MVBench 8f dev & 0.478 & 0.400 & 1.237 & 1.210 & -2.7pp & Gemma dev \\
 TOMATO 8f dev & 0.407 & 0.427 & 1.214 & 1.240 & +2.6pp & Gemma dev \\
-VideoMME 8f holdout & 0.154 & 0.413 & 1.068 & 1.113 & +4.5pp & clean local \\
-MVBench 8f holdout & 0.452 & 0.471 & 1.271 & 1.407 & +13.6pp & advisory local \\
-TOMATO 8f holdout & 0.384 & 0.350 & 1.155 & 1.194 & +3.9pp & advisory local \\
+VideoMME 8f holdout & 0.154 & 0.413 & 1.068 & 1.113 & +4.5pp & clean \\
+MVBench 8f holdout & 0.452 & 0.471 & 1.271 & 1.407 & +13.6pp & advisory \\
+TOMATO 8f holdout & 0.384 & 0.350 & 1.155 & 1.194 & +3.9pp & advisory \\
 Qwen VideoMME 8f dev & 0.103 & 0.398 & 1.043 & 1.044 & +0.1pp & matched cross-arch \\
-Qwen measured sparse vision 8f \(kr_V=0.50\) & 0.100 & 0.448 & 1.047 & 1.042 & -0.5pp & local boundary, fidelity fail \\
+Qwen measured sparse vision 8f \(kr_V=0.50\) & 0.100 & 0.448 & 1.047 & 1.042 & -0.5pp & boundary; fidelity fail \\
 VideoMME n=60 composition audit & 0.063 & 0.430 & 1.028 & 1.042 & +1.4pp & composition null \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-Across the rendered accounting view and the newer sparse-execution tables, the share model stays predictive enough to
+Across the ceiling table and the newer sparse-execution tables, the share model stays predictive enough to
 be useful and honest, but it is not a literal no-residual theorem. Advisory
 cells can sit above or below the prediction when non-vision timing varies
 across paired arms. The holdout spread is wider than
@@ -334,7 +333,7 @@ multiply: temporal placement of fresh compute decides whether the answer
 survives, and the reused cache state can matter even when the visible first
 answer looks fine.
 
-The newest local bridge makes the same warning concrete. On Qwen2.5-VL-7B-Instruct-4bit
+The composition bridge makes the same warning concrete. On Qwen2.5-VL-7B-Instruct-4bit
 at 8 frames, the original session/streaming stack that combines \(L=2\),
 \(kr_V=0.50\) vision pruning with persistent-KV reuse over a VideoMME
 dev+holdout union (\(n=57\) sessions, 171 queries) was a hard negative. The
