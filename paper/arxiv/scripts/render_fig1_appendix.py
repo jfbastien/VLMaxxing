@@ -54,7 +54,7 @@ from fig1_primitives import (  # noqa: E402
 from PIL import Image  # noqa: E402
 
 GENERATED = MANUSCRIPT_ROOT / "generated"
-DEFAULT_CANDIDATES = GENERATED / "figures" / "fig1_candidates" / "ranked_candidates.json"
+DEFAULT_CANDIDATES = GENERATED / "figures" / "fig1_candidates" / "planner_selected_candidates.json"
 DEFAULT_OUT = GENERATED / "figures" / "fig1_appendix_broadened"
 HEADLINE_SNAPSHOT = GENERATED / "data" / "headline_snapshot.json"
 CEILING_DATA = GENERATED / "data" / "v_share_v_red_ceiling_data.json"
@@ -283,7 +283,7 @@ def class_composition_line(transition: dict[str, Any]) -> str:
     static_pct = int(math.floor(static / total * 100.0 + 0.5))
     shifted_pct = int(math.floor(shifted / total * 100.0 + 0.5))
     fresh_pct = max(0, 100 - static_pct - shifted_pct)
-    return f"static {static_pct}% + shifted {shifted_pct}% -> reused; fresh {fresh_pct}%"
+    return f"static {static_pct}% + shifted {shifted_pct}% → reused; fresh {fresh_pct}%"
 
 
 def average_reuse(candidate: dict[str, Any]) -> float:
@@ -590,7 +590,7 @@ def render_routing_budget_combined(candidates: list[dict[str, Any]], out_dir: Pa
         ax,
         0.040,
         0.855,
-        "A. One real transition: planner rule -> decision budget",
+        "A. One real transition: planner rule → decision budget",
         fs=8.0,
         weight="bold",
     )
@@ -691,7 +691,7 @@ def render_routing_budget_combined(candidates: list[dict[str, Any]], out_dir: Pa
     )
     label(ax, 0.285, 0.430, "previous", fs=5.2, color=THEME.muted)
     label(ax, 0.445, 0.430, "classes", fs=5.2, color=THEME.muted)
-    label(ax, 0.695, 0.430, "window budget", fs=5.2, color=THEME.muted)
+    label(ax, 0.695, 0.430, "window average", fs=5.2, color=THEME.muted)
 
     row_ys = [0.328, 0.198, 0.068]
     roles = ["high-reuse routing example", "VideoMME visual anchor", "lower-reuse boundary"]
@@ -763,7 +763,7 @@ def render_routing_budget_combined(candidates: list[dict[str, Any]], out_dir: Pa
             ax,
             card_x + 0.020,
             card_y + 0.026,
-            f"shown: {shown_reuse_pct}% reused / {shown_fresh_pct}% fresh",
+            f"shown transition: {shown_reuse_pct}% / {shown_fresh_pct}%",
             fs=4.8,
             color=THEME.muted,
         )
@@ -771,7 +771,7 @@ def render_routing_budget_combined(candidates: list[dict[str, Any]], out_dir: Pa
             ax,
             card_x + 0.020,
             card_y + 0.011,
-            f"age-expired {int(round(shown_stale * 100))}%",
+            f"age-expired: {int(round(shown_stale * 100))}%",
             fs=4.8,
             color=THEME.muted,
         )

@@ -12,6 +12,7 @@ Included scripts:
 
 Included review assets:
 - updated production schematic `generated/figures/regime_overview.{png,pdf,svg}`
+- C-PERSIST mechanism figure `generated/figures/c_persist_timeline.{png,pdf,svg}`
 - vectorized paper plots:
   `generated/figures/c_persist_safe_budget.{png,pdf,svg}` and
   `generated/figures/v_share_v_red_ceiling.{png,pdf,svg}`
@@ -40,7 +41,7 @@ C-VISION keep-mask artifact is present.
 
 Font status:
 - Matplotlib-generated publication figures now use a Helvetica-compatible
-  stack (`Helvetica Neue`, `Helvetica`, `Arial`, `Liberation Sans`,
+  stack (`Arial`, `Helvetica Neue`, `Helvetica`, `Liberation Sans`,
   `Nimbus Sans`) instead of Matplotlib's bundled default face.
 - SVG outputs preserve figure text as text; PDF outputs embed TrueType/CID
   Helvetica-compatible fonts.

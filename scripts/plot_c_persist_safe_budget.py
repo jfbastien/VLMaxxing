@@ -38,9 +38,9 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 FIGURES = REPO_ROOT / "paper" / "figures"
 PDF_METADATA = {"CreationDate": None, "ModDate": None}
 FIGURE_SANS_STACK = [
+    "Arial",
     "Helvetica Neue",
     "Helvetica",
-    "Arial",
     "Liberation Sans",
     "Nimbus Sans",
 ]

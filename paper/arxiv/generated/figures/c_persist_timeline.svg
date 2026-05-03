@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="524.52pt" height="222.12pt" viewBox="0 0 524.52 222.12" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-05-04T08:13:53.581199</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.8, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 222.12 
+L 524.52 222.12 
+L 524.52 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 31.68576 107.32104 
+L 110.24424 107.32104 
+Q 122.99724 107.32104 122.99724 102.12804 
+L 122.99724 80.52516 
+Q 122.99724 75.33216 110.24424 75.33216 
+L 31.68576 75.33216 
+Q 18.93276 75.33216 18.93276 80.52516 
+L 18.93276 102.12804 
+Q 18.93276 107.32104 31.68576 107.32104 
+z
+" clip-path="url(#p0e981ca706)" style="fill: #f8fafc; stroke: #64748b; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 159.21576 92.3652 
+L 204.61644 92.3652 
+Q 213.7986 92.3652 213.7986 88.62624 
+L 213.7986 76.37076 
+Q 213.7986 72.6318 204.61644 72.6318 
+L 159.21576 72.6318 
+Q 150.0336 72.6318 150.0336 76.37076 
+L 150.0336 88.62624 
+Q 150.0336 92.3652 159.21576 92.3652 
+z
+" clip-path="url(#p0e981ca706)" style="fill: #dcfce7; stroke: #16a34a; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 215.83908 92.3652 
+L 263.79036 92.3652 
+Q 272.97252 92.3652 272.97252 88.62624 
+L 272.97252 76.37076 
+Q 272.97252 72.6318 263.79036 72.6318 
+L 215.83908 72.6318 
+Q 206.65692 72.6318 206.65692 76.37076 
+L 206.65692 88.62624 
+Q 206.65692 92.3652 215.83908 92.3652 
+z
+" clip-path="url(#p0e981ca706)" style="fill: #fed7aa; stroke: #c2410c; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 159.21576 142.218 
+L 204.61644 142.218 
+Q 213.7986 142.218 213.7986 138.47904 
+L 213.7986 126.22356 
+Q 213.7986 122.4846 204.61644 122.4846 
+L 159.21576 122.4846 
+Q 150.0336 122.4846 150.0336 126.22356 
+L 150.0336 138.47904 
+Q 150.0336 142.218 159.21576 142.218 
+z
+" clip-path="url(#p0e981ca706)" style="fill: #dcfce7; stroke: #16a34a; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 215.83908 142.218 
+L 263.79036 142.218 
+Q 272.97252 142.218 272.97252 138.47904 
+L 272.97252 126.22356 
+Q 272.97252 122.4846 263.79036 122.4846 
+L 215.83908 122.4846 
+Q 206.65692 122.4846 206.65692 126.22356 
+L 206.65692 138.47904 
+Q 206.65692 142.218 215.83908 142.218 
+z
+" clip-path="url(#p0e981ca706)" style="fill: #fed7aa; stroke: #c2410c; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 307.15056 92.3652 
+L 352.55124 92.3652 
+Q 361.7334 92.3652 361.7334 88.62624 
+L 361.7334 76.37076 
+Q 361.7334 72.6318 352.55124 72.6318 
+L 307.15056 72.6318 
+Q 297.9684 72.6318 297.9684 76.37076 
+L 297.9684 88.62624 
+Q 297.9684 92.3652 307.15056 92.3652 
+z
+" clip-path="url(#p0e981ca706)" style="fill: #dcfce7; stroke: #16a34a; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 363.77388 92.3652 
+L 411.72516 92.3652 
+Q 420.90732 92.3652 420.90732 88.62624 
+L 420.90732 76.37076 
+Q 420.90732 72.6318 411.72516 72.6318 
+L 363.77388 72.6318 
+Q 354.59172 72.6318 354.59172 76.37076 
+L 354.59172 88.62624 
+Q 354.59172 92.3652 363.77388 92.3652 
+z
+" clip-path="url(#p0e981ca706)" style="fill: #fb923c; stroke: #c2410c; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 307.15056 142.218 
+L 385.70904 142.218 
+Q 394.8912 142.218 394.8912 138.47904 
+L 394.8912 126.22356 
+Q 394.8912 122.4846 385.70904 122.4846 
+L 307.15056 122.4846 
+Q 297.9684 122.4846 297.9684 126.22356 
+L 297.9684 138.47904 
+Q 297.9684 142.218 307.15056 142.218 
+z
+" clip-path="url(#p0e981ca706)" style="fill: #dcfce7; stroke: #16a34a; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_10">
+    <path d="M 396.93168 142.218 
+L 401.52276 142.218 
+Q 410.70492 142.218 410.70492 138.47904 
+L 410.70492 126.22356 
+Q 410.70492 122.4846 401.52276 122.4846 
+L 396.93168 122.4846 
+Q 387.74952 122.4846 387.74952 126.22356 
+L 387.74952 138.47904 
+Q 387.74952 142.218 396.93168 142.218 
+z
+" clip-path="url(#p0e981ca706)" style="fill: #fdba74; stroke: #c2410c; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_11">
+    <path d="M 439.27164 152.18856 
+L 495.89496 152.18856 
+Q 511.19856 152.18856 511.19856 145.95696 
+L 511.19856 103.16664 
+Q 511.19856 96.93504 495.89496 96.93504 
+L 439.27164 96.93504 
+Q 423.96804 96.93504 423.96804 103.16664 
+L 423.96804 145.95696 
+Q 423.96804 152.18856 439.27164 152.18856 
+z
+" clip-path="url(#p0e981ca706)" style="fill: #ecfdf5; stroke: #16a34a; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="text_1">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start" x="17.4024" y="21.7404" transform="rotate(-0 17.4024 21.7404)">Adaptive C-PERSIST: repair once, reuse the repaired state</text>
+   </g>
+   <g id="text_2">
+    <text style="font-size: 7.6px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="17.4024" y="36.2808" transform="rotate(-0 17.4024 36.2808)">The visual tail is bought at the first follow-up. Fixed K=1 buys it again; adaptive reuse mostly appends text.</text>
+   </g>
+   <g id="text_3">
+    <text style="font-weight: 700; font-size: 8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: middle; fill: #334155" x="68.4144" y="52.8984" transform="rotate(-0 68.4144 52.8984)">First query</text>
+   </g>
+   <g id="text_4">
+    <text style="font-weight: 700; font-size: 8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: middle; fill: #334155" x="221.4504" y="52.8984" transform="rotate(-0 221.4504 52.8984)">Follow-up 1 repair</text>
+   </g>
+   <g id="text_5">
+    <text style="font-weight: 700; font-size: 8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: middle; fill: #334155" x="374.4864" y="52.8984" transform="rotate(-0 374.4864 52.8984)">Follow-up 2 / Q3</text>
+   </g>
+   <g id="text_6">
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif" transform="translate(57.155313 89.476959)">full prefill</text>
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif" transform="translate(51.022109 96.880772)">~8.1k tokens</text>
+   </g>
+   <g id="text_7">
+    <text style="font-weight: 700; font-size: 8.2px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #14532d" x="17.4024" y="81.9792" transform="rotate(-0 17.4024 81.9792)">Fixed K=1</text>
+   </g>
+   <g id="text_8">
+    <text style="font-weight: 700; font-size: 8.2px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #14532d" x="17.4024" y="131.832" transform="rotate(-0 17.4024 131.832)">Adaptive</text>
+   </g>
+   <g id="text_9">
+    <text style="font-size: 6.6px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: middle" x="181.9161" y="84.100843" transform="rotate(-0 181.9161 84.100843)">cache</text>
+   </g>
+   <g id="text_10">
+    <text style="font-size: 6.3px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: middle" x="239.81472" y="84.023288" transform="rotate(-0 239.81472 84.023288)">459 tok</text>
+   </g>
+   <g id="text_11">
+    <text style="font-size: 6.6px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: middle" x="181.9161" y="133.953643" transform="rotate(-0 181.9161 133.953643)">cache</text>
+   </g>
+   <g id="text_12">
+    <text style="font-size: 6.3px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: middle" x="239.81472" y="133.876088" transform="rotate(-0 239.81472 133.876088)">459 tok</text>
+   </g>
+   <g id="text_13">
+    <text style="font-size: 6.6px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: middle" x="329.8509" y="84.100843" transform="rotate(-0 329.8509 84.100843)">cache</text>
+   </g>
+   <g id="text_14">
+    <text style="font-size: 6.3px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: middle" x="387.74952" y="84.023288" transform="rotate(-0 387.74952 84.023288)">451 tok</text>
+   </g>
+   <g id="text_15">
+    <text style="font-size: 6.6px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: middle" x="346.4298" y="133.953643" transform="rotate(-0 346.4298 133.953643)">repaired cache</text>
+   </g>
+   <g id="text_16">
+    <text style="font-size: 6.3px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: middle" x="399.22722" y="133.876088" transform="rotate(-0 399.22722 133.876088)">50</text>
+   </g>
+   <g id="patch_12">
+    <path d="M 119.4264 91.3266 
+Q 136.0053 87.1722 151.391246 83.316735 
+" style="fill: none; stroke: #64748b; stroke-width: 1.1; stroke-linecap: round"/>
+    <path d="M 146.806764 82.300602 
+L 151.391246 83.316735 
+L 147.827652 86.374641 
+" style="fill: none; stroke: #64748b; stroke-width: 1.1; stroke-linecap: round"/>
+   </g>
+   <g id="patch_13">
+    <path d="M 119.4264 91.3266 
+Q 136.0053 112.0986 151.817019 131.909385 
+" style="fill: none; stroke: #64748b; stroke-width: 1.1; stroke-linecap: round"/>
+    <path d="M 150.838346 127.316761 
+L 151.817019 131.909385 
+L 147.555716 129.936749 
+" style="fill: none; stroke: #64748b; stroke-width: 1.1; stroke-linecap: round"/>
+   </g>
+   <g id="patch_14">
+    <path d="M 269.9118 82.39464 
+Q 286.4907 82.39464 301.839763 82.39464 
+" style="fill: none; stroke: #16a34a; stroke-width: 1.1; stroke-linecap: round"/>
+    <path d="M 297.639763 80.29464 
+L 301.839763 82.39464 
+L 297.639763 84.49464 
+" style="fill: none; stroke: #16a34a; stroke-width: 1.1; stroke-linecap: round"/>
+   </g>
+   <g id="patch_15">
+    <path d="M 269.9118 132.24744 
+Q 286.4907 132.24744 301.839763 132.24744 
+" style="fill: none; stroke: #16a34a; stroke-width: 1.1; stroke-linecap: round"/>
+    <path d="M 297.639763 130.14744 
+L 301.839763 132.24744 
+L 297.639763 134.34744 
+" style="fill: none; stroke: #16a34a; stroke-width: 1.1; stroke-linecap: round"/>
+   </g>
+   <g id="text_17">
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; fill: #7c2d12" transform="translate(333.805713 62.112187)">Q3: 6.65s</text>
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; fill: #7c2d12" transform="translate(333.611025 69.516)">repeat tail</text>
+   </g>
+   <g id="text_18">
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; fill: #14532d" transform="translate(336.960584 149.354587)">Q3: 0.675s</text>
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; fill: #14532d" transform="translate(321.203475 156.7584)">reuse repaired cache</text>
+   </g>
+   <g id="text_19">
+    <text style="font-weight: 700; font-size: 8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; fill: #14532d" transform="translate(457.31949 108.36396)">9.50x</text>
+    <text style="font-weight: 700; font-size: 8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; fill: #14532d" transform="translate(448.87824 116.93121)">paired Q3</text>
+    <text style="font-weight: 700; font-size: 8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; fill: #14532d" transform="translate(450.882615 125.38146)">speedup</text>
+   </g>
+   <g id="text_20">
+    <text style="font-size: 6.7px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; fill: #166534" transform="translate(448.707998 133.136602)">88.9% fewer</text>
+    <text style="font-size: 6.7px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; fill: #166534" transform="translate(446.846654 140.223108)">Q3 tail tokens</text>
+   </g>
+   <g id="text_21">
+    <text style="font-size: 7.2px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #166534" x="32.706" y="181.6848" transform="rotate(-0 32.706 181.6848)">green = cached prefix/state</text>
+   </g>
+   <g id="text_22">
+    <text style="font-size: 7.2px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #c2410c" x="150.0336" y="181.6848" transform="rotate(-0 150.0336 181.6848)">orange = newly bought tail work</text>
+   </g>
+   <g id="text_23">
+    <text style="font-size: 6.8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="17.4024" y="198.3024" transform="rotate(-0 17.4024 198.3024)">Timing attribution from checked fixed/adaptive stage-timing artifacts; provenance in appendix.</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p0e981ca706">
+   <rect x="7.2" y="7.2" width="510.12" height="207.72"/>
+  </clipPath>
+ </defs>
+</svg>

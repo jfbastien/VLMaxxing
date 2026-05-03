@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="424.141512pt" height="260.676pt" viewBox="0 0 424.141512 260.676" xmlns="http://www.w3.org/2000/svg" version="1.1">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="421.992192pt" height="260.676pt" viewBox="0 0 421.992192 260.676" xmlns="http://www.w3.org/2000/svg" version="1.1">
  <metadata>
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-05-04T07:15:20.904179</dc:date>
+    <dc:date>2026-05-04T08:13:36.198697</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -22,8 +22,8 @@
  <g id="figure_1">
   <g id="patch_1">
    <path d="M 0 260.676 
-L 424.141512 260.676 
-L 424.141512 0 
+L 421.992192 260.676 
+L 421.992192 0 
 L 0 0 
 z
 " style="fill: #ffffff"/>
@@ -6743,124 +6743,124 @@ z
 " style="fill: #64748b; stroke: #64748b; stroke-width: 0.75; stroke-linecap: round"/>
    </g>
    <g id="text_1">
-    <text style="font-weight: 700; font-size: 12px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #0f172a" x="18.0684" y="13.59411" transform="rotate(-0 18.0684 13.59411)">Qwen routing-budget visualized</text>
+    <text style="font-weight: 700; font-size: 12px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #0f172a" x="18.0684" y="13.56786" transform="rotate(-0 18.0684 13.56786)">Qwen routing-budget visualized</text>
    </g>
    <g id="text_2">
-    <text style="font-size: 6.1px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="18.0684" y="22.366419" transform="rotate(-0 18.0684 22.366419)">A fixed-backend routing example: block classes become a reused/fresh visual budget, not a speedup claim.</text>
+    <text style="font-size: 6.1px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="18.0684" y="22.353075" transform="rotate(-0 18.0684 22.353075)">A fixed-backend routing example: block classes become a reused/fresh visual budget, not a speedup claim.</text>
    </g>
    <g id="text_3">
-    <text style="font-weight: 700; font-size: 8px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #0f172a" x="18.0684" y="40.90792" transform="rotate(-0 18.0684 40.90792)">A. One real transition: planner rule -&gt; decision budget</text>
+    <text style="font-weight: 700; font-size: 8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #0f172a" x="18.0684" y="40.89042" transform="rotate(-0 18.0684 40.89042)">A. One real transition: planner rule → decision budget</text>
    </g>
    <g id="text_4">
-    <text style="font-size: 5.5px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="18.0684" y="56.225608" transform="rotate(-0 18.0684 56.225608)">previous</text>
+    <text style="font-size: 5.5px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="18.0684" y="56.225608" transform="rotate(-0 18.0684 56.225608)">previous</text>
    </g>
    <g id="text_5">
-    <text style="font-size: 5.5px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="105.3675" y="56.225608" transform="rotate(-0 105.3675 56.225608)">current</text>
+    <text style="font-size: 5.5px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="105.3675" y="56.225608" transform="rotate(-0 105.3675 56.225608)">current</text>
    </g>
    <g id="text_6">
-    <text style="font-size: 5.5px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="192.6666" y="56.225608" transform="rotate(-0 192.6666 56.225608)">classes</text>
+    <text style="font-size: 5.5px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="192.6666" y="56.225608" transform="rotate(-0 192.6666 56.225608)">classes</text>
    </g>
    <g id="text_7">
-    <text style="font-weight: 700; font-size: 9.6px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #16a34a" x="299.91978" y="66.308382" transform="rotate(-0 299.91978 66.308382)">92% reused</text>
+    <text style="font-weight: 700; font-size: 9.6px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #16a34a" x="299.91978" y="66.315132" transform="rotate(-0 299.91978 66.315132)">92% reused</text>
    </g>
    <g id="text_8">
-    <text style="font-weight: 700; font-size: 8.6px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #f97316" x="299.91978" y="75.072726" transform="rotate(-0 299.91978 75.072726)">8% fresh</text>
+    <text style="font-weight: 700; font-size: 8.6px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #f97316" x="299.91978" y="75.078773" transform="rotate(-0 299.91978 75.078773)">8% fresh</text>
    </g>
    <g id="text_9">
-    <text style="font-size: 5.5px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="299.91978" y="81.73624" transform="rotate(-0 299.91978 81.73624)">age-expired: 0%</text>
+    <text style="font-size: 5.5px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="299.91978" y="81.748701" transform="rotate(-0 299.91978 81.748701)">age-expired: 0%</text>
    </g>
    <g id="text_10">
-    <text style="font-weight: 700; font-size: 5.8px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #0f172a" x="18.0684" y="101.675259" transform="rotate(-0 18.0684 101.675259)">static 81% + shifted 11% -&gt; reused; fresh 8%</text>
+    <text style="font-weight: 700; font-size: 5.8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #0f172a" x="18.0684" y="101.679337" transform="rotate(-0 18.0684 101.679337)">static 81% + shifted 11% → reused; fresh 8%</text>
    </g>
    <g id="text_11">
-    <text style="font-size: 5.8px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #0f172a" x="18.0684" y="109.655153" transform="rotate(-0 18.0684 109.655153)">Rule: reused = static + shifted while age &lt; 4; fresh = novel + age-expired.</text>
+    <text style="font-size: 5.8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #0f172a" x="18.0684" y="109.668294" transform="rotate(-0 18.0684 109.668294)">Rule: reused = static + shifted while age &lt; 4; fresh = novel + age-expired.</text>
    </g>
    <g id="text_12">
-    <text style="font-size: 5.2px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="26.79831" y="118.276889" transform="rotate(-0 26.79831 118.276889)">static / shifted reused</text>
+    <text style="font-size: 5.2px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="26.79831" y="118.276889" transform="rotate(-0 26.79831 118.276889)">static / shifted reused</text>
    </g>
    <g id="text_13">
-    <text style="font-size: 5.2px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="116.17596" y="118.266327" transform="rotate(-0 116.17596 118.266327)">fresh bought</text>
+    <text style="font-size: 5.2px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="116.17596" y="118.278108" transform="rotate(-0 116.17596 118.278108)">fresh bought</text>
    </g>
    <g id="text_14">
-    <text style="font-size: 5.15px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="217.6092" y="118.281667" transform="rotate(-0 217.6092 118.281667)">Block classes are freshness evidence; object relevance is still decided by the model/task.</text>
+    <text style="font-size: 5.15px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="217.6092" y="118.265171" transform="rotate(-0 217.6092 118.265171)">Block classes are freshness evidence; object relevance is still decided by the model/task.</text>
    </g>
    <g id="text_15">
-    <text style="font-weight: 700; font-size: 8px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #0f172a" x="18.0684" y="134.238197" transform="rotate(-0 18.0684 134.238197)">B. Same policy on three real windows</text>
+    <text style="font-weight: 700; font-size: 8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #0f172a" x="18.0684" y="134.212572" transform="rotate(-0 18.0684 134.212572)">B. Same policy on three real windows</text>
    </g>
    <g id="text_16">
-    <text style="font-size: 5.8px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="18.0684" y="140.874298" transform="rotate(-0 18.0684 140.874298)">Selected real windows rendered with the same routing policy; budgets are visualization summaries, not speedup claims.</text>
+    <text style="font-size: 5.8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="18.0684" y="140.86161" transform="rotate(-0 18.0684 140.86161)">Selected real windows rendered with the same routing policy; budgets are visualization summaries, not speedup claims.</text>
    </g>
    <g id="text_17">
-    <text style="font-size: 5.2px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="119.91735" y="149.728001" transform="rotate(-0 119.91735 149.728001)">previous</text>
+    <text style="font-size: 5.2px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="119.91735" y="149.728001" transform="rotate(-0 119.91735 149.728001)">previous</text>
    </g>
    <g id="text_18">
-    <text style="font-size: 5.2px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="186.43095" y="149.728001" transform="rotate(-0 186.43095 149.728001)">classes</text>
+    <text style="font-size: 5.2px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="186.43095" y="149.728001" transform="rotate(-0 186.43095 149.728001)">classes</text>
    </g>
    <g id="text_19">
-    <text style="font-size: 5.2px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="290.35845" y="149.69672" transform="rotate(-0 290.35845 149.69672)">window budget</text>
+    <text style="font-size: 5.2px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="290.35845" y="149.697533" transform="rotate(-0 290.35845 149.697533)">window average</text>
    </g>
    <g id="text_20">
-    <text style="font-weight: 700; font-size: 7px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #0f172a" x="18.0684" y="158.185005" transform="rotate(-0 18.0684 158.185005)">TOMATO 0298-00</text>
+    <text style="font-weight: 700; font-size: 7px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #0f172a" x="18.0684" y="158.189927" transform="rotate(-0 18.0684 158.189927)">TOMATO 0298-00</text>
    </g>
    <g id="text_21">
-    <text style="font-size: 5.2px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="18.0684" y="164.648888" transform="rotate(-0 18.0684 164.648888)">high-reuse routing example</text>
+    <text style="font-size: 5.2px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="18.0684" y="164.649701" transform="rotate(-0 18.0684 164.649701)">high-reuse routing example</text>
    </g>
    <g id="text_22">
-    <text style="font-size: 5px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="18.0684" y="170.557774" transform="rotate(-0 18.0684 170.557774)">0.00-2.00s</text>
+    <text style="font-size: 5px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="18.0684" y="170.557774" transform="rotate(-0 18.0684 170.557774)">0.00-2.00s</text>
    </g>
    <g id="text_23">
-    <text style="font-weight: 700; font-size: 7.1px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #16a34a" x="290.35845" y="158.210857" transform="rotate(-0 290.35845 158.210857)">95% reused</text>
+    <text style="font-weight: 700; font-size: 7.1px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #16a34a" x="290.35845" y="158.215849" transform="rotate(-0 290.35845 158.215849)">95% reused</text>
    </g>
    <g id="text_24">
-    <text style="font-weight: 700; font-size: 7.1px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: end; fill: #f97316" x="390.12885" y="158.210857" transform="rotate(-0 390.12885 158.210857)">5% fresh</text>
+    <text style="font-weight: 700; font-size: 7.1px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: end; fill: #f97316" x="390.12885" y="158.215849" transform="rotate(-0 390.12885 158.215849)">5% fresh</text>
    </g>
    <g id="text_25">
-    <text style="font-size: 4.8px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="290.35845" y="169.217091" transform="rotate(-0 290.35845 169.217091)">shown: 92% reused / 8% fresh</text>
+    <text style="font-size: 4.8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="290.35845" y="169.217091" transform="rotate(-0 290.35845 169.217091)">shown transition: 92% / 8%</text>
    </g>
    <g id="text_26">
-    <text style="font-size: 4.8px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="290.35845" y="173.074281" transform="rotate(-0 290.35845 173.074281)">age-expired 0%</text>
+    <text style="font-size: 4.8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="290.35845" y="173.085156" transform="rotate(-0 290.35845 173.085156)">age-expired: 0%</text>
    </g>
    <g id="text_27">
-    <text style="font-weight: 700; font-size: 7px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #0f172a" x="18.0684" y="191.698485" transform="rotate(-0 18.0684 191.698485)">VideoMME 380</text>
+    <text style="font-weight: 700; font-size: 7px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #0f172a" x="18.0684" y="191.703407" transform="rotate(-0 18.0684 191.703407)">VideoMME 380</text>
    </g>
    <g id="text_28">
-    <text style="font-size: 5.2px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="18.0684" y="198.193649" transform="rotate(-0 18.0684 198.193649)">VideoMME visual anchor</text>
+    <text style="font-size: 5.2px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="18.0684" y="198.193649" transform="rotate(-0 18.0684 198.193649)">VideoMME visual anchor</text>
    </g>
    <g id="text_29">
-    <text style="font-size: 5px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="18.0684" y="204.071254" transform="rotate(-0 18.0684 204.071254)">206.39-207.89s</text>
+    <text style="font-size: 5px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="18.0684" y="204.071254" transform="rotate(-0 18.0684 204.071254)">206.39-207.89s</text>
    </g>
    <g id="text_30">
-    <text style="font-weight: 700; font-size: 7.1px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #16a34a" x="290.35845" y="191.724337" transform="rotate(-0 290.35845 191.724337)">84% reused</text>
+    <text style="font-weight: 700; font-size: 7.1px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #16a34a" x="290.35845" y="191.729329" transform="rotate(-0 290.35845 191.729329)">84% reused</text>
    </g>
    <g id="text_31">
-    <text style="font-weight: 700; font-size: 7.1px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: end; fill: #f97316" x="390.12885" y="191.724337" transform="rotate(-0 390.12885 191.724337)">16% fresh</text>
+    <text style="font-weight: 700; font-size: 7.1px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: end; fill: #f97316" x="390.12885" y="191.729329" transform="rotate(-0 390.12885 191.729329)">16% fresh</text>
    </g>
    <g id="text_32">
-    <text style="font-size: 4.8px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="290.35845" y="202.730571" transform="rotate(-0 290.35845 202.730571)">shown: 82% reused / 18% fresh</text>
+    <text style="font-size: 4.8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="290.35845" y="202.730571" transform="rotate(-0 290.35845 202.730571)">shown transition: 82% / 18%</text>
    </g>
    <g id="text_33">
-    <text style="font-size: 4.8px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="290.35845" y="206.587761" transform="rotate(-0 290.35845 206.587761)">age-expired 0%</text>
+    <text style="font-size: 4.8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="290.35845" y="206.598636" transform="rotate(-0 290.35845 206.598636)">age-expired: 0%</text>
    </g>
    <g id="text_34">
-    <text style="font-weight: 700; font-size: 7px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #0f172a" x="18.0684" y="225.211965" transform="rotate(-0 18.0684 225.211965)">VideoMME 267</text>
+    <text style="font-weight: 700; font-size: 7px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #0f172a" x="18.0684" y="225.216887" transform="rotate(-0 18.0684 225.216887)">VideoMME 267</text>
    </g>
    <g id="text_35">
-    <text style="font-size: 5.2px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="18.0684" y="231.681129" transform="rotate(-0 18.0684 231.681129)">lower-reuse boundary</text>
+    <text style="font-size: 5.2px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="18.0684" y="231.676661" transform="rotate(-0 18.0684 231.676661)">lower-reuse boundary</text>
    </g>
    <g id="text_36">
-    <text style="font-size: 5px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="18.0684" y="237.584734" transform="rotate(-0 18.0684 237.584734)">0.00-1.00s</text>
+    <text style="font-size: 5px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="18.0684" y="237.584734" transform="rotate(-0 18.0684 237.584734)">0.00-1.00s</text>
    </g>
    <g id="text_37">
-    <text style="font-weight: 700; font-size: 7.1px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #16a34a" x="290.35845" y="225.237817" transform="rotate(-0 290.35845 225.237817)">54% reused</text>
+    <text style="font-weight: 700; font-size: 7.1px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #16a34a" x="290.35845" y="225.242809" transform="rotate(-0 290.35845 225.242809)">54% reused</text>
    </g>
    <g id="text_38">
-    <text style="font-weight: 700; font-size: 7.1px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: end; fill: #f97316" x="390.12885" y="225.237817" transform="rotate(-0 390.12885 225.237817)">46% fresh</text>
+    <text style="font-weight: 700; font-size: 7.1px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: end; fill: #f97316" x="390.12885" y="225.242809" transform="rotate(-0 390.12885 225.242809)">46% fresh</text>
    </g>
    <g id="text_39">
-    <text style="font-size: 4.8px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="290.35845" y="236.244051" transform="rotate(-0 290.35845 236.244051)">shown: 52% reused / 48% fresh</text>
+    <text style="font-size: 4.8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="290.35845" y="236.244051" transform="rotate(-0 290.35845 236.244051)">shown transition: 52% / 48%</text>
    </g>
    <g id="text_40">
-    <text style="font-size: 4.8px; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="290.35845" y="240.101241" transform="rotate(-0 290.35845 240.101241)">age-expired 0%</text>
+    <text style="font-size: 4.8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="290.35845" y="240.112116" transform="rotate(-0 290.35845 240.112116)">age-expired: 0%</text>
    </g>
   </g>
  </g>

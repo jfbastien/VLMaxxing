@@ -36,9 +36,9 @@ class Theme:
 THEME = Theme()
 
 FIGURE_SANS_STACK = [
+    "Arial",
     "Helvetica Neue",
     "Helvetica",
-    "Arial",
     "Liberation Sans",
     "Nimbus Sans",
 ]

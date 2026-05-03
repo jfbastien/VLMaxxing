@@ -40,9 +40,9 @@ SOURCE_KEYS = {
 }
 ALLOWED_SOURCE_ROOTS = ("docs/", "paper/", "research/", "scripts/", "src/", "tests/")
 FIGURE_SANS_STACK = [
+    "Arial",
     "Helvetica Neue",
     "Helvetica",
-    "Arial",
     "Liberation Sans",
     "Nimbus Sans",
 ]
@@ -1085,8 +1085,10 @@ def _render_c_persist_timeline_figure() -> None:
     fig.tight_layout()
     out_png = GENERATED / "figures" / "c_persist_timeline.png"
     out_pdf = GENERATED / "figures" / "c_persist_timeline.pdf"
+    out_svg = GENERATED / "figures" / "c_persist_timeline.svg"
     fig.savefig(out_png, dpi=220, bbox_inches="tight")
     _save_pdf(fig, out_pdf, bbox_inches="tight")
+    fig.savefig(out_svg, bbox_inches="tight")
     plt.close(fig)
     (GENERATED / "data" / "c_persist_timeline_snapshot.json").write_text(
         json.dumps(
