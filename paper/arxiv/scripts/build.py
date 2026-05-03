@@ -112,6 +112,8 @@ def _bundle() -> Path:
         "build/",
         "dist/",
         "__pycache__/",
+        "generated/figures/fig1_candidates/",
+        "generated/figures/fig1_chatgpt_review_bundle/",
     }
     with tarfile.open(out_path, "w:gz") as archive:
         for path in sorted(MANUSCRIPT_ROOT.rglob("*")):
@@ -120,7 +122,7 @@ def _bundle() -> Path:
             rel = path.relative_to(MANUSCRIPT_ROOT).as_posix()
             if any(rel.startswith(prefix) for prefix in exclude_prefixes):
                 continue
-            if path.suffix in {".pyc"}:
+            if path.suffix in {".pyc", ".zip"}:
                 continue
             if path.name in {".DS_Store"} or path.name.startswith("._"):
                 continue
