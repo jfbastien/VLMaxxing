@@ -4,8 +4,8 @@ Streaming state reuse is the natural scale-out target for anti-recomputation:
 the model revisits nearly the same visual state while deciding when to keep,
 shift, rebuild, or invalidate cached state. We do not claim a standardized
 C-STREAM result yet; here we report boundary evidence from a checked 26B-class
-scale-out bundle: cache-correctness failures, positive small-\(N\)
-prefix-snapshot rows, strong
+scale-out bundle on an M5 Max MacBook Pro with 128\,GB unified memory:
+cache-correctness failures, positive small-\(N\) prefix-snapshot rows, strong
 low-FPS / screenshot / recency baselines, denominator-safe exactness exports,
 and source manifests. The result is mixed in the scientifically useful way. It
 shows which mechanisms are plausible, which simple baselines are serious, and

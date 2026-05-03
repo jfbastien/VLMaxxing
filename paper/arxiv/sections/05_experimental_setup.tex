@@ -41,7 +41,8 @@ persistent-KV scaling curve use the same local stack on an M3 Air with
 MLX-community 4-bit conversion of Gemma 4-E4B \cite{gemma4e4b,gemma4e4bmlx},
 a separate open VLM family, on the same general MLX environment. The scale-out
 streaming evaluation uses a separate RTSP and screen-recording pipeline with a
-Gemma 4 26B/A4B-family stack.
+Gemma 4 26B/A4B-family stack on an M5 Max MacBook Pro with 128\,GB unified
+memory.
 
 For benchmark comparability, the main-path runs use uniform global sampling at
 8 frames and square-pad plus resize to 560\,$\times$\,560. The routing planner
@@ -70,7 +71,8 @@ first query at 8f plus selected frame-count probes & First-query E2E, \(V_{\math
 After-ingest reuse & Qwen2.5-VL-7B-Instruct-4bit, MLX-VLM & VideoMME sessions
 with one cold query and two follow-ups & Paired drift, follow-up latency,
 repair speedup \\
-Scale-out streaming & Separate Gemma 4 26B/A4B-family RTSP / screen-recording stack &
+Scale-out streaming & Gemma 4 26B/A4B-family RTSP / screen-recording stack,
+M5 Max MacBook Pro 128\,GB &
 Separate native-rate scale-out protocol & ViT-call reduction, throughput, diagnostics,
 artifact-harmonization status \\
 \bottomrule

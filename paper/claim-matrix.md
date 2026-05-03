@@ -95,13 +95,13 @@ cross-architecture C-PERSIST once Gemma cache semantics are safe, and
 cache-state causal instrumentation, not basic runnability.
 
 **2026-04-30 scale-out bundle update:** candidate C-STREAM now has a checked
-mixed bundle, but it remains a bounded evidence lane rather than a
-fourth headline. The checked 26B-class scale-out bundle shows default mixed-topology
-cross-turn cache reuse is unsafe; a topology-aware prefix snapshot gives
-positive small-N follow-up rows; fixed-evidence screen/UI baselines favor
-low-FPS dense over the tested event-window proxy; and exactness claims must
-separate zero correctness delta on 1,937 logged rows from byte-identical
-raw-paired text on 513 rows.
+mixed bundle on an M5 Max MacBook Pro with 128 GB unified memory, but it
+remains a bounded evidence lane rather than a fourth headline. The checked
+26B-class scale-out bundle shows default mixed-topology cross-turn cache reuse
+is unsafe; a topology-aware prefix snapshot gives positive small-N follow-up
+rows; fixed-evidence screen/UI baselines favor low-FPS dense over the tested
+event-window proxy; and exactness claims must separate zero correctness delta
+on 1,937 logged rows from byte-identical raw-paired text on 513 rows.
 The derived perception-fps view is after-warm only: 27.02 fps median at 8f
 (8/21 rows >=30 fps) and 54.68 fps median at 32f (19/21 rows >=30 fps), traced
 to the May 2 findings note and the checked Sam prefix-snapshot JSONL rows.

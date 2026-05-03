@@ -2967,10 +2967,11 @@ def _write_scaleout_bundle_table() -> None:
         r"\begin{table}[H]",
         r"\centering",
         (
-            r"\caption{Evaluated scale-out bundle. These rows make "
-            r"native-rate streaming state reuse more concrete, while "
-            r"cache correctness, matched baselines, and native mechanism quality "
-            r"remain open standardization gates.}"
+            r"\caption{Evaluated scale-out bundle on an M5 Max MacBook Pro "
+            r"with 128\,GB unified memory. These rows make native-rate "
+            r"streaming state reuse more concrete, while cache correctness, "
+            r"matched baselines, and native mechanism quality remain open "
+            r"standardization gates.}"
         ),
         r"\label{tab:scaleout-bundle}",
         r"\scriptsize",
