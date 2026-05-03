@@ -11,10 +11,8 @@ paired rows, cache-correctness checks, matched baselines, and source manifests.
 not support the main quantitative claims.
 
 This appendix makes that distinction audit-friendly. The manifest maps each
-main quantitative asset to its artifact family and hardware, and the provenance
-table records the commit pins observed by the manuscript sync step. A frozen
-submission should regenerate this table from the released source state after
-the source tree and generated assets are synchronized.
+main quantitative asset to its artifact family and hardware. The provenance
+table records the source revisions used for the reported evidence artifacts.
 
 \begin{table}[H]
 \centering
@@ -50,18 +48,15 @@ Qwen 8f keep-rate sweep & C-CEILING timing validation under failed-fidelity spar
 Random-keep sanity check & structured Qwen scorer versus uniform random keep at matched keep-rate & local sanity baseline & Qwen 8f VideoMME dev30 dense, magnitude-score, and four uniform-random seeds \\
 Paired drift table & paired choice/correctness drift summary & local analysis & paired-drift summary built from composition, Gemma routing-boundary, and persistent-cache artifacts \\
 Stability predictor scouts & dense margin and richer features are insufficient as deployable drift guards & local negative / future guard feature & stability-predictor artifacts; 228 scored Qwen paired rows \\
-Memory envelope & process working-set characterization across landed families & local reproducibility evidence & memory characterization artifacts; 78 cells across follow-up reuse, admission/composition, and measured sparse vision \\
+Memory envelope & process working-set characterization across reported families & local reproducibility evidence & memory characterization artifacts; 78 cells across follow-up reuse, admission/composition, and measured sparse vision \\
 Method / limitations & codec-native planner bridge; semantic planner substitution & local semantic evidence & Codec-native planner-substitution artifacts; Qwen 7B-4bit, VideoMME dev/short slices; offline extraction, not latency \\
-Native-rate streaming bundle & 26B cache-correctness, prefix snapshot, fixed-evidence stream baselines, exactness export, and post-vision-tower hard-prune boundary & scale-out bounded / mixed & Checked M5 Max MacBook Pro 128\,GB scale-out bundle, r2 correctness guard, patched-library closure, and expanded 32f n=21 prefix snapshot; predecessor E3 throughput instrumentation remains advisory until raw rows are imported \\
+Native-rate streaming bundle & 26B cache-correctness, prefix snapshot, fixed-evidence stream baselines, exactness export, and post-vision-tower hard-prune boundary & scale-out bounded / mixed & Checked M5 Max MacBook Pro 128\,GB scale-out bundle, r2 correctness guard, patched-library closure, and expanded 32f n=21 prefix snapshot; earlier throughput-only evidence is advisory because raw paired rows are outside the release evidence set \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-This appendix is the traceability manifest. Durable claim ledgers live in the
-paper claim matrix, reproduction-status document, and publishability-status
-note. The table above records the artifact families used by the paper; the
-generated repo-provenance table below records the checkout used for this PDF.
-A frozen submission should regenerate this appendix from the released source
-state.
+This appendix is the traceability manifest. The table above records the
+artifact families used by the paper; the generated repo-provenance table below
+records the source revisions used for this PDF.
 
 \input{generated/tables/repo_provenance.tex}

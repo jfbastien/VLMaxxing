@@ -85,9 +85,9 @@ the codec-native planner-substitution results provide semantic
 planner-substitution evidence: MAX-over-span sparse sampling is hard-falsified,
 but the continuous-score redesign matches dense choices on VideoMME dev
 all-duration \(n=30\) and later calibration-mode/source ablations are neutral
-on the local slices we ran. This remains a semantic planner result, not a
-latency win; the offline extraction path took 7290 s and the deployment path
-still needs streaming decoder integration.
+on the tested local slices. This remains a semantic planner result, not a
+latency win; the extraction path is offline and not integrated into the timed
+deployment path.
 
 The tested benchmark mix also under-samples scroll and pan regimes. We audited
 this directly on a 60-item VideoMME stratification across 8f/16f/32f and found

@@ -33,7 +33,7 @@
       },
       {
         "acc_delta": -0.06666666666666665,
-        "advisory_note": "Revised thermal gate misses by 19 ms in the favorable direction; source artifacts are checked into this repo.",
+        "advisory_note": "Decode-stage imbalance misses the advisory gate by 19 ms; source artifacts are checked into this repo.",
         "benchmark": "TOMATO",
         "decode_delta_ms": -119.65835150000066,
         "decode_delta_rel": -0.03514919278474747,

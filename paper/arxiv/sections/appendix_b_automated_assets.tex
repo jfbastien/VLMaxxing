@@ -1,19 +1,10 @@
 \section{Automated Assets and Figure Sources}
 
-The manuscript tooling automates paper elements with checked-in inputs: the routing holdout figure and table, headline
-anti-recomputation assets, measured sparse-vision tables, C-PERSIST repair and
-sampler/many-turn/setup-economics tables, the random-keep sanity table, the
-scale-out bundle status table, memory
-characterization, paired-drift summaries, and repo provenance generated
-from the current checkout.
+Several tables and figures are generated from checked evidence artifacts:
+routing frontiers, headline anti-recomputation assets, measured sparse-vision
+tables, C-PERSIST repair and stress tables, setup-economics tables, the
+random-keep sanity baseline, the scale-out bundle status table, memory
+characterization, paired-drift summaries, and source provenance.
 
-The sync step reads the checked artifact summaries used by this repo. Candidate
-C-STREAM rows are generated from the checked scale-out bundle and remain
-visibly bounded when the bundle is mixed.
-
-Future novelty-ranked dense and native-streaming quality tables should follow
-the same rule: generate from checked rows, not from free-form markdown or
-screenshots.
-
-Source pointers: \path{paper/arxiv/scripts/sync_sources.py},
-\path{paper/arxiv/scripts/build.py}, and \path{paper/arxiv/generated/}.
+The point is scientific rather than procedural: quantitative paper assets
+should come from checked rows, not free-form notes or screenshots.

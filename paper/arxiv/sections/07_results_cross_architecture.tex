@@ -203,12 +203,12 @@ vision-tower pruning still produces measured end-to-end gains before any video
 cache enters the picture. VideoMME 8f is the clean holdout anchor:
 1.113$\times$ first-query speedup with zero aggregate accuracy delta. MVBench
 8f has the larger observed multiplier at 1.407$\times$, but it remains
-advisory: the patched arm decodes 50\,ms faster on a 432\,ms decode window and
-also runs generation faster. A literal decode only normalization would lower
-the observed multiplier only to about 1.40$\times$, so the row remains useful
-but high residual. TOMATO 8f is advisory as well: the holdout rerun
-reports 1.194$\times$ with a favorable 119.7\,ms decode delta, missing the
-100\,ms advisory gate by 19.7\,ms in the favorable direction.
+advisory because decode-stage imbalance and generation-time residuals prevent
+clean attribution. Normalizing only the decode imbalance would lower the
+observed multiplier only to about 1.40$\times$, so the row remains useful but
+high residual. TOMATO 8f is advisory as well: the holdout rerun reports
+1.194$\times$, but decode-stage imbalance misses the 100\,ms advisory gate by
+19.7\,ms.
 
 The denominator, not the absolute multiplier, is the portable claim. The same
 pruning mechanism gives smaller gains on VideoMME than on MVBench because
@@ -289,9 +289,8 @@ multiplier. The newer measured sparse-execution rows are plotted in
 Figure~\ref{fig:vshare-ceiling} and tabulated in
 Tables~\ref{tab:gemma-measured-sparse-vision}
 and~\ref{tab:qwen-measured-sparse-vision}. Residual is observed minus
-predicted speedup. MVBench's advisory residual is in
-the favorable timing direction, so it is not used as a clean first-pass
-headline.}
+predicted speedup. MVBench's advisory residual is not cleanly attributable, so
+it is not used as a clean first-pass headline.}
 \label{tab:vshare-ceiling-residuals}
 \scriptsize
 \renewcommand{\arraystretch}{\PaperTableStretch}
@@ -315,8 +314,8 @@ VideoMME n=60 composition audit & 0.063 & 0.430 & 1.028 & 1.042 & +1.4pp & compo
 
 Across the rendered accounting view and the newer sparse-execution tables, the share model stays predictive enough to
 be useful and honest, but it is not a literal no-residual theorem. Advisory
-cells can sit above or below the prediction when non-vision timing, scheduler
-jitter, or thermal state moves with the run. The holdout spread is wider than
+cells can sit above or below the prediction when non-vision timing varies
+across paired arms. The holdout spread is wider than
 the first dev tranche made it look, and the matched Qwen point sits low-left
 where its smaller \(V_{\mathrm{share}}\) says it should. Gemma's 32f short cell
 is the cleanest measured sparse-execution operating point; Qwen's 8f keep-rate

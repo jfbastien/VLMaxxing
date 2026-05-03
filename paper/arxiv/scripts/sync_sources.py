@@ -1410,7 +1410,7 @@ def _c_vision_snapshot() -> dict[str, object]:
             frame_count=8,
             status="advisory-holdout",
             advisory_note=(
-                "Revised thermal gate misses by 19 ms in the favorable direction; "
+                "Decode-stage imbalance misses the advisory gate by 19 ms; "
                 "source artifacts are checked into this repo."
             ),
         )
@@ -2222,7 +2222,7 @@ def _write_headline_table(snapshot: dict) -> None:
             "first-query E2E & "
             f"{cvision_rows[1]['observed_e2e']:.3f}$\\times$ & "
             f"$\\Delta$acc {cvision_rows[1]['acc_delta']:+.3f}; "
-            "favorable timing caveat & advisory local \\\\"
+            "timing-attribution caveat & advisory local \\\\"
         ),
         (
             "First-pass & Qwen measured sparse vision, 16f \\(kr_V=0.85\\) & "
@@ -2683,9 +2683,8 @@ def _write_memory_characterization_table() -> None:
         r"\centering",
         (
             r"\caption{Memory characterization across reported cells. The "
-            r"runtime mitigation configures an MLX allocation cap and avoided "
-            r"kernel panics in the reported runs, but observed process working-set "
-            r"peaks still reached 13.6\,GB.}"
+            r"runtime uses an MLX allocation cap, and observed process "
+            r"working-set peaks still reached 13.6\,GB.}"
         ),
         r"\label{tab:memory-characterization}",
         r"\small",
@@ -3126,10 +3125,7 @@ def _write_repo_provenance_table(primary: dict[str, str]) -> None:
     lines = [
         r"\begin{table}[H]",
         r"\centering",
-        (
-            r"\caption{Repo provenance captured by the manuscript sync step "
-            r"for this built artifact.}"
-        ),
+        (r"\caption{Source revisions for released evidence artifacts.}"),
         r"\label{tab:repo-provenance}",
         r"\small",
         r"\renewcommand{\arraystretch}{\PaperTableStretch}",

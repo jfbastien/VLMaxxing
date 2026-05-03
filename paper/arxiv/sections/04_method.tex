@@ -143,9 +143,9 @@ the ideal end-to-end gain is
 \]
 where $f_{\mathrm{fixed}}$ is the dense wall-clock fraction left untouched.
 That is the paper's C-CEILING contribution: the denominator limits how much of
-a local speedup can survive. In real runs, residuals around this model expose
-overhead, scheduler noise, thermal movement, or non-target stages that moved
-despite the intended intervention. For vision-tower pruning, the same logic
+a component speedup can survive. In measured runs, residuals around this model
+expose overhead or non-target-stage timing variation despite the intended
+intervention. For vision-tower pruning, the same logic
 reduces to the scatter-back prediction
 \[
 \mathrm{E2E}_{\mathrm{pred}} =

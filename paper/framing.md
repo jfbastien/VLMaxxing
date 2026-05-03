@@ -138,7 +138,7 @@ duration-conditional partial reproduction + 1.55D frontier-partial):
    differentiated rather than missing: VideoMME 8f is **clean** at
    **1.113×** with zero aggregate accuracy delta; MVBench 8f is
    **advisory** at **1.407×** with a scheduler-scale decode note; and
-  TOMATO 8f is **earned-advisory** at **1.194×** from checked-in session-5
+  TOMATO 8f is **earned-advisory** at **1.194×** from checked TOMATO holdout
   artifacts. The matched Qwen VideoMME 8f cross-arch point lands
    at **1.044× observed vs 1.043× predicted**, with smaller absolute lift
    because Qwen's dense vision share is only ~10\%. The mechanism is
@@ -248,17 +248,19 @@ boundary as much as the positives:
   dev all-duration Qwen items with codec accuracy equal to dense accuracy
   (0.533) and zero parse failures; short dev+holdout n=20 also passes on the
   -5pp accuracy-loss boundary. This is local codec-native planner-substitution
-  evidence, not a latency win: offline codec extraction totals 7290s.
-- **1.30 Qwen session/streaming composition: CLOSED BOUNDARY RESULT
-  2026-04-26.** The original bridge was a hard negative, but the
+  evidence, not a latency win; the extraction path is offline rather than
+  integrated into the timed deployment path.
+- **1.30 Qwen session/streaming composition: boundary result.** The
+  original bridge was a hard negative, but the
   dense-Q0 successor `1.30W` materially improves it: paired cold
   `0.561` / streaming `0.503` (`Δacc = −0.0585`) at `2.7869×`, with
   aggregate Q0 parity (`34/57` in both arms), `0` parse failures, and `0`
   degenerates. Wording discipline matters here: 1.30W is currently
   evidenced as **dense-Q0 admission plus the existing session-reuse
   follow-up path**, not yet as proven follow-up pruning, because prompt
-  reuse may bypass most follow-up image work. The composition is still
-  not promoted: every remaining loss is follow-up-only, and the
+  reuse may bypass most follow-up image work. The composition remains a
+  boundary result rather than a C-STREAM claim: every remaining loss is
+  follow-up-only, and the
   `>=3.0×` rescue floor is structurally unreachable under the current
   3-query protocol because dense Q0 alone already exceeds the target
   wall-clock budget. Root-cause decomposition remains valid, and the
@@ -357,7 +359,7 @@ streaming bundle occupy disjoint regimes by design:
 |-----------------------|--------------------------------------------|------------------------------------------------------------|
 | Model size            | 4 B-class / 7B local, mostly quantized     | 26B-class scale-out rows plus local artifacts |
 | Protocol              | sparse-sampled benchmark QA                | native-rate streaming / live deployment |
-| Eval regime           | N = 30 / 60 holdout, paired, thermally controlled | checked raw paired rows and matched fixed-evidence baselines, still mixed |
+| Eval regime           | N = 30 / 60 holdout with paired local timing | checked raw paired rows and matched fixed-evidence baselines, still mixed |
 | Classifier            | pixel-diff proxy on sampled decoded frames | MV/residual side-channels, event windows, prefix snapshots |
 | Focus                 | mechanism isolation, prereg falsification  | full stack and deployment-style state reuse |
 | Strongest numbers     | 1.113× VideoMME 8 f holdout; Gemma 32f short 1.316×; adaptive C-PERSIST 0/93 + many-turn stress | prefix-snapshot 8f/32f positive small-N; exactness export bounded to 1,937 zero-delta / 513 byte-identical |
@@ -426,7 +428,7 @@ revised pre-release source §8 and codex 2026-04-16 review, the paper must state
    budget is lower than some adjacent work. Frame-count scaling study
    is noted as future work.
 4. **Pixel diff is still the default proxy, but codec-native evidence now
-   exists without a calibration caveat on the local slices we ran**: the
+   has neutral calibration ablations on the tested local slices**: the
    1.29 results show why the bridge is hard. MAX-over-span sparse
    sampling degenerates to all-NOVEL, but continuous codec scores match dense
    choices on VideoMME dev all-duration \(n=30\), and that row is unchanged
@@ -571,8 +573,7 @@ skipped compute.
 
 Near-term paper path:
 
-- honest reproduction of the pre-release source controls and benchmark lane on
-  Apple Silicon (mostly done; see `docs/reproduction-status.md`)
+- documented MLX reproduction of the source controls and benchmark lane
 - benchmark-native diagnosis of where same-position reuse fails and why
 - a stronger training-free planner: phase 1.21 MVBench N=30 **PASSED**
   (base policy 0.600@4.06 Pareto-wins dense-6; clean tree). Phase
@@ -695,8 +696,8 @@ hard-falsified, while continuous codec scores match dense choices on VideoMME
 dev all-duration \(n=30\) and survive both calibration-mode and
 calibration-source ablations on the local slices we ran. Paper language can
 now cite 1.29 as **local codec-native planner-substitution evidence**, but it
-should not cite 1.29 as a latency win. The offline extraction path took 7290s
-on dev n=30; speed requires streaming decoder integration or cached metadata.
+should not cite 1.29 as a latency win. Speed requires streaming decoder
+integration or cached metadata.
 
 Phase 1.36 (2026-04-17) quantified the pixel-diff ↔ ViT-feature
 lower bound: per-block Pearson r is **+0.233 on TOMATO (MEAN)** and
