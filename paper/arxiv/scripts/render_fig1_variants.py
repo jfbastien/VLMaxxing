@@ -10,17 +10,34 @@ import sys
 from pathlib import Path
 from typing import Any
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+
+def _find_manuscript_root() -> Path:
+    """Support both the repo tree and the flattened arXiv source bundle."""
+
+    here = Path(__file__).resolve()
+    for parent in (here.parent, *here.parents):
+        if (parent / "main.tex").exists() and (parent / "generated").exists():
+            return parent
+        nested = parent / "paper" / "arxiv"
+        if (nested / "main.tex").exists() and (nested / "generated").exists():
+            return nested
+    return here.parents[1]
+
+
+MANUSCRIPT_ROOT = _find_manuscript_root()
+REPO_ROOT = (
+    MANUSCRIPT_ROOT.parents[1]
+    if MANUSCRIPT_ROOT.name == "arxiv" and MANUSCRIPT_ROOT.parent.name == "paper"
+    else MANUSCRIPT_ROOT
+)
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 os.environ.setdefault("MPLCONFIGDIR", str(REPO_ROOT / ".tmp" / "matplotlib"))
 
-import matplotlib.patches as mpatches
-import matplotlib.pyplot as plt
-from PIL import Image, ImageDraw
-
+import matplotlib.patches as mpatches  # noqa: E402
+import matplotlib.pyplot as plt  # noqa: E402
 from fig1_primitives import (  # noqa: E402
     THEME,
     arrow,
@@ -35,9 +52,9 @@ from fig1_primitives import (  # noqa: E402
     runtime_bar,
     save_figure,
 )
+from PIL import Image, ImageDraw  # noqa: E402
 
-
-GENERATED = REPO_ROOT / "paper" / "arxiv" / "generated"
+GENERATED = MANUSCRIPT_ROOT / "generated"
 DEFAULT_CANDIDATES = GENERATED / "figures" / "fig1_candidates" / "ranked_candidates.json"
 DEFAULT_OUT = GENERATED / "figures" / "fig1_variants"
 HEADLINE_SNAPSHOT = GENERATED / "data" / "headline_snapshot.json"
@@ -55,11 +72,28 @@ def load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text())
 
 
-def load_candidates(path: Path, *, top_k: int, candidate_ids: set[str] | None) -> list[dict[str, Any]]:
+def resolve_asset_path(path: str) -> Path:
+    rel = Path(path)
+    candidates = [REPO_ROOT / rel, MANUSCRIPT_ROOT / rel]
+    prefix = Path("paper") / "arxiv"
+    if len(rel.parts) >= 2 and Path(*rel.parts[:2]) == prefix:
+        stripped = Path(*rel.parts[2:])
+        candidates.extend([MANUSCRIPT_ROOT / stripped, REPO_ROOT / stripped])
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return candidates[0]
+
+
+def load_candidates(
+    path: Path, *, top_k: int, candidate_ids: set[str] | None
+) -> list[dict[str, Any]]:
     payload = load_json(path)
     candidates = payload["candidates"]
     if candidate_ids:
-        candidates = [candidate for candidate in candidates if candidate["candidate_id"] in candidate_ids]
+        candidates = [
+            candidate for candidate in candidates if candidate["candidate_id"] in candidate_ids
+        ]
     return candidates[:top_k]
 
 
@@ -67,7 +101,9 @@ def headline_values() -> dict[str, Any]:
     snapshot = load_json(HEADLINE_SNAPSHOT)
     repair = snapshot["selective_reprefill"]["adaptive"]
     measured = snapshot["measured_sparse_execution"]["gemma_32f_short"]
-    qwen_16f = next(row for row in snapshot["persistent_kv"]["rows"] if int(row["frame_count"]) == 16)
+    qwen_16f = next(
+        row for row in snapshot["persistent_kv"]["rows"] if int(row["frame_count"]) == 16
+    )
     drift = int(round(float(measured["n"]) * (1.0 - float(measured["choice_agreement"]))))
     ceiling = load_json(CEILING_DATA)
     composition = ceiling["composition_cells"][0]
@@ -91,7 +127,7 @@ def headline_values() -> dict[str, Any]:
 
 
 def open_images(paths: list[str]) -> list[Image.Image]:
-    return [Image.open(REPO_ROOT / path).convert("RGB") for path in paths]
+    return [Image.open(resolve_asset_path(path)).convert("RGB") for path in paths]
 
 
 def candidate_short_name(candidate: dict[str, Any]) -> str:
@@ -103,7 +139,9 @@ def draw_headline(ax: plt.Axes, candidate: dict[str, Any]) -> None:
     label(ax, 0.045, 0.918, "Stop paying twice.", fs=14.6, color=THEME.waste, weight="bold")
 
 
-def frame_slots(x: float, y: float, w: float, h: float, n: int) -> list[tuple[float, float, float, float]]:
+def frame_slots(
+    x: float, y: float, w: float, h: float, n: int
+) -> list[tuple[float, float, float, float]]:
     gap = 0.012
     fw = (w - gap * (n - 1)) / n
     return [(x + idx * (fw + gap), y, fw, h) for idx in range(n)]
@@ -138,7 +176,9 @@ def draw_frame_strip(
         sx, sy, sw, sh = slot
         if variant == "ghost":
             alpha = 0.45 if idx < len(images) - 1 else 1.0
-            draw_raster_frame(ax, image, sx + idx * 0.006, sy - idx * 0.006, sw, sh, alpha=alpha, z=2 + idx)
+            draw_raster_frame(
+                ax, image, sx + idx * 0.006, sy - idx * 0.006, sw, sh, alpha=alpha, z=2 + idx
+            )
         else:
             draw_raster_frame(ax, image, sx, sy, sw, sh, z=2)
         if variant in {"clean", "inset"} and idx > 0:
@@ -151,23 +191,54 @@ def draw_frame_strip(
             transition = assets["transitions"][idx - 1]
             reuse = float(transition["reuse_ratio_active"])
             reuse_bar(ax, sx, sy - 0.033, sw, 0.012, reuse)
-            label(ax, sx + sw / 2, sy - 0.047, f"{reuse:.0%} reused", fs=4.8, color=THEME.muted, ha="center")
+            label(
+                ax,
+                sx + sw / 2,
+                sy - 0.047,
+                f"{reuse:.0%} reused",
+                fs=4.8,
+                color=THEME.muted,
+                ha="center",
+            )
     if variant == "inset":
         draw_truth_inset(ax, candidate, 0.505, 0.622, 0.115, 0.115)
     if variant == "ghost":
-        label(ax, x + 0.08, y - 0.044, "persistent visual state", fs=6.1, color=THEME.cache, weight="bold")
+        label(
+            ax,
+            x + 0.08,
+            y - 0.044,
+            "persistent visual state",
+            fs=6.1,
+            color=THEME.cache,
+            weight="bold",
+        )
         ax.plot([x + 0.03, x + 0.43], [y - 0.022, y - 0.022], color=THEME.cache, lw=1.8)
-        label(ax, x + 0.455, y - 0.022, "repair local tail", fs=6.1, color=THEME.fresh, weight="bold")
+        label(
+            ax, x + 0.455, y - 0.022, "repair local tail", fs=6.1, color=THEME.fresh, weight="bold"
+        )
 
 
-def draw_truth_inset(ax: plt.Axes, candidate: dict[str, Any], x: float, y: float, w: float, h: float) -> None:
+def draw_truth_inset(
+    ax: plt.Axes, candidate: dict[str, Any], x: float, y: float, w: float, h: float
+) -> None:
     assets = candidate["assets"]
     images = open_images([assets["frames"][1]])
-    rounded_panel(ax, x - 0.006, y - 0.033, w + 0.012, h + 0.054, face="#ffffff", edge=THEME.faint, lw=0.7)
+    rounded_panel(
+        ax, x - 0.006, y - 0.033, w + 0.012, h + 0.054, face="#ffffff", edge=THEME.faint, lw=0.7
+    )
     draw_raster_frame(ax, images[0], x, y, w, h, z=12)
     boxes = assets["transitions"][0]["fresh_boxes"]
     draw_highlight_regions(ax, x, y, w, h, boxes, alpha=0.18, lw=0.32, z=14)
-    label(ax, x + w / 2, y + h + 0.018, "exact fresh blocks", fs=4.9, color=THEME.fresh, weight="bold", ha="center")
+    label(
+        ax,
+        x + w / 2,
+        y + h + 0.018,
+        "exact fresh blocks",
+        fs=4.9,
+        color=THEME.fresh,
+        weight="bold",
+        ha="center",
+    )
     label(ax, x + w / 2, y - 0.018, "active blocks", fs=4.5, color=THEME.muted, ha="center")
 
 
@@ -176,10 +247,21 @@ def draw_rebuild_block(ax: plt.Axes, x: float, y: float, w: float, h: float, q: 
     label(ax, x + 0.015, y + h * 0.67, q, fs=7.1, color=THEME.waste, weight="bold")
     label(ax, x + 0.047, y + h * 0.67, "frames", fs=5.4, color=THEME.ink)
     arrow(ax, x + 0.030, y + h * 0.40, x + w - 0.030, y + h * 0.40, color=THEME.waste, lw=0.75)
-    label(ax, x + w * 0.50, y + h * 0.21, "ViT + prefix/KV", fs=5.0, color=THEME.waste, weight="bold", ha="center")
+    label(
+        ax,
+        x + w * 0.50,
+        y + h * 0.21,
+        "ViT + prefix/KV",
+        fs=5.0,
+        color=THEME.waste,
+        weight="bold",
+        ha="center",
+    )
 
 
-def draw_stateful_block(ax: plt.Axes, x: float, y: float, w: float, h: float, q: str, mode: str) -> None:
+def draw_stateful_block(
+    ax: plt.Axes, x: float, y: float, w: float, h: float, q: str, mode: str
+) -> None:
     if mode == "pay":
         face, edge, text = THEME.waste_soft, THEME.waste, "full ingest"
         filled, fresh_tail = 10, 10
@@ -191,11 +273,22 @@ def draw_stateful_block(ax: plt.Axes, x: float, y: float, w: float, h: float, q:
         filled, fresh_tail = 10, 1
     rounded_panel(ax, x, y, w, h, face=face, edge=edge, lw=0.85, radius=0.008)
     label(ax, x + 0.014, y + h * 0.67, q, fs=7.1, color=edge, weight="bold")
-    brick_row(ax, x + 0.045, y + h * 0.52, n=10, filled=filled, fresh_tail=fresh_tail, w=w - 0.062, h=h * 0.15)
+    brick_row(
+        ax,
+        x + 0.045,
+        y + h * 0.52,
+        n=10,
+        filled=filled,
+        fresh_tail=fresh_tail,
+        w=w - 0.062,
+        h=h * 0.15,
+    )
     label(ax, x + w / 2, y + h * 0.22, text, fs=5.1, color=edge, weight="bold", ha="center")
 
 
-def draw_lanes(ax: plt.Axes, x: float = 0.045, y: float = 0.365, w: float = 0.575, h: float = 0.235) -> None:
+def draw_lanes(
+    ax: plt.Axes, x: float = 0.045, y: float = 0.365, w: float = 0.575, h: float = 0.235
+) -> None:
     label(ax, x, y + h + 0.024, "same video, new questions", fs=7.8, weight="bold")
     label(ax, x, y + h - 0.025, "baseline VLM", fs=6.3, color=THEME.waste, weight="bold")
     label(ax, x, y + h - 0.135, "anti-recompute", fs=6.3, color=THEME.cache, weight="bold")
@@ -206,14 +299,30 @@ def draw_lanes(ax: plt.Axes, x: float = 0.045, y: float = 0.365, w: float = 0.57
         bx = start_x + idx * (block_w + gap)
         draw_rebuild_block(ax, bx, y + h - 0.078, block_w, 0.070, q)
         if idx < 2:
-            arrow(ax, bx + block_w + 0.006, y + h - 0.043, bx + block_w + gap - 0.006, y + h - 0.043, lw=0.7)
+            arrow(
+                ax,
+                bx + block_w + 0.006,
+                y + h - 0.043,
+                bx + block_w + gap - 0.006,
+                y + h - 0.043,
+                lw=0.7,
+            )
     for idx, (q, mode) in enumerate((("Q1", "pay"), ("Q2", "repair"), ("Q3", "reuse"))):
         bx = start_x + idx * (block_w + gap)
         draw_stateful_block(ax, bx, y + h - 0.188, block_w, 0.070, q, mode)
         if idx < 2:
-            arrow(ax, bx + block_w + 0.006, y + h - 0.153, bx + block_w + gap - 0.006, y + h - 0.153, lw=0.7)
+            arrow(
+                ax,
+                bx + block_w + 0.006,
+                y + h - 0.153,
+                bx + block_w + gap - 0.006,
+                y + h - 0.153,
+                lw=0.7,
+            )
     label(ax, x + 0.145, y + 0.012, "red = pay again", fs=5.4, color=THEME.waste, weight="bold")
-    label(ax, x + 0.285, y + 0.012, "green = already paid", fs=5.4, color=THEME.cache, weight="bold")
+    label(
+        ax, x + 0.285, y + 0.012, "green = already paid", fs=5.4, color=THEME.cache, weight="bold"
+    )
     label(ax, x + 0.455, y + 0.012, "orange = repair", fs=5.4, color=THEME.fresh, weight="bold")
 
 
@@ -241,10 +350,22 @@ def draw_token_grid(ax: plt.Axes, x: float, y: float, w: float, h: float) -> Non
             )
 
 
-def draw_result_cards(ax: plt.Axes, values: dict[str, Any], x: float = 0.665, y: float = 0.276, w: float = 0.290) -> None:
+def draw_result_cards(
+    ax: plt.Axes, values: dict[str, Any], x: float = 0.665, y: float = 0.276, w: float = 0.290
+) -> None:
     # C-PERSIST hero.
-    rounded_panel(ax, x, y + 0.318, w, 0.235, face="#f0fdf4", edge=THEME.cache, lw=1.0, radius=0.010)
-    label(ax, x + 0.016, y + 0.523, "C-PERSIST, after ingest", fs=7.1, color=THEME.cache, weight="bold")
+    rounded_panel(
+        ax, x, y + 0.318, w, 0.235, face="#f0fdf4", edge=THEME.cache, lw=1.0, radius=0.010
+    )
+    label(
+        ax,
+        x + 0.016,
+        y + 0.523,
+        "C-PERSIST, after ingest",
+        fs=7.1,
+        color=THEME.cache,
+        weight="bold",
+    )
     label(
         ax,
         x + 0.016,
@@ -254,7 +375,15 @@ def draw_result_cards(ax: plt.Axes, values: dict[str, Any], x: float = 0.665, y:
         color=THEME.cache,
         weight="bold",
     )
-    label(ax, x + 0.018, y + 0.412, "repaired follow-up speedup", fs=6.4, color=THEME.cache, weight="bold")
+    label(
+        ax,
+        x + 0.018,
+        y + 0.412,
+        "repaired follow-up speedup",
+        fs=6.4,
+        color=THEME.cache,
+        weight="bold",
+    )
     label(
         ax,
         x + 0.018,
@@ -276,19 +405,61 @@ def draw_result_cards(ax: plt.Axes, values: dict[str, Any], x: float = 0.665, y:
     )
 
     # C-VISION measured first-pass cell.
-    rounded_panel(ax, x, y + 0.184, w, 0.105, face="#eff6ff", edge=THEME.question, lw=0.85, radius=0.009)
-    label(ax, x + 0.016, y + 0.269, "C-VISION, fresh video", fs=6.5, color=THEME.question, weight="bold")
-    label(ax, x + 0.016, y + 0.225, f"{values['c_vision_e2e']:.3f}x", fs=12.0, color=THEME.question, weight="bold")
+    rounded_panel(
+        ax, x, y + 0.184, w, 0.105, face="#eff6ff", edge=THEME.question, lw=0.85, radius=0.009
+    )
+    label(
+        ax,
+        x + 0.016,
+        y + 0.269,
+        "C-VISION, fresh video",
+        fs=6.5,
+        color=THEME.question,
+        weight="bold",
+    )
+    label(
+        ax,
+        x + 0.016,
+        y + 0.225,
+        f"{values['c_vision_e2e']:.3f}x",
+        fs=12.0,
+        color=THEME.question,
+        weight="bold",
+    )
     label(ax, x + 0.132, y + 0.229, "first-query", fs=5.4, color=THEME.question, weight="bold")
     label(ax, x + 0.132, y + 0.209, "E2E", fs=5.4, color=THEME.question, weight="bold")
-    label(ax, x + 0.016, y + 0.199, f"{values['c_vision_drift']}/{values['c_vision_n']} drift · schematic mask", fs=5.1, color=THEME.muted)
+    label(
+        ax,
+        x + 0.016,
+        y + 0.199,
+        f"{values['c_vision_drift']}/{values['c_vision_n']} drift · schematic mask",
+        fs=5.1,
+        color=THEME.muted,
+    )
     draw_token_grid(ax, x + 0.205, y + 0.205, 0.060, 0.052)
 
     # C-CEILING guardrail.
-    rounded_panel(ax, x, y + 0.060, w, 0.095, face=THEME.guard_soft, edge=THEME.guard, lw=0.85, radius=0.009)
+    rounded_panel(
+        ax, x, y + 0.060, w, 0.095, face=THEME.guard_soft, edge=THEME.guard, lw=0.85, radius=0.009
+    )
     label(ax, x + 0.016, y + 0.137, "C-CEILING", fs=6.5, color=THEME.guard, weight="bold")
-    label(ax, x + 0.016, y + 0.112, "do not multiply local wins", fs=5.8, color=THEME.guard, weight="bold")
-    label(ax, x + 0.016, y + 0.091, f"audit {values['composition_observed']:.3f}x, not a product", fs=4.9, color=THEME.muted)
+    label(
+        ax,
+        x + 0.016,
+        y + 0.112,
+        "do not multiply local wins",
+        fs=5.8,
+        color=THEME.guard,
+        weight="bold",
+    )
+    label(
+        ax,
+        x + 0.016,
+        y + 0.091,
+        f"audit {values['composition_observed']:.3f}x, not a product",
+        fs=4.9,
+        color=THEME.muted,
+    )
     runtime_bar(
         ax,
         x + 0.016,
@@ -307,7 +478,9 @@ def draw_result_cards(ax: plt.Axes, values: dict[str, Any], x: float = 0.665, y:
     label(ax, x + 0.118, y + 0.019, "native-rate target", fs=5.3, color=THEME.muted)
 
 
-def draw_caption_line(ax: plt.Axes, candidate: dict[str, Any], x: float = 0.045, y: float = 0.214) -> None:
+def draw_caption_line(
+    ax: plt.Axes, candidate: dict[str, Any], x: float = 0.045, y: float = 0.214
+) -> None:
     metrics = candidate["metrics"]
     label(
         ax,
@@ -323,7 +496,9 @@ def draw_caption_line(ax: plt.Axes, candidate: dict[str, Any], x: float = 0.045,
     )
 
 
-def render_variant(candidate: dict[str, Any], values: dict[str, Any], out_dir: Path, variant: str) -> Path:
+def render_variant(
+    candidate: dict[str, Any], values: dict[str, Any], out_dir: Path, variant: str
+) -> Path:
     hashsalt = f"codec-through-fig1-v2-{variant}-{candidate['candidate_id']}"
     fig, ax = new_canvas(hashsalt=hashsalt)
     draw_headline(ax, candidate)
@@ -366,7 +541,9 @@ def main() -> int:
     args = parser.parse_args()
 
     candidate_ids = set(args.candidate_id) if args.candidate_id else None
-    candidates = load_candidates(args.candidate_manifest, top_k=args.top_k, candidate_ids=candidate_ids)
+    candidates = load_candidates(
+        args.candidate_manifest, top_k=args.top_k, candidate_ids=candidate_ids
+    )
     values = headline_values()
     variants = [part.strip() for part in args.variants.split(",") if part.strip()]
     png_paths: list[Path] = []

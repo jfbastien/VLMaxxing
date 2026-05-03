@@ -8,12 +8,23 @@ import json
 from pathlib import Path
 from typing import Any
 
-
 ASSET_KEYS = ("frames", "subtle_overlays", "readable_masks", "exact_overlays")
 
 
 def load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text())
+
+
+def resolve_asset_path(root: Path, rel_path: str) -> Path:
+    rel = Path(rel_path)
+    candidates = [root / rel]
+    prefix = Path("paper") / "arxiv"
+    if len(rel.parts) >= 2 and Path(*rel.parts[:2]) == prefix:
+        candidates.append(root / Path(*rel.parts[2:]))
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return candidates[0]
 
 
 def validate_manifest(repo_root: Path, manifest: Path) -> list[str]:
@@ -24,13 +35,20 @@ def validate_manifest(repo_root: Path, manifest: Path) -> list[str]:
         assets = candidate.get("assets") or {}
         for key in ASSET_KEYS:
             for rel in assets.get(key, []):
-                path = repo_root / rel
+                path = resolve_asset_path(repo_root, rel)
                 if not path.exists():
                     missing.append(f"{manifest.name}: {candidate_id}: missing {key}: {rel}")
         for tidx, transition in enumerate(assets.get("transitions", []), start=1):
-            for required in ("fresh_fraction_active", "raw_novel_fraction_active", "stale_fraction_active"):
+            for required in (
+                "fresh_fraction_active",
+                "raw_novel_fraction_active",
+                "stale_fraction_active",
+            ):
                 if required not in transition:
-                    missing.append(f"{manifest.name}: {candidate_id}: transition {tidx} missing metadata {required}")
+                    missing.append(
+                        f"{manifest.name}: {candidate_id}: transition {tidx} "
+                        f"missing metadata {required}"
+                    )
     return missing
 
 

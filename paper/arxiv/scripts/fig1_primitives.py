@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
-
 
 PDF_METADATA = {"CreationDate": None, "ModDate": None}
 
@@ -303,7 +303,9 @@ def reuse_bar(
     edge: str = THEME.faint,
 ) -> None:
     reuse = max(0.0, min(1.0, reuse))
-    ax.add_patch(mpatches.Rectangle((x, y), w * reuse, h, facecolor=THEME.cache, edgecolor="none", zorder=5))
+    ax.add_patch(
+        mpatches.Rectangle((x, y), w * reuse, h, facecolor=THEME.cache, edgecolor="none", zorder=5)
+    )
     ax.add_patch(
         mpatches.Rectangle(
             (x + w * reuse, y),
@@ -314,7 +316,9 @@ def reuse_bar(
             zorder=5,
         )
     )
-    ax.add_patch(mpatches.Rectangle((x, y), w, h, facecolor="none", edgecolor=edge, lw=0.35, zorder=6))
+    ax.add_patch(
+        mpatches.Rectangle((x, y), w, h, facecolor="none", edgecolor=edge, lw=0.35, zorder=6)
+    )
 
 
 def runtime_bar(
@@ -354,4 +358,6 @@ def runtime_bar(
                 va="center",
             )
         cursor += seg_w
-    ax.add_patch(mpatches.Rectangle((x, y), w, h, facecolor="none", edgecolor=THEME.ink, lw=0.45, zorder=4))
+    ax.add_patch(
+        mpatches.Rectangle((x, y), w, h, facecolor="none", edgecolor=THEME.ink, lw=0.45, zorder=4)
+    )

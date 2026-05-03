@@ -9,15 +9,17 @@ paper sync path.
 from __future__ import annotations
 
 import argparse
-from collections import Counter
+import contextlib
 import csv
 import hashlib
 import json
 import os
 import sys
+from collections import Counter
+from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 import numpy as np
 from PIL import Image, ImageDraw, JpegImagePlugin
@@ -42,7 +44,6 @@ from codec_through.temporal import (  # noqa: E402
     classify_blocks_with_planner,
 )
 from codec_through.track_a import active_region_block_mask  # noqa: E402
-
 
 GENERATED = REPO_ROOT / "paper" / "arxiv" / "generated"
 OUT_DIR = GENERATED / "figures" / "fig1_candidates"
@@ -159,8 +160,7 @@ VISUALIZATION_POLICY = {
     "max_age": TRACK_A_MAX_AGE,
     "active_region_only": True,
     "source_row_policy_hint": (
-        "source_jsonl may come from older planner sweeps; do not treat it as "
-        "the rendering policy."
+        "source_jsonl may come from older planner sweeps; do not treat it as the rendering policy."
     ),
 }
 
@@ -208,10 +208,7 @@ def infer_benchmark(item_id: str, source_jsonl: Path) -> str:
 def parse_video_source_row(row: dict[str, Any], source_jsonl: Path) -> VideoSource | None:
     item_id = row.get("item_id") or row.get("sample_id") or row.get("id")
     raw_video_path = (
-        row.get("video_path")
-        or row.get("path")
-        or row.get("video")
-        or row.get("source_video")
+        row.get("video_path") or row.get("path") or row.get("video") or row.get("source_video")
     )
     if not isinstance(item_id, str) or not isinstance(raw_video_path, str):
         return None
@@ -222,7 +219,9 @@ def parse_video_source_row(row: dict[str, Any], source_jsonl: Path) -> VideoSour
         return None
     benchmark = infer_benchmark(item_id, source_jsonl)
     video_id = infer_video_id(item_id, video_path, row)
-    split = row.get("split") or row.get("group") or row.get("duration") or row.get("duration_bucket")
+    split = (
+        row.get("split") or row.get("group") or row.get("duration") or row.get("duration_bucket")
+    )
     question = row.get("question") or row.get("prompt")
     return VideoSource(
         video_id=str(video_id),
@@ -302,10 +301,10 @@ def decode_frames_at_times(video_path: Path, times: list[float]) -> list[Image.I
     first_time = indexed_times[0][0]
     with av.open(str(video_path)) as container:
         stream = container.streams.video[0]
-        try:
-            container.seek(int(max(0.0, first_time - 0.35) * 1_000_000), any_frame=False, backward=True)
-        except Exception:
-            pass
+        with contextlib.suppress(Exception):
+            container.seek(
+                int(max(0.0, first_time - 0.35) * 1_000_000), any_frame=False, backward=True
+            )
         for frame in container.decode(stream):
             ts = float(frame.time) if frame.time is not None else None
             if ts is None:
@@ -324,7 +323,9 @@ def decode_frames_at_times(video_path: Path, times: list[float]) -> list[Image.I
     return [image for image in selected if image is not None]
 
 
-def square_pad_frame(frame: Image.Image, *, size: int = BENCHMARK_FRAME_SIZE) -> tuple[Image.Image, tuple[int, int, int, int]]:
+def square_pad_frame(
+    frame: Image.Image, *, size: int = BENCHMARK_FRAME_SIZE
+) -> tuple[Image.Image, tuple[int, int, int, int]]:
     width, height = frame.size
     if width <= 0 or height <= 0:
         raise ValueError("frame dimensions must be positive")
@@ -394,7 +395,12 @@ def connected_components(mask: np.ndarray) -> list[np.ndarray]:
                 cy, cx = stack.pop()
                 points.append((cy, cx))
                 for ny, nx in ((cy - 1, cx), (cy + 1, cx), (cy, cx - 1), (cy, cx + 1)):
-                    if 0 <= ny < height and 0 <= nx < width and bool(mask[ny, nx]) and not bool(seen[ny, nx]):
+                    if (
+                        0 <= ny < height
+                        and 0 <= nx < width
+                        and bool(mask[ny, nx])
+                        and not bool(seen[ny, nx])
+                    ):
                         seen[ny, nx] = True
                         stack.append((ny, nx))
             comp = np.zeros_like(mask, dtype=bool)
@@ -656,7 +662,9 @@ def compute_window_metrics(
         color_entropy_values.append(color_entropy(crop))
         graphic_card_penalties.append(graphic_card_penalty(crop))
 
-    for idx, (previous, current) in enumerate(zip(padded_frames[:-1], padded_frames[1:], strict=True)):
+    for idx, (previous, current) in enumerate(
+        zip(padded_frames[:-1], padded_frames[1:], strict=True)
+    ):
         scores, classes, active = block_scores_and_classes(
             previous,
             current,
@@ -682,7 +690,12 @@ def compute_window_metrics(
         regions = merge_novel_blocks_to_regions(fresh, max_regions=2, min_blocks=2, dilate_iters=1)
         norm_regions = block_boxes_to_normalized_active_boxes(regions, active_boxes[idx + 1])
         highlighted_areas.append(float(sum(box_area(box) for box in norm_regions)))
-        cut_scores.append(cut_penalty(active_crop(previous, active_boxes[idx]), active_crop(current, active_boxes[idx + 1])))
+        cut_scores.append(
+            cut_penalty(
+                active_crop(previous, active_boxes[idx]),
+                active_crop(current, active_boxes[idx + 1]),
+            )
+        )
 
     if not reuse_ratios:
         reuse_ratios = [0.0]
@@ -729,7 +742,11 @@ def enumerate_windows(
         if duration_s < length_s + 0.1:
             continue
         max_start = duration_s - length_s
-        starts = np.linspace(0.0, max_start, num=per_length) if per_length > 1 else np.array([max_start / 2.0])
+        starts = (
+            np.linspace(0.0, max_start, num=per_length)
+            if per_length > 1
+            else np.array([max_start / 2.0])
+        )
         for start in starts:
             windows.append((float(start), float(start + length_s)))
     return windows
@@ -742,7 +759,9 @@ def candidate_id_for(source: VideoSource, start_s: float, end_s: float) -> str:
     return f"{video}_{start_s:06.2f}_{end_s:06.2f}_{digest}".replace(".", "p")
 
 
-def evaluate_window(source: VideoSource, start_s: float, end_s: float, duration_s: float) -> WindowRecord | None:
+def evaluate_window(
+    source: VideoSource, start_s: float, end_s: float, duration_s: float
+) -> WindowRecord | None:
     frame_times = [float(t) for t in np.linspace(start_s, end_s, num=DISPLAY_FRAMES)]
     try:
         frames = decode_frames_at_times(source.video_path, frame_times)
@@ -805,7 +824,9 @@ def transition_details(
 ) -> list[dict[str, Any]]:
     details: list[dict[str, Any]] = []
     ages: np.ndarray | None = None
-    for idx, (previous, current) in enumerate(zip(padded_frames[:-1], padded_frames[1:], strict=True)):
+    for idx, (previous, current) in enumerate(
+        zip(padded_frames[:-1], padded_frames[1:], strict=True)
+    ):
         scores, classes, active = block_scores_and_classes(
             previous,
             current,
@@ -914,7 +935,10 @@ def flatten_record_for_csv(rank: int, record: WindowRecord) -> dict[str, Any]:
         "end_s": f"{record.end_s:.3f}",
         "window_length_s": f"{record.window_length_s:.3f}",
         "passes_basic_filters": record.passes_basic_filters,
-        **{key: f"{value:.6f}" if isinstance(value, float) else value for key, value in metrics.items()},
+        **{
+            key: f"{value:.6f}" if isinstance(value, float) else value
+            for key, value in metrics.items()
+        },
         "video_path_hint": record.video_path_hint,
         "source_jsonl": record.source_jsonl,
     }
@@ -942,13 +966,11 @@ def select_diverse_records(
             return False
         if by_video[record.video_id] >= max_per_video:
             return False
-        if (
+        return not (
             enforce_benchmark_cap
             and max_per_benchmark is not None
             and by_benchmark[record.benchmark] >= max_per_benchmark
-        ):
-            return False
-        return True
+        )
 
     def add(record: WindowRecord) -> None:
         selected.append(record)
@@ -994,7 +1016,10 @@ def save_ranked_outputs(records: list[WindowRecord]) -> None:
     json_path.write_text(
         json.dumps(
             {
-                "purpose": "Figure 1 candidate windows ranked by persistence, compact novelty, and visual clarity.",
+                "purpose": (
+                    "Figure 1 candidate windows ranked by persistence, compact novelty, "
+                    "and visual clarity."
+                ),
                 "planner": {
                     "frame_size": BENCHMARK_FRAME_SIZE,
                     "block_size": QWEN_BLOCK_SIZE,
@@ -1014,11 +1039,17 @@ def save_ranked_outputs(records: list[WindowRecord]) -> None:
     )
 
 
-def candidate_row_image(record: WindowRecord, rank: int, *, width: int = 1650, height: int = 310) -> Image.Image:
+def candidate_row_image(
+    record: WindowRecord, rank: int, *, width: int = 1650, height: int = 310
+) -> Image.Image:
     row = Image.new("RGB", (width, height), "white")
     draw = ImageDraw.Draw(row)
     metrics = record.metrics
-    draw.text((22, 18), f"#{rank:02d} {record.item_id}  {record.start_s:.2f}-{record.end_s:.2f}s", fill=(15, 23, 42))
+    draw.text(
+        (22, 18),
+        f"#{rank:02d} {record.item_id}  {record.start_s:.2f}-{record.end_s:.2f}s",
+        fill=(15, 23, 42),
+    )
     draw.text(
         (22, 42),
         (
@@ -1069,7 +1100,10 @@ def save_contact_sheets(records: list[WindowRecord], *, rows_per_page: int = 4) 
         draw.text((22, 20), "Real-clip planner candidate windows", fill=(15, 23, 42))
         draw.text(
             (22, 43),
-            "Rows show clean frames, merged planner-derived highlights, and one exact planner mask inset.",
+            (
+                "Rows show clean frames, merged planner-derived highlights, and one "
+                "exact planner mask inset."
+            ),
             fill=(71, 85, 105),
         )
         for offset, record in enumerate(page_records):
@@ -1130,7 +1164,10 @@ def mine(args: argparse.Namespace) -> list[WindowRecord]:
             lengths_s=lengths,
             max_windows_per_video=args.max_windows_per_video,
         )
-        print(f"[{source_idx}/{len(sources)}] {source.item_id} windows={len(windows)} duration={duration_s:.1f}s")
+        print(
+            f"[{source_idx}/{len(sources)}] {source.item_id} "
+            f"windows={len(windows)} duration={duration_s:.1f}s"
+        )
         for start_s, end_s in windows:
             record = evaluate_window(source, start_s, end_s, duration_s)
             if record is not None:
