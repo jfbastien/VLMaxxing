@@ -1,18 +1,20 @@
 \section{Source Traceability and Provenance}
 
-The manuscript uses evidence classes and labels them differently in the text.
-\emph{Reproduced-here evidence} comes from checked-in \texttt{codec-through}
-artifacts and backs the automated headline assets, the persistent-KV curve, and
-the Qwen routing section. \emph{Advisory evidence} is checked in but misses a
-clean reporting gate such as thermal pairing or a strict quality band.
-\emph{Scale-out bounded evidence} comes from checked local bundles with raw
-paired rows, cache-correctness checks, matched baselines, and source manifests.
-\emph{Hypotheses or moving results} may be discussed for context, but they do
-not support the main quantitative claims.
+The manuscript source and checked evidence artifacts are in the public
+repository \url{https://github.com/jfbastien/codec-through}. This PDF was
+built from commit \texttt{\PrimaryRepoSHA} dated \PrimaryRepoCommitDate. The
+manifest below maps the main quantitative assets to their evidence artifacts
+and hardware.
 
-This appendix makes that distinction audit-friendly. The manifest maps each
-main quantitative asset to its artifact family and hardware. The provenance
-table records the source revisions used for the reported evidence artifacts.
+The evidence labels are shorthand, not a separate claim taxonomy. \emph{Local
+clean} means checked local rows that pass the relevant quality and timing gates.
+\emph{Local advisory} means checked local rows whose timing attribution or
+strict quality gate is imperfect. \emph{Local boundary}, \emph{bounded},
+\emph{negative}, or \emph{sanity} rows define limits, failures, or narrow
+operating envelopes. \emph{Scale-out bounded / mixed} means checked 26B-class
+bundle rows with raw paired rows and matched baselines, but not C-STREAM
+closure. Hypotheses and future-work items do not support the main quantitative
+claims.
 
 \begingroup
 \scriptsize
@@ -64,8 +66,5 @@ Native-rate streaming bundle & 26B cache-correctness, prefix snapshot, fixed-evi
 \end{longtable}
 \endgroup
 
-This appendix is the traceability manifest. The table above records the
-artifact families used by the paper; the generated repo-provenance table below
-records the source revisions used for this PDF.
-
-\input{generated/tables/repo_provenance.tex}
+This appendix is the traceability manifest; build scripts and generated-asset
+mechanics live in the repository.

@@ -3112,6 +3112,7 @@ def _write_scaleout_bundle_table() -> None:
 def _write_build_meta(primary: dict[str, str]) -> None:
     lines = [
         f"\\newcommand{{\\PrimaryRepoSHA}}{{{_short_sha(primary['sha'])}}}",
+        f"\\newcommand{{\\PrimaryRepoFullSHA}}{{{primary['sha']}}}",
         f"\\newcommand{{\\PrimaryRepoCommitDate}}{{{primary['commit_date']}}}",
         r"\newcommand{\UpstreamRepoSHA}{not used}",
         r"\newcommand{\UpstreamRepoCommitDate}{not used}",
