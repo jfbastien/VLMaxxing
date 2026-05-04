@@ -1608,7 +1608,7 @@ L 353.475006 111.085139
     <text style="font-weight: 700; font-size: 7.35px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #166534" x="431.942976" y="77.33904" transform="rotate(-0 431.942976 77.33904)">C-PERSIST</text>
    </g>
    <g id="text_21">
-    <text style="font-size: 6.3px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #334155" x="417.56059" y="98.721224" transform="rotate(-0 417.56059 98.721224)">Q1</text>
+    <text style="font-size: 6.3px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #334155" x="417.56059" y="98.721224" transform="rotate(-0 417.56059 98.721224)">first</text>
    </g>
    <g id="patch_111">
     <path d="M 430.513148 97.092576
@@ -1623,7 +1623,7 @@ L 439.404686 99.292576
     <text style="font-size: 4.9px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: middle; fill: #111827" x="460.539533" y="98.301881" transform="rotate(-0 460.539533 98.301881)">pay once</text>
    </g>
    <g id="text_23">
-    <text style="font-size: 6.3px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #334155" x="417.56059" y="114.801992" transform="rotate(-0 417.56059 114.801992)">Q2</text>
+    <text style="font-size: 6.3px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #334155" x="417.56059" y="114.801992" transform="rotate(-0 417.56059 114.801992)">next</text>
    </g>
    <g id="patch_112">
     <path d="M 430.513148 113.173344
@@ -1638,7 +1638,7 @@ L 439.404686 115.373344
     <text style="font-size: 4.9px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: middle; fill: #111827" x="460.539533" y="114.440071" transform="rotate(-0 460.539533 114.440071)">repair tail</text>
    </g>
    <g id="text_25">
-    <text style="font-size: 6.3px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #334155" x="417.56059" y="130.88276" transform="rotate(-0 417.56059 130.88276)">Q3</text>
+    <text style="font-size: 6.3px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #334155" x="417.56059" y="130.88276" transform="rotate(-0 417.56059 130.88276)">later</text>
    </g>
    <g id="patch_113">
     <path d="M 430.513148 129.254112

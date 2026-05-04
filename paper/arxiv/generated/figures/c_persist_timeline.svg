@@ -172,7 +172,7 @@ z
     <text style="font-weight: 700; font-size: 8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: middle; fill: #334155" x="221.4504" y="52.8984" transform="rotate(-0 221.4504 52.8984)">Follow-up 1 repair</text>
    </g>
    <g id="text_5">
-    <text style="font-weight: 700; font-size: 8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: middle; fill: #334155" x="374.4864" y="52.8984" transform="rotate(-0 374.4864 52.8984)">Follow-up 2 / Q3</text>
+    <text style="font-weight: 700; font-size: 8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: middle; fill: #334155" x="374.4864" y="52.8984" transform="rotate(-0 374.4864 52.8984)">Follow-up 2 reuse</text>
    </g>
    <g id="text_6">
     <text style="font-size: 7px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif" transform="translate(57.155313 89.476959)">full prefill</text>
@@ -245,21 +245,21 @@ L 297.639763 134.34744
 " style="fill: none; stroke: #16a34a; stroke-width: 1.1; stroke-linecap: round"/>
    </g>
    <g id="text_17">
-    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; fill: #7c2d12" transform="translate(333.805713 62.112187)">Q3: 6.65s</text>
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; fill: #7c2d12" transform="translate(340.419072 62.112187)">6.65s</text>
     <text style="font-size: 7px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; fill: #7c2d12" transform="translate(333.611025 69.516)">repeat tail</text>
    </g>
    <g id="text_18">
-    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; fill: #14532d" transform="translate(336.960584 149.354587)">Q3: 0.675s</text>
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; fill: #14532d" transform="translate(343.573944 149.354587)">0.675s</text>
     <text style="font-size: 7px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; fill: #14532d" transform="translate(321.203475 156.7584)">reuse repaired cache</text>
    </g>
    <g id="text_19">
-    <text style="font-weight: 700; font-size: 8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; fill: #14532d" transform="translate(457.31949 108.36396)">9.50x</text>
-    <text style="font-weight: 700; font-size: 8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; fill: #14532d" transform="translate(448.87824 116.93121)">paired Q3</text>
-    <text style="font-weight: 700; font-size: 8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; fill: #14532d" transform="translate(450.882615 125.38146)">speedup</text>
+    <text style="font-weight: 700; font-size: 8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; fill: #14532d" transform="translate(457.31949 108.42246)">9.50x</text>
+    <text style="font-weight: 700; font-size: 8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; fill: #14532d" transform="translate(455.325115 116.87271)">paired</text>
+    <text style="font-weight: 700; font-size: 8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; fill: #14532d" transform="translate(450.882615 125.32296)">speedup</text>
    </g>
    <g id="text_20">
     <text style="font-size: 6.7px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; fill: #166534" transform="translate(448.707998 133.136602)">88.9% fewer</text>
-    <text style="font-size: 6.7px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; fill: #166534" transform="translate(446.846654 140.223108)">Q3 tail tokens</text>
+    <text style="font-size: 6.7px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; fill: #166534" transform="translate(452.245912 140.223108)">tail tokens</text>
    </g>
    <g id="text_21">
     <text style="font-size: 7.2px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #166534" x="32.706" y="181.6848" transform="rotate(-0 32.706 181.6848)">green = cached prefix/state</text>
@@ -268,7 +268,7 @@ L 297.639763 134.34744
     <text style="font-size: 7.2px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #c2410c" x="150.0336" y="181.6848" transform="rotate(-0 150.0336 181.6848)">orange = newly bought tail work</text>
    </g>
    <g id="text_23">
-    <text style="font-size: 6.8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="17.4024" y="198.3024" transform="rotate(-0 17.4024 198.3024)">Timing attribution from checked fixed/adaptive stage-timing artifacts; provenance in appendix.</text>
+    <text style="font-size: 6.8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start; fill: #475569" x="17.4024" y="198.3024" transform="rotate(-0 17.4024 198.3024)">Short-slice stage-timing attribution; broader repair contract in text.</text>
    </g>
   </g>
  </g>

@@ -52,10 +52,9 @@ refreshing a small newest-frame visual tail before a follow-up query.
 
 \subsection{Temporal Planner}
 
-For adjacent frames, the routing path computes a per-block statistic on the RGB
-difference plane. The implementation supports mean difference, max-absolute
-difference, changed-pixel fraction, and top-$k$ mean over the block. In the
-audited Qwen policy, the statistic is \texttt{max\_abs}. Fixed
+For adjacent frames, the audited Qwen routing path uses max-absolute RGB
+difference (\texttt{max\_abs}) over model-aligned blocks; other block
+statistics remain implementation options. Fixed
 thresholds partition blocks into \emph{static}, \emph{shifted}, and
 \emph{novel} regions. These names are historical planner labels, not literal
 codec semantics: today they mean low, medium, and high pixel-domain change.

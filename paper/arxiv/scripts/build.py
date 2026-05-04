@@ -142,13 +142,7 @@ repository contains scripts, raw paired rows, and extended claim traceability:
 
 
 def _arxiv_control_readme() -> bytes:
-    return (
-        "process:\n"
-        "  compiler: xelatex\n"
-        "sources:\n"
-        "  - filename: main.tex\n"
-        "    usage: toplevel\n"
-    ).encode("utf-8")
+    return b"process:\n  compiler: xelatex\nsources:\n  - filename: main.tex\n    usage: toplevel\n"
 
 
 def _add_bytes(archive: tarfile.TarFile, arcname: str, content: bytes) -> None:
