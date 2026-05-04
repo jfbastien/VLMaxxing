@@ -49,7 +49,9 @@ if not os.environ.get("HF_TOKEN"):
     raise SystemExit("HF_TOKEN required.")
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SDAMICO_EXPERIMENTS = Path("/Users/sam/repos/codec-through/experiments")
+SDAMICO_EXPERIMENTS = Path(
+    os.environ.get("CODEC_THROUGH_SDAMICO_EXPERIMENTS", "external/codec-through/experiments")
+)
 if str(SDAMICO_EXPERIMENTS) not in sys.path:
     sys.path.insert(0, str(SDAMICO_EXPERIMENTS))
 
@@ -156,6 +158,20 @@ def find_videomme_video(video_id: str, vmme_dir: Path) -> str | None:
         for p in vmme_dir.rglob(f"{video_id}{ext}"):
             return str(p)
     return None
+
+
+def find_videomme_parquet(vmme_dir: Path) -> Path:
+    for rel in (
+        Path("hf/videomme/test-00000-of-00001.parquet"),
+        Path("videomme/test-00000-of-00001.parquet"),
+    ):
+        path = vmme_dir / rel
+        if path.exists():
+            return path
+    raise SystemExit(
+        f"VideoMME parquet missing under {vmme_dir}. "
+        "Run `uv run python scripts/fetch_benchmarks.py --dataset videomme --mode metadata`."
+    )
 
 
 def extract_frames(
@@ -384,9 +400,7 @@ def main() -> int:
         args.n_videos = 1
         args.frame_counts = [8]
 
-    parquet = args.videomme_dir / "videomme/test-00000-of-00001.parquet"
-    if not parquet.exists():
-        raise SystemExit(f"VideoMME parquet missing: {parquet}")
+    parquet = find_videomme_parquet(args.videomme_dir)
     args.out.parent.mkdir(parents=True, exist_ok=True)
 
     versions = runtime_versions()

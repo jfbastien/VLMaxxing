@@ -77,9 +77,7 @@ PHASE = "B3"
 EXPERIMENT_ID = "sam_scaleout_b3_streaming_baselines_20260429"
 PROTOCOL_ID = "sam_scaleout_handoff_20260429"
 
-DEFAULT_RECORDINGS_DIR = Path(
-    "/Users/sam/repos/codec-through/research/2026-04-26-e3-sectional-scroll-walltime/recordings"
-)
+DEFAULT_RECORDINGS_DIR = Path(os.environ.get("CODEC_THROUGH_RECORDINGS_DIR", "data/recordings"))
 ARTIFACT_DIR = REPO_ROOT / ("research/experiments/2026/artifacts/sam_scaleout_m5_20260429")
 DEFAULT_OUT = ARTIFACT_DIR / "sam_b3_streaming_baselines.jsonl"
 

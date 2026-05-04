@@ -53,6 +53,7 @@ from run_sam_b0b_cache_correctness import (  # noqa: E402
     Harness,
     cleanup_paths,
     extract_frames,
+    find_videomme_parquet,
     find_videomme_video,
     hash_ids,
     hash_ndarray,
@@ -361,9 +362,7 @@ def main():
     )
     args = ap.parse_args()
 
-    parquet = args.videomme_dir / "videomme/test-00000-of-00001.parquet"
-    if not parquet.exists():
-        raise SystemExit(f"VideoMME parquet missing: {parquet}")
+    parquet = find_videomme_parquet(args.videomme_dir)
     args.out.parent.mkdir(parents=True, exist_ok=True)
 
     versions = runtime_versions()

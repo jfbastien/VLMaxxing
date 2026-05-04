@@ -32,7 +32,7 @@ Per-row data is faithfully reproduced from the source rows; this script
 is artifact provenance plumbing, not a re-run.
 
 Run:
-  python scripts/run_sam_b5_s4_reexport.py [--source-root ~/repos/codec-through]
+  python scripts/run_sam_b5_s4_reexport.py [--source-root external/codec-through]
 """
 
 from __future__ import annotations
@@ -40,6 +40,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import platform
 import resource
 import subprocess
@@ -55,7 +56,9 @@ PHASE = "B5"
 EXPERIMENT_ID = "sam_scaleout_b5_s4_reexport_20260429"
 PROTOCOL_ID = "sam_scaleout_handoff_20260429"
 
-DEFAULT_SOURCE_ROOT = Path("/Users/sam/repos/codec-through")
+DEFAULT_SOURCE_ROOT = Path(
+    os.environ.get("CODEC_THROUGH_SCALEOUT_SOURCE_ROOT", "external/codec-through")
+)
 DEFAULT_BUNDLE_DIR = REPO_ROOT / ("research/experiments/2026/artifacts/sam_scaleout_m5_20260429")
 
 # Origin sdamico commit that landed the S4 audit JSONLs.

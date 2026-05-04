@@ -65,7 +65,9 @@ PHASE = "B1"
 EXPERIMENT_ID = "sam_scaleout_b1_cpersist_replication_20260429"
 PROTOCOL_ID = "sam_scaleout_handoff_20260429"
 
-VIDEOMME_DIR_DEFAULT = Path("/Users/sam/repos/codec-through/experiments/videomme_data")
+VIDEOMME_DIR_DEFAULT = Path(
+    os.environ.get("CODEC_THROUGH_VIDEOMME_DIR", "data/benchmarks/videomme")
+)
 ARTIFACT_DIR = REPO_ROOT / ("research/experiments/2026/artifacts/sam_scaleout_m5_20260429")
 DEFAULT_OUT = ARTIFACT_DIR / "sam_b1_cpersist_replication.jsonl"
 
@@ -163,6 +165,20 @@ def find_videomme_video(video_id: str, vmme_dir: Path) -> str | None:
         for p in vmme_dir.rglob(f"{video_id}{ext}"):
             return str(p)
     return None
+
+
+def find_videomme_parquet(vmme_dir: Path) -> Path:
+    for rel in (
+        Path("hf/videomme/test-00000-of-00001.parquet"),
+        Path("videomme/test-00000-of-00001.parquet"),
+    ):
+        path = vmme_dir / rel
+        if path.exists():
+            return path
+    raise SystemExit(
+        f"VideoMME parquet missing under {vmme_dir}. "
+        "Run `uv run python scripts/fetch_benchmarks.py --dataset videomme --mode metadata`."
+    )
 
 
 def extract_frames(
@@ -499,9 +515,7 @@ def main() -> int:
     if args.smoke:
         args.n_videos = 1
 
-    parquet = args.videomme_dir / "videomme/test-00000-of-00001.parquet"
-    if not parquet.exists():
-        raise SystemExit(f"VideoMME parquet missing: {parquet}")
+    parquet = find_videomme_parquet(args.videomme_dir)
     args.out.parent.mkdir(parents=True, exist_ok=True)
 
     versions = runtime_versions()
