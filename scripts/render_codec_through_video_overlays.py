@@ -1148,26 +1148,17 @@ def render_clip(
 def render_montage(records: list[dict[str, Any]], out_dir: Path, *, fps: float) -> None:
     """Make a compact chooser that plays the three pipeline videos side by side."""
 
-    # Use the generated pipeline videos as source-independent deliverables. A
-    # montage is helpful for comparing high/medium/lower reuse, but the per-clip
-    # files remain the source of truth.
-    frames_by_record: list[list[Image.Image]] = []
+    # Render directly from source crops instead of shrinking the full pipeline
+    # frames; the montage has its own labels and uses the same transition-aware
+    # budget display as the per-clip videos.
+    spec_by_key = {spec.key: spec for spec in CLIPS}
+    decoded_records: list[tuple[dict[str, Any], list[Image.Image], list[dict[str, Any]]]] = []
     max_len = 0
     for record in records:
-        source = REPO_ROOT / record["pipeline_video"]
-        tmp_dir = out_dir / "_montage_frames" / record["key"]
-        tmp_dir.mkdir(parents=True, exist_ok=True)
-        cmd = [
-            "ffmpeg",
-            "-y",
-            "-i",
-            str(source),
-            str(tmp_dir / "frame_%04d.png"),
-        ]
-        subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        frames = [Image.open(path).convert("RGB") for path in sorted(tmp_dir.glob("frame_*.png"))]
-        frames_by_record.append(frames)
-        max_len = max(max_len, len(frames))
+        spec = spec_by_key[record["key"]]
+        _, crops, details = decode_clip(spec, fps=fps)
+        decoded_records.append((record, crops, details))
+        max_len = max(max_len, len(crops))
     montage_frames: list[Image.Image] = []
     for idx in range(max_len):
         canvas = Image.new("RGB", (1600, 900), WHITE)
@@ -1186,27 +1177,61 @@ def render_montage(records: list[dict[str, Any]], out_dir: Path, *, fps: float) 
             fnt=FONTS["subtitle"],
         )
         y = 120
-        for record, frames in zip(records, frames_by_record, strict=True):
-            frame = frames[min(idx, len(frames) - 1)]
-            crop = frame.crop((40, 110, 1040, 790))
-            fitted = crop.resize((650, 220), Image.Resampling.LANCZOS)
-            canvas.paste(fitted, (70, y))
-            draw.rectangle((70, y, 720, y + 220), outline=INK, width=2)
+        for record, crops, details in decoded_records:
+            frame_idx = min(idx, len(crops) - 1)
+            transition = details[frame_idx - 1] if frame_idx > 0 else None
+            overlay = overlay_boxes(crops[frame_idx], transition, mode="fresh")
+            fitted, pos = fit_image(overlay, (70, y + 10, 660, y + 230))
+            canvas.paste(fitted, pos)
+            draw.rectangle(
+                (pos[0], pos[1], pos[0] + fitted.width, pos[1] + fitted.height),
+                outline=INK,
+                width=2,
+            )
             draw_text(
                 draw,
-                (750, y + 8),
+                (710, y + 8),
                 f"{record['benchmark']} {record['video_id']}",
                 fnt=FONTS["h"],
             )
-            draw_text(draw, (750, y + 42), record["role"], fill=MUTED, fnt=FONTS["body"])
-            rows = record["transitions"]
-            current = rows[min(idx, len(rows) - 1)]
-            reuse_pct, fresh_pct = pct_pair(current["reuse_ratio_active"])
-            draw_text(draw, (750, y + 88), f"{reuse_pct}% reused", fill=GREEN, fnt=FONTS["number"])
-            draw_text(
-                draw, (750, y + 126), f"{fresh_pct}% fresh", fill=ORANGE, fnt=FONTS["number_small"]
-            )
-            bar(draw, (750, y + 165, 1260, y + 184), current["reuse_ratio_active"])
+            draw_text(draw, (710, y + 42), record["role"], fill=MUTED, fnt=FONTS["body"])
+            stats = transition_percentages(transition)
+            if stats["has_transition"]:
+                reuse_pct, fresh_pct = pct_pair_from_stats(stats)
+                draw_text(
+                    draw, (710, y + 88), f"{reuse_pct}% reused", fill=GREEN, fnt=FONTS["number"]
+                )
+                draw_text(
+                    draw,
+                    (710, y + 126),
+                    f"{fresh_pct}% fresh",
+                    fill=ORANGE,
+                    fnt=FONTS["number_small"],
+                )
+                draw_text(
+                    draw,
+                    (710, y + 154),
+                    f"age-expired refresh: {stats['stale']:.0%}",
+                    fill=MUTED,
+                    fnt=FONTS["small"],
+                )
+                bar(draw, (710, y + 185, 1220, y + 204), stats["reused"])
+            else:
+                draw_text(
+                    draw,
+                    (710, y + 92),
+                    "no prior frame",
+                    fill=MUTED,
+                    fnt=FONTS["number_small"],
+                )
+                draw_text(
+                    draw,
+                    (710, y + 130),
+                    "transition not scored yet",
+                    fill=MUTED,
+                    fnt=FONTS["small"],
+                )
+                empty_bar(draw, (710, y + 185, 1220, y + 204))
             y += 250
         montage_frames.append(canvas)
     write_mp4(montage_frames, out_dir / "three_window_pipeline_montage.mp4", fps=fps)
@@ -1215,7 +1240,6 @@ def render_montage(records: list[dict[str, Any]], out_dir: Path, *, fps: float) 
             montage_frames[min(1, len(montage_frames) - 1)],
             out_dir / "thumbnails" / "three_window_pipeline_montage.png",
         )
-    shutil.rmtree(out_dir / "_montage_frames")
 
 
 def render_title_card() -> Image.Image:
