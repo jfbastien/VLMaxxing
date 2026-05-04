@@ -189,8 +189,7 @@ Build with XeLaTeX:
 
   latexmk -xelatex main.tex
 
-The rendered PDF was built from commit {rendered_from}. The public
-repository contains scripts, raw paired rows, and extended claim traceability:
+The rendered PDF was built from commit {rendered_from}. The public repository:
 
   https://github.com/jfbastien/codec-through
 """
