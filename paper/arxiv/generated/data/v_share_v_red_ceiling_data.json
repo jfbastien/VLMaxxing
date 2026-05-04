@@ -146,7 +146,7 @@
   "measured_sparse_cells": [
     {
       "error_pp": 0.0,
-      "label": "Qwen sparse vision 8f kr=0.25",
+      "label": "Qwen sparse vision 8f kr_V=0.25",
       "observed_e2e": 1.069,
       "predicted_e2e": 1.069,
       "product": 0.0647,
@@ -160,7 +160,7 @@
     },
     {
       "error_pp": -0.5,
-      "label": "Qwen sparse vision 8f kr=0.50",
+      "label": "Qwen sparse vision 8f kr_V=0.50",
       "observed_e2e": 1.042,
       "predicted_e2e": 1.047,
       "product": 0.0447,
@@ -175,7 +175,7 @@
     },
     {
       "error_pp": -2.0,
-      "label": "Qwen sparse vision 8f kr=0.75",
+      "label": "Qwen sparse vision 8f kr_V=0.75",
       "observed_e2e": 0.998,
       "predicted_e2e": 1.018,
       "product": 0.0172,
@@ -249,7 +249,7 @@
     },
     {
       "error_pp": 1.1,
-      "label": "Qwen sparse vision 16f kr=0.85",
+      "label": "Qwen sparse vision 16f kr_V=0.85",
       "observed_e2e": 1.032,
       "predicted_e2e": 1.021,
       "product": 0.0203,

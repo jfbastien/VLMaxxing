@@ -1,6 +1,6 @@
 \begin{table}[H]
 \centering
-\caption{Evaluated scale-out bundle on an M5 Max MacBook Pro with 128\,GB unified memory. Rows are operational evidence; cache correctness, matched baselines, and native mechanism quality remain open gates.}
+\caption{Evaluated scale-out bundle on an M5 Max MacBook Pro with 128\,GB unified memory. Rows are operational evidence; native mechanism quality, matched baselines, and speed remain open gates.}
 \label{tab:scaleout-bundle}
 \scriptsize
 \renewcommand{\arraystretch}{\PaperTableStretch}
@@ -8,14 +8,14 @@
 \toprule
 Probe & Result & Claim status \\
 \midrule
-Default 26B cache reuse & 16/42 text diffs; 2 choice diffs; 4 parse failures; cross-turn path fails cache-correctness test & diagnostic boundary; unsafe default path \\
-Correctness guard & 0/42 text diffs under RotatingKV full-refill guard; 4 parse failures & correctness control; speed not evaluated \\
-Patched cache-library closure & 0/42 text diffs; 0 choice diffs; 0 correctness diffs; 4 matched parse failures; cross-turn wall-clock 0.98$\times$ vs cold dense & correctness closure; speed path remains open \\
-26B prefix snapshot (8f) & after warm 9.11$\times$; parse-clean MC choice/correct 0/5 / 0/5; 2 matched parse failures; 14 open-ended text-comparison rows; text diffs 6/21; 27.02 fps median (8/21 rows >=30 fps) & warm-prefix positive; setup excluded; wrapper-specific, not byte-identical \\
-26B prefix snapshot (32f) & after warm 18.71$\times$; MC choice/correct 0/7 / 0/7; 14 open-ended text-comparison rows; text diffs 7/21; parse 0/21; 54.68 fps median (19/21 rows >=30 fps; 23.85--134.43 fps) & warm-prefix positive; setup excluded; wrapper-specific, not byte-identical \\
+Default 26B cache reuse & 16/42 text diffs; 2 choice diffs; 4 parse failures; unsafe cross-turn cache path & diagnostic boundary; rejected default path \\
+Correctness guard & 0/42 text diffs under full-refill guard; 4 parse failures & correctness control; speed not evaluated \\
+Patched cache-library closure & 0/42 text diffs; 0 choice diffs; 0 correctness diffs; 4 matched parse failures; 0.98$\times$ vs cold dense & correctness closure; not a speed path \\
+26B prefix snapshot (8f) & after-warm follow-up 9.11$\times$; MC choice/correct 0/5 / 0/5; 2 matched parse failures; open-ended text diffs 6/21; 27.02 fps median (8/21 rows >=30 fps) & after-warm prefix snapshot; setup excluded; wrapper-specific \\
+26B prefix snapshot (32f) & after-warm follow-up 18.71$\times$; MC choice/correct 0/7 / 0/7; open-ended text diffs 7/21; parse 0/21; 54.68 fps median (19/21 rows >=30 fps; 23.85--134.43 fps) & after-warm prefix snapshot; setup excluded; wrapper-specific \\
 Fixed-evidence stream baselines & low-FPS dense 17/22 beats screenshot 13/22, event-window proxy 13/22, recency 12/22 & baseline pressure; throughput axis remains separate \\
 Post-vision-tower hard prune & 8f 0.757$\times$, 32f 1.042$\times$; text diffs 10/10; timing-only descriptive prompts & overhead boundary; no correctness gate; not real sparse vision-tower speedup \\
-Sparse exactness export & zero correctness delta on 1,937 logged rows; byte-identical raw-paired text on 513 rows & denominator-safe reporting \\
+Scale-out paired-row export & zero correctness delta on 1,937 logged rows; byte-identical raw-paired text on 513 rows & denominator-safe reporting \\
 \bottomrule
 \end{tabularx}
 \end{table}

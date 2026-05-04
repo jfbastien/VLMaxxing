@@ -103,16 +103,16 @@ SOURCE_PATHS: dict[str, list[str]] = {
         "research/experiments/2026/artifacts/phase1_51V_qwen_cross_arch/videomme_dev30_8f_L2_kr050_summary.json",
         "research/experiments/2026/artifacts/phase1_51V_qwen_cross_arch/pair_analysis.txt",
     ],
-    "Qwen sparse vision 8f kr=0.25": [
+    "Qwen sparse vision 8f kr_V=0.25": [
         "research/experiments/2026/artifacts/phase1_63J_qwen_8f_kr_sweep/kr_sweep_summary.json",
         "research/experiments/2026/artifacts/phase1_63J_qwen_8f_kr_sweep/pair_summary_kr025_8f.json",
     ],
-    "Qwen sparse vision 8f kr=0.50": [
+    "Qwen sparse vision 8f kr_V=0.50": [
         "research/experiments/2026/2026-04-27-phase-1_63E-8f-findings.md",
         "research/experiments/2026/artifacts/phase1_63E_track_b_frame_scaling/pair_summary_8f.json",
         "research/experiments/2026/artifacts/phase1_63J_qwen_8f_kr_sweep/kr_sweep_summary.json",
     ],
-    "Qwen sparse vision 8f kr=0.75": [
+    "Qwen sparse vision 8f kr_V=0.75": [
         "research/experiments/2026/artifacts/phase1_63J_qwen_8f_kr_sweep/kr_sweep_summary.json",
         "research/experiments/2026/artifacts/phase1_63J_qwen_8f_kr_sweep/pair_summary_kr075_8f.json",
     ],
@@ -136,7 +136,7 @@ SOURCE_PATHS: dict[str, list[str]] = {
         "research/experiments/2026/2026-04-29-phase-1_63G-format-diagnostic-findings.md",
         "research/experiments/2026/artifacts/phase1_63G_gemma_track_b/pair_summary_32f.json",
     ],
-    "Qwen sparse vision 16f kr=0.85": [
+    "Qwen sparse vision 16f kr_V=0.85": [
         "research/experiments/2026/2026-04-29-phase-1_63H-16f-kr-sweep-findings.md",
         "research/experiments/2026/artifacts/phase1_63H_16f_kr_sweep/pair_summary_kr085_16f.json",
     ],
@@ -180,14 +180,14 @@ CROSS_ARCH_CELLS = [
 
 # Measured sparse-execution points: timed vision-tower work is actually skipped.
 SPARSE_CELLS = [
-    CeilingCell("Qwen sparse vision 8f kr=0.25", "measured sparse", 0.099846, 0.648, 1.069, 1.069),
-    CeilingCell("Qwen sparse vision 8f kr=0.50", "measured sparse", 0.099846, 0.448, 1.047, 1.042),
-    CeilingCell("Qwen sparse vision 8f kr=0.75", "measured sparse", 0.099846, 0.172, 1.018, 0.998),
+    CeilingCell("Qwen sparse vision 8f kr_V=0.25", "measured sparse", 0.099846, 0.648, 1.069, 1.069),
+    CeilingCell("Qwen sparse vision 8f kr_V=0.50", "measured sparse", 0.099846, 0.448, 1.047, 1.042),
+    CeilingCell("Qwen sparse vision 8f kr_V=0.75", "measured sparse", 0.099846, 0.172, 1.018, 0.998),
     CeilingCell("Gemma sparse vision 8f n=60", "measured sparse", 0.0785, 0.482, 1.039, 1.102),
     CeilingCell("Gemma sparse vision 16f n=60", "measured sparse", 0.1556, 0.406, 1.067, 1.035),
     CeilingCell("Gemma sparse vision 32f n=60", "measured sparse", 0.2420, 0.433, 1.117, 1.126),
     CeilingCell("Gemma sparse vision 32f short", "measured sparse", 0.5856, 0.422, 1.328, 1.316),
-    CeilingCell("Qwen sparse vision 16f kr=0.85", "measured sparse", 0.1490, 0.136, 1.021, 1.032),
+    CeilingCell("Qwen sparse vision 16f kr_V=0.85", "measured sparse", 0.1490, 0.136, 1.021, 1.032),
 ]
 
 # Composition-audit cell (EXP10 n=60 CLOSED-NULL).
@@ -253,7 +253,7 @@ def plot() -> None:
                     bbox={"boxstyle": "round,pad=0.25", "fc": "#fff7e6", "ec": "#8d6e00"},
                 )
                 continue
-            if c.label == "Qwen sparse vision 8f kr=0.25":
+            if c.label == "Qwen sparse vision 8f kr_V=0.25":
                 ax.annotate(
                     "Qwen keep-rate sweep\npredicts timing;\nfidelity fails",
                     xy=(c.product, c.observed_e2e),
@@ -295,7 +295,7 @@ def plot() -> None:
     ax.set_ylabel("end-to-end speedup ×")
     ax.set_title(
         "C-VISION scatter-back ceiling validation\n"
-        f"{len(all_cells)} regimes; C-CEILING is the null, not a fitted curve"
+        f"{len(all_cells)} regimes; predicted from measured stage shares, not fit"
     )
     ax.grid(True, alpha=0.3)
     ax.set_xlim(0.0, 0.30)

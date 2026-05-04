@@ -5,8 +5,9 @@ the model revisits nearly the same visual state while deciding when to keep,
 shift, rebuild, or invalidate cached state. We do not claim a standardized
 C-STREAM result yet. Instead, this section reports boundary evidence from a
 26B-class scale-out evaluation on an M5 Max MacBook Pro with 128\,GB unified
-memory: unsafe default cache paths, small-\(N\) warm-prefix positives, strong
-low-FPS / screenshot / recency baselines, and denominator-safe exactness
+memory: unsafe default cache paths, small-\(N\) after-warm prefix snapshot
+positives, strong
+low-FPS / screenshot / recency baselines, and denominator-safe paired-row
 exports. The result is mixed, and that is the point: it shows which mechanisms
 are plausible, which simple baselines are serious, and which cache paths are
 unsafe.
@@ -22,8 +23,8 @@ updates, stale-cache failure, fixed-vision-budget perception rate, and cache
 topology under mixed sliding-window/full-attention attention.
 
 The local Qwen session/streaming bridge explains why this gate matters. The
-dense-first-query reference recovers aggregate first-query correctness and
-reaches 2.79$\times$ paired speedup, missing the preregistered 3.0$\times$
+dense-first-query reference returns aggregate first-query correctness to parity
+and reaches 2.79$\times$ paired speedup, missing the preregistered 3.0$\times$
 rescue floor. The later instrumented cache-reuse rerun preserves the same
 aggregate boundary and reaches 3.02$\times$, but still misses the follow-up
 fidelity target. Instrumentation also shows that follow-up vision pruning is
@@ -58,7 +59,7 @@ follow-up wall-clock denominator? The 8f prefix snapshot yields
 27.02\,fps at the median, with 8/21 paired rows above 30\,fps. The expanded 32f
 snapshot yields 54.68\,fps at the median, with 19/21 rows above 30\,fps and a
 23.85--134.43\,fps range. Cold dense is about 3\,fps on the same rows.
-Read this on the same after-warm prefix-snapshot denominator: it is a throughput
+Read this on the same after-warm prefix snapshot denominator: it is a throughput
 view of those rows, not ingest throughput or setup-inclusive session speed. The
 first query still pays full dense visual processing, the snapshot wrapper is
 required for the safe path, and continuous capture, stale-cache invalidation,
@@ -90,10 +91,10 @@ failure case that shows when the runtime deliberately buys fresh evidence.
 
 \input{generated/tables/scaleout_bundle_status.tex}
 
-The scale-out bundle also adds two useful boundary checks. First, the large
-feature-reuse export keeps its denominators separate: zero correctness delta is
-logged on 1,937 sparse-sampled rows, while byte-identical raw-paired text is
-verified on 513 rows. Second, post-vision-tower hard pruning
+The scale-out bundle also adds two useful boundary checks. First, the paired-row
+export keeps its denominators separate: zero correctness delta is logged on
+1,937 sparse-sampled rows, while byte-identical raw-paired text is verified on
+513 rows. Second, post-vision-tower hard pruning
 on the 26B stack is a negative systems result: because the full vision tower has
 already run, policy overhead can dominate, so the row is not evidence for real
 sparse-ViT speedup. It is a reminder that the paper's C-CEILING arithmetic

@@ -42,11 +42,11 @@ boundary appears.
       \fbox{\parbox{0.9\linewidth}{Figure unavailable in this source snapshot.}}
     }
   }
-\caption{C-PERSIST tested follow-up-reuse envelope. The local result is not one
-  persistent-KV curve but two different architectural stories: 7B stays inside
-  the tested envelope through 16 frames / 6.5k prefill tokens, while 3B
-  trades paired fidelity for a much wider pre-basin plateau through 36 frames /
-  14.5k prefill tokens before the basin opens.}
+\caption{Unrepaired persistent-KV frame-scaling envelope. The figure separates
+  the raw warm-reuse probe from the repaired C-PERSIST breadth result in
+  Table~\ref{tab:c-persist-repair}: 7B stays inside the tested raw envelope
+  through 16 frames / 6.5k prefill tokens, while 3B trades paired fidelity for
+  a wider pre-basin plateau through 36 frames / 14.5k prefill tokens.}
   \label{fig:c-persist-safe-budget}
 \end{figure}
 
@@ -165,12 +165,11 @@ have follow-up questions, not because the first question became cheap.
   }{
     \fbox{\parbox{0.9\linewidth}{Figure unavailable in this source snapshot.}}
   }
-  \caption{Adaptive C-PERSIST timing attribution. Fixed \(K=1\) repairs the
-  newest-frame tail again at the second follow-up, while the adaptive policy
-  inherits the cache repaired after the first follow-up and mostly appends the
-  new question text. The visual shows the short-slice timing mechanism behind
-  the 9.50\(\times\) paired second-follow-up speedup; the broader 0/93 fidelity
-  result is reported in the text and Table~\ref{tab:c-persist-repair}.}
+  \caption{Adaptive C-PERSIST timing attribution. Fixed \(K=1\) buys the
+  newest-frame tail again at the second follow-up; adaptive repair mostly
+  appends text from the repaired cache. The visual shows the short-slice
+  timing mechanism behind the 9.50\(\times\) paired second-follow-up speedup;
+  the broader 0/93 fidelity result is in Table~\ref{tab:c-persist-repair}.}
   \label{fig:c-persist-timeline}
 \end{figure}
 
@@ -275,7 +274,7 @@ VideoMME 8f dev & 0.152 & 0.390 & 1.062 & 1.080 & +1.8pp & Gemma dev \\
 VideoMME 16f dev & 0.243 & 0.390 & 1.105 & 1.120 & +1.5pp & Gemma dev \\
 MVBench 8f dev & 0.478 & 0.400 & 1.237 & 1.210 & -2.7pp & Gemma dev \\
 TOMATO 8f dev & 0.407 & 0.427 & 1.214 & 1.240 & +2.6pp & Gemma dev \\
-VideoMME 8f holdout & 0.154 & 0.413 & 1.068 & 1.113 & +4.5pp & clean \\
+VideoMME 8f holdout & 0.154 & 0.413 & 1.068 & 1.113 & +4.5pp & aggregate-clean \\
 MVBench 8f holdout & 0.452 & 0.471 & 1.271 & 1.407 & +13.6pp & advisory \\
 TOMATO 8f holdout & 0.384 & 0.350 & 1.155 & 1.194 & +3.9pp & advisory \\
 Qwen VideoMME 8f dev & 0.103 & 0.398 & 1.043 & 1.044 & +0.1pp & matched cross-arch \\

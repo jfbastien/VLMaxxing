@@ -6,7 +6,7 @@ Emits:
   panel: Δacc vs frame-count for 7B and 3B Qwen 2.5-VL-4bit on the
   persistent-KV frame-scaling probe. Right panel: follow-up speedup
   (dense / session) vs frame-count for the same two architectures.
-  Tested/tolerated thresholds (7B ≤16f, 3B ≤36f) are shaded.
+  The 7B accepted region and 3B pre-basin region are shaded.
 - ``paper/figures/c_persist_safe_budget_data.json`` — the full per-cell
   numbers used to render the figure.
 
@@ -163,10 +163,10 @@ def plot() -> None:
     three_acc = [c.delta_acc for c in THREE_B]
     three_spd = [c.speedup_x for c in THREE_B]
 
-    # Accepted-region shading: 7B tolerated ≤16f (left of the 7B basin at 20f);
-    # 3B tolerated ≤36f (left of the 3B basin bracketed (36f, 40f]).
+    # Region shading: 7B accepted ≤16f (left of the 7B basin at 20f);
+    # 3B pre-basin ≤36f (left of the 3B basin bracketed (36f, 40f]).
     ax_acc.axvspan(0, 16, color="tab:blue", alpha=0.08, label="7B accepted ≤16f")
-    ax_acc.axvspan(0, 36, color="tab:green", alpha=0.06, label="3B tolerated ≤36f")
+    ax_acc.axvspan(0, 36, color="tab:green", alpha=0.06, label="3B pre-basin ≤36f")
     ax_speed.axvspan(0, 16, color="tab:blue", alpha=0.08)
     ax_speed.axvspan(0, 36, color="tab:green", alpha=0.06)
 

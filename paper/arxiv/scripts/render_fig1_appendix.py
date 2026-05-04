@@ -136,7 +136,7 @@ def write_selected_manifest(
         purpose = str(normalized_policy.get("purpose", ""))
         if "Track-A" in purpose or "Track A" in purpose:
             normalized_policy["purpose"] = (
-                "Selected candidate windows are rendered with the audited Qwen "
+                "Selected candidate windows are rendered with the reported Qwen "
                 "routing-budget visualization policy; source_jsonl only supplies "
                 "the video path and row metadata."
             )

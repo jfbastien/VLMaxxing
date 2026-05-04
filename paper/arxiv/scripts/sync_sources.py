@@ -5,7 +5,7 @@ This script is intentionally conservative:
 
 - it reads canonical, checked-in artifacts only
 - it emits small diffable files under ``paper/arxiv/generated/``
-- it keeps the default manuscript snapshot restricted to audited artifact,
+- it keeps the default manuscript snapshot restricted to validated artifact,
   paper-grade evidence
 """
 
@@ -1015,7 +1015,7 @@ def _render_c_persist_timeline_figure() -> None:
         tail_w=0.025,
         tail_color="#fdba74",
         label="repaired cache",
-        tail_label=f"{adaptive_q3['median_tail_prompt_tokens']:.0f}",
+        tail_label=f"{adaptive_q3['median_tail_prompt_tokens']:.0f} tok",
     )
 
     arrow((0.22, 0.595), (0.285, 0.635))
@@ -1290,7 +1290,7 @@ def _render_lane_a_figure(snapshot: dict) -> None:
         ax.set_ylim(0.1, 0.72)
         ax.legend(frameon=False, loc="lower right", fontsize=9)
 
-    fig.suptitle("Training-free temporal routing: audited holdout snapshot", fontsize=13)
+    fig.suptitle("Training-free temporal routing: held-out snapshot", fontsize=13)
     fig.tight_layout()
     png_path = GENERATED / "figures" / "lane_a_pareto.png"
     pdf_path = GENERATED / "figures" / "lane_a_pareto.pdf"
@@ -1781,7 +1781,7 @@ def _write_paired_drift_table(snapshot: dict) -> None:
         r"\begin{table}[H]",
         r"\centering",
         (
-            r"\caption{Paired-drift audit. Aggregate accuracy can preserve a point "
+            r"\caption{Paired-drift examples. Aggregate accuracy can preserve a point "
             r"estimate while answer identity, correctness on individual examples, or "
             r"output format changes.}"
         ),
@@ -1865,7 +1865,7 @@ def _write_c_persist_repair_table(snapshot: dict) -> None:
             f"{adaptive['paired_correctness_diffs']}/{adaptive['n_sessions']}; "
             f"choice/correct {adaptive['paired_choice_diffs']}/{adaptive['n_pairs']} / "
             f"{adaptive['paired_correctness_diffs']}/{adaptive['n_pairs']}; "
-            f"follow-up subset 0/{adaptive['n_follow_up_pairs']}; "
+            f"follow-up paired drift 0/{adaptive['n_follow_up_pairs']}; "
             "second follow-up inherits repaired state; paired second-follow-up "
             "speedup 9.50$\\times$ \\\\"
         ),
@@ -2153,38 +2153,21 @@ def _write_headline_table(snapshot: dict) -> None:
             r"C-CEILING explains why they do not multiply.}"
         ),
         r"\label{tab:headline-results}",
-        r"\tiny",
-        r"\setlength{\tabcolsep}{0pt}",
+        r"\scriptsize",
+        r"\setlength{\tabcolsep}{2pt}",
         r"\renewcommand{\arraystretch}{\PaperTableStretch}",
         (
-            r"\noindent\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.10\linewidth} "
-            r">{\raggedright\arraybackslash}p{0.21\linewidth} "
-            r">{\raggedright\arraybackslash}p{0.13\linewidth} "
+            r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.12\linewidth} "
+            r"Y >{\raggedright\arraybackslash}p{0.15\linewidth} "
             r">{\raggedright\arraybackslash}p{0.10\linewidth} "
-            r">{\raggedright\arraybackslash}p{0.35\linewidth} "
-            r">{\raggedright\arraybackslash}p{0.10\linewidth}@{}}"
+            r"Y >{\raggedright\arraybackslash}p{0.12\linewidth}@{}}"
         ),
         r"\toprule",
         r"Regime & Setting & Speedup denominator & Gain & Validation / notes & Evidence \\",
         r"\midrule",
         (
-            "After-ingest & Qwen raw warm reuse, 16f & "
-            "cold/cached follow-up & "
-            f"{kv_by_frame[16]['speedup']:.1f}$\\times$ & "
-            f"{kv_by_frame[16]['follow_up_median_s']:.3f}\\,s median; "
-            f"$\\Delta$acc {kv_by_frame[16]['accuracy_delta']:+.3f} & "
-            "aggregate-clean; unrepaired \\\\"
-        ),
-        (
-            "After-ingest & Qwen raw warm reuse, 8f & "
-            "cold/cached follow-up & "
-            f"{kv_by_frame[8]['speedup']:.1f}$\\times$ & "
-            f"{kv_by_frame[8]['follow_up_median_s']:.3f}\\,s median; "
-            f"$\\Delta$acc {kv_by_frame[8]['accuracy_delta']:+.3f} & within criterion \\\\"
-        ),
-        (
-            "After-ingest & Qwen repaired escape, adaptive & "
-            "cold/repaired follow-up median & "
+            "After-ingest repair & Qwen adaptive repair breadth & "
+            "cold/repaired follow-up & "
             f"{adaptive_repair['speedup_min']:.2f}--"
             f"{adaptive_repair['speedup_max']:.2f}$\\times$ & "
             f"choice {adaptive_repair['paired_choice_diffs']}/"
@@ -2196,7 +2179,7 @@ def _write_headline_table(snapshot: dict) -> None:
             "repair breadth \\\\"
         ),
         (
-            "After-ingest & Qwen repaired escape, fixed K=1 & "
+            "After-ingest repair & Qwen fixed \\(K=1\\) repair breadth & "
             "cold/repaired follow-up & "
             f"{fixed_repair['speedup_min']:.2f}--"
             f"{fixed_repair['speedup_max']:.2f}$\\times$ & "
@@ -2208,10 +2191,25 @@ def _write_headline_table(snapshot: dict) -> None:
             f"{fixed_repair['n_follow_up_pairs']} & repair breadth \\\\"
         ),
         (
+            "After-ingest raw & Qwen raw warm reuse, 16f & "
+            "cold/cached follow-up & "
+            f"{kv_by_frame[16]['speedup']:.1f}$\\times$ & "
+            f"{kv_by_frame[16]['follow_up_median_s']:.3f}\\,s median; "
+            f"$\\Delta$acc {kv_by_frame[16]['accuracy_delta']:+.3f} & "
+            "aggregate-clean; unrepaired \\\\"
+        ),
+        (
+            "After-ingest raw & Qwen raw warm reuse, 8f & "
+            "cold/cached follow-up & "
+            f"{kv_by_frame[8]['speedup']:.1f}$\\times$ & "
+            f"{kv_by_frame[8]['follow_up_median_s']:.3f}\\,s median; "
+            f"$\\Delta$acc {kv_by_frame[8]['accuracy_delta']:+.3f} & within criterion \\\\"
+        ),
+        (
             "First-pass & Gemma VideoMME 8f holdout & "
             "first-query E2E & "
             f"{cvision_rows[0]['observed_e2e']:.3f}$\\times$ "
-            f"& $\\Delta$acc {cvision_rows[0]['acc_delta']:+.3f} & clean \\\\"
+            f"& $\\Delta$acc {cvision_rows[0]['acc_delta']:+.3f} & aggregate-clean \\\\"
         ),
         (
             "First-pass & Gemma sparse vision, 32f short & "
@@ -2238,7 +2236,7 @@ def _write_headline_table(snapshot: dict) -> None:
             "format gate; low gain \\\\"
         ),
         r"\bottomrule",
-        r"\end{tabular}",
+        r"\end{tabularx}",
         r"\end{table}",
     ]
     (GENERATED / "tables" / "headline_results.tex").write_text("\n".join(lines) + "\n")
@@ -2323,9 +2321,9 @@ def _write_measured_sparse_execution_tables(snapshot: dict) -> None:
         (
             r"\caption{Measured sparse vision execution on Qwen. The 8f "
             r"sweep validates C-CEILING timing but has no fidelity-preserving, "
-            r"speed-positive point. The 16f sweep recovers aggregate accuracy "
-            r"and format at \(kr_V=0.85\), but not paired identity and not the "
-            r"vision-reduction gate.}"
+            r"speed-positive point. The 16f sweep recovers to within the "
+            r"aggregate-accuracy/format gates at \(kr_V=0.85\), but not paired "
+            r"identity and not the vision-reduction gate.}"
         ),
         r"\label{tab:qwen-measured-sparse-vision}",
         r"\scriptsize",
@@ -2461,7 +2459,8 @@ def _write_c_persist_seed_sweep_table() -> None:
         (
             r"\caption{Adaptive C-PERSIST sampler-seed cross-product on the "
             r"seven-clip, 21-pair short-slice cell. All nine seed/temperature "
-            r"cells pass the fidelity, format, and baseline-quality gates.}"
+            r"cells pass the sampler robustness gate; small paired diffs remain "
+            r"bounded and are not part of the 0/93 breadth claim.}"
         ),
         r"\label{tab:c-persist-sampler-seed-sweep}",
         r"\small",
@@ -2993,8 +2992,8 @@ def _write_scaleout_bundle_table() -> None:
         (
             r"\caption{Evaluated scale-out bundle on an M5 Max MacBook Pro "
             r"with 128\,GB unified memory. Rows are operational evidence; "
-            r"cache correctness, matched baselines, and native mechanism "
-            r"quality remain open gates.}"
+            r"native mechanism quality, matched baselines, and speed remain "
+            r"open gates.}"
         ),
         r"\label{tab:scaleout-bundle}",
         r"\scriptsize",
@@ -3013,14 +3012,14 @@ def _write_scaleout_bundle_table() -> None:
             f"{snapshot['default_cache_path']['n']} text diffs; "
             f"{snapshot['default_cache_path']['choice_diffs']} choice diffs; "
             f"{snapshot['default_cache_path']['parse_failures']} parse failures; "
-            "cross-turn path fails cache-correctness test & "
-            "diagnostic boundary; unsafe default path \\\\"
+            "unsafe cross-turn cache path & "
+            "diagnostic boundary; rejected default path \\\\"
         ),
         (
             "Correctness guard & "
             f"{snapshot['guarded_correctness_control']['text_diffs']}/"
             f"{snapshot['guarded_correctness_control']['n']} text diffs under "
-            "RotatingKV full-refill guard; "
+            "full-refill guard; "
             f"{snapshot['guarded_correctness_control']['parse_failures']} parse failures & "
             "correctness control; speed not evaluated \\\\"
         ),
@@ -3030,39 +3029,36 @@ def _write_scaleout_bundle_table() -> None:
             f"{patched['choice_diffs']} choice diffs; "
             f"{patched['correctness_diffs']} correctness diffs; "
             f"{patched['parse_failures']} matched parse failures; "
-            f"cross-turn wall-clock {patched['cross_turn_median_speedup']:.2f}$\\times$ "
-            "vs cold dense & "
-            "correctness closure; speed path remains open \\\\"
+            f"{patched['cross_turn_median_speedup']:.2f}$\\times$ vs cold dense & "
+            "correctness closure; not a speed path \\\\"
         ),
         (
             "26B prefix snapshot (8f) & "
-            f"after warm {prefix8['median_speedup']:.2f}$\\times$; "
-            f"parse-clean MC choice/correct {prefix8['choice_diffs']}/"
+            f"after-warm follow-up {prefix8['median_speedup']:.2f}$\\times$; "
+            f"MC choice/correct {prefix8['choice_diffs']}/"
             f"{prefix8['mc_parse_clean_rows']} / {prefix8['correctness_diffs']}/"
             f"{prefix8['mc_parse_clean_rows']}; "
             f"{prefix8['mc_parse_failures']} matched parse failures; "
-            f"{prefix8['open_ended_rows']} open-ended text-comparison rows; "
-            f"text diffs {prefix8['text_diffs']}/{prefix8['n']}; "
+            f"open-ended text diffs {prefix8['text_diffs']}/{prefix8['n']}; "
             f"{prefix8['prefix_snapshot_fps_median']:.2f} fps median "
             f"({prefix8['prefix_snapshot_rows_ge_30fps']}/{prefix8['n']} rows "
             ">=30 fps) & "
-            "warm-prefix positive; setup excluded; wrapper-specific, not byte-identical \\\\"
+            "after-warm prefix snapshot; setup excluded; wrapper-specific \\\\"
         ),
         (
             "26B prefix snapshot (32f) & "
-            f"after warm {prefix32['median_speedup']:.2f}$\\times$; "
+            f"after-warm follow-up {prefix32['median_speedup']:.2f}$\\times$; "
             f"MC choice/correct {prefix32['choice_diffs']}/"
             f"{prefix32['mc_parse_clean_rows']} / {prefix32['correctness_diffs']}/"
             f"{prefix32['mc_parse_clean_rows']}; "
-            f"{prefix32['open_ended_rows']} open-ended text-comparison rows; "
-            f"text diffs {prefix32['text_diffs']}/{prefix32['n']}; "
+            f"open-ended text diffs {prefix32['text_diffs']}/{prefix32['n']}; "
             f"parse {prefix32['parse_failures']}/{prefix32['n']}; "
             f"{prefix32['prefix_snapshot_fps_median']:.2f} fps median "
             f"({prefix32['prefix_snapshot_rows_ge_30fps']}/{prefix32['n']} rows "
             ">=30 fps; "
             f"{prefix32['prefix_snapshot_fps_min']:.2f}--"
             f"{prefix32['prefix_snapshot_fps_max']:.2f} fps) & "
-            "warm-prefix positive; setup excluded; wrapper-specific, not byte-identical \\\\"
+            "after-warm prefix snapshot; setup excluded; wrapper-specific \\\\"
         ),
         (
             "Fixed-evidence stream baselines & "
@@ -3079,7 +3075,7 @@ def _write_scaleout_bundle_table() -> None:
             "not real sparse vision-tower speedup \\\\"
         ),
         (
-            "Sparse exactness export & "
+            "Scale-out paired-row export & "
             "zero correctness delta on "
             f"{snapshot['exactness_export']['accuracy_rows']:,} "
             f"logged rows; byte-identical raw-paired text on "

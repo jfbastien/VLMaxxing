@@ -10,12 +10,13 @@ Qwen2.5-VL-7B-Instruct-4bit, adaptive same-video follow-up reuse preserves
 paired choices and correctness on the 93-query VideoMME breadth setting while
 reducing follow-up latency by 14.90--35.92$\times$. The first query is still
 cold; the win starts when later questions reuse the same video state.
-Selective re-prefill repairs the cache basin, and the
-second follow-up inherits that repaired cache instead of buying the visual tail
-again. Stress tests bound the result rather than pretending it is universal:
-repeated-question schedules hold through 50 turns, while dense-answer-anchored
-prompt variation separates conservative fixed-\(K=1\) repair from faster
-aggressive policies that drift.
+Selective re-prefill repairs the cache basin, and the second follow-up inherits
+that repaired cache instead of buying the visual tail again. Stress tests bound
+the result rather than pretending it is universal: adaptive and scheduled-refresh
+policies are drift-clean through a 50-turn repeated-question stress, fixed
+\(K=1\) stays below the gate with sparse drift, and dense-answer-anchored prompt
+variation separates conservative repair from faster aggressive policies that
+drift.
 
 Fresh-video pruning is smaller but real. First-pass vision pruning
 (C-VISION) skips timed vision-tower work before the first answer is generated.

@@ -52,7 +52,7 @@ refreshing a small newest-frame visual tail before a follow-up query.
 
 \subsection{Temporal Planner}
 
-For adjacent frames, the audited Qwen routing path uses max-absolute RGB
+For adjacent frames, the Qwen routing path uses max-absolute RGB
 difference (\texttt{max\_abs}) over model-aligned blocks; other block
 statistics remain implementation options. Fixed
 thresholds partition blocks into \emph{static}, \emph{shifted}, and
@@ -65,7 +65,7 @@ spatial grid so cached features can be substituted back into the dense path at
 the same geometry the benchmark runner already understands.
 
 The paper's default sparse-QA routing path still uses pixel differences because
-that is the audited semantic baseline. A codec-native planner bridge remains
+that is the validated semantic baseline. A codec-native planner bridge remains
 semantic substitution evidence, not a latency claim: replacing the pixel-diff
 planner signal with H.264-derived scores can preserve local dense choices, but
 a systems claim requires a streaming decoder-integrated path.
@@ -82,8 +82,8 @@ summaries.
 
 Reuse without age control drifts. The planner therefore carries a
 bounded-staleness counter: even a block that continues to look reusable must be
-refreshed after its age exceeds a configured limit. The audited policy used
-in the paper sets that limit to four frame steps. That choice is not cosmetic.
+refreshed after its age exceeds a configured limit. The reported policy sets
+that limit to four frame steps. That choice is not cosmetic.
 It is an important guardrail on TOMATO, where temporally concentrated evidence
 punishes policies that keep trusting a stale region simply because the local
 pixel difference remains small.
@@ -176,7 +176,11 @@ choices, and a follow-up cache can lose accuracy by collapsing into a
 pathological output distribution rather than by making ordinary wrong choices.
 The paper therefore records paired choice diffs, paired correctness diffs,
 parse failures, degenerate or pathological-like outputs, and query-index splits
-whenever these decide the claim. The distinction matters scientifically:
+whenever these decide the claim. In the C-PERSIST audits, pathological-like
+means the raw response matched the repeated malformed attractor strings logged
+in the unrepaired basin, including \texttt{addCriterion} or the logged
+Chinese auto-generation marker.
+The distinction matters scientifically:
 answer-identity drift, accuracy drift, and format collapse point to different
 repair mechanisms.
 

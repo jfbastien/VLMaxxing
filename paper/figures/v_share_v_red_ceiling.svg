@@ -496,7 +496,7 @@ z
    </g>
    <g id="text_25">
     <text style="font-size: 12px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif" transform="translate(243.715625 15.943125)">C-VISION scatter-back ceiling validation</text>
-    <text style="font-size: 12px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif" transform="translate(212.368437 28.9515)">17 regimes; C-CEILING is the null, not a fitted curve</text>
+    <text style="font-size: 12px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif" transform="translate(196.689687 28.9515)">17 regimes; predicted from measured stage shares, not fit</text>
    </g>
    <g id="legend_1">
     <g id="patch_13">

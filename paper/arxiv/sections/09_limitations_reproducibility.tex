@@ -48,14 +48,15 @@ transfer was the downstream long-bucket accuracy shape, not the drift signal.
 
 The streaming/deployment lane remains the least harmonized evidence class, but
 it names the practical regime where redundancy can become largest. The
-scale-out bundle is mixed: default 26B cross-turn cache reuse is unsafe, a
-topology-aware prefix snapshot is positive only at small \(N\), fixed-evidence
+scale-out bundle is mixed: default 26B cross-turn cache reuse is unsafe, an
+after-warm prefix snapshot is positive only at small \(N\), fixed-evidence
 stream baselines favor low-FPS dense over the tested event-window proxy, and
 post-vision-tower hard pruning shows that policy overhead can erase any
 expected win if vision work was not actually skipped.
 
 The Qwen composition bridge is useful precisely because it is diagnosed rather
-than promoted. Dense-first-query admission restores Q0 aggregate correctness,
+than promoted. Dense-first-query admission returns Q0 aggregate correctness to
+parity,
 but the three-query bridge still misses the rescue gate; the long-bucket
 admission sweep falsifies every tested Q0 keep rate from 0.67 to 0.90. The
 mechanistic boundary is sharper than aggregate loss: cache reuse preserves the
@@ -75,7 +76,7 @@ on the tested local slices. This remains a semantic planner result, not a
 latency win; the extraction path is offline and not integrated into the timed
 deployment path.
 
-The tested benchmark mix also under-samples scroll and pan regimes. We audited
+The tested benchmark mix also under-samples scroll and pan regimes. We measured
 this directly on a 60-item VideoMME stratification across 8f/16f/32f and found
 0/60 items above a relaxed \texttt{shifted\_fraction} \(\geq 0.30\) gate, with
 max shifted fraction 0.125. That does not certify C-VISION on sustained
@@ -139,7 +140,7 @@ tested cleanly.}
 \renewcommand{\arraystretch}{\PaperTableStretch}
 \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.18\linewidth} Y Y@{}}
 \toprule
-Family & What it currently supports & Design lesson \\
+Family & Tested support & Design lesson \\
 \midrule
 Qwen2.5-VL-7B-Instruct & Stable routing and persistent follow-up reuse; strong
 selective re-prefill evidence; measured sparse-vision configuration boundary &
@@ -150,7 +151,7 @@ format caveats & Expose keep masks and per-stage timing, but make
 rotating/sliding cache behavior explicit. \\
 Candidate C-STREAM & Native-rate streaming state reuse under a separate
 protocol; evaluation bundle with cache-correctness, prefix snapshot, fixed-evidence
-baselines, and exactness export & Promote only after the native streaming
+baselines, and paired-row export & Promote only after the native streaming
 policy beats low-FPS/screenshot/recency baselines under the same quality
 envelope and cache topology. \\
 \bottomrule

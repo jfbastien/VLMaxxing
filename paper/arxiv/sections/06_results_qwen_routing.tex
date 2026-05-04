@@ -6,9 +6,9 @@ anti-recomputation can work at all. It tells us what kind of temporal signal
 is useful, what kind is too blunt, and where the semantic-substitution story
 stops.
 
-\subsection{Audited Holdout Frontier}
+\subsection{Held-out Routing Frontier}
 
-On TOMATO motion, the audited base policy matches dense-8 accuracy while spending
+On TOMATO motion, the base policy matches dense-8 accuracy while spending
 only 3.55 effective fresh frames instead of 8.0. On MVBench motion, the same
 base policy reaches a higher point estimate than dense-6 while spending
 less visual refresh: 0.600 accuracy at 4.06 effective fresh frames versus
@@ -19,7 +19,7 @@ budget. The MVBench statement is against the dense-6 point at a
 matched-or-lower fresh-frame budget; dense-8 remains the higher
 absolute-accuracy point on that slice.
 
-\subsection{Audited Frontier Snapshot}
+\subsection{Frontier Snapshot}
 
 \input{generated/tables/lane_a_holdout.tex}
 
@@ -60,7 +60,7 @@ is architecture-conditioned \emph{and} benchmark-conditioned. This is why the
 paper reports paired answer drift instead of treating equal aggregate accuracy
 as proof that reuse is semantically identical.
 
-\subsection{Local Diagnostics Are Mechanism Evidence}
+\subsection{Mechanism Diagnostics}
 
 Two local diagnostics sharpen the mechanism story but are not main-claim
 evidence here. The novelty-ranked dense baseline tests

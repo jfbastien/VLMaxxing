@@ -149,7 +149,7 @@ class WindowRecord:
 
 VISUALIZATION_POLICY = {
     "purpose": (
-        "All candidate windows are rendered with the audited Qwen routing-budget "
+        "All candidate windows are rendered with the reported Qwen routing-budget "
         "visualization policy, regardless of which artifact supplied the video path."
     ),
     "statistic": EXACT_PIXEL_PLANNER.statistic.value,

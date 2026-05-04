@@ -64,8 +64,8 @@ requirements, not as a systems claim here.
 The scale-out streaming lane is part of the same science story, but it has a
 different protocol. A 26B-class bundle sharpens the boundary rather than simply
 adding wins: the default cross-turn cache path is unsafe, topology-aware
-warm-prefix snapshots are positive at small \(N\), and fixed-evidence streaming
-baselines show that low-FPS dense is a serious competitor. The same warning
+after-warm prefix snapshots are positive at small \(N\), and fixed-evidence
+streaming baselines show that low-FPS dense is a serious competitor. The same warning
 shows up locally in Qwen session-composition experiments, where speedup can
 survive while the full follow-up fidelity contract does not.
 
@@ -87,7 +87,7 @@ Regime & Reused work & Denominator / gate & Evidence / boundary \\
 \midrule
 After-ingest follow-up & prompt / key--value (KV) prefix for later questions on the same video & median cold follow-up / cached-or-repaired follow-up plus paired drift; first query still pays full freight & 0/93 paired drift in breadth protocol at 14.90--35.92$\times$; stress tests expose conservative/aggressive boundary \\
 Fresh-video first pass & vision-tower work inside the first query & first-query wall-clock; clean/advisory gates plus measured sparse-execution envelopes & VideoMME clean 1.113$\times$; Gemma 32f short 1.316$\times$ timed skip; Qwen low-gain boundary \\
-Candidate C-STREAM & repeated visual state in a native-rate or live pipeline & after-warm prefix-snapshot timing plus fixed-evidence baselines; not setup-inclusive throughput & default 26B cache path blocked; prefix snapshots positive but small-\(N\); low-FPS dense is a strong baseline \\
+Candidate C-STREAM & repeated visual state in a native-rate or live pipeline & after-warm prefix snapshot timing plus fixed-evidence baselines; not setup-inclusive throughput & default 26B cache path blocked; after-warm prefix snapshots positive but small-\(N\); low-FPS dense is a strong baseline \\
 \bottomrule
 \end{tabularx}
 \end{table}
