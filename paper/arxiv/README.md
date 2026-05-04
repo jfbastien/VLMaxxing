@@ -49,8 +49,12 @@ Current verified local path:
 
 - `tectonic` builds the manuscript PDF successfully on this machine.
 - `latexmk -xelatex main.tex` is the intended explicit TeX Live build path.
-- The paper bundle can be generated locally with `make paper-bundle`.
-- CI can still use a fuller TeX Live action independently of the local setup.
+- The minimal arXiv upload bundle can be generated locally with
+  `make paper-arxiv-upload` or the compatibility alias `make paper-bundle`.
+- The richer audit/reproducibility bundle can be generated with
+  `make paper-audit-bundle`.
+- CI builds the extracted arXiv upload tarball under a pinned TeX Live 2025
+  container independently of the local setup.
 
 Install commands on macOS:
 
@@ -67,15 +71,21 @@ brew install --cask mactex-no-gui
 eval "$(/usr/libexec/path_helper)"
 ```
 
-Direct script path:
+Direct script paths:
 
 ```bash
 ./.venv/bin/python paper/arxiv/scripts/build.py
+./.venv/bin/python paper/arxiv/scripts/build.py --skip-pdf --arxiv-upload
+./.venv/bin/python paper/arxiv/scripts/build.py --skip-pdf --audit-bundle
 ```
 
-The arXiv source bundle contains a short submission-facing `README.md` and a
-`00README` file that declares `main.tex` as the top-level source and `xelatex`
-as the intended compiler.
+The arXiv upload bundle contains only the TeX sources, generated table `.tex`
+files, generated build metadata, and figure PDFs needed for arXiv to compile
+the paper. It also contains a short submission-facing `README.md` and a
+`00README` file that declares TeX Live 2025, `main.tex` as the top-level source,
+and `xelatex` as the intended compiler. The audit bundle is the place for
+scripts, generated JSON snapshots, duplicate figure formats, and traceability
+materials that are useful for reviewers but unnecessary for arXiv processing.
 
 ## Style Choice
 

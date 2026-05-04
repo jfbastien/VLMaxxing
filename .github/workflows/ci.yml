@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   checks:
     runs-on: ubuntu-latest
@@ -47,21 +50,46 @@ jobs:
           python-version-file: ".python-version"
 
       - name: Sync dependencies
-        run: uv sync --group dev --group research --group benchmark --group paper
+        run: uv sync --locked --group paper
 
       - name: Generate manuscript assets
         run: uv run --group paper python paper/arxiv/scripts/sync_sources.py
 
-      - name: Build paper PDF
-        uses: xu-cheng/latex-action@v3
-        with:
-          root_file: main.tex
-          working_directory: paper/arxiv
-          latexmk_use_xelatex: true
-          args: -interaction=nonstopmode -halt-on-error -file-line-error -outdir=build
+      - name: Fail on stale generated manuscript assets
+        run: |
+          git diff --exit-code -- \
+            paper/arxiv/generated \
+            ':!paper/arxiv/generated/tex/build_meta.tex' \
+            ':!paper/arxiv/generated/tables/repo_provenance.tex'
 
-      - name: Upload paper PDF
+      - name: Create arXiv upload bundle
+        run: uv run --group paper python paper/arxiv/scripts/build.py --skip-pdf --arxiv-upload
+
+      - name: Extract arXiv upload bundle
+        run: |
+          rm -rf .tmp/arxiv-upload
+          mkdir -p .tmp/arxiv-upload
+          tar -xzf paper/arxiv/dist/codec-through-arxiv-upload.tar.gz -C .tmp/arxiv-upload
+          mkdir -p .tmp/arxiv-upload/build
+          find .tmp/arxiv-upload -maxdepth 4 -type f | sort
+
+      - name: Build extracted arXiv upload with TeX Live 2025 / XeLaTeX
+        run: |
+          docker run --rm \
+            --network none \
+            --cap-drop ALL \
+            --security-opt no-new-privileges \
+            --volume "$PWD/.tmp/arxiv-upload:/work:rw" \
+            --workdir /work \
+            ghcr.io/xu-cheng/texlive-historic-alpine@sha256:73a48f4fc1d3ee7357c8ea5d274af161541c0981432da33339eed7ac1f8e083d \
+            latexmk -xelatex -interaction=nonstopmode -halt-on-error -file-line-error -recorder -outdir=build main.tex
+
+      - name: Upload arXiv artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: paper-pdf
-          path: paper/arxiv/build/main.pdf
+          name: arxiv-upload-and-pdf
+          path: |
+            paper/arxiv/dist/codec-through-arxiv-upload.tar.gz
+            .tmp/arxiv-upload/build/main.pdf
+            .tmp/arxiv-upload/build/main.log
+            .tmp/arxiv-upload/build/main.fls

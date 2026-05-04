@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the manuscript PDF and optional arXiv source bundle."""
+"""Build the manuscript PDF and optional release bundles."""
 
 from __future__ import annotations
 
@@ -15,6 +15,52 @@ MANUSCRIPT_ROOT = Path(__file__).resolve().parents[1]
 BUILD_DIR = MANUSCRIPT_ROOT / "build"
 DIST_DIR = MANUSCRIPT_ROOT / "dist"
 SYNC_SCRIPT = MANUSCRIPT_ROOT / "scripts" / "sync_sources.py"
+ARXIV_UPLOAD_NAME = "codec-through-arxiv-upload.tar.gz"
+AUDIT_BUNDLE_NAME = "codec-through-audit-bundle.tar.gz"
+
+ARXIV_FIGURE_FILES = (
+    "generated/figures/regime_overview.pdf",
+    "generated/figures/lane_a_pareto.pdf",
+    "generated/figures/c_persist_safe_budget.pdf",
+    "generated/figures/c_persist_timeline.pdf",
+    "generated/figures/v_share_v_red_ceiling.pdf",
+    "generated/figures/fig1_appendix_broadened/qwen_routing_budget_visualized.pdf",
+)
+
+ARXIV_TABLE_FILES = (
+    "generated/tables/c_persist_dense_anchored.tex",
+    "generated/tables/c_persist_many_turn.tex",
+    "generated/tables/c_persist_repair.tex",
+    "generated/tables/c_persist_sampler_seed_sweep.tex",
+    "generated/tables/c_persist_sampler_stability.tex",
+    "generated/tables/c_persist_setup_inclusive.tex",
+    "generated/tables/competitor_positioning.tex",
+    "generated/tables/gemma_measured_sparse_vision.tex",
+    "generated/tables/headline_results.tex",
+    "generated/tables/lane_a_holdout.tex",
+    "generated/tables/memory_characterization.tex",
+    "generated/tables/paired_drift.tex",
+    "generated/tables/qwen_bridge_boundary.tex",
+    "generated/tables/qwen_measured_sparse_vision.tex",
+    "generated/tables/scaleout_bundle_status.tex",
+)
+
+AUDIT_EXTRA_FILES = (
+    "README.md",
+    "PLAN.md",
+    "pyproject.toml",
+    "uv.lock",
+    "docs/claim-register.md",
+    "docs/reproduction-status.md",
+    "paper/AGENTS.md",
+    "paper/README.md",
+    "paper/priority.md",
+    "paper/claim-matrix.md",
+    "paper/publishability-status.md",
+    "paper/framing.md",
+    "research/README.md",
+    "research/experiments/registry.md",
+)
 
 
 def _has_repo_context() -> bool:
@@ -142,7 +188,15 @@ repository contains scripts, raw paired rows, and extended claim traceability:
 
 
 def _arxiv_control_readme() -> bytes:
-    return b"process:\n  compiler: xelatex\nsources:\n  - filename: main.tex\n    usage: toplevel\n"
+    return (
+        b"spec_version: 1\n"
+        b"texlive_version: 2025\n"
+        b"process:\n"
+        b"  compiler: xelatex\n"
+        b"sources:\n"
+        b"  - filename: main.tex\n"
+        b"    usage: toplevel\n"
+    )
 
 
 def _add_bytes(archive: tarfile.TarFile, arcname: str, content: bytes) -> None:
@@ -151,9 +205,42 @@ def _add_bytes(archive: tarfile.TarFile, arcname: str, content: bytes) -> None:
     archive.addfile(info, io.BytesIO(content))
 
 
-def _bundle() -> Path:
+def _add_file(archive: tarfile.TarFile, rel: str, root: Path = MANUSCRIPT_ROOT) -> None:
+    path = root / rel
+    if not path.is_file():
+        raise SystemExit(f"Required bundle file is missing: {path}")
+    archive.add(path, arcname=rel)
+
+
+def _iter_arxiv_upload_files() -> list[str]:
+    files = [
+        "main.tex",
+        "appendix.tex",
+        "generated/tex/build_meta.tex",
+    ]
+    files.extend(
+        path.relative_to(MANUSCRIPT_ROOT).as_posix()
+        for path in sorted((MANUSCRIPT_ROOT / "sections").glob("*.tex"))
+    )
+    files.extend(ARXIV_TABLE_FILES)
+    files.extend(ARXIV_FIGURE_FILES)
+    return sorted(set(files))
+
+
+def _arxiv_upload_bundle() -> Path:
     DIST_DIR.mkdir(parents=True, exist_ok=True)
-    out_path = DIST_DIR / "codec-through-arxiv-source.tar.gz"
+    out_path = DIST_DIR / ARXIV_UPLOAD_NAME
+    with tarfile.open(out_path, "w:gz") as archive:
+        _add_bytes(archive, "README.md", _bundle_readme())
+        _add_bytes(archive, "00README", _arxiv_control_readme())
+        for rel in _iter_arxiv_upload_files():
+            _add_file(archive, rel)
+    return out_path
+
+
+def _audit_bundle() -> Path:
+    DIST_DIR.mkdir(parents=True, exist_ok=True)
+    out_path = DIST_DIR / AUDIT_BUNDLE_NAME
     exclude_prefixes = {
         "build/",
         "dist/",
@@ -177,6 +264,11 @@ def _bundle() -> Path:
             if path.name in {".DS_Store"} or path.name.startswith("._"):
                 continue
             archive.add(path, arcname=rel)
+        repo_root = MANUSCRIPT_ROOT.parents[1]
+        for rel in AUDIT_EXTRA_FILES:
+            path = repo_root / rel
+            if path.is_file():
+                archive.add(path, arcname=f"repo/{rel}")
     return out_path
 
 
@@ -190,17 +282,36 @@ def main() -> int:
     parser.add_argument(
         "--bundle",
         action="store_true",
-        help="Create an arXiv-style source tarball.",
+        help="Create the minimal arXiv upload tarball.",
+    )
+    parser.add_argument(
+        "--arxiv-upload",
+        action="store_true",
+        help="Create the minimal arXiv upload tarball.",
+    )
+    parser.add_argument(
+        "--audit-bundle",
+        action="store_true",
+        help="Create a richer reproducibility/audit tarball.",
+    )
+    parser.add_argument(
+        "--allow-dirty",
+        action="store_true",
+        help="Allow bundle creation from a dirty working tree for local validation only.",
     )
     args = parser.parse_args()
 
     _sync()
-    if args.bundle:
+    wants_bundle = args.bundle or args.arxiv_upload or args.audit_bundle
+    if wants_bundle and not args.allow_dirty:
         _ensure_clean_for_bundle()
     if not args.skip_pdf:
         _build_pdf()
-    if args.bundle:
-        bundle = _bundle()
+    if args.bundle or args.arxiv_upload:
+        bundle = _arxiv_upload_bundle()
+        print(f"Wrote {bundle}")
+    if args.audit_bundle:
+        bundle = _audit_bundle()
         print(f"Wrote {bundle}")
     return 0
 
