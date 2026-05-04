@@ -22,13 +22,7 @@ Useful but optional:
 
 ## Python Environments
 
-Base repo checks:
-
-```bash
-uv sync --group dev
-```
-
-Research helpers such as PyAV:
+Base repo checks and CPU decode/codec helpers:
 
 ```bash
 uv sync --group dev --group research
@@ -61,9 +55,11 @@ Important current note:
 Base verification:
 
 ```bash
+uv run ruff format --check .
 uv run ruff check .
 uv run mypy src tests
 uv run pytest
+uv run python scripts/audit_artifact_integrity.py
 ```
 
 Optional research/VLM verification:
@@ -74,6 +70,10 @@ uv run python -c "import mlx, mlx_vlm; print(mlx_vlm.__file__)"
 uv run python scripts/check_model_configs.py
 ffmpeg -version
 ```
+
+Scale-out streaming baseline recordings are not part of the normal checkout.
+Scripts that consume them look under `data/recordings/` by default and can be
+pointed elsewhere with `CODEC_THROUGH_RECORDINGS_DIR` or `--recordings-dir`.
 
 ## Recommended Models
 
@@ -118,11 +118,17 @@ Optional predecessor cross-check clips:
 uv run python scripts/fetch_corpus.py --tier crosscheck
 ```
 
-Benchmark-native assets:
+TOMATO and MVBench benchmark-native assets:
 
 ```bash
 uv run python scripts/fetch_benchmarks.py --dataset both --mode all
 ```
+
+Here `--dataset both` means TOMATO + MVBench. VideoMME metadata is handled by
+`scripts/fetch_benchmarks.py`, but the videos are intentionally fetched by
+manifest subset. See
+[docs/videomme-download-handoff.md](videomme-download-handoff.md) for the
+`scripts/fetch_videomme_subset.py` flow.
 
 The source of truth for clip ids and local paths is:
 

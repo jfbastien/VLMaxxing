@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "codec-through"
 version = "0.1.0"
-description = "Research scaffolding for codec-guided video VLM acceleration."
+description = "Research code for training-free anti-recomputation in video VLMs."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 license = { text = "MIT" }

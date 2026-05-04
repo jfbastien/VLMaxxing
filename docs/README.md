@@ -59,6 +59,7 @@ This file only routes work inside `docs/`.
 - [methodology/timing-harness.md](methodology/timing-harness.md)
 - [clip-policy.md](clip-policy.md)
 - [benchmark-setup.md](benchmark-setup.md)
+- [videomme-download-handoff.md](videomme-download-handoff.md)
 - [local-setup.md](local-setup.md)
 
 Historical source imports, review packets, and superseded strategy notes are not

@@ -92,7 +92,7 @@ data/
 └── corpus/
     ├── raw/
     ├── derived/
-    └── crosscheck/
+    ├── crosscheck/
     └── synthetic/
 ```
 
@@ -122,16 +122,14 @@ The primary local pilot does not require the YouTube cross-check set.
 
 ## Benchmark-Native Assets
 
-TOMATO and MVBench assets are not automated yet in this repo.
+TOMATO and MVBench metadata/assets are handled by
+[docs/benchmark-setup.md](benchmark-setup.md) and
+`scripts/fetch_benchmarks.py`. VideoMME uses the same benchmark root but fetches
+videos by checked manifest subset; see
+[docs/videomme-download-handoff.md](videomme-download-handoff.md).
 
-Use them only after:
-
-- Phase 0.5
-- Phase 0.75
-- the local synthetic and Xiph bring-up work is stable
-
-When that setup lands, it should preserve the dataset-native structure instead
-of inventing a custom local derivative without documentation.
+Keep benchmark-native assets in their dataset-native layout under ignored
+`data/benchmarks/` paths. Do not turn them into a custom committed derivative.
 
 ## What Comes Later
 
@@ -139,7 +137,6 @@ Planned later, not part of the initial local setup:
 
 - UVG 4K sequences once we pin exact download URLs and local handling
 - one more public natural-motion clip if the current Xiph set proves too narrow
-- benchmark-native dataset helpers once the local suite is stable
 
 ## Source Notes
 

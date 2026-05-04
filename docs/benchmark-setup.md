@@ -37,10 +37,14 @@ data/benchmarks/
 │   ├── downloads/
 │   ├── hf/
 │   └── videos/
-└── mvbench/
+├── mvbench/
+│   ├── downloads/
+│   ├── hf/
+│   └── video/
+└── videomme/
     ├── downloads/
     ├── hf/
-    └── video/
+    └── videos/
 ```
 
 Nothing under `data/benchmarks/` is committed to git.
@@ -97,11 +101,30 @@ To fetch every Hugging Face-hosted MVBench archive instead:
 uv run python scripts/fetch_benchmarks.py --dataset mvbench --mode assets --mvbench-profile all
 ```
 
-Fetch both benchmark stacks:
+Fetch the TOMATO and MVBench stacks (`both` means TOMATO + MVBench):
 
 ```bash
 uv run python scripts/fetch_benchmarks.py --dataset both --mode all
 ```
+
+Fetch VideoMME metadata:
+
+```bash
+uv run python scripts/fetch_benchmarks.py --dataset videomme --mode metadata
+```
+
+VideoMME videos are intentionally fetched by checked manifest subset rather than
+by the full 101 GB corpus. Use:
+
+```bash
+uv run python scripts/fetch_videomme_subset.py \
+  --manifest research/benchmark_manifests/videomme_dev_v1.toml \
+  --manifest research/benchmark_manifests/videomme_holdout_v1.toml \
+  --cache-dir data/benchmarks/videomme/downloads/hf_cache
+```
+
+See [docs/videomme-download-handoff.md](videomme-download-handoff.md) for the
+complete VideoMME acquisition and verification flow.
 
 Dry-run without downloading anything:
 

@@ -25,15 +25,20 @@ untracked until the final clean-tag freeze.
 3. `make paper-build`
 4. `make paper-bundle`
 
-`paper-sync` regenerates:
+`paper-sync` regenerates the checked generated assets that reviewers are meant
+to audit:
 
-- the routing Pareto figure and table from canonical
-  `research/experiments/2026/artifacts/...` summaries
-- a headline anti-recomputation figure and table covering:
-  - first-pass Gemma vision-pruning holdout cells from canonical artifacts
-  - the local Qwen persistent-KV scaling curve from canonical artifacts
-- the local TOMATO session-5 advisory rerun from checked-in artifacts
-- repo provenance tables, generated at build/freeze time
+- `generated/data/*.json`: source-path-bearing snapshots for figures and tables
+- `generated/tables/*.tex`: manuscript tables, excluding checkout-specific
+  ignored provenance snippets
+- `generated/figures/*.{pdf,png,svg}`: paper figures and duplicate web-friendly
+  formats
+- `paper/figures/*`: curated top-level copies of selected figures and data
+- ignored checkout-specific provenance files under `generated/tex/` and
+  `generated/tables/repo_provenance.tex`
+
+The sync step also validates generated source paths and runs
+`scripts/audit_artifact_integrity.py`.
 
 ## Local Tooling
 

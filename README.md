@@ -1,5 +1,7 @@
 # codec-through
 
+[![ci](https://github.com/jfbastien/codec-through/actions/workflows/ci.yml/badge.svg)](https://github.com/jfbastien/codec-through/actions/workflows/ci.yml)
+
 Research code, artifacts, and manuscript tooling for training-free
 anti-recomputation in video vision-language models.
 
@@ -21,34 +23,42 @@ arXiv release surface. The durable imported-target summary is in
 in [docs/reproduction-status.md](docs/reproduction-status.md), and raw history
 remains in git.
 
+<img src="paper/arxiv/generated/figures/regime_overview.png" alt="Regime overview" width="900">
+
 ## Quick Start
 
 ```bash
-uv sync --group dev
-uv run ruff check .
+uv sync --group dev --group research
 uv run ruff format --check .
+uv run ruff check .
 uv run mypy src tests
 uv run pytest
+uv run python scripts/audit_artifact_integrity.py
 ```
 
-For local research utilities:
+For local MLX / MLX-VLM research utilities:
 
 ```bash
 uv sync --group dev --group research --group vlm
 ```
 
-For benchmark assets:
+For local corpus assets:
 
 ```bash
 uv run python scripts/fetch_corpus.py --tier primary --encode
 uv run python scripts/generate_synthetic_corpus.py
 ```
 
+For benchmark-native TOMATO / MVBench / VideoMME assets, start with
+[docs/benchmark-setup.md](docs/benchmark-setup.md). VideoMME uses checked
+manifest subsets and a separate subset fetch path documented in
+[docs/videomme-download-handoff.md](docs/videomme-download-handoff.md).
+
 For the paper:
 
 ```bash
 uv sync --group dev --group research --group benchmark --group paper
-brew install tectonic
+brew install tectonic  # macOS; any XeLaTeX/Tectonic install also works
 make paper-doctor
 make paper-sync
 make paper-build
@@ -56,16 +66,21 @@ make paper-build
 
 ## Where To Read First
 
+For readers and reviewers:
+
+- [paper/arxiv/README.md](paper/arxiv/README.md): manuscript build and generated assets
+- [paper/claim-matrix.md](paper/claim-matrix.md): paper-facing claim truth table
+- [paper/publishability-status.md](paper/publishability-status.md): current reviewer-facing claim inventory
+- [docs/reproduction-status.md](docs/reproduction-status.md): local reproduction status
+- [research/experiments/registry.md](research/experiments/registry.md): phase/artifact ledger
+
+For contributors and agents:
+
 - [AGENTS.md](AGENTS.md): canonical coding-agent guidance
 - [PLAN.md](PLAN.md): current roadmap and open gates
 - [docs/README.md](docs/README.md): durable docs router
-- [docs/claim-register.md](docs/claim-register.md): imported target register
-- [docs/reproduction-status.md](docs/reproduction-status.md): local status
-- [docs/methodology/performance.md](docs/methodology/performance.md): timing and denominator rules
 - [research/README.md](research/README.md): experiment-note workflow
-- [research/experiments/registry.md](research/experiments/registry.md): phase/artifact ledger
-- [paper/README.md](paper/README.md): manuscript workspace
-- [paper/claim-matrix.md](paper/claim-matrix.md): paper-facing claim truth table
+- [docs/methodology/performance.md](docs/methodology/performance.md): timing and denominator rules
 
 ## Repository Layout
 
@@ -91,6 +106,12 @@ harder to audit.
 - report denominators and setup costs explicitly
 - keep negative results when they change the claim boundary
 - use primary sources for literature and standards claims
+
+## Citation
+
+Use [CITATION.cff](CITATION.cff) for software citation metadata. Once a DOI or
+paper venue is assigned, add a preferred citation there before tagging the
+release.
 
 ## License
 

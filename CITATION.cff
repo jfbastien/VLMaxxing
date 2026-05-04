@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this repository, please cite it as below."
+type: software
+title: "codec-through: Training-Free Anti-Recomputation for Video Vision-Language Models"
+version: 0.1.0
+authors:
+  - family-names: "Bastien"
+    given-names: "Jean-Francois"
+  - family-names: "D'Amico"
+    given-names: "Sam"
+repository-code: "https://github.com/jfbastien/codec-through"
+url: "https://github.com/jfbastien/codec-through"
+license: MIT
+keywords:
+  - video-language-models
+  - vision-language-models
+  - video-efficiency
+  - anti-recomputation
+  - mlx
+abstract: "Software citation metadata for the codec-through code. Documentation, research notes, and paper materials in the same repository are licensed separately under CC BY 4.0."

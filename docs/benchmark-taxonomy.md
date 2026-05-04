@@ -144,5 +144,5 @@ presence here does not imply a local result.
    useful mechanistic evidence for "where budget placement matters."
 2. Do not generalize our MVBench motion slice to "MVBench" — be
    explicit about the motion-heavy group subset.
-3. If / when Video-MME is evaluated, it's a breadth check, not a
-   method-comparison arena.
+3. VideoMME is evaluated as a breadth and denominator-accounting check, not as
+   the primary diagnosis or method-comparison arena.
