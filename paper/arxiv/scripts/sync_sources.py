@@ -1088,7 +1088,7 @@ def _render_c_persist_timeline_figure() -> None:
     out_svg = GENERATED / "figures" / "c_persist_timeline.svg"
     fig.savefig(out_png, dpi=220, bbox_inches="tight")
     _save_pdf(fig, out_pdf, bbox_inches="tight")
-    fig.savefig(out_svg, bbox_inches="tight")
+    fig.savefig(out_svg, bbox_inches="tight", metadata={"Date": "2026-05-04"})
     plt.close(fig)
     (GENERATED / "data" / "c_persist_timeline_snapshot.json").write_text(
         json.dumps(

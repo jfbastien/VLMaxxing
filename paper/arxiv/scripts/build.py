@@ -16,6 +16,17 @@ DIST_DIR = MANUSCRIPT_ROOT / "dist"
 SYNC_SCRIPT = MANUSCRIPT_ROOT / "scripts" / "sync_sources.py"
 
 
+def _has_repo_context() -> bool:
+    """Return true when this script is running from the full repository tree."""
+
+    return (
+        MANUSCRIPT_ROOT.name == "arxiv"
+        and MANUSCRIPT_ROOT.parent.name == "paper"
+        and (MANUSCRIPT_ROOT.parents[1] / "research").exists()
+        and (MANUSCRIPT_ROOT.parents[1] / "paper" / "arxiv").resolve() == MANUSCRIPT_ROOT.resolve()
+    )
+
+
 def _run(cmd: list[str], cwd: Path | None = None) -> None:
     subprocess.run(cmd, cwd=cwd or MANUSCRIPT_ROOT, check=True)
 
@@ -42,6 +53,9 @@ def _ensure_clean_for_bundle() -> None:
 
 
 def _sync() -> None:
+    if not _has_repo_context():
+        print("Skipping source sync; building from bundled generated assets.")
+        return
     _run([sys.executable, str(SYNC_SCRIPT)])
 
 

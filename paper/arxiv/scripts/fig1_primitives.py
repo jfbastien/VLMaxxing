@@ -11,6 +11,7 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 
 PDF_METADATA = {"CreationDate": None, "ModDate": None}
+SVG_METADATA = {"Date": "2026-05-04"}
 
 
 @dataclass(frozen=True)
@@ -90,7 +91,7 @@ def save_figure(
     paths: list[str] = []
     svg = out_dir / f"{stem}.svg"
     pdf = out_dir / f"{stem}.pdf"
-    fig.savefig(svg, bbox_inches="tight", pad_inches=0.02)
+    fig.savefig(svg, bbox_inches="tight", pad_inches=0.02, metadata=SVG_METADATA)
     fig.savefig(pdf, bbox_inches="tight", pad_inches=0.02, metadata=PDF_METADATA)
     paths.extend([str(svg), str(pdf)])
     if also_png:

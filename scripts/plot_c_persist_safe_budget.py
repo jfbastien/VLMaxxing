@@ -37,6 +37,7 @@ import matplotlib.pyplot as plt
 REPO_ROOT = Path(__file__).resolve().parent.parent
 FIGURES = REPO_ROOT / "paper" / "figures"
 PDF_METADATA = {"CreationDate": None, "ModDate": None}
+SVG_METADATA = {"Date": "2026-05-04"}
 FIGURE_SANS_STACK = [
     "Arial",
     "Helvetica Neue",
@@ -148,6 +149,7 @@ def plot() -> None:
             "pdf.fonttype": 42,
             "ps.fonttype": 42,
             "svg.fonttype": "none",
+            "svg.hashsalt": "codec-through-c-persist-safe-budget",
         }
     )
 
@@ -230,7 +232,7 @@ def plot() -> None:
     out_svg = FIGURES / "c_persist_safe_budget.svg"
     out_png = FIGURES / "c_persist_safe_budget.png"
     fig.savefig(out_pdf, bbox_inches="tight", metadata=PDF_METADATA)
-    fig.savefig(out_svg, bbox_inches="tight")
+    fig.savefig(out_svg, bbox_inches="tight", metadata=SVG_METADATA)
     fig.savefig(out_png, dpi=200, bbox_inches="tight")
     print(f"Wrote {out_pdf}")
     print(f"Wrote {out_svg}")
