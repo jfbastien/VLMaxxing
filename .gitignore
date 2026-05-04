@@ -26,5 +26,7 @@ htmlcov/
 research/cache/
 paper/arxiv/build/
 paper/arxiv/dist/
+paper/arxiv/generated/figures/fig1_candidates/
+paper/arxiv/generated/figures/fig1_chatgpt_review_bundle/
 paper/arxiv/generated/tables/repo_provenance.tex
 paper/arxiv/generated/tex/build_meta.tex

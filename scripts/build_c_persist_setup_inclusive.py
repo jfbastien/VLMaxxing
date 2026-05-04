@@ -261,7 +261,7 @@ def _emit_table(snapshot: dict[str, Any]) -> str:
             group = (
                 "Local Qwen C-PERSIST: cold first query + follow-ups"
                 if setup_model == "first_query_then_followups"
-                else "Gemma 26B prefix snapshots: warm snapshot + follow-ups"
+                else "Gemma 26B prefix snapshots: after-warm prefix snapshot + follow-ups"
             )
             lines.append(rf"\multicolumn{{{3 + len(n_grid)}}}{{@{{}}l}}{{\emph{{{group}}}}} \\")
             last_setup_model = setup_model

@@ -176,7 +176,7 @@ def plot() -> None:
         marker="o",
         color="tab:blue",
         linestyle="-",
-        label="Qwen 2.5-VL-7B-4bit",
+        label="Qwen2.5-VL-7B-Instruct-4bit",
     )
     ax_acc.plot(
         three_xs,
@@ -203,7 +203,7 @@ def plot() -> None:
         marker="o",
         color="tab:blue",
         linestyle="-",
-        label="Qwen 2.5-VL-7B-4bit",
+        label="Qwen2.5-VL-7B-Instruct-4bit",
     )
     ax_speed.plot(
         three_xs,

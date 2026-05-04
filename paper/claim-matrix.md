@@ -63,7 +63,7 @@ envelope from Phase 1.55A four-regime probe (Qwen 2.5-VL, n=21 per cell):
 
 | Model               | Tested/tolerated prefill tokens  | Tested/tolerated frame count (VideoMME short prompts) | Observed speedup | Accuracy floor at tested edge |
 |---------------------|----------------------|--------------------------------------------|-------------------|-------------------------------|
-| Qwen 2.5-VL-7B-4bit | ≤ ~6,500             | ≤ 16f                                      | 47×–91×           | Δacc = 0.000 at 16f (clean)   |
+| Qwen2.5-VL-7B-Instruct-4bit | ≤ ~6,500             | ≤ 16f                                      | 47×–91×           | Δacc = 0.000 at 16f (clean)   |
 | Qwen 2.5-VL-3B-4bit | ≤ ~14,500            | ≤ 36f                                      | 91×–215×          | tolerated Δacc = −0.19 pre-basin plateau (three-point 24f/32f/36f) |
 
 **Crossing the tested threshold triggers a bracketed basin onset:**
@@ -98,7 +98,7 @@ cache-state causal instrumentation, not basic runnability.
 mixed bundle on an M5 Max MacBook Pro with 128 GB unified memory, but it
 remains a bounded evidence lane rather than a fourth headline. The checked
 26B-class scale-out bundle shows default mixed-topology cross-turn cache reuse
-is unsafe; a topology-aware prefix snapshot gives positive small-N follow-up
+is unsafe; an after-warm prefix snapshot gives positive small-N follow-up
 rows; fixed-evidence screen/UI baselines favor low-FPS dense over the tested
 event-window proxy; and exactness claims must separate zero correctness delta
 on 1,937 logged rows from byte-identical raw-paired text on 513 rows.
@@ -282,7 +282,7 @@ big-number mechanism (now claim 15).
 
 ## Language rules
 
-Per ChatGPT 2026-04-16 review:
+External review note from 2026-04-16:
 
 - DO NOT say "confidence-conditioned" until answer-margin analyses
   land. SAY: "staleness × temporal-evidence concentration."

@@ -100,8 +100,8 @@ are:
   dense-8 at 44 % of fresh-frame budget on clean tree)
 - Phase 1.21 MVBench N=30 enlargement — **COMPLETED 2026-04-17**
   (base policy 0.600 @ 4.06; strict Pareto win vs dense-6 on clean
-  tree; sticky4 0.633 @ 4.49 matches dense-8 at 56 % of budget,
-  supplementary dirty-tree)
+  tree; the older sticky4 refinement is retained as historical supplementary
+  evidence only and is not part of the current paper-facing evidence set)
 - Phase 1.26 sticky-dynamic planner — **COMPLETED 2026-04-16**
   (helps MVBench holdout; hurts TOMATO motion dev; explanatory
   variable = placement, not quantity)
@@ -134,7 +134,7 @@ are:
   `research/experiments/2026/2026-04-17-phase-1_37B-neighbor-halo-veto-prereg.md`
   and artifact `halo_analysis.json`.
 - Phase 1.41 VideoMME lane — **EARNED LOCALLY / GENERALIZED 2026-04-21**:
-  Qwen 7B-4bit local VideoMME dev at 8f/16f/32f plus 16f holdout. The dev
+  Qwen2.5-VL-7B-Instruct-4bit local VideoMME dev at 8f/16f/32f plus 16f holdout. The dev
   long-bucket regression is split-specific and did not replicate on holdout;
   32f is not Pareto-efficient.
 - Phase 1.42 Gemma architecture-topology lane — **COMPLETED SPLIT 2026-04-24**:

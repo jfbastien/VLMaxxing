@@ -57,7 +57,8 @@ jobs:
         with:
           root_file: main.tex
           working_directory: paper/arxiv
-          args: -pdf -interaction=nonstopmode -halt-on-error -file-line-error -outdir=build
+          latexmk_use_xelatex: true
+          args: -interaction=nonstopmode -halt-on-error -file-line-error -outdir=build
 
       - name: Upload paper PDF
         uses: actions/upload-artifact@v4

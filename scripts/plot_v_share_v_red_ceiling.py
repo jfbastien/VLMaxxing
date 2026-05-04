@@ -180,9 +180,15 @@ CROSS_ARCH_CELLS = [
 
 # Measured sparse-execution points: timed vision-tower work is actually skipped.
 SPARSE_CELLS = [
-    CeilingCell("Qwen sparse vision 8f kr_V=0.25", "measured sparse", 0.099846, 0.648, 1.069, 1.069),
-    CeilingCell("Qwen sparse vision 8f kr_V=0.50", "measured sparse", 0.099846, 0.448, 1.047, 1.042),
-    CeilingCell("Qwen sparse vision 8f kr_V=0.75", "measured sparse", 0.099846, 0.172, 1.018, 0.998),
+    CeilingCell(
+        "Qwen sparse vision 8f kr_V=0.25", "measured sparse", 0.099846, 0.648, 1.069, 1.069
+    ),
+    CeilingCell(
+        "Qwen sparse vision 8f kr_V=0.50", "measured sparse", 0.099846, 0.448, 1.047, 1.042
+    ),
+    CeilingCell(
+        "Qwen sparse vision 8f kr_V=0.75", "measured sparse", 0.099846, 0.172, 1.018, 0.998
+    ),
     CeilingCell("Gemma sparse vision 8f n=60", "measured sparse", 0.0785, 0.482, 1.039, 1.102),
     CeilingCell("Gemma sparse vision 16f n=60", "measured sparse", 0.1556, 0.406, 1.067, 1.035),
     CeilingCell("Gemma sparse vision 32f n=60", "measured sparse", 0.2420, 0.433, 1.117, 1.126),

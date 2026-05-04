@@ -359,10 +359,10 @@ L 460.5175 60.18
    <g id="legend_1">
     <g id="patch_9">
      <path d="M 52.925 329.547
-L 173.01625 329.547
-Q 174.61625 329.547 174.61625 327.947
-L 174.61625 271.97075
-Q 174.61625 270.37075 173.01625 270.37075
+L 179.89375 329.547
+Q 181.49375 329.547 181.49375 327.947
+L 181.49375 271.97075
+Q 181.49375 270.37075 179.89375 270.37075
 L 52.925 270.37075
 Q 51.325 270.37075 51.325 271.97075
 L 51.325 327.947
@@ -402,7 +402,7 @@ L 70.525 299.3245
      </g>
     </g>
     <g id="text_19">
-     <text style="font-size: 8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start" x="76.925" y="302.1245" transform="rotate(-0 76.925 302.1245)">Qwen 2.5-VL-7B-4bit</text>
+     <text style="font-size: 8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start" x="76.925" y="302.1245" transform="rotate(-0 76.925 302.1245)">Qwen2.5-VL-7B-Instruct-4bit</text>
     </g>
     <g id="line2d_32">
      <path d="M 54.525 310.64075
@@ -746,41 +746,41 @@ L 921.61 60.18
    </g>
    <g id="legend_2">
     <g id="patch_19">
-     <path d="M 815.71125 329.547
+     <path d="M 789.04125 329.547
 L 916.01 329.547
 Q 917.61 329.547 917.61 327.947
 L 917.61 306.1145
 Q 917.61 304.5145 916.01 304.5145
-L 815.71125 304.5145
-Q 814.11125 304.5145 814.11125 306.1145
-L 814.11125 327.947
-Q 814.11125 329.547 815.71125 329.547
+L 789.04125 304.5145
+Q 787.44125 304.5145 787.44125 306.1145
+L 787.44125 327.947
+Q 787.44125 329.547 789.04125 329.547
 z
 " style="fill: #ffffff; opacity: 0.8; stroke: #cccccc; stroke-linejoin: miter"/>
     </g>
     <g id="line2d_66">
-     <path d="M 817.31125 310.64075
-L 825.31125 310.64075
-L 833.31125 310.64075
+     <path d="M 790.64125 310.64075
+L 798.64125 310.64075
+L 806.64125 310.64075
 " style="fill: none; stroke: #1f77b4; stroke-width: 1.5; stroke-linecap: square"/>
      <g>
-      <use xlink:href="#m68dca2e5e0" x="825.31125" y="310.64075" style="fill: #1f77b4; stroke: #1f77b4"/>
+      <use xlink:href="#m68dca2e5e0" x="798.64125" y="310.64075" style="fill: #1f77b4; stroke: #1f77b4"/>
      </g>
     </g>
     <g id="text_40">
-     <text style="font-size: 8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start" x="839.71125" y="313.44075" transform="rotate(-0 839.71125 313.44075)">Qwen 2.5-VL-7B-4bit</text>
+     <text style="font-size: 8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start" x="813.04125" y="313.44075" transform="rotate(-0 813.04125 313.44075)">Qwen2.5-VL-7B-Instruct-4bit</text>
     </g>
     <g id="line2d_67">
-     <path d="M 817.31125 321.957
-L 825.31125 321.957
-L 833.31125 321.957
+     <path d="M 790.64125 321.957
+L 798.64125 321.957
+L 806.64125 321.957
 " style="fill: none; stroke: #2ca02c; stroke-width: 1.5; stroke-linecap: square"/>
      <g>
-      <use xlink:href="#me3d4f55d4b" x="825.31125" y="321.957" style="fill: #2ca02c; stroke: #2ca02c; stroke-linejoin: miter"/>
+      <use xlink:href="#me3d4f55d4b" x="798.64125" y="321.957" style="fill: #2ca02c; stroke: #2ca02c; stroke-linejoin: miter"/>
      </g>
     </g>
     <g id="text_41">
-     <text style="font-size: 8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start" x="839.71125" y="324.757" transform="rotate(-0 839.71125 324.757)">Qwen 2.5-VL-3B-4bit</text>
+     <text style="font-size: 8px; font-family: 'Arial', 'Helvetica Neue', 'Helvetica', 'Liberation Sans', 'Nimbus Sans', sans-serif; text-anchor: start" x="813.04125" y="324.757" transform="rotate(-0 813.04125 324.757)">Qwen 2.5-VL-3B-4bit</text>
     </g>
    </g>
   </g>

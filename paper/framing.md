@@ -106,7 +106,7 @@ duration-conditional partial reproduction + 1.55D frontier-partial):
    are **after-ingest / follow-up-query** numbers: the user pays the
    full first-query prefill once, subsequent questions on the *same
    video* reuse the KV and return in sub-second time. These are not
-   "any-fresh-video" latencies. 7B Qwen 2.5-VL-7B-4bit stays inside the
+   "any-fresh-video" latencies. Qwen2.5-VL-7B-Instruct-4bit stays inside the
    tested envelope through ≤16f / ≤6.5k prefill tokens, with a clean 16f
    point (Δacc=0) and a slightly worse but still tolerated 8f point
    (Δacc=−0.048); 3B at ≤36f / ≤14.5k prefill sits on a tolerated
@@ -130,7 +130,7 @@ duration-conditional partial reproduction + 1.55D frontier-partial):
    in its own right.
 
 3. **C-VISION (claim 15): Vision-tower pruning transfers at `L=2`
-   `kr_V=0.50` across Gemma 4-E4B-4bit and Qwen 2.5-VL-7B-4bit, with
+   `kr_V=0.50` across Gemma 4-E4B-4bit and Qwen2.5-VL-7B-Instruct-4bit, with
    first-pass gains governed by the scatter-back ceiling
    `1/(1 − V_share × V_red)`.**
    Dev n=30 headlines are TOMATO **1.24×**, MVBench **1.21×**, and
@@ -306,7 +306,7 @@ paired outputs, cache-correctness checks, source paths, and matched baselines;
 the current bundle is useful because it includes both positive prefix-snapshot
 rows and negative/baseline-pressure rows.
 
-**Sparse exactness** is a separate scale-out evidence row, not part of the
+**Paired-row export** is a separate scale-out evidence row, not part of the
 deployment-multiplier bucket. Historical audits supported zero accuracy delta
 on 1,937 sparse-sampled scale-out S4 rows, but direct byte-identical raw-paired
 verification covered 513 items. Do not write

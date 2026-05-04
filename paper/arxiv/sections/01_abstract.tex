@@ -10,8 +10,9 @@ Qwen2.5-VL-7B-Instruct-4bit, adaptive same-video follow-up reuse preserves
 paired choices and correctness on the 93-query VideoMME breadth setting while
 reducing follow-up latency by 14.90--35.92$\times$. The first query is still
 cold; the win starts when later questions reuse the same video state.
-Selective re-prefill repairs the cache basin, and the second follow-up inherits
-that repaired cache instead of buying the visual tail again. Stress tests bound
+Selective re-prefill moves reused state out of the cache basin, and the second
+follow-up inherits that repaired cache instead of buying the visual tail again.
+Stress tests bound
 the result rather than pretending it is universal: adaptive and scheduled-refresh
 policies are drift-clean through a 50-turn repeated-question stress, fixed
 \(K=1\) stays below the gate with sparse drift, and dense-answer-anchored prompt
@@ -35,8 +36,8 @@ the paper.
 
 Streaming state reuse (candidate C-STREAM) is the native-rate deployment target,
 not a headline result here. The 26B-class scale-out bundle shows the gates:
-default cross-turn cache reuse can be unsafe, topology-aware prefix snapshots
-can help after warm-up, and low-FPS dense remains a serious fixed-evidence
+default cross-turn cache reuse can be unsafe, after-warm prefix snapshots can
+help at small \(N\), and low-FPS dense remains a serious fixed-evidence
 baseline. The larger direction is that future VLM-native media should expose
 change, motion, uncertainty, object state, sensor time, and active tiles
 directly, so models do not have to rediscover the world from dense RGB every

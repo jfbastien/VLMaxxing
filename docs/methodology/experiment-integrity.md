@@ -3,8 +3,8 @@
 Date: 2026-04-17
 Parent: [pareto-reporting.md](pareto-reporting.md)
 
-Per ChatGPT 2026-04-17 review: as the paper approaches submission,
-we need the experiment artifacts to be machine-checkable, not just
+External review on 2026-04-17 highlighted that, as the paper approaches
+submission, experiment artifacts need to be machine-checkable, not just
 human-readable. This document specifies the two conventions that
 make per-claim reproduction auditable without running the full
 pipeline.
