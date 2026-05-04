@@ -20,21 +20,7 @@
     ]
   },
   "source_policy": {
-    "default_snapshot": "clean_tree_only",
-    "sticky4_source_clean": false,
-    "supplementary_excluded_from_main_figure": true
-  },
-  "supplementary": {
-    "mvbench_sticky4": {
-      "agreement": 0.9666666666666667,
-      "artifact": "research/experiments/2026/artifacts/phase1_21_mvbench_motion_holdout_v2_cached/max_abs-8.0-32.0-static+shifted-age4-sticky4_summary.json",
-      "cached_accuracy": 0.6333333333333333,
-      "effective_fresh_frames": 4.494517855501423,
-      "git_sha": "4d84ea2f07a6ea41320e355c90d81c54cd26fc35",
-      "reason": "The sticky4 MVBench holdout artifact remains supplementary until it is rerun from the final checked source state.",
-      "source_clean": false,
-      "status": "supplementary_rerun_required"
-    }
+    "default_snapshot": "clean_tree_only"
   },
   "tomato": {
     "cached_base": {

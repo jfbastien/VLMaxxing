@@ -1166,13 +1166,6 @@ def _lane_a_snapshot() -> dict:
         / "phase1_21_mvbench_motion_holdout_v2_cached_nosticky"
         / "max_abs-8.0-32.0-static+shifted-age4_summary.json"
     )
-    mvbench_sticky_path = (
-        ARTIFACTS
-        / "phase1_21_mvbench_motion_holdout_v2_cached"
-        / "max_abs-8.0-32.0-static+shifted-age4-sticky4_summary.json"
-    )
-    sticky_payload = _artifact_json(mvbench_sticky_path)
-
     return {
         "tomato": {
             "cached_base": _cached_point(tomato_base_path),
@@ -1196,20 +1189,8 @@ def _lane_a_snapshot() -> dict:
                 [4, 6, 8],
             ),
         },
-        "supplementary": {
-            "mvbench_sticky4": {
-                **_cached_point(mvbench_sticky_path),
-                "status": "supplementary_rerun_required",
-                "reason": (
-                    "The sticky4 MVBench holdout artifact remains supplementary "
-                    "until it is rerun from the final checked source state."
-                ),
-            }
-        },
         "source_policy": {
             "default_snapshot": "clean_tree_only",
-            "supplementary_excluded_from_main_figure": True,
-            "sticky4_source_clean": not bool(sticky_payload["environment"]["git_dirty"]),
         },
     }
 
