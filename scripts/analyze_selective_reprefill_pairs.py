@@ -14,6 +14,7 @@ from typing import Any
 
 def _is_pathological_like_response(text: str | None) -> bool:
     rendered = str(text or "")
+    # "自动" catches the observed 自动生成 ("auto-generated") basin attractor.
     return "addCriterion" in rendered or "自动" in rendered
 
 

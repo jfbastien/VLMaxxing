@@ -178,8 +178,9 @@ The paper therefore records paired choice diffs, paired correctness diffs,
 parse failures, degenerate or pathological-like outputs, and query-index splits
 whenever these decide the claim. In the C-PERSIST audits, pathological-like
 means the raw response matched the repeated malformed attractor strings logged
-in the unrepaired basin, including \texttt{addCriterion} or the logged
-Chinese auto-generation marker.
+in the unrepaired basin, including \texttt{addCriterion...} or the literal
+four-character Chinese string for ``auto-generated'' (Unicode
+U+81EA U+52A8 U+751F U+6210).
 The distinction matters scientifically:
 answer-identity drift, accuracy drift, and format collapse point to different
 repair mechanisms.

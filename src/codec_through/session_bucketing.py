@@ -17,7 +17,7 @@ from collections.abc import Iterable
 
 DEFAULT_DEGENERATE_MARKERS: tuple[str, ...] = (
     "addCriterion",
-    "自动生成",
+    "自动生成",  # "auto-generated"; observed unrepaired C-PERSIST basin marker.
 )
 
 

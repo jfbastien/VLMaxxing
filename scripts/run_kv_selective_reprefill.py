@@ -525,8 +525,9 @@ def main() -> int:
     h1_target_25 = acc_delta is not None and acc_delta >= -0.25
     h2_follow_s = follow_summary["median_elapsed_ms"] / 1000 if follow_summary else None
     h2_speedup_10 = speedup is not None and speedup >= 10.0
-    # Basin dispersal counted as: fraction of follow-ups with any pathological-
-    # attractor-set token. Cheap proxy: look for 'addCriterion' or 自动 substring.
+    # Basin dispersal counted as follow-ups with known pathological attractor
+    # strings: addCriterion variants or the literal 自动生成 ("auto-generated")
+    # marker observed in the unrepaired basin.
     basin_hits = sum(
         1
         for r in session_follow
