@@ -1,0 +1,279 @@
+{
+  "algorithm_policy": {
+    "c_persist": "Mechanism lane from c_persist_timeline_snapshot.json; not recomputed per clip.",
+    "c_stream": "Candidate state-update target lane; reported bridge remains fidelity-limited.",
+    "c_vision": "Aggregate measured sparse-vision lane; no checked per-example token keep mask is implied.",
+    "routing": {
+      "active_region_only": true,
+      "block_size": 28,
+      "fresh_rule": "novel + age-expired",
+      "preprocessing": "square-pad resize 560x560",
+      "reuse_rule": "static + shifted while age < 4",
+      "shifted_threshold": 32.0,
+      "static_threshold": 8.0,
+      "statistic": "max_abs"
+    }
+  },
+  "cinematic_policy": "Cinematic videos compute planner decisions at the listed fps, then slow the rendered frames for readability. Slow playback does not change the computed block classes.",
+  "clips": [
+    {
+      "audit_video": "research/experiments/2026/artifacts/codec_through_video_overlays_exploratory_4fps/tomato_0298_00_routing_audit.mp4",
+      "benchmark": "TOMATO",
+      "cinematic_note": "Planner decisions are computed at the listed fps; the second half repeats frames for slow playback only.",
+      "cinematic_video": "research/experiments/2026/artifacts/codec_through_video_overlays_exploratory_4fps/tomato_0298_00_cinematic_explainer.mp4",
+      "end_s": 2.0,
+      "fps": 4.0,
+      "frame_count": 9,
+      "item_id": "tomato:rotation:0298-00",
+      "key": "tomato_0298_00",
+      "pipeline_video": "research/experiments/2026/artifacts/codec_through_video_overlays_exploratory_4fps/tomato_0298_00_state_pipeline.mp4",
+      "role": "high-reuse routing example",
+      "source_jsonl": "research/experiments/2026/artifacts/phase1_6_tomato_motion_holdout_mean_age4.jsonl",
+      "source_video": "data/benchmarks/tomato/videos/object/0298-00.mp4",
+      "start_s": 0.0,
+      "transitions": [
+        {
+          "frame_index": 0,
+          "fresh_fraction_active": 0.0,
+          "reuse_ratio_active": 0.0,
+          "shifted_fraction_active": 0.0,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.0,
+          "time_s": 0.0
+        },
+        {
+          "frame_index": 1,
+          "fresh_fraction_active": 0.105,
+          "reuse_ratio_active": 0.895,
+          "shifted_fraction_active": 0.225,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.67,
+          "time_s": 0.25
+        },
+        {
+          "frame_index": 2,
+          "fresh_fraction_active": 0.1,
+          "reuse_ratio_active": 0.9,
+          "shifted_fraction_active": 0.2,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.7,
+          "time_s": 0.5
+        },
+        {
+          "frame_index": 3,
+          "fresh_fraction_active": 0.09,
+          "reuse_ratio_active": 0.91,
+          "shifted_fraction_active": 0.055,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.855,
+          "time_s": 0.75
+        },
+        {
+          "frame_index": 4,
+          "fresh_fraction_active": 0.105,
+          "reuse_ratio_active": 0.895,
+          "shifted_fraction_active": 0.295,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.6,
+          "time_s": 1.0
+        },
+        {
+          "frame_index": 5,
+          "fresh_fraction_active": 0.92,
+          "reuse_ratio_active": 0.08,
+          "shifted_fraction_active": 0.045,
+          "stale_fraction_active": 0.8,
+          "static_fraction_active": 0.035,
+          "time_s": 1.25
+        },
+        {
+          "frame_index": 6,
+          "fresh_fraction_active": 0.115,
+          "reuse_ratio_active": 0.885,
+          "shifted_fraction_active": 0.13,
+          "stale_fraction_active": 0.01,
+          "static_fraction_active": 0.755,
+          "time_s": 1.5
+        },
+        {
+          "frame_index": 7,
+          "fresh_fraction_active": 0.07,
+          "reuse_ratio_active": 0.93,
+          "shifted_fraction_active": 0.055,
+          "stale_fraction_active": 0.005,
+          "static_fraction_active": 0.875,
+          "time_s": 1.75
+        },
+        {
+          "frame_index": 8,
+          "fresh_fraction_active": 0.14,
+          "reuse_ratio_active": 0.86,
+          "shifted_fraction_active": 0.15,
+          "stale_fraction_active": 0.035,
+          "static_fraction_active": 0.71,
+          "time_s": 2.0
+        }
+      ],
+      "video_id": "0298-00"
+    },
+    {
+      "audit_video": "research/experiments/2026/artifacts/codec_through_video_overlays_exploratory_4fps/videomme_380_routing_audit.mp4",
+      "benchmark": "VideoMME",
+      "cinematic_note": "Planner decisions are computed at the listed fps; the second half repeats frames for slow playback only.",
+      "cinematic_video": "research/experiments/2026/artifacts/codec_through_video_overlays_exploratory_4fps/videomme_380_cinematic_explainer.mp4",
+      "end_s": 207.89,
+      "fps": 4.0,
+      "frame_count": 7,
+      "item_id": "videomme:medium:380-3",
+      "key": "videomme_380",
+      "pipeline_video": "research/experiments/2026/artifacts/codec_through_video_overlays_exploratory_4fps/videomme_380_state_pipeline.mp4",
+      "role": "VideoMME visual anchor",
+      "source_jsonl": "research/experiments/2026/artifacts/phase1_29B_dev30_artifact_20260424/artifact_results.jsonl",
+      "source_video": "data/benchmarks/videomme/videos/2Bns2m5Bg4M.mp4",
+      "start_s": 206.39,
+      "transitions": [
+        {
+          "frame_index": 0,
+          "fresh_fraction_active": 0.0,
+          "reuse_ratio_active": 0.0,
+          "shifted_fraction_active": 0.0,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.0,
+          "time_s": 206.39
+        },
+        {
+          "frame_index": 1,
+          "fresh_fraction_active": 0.205,
+          "reuse_ratio_active": 0.795,
+          "shifted_fraction_active": 0.05,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.745,
+          "time_s": 206.64
+        },
+        {
+          "frame_index": 2,
+          "fresh_fraction_active": 0.19,
+          "reuse_ratio_active": 0.81,
+          "shifted_fraction_active": 0.04,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.77,
+          "time_s": 206.89
+        },
+        {
+          "frame_index": 3,
+          "fresh_fraction_active": 0.205,
+          "reuse_ratio_active": 0.795,
+          "shifted_fraction_active": 0.04,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.755,
+          "time_s": 207.14
+        },
+        {
+          "frame_index": 4,
+          "fresh_fraction_active": 0.2,
+          "reuse_ratio_active": 0.8,
+          "shifted_fraction_active": 0.06,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.74,
+          "time_s": 207.39
+        },
+        {
+          "frame_index": 5,
+          "fresh_fraction_active": 0.98,
+          "reuse_ratio_active": 0.02,
+          "shifted_fraction_active": 0.02,
+          "stale_fraction_active": 0.79,
+          "static_fraction_active": 0.0,
+          "time_s": 207.64
+        },
+        {
+          "frame_index": 6,
+          "fresh_fraction_active": 0.21,
+          "reuse_ratio_active": 0.79,
+          "shifted_fraction_active": 0.04,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.75,
+          "time_s": 207.89
+        }
+      ],
+      "video_id": "380"
+    },
+    {
+      "audit_video": "research/experiments/2026/artifacts/codec_through_video_overlays_exploratory_4fps/videomme_267_routing_audit.mp4",
+      "benchmark": "VideoMME",
+      "cinematic_note": "Planner decisions are computed at the listed fps; the second half repeats frames for slow playback only.",
+      "cinematic_video": "research/experiments/2026/artifacts/codec_through_video_overlays_exploratory_4fps/videomme_267_cinematic_explainer.mp4",
+      "end_s": 1.0,
+      "fps": 4.0,
+      "frame_count": 5,
+      "item_id": "videomme:short:267-2",
+      "key": "videomme_267",
+      "pipeline_video": "research/experiments/2026/artifacts/codec_through_video_overlays_exploratory_4fps/videomme_267_state_pipeline.mp4",
+      "role": "lower-reuse boundary",
+      "source_jsonl": "research/experiments/2026/artifacts/phase1_29B_short_n20_calibration_20260423/artifact_results.jsonl",
+      "source_video": "data/benchmarks/videomme/videos/Atf_Af1q_5w.mp4",
+      "start_s": 0.0,
+      "transitions": [
+        {
+          "frame_index": 0,
+          "fresh_fraction_active": 0.0,
+          "reuse_ratio_active": 0.0,
+          "shifted_fraction_active": 0.0,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.0,
+          "time_s": 0.0
+        },
+        {
+          "frame_index": 1,
+          "fresh_fraction_active": 0.47,
+          "reuse_ratio_active": 0.53,
+          "shifted_fraction_active": 0.2,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.33,
+          "time_s": 0.25
+        },
+        {
+          "frame_index": 2,
+          "fresh_fraction_active": 0.455,
+          "reuse_ratio_active": 0.545,
+          "shifted_fraction_active": 0.18,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.365,
+          "time_s": 0.5
+        },
+        {
+          "frame_index": 3,
+          "fresh_fraction_active": 0.435,
+          "reuse_ratio_active": 0.565,
+          "shifted_fraction_active": 0.165,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.4,
+          "time_s": 0.75
+        },
+        {
+          "frame_index": 4,
+          "fresh_fraction_active": 0.42,
+          "reuse_ratio_active": 0.58,
+          "shifted_fraction_active": 0.185,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.395,
+          "time_s": 1.0
+        }
+      ],
+      "video_id": "267"
+    }
+  ],
+  "purpose": "Exploratory video overlays for codec-through mechanisms. Spatial overlays are exact Qwen routing-budget policy outputs; C-PERSIST/C-VISION/C-STREAM lanes are regime mechanism ledgers from checked paper snapshots.",
+  "reel_video": "research/experiments/2026/artifacts/codec_through_video_overlays_exploratory_4fps/all_clips_cinematic_reel.mp4",
+  "values": {
+    "persist_adaptive_tokens": 50,
+    "persist_fixed_tokens": 451,
+    "persist_q3_speedup": 9.499639841646504,
+    "persist_tail_reduction": 0.8891352549889135,
+    "stream_acc_delta": -0.19298245614035087,
+    "stream_speedup": 3.326045618151653,
+    "vision_n": 20,
+    "vision_reduction": 0.42155219762366813,
+    "vision_speedup": 1.3156532984176152
+  }
+}

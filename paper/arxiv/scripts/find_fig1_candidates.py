@@ -844,6 +844,8 @@ def transition_details(
         ages = np.where(reused, ages + 1, 0).astype(np.int32)
         shifted = (classes == int(BlockClass.SHIFTED)) & active
         static = (classes == int(BlockClass.STATIC)) & active
+        shifted_reused = shifted & reused
+        static_reused = static & reused
         active_count = int(active.sum())
         reuse_ratio = float(reused.sum() / active_count) if active_count else 0.0
         regions = merge_novel_blocks_to_regions(fresh, max_regions=2, min_blocks=2, dilate_iters=1)
@@ -867,6 +869,12 @@ def transition_details(
                 "raw_novel_boxes": mask_to_normalized_boxes(raw_novel, active_boxes[idx + 1]),
                 "stale_boxes": mask_to_normalized_boxes(stale, active_boxes[idx + 1]),
                 "novel_boxes": mask_to_normalized_boxes(raw_novel, active_boxes[idx + 1]),
+                "shifted_reused_boxes": mask_to_normalized_boxes(
+                    shifted_reused, active_boxes[idx + 1]
+                ),
+                "static_reused_boxes": mask_to_normalized_boxes(
+                    static_reused, active_boxes[idx + 1]
+                ),
                 "shifted_boxes": mask_to_normalized_boxes(shifted, active_boxes[idx + 1]),
                 "static_boxes": mask_to_normalized_boxes(static, active_boxes[idx + 1]),
             }

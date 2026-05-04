@@ -276,8 +276,8 @@ def budget_percent_pair(reuse: float) -> tuple[int, int]:
 
 
 def class_composition_line(transition: dict[str, Any]) -> str:
-    static = len(transition.get("static_boxes", []))
-    shifted = len(transition.get("shifted_boxes", []))
+    static = len(transition.get("static_reused_boxes", transition.get("static_boxes", [])))
+    shifted = len(transition.get("shifted_reused_boxes", transition.get("shifted_boxes", [])))
     fresh = len(transition.get("fresh_boxes", []))
     total = max(1, static + shifted + fresh)
     static_pct = int(math.floor(static / total * 100.0 + 0.5))
@@ -324,8 +324,20 @@ def draw_class_overlay(
 ) -> None:
     draw_raster_frame(ax, image, x, y, w, h, z=z)
     for boxes, fill, edge, alpha, lw in [
-        (transition.get("static_boxes", []), THEME.cache, THEME.cache, 0.045, 0.05),
-        (transition.get("shifted_boxes", []), "#eab308", "#a16207", 0.075, 0.08),
+        (
+            transition.get("static_reused_boxes", transition.get("static_boxes", [])),
+            THEME.cache,
+            THEME.cache,
+            0.045,
+            0.05,
+        ),
+        (
+            transition.get("shifted_reused_boxes", transition.get("shifted_boxes", [])),
+            "#eab308",
+            "#a16207",
+            0.075,
+            0.08,
+        ),
         (transition.get("fresh_boxes", []), "#ff5a1f", "#b42318", 0.460, 0.42),
     ]:
         draw_highlight_regions(
@@ -864,8 +876,18 @@ def render_algorithm_comparison(candidate: dict[str, Any], out_dir: Path) -> Non
     draw_raster_frame(ax, frames[1], inset_x, inset_y, inset_w, inset_h, z=2)
     transition = assets["transitions"][0]
     for boxes, fill, edge, alpha in [
-        (transition["static_boxes"], THEME.cache, THEME.cache, 0.07),
-        (transition["shifted_boxes"], "#eab308", "#a16207", 0.10),
+        (
+            transition.get("static_reused_boxes", transition.get("static_boxes", [])),
+            THEME.cache,
+            THEME.cache,
+            0.07,
+        ),
+        (
+            transition.get("shifted_reused_boxes", transition.get("shifted_boxes", [])),
+            "#eab308",
+            "#a16207",
+            0.10,
+        ),
         (transition["fresh_boxes"], "#ff5a1f", "#b42318", 0.46),
     ]:
         draw_highlight_regions(

@@ -1,0 +1,603 @@
+{
+  "algorithm_policy": {
+    "c_persist": "Mechanism lane from c_persist_timeline_snapshot.json; not recomputed per clip.",
+    "c_stream": "Candidate state-update target lane; reported bridge remains fidelity-limited.",
+    "c_vision": "Aggregate measured sparse-vision lane; no checked per-example token keep mask is implied.",
+    "routing": {
+      "active_region_only": true,
+      "block_size": 28,
+      "fresh_rule": "novel + age-expired",
+      "preprocessing": "square-pad resize 560x560",
+      "reuse_rule": "static + shifted while age < 4",
+      "shifted_threshold": 32.0,
+      "static_threshold": 8.0,
+      "statistic": "max_abs"
+    }
+  },
+  "cinematic_policy": "Cinematic videos compute planner decisions at the listed fps, then slow the rendered frames for readability. Slow playback does not change the computed block classes.",
+  "clips": [
+    {
+      "audit_video": "research/experiments/2026/artifacts/codec_through_video_overlays_exploratory/tomato_0298_00_routing_audit.mp4",
+      "benchmark": "TOMATO",
+      "cinematic_note": "Planner decisions are computed at the listed fps; the second half repeats frames for slow playback only.",
+      "cinematic_video": "research/experiments/2026/artifacts/codec_through_video_overlays_exploratory/tomato_0298_00_cinematic_explainer.mp4",
+      "end_s": 2.0,
+      "fps": 12.0,
+      "frame_count": 25,
+      "item_id": "tomato:rotation:0298-00",
+      "key": "tomato_0298_00",
+      "pipeline_video": "research/experiments/2026/artifacts/codec_through_video_overlays_exploratory/tomato_0298_00_state_pipeline.mp4",
+      "role": "high-reuse routing example",
+      "source_jsonl": "research/experiments/2026/artifacts/phase1_6_tomato_motion_holdout_mean_age4.jsonl",
+      "source_video": "data/benchmarks/tomato/videos/object/0298-00.mp4",
+      "start_s": 0.0,
+      "transitions": [
+        {
+          "frame_index": 0,
+          "fresh_fraction_active": 0.0,
+          "reuse_ratio_active": 0.0,
+          "shifted_fraction_active": 0.0,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.0,
+          "time_s": 0.0
+        },
+        {
+          "frame_index": 1,
+          "fresh_fraction_active": 0.105,
+          "reuse_ratio_active": 0.895,
+          "shifted_fraction_active": 0.11,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.785,
+          "time_s": 0.08333333333333333
+        },
+        {
+          "frame_index": 2,
+          "fresh_fraction_active": 0.1,
+          "reuse_ratio_active": 0.9,
+          "shifted_fraction_active": 0.07,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.83,
+          "time_s": 0.16666666666666666
+        },
+        {
+          "frame_index": 3,
+          "fresh_fraction_active": 0.105,
+          "reuse_ratio_active": 0.895,
+          "shifted_fraction_active": 0.07,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.825,
+          "time_s": 0.25
+        },
+        {
+          "frame_index": 4,
+          "fresh_fraction_active": 0.075,
+          "reuse_ratio_active": 0.925,
+          "shifted_fraction_active": 0.08,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.845,
+          "time_s": 0.3333333333333333
+        },
+        {
+          "frame_index": 5,
+          "fresh_fraction_active": 0.915,
+          "reuse_ratio_active": 0.085,
+          "shifted_fraction_active": 0.035,
+          "stale_fraction_active": 0.795,
+          "static_fraction_active": 0.05,
+          "time_s": 0.4166666666666667
+        },
+        {
+          "frame_index": 6,
+          "fresh_fraction_active": 0.13,
+          "reuse_ratio_active": 0.87,
+          "shifted_fraction_active": 0.08,
+          "stale_fraction_active": 0.025,
+          "static_fraction_active": 0.79,
+          "time_s": 0.5
+        },
+        {
+          "frame_index": 7,
+          "fresh_fraction_active": 0.09,
+          "reuse_ratio_active": 0.91,
+          "shifted_fraction_active": 0.085,
+          "stale_fraction_active": 0.005,
+          "static_fraction_active": 0.825,
+          "time_s": 0.5833333333333334
+        },
+        {
+          "frame_index": 8,
+          "fresh_fraction_active": 0.075,
+          "reuse_ratio_active": 0.925,
+          "shifted_fraction_active": 0.06,
+          "stale_fraction_active": 0.015,
+          "static_fraction_active": 0.865,
+          "time_s": 0.6666666666666666
+        },
+        {
+          "frame_index": 9,
+          "fresh_fraction_active": 0.115,
+          "reuse_ratio_active": 0.885,
+          "shifted_fraction_active": 0.12,
+          "stale_fraction_active": 0.025,
+          "static_fraction_active": 0.765,
+          "time_s": 0.75
+        },
+        {
+          "frame_index": 10,
+          "fresh_fraction_active": 0.855,
+          "reuse_ratio_active": 0.145,
+          "shifted_fraction_active": 0.055,
+          "stale_fraction_active": 0.75,
+          "static_fraction_active": 0.09,
+          "time_s": 0.8333333333333334
+        },
+        {
+          "frame_index": 11,
+          "fresh_fraction_active": 0.14,
+          "reuse_ratio_active": 0.86,
+          "shifted_fraction_active": 0.055,
+          "stale_fraction_active": 0.025,
+          "static_fraction_active": 0.805,
+          "time_s": 0.9166666666666666
+        },
+        {
+          "frame_index": 12,
+          "fresh_fraction_active": 0.075,
+          "reuse_ratio_active": 0.925,
+          "shifted_fraction_active": 0.265,
+          "stale_fraction_active": 0.03,
+          "static_fraction_active": 0.66,
+          "time_s": 1.0
+        },
+        {
+          "frame_index": 13,
+          "fresh_fraction_active": 0.145,
+          "reuse_ratio_active": 0.855,
+          "shifted_fraction_active": 0.07,
+          "stale_fraction_active": 0.025,
+          "static_fraction_active": 0.785,
+          "time_s": 1.0833333333333333
+        },
+        {
+          "frame_index": 14,
+          "fresh_fraction_active": 0.16,
+          "reuse_ratio_active": 0.84,
+          "shifted_fraction_active": 0.08,
+          "stale_fraction_active": 0.045,
+          "static_fraction_active": 0.76,
+          "time_s": 1.1666666666666667
+        },
+        {
+          "frame_index": 15,
+          "fresh_fraction_active": 0.815,
+          "reuse_ratio_active": 0.185,
+          "shifted_fraction_active": 0.04,
+          "stale_fraction_active": 0.72,
+          "static_fraction_active": 0.145,
+          "time_s": 1.25
+        },
+        {
+          "frame_index": 16,
+          "fresh_fraction_active": 0.095,
+          "reuse_ratio_active": 0.905,
+          "shifted_fraction_active": 0.05,
+          "stale_fraction_active": 0.025,
+          "static_fraction_active": 0.855,
+          "time_s": 1.3333333333333333
+        },
+        {
+          "frame_index": 17,
+          "fresh_fraction_active": 0.115,
+          "reuse_ratio_active": 0.885,
+          "shifted_fraction_active": 0.09,
+          "stale_fraction_active": 0.02,
+          "static_fraction_active": 0.795,
+          "time_s": 1.4166666666666667
+        },
+        {
+          "frame_index": 18,
+          "fresh_fraction_active": 0.15,
+          "reuse_ratio_active": 0.85,
+          "shifted_fraction_active": 0.075,
+          "stale_fraction_active": 0.055,
+          "static_fraction_active": 0.775,
+          "time_s": 1.5
+        },
+        {
+          "frame_index": 19,
+          "fresh_fraction_active": 0.135,
+          "reuse_ratio_active": 0.865,
+          "shifted_fraction_active": 0.05,
+          "stale_fraction_active": 0.02,
+          "static_fraction_active": 0.815,
+          "time_s": 1.5833333333333333
+        },
+        {
+          "frame_index": 20,
+          "fresh_fraction_active": 0.76,
+          "reuse_ratio_active": 0.24,
+          "shifted_fraction_active": 0.045,
+          "stale_fraction_active": 0.725,
+          "static_fraction_active": 0.195,
+          "time_s": 1.6666666666666667
+        },
+        {
+          "frame_index": 21,
+          "fresh_fraction_active": 0.155,
+          "reuse_ratio_active": 0.845,
+          "shifted_fraction_active": 0.065,
+          "stale_fraction_active": 0.035,
+          "static_fraction_active": 0.78,
+          "time_s": 1.75
+        },
+        {
+          "frame_index": 22,
+          "fresh_fraction_active": 0.175,
+          "reuse_ratio_active": 0.825,
+          "shifted_fraction_active": 0.065,
+          "stale_fraction_active": 0.065,
+          "static_fraction_active": 0.76,
+          "time_s": 1.8333333333333333
+        },
+        {
+          "frame_index": 23,
+          "fresh_fraction_active": 0.11,
+          "reuse_ratio_active": 0.89,
+          "shifted_fraction_active": 0.1,
+          "stale_fraction_active": 0.01,
+          "static_fraction_active": 0.79,
+          "time_s": 1.9166666666666667
+        },
+        {
+          "frame_index": 24,
+          "fresh_fraction_active": 0.095,
+          "reuse_ratio_active": 0.905,
+          "shifted_fraction_active": 0.04,
+          "stale_fraction_active": 0.015,
+          "static_fraction_active": 0.865,
+          "time_s": 2.0
+        }
+      ],
+      "video_id": "0298-00"
+    },
+    {
+      "audit_video": "research/experiments/2026/artifacts/codec_through_video_overlays_exploratory/videomme_380_routing_audit.mp4",
+      "benchmark": "VideoMME",
+      "cinematic_note": "Planner decisions are computed at the listed fps; the second half repeats frames for slow playback only.",
+      "cinematic_video": "research/experiments/2026/artifacts/codec_through_video_overlays_exploratory/videomme_380_cinematic_explainer.mp4",
+      "end_s": 207.89,
+      "fps": 12.0,
+      "frame_count": 19,
+      "item_id": "videomme:medium:380-3",
+      "key": "videomme_380",
+      "pipeline_video": "research/experiments/2026/artifacts/codec_through_video_overlays_exploratory/videomme_380_state_pipeline.mp4",
+      "role": "VideoMME visual anchor",
+      "source_jsonl": "research/experiments/2026/artifacts/phase1_29B_dev30_artifact_20260424/artifact_results.jsonl",
+      "source_video": "data/benchmarks/videomme/videos/2Bns2m5Bg4M.mp4",
+      "start_s": 206.39,
+      "transitions": [
+        {
+          "frame_index": 0,
+          "fresh_fraction_active": 0.0,
+          "reuse_ratio_active": 0.0,
+          "shifted_fraction_active": 0.0,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.0,
+          "time_s": 206.39
+        },
+        {
+          "frame_index": 1,
+          "fresh_fraction_active": 0.185,
+          "reuse_ratio_active": 0.815,
+          "shifted_fraction_active": 0.065,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.75,
+          "time_s": 206.47333333333333
+        },
+        {
+          "frame_index": 2,
+          "fresh_fraction_active": 0.18,
+          "reuse_ratio_active": 0.82,
+          "shifted_fraction_active": 0.045,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.775,
+          "time_s": 206.55666666666664
+        },
+        {
+          "frame_index": 3,
+          "fresh_fraction_active": 0.12,
+          "reuse_ratio_active": 0.88,
+          "shifted_fraction_active": 0.115,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.765,
+          "time_s": 206.64
+        },
+        {
+          "frame_index": 4,
+          "fresh_fraction_active": 0.195,
+          "reuse_ratio_active": 0.805,
+          "shifted_fraction_active": 0.06,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.745,
+          "time_s": 206.72333333333333
+        },
+        {
+          "frame_index": 5,
+          "fresh_fraction_active": 0.905,
+          "reuse_ratio_active": 0.095,
+          "shifted_fraction_active": 0.045,
+          "stale_fraction_active": 0.79,
+          "static_fraction_active": 0.05,
+          "time_s": 206.80666666666664
+        },
+        {
+          "frame_index": 6,
+          "fresh_fraction_active": 0.175,
+          "reuse_ratio_active": 0.825,
+          "shifted_fraction_active": 0.045,
+          "stale_fraction_active": 0.01,
+          "static_fraction_active": 0.78,
+          "time_s": 206.89
+        },
+        {
+          "frame_index": 7,
+          "fresh_fraction_active": 0.185,
+          "reuse_ratio_active": 0.815,
+          "shifted_fraction_active": 0.045,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.77,
+          "time_s": 206.97333333333333
+        },
+        {
+          "frame_index": 8,
+          "fresh_fraction_active": 0.175,
+          "reuse_ratio_active": 0.825,
+          "shifted_fraction_active": 0.045,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.78,
+          "time_s": 207.05666666666664
+        },
+        {
+          "frame_index": 9,
+          "fresh_fraction_active": 0.075,
+          "reuse_ratio_active": 0.925,
+          "shifted_fraction_active": 0.11,
+          "stale_fraction_active": 0.005,
+          "static_fraction_active": 0.815,
+          "time_s": 207.14
+        },
+        {
+          "frame_index": 10,
+          "fresh_fraction_active": 0.965,
+          "reuse_ratio_active": 0.035,
+          "shifted_fraction_active": 0.03,
+          "stale_fraction_active": 0.785,
+          "static_fraction_active": 0.005,
+          "time_s": 207.22333333333333
+        },
+        {
+          "frame_index": 11,
+          "fresh_fraction_active": 0.165,
+          "reuse_ratio_active": 0.835,
+          "shifted_fraction_active": 0.04,
+          "stale_fraction_active": 0.015,
+          "static_fraction_active": 0.795,
+          "time_s": 207.30666666666664
+        },
+        {
+          "frame_index": 12,
+          "fresh_fraction_active": 0.115,
+          "reuse_ratio_active": 0.885,
+          "shifted_fraction_active": 0.045,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.84,
+          "time_s": 207.39
+        },
+        {
+          "frame_index": 13,
+          "fresh_fraction_active": 0.165,
+          "reuse_ratio_active": 0.835,
+          "shifted_fraction_active": 0.065,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.77,
+          "time_s": 207.47333333333333
+        },
+        {
+          "frame_index": 14,
+          "fresh_fraction_active": 0.185,
+          "reuse_ratio_active": 0.815,
+          "shifted_fraction_active": 0.035,
+          "stale_fraction_active": 0.005,
+          "static_fraction_active": 0.78,
+          "time_s": 207.55666666666664
+        },
+        {
+          "frame_index": 15,
+          "fresh_fraction_active": 0.895,
+          "reuse_ratio_active": 0.105,
+          "shifted_fraction_active": 0.085,
+          "stale_fraction_active": 0.785,
+          "static_fraction_active": 0.02,
+          "time_s": 207.64
+        },
+        {
+          "frame_index": 16,
+          "fresh_fraction_active": 0.215,
+          "reuse_ratio_active": 0.785,
+          "shifted_fraction_active": 0.04,
+          "stale_fraction_active": 0.01,
+          "static_fraction_active": 0.745,
+          "time_s": 207.72333333333333
+        },
+        {
+          "frame_index": 17,
+          "fresh_fraction_active": 0.135,
+          "reuse_ratio_active": 0.865,
+          "shifted_fraction_active": 0.06,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.805,
+          "time_s": 207.80666666666664
+        },
+        {
+          "frame_index": 18,
+          "fresh_fraction_active": 0.115,
+          "reuse_ratio_active": 0.885,
+          "shifted_fraction_active": 0.08,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.805,
+          "time_s": 207.89
+        }
+      ],
+      "video_id": "380"
+    },
+    {
+      "audit_video": "research/experiments/2026/artifacts/codec_through_video_overlays_exploratory/videomme_267_routing_audit.mp4",
+      "benchmark": "VideoMME",
+      "cinematic_note": "Planner decisions are computed at the listed fps; the second half repeats frames for slow playback only.",
+      "cinematic_video": "research/experiments/2026/artifacts/codec_through_video_overlays_exploratory/videomme_267_cinematic_explainer.mp4",
+      "end_s": 1.0,
+      "fps": 12.0,
+      "frame_count": 13,
+      "item_id": "videomme:short:267-2",
+      "key": "videomme_267",
+      "pipeline_video": "research/experiments/2026/artifacts/codec_through_video_overlays_exploratory/videomme_267_state_pipeline.mp4",
+      "role": "lower-reuse boundary",
+      "source_jsonl": "research/experiments/2026/artifacts/phase1_29B_short_n20_calibration_20260423/artifact_results.jsonl",
+      "source_video": "data/benchmarks/videomme/videos/Atf_Af1q_5w.mp4",
+      "start_s": 0.0,
+      "transitions": [
+        {
+          "frame_index": 0,
+          "fresh_fraction_active": 0.0,
+          "reuse_ratio_active": 0.0,
+          "shifted_fraction_active": 0.0,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.0,
+          "time_s": 0.0
+        },
+        {
+          "frame_index": 1,
+          "fresh_fraction_active": 0.445,
+          "reuse_ratio_active": 0.555,
+          "shifted_fraction_active": 0.085,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.47,
+          "time_s": 0.08333333333333333
+        },
+        {
+          "frame_index": 2,
+          "fresh_fraction_active": 0.445,
+          "reuse_ratio_active": 0.555,
+          "shifted_fraction_active": 0.055,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.5,
+          "time_s": 0.16666666666666666
+        },
+        {
+          "frame_index": 3,
+          "fresh_fraction_active": 0.435,
+          "reuse_ratio_active": 0.565,
+          "shifted_fraction_active": 0.06,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.505,
+          "time_s": 0.25
+        },
+        {
+          "frame_index": 4,
+          "fresh_fraction_active": 0.42,
+          "reuse_ratio_active": 0.58,
+          "shifted_fraction_active": 0.075,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.505,
+          "time_s": 0.3333333333333333
+        },
+        {
+          "frame_index": 5,
+          "fresh_fraction_active": 0.975,
+          "reuse_ratio_active": 0.025,
+          "shifted_fraction_active": 0.01,
+          "stale_fraction_active": 0.55,
+          "static_fraction_active": 0.015,
+          "time_s": 0.4166666666666667
+        },
+        {
+          "frame_index": 6,
+          "fresh_fraction_active": 0.41,
+          "reuse_ratio_active": 0.59,
+          "shifted_fraction_active": 0.07,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.52,
+          "time_s": 0.5
+        },
+        {
+          "frame_index": 7,
+          "fresh_fraction_active": 0.41,
+          "reuse_ratio_active": 0.59,
+          "shifted_fraction_active": 0.105,
+          "stale_fraction_active": 0.01,
+          "static_fraction_active": 0.485,
+          "time_s": 0.5833333333333334
+        },
+        {
+          "frame_index": 8,
+          "fresh_fraction_active": 0.415,
+          "reuse_ratio_active": 0.585,
+          "shifted_fraction_active": 0.055,
+          "stale_fraction_active": 0.01,
+          "static_fraction_active": 0.53,
+          "time_s": 0.6666666666666666
+        },
+        {
+          "frame_index": 9,
+          "fresh_fraction_active": 0.375,
+          "reuse_ratio_active": 0.625,
+          "shifted_fraction_active": 0.08,
+          "stale_fraction_active": 0.0,
+          "static_fraction_active": 0.545,
+          "time_s": 0.75
+        },
+        {
+          "frame_index": 10,
+          "fresh_fraction_active": 0.93,
+          "reuse_ratio_active": 0.07,
+          "shifted_fraction_active": 0.03,
+          "stale_fraction_active": 0.56,
+          "static_fraction_active": 0.04,
+          "time_s": 0.8333333333333334
+        },
+        {
+          "frame_index": 11,
+          "fresh_fraction_active": 0.385,
+          "reuse_ratio_active": 0.615,
+          "shifted_fraction_active": 0.07,
+          "stale_fraction_active": 0.015,
+          "static_fraction_active": 0.545,
+          "time_s": 0.9166666666666666
+        },
+        {
+          "frame_index": 12,
+          "fresh_fraction_active": 0.38,
+          "reuse_ratio_active": 0.62,
+          "shifted_fraction_active": 0.07,
+          "stale_fraction_active": 0.01,
+          "static_fraction_active": 0.55,
+          "time_s": 1.0
+        }
+      ],
+      "video_id": "267"
+    }
+  ],
+  "purpose": "Exploratory video overlays for codec-through mechanisms. Spatial overlays are exact Qwen routing-budget policy outputs; C-PERSIST/C-VISION/C-STREAM lanes are regime mechanism ledgers from checked paper snapshots.",
+  "reel_video": "research/experiments/2026/artifacts/codec_through_video_overlays_exploratory/all_clips_cinematic_reel.mp4",
+  "values": {
+    "persist_adaptive_tokens": 50,
+    "persist_fixed_tokens": 451,
+    "persist_q3_speedup": 9.499639841646504,
+    "persist_tail_reduction": 0.8891352549889135,
+    "stream_acc_delta": -0.19298245614035087,
+    "stream_speedup": 3.326045618151653,
+    "vision_n": 20,
+    "vision_reduction": 0.42155219762366813,
+    "vision_speedup": 1.3156532984176152
+  }
+}
