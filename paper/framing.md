@@ -362,7 +362,7 @@ streaming bundle occupy disjoint regimes by design:
 | Eval regime           | N = 30 / 60 holdout with paired local timing | checked raw paired rows and matched fixed-evidence baselines, still mixed |
 | Classifier            | pixel-diff proxy on sampled decoded frames | MV/residual side-channels, event windows, prefix snapshots |
 | Focus                 | mechanism isolation, prereg falsification  | full stack and deployment-style state reuse |
-| Strongest numbers     | 1.113× VideoMME 8 f holdout; Gemma 32f short 1.316×; adaptive C-PERSIST 0/93 + many-turn stress | prefix-snapshot 8f/32f positive small-N; exactness export bounded to 1,937 zero-delta / 513 byte-identical |
+| Strongest numbers     | 1.113× VideoMME 8 f holdout; Gemma 32f short 1.316×; adaptive C-PERSIST 0/93 + many-turn stress | prefix-snapshot 8f/32f positive small-N; paired-row export bounded to 1,937 zero-delta / 513 byte-identical |
 
 The shared frame is **C-CEILING** (`1/(fixed + (1−fixed)/s)` on any
 stage-bounded acceleration, including the vision-axis analog
@@ -436,9 +436,9 @@ revised pre-release source §8 and codex 2026-04-16 review, the paper must state
    target-share calibration ablations. This supports a codec-native
    planner-substitution row; it still does **not** support a latency claim
    because the current extraction path is offline and too slow.
-5. **Composition remains projected**: temporal × KV-compression
-   composition ratios are projected from independent-layer
-   assumptions, not measured end-to-end.
+5. **Composition remains ceiling-bound boundary evidence**: temporal ×
+   KV-compression ratios are not assumed from independent-layer projections;
+   direct stacked runs must earn any composition claim end-to-end.
 6. **Per-frame binary decision**: our mechanism cannot prune WITHIN
    novel frames. On all-dynamic content, temporal caching provides
    near-zero benefit. This is a fundamental limitation, not a

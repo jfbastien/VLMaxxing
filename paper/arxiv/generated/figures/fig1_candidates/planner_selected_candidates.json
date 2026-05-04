@@ -16146,7 +16146,7 @@
       "stale_by_age"
     ],
     "max_age": 4,
-    "purpose": "Selected candidate windows are rendered with the audited Qwen routing-budget visualization policy; source_jsonl only supplies the video path and row metadata.",
+    "purpose": "Selected candidate windows are rendered with the reported Qwen routing-budget visualization policy; source_jsonl only supplies the video path and row metadata.",
     "reuse_classes": [
       "static",
       "shifted"

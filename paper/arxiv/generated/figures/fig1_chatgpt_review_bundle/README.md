@@ -31,7 +31,7 @@ Current recommendation:
   replacement for the main figure, because the bars visualize fixed-backend
   Qwen routing-budget evidence rather than C-PERSIST timing evidence.
 
-The planner figures visualize the audited block policy behind the Section 6
+The planner figures visualize the reported block policy behind the Section 6
 Qwen routing frontier: `max_abs(8,32)`, active-region only, reuse classes
 `static+shifted`, `age < 4`. The combined appendix figure shows a previous
 frame, current frame, planner classes, and the resulting reused/fresh decision
