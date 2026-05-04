@@ -22,9 +22,9 @@ jobs:
       - name: Sync dependencies
         # MLX is Apple-only (libmlx.so is not distributed for Linux), so
         # the vlm group is intentionally omitted on CI. Tests that load
-        # MLX-dependent scripts use pytest.importorskip("mlx.core") to
-        # skip cleanly on non-MLX hosts. See round-16 CI post-mortem.
-        run: uv sync --group dev --group research --group benchmark --group paper
+        # MLX-dependent scripts use a subprocess probe before importing
+        # MLX-backed modules and skip cleanly on non-MLX hosts.
+        run: uv sync --locked --group dev --group research --group benchmark --group paper
 
       - name: Ruff format check
         run: uv run ruff format --check .
@@ -38,17 +38,31 @@ jobs:
       - name: Pytest
         run: uv run pytest
 
+      - name: Artifact integrity
+        run: uv run python scripts/audit_artifact_integrity.py
+
   paper:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
+      - uses: astral-sh/setup-uv@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version-file: ".python-version"
 
+      - name: Sync dependencies
+        run: uv sync --locked --group dev --group research --group benchmark --group paper
+
+      - name: Sync generated paper assets
+        run: uv run python paper/arxiv/scripts/sync_sources.py
+
+      - name: Ensure generated paper assets are committed
+        run: git diff --exit-code -- paper/arxiv/generated paper/figures
+
       - name: Create arXiv upload bundle from frozen assets
-        run: python paper/arxiv/scripts/build.py --skip-pdf --arxiv-upload --no-sync
+        run: uv run python paper/arxiv/scripts/build.py --skip-pdf --arxiv-upload --no-sync
 
       - name: Extract arXiv upload bundle
         run: |

@@ -1,4 +1,4 @@
-.PHONY: fmt lint test typecheck check paper-doctor paper-sync paper-build paper-bundle paper-arxiv-upload paper-audit-bundle paper-arxiv-check
+.PHONY: fmt lint test typecheck check paper-doctor paper-sync paper-build paper-bundle paper-arxiv-upload paper-audit-bundle paper-arxiv-check paper-arxiv-check-dirty
 
 PAPER_PYTHON ?= ./.venv/bin/python
 
@@ -39,7 +39,15 @@ paper-arxiv-upload:
 paper-audit-bundle:
 	$(PAPER_PYTHON) paper/arxiv/scripts/build.py --skip-pdf --audit-bundle
 
-paper-arxiv-check:
+paper-arxiv-check: paper-arxiv-upload
+	rm -rf .tmp/arxiv-upload
+	mkdir -p .tmp/arxiv-upload
+	tar -xzf paper/arxiv/dist/codec-through-arxiv-upload.tar.gz -C .tmp/arxiv-upload
+	mkdir -p .tmp/arxiv-upload/build
+	cd .tmp/arxiv-upload && latexmk -xelatex -interaction=nonstopmode -halt-on-error -file-line-error -recorder -outdir=build main.tex
+
+paper-arxiv-check-dirty:
+	$(PAPER_PYTHON) paper/arxiv/scripts/build.py --skip-pdf --arxiv-upload --allow-dirty
 	rm -rf .tmp/arxiv-upload
 	mkdir -p .tmp/arxiv-upload
 	tar -xzf paper/arxiv/dist/codec-through-arxiv-upload.tar.gz -C .tmp/arxiv-upload
