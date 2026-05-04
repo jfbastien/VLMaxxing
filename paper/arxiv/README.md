@@ -54,7 +54,7 @@ Current verified local path:
 - The richer audit/reproducibility bundle can be generated with
   `make paper-audit-bundle`.
 - CI builds the extracted arXiv upload tarball under a pinned TeX Live 2025
-  container independently of the local setup.
+  container from the frozen checked-in assets independently of the local setup.
 
 Install commands on macOS:
 
@@ -77,6 +77,7 @@ Direct script paths:
 ./.venv/bin/python paper/arxiv/scripts/build.py
 ./.venv/bin/python paper/arxiv/scripts/build.py --skip-pdf --arxiv-upload
 ./.venv/bin/python paper/arxiv/scripts/build.py --skip-pdf --audit-bundle
+./.venv/bin/python paper/arxiv/scripts/build.py --skip-pdf --arxiv-upload --no-sync
 ```
 
 The arXiv upload bundle contains only the TeX sources, generated table `.tex`

@@ -106,6 +106,28 @@ def _sync() -> None:
     _run([sys.executable, str(SYNC_SCRIPT)])
 
 
+def _git_commit_info() -> dict[str, str]:
+    sha = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=MANUSCRIPT_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    commit_date = subprocess.run(
+        ["git", "show", "-s", "--format=%cs", "HEAD"],
+        cwd=MANUSCRIPT_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    return {"sha": sha, "commit_date": commit_date}
+
+
+def _short_sha(sha: str) -> str:
+    return sha[:7]
+
+
 def _build_pdf() -> None:
     BUILD_DIR.mkdir(parents=True, exist_ok=True)
     latexmk = shutil.which("latexmk")
@@ -156,20 +178,8 @@ def _build_pdf() -> None:
 
 
 def _bundle_readme() -> bytes:
-    sha = subprocess.run(
-        ["git", "rev-parse", "--short=7", "HEAD"],
-        cwd=MANUSCRIPT_ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
-    commit_date = subprocess.run(
-        ["git", "show", "-s", "--format=%cs", "HEAD"],
-        cwd=MANUSCRIPT_ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
+    commit = _git_commit_info()
+    rendered_from = f"{_short_sha(commit['sha'])} dated {commit['commit_date']}"
     text = f"""This archive contains the LaTeX source and generated figures/tables for:
 
   VLMaxxing through FrameMogging: Training-Free Anti-Recomputation for
@@ -179,7 +189,7 @@ Build with XeLaTeX:
 
   latexmk -xelatex main.tex
 
-The rendered PDF was built from commit {sha} dated {commit_date}. The public
+The rendered PDF was built from commit {rendered_from}. The public
 repository contains scripts, raw paired rows, and extended claim traceability:
 
   https://github.com/jfbastien/codec-through
@@ -197,6 +207,24 @@ def _arxiv_control_readme() -> bytes:
         b"  - filename: main.tex\n"
         b"    usage: toplevel\n"
     )
+
+
+def _build_meta() -> bytes:
+    commit = _git_commit_info()
+    lines = [
+        f"\\newcommand{{\\PrimaryRepoSHA}}{{{_short_sha(commit['sha'])}}}",
+        f"\\newcommand{{\\PrimaryRepoFullSHA}}{{{commit['sha']}}}",
+        f"\\newcommand{{\\PrimaryRepoCommitDate}}{{{commit['commit_date']}}}",
+        r"\newcommand{\UpstreamRepoSHA}{not used}",
+        r"\newcommand{\UpstreamRepoCommitDate}{not used}",
+        (
+            "\\newcommand{\\ScaleoutRepoSHA}{"
+            f"checked in primary repo at {_short_sha(commit['sha'])}"
+            "}"
+        ),
+        f"\\newcommand{{\\ScaleoutRepoCommitDate}}{{{commit['commit_date']}}}",
+    ]
+    return ("\n".join(lines) + "\n").encode("utf-8")
 
 
 def _add_bytes(archive: tarfile.TarFile, arcname: str, content: bytes) -> None:
@@ -234,7 +262,10 @@ def _arxiv_upload_bundle() -> Path:
         _add_bytes(archive, "README.md", _bundle_readme())
         _add_bytes(archive, "00README", _arxiv_control_readme())
         for rel in _iter_arxiv_upload_files():
-            _add_file(archive, rel)
+            if rel == "generated/tex/build_meta.tex":
+                _add_bytes(archive, rel, _build_meta())
+            else:
+                _add_file(archive, rel)
     return out_path
 
 
@@ -299,9 +330,15 @@ def main() -> int:
         action="store_true",
         help="Allow bundle creation from a dirty working tree for local validation only.",
     )
+    parser.add_argument(
+        "--no-sync",
+        action="store_true",
+        help="Use frozen generated assets without running the repository sync step.",
+    )
     args = parser.parse_args()
 
-    _sync()
+    if not args.no_sync:
+        _sync()
     wants_bundle = args.bundle or args.arxiv_upload or args.audit_bundle
     if wants_bundle and not args.allow_dirty:
         _ensure_clean_for_bundle()
