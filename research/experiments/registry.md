@@ -599,11 +599,11 @@ authoritative in the per-phase notes under
     - scripts/fetch_videomme_subset.py
     - research/benchmark_manifests/videomme_dev_v1.toml
     - research/benchmark_manifests/videomme_holdout_v1.toml
-    - research/experiments/2026/artifacts/phase1_41_qwen_videomme_8f/ (dense baseline)
+    - research/experiments/2026/artifacts/phase1_41_qwen_videomme/ (8f dense baseline)
     - research/experiments/2026/artifacts/phase1_41_qwen_videomme_16f/ (16f follow-up)
     - research/experiments/2026/artifacts/phase1_41_qwen_videomme_32f_long/ (32f long-bucket third data point)
     - research/experiments/2026/artifacts/phase1_41_qwen_videomme_16f_holdout/ (holdout 16f, 2026-04-21)
-    - research/experiments/2026/artifacts/phase1_57_feature_drift/ (STATIC-class drift mechanism; adjacent-frame ViT cos)
+    - research/experiments/2026/artifacts/phase1_57/ (STATIC-class drift mechanism; adjacent-frame ViT cos)
     - research/experiments/2026/2026-04-19-phase-1_41-qwen-videomme-16f-findings.md
     - research/experiments/2026/2026-04-19-phase-1_41-qwen-videomme-32f-long-findings.md
     - research/experiments/2026/2026-04-21-phase-1_41-qwen-videomme-16f-holdout-findings.md

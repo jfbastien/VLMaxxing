@@ -566,8 +566,9 @@ What this repo is trying to show:
   on a slice
 
 The paper slot is the intersection: training-free × temporal axis ×
-temporal-reasoning benchmarks × MLX-local × (future) real measured
-skipped compute.
+temporal-reasoning benchmarks × MLX-local × bounded real measured skipped
+vision work. Broad sparse backends and sparse LM prefill remain future systems
+work.
 
 ## Likely Contribution Stack
 
@@ -736,9 +737,10 @@ human-visual-system rate-distortion objective. A growing body of
 standards work targets machine consumption instead:
 
 - **MPEG-AI Part 2 / VCM** (Video Coding for Machines): ISO/IEC DIS
-  23888-2, Draft International Standard in enquiry stage 40.20 as of the
-  current ISO page, aiming to define bitstream syntax, decoding, and descriptors
-  optimized for downstream machine tasks, not human viewing.
+  23888-2. On 2026-05-05, the ISO page listed it as an under-development
+  Draft International Standard in enquiry, with DIS ballot stage 40.20. It
+  aims to define bitstream syntax, decoding, and descriptors optimized for
+  downstream machine tasks, not human viewing.
 - **JPEG AI**: learned image codec standardization activity with
   machine-task rate-distortion as a first-class objective.
 - **DCVC-RT** (Deep Contextual Video Compression — Real-Time): the

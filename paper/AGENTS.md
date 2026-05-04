@@ -18,7 +18,17 @@ automation:
 5. [framing.md](framing.md)
 6. [arxiv/README.md](arxiv/README.md)
 
-If those files disagree, prefer them in that order.
+Authority is split by question:
+
+- submission gates and priority: [priority.md](priority.md)
+- paper-facing claim status and exact numbers: [claim-matrix.md](claim-matrix.md)
+- reviewer-facing inventory and runtime-cost summary:
+  [publishability-status.md](publishability-status.md)
+- accepted wording and contribution boundary: [framing.md](framing.md)
+- manuscript text: [`arxiv/sections/`](arxiv/sections/)
+
+If files disagree inside one of those scopes, prefer the scoped authority above
+and update the stale file in the same change.
 
 ## Current Paper Position
 
