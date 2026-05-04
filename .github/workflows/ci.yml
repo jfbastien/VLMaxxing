@@ -56,6 +56,7 @@ jobs:
           mkdir -p .tmp/arxiv-upload
           tar -xzf paper/arxiv/dist/codec-through-arxiv-upload.tar.gz -C .tmp/arxiv-upload
           mkdir -p .tmp/arxiv-upload/build
+          chmod -R a+rwX .tmp/arxiv-upload
           find .tmp/arxiv-upload -maxdepth 4 -type f | sort
 
       - name: Build extracted arXiv upload with TeX Live 2025 / XeLaTeX
