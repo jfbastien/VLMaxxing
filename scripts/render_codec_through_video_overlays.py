@@ -81,7 +81,7 @@ class ClipSpec:
     video_id: str
     role: str
     video_path: Path
-    source_jsonl: Path
+    source_jsonl: Path | None
     start_s: float
     end_s: float
 
@@ -1127,7 +1127,7 @@ def render_clip(
         "video_id": spec.video_id,
         "role": spec.role,
         "source_video": safe_rel(spec.video_path),
-        "source_jsonl": safe_rel(spec.source_jsonl),
+        "source_jsonl": safe_rel(spec.source_jsonl) if spec.source_jsonl is not None else None,
         "start_s": spec.start_s,
         "end_s": spec.end_s,
         "fps": fps,

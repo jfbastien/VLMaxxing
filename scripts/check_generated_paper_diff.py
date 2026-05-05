@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Fail on generated paper drift, except web-only PNG raster differences."""
+"""Fail on generated paper drift, except web-only PNG raster differences.
+
+The check includes staged and unstaged changes. PNG duplicates are intentionally
+restored/removed so later bundle checks run from a clean generated-asset state.
+"""
 
 from __future__ import annotations
 
@@ -15,12 +19,16 @@ def _run(args: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(args, check=False, capture_output=True, text=True)
 
 
-def _changed_paths() -> list[str]:
-    result = _run(["git", "diff", "--name-only", "--", *CHECKED_ROOTS])
+def _diff_name_only(*extra: str) -> list[str]:
+    result = _run(["git", "diff", *extra, "--name-only", "--", *CHECKED_ROOTS])
     if result.returncode not in (0, 1):
         sys.stderr.write(result.stderr)
         raise SystemExit(result.returncode)
     return [line for line in result.stdout.splitlines() if line]
+
+
+def _changed_paths() -> list[str]:
+    return sorted(set(_diff_name_only() + _diff_name_only("--cached")))
 
 
 def _untracked_paths() -> list[str]:
@@ -47,7 +55,7 @@ def _restore_ignored_rasters(paths: list[str]) -> None:
     untracked = [path for path in paths if path not in tracked]
 
     if tracked:
-        result = _run(["git", "checkout", "--", *tracked])
+        result = _run(["git", "restore", "--source=HEAD", "--staged", "--worktree", "--", *tracked])
         if result.returncode != 0:
             sys.stderr.write(result.stderr)
             raise SystemExit(result.returncode)
@@ -66,6 +74,7 @@ def main() -> int:
         for path in blocking:
             print(f"  {path}")
         subprocess.run(["git", "diff", "--", *blocking], check=False)
+        subprocess.run(["git", "diff", "--cached", "--", *blocking], check=False)
         return 1
 
     ignored = [path for path in changed + untracked if _is_ignored_raster(path)]

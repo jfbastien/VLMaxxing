@@ -485,6 +485,12 @@ def resolve_input_path(path: str | Path) -> Path:
     return raw if raw.is_absolute() else REPO_ROOT / raw
 
 
+def resolve_optional_input_path(path: str | Path | None) -> Path | None:
+    if path is None or str(path) == "":
+        return None
+    return resolve_input_path(path)
+
+
 def clip_spec_from_record(record: dict[str, Any], *, index: int) -> ClipSpec:
     video_path_raw = record.get("video_path") or record.get("source_video")
     if not video_path_raw:
@@ -504,7 +510,7 @@ def clip_spec_from_record(record: dict[str, Any], *, index: int) -> ClipSpec:
         video_id=str(record.get("video_id", video_path.stem)),
         role=str(record.get("role", "custom routing window")),
         video_path=video_path,
-        source_jsonl=resolve_input_path(record.get("source_jsonl", "")),
+        source_jsonl=resolve_optional_input_path(record.get("source_jsonl")),
         start_s=start_s,
         end_s=end_s,
     )
@@ -1614,15 +1620,9 @@ def render_title_motion_probe(out_dir: Path, *, scored: bool = False) -> Path:
     """Render the synthetic moving-title joke as a separate artifact."""
 
     raw_title = generated_title_motion_frames(seconds=5.6)
-    sparse_idxs = [
-        0,
-        round(len(raw_title) * 0.18),
-        round(len(raw_title) * 0.34),
-        round(len(raw_title) * 0.50),
-    ]
-    sparse_idxs = [min(len(raw_title) - 1, max(0, idx)) for idx in sparse_idxs]
-    sparse_title = [raw_title[idx] for idx in sparse_idxs]
-    overlay_title = apply_planner_fresh_overlay_to_generated_frames(sparse_title)
+    planner_step = max(1, round(FPS / 12.0))
+    planner_title = raw_title[::planner_step]
+    overlay_title = apply_planner_fresh_overlay_to_generated_frames(planner_title)
     frames: list[Image.Image] = []
     frames.extend(raw_title[: round(1.8 * FPS)])
     # VHS rewind over the generated card before the planner view.
@@ -1631,7 +1631,7 @@ def render_title_motion_probe(out_dir: Path, *, scored: bool = False) -> Path:
         p = pos / max(1, round(1.0 * FPS) - 1)
         frames.append(vhs_rewind_image(frame, progress=p))
     for frame in overlay_title:
-        frames.extend(hold(frame, 0.7))
+        frames.extend([frame.copy() for _ in range(planner_step)])
     frames.extend(end_card("dark", seconds=1.4))
     stem = "title_motion_probe_scored" if scored else "title_motion_probe"
     out_path = out_dir / f"{stem}.mp4"
@@ -2444,7 +2444,9 @@ def main() -> int:
                 "start_s": clip.spec.start_s,
                 "end_s": clip.spec.end_s,
                 "source_video": safe_rel(clip.spec.video_path),
-                "source_jsonl": safe_rel(clip.spec.source_jsonl),
+                "source_jsonl": (
+                    safe_rel(clip.spec.source_jsonl) if clip.spec.source_jsonl is not None else None
+                ),
                 "frames": len(clip.crops),
             }
             for clip in clips
