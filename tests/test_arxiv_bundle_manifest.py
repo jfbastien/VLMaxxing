@@ -1,4 +1,5 @@
 import importlib.util
+import json
 import re
 from pathlib import Path
 from types import ModuleType
@@ -59,10 +60,9 @@ def test_arxiv_upload_manifest_excludes_audit_only_files() -> None:
 
 def test_arxiv_control_readme_selects_xelatex_texlive_2025() -> None:
     build = _load_build_script()
-    readme = build._arxiv_control_readme().decode("utf-8")
+    control = json.loads(build._arxiv_control_readme().decode("utf-8"))
 
-    assert "spec_version: 1" in readme
-    assert "texlive_version: 2025" in readme
-    assert "compiler: xelatex" in readme
-    assert "filename: main.tex" in readme
-    assert "usage: toplevel" in readme
+    assert control["spec_version"] == 1
+    assert control["texlive_version"] == 2025
+    assert control["process"]["compiler"] == "xelatex"
+    assert control["sources"] == [{"filename": "main.tex", "usage": "toplevel"}]
