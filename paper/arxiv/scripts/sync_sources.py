@@ -40,11 +40,7 @@ SOURCE_KEYS = {
 }
 ALLOWED_SOURCE_ROOTS = ("docs/", "paper/", "research/", "scripts/", "src/", "tests/")
 FIGURE_SANS_STACK = [
-    "Arial",
-    "Helvetica Neue",
-    "Helvetica",
-    "Liberation Sans",
-    "Nimbus Sans",
+    "DejaVu Sans",
 ]
 
 
@@ -180,6 +176,10 @@ def _ensure_dirs() -> None:
 
 def _save_pdf(fig: plt.Figure, path: Path, **kwargs: object) -> None:
     fig.savefig(path, metadata=PDF_METADATA, **kwargs)
+
+
+def _normalize_svg(path: Path) -> None:
+    path.write_text("\n".join(line.rstrip() for line in path.read_text().splitlines()) + "\n")
 
 
 def _sync_curated_paper_figures() -> None:
@@ -793,7 +793,7 @@ def _render_regime_overview_figure(snapshot: dict) -> None:
     out_svg = GENERATED / "figures" / "regime_overview.svg"
     fig.savefig(out_png, dpi=240, bbox_inches="tight")
     fig.savefig(out_svg, bbox_inches="tight", metadata={"Date": "2026-05-02"})
-    out_svg.write_text("\n".join(line.rstrip() for line in out_svg.read_text().splitlines()) + "\n")
+    _normalize_svg(out_svg)
     _save_pdf(fig, out_pdf, bbox_inches="tight")
     overview = {
         "figure": "regime_overview",
@@ -1088,6 +1088,7 @@ def _render_c_persist_timeline_figure() -> None:
     fig.savefig(out_png, dpi=220, bbox_inches="tight")
     _save_pdf(fig, out_pdf, bbox_inches="tight")
     fig.savefig(out_svg, bbox_inches="tight", metadata={"Date": "2026-05-04"})
+    _normalize_svg(out_svg)
     plt.close(fig)
     (GENERATED / "data" / "c_persist_timeline_snapshot.json").write_text(
         json.dumps(
