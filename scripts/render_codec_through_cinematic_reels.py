@@ -383,10 +383,7 @@ def anchored_title_frames(*, seconds: float) -> list[Image.Image]:
     hold_before = min(round(0.65 * FPS), max(1, n // 4))
     motion_n = min(12, max(1, n - hold_before))
     static = anchored_title_raw_frame(progress=0.0)
-    raw = [
-        anchored_title_raw_frame(progress=idx / max(1, motion_n - 1))
-        for idx in range(motion_n)
-    ]
+    raw = [anchored_title_raw_frame(progress=idx / max(1, motion_n - 1)) for idx in range(motion_n)]
     frames = [static.copy() for _ in range(hold_before)]
     frames.extend(raw)
     final = raw[-1] if raw else static
