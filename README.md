@@ -1,12 +1,10 @@
-# codec-through
+# VLMaxxing through FrameMogging
 
 [![ci](https://github.com/jfbastien/codec-through/actions/workflows/ci.yml/badge.svg)](https://github.com/jfbastien/codec-through/actions/workflows/ci.yml)
+[![website](https://img.shields.io/badge/website-vlmaxxi.ng-0f766e)](https://vlmaxxi.ng)
+![arXiv](https://img.shields.io/badge/arXiv-pending-b31b1b)
 
-[Website](https://vlmaxxi.ng) · arXiv paper: link pending
-
-**VLMaxxing through FrameMogging**
-
-Training-Free Anti-Recomputation for Video Vision-Language Models
+**Training-Free Anti-Recomputation for Video Vision-Language Models**
 
 Research code, artifacts, and manuscript tooling for training-free
 anti-recomputation in video vision-language models.
@@ -23,11 +21,9 @@ The repo is organized around a small set of claim-bearing regimes:
   mixed/boundary bundle, but it is not an earned headline until a native policy
   beats matched baselines under cache-correctness and stale-cache tests.
 
-Historical source imports and old review packets are excluded from the paper /
-arXiv release surface. The durable imported-target summary is in
-[docs/claim-register.md](docs/claim-register.md), local reproduction status is
-in [docs/reproduction-status.md](docs/reproduction-status.md), and raw history
-remains in git.
+The durable imported-target summary is in [docs/claim-register.md](docs/claim-register.md),
+local reproduction status is in [docs/reproduction-status.md](docs/reproduction-status.md),
+and raw history remains in git.
 
 <img src="paper/arxiv/generated/figures/regime_overview.png" alt="Regime overview" width="900">
 

@@ -1,8 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this repository, please cite it as below."
 type: software
-title: "codec-through: Training-Free Anti-Recomputation for Video Vision-Language Models"
-version: 0.1.0
+title: "VLMaxxing through FrameMogging"
 authors:
   - family-names: "Bastien"
     given-names: "JF"
