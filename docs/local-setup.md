@@ -25,19 +25,19 @@ Useful but optional:
 Base repo checks and CPU decode/codec helpers:
 
 ```bash
-uv sync --group dev --group research
+uv sync --locked --group dev --group research
 ```
 
 Local MLX / MLX-VLM work:
 
 ```bash
-uv sync --group dev --group research --group vlm
+uv sync --locked --group dev --group research --group vlm
 ```
 
 Benchmark-native TOMATO / MVBench helpers:
 
 ```bash
-uv sync --group dev --group research --group vlm --group benchmark
+uv sync --locked --group dev --group research --group vlm --group benchmark
 ```
 
 The repo assumes you run commands through `uv run ...`, not through an unrelated
@@ -47,7 +47,8 @@ Important current note:
 
 - the Qwen2.5-VL video processor path requires `torch` and `torchvision` in the
   repo environment
-- these are included in the `vlm` group so `uv sync --group ... --group vlm`
+- these are included in the `vlm` group so
+  `uv sync --locked --group ... --group vlm`
   is the intended setup path
 
 ## Verification Commands

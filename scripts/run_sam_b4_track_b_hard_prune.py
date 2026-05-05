@@ -64,7 +64,9 @@ PHASE = "B4"
 EXPERIMENT_ID = "sam_scaleout_b4_track_b_hard_prune_20260429"
 PROTOCOL_ID = "sam_scaleout_handoff_20260429"
 
-VIDEOMME_DIR_DEFAULT = SDAMICO_EXPERIMENTS / "videomme_data"
+VIDEOMME_DIR_DEFAULT = Path(
+    os.environ.get("CODEC_THROUGH_VIDEOMME_DIR", "data/benchmarks/videomme")
+)
 ARTIFACT_DIR = REPO_ROOT / ("research/experiments/2026/artifacts/sam_scaleout_m5_20260429")
 DEFAULT_OUT = ARTIFACT_DIR / "sam_b4_sparse_vit_ceiling.jsonl"
 

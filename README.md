@@ -28,7 +28,7 @@ remains in git.
 ## Quick Start
 
 ```bash
-uv sync --group dev --group research
+uv sync --locked --group dev --group research
 uv run ruff format --check .
 uv run ruff check .
 uv run mypy src tests
@@ -39,7 +39,7 @@ uv run python scripts/audit_artifact_integrity.py
 For local MLX / MLX-VLM research utilities:
 
 ```bash
-uv sync --group dev --group research --group vlm
+uv sync --locked --group dev --group research --group vlm
 ```
 
 For local corpus assets:
@@ -57,7 +57,7 @@ manifest subsets and a separate subset fetch path documented in
 For the paper:
 
 ```bash
-uv sync --group dev --group research --group benchmark --group paper
+uv sync --locked --group dev --group research --group benchmark --group paper
 brew install tectonic  # macOS; any XeLaTeX/Tectonic install also works
 make paper-doctor
 make paper-sync
