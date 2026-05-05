@@ -2,6 +2,8 @@
 
 [![ci](https://github.com/jfbastien/codec-through/actions/workflows/ci.yml/badge.svg)](https://github.com/jfbastien/codec-through/actions/workflows/ci.yml)
 
+[Website](https://vlmaxxi.ng) · arXiv paper: link pending
+
 **VLMaxxing through FrameMogging**
 
 Training-Free Anti-Recomputation for Video Vision-Language Models
