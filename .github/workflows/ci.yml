@@ -59,7 +59,7 @@ jobs:
         run: uv run python paper/arxiv/scripts/sync_sources.py
 
       - name: Ensure generated paper assets are committed
-        run: git diff --exit-code -- paper/arxiv/generated paper/figures
+        run: uv run python scripts/check_generated_paper_diff.py
 
       - name: Create arXiv upload bundle from frozen assets
         run: uv run python paper/arxiv/scripts/build.py --skip-pdf --arxiv-upload --no-sync

@@ -37,12 +37,7 @@ echo "==> paper sync"
 uv run python paper/arxiv/scripts/sync_sources.py
 
 echo "==> generated paper asset diff"
-git diff --exit-code -- paper/arxiv/generated paper/figures
-if [ -n "$(git status --porcelain -- paper/arxiv/generated paper/figures)" ]; then
-  git status --short -- paper/arxiv/generated paper/figures
-  echo "preflight: untracked or modified generated paper assets"
-  exit 1
-fi
+uv run python scripts/check_generated_paper_diff.py
 
 echo "==> git diff --check $BASE..HEAD"
 git diff --check "$BASE..HEAD" || {

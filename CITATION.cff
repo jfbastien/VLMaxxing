@@ -5,7 +5,7 @@ title: "codec-through: Training-Free Anti-Recomputation for Video Vision-Languag
 version: 0.1.0
 authors:
   - family-names: "Bastien"
-    given-names: "Jean-Francois"
+    given-names: "JF"
   - family-names: "D'Amico"
     given-names: "Sam"
 repository-code: "https://github.com/jfbastien/codec-through"
