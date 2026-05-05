@@ -1,7 +1,7 @@
-# Pre-release source Claim Register
+# Imported Pre-release Claim Register
 
-This file freezes the pre-release source targets that this repo is trying to
-reproduce.
+This file freezes the imported pre-release source targets that this repo may
+reproduce, generalize, or keep explicitly imported-only.
 
 It exists because the pre-release source markdown contains internal
 inconsistencies. Without a frozen claim register, "did we reproduce the
@@ -23,11 +23,14 @@ claims live in `paper/claim-matrix.md`, phase state lives in
 `research/experiments/registry.md`, and local reproduction/import status lives
 in `docs/reproduction-status.md`.
 
-The repo is canonically targeting **both**: the original WP-2.1 through
-WP-5 claims remain active, PLUS the new WP-2.7 through WP-5.1 claims
-from the revised pre-release source (registered below). Claims from the revised
-pre-release source are treated with the same "useful hypotheses, not trusted
-claims" epistemics as the original.
+This register covers two imported target sets:
+
+- the original WP-2.1 through WP-5 targets
+- the revised-source WP-2.7 through WP-5.1 targets registered below
+
+Imported targets are planning targets, not trusted local claims, until this
+repo either reproduces them locally, generalizes them with explicit caveats, or
+marks them imported-only.
 
 Repo rule:
 
@@ -68,6 +71,8 @@ Important runtime distinction:
 
 ## Frozen Reproduction Targets
 
+### Original Pre-release Source
+
 | Claim id | Imported target | Current canonical reading | Scope in this repo |
 | --- | --- | --- | --- |
 | `WP-2.1` | Exact repeated-image identity | repeated encodes of the same image should produce identical vision features | direct local reproduction target |
@@ -80,24 +85,26 @@ Important runtime distinction:
 | `WP-3.3` | Refresh-interval drift tolerance | imported `14`-frame tolerance remains external until local sweep exists | direct local reproduction target |
 | `WP-4` | Q-table pre-filter correlation | useful supporting reproduction target, not the first milestone | deferred reproduction target |
 | `WP-5` | Compression and speed stackup | partial local measured sparse-execution evidence now exists, but the imported compression/speed stackup remains unreproduced | explicitly gated |
-| | | | |
-| **From revised pre-release source (2026-04-16)** | | | |
-| | | | |
-| **NOTE on claim-ID stability**: our `WP-*` IDs are semantic labels | | | |
-| assigned at import time, NOT mirrors of the pre-release source's section numbers. | | | |
-| Source sections may renumber across revisions (e.g., source §2.10 was | | | |
-| thinking amplification at our import date but is now hard spatial | | | |
-| pruning in the latest revision). Our IDs are frozen to the meaning | | | |
-| we registered; new source claims get new WP-* IDs. | | | |
-| | | | |
+
+### Revised Pre-release Source (2026-04-16)
+
+Claim ID stability: the `WP-*` IDs are semantic labels assigned at import time,
+not mirrors of the pre-release source's section numbers. Source sections may
+renumber across revisions. For example, source §2.10 was thinking amplification
+at import time, but the latest revision uses that section number for hard
+spatial pruning. The IDs below are frozen to the registered meaning; newly
+imported source claims get new `WP-*` IDs.
+
+| Claim id | Imported target | Current canonical reading | Scope in this repo |
+| --- | --- | --- | --- |
 | `WP-2.7` | VideoMME evaluation (Qwen 100% on 300q; Gemma 4 90%/−3.3% on 60q) | local VideoMME Qwen lane is now reproduced in generalized form across 8f/16f/32f dev plus 16f holdout; the imported Gemma 26B/60q target remains scale-out evidence, not a strict local reproduction | generalized reproduction target, partially closed locally |
-| `WP-2.8` | Strict-parse audit (413 Qwen items, 0 parse failures, byte-identical) | our local parser already shows 0 failures on our saved slices (84 items exact + ~60 motion items approximate); scaling to 413+ is the remaining step | generalized reproduction target |
-| `WP-2.9` | Cross-architecture generalization — **scoped to spectrum, not binary**. The pre-release source §2.7 groups InternVL3 with all-global but §2.9 and §2.10 group it with windowed-attention in the same document (lines 171 / 243). The empirical data (Qwen 100% byte-identical, InternVL3 95% strict, Gemma 4 88% byte-identical) supports a spectrum conditioned on attention-window fraction AND pretraining, not a topology-determined binary. | generalized local evidence now exists on Gemma 4 E4B: TOMATO motion passes answer-fidelity gating, MVBench preserves aggregate accuracy but fails strict agreement, and 1.57 Gemma feature-drift geometry shows higher adjacent-frame cosine than Qwen. This is not a strict 26B reproduction. | generalized reproduction target — **scoped, partially closed locally** |
-| `WP-2.12` | EgoSchema low-reuse robustness (pre-release source: N=100 Qwen, 100% byte-identical at 29.9% mean token reuse) | The pre-release source's strongest counterexample to "caching only helps high-reuse content." Local reproduction at N=30 on Qwen2.5-VL-7B 4-bit would close the low-reuse-robustness gap the current paper has. | new phase 1.43 |
-| `WP-4.2` | Combined temporal+spatial pipeline, end-to-end measured, 4–5× sustained across 32/64/128 frames (pre-release scale-out source, Gemma 4 26B on M5 Max) | The pre-release source's most distinctive empirical contribution; measured, not projected. Citable as a pre-release scale-out report, with hardware/model caveat. The imported Gemma 26B/M5 Max scale-out target remains unreproduced locally. Our Qwen2.5-VL-7B 4-bit streaming/composition bridge is bounded/negative-to-near-miss evidence, not a strict reproduction of that imported scale-out claim. | deferred strict reproduction; bounded local bridge evidence exists |
-| `WP-2.10` | Thinking-amplification finding (agreement drops with thinking enabled on Gemma 4) | requires Gemma 4 thinking-on/off comparison. Supplementary to WP-2.9. | deferred reproduction target |
+| `WP-2.8` | Strict-parse audit (413 Qwen items, 0 parse failures, byte-identical) | local parser evidence has 0 failures on saved slices (84 exact items plus about 60 motion items with approximate checks); the imported 413-item strict audit remains unreproduced | generalized reproduction target |
+| `WP-2.9` | Cross-architecture generalization — **scoped to spectrum, not binary**. The pre-release source §2.7 groups InternVL3 with all-global but §2.9 and §2.10 group it with windowed-attention in the same document (lines 171 / 243). The empirical data (Qwen 100% byte-identical, InternVL3 95% strict, Gemma 4 88% byte-identical) supports a spectrum conditioned on attention-window fraction and pretraining, not a topology-determined binary. | generalized local evidence now exists on Gemma 4 E4B: TOMATO motion passes answer-fidelity gating, MVBench preserves aggregate accuracy but fails strict agreement, and 1.57 Gemma feature-drift geometry shows higher adjacent-frame cosine than Qwen. This is not a strict 26B reproduction. | generalized reproduction target — **scoped, partially closed locally** |
+| `WP-2.12` | EgoSchema low-reuse robustness (pre-release source: N=100 Qwen, 100% byte-identical at 29.9% mean token reuse) | This is the imported counterexample to "caching only helps high-reuse content." Local N=30 reproduction on Qwen2.5-VL-7B 4-bit would close the long-form/low-reuse robustness gap; phase 1.43 is preregistered but blocked on the EgoSchema loader and manifest. | blocked phase 1.43 |
+| `WP-4.2` | Combined temporal+spatial pipeline, end-to-end measured, 4–5× sustained across 32/64/128 frames (pre-release scale-out source, Gemma 4 26B on M5 Max) | The imported scale-out target is measured rather than projected, but it remains unreproduced locally. Current Qwen2.5-VL-7B 4-bit streaming/composition bridge evidence is bounded, negative-to-near-miss evidence, not a strict reproduction of the imported Gemma 26B/M5 Max scale-out claim. | deferred strict reproduction; bounded local bridge evidence exists |
+| `WP-2.10` | Thinking-amplification finding (agreement drops with thinking enabled on Gemma 4) | Requires Gemma 4 thinking-on/off comparison. Supplementary to WP-2.9. | deferred reproduction target |
 | `WP-2.11` | Hard spatial pruning (Gemma 4 with token reduction) | new in latest source revision; not in our original import. Local C-VISION now supplies bounded related evidence through measured Gemma sparse-vision execution, but broad sparse-backend and sparse LM prefill remain open. | related local evidence exists; strict imported target remains gated |
-| `WP-4.1` | Wall-clock throughput (M5 Max: 6.0× ViT, 4.2× E2E, 130 fps on 32-frame conferencing) | NOT directly reproducible on M3 Air 16GB; the local measured sparse-execution harness now provides hardware-conditioned boundary evidence, not the imported M5 throughput claim | generalized reproduction target (hardware-conditioned) |
+| `WP-4.1` | Wall-clock throughput (M5 Max: 6.0× ViT, 4.2× E2E, 130 fps on 32-frame conferencing) | Not directly reproducible on M3 Air 16GB; the local measured sparse-execution harness now provides hardware-conditioned boundary evidence, not the imported M5 throughput claim | generalized reproduction target (hardware-conditioned) |
 | `WP-5.1` | Composition projection (~175× with TurboQuant) | projected, not measured, even by the pre-release source; explicitly marked as future work in source §5 | explicitly gated |
 
 ## Strict Versus Generalized Reproduction
