@@ -17,4 +17,4 @@ keywords:
   - video-efficiency
   - anti-recomputation
   - mlx
-abstract: "Software citation metadata for the codec-through code. Documentation, research notes, and paper materials in the same repository are licensed separately under CC BY 4.0."
+abstract: "Research software, checked artifacts, and manuscript tooling for evaluating training-free anti-recomputation in video vision-language models."

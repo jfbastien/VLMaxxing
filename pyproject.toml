@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.12,<3.13"
 license = { text = "MIT" }
 authors = [
-  { name = "Jean-Francois Bastien" },
+  { name = "JF Bastien" },
 ]
 dependencies = [
   "numpy>=2.2.4",

@@ -2,6 +2,10 @@
 
 [![ci](https://github.com/jfbastien/codec-through/actions/workflows/ci.yml/badge.svg)](https://github.com/jfbastien/codec-through/actions/workflows/ci.yml)
 
+**VLMaxxing through FrameMogging**
+
+Training-Free Anti-Recomputation for Video Vision-Language Models
+
 Research code, artifacts, and manuscript tooling for training-free
 anti-recomputation in video vision-language models.
 
