@@ -6,7 +6,7 @@ in `research/experiments/2026/2026-04-17-phase-1_51-novelty-pruning-gemma-prereg
 - `none` — pure top-K novelty rank (FastV-style baseline).
 - `cls_attention_proxy` — top-K by a scalar proxy for CLS-attention. The
   callsite supplies the proxy tensor (FasterVLM / HiPrune family: real
-  CLS-attention; codec-through v0: per-token L2-norm of post-pool features
+  CLS-attention; VLMaxxing v0: per-token L2-norm of post-pool features
   because Gemma vision-tower attention instrumentation has not been landed
   yet). Results from this arm are **not eligible for winner promotion** until
   real attention is wired (see prereg §Phase B caveat). Kept in the grid to

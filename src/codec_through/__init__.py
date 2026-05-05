@@ -1,4 +1,4 @@
-"""codec-through research package."""
+"""VLMaxxing research package."""
 
 from codec_through.answers import extract_choice
 from codec_through.feature_cache import (

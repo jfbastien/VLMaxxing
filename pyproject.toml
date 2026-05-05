@@ -3,7 +3,7 @@ requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [project]
-name = "codec-through"
+name = "vlmaxxing"
 version = "0.1.0"
 description = "Research code for training-free anti-recomputation in video VLMs."
 readme = "README.md"

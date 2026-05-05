@@ -379,8 +379,7 @@ Weak streaming case-study claims without matched baselines (e.g.
 single-cell streaming anecdotes) are **appendix-bound** — they do not
 appear in the main body unless the paired baseline is also reported.
 
-Bridge experiments we explicitly do NOT claim as landed in
-codec-through locally:
+Bridge experiments we explicitly do NOT claim as landed in this repo locally:
 
 - streaming-protocol fidelity reproduction of the pre-release N = 60 line: phase
   1.30 speedup landed locally on Qwen, but fidelity falsified the

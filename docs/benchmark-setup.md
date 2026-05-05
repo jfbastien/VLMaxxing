@@ -210,14 +210,14 @@ uv run python scripts/run_benchmark_track_a.py run \
   --benchmark tomato \
   --manifest research/benchmark_manifests/tomato_dev_v1.toml \
   --chunk-size 1 \
-  --stop-file /tmp/codec-through-stop \
+  --stop-file /tmp/vlmaxxing-stop \
   --summary-path results/tomato_subset_summary.json
 ```
 
 Then request clean termination with:
 
 ```bash
-touch /tmp/codec-through-stop
+touch /tmp/vlmaxxing-stop
 ```
 
 The runner stops at the next chunk boundary and rewrites the summary JSON.

@@ -1,4 +1,4 @@
-"""PyAV decode helpers shared across codec-through's codec surfaces.
+"""PyAV decode helpers shared across VLMaxxing's codec surfaces.
 
 Ported from a predecessor prototype's robust reformat helper. Under
 Metal/MLX memory pressure PyAV's sws_scale path can intermittently

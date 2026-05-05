@@ -1,6 +1,6 @@
 # VLMaxxing through FrameMogging
 
-[![ci](https://github.com/jfbastien/codec-through/actions/workflows/ci.yml/badge.svg)](https://github.com/jfbastien/codec-through/actions/workflows/ci.yml)
+[![ci](https://github.com/jfbastien/VLMaxxing/actions/workflows/ci.yml/badge.svg)](https://github.com/jfbastien/VLMaxxing/actions/workflows/ci.yml)
 [![website](https://img.shields.io/badge/website-vlmaxxi.ng-0f766e)](https://vlmaxxi.ng)
 ![arXiv](https://img.shields.io/badge/arXiv-pending-b31b1b)
 

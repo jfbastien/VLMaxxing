@@ -103,7 +103,7 @@ def extract_frames(
         raise ValueError("frame_indices must be non-negative")
 
     extracted: list[ExtractedFrame] = []
-    with tempfile.TemporaryDirectory(prefix="codec-through-frames-") as tmp_dir:
+    with tempfile.TemporaryDirectory(prefix="vlmaxxing-frames-") as tmp_dir:
         temp_dir = Path(tmp_dir)
         for frame_index in frame_indices:
             output_path = temp_dir / f"frame-{frame_index}.png"
@@ -158,7 +158,7 @@ def extract_frames_single_pass(
     select_terms = "+".join(f"eq(n\\,{frame_index})" for frame_index in unique_indices)
     extracted_by_index: dict[int, ExtractedFrame] = {}
 
-    with tempfile.TemporaryDirectory(prefix="codec-through-frames-") as tmp_dir:
+    with tempfile.TemporaryDirectory(prefix="vlmaxxing-frames-") as tmp_dir:
         temp_dir = Path(tmp_dir)
         output_pattern = temp_dir / "frame-%06d.png"
         _run_command(

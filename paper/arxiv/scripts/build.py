@@ -15,8 +15,8 @@ MANUSCRIPT_ROOT = Path(__file__).resolve().parents[1]
 BUILD_DIR = MANUSCRIPT_ROOT / "build"
 DIST_DIR = MANUSCRIPT_ROOT / "dist"
 SYNC_SCRIPT = MANUSCRIPT_ROOT / "scripts" / "sync_sources.py"
-ARXIV_UPLOAD_NAME = "codec-through-arxiv-upload.tar.gz"
-AUDIT_BUNDLE_NAME = "codec-through-audit-bundle.tar.gz"
+ARXIV_UPLOAD_NAME = "vlmaxxing-arxiv-upload.tar.gz"
+AUDIT_BUNDLE_NAME = "vlmaxxing-audit-bundle.tar.gz"
 
 ARXIV_FIGURE_FILES = (
     "generated/figures/regime_overview.pdf",
@@ -191,7 +191,7 @@ Build with XeLaTeX:
 
 The rendered PDF was built from commit {rendered_from}. The public repository:
 
-  https://github.com/jfbastien/codec-through
+  https://github.com/jfbastien/VLMaxxing
 """
     return text.encode("utf-8")
 

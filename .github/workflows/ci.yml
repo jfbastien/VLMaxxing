@@ -68,7 +68,7 @@ jobs:
         run: |
           rm -rf .tmp/arxiv-upload
           mkdir -p .tmp/arxiv-upload
-          tar -xzf paper/arxiv/dist/codec-through-arxiv-upload.tar.gz -C .tmp/arxiv-upload
+          tar -xzf paper/arxiv/dist/vlmaxxing-arxiv-upload.tar.gz -C .tmp/arxiv-upload
           mkdir -p .tmp/arxiv-upload/build
           chmod -R a+rwX .tmp/arxiv-upload
           find .tmp/arxiv-upload -maxdepth 4 -type f | sort
@@ -89,7 +89,7 @@ jobs:
         with:
           name: arxiv-upload-and-pdf
           path: |
-            paper/arxiv/dist/codec-through-arxiv-upload.tar.gz
+            paper/arxiv/dist/vlmaxxing-arxiv-upload.tar.gz
             .tmp/arxiv-upload/build/main.pdf
             .tmp/arxiv-upload/build/main.log
             .tmp/arxiv-upload/build/main.fls

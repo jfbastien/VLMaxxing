@@ -7,8 +7,8 @@ authors:
     given-names: "JF"
   - family-names: "D'Amico"
     given-names: "Sam"
-repository-code: "https://github.com/jfbastien/codec-through"
-url: "https://github.com/jfbastien/codec-through"
+repository-code: "https://github.com/jfbastien/VLMaxxing"
+url: "https://github.com/jfbastien/VLMaxxing"
 license: MIT
 keywords:
   - video-language-models

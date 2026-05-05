@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render exploratory video overlays for codec-through mechanisms.
+"""Render exploratory video overlays for VLMaxxing mechanisms.
 
 This is a review/demo renderer, not part of the paper build.  The spatial
 overlay uses the exact Qwen routing-budget visualization policy from the
@@ -1349,7 +1349,7 @@ def main() -> int:
     reel_path = None if args.no_reel else render_back_to_back_reel(records, args.out_dir)
     manifest = {
         "purpose": (
-            "Exploratory video overlays for codec-through mechanisms. Spatial overlays are exact "
+            "Exploratory video overlays for VLMaxxing mechanisms. Spatial overlays are exact "
             "Qwen routing-budget policy outputs; C-PERSIST/C-VISION/C-STREAM lanes are regime "
             "mechanism ledgers from checked paper snapshots."
         ),

@@ -13,7 +13,7 @@ windows, questions, answer keys, and scoring:
                           (evidence_budget="4f@uniform")
   - recency_last_k     : 4 most recent frames before the query
                           (evidence_budget="last_4")
-  - sam_policy         : codec-through native streaming -- decode all
+  - sam_policy         : VLMaxxing native streaming -- decode all
                           frames upstream, fire the ViT only at events
                           (T0 + rebuilds when MV inflection > threshold);
                           present 4 representative frames covering T0
@@ -288,7 +288,7 @@ def detect_events_pixeldiff(
     sampled frames spikes above the moving baseline. We use this rather
     than a full H.264 MV pipeline because the recordings we use here
     are 1080p re-encodes; the exact MV side-channel that the
-    sectional-scroll mechanism uses is for the codec-through claim,
+    sectional-scroll mechanism uses is for the VLMaxxing claim,
     not for the gold-standard event detector.
 
     Returns a list of event timestamps (seconds).
@@ -457,7 +457,7 @@ def policy_frames(
         # Last K frames; ~0.5s spacing, tail at t_event
         ts = [max(0.0, t_event - 0.5 * (n_arm_frames - 1 - i)) for i in range(n_arm_frames)]
     elif arm == "sam_policy":
-        # codec-through native: ViT fires at events. Approximate by
+        # VLMaxxing native: ViT fires at events. Approximate by
         # picking T0 (start of clip) + last event timestamp + 2 mid-window
         # frames so the LLM sees the scene history that the cache would
         # have summarized.

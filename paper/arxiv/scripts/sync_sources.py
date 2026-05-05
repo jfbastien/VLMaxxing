@@ -3103,7 +3103,7 @@ def _write_repo_provenance_table(primary: dict[str, str]) -> None:
         r"\toprule",
         r"Repo & Commit & Commit date \\",
         r"\midrule",
-        f"codec-through & {_short_sha(primary['sha'], 12)} & {primary['commit_date']} \\\\",
+        f"VLMaxxing & {_short_sha(primary['sha'], 12)} & {primary['commit_date']} \\\\",
         (
             "scale-out checked artifacts & "
             f"primary repo {_short_sha(primary['sha'], 12)} & {primary['commit_date']} \\\\"
