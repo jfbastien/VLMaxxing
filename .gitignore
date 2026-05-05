@@ -30,3 +30,8 @@ paper/arxiv/generated/figures/fig1_candidates/
 paper/arxiv/generated/figures/fig1_chatgpt_review_bundle/
 paper/arxiv/generated/tables/repo_provenance.tex
 paper/arxiv/generated/tex/build_meta.tex
+
+# Local review-only cinematic reel renders. Keep the source renderer and
+# experiment note in git; regenerate MP4s/stills/zips locally.
+research/experiments/2026/artifacts/codec_through_cinematic_reels_exploratory/
+research/experiments/2026/artifacts/codec_through_cinematic_reels_code_review.zip

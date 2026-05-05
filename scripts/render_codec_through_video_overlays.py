@@ -1023,7 +1023,7 @@ def write_mp4(frames: list[Image.Image], out_path: Path, *, fps: float) -> None:
         "-preset",
         "slow",
         "-crf",
-        "18",
+        "17",
         "-pix_fmt",
         "yuv420p",
         "-movflags",
