@@ -109,9 +109,9 @@ harder to audit.
 
 ## Citation
 
-Use [CITATION.cff](CITATION.cff) for software citation metadata. Once a DOI or
-paper venue is assigned, add a preferred citation there before tagging the
-release.
+Once the arXiv record is public, cite the paper linked at the top of this
+README. [CITATION.cff](CITATION.cff) is kept so GitHub can expose citation
+metadata; add the paper as its preferred citation before tagging the release.
 
 ## License
 
