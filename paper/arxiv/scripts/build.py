@@ -198,13 +198,19 @@ The rendered PDF was built from commit {rendered_from}. The public repository:
 
 def _arxiv_control_readme() -> bytes:
     return (
-        b"spec_version: 1\n"
-        b"texlive_version: 2025\n"
-        b"process:\n"
-        b"  compiler: xelatex\n"
-        b"sources:\n"
-        b"  - filename: main.tex\n"
-        b"    usage: toplevel\n"
+        b"{\n"
+        b'  "spec_version": 1,\n'
+        b'  "texlive_version": 2025,\n'
+        b'  "process": {\n'
+        b'    "compiler": "xelatex"\n'
+        b"  },\n"
+        b'  "sources": [\n'
+        b"    {\n"
+        b'      "filename": "main.tex",\n'
+        b'      "usage": "toplevel"\n'
+        b"    }\n"
+        b"  ]\n"
+        b"}\n"
     )
 
 
