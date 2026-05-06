@@ -17,22 +17,28 @@
   grid/order contracts, normalization-domain hard-fails, and shape checks.
 - [ ] Add runner timing instrumentation for canonical stages, including
   separate multimodal prefill and text generation where RLT-3G makes
-  prefill-stage claims.
+  prefill-stage claims; land this as a prerequisite commit before any RLT-3G-B
+  denominator-separation run.
 - [ ] Wire RLT-style masks into the existing measured C-VISION Track B
   harness for Qwen and Gemma behind explicit CLI flags; label this as scorer
   substitution, not multiplier evidence.
 - [ ] Add the RLT-as-free-prior experiment: test whether cheap RLT-style pixel
-  masks can replace or prefilter more expensive structural/novelty scoring.
+  masks can prefilter more expensive feature-dependent scoring, then require a
+  paired model-run drift gate before any "replacement" language.
 - [ ] Add autonomous sweep runners and analyzers that reuse the existing dense
   baselines, stage-share accounting, paired fidelity gates, and artifact
   schemas.
 - [ ] Add the Gemma composition experiments in cleanly separated cells:
   scorer-stacking/union evidence and a denominator-separation cell with
-  scatter-back C-VISION versus RLT-style placeholder pruning.
+  scatter-back C-VISION versus encoder-state-invariant RLT-style placeholder
+  pruning.
 - [ ] Add C-PERSIST experiments in two tiers: Q0 shorter-cached-prefix
   economics after visual admission is safe, then conservative whole-frame RLT
   repair scheduling; do not cut inside Qwen image-frame cache blocks until a
   separate topology contract exists.
+- [ ] Add a Track A scout for duration-annotated anchors: log RLT-style run
+  lengths alongside unchanged VLMaxxing structural anchors without changing
+  token counts.
 - [ ] Run smoke tests, unit tests, repo checks, plan/diff review, and commit
   each logical chunk.
 

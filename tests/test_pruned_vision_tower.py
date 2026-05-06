@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import cast
+
 import pytest
 
 from tests._mlx_probe import mlx_is_usable
@@ -39,6 +41,13 @@ def test_keep_indices_hard_fails_empty_rows() -> None:
         _keep_indices(keep_mask)
 
 
+def test_keep_indices_hard_fails_bad_rank() -> None:
+    keep_mask = mx.array([True, False, True])
+
+    with pytest.raises(ValueError, match="2D"):
+        _keep_indices(keep_mask)
+
+
 def test_keep_indices_accepts_uniform_row_counts() -> None:
     keep_mask = mx.array(
         [
@@ -50,4 +59,5 @@ def test_keep_indices_accepts_uniform_row_counts() -> None:
     indices = _keep_indices(keep_mask)
 
     assert indices.shape == (2, 2)
-    assert indices.tolist() == [[0, 2], [1, 3]]
+    rows = cast(list[list[int]], indices.tolist())
+    assert [sorted(row) for row in rows] == [[0, 2], [1, 3]]

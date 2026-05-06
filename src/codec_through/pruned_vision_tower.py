@@ -95,7 +95,9 @@ def _scatter_back(pruned: mx.array, indices: mx.array, length: int) -> mx.array:
 
 def _keep_indices(keep_mask: mx.array) -> mx.array:
     """Convert bool mask [B, L] to int indices [B, K]. K must be uniform across rows."""
-    B, L = keep_mask.shape
+    if keep_mask.ndim != 2:
+        raise ValueError(f"keep_mask must be 2D [B, L], got shape={keep_mask.shape}")
+    B, _L = keep_mask.shape
     row_counts = keep_mask.astype(mx.int32).sum(axis=1)
     mx.eval(row_counts)
     counts = [int(row_counts[row].item()) for row in range(B)]
