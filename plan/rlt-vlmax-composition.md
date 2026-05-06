@@ -7,22 +7,32 @@
   evidence.
 - [x] Land a reviewed preregistration/design note for RLT x VLMaxxing
   composition experiments.
+- [x] Validate scientist peer feedback against the repo and hard-fail Gemma
+  sparse-wrapper variable-`K` masks before any adaptive RLT mask can reach it.
 - [ ] Implement a small, audited RLT mask module in `src/codec_through/`
-  without vendoring RLT's training stack or third-party dependencies.
+  without installing, importing, executing, or vendoring RLT's training stack
+  or third-party dependencies.
 - [ ] Add unit tests for RLT endpoint comparisons, first-tubelet retention,
-  run-length accounting, grid/order contracts, and hard-fail shape checks.
+  repeated-frame keep-rate, minimum-frame guards, run-length accounting,
+  grid/order contracts, normalization-domain hard-fails, and shape checks.
+- [ ] Add runner timing instrumentation for canonical stages, including
+  separate multimodal prefill and text generation where RLT-3G makes
+  prefill-stage claims.
 - [ ] Wire RLT-style masks into the existing measured C-VISION Track B
   harness for Qwen and Gemma behind explicit CLI flags; label this as scorer
   substitution, not multiplier evidence.
+- [ ] Add the RLT-as-free-prior experiment: test whether cheap RLT-style pixel
+  masks can replace or prefilter more expensive structural/novelty scoring.
 - [ ] Add autonomous sweep runners and analyzers that reuse the existing dense
   baselines, stage-share accounting, paired fidelity gates, and artifact
   schemas.
-- [ ] Add the primary Gemma 2x2 composition experiment: dense, C-VISION-only,
-  RLT-style visual-admission-only, and C-VISION + RLT-style visual admission
-  on the same manifest/model/frame count/order.
-- [ ] Add a conservative C-PERSIST scheduler experiment where RLT controls
-  whole-frame repair decisions only; do not cut inside Qwen image-frame cache
-  blocks until a separate topology contract exists.
+- [ ] Add the Gemma composition experiments in cleanly separated cells:
+  scorer-stacking/union evidence and a denominator-separation cell with
+  scatter-back C-VISION versus RLT-style placeholder pruning.
+- [ ] Add C-PERSIST experiments in two tiers: Q0 shorter-cached-prefix
+  economics after visual admission is safe, then conservative whole-frame RLT
+  repair scheduling; do not cut inside Qwen image-frame cache blocks until a
+  separate topology contract exists.
 - [ ] Run smoke tests, unit tests, repo checks, plan/diff review, and commit
   each logical chunk.
 
@@ -44,25 +54,37 @@
   variable-length ViT training stack.
 - RLT's faithful patch comparison uses normalized pixel/tubelet endpoint
   differences, not the repo's raw adjacent-frame RGB planner by default.
+- `tau = 0.1` is meaningful only for the paper's normalized pixel domain. The
+  local implementation must pin and log `mask_domain`; thresholds are not
+  transferable across raw frames, Qwen processor tensors, and Gemma processor
+  tensors without profiler evidence.
 - The local target is an Apple 16 GB unified-memory machine. Long sweeps must
   be resumable, sequential, RSS-guarded, and checkpoint artifacts per cell.
-- Do not vendor RLT's CUDA/PyTorch/xformers/decord training stack. Port only a
-  small pure algorithmic subset if the plan is accepted.
+- Do not install, execute, import from, or vendor RLT's
+  CUDA/PyTorch/xformers/decord training stack. Port only a small pure
+  algorithmic subset by inspection, with attribution and license preservation
+  if code is copied.
 
 ## Decisions
 
 - The first code implementation should measure composition, not assume
   multiplicative speedups. A combined arm must beat both single arms under the
-  same manifest/model/hardware and match an explicit combined stage-share
-  timing model before any "multiplier" language is earned.
+  same manifest/model/hardware, pass per-bucket fidelity gates, and match an
+  explicit combined stage-share timing model before any "multiplier" language
+  is earned.
 - C-VISION integration comes first because Qwen/Gemma already have measured
   sparse vision execution and paired analyzers, but it is a scorer/substitution
   test rather than the primary multiplier test.
-- Gemma visual admission is the first candidate for attacking a different
-  denominator from C-VISION because existing placeholder-pruning machinery
-  already validates image-token alignment.
-- Qwen C-PERSIST will initially use RLT as a whole-frame repair scheduler. A
-  partial image-token cache path is a separate systems project.
+- Gemma evidence should run first, before Qwen, because it is the cleanest
+  local measured C-VISION cell and has the safer placeholder-pruning path.
+- Gemma visual admission is the first candidate for denominator separation
+  from scatter-back C-VISION, but existing novelty-pruning runners can already
+  combine placeholder pruning and C-VISION; label that as scorer-stacking
+  unless the arm protocol cleanly separates stages.
+- Qwen C-PERSIST has two possible RLT roles. Q0 cache shrinking is the more
+  interesting multiplier hypothesis but depends on safe visual admission;
+  whole-frame repair scheduling is the conservative fallback. A partial
+  image-token cache path is a separate systems project.
 
 ## Verification
 
@@ -70,6 +92,7 @@
 - sub-agent plan review focused on science, denominator accounting, and
   implementation risk
 - `ai-workflow run-checks`
+- `uv run --group vlm pytest tests/test_pruned_vision_tower.py`
 - `uv run pytest tests/test_qwen_vision_pruning.py tests/test_novelty_pruning.py tests/test_qwen_selective_reprefill.py`
 - new RLT mask unit tests after implementation
 - smoke run with `--n-items 1` before any long autonomous experiment

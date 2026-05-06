@@ -96,10 +96,18 @@ def _scatter_back(pruned: mx.array, indices: mx.array, length: int) -> mx.array:
 def _keep_indices(keep_mask: mx.array) -> mx.array:
     """Convert bool mask [B, L] to int indices [B, K]. K must be uniform across rows."""
     B, L = keep_mask.shape
+    row_counts = keep_mask.astype(mx.int32).sum(axis=1)
+    mx.eval(row_counts)
+    counts = [int(row_counts[row].item()) for row in range(B)]
+    if not counts:
+        raise ValueError("keep_mask must contain at least one row")
+    if len(set(counts)) != 1:
+        raise ValueError(f"keep_mask True count must be uniform across rows; got counts={counts}")
+    if counts[0] <= 0:
+        raise ValueError("keep_mask must keep at least one token per row")
     # Per-row argsort on bool (True=1 sorts last).
     order = mx.argsort(keep_mask.astype(mx.int32), axis=-1)  # [B, L]
-    # K derived from row-0 sum; per-row K is identical by construction (top-k).
-    k = int(keep_mask[0].astype(mx.int32).sum().item())
+    k = counts[0]
     idx = order[:, -k:]  # [B, K]
     return idx
 
