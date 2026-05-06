@@ -97,9 +97,9 @@ For contributors and agents:
 ```
 
 Checked research artifacts remain in this repo when they directly support
-tables, figures, or status claims. Large future bundles should use a manifest
-with checksums, but deleting current artifact evidence would make the paper
-harder to audit.
+tables, figures, status claims, or review/publication previews with adjacent
+provenance notes. Large future bundles should use a manifest with checksums,
+but deleting current artifact evidence would make the paper harder to audit.
 
 ## Research Principles
 
@@ -117,5 +117,15 @@ citation UI.
 
 ## License
 
-- code: [MIT](LICENSE)
-- docs, research notes, and paper materials: [CC BY 4.0](LICENSE-docs)
+This repository is multi-licensed.
+
+Code, scripts, tests, software configuration, and paper/build tooling are
+licensed under [MIT](LICENSE).
+
+Original documentation, research notes, manuscript source, generated paper
+figures/tables, and non-code research artifacts created solely by this repo are
+licensed under [Creative Commons Attribution 4.0 International](LICENSE-docs)
+(`CC-BY-4.0`).
+
+Benchmark-derived preview artifacts carry provenance notes in their artifact
+folders.

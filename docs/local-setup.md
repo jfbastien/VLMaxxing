@@ -148,7 +148,9 @@ The policy for what belongs in each corpus tier is:
 
 ## Clips And Local Assets
 
-This repo does not check media into git.
+This repo does not check fetched or source media into git. Generated paper
+figures, thumbnails, and explicit review artifacts are handled by the scoped
+policy in [docs/clip-policy.md](clip-policy.md).
 
 For the local clip policy, primary corpus, and predecessor cross-check set, see
 [docs/clip-policy.md](clip-policy.md) and

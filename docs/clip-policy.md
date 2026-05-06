@@ -1,13 +1,22 @@
 # Clip Policy
 
-This repo does not check media into git.
+This repo does not check fetched or source media into git.
 
-Media stays local. The repo tracks only:
+Generated static figures and thumbnails may be committed when they are paper,
+README, or review artifacts. Generated videos are heavier and may include
+benchmark-derived frames; keep them out of git unless they are deliberate
+review or publication artifacts with adjacent provenance and regeneration
+notes.
+
+Fetched and source media stays local. The repo tracks only:
 
 - manifest metadata
 - download or reproduction instructions
 - local generator scripts
 - experiment notes that reference local clip ids
+- generated static figures and thumbnails needed for the paper, README, or
+  review
+- exceptional generated videos with explicit provenance notes
 
 ## Corpus Tiers
 
@@ -96,7 +105,9 @@ data/
     └── synthetic/
 ```
 
-Do not commit downloaded media.
+Do not commit downloaded media or raw benchmark assets. Generated videos should
+normally be regenerated locally; if committed as review artifacts, keep an
+adjacent manifest or README documenting provenance and regeneration.
 
 ## Initial Setup Commands
 
@@ -128,8 +139,10 @@ TOMATO and MVBench metadata/assets are handled by
 videos by checked manifest subset; see
 [docs/videomme-download-handoff.md](videomme-download-handoff.md).
 
-Keep benchmark-native assets in their dataset-native layout under ignored
-`data/benchmarks/` paths. Do not turn them into a custom committed derivative.
+Keep benchmark-native source assets in their dataset-native layout under
+ignored `data/benchmarks/` paths. Do not turn them into a custom committed
+derived dataset. Small generated review or publication previews may be
+committed only with adjacent provenance and regeneration notes.
 
 ## What Comes Later
 
