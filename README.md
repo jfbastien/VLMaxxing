@@ -2,7 +2,7 @@
 
 [![ci](https://github.com/jfbastien/VLMaxxing/actions/workflows/ci.yml/badge.svg)](https://github.com/jfbastien/VLMaxxing/actions/workflows/ci.yml)
 [![website](https://img.shields.io/badge/website-vlmaxxi.ng-0f766e)](https://vlmaxxi.ng)
-![arXiv](https://img.shields.io/badge/arXiv-pending-b31b1b)
+[![arXiv](https://img.shields.io/badge/arXiv-2605.03351-b31b1b)](https://arxiv.org/abs/2605.03351)
 
 **Training-Free Anti-Recomputation for Video Vision-Language Models**
 
@@ -111,9 +111,9 @@ harder to audit.
 
 ## Citation
 
-Once the arXiv record is public, cite the paper linked at the top of this
-README. [CITATION.cff](CITATION.cff) is kept so GitHub can expose citation
-metadata; add the paper as its preferred citation before tagging the release.
+Cite the paper as [arXiv:2605.03351](https://arxiv.org/abs/2605.03351).
+[CITATION.cff](CITATION.cff) includes the preferred paper citation for GitHub's
+citation UI.
 
 ## License
 

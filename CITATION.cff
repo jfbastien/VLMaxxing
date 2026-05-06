@@ -17,3 +17,18 @@ keywords:
   - anti-recomputation
   - mlx
 abstract: "Research software, checked artifacts, and manuscript tooling for evaluating training-free anti-recomputation in video vision-language models."
+preferred-citation:
+  type: article
+  title: "VLMaxxing through FrameMogging: Training-Free Anti-Recomputation for Video Vision-Language Models"
+  authors:
+    - family-names: "Bastien"
+      given-names: "JF"
+    - family-names: "D'Amico"
+      given-names: "Sam"
+  year: 2026
+  doi: "10.48550/arXiv.2605.03351"
+  url: "https://arxiv.org/abs/2605.03351"
+  identifiers:
+    - type: other
+      value: "arXiv:2605.03351"
+      description: "arXiv identifier"
