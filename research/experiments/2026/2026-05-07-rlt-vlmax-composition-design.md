@@ -145,6 +145,28 @@ Validated on 2026-05-07 against the current branch after commit `56fa2f2`.
 | Per-frame minimum keep was unspecified. | VALID | First visual-admission arms must keep at least one token per frame and at least one full first-tubelet spatial grid; stricter 25% floors are separate ablations. |
 | Duration-annotated anchors are a useful scout. | VALID AS SCOUT | Added RLT-7 as a Track A logging-only scout: record run-length metadata beside unchanged anchors without changing model inputs. |
 
+### Scientist Peer Feedback Validation, Round 3
+
+Validated on 2026-05-07 against the current branch after commit `9c12d29`.
+
+| Peer claim | Verdict | Evidence / action |
+| --- | --- | --- |
+| `nuwa_pillar` is listed as an H1.5 replacement target but was already rejected. | VALID | `paper/claim-matrix.md` row 11 and the Stage 5 findings reject `nuwa_pillar` (`Delta acc=-0.167`). Removed it from the live H1.5 target list. |
+| `max_min_diversity` needs measured cost before promotion. | VALID WITH LOCAL ANCHOR | Existing Stage 5b records `mean_pruned_mask_ms=362 ms`, so it is the current live expensive-scorer target. H1.5 still requires per-frame-count remeasurement before adoption. |
+| The `--prune-placeholders` switch description must pin current behavior and dense sanity checks. | VALID | Current `scripts/run_novelty_pruning_gemma.py` always calls `prune_image_placeholders(...)` in the pruned branch. RLT-3G now says `structural` must reproduce the current accepted structural placeholder-pruning path, and the pure scatter-back arm must prove dense placeholder counts. |
+| H4A is Gemma-specific for fine-grained RLT content; Qwen can only test coarse frame-selection. | VALID | `qwen_selective_reprefill.py` hard-fails truncation inside image-frame blocks. H4A is now Gemma-first for patch-level admission; Qwen is labeled a coarse frame-selection scout. |
+| Active `mlx-vlm` SWA-trim patch must be verified before Gemma H4A. | VALID | The active venv `mlx_vlm.generate.py` lacks the `Topology-aware trim` patch marker. Added SWA-trim verification to preflight before Gemma H4A; otherwise Gemma cache-prefix claims are blocked. |
+| First-tubelet full-grid floor censors low-frame keep-rate curves. | VALID | RLT-1/H3 now require floor-active versus threshold-active reporting so low-frame keep-rate distributions are not misread as threshold sensitivity. |
+| H3A intersection needs a budget/floor rule. | VALID | Intersection is explicitly floating-budget before floors; if it violates per-frame or first-tubelet floors, apply the required floors and report the top-up separately. Fixed-budget use belongs to the `hybrid` arm. |
+| H1.5b should be evaluated per frame-count cell. | VALID | Acceptance now requires `saved_scorer_ms > added_rlt_mask_ms` per frame-count cell, not aggregate. |
+| Per-item random budgets must come from emitted RLT counts. | VALID | Random-control rules now say the random arm's budget is taken from the matched RLT arm's emitted per-item keep counts in the same paired cell. |
+| Prefill split and SWA checks should be preflight, not late queue steps. | VALID | Autonomous queue now aborts in preflight before smokes/long runs if required prefill or SWA checks are missing for the selected phases. |
+| RLT-vs-pixel-novelty is the most likely null and should be named. | VALID | H1.5 now names the co-cover null: if RLT and pixel-novelty agree above `0.90` Jaccard across buckets, skip H1.5b and choose the cheaper signal. |
+| Include a published-RLT-domain positive control. | VALID | Phase RLT-1 now requires fixed-camera/repetitive-action positive-control clips before claiming the local helper is grounded. |
+| Operationalize "RLT-style" once. | VALID | The note now states the mask kernel is a faithful re-derivation of `batched_find_idxs_to_keep`; the qualifier reflects omitted length encoding, packed attention, and VideoMAE training. |
+| RLT-7 positive result should not scope-creep into training. | VALID | RLT-7 now says a positive outcome unlocks a future training-required scout, outside this preregistration. |
+| Pledge `paper/framing.md` updates. | VALID | Shared protocol now requires `paper/framing.md` updates when contribution boundaries or anti-claims change. |
+
 ### RLT Algorithm Facts To Preserve
 
 - Input shape in RLT code is `[B, C, T, H, W]`.
@@ -153,6 +175,10 @@ Validated on 2026-05-07 against the current branch after commit `56fa2f2`.
 - Differences are absolute, average-pooled over the spatial patch, averaged
   across channels, then thresholded.
 - The first temporal tubelet is always kept.
+- The local mask kernel is a faithful re-derivation of RLT's
+  `batched_find_idxs_to_keep`. The `RLT-style` qualifier refers to the system
+  integration: this preregistration does not reproduce RLT length encoding,
+  variable-length packed attention, or VideoMAE training/fine-tuning.
 - The paper's default threshold is `tau = 0.1` after ImageNet normalization;
   the code docstring default `2` is not the paper default.
 - The inference deltas in Table 2 are not a universal "0.1 pp" claim:
@@ -266,6 +292,10 @@ token-retention curves as threshold increases.
 - Inconclusive if synthetic tests pass but the available corpus lacks enough
   static/egomotion contrast or bucket labels are too noisy for a bucket-level
   conclusion.
+- Reporting rule: always separate threshold-active keep-rate reductions from
+  floor-active reductions caused by the first-tubelet/per-frame safety floor.
+  Low-frame curves are censored by the floor and cannot be interpreted as pure
+  threshold sensitivity.
 
 **H1.5-RLT-free-prior (Track A/B precondition).** Cheap RLT-style pixel masks
 can prefilter more expensive feature-dependent scoring for some Gemma/Qwen
@@ -273,13 +303,21 @@ cells. This is a mechanism precondition only; it does not by itself allow
 "replacement" language.
 
 - Primary metric: agreement/overlap between RLT-style masks and the local
-  feature-dependent scorers (`max_min_diversity`, `nuwa_pillar`, and any future
-  real attention scorer) at matched keep budgets; secondary metric is
-  scorer/planner compute time. `gemma_structural` is a cheap calibration arm,
-  not the target for a meaningful wall-clock replacement claim.
+  feature-dependent scorers (`max_min_diversity` and any future real attention
+  scorer) at matched keep budgets; secondary metric is scorer/planner compute
+  time. `gemma_structural` is a cheap calibration arm, not the target for a
+  meaningful wall-clock replacement claim. `nuwa_pillar` is excluded from
+  replacement targeting because prior local Stage 5 evidence rejected it.
+- Existing local anchor: Stage 5b measured `max_min_diversity` at about
+  `362 ms` mask time, making it the current live expensive-scorer target.
+  This must still be remeasured in each promoted frame-count cell.
 - Accept if RLT-style masks reach at least `0.80` Jaccard with a passing local
   scorer in a content bucket and reduce measured scorer/planner time by at
   least `50%` in the offline profiler.
+- Named null: if RLT-style masks and existing pixel-novelty masks reach at
+  least `0.90` Jaccard across content/duration buckets at matched budgets, skip
+  the H1.5b model run and report that RLT and pixel-novelty co-cover the same
+  admission signal; choose the cheaper signal by measured overhead.
 - Reject if overlap stays below `0.50` in all buckets or if scorer/planner time
   is already too small to move the ceiling.
 - Inconclusive if overlap is bucket-specific but the bucket lacks enough
@@ -293,10 +331,10 @@ replacement for a local scorer only after a paired model-run drift test.
 - Accept if the RLT-prefilter/replacement arm preserves the target scorer's
   paired correctness within H2 gates, preserves choice agreement at `>=0.90`,
   and reduces the target scorer/planner wall-clock by enough that
-  `saved_scorer_ms > added_rlt_mask_ms`.
+  `saved_scorer_ms > added_rlt_mask_ms` in that same frame-count cell.
 - Reject if paired correctness drift exceeds H2 gates, if the replaced scorer's
   accepted cell no longer passes per-bucket quality gates, or if RLT mask
-  overhead erases the scorer-time saving.
+  overhead erases the scorer-time saving in any promoted frame-count cell.
 - Inconclusive if mechanism overlap is high but model-run timing is too noisy
   to assign the saved stage.
 
@@ -381,9 +419,16 @@ shortens measured multimodal prefill work.
 **H4A-CPERSIST-q0-prefix-shrinker (Track B/session economics).** RLT-style
 visual admission can improve setup-inclusive C-PERSIST if it makes Q0 ingest
 and the persisted cached prefix cheaper while preserving follow-up behavior.
+The fine-grained patch-level version is Gemma-first: Qwen's current cache
+topology only permits whole-frame prefix boundaries, so the Qwen variant is a
+coarse RLT-driven frame-selection scout rather than a full RLT admission test.
 
 - Prerequisite: a safe first-query visual-admission path with paired fidelity
-  already passed H3B or a narrower Qwen-specific prompt-shortening gate.
+  already passed H3B or a narrower Qwen-specific prompt-shortening gate. Gemma
+  H4A also requires the active `mlx-vlm` install to have the SWA-aware trim
+  patch or an equivalent safe prefix-snapshot wrapper verified before any run;
+  otherwise Gemma cache-prefix claims are blocked and the queue may only run
+  the coarse Qwen frame-selection scout.
 - Scope: first acceptance is only for the stationary same-video Q0..QN protocol
   used by the 1.55L repeated-question stress. Dense-answer-anchored prompt
   variation in the style of 1.55M is required follow-up evidence, not the first
@@ -457,26 +502,37 @@ until cheaper evidence has survived.
 - Order: use ABBA or randomized paired arm order when arms run back-to-back; if
   thermal or memory constraints force sequential arms, record that deviation
   and use existing background-activity and decode-delta gates.
-- Instrumentation sequencing: no RLT-3G-B denominator-separation run may start
-  until a separate landed commit instruments `multimodal_prefill_ms` and
-  `text_generation_ms` in `scripts/run_phase1_51V.py` and
-  `scripts/run_phase1_63G_gemma_track_b.py`, verifies the fields on a dense
-  n=1 smoke against `qwen_selective_reprefill.py`-style prefill accounting
-  within timing noise, and shows dense wall-clock perturbation is at most `3%`
-  or `50 ms`, whichever is larger.
+- Preflight sequencing: the autonomous queue must abort before smokes or long
+  runs when a selected phase is missing its prerequisite instrumentation. No
+  RLT-3G-B denominator-separation run may start until a separate landed commit
+  instruments `multimodal_prefill_ms` and `text_generation_ms` in
+  `scripts/run_phase1_51V.py` and `scripts/run_phase1_63G_gemma_track_b.py`,
+  verifies the fields on a dense n=1 smoke against
+  `qwen_selective_reprefill.py`-style prefill accounting within timing noise,
+  and shows dense wall-clock perturbation is at most `3%` or `50 ms`,
+  whichever is larger.
+- SWA-cache preflight: no Gemma H4A/C-PERSIST run may start until the active
+  `mlx_vlm.generate` path is verified to contain the SWA-aware trim behavior
+  from `scripts/mlx_vlm_swa_aware_trim.patch` or the run uses the checked
+  prefix-snapshot wrapper instead of default `PromptCacheState`.
 - Power/n: initial `n=30 dev / n=30 holdout` inherits local VideoMME precedent
   from Phase 1.51V/1.63. Treat this as screening unless a cell-specific
   minimum detectable effect is computed from prior paired timing variance.
 - Claim mapping: H2 maps to paper claim 15 and claim 5; H3A/H3B map to claim
   10 plus claims 11/15 depending on the arm; H4A/H4B map to claim 14. Any
-  adopted, weakened, killed, or revived hypothesis must update
-  `research/decision-log.md` after the run lands.
+  adopted, weakened, killed, revived, or boundary-changing hypothesis must
+  update `research/decision-log.md` after the run lands; if the composition
+  assumption or paper contribution boundary changes, update
+  `paper/framing.md` in the same evidence-maintenance pass.
 - Mask compute time is recorded on every arm, with dense arms writing
   `mask_compute_ms = 0`.
 - Random controls: the default matched-random control is per-item matched to
-  the RLT arm's effective keep count/budget. Aggregate-matched random is
-  optional and diagnostic because it confounds scorer quality with
-  content-conditioned budget allocation.
+  the RLT arm's effective keep count/budget. The random arm's budget is read
+  from the matched RLT arm's emitted per-item keep counts in the same paired
+  cell; target-rate random without emitted per-item budgets is
+  aggregate-matched in disguise. Aggregate-matched random is optional and
+  diagnostic because it confounds scorer quality with content-conditioned
+  budget allocation.
 
 ### Phase RLT-0 (Track A/B Precondition): Pure Mask Port And Audit
 
@@ -544,6 +600,9 @@ Inputs:
 
 - Existing VideoMME dev/holdout manifests.
 - Existing TOMATO/MVBench motion slices where local assets exist.
+- Published-RLT-domain positive controls: 1-3 fixed-camera, repetitive-action
+  clips with lecture/Breakfast/COIN-like characteristics. These can be local
+  corpus clips or synthetic equivalents, but their provenance must be logged.
 - Synthetic static, pan, object-motion, and screen/UI clips from the repo's
   synthetic corpus tooling if benchmark assets are not enough.
 
@@ -556,6 +615,8 @@ Outputs:
   - run-length histogram,
   - overlap with current `STATIC`, `STATIC|SHIFTED`, novelty top-k,
   - content bucket.
+- Floor-active flag for each row: distinguish threshold-kept tokens from
+  tokens kept only because the first-tubelet/per-frame floor was applied.
 - Threshold selection must be split-safe: profiler/dev selects the threshold
   set; holdout confirms. Combined dev+holdout n=60 artifacts must be reported
   split-wise and must not feed threshold choice.
@@ -564,6 +625,12 @@ Gate:
 
 - Do not run long model experiments until synthetic tests pass and at least one
   static/motion contrast appears in the profiler.
+- Do not claim the helper is grounded in published RLT behavior unless the
+  fixed-camera positive controls show high token reduction at the canonical
+  ImageNet-normalized `tau=0.1` setting, operationalized as at least `50%`
+  median token reduction on the positive-control clips. If those controls fail,
+  investigate the local mask kernel/domain before using `RLT-style` in model
+  runs.
 
 Runtime estimate:
 
@@ -593,9 +660,17 @@ Design:
 - Treat `gemma_structural` as calibration only because prior local evidence
   puts its mask cost around 2 ms; the meaningful replacement target is a
   feature-dependent scorer whose host feature mirror or scoring pass can move
-  wall-clock.
+  wall-clock. Current live target: `max_min_diversity`, which prior Stage 5b
+  measured at about `362 ms`; remeasure it per frame count before promotion.
+- Treat `nuwa_pillar` as rejected local evidence unless a separate
+  preregistration resurrects it with a new rationale.
+- Elevate the likely null: compare RLT directly against current pixel-novelty
+  masks before any model run. If they co-cover the same signal at `>=0.90`
+  Jaccard across buckets, skip replacement/adoption and choose by measured
+  overhead.
 - Report overlap by content bucket and by duration bucket.
-- Report scorer/planner compute time separately from decode/processor time.
+- Report scorer/planner compute time separately from decode/processor time and
+  per frame count; H1.5b is frame-count-conditional, not aggregate.
 - If RLT strongly agrees with an expensive scorer in a bucket, promote a
   bucket-specific H1.5b model run that uses RLT as a prefilter or replacement.
 
@@ -696,8 +771,12 @@ Implementation path:
 - Reuse `prune_image_placeholders(...)` validation.
 - Add an explicit placeholder mode such as
   `--prune-placeholders {none,rlt,structural}` or a sibling-runner equivalent.
-  The H3B "pure scatter-back C-VISION" arm must prove it emits dense
-  placeholder counts.
+  `structural` must reproduce the current accepted behavior: the selected
+  existing structural/novelty arm computes `keep_mask` and calls
+  `prune_image_placeholders(...)` before generation. `none` must bypass
+  `prune_image_placeholders(...)` entirely. The H3B "pure scatter-back
+  C-VISION" arm must prove it emits dense placeholder counts, e.g.
+  `len(image_placeholders) == frame_count * 256` for the current Gemma grid.
 - Instrument first-turn runners so `multimodal_prefill_ms` and
   `text_generation_ms` are separate; without this, H3B cannot accept.
 - For H3B, the RLT mask must be pixel-side or processor-tensor-side and
@@ -709,7 +788,9 @@ Implementation path:
 - Add a per-frame minimum keep requirement so visual admission cannot erase an
   entire frame's visual evidence. First implementation floor: keep at least
   one token per frame and keep all tokens in the first temporal tubelet; a
-  `25%` per-frame floor is a separate ablation.
+  `25%` per-frame floor is a separate ablation. At low frame counts this floor
+  can dominate the emitted keep rate, so every summary must report
+  floor-active versus threshold-active rows.
 - Use ABBA/randomized arm order where feasible and paired bootstrap intervals
   with duplicate-preserving item resampling.
 
@@ -729,7 +810,10 @@ H3A combination policy definitions:
   existing scorer.
 - `intersection(A, B) = A ∩ B keeps`: keep a token only if both scorers keep
   it; this is more aggressive and tests whether agreement is a safe pruning
-  signal.
+  signal. This arm is floating-budget: report actual `K`. If it violates the
+  per-frame or first-tubelet floor, apply the required floor/top-up and report
+  those added tokens separately. Fixed-budget intersection belongs in the
+  `hybrid` arm.
 - `hybrid(A, B, budget)`: start from `A ∪ B`, then budget-adjust with
   magnitude ranking; if union exceeds budget, drop lowest-magnitude union
   tokens down to budget; if union is below budget, fill from highest-magnitude
@@ -844,9 +928,37 @@ Runtime estimate:
 - 16f expansion roughly doubles per-arm cost.
 - RSS guard: 9 GB; model path `Qwen2.5-VL-7B-Instruct-4bit`.
 
-### Phase RLT-5Q (Track B/Session Economics): C-PERSIST Q0 Prefix And Whole-Frame Scheduler
+### Phase RLT-5G (Track B/Session Economics): Gemma Q0 Prefix Shrinker
 
-Purpose: test H4A/H4B without unsafe token-level Qwen cache cuts.
+Purpose: test the full H4A hypothesis where RLT-style patch-level admission
+can shorten Q0 visual placeholders and the persisted prefix.
+
+Implementation path:
+
+- Do not run this phase on default `PromptCacheState` unless the active
+  `mlx-vlm` install is verified to include the SWA-aware trim behavior.
+  Otherwise use the checked prefix-snapshot wrapper or defer the phase.
+- Start only after H3B or an equivalent Gemma placeholder-pruning fidelity gate
+  passes.
+- Compare dense Q0 + safe Gemma follow-up reuse against RLT-shortened Q0 +
+  the same safe reuse path under identical stationary Q0..QN sessions.
+- Log dense and shortened prefix token counts, placeholder counts, Q0
+  wall-clock, setup-inclusive session wall-clock, paired follow-up drift, and
+  whether the run used patched `mlx-vlm` or a prefix-snapshot wrapper.
+
+Gate:
+
+- Use H4A gates. Any result without SWA-safe cache verification is invalid for
+  Gemma H4A, not merely advisory.
+
+Status:
+
+- Deferred until Gemma cache semantics are verified safe in the active runtime.
+
+### Phase RLT-5Q (Track B/Session Economics Scout): Qwen C-PERSIST Frame Selection
+
+Purpose: test H4B and a coarse Qwen-only H4A scout without unsafe token-level
+Qwen cache cuts. This is not a full patch-level RLT admission test.
 
 Implementation path:
 
@@ -854,9 +966,9 @@ Implementation path:
 - Use `scripts/run_phase1_55L_many_turn_cpersist.py` as the many-turn runner.
   Existing policy strings `fixed_k1`, `adaptive_post_q2`, and `refresh10`
   are the precedent to extend.
-- H4A: after safe visual admission exists, compare dense Q0 + C-PERSIST
-  against shorter-Q0-prefix + C-PERSIST under identical stationary same-video
-  Q0..QN sessions.
+- Qwen H4A scout: use RLT-derived frame scores only to choose whole-frame Q0
+  prefixes. Because `qwen_selective_reprefill.py` rejects mid-frame cuts, this
+  is a frame-selection policy, not RLT proper.
 - H4B: add a policy layer:
   - `fixed_k1` baseline,
   - current `adaptive_post_q2`,
@@ -886,7 +998,8 @@ Protocol:
 
 Gate:
 
-- H4A uses the Q0 prefix-shrinker gates.
+- The Qwen H4A scout may report setup-inclusive frame-selection economics but
+  cannot claim fine-grained RLT prefix shrinking.
 - H4B uses the scheduler gates.
 - No token-level cache multiplier claim is allowed from H4B.
 
@@ -935,6 +1048,9 @@ Gate:
 - Accept as a future-work direction if duration metadata predicts anchor
   quality or scorer disagreement better than existing pixel novelty alone on a
   held-out slice.
+- A positive result only unlocks a future training-required scout, such as
+  feeding duration as a positional/attention bias. That learned-duration path
+  is outside this preregistration.
 - Reject if duration adds no signal beyond existing static/shifted/novel
   labels.
 - Inconclusive if the run-length distribution is too degenerate in the tested
@@ -959,17 +1075,18 @@ Status:
     version, frame count, threshold, normalization, grid shape, and mask policy,
   - reuse existing analyzers where possible.
 - The top-level autonomous queue should run:
-  1. preflight,
+  1. preflight, including selected-phase prerequisite checks for prefill split
+     and Gemma SWA-safe cache behavior,
   2. CPU mask profiler,
   3. n=1 Gemma smoke,
   4. n=1 Qwen smoke,
-  5. prefill-split instrumentation verification before any RLT-3G-B run,
-  6. selected decision cells,
-  7. analyzers,
-  8. gate summary.
+  5. selected decision cells,
+  6. analyzers,
+  7. gate summary.
 - Claude/Codex supervision should interpret only completed artifacts and should
   record negative outcomes in this note, `research/decision-log.md`, and
-  paper-facing docs only when a hypothesis changes status.
+  paper-facing docs only when a hypothesis changes status. If contribution
+  boundaries or anti-claims change, update `paper/framing.md`.
 
 ## Open Risks
 

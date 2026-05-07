@@ -15,6 +15,9 @@
 - [ ] Add unit tests for RLT endpoint comparisons, first-tubelet retention,
   repeated-frame keep-rate, minimum-frame guards, run-length accounting,
   grid/order contracts, normalization-domain hard-fails, and shape checks.
+- [ ] Add an offline positive-control profile on fixed-camera/repetitive clips
+  resembling RLT's published evaluation domain before treating local
+  `RLT-style` masks as grounded.
 - [ ] Add runner timing instrumentation for canonical stages, including
   separate multimodal prefill and text generation where RLT-3G makes
   prefill-stage claims; land this as a prerequisite commit before any RLT-3G-B
@@ -24,18 +27,22 @@
   substitution, not multiplier evidence.
 - [ ] Add the RLT-as-free-prior experiment: test whether cheap RLT-style pixel
   masks can prefilter more expensive feature-dependent scoring, then require a
-  paired model-run drift gate before any "replacement" language.
+  paired model-run drift gate before any "replacement" language. Treat
+  `max_min_diversity` as the current live expensive-scorer target and
+  `nuwa_pillar` as rejected unless a later preregistration resurrects it.
 - [ ] Add autonomous sweep runners and analyzers that reuse the existing dense
   baselines, stage-share accounting, paired fidelity gates, and artifact
-  schemas.
+  schemas. Preflight must abort before smokes if selected cells lack prefill
+  split instrumentation or Gemma SWA-safe cache verification.
 - [ ] Add the Gemma composition experiments in cleanly separated cells:
   scorer-stacking/union evidence and a denominator-separation cell with
   scatter-back C-VISION versus encoder-state-invariant RLT-style placeholder
   pruning.
-- [ ] Add C-PERSIST experiments in two tiers: Q0 shorter-cached-prefix
-  economics after visual admission is safe, then conservative whole-frame RLT
-  repair scheduling; do not cut inside Qwen image-frame cache blocks until a
-  separate topology contract exists.
+- [ ] Add C-PERSIST experiments in two tiers: Gemma-first Q0
+  shorter-cached-prefix economics after visual admission and SWA-safe cache
+  semantics are verified, then conservative Qwen whole-frame RLT repair/frame
+  selection scheduling; do not cut inside Qwen image-frame cache blocks until
+  a separate topology contract exists.
 - [ ] Add a Track A scout for duration-annotated anchors: log RLT-style run
   lengths alongside unchanged VLMaxxing structural anchors without changing
   token counts.
@@ -51,7 +58,12 @@
   come from action-recognition VideoMAE-style models, not video VLM QA.
 - Current Qwen selective re-prefill is whole-frame/cache-prefix oriented and
   intentionally rejects cuts inside image-frame token blocks. RLT token-level
-  C-PERSIST surgery is out of scope for the first implementation.
+  C-PERSIST surgery is out of scope for the first implementation, and Qwen
+  H4A is only a coarse frame-selection scout.
+- Gemma C-PERSIST is the architecture where RLT-style patch-level prefix
+  shrinking is meaningful, but Gemma mixed-SWA cache semantics must be verified
+  against the active `mlx-vlm` install or a checked prefix-snapshot wrapper
+  before any H4A run.
 - Current C-VISION scatter-back paths preserve downstream dense prompt geometry.
   They can test real skipped vision work, but not visual-token prefill
   reduction unless paired with a separate visual-admission path.
