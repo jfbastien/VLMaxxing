@@ -32,8 +32,10 @@ layers. mlx-vlm 0.4.4's prompt-cache trim path doesn't honor SWA semantics
 from __future__ import annotations
 
 import argparse
+import contextlib
 import gc
 import hashlib
+import importlib
 import json
 import os
 import platform
@@ -47,13 +49,10 @@ import warnings
 from pathlib import Path
 from typing import Any
 
-if not os.environ.get("HF_TOKEN"):
-    raise SystemExit(
-        "HF_TOKEN environment variable is required (gated Gemma 4 weights). "
-        "Aborting per B0b spec -- do not attempt to download."
-    )
-
-import contextlib
+import mlx.core as mx
+import numpy as np
+from mlx_lm.models.cache import RotatingKVCache
+from PIL import Image
 
 # --- BEGIN B0b r2 correctness-control guard ---
 # Background: mlx_vlm/generate.py:671-697 (mlx-vlm 0.4.4) flat-slices
@@ -67,13 +66,6 @@ import contextlib
 # reuse the cache cross-turn whenever any RotatingKVCache is present.
 # The result: B0b's correctness gate can pass; the C-PERSIST speedup
 # claim on Gemma 26B remains BLOCKED until the upstream fix.
-import importlib  # noqa: E402
-
-import mlx.core as mx
-import numpy as np  # noqa: E402
-from mlx_lm.models.cache import RotatingKVCache  # noqa: E402
-from PIL import Image
-
 # Note: `mlx_vlm.generate` is shadowed by the top-level `generate`
 # function exported in mlx_vlm/__init__.py, so `import mlx_vlm.generate`
 # returns the function, not the module. Use importlib to fetch the
@@ -461,7 +453,9 @@ class Harness:
 # ---------------------------------------------------------------------------
 
 
-def load_first_n_videomme(parquet_path: Path, n: int) -> list[dict[str, Any]]:
+def load_first_n_videomme(
+    parquet_path: Path, n: int, *, videomme_dir: Path | None = None
+) -> list[dict[str, Any]]:
     import pyarrow.parquet as pq
 
     df = pq.read_table(parquet_path).to_pandas()
@@ -472,16 +466,22 @@ def load_first_n_videomme(parquet_path: Path, n: int) -> list[dict[str, Any]]:
         if row["videoID"] in seen:
             continue
         seen[row["videoID"]] = True
-        items.append(
-            {
-                "video_id": str(row["videoID"]),
-                "duration": str(row["duration"]),
-                "q1_text": str(row["question"]),
-                "options": list(row["options"]),
-                "answer_letter": str(row["answer"]),
-                "question_id": str(row["question_id"]),
-            }
-        )
+        video_path = None
+        if videomme_dir is not None:
+            video_path = find_videomme_video(str(row["videoID"]), videomme_dir)
+            if video_path is None:
+                continue
+        item = {
+            "video_id": str(row["videoID"]),
+            "duration": str(row["duration"]),
+            "q1_text": str(row["question"]),
+            "options": list(row["options"]),
+            "answer_letter": str(row["answer"]),
+            "question_id": str(row["question_id"]),
+        }
+        if video_path is not None:
+            item["video_path"] = video_path
+        items.append(item)
         if len(items) >= n:
             break
     return items
@@ -670,6 +670,13 @@ def main() -> int:
     )
     args = ap.parse_args()
 
+    model_id_path = Path(str(args.model_id)).expanduser()
+    if not model_id_path.exists() and not os.environ.get("HF_TOKEN"):
+        raise SystemExit(
+            "HF_TOKEN environment variable is required for remote gated Gemma 4 weights. "
+            "Use --model-id with an existing local model path to run the smoke without download."
+        )
+
     if args.smoke:
         args.n_videos = 1
 
@@ -696,14 +703,14 @@ def main() -> int:
     }
     print(f"[provenance] {json.dumps(base_provenance, indent=2)}", flush=True)
 
-    items = load_first_n_videomme(parquet, args.n_videos)
+    items = load_first_n_videomme(parquet, args.n_videos, videomme_dir=args.videomme_dir)
     if len(items) < args.n_videos:
         raise SystemExit(f"Only found {len(items)} unique videos; need {args.n_videos}")
 
     # Resolve videos and pre-extract frames.
     print(f"[setup] resolving {len(items)} videos + extracting frames", flush=True)
     for it in items:
-        video_path = find_videomme_video(it["video_id"], args.videomme_dir)
+        video_path = it.get("video_path") or find_videomme_video(it["video_id"], args.videomme_dir)
         if not video_path:
             raise SystemExit(f"Video missing: {it['video_id']}")
         frames, timestamps = extract_frames(video_path, n_frames=args.n_frames)

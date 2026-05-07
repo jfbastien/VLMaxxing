@@ -273,6 +273,42 @@ Round 8 local verification:
   active-pixel denominators, token-domain keep rate, RLT config hash, and
   routing-policy metadata.
 
+Round 9 local verification:
+
+- Added `scripts/build_rlt_prefill_split_smoke.py` so the queue can produce the
+  H3B prefill-split smoke artifact autonomously instead of relying on a
+  hand-written JSON file.
+- Bumped first-turn sparse runner schemas to `phase1_51v_sparse_v3` and
+  `phase1_63g_gemma_track_b_v3`; JSONL item rows now include explicit
+  `multimodal_prefill_ms` and `text_generation_ms` aliases in `timing_ms`.
+- Dense Gemma n=1 prefill-split smoke ran successfully in `~62 s`.
+  The split fields were populated and nonzero:
+  `multimodal_prefill_ms ~= 4.1 s`, `text_generation_ms ~= 44 ms`.
+  `generate_ms - (prefill_ms + text_generation_ms)` was `~0.5-0.7 s` across
+  local smokes, so the residual is recorded as cold/wrapper/JIT overhead and
+  is diagnostic only. It is not allowed to block H3B by itself.
+- `scripts/preflight_rlt_vlmax.py --phase RLT-3G-B
+  --prefill-split-smoke-json ...` returned `ready=true` with the generated
+  smoke artifact.
+- `scripts/run_rlt_autonomous_queue.py --auto-prefill-split-smoke
+  --run-model-smokes --gemma-cell-type h3b_admission` completed CPU gates,
+  produced the prefill-split smoke artifact, ran the n=1 Gemma H3B-admission
+  advisory smoke, and reported `ready_for_model_runs=true`. The only remaining
+  block in that queue was Gemma H4A SWA functional smoke.
+- `scripts/preflight_rlt_vlmax.py --phase RLT-5G --run-swa-smoke` returned
+  `ready=false` when it used the historical 26B B0b default; that target is
+  not viable on the 16 GB M3 local machine.
+- The RLT preflight now uses the local small Gemma target by default:
+  `/Users/jfb/models/gemma-4-e4b-it-4bit`. The B0b cache-correctness smoke no
+  longer requires `HF_TOKEN` when `--model-id` points at an existing local
+  model, and it skips locally missing VideoMME videos when choosing a smoke
+  item.
+- `scripts/preflight_rlt_vlmax.py --phase RLT-5G --run-swa-smoke
+  --swa-smoke-model-id /Users/jfb/models/gemma-4-e4b-it-4bit` returned
+  `ready=true` in `~93 s`. The active `mlx-vlm` install still lacks the
+  SWA-trim marker, so this is a small-model functional safety smoke, not a 26B
+  claim.
+
 ### RLT Algorithm Facts To Preserve
 
 - Input shape in RLT code is `[B, C, T, H, W]`.
@@ -528,6 +564,12 @@ shortens measured multimodal prefill work.
   stage reductions, or if combined quality fails.
 - Inconclusive if both stage reductions are visible but the combined E2E lift
   is absorbed by decode/processor overhead.
+- Current implementation note: `scripts/run_novelty_pruning_gemma.py` computes
+  Gemma vision features once per item and feeds the cached features to both
+  dense and RLT-admission generations. In that runner, `vision_reduction_ms` is
+  therefore a structural zero and the H3B cell is prompt/admission-only. A
+  paper-facing vision-attention composition claim requires a separate runner
+  with paired dense-encoder and sparse/scatter-back encoder passes.
 
 **H4A-CPERSIST-q0-prefix-shrinker (Track B/session economics).** RLT-style
 visual admission can improve setup-inclusive C-PERSIST if it makes Q0 ingest

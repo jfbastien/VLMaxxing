@@ -46,7 +46,7 @@ from codec_through.qwen_vision_pruning import qwen_groups_per_frame  # noqa: E40
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RUNNER_PATH = REPO_ROOT / "scripts" / "run_benchmark_track_a.py"
 DEFAULT_MODEL_PATH = Path.home() / "models" / "Qwen2.5-VL-7B-Instruct-4bit"
-SCHEMA_VERSION = "phase1_51v_sparse_v2"
+SCHEMA_VERSION = "phase1_51v_sparse_v3"
 
 
 @dataclass(frozen=True, slots=True)
@@ -263,7 +263,9 @@ def _record_payload(record: ItemResult) -> dict[str, Any]:
             "processor": record.timings.processor_ms,
             "vision": record.timings.vision_ms,
             "multimodal_prefill": record.timings.multimodal_prefill_ms,
+            "multimodal_prefill_ms": record.timings.multimodal_prefill_ms,
             "text_generation": record.timings.text_generation_ms,
+            "text_generation_ms": record.timings.text_generation_ms,
             "generate": record.timings.generate_ms,
             "end_to_end": record.timings.end_to_end_ms,
         },

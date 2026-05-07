@@ -21,6 +21,7 @@ from typing import Any, cast
 SCHEMA_VERSION = "rlt_autonomous_queue_v2"
 DEFAULT_ARTIFACT_DIR = Path("research/experiments/2026/artifacts/rlt_autonomous_queue")
 DEFAULT_GEMMA_MODEL_PATH = Path.home() / "models" / "gemma-4-e4b-it-4bit"
+DEFAULT_SWA_SMOKE_MODEL_ID = str(DEFAULT_GEMMA_MODEL_PATH)
 DEFAULT_GEMMA_MANIFEST = Path("research/benchmark_manifests/videomme_combined_v1_n60.toml")
 DEFAULT_GEMMA_SMOKE_MANIFEST = Path("research/benchmark_manifests/videomme_dev_v1.toml")
 DEFAULT_DECISION_LOG = Path("research/decision-log.md")
@@ -34,6 +35,7 @@ PHASE_ESTIMATES_HOURS = {
     "RLT-1-profiler-n60": [0.25, 0.50],
     "RLT-2G-gemma-smoke": [0.25, 0.75],
     "RLT-2G-gemma-n60": [7.5, 10.5],
+    "RLT-3G-B-prefill-smoke": [0.25, 0.50],
     "RLT-3G-A": [2.0, 6.0],
     "RLT-3G-B": [2.0, 6.0],
     "RLT-4Q": [7.0, 10.0],
@@ -246,6 +248,54 @@ def _profile_command(
     return command
 
 
+def _prefill_split_smoke_command(
+    *,
+    artifact_dir: Path,
+    output: Path,
+    manifest: Path,
+    model_path: Path,
+    frame_count: int,
+    rss_guard_mb: int,
+) -> list[str]:
+    command = [
+        sys.executable,
+        "scripts/build_rlt_prefill_split_smoke.py",
+        "--artifact-dir",
+        str(artifact_dir / "prefill_split_smoke"),
+        "--output",
+        str(output),
+        "--manifest",
+        str(manifest),
+        "--model-path",
+        str(model_path),
+        "--frame-count",
+        str(frame_count),
+        "--n-items",
+        "1",
+    ]
+    if rss_guard_mb > 0:
+        command.extend(["--rss-guard-mb", str(rss_guard_mb)])
+    return command
+
+
+def _rlt3_preflight_command(
+    *,
+    artifact_dir: Path,
+    prefill_split_smoke_json: Path | None,
+) -> list[str]:
+    command = [
+        sys.executable,
+        "scripts/preflight_rlt_vlmax.py",
+        "--phase",
+        "RLT-3G-B",
+        "--output",
+        str(artifact_dir / "rlt3gb_preflight.json"),
+    ]
+    if prefill_split_smoke_json is not None:
+        command.extend(["--prefill-split-smoke-json", str(prefill_split_smoke_json)])
+    return command
+
+
 def _gemma_admission_commands(
     *,
     artifact_dir: Path,
@@ -314,6 +364,14 @@ def main() -> int:
     parser.add_argument("--manifest", type=Path)
     parser.add_argument("--frame-count", type=int, default=8)
     parser.add_argument("--prefill-split-smoke-json", type=Path)
+    parser.add_argument(
+        "--auto-prefill-split-smoke",
+        action="store_true",
+        help=(
+            "Run the dense n=1 Gemma prefill-split smoke builder before H3B preflight. "
+            "This is the autonomous path for unblocking RLT-3G-B."
+        ),
+    )
     parser.add_argument("--run-model-smokes", action="store_true")
     parser.add_argument("--run-gemma-decision-cell", action="store_true")
     parser.add_argument("--gemma-model-path", type=Path, default=DEFAULT_GEMMA_MODEL_PATH)
@@ -339,6 +397,7 @@ def main() -> int:
         ),
     )
     parser.add_argument("--run-swa-smoke", action="store_true")
+    parser.add_argument("--swa-smoke-model-id", default=DEFAULT_SWA_SMOKE_MODEL_ID)
     parser.add_argument("--max-planned-hours", type=float, default=30.0)
     parser.add_argument("--decision-log", type=Path, default=DEFAULT_DECISION_LOG)
     parser.add_argument("--no-decision-log", action="store_true")
@@ -352,6 +411,9 @@ def main() -> int:
     if args.max_planned_hours <= 0:
         raise SystemExit("--max-planned-hours must be positive")
     decision_log = None if args.no_decision_log else args.decision_log
+    prefill_split_smoke_json = args.prefill_split_smoke_json
+    if args.auto_prefill_split_smoke and prefill_split_smoke_json is None:
+        prefill_split_smoke_json = args.artifact_dir / "prefill_split_smoke.json"
 
     args.artifact_dir.mkdir(parents=True, exist_ok=True)
     summary_path = args.summary or args.artifact_dir / "queue_summary.json"
@@ -365,10 +427,14 @@ def main() -> int:
     selected_budget = ["RLT-1-preflight", "RLT-1-profiler-synthetic"]
     if args.manifest is not None:
         selected_budget.append("RLT-1-profiler-n60")
+    if args.auto_prefill_split_smoke:
+        selected_budget.append("RLT-3G-B-prefill-smoke")
     if args.run_model_smokes:
         selected_budget.append("RLT-2G-gemma-smoke")
     if args.run_gemma_decision_cell:
-        selected_budget.append("RLT-2G-gemma-n60")
+        selected_budget.append(
+            "RLT-3G-B" if args.gemma_cell_type == "h3b_admission" else "RLT-2G-gemma-n60"
+        )
     budget = _total_budget(selected_budget)
     if budget["high_hours"] > args.max_planned_hours:
         raise SystemExit(
@@ -384,6 +450,7 @@ def main() -> int:
         },
     }
     if args.dry_run:
+        h3b_preflight_planned_early = False
         planned_commands = [
             _planned_command(
                 [
@@ -414,6 +481,19 @@ def main() -> int:
                 ]
             ),
         ]
+        if args.auto_prefill_split_smoke:
+            planned_commands.append(
+                _planned_command(
+                    _prefill_split_smoke_command(
+                        artifact_dir=args.artifact_dir,
+                        output=cast(Path, prefill_split_smoke_json),
+                        manifest=args.gemma_smoke_manifest,
+                        model_path=args.gemma_model_path,
+                        frame_count=args.frame_count,
+                        rss_guard_mb=args.gemma_rss_guard_mb,
+                    )
+                )
+            )
         if args.run_model_smokes:
             planned_commands.extend(
                 _planned_command(command)
@@ -432,6 +512,16 @@ def main() -> int:
                 )
             )
         if args.run_gemma_decision_cell:
+            if args.gemma_cell_type == "h3b_admission":
+                planned_commands.append(
+                    _planned_command(
+                        _rlt3_preflight_command(
+                            artifact_dir=args.artifact_dir,
+                            prefill_split_smoke_json=prefill_split_smoke_json,
+                        )
+                    )
+                )
+                h3b_preflight_planned_early = True
             planned_commands.extend(
                 _planned_command(command)
                 for command in _gemma_admission_commands(
@@ -448,28 +538,33 @@ def main() -> int:
                     label="rlt2g_gemma_rlt_decision",
                 )
             )
+        rlt5_planned_command = [
+            sys.executable,
+            "scripts/preflight_rlt_vlmax.py",
+            "--phase",
+            "RLT-5G",
+            "--output",
+            str(args.artifact_dir / "rlt5g_preflight.json"),
+            "--swa-smoke-model-id",
+            args.swa_smoke_model_id,
+        ]
+        if args.run_swa_smoke:
+            rlt5_planned_command.append("--run-swa-smoke")
         planned_commands.extend(
-            [
-                _planned_command(
-                    [
-                        sys.executable,
-                        "scripts/preflight_rlt_vlmax.py",
-                        "--phase",
-                        "RLT-3G-B",
-                        "--output",
-                        str(args.artifact_dir / "rlt3gb_preflight.json"),
-                    ]
-                ),
-                _planned_command(
-                    [
-                        sys.executable,
-                        "scripts/preflight_rlt_vlmax.py",
-                        "--phase",
-                        "RLT-5G",
-                        "--output",
-                        str(args.artifact_dir / "rlt5g_preflight.json"),
-                    ]
-                ),
+            (
+                [
+                    _planned_command(
+                        _rlt3_preflight_command(
+                            artifact_dir=args.artifact_dir,
+                            prefill_split_smoke_json=prefill_split_smoke_json,
+                        )
+                    )
+                ]
+                if not h3b_preflight_planned_early
+                else []
+            )
+            + [
+                _planned_command(rlt5_planned_command),
             ]
         )
         payload = {
@@ -571,6 +666,20 @@ def main() -> int:
         )
         return 0
 
+    if args.auto_prefill_split_smoke:
+        commands.append(
+            _run(
+                _prefill_split_smoke_command(
+                    artifact_dir=args.artifact_dir,
+                    output=cast(Path, prefill_split_smoke_json),
+                    manifest=args.gemma_smoke_manifest,
+                    model_path=args.gemma_model_path,
+                    frame_count=args.frame_count,
+                    rss_guard_mb=args.gemma_rss_guard_mb,
+                )
+            )
+        )
+
     gemma_analyses: dict[str, Any] = {}
     if args.run_model_smokes:
         if not args.gemma_model_path.exists():
@@ -603,6 +712,38 @@ def main() -> int:
                     "decisions": decisions,
                     "analysis": analysis,
                     "gemma_analyses": gemma_analyses,
+                },
+                decision_log=decision_log,
+            )
+            return 0
+
+    rlt3_preflight: dict[str, Any] | None = None
+    if args.run_gemma_decision_cell and args.gemma_cell_type == "h3b_admission":
+        rlt3_preflight_path = args.artifact_dir / "rlt3gb_preflight.json"
+        commands.append(
+            _run(
+                _rlt3_preflight_command(
+                    artifact_dir=args.artifact_dir,
+                    prefill_split_smoke_json=prefill_split_smoke_json,
+                ),
+                allow_failure=True,
+            )
+        )
+        rlt3_preflight = _read_json(rlt3_preflight_path)
+        if not rlt3_preflight.get("ready"):
+            decisions.append({"decision": "block_h3b", "reason": "prefill_split_smoke_missing"})
+            _write_terminal_summary(
+                summary_path,
+                {
+                    "schema_version": SCHEMA_VERSION,
+                    "ready_for_model_runs": False,
+                    "budget": budget,
+                    "input_hashes": input_hashes,
+                    "commands": commands,
+                    "decisions": decisions,
+                    "analysis": analysis,
+                    "gemma_analyses": gemma_analyses,
+                    "rlt3gb_preflight": rlt3_preflight,
                 },
                 decision_log=decision_log,
             )
@@ -644,19 +785,18 @@ def main() -> int:
             )
             return 0
 
-    rlt3_preflight_path = args.artifact_dir / "rlt3gb_preflight.json"
-    rlt3_command = [
-        sys.executable,
-        "scripts/preflight_rlt_vlmax.py",
-        "--phase",
-        "RLT-3G-B",
-        "--output",
-        str(rlt3_preflight_path),
-    ]
-    if args.prefill_split_smoke_json is not None:
-        rlt3_command.extend(["--prefill-split-smoke-json", str(args.prefill_split_smoke_json)])
-    commands.append(_run(rlt3_command, allow_failure=True))
-    rlt3_preflight = _read_json(rlt3_preflight_path)
+    if rlt3_preflight is None:
+        rlt3_preflight_path = args.artifact_dir / "rlt3gb_preflight.json"
+        commands.append(
+            _run(
+                _rlt3_preflight_command(
+                    artifact_dir=args.artifact_dir,
+                    prefill_split_smoke_json=prefill_split_smoke_json,
+                ),
+                allow_failure=True,
+            )
+        )
+        rlt3_preflight = _read_json(rlt3_preflight_path)
     if not rlt3_preflight.get("ready"):
         decisions.append({"decision": "block_h3b", "reason": "prefill_split_smoke_missing"})
 
@@ -668,6 +808,8 @@ def main() -> int:
         "RLT-5G",
         "--output",
         str(rlt5_preflight_path),
+        "--swa-smoke-model-id",
+        args.swa_smoke_model_id,
     ]
     if args.run_swa_smoke:
         rlt5_command.append("--run-swa-smoke")

@@ -33,6 +33,7 @@ PhaseName = Literal[
 
 SCHEMA_VERSION = "rlt_vlmax_preflight_v1"
 DEFAULT_OUTPUT = Path("research/experiments/2026/artifacts/rlt_vlmax_preflight.json")
+DEFAULT_SWA_SMOKE_MODEL_ID = str(Path.home() / "models" / "gemma-4-e4b-it-4bit")
 PHASES_REQUIRING_PREFILL_SPLIT = {"RLT-3G-B"}
 PHASES_REQUIRING_GEMMA_SWA = {"RLT-5G"}
 
@@ -65,7 +66,7 @@ def _check_prefill_split() -> dict[str, Any]:
         Path("scripts/run_phase1_63G_gemma_track_b.py"),
     ]
     required_fields = ["multimodal_prefill_ms", "text_generation_ms"]
-    details = {
+    details: dict[str, dict[str, Any]] = {
         str(path): {
             "exists": path.exists(),
             "fields": _file_contains(path, required_fields),
@@ -92,8 +93,24 @@ def _check_prefill_split_smoke(path: Path | None) -> dict[str, Any]:
     if not path.exists():
         return _status(False, detail=f"prefill split smoke artifact missing: {path}")
     payload = json.loads(path.read_text(encoding="utf-8"))
-    ready = bool(payload.get("ready"))
-    return _status(ready, detail={"path": str(path), "payload": payload})
+    required_schema = "rlt_prefill_split_smoke_v1"
+    failures: list[str] = []
+    if payload.get("schema_version") != required_schema:
+        failures.append(f"schema_version must be {required_schema!r}")
+    if not payload.get("ready"):
+        failures.append("payload.ready is false")
+    if int(payload.get("n_items", 0)) < 1:
+        failures.append("n_items must be at least 1")
+    if payload.get("runner") != "scripts/run_phase1_63G_gemma_track_b.py":
+        failures.append("runner must be scripts/run_phase1_63G_gemma_track_b.py")
+    fields = set(payload.get("fields_present", []))
+    for field in ("multimodal_prefill_ms", "text_generation_ms"):
+        if field not in fields:
+            failures.append(f"fields_present missing {field}")
+    return _status(
+        not failures,
+        detail={"path": str(path), "payload": payload, "validation_failures": failures},
+    )
 
 
 def _check_swa_marker() -> dict[str, Any]:
@@ -123,17 +140,14 @@ def _check_swa_marker() -> dict[str, Any]:
     )
 
 
-def _run_swa_smoke(out_dir: Path, *, timeout_seconds: int) -> dict[str, Any]:
-    if not os.environ.get("HF_TOKEN"):
-        return _status(
-            False,
-            detail="HF_TOKEN is required by scripts/run_sam_b0b_cache_correctness.py",
-        )
+def _run_swa_smoke(out_dir: Path, *, model_id: str, timeout_seconds: int) -> dict[str, Any]:
     smoke_out = out_dir / "rlt_swa_cache_correctness_smoke.jsonl"
     command = [
         sys.executable,
         "scripts/run_sam_b0b_cache_correctness.py",
         "--smoke",
+        "--model-id",
+        model_id,
         "--out",
         str(smoke_out),
     ]
@@ -161,6 +175,7 @@ def _run_swa_smoke(out_dir: Path, *, timeout_seconds: int) -> dict[str, Any]:
         detail={
             "command": command,
             "env_overrides": {"B0B_DISABLE_RUNTIME_GUARD": "1"},
+            "model_id": model_id,
             "returncode": completed.returncode,
             "stdout_tail": completed.stdout[-2000:],
             "stderr_tail": completed.stderr[-2000:],
@@ -210,6 +225,7 @@ def main() -> int:
     )
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--run-swa-smoke", action="store_true")
+    parser.add_argument("--swa-smoke-model-id", default=DEFAULT_SWA_SMOKE_MODEL_ID)
     parser.add_argument("--swa-smoke-timeout-seconds", type=int, default=1800)
     parser.add_argument("--prefill-split-smoke-json", type=Path)
     parser.add_argument(
@@ -246,6 +262,7 @@ def main() -> int:
             with tempfile.TemporaryDirectory(prefix="rlt_swa_smoke_") as tmp:
                 checks["swa_functional_smoke"] = _run_swa_smoke(
                     Path(tmp),
+                    model_id=args.swa_smoke_model_id,
                     timeout_seconds=args.swa_smoke_timeout_seconds,
                 )
         else:
@@ -258,7 +275,7 @@ def main() -> int:
                 ),
             )
 
-    payload = {
+    payload: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "selected_phases": phases,
         "checks": checks,
