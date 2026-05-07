@@ -79,6 +79,23 @@ def _check_prefill_split() -> dict[str, Any]:
     return _status(ok, detail=details)
 
 
+def _check_prefill_split_smoke(path: Path | None) -> dict[str, Any]:
+    if path is None:
+        return _status(
+            False,
+            detail=(
+                "RLT-3G-B requires a dense n=1 prefill-split smoke artifact "
+                "showing the new fields are populated and dense wall-clock "
+                "perturbation is within tolerance."
+            ),
+        )
+    if not path.exists():
+        return _status(False, detail=f"prefill split smoke artifact missing: {path}")
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    ready = bool(payload.get("ready"))
+    return _status(ready, detail={"path": str(path), "payload": payload})
+
+
 def _check_swa_marker() -> dict[str, Any]:
     module_path = _python_module_path("mlx_vlm.generate")
     if module_path is None:
@@ -194,6 +211,7 @@ def main() -> int:
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--run-swa-smoke", action="store_true")
     parser.add_argument("--swa-smoke-timeout-seconds", type=int, default=1800)
+    parser.add_argument("--prefill-split-smoke-json", type=Path)
     parser.add_argument(
         "--allow-swa-marker-only",
         action="store_true",
@@ -217,6 +235,8 @@ def main() -> int:
     }
     if not _phase_requires_prefill_split(phases):
         checks["prefill_split"]["required"] = False
+    else:
+        checks["prefill_split_smoke"] = _check_prefill_split_smoke(args.prefill_split_smoke_json)
 
     swa_marker = _check_swa_marker()
     checks["swa_marker"] = swa_marker

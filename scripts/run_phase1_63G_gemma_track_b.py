@@ -40,6 +40,8 @@ class StageTimings:
     decode_ms: float
     processor_ms: float
     vision_ms: float
+    multimodal_prefill_ms: float
+    text_generation_ms: float
     generate_ms: float
     end_to_end_ms: float
 
@@ -197,6 +199,16 @@ def _run_generate(
     )
 
 
+def _stage_ms_from_tps(*, tokens: int, tokens_per_second: float, stage: str) -> float:
+    if tokens == 0:
+        return 0.0
+    if tokens_per_second <= 0.0:
+        raise ValueError(
+            f"cannot derive {stage} timing: tokens={tokens}, tokens_per_second={tokens_per_second}"
+        )
+    return float(tokens / tokens_per_second * 1000.0)
+
+
 def _clear_runtime_state() -> None:
     gc.collect()
     mx.clear_cache()
@@ -221,6 +233,8 @@ def _record_payload(record: ItemResult) -> dict[str, Any]:
             "decode": record.timings.decode_ms,
             "processor": record.timings.processor_ms,
             "vision": record.timings.vision_ms,
+            "multimodal_prefill": record.timings.multimodal_prefill_ms,
+            "text_generation": record.timings.text_generation_ms,
             "generate": record.timings.generate_ms,
             "end_to_end": record.timings.end_to_end_ms,
         },
@@ -245,6 +259,12 @@ def _summarize(records: list[ItemResult]) -> dict[str, Any]:
         "mean_decode_ms": float(np.mean([record.timings.decode_ms for record in records])),
         "mean_processor_ms": float(np.mean([record.timings.processor_ms for record in records])),
         "mean_dense_vision_ms": float(np.mean([record.timings.vision_ms for record in records])),
+        "mean_dense_multimodal_prefill_ms": float(
+            np.mean([record.timings.multimodal_prefill_ms for record in records])
+        ),
+        "mean_dense_text_generation_ms": float(
+            np.mean([record.timings.text_generation_ms for record in records])
+        ),
         "mean_dense_generate_ms": float(
             np.mean([record.timings.generate_ms for record in records])
         ),
@@ -336,6 +356,16 @@ def main() -> int:
                 cached_image_features=features,
                 max_tokens=args.max_tokens,
             )
+            multimodal_prefill_ms = _stage_ms_from_tps(
+                tokens=stats.prompt_tokens,
+                tokens_per_second=stats.prompt_tps,
+                stage="multimodal_prefill",
+            )
+            text_generation_ms = _stage_ms_from_tps(
+                tokens=stats.generation_tokens,
+                tokens_per_second=stats.generation_tps,
+                stage="text_generation",
+            )
             choice_index = extract_choice(stats.text, item.candidates)
             record = ItemResult(
                 item_id=item.item_id,
@@ -350,6 +380,8 @@ def main() -> int:
                     decode_ms=decode_ms,
                     processor_ms=processor_ms,
                     vision_ms=vision_ms,
+                    multimodal_prefill_ms=multimodal_prefill_ms,
+                    text_generation_ms=text_generation_ms,
                     generate_ms=stats.elapsed_ms,
                     end_to_end_ms=decode_ms + processor_ms + vision_ms + stats.elapsed_ms,
                 ),

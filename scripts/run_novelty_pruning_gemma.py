@@ -71,7 +71,7 @@ import time
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 import mlx.core as mx
 import numpy as np
@@ -90,6 +90,11 @@ from codec_through.novelty_pruning import (
     prune_image_placeholders,
 )
 from codec_through.pruned_vision_tower import PruneConfig, patch_vision_tower
+from codec_through.rlt_masks import (
+    RLTMaskConfig,
+    compute_rlt_keep_mask_from_frames,
+    mask_summary,
+)
 from codec_through.video_decode import decode_uniform_frames
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -113,6 +118,7 @@ GEMMA_GRID_SHAPE = (16, 16)  # 256 soft tokens per image, runtime-verified.
 _FEATURE_DEPENDENT_ARMS: frozenset[AnchorArm] = frozenset(
     {"nuwa_pillar", "max_min_diversity", "cls_attention_proxy"}
 )
+PlaceholderPruneMode = Literal["anchor", "structural", "rlt", "none"]
 
 
 def _clear_runtime_state() -> None:
@@ -367,6 +373,8 @@ def _process_one_item(
     *,
     anchor_arm: AnchorArm,
     keep_rate: float,
+    prune_placeholders: PlaceholderPruneMode,
+    rlt_config: RLTMaskConfig,
     frame_count: int,
     max_tokens: int,
 ) -> ItemResult:
@@ -415,10 +423,14 @@ def _process_one_item(
         if k not in {"input_ids", "pixel_values", "attention_mask"}
     }
 
-    # --- Stage 3: novelty (pruned branch only) ---
-    t_stage = time.perf_counter_ns()
-    novelty = compute_pixel_novelty(pixel_stack, grid_shape=GEMMA_GRID_SHAPE)
-    novelty_ms = (time.perf_counter_ns() - t_stage) / 1_000_000
+    # --- Stage 3: novelty (placeholder-pruning scorer only when needed) ---
+    novelty: np.ndarray | None = None
+    if prune_placeholders in ("anchor", "structural"):
+        t_stage = time.perf_counter_ns()
+        novelty = compute_pixel_novelty(pixel_stack, grid_shape=GEMMA_GRID_SHAPE)
+        novelty_ms = (time.perf_counter_ns() - t_stage) / 1_000_000
+    else:
+        novelty_ms = 0.0
 
     # --- Stage 4: vision encode (shared; both branches need embeddings) ---
     t_stage = time.perf_counter_ns()
@@ -434,7 +446,9 @@ def _process_one_item(
     t_stage = time.perf_counter_ns()
     per_token_features: np.ndarray | None = None
     cls_proxy = None
-    if anchor_arm in _FEATURE_DEPENDENT_ARMS:
+    mask_metadata: dict[str, Any] = {"prune_placeholders": prune_placeholders}
+    scorer_arm = "gemma_structural" if prune_placeholders == "structural" else anchor_arm
+    if prune_placeholders == "anchor" and anchor_arm in _FEATURE_DEPENDENT_ARMS:
         # Gemma vision_tower emits bfloat16 features; np.asarray trips on
         # MLX's PEP-3118 exposure of bf16 (item_size=2, format='B'). Route
         # through mx.float32 first, matching the historical reproduction path.
@@ -448,17 +462,46 @@ def _process_one_item(
         del vision_np
         if anchor_arm == "cls_attention_proxy":
             cls_proxy = _mean_token_attention_proxy(per_token_features)
-    cfg = NoveltyPruneConfig(
-        anchor_arm=anchor_arm,
-        keep_rate=keep_rate,
-        grid_shape=GEMMA_GRID_SHAPE,
-    )
-    keep_mask = compute_keep_mask(
-        novelty,
-        config=cfg,
-        features=per_token_features if anchor_arm in ("nuwa_pillar", "max_min_diversity") else None,
-        cls_attention=cls_proxy,
-    )
+    if prune_placeholders in ("anchor", "structural"):
+        if novelty is None:
+            raise RuntimeError("novelty scores missing for placeholder-pruning scorer")
+        cfg = NoveltyPruneConfig(
+            anchor_arm=scorer_arm,
+            keep_rate=keep_rate,
+            grid_shape=GEMMA_GRID_SHAPE,
+        )
+        keep_mask = compute_keep_mask(
+            novelty,
+            config=cfg,
+            features=(
+                per_token_features
+                if prune_placeholders == "anchor"
+                and anchor_arm in ("nuwa_pillar", "max_min_diversity")
+                else None
+            ),
+            cls_attention=cls_proxy if prune_placeholders == "anchor" else None,
+        )
+        mask_metadata.update({"mask_policy": scorer_arm, "mask_domain": "gemma_letterboxed_512"})
+    elif prune_placeholders == "rlt":
+        rlt_result = compute_rlt_keep_mask_from_frames(frames, config=rlt_config)
+        keep_mask = rlt_result.frame_keep_mask.reshape(frame_count, -1)
+        if keep_mask.shape != (frame_count, GEMMA_GRID_SHAPE[0] * GEMMA_GRID_SHAPE[1]):
+            raise RuntimeError(
+                f"RLT keep mask shape {keep_mask.shape} does not match Gemma placeholders "
+                f"{(frame_count, GEMMA_GRID_SHAPE[0] * GEMMA_GRID_SHAPE[1])}"
+            )
+        mask_metadata.update(
+            {
+                "mask_policy": "rlt",
+                "mask_domain": "gemma_letterboxed_frames_resized_224_imagenet",
+                "rlt_summary": mask_summary(rlt_result),
+            }
+        )
+    elif prune_placeholders == "none":
+        keep_mask = np.ones((frame_count, GEMMA_GRID_SHAPE[0] * GEMMA_GRID_SHAPE[1]), dtype=bool)
+        mask_metadata.update({"mask_policy": "dense_placeholders", "mask_domain": "none"})
+    else:
+        raise ValueError(f"unknown prune_placeholders mode {prune_placeholders!r}")
     mask_ms = (time.perf_counter_ns() - t_stage) / 1_000_000
 
     # --- Stage 6: prune input_ids + gather features (pruned branch only) ---
@@ -580,6 +623,7 @@ def _process_one_item(
         pruned_prompt_tps=pruned_stats.prompt_tps,
         dense_generation_tps=dense_stats.generation_tps,
         pruned_generation_tps=pruned_stats.generation_tps,
+        metadata=mask_metadata,
     )
 
 
@@ -721,6 +765,7 @@ def _record_payload(record: ItemResult) -> dict[str, Any]:
         "pruned_prompt_tps": record.pruned_prompt_tps,
         "dense_generation_tps": record.dense_generation_tps,
         "pruned_generation_tps": record.pruned_generation_tps,
+        "metadata": record.metadata,
     }
 
 
@@ -736,6 +781,21 @@ def main() -> int:
         required=True,
     )
     parser.add_argument("--keep-rate", type=float, required=True)
+    parser.add_argument(
+        "--prune-placeholders",
+        choices=("anchor", "structural", "rlt", "none"),
+        default="anchor",
+        help=(
+            "Placeholder pruning policy. 'anchor' preserves existing behavior; "
+            "'structural' forces the current gemma_structural placeholder-pruning "
+            "path; 'rlt' uses the local RLT-style pixel mask; 'none' emits dense "
+            "placeholder counts for scatter-back-only controls."
+        ),
+    )
+    parser.add_argument("--rlt-threshold", type=float, default=0.1)
+    parser.add_argument("--rlt-tubelet-size", type=int, default=2)
+    parser.add_argument("--rlt-image-size", type=int, default=224)
+    parser.add_argument("--rlt-per-frame-min-keep", type=int, default=1)
     parser.add_argument("--max-tokens", type=int, default=32)
     parser.add_argument("--model-path", type=Path, default=DEFAULT_MODEL_PATH)
     parser.add_argument("--output", type=Path, required=True)
@@ -782,6 +842,14 @@ def main() -> int:
             "instrumentation is landed.",
             file=sys.stderr,
         )
+    rlt_config = RLTMaskConfig(
+        threshold=args.rlt_threshold,
+        tubelet_size=args.rlt_tubelet_size,
+        image_size=(args.rlt_image_size, args.rlt_image_size),
+        grid_shape=GEMMA_GRID_SHAPE,
+        normalize_mode="imagenet",
+        per_frame_min_keep=args.rlt_per_frame_min_keep,
+    )
 
     runner = _load_runner_module()
     items = _load_manifest_items(runner, args.manifest)
@@ -828,6 +896,8 @@ def main() -> int:
                     item,
                     anchor_arm=cast(AnchorArm, args.anchor_arm),
                     keep_rate=args.keep_rate,
+                    prune_placeholders=cast(PlaceholderPruneMode, args.prune_placeholders),
+                    rlt_config=rlt_config,
                     frame_count=args.frame_count,
                     max_tokens=args.max_tokens,
                 )
@@ -858,6 +928,8 @@ def main() -> int:
         "model_path": str(args.model_path),
         "anchor_arm": args.anchor_arm,
         "keep_rate": args.keep_rate,
+        "prune_placeholders": args.prune_placeholders,
+        "rlt_config": rlt_config.as_dict() if args.prune_placeholders == "rlt" else None,
         "frame_count": args.frame_count,
         "max_tokens": args.max_tokens,
         "vision_tower_patched": vt_patched,

@@ -531,7 +531,8 @@ until cheaper evidence has survived.
   verifies the fields on a dense n=1 smoke against
   `qwen_selective_reprefill.py`-style prefill accounting within timing noise,
   and shows dense wall-clock perturbation is at most `3%` or `50 ms`,
-  whichever is larger.
+  whichever is larger. The preflight therefore requires both field presence
+  and a supplied smoke-summary artifact before RLT-3G-B is ready.
 - SWA-cache preflight: no Gemma H4A/C-PERSIST run may start until the active
   `mlx_vlm.generate` path passes a functional cache-correctness smoke using
   `scripts/run_sam_b0b_cache_correctness.py --smoke` with the B0b runtime guard
@@ -806,6 +807,8 @@ Implementation path:
 - Reuse `prune_image_placeholders(...)` validation.
 - Add an explicit placeholder mode such as
   `--prune-placeholders {none,rlt,structural}` or a sibling-runner equivalent.
+  The landed Gemma runner also keeps `anchor` as a backward-compatible default
+  for the historical `--anchor-arm` grid.
   `structural` must reproduce the current accepted behavior: the selected
   existing structural/novelty arm computes `keep_mask` and calls
   `prune_image_placeholders(...)` before generation. `none` must bypass
