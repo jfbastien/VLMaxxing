@@ -197,6 +197,24 @@ Validated on 2026-05-07 against the current implementation diff.
 | Runtime estimates and early-cancel ordering must be encoded, not only prose. | VALID | The autonomous queue records phase-hour estimates and stops before dependent cells when positive-control, pixel-novelty co-cover, prefill-split, or SWA-cache gates block. |
 | Model-cell outcomes should be analyzed automatically. | VALID | Added `scripts/analyze_gemma_admission.py`; explicit Gemma smoke/decision cells in `scripts/run_rlt_autonomous_queue.py` now analyze paired dense/pruned quality, per-bucket gates, prompt-prefill reduction, and mask/prune overhead before allowing H3. |
 
+### Scientist Peer Feedback Validation, Round 6
+
+Validated on 2026-05-07 against the implementation diff and local MLX smoke
+artifacts.
+
+| Peer claim | Verdict | Evidence / action |
+| --- | --- | --- |
+| The n=1 Gemma smoke timing regression is not decision-grade and can be MLX JIT/path noise. | VALID | MLX-VLM measures prompt prefill as wall time to first token, and the smoke has different dense/pruned prompt shapes. The queue now disables the overhead gate for smoke cells, requires `timing_min_n >= 20` for timing gates, and adds shape-counted pruned warmup diagnostics. |
+| `stop_or_contract` had no contract path. | VALID | Analyzer decisions now use `contract`; the queue hard-fails unknown decision strings and only blocks downstream phases when `skip_phases` explicitly intersects them or a true `stop` fires. |
+| H2/H3 overhead gates must compare overhead against the stages actually reduced. | VALID | The Gemma admission analyzer now computes direct `multimodal_prefill_ms`, `vision_reduction_ms`, and `total_overhead_budget_ms = prefill_reduction_ms + vision_reduction_ms`; pure C-VISION promotion still requires measured vision reduction. |
+| The Gemma admission runner should log direct prefill/generation fields. | VALID | `scripts/run_novelty_pruning_gemma.py` records `multimodal_prefill_ms` and `text_generation_ms` inside each dense/pruned timing row, while retaining prompt-token/tps fields as a consistency check. |
+| H1 synthetic gates must be enforced, not merely emitted. | VALID | `scripts/analyze_rlt_mask_profile.py` hard-stops if exact-static, single-frame-repeat, or all-motion synthetic rows violate their expected keep rates. |
+| H1.5 feature-prior acceptance needs an explicit gate. | VALID | The profile analyzer now enforces optional feature-scorer rows when present: each frame-count cell must pass `feature_scorer_jaccard >= 0.80` and `1 - mask_compute_ms / feature_scorer_ms >= 0.50`; otherwise H1.5b is skipped. |
+| A real fixed-camera positive control should gate model runs. | VALID WITH LOCAL WARNING | The queue includes `data/corpus/crosscheck/talking_head.mp4` when present and hashes it into the summary. The first local CPU queue smoke measured only `48.1%` median reduction at `tau=0.1`, below the preregistered `50%` gate, so long model runs remain blocked until the clip/gate/kernel calibration is reviewed. |
+| Dry-run and artifact-hash locks should exist before autonomous runs. | VALID | The queue has `--dry-run`, records selected budget, and persists SHA-256 hashes for manifest inputs and the positive-control clip. |
+| Missing synthetic controls must fail rather than pass by absence. | VALID | The profile analyzer now treats missing `exact_static`, `single_frame_repeat`, or `all_motion` controls as H1 synthetic-gate failures and has a regression test. |
+| Timing-affecting runner parameters must be in the artifact hash. | VALID | The Gemma admission schema hash now includes `max_tokens`; warmup metadata is counted per pruned shape rather than assuming every item is the first call for that shape. |
+
 ### RLT Algorithm Facts To Preserve
 
 - Input shape in RLT code is `[B, C, T, H, W]`.
@@ -390,7 +408,10 @@ than current magnitude-norm and random baselines.
   is below `0.15`. Also reject paper-facing promotion if aggregate passes but
   any duration bucket with at least 20 paired items fails the quality gate, or
   if `mask_compute_ms + scatter_or_placeholder_overhead_ms` exceeds the
-  measured `vision_reduction_ms` for the arm.
+  measured reduction in the stages targeted by that arm. Pure C-VISION claims
+  must clear `vision_reduction_ms`; placeholder-pruning admission cells may
+  also count measured `multimodal_prefill_reduction_ms`, but only when that
+  field is logged directly.
 - Inconclusive if quality passes but `vision_reduction` is in `[0.15, 0.25)`
   or E2E speedup is positive but below `1.03x`, or if bucket sample sizes are
   too small for per-bucket gating.
@@ -1160,7 +1181,17 @@ Status:
   cache-correctness smoke.
 - With `--run-model-smokes` or `--run-gemma-decision-cell`, the queue runs the
   Gemma RLT admission cell, calls `scripts/analyze_gemma_admission.py`, and
-  stops H3 if paired quality or the preregistered overhead gate fails.
+  stops H3 if paired quality or the preregistered overhead gate fails. The
+  overhead gate is disabled automatically for n=1 smoke cells and cannot fire
+  until `n >= timing_min_n` (default `20`); smokes are quality/JIT diagnostics,
+  not timing-grade evidence.
+- Gemma admission rows now log direct `multimodal_prefill_ms` and
+  `text_generation_ms`, input sequence lengths, dense/pruned chunked-prefill
+  step counts, and `n_warmup` metadata. These fields are required to distinguish
+  a real prefill regression from MLX cold-shape compile or chunked-path noise.
+- The queue supports `--dry-run` and writes SHA-256 hashes for manifests and
+  positive-control clips into the summary so resumed interpretation can reject
+  stale inputs.
 - Claude/Codex supervision should interpret only completed artifacts and should
   record negative outcomes in this note, `research/decision-log.md`, and
   paper-facing docs only when a hypothesis changes status. If contribution
@@ -1187,6 +1218,10 @@ Status:
 - Existing first-turn runners must be instrumented before they can prove
   prefill-stage reductions; otherwise prompt shortening remains inferred from
   prompt token counts and folded generate wall-clock.
+- MLX first-call timing for a new prompt shape is not decision-grade. Any
+  "prefill regressed" interpretation from Gemma/Qwen smokes must be checked
+  with at least one same-shape warmup or repeated-call diagnostic before it can
+  influence hypothesis status.
 - ToMe/DynamicViT-style feature-dependent token merging/pruning is not a clean
   H3B denominator-separation comparator. It belongs in H3A scorer-stacking or
   future feature-dependent baselines once comparable local instrumentation

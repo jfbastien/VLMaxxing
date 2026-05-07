@@ -82,6 +82,10 @@ from PIL import Image
 
 from codec_through.answers import extract_choice
 from codec_through.memory_guard import check_rss_guard, rss_mb
+from codec_through.mlx_vlm_timing import (
+    chunked_prefill_steps,
+    register_prefill_shape_observation,
+)
 from codec_through.novelty_pruning import (
     ANCHOR_ARMS,
     AnchorArm,
@@ -114,7 +118,7 @@ DEFAULT_MODEL_PATH = Path.home() / "models" / "gemma-4-e4b-it-4bit"
 # is stale / decorative; trust the observed emission.
 GEMMA_IMAGE_SIZE = 512
 GEMMA_GRID_SHAPE = (16, 16)  # 256 soft tokens per image, runtime-verified.
-SCHEMA_VERSION = "phase1_51r_gemma_admission_v2"
+SCHEMA_VERSION = "phase1_51r_gemma_admission_v3"
 # Anchor arms that actually need per-token vision features. Others skip the
 # (1, F*280, hidden) host-float32 mirror, which saved ~1–2 GB per item on the
 # 2026-04-18 OOM repro without changing any science.
@@ -203,6 +207,8 @@ class StageTimings:
     mask_ms: float
     prune_ms: float
     vision_ms: float
+    multimodal_prefill_ms: float
+    text_generation_ms: float
     generate_ms: float
     end_to_end_ms: float
 
@@ -364,8 +370,10 @@ def _schema_row(args: argparse.Namespace, rlt_config: RLTMaskConfig) -> dict[str
         "frame_count": args.frame_count,
         "anchor_arm": args.anchor_arm,
         "keep_rate": args.keep_rate,
+        "max_tokens": args.max_tokens,
         "prune_placeholders": args.prune_placeholders,
         "rlt_config": rlt_config.as_dict() if args.prune_placeholders == "rlt" else None,
+        "n_warmup": args.n_warmup,
         "vision_tower_layer": args.vision_tower_layer,
         "vision_tower_keep_rate": args.vision_tower_keep_rate,
     }
@@ -390,6 +398,16 @@ class GenerateStats:
     generation_tokens: int
     prompt_tps: float
     generation_tps: float
+
+
+def _stage_ms_from_tps(*, tokens: int, tokens_per_second: float, stage: str) -> float:
+    if tokens == 0:
+        return 0.0
+    if tokens_per_second <= 0.0:
+        raise ValueError(
+            f"cannot derive {stage} timing: tokens={tokens}, tokens_per_second={tokens_per_second}"
+        )
+    return float(tokens / tokens_per_second * 1000.0)
 
 
 def _run_generate(
@@ -451,6 +469,9 @@ def _process_one_item(
     rlt_config: RLTMaskConfig,
     frame_count: int,
     max_tokens: int,
+    item_index: int,
+    n_warmup: int,
+    pruned_shape_observation_counts: dict[tuple[int, int], int],
 ) -> ItemResult:
     # --- Stage 1: decode ---
     # Shared: both branches pay this cost once per item (the frames are the
@@ -598,11 +619,26 @@ def _process_one_item(
     gathered_features = prune_application.image_features
     kept_per_frame = prune_application.kept_per_frame
     prune_ms = prune_application.elapsed_ms
+    pruned_seq_len = int(pruned_input_ids.shape[1])
+    pruned_shape_metadata = register_prefill_shape_observation(
+        pruned_shape_observation_counts,
+        seq_len=pruned_seq_len,
+        n_warmup=n_warmup,
+    )
     mask_metadata.update(
         {
             "dense_placeholder_count": observed_placeholders,
             "pruned_placeholder_count": int(sum(kept_per_frame)),
             "placeholder_prune_bypassed": prune_application.bypassed,
+            "dense_input_ids_seq_len": int(dense_input_ids.shape[1]),
+            "pruned_input_ids_seq_len": pruned_seq_len,
+            "dense_chunked_prefill_steps": chunked_prefill_steps(int(dense_input_ids.shape[1])),
+            "pruned_chunked_prefill_steps": chunked_prefill_steps(pruned_seq_len),
+            "mlx_metal_clear_cache_called": True,
+            "prepare_inputs_warmed": False,
+            "pruned_warmup_calls": n_warmup,
+            "pruned_call_index_within_run": item_index + 1,
+            **pruned_shape_metadata,
         }
     )
 
@@ -640,6 +676,21 @@ def _process_one_item(
         pruned_attn = attn_np[survivor]
         pruned_mask = mx.array(pruned_attn[None, :])
 
+    pruned_warmup_generate_ms: list[float] = []
+    for _ in range(n_warmup):
+        warmup_stats = _run_generate(
+            model,
+            processor,
+            input_ids=pruned_input_ids,
+            pixel_values=pixel_values,
+            mask=pruned_mask,
+            extra=extra,
+            cached_image_features=gathered_features,
+            max_tokens=max_tokens,
+        )
+        pruned_warmup_generate_ms.append(warmup_stats.elapsed_ms)
+        _clear_runtime_state()
+
     pruned_stats = _run_generate(
         model,
         processor,
@@ -652,6 +703,27 @@ def _process_one_item(
     )
     pruned_text = pruned_stats.text
     pruned_generate_ms = pruned_stats.elapsed_ms
+    dense_prefill_ms = _stage_ms_from_tps(
+        tokens=dense_stats.prompt_tokens,
+        tokens_per_second=dense_stats.prompt_tps,
+        stage="dense multimodal prefill",
+    )
+    pruned_prefill_ms = _stage_ms_from_tps(
+        tokens=pruned_stats.prompt_tokens,
+        tokens_per_second=pruned_stats.prompt_tps,
+        stage="pruned multimodal prefill",
+    )
+    dense_text_generation_ms = _stage_ms_from_tps(
+        tokens=dense_stats.generation_tokens,
+        tokens_per_second=dense_stats.generation_tps,
+        stage="dense text generation",
+    )
+    pruned_text_generation_ms = _stage_ms_from_tps(
+        tokens=pruned_stats.generation_tokens,
+        tokens_per_second=pruned_stats.generation_tps,
+        stage="pruned text generation",
+    )
+    mask_metadata["pruned_warmup_generate_ms"] = pruned_warmup_generate_ms
 
     # End-to-end wall-clocks. Both branches pay decode + processor + vision +
     # generate; only the pruned branch pays novelty + mask + prune. Dense does
@@ -697,6 +769,8 @@ def _process_one_item(
             mask_ms=0.0,
             prune_ms=0.0,
             vision_ms=vision_ms,
+            multimodal_prefill_ms=dense_prefill_ms,
+            text_generation_ms=dense_text_generation_ms,
             generate_ms=dense_generate_ms,
             end_to_end_ms=dense_end_to_end_ms,
         ),
@@ -707,6 +781,8 @@ def _process_one_item(
             mask_ms=mask_ms,
             prune_ms=prune_ms,
             vision_ms=vision_ms,
+            multimodal_prefill_ms=pruned_prefill_ms,
+            text_generation_ms=pruned_text_generation_ms,
             generate_ms=pruned_generate_ms,
             end_to_end_ms=pruned_end_to_end_ms,
         ),
@@ -772,6 +848,18 @@ def _summarize(records: list[ItemResult]) -> dict[str, Any]:
         "mean_decode_ms": float(np.mean([r.dense_timing.decode_ms for r in records])),
         "mean_processor_ms": float(np.mean([r.dense_timing.processor_ms for r in records])),
         "mean_dense_vision_ms": float(np.mean([r.dense_timing.vision_ms for r in records])),
+        "mean_dense_multimodal_prefill_ms": float(
+            np.mean([r.dense_timing.multimodal_prefill_ms for r in records])
+        ),
+        "mean_pruned_multimodal_prefill_ms": float(
+            np.mean([r.pruned_timing.multimodal_prefill_ms for r in records])
+        ),
+        "mean_dense_text_generation_ms": float(
+            np.mean([r.dense_timing.text_generation_ms for r in records])
+        ),
+        "mean_pruned_text_generation_ms": float(
+            np.mean([r.pruned_timing.text_generation_ms for r in records])
+        ),
         "mean_pruned_novelty_ms": float(np.mean([r.pruned_timing.novelty_ms for r in records])),
         "mean_pruned_mask_ms": float(np.mean([r.pruned_timing.mask_ms for r in records])),
         "mean_pruned_mask_compute_ms": float(np.mean([r.pruned_timing.mask_ms for r in records])),
@@ -844,6 +932,10 @@ def _record_payload(record: ItemResult) -> dict[str, Any]:
             "decode": record.dense_timing.decode_ms,
             "processor": record.dense_timing.processor_ms,
             "vision": record.dense_timing.vision_ms,
+            "multimodal_prefill": record.dense_timing.multimodal_prefill_ms,
+            "multimodal_prefill_ms": record.dense_timing.multimodal_prefill_ms,
+            "text_generation": record.dense_timing.text_generation_ms,
+            "text_generation_ms": record.dense_timing.text_generation_ms,
             "generate": record.dense_timing.generate_ms,
             "end_to_end": record.dense_timing.end_to_end_ms,
         },
@@ -856,6 +948,10 @@ def _record_payload(record: ItemResult) -> dict[str, Any]:
             "prune": record.pruned_timing.prune_ms,
             "placeholder_prune": record.pruned_timing.prune_ms,
             "vision": record.pruned_timing.vision_ms,
+            "multimodal_prefill": record.pruned_timing.multimodal_prefill_ms,
+            "multimodal_prefill_ms": record.pruned_timing.multimodal_prefill_ms,
+            "text_generation": record.pruned_timing.text_generation_ms,
+            "text_generation_ms": record.pruned_timing.text_generation_ms,
             "generate": record.pruned_timing.generate_ms,
             "end_to_end": record.pruned_timing.end_to_end_ms,
         },
@@ -898,6 +994,15 @@ def main() -> int:
     parser.add_argument("--rlt-tubelet-size", type=int, default=2)
     parser.add_argument("--rlt-image-size", type=int, default=224)
     parser.add_argument("--rlt-per-frame-min-keep", type=int, default=1)
+    parser.add_argument(
+        "--n-warmup",
+        type=int,
+        default=0,
+        help=(
+            "Discard this many pruned generate() calls before the measured pruned call. "
+            "Use 1 for MLX shape-JIT diagnostics; default 0 preserves historical timing."
+        ),
+    )
     parser.add_argument("--max-tokens", type=int, default=32)
     parser.add_argument("--model-path", type=Path, default=DEFAULT_MODEL_PATH)
     parser.add_argument("--output", type=Path, required=True)
@@ -935,6 +1040,8 @@ def main() -> int:
 
     if not args.model_path.exists():
         raise SystemExit(f"model path missing: {args.model_path}")
+    if args.n_warmup < 0:
+        raise SystemExit(f"--n-warmup must be nonnegative, got {args.n_warmup}")
     if args.anchor_arm == "cls_attention_proxy":
         print(
             "WARNING: cls_attention_proxy uses a per-token L2-norm proxy, not "
@@ -991,6 +1098,7 @@ def main() -> int:
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     records: list[ItemResult] = []
+    pruned_shape_observation_counts: dict[tuple[int, int], int] = {}
     with args.output.open("w") as out_f:
         out_f.write(json.dumps(_schema_row(args, rlt_config), sort_keys=True) + "\n")
         for idx, item in enumerate(items):
@@ -1007,6 +1115,9 @@ def main() -> int:
                     rlt_config=rlt_config,
                     frame_count=args.frame_count,
                     max_tokens=args.max_tokens,
+                    item_index=idx,
+                    n_warmup=args.n_warmup,
+                    pruned_shape_observation_counts=pruned_shape_observation_counts,
                 )
             except Exception as exc:
                 print(f"[{idx + 1}/{len(items)}] {item.item_id}: FAILED {exc!r}", file=sys.stderr)
@@ -1040,6 +1151,7 @@ def main() -> int:
         "rlt_config": rlt_config.as_dict() if args.prune_placeholders == "rlt" else None,
         "frame_count": args.frame_count,
         "max_tokens": args.max_tokens,
+        "n_warmup": args.n_warmup,
         "vision_tower_patched": vt_patched,
         "vision_tower_layer": args.vision_tower_layer if vt_patched else None,
         "vision_tower_keep_rate": args.vision_tower_keep_rate if vt_patched else None,

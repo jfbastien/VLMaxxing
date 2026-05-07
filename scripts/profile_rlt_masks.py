@@ -36,8 +36,9 @@ from codec_through.rlt_masks import (
     project_bool_grid,
     project_float_grid,
 )
+from codec_through.video_decode import decode_uniform_frames
 
-SCHEMA_VERSION = "rlt_mask_profile_v1"
+SCHEMA_VERSION = "rlt_mask_profile_v2"
 DEFAULT_OUTPUT = Path("research/experiments/2026/artifacts/rlt_mask_profile.jsonl")
 DEFAULT_SUMMARY = Path("research/experiments/2026/artifacts/rlt_mask_profile_summary.json")
 SyntheticKind = Literal[
@@ -89,10 +90,13 @@ def _sha256_file(path: Path) -> str | None:
 
 def _artifact_payload(args: argparse.Namespace, config: RLTMaskConfig) -> dict[str, Any]:
     manifest_hash = _sha256_file(args.manifest) if args.manifest else None
+    clip_hashes = {str(path): _sha256_file(path) for path in args.clip}
     return {
         "schema_version": SCHEMA_VERSION,
         "manifest_path": str(args.manifest) if args.manifest else None,
         "manifest_content_hash": manifest_hash,
+        "clip_hashes": clip_hashes,
+        "clip_group": args.clip_group,
         "frame_count": args.frame_count,
         "config": config.as_dict(),
         "project_grid_shape": list(args.project_grid_shape) if args.project_grid_shape else None,
@@ -206,6 +210,28 @@ def _iter_manifest_items(
                 "group": str(item.group),
                 "video_path": str(item.video_path),
                 "active_boxes": [list(box) for box in active_boxes],
+            },
+        )
+
+
+def _iter_clip_items(
+    clips: list[Path],
+    *,
+    frame_count: int,
+    group: str,
+) -> Iterable[tuple[str, list[Image.Image], dict[str, Any]]]:
+    for path in clips:
+        if not path.exists():
+            raise FileNotFoundError(path)
+        frames = decode_uniform_frames(path, frame_count=frame_count)
+        yield (
+            f"clip:{path.stem}",
+            frames,
+            {
+                "source": "clip",
+                "group": group,
+                "video_path": str(path),
+                "content_hash": _sha256_file(path),
             },
         )
 
@@ -345,6 +371,8 @@ def _write_summary(path: Path, rows: list[dict[str, Any]], schema_row: dict[str,
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path)
+    parser.add_argument("--clip", type=Path, action="append", default=[])
+    parser.add_argument("--clip-group", default="fixed_camera_positive")
     parser.add_argument("--frame-count", type=int, default=8)
     parser.add_argument("--threshold", type=float, default=0.1)
     parser.add_argument("--tubelet-size", type=int, default=2)
@@ -386,7 +414,7 @@ def main() -> int:
         raise SystemExit("--frame-count must be positive")
     if args.n_items is not None and args.n_items <= 0:
         raise SystemExit("--n-items must be positive when supplied")
-    if not args.manifest and not args.synthetic:
+    if not args.manifest and not args.synthetic and not args.clip:
         args.synthetic = [
             "exact_static",
             "single_frame_repeat",
@@ -461,6 +489,22 @@ def main() -> int:
                     compare_pixel_novelty=args.compare_pixel_novelty,
                 )
             )
+
+    for item_id, frames, item_meta in _iter_clip_items(
+        args.clip,
+        frame_count=args.frame_count,
+        group=args.clip_group,
+    ):
+        rows.append(
+            _profile_one(
+                item_id=item_id,
+                frames=frames,
+                item_meta=item_meta,
+                config=config,
+                project_grid_shape=args.project_grid_shape,
+                compare_pixel_novelty=args.compare_pixel_novelty,
+            )
+        )
 
     _write_jsonl(args.output_jsonl, rows, schema_row)
     _write_summary(args.summary_json, rows, schema_row)

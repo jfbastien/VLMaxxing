@@ -9,6 +9,7 @@ are absent.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import subprocess
 import sys
@@ -16,11 +17,12 @@ import time
 from pathlib import Path
 from typing import Any, cast
 
-SCHEMA_VERSION = "rlt_autonomous_queue_v1"
+SCHEMA_VERSION = "rlt_autonomous_queue_v2"
 DEFAULT_ARTIFACT_DIR = Path("research/experiments/2026/artifacts/rlt_autonomous_queue")
 DEFAULT_GEMMA_MODEL_PATH = Path.home() / "models" / "gemma-4-e4b-it-4bit"
 DEFAULT_GEMMA_MANIFEST = Path("research/benchmark_manifests/videomme_combined_v1_n60.toml")
 DEFAULT_GEMMA_SMOKE_MANIFEST = Path("research/benchmark_manifests/videomme_dev_v1.toml")
+DEFAULT_POSITIVE_CONTROL_CLIP = Path("data/corpus/crosscheck/talking_head.mp4")
 PHASE_ESTIMATES_HOURS = {
     "RLT-1-preflight": [0.02, 0.05],
     "RLT-1-profiler-synthetic": [0.02, 0.10],
@@ -59,6 +61,16 @@ def _read_json(path: Path) -> dict[str, Any]:
     return cast(dict[str, Any], payload)
 
 
+def _file_sha256(path: Path | None) -> str | None:
+    if path is None:
+        return None
+    h = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
 def _total_budget(selected: list[str]) -> dict[str, float]:
     low = 0.0
     high = 0.0
@@ -75,13 +87,15 @@ def _write_summary(path: Path, payload: dict[str, Any]) -> None:
 
 
 def _analysis_blocks_downstream(analysis: dict[str, Any]) -> bool:
+    known_decisions = {"continue", "stop", "contract", "skip_h1_5b", "downgrade"}
+    for decision in analysis.get("decisions", []):
+        value = str(decision.get("decision"))
+        if value not in known_decisions:
+            raise ValueError(f"unknown analyzer decision {value!r}")
     skip_phases = {str(phase) for phase in analysis.get("skip_phases", [])}
     if skip_phases.intersection({"RLT-3G-A", "RLT-3G-B", "RLT-4Q", "RLT-5G", "RLT-5Q"}):
         return True
-    return any(
-        decision.get("decision") in {"stop", "stop_or_contract"}
-        for decision in analysis.get("decisions", [])
-    )
+    return any(decision.get("decision") == "stop" for decision in analysis.get("decisions", []))
 
 
 def _run_gemma_admission_cell(
@@ -92,6 +106,9 @@ def _run_gemma_admission_cell(
     frame_count: int,
     n_items: int,
     rss_guard_mb: int,
+    n_warmup: int,
+    enforce_overhead_gate: bool,
+    timing_min_n: int,
     label: str,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     jsonl_path = artifact_dir / f"{label}.jsonl"
@@ -115,6 +132,8 @@ def _run_gemma_admission_cell(
         str(model_path),
         "--rss-guard-mb",
         str(rss_guard_mb),
+        "--n-warmup",
+        str(n_warmup),
         "--output",
         str(jsonl_path),
         "--summary",
@@ -123,20 +142,21 @@ def _run_gemma_admission_cell(
     if n_items > 0:
         command.extend(["--n-items", str(n_items)])
     commands.append(_run(command))
-    commands.append(
-        _run(
-            [
-                sys.executable,
-                "scripts/analyze_gemma_admission.py",
-                "--jsonl",
-                str(jsonl_path),
-                "--summary-json",
-                str(summary_path),
-                "--output",
-                str(analysis_path),
-            ]
-        )
-    )
+    analyze_command = [
+        sys.executable,
+        "scripts/analyze_gemma_admission.py",
+        "--jsonl",
+        str(jsonl_path),
+        "--summary-json",
+        str(summary_path),
+        "--output",
+        str(analysis_path),
+        "--timing-min-n",
+        str(timing_min_n),
+    ]
+    if not enforce_overhead_gate:
+        analyze_command.append("--no-overhead-gate")
+    commands.append(_run(analyze_command))
     return commands, _read_json(analysis_path)
 
 
@@ -152,10 +172,18 @@ def main() -> int:
     parser.add_argument("--gemma-manifest", type=Path, default=DEFAULT_GEMMA_MANIFEST)
     parser.add_argument("--gemma-smoke-manifest", type=Path, default=DEFAULT_GEMMA_SMOKE_MANIFEST)
     parser.add_argument("--gemma-rss-guard-mb", type=int, default=9000)
+    parser.add_argument("--gemma-n-warmup", type=int, default=1)
+    parser.add_argument("--timing-min-n", type=int, default=20)
+    parser.add_argument("--positive-control-clip", type=Path, default=DEFAULT_POSITIVE_CONTROL_CLIP)
     parser.add_argument("--run-swa-smoke", action="store_true")
     parser.add_argument("--max-planned-hours", type=float, default=30.0)
+    parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--summary", type=Path)
     args = parser.parse_args()
+    if args.gemma_n_warmup < 0:
+        raise SystemExit("--gemma-n-warmup must be nonnegative")
+    if args.timing_min_n < 1:
+        raise SystemExit("--timing-min-n must be at least 1")
 
     args.artifact_dir.mkdir(parents=True, exist_ok=True)
     summary_path = args.summary or args.artifact_dir / "queue_summary.json"
@@ -174,6 +202,35 @@ def main() -> int:
             f"planned queue high estimate {budget['high_hours']:.1f}h exceeds "
             f"--max-planned-hours {args.max_planned_hours:.1f}h"
         )
+    input_hashes = {
+        "manifest": _file_sha256(args.manifest),
+        "gemma_manifest": _file_sha256(args.gemma_manifest),
+        "gemma_smoke_manifest": _file_sha256(args.gemma_smoke_manifest),
+        "positive_control_clip": _file_sha256(args.positive_control_clip)
+        if args.positive_control_clip.exists()
+        else None,
+    }
+    if args.dry_run:
+        payload = {
+            "schema_version": SCHEMA_VERSION,
+            "dry_run": True,
+            "ready_for_model_runs": False,
+            "selected_budget_phases": selected_budget,
+            "budget": budget,
+            "input_hashes": input_hashes,
+            "planned_gates": [
+                "RLT-1 preflight",
+                "CPU mask profile synthetic/optional manifest",
+                "RLT profile analyzer early-cancel gates",
+                "optional Gemma smoke with overhead gate disabled",
+                "optional Gemma decision cell with timing_min_n gate",
+                "H3B prefill split preflight",
+                "Gemma SWA functional smoke preflight",
+            ],
+        }
+        _write_summary(summary_path, payload)
+        print(json.dumps({"summary": str(summary_path), "dry_run": True}, sort_keys=True))
+        return 0
 
     preflight_path = args.artifact_dir / "rlt1_preflight.json"
     commands.append(
@@ -197,6 +254,7 @@ def main() -> int:
                 "schema_version": SCHEMA_VERSION,
                 "ready_for_model_runs": False,
                 "budget": budget,
+                "input_hashes": input_hashes,
                 "commands": commands,
                 "decisions": decisions,
             },
@@ -231,6 +289,15 @@ def main() -> int:
     ]
     if args.manifest is not None:
         profile_command.extend(["--manifest", str(args.manifest)])
+    if args.positive_control_clip.exists():
+        profile_command.extend(
+            [
+                "--clip",
+                str(args.positive_control_clip),
+                "--clip-group",
+                "fixed_camera_positive",
+            ]
+        )
     commands.append(_run(profile_command))
 
     analysis_path = args.artifact_dir / "rlt_mask_profile_analysis.json"
@@ -249,7 +316,9 @@ def main() -> int:
     analysis = _read_json(analysis_path)
     decisions.extend(analysis["decisions"])
     stop_reasons = {
+        "synthetic_mask_gate_failed",
         "positive_control_reduction_failed",
+        "real_positive_control_reduction_failed",
         "rlt_pixel_novelty_strong_co_cover",
     }
     if any(decision.get("reason") in stop_reasons for decision in analysis["decisions"]):
@@ -259,6 +328,7 @@ def main() -> int:
                 "schema_version": SCHEMA_VERSION,
                 "ready_for_model_runs": False,
                 "budget": budget,
+                "input_hashes": input_hashes,
                 "commands": commands,
                 "decisions": decisions,
                 "analysis": analysis,
@@ -277,6 +347,9 @@ def main() -> int:
             frame_count=args.frame_count,
             n_items=1,
             rss_guard_mb=args.gemma_rss_guard_mb,
+            n_warmup=args.gemma_n_warmup,
+            enforce_overhead_gate=False,
+            timing_min_n=args.timing_min_n,
             label="rlt2g_gemma_rlt_smoke",
         )
         commands.extend(gemma_commands)
@@ -289,6 +362,7 @@ def main() -> int:
                     "schema_version": SCHEMA_VERSION,
                     "ready_for_model_runs": False,
                     "budget": budget,
+                    "input_hashes": input_hashes,
                     "commands": commands,
                     "decisions": decisions,
                     "analysis": analysis,
@@ -307,6 +381,9 @@ def main() -> int:
             frame_count=args.frame_count,
             n_items=0,
             rss_guard_mb=args.gemma_rss_guard_mb,
+            n_warmup=args.gemma_n_warmup,
+            enforce_overhead_gate=True,
+            timing_min_n=args.timing_min_n,
             label="rlt2g_gemma_rlt_decision",
         )
         commands.extend(gemma_commands)
@@ -319,6 +396,7 @@ def main() -> int:
                     "schema_version": SCHEMA_VERSION,
                     "ready_for_model_runs": False,
                     "budget": budget,
+                    "input_hashes": input_hashes,
                     "commands": commands,
                     "decisions": decisions,
                     "analysis": analysis,
@@ -365,6 +443,7 @@ def main() -> int:
             "schema_version": SCHEMA_VERSION,
             "ready_for_model_runs": rlt3_preflight.get("ready", False),
             "budget": budget,
+            "input_hashes": input_hashes,
             "phase_estimates_hours": PHASE_ESTIMATES_HOURS,
             "commands": commands,
             "decisions": decisions,

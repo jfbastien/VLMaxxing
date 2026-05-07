@@ -22,18 +22,28 @@ def _row(
     jaccard: float | None,
     *,
     source: str = "synthetic",
+    feature_scorer_jaccard: float | None = None,
+    feature_scorer_ms: float | None = None,
 ) -> dict[str, Any]:
-    return {
+    row = {
         "kind": "item",
         "schema_version": "rlt_mask_profile_v1",
         "item_id": f"synthetic:{kind}",
         "item_meta": {"source": source, "synthetic_kind": kind},
+        "frame_count": 8,
+        "mask_config": {"tubelet_size": 2},
         "keep_rate": keep_rate,
+        "mask_compute_ms": 10.0,
         "pixel_novelty_jaccard": jaccard,
         "floor_active": False,
         "floor_active_token_count": 0,
         "threshold_active_token_count": 1,
     }
+    if feature_scorer_jaccard is not None:
+        row["feature_scorer_jaccard"] = feature_scorer_jaccard
+    if feature_scorer_ms is not None:
+        row["feature_scorer_ms"] = feature_scorer_ms
+    return row
 
 
 def _write_profile(path: Path, rows: list[dict[str, Any]]) -> None:
@@ -80,6 +90,59 @@ def test_rlt_profile_analyzer_stops_on_failed_positive_control(tmp_path: Path) -
     assert "RLT-2G" in payload["skip_phases"]
 
 
+def test_rlt_profile_analyzer_stops_on_failed_real_positive_control(tmp_path: Path) -> None:
+    payload = _run_analyzer(
+        tmp_path,
+        [
+            _row("fixed_camera_positive", 0.25, 0.4),
+            _row("fixed_camera_positive", 0.75, 0.4, source="clip"),
+            _row("exact_static", 0.25, 0.4),
+            _row("all_motion", 1.0, 0.4),
+        ],
+    )
+
+    assert payload["real_positive_control_pass"] is False
+    assert any(
+        decision["reason"] == "real_positive_control_reduction_failed"
+        for decision in payload["decisions"]
+    )
+    assert "RLT-2G" in payload["skip_phases"]
+
+
+def test_rlt_profile_analyzer_stops_on_failed_synthetic_gate(tmp_path: Path) -> None:
+    payload = _run_analyzer(
+        tmp_path,
+        [
+            _row("exact_static", 0.50, 0.4),
+            _row("single_frame_repeat", 0.25, 0.4),
+            _row("all_motion", 1.0, 0.4),
+        ],
+    )
+
+    assert payload["synthetic_gate_pass"] is False
+    assert any(
+        decision["reason"] == "synthetic_mask_gate_failed" for decision in payload["decisions"]
+    )
+    assert "RLT-3G-B" in payload["skip_phases"]
+
+
+def test_rlt_profile_analyzer_stops_on_missing_synthetic_gate(tmp_path: Path) -> None:
+    payload = _run_analyzer(
+        tmp_path,
+        [
+            _row("exact_static", 0.25, 0.4),
+            _row("all_motion", 1.0, 0.4),
+        ],
+    )
+
+    assert payload["synthetic_gate_pass"] is False
+    assert payload["synthetic_gate_checks"]["single_frame_repeat"]["present"] is False
+    assert any(
+        decision["reason"] == "synthetic_mask_gate_failed" for decision in payload["decisions"]
+    )
+    assert "RLT-2G" in payload["skip_phases"]
+
+
 def test_rlt_profile_analyzer_detects_pixel_novelty_co_cover(tmp_path: Path) -> None:
     payload = _run_analyzer(
         tmp_path,
@@ -113,4 +176,85 @@ def test_rlt_profile_analyzer_keeps_synthetic_co_cover_diagnostic(tmp_path: Path
     assert all(
         decision["reason"] != "rlt_pixel_novelty_strong_co_cover"
         for decision in payload["decisions"]
+    )
+
+
+def test_rlt_profile_analyzer_skips_h15b_when_feature_prior_fails(
+    tmp_path: Path,
+) -> None:
+    payload = _run_analyzer(
+        tmp_path,
+        [
+            _row(
+                "fixed_camera_positive",
+                0.25,
+                0.4,
+                source="manifest",
+                feature_scorer_jaccard=0.79,
+                feature_scorer_ms=100.0,
+            ),
+            _row(
+                "exact_static",
+                0.25,
+                0.4,
+                source="manifest",
+                feature_scorer_jaccard=0.78,
+                feature_scorer_ms=100.0,
+            ),
+            _row(
+                "all_motion",
+                1.0,
+                0.4,
+                source="manifest",
+                feature_scorer_jaccard=0.79,
+                feature_scorer_ms=100.0,
+            ),
+        ],
+    )
+
+    assert payload["h1_5_feature_prior_present"] is True
+    assert payload["h1_5_feature_prior_pass"] is False
+    assert any(
+        decision["reason"] == "feature_prior_mechanism_failed" for decision in payload["decisions"]
+    )
+    assert "RLT-1.5b" in payload["skip_phases"]
+
+
+def test_rlt_profile_analyzer_accepts_h15_mechanism_when_feature_prior_passes(
+    tmp_path: Path,
+) -> None:
+    payload = _run_analyzer(
+        tmp_path,
+        [
+            _row(
+                "fixed_camera_positive",
+                0.25,
+                0.4,
+                source="manifest",
+                feature_scorer_jaccard=0.82,
+                feature_scorer_ms=100.0,
+            ),
+            _row(
+                "exact_static",
+                0.25,
+                0.4,
+                source="manifest",
+                feature_scorer_jaccard=0.83,
+                feature_scorer_ms=100.0,
+            ),
+            _row(
+                "all_motion",
+                1.0,
+                0.4,
+                source="manifest",
+                feature_scorer_jaccard=0.84,
+                feature_scorer_ms=100.0,
+            ),
+        ],
+    )
+
+    assert payload["h1_5_feature_prior_present"] is True
+    assert payload["h1_5_feature_prior_pass"] is True
+    assert all(
+        decision["reason"] != "feature_prior_mechanism_failed" for decision in payload["decisions"]
     )
