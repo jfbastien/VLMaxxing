@@ -373,6 +373,16 @@ def main() -> int:
     parser.add_argument("--bucket-e2e-min-n", type=int, default=7)
     parser.add_argument("--parse-failure-delta-max", type=int, default=2)
     parser.add_argument("--parse-failure-max-fraction", type=float, default=0.25)
+    parser.add_argument(
+        "--ceiling-tolerance",
+        type=float,
+        default=0.05,
+        help=(
+            "Allowed absolute difference between actual E2E speedup and the "
+            "vision+scorer-prep Amdahl prediction. This is a self-consistency "
+            "diagnostic, not a format gate."
+        ),
+    )
     parser.add_argument("--require-schema-version")
     parser.add_argument("--require-scorer-timings", action="store_true")
     parser.add_argument(
@@ -452,9 +462,10 @@ def main() -> int:
         "pass_e2e_positive": summary["actual_e2e_speedup_dense_over_sparse"] is not None
         and summary["actual_e2e_speedup_dense_over_sparse"] >= 1.03,
         **bucket_e2e_gate,
+        "ceiling_tolerance": args.ceiling_tolerance,
         "pass_ceiling_explained": (
             summary["actual_minus_predicted_e2e_speedup"] is not None
-            and abs(float(summary["actual_minus_predicted_e2e_speedup"])) <= 0.05
+            and abs(float(summary["actual_minus_predicted_e2e_speedup"])) <= args.ceiling_tolerance
         ),
     }
 

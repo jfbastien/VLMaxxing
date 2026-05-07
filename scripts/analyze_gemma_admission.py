@@ -287,8 +287,16 @@ def analyze(
         quality_delta_floor=quality_delta_floor,
         bucket_min_n=bucket_min_n,
     )
+    comparable_choice_rows = [
+        row
+        for row in rows
+        if row.get("dense_choice") is not None and row.get("pruned_choice") is not None
+    ]
     choice_agreement = _mean(
-        [1.0 if row.get("dense_choice") == row.get("pruned_choice") else 0.0 for row in rows]
+        [
+            1.0 if row.get("dense_choice") == row.get("pruned_choice") else 0.0
+            for row in comparable_choice_rows
+        ]
     )
     dense_prefill_ms = [_prefill_ms(row, branch="dense") for row in rows]
     pruned_prefill_ms = [_prefill_ms(row, branch="pruned") for row in rows]
@@ -373,6 +381,7 @@ def analyze(
         "cell_type": cell_type,
         **quality,
         "choice_agreement": choice_agreement,
+        "choice_agreement_denominator": len(comparable_choice_rows),
         "dense_parse_failures": sum(bool(row.get("dense_parse_failure", False)) for row in rows),
         "pruned_parse_failures": sum(bool(row.get("pruned_parse_failure", False)) for row in rows),
         "mean_dense_prefill_ms": _mean(dense_prefill_ms),

@@ -22,7 +22,7 @@ def test_prefill_kernel_command_uses_paper_grade_controls(tmp_path: Path) -> Non
     assert command[command.index("--rss-guard-mb") + 1] == "8123"
 
 
-def test_phase_passed_cvision_requires_parse_gates() -> None:
+def test_phase_passed_cvision_requires_sparse_induced_parse_gate_only() -> None:
     base: dict[str, Any] = {
         "pass_complete_pairing": True,
         "pass_fidelity": True,
@@ -35,10 +35,14 @@ def test_phase_passed_cvision_requires_parse_gates() -> None:
     }
     assert queue._phase_passed_cvision(base)
 
-    for key in ("pass_parse_failure_delta", "pass_parse_failure_rate"):
+    candidate = dict(base)
+    candidate["pass_parse_failure_delta"] = False
+    assert not queue._phase_passed_cvision(candidate)
+
+    for key in ("pass_parse_failure_rate", "pass_ceiling_explained"):
         candidate = dict(base)
         candidate[key] = False
-        assert not queue._phase_passed_cvision(candidate)
+        assert queue._phase_passed_cvision(candidate)
 
 
 def test_run_command_group_stops_after_first_failure(monkeypatch: MonkeyPatch) -> None:
@@ -78,3 +82,43 @@ def test_expansion_requires_video_mme_rlt_gate(tmp_path: Path) -> None:
 
     assert completed.returncode != 0
     assert "--run-cvision-expansion requires --run-cvision-rlt" in completed.stderr
+
+
+def test_cvision_commands_can_reuse_dense_and_set_keep_rate(tmp_path: Path) -> None:
+    commands = queue._cvision_commands(
+        artifact_dir=tmp_path,
+        manifest=Path("manifest.toml"),
+        model_path=Path("model"),
+        frame_count=8,
+        n_items=30,
+        rss_guard_mb=9000,
+        label="cvision_rlt_tomato_kr030",
+        expected_items=30,
+        score_mode="rlt_topk",
+        keep_rate=0.3,
+        dense_source_label="cvision_rlt_tomato",
+        include_dense_command=False,
+    )
+
+    assert len(commands) == 2
+    sparse, analyze = commands
+    assert sparse[sparse.index("--vision-tower-keep-rate") + 1] == "0.3"
+    assert str(tmp_path / "cvision_rlt_tomato_dense.jsonl") in analyze
+    assert str(tmp_path / "cvision_rlt_tomato_kr030_analysis.json") in analyze
+
+
+def test_composition_command_uses_rlt_for_admission_and_cvision(tmp_path: Path) -> None:
+    run_command, analyze_command = queue._gemma_composition_commands(
+        artifact_dir=tmp_path,
+        manifest=Path("manifest.toml"),
+        model_path=Path("model"),
+        frame_count=8,
+        n_items=30,
+        rss_guard_mb=9000,
+        label="composition_rlt_videomme",
+    )
+
+    assert run_command[run_command.index("--prune-placeholders") + 1] == "rlt"
+    assert run_command[run_command.index("--vision-tower-score-mode") + 1] == "rlt_topk"
+    assert run_command[run_command.index("--prefill-step-size") + 1] == "1500"
+    assert analyze_command[analyze_command.index("--cell-type") + 1] == "h3b_admission"

@@ -99,6 +99,7 @@ from codec_through.pruned_vision_tower import PruneConfig, patch_vision_tower
 from codec_through.rlt_masks import (
     RLTMaskConfig,
     compute_rlt_keep_mask_from_frames,
+    fixed_budget_rlt_score_mask_for_positions,
     mask_summary,
     project_bool_grid,
 )
@@ -128,6 +129,7 @@ _FEATURE_DEPENDENT_ARMS: frozenset[AnchorArm] = frozenset(
 )
 PlaceholderPruneMode = Literal["anchor", "structural", "rlt", "none"]
 ArmOrderMode = Literal["dense_first", "abba"]
+VisionTowerScoreMode = Literal["magnitude", "rlt_topk"]
 
 
 def _clear_runtime_state() -> None:
@@ -379,11 +381,17 @@ def _schema_row(args: argparse.Namespace, rlt_config: RLTMaskConfig) -> dict[str
         "max_tokens": args.max_tokens,
         "prefill_step_size": getattr(args, "prefill_step_size", 2048),
         "prune_placeholders": args.prune_placeholders,
-        "rlt_config": rlt_config.as_dict() if args.prune_placeholders == "rlt" else None,
+        "rlt_config": (
+            rlt_config.as_dict()
+            if args.prune_placeholders == "rlt"
+            or getattr(args, "vision_tower_score_mode", "magnitude") == "rlt_topk"
+            else None
+        ),
         "n_warmup": args.n_warmup,
         "arm_order": getattr(args, "arm_order", "dense_first"),
         "vision_tower_layer": args.vision_tower_layer,
         "vision_tower_keep_rate": args.vision_tower_keep_rate,
+        "vision_tower_score_mode": getattr(args, "vision_tower_score_mode", "magnitude"),
     }
     return {
         "kind": "schema",
@@ -513,6 +521,9 @@ def _process_one_item(
     n_warmup: int,
     arm_order: ArmOrderMode,
     pruned_shape_observation_counts: dict[tuple[int, int], int],
+    vision_tower_score_mode: VisionTowerScoreMode,
+    vision_tower_keep_rate: float,
+    rlt_vision_holder: dict[str, Any] | None,
 ) -> ItemResult:
     # --- Stage 1: decode ---
     # Shared: both branches pay this cost once per item (the frames are the
@@ -559,6 +570,23 @@ def _process_one_item(
         if k not in {"input_ids", "pixel_values", "attention_mask"}
     }
 
+    # --- Stage 2.5: sparse-vision scorer preparation ---
+    # Composition experiments use the same RLT motion scores for Gemma
+    # C-VISION and placeholder admission. Compute once before the vision
+    # tower so the custom keep-mask hook can consume exactly the same
+    # RLTMaskResult that the prompt-pruning path later projects.
+    rlt_result: Any | None = None
+    vision_scorer_prepare_ms = 0.0
+    if vision_tower_keep_rate < 1.0 and vision_tower_score_mode == "rlt_topk":
+        if rlt_vision_holder is None:
+            raise RuntimeError("RLT C-VISION requested without rlt_vision_holder")
+        t_stage = time.perf_counter_ns()
+        rlt_result = compute_rlt_keep_mask_from_frames(frames, config=rlt_config)
+        vision_scorer_prepare_ms = (time.perf_counter_ns() - t_stage) / 1_000_000
+        rlt_vision_holder["rlt_result"] = rlt_result
+        rlt_vision_holder.pop("last_mask_np", None)
+        rlt_vision_holder.pop("last_keep_mask_ms", None)
+
     # --- Stage 3: novelty (placeholder-pruning scorer only when needed) ---
     novelty: np.ndarray | None = None
     if prune_placeholders in ("anchor", "structural"):
@@ -582,7 +610,12 @@ def _process_one_item(
     t_stage = time.perf_counter_ns()
     per_token_features: np.ndarray | None = None
     cls_proxy = None
-    mask_metadata: dict[str, Any] = {"prune_placeholders": prune_placeholders}
+    mask_metadata: dict[str, Any] = {
+        "prune_placeholders": prune_placeholders,
+        "vision_tower_score_mode": vision_tower_score_mode,
+        "vision_tower_keep_rate": vision_tower_keep_rate,
+        "vision_scorer_prepare_ms": vision_scorer_prepare_ms,
+    }
     scorer_arm = "gemma_structural" if prune_placeholders == "structural" else anchor_arm
     if prune_placeholders == "anchor" and anchor_arm in _FEATURE_DEPENDENT_ARMS:
         # Gemma vision_tower emits bfloat16 features; np.asarray trips on
@@ -619,7 +652,8 @@ def _process_one_item(
         )
         mask_metadata.update({"mask_policy": scorer_arm, "mask_domain": "gemma_letterboxed_512"})
     elif prune_placeholders == "rlt":
-        rlt_result = compute_rlt_keep_mask_from_frames(frames, config=rlt_config)
+        if rlt_result is None:
+            rlt_result = compute_rlt_keep_mask_from_frames(frames, config=rlt_config)
         t_project = time.perf_counter_ns()
         projected_rlt_mask = project_bool_grid(rlt_result.frame_keep_mask, GEMMA_GRID_SHAPE)
         mask_project_ms = (time.perf_counter_ns() - t_project) / 1_000_000
@@ -644,6 +678,36 @@ def _process_one_item(
     else:
         raise ValueError(f"unknown prune_placeholders mode {prune_placeholders!r}")
     mask_ms = (time.perf_counter_ns() - t_stage) / 1_000_000
+    if (
+        vision_tower_keep_rate < 1.0
+        and vision_tower_score_mode == "rlt_topk"
+        and rlt_vision_holder is not None
+    ):
+        last_mask = rlt_vision_holder.get("last_mask_np")
+        if last_mask is None:
+            raise RuntimeError("RLT C-VISION keep_mask_fn did not run inside vision_tower")
+        last_mask_np = np.asarray(last_mask, dtype=bool)
+        actual_kept_per_frame = [int(row.sum()) for row in last_mask_np]
+        if len(set(actual_kept_per_frame)) != 1:
+            raise RuntimeError(
+                f"RLT C-VISION keep-mask must emit uniform per-frame K; got {actual_kept_per_frame}"
+            )
+        valid_counts = [int(value) for value in rlt_vision_holder["last_valid_counts"]]
+        vision_scorer_keep_mask_ms = float(rlt_vision_holder.get("last_keep_mask_ms", 0.0))
+        mask_metadata.update(
+            {
+                "gemma_encoder_positions_per_frame": int(last_mask_np.shape[1]),
+                "gemma_encoder_valid_positions_per_frame": valid_counts,
+                "gemma_encoder_kept_per_frame": actual_kept_per_frame,
+                "vision_scorer_keep_mask_ms": vision_scorer_keep_mask_ms,
+                "vision_scorer_total_ms": vision_scorer_prepare_ms + vision_scorer_keep_mask_ms,
+                "rlt_cvision_budget_domain": "valid_encoder_positions",
+                "rlt_cvision_scope": (
+                    "incremental prompt admission on top of RLT-as-C-VISION; "
+                    "both branches share the sparse vision-tower features"
+                ),
+            }
+        )
 
     # --- Stage 6: prune input_ids + gather features (pruned branch only) ---
     image_token_id = int(model.config.image_token_id)
@@ -788,9 +852,18 @@ def _process_one_item(
     # NOT pay novelty/mask/prune, so attributing those to dense_end_to_end
     # would inflate dense's denominator and deflate the speedup. Keep each
     # branch's end_to_end sum restricted to stages that branch actually ran.
-    dense_end_to_end_ms = decode_ms + processor_ms + vision_ms + dense_generate_ms
+    dense_end_to_end_ms = (
+        decode_ms + processor_ms + vision_scorer_prepare_ms + vision_ms + dense_generate_ms
+    )
     pruned_end_to_end_ms = (
-        decode_ms + processor_ms + novelty_ms + vision_ms + mask_ms + prune_ms + pruned_generate_ms
+        decode_ms
+        + processor_ms
+        + vision_scorer_prepare_ms
+        + novelty_ms
+        + vision_ms
+        + mask_ms
+        + prune_ms
+        + pruned_generate_ms
     )
 
     dense_choice = extract_choice(dense_text, item.candidates)
@@ -1267,6 +1340,16 @@ def main() -> int:
             "comparison: run at 1.0 for dense baseline, then at <1.0."
         ),
     )
+    parser.add_argument(
+        "--vision-tower-score-mode",
+        choices=("magnitude", "rlt_topk"),
+        default="magnitude",
+        help=(
+            "Sparse vision-tower scoring policy when --vision-tower-keep-rate < 1.0. "
+            "'magnitude' preserves the historical C-VISION patch; 'rlt_topk' uses "
+            "the same RLT motion scores as placeholder admission."
+        ),
+    )
     args = parser.parse_args()
 
     if not args.model_path.exists():
@@ -1332,7 +1415,11 @@ def main() -> int:
             "anchor_arm": args.anchor_arm,
             "keep_rate": args.keep_rate,
             "prune_placeholders": args.prune_placeholders,
-            "rlt_config": rlt_config.as_dict() if args.prune_placeholders == "rlt" else None,
+            "rlt_config": (
+                rlt_config.as_dict()
+                if args.prune_placeholders == "rlt" or args.vision_tower_score_mode == "rlt_topk"
+                else None
+            ),
             "frame_count": args.frame_count,
             "max_tokens": args.max_tokens,
             "prefill_step_size": args.prefill_step_size,
@@ -1347,6 +1434,9 @@ def main() -> int:
             ),
             "vision_tower_keep_rate": (
                 args.vision_tower_keep_rate if args.vision_tower_keep_rate < 1.0 else None
+            ),
+            "vision_tower_score_mode": (
+                args.vision_tower_score_mode if args.vision_tower_keep_rate < 1.0 else None
             ),
             **_summarize_payload_rows(existing_rows),
         }
@@ -1363,21 +1453,56 @@ def main() -> int:
     check_rss_guard(args.rss_guard_mb, stage="after_model_load")
 
     vt_patched = args.vision_tower_keep_rate < 1.0
+    rlt_vision_holder: dict[str, Any] | None = (
+        {} if args.vision_tower_score_mode == "rlt_topk" else None
+    )
     if vt_patched:
         if not (0.0 < args.vision_tower_keep_rate < 1.0):
             raise SystemExit(
                 f"--vision-tower-keep-rate must be in (0, 1); got {args.vision_tower_keep_rate}"
             )
+        keep_mask_fn = None
+        if args.vision_tower_score_mode == "rlt_topk":
+            if rlt_vision_holder is None:
+                raise RuntimeError("internal error: missing RLT vision holder")
+
+            def keep_mask_fn(hidden_states: mx.array, positions: mx.array) -> mx.array:
+                scorer_t0 = time.perf_counter_ns()
+                if "rlt_result" not in rlt_vision_holder:
+                    raise RuntimeError("RLT result was not prepared before vision_tower call")
+                pos_np = np.array(positions)
+                valid_counts = ((pos_np[:, :, 0] >= 0) & (pos_np[:, :, 1] >= 0)).sum(axis=1)
+                mask_np = fixed_budget_rlt_score_mask_for_positions(
+                    rlt_vision_holder["rlt_result"],
+                    positions=pos_np,
+                    keep_rate=args.vision_tower_keep_rate,
+                )
+                rlt_vision_holder["last_valid_counts"] = [int(value) for value in valid_counts]
+                rlt_vision_holder["last_keep_mask_ms"] = (
+                    time.perf_counter_ns() - scorer_t0
+                ) / 1_000_000
+                rlt_vision_holder["last_mask_np"] = mask_np
+                mask = mx.array(mask_np)
+                expected = (int(hidden_states.shape[0]), int(hidden_states.shape[1]))
+                if tuple(mask.shape) != expected:
+                    raise ValueError(
+                        f"RLT C-VISION mask shape {tuple(mask.shape)} does not match "
+                        f"vision hidden_states rows/tokens {expected}"
+                    )
+                return mask
+
         patch_vision_tower(
             model,
             PruneConfig(
                 layer_idx=args.vision_tower_layer,
                 keep_rate=args.vision_tower_keep_rate,
             ),
+            keep_mask_fn=keep_mask_fn,
         )
         print(
             f"[1.51V] vision-tower patched: layer={args.vision_tower_layer} "
-            f"keep_rate={args.vision_tower_keep_rate}"
+            f"keep_rate={args.vision_tower_keep_rate} "
+            f"score_mode={args.vision_tower_score_mode}"
         )
 
     records: list[ItemResult] = []
@@ -1406,6 +1531,12 @@ def main() -> int:
                     n_warmup=args.n_warmup,
                     arm_order=cast(ArmOrderMode, args.arm_order),
                     pruned_shape_observation_counts=pruned_shape_observation_counts,
+                    vision_tower_score_mode=cast(
+                        VisionTowerScoreMode,
+                        args.vision_tower_score_mode,
+                    ),
+                    vision_tower_keep_rate=args.vision_tower_keep_rate,
+                    rlt_vision_holder=rlt_vision_holder,
                 )
             except Exception as exc:
                 print(f"[{idx + 1}/{len(items)}] {item.item_id}: FAILED {exc!r}", file=sys.stderr)
@@ -1439,7 +1570,11 @@ def main() -> int:
         "anchor_arm": args.anchor_arm,
         "keep_rate": args.keep_rate,
         "prune_placeholders": args.prune_placeholders,
-        "rlt_config": rlt_config.as_dict() if args.prune_placeholders == "rlt" else None,
+        "rlt_config": (
+            rlt_config.as_dict()
+            if args.prune_placeholders == "rlt" or args.vision_tower_score_mode == "rlt_topk"
+            else None
+        ),
         "frame_count": args.frame_count,
         "max_tokens": args.max_tokens,
         "prefill_step_size": args.prefill_step_size,
@@ -1451,6 +1586,7 @@ def main() -> int:
         "vision_tower_patched": vt_patched,
         "vision_tower_layer": args.vision_tower_layer if vt_patched else None,
         "vision_tower_keep_rate": args.vision_tower_keep_rate if vt_patched else None,
+        "vision_tower_score_mode": args.vision_tower_score_mode if vt_patched else None,
         **_summarize_payload_rows(all_rows),
     }
     args.summary.parent.mkdir(parents=True, exist_ok=True)

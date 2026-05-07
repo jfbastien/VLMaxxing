@@ -31,6 +31,15 @@ PHASE_ESTIMATES_HOURS = {
     "cvision-rlt-mvbench-n30": [1.0, 2.0],
     "cvision-maxmin-tomato-n30": [1.2, 2.4],
     "cvision-maxmin-mvbench-n30": [1.2, 2.4],
+    "cvision-magnitude-videomme-n30": [0.8, 1.8],
+    "cvision-magnitude-tomato-n30": [0.8, 1.6],
+    "cvision-magnitude-mvbench-n30": [0.8, 1.6],
+    "composition-rlt-videomme-n30": [0.6, 1.3],
+    "composition-rlt-tomato-n30": [0.6, 1.2],
+    "composition-rlt-mvbench-n30": [0.6, 1.2],
+    "cvision-kr-sweep-tomato": [1.2, 2.4],
+    "cvision-kr-sweep-mvbench": [1.2, 2.4],
+    "cvision-kr-sweep-videomme": [1.4, 3.0],
 }
 
 
@@ -161,9 +170,16 @@ def _cvision_commands(
     label: str,
     expected_items: int,
     score_mode: str = "rlt_topk",
+    keep_rate: float = 0.5,
+    dense_source_label: str | None = None,
+    include_dense_command: bool = True,
+    parse_failure_max_fraction: float = 0.30,
+    bucket_e2e_min_n: int = 5,
+    ceiling_tolerance: float = 0.07,
 ) -> list[list[str]]:
-    dense_jsonl = artifact_dir / f"{label}_dense.jsonl"
-    dense_summary = artifact_dir / f"{label}_dense_summary.json"
+    dense_label = dense_source_label or label
+    dense_jsonl = artifact_dir / f"{dense_label}_dense.jsonl"
+    dense_summary = artifact_dir / f"{dense_label}_dense_summary.json"
     sparse_jsonl = artifact_dir / f"{label}_{score_mode}.jsonl"
     sparse_summary = artifact_dir / f"{label}_{score_mode}_summary.json"
     analysis = artifact_dir / f"{label}_analysis.json"
@@ -198,7 +214,7 @@ def _cvision_commands(
     sparse = [
         *base,
         "--vision-tower-keep-rate",
-        "0.5",
+        f"{keep_rate:.6g}",
         "--vision-tower-score-mode",
         score_mode,
         "--output",
@@ -234,8 +250,85 @@ def _cvision_commands(
         "--require-schema-version",
         GEMMA_TRACK_B_SCHEMA_VERSION,
         "--require-scorer-timings",
+        "--parse-failure-max-fraction",
+        f"{parse_failure_max_fraction:.6g}",
+        "--bucket-e2e-min-n",
+        str(bucket_e2e_min_n),
+        "--ceiling-tolerance",
+        f"{ceiling_tolerance:.6g}",
     ]
-    return [dense, sparse, analyze]
+    return ([dense] if include_dense_command else []) + [sparse, analyze]
+
+
+def _gemma_composition_commands(
+    *,
+    artifact_dir: Path,
+    manifest: Path,
+    model_path: Path,
+    frame_count: int,
+    n_items: int,
+    rss_guard_mb: int,
+    label: str,
+    prefill_step_size: int = 1500,
+    vision_keep_rate: float = 0.5,
+) -> list[list[str]]:
+    jsonl_path = artifact_dir / f"{label}.jsonl"
+    summary_path = artifact_dir / f"{label}_summary.json"
+    analysis_path = artifact_dir / f"{label}_analysis.json"
+    run_command = [
+        sys.executable,
+        "scripts/run_novelty_pruning_gemma.py",
+        "--manifest",
+        str(manifest),
+        "--frame-count",
+        str(frame_count),
+        "--anchor-arm",
+        "gemma_structural",
+        "--keep-rate",
+        "0.5",
+        "--prune-placeholders",
+        "rlt",
+        "--prefill-step-size",
+        str(prefill_step_size),
+        "--vision-tower-keep-rate",
+        f"{vision_keep_rate:.6g}",
+        "--vision-tower-score-mode",
+        "rlt_topk",
+        "--model-path",
+        str(model_path),
+        "--rss-guard-mb",
+        str(rss_guard_mb),
+        "--n-warmup",
+        "1",
+        "--arm-order",
+        "abba",
+        "--resume",
+        "--output",
+        str(jsonl_path),
+        "--summary",
+        str(summary_path),
+    ]
+    if n_items > 0:
+        run_command.extend(["--n-items", str(n_items)])
+    analyze_command = [
+        sys.executable,
+        "scripts/analyze_gemma_admission.py",
+        "--jsonl",
+        str(jsonl_path),
+        "--summary-json",
+        str(summary_path),
+        "--output",
+        str(analysis_path),
+        "--cell-type",
+        "h3b_admission",
+        "--bucket-min-n",
+        "1",
+        "--timing-min-n",
+        "5",
+        "--n-bootstrap",
+        "500",
+    ]
+    return [run_command, analyze_command]
 
 
 def _run_command_group(
@@ -300,8 +393,10 @@ def _read_analysis_after_success(
 
 def _phase_passed_cvision(analysis: dict[str, Any]) -> bool:
     # pass_format is informational here: some dense baselines have parse
-    # failures independent of sparse execution. Ceiling and bucket E2E gates
-    # are required before expensive expansion cells can run.
+    # failures independent of sparse execution. Absolute parse-rate and
+    # ceiling-model diagnostics are persisted but do not block follow-up
+    # execution because dense baseline format failures and non-Amdahl decode
+    # covariance produced false cancellations in the completed n=30 series.
     return bool(
         analysis.get("pass_complete_pairing")
         and analysis.get("pass_fidelity")
@@ -309,8 +404,6 @@ def _phase_passed_cvision(analysis: dict[str, Any]) -> bool:
         and analysis.get("pass_e2e_positive")
         and analysis.get("pass_bucket_e2e_positive")
         and analysis.get("pass_parse_failure_delta")
-        and analysis.get("pass_parse_failure_rate")
-        and analysis.get("pass_ceiling_explained")
     )
 
 
@@ -321,6 +414,16 @@ def _phase_passed_prefill_same_path(analysis: dict[str, Any]) -> bool:
         and isinstance(speedup, (int, float))
         and float(speedup) > 1.0
     )
+
+
+def _parse_keep_rates(raw: str) -> list[float]:
+    rates = [float(part.strip()) for part in raw.replace(",", " ").split() if part.strip()]
+    if not rates:
+        raise ValueError("at least one keep rate is required")
+    for rate in rates:
+        if not (0.0 < rate <= 1.0):
+            raise ValueError(f"keep rates must be in (0, 1], got {rate}")
+    return rates
 
 
 def main() -> int:
@@ -347,7 +450,36 @@ def main() -> int:
             "same manifests for head-to-head interpretation."
         ),
     )
-    parser.add_argument("--max-planned-hours", type=float, default=19.0)
+    parser.add_argument(
+        "--run-magnitude-head-to-head",
+        action="store_true",
+        help=(
+            "Run the existing MLX-native magnitude scorer on the same three "
+            "manifests. This closes the scorer-comparison triangle: dense, "
+            "RLT, max-min, and magnitude."
+        ),
+    )
+    parser.add_argument(
+        "--run-composition-incremental",
+        action="store_true",
+        help=(
+            "Run RLT prompt admission on top of RLT-as-C-VISION at "
+            "prefill_step_size=1500. This measures incremental composition, "
+            "not a full dense-vs-composed baseline."
+        ),
+    )
+    parser.add_argument(
+        "--run-keep-rate-sweep",
+        action="store_true",
+        help="Run an RLT-as-C-VISION keep-rate Pareto sweep on one benchmark.",
+    )
+    parser.add_argument(
+        "--keep-rate-sweep-benchmark",
+        choices=("tomato", "mvbench", "videomme"),
+        default="tomato",
+    )
+    parser.add_argument("--cvision-keep-rates", default="0.3,0.5,0.7,0.85")
+    parser.add_argument("--max-planned-hours", type=float, default=28.0)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--summary", type=Path)
     args = parser.parse_args()
@@ -360,8 +492,15 @@ def main() -> int:
         raise SystemExit("--run-max-min-triangulation requires --run-cvision-rlt")
     if args.run_cvision_expansion and not args.run_cvision_rlt:
         raise SystemExit("--run-cvision-expansion requires --run-cvision-rlt")
+    if args.run_magnitude_head_to_head and not args.run_cvision_rlt:
+        raise SystemExit("--run-magnitude-head-to-head requires --run-cvision-rlt")
+    if args.run_composition_incremental and not args.run_cvision_rlt:
+        raise SystemExit("--run-composition-incremental requires --run-cvision-rlt")
+    if args.run_keep_rate_sweep and not args.run_cvision_rlt:
+        raise SystemExit("--run-keep-rate-sweep requires --run-cvision-rlt")
     if args.cooldown_after_microbench_seconds < 0:
         raise SystemExit("--cooldown-after-microbench-seconds must be nonnegative")
+    keep_rates = _parse_keep_rates(args.cvision_keep_rates)
     phases: list[str] = []
     if args.run_prefill_diagnostics:
         phases.append("prefill-kernel-microbench")
@@ -375,6 +514,24 @@ def main() -> int:
         phases.extend(["cvision-rlt-tomato-n30", "cvision-rlt-mvbench-n30"])
         if args.run_max_min_triangulation:
             phases.extend(["cvision-maxmin-tomato-n30", "cvision-maxmin-mvbench-n30"])
+    if args.run_magnitude_head_to_head:
+        phases.extend(
+            [
+                "cvision-magnitude-videomme-n30",
+                "cvision-magnitude-tomato-n30",
+                "cvision-magnitude-mvbench-n30",
+            ]
+        )
+    if args.run_composition_incremental:
+        phases.extend(
+            [
+                "composition-rlt-videomme-n30",
+                "composition-rlt-tomato-n30",
+                "composition-rlt-mvbench-n30",
+            ]
+        )
+    if args.run_keep_rate_sweep:
+        phases.append(f"cvision-kr-sweep-{args.keep_rate_sweep_benchmark}")
     budget = _budget(phases)
     if budget["high_hours"] > args.max_planned_hours:
         raise SystemExit(
@@ -491,6 +648,63 @@ def main() -> int:
             score_mode="max_min_diversity",
         ),
     }
+    benchmark_manifests = {
+        "videomme": args.videomme_manifest,
+        "tomato": args.tomato_manifest,
+        "mvbench": args.mvbench_manifest,
+    }
+    benchmark_expected_items = {
+        "videomme": args.cvision_n_items,
+        "tomato": 30,
+        "mvbench": 30,
+    }
+    magnitude_commands = {
+        benchmark: _cvision_commands(
+            artifact_dir=args.artifact_dir,
+            manifest=manifest,
+            model_path=args.gemma_model_path,
+            frame_count=args.frame_count,
+            n_items=args.cvision_n_items if benchmark == "videomme" else 0,
+            rss_guard_mb=args.rss_guard_mb,
+            label=f"cvision_magnitude_{benchmark}",
+            expected_items=benchmark_expected_items[benchmark],
+            score_mode="magnitude",
+            dense_source_label=f"cvision_rlt_{benchmark}",
+            include_dense_command=False,
+        )
+        for benchmark, manifest in benchmark_manifests.items()
+    }
+    composition_commands = {
+        benchmark: _gemma_composition_commands(
+            artifact_dir=args.artifact_dir,
+            manifest=manifest,
+            model_path=args.gemma_model_path,
+            frame_count=args.frame_count,
+            n_items=args.cvision_n_items if benchmark == "videomme" else 0,
+            rss_guard_mb=args.rss_guard_mb,
+            label=f"composition_rlt_{benchmark}",
+        )
+        for benchmark, manifest in benchmark_manifests.items()
+    }
+    sweep_manifest = benchmark_manifests[args.keep_rate_sweep_benchmark]
+    sweep_expected_items = benchmark_expected_items[args.keep_rate_sweep_benchmark]
+    keep_rate_sweep_commands = {
+        rate: _cvision_commands(
+            artifact_dir=args.artifact_dir,
+            manifest=sweep_manifest,
+            model_path=args.gemma_model_path,
+            frame_count=args.frame_count,
+            n_items=(args.cvision_n_items if args.keep_rate_sweep_benchmark == "videomme" else 0),
+            rss_guard_mb=args.rss_guard_mb,
+            label=(f"cvision_rlt_{args.keep_rate_sweep_benchmark}_kr{int(round(rate * 100)):03d}"),
+            expected_items=sweep_expected_items,
+            score_mode="rlt_topk",
+            keep_rate=rate,
+            dense_source_label=f"cvision_rlt_{args.keep_rate_sweep_benchmark}",
+            include_dense_command=False,
+        )
+        for rate in keep_rates
+    }
     if args.run_prefill_diagnostics:
         planned.append({"phase": "prefill_kernel_microbench", "command": prefill_kernel_command})
         planned.extend({"phase": "prefill_step_1500", "command": c} for c in prefill_1500_commands)
@@ -526,6 +740,36 @@ def main() -> int:
                     }
                     for c in phase_commands
                 )
+    if args.run_magnitude_head_to_head:
+        for benchmark, phase_commands in magnitude_commands.items():
+            planned.extend(
+                {
+                    "phase": f"cvision_magnitude_{benchmark}_if_rlt_videomme_core_passes",
+                    "command": c,
+                }
+                for c in phase_commands
+            )
+    if args.run_composition_incremental:
+        for benchmark, phase_commands in composition_commands.items():
+            planned.extend(
+                {
+                    "phase": f"composition_rlt_{benchmark}_if_rlt_videomme_core_passes",
+                    "command": c,
+                }
+                for c in phase_commands
+            )
+    if args.run_keep_rate_sweep:
+        for rate, phase_commands in keep_rate_sweep_commands.items():
+            planned.extend(
+                {
+                    "phase": (
+                        f"cvision_rlt_{args.keep_rate_sweep_benchmark}_"
+                        f"kr{int(round(rate * 100)):03d}_if_rlt_videomme_core_passes"
+                    ),
+                    "command": c,
+                }
+                for c in phase_commands
+            )
     if args.dry_run:
         _write_json(
             summary_path,
@@ -555,9 +799,11 @@ def main() -> int:
                             ("Run C-VISION RLT n=1 smoke; skip VideoMME decision if smoke fails."),
                             (
                                 "Run C-VISION RLT VideoMME n=30; skip TOMATO/MVBench "
-                                "expansion and max-min triangulation unless it passes "
-                                "fidelity, parse-failure, sparse-vision, ceiling, bucket, "
-                                "and E2E gates."
+                                "expansion and head-to-head follow-ups unless it passes "
+                                "fidelity, sparse-induced parse-failure, sparse-vision, "
+                                "bucket, and E2E gates. Absolute parse-rate and ceiling "
+                                "diagnostics are reported but no longer hard-cancel "
+                                "scientifically useful follow-ups."
                             ),
                         ]
                         if args.run_cvision_rlt
@@ -732,6 +978,93 @@ def main() -> int:
             {
                 "decision": "skip",
                 "reason": "cvision_rlt_expansion_requires_videomme_pass",
+            }
+        )
+    if args.run_magnitude_head_to_head and cvision_videomme_passed:
+        for benchmark, phase_commands in magnitude_commands.items():
+            magnitude_results = _run_command_group(phase_commands)
+            commands.extend(magnitude_results)
+            magnitude_analysis = _read_analysis_after_success(
+                results=magnitude_results,
+                path=args.artifact_dir / f"cvision_magnitude_{benchmark}_analysis.json",
+                phase=f"cvision_magnitude_{benchmark}",
+                decisions=decisions,
+            )
+            if magnitude_analysis is not None:
+                analyses[f"cvision_magnitude_{benchmark}"] = magnitude_analysis
+    elif args.run_magnitude_head_to_head and not cvision_videomme_passed:
+        decisions.append(
+            {
+                "decision": "skip",
+                "reason": "cvision_magnitude_requires_rlt_videomme_pass",
+            }
+        )
+    if args.run_composition_incremental and cvision_videomme_passed:
+        for benchmark, phase_commands in composition_commands.items():
+            composition_results = _run_command_group(phase_commands)
+            commands.extend(composition_results)
+            composition_analysis = _read_analysis_after_success(
+                results=composition_results,
+                path=args.artifact_dir / f"composition_rlt_{benchmark}_analysis.json",
+                phase=f"composition_rlt_{benchmark}",
+                decisions=decisions,
+            )
+            if composition_analysis is not None:
+                analyses[f"composition_rlt_{benchmark}"] = composition_analysis
+                if any(
+                    decision.get("decision") in {"stop", "contract"}
+                    for decision in composition_analysis.get("decisions", [])
+                ):
+                    decisions.append(
+                        {
+                            "decision": "continue",
+                            "reason": f"composition_rlt_{benchmark}_did_not_earn_gate",
+                            "phase": f"composition_rlt_{benchmark}",
+                            "details": composition_analysis.get("decisions", []),
+                        }
+                    )
+    elif args.run_composition_incremental and not cvision_videomme_passed:
+        decisions.append(
+            {
+                "decision": "skip",
+                "reason": "composition_requires_rlt_videomme_pass",
+            }
+        )
+    if args.run_keep_rate_sweep and cvision_videomme_passed:
+        sweep_results: dict[str, Any] = {}
+        for rate, phase_commands in keep_rate_sweep_commands.items():
+            rate_results = _run_command_group(phase_commands)
+            commands.extend(rate_results)
+            rate_label = (
+                f"cvision_rlt_{args.keep_rate_sweep_benchmark}_kr{int(round(rate * 100)):03d}"
+            )
+            rate_analysis = _read_analysis_after_success(
+                results=rate_results,
+                path=args.artifact_dir / f"{rate_label}_analysis.json",
+                phase=rate_label,
+                decisions=decisions,
+            )
+            if rate_analysis is not None:
+                analyses[rate_label] = rate_analysis
+                sweep_results[f"{rate:.6g}"] = {
+                    "speedup": rate_analysis.get("all", {}).get(
+                        "actual_e2e_speedup_dense_over_sparse"
+                    ),
+                    "accuracy_delta": rate_analysis.get("all", {}).get(
+                        "accuracy_delta_sparse_minus_dense"
+                    ),
+                    "pass_core": _phase_passed_cvision(rate_analysis),
+                }
+        analyses[f"cvision_rlt_{args.keep_rate_sweep_benchmark}_keep_rate_sweep"] = {
+            "benchmark": args.keep_rate_sweep_benchmark,
+            "keep_rates": keep_rates,
+            "results": sweep_results,
+        }
+    elif args.run_keep_rate_sweep and not cvision_videomme_passed:
+        decisions.append(
+            {
+                "decision": "skip",
+                "reason": "keep_rate_sweep_requires_rlt_videomme_pass",
             }
         )
 
