@@ -226,11 +226,52 @@ artifacts.
 | The talking-head positive-control failure was clip-choice, not kernel failure. | VALID | The predecessor talking-head, surveillance, and fpv clips are retained as cross-checks. The published-domain positive control now uses the Xiph hall-monitor clip from the primary local corpus; it clears the `50%` reduction gate at `61.6%` on the CPU queue smoke. |
 | Threshold monotonicity should be enforced. | VALID | `profile_rlt_masks.py` can emit threshold sweeps; the autonomous queue runs `tau in {0.05, 0.1, 0.2, 0.5, 1.0}` and the analyzer hard-stops if keep-rate increases as the threshold rises. |
 | The Gemma admission prefill field was still derived from `prompt_tokens / prompt_tps`. | VALID | `scripts/run_novelty_pruning_gemma.py` now drives `stream_generate(...)` directly and records wall-clock time to first yield as `multimodal_prefill_ms`, while retaining tps-derived values in metadata as a consistency diagnostic. |
-| JIT warmup should be visible in the analyzer, not only logged. | VALID | `scripts/analyze_gemma_admission.py` now reports `prefill_jit_warmup_ratio_proxy` from the first pruned warmup call over the measured pruned call, with `>1.5x` marked as suspected cold-shape/JIT contamination. |
+| JIT warmup should be visible in the analyzer, not only logged. | VALID | `scripts/analyze_gemma_admission.py` reports warmup ratios from the first pruned warmup call over the measured pruned call, with `>1.5x` marked as suspected cold-shape/JIT contamination. Round 8 split the prefill ratio from the generate-level proxy. |
 | A pure C-VISION cell must not get noisy prefill credit. | VALID | The Gemma admission analyzer has `--cell-type {h2_pure_cvision,h2_admission,h3b_admission}`. Pure C-VISION overhead gates credit only measured `vision_reduction_ms`; admission/H3B cells credit vision plus prefill. |
 | Dry-run should print actual commands. | VALID | The autonomous queue dry-run now emits the constructed argv list for preflight, profiling, analysis, optional Gemma smoke/decision cells, and dependent preflights. |
 | Decision-log writeback should happen on early stop/block. | VALID | The queue appends a dated `research/decision-log.md` row on stop/contract/block outcomes unless `--no-decision-log` is supplied. A temporary-log smoke verified the row format without mutating the repo log. |
 | The visualization should be algorithmically grounded, not hand drawn. | VALID | Added `scripts/render_rlt_vlmax_composition_overlays.py`, which renders the same three VLMaxxing windows with recomputed VLMaxxing routing boxes, recomputed local RLT masks, and a conservative union pane for the composition candidate. |
+
+### Scientist Peer Feedback Validation, Round 8
+
+Validated on 2026-05-07 against the implementation diff, local CPU artifacts,
+and the RLT/VLMaxxing visualization manifest.
+
+| Peer claim | Verdict | Evidence / action |
+| --- | --- | --- |
+| Visualization composition fractions were active-crop pixel fractions but named like token fractions. | VALID | Renamed manifest/frame stats to `*_active_pixel_fraction` and added `rlt_keep_rate_token_domain` for token-domain comparison. The visual overlap result remains useful as a region-area diagnostic, not a token-count or wall-clock claim. |
+| The RLT/VLMaxxing reel silently displayed one fewer frame than the existing VLMaxxing reel. | VALID | The renderer now preserves the original 25/19/13 displayed frame windows and duplicates the final frame only inside RLT mask computation when tubelet parity requires it. The manifest records displayed frame count, RLT input frame count, and duplicate-last-frame count. |
+| Visualization artifacts need reproducibility metadata. | VALID | The renderer manifest now records `git_sha`, an RLT config hash, the exact RLT config, and the checked VLMaxxing routing policy block (`BENCHMARK_FRAME_SIZE`, `QWEN_BLOCK_SIZE`, thresholds, and reuse/fresh rules). |
+| The RLT subtitle could imply length encoding was ported. | VALID | The RLT pane now says `mask only, no length encoding`; this matches the local implementation and the preregistered RLT-style scope. |
+| The warmup ratio named as prefill was actually generate-level. | VALID | Gemma admission rows now preserve `pruned_warmup_multimodal_prefill_ms`; the analyzer reports true `prefill_jit_warmup_ratio` separately from `pruned_generate_warmup_ratio_proxy`. |
+| Queue decision-log writeback should be per phase. | VALID | The queue now writes one decision-log row per terminal stop/contract/block decision and maps known reasons to RLT phases. |
+| The queue hard-coded `h2_admission` for Gemma analysis. | VALID | Added `--gemma-cell-type {h2_pure_cvision,h2_admission,h3b_admission}` and plumbed it through smoke, decision, and dry-run command construction. |
+| Threshold-conditioned RLT-vs-pixel-novelty Jaccard is a useful paper-defense diagnostic. | VALID | Threshold sweeps now optionally emit per-threshold pixel-novelty Jaccard, and the analyzer reports real/synthetic threshold-conditioned distributions. These diagnostics do not change preregistered gates unless promoted later. |
+| Synthetic/real classification should not trust `source` alone. | VALID | The analyzer treats any row with `synthetic_kind` or a synthetic path as synthetic, and only counts manifest/clip rows as real evidence when their video path is under approved local real-corpus prefixes. |
+| Visualization overlap suggests composition signal. | VALID AS SCREENING EVIDENCE | The TOMATO visualization has low active-pixel overlap between VLMaxxing fresh regions and RLT admitted regions relative to either single signal. This supports running H3; it does not by itself prove E2E speedup or accuracy preservation. |
+
+Round 8 local verification:
+
+- CPU queue smoke (`/tmp/rlt_round8_cpu_queue_summary.json`) produced no RLT-1
+  early cancel. Hall-monitor real positive-control reduction was `61.6%`,
+  clearing the `50%` gate. Mixed RLT-vs-pixel-novelty Jaccard was `0.9436`,
+  but real-only Jaccard was `0.8523`; the co-cover null did not fire.
+- Threshold-conditioned real Jaccard was emitted for
+  `tau in {0.05, 0.1, 0.2, 0.5, 1.0}`. The current real positive-control
+  row ranges from `0.8523` at `tau=0.1` to `0.9526` at `tau=1.0`; this is a
+  diagnostic, not a preregistered acceptance gate.
+- Gemma n=1 advisory smoke (`/tmp/rlt_round8_gemma_smoke_summary.json`) passed
+  quality and did not evaluate timing gates because `n < timing_min_n`. The
+  true prefill warmup ratio was `0.977`, so this run did not show a cold-shape
+  prefill JIT artifact; the earlier round-6 regression remains classified as
+  an untrusted n=1 timing artifact, not a falsification of RLT.
+- H3B remains blocked only on the preregistered prefill-split smoke artifact.
+  Gemma H4A/H5G remains blocked only on the SWA functional smoke.
+- Visualization artifacts were regenerated under
+  `research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/`.
+  The manifest now records 25/19/13 displayed frames, RLT-only parity padding,
+  active-pixel denominators, token-domain keep rate, RLT config hash, and
+  routing-policy metadata.
 
 ### RLT Algorithm Facts To Preserve
 

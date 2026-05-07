@@ -219,25 +219,48 @@ def _ratio_distribution(values: list[float]) -> dict[str, Any]:
     }
 
 
-def _warmup_ratio_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
+def _metadata_first_ratio(
+    rows: list[dict[str, Any]],
+    *,
+    metadata_key: str,
+    measured_timing_key: str,
+) -> dict[str, Any]:
     ratios: list[float] = []
     for row in rows:
         metadata = row.get("metadata")
         if not isinstance(metadata, dict):
             continue
-        warmups = metadata.get("pruned_warmup_generate_ms")
+        warmups = metadata.get(metadata_key)
         if not isinstance(warmups, list) or not warmups:
             continue
-        measured = _timing(row, "pruned", "generate")
+        measured = _timing(row, "pruned", measured_timing_key)
         if measured <= 0.0:
             continue
         ratios.append(float(warmups[0]) / measured)
-    distribution = _ratio_distribution(ratios)
+    return _ratio_distribution(ratios)
+
+
+def _warmup_ratio_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    prefill_distribution = _metadata_first_ratio(
+        rows,
+        metadata_key="pruned_warmup_multimodal_prefill_ms",
+        measured_timing_key="multimodal_prefill_ms",
+    )
+    generate_distribution = _metadata_first_ratio(
+        rows,
+        metadata_key="pruned_warmup_generate_ms",
+        measured_timing_key="generate",
+    )
     return {
-        "prefill_jit_warmup_ratio_proxy": distribution["max"],
-        "prefill_jit_warmup_ratios": distribution,
+        "prefill_jit_warmup_ratio": prefill_distribution["max"],
+        "prefill_jit_warmup_ratios": prefill_distribution,
         "prefill_jit_warmup_suspected": (
-            distribution["max"] is not None and distribution["max"] > 1.5
+            prefill_distribution["max"] is not None and prefill_distribution["max"] > 1.5
+        ),
+        "pruned_generate_warmup_ratio_proxy": generate_distribution["max"],
+        "pruned_generate_warmup_ratios": generate_distribution,
+        "pruned_generate_warmup_suspected": (
+            generate_distribution["max"] is not None and generate_distribution["max"] > 1.5
         ),
     }
 

@@ -296,13 +296,17 @@ def _profile_one(
     t1 = time.perf_counter()
     result = compute_rlt_keep_mask_from_array(arr, config=config, frames_are_normalized=True)
     t2 = time.perf_counter()
-    threshold_sweep_rows: list[dict[str, float]] = []
+    threshold_sweep_rows: list[dict[str, float | None]] = []
     for threshold in sorted(threshold_sweep):
         sweep_result = compute_rlt_keep_mask_from_array(
             arr,
             config=replace(config, threshold=threshold),
             frames_are_normalized=True,
         )
+        sweep_pixel_jaccard = None
+        if compare_pixel_novelty:
+            sweep_pixel_mask = _matched_pixel_novelty_mask(arr, sweep_result.frame_keep_mask)
+            sweep_pixel_jaccard = _jaccard(sweep_result.frame_keep_mask, sweep_pixel_mask)
         threshold_sweep_rows.append(
             {
                 "threshold": float(threshold),
@@ -310,6 +314,7 @@ def _profile_one(
                     sweep_result.kept_token_count
                     / (sweep_result.frame_count * sweep_result.tokens_per_frame)
                 ),
+                "pixel_novelty_jaccard": sweep_pixel_jaccard,
             }
         )
     mask_project_ms = 0.0

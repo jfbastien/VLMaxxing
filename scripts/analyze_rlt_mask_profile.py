@@ -15,6 +15,11 @@ STATIC_KINDS = {"exact_static", "single_frame_repeat", "fixed_camera_positive"}
 MOTION_KINDS = {"all_motion", "camera_pan"}
 SYNTHETIC_KEEP_RATE_TOLERANCE = 1e-6
 THRESHOLD_MONOTONICITY_TOLERANCE = 1e-9
+REAL_CLIP_PATH_PREFIXES = (
+    "data/benchmarks/",
+    "data/corpus/crosscheck/",
+    "data/corpus/derived/",
+)
 
 
 def _load_jsonl(path: Path) -> tuple[dict[str, Any] | None, list[dict[str, Any]]]:
@@ -162,16 +167,27 @@ def _feature_scorer_summary(
 
 def _is_synthetic(row: dict[str, Any]) -> bool:
     meta = row.get("item_meta")
-    return isinstance(meta, dict) and meta.get("source") == "synthetic"
+    if not isinstance(meta, dict):
+        return False
+    if meta.get("source") == "synthetic" or meta.get("synthetic_kind") is not None:
+        return True
+    video_path = str(meta.get("video_path", "")).replace("\\", "/")
+    return "/synthetic/" in f"/{video_path}/" or video_path.startswith("data/corpus/synthetic/")
 
 
-def _has_non_synthetic_jaccard(rows: list[dict[str, Any]]) -> bool:
-    for row in rows:
-        if row.get("pixel_novelty_jaccard") is None:
-            continue
-        if not _is_synthetic(row):
-            return True
-    return False
+def _is_real_evidence(row: dict[str, Any]) -> bool:
+    if _is_synthetic(row):
+        return False
+    meta = row.get("item_meta")
+    if not isinstance(meta, dict):
+        return False
+    if meta.get("source") not in {"manifest", "clip"}:
+        return False
+    video_path = str(meta.get("video_path", "")).replace("\\", "/")
+    return any(
+        video_path.startswith(prefix) or f"/{prefix}" in video_path
+        for prefix in REAL_CLIP_PATH_PREFIXES
+    )
 
 
 def _expected_static_keep_rate(row: dict[str, Any]) -> float:
@@ -276,6 +292,32 @@ def _threshold_monotonicity_summary(rows: list[dict[str, Any]]) -> dict[str, Any
     }
 
 
+def _threshold_jaccard_distribution(rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    by_threshold: dict[float, list[float]] = {}
+    for row in rows:
+        sweep = row.get("threshold_sweep")
+        if not isinstance(sweep, list):
+            continue
+        for point in sweep:
+            if not isinstance(point, dict):
+                continue
+            if point.get("threshold") is None or point.get("pixel_novelty_jaccard") is None:
+                continue
+            by_threshold.setdefault(float(point["threshold"]), []).append(
+                float(point["pixel_novelty_jaccard"])
+            )
+    return {
+        f"{threshold:g}": {
+            "n": len(values),
+            "mean": _mean(values),
+            "median": _median(values),
+            "min": float(min(values)) if values else None,
+            "max": float(max(values)) if values else None,
+        }
+        for threshold, values in sorted(by_threshold.items())
+    }
+
+
 def analyze(
     rows: list[dict[str, Any]],
     *,
@@ -295,7 +337,7 @@ def analyze(
     static_reductions = _reductions(static_rows)
     motion_reductions = _reductions(motion_rows)
     jaccards = _jaccards(rows)
-    real_rows = [row for row in rows if not _is_synthetic(row)]
+    real_rows = [row for row in rows if _is_real_evidence(row)]
     synthetic_rows = [row for row in rows if _is_synthetic(row)]
     real_jaccards = _jaccards(real_rows)
     synthetic_jaccards = _jaccards(synthetic_rows)
@@ -474,6 +516,10 @@ def analyze(
         "pixel_novelty_jaccard_distribution_synthetic": _jaccard_distribution(synthetic_rows),
         "pixel_novelty_jaccard_real_per_bucket": _jaccard_distributions_by_bucket(real_rows),
         "pixel_novelty_jaccard_synthetic_per_bucket": _jaccard_distributions_by_bucket(
+            synthetic_rows
+        ),
+        "threshold_pixel_novelty_jaccard_real": _threshold_jaccard_distribution(real_rows),
+        "threshold_pixel_novelty_jaccard_synthetic": _threshold_jaccard_distribution(
             synthetic_rows
         ),
         "has_non_synthetic_jaccard": has_non_synthetic_jaccard,

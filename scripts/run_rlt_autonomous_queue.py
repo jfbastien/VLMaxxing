@@ -107,6 +107,18 @@ def _append_decision_log(
     if not decisions:
         return
     date = dt.date.today().isoformat()
+    phase_by_reason = {
+        "rlt1_preflight_failed": "RLT-1",
+        "synthetic_mask_gate_failed": "RLT-1",
+        "positive_control_reduction_failed": "RLT-1",
+        "real_positive_control_reduction_failed": "RLT-1",
+        "threshold_monotonicity_failed": "RLT-1",
+        "rlt_pixel_novelty_strong_co_cover": "RLT-1.5",
+        "gemma_admission_quality_gate_failed": "RLT-2G",
+        "gemma_admission_overhead_dominated": "RLT-2G",
+        "prefill_split_smoke_missing": "RLT-3G-B",
+        "swa_functional_smoke_missing": "RLT-5G",
+    }
     stop_decisions = [
         decision
         for decision in decisions
@@ -114,16 +126,18 @@ def _append_decision_log(
     ]
     if not stop_decisions:
         return
-    reasons = ", ".join(str(decision.get("reason", "unknown")) for decision in stop_decisions)
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as handle:
-        handle.write(
-            "\n"
-            f"| {date}: RLT autonomous queue early stop | Screening result | "
-            f"[summary]({_repo_rel(summary_path)}) | Reasons: {reasons}. "
-            "Reopen by fixing the failing gate or rerunning with a replacement artifact under the "
-            "same preregistered analyzer. |\n"
-        )
+        for decision in stop_decisions:
+            reason = str(decision.get("reason", "unknown"))
+            phase = str(decision.get("phase") or phase_by_reason.get(reason, "RLT-unknown"))
+            handle.write(
+                "\n"
+                f"| {date}: {phase} autonomous queue early stop | Screening result | "
+                f"[summary]({_repo_rel(summary_path)}) | Reason: {reason}. "
+                "Reopen by fixing the failing gate or rerunning with a replacement artifact under "
+                "the same preregistered analyzer. |\n"
+            )
 
 
 def _write_terminal_summary(
@@ -168,6 +182,7 @@ def _run_gemma_admission_cell(
     n_warmup: int,
     enforce_overhead_gate: bool,
     timing_min_n: int,
+    cell_type: str,
     label: str,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     analysis_path = artifact_dir / f"{label}_analysis.json"
@@ -182,6 +197,7 @@ def _run_gemma_admission_cell(
         n_warmup=n_warmup,
         enforce_overhead_gate=enforce_overhead_gate,
         timing_min_n=timing_min_n,
+        cell_type=cell_type,
         label=label,
     )
     for command in planned:
@@ -241,6 +257,7 @@ def _gemma_admission_commands(
     n_warmup: int,
     enforce_overhead_gate: bool,
     timing_min_n: int,
+    cell_type: str,
     label: str,
 ) -> list[list[str]]:
     jsonl_path = artifact_dir / f"{label}.jsonl"
@@ -284,7 +301,7 @@ def _gemma_admission_commands(
         "--timing-min-n",
         str(timing_min_n),
         "--cell-type",
-        "h2_admission",
+        cell_type,
     ]
     if not enforce_overhead_gate:
         analyze_command.append("--no-overhead-gate")
@@ -304,6 +321,12 @@ def main() -> int:
     parser.add_argument("--gemma-smoke-manifest", type=Path, default=DEFAULT_GEMMA_SMOKE_MANIFEST)
     parser.add_argument("--gemma-rss-guard-mb", type=int, default=9000)
     parser.add_argument("--gemma-n-warmup", type=int, default=1)
+    parser.add_argument(
+        "--gemma-cell-type",
+        choices=["h2_pure_cvision", "h2_admission", "h3b_admission"],
+        default="h2_admission",
+        help="Analyzer stage-credit contract for optional Gemma smoke/decision cells.",
+    )
     parser.add_argument("--timing-min-n", type=int, default=20)
     parser.add_argument(
         "--positive-control-clip",
@@ -404,6 +427,7 @@ def main() -> int:
                     n_warmup=args.gemma_n_warmup,
                     enforce_overhead_gate=False,
                     timing_min_n=args.timing_min_n,
+                    cell_type=args.gemma_cell_type,
                     label="rlt2g_gemma_rlt_smoke",
                 )
             )
@@ -420,6 +444,7 @@ def main() -> int:
                     n_warmup=args.gemma_n_warmup,
                     enforce_overhead_gate=True,
                     timing_min_n=args.timing_min_n,
+                    cell_type=args.gemma_cell_type,
                     label="rlt2g_gemma_rlt_decision",
                 )
             )
@@ -560,6 +585,7 @@ def main() -> int:
             n_warmup=args.gemma_n_warmup,
             enforce_overhead_gate=False,
             timing_min_n=args.timing_min_n,
+            cell_type=args.gemma_cell_type,
             label="rlt2g_gemma_rlt_smoke",
         )
         commands.extend(gemma_commands)
@@ -595,6 +621,7 @@ def main() -> int:
             n_warmup=args.gemma_n_warmup,
             enforce_overhead_gate=True,
             timing_min_n=args.timing_min_n,
+            cell_type=args.gemma_cell_type,
             label="rlt2g_gemma_rlt_decision",
         )
         commands.extend(gemma_commands)

@@ -707,6 +707,7 @@ def _process_one_item(
         pruned_mask = mx.array(pruned_attn[None, :])
 
     pruned_warmup_generate_ms: list[float] = []
+    pruned_warmup_multimodal_prefill_ms: list[float] = []
     for _ in range(n_warmup):
         warmup_stats = _run_generate(
             model,
@@ -719,6 +720,7 @@ def _process_one_item(
             max_tokens=max_tokens,
         )
         pruned_warmup_generate_ms.append(warmup_stats.elapsed_ms)
+        pruned_warmup_multimodal_prefill_ms.append(warmup_stats.multimodal_prefill_ms)
         _clear_runtime_state()
 
     pruned_stats = _run_generate(
@@ -738,6 +740,7 @@ def _process_one_item(
     dense_text_generation_ms = dense_stats.text_generation_ms
     pruned_text_generation_ms = pruned_stats.text_generation_ms
     mask_metadata["pruned_warmup_generate_ms"] = pruned_warmup_generate_ms
+    mask_metadata["pruned_warmup_multimodal_prefill_ms"] = pruned_warmup_multimodal_prefill_ms
     mask_metadata["prompt_time_source"] = dense_stats.prompt_time_source
     mask_metadata["dense_prefill_ms_from_tps"] = _stage_ms_from_tps(
         tokens=dense_stats.prompt_tokens,

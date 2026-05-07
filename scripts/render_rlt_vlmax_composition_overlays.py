@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -22,19 +23,27 @@ from typing import Any
 import numpy as np
 from PIL import Image, ImageDraw
 
-from codec_through.rlt_masks import RLTMaskConfig, compute_rlt_keep_mask_from_frames, mask_summary
+from codec_through.rlt_masks import (
+    RLTMaskConfig,
+    artifact_config_hash,
+    compute_rlt_keep_mask_from_frames,
+    mask_summary,
+)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
-from render_codec_through_video_overlays import (  # noqa: E402
+from render_codec_through_video_overlays import (  # type: ignore[import-not-found]  # noqa: E402
+    BENCHMARK_FRAME_SIZE,
     CLIPS,
     FAINT,
     INK,
     MUTED,
     ORANGE,
     ORANGE_DARK,
+    QWEN_BLOCK_SIZE,
+    TRACK_A_MAX_AGE,
     WHITE,
     active_crop,
     decode_frames_at_times,
@@ -74,6 +83,20 @@ RLT_CONFIG = RLTMaskConfig(
     window_min_keep=0,
     ordering="time_major",
 )
+
+
+def _git_sha() -> str | None:
+    try:
+        completed = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    return completed.stdout.strip() or None
 
 
 def _draw_text(
@@ -224,10 +247,10 @@ def _overlay_combined(
     return (
         out.convert("RGB"),
         {
-            "rlt_admit_fraction": float(rlt_active.sum() / total),
-            "vlmax_fresh_fraction": float(vl_fresh.sum() / total),
-            "combined_refresh_fraction": float(union.sum() / total),
-            "overlap_fraction": float(overlap.sum() / total),
+            "rlt_admit_active_pixel_fraction": float(rlt_active.sum() / total),
+            "vlmax_fresh_active_pixel_fraction": float(vl_fresh.sum() / total),
+            "combined_refresh_active_pixel_fraction": float(union.sum() / total),
+            "overlap_active_pixel_fraction": float(overlap.sum() / total),
         },
     )
 
@@ -248,8 +271,6 @@ def _decode(
     spec: Any, fps: float
 ) -> tuple[list[float], list[Image.Image], list[tuple[int, int, int, int]]]:
     frame_count = max(4, int(math.ceil((spec.end_s - spec.start_s) * fps)) + 1)
-    if frame_count % RLT_CONFIG.tubelet_size:
-        frame_count -= 1
     times = [
         spec.start_s + (spec.end_s - spec.start_s) * idx / max(1, frame_count - 1)
         for idx in range(frame_count)
@@ -262,6 +283,12 @@ def _decode(
         padded_frames.append(padded)
         active_boxes.append(active_box)
     return times, padded_frames, active_boxes
+
+
+def _rlt_frames_for_compute(padded_frames: list[Image.Image]) -> tuple[list[Image.Image], int]:
+    if len(padded_frames) % RLT_CONFIG.tubelet_size == 0:
+        return padded_frames, 0
+    return [*padded_frames, padded_frames[-1].copy()], 1
 
 
 def _render_frame(
@@ -314,25 +341,41 @@ def _render_frame(
         rlt_overlay,
         PANE_BOXES["rlt"],
         title="RLT-style admission",
-        subtitle=f"run-length keep mask, keep={rlt_keep_rate:.1%}",
+        subtitle=f"mask only, no length encoding; token keep={rlt_keep_rate:.1%}",
     )
     _paste_pane(
         canvas,
         combined_overlay,
         PANE_BOXES["combined"],
         title="conservative composition",
-        subtitle=f"union refresh/admit={stats['combined_refresh_fraction']:.1%}",
+        subtitle=f"union active pixels={stats['combined_refresh_active_pixel_fraction']:.1%}",
     )
-    _draw_badge(canvas, f"RLT {stats['rlt_admit_fraction']:.0%}", (40, 842), BLUE_DARK)
-    _draw_badge(canvas, f"VL fresh {stats['vlmax_fresh_fraction']:.0%}", (190, 842), ORANGE_DARK)
-    _draw_badge(canvas, f"overlap {stats['overlap_fraction']:.0%}", (385, 842), PURPLE)
+    _draw_badge(
+        canvas,
+        f"RLT px {stats['rlt_admit_active_pixel_fraction']:.0%}",
+        (40, 842),
+        BLUE_DARK,
+    )
+    _draw_badge(
+        canvas,
+        f"VL px {stats['vlmax_fresh_active_pixel_fraction']:.0%}",
+        (205, 842),
+        ORANGE_DARK,
+    )
+    _draw_badge(
+        canvas,
+        f"overlap px {stats['overlap_active_pixel_fraction']:.0%}",
+        (350, 842),
+        PURPLE,
+    )
     return canvas
 
 
 def render_clip(spec: Any, *, fps: float, out_dir: Path) -> dict[str, Any]:
-    times, padded_frames, active_boxes = _decode(spec, fps)
+    _times, padded_frames, active_boxes = _decode(spec, fps)
     transitions = transition_details(padded_frames, active_boxes)
-    rlt_result = compute_rlt_keep_mask_from_frames(padded_frames, config=RLT_CONFIG)
+    rlt_frames, rlt_padding_frame_count = _rlt_frames_for_compute(padded_frames)
+    rlt_result = compute_rlt_keep_mask_from_frames(rlt_frames, config=RLT_CONFIG)
     frames: list[Image.Image] = []
     combined_stats: list[dict[str, float]] = []
 
@@ -384,8 +427,12 @@ def render_clip(spec: Any, *, fps: float, out_dir: Path) -> dict[str, Any]:
         "start_s": spec.start_s,
         "end_s": spec.end_s,
         "frame_count": len(frames),
+        "displayed_frame_count": len(frames),
+        "rlt_input_frame_count": rlt_result.frame_count,
+        "rlt_duplicate_last_frame_count": rlt_padding_frame_count,
         "fps": fps,
         "rlt_mask_summary": mask_summary(rlt_result),
+        "rlt_keep_rate_token_domain": rlt_result.keep_rate,
         "mean_composition_stats": mean_stats,
     }
 
@@ -401,6 +448,8 @@ def main() -> int:
     records = [render_clip(spec, fps=args.fps, out_dir=args.out_dir) for spec in CLIPS]
     manifest = {
         "schema_version": "rlt_vlmax_composition_overlay_v1",
+        "git_sha": _git_sha(),
+        "rlt_config_hash": artifact_config_hash(RLT_CONFIG.as_dict()),
         "purpose": (
             "Scientifically grounded visualization of the RLT/VLMaxxing composition "
             "hypothesis on the same three videos used by the VLMaxxing overlay reel."
@@ -420,6 +469,28 @@ def main() -> int:
                 "regions and RLT representative-token regions. It visualizes the preregistered "
                 "composition candidate, not an already-earned speedup claim."
             ),
+            "denominators": (
+                "Composition fractions are active-crop pixel fractions for visualization. "
+                "Each clip also records rlt_keep_rate_token_domain for token-domain comparison."
+            ),
+            "rlt_frame_parity": (
+                "Displayed frame counts match the existing VLMaxxing windows. If a window has an "
+                "odd frame count, the renderer duplicates the final frame only for RLT mask "
+                "computation, then displays the original frame sequence."
+            ),
+        },
+        "algorithm_policy": {
+            "routing": {
+                "preprocessing": f"square-pad resize {BENCHMARK_FRAME_SIZE}x{BENCHMARK_FRAME_SIZE}",
+                "block_size": QWEN_BLOCK_SIZE,
+                "statistic": "max_abs",
+                "static_threshold": 8.0,
+                "shifted_threshold": 32.0,
+                "reuse_rule": f"static + shifted while age < {TRACK_A_MAX_AGE}",
+                "fresh_rule": "novel + age-expired",
+                "active_region_only": True,
+            },
+            "rlt": RLT_CONFIG.as_dict(),
         },
         "clips": records,
     }

@@ -25,12 +25,19 @@ def _row(
     feature_scorer_jaccard: float | None = None,
     feature_scorer_ms: float | None = None,
     threshold_sweep: list[dict[str, float]] | None = None,
+    video_path: str | None = None,
 ) -> dict[str, Any]:
+    item_meta = {"source": source}
+    if source == "synthetic":
+        item_meta["synthetic_kind"] = kind
+    else:
+        item_meta["group"] = kind
+        item_meta["video_path"] = video_path or "data/benchmarks/mock.mp4"
     row = {
         "kind": "item",
         "schema_version": "rlt_mask_profile_v1",
         "item_id": f"synthetic:{kind}",
-        "item_meta": {"source": source, "synthetic_kind": kind},
+        "item_meta": item_meta,
         "frame_count": 8,
         "mask_config": {"tubelet_size": 2},
         "keep_rate": keep_rate,
@@ -201,6 +208,55 @@ def test_rlt_profile_analyzer_gates_co_cover_on_real_rows_only(tmp_path: Path) -
     assert all(
         decision["reason"] != "rlt_pixel_novelty_co_cover" for decision in payload["decisions"]
     )
+
+
+def test_rlt_profile_analyzer_excludes_synthetic_clip_paths_from_real_gate(
+    tmp_path: Path,
+) -> None:
+    payload = _run_analyzer(
+        tmp_path,
+        [
+            _row("exact_static", 0.25, 1.0),
+            _row("single_frame_repeat", 0.25, 1.0),
+            _row("all_motion", 1.0, 1.0),
+            _row(
+                "fixed_camera_positive",
+                0.25,
+                0.99,
+                source="clip",
+                video_path="data/corpus/synthetic/synthetic_exact_static.mp4",
+            ),
+        ],
+    )
+
+    assert payload["mean_pixel_novelty_jaccard"] > 0.90
+    assert payload["mean_pixel_novelty_jaccard_real"] is None
+    assert payload["co_cover_null"] is False
+    assert payload["synthetic_co_cover_diagnostic"] is True
+
+
+def test_rlt_profile_analyzer_reports_threshold_jaccard_distribution(tmp_path: Path) -> None:
+    payload = _run_analyzer(
+        tmp_path,
+        [
+            _row(
+                "fixed_camera_positive",
+                0.25,
+                0.4,
+                source="manifest",
+                threshold_sweep=[
+                    {"threshold": 0.05, "keep_rate": 0.50, "pixel_novelty_jaccard": 0.60},
+                    {"threshold": 0.10, "keep_rate": 0.25, "pixel_novelty_jaccard": 0.70},
+                ],
+            ),
+            _row("exact_static", 0.25, 0.4),
+            _row("single_frame_repeat", 0.25, 0.4),
+            _row("all_motion", 1.0, 0.4),
+        ],
+    )
+
+    assert payload["threshold_pixel_novelty_jaccard_real"]["0.05"]["mean"] == 0.60
+    assert payload["threshold_pixel_novelty_jaccard_real"]["0.1"]["mean"] == 0.70
 
 
 def test_rlt_profile_analyzer_skips_h15b_when_feature_prior_fails(

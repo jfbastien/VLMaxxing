@@ -192,13 +192,19 @@ def test_gemma_admission_analyzer_pure_cvision_does_not_credit_prefill_noise() -
 
 def test_gemma_admission_analyzer_reports_pruned_warmup_ratio() -> None:
     row = _row("a")
-    row["metadata"] = {"pruned_warmup_generate_ms": [240.0]}
+    row["metadata"] = {
+        "pruned_warmup_generate_ms": [240.0],
+        "pruned_warmup_multimodal_prefill_ms": [180.0],
+    }
     row["pruned_timing_ms"]["generate"] = 120.0
+    row["pruned_timing_ms"]["multimodal_prefill_ms"] = 90.0
 
     summary = _analyze([row], require_overhead_gate=False)
 
-    assert summary["prefill_jit_warmup_ratio_proxy"] == 2.0
+    assert summary["prefill_jit_warmup_ratio"] == 2.0
     assert summary["prefill_jit_warmup_suspected"] is True
+    assert summary["pruned_generate_warmup_ratio_proxy"] == 2.0
+    assert summary["pruned_generate_warmup_suspected"] is True
 
 
 def test_gemma_admission_analyzer_enforces_bucket_gate_when_powered() -> None:
