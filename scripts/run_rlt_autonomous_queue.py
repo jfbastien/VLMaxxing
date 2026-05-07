@@ -14,7 +14,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 SCHEMA_VERSION = "rlt_autonomous_queue_v1"
 DEFAULT_ARTIFACT_DIR = Path("research/experiments/2026/artifacts/rlt_autonomous_queue")
@@ -53,7 +53,10 @@ def _run(command: list[str], *, allow_failure: bool = False) -> dict[str, Any]:
 
 
 def _read_json(path: Path) -> dict[str, Any]:
-    return json.loads(path.read_text(encoding="utf-8"))
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError(f"{path} did not contain a JSON object")
+    return cast(dict[str, Any], payload)
 
 
 def _total_budget(selected: list[str]) -> dict[str, float]:
@@ -69,6 +72,16 @@ def _total_budget(selected: list[str]) -> dict[str, float]:
 def _write_summary(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _analysis_blocks_downstream(analysis: dict[str, Any]) -> bool:
+    skip_phases = {str(phase) for phase in analysis.get("skip_phases", [])}
+    if skip_phases.intersection({"RLT-3G-A", "RLT-3G-B", "RLT-4Q", "RLT-5G", "RLT-5Q"}):
+        return True
+    return any(
+        decision.get("decision") in {"stop", "stop_or_contract"}
+        for decision in analysis.get("decisions", [])
+    )
 
 
 def _run_gemma_admission_cell(
@@ -269,9 +282,7 @@ def main() -> int:
         commands.extend(gemma_commands)
         gemma_analyses["rlt2g_gemma_rlt_smoke"] = gemma_smoke_analysis
         decisions.extend(gemma_smoke_analysis["decisions"])
-        if any(
-            decision.get("decision") == "stop" for decision in gemma_smoke_analysis["decisions"]
-        ):
+        if _analysis_blocks_downstream(gemma_smoke_analysis):
             _write_summary(
                 summary_path,
                 {
@@ -301,9 +312,7 @@ def main() -> int:
         commands.extend(gemma_commands)
         gemma_analyses["rlt2g_gemma_rlt_decision"] = gemma_decision_analysis
         decisions.extend(gemma_decision_analysis["decisions"])
-        if any(
-            decision.get("decision") == "stop" for decision in gemma_decision_analysis["decisions"]
-        ):
+        if _analysis_blocks_downstream(gemma_decision_analysis):
             _write_summary(
                 summary_path,
                 {
