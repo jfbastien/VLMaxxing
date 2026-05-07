@@ -309,6 +309,43 @@ Round 9 local verification:
   SWA-trim marker, so this is a small-model functional safety smoke, not a 26B
   claim.
 
+Round 10 autonomous-readiness update:
+
+- Validated the launch-readiness critique. The scientific gates were correctly
+  wired, but the long-run operational layer needed resume, partial-failure,
+  bucket-underpower, thermal-order, and prefill-split tightening before an
+  unattended 7-8 h run was defensible.
+- `scripts/run_novelty_pruning_gemma.py` now supports `--resume`, validates the
+  existing `artifact_config_hash`, appends only missing `item_id`s, and refreshes
+  summaries from all JSONL rows. The autonomous queue passes `--resume`.
+- Long paired Gemma queue runs now use `--arm-order abba`: even items measure
+  dense then pruned; odd items measure pruned then dense. Item metadata records
+  `arm_order_policy` and `measured_arm_order` so thermal/order effects can be
+  audited.
+- `scripts/analyze_gemma_admission.py` now treats powered buckets with fewer
+  than `bucket_min_n` rows as inconclusive, not as a science failure, and emits
+  `partial_jsonl` stop decisions when a runner subprocess fails before a full
+  analyzable artifact is produced.
+- `scripts/run_rlt_autonomous_queue.py` now runs Gemma subprocesses with
+  failure capture, invokes the analyzer even on partial runs, and writes a
+  terminal summary rather than dying before decision-log/summary emission.
+- First-turn Gemma/Qwen runners now split generation by direct
+  `stream_generate` first-yield wall-clock timing (`phase1_63g_gemma_track_b_v4`
+  and `phase1_51v_sparse_v4`). The prefill-split smoke has a hard residual gate
+  again: `generate_ms ~= multimodal_prefill_ms + text_generation_ms` must hold
+  within the preregistered tolerance.
+- Executed the standalone steps-0-6 smoke path under
+  `/tmp/rlt_round10_steps0_6` with local small Gemma. It completed successfully
+  and reported only `continue` decisions. Key artifacts:
+  - `prefill_split_smoke.json`: `ready=true`, `split_residual_ms=0.0`,
+    `multimodal_prefill_ms=4700.5`, `text_generation_ms=53.5`.
+  - `rlt3gb_preflight.json`: `ready=true`.
+  - `rlt5g_preflight.json`: `ready=true` with local
+    `/Users/jfb/models/gemma-4-e4b-it-4bit` SWA functional smoke.
+  - `queue_summary.json`: `ready_for_model_runs=true`.
+- Updated dry-run budget for the local autonomous H3B path with SWA smoke:
+  low/high estimate is now `2.57-7.50 h`.
+
 ### RLT Algorithm Facts To Preserve
 
 - Input shape in RLT code is `[B, C, T, H, W]`.

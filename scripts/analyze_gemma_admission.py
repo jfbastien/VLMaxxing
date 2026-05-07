@@ -115,6 +115,7 @@ def _quality_summary(
     aggregate_delta = pruned_acc - dense_acc
     by_bucket: dict[str, dict[str, Any]] = {}
     bucket_failures: list[str] = []
+    bucket_underpowered: list[str] = []
     for bucket, bucket_rows in sorted(_group_rows(rows).items()):
         dense_bucket = _accuracy(bucket_rows, "dense_correct")
         pruned_bucket = _accuracy(bucket_rows, "pruned_correct")
@@ -123,6 +124,8 @@ def _quality_summary(
         passed = delta >= quality_delta_floor if evaluated else None
         if evaluated and not passed:
             bucket_failures.append(bucket)
+        if not evaluated:
+            bucket_underpowered.append(bucket)
         by_bucket[bucket] = {
             "n": len(bucket_rows),
             "dense_accuracy": dense_bucket,
@@ -137,7 +140,9 @@ def _quality_summary(
         "accuracy_delta_pruned_minus_dense": aggregate_delta,
         "aggregate_quality_gate_pass": aggregate_delta >= quality_delta_floor,
         "bucket_quality_gate_pass": not bucket_failures,
+        "bucket_quality_gate_inconclusive": len(rows) >= bucket_min_n and bool(bucket_underpowered),
         "bucket_failures": bucket_failures,
+        "bucket_underpowered": bucket_underpowered,
         "buckets": by_bucket,
     }
 
@@ -274,6 +279,7 @@ def analyze(
     timing_min_n: int,
     n_bootstrap: int,
     cell_type: CellType,
+    partial_run: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     quality = _quality_summary(
         rows,
@@ -307,6 +313,15 @@ def analyze(
     pruned_e2e_total = sum(pruned_e2e)
     decisions: list[dict[str, Any]] = []
     skip_phases: list[str] = []
+    if partial_run is not None:
+        decisions.append(
+            {
+                "decision": "stop",
+                "reason": "partial_jsonl",
+                "details": partial_run,
+            }
+        )
+        skip_phases.extend(["RLT-3G-A", "RLT-3G-B", "RLT-4Q", "RLT-5G", "RLT-5Q"])
     if not quality["aggregate_quality_gate_pass"] or not quality["bucket_quality_gate_pass"]:
         decisions.append(
             {
@@ -318,6 +333,18 @@ def analyze(
                     ],
                     "bucket_failures": quality["bucket_failures"],
                     "gate": quality_delta_floor,
+                },
+            }
+        )
+        skip_phases.extend(["RLT-3G-A", "RLT-3G-B", "RLT-4Q", "RLT-5G", "RLT-5Q"])
+    if quality["bucket_quality_gate_inconclusive"]:
+        decisions.append(
+            {
+                "decision": "inconclusive",
+                "reason": "gemma_admission_bucket_underpowered",
+                "details": {
+                    "bucket_min_n": bucket_min_n,
+                    "bucket_underpowered": quality["bucket_underpowered"],
                 },
             }
         )
@@ -404,14 +431,61 @@ def main() -> int:
         default="h2_admission",
     )
     parser.add_argument("--no-overhead-gate", action="store_true")
+    parser.add_argument("--partial-run-returncode", type=int, default=0)
+    parser.add_argument("--partial-run-stderr-tail", default="")
     args = parser.parse_args()
     if args.timing_min_n < 1:
         raise SystemExit("--timing-min-n must be at least 1")
     if args.n_bootstrap < 0:
         raise SystemExit("--n-bootstrap must be nonnegative")
 
-    schema, rows = _load_jsonl(args.jsonl)
-    runner_summary = json.loads(args.summary_json.read_text(encoding="utf-8"))
+    partial_run = (
+        {
+            "runner_returncode": args.partial_run_returncode,
+            "stderr_tail": args.partial_run_stderr_tail[-2000:],
+        }
+        if args.partial_run_returncode != 0
+        else None
+    )
+    try:
+        schema, rows = _load_jsonl(args.jsonl)
+    except Exception as exc:
+        payload = {
+            "schema_version": SCHEMA_VERSION,
+            "jsonl": str(args.jsonl),
+            "summary_json": str(args.summary_json),
+            "runner_schema": None,
+            "runner_summary_schema_version": None,
+            "load_error": repr(exc),
+            "gates": {
+                "quality_delta_floor": args.quality_delta_floor,
+                "bucket_min_n": args.bucket_min_n,
+                "timing_min_n": args.timing_min_n,
+                "n_bootstrap": args.n_bootstrap,
+                "overhead_gate_required": not args.no_overhead_gate,
+                "cell_type": args.cell_type,
+            },
+            "n_items": 0,
+            "decisions": [
+                {
+                    "decision": "stop",
+                    "reason": "partial_jsonl",
+                    "details": partial_run or {"load_error": repr(exc)},
+                }
+            ],
+            "skip_phases": ["RLT-3G-A", "RLT-3G-B", "RLT-4Q", "RLT-5G", "RLT-5Q"],
+        }
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(
+            json.dumps(payload, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        print(json.dumps({"output": str(args.output), "decisions": payload["decisions"]}))
+        return 0
+    try:
+        runner_summary = json.loads(args.summary_json.read_text(encoding="utf-8"))
+    except Exception as exc:
+        runner_summary = {"load_error": repr(exc)}
     analysis = analyze(
         rows,
         quality_delta_floor=args.quality_delta_floor,
@@ -420,6 +494,7 @@ def main() -> int:
         timing_min_n=args.timing_min_n,
         n_bootstrap=args.n_bootstrap,
         cell_type=args.cell_type,
+        partial_run=partial_run,
     )
     payload = {
         "schema_version": SCHEMA_VERSION,

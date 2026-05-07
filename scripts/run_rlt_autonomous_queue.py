@@ -40,6 +40,7 @@ PHASE_ESTIMATES_HOURS = {
     "RLT-3G-B": [2.0, 6.0],
     "RLT-4Q": [7.0, 10.0],
     "RLT-5G": [1.5, 6.0],
+    "RLT-5G-swa-smoke": [0.03, 0.10],
     "RLT-5Q": [7.0, 10.0],
     "threshold-extension": [10.0, 20.0],
 }
@@ -118,13 +119,19 @@ def _append_decision_log(
         "rlt_pixel_novelty_strong_co_cover": "RLT-1.5",
         "gemma_admission_quality_gate_failed": "RLT-2G",
         "gemma_admission_overhead_dominated": "RLT-2G",
+        "gemma_admission_bucket_underpowered": "RLT-2G",
+        "partial_jsonl": "RLT-2G",
+        "gemma_admission_analysis_failed": "RLT-2G",
         "prefill_split_smoke_missing": "RLT-3G-B",
         "swa_functional_smoke_missing": "RLT-5G",
     }
     stop_decisions = [
         decision
         for decision in decisions
-        if str(decision.get("decision")) in {"stop", "contract", "block_h3b", "block_h4a_gemma"}
+        if (
+            str(decision.get("decision"))
+            in {"stop", "contract", "inconclusive", "block_h3b", "block_h4a_gemma"}
+        )
     ]
     if not stop_decisions:
         return
@@ -162,7 +169,7 @@ def _planned_command(command: list[str]) -> dict[str, Any]:
 
 
 def _analysis_blocks_downstream(analysis: dict[str, Any]) -> bool:
-    known_decisions = {"continue", "stop", "contract", "skip_h1_5b", "downgrade"}
+    known_decisions = {"continue", "stop", "contract", "inconclusive", "skip_h1_5b", "downgrade"}
     for decision in analysis.get("decisions", []):
         value = str(decision.get("decision"))
         if value not in known_decisions:
@@ -186,6 +193,7 @@ def _run_gemma_admission_cell(
     timing_min_n: int,
     cell_type: str,
     label: str,
+    allow_runner_failure: bool,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     analysis_path = artifact_dir / f"{label}_analysis.json"
     commands: list[dict[str, Any]] = []
@@ -202,8 +210,32 @@ def _run_gemma_admission_cell(
         cell_type=cell_type,
         label=label,
     )
-    for command in planned:
-        commands.append(_run(command))
+    run_result = _run(planned[0], allow_failure=allow_runner_failure)
+    commands.append(run_result)
+    analyze_command = list(planned[1])
+    if run_result["returncode"] != 0:
+        analyze_command.extend(
+            [
+                "--partial-run-returncode",
+                str(run_result["returncode"]),
+                "--partial-run-stderr-tail",
+                str(run_result.get("stderr_tail", "")),
+            ]
+        )
+    analyze_result = _run(analyze_command, allow_failure=True)
+    commands.append(analyze_result)
+    if not analysis_path.exists():
+        return commands, {
+            "schema_version": "gemma_admission_analysis_v2",
+            "decisions": [
+                {
+                    "decision": "stop",
+                    "reason": "gemma_admission_analysis_failed",
+                    "details": {"analyzer_returncode": analyze_result["returncode"]},
+                }
+            ],
+            "skip_phases": ["RLT-3G-A", "RLT-3G-B", "RLT-4Q", "RLT-5G", "RLT-5Q"],
+        }
     return commands, _read_json(analysis_path)
 
 
@@ -332,6 +364,9 @@ def _gemma_admission_commands(
         str(rss_guard_mb),
         "--n-warmup",
         str(n_warmup),
+        "--arm-order",
+        "abba",
+        "--resume",
         "--output",
         str(jsonl_path),
         "--summary",
@@ -435,6 +470,8 @@ def main() -> int:
         selected_budget.append(
             "RLT-3G-B" if args.gemma_cell_type == "h3b_admission" else "RLT-2G-gemma-n60"
         )
+    if args.run_swa_smoke:
+        selected_budget.append("RLT-5G-swa-smoke")
     budget = _total_budget(selected_budget)
     if budget["high_hours"] > args.max_planned_hours:
         raise SystemExit(
@@ -696,6 +733,7 @@ def main() -> int:
             timing_min_n=args.timing_min_n,
             cell_type=args.gemma_cell_type,
             label="rlt2g_gemma_rlt_smoke",
+            allow_runner_failure=True,
         )
         commands.extend(gemma_commands)
         gemma_analyses["rlt2g_gemma_rlt_smoke"] = gemma_smoke_analysis
@@ -764,6 +802,7 @@ def main() -> int:
             timing_min_n=args.timing_min_n,
             cell_type=args.gemma_cell_type,
             label="rlt2g_gemma_rlt_decision",
+            allow_runner_failure=True,
         )
         commands.extend(gemma_commands)
         gemma_analyses["rlt2g_gemma_rlt_decision"] = gemma_decision_analysis

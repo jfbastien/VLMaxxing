@@ -221,3 +221,44 @@ def test_gemma_admission_analyzer_enforces_bucket_gate_when_powered() -> None:
 
     assert summary["bucket_quality_gate_pass"] is False
     assert summary["bucket_failures"] == ["long"]
+
+
+def test_gemma_admission_analyzer_marks_underpowered_bucket_inconclusive() -> None:
+    rows = [
+        _row(f"short-{idx}", group="short", dense_correct=True, pruned_correct=True)
+        for idx in range(20)
+    ]
+    rows.extend(
+        _row(f"long-{idx}", group="long", dense_correct=True, pruned_correct=True)
+        for idx in range(19)
+    )
+
+    summary = _analyze(rows, require_overhead_gate=False)
+
+    assert summary["bucket_quality_gate_inconclusive"] is True
+    assert summary["bucket_underpowered"] == ["long"]
+    assert summary["decisions"][0] == {
+        "decision": "inconclusive",
+        "reason": "gemma_admission_bucket_underpowered",
+        "details": {"bucket_min_n": 20, "bucket_underpowered": ["long"]},
+    }
+    assert "RLT-3G-B" in summary["skip_phases"]
+
+
+def test_gemma_admission_analyzer_marks_partial_run_as_stop() -> None:
+    rows = [_row("a")]
+
+    summary = analyzer.analyze(
+        rows,
+        quality_delta_floor=-0.05,
+        bucket_min_n=20,
+        require_overhead_gate=False,
+        timing_min_n=20,
+        n_bootstrap=0,
+        cell_type="h3b_admission",
+        partial_run={"runner_returncode": 1, "stderr_tail": "boom"},
+    )
+
+    assert summary["decisions"][0]["decision"] == "stop"
+    assert summary["decisions"][0]["reason"] == "partial_jsonl"
+    assert "RLT-3G-B" in summary["skip_phases"]

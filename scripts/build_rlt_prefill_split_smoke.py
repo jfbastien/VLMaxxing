@@ -106,6 +106,17 @@ def validate_prefill_split_artifact(
             split["split_residual_pct"] <= max_split_residual_pct
             or split["split_residual_ms"] <= max_split_residual_ms
         )
+        if not split_residual_within_tolerance:
+            failures.append(
+                {
+                    "item_id": row.get("item_id"),
+                    "reason": "split_residual_exceeds_tolerance",
+                    "split_residual_ms": split["split_residual_ms"],
+                    "split_residual_pct": split["split_residual_pct"],
+                    "max_split_residual_ms": max_split_residual_ms,
+                    "max_split_residual_pct": max_split_residual_pct,
+                }
+            )
         item_summaries.append(
             {
                 "item_id": row.get("item_id"),
@@ -149,9 +160,9 @@ def validate_prefill_split_artifact(
         "max_split_residual_pct": max_split_residual_pct,
         "max_split_residual_ms": max_split_residual_ms,
         "split_residual_contract": (
-            "Diagnostic only. mlx-vlm reported prompt/generation TPS splits can exclude "
-            "wrapper, shape-compile, and Python overhead in generate_ms; a large residual "
-            "does not invalidate the presence of separate multimodal prefill fields."
+            "Hard gate. The first-turn runner must split generate_ms into direct "
+            "first-yield multimodal_prefill_ms plus remaining text_generation_ms within "
+            "the preregistered tolerance before H3B can start."
         ),
         "items": item_summaries,
         "failures": failures,
@@ -161,9 +172,9 @@ def validate_prefill_split_artifact(
             "qwen_selective_reprefill_uses_wall_prefill_timer": all(qwen_reference.values()),
             "gemma_track_b_timing_split": schema.get("timing_split"),
             "interpretation": (
-                "Gemma first-turn runners recover mlx-vlm prompt_time algebraically from "
-                "prompt_tokens / prompt_tps. qwen_selective_reprefill measures the same "
-                "prefill boundary with a direct perf_counter_ns span around prompt/tail prefill."
+                "Gemma first-turn runners and qwen_selective_reprefill both expose a "
+                "wall-clock prefill boundary; the Gemma smoke checks that the split "
+                "adds back to generate_ms before allowing H3B."
             ),
         },
     }

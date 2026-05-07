@@ -21,8 +21,8 @@ def test_prefill_split_smoke_validates_nonzero_split_fields(tmp_path: Path) -> N
         [
             {
                 "kind": "schema",
-                "schema_version": "phase1_63g_gemma_track_b_v3",
-                "timing_split": "exact_prompt_or_generation_tokens_divided_by_mlx_vlm_reported_tps",
+                "schema_version": "phase1_63g_gemma_track_b_v4",
+                "timing_split": "stream_generate_first_yield_wall_clock",
             },
             {
                 "kind": "item",
@@ -37,7 +37,7 @@ def test_prefill_split_smoke_validates_nonzero_split_fields(tmp_path: Path) -> N
             },
         ],
     )
-    summary_path.write_text(json.dumps({"schema_version": "phase1_63g_gemma_track_b_v3"}))
+    summary_path.write_text(json.dumps({"schema_version": "phase1_63g_gemma_track_b_v4"}))
 
     payload = smoke.validate_prefill_split_artifact(
         jsonl_path=jsonl_path,
@@ -86,7 +86,7 @@ def test_prefill_split_smoke_fails_missing_ms_alias(tmp_path: Path) -> None:
     assert payload["failures"][0]["reason"] == "missing_fields"
 
 
-def test_prefill_split_smoke_keeps_large_generate_residual_advisory(tmp_path: Path) -> None:
+def test_prefill_split_smoke_fails_large_generate_residual(tmp_path: Path) -> None:
     jsonl_path = tmp_path / "dense.jsonl"
     summary_path = tmp_path / "summary.json"
     _write_jsonl(
@@ -94,8 +94,8 @@ def test_prefill_split_smoke_keeps_large_generate_residual_advisory(tmp_path: Pa
         [
             {
                 "kind": "schema",
-                "schema_version": "phase1_63g_gemma_track_b_v3",
-                "timing_split": "exact_prompt_or_generation_tokens_divided_by_mlx_vlm_reported_tps",
+                "schema_version": "phase1_63g_gemma_track_b_v4",
+                "timing_split": "stream_generate_first_yield_wall_clock",
             },
             {
                 "kind": "item",
@@ -110,7 +110,7 @@ def test_prefill_split_smoke_keeps_large_generate_residual_advisory(tmp_path: Pa
             },
         ],
     )
-    summary_path.write_text(json.dumps({"schema_version": "phase1_63g_gemma_track_b_v3"}))
+    summary_path.write_text(json.dumps({"schema_version": "phase1_63g_gemma_track_b_v4"}))
 
     payload = smoke.validate_prefill_split_artifact(
         jsonl_path=jsonl_path,
@@ -119,7 +119,8 @@ def test_prefill_split_smoke_keeps_large_generate_residual_advisory(tmp_path: Pa
         max_split_residual_ms=50.0,
     )
 
-    assert payload["ready"] is True
+    assert payload["ready"] is False
+    assert payload["failures"][0]["reason"] == "split_residual_exceeds_tolerance"
     assert payload["items"][0]["split_residual_within_tolerance"] is False
 
 

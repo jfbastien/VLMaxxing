@@ -119,7 +119,7 @@ DEFAULT_MODEL_PATH = Path.home() / "models" / "gemma-4-e4b-it-4bit"
 # is stale / decorative; trust the observed emission.
 GEMMA_IMAGE_SIZE = 512
 GEMMA_GRID_SHAPE = (16, 16)  # 256 soft tokens per image, runtime-verified.
-SCHEMA_VERSION = "phase1_51r_gemma_admission_v3"
+SCHEMA_VERSION = "phase1_51r_gemma_admission_v4"
 # Anchor arms that actually need per-token vision features. Others skip the
 # (1, F*280, hidden) host-float32 mirror, which saved ~1–2 GB per item on the
 # 2026-04-18 OOM repro without changing any science.
@@ -127,6 +127,7 @@ _FEATURE_DEPENDENT_ARMS: frozenset[AnchorArm] = frozenset(
     {"nuwa_pillar", "max_min_diversity", "cls_attention_proxy"}
 )
 PlaceholderPruneMode = Literal["anchor", "structural", "rlt", "none"]
+ArmOrderMode = Literal["dense_first", "abba"]
 
 
 def _clear_runtime_state() -> None:
@@ -364,6 +365,10 @@ def _artifact_hash(payload: dict[str, Any]) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
+def _mean(values: list[float]) -> float:
+    return sum(values) / len(values) if values else 0.0
+
+
 def _schema_row(args: argparse.Namespace, rlt_config: RLTMaskConfig) -> dict[str, Any]:
     payload = {
         "manifest": str(args.manifest),
@@ -375,6 +380,7 @@ def _schema_row(args: argparse.Namespace, rlt_config: RLTMaskConfig) -> dict[str
         "prune_placeholders": args.prune_placeholders,
         "rlt_config": rlt_config.as_dict() if args.prune_placeholders == "rlt" else None,
         "n_warmup": args.n_warmup,
+        "arm_order": getattr(args, "arm_order", "dense_first"),
         "vision_tower_layer": args.vision_tower_layer,
         "vision_tower_keep_rate": args.vision_tower_keep_rate,
     }
@@ -501,6 +507,7 @@ def _process_one_item(
     max_tokens: int,
     item_index: int,
     n_warmup: int,
+    arm_order: ArmOrderMode,
     pruned_shape_observation_counts: dict[tuple[int, int], int],
 ) -> ItemResult:
     # --- Stage 1: decode ---
@@ -672,24 +679,6 @@ def _process_one_item(
         }
     )
 
-    # --- Stage 7: dense baseline generate ---
-    dense_stats = _run_generate(
-        model,
-        processor,
-        input_ids=dense_input_ids,
-        pixel_values=pixel_values,
-        mask=mask,
-        extra=extra,
-        cached_image_features=vision_features,
-        max_tokens=max_tokens,
-    )
-    dense_text = dense_stats.text
-    dense_generate_ms = dense_stats.elapsed_ms
-    # Release MLX kv-cache + Python refs before the pruned pass. Without this,
-    # the 2026-04-18 pilot had both generate() branches' prefill tensors
-    # resident simultaneously on a 16 GB Mac — peak RSS exceeded 50 GB.
-    _clear_runtime_state()
-
     # --- Stage 8: pruned generate ---
     # Pruned mask: same attention_mask slots minus the dropped image positions.
     # We regenerate the mask by taking the attention_mask row and selecting kept columns.
@@ -706,10 +695,26 @@ def _process_one_item(
         pruned_attn = attn_np[survivor]
         pruned_mask = mx.array(pruned_attn[None, :])
 
-    pruned_warmup_generate_ms: list[float] = []
-    pruned_warmup_multimodal_prefill_ms: list[float] = []
-    for _ in range(n_warmup):
-        warmup_stats = _run_generate(
+    measured_arm_order = (
+        "pruned_first" if arm_order == "abba" and item_index % 2 == 1 else "dense_first"
+    )
+    mask_metadata["arm_order_policy"] = arm_order
+    mask_metadata["measured_arm_order"] = measured_arm_order
+
+    def run_dense_branch() -> GenerateStats:
+        return _run_generate(
+            model,
+            processor,
+            input_ids=dense_input_ids,
+            pixel_values=pixel_values,
+            mask=mask,
+            extra=extra,
+            cached_image_features=vision_features,
+            max_tokens=max_tokens,
+        )
+
+    def run_pruned_branch() -> GenerateStats:
+        return _run_generate(
             model,
             processor,
             input_ids=pruned_input_ids,
@@ -719,20 +724,33 @@ def _process_one_item(
             cached_image_features=gathered_features,
             max_tokens=max_tokens,
         )
-        pruned_warmup_generate_ms.append(warmup_stats.elapsed_ms)
-        pruned_warmup_multimodal_prefill_ms.append(warmup_stats.multimodal_prefill_ms)
-        _clear_runtime_state()
 
-    pruned_stats = _run_generate(
-        model,
-        processor,
-        input_ids=pruned_input_ids,
-        pixel_values=pixel_values,
-        mask=pruned_mask,
-        extra=extra,
-        cached_image_features=gathered_features,
-        max_tokens=max_tokens,
-    )
+    pruned_warmup_generate_ms: list[float] = []
+    pruned_warmup_multimodal_prefill_ms: list[float] = []
+
+    def warm_pruned_branch() -> None:
+        for _ in range(n_warmup):
+            warmup_stats = run_pruned_branch()
+            pruned_warmup_generate_ms.append(warmup_stats.elapsed_ms)
+            pruned_warmup_multimodal_prefill_ms.append(warmup_stats.multimodal_prefill_ms)
+            _clear_runtime_state()
+
+    if measured_arm_order == "dense_first":
+        # Release MLX kv-cache + Python refs before the pruned pass. Without this,
+        # the 2026-04-18 pilot had both generate() branches' prefill tensors
+        # resident simultaneously on a 16 GB Mac — peak RSS exceeded 50 GB.
+        dense_stats = run_dense_branch()
+        _clear_runtime_state()
+        warm_pruned_branch()
+        pruned_stats = run_pruned_branch()
+    else:
+        warm_pruned_branch()
+        pruned_stats = run_pruned_branch()
+        _clear_runtime_state()
+        dense_stats = run_dense_branch()
+
+    dense_text = dense_stats.text
+    dense_generate_ms = dense_stats.elapsed_ms
     pruned_text = pruned_stats.text
     pruned_generate_ms = pruned_stats.elapsed_ms
     dense_prefill_ms = dense_stats.multimodal_prefill_ms
@@ -995,6 +1013,151 @@ def _record_payload(record: ItemResult) -> dict[str, Any]:
     }
 
 
+def _load_output_rows_for_resume(path: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    schema: dict[str, Any] | None = None
+    rows: list[dict[str, Any]] = []
+    with path.open("r", encoding="utf-8") as handle:
+        for lineno, line in enumerate(handle, start=1):
+            if not line.strip():
+                continue
+            payload = json.loads(line)
+            kind = payload.get("kind")
+            if kind == "schema":
+                if schema is not None:
+                    raise ValueError(f"{path}:{lineno} has a duplicate schema row")
+                schema = payload
+            elif kind in (None, "item"):
+                rows.append(payload)
+            else:
+                raise ValueError(f"{path}:{lineno} has unexpected row kind {kind!r}")
+    if schema is None:
+        raise ValueError(f"{path} is missing a schema row; refuse to resume")
+    return schema, rows
+
+
+def _timing_from_payload(row: dict[str, Any], branch: str, key: str) -> float:
+    timings = row.get(f"{branch}_timing_ms")
+    if not isinstance(timings, dict):
+        raise ValueError(f"{row.get('item_id')} missing {branch}_timing_ms")
+    value = timings.get(key)
+    if value is None:
+        raise ValueError(f"{row.get('item_id')} missing {branch}_timing_ms.{key}")
+    return float(value)
+
+
+def _summarize_payload_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    if not rows:
+        return {"n_items": 0}
+    dense_generate_ms = [_timing_from_payload(row, "dense", "generate") for row in rows]
+    pruned_generate_ms = [_timing_from_payload(row, "pruned", "generate") for row in rows]
+    dense_e2e_ms = [_timing_from_payload(row, "dense", "end_to_end") for row in rows]
+    pruned_e2e_ms = [_timing_from_payload(row, "pruned", "end_to_end") for row in rows]
+    dense_tok = float(sum(int(row.get("dense_generation_tokens", 0)) for row in rows))
+    pruned_tok = float(sum(int(row.get("pruned_generation_tokens", 0)) for row in rows))
+    dense_ms = float(sum(dense_generate_ms))
+    pruned_ms = float(sum(pruned_generate_ms))
+    return {
+        "n_items": len(rows),
+        "dense_accuracy": _mean([1.0 if row.get("dense_correct") else 0.0 for row in rows]),
+        "pruned_accuracy": _mean([1.0 if row.get("pruned_correct") else 0.0 for row in rows]),
+        "agreement": _mean([1.0 if row.get("agreement") else 0.0 for row in rows]),
+        "mean_kept_tokens": float(np.mean([int(row["kept_tokens_total"]) for row in rows])),
+        "mean_keep_rate": float(
+            np.mean(
+                [
+                    int(row["kept_tokens_total"])
+                    / max(1, int(row["n_frames"]) * int(row["tokens_per_frame"]))
+                    for row in rows
+                ]
+            )
+        ),
+        "generate_speedup_mean": (
+            float(np.mean(dense_generate_ms) / np.mean(pruned_generate_ms))
+            if pruned_generate_ms and np.mean(pruned_generate_ms) > 0
+            else 0.0
+        ),
+        "end_to_end_speedup_mean": (
+            float(np.mean(dense_e2e_ms) / np.mean(pruned_e2e_ms))
+            if pruned_e2e_ms and np.mean(pruned_e2e_ms) > 0
+            else 0.0
+        ),
+        "median_generate_speedup": (
+            float(np.median(dense_generate_ms) / np.median(pruned_generate_ms))
+            if pruned_generate_ms and np.median(pruned_generate_ms) > 0
+            else 0.0
+        ),
+        "mean_dense_generate_ms": float(np.mean(dense_generate_ms)),
+        "mean_pruned_generate_ms": float(np.mean(pruned_generate_ms)),
+        "median_dense_generate_ms": float(np.median(dense_generate_ms)),
+        "median_pruned_generate_ms": float(np.median(pruned_generate_ms)),
+        "mean_dense_end_to_end_ms": float(np.mean(dense_e2e_ms)),
+        "mean_pruned_end_to_end_ms": float(np.mean(pruned_e2e_ms)),
+        "median_dense_end_to_end_ms": float(np.median(dense_e2e_ms)),
+        "median_pruned_end_to_end_ms": float(np.median(pruned_e2e_ms)),
+        "mean_decode_ms": float(
+            np.mean([_timing_from_payload(row, "dense", "decode") for row in rows])
+        ),
+        "mean_processor_ms": float(
+            np.mean([_timing_from_payload(row, "dense", "processor") for row in rows])
+        ),
+        "mean_dense_vision_ms": float(
+            np.mean([_timing_from_payload(row, "dense", "vision") for row in rows])
+        ),
+        "mean_dense_multimodal_prefill_ms": float(
+            np.mean([_timing_from_payload(row, "dense", "multimodal_prefill_ms") for row in rows])
+        ),
+        "mean_pruned_multimodal_prefill_ms": float(
+            np.mean([_timing_from_payload(row, "pruned", "multimodal_prefill_ms") for row in rows])
+        ),
+        "mean_dense_text_generation_ms": float(
+            np.mean([_timing_from_payload(row, "dense", "text_generation_ms") for row in rows])
+        ),
+        "mean_pruned_text_generation_ms": float(
+            np.mean([_timing_from_payload(row, "pruned", "text_generation_ms") for row in rows])
+        ),
+        "mean_pruned_novelty_ms": float(
+            np.mean([_timing_from_payload(row, "pruned", "novelty") for row in rows])
+        ),
+        "mean_pruned_mask_ms": float(
+            np.mean([_timing_from_payload(row, "pruned", "mask") for row in rows])
+        ),
+        "mean_pruned_mask_compute_ms": float(
+            np.mean([_timing_from_payload(row, "pruned", "mask_compute") for row in rows])
+        ),
+        "mean_pruned_prune_ms": float(
+            np.mean([_timing_from_payload(row, "pruned", "prune") for row in rows])
+        ),
+        "mean_pruned_placeholder_prune_ms": float(
+            np.mean([_timing_from_payload(row, "pruned", "placeholder_prune") for row in rows])
+        ),
+        "dense_parse_failures": sum(1 for row in rows if row.get("dense_parse_failure")),
+        "pruned_parse_failures": sum(1 for row in rows if row.get("pruned_parse_failure")),
+        "mean_dense_prompt_tokens": float(
+            np.mean([int(row.get("dense_prompt_tokens", 0)) for row in rows])
+        ),
+        "mean_pruned_prompt_tokens": float(
+            np.mean([int(row.get("pruned_prompt_tokens", 0)) for row in rows])
+        ),
+        "mean_dense_generation_tokens": float(
+            np.mean([int(row.get("dense_generation_tokens", 0)) for row in rows])
+        ),
+        "mean_pruned_generation_tokens": float(
+            np.mean([int(row.get("pruned_generation_tokens", 0)) for row in rows])
+        ),
+        "mean_dense_generation_tps": float(
+            np.mean([float(row.get("dense_generation_tps", 0.0)) for row in rows])
+        ),
+        "mean_pruned_generation_tps": float(
+            np.mean([float(row.get("pruned_generation_tps", 0.0)) for row in rows])
+        ),
+        "per_token_generate_speedup_mean": (
+            (dense_ms / dense_tok) / (pruned_ms / pruned_tok)
+            if dense_tok > 0 and pruned_tok > 0 and pruned_ms > 0
+            else 0.0
+        ),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, required=True)
@@ -1029,6 +1192,23 @@ def main() -> int:
         help=(
             "Discard this many pruned generate() calls before the measured pruned call. "
             "Use 1 for MLX shape-JIT diagnostics; default 0 preserves historical timing."
+        ),
+    )
+    parser.add_argument(
+        "--arm-order",
+        choices=("dense_first", "abba"),
+        default="dense_first",
+        help=(
+            "Measured branch order. 'abba' alternates odd items to pruned-then-dense "
+            "to reduce thermal/order bias in long paired runs."
+        ),
+    )
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help=(
+            "Append to an existing JSONL with the same artifact_config_hash and skip "
+            "completed item_ids. Used by autonomous long runs."
         ),
     )
     parser.add_argument("--max-tokens", type=int, default=32)
@@ -1099,6 +1279,56 @@ def main() -> int:
     if args.n_items > 0:
         items = items[: args.n_items]
 
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    schema_row = _schema_row(args, rlt_config)
+    existing_rows: list[dict[str, Any]] = []
+    completed_item_ids: set[str] = set()
+    if args.resume and args.output.exists() and args.output.stat().st_size > 0:
+        existing_schema, existing_rows = _load_output_rows_for_resume(args.output)
+        if existing_schema.get("artifact_config_hash") != schema_row["artifact_config_hash"]:
+            raise SystemExit(
+                "refusing to resume because artifact_config_hash changed: "
+                f"existing={existing_schema.get('artifact_config_hash')} "
+                f"current={schema_row['artifact_config_hash']}"
+            )
+        completed_item_ids = {str(row["item_id"]) for row in existing_rows}
+        print(
+            f"[resume] loaded {len(existing_rows)} completed rows from {args.output}; "
+            f"skipping {len(completed_item_ids)} item_ids"
+        )
+    pending_items = [
+        (idx, item) for idx, item in enumerate(items) if item.item_id not in completed_item_ids
+    ]
+    if args.resume and not pending_items:
+        summary = {
+            "manifest": str(args.manifest),
+            "schema_version": SCHEMA_VERSION,
+            "model_path": str(args.model_path),
+            "anchor_arm": args.anchor_arm,
+            "keep_rate": args.keep_rate,
+            "prune_placeholders": args.prune_placeholders,
+            "rlt_config": rlt_config.as_dict() if args.prune_placeholders == "rlt" else None,
+            "frame_count": args.frame_count,
+            "max_tokens": args.max_tokens,
+            "n_warmup": args.n_warmup,
+            "arm_order": args.arm_order,
+            "resume": True,
+            "resumed_existing_rows": len(existing_rows),
+            "new_rows": 0,
+            "vision_tower_patched": args.vision_tower_keep_rate < 1.0,
+            "vision_tower_layer": (
+                args.vision_tower_layer if args.vision_tower_keep_rate < 1.0 else None
+            ),
+            "vision_tower_keep_rate": (
+                args.vision_tower_keep_rate if args.vision_tower_keep_rate < 1.0 else None
+            ),
+            **_summarize_payload_rows(existing_rows),
+        }
+        args.summary.parent.mkdir(parents=True, exist_ok=True)
+        args.summary.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
+        print(f"[resume] all {len(existing_rows)} rows already complete; summary refreshed")
+        return 0
+
     print(f"loading model: {args.model_path}")
     print(f"[rss before load] {rss_mb():.0f} MiB")
     model, processor = load(str(args.model_path))
@@ -1124,12 +1354,14 @@ def main() -> int:
             f"keep_rate={args.vision_tower_keep_rate}"
         )
 
-    args.output.parent.mkdir(parents=True, exist_ok=True)
     records: list[ItemResult] = []
+    record_rows: list[dict[str, Any]] = []
     pruned_shape_observation_counts: dict[tuple[int, int], int] = {}
-    with args.output.open("w") as out_f:
-        out_f.write(json.dumps(_schema_row(args, rlt_config), sort_keys=True) + "\n")
-        for idx, item in enumerate(items):
+    output_mode = "a" if args.resume and existing_rows else "w"
+    with args.output.open(output_mode) as out_f:
+        if output_mode == "w":
+            out_f.write(json.dumps(schema_row, sort_keys=True) + "\n")
+        for idx, item in pending_items:
             _clear_runtime_state()
             try:
                 record = _process_one_item(
@@ -1145,13 +1377,16 @@ def main() -> int:
                     max_tokens=args.max_tokens,
                     item_index=idx,
                     n_warmup=args.n_warmup,
+                    arm_order=cast(ArmOrderMode, args.arm_order),
                     pruned_shape_observation_counts=pruned_shape_observation_counts,
                 )
             except Exception as exc:
                 print(f"[{idx + 1}/{len(items)}] {item.item_id}: FAILED {exc!r}", file=sys.stderr)
                 raise
             records.append(record)
-            out_f.write(json.dumps(_record_payload(record)) + "\n")
+            record_payload = _record_payload(record)
+            record_rows.append(record_payload)
+            out_f.write(json.dumps(record_payload) + "\n")
             out_f.flush()
             print(
                 f"[{idx + 1:3d}/{len(items)}] {item.item_id:<40s} "
@@ -1169,6 +1404,7 @@ def main() -> int:
             )
             check_rss_guard(args.rss_guard_mb, stage=f"after_item_{idx + 1}")
 
+    all_rows = existing_rows + record_rows
     summary = {
         "manifest": str(args.manifest),
         "schema_version": SCHEMA_VERSION,
@@ -1180,10 +1416,14 @@ def main() -> int:
         "frame_count": args.frame_count,
         "max_tokens": args.max_tokens,
         "n_warmup": args.n_warmup,
+        "arm_order": args.arm_order,
+        "resume": args.resume,
+        "resumed_existing_rows": len(existing_rows),
+        "new_rows": len(record_rows),
         "vision_tower_patched": vt_patched,
         "vision_tower_layer": args.vision_tower_layer if vt_patched else None,
         "vision_tower_keep_rate": args.vision_tower_keep_rate if vt_patched else None,
-        **_summarize(records),
+        **_summarize_payload_rows(all_rows),
     }
     args.summary.parent.mkdir(parents=True, exist_ok=True)
     args.summary.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")

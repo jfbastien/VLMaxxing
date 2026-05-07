@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import argparse
+import json
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -19,6 +21,48 @@ pytest.importorskip("mlx_vlm")
 
 import scripts.run_novelty_pruning_gemma as runner
 from codec_through.rlt_masks import RLTMaskConfig
+
+
+def _payload(item_id: str) -> dict[str, object]:
+    return {
+        "kind": "item",
+        "item_id": item_id,
+        "dense_correct": True,
+        "pruned_correct": True,
+        "agreement": True,
+        "kept_tokens_total": 4,
+        "n_frames": 2,
+        "tokens_per_frame": 4,
+        "dense_generation_tokens": 2,
+        "pruned_generation_tokens": 2,
+        "dense_generation_tps": 1.0,
+        "pruned_generation_tps": 1.0,
+        "dense_prompt_tokens": 10,
+        "pruned_prompt_tokens": 5,
+        "dense_timing_ms": {
+            "decode": 1.0,
+            "processor": 1.0,
+            "vision": 1.0,
+            "multimodal_prefill_ms": 10.0,
+            "text_generation_ms": 2.0,
+            "generate": 12.0,
+            "end_to_end": 15.0,
+        },
+        "pruned_timing_ms": {
+            "decode": 1.0,
+            "processor": 1.0,
+            "novelty": 0.0,
+            "mask": 1.0,
+            "mask_compute": 1.0,
+            "prune": 1.0,
+            "placeholder_prune": 1.0,
+            "vision": 1.0,
+            "multimodal_prefill_ms": 5.0,
+            "text_generation_ms": 2.0,
+            "generate": 7.0,
+            "end_to_end": 11.0,
+        },
+    }
 
 
 def test_prune_placeholders_none_is_strict_bypass(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -133,3 +177,27 @@ def test_record_payload_emits_direct_prefill_and_generation_fields() -> None:
     assert payload["dense_timing_ms"]["text_generation_ms"] == 5.0
     assert payload["pruned_timing_ms"]["multimodal_prefill_ms"] == 2.0
     assert payload["pruned_timing_ms"]["text_generation_ms"] == 4.0
+
+
+def test_resume_loader_reads_schema_and_item_rows(tmp_path: Path) -> None:
+    path = tmp_path / "out.jsonl"
+    schema = {"kind": "schema", "artifact_config_hash": "abc"}
+    rows = [_payload("a"), _payload("b")]
+    with path.open("w", encoding="utf-8") as handle:
+        handle.write(json.dumps(schema) + "\n")
+        for row in rows:
+            handle.write(json.dumps(row) + "\n")
+
+    loaded_schema, loaded_rows = runner._load_output_rows_for_resume(path)
+
+    assert loaded_schema == schema
+    assert [row["item_id"] for row in loaded_rows] == ["a", "b"]
+
+
+def test_payload_summary_includes_resumed_rows() -> None:
+    summary = runner._summarize_payload_rows([_payload("a"), _payload("b")])
+
+    assert summary["n_items"] == 2
+    assert summary["dense_accuracy"] == 1.0
+    assert summary["pruned_accuracy"] == 1.0
+    assert summary["mean_keep_rate"] == 0.5

@@ -17,7 +17,7 @@ from typing import Any, cast
 
 import mlx.core as mx
 import numpy as np
-from mlx_vlm import generate, load
+from mlx_vlm import load, stream_generate
 from mlx_vlm.utils import prepare_inputs
 from PIL import Image
 
@@ -34,7 +34,7 @@ RUNNER_PATH = REPO_ROOT / "scripts" / "run_benchmark_track_a.py"
 DEFAULT_MODEL_PATH = Path.home() / "models" / "gemma-4-e4b-it-4bit"
 GEMMA_IMAGE_SIZE = 512
 GEMMA_GRID_SHAPE = (16, 16)
-SCHEMA_VERSION = "phase1_63g_gemma_track_b_v3"
+SCHEMA_VERSION = "phase1_63g_gemma_track_b_v4"
 
 
 @dataclass(frozen=True, slots=True)
@@ -152,6 +152,9 @@ def _compute_gemma_features(model: Any, raw: dict[str, Any]) -> tuple[mx.array, 
 class GenerateStats:
     text: str
     elapsed_ms: float
+    multimodal_prefill_ms: float
+    text_generation_ms: float
+    prompt_time_source: str
     prompt_tokens: int
     generation_tokens: int
     prompt_tps: float
@@ -177,8 +180,11 @@ def _run_generate(
     }
     kwargs["cached_image_features"] = cached_image_features
     t0 = time.perf_counter_ns()
+    first_yield_ns: int | None = None
+    last_response: Any | None = None
+    text = ""
     mx.random.seed(42)
-    response = generate(
+    for response in stream_generate(
         model,
         processor,
         "",
@@ -188,16 +194,37 @@ def _run_generate(
         max_tokens=max_tokens,
         temperature=0.0,
         **kwargs,
-    )
+    ):
+        if first_yield_ns is None:
+            first_yield_ns = time.perf_counter_ns()
+        text += str(response.text)
+        last_response = response
     elapsed_ms = (time.perf_counter_ns() - t0) / 1_000_000
+    if first_yield_ns is None or last_response is None:
+        return GenerateStats(
+            text=text,
+            elapsed_ms=elapsed_ms,
+            multimodal_prefill_ms=0.0,
+            text_generation_ms=elapsed_ms,
+            prompt_time_source="stream_generate_no_yield",
+            prompt_tokens=0,
+            generation_tokens=0,
+            prompt_tps=0.0,
+            generation_tps=0.0,
+            peak_memory_gb=0.0,
+        )
+    multimodal_prefill_ms = (first_yield_ns - t0) / 1_000_000
     return GenerateStats(
-        text=str(response.text),
+        text=text,
         elapsed_ms=elapsed_ms,
-        prompt_tokens=int(getattr(response, "prompt_tokens", 0)),
-        generation_tokens=int(getattr(response, "generation_tokens", 0)),
-        prompt_tps=float(getattr(response, "prompt_tps", 0.0)),
-        generation_tps=float(getattr(response, "generation_tps", 0.0)),
-        peak_memory_gb=float(getattr(response, "peak_memory", 0.0)),
+        multimodal_prefill_ms=multimodal_prefill_ms,
+        text_generation_ms=max(0.0, elapsed_ms - multimodal_prefill_ms),
+        prompt_time_source="stream_generate_first_yield_wall_clock",
+        prompt_tokens=int(getattr(last_response, "prompt_tokens", 0)),
+        generation_tokens=int(getattr(last_response, "generation_tokens", 0)),
+        prompt_tps=float(getattr(last_response, "prompt_tps", 0.0)),
+        generation_tps=float(getattr(last_response, "generation_tps", 0.0)),
+        peak_memory_gb=float(getattr(last_response, "peak_memory", 0.0)),
     )
 
 
@@ -230,7 +257,7 @@ def _schema_row(args: argparse.Namespace) -> dict[str, Any]:
         "schema_version": SCHEMA_VERSION,
         "artifact_config_hash": _artifact_hash(payload),
         "artifact_payload": payload,
-        "timing_split": "exact_prompt_or_generation_tokens_divided_by_mlx_vlm_reported_tps",
+        "timing_split": "stream_generate_first_yield_wall_clock",
     }
 
 
@@ -385,16 +412,6 @@ def main() -> int:
                 cached_image_features=features,
                 max_tokens=args.max_tokens,
             )
-            multimodal_prefill_ms = _stage_ms_from_tps(
-                tokens=stats.prompt_tokens,
-                tokens_per_second=stats.prompt_tps,
-                stage="multimodal_prefill",
-            )
-            text_generation_ms = _stage_ms_from_tps(
-                tokens=stats.generation_tokens,
-                tokens_per_second=stats.generation_tps,
-                stage="text_generation",
-            )
             choice_index = extract_choice(stats.text, item.candidates)
             record = ItemResult(
                 item_id=item.item_id,
@@ -409,8 +426,8 @@ def main() -> int:
                     decode_ms=decode_ms,
                     processor_ms=processor_ms,
                     vision_ms=vision_ms,
-                    multimodal_prefill_ms=multimodal_prefill_ms,
-                    text_generation_ms=text_generation_ms,
+                    multimodal_prefill_ms=stats.multimodal_prefill_ms,
+                    text_generation_ms=stats.text_generation_ms,
                     generate_ms=stats.elapsed_ms,
                     end_to_end_ms=decode_ms + processor_ms + vision_ms + stats.elapsed_ms,
                 ),
