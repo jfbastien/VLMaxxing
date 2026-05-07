@@ -132,6 +132,8 @@ def _run_analyzer(
             str(paired),
             "--expected-items",
             "2",
+            "--bucket-e2e-min-pass",
+            "1",
         ],
         check=True,
     )
@@ -150,9 +152,12 @@ def test_track_b_analyzer_reports_sparse_vision_and_ceiling(tmp_path: Path) -> N
     assert all_summary["mean_keep_rate"] == 0.5
     assert all_summary["vision_reduction"] == 0.5
     assert all_summary["actual_e2e_speedup_dense_over_sparse"] == 1.25
+    assert all_summary["actual_e2e_speedup_dense_over_sparse_ci95"] == [1.25, 1.25]
     assert summary["pass_fidelity"] is True
     assert summary["pass_sparse_vision"] is True
     assert summary["pass_e2e_positive"] is True
+    assert summary["bucket_e2e_passing_groups"] == ["short"]
+    assert summary["pass_bucket_e2e_positive"] is True
 
 
 def test_track_b_analyzer_does_not_hide_e2e_boundary(tmp_path: Path) -> None:
@@ -162,3 +167,4 @@ def test_track_b_analyzer_does_not_hide_e2e_boundary(tmp_path: Path) -> None:
     assert summary["pass_fidelity"] is True
     assert summary["pass_sparse_vision"] is True
     assert summary["pass_e2e_positive"] is False
+    assert summary["pass_bucket_e2e_positive"] is False

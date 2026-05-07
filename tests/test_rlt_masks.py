@@ -328,6 +328,24 @@ def test_aggregate_and_projection_helpers() -> None:
     assert float_projected[3, 3] == pytest.approx(12.5)
 
 
+def test_project_float_grid_non_integer_ratio_preserves_spatial_order() -> None:
+    rows = np.arange(14, dtype=np.float32)[:, None]
+    cols = np.arange(14, dtype=np.float32)[None, :]
+    plane = rows * 100.0 + cols
+
+    projected = project_float_grid(plane, (32, 32))
+
+    assert projected.shape == (32, 32)
+    assert projected[0, 0] == pytest.approx(0.0)
+    assert projected[0, -1] == pytest.approx(13.0)
+    assert projected[-1, 0] == pytest.approx(1300.0)
+    assert projected[-1, -1] == pytest.approx(1313.0)
+    assert np.all(np.diff(projected, axis=0) >= 0.0)
+    assert np.all(np.diff(projected, axis=1) >= 0.0)
+    assert sorted({int(value // 100) for value in projected[:, 0]}) == list(range(14))
+    assert sorted({int(value % 100) for value in projected[0, :]}) == list(range(14))
+
+
 def test_fixed_budget_rlt_score_mask_keeps_uniform_k_after_projection() -> None:
     cfg = RLTMaskConfig(
         threshold=0.1,

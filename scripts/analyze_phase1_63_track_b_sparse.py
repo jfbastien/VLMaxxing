@@ -128,6 +128,10 @@ def _accuracy_delta(rows: list[dict[str, Any]]) -> float:
     return _accuracy(rows, "sparse_correct") - _accuracy(rows, "dense_correct")
 
 
+def _e2e_speedup(rows: list[dict[str, Any]]) -> float:
+    return _ratio(rows, "dense_end_to_end_ms", "sparse_end_to_end_ms")
+
+
 def _ratio(rows: list[dict[str, Any]], numerator_key: str, denominator_key: str) -> float:
     numerator = sum(float(row[numerator_key]) for row in rows)
     denominator = sum(float(row[denominator_key]) for row in rows)
@@ -173,6 +177,10 @@ def _summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
         if sparse_vision > 0
         else None,
         "actual_e2e_speedup_dense_over_sparse": actual_e2e_speedup,
+        "actual_e2e_speedup_dense_over_sparse_ci95": _bootstrap_ci(
+            rows,
+            metric=_e2e_speedup,
+        ),
         "predicted_e2e_speedup_from_vision_only": predicted_e2e_speedup,
         "actual_minus_predicted_e2e_speedup": (
             actual_e2e_speedup - predicted_e2e_speedup
@@ -192,6 +200,29 @@ def _summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def _bucket_e2e_gate(
+    by_group: dict[str, dict[str, Any]],
+    *,
+    speedup_floor: float,
+    min_passing_groups: int,
+) -> dict[str, Any]:
+    passing = [
+        group
+        for group, summary in sorted(by_group.items())
+        if (
+            summary.get("actual_e2e_speedup_dense_over_sparse") is not None
+            and float(summary["actual_e2e_speedup_dense_over_sparse"]) >= speedup_floor
+        )
+    ]
+    evaluated = len(by_group) >= min_passing_groups
+    return {
+        "bucket_e2e_speedup_floor": speedup_floor,
+        "bucket_e2e_min_passing_groups": min_passing_groups,
+        "bucket_e2e_passing_groups": passing,
+        "pass_bucket_e2e_positive": evaluated and len(passing) >= min_passing_groups,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dense-jsonl", type=Path, required=True)
@@ -201,6 +232,8 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--paired-items", type=Path, default=None)
     parser.add_argument("--expected-items", type=int, default=60)
+    parser.add_argument("--bucket-e2e-floor", type=float, default=1.03)
+    parser.add_argument("--bucket-e2e-min-pass", type=int, default=2)
     parser.add_argument(
         "--sparse-execution-scope",
         default=(
@@ -218,6 +251,15 @@ def main() -> int:
     sparse_summary = json.loads(args.sparse_summary.read_text())
     rows = _paired_rows(dense_rows, sparse_rows)
     summary = _summarize(rows)
+    by_group = {
+        group: _summarize([row for row in rows if str(row.get("group")) == group])
+        for group in sorted({str(row.get("group")) for row in rows})
+    }
+    bucket_e2e_gate = _bucket_e2e_gate(
+        by_group,
+        speedup_floor=args.bucket_e2e_floor,
+        min_passing_groups=args.bucket_e2e_min_pass,
+    )
 
     payload = {
         "dense_jsonl": args.dense_jsonl.as_posix(),
@@ -230,12 +272,10 @@ def main() -> int:
         "frame_count": sparse_summary.get("frame_count"),
         "vision_tower_layer": sparse_summary.get("vision_tower_layer"),
         "vision_tower_keep_rate": sparse_summary.get("vision_tower_keep_rate"),
+        "vision_tower_score_mode": sparse_summary.get("vision_tower_score_mode"),
         "n_paired_items": len(rows),
         "all": summary,
-        "by_group": {
-            group: _summarize([row for row in rows if str(row.get("group")) == group])
-            for group in sorted({str(row.get("group")) for row in rows})
-        },
+        "by_group": by_group,
         "pass_complete_pairing": len(rows) == args.expected_items,
         "pass_format": summary["dense_parse_failures"] == 0
         and summary["sparse_parse_failures"] == 0,
@@ -243,6 +283,7 @@ def main() -> int:
         "pass_sparse_vision": summary["vision_reduction"] >= 0.25,
         "pass_e2e_positive": summary["actual_e2e_speedup_dense_over_sparse"] is not None
         and summary["actual_e2e_speedup_dense_over_sparse"] >= 1.03,
+        **bucket_e2e_gate,
         "pass_ceiling_explained": (
             summary["actual_minus_predicted_e2e_speedup"] is not None
             and abs(float(summary["actual_minus_predicted_e2e_speedup"])) <= 0.05

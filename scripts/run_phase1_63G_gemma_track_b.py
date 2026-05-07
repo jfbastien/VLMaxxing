@@ -251,6 +251,66 @@ def _artifact_hash(payload: dict[str, Any]) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
+def _max_min_diversity_indices(features: np.ndarray, keep_count: int) -> np.ndarray:
+    if features.ndim != 2:
+        raise ValueError(f"features must be [N, D], got {features.shape}")
+    n, _dim = features.shape
+    if keep_count <= 0:
+        raise ValueError("keep_count must be positive")
+    if keep_count >= n:
+        return np.arange(n, dtype=np.int64)
+    norms_l1 = np.linalg.norm(features, ord=1, axis=1)
+    chosen: list[int] = [int(np.argmax(norms_l1))]
+    chosen_set = {chosen[0]}
+    min_sq_dist = np.full(n, np.inf, dtype=np.float64)
+    while len(chosen) < keep_count:
+        diff = features - features[chosen[-1]]
+        sq_dist = np.sum(diff * diff, axis=1)
+        min_sq_dist = np.minimum(min_sq_dist, sq_dist)
+        candidate_scores = min_sq_dist.copy()
+        for idx in chosen_set:
+            candidate_scores[idx] = -np.inf
+        next_idx = int(np.argmax(candidate_scores))
+        chosen.append(next_idx)
+        chosen_set.add(next_idx)
+    return np.asarray(chosen, dtype=np.int64)
+
+
+def _max_min_diversity_mask_for_positions(
+    hidden_states: mx.array,
+    positions: mx.array,
+    *,
+    keep_rate: float,
+) -> tuple[np.ndarray, list[int]]:
+    hidden_np = np.array(hidden_states.astype(mx.float32))
+    pos_np = np.array(positions)
+    if hidden_np.ndim != 3:
+        raise ValueError(f"hidden_states must be [B, L, D], got {hidden_np.shape}")
+    if pos_np.shape[:2] != hidden_np.shape[:2] or pos_np.shape[-1] != 2:
+        raise ValueError(
+            f"positions shape {pos_np.shape} does not match hidden_states {hidden_np.shape}"
+        )
+    rows, row_len, _dim = hidden_np.shape
+    keep = np.zeros((rows, row_len), dtype=bool)
+    valid_counts: list[int] = []
+    kept_counts: list[int] = []
+    for row_idx in range(rows):
+        xy = pos_np[row_idx]
+        valid = (xy[:, 0] >= 0) & (xy[:, 1] >= 0)
+        valid_indices = np.flatnonzero(valid)
+        valid_count = int(valid_indices.size)
+        if valid_count <= 0:
+            raise ValueError(f"row {row_idx} has no valid encoder positions")
+        keep_count = max(1, int(valid_count * keep_rate))
+        selected_local = _max_min_diversity_indices(hidden_np[row_idx, valid_indices], keep_count)
+        keep[row_idx, valid_indices[selected_local]] = True
+        valid_counts.append(valid_count)
+        kept_counts.append(keep_count)
+    if len(set(kept_counts)) != 1:
+        raise ValueError(f"max_min_diversity must keep uniform K across rows; got {kept_counts}")
+    return keep, valid_counts
+
+
 def _rlt_config_from_args(args: argparse.Namespace) -> RLTMaskConfig:
     return RLTMaskConfig(
         threshold=args.rlt_threshold,
@@ -272,6 +332,7 @@ def _schema_row(args: argparse.Namespace) -> dict[str, Any]:
         "model_path": str(args.model_path),
         "frame_count": args.frame_count,
         "max_tokens": args.max_tokens,
+        "warmup_items": getattr(args, "warmup_items", 0),
         "vision_tower_layer": args.vision_tower_layer,
         "vision_tower_keep_rate": args.vision_tower_keep_rate,
         "vision_tower_score_mode": args.vision_tower_score_mode,
@@ -469,16 +530,27 @@ def main() -> int:
         ),
     )
     parser.add_argument("--rss-guard-mb", type=int, default=0)
+    parser.add_argument(
+        "--warmup-items",
+        type=int,
+        default=0,
+        help=(
+            "Run this many discarded items through decode, vision, and generation "
+            "before recording measurements. Used to avoid item-0 MLX JIT timing "
+            "contamination in autonomous sparse-vision sweeps."
+        ),
+    )
     parser.add_argument("--vision-tower-layer", type=int, default=2)
     parser.add_argument("--vision-tower-keep-rate", type=float, default=1.0)
     parser.add_argument(
         "--vision-tower-score-mode",
-        choices=("magnitude", "rlt_topk"),
+        choices=("magnitude", "rlt_topk", "max_min_diversity"),
         default="magnitude",
         help=(
             "Sparse-vision token scorer. 'magnitude' is the existing hidden-state "
             "L2 scorer; 'rlt_topk' ranks tokens by RLT same-position motion scores "
-            "and keeps a fixed K per frame for the scatter-back wrapper."
+            "and keeps a fixed K per frame for the scatter-back wrapper; "
+            "'max_min_diversity' is the expensive feature-dependent comparator."
         ),
     )
     parser.add_argument("--rlt-threshold", type=float, default=0.1)
@@ -486,6 +558,8 @@ def main() -> int:
     parser.add_argument("--rlt-image-size", type=int, default=224)
     parser.add_argument("--rlt-per-frame-min-keep", type=int, default=1)
     args = parser.parse_args()
+    if args.warmup_items < 0:
+        raise SystemExit("--warmup-items must be nonnegative")
 
     runner = _load_runner_module()
     runner._ensure_clean_git_tree(allow_dirty=args.allow_dirty)
@@ -522,6 +596,7 @@ def main() -> int:
                 "frame_count": args.frame_count,
                 "n_frames": args.frame_count,
                 "max_tokens": args.max_tokens,
+                "warmup_items": args.warmup_items,
                 "vision_tower_patched": args.vision_tower_keep_rate < 1.0,
                 "vision_tower_layer": (
                     args.vision_tower_layer if args.vision_tower_keep_rate < 1.0 else None
@@ -558,29 +633,38 @@ def main() -> int:
         )
 
     vt_patched = args.vision_tower_keep_rate < 1.0
-    if args.vision_tower_score_mode == "rlt_topk" and not vt_patched:
+    if args.vision_tower_score_mode in {"rlt_topk", "max_min_diversity"} and not vt_patched:
         raise SystemExit(
-            "--vision-tower-score-mode rlt_topk requires --vision-tower-keep-rate < 1.0"
+            "--vision-tower-score-mode rlt_topk/max_min_diversity requires "
+            "--vision-tower-keep-rate < 1.0"
         )
     rlt_config = _rlt_config_from_args(args)
     rlt_keep_holder: dict[str, Any] = {}
     if vt_patched:
         keep_mask_fn: Any | None = None
-        if args.vision_tower_score_mode == "rlt_topk":
+        if args.vision_tower_score_mode in {"rlt_topk", "max_min_diversity"}:
 
             def keep_mask_fn(hidden_states: mx.array, positions: mx.array) -> mx.array:
-                if "rlt_result" not in rlt_keep_holder:
-                    raise RuntimeError("RLT result was not prepared before vision_tower call")
-                rlt_result = rlt_keep_holder["rlt_result"]
-                pos_np = np.array(positions)
-                valid_counts = ((pos_np[:, :, 0] >= 0) & (pos_np[:, :, 1] >= 0)).sum(axis=1)
-                mask_np = fixed_budget_rlt_score_mask_for_positions(
-                    rlt_result,
-                    positions=pos_np,
-                    keep_rate=args.vision_tower_keep_rate,
-                )
+                if args.vision_tower_score_mode == "rlt_topk":
+                    if "rlt_result" not in rlt_keep_holder:
+                        raise RuntimeError("RLT result was not prepared before vision_tower call")
+                    rlt_result = rlt_keep_holder["rlt_result"]
+                    pos_np = np.array(positions)
+                    valid_counts = ((pos_np[:, :, 0] >= 0) & (pos_np[:, :, 1] >= 0)).sum(axis=1)
+                    mask_np = fixed_budget_rlt_score_mask_for_positions(
+                        rlt_result,
+                        positions=pos_np,
+                        keep_rate=args.vision_tower_keep_rate,
+                    )
+                    rlt_keep_holder["last_valid_counts"] = [int(value) for value in valid_counts]
+                else:
+                    mask_np, valid_count_list = _max_min_diversity_mask_for_positions(
+                        hidden_states,
+                        positions,
+                        keep_rate=args.vision_tower_keep_rate,
+                    )
+                    rlt_keep_holder["last_valid_counts"] = valid_count_list
                 rlt_keep_holder["last_mask_np"] = mask_np
-                rlt_keep_holder["last_valid_counts"] = [int(value) for value in valid_counts]
                 mask = mx.array(mask_np)
                 expected = (int(hidden_states.shape[0]), int(hidden_states.shape[1]))
                 if tuple(mask.shape) != expected:
@@ -613,6 +697,95 @@ def main() -> int:
     )
     kept_groups = args.frame_count * kept_per_frame
 
+    def prepare_sparse_scorer_for_frames(frames: list[Any], metadata: dict[str, Any]) -> None:
+        if not vt_patched:
+            return
+        rlt_keep_holder.pop("last_mask_np", None)
+        if args.vision_tower_score_mode == "max_min_diversity":
+            metadata.update(
+                {
+                    "feature_scorer_policy": "max_min_diversity_fixed_k",
+                    "feature_scorer_domain": "gemma_internal_encoder_positions",
+                }
+            )
+            return
+        if args.vision_tower_score_mode != "rlt_topk":
+            return
+        rlt_result = compute_rlt_keep_mask_from_frames(frames, config=rlt_config)
+        projected_placeholder_mask = fixed_budget_rlt_score_mask(
+            rlt_result,
+            out_grid_shape=GEMMA_GRID_SHAPE,
+            keep_rate=args.vision_tower_keep_rate,
+        )
+        rlt_keep_holder["rlt_result"] = rlt_result
+        metadata.update(
+            {
+                "rlt_config": rlt_config.as_dict(),
+                "rlt_mask_policy": "rlt_score_topk_fixed_k",
+                "rlt_mask_domain": (
+                    "gemma_internal_encoder_positions_from_letterboxed_frames_resized_224_imagenet"
+                ),
+                "rlt_summary": mask_summary(rlt_result),
+                "rlt_score_grid_shape": list(rlt_result.config.resolved_grid_shape()),
+                "rlt_placeholder_projected_keep_rate": float(
+                    projected_placeholder_mask.sum() / projected_placeholder_mask.size
+                ),
+            }
+        )
+
+    def record_sparse_scorer_after_vision(metadata: dict[str, Any]) -> tuple[int, int, list[int]]:
+        if not (vt_patched and args.vision_tower_score_mode in {"rlt_topk", "max_min_diversity"}):
+            return kept_groups, total_groups, [kept_per_frame] * args.frame_count
+        last_mask = rlt_keep_holder.get("last_mask_np")
+        if last_mask is None:
+            raise RuntimeError(
+                f"{args.vision_tower_score_mode} keep_mask_fn did not run inside vision_tower"
+            )
+        last_mask_np = np.asarray(last_mask, dtype=bool)
+        actual_kept_per_frame = [int(row.sum()) for row in last_mask_np]
+        if len(set(actual_kept_per_frame)) != 1:
+            raise RuntimeError(
+                f"{args.vision_tower_score_mode} scorer must emit uniform per-frame K; got "
+                f"{actual_kept_per_frame}"
+            )
+        valid_counts = [
+            int(value) for value in cast(list[int], rlt_keep_holder["last_valid_counts"])
+        ]
+        metadata.update(
+            {
+                "gemma_encoder_positions_per_frame": int(last_mask_np.shape[1]),
+                "gemma_encoder_valid_positions_per_frame": valid_counts,
+                "gemma_encoder_kept_per_frame": actual_kept_per_frame,
+                "sparse_budget_domain": "valid_encoder_positions",
+                **(
+                    {"rlt_budget_domain": "valid_encoder_positions"}
+                    if args.vision_tower_score_mode == "rlt_topk"
+                    else {"feature_budget_domain": "valid_encoder_positions"}
+                ),
+            }
+        )
+        return int(last_mask_np.sum()), int(sum(valid_counts)), actual_kept_per_frame
+
+    for warmup_item in items[: args.warmup_items]:
+        _clear_runtime_state()
+        warm_raw, warm_frames, _decode_ms, _processor_ms = _prepare_item(
+            runner,
+            processor,
+            warmup_item,
+            frame_count=args.frame_count,
+        )
+        warm_metadata: dict[str, Any] = {}
+        prepare_sparse_scorer_for_frames(warm_frames, warm_metadata)
+        warm_features, _vision_ms = _compute_gemma_features(model, warm_raw)
+        _run_generate(
+            model,
+            processor,
+            raw=warm_raw,
+            cached_image_features=warm_features,
+            max_tokens=args.max_tokens,
+        )
+        _clear_runtime_state()
+
     record_rows: list[dict[str, Any]] = list(existing_rows)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     output_mode = "a" if args.resume and existing_rows else "w"
@@ -629,58 +802,11 @@ def main() -> int:
             item_metadata: dict[str, Any] = {
                 "vision_tower_score_mode": args.vision_tower_score_mode,
             }
-            actual_total_groups = total_groups
-            actual_kept_per_frame = [kept_per_frame] * args.frame_count
-            actual_kept_groups = kept_groups
-            if vt_patched and args.vision_tower_score_mode == "rlt_topk":
-                rlt_result = compute_rlt_keep_mask_from_frames(frames, config=rlt_config)
-                projected_placeholder_mask = fixed_budget_rlt_score_mask(
-                    rlt_result,
-                    out_grid_shape=GEMMA_GRID_SHAPE,
-                    keep_rate=args.vision_tower_keep_rate,
-                )
-                rlt_keep_holder["rlt_result"] = rlt_result
-                rlt_keep_holder.pop("last_mask_np", None)
-                item_metadata.update(
-                    {
-                        "rlt_config": rlt_config.as_dict(),
-                        "rlt_mask_policy": "rlt_score_topk_fixed_k",
-                        "rlt_mask_domain": (
-                            "gemma_internal_encoder_positions_from_letterboxed_frames_"
-                            "resized_224_imagenet"
-                        ),
-                        "rlt_summary": mask_summary(rlt_result),
-                        "rlt_score_grid_shape": list(rlt_result.config.resolved_grid_shape()),
-                        "rlt_placeholder_projected_keep_rate": float(
-                            projected_placeholder_mask.sum() / projected_placeholder_mask.size
-                        ),
-                    }
-                )
+            prepare_sparse_scorer_for_frames(frames, item_metadata)
             features, vision_ms = _compute_gemma_features(model, raw)
-            if vt_patched and args.vision_tower_score_mode == "rlt_topk":
-                last_mask = rlt_keep_holder.get("last_mask_np")
-                if last_mask is None:
-                    raise RuntimeError("rlt_topk keep_mask_fn did not run inside vision_tower")
-                last_mask_np = np.asarray(last_mask, dtype=bool)
-                actual_kept_per_frame = [int(row.sum()) for row in last_mask_np]
-                if len(set(actual_kept_per_frame)) != 1:
-                    raise RuntimeError(
-                        "rlt_topk scorer must emit uniform per-frame K; got "
-                        f"{actual_kept_per_frame}"
-                    )
-                actual_kept_groups = int(last_mask_np.sum())
-                valid_counts = [
-                    int(value) for value in cast(list[int], rlt_keep_holder["last_valid_counts"])
-                ]
-                actual_total_groups = int(sum(valid_counts))
-                item_metadata.update(
-                    {
-                        "gemma_encoder_positions_per_frame": int(last_mask_np.shape[1]),
-                        "gemma_encoder_valid_positions_per_frame": valid_counts,
-                        "gemma_encoder_kept_per_frame": actual_kept_per_frame,
-                        "rlt_budget_domain": "valid_encoder_positions",
-                    }
-                )
+            actual_kept_groups, actual_total_groups, actual_kept_per_frame = (
+                record_sparse_scorer_after_vision(item_metadata)
+            )
             stats = _run_generate(
                 model,
                 processor,
@@ -734,6 +860,7 @@ def main() -> int:
             "frame_count": args.frame_count,
             "n_frames": args.frame_count,
             "max_tokens": args.max_tokens,
+            "warmup_items": args.warmup_items,
             "vision_tower_patched": vt_patched,
             "vision_tower_layer": args.vision_tower_layer if vt_patched else None,
             "vision_tower_keep_rate": args.vision_tower_keep_rate if vt_patched else None,
