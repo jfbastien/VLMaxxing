@@ -1,6 +1,6 @@
 # Experiment Registry (Machine-Readable)
 
-Last updated: 2026-05-02
+Last updated: 2026-05-08
 
 This is the primary source of per-phase experiment state. It is the phase
 ledger, not the paper claim ledger. Use `paper/claim-matrix.md` for
@@ -39,6 +39,17 @@ Entries are ordered by phase_id (chronological within each 1.x range).
 ### Recent phase-2 additions (2026-04-29 to 2026-04-30)
 
 ```yaml
+- phase_id: onevision-vlmaxxing-20260508
+  status: proposed
+  authoritative_note: research/experiments/2026/2026-05-08-onevision-vlmaxxing-prereg.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/onevision_vlmaxxing_plan/experiment_schedule.json
+    - research/experiments/2026/artifacts/onevision_vlmaxxing_visuals/
+  current_best_policy: "pending; preregisters OneVision-style codec patchification, Track A/Track B ablations, session accounting, and visualization work"
+  supersedes: []
+  paper_relevance: diagnostic/proposed new science
+  prereg_outcome:
+
 - phase_id: 1.55L
   status: completed
   authoritative_note: research/experiments/2026/2026-04-30-phase-1_55L-many-turn-cpersist-findings.md
