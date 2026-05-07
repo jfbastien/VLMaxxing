@@ -1,0 +1,82 @@
+{
+  "failures": [],
+  "fields_present": [
+    "generate",
+    "multimodal_prefill_ms",
+    "text_generation_ms"
+  ],
+  "frame_count": 8,
+  "items": [
+    {
+      "generate_ms": 4673.599125,
+      "generation_tokens": 2,
+      "item_id": "videomme:long:669-1",
+      "multimodal_prefill_ms": 4616.388083,
+      "prompt_tokens": 1014,
+      "split_residual_ms": 0.0,
+      "split_residual_pct": 0.0,
+      "split_residual_within_tolerance": true,
+      "text_generation_ms": 57.21104199999991
+    }
+  ],
+  "jsonl": "research/experiments/2026/artifacts/rlt_autonomous_queue_h3b/prefill_split_smoke/phase1_63g_dense_prefill_split_smoke.jsonl",
+  "manifest": "research/benchmark_manifests/videomme_dev_v1.toml",
+  "max_split_residual_ms": 50.0,
+  "max_split_residual_pct": 0.03,
+  "max_tokens": 32,
+  "model_path": "/Users/jfb/models/gemma-4-e4b-it-4bit",
+  "n_items": 1,
+  "ready": true,
+  "run": {
+    "command": [
+      "/Users/jfb/s/codec-through/.venv/bin/python3",
+      "scripts/run_phase1_63G_gemma_track_b.py",
+      "--manifest",
+      "research/benchmark_manifests/videomme_dev_v1.toml",
+      "--n-items",
+      "1",
+      "--frame-count",
+      "8",
+      "--max-tokens",
+      "32",
+      "--model-path",
+      "/Users/jfb/models/gemma-4-e4b-it-4bit",
+      "--output",
+      "research/experiments/2026/artifacts/rlt_autonomous_queue_h3b/prefill_split_smoke/phase1_63g_dense_prefill_split_smoke.jsonl",
+      "--summary",
+      "research/experiments/2026/artifacts/rlt_autonomous_queue_h3b/prefill_split_smoke/phase1_63g_dense_prefill_split_smoke_summary.json",
+      "--allow-dirty",
+      "--rss-guard-mb",
+      "9000"
+    ],
+    "elapsed_seconds": 61.94146587501746,
+    "returncode": 0,
+    "stderr_tail": "",
+    "stdout_tail": ""
+  },
+  "runner": "scripts/run_phase1_63G_gemma_track_b.py",
+  "runner_schema": {
+    "artifact_config_hash": "5a821d7d16187bb82d3d2d6a44bf87f1e357d1bbfe69c0369a7d58b9fe8df85c",
+    "artifact_payload": {
+      "frame_count": 8,
+      "manifest": "research/benchmark_manifests/videomme_dev_v1.toml",
+      "max_tokens": 32,
+      "model_path": "/Users/jfb/models/gemma-4-e4b-it-4bit",
+      "vision_tower_keep_rate": 1.0,
+      "vision_tower_layer": 2
+    },
+    "kind": "schema",
+    "schema_version": "phase1_63g_gemma_track_b_v4",
+    "timing_split": "stream_generate_first_yield_wall_clock"
+  },
+  "runner_summary_schema_version": "phase1_63g_gemma_track_b_v4",
+  "schema_version": "rlt_prefill_split_smoke_v1",
+  "semantic_reference": {
+    "gemma_track_b_timing_split": "stream_generate_first_yield_wall_clock",
+    "interpretation": "Gemma first-turn runners and qwen_selective_reprefill both expose a wall-clock prefill boundary; the Gemma smoke checks that the split adds back to generate_ms before allowing H3B.",
+    "qwen_selective_reprefill_path": "src/codec_through/qwen_selective_reprefill.py",
+    "qwen_selective_reprefill_uses_wall_prefill_timer": true
+  },
+  "split_residual_contract": "Hard gate. The first-turn runner must split generate_ms into direct first-yield multimodal_prefill_ms plus remaining text_generation_ms within the preregistered tolerance before H3B can start.",
+  "summary": "research/experiments/2026/artifacts/rlt_autonomous_queue_h3b/prefill_split_smoke/phase1_63g_dense_prefill_split_smoke_summary.json"
+}

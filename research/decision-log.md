@@ -129,3 +129,7 @@ This is the canonical ledger for adopted, weakened, killed, and revived ideas.
 
 When a row changes status, add a dated note or a successor row instead of silently
 erasing the previous reasoning. The log is meant to preserve decision history.
+
+| 2026-05-07: RLT-2G autonomous queue early stop | Screening result | [summary](research/experiments/2026/artifacts/rlt_autonomous_queue_h3b/queue_summary.json) | Reason: gemma_admission_quality_gate_failed. Reopen by fixing the failing gate or rerunning with a replacement artifact under the same preregistered analyzer. |
+
+| 2026-05-07: RLT-2G autonomous queue early stop | Screening result | [summary](research/experiments/2026/artifacts/rlt_autonomous_queue_h3b/queue_summary.json) | Reason: gemma_admission_overhead_dominated. Reopen by fixing the failing gate or rerunning with a replacement artifact under the same preregistered analyzer. |

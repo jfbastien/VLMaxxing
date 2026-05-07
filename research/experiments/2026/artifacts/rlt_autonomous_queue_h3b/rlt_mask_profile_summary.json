@@ -1,0 +1,65 @@
+{
+  "artifact_payload": {
+    "clip_group": "fixed_camera_positive",
+    "clip_hashes": {
+      "data/corpus/derived/hall_monitor_cif_standard_h264_crf18_g30.mp4": "0a714715eef1b05b0ac7498f75b3354bbca92e09650533eec3b5de06eb481611"
+    },
+    "compare_pixel_novelty": true,
+    "config": {
+      "first_tubelet_mode": "full_grid",
+      "grid_shape": [
+        14,
+        14
+      ],
+      "grid_shape_source": "patch_size",
+      "image_size": [
+        224,
+        224
+      ],
+      "normalize_mode": "imagenet",
+      "ordering": "time_major",
+      "patch_size": 16,
+      "pixel_scale": "uint8",
+      "threshold": 0.1,
+      "tubelet_size": 2,
+      "window_min_keep": 0
+    },
+    "frame_count": 8,
+    "manifest_content_hash": null,
+    "manifest_path": null,
+    "n_items": null,
+    "project_grid_shape": [
+      16,
+      16
+    ],
+    "rng_seed": 0,
+    "schema_version": "rlt_mask_profile_v2",
+    "synthetic": [
+      "exact_static",
+      "single_frame_repeat",
+      "all_motion",
+      "fixed_camera_positive",
+      "camera_pan"
+    ],
+    "threshold_sweep": [
+      0.05,
+      0.1,
+      0.2,
+      0.5,
+      1.0
+    ]
+  },
+  "floor_active_item_count": 0,
+  "floor_active_token_count": 0,
+  "git_sha": "5fdd08012a967c192daabd78d0a846fa25049472",
+  "item_count": 6,
+  "kind": "summary",
+  "mean_keep_rate": 0.529124149659864,
+  "mean_mask_compute_ms": 2.831638829472164,
+  "mean_mask_project_ms": 0.05202115668604771,
+  "mean_pixel_novelty_jaccard": 0.9436385836385837,
+  "median_keep_rate": 0.33737244897959184,
+  "run_hash": "e4202e3b247c7398912a15d3c98f07805960329eca27789acb5bc882fbfeb76e",
+  "schema_version": "rlt_mask_profile_v2",
+  "threshold_active_token_count": 2626
+}
