@@ -134,6 +134,8 @@ def _run_analyzer(
             "2",
             "--bucket-e2e-min-pass",
             "1",
+            "--bucket-e2e-min-n",
+            "1",
         ],
         check=True,
     )
@@ -158,6 +160,7 @@ def test_track_b_analyzer_reports_sparse_vision_and_ceiling(tmp_path: Path) -> N
     assert summary["pass_e2e_positive"] is True
     assert summary["bucket_e2e_passing_groups"] == ["short"]
     assert summary["pass_bucket_e2e_positive"] is True
+    assert summary["pass_parse_failure_delta"] is True
 
 
 def test_track_b_analyzer_does_not_hide_e2e_boundary(tmp_path: Path) -> None:
@@ -168,3 +171,74 @@ def test_track_b_analyzer_does_not_hide_e2e_boundary(tmp_path: Path) -> None:
     assert summary["pass_sparse_vision"] is True
     assert summary["pass_e2e_positive"] is False
     assert summary["pass_bucket_e2e_positive"] is False
+
+
+def test_track_b_analyzer_reports_sparse_parse_failure_delta(tmp_path: Path) -> None:
+    dense_jsonl = tmp_path / "dense.jsonl"
+    sparse_jsonl = tmp_path / "sparse.jsonl"
+    dense_summary = tmp_path / "dense_summary.json"
+    sparse_summary = tmp_path / "sparse_summary.json"
+    output = tmp_path / "summary.json"
+
+    dense_rows: list[dict[str, object]] = [
+        {"kind": "schema", "schema_version": "phase1_63g_gemma_track_b_v5"},
+        _row(
+            "a",
+            correct=True,
+            choice_index=0,
+            vision_ms=40.0,
+            end_to_end_ms=100.0,
+            kept_groups=10,
+            total_groups=10,
+        ),
+    ]
+    sparse_row = _row(
+        "a",
+        correct=False,
+        choice_index=0,
+        vision_ms=20.0,
+        end_to_end_ms=80.0,
+        kept_groups=5,
+        total_groups=10,
+    )
+    sparse_row["parse_failure"] = True
+    sparse_rows: list[dict[str, object]] = [
+        {"kind": "schema", "schema_version": "phase1_63g_gemma_track_b_v5"},
+        sparse_row,
+    ]
+    _write_jsonl(dense_jsonl, dense_rows)
+    _write_jsonl(sparse_jsonl, sparse_rows)
+    dense_summary.write_text(json.dumps({"manifest": "m", "frame_count": 8}) + "\n")
+    sparse_summary.write_text(
+        json.dumps({"manifest": "m", "frame_count": 8, "vision_tower_keep_rate": 0.5}) + "\n"
+    )
+
+    subprocess.run(
+        [
+            sys.executable,
+            "scripts/analyze_phase1_63_track_b_sparse.py",
+            "--dense-jsonl",
+            str(dense_jsonl),
+            "--sparse-jsonl",
+            str(sparse_jsonl),
+            "--dense-summary",
+            str(dense_summary),
+            "--sparse-summary",
+            str(sparse_summary),
+            "--output",
+            str(output),
+            "--expected-items",
+            "1",
+            "--parse-failure-delta-max",
+            "0",
+            "--bucket-e2e-min-pass",
+            "1",
+            "--bucket-e2e-min-n",
+            "1",
+        ],
+        check=True,
+    )
+
+    summary: dict[str, Any] = json.loads(output.read_text())
+    assert summary["all"]["parse_failure_delta_sparse_minus_dense"] == 1
+    assert summary["pass_parse_failure_delta"] is False

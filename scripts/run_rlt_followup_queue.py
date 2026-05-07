@@ -20,6 +20,7 @@ DEFAULT_TOMATO_MANIFEST = Path("research/benchmark_manifests/tomato_motion_dev_v
 DEFAULT_MVBENCH_MANIFEST = Path("research/benchmark_manifests/mvbench_motion_dev_v2.toml")
 
 PHASE_ESTIMATES_HOURS = {
+    "prefill-kernel-microbench": [0.2, 1.0],
     "prefill-step-1500-n30": [0.6, 1.3],
     "prefill-step-4096-n30": [0.6, 1.3],
     "cvision-rlt-smoke": [0.1, 0.4],
@@ -131,6 +132,17 @@ def _gemma_admission_commands(
     return [run_command, analyze_command]
 
 
+def _prefill_kernel_benchmark_command(*, artifact_dir: Path, model_path: Path) -> list[str]:
+    return [
+        sys.executable,
+        "scripts/benchmark_mlx_vlm_prefill_kernel.py",
+        "--model-path",
+        str(model_path),
+        "--output",
+        str(artifact_dir / "prefill_kernel_microbench.json"),
+    ]
+
+
 def _cvision_commands(
     *,
     artifact_dir: Path,
@@ -165,7 +177,7 @@ def _cvision_commands(
         "--resume",
         "--allow-dirty",
         "--warmup-items",
-        "1",
+        "3",
     ]
     dense = [
         *base,
@@ -281,6 +293,7 @@ def main() -> int:
         raise SystemExit("--run-max-min-triangulation requires --run-cvision-rlt")
     phases: list[str] = []
     if args.run_prefill_diagnostics:
+        phases.append("prefill-kernel-microbench")
         phases.append("prefill-step-1500-n30")
         phases.append("prefill-step-4096-n30")
     if args.run_cvision_rlt:
@@ -301,6 +314,10 @@ def main() -> int:
     summary_path = args.summary or args.artifact_dir / "queue_summary.json"
     planned: list[dict[str, Any]] = []
 
+    prefill_kernel_command = _prefill_kernel_benchmark_command(
+        artifact_dir=args.artifact_dir,
+        model_path=args.gemma_model_path,
+    )
     prefill_1500_commands = _gemma_admission_commands(
         artifact_dir=args.artifact_dir,
         manifest=args.videomme_manifest,
@@ -403,6 +420,7 @@ def main() -> int:
         ),
     }
     if args.run_prefill_diagnostics:
+        planned.append({"phase": "prefill_kernel_microbench", "command": prefill_kernel_command})
         planned.extend({"phase": "prefill_step_1500", "command": c} for c in prefill_1500_commands)
         planned.extend(
             {"phase": "prefill_step_4096_if_needed", "command": c} for c in prefill_4096_commands
@@ -446,6 +464,10 @@ def main() -> int:
                 "planned_commands": planned,
                 "early_cancel_tree": [
                     (
+                        "Run a synthetic mlx-vlm prefill-kernel micro-benchmark first "
+                        "to explain chunk-threshold substrate effects without video work."
+                    ),
+                    (
                         "Run prefill_step_size=1500 first; skip 4096 if "
                         "same-path chunking makes RLT faster."
                     ),
@@ -465,6 +487,10 @@ def main() -> int:
     decisions: list[dict[str, Any]] = []
     analyses: dict[str, Any] = {}
     if args.run_prefill_diagnostics:
+        commands.append(_run(prefill_kernel_command, allow_failure=True))
+        kernel_path = args.artifact_dir / "prefill_kernel_microbench.json"
+        if kernel_path.exists():
+            analyses["prefill_kernel_microbench"] = _read_json(kernel_path)
         commands.extend(_run_command_group(prefill_1500_commands))
         analysis_1500 = _read_json(args.artifact_dir / "h3b_prefill_step1500_analysis.json")
         analyses["h3b_prefill_step1500"] = analysis_1500

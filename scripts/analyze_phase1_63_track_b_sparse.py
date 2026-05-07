@@ -45,6 +45,16 @@ def _timing(row: dict[str, Any], key: str) -> float:
     return float(value)
 
 
+def _optional_timing(row: dict[str, Any], key: str, *, default: float = 0.0) -> float:
+    timings = row.get("timing_ms")
+    if not isinstance(timings, dict):
+        return default
+    value = timings.get(key)
+    if value is None:
+        return default
+    return float(value)
+
+
 def _paired_rows(
     dense_rows: list[dict[str, Any]], sparse_rows: list[dict[str, Any]]
 ) -> list[dict[str, Any]]:
@@ -78,6 +88,28 @@ def _paired_rows(
                 "sparse_processor_ms": _timing(sparse_row, "processor"),
                 "dense_vision_ms": _timing(dense_row, "vision"),
                 "sparse_vision_ms": _timing(sparse_row, "vision"),
+                "dense_scorer_total_ms": _optional_timing(dense_row, "scorer_total"),
+                "sparse_scorer_total_ms": _optional_timing(sparse_row, "scorer_total"),
+                "dense_scorer_prepare_ms": _optional_timing(dense_row, "scorer_prepare"),
+                "sparse_scorer_prepare_ms": _optional_timing(sparse_row, "scorer_prepare"),
+                "dense_scorer_keep_mask_ms": _optional_timing(
+                    dense_row,
+                    "scorer_keep_mask",
+                ),
+                "sparse_scorer_keep_mask_ms": _optional_timing(
+                    sparse_row,
+                    "scorer_keep_mask",
+                ),
+                "dense_vision_excluding_scorer_ms": _optional_timing(
+                    dense_row,
+                    "vision_excluding_scorer",
+                    default=_timing(dense_row, "vision"),
+                ),
+                "sparse_vision_excluding_scorer_ms": _optional_timing(
+                    sparse_row,
+                    "vision_excluding_scorer",
+                    default=_timing(sparse_row, "vision"),
+                ),
                 "dense_generate_ms": _timing(dense_row, "generate"),
                 "sparse_generate_ms": _timing(sparse_row, "generate"),
                 "dense_end_to_end_ms": _timing(dense_row, "end_to_end"),
@@ -141,10 +173,23 @@ def _ratio(rows: list[dict[str, Any]], numerator_key: str, denominator_key: str)
 def _summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
     dense_vision = sum(float(row["dense_vision_ms"]) for row in rows)
     sparse_vision = sum(float(row["sparse_vision_ms"]) for row in rows)
+    dense_vision_excluding_scorer = sum(
+        float(row["dense_vision_excluding_scorer_ms"]) for row in rows
+    )
+    sparse_vision_excluding_scorer = sum(
+        float(row["sparse_vision_excluding_scorer_ms"]) for row in rows
+    )
+    dense_scorer_total = sum(float(row["dense_scorer_total_ms"]) for row in rows)
+    sparse_scorer_total = sum(float(row["sparse_scorer_total_ms"]) for row in rows)
     dense_e2e = sum(float(row["dense_end_to_end_ms"]) for row in rows)
     sparse_e2e = sum(float(row["sparse_end_to_end_ms"]) for row in rows)
     vision_share_dense = dense_vision / dense_e2e if dense_e2e > 0 else 0.0
     vision_reduction = 1.0 - (sparse_vision / dense_vision) if dense_vision > 0 else 0.0
+    vision_reduction_excluding_scorer = (
+        1.0 - (sparse_vision_excluding_scorer / dense_vision_excluding_scorer)
+        if dense_vision_excluding_scorer > 0
+        else 0.0
+    )
     predicted_e2e_speedup = (
         1.0 / (1.0 - vision_share_dense * vision_reduction)
         if vision_share_dense * vision_reduction < 1.0
@@ -170,12 +215,23 @@ def _summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
         / len(rows),
         "dense_parse_failures": sum(row["dense_parse_failure"] for row in rows),
         "sparse_parse_failures": sum(row["sparse_parse_failure"] for row in rows),
+        "parse_failure_delta_sparse_minus_dense": sum(row["sparse_parse_failure"] for row in rows)
+        - sum(row["dense_parse_failure"] for row in rows),
         "mean_keep_rate": _mean(keep_rates),
         "vision_share_dense": vision_share_dense,
         "vision_reduction": vision_reduction,
+        "vision_reduction_excluding_scorer": vision_reduction_excluding_scorer,
         "vision_speedup_dense_over_sparse": dense_vision / sparse_vision
         if sparse_vision > 0
         else None,
+        "vision_speedup_dense_over_sparse_excluding_scorer": (
+            dense_vision_excluding_scorer / sparse_vision_excluding_scorer
+            if sparse_vision_excluding_scorer > 0
+            else None
+        ),
+        "total_dense_scorer_ms": dense_scorer_total,
+        "total_sparse_scorer_ms": sparse_scorer_total,
+        "total_scorer_delta_sparse_minus_dense_ms": sparse_scorer_total - dense_scorer_total,
         "actual_e2e_speedup_dense_over_sparse": actual_e2e_speedup,
         "actual_e2e_speedup_dense_over_sparse_ci95": _bootstrap_ci(
             rows,
@@ -193,6 +249,22 @@ def _summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "mean_sparse_processor_ms": _mean([float(row["sparse_processor_ms"]) for row in rows]),
         "mean_dense_vision_ms": _mean([float(row["dense_vision_ms"]) for row in rows]),
         "mean_sparse_vision_ms": _mean([float(row["sparse_vision_ms"]) for row in rows]),
+        "mean_dense_vision_excluding_scorer_ms": _mean(
+            [float(row["dense_vision_excluding_scorer_ms"]) for row in rows]
+        ),
+        "mean_sparse_vision_excluding_scorer_ms": _mean(
+            [float(row["sparse_vision_excluding_scorer_ms"]) for row in rows]
+        ),
+        "mean_dense_scorer_total_ms": _mean([float(row["dense_scorer_total_ms"]) for row in rows]),
+        "mean_sparse_scorer_total_ms": _mean(
+            [float(row["sparse_scorer_total_ms"]) for row in rows]
+        ),
+        "mean_sparse_scorer_prepare_ms": _mean(
+            [float(row["sparse_scorer_prepare_ms"]) for row in rows]
+        ),
+        "mean_sparse_scorer_keep_mask_ms": _mean(
+            [float(row["sparse_scorer_keep_mask_ms"]) for row in rows]
+        ),
         "mean_dense_generate_ms": _mean([float(row["dense_generate_ms"]) for row in rows]),
         "mean_sparse_generate_ms": _mean([float(row["sparse_generate_ms"]) for row in rows]),
         "mean_dense_end_to_end_ms": _mean([float(row["dense_end_to_end_ms"]) for row in rows]),
@@ -205,19 +277,32 @@ def _bucket_e2e_gate(
     *,
     speedup_floor: float,
     min_passing_groups: int,
+    min_items_per_group: int,
 ) -> dict[str, Any]:
+    evaluated_groups = {
+        group: summary
+        for group, summary in by_group.items()
+        if int(summary.get("n", 0)) >= min_items_per_group
+    }
     passing = [
         group
-        for group, summary in sorted(by_group.items())
+        for group, summary in sorted(evaluated_groups.items())
         if (
             summary.get("actual_e2e_speedup_dense_over_sparse") is not None
             and float(summary["actual_e2e_speedup_dense_over_sparse"]) >= speedup_floor
         )
     ]
-    evaluated = len(by_group) >= min_passing_groups
+    evaluated = len(evaluated_groups) >= min_passing_groups
     return {
         "bucket_e2e_speedup_floor": speedup_floor,
         "bucket_e2e_min_passing_groups": min_passing_groups,
+        "bucket_e2e_min_items_per_group": min_items_per_group,
+        "bucket_e2e_evaluated_groups": sorted(evaluated_groups),
+        "bucket_e2e_underpowered_groups": [
+            group
+            for group, summary in sorted(by_group.items())
+            if int(summary.get("n", 0)) < min_items_per_group
+        ],
         "bucket_e2e_passing_groups": passing,
         "pass_bucket_e2e_positive": evaluated and len(passing) >= min_passing_groups,
     }
@@ -234,6 +319,8 @@ def main() -> int:
     parser.add_argument("--expected-items", type=int, default=60)
     parser.add_argument("--bucket-e2e-floor", type=float, default=1.03)
     parser.add_argument("--bucket-e2e-min-pass", type=int, default=2)
+    parser.add_argument("--bucket-e2e-min-n", type=int, default=7)
+    parser.add_argument("--parse-failure-delta-max", type=int, default=2)
     parser.add_argument(
         "--sparse-execution-scope",
         default=(
@@ -259,6 +346,7 @@ def main() -> int:
         by_group,
         speedup_floor=args.bucket_e2e_floor,
         min_passing_groups=args.bucket_e2e_min_pass,
+        min_items_per_group=args.bucket_e2e_min_n,
     )
 
     payload = {
@@ -279,6 +367,14 @@ def main() -> int:
         "pass_complete_pairing": len(rows) == args.expected_items,
         "pass_format": summary["dense_parse_failures"] == 0
         and summary["sparse_parse_failures"] == 0,
+        "pass_format_note": (
+            "Informational for C-VISION queue gating because dense baselines can "
+            "parse-fail independently of sparse execution; use parse-failure delta "
+            "for sparse-induced format regressions."
+        ),
+        "parse_failure_delta_max": args.parse_failure_delta_max,
+        "pass_parse_failure_delta": summary["parse_failure_delta_sparse_minus_dense"]
+        <= args.parse_failure_delta_max,
         "pass_fidelity": summary["accuracy_delta_sparse_minus_dense"] >= -0.05,
         "pass_sparse_vision": summary["vision_reduction"] >= 0.25,
         "pass_e2e_positive": summary["actual_e2e_speedup_dense_over_sparse"] is not None

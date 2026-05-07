@@ -330,7 +330,7 @@ Round 10 autonomous-readiness update:
   failure capture, invokes the analyzer even on partial runs, and writes a
   terminal summary rather than dying before decision-log/summary emission.
 - First-turn Gemma/Qwen runners now split generation by direct
-  `stream_generate` first-yield wall-clock timing (`phase1_63g_gemma_track_b_v4`
+  `stream_generate` first-yield wall-clock timing (`phase1_63g_gemma_track_b_v5`
   and `phase1_51v_sparse_v4`). The prefill-split smoke has a hard residual gate
   again: `generate_ms ~= multimodal_prefill_ms + text_generation_ms` must hold
   within the preregistered tolerance.
@@ -917,6 +917,16 @@ Implementation path:
   per-row counts. Raw threshold masks are not drop-in safe.
 - Log actual per-item kept counts from the applied mask; do not infer counts
   from `vision_tower_keep_rate`.
+- Log scorer preparation and hook time separately. RLT-style masks have a
+  pixel-side NumPy preparation stage before the vision tower; feature-dependent
+  comparators such as `max_min_diversity` pay their NumPy scorer cost inside the
+  vision-tower hook. End-to-end timing must include both, while analyzers should
+  also report `vision_excluding_scorer` for algorithm-only interpretation.
+- The local RLT scorer preserves the published 224 px / patch-size 16 grid,
+  so its effective score resolution is 14x14. Gemma encoder positions are a
+  denser grid; projection to that grid is nearest-neighbor, producing tied
+  score plateaus. Fixed-budget top-K breaks ties by raster index after score.
+  This is a deliberate discrete-tubelet choice, not a smoothed saliency map.
 - Preserve scatter-back before the pooler.
 
 Arms:

@@ -41,14 +41,16 @@ RUNNER_PATH = REPO_ROOT / "scripts" / "run_benchmark_track_a.py"
 DEFAULT_MODEL_PATH = Path.home() / "models" / "gemma-4-e4b-it-4bit"
 GEMMA_IMAGE_SIZE = 512
 GEMMA_GRID_SHAPE = (16, 16)
-SCHEMA_VERSION = "phase1_63g_gemma_track_b_v4"
+SCHEMA_VERSION = "phase1_63g_gemma_track_b_v5"
 
 
 @dataclass(frozen=True, slots=True)
 class StageTimings:
     decode_ms: float
     processor_ms: float
+    scorer_prepare_ms: float
     vision_ms: float
+    scorer_keep_mask_ms: float
     multimodal_prefill_ms: float
     text_generation_ms: float
     generate_ms: float
@@ -336,6 +338,7 @@ def _schema_row(args: argparse.Namespace) -> dict[str, Any]:
         "vision_tower_layer": args.vision_tower_layer,
         "vision_tower_keep_rate": args.vision_tower_keep_rate,
         "vision_tower_score_mode": args.vision_tower_score_mode,
+        "scorer_timing_schema": 1,
         "rlt_config": (
             _rlt_config_from_args(args).as_dict()
             if args.vision_tower_score_mode == "rlt_topk"
@@ -359,6 +362,32 @@ def _clear_runtime_state() -> None:
 def _load_manifest_items(runner: Any, manifest_path: Path) -> list[Any]:
     payload = tomllib.loads(manifest_path.read_text())
     return cast(list[Any], runner._load_items_by_id(payload["benchmark"], payload["item_ids"]))
+
+
+def _select_warmup_items(items: list[Any], count: int) -> list[Any]:
+    if count <= 0:
+        return []
+    selected: list[Any] = []
+    selected_ids: set[str] = set()
+    seen_groups: set[str] = set()
+    for item in items:
+        group = str(getattr(item, "group", ""))
+        item_id = str(getattr(item, "item_id", id(item)))
+        if group in seen_groups:
+            continue
+        selected.append(item)
+        selected_ids.add(item_id)
+        seen_groups.add(group)
+        if len(selected) == count:
+            return selected
+    for item in items:
+        item_id = str(getattr(item, "item_id", id(item)))
+        if item_id in selected_ids:
+            continue
+        selected.append(item)
+        if len(selected) == count:
+            break
+    return selected
 
 
 def _load_output_rows_for_resume(path: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
@@ -395,7 +424,22 @@ def _record_payload(record: ItemResult) -> dict[str, Any]:
         "timing_ms": {
             "decode": record.timings.decode_ms,
             "processor": record.timings.processor_ms,
+            "scorer_prepare": record.timings.scorer_prepare_ms,
+            "scorer_prepare_ms": record.timings.scorer_prepare_ms,
             "vision": record.timings.vision_ms,
+            "scorer_keep_mask": record.timings.scorer_keep_mask_ms,
+            "scorer_keep_mask_ms": record.timings.scorer_keep_mask_ms,
+            "scorer_total": record.timings.scorer_prepare_ms + record.timings.scorer_keep_mask_ms,
+            "scorer_total_ms": record.timings.scorer_prepare_ms
+            + record.timings.scorer_keep_mask_ms,
+            "vision_excluding_scorer": max(
+                0.0,
+                record.timings.vision_ms - record.timings.scorer_keep_mask_ms,
+            ),
+            "vision_excluding_scorer_ms": max(
+                0.0,
+                record.timings.vision_ms - record.timings.scorer_keep_mask_ms,
+            ),
             "multimodal_prefill": record.timings.multimodal_prefill_ms,
             "multimodal_prefill_ms": record.timings.multimodal_prefill_ms,
             "text_generation": record.timings.text_generation_ms,
@@ -436,8 +480,20 @@ def _summarize_payload_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "mean_processor_ms": float(
             np.mean([_timing_from_payload(row, "processor") for row in rows])
         ),
+        "mean_scorer_prepare_ms": float(
+            np.mean([_timing_from_payload(row, "scorer_prepare") for row in rows])
+        ),
         "mean_dense_vision_ms": float(
             np.mean([_timing_from_payload(row, "vision") for row in rows])
+        ),
+        "mean_scorer_keep_mask_ms": float(
+            np.mean([_timing_from_payload(row, "scorer_keep_mask") for row in rows])
+        ),
+        "mean_scorer_total_ms": float(
+            np.mean([_timing_from_payload(row, "scorer_total") for row in rows])
+        ),
+        "mean_dense_vision_excluding_scorer_ms": float(
+            np.mean([_timing_from_payload(row, "vision_excluding_scorer") for row in rows])
         ),
         "mean_dense_multimodal_prefill_ms": float(
             np.mean([_timing_from_payload(row, "multimodal_prefill_ms") for row in rows])
@@ -483,7 +539,29 @@ def _summarize(records: list[ItemResult]) -> dict[str, Any]:
         "dense_parse_failures": sum(1 for record in records if record.parse_failure),
         "mean_decode_ms": float(np.mean([record.timings.decode_ms for record in records])),
         "mean_processor_ms": float(np.mean([record.timings.processor_ms for record in records])),
+        "mean_scorer_prepare_ms": float(
+            np.mean([record.timings.scorer_prepare_ms for record in records])
+        ),
         "mean_dense_vision_ms": float(np.mean([record.timings.vision_ms for record in records])),
+        "mean_scorer_keep_mask_ms": float(
+            np.mean([record.timings.scorer_keep_mask_ms for record in records])
+        ),
+        "mean_scorer_total_ms": float(
+            np.mean(
+                [
+                    record.timings.scorer_prepare_ms + record.timings.scorer_keep_mask_ms
+                    for record in records
+                ]
+            )
+        ),
+        "mean_dense_vision_excluding_scorer_ms": float(
+            np.mean(
+                [
+                    max(0.0, record.timings.vision_ms - record.timings.scorer_keep_mask_ms)
+                    for record in records
+                ]
+            )
+        ),
         "mean_dense_multimodal_prefill_ms": float(
             np.mean([record.timings.multimodal_prefill_ms for record in records])
         ),
@@ -645,6 +723,7 @@ def main() -> int:
         if args.vision_tower_score_mode in {"rlt_topk", "max_min_diversity"}:
 
             def keep_mask_fn(hidden_states: mx.array, positions: mx.array) -> mx.array:
+                scorer_t0 = time.perf_counter_ns()
                 if args.vision_tower_score_mode == "rlt_topk":
                     if "rlt_result" not in rlt_keep_holder:
                         raise RuntimeError("RLT result was not prepared before vision_tower call")
@@ -664,6 +743,9 @@ def main() -> int:
                         keep_rate=args.vision_tower_keep_rate,
                     )
                     rlt_keep_holder["last_valid_counts"] = valid_count_list
+                rlt_keep_holder["last_keep_mask_ms"] = (
+                    time.perf_counter_ns() - scorer_t0
+                ) / 1_000_000
                 rlt_keep_holder["last_mask_np"] = mask_np
                 mask = mx.array(mask_np)
                 expected = (int(hidden_states.shape[0]), int(hidden_states.shape[1]))
@@ -697,10 +779,12 @@ def main() -> int:
     )
     kept_groups = args.frame_count * kept_per_frame
 
-    def prepare_sparse_scorer_for_frames(frames: list[Any], metadata: dict[str, Any]) -> None:
+    def prepare_sparse_scorer_for_frames(frames: list[Any], metadata: dict[str, Any]) -> float:
+        prepare_t0 = time.perf_counter_ns()
         if not vt_patched:
-            return
+            return 0.0
         rlt_keep_holder.pop("last_mask_np", None)
+        rlt_keep_holder.pop("last_keep_mask_ms", None)
         if args.vision_tower_score_mode == "max_min_diversity":
             metadata.update(
                 {
@@ -708,9 +792,11 @@ def main() -> int:
                     "feature_scorer_domain": "gemma_internal_encoder_positions",
                 }
             )
-            return
+            scorer_prepare_ms = (time.perf_counter_ns() - prepare_t0) / 1_000_000
+            metadata["scorer_prepare_ms"] = scorer_prepare_ms
+            return scorer_prepare_ms
         if args.vision_tower_score_mode != "rlt_topk":
-            return
+            return 0.0
         rlt_result = compute_rlt_keep_mask_from_frames(frames, config=rlt_config)
         projected_placeholder_mask = fixed_budget_rlt_score_mask(
             rlt_result,
@@ -732,6 +818,14 @@ def main() -> int:
                 ),
             }
         )
+        scorer_prepare_ms = (time.perf_counter_ns() - prepare_t0) / 1_000_000
+        metadata["scorer_prepare_ms"] = scorer_prepare_ms
+        metadata["scorer_implementation_substrate"] = "numpy_cpu"
+        metadata["rlt_projection_effective_score_grid"] = list(
+            rlt_result.config.resolved_grid_shape()
+        )
+        metadata["rlt_projection_tiebreak"] = "score_desc_then_raster_index_asc"
+        return scorer_prepare_ms
 
     def record_sparse_scorer_after_vision(metadata: dict[str, Any]) -> tuple[int, int, list[int]]:
         if not (vt_patched and args.vision_tower_score_mode in {"rlt_topk", "max_min_diversity"}):
@@ -751,12 +845,17 @@ def main() -> int:
         valid_counts = [
             int(value) for value in cast(list[int], rlt_keep_holder["last_valid_counts"])
         ]
+        scorer_keep_mask_ms = float(rlt_keep_holder.get("last_keep_mask_ms", 0.0))
+        scorer_prepare_ms = float(metadata.get("scorer_prepare_ms", 0.0))
         metadata.update(
             {
                 "gemma_encoder_positions_per_frame": int(last_mask_np.shape[1]),
                 "gemma_encoder_valid_positions_per_frame": valid_counts,
                 "gemma_encoder_kept_per_frame": actual_kept_per_frame,
                 "sparse_budget_domain": "valid_encoder_positions",
+                "scorer_keep_mask_ms": scorer_keep_mask_ms,
+                "scorer_total_ms": scorer_prepare_ms + scorer_keep_mask_ms,
+                "scorer_implementation_substrate": "numpy_cpu",
                 **(
                     {"rlt_budget_domain": "valid_encoder_positions"}
                     if args.vision_tower_score_mode == "rlt_topk"
@@ -766,7 +865,8 @@ def main() -> int:
         )
         return int(last_mask_np.sum()), int(sum(valid_counts)), actual_kept_per_frame
 
-    for warmup_item in items[: args.warmup_items]:
+    warmup_items = _select_warmup_items(items, args.warmup_items)
+    for warmup_item in warmup_items:
         _clear_runtime_state()
         warm_raw, warm_frames, _decode_ms, _processor_ms = _prepare_item(
             runner,
@@ -802,10 +902,15 @@ def main() -> int:
             item_metadata: dict[str, Any] = {
                 "vision_tower_score_mode": args.vision_tower_score_mode,
             }
-            prepare_sparse_scorer_for_frames(frames, item_metadata)
+            scorer_prepare_ms = prepare_sparse_scorer_for_frames(frames, item_metadata)
             features, vision_ms = _compute_gemma_features(model, raw)
             actual_kept_groups, actual_total_groups, actual_kept_per_frame = (
                 record_sparse_scorer_after_vision(item_metadata)
+            )
+            scorer_keep_mask_ms = float(item_metadata.get("scorer_keep_mask_ms", 0.0))
+            item_metadata["vision_ms_excluding_scorer"] = max(
+                0.0,
+                vision_ms - scorer_keep_mask_ms,
             )
             stats = _run_generate(
                 model,
@@ -827,11 +932,15 @@ def main() -> int:
                 timings=StageTimings(
                     decode_ms=decode_ms,
                     processor_ms=processor_ms,
+                    scorer_prepare_ms=scorer_prepare_ms,
                     vision_ms=vision_ms,
+                    scorer_keep_mask_ms=scorer_keep_mask_ms,
                     multimodal_prefill_ms=stats.multimodal_prefill_ms,
                     text_generation_ms=stats.text_generation_ms,
                     generate_ms=stats.elapsed_ms,
-                    end_to_end_ms=decode_ms + processor_ms + vision_ms + stats.elapsed_ms,
+                    end_to_end_ms=(
+                        decode_ms + processor_ms + scorer_prepare_ms + vision_ms + stats.elapsed_ms
+                    ),
                 ),
                 prompt_tokens=stats.prompt_tokens,
                 generation_tokens=stats.generation_tokens,
@@ -861,6 +970,8 @@ def main() -> int:
             "n_frames": args.frame_count,
             "max_tokens": args.max_tokens,
             "warmup_items": args.warmup_items,
+            "warmup_item_ids": [str(item.item_id) for item in warmup_items],
+            "warmup_groups": [str(item.group) for item in warmup_items],
             "vision_tower_patched": vt_patched,
             "vision_tower_layer": args.vision_tower_layer if vt_patched else None,
             "vision_tower_keep_rate": args.vision_tower_keep_rate if vt_patched else None,
