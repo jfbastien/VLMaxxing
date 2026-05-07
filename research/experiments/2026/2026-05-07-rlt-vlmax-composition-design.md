@@ -167,6 +167,23 @@ Validated on 2026-05-07 against the current branch after commit `9c12d29`.
 | RLT-7 positive result should not scope-creep into training. | VALID | RLT-7 now says a positive outcome unlocks a future training-required scout, outside this preregistration. |
 | Pledge `paper/framing.md` updates. | VALID | Shared protocol now requires `paper/framing.md` updates when contribution boundaries or anti-claims change. |
 
+### Scientist Peer Feedback Validation, Round 4
+
+Validated on 2026-05-07 against the current branch after commit `2ea0a5e`.
+
+| Peer claim | Verdict | Evidence / action |
+| --- | --- | --- |
+| H1.5b tests a conditional future replacement, not a current Pareto-cell replacement. | VALID | `gemma_structural`, not `max_min_diversity`, is the current paper-default anchor because it earned the same delta-accuracy band with far lower cost. H1.5b now explicitly says acceptance does not move a current Pareto cell unless a future production cell adopts an expensive feature-dependent scorer. |
+| SWA marker checks are necessary but insufficient. | VALID | Marker greps can survive partial patch drift. Gemma H4A preflight now requires a functional `scripts/run_sam_b0b_cache_correctness.py --smoke` go/no-go; marker presence is only a fast screen. |
+| The mask helper should pin a stable pixel domain. | VALID | The implementation default is post-decode raw frames resized to `224x224`, ImageNet-normalized before the RLT threshold, with downstream model-grid projection logged separately. This matches the RLT threshold domain while keeping masks cacheable across models. |
+| Mask-grid projection should be charged separately. | VALID | RLT profiler rows now record `mask_compute_ms` and `mask_project_ms` separately. |
+| Pure mask tests should not be MLX-gated. | VALID | `tests/test_rlt_masks.py` is NumPy/Pillow-only and must run without `tests/_mlx_probe.py`. |
+| Runners need a durable resume key and schema row. | VALID | New profiler artifacts use JSONL row 0 with `schema_version` and a SHA-256 over manifest path/content hash, frame count, mask config, random seed, and comparison options. Mismatched artifacts hard-fail unless explicitly overwritten. |
+| Multiple comparisons need confirmatory versus exploratory separation. | VALID | H2, H3B, and H4A are the confirmatory family for this preregistration; H1, H1.5, H1.5b, H3A, H4B, H5/H6/RLT-7 are exploratory or prerequisite mechanisms unless promoted by a follow-up preregistration. |
+| Total compute can exceed two days if every cell runs. | VALID | Added early-cancel rules: strong RLT-vs-pixel-novelty co-cover can stop model runs, failed RLT-1 static/positive-control grounding stops RLT-style claims, and failed prefill/SWA preflight blocks dependent cells before smokes. |
+| ToMe/DynamicViT deserve an explicit non-comparison note. | VALID | Added a reviewer-defense note: ToMe/DynamicViT are feature-dependent token-merging/pruning baselines, relevant to H3A scorer-stacking but not the clean denominator-separation cell. |
+| RLT-7 should run beside RLT-1 because duration metadata is essentially free. | VALID | Implementation order now logs duration-anchor metadata during RLT-1 profiling rather than waiting until after all long model runs. |
+
 ### RLT Algorithm Facts To Preserve
 
 - Input shape in RLT code is `[B, C, T, H, W]`.
@@ -325,6 +342,10 @@ cells. This is a mechanism precondition only; it does not by itself allow
 
 **H1.5b-RLT-free-prior-adoption (Track B).** RLT-style masks can be called a
 replacement for a local scorer only after a paired model-run drift test.
+Acceptance does not by itself improve a current paper Pareto cell because
+`max_min_diversity` is not the live paper-default anchor; it is a conditional
+hypothesis for a future production cell that adopts an expensive
+feature-dependent scorer.
 
 - Primary metric: paired answer drift and E2E/stage timing in the cheapest
   model cell that previously passed with the target scorer.
@@ -480,14 +501,14 @@ classes should recover keep-rate/fidelity on scroll/pan/egomotion clips.
 Implementation order is:
 
 1. RLT-0 pure helper and safety checks,
-2. RLT-1/H1 profiler,
+2. RLT-1/H1 profiler, including RLT-7 duration-anchor logging because run
+   lengths are already computed,
 3. RLT-1.5 free-prior profiler,
 4. RLT-2G Gemma C-VISION,
 5. RLT-3G Gemma composition cells,
 6. RLT-4Q Qwen C-VISION,
 7. RLT-5Q C-PERSIST,
-8. RLT-6 motion-compensated scout,
-9. RLT-7 duration-annotated anchor scout.
+8. RLT-6 motion-compensated scout.
 
 This order intentionally front-loads Gemma because it is the cleanest local
 measured sparse-vision cell and avoids the longer Qwen 7B thermal pairing
@@ -512,9 +533,12 @@ until cheaper evidence has survived.
   and shows dense wall-clock perturbation is at most `3%` or `50 ms`,
   whichever is larger.
 - SWA-cache preflight: no Gemma H4A/C-PERSIST run may start until the active
-  `mlx_vlm.generate` path is verified to contain the SWA-aware trim behavior
-  from `scripts/mlx_vlm_swa_aware_trim.patch` or the run uses the checked
-  prefix-snapshot wrapper instead of default `PromptCacheState`.
+  `mlx_vlm.generate` path passes a functional cache-correctness smoke using
+  `scripts/run_sam_b0b_cache_correctness.py --smoke` with the B0b runtime guard
+  disabled, or the run uses the checked prefix-snapshot wrapper instead of
+  default `PromptCacheState`. A grep for the
+  `scripts/mlx_vlm_swa_aware_trim.patch` marker is only a fast screen and is
+  not sufficient for H4A evidence.
 - Power/n: initial `n=30 dev / n=30 holdout` inherits local VideoMME precedent
   from Phase 1.51V/1.63. Treat this as screening unless a cell-specific
   minimum detectable effect is computed from prior paired timing variance.
@@ -526,6 +550,12 @@ until cheaper evidence has survived.
   `paper/framing.md` in the same evidence-maintenance pass.
 - Mask compute time is recorded on every arm, with dense arms writing
   `mask_compute_ms = 0`.
+- RLT profiler and runner artifacts must record `mask_project_ms` separately
+  from `mask_compute_ms` when a model-specific grid projection happens.
+- Artifact resumability key: each arm artifact must carry a SHA-256 over
+  `(manifest_path, manifest_content_hash, model_path, frame_count,
+  mask_config_dict, rng_seed)`. A stale artifact with a mismatched key
+  hard-fails unless the runner was explicitly told to overwrite it.
 - Random controls: the default matched-random control is per-item matched to
   the RLT arm's effective keep count/budget. The random arm's budget is read
   from the matched RLT arm's emitted per-item keep counts in the same paired
@@ -533,6 +563,9 @@ until cheaper evidence has survived.
   aggregate-matched in disguise. Aggregate-matched random is optional and
   diagnostic because it confounds scorer quality with content-conditioned
   budget allocation.
+- Confirmatory family: H2, H3B, and H4A are the preregistered confirmatory
+  hypotheses. H1, H1.5, H1.5b, H3A, H4B, H5/H6, and RLT-7 are exploratory or
+  prerequisite mechanisms until a follow-up preregistration promotes them.
 
 ### Phase RLT-0 (Track A/B Precondition): Pure Mask Port And Audit
 
@@ -613,6 +646,8 @@ Outputs:
   - frame count, grid shape, threshold, normalize mode,
   - keep rate,
   - run-length histogram,
+  - duration-anchor summary for RLT-7,
+  - `mask_compute_ms` and `mask_project_ms`,
   - overlap with current `STATIC`, `STATIC|SHIFTED`, novelty top-k,
   - content bucket.
 - Floor-active flag for each row: distinguish threshold-kept tokens from
@@ -644,7 +679,7 @@ Protocol:
   TOMATO/MVBench motion manifests.
 - Frame count: 8 first, then 16/32 only if H1 bucket contrast exists.
 - Runner command: new offline profiler, e.g.
-  `uv run python scripts/profile_rlt_masks.py --manifest ... --frame-count 8`.
+  `uv run python scripts/profile_rlt_masks.py --manifest ... --frame-count 8 --compare-pixel-novelty`.
 - Analyzer: new profiler summary plus overlap plots/tables.
 - Pairing key: `item_id`.
 
@@ -1078,11 +1113,23 @@ Status:
   1. preflight, including selected-phase prerequisite checks for prefill split
      and Gemma SWA-safe cache behavior,
   2. CPU mask profiler,
-  3. n=1 Gemma smoke,
-  4. n=1 Qwen smoke,
-  5. selected decision cells,
-  6. analyzers,
-  7. gate summary.
+  3. early-cancel gates from the CPU profiler,
+  4. n=1 Gemma smoke,
+  5. n=1 Qwen smoke,
+  6. selected decision cells,
+  7. analyzers,
+  8. gate summary.
+- Early-cancel rules:
+  - if RLT-1 synthetic tests or fixed-camera positive controls fail, stop
+    model runs and debug the mask kernel/domain;
+  - if RLT and pixel-novelty co-cover at `>=0.95` Jaccard across buckets,
+    cancel H1.5b/H3/H4 model runs and report the negative mechanism result
+    unless a cheaper-overhead comparison still matters operationally;
+  - if prefill split or Gemma SWA functional smoke fails, skip dependent cells
+    rather than producing artifacts that cannot satisfy the gates.
+- Sequential conservative runtime can exceed `50 h` if every extension cell
+  runs. The queue should expose the cumulative estimate and add cancel points
+  before any selected slate exceeds `30 h` on the 16 GB M3 machine.
 - Claude/Codex supervision should interpret only completed artifacts and should
   record negative outcomes in this note, `research/decision-log.md`, and
   paper-facing docs only when a hypothesis changes status. If contribution
@@ -1092,10 +1139,11 @@ Status:
 
 - RLT threshold calibration differs by pixel domain. The faithful `tau=0.1`
   setting assumes ImageNet-normalized tensors, not raw RGB.
-- The first local implementation must choose and log `mask_domain`. Candidate
-  domains are raw decoded frames, explicit ImageNet-normalized tensors, Qwen
-  processor tensors, and Gemma letterboxed processor tensors. Thresholds are
-  not shared across those domains without profiler evidence.
+- The first local implementation pins `mask_domain` to post-decode raw RGB
+  frames resized to `224x224` and ImageNet-normalized before thresholding.
+  This makes the canonical `tau=0.1` meaningful and lets the mask cache across
+  model families; model-specific token-grid projections are downstream work
+  and must be charged as `mask_project_ms`.
 - RLT's same-position assumption is brittle under camera motion.
 - RLT length encoding is not safe to port first; the local RLT code's length
   ordering should be tested before any duration embedding claim.
@@ -1108,6 +1156,30 @@ Status:
 - Existing first-turn runners must be instrumented before they can prove
   prefill-stage reductions; otherwise prompt shortening remains inferred from
   prompt token counts and folded generate wall-clock.
+- ToMe/DynamicViT-style feature-dependent token merging/pruning is not a clean
+  H3B denominator-separation comparator. It belongs in H3A scorer-stacking or
+  future feature-dependent baselines once comparable local instrumentation
+  exists.
+
+## Implementation Checklist
+
+Before each implementation commit that changes this experiment family:
+
+- verify every referenced runner, analyzer, manifest, model path, and claim row
+  exists or is explicitly labeled "to add";
+- search `paper/claim-matrix.md` and `research/decision-log.md` before naming a
+  scorer or method as a live target;
+- confirm any new threshold is either anchored in prior local evidence or
+  labeled exploratory;
+- keep JSONL schema row 0 and the artifact resume hash in every new writer;
+- hard-fail shape, rank, placeholder-count, and cache-topology mismatches with
+  `ValueError` or a failing preflight;
+- keep paired bootstrap resampling list-based, never `set`-based;
+- avoid argsort tie-order assertions in tests unless stable ordering is part of
+  the contract;
+- run `uv run pytest` for the touched tests, `uv run ruff format --check`,
+  `uv run ruff check`, and `uv run mypy src tests` before presenting the commit
+  as complete.
 
 ## Verification Plan
 
@@ -1137,6 +1209,9 @@ Before first implementation code commit:
 After pure-mask implementation:
 
 - `uv run pytest tests/test_rlt_masks.py`
+- `uv run python scripts/profile_rlt_masks.py --synthetic exact_static --synthetic single_frame_repeat --synthetic all_motion --frame-count 8 --overwrite --output-jsonl /tmp/rlt_mask_profile.jsonl --summary-json /tmp/rlt_mask_profile_summary.json`
+- `uv run python scripts/profile_rlt_masks.py --synthetic exact_static --synthetic fixed_camera_positive --synthetic camera_pan --frame-count 8 --compare-pixel-novelty --project-grid-shape 14x20 --overwrite --output-jsonl /tmp/rlt_mask_profile_compare.jsonl --summary-json /tmp/rlt_mask_profile_compare_summary.json`
+- `uv run python scripts/preflight_rlt_vlmax.py --phase RLT-1 --output /tmp/rlt_vlmax_preflight.json`
 - `uv run pytest tests/test_temporal.py tests/test_novelty_pruning.py`
 
 After Qwen/Gemma wiring:
