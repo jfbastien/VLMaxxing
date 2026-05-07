@@ -15,9 +15,10 @@ import random
 from collections import defaultdict
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 SCHEMA_VERSION = "gemma_admission_analysis_v2"
+CellType = Literal["h2_pure_cvision", "h2_admission", "h3b_admission"]
 
 
 def _load_jsonl(path: Path) -> tuple[dict[str, Any] | None, list[dict[str, Any]]]:
@@ -178,17 +179,67 @@ def _e2e_speedup_metric(rows: list[dict[str, Any]]) -> float:
     return dense / pruned if pruned > 0.0 else 0.0
 
 
-def _overhead_budget_metric(rows: list[dict[str, Any]]) -> float:
+def _stage_reductions(rows: list[dict[str, Any]], *, cell_type: CellType) -> dict[str, float]:
     dense_prefill = sum(_prefill_ms(row, branch="dense") for row in rows)
     pruned_prefill = sum(_prefill_ms(row, branch="pruned") for row in rows)
     dense_vision = sum(_timing(row, "dense", "vision") for row in rows)
     pruned_vision = sum(_timing(row, "pruned", "vision") for row in rows)
+    prompt_reduction_ms = dense_prefill - pruned_prefill
+    vision_reduction_ms = dense_vision - pruned_vision
+    if cell_type == "h2_pure_cvision":
+        credited_reduction_ms = vision_reduction_ms
+    elif cell_type in {"h2_admission", "h3b_admission"}:
+        credited_reduction_ms = prompt_reduction_ms + vision_reduction_ms
+    else:
+        raise ValueError(f"unknown cell_type {cell_type!r}")
+    return {
+        "prompt_reduction_ms": prompt_reduction_ms,
+        "vision_reduction_ms": vision_reduction_ms,
+        "credited_stage_reduction_ms": credited_reduction_ms,
+    }
+
+
+def _overhead_budget_metric(rows: list[dict[str, Any]], *, cell_type: CellType) -> float:
+    reductions = _stage_reductions(rows, cell_type=cell_type)
     overhead = sum(
         _optional_timing(row, "pruned", "mask_compute", "mask")
         + _optional_timing(row, "pruned", "placeholder_prune", "prune")
         for row in rows
     )
-    return (dense_prefill - pruned_prefill) + (dense_vision - pruned_vision) - overhead
+    return reductions["credited_stage_reduction_ms"] - overhead
+
+
+def _ratio_distribution(values: list[float]) -> dict[str, Any]:
+    values = sorted(values)
+    return {
+        "n": len(values),
+        "mean": _mean(values),
+        "min": float(values[0]) if values else None,
+        "max": float(values[-1]) if values else None,
+    }
+
+
+def _warmup_ratio_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    ratios: list[float] = []
+    for row in rows:
+        metadata = row.get("metadata")
+        if not isinstance(metadata, dict):
+            continue
+        warmups = metadata.get("pruned_warmup_generate_ms")
+        if not isinstance(warmups, list) or not warmups:
+            continue
+        measured = _timing(row, "pruned", "generate")
+        if measured <= 0.0:
+            continue
+        ratios.append(float(warmups[0]) / measured)
+    distribution = _ratio_distribution(ratios)
+    return {
+        "prefill_jit_warmup_ratio_proxy": distribution["max"],
+        "prefill_jit_warmup_ratios": distribution,
+        "prefill_jit_warmup_suspected": (
+            distribution["max"] is not None and distribution["max"] > 1.5
+        ),
+    }
 
 
 def analyze(
@@ -199,6 +250,7 @@ def analyze(
     require_overhead_gate: bool,
     timing_min_n: int,
     n_bootstrap: int,
+    cell_type: CellType,
 ) -> dict[str, Any]:
     quality = _quality_summary(
         rows,
@@ -219,9 +271,10 @@ def analyze(
     pruned_vision_ms = [_timing(row, "pruned", "vision") for row in rows]
     dense_e2e = [_timing(row, "dense", "end_to_end") for row in rows]
     pruned_e2e = [_timing(row, "pruned", "end_to_end") for row in rows]
-    prompt_reduction_ms = sum(dense_prefill_ms) - sum(pruned_prefill_ms)
-    vision_reduction_ms = sum(dense_vision_ms) - sum(pruned_vision_ms)
-    overhead_budget_ms = prompt_reduction_ms + vision_reduction_ms
+    reductions = _stage_reductions(rows, cell_type=cell_type)
+    prompt_reduction_ms = reductions["prompt_reduction_ms"]
+    vision_reduction_ms = reductions["vision_reduction_ms"]
+    overhead_budget_ms = reductions["credited_stage_reduction_ms"]
     total_overhead_ms = sum(overhead_ms)
     overhead_gate_evaluated = require_overhead_gate and len(rows) >= timing_min_n
     overhead_gate_pass = (
@@ -254,9 +307,10 @@ def analyze(
                 "details": {
                     "prompt_reduction_ms": prompt_reduction_ms,
                     "vision_reduction_ms": vision_reduction_ms,
-                    "overhead_budget_ms": overhead_budget_ms,
+                    "credited_stage_reduction_ms": overhead_budget_ms,
                     "overhead_ms": total_overhead_ms,
                     "timing_min_n": timing_min_n,
+                    "cell_type": cell_type,
                 },
             }
         )
@@ -265,6 +319,7 @@ def analyze(
         decisions.append({"decision": "continue", "reason": "gemma_admission_gates_survived"})
     return {
         "n_items": len(rows),
+        "cell_type": cell_type,
         **quality,
         "choice_agreement": choice_agreement,
         "dense_parse_failures": sum(bool(row.get("dense_parse_failure", False)) for row in rows),
@@ -275,6 +330,7 @@ def analyze(
         "mean_dense_vision_ms": _mean(dense_vision_ms),
         "mean_pruned_vision_ms": _mean(pruned_vision_ms),
         "total_vision_reduction_ms": vision_reduction_ms,
+        "total_credited_stage_reduction_ms": overhead_budget_ms,
         "total_overhead_budget_ms": overhead_budget_ms,
         "mean_overhead_ms": _mean(overhead_ms),
         "total_overhead_ms": total_overhead_ms,
@@ -300,10 +356,11 @@ def analyze(
             ),
             "overhead_budget_minus_overhead_ms_ci95": _bootstrap_ci(
                 rows,
-                metric=_overhead_budget_metric,
+                metric=lambda sample: _overhead_budget_metric(sample, cell_type=cell_type),
                 n_bootstrap=n_bootstrap,
             ),
         },
+        **_warmup_ratio_summary(rows),
         "decisions": decisions,
         "skip_phases": sorted(set(skip_phases)),
     }
@@ -318,6 +375,11 @@ def main() -> int:
     parser.add_argument("--bucket-min-n", type=int, default=20)
     parser.add_argument("--timing-min-n", type=int, default=20)
     parser.add_argument("--n-bootstrap", type=int, default=2000)
+    parser.add_argument(
+        "--cell-type",
+        choices=["h2_pure_cvision", "h2_admission", "h3b_admission"],
+        default="h2_admission",
+    )
     parser.add_argument("--no-overhead-gate", action="store_true")
     args = parser.parse_args()
     if args.timing_min_n < 1:
@@ -334,6 +396,7 @@ def main() -> int:
         require_overhead_gate=not args.no_overhead_gate,
         timing_min_n=args.timing_min_n,
         n_bootstrap=args.n_bootstrap,
+        cell_type=args.cell_type,
     )
     payload = {
         "schema_version": SCHEMA_VERSION,
@@ -347,6 +410,7 @@ def main() -> int:
             "timing_min_n": args.timing_min_n,
             "n_bootstrap": args.n_bootstrap,
             "overhead_gate_required": not args.no_overhead_gate,
+            "cell_type": args.cell_type,
         },
         **analysis,
     }

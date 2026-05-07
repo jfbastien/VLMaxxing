@@ -20,6 +20,7 @@ import subprocess
 import sys
 import time
 from collections.abc import Iterable
+from dataclasses import replace
 from pathlib import Path
 from typing import Any, Literal
 
@@ -104,6 +105,7 @@ def _artifact_payload(args: argparse.Namespace, config: RLTMaskConfig) -> dict[s
         "n_items": args.n_items,
         "rng_seed": args.rng_seed,
         "compare_pixel_novelty": args.compare_pixel_novelty,
+        "threshold_sweep": sorted(float(v) for v in args.threshold_sweep),
     }
 
 
@@ -282,6 +284,7 @@ def _profile_one(
     config: RLTMaskConfig,
     project_grid_shape: tuple[int, int] | None,
     compare_pixel_novelty: bool,
+    threshold_sweep: list[float],
 ) -> dict[str, Any]:
     t0 = time.perf_counter()
     arr = coerce_frames_to_array(
@@ -293,6 +296,22 @@ def _profile_one(
     t1 = time.perf_counter()
     result = compute_rlt_keep_mask_from_array(arr, config=config, frames_are_normalized=True)
     t2 = time.perf_counter()
+    threshold_sweep_rows: list[dict[str, float]] = []
+    for threshold in sorted(threshold_sweep):
+        sweep_result = compute_rlt_keep_mask_from_array(
+            arr,
+            config=replace(config, threshold=threshold),
+            frames_are_normalized=True,
+        )
+        threshold_sweep_rows.append(
+            {
+                "threshold": float(threshold),
+                "keep_rate": float(
+                    sweep_result.kept_token_count
+                    / (sweep_result.frame_count * sweep_result.tokens_per_frame)
+                ),
+            }
+        )
     mask_project_ms = 0.0
     projected_shape: tuple[int, int] | None = None
     if project_grid_shape is not None:
@@ -325,6 +344,7 @@ def _profile_one(
             result.frame_keep_mask,
             result.frame_run_lengths,
         ),
+        "threshold_sweep": threshold_sweep_rows,
         **summary,
     }
     return row
@@ -375,6 +395,7 @@ def main() -> int:
     parser.add_argument("--clip-group", default="fixed_camera_positive")
     parser.add_argument("--frame-count", type=int, default=8)
     parser.add_argument("--threshold", type=float, default=0.1)
+    parser.add_argument("--threshold-sweep", type=float, action="append", default=[])
     parser.add_argument("--tubelet-size", type=int, default=2)
     parser.add_argument("--image-size", type=int, default=224)
     parser.add_argument("--patch-size", type=int, default=16)
@@ -470,6 +491,7 @@ def main() -> int:
                 config=config,
                 project_grid_shape=args.project_grid_shape,
                 compare_pixel_novelty=args.compare_pixel_novelty,
+                threshold_sweep=args.threshold_sweep,
             )
         )
 
@@ -487,6 +509,7 @@ def main() -> int:
                     config=config,
                     project_grid_shape=args.project_grid_shape,
                     compare_pixel_novelty=args.compare_pixel_novelty,
+                    threshold_sweep=args.threshold_sweep,
                 )
             )
 
@@ -503,6 +526,7 @@ def main() -> int:
                 config=config,
                 project_grid_shape=args.project_grid_shape,
                 compare_pixel_novelty=args.compare_pixel_novelty,
+                threshold_sweep=args.threshold_sweep,
             )
         )
 

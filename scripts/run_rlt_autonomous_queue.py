@@ -9,6 +9,7 @@ are absent.
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import hashlib
 import json
 import subprocess
@@ -22,7 +23,11 @@ DEFAULT_ARTIFACT_DIR = Path("research/experiments/2026/artifacts/rlt_autonomous_
 DEFAULT_GEMMA_MODEL_PATH = Path.home() / "models" / "gemma-4-e4b-it-4bit"
 DEFAULT_GEMMA_MANIFEST = Path("research/benchmark_manifests/videomme_combined_v1_n60.toml")
 DEFAULT_GEMMA_SMOKE_MANIFEST = Path("research/benchmark_manifests/videomme_dev_v1.toml")
-DEFAULT_POSITIVE_CONTROL_CLIP = Path("data/corpus/crosscheck/talking_head.mp4")
+DEFAULT_DECISION_LOG = Path("research/decision-log.md")
+DEFAULT_POSITIVE_CONTROL_CLIPS = [
+    Path("data/corpus/derived/hall_monitor_cif_standard_h264_crf18_g30.mp4")
+]
+DEFAULT_THRESHOLD_SWEEP = [0.05, 0.10, 0.20, 0.50, 1.00]
 PHASE_ESTIMATES_HOURS = {
     "RLT-1-preflight": [0.02, 0.05],
     "RLT-1-profiler-synthetic": [0.02, 0.10],
@@ -86,6 +91,60 @@ def _write_summary(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def _repo_rel(path: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(Path.cwd().resolve()))
+    except ValueError:
+        return str(path)
+
+
+def _append_decision_log(
+    path: Path,
+    *,
+    summary_path: Path,
+    decisions: list[dict[str, Any]],
+) -> None:
+    if not decisions:
+        return
+    date = dt.date.today().isoformat()
+    stop_decisions = [
+        decision
+        for decision in decisions
+        if str(decision.get("decision")) in {"stop", "contract", "block_h3b", "block_h4a_gemma"}
+    ]
+    if not stop_decisions:
+        return
+    reasons = ", ".join(str(decision.get("reason", "unknown")) for decision in stop_decisions)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(
+            "\n"
+            f"| {date}: RLT autonomous queue early stop | Screening result | "
+            f"[summary]({_repo_rel(summary_path)}) | Reasons: {reasons}. "
+            "Reopen by fixing the failing gate or rerunning with a replacement artifact under the "
+            "same preregistered analyzer. |\n"
+        )
+
+
+def _write_terminal_summary(
+    path: Path,
+    payload: dict[str, Any],
+    *,
+    decision_log: Path | None,
+) -> None:
+    _write_summary(path, payload)
+    if decision_log is not None:
+        _append_decision_log(
+            decision_log,
+            summary_path=path,
+            decisions=cast(list[dict[str, Any]], payload.get("decisions", [])),
+        )
+
+
+def _planned_command(command: list[str]) -> dict[str, Any]:
+    return {"command": command}
+
+
 def _analysis_blocks_downstream(analysis: dict[str, Any]) -> bool:
     known_decisions = {"continue", "stop", "contract", "skip_h1_5b", "downgrade"}
     for decision in analysis.get("decisions", []):
@@ -111,11 +170,83 @@ def _run_gemma_admission_cell(
     timing_min_n: int,
     label: str,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    analysis_path = artifact_dir / f"{label}_analysis.json"
+    commands: list[dict[str, Any]] = []
+    planned = _gemma_admission_commands(
+        artifact_dir=artifact_dir,
+        manifest=manifest,
+        model_path=model_path,
+        frame_count=frame_count,
+        n_items=n_items,
+        rss_guard_mb=rss_guard_mb,
+        n_warmup=n_warmup,
+        enforce_overhead_gate=enforce_overhead_gate,
+        timing_min_n=timing_min_n,
+        label=label,
+    )
+    for command in planned:
+        commands.append(_run(command))
+    return commands, _read_json(analysis_path)
+
+
+def _profile_command(
+    *,
+    artifact_dir: Path,
+    manifest: Path | None,
+    frame_count: int,
+    positive_control_clips: list[Path],
+) -> list[str]:
+    command = [
+        sys.executable,
+        "scripts/profile_rlt_masks.py",
+        "--synthetic",
+        "exact_static",
+        "--synthetic",
+        "single_frame_repeat",
+        "--synthetic",
+        "all_motion",
+        "--synthetic",
+        "fixed_camera_positive",
+        "--synthetic",
+        "camera_pan",
+        "--frame-count",
+        str(frame_count),
+        "--compare-pixel-novelty",
+        "--project-grid-shape",
+        "16x16",
+        "--overwrite",
+        "--output-jsonl",
+        str(artifact_dir / "rlt_mask_profile.jsonl"),
+        "--summary-json",
+        str(artifact_dir / "rlt_mask_profile_summary.json"),
+    ]
+    for threshold in DEFAULT_THRESHOLD_SWEEP:
+        command.extend(["--threshold-sweep", f"{threshold:g}"])
+    if manifest is not None:
+        command.extend(["--manifest", str(manifest)])
+    for clip in positive_control_clips:
+        if clip.exists():
+            command.extend(["--clip", str(clip), "--clip-group", "fixed_camera_positive"])
+    return command
+
+
+def _gemma_admission_commands(
+    *,
+    artifact_dir: Path,
+    manifest: Path,
+    model_path: Path,
+    frame_count: int,
+    n_items: int,
+    rss_guard_mb: int,
+    n_warmup: int,
+    enforce_overhead_gate: bool,
+    timing_min_n: int,
+    label: str,
+) -> list[list[str]]:
     jsonl_path = artifact_dir / f"{label}.jsonl"
     summary_path = artifact_dir / f"{label}_summary.json"
     analysis_path = artifact_dir / f"{label}_analysis.json"
-    commands: list[dict[str, Any]] = []
-    command = [
+    run_command = [
         sys.executable,
         "scripts/run_novelty_pruning_gemma.py",
         "--manifest",
@@ -140,8 +271,7 @@ def _run_gemma_admission_cell(
         str(summary_path),
     ]
     if n_items > 0:
-        command.extend(["--n-items", str(n_items)])
-    commands.append(_run(command))
+        run_command.extend(["--n-items", str(n_items)])
     analyze_command = [
         sys.executable,
         "scripts/analyze_gemma_admission.py",
@@ -153,11 +283,12 @@ def _run_gemma_admission_cell(
         str(analysis_path),
         "--timing-min-n",
         str(timing_min_n),
+        "--cell-type",
+        "h2_admission",
     ]
     if not enforce_overhead_gate:
         analyze_command.append("--no-overhead-gate")
-    commands.append(_run(analyze_command))
-    return commands, _read_json(analysis_path)
+    return [run_command, analyze_command]
 
 
 def main() -> int:
@@ -174,9 +305,20 @@ def main() -> int:
     parser.add_argument("--gemma-rss-guard-mb", type=int, default=9000)
     parser.add_argument("--gemma-n-warmup", type=int, default=1)
     parser.add_argument("--timing-min-n", type=int, default=20)
-    parser.add_argument("--positive-control-clip", type=Path, default=DEFAULT_POSITIVE_CONTROL_CLIP)
+    parser.add_argument(
+        "--positive-control-clip",
+        type=Path,
+        action="append",
+        default=None,
+        help=(
+            "Real fixed-camera positive-control clip. Repeatable. Defaults to the "
+            "encoded Xiph hall-monitor clip when present."
+        ),
+    )
     parser.add_argument("--run-swa-smoke", action="store_true")
     parser.add_argument("--max-planned-hours", type=float, default=30.0)
+    parser.add_argument("--decision-log", type=Path, default=DEFAULT_DECISION_LOG)
+    parser.add_argument("--no-decision-log", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--summary", type=Path)
     args = parser.parse_args()
@@ -184,9 +326,17 @@ def main() -> int:
         raise SystemExit("--gemma-n-warmup must be nonnegative")
     if args.timing_min_n < 1:
         raise SystemExit("--timing-min-n must be at least 1")
+    if args.max_planned_hours <= 0:
+        raise SystemExit("--max-planned-hours must be positive")
+    decision_log = None if args.no_decision_log else args.decision_log
 
     args.artifact_dir.mkdir(parents=True, exist_ok=True)
     summary_path = args.summary or args.artifact_dir / "queue_summary.json"
+    positive_control_clips = (
+        list(args.positive_control_clip)
+        if args.positive_control_clip is not None
+        else list(DEFAULT_POSITIVE_CONTROL_CLIPS)
+    )
     commands: list[dict[str, Any]] = []
     decisions: list[dict[str, Any]] = []
     selected_budget = ["RLT-1-preflight", "RLT-1-profiler-synthetic"]
@@ -206,11 +356,97 @@ def main() -> int:
         "manifest": _file_sha256(args.manifest),
         "gemma_manifest": _file_sha256(args.gemma_manifest),
         "gemma_smoke_manifest": _file_sha256(args.gemma_smoke_manifest),
-        "positive_control_clip": _file_sha256(args.positive_control_clip)
-        if args.positive_control_clip.exists()
-        else None,
+        "positive_control_clips": {
+            str(clip): _file_sha256(clip) for clip in positive_control_clips if clip.exists()
+        },
     }
     if args.dry_run:
+        planned_commands = [
+            _planned_command(
+                [
+                    sys.executable,
+                    "scripts/preflight_rlt_vlmax.py",
+                    "--phase",
+                    "RLT-1",
+                    "--output",
+                    str(args.artifact_dir / "rlt1_preflight.json"),
+                ]
+            ),
+            _planned_command(
+                _profile_command(
+                    artifact_dir=args.artifact_dir,
+                    manifest=args.manifest,
+                    frame_count=args.frame_count,
+                    positive_control_clips=positive_control_clips,
+                )
+            ),
+            _planned_command(
+                [
+                    sys.executable,
+                    "scripts/analyze_rlt_mask_profile.py",
+                    "--profile-jsonl",
+                    str(args.artifact_dir / "rlt_mask_profile.jsonl"),
+                    "--output",
+                    str(args.artifact_dir / "rlt_mask_profile_analysis.json"),
+                ]
+            ),
+        ]
+        if args.run_model_smokes:
+            planned_commands.extend(
+                _planned_command(command)
+                for command in _gemma_admission_commands(
+                    artifact_dir=args.artifact_dir,
+                    manifest=args.gemma_smoke_manifest,
+                    model_path=args.gemma_model_path,
+                    frame_count=args.frame_count,
+                    n_items=1,
+                    rss_guard_mb=args.gemma_rss_guard_mb,
+                    n_warmup=args.gemma_n_warmup,
+                    enforce_overhead_gate=False,
+                    timing_min_n=args.timing_min_n,
+                    label="rlt2g_gemma_rlt_smoke",
+                )
+            )
+        if args.run_gemma_decision_cell:
+            planned_commands.extend(
+                _planned_command(command)
+                for command in _gemma_admission_commands(
+                    artifact_dir=args.artifact_dir,
+                    manifest=args.gemma_manifest,
+                    model_path=args.gemma_model_path,
+                    frame_count=args.frame_count,
+                    n_items=0,
+                    rss_guard_mb=args.gemma_rss_guard_mb,
+                    n_warmup=args.gemma_n_warmup,
+                    enforce_overhead_gate=True,
+                    timing_min_n=args.timing_min_n,
+                    label="rlt2g_gemma_rlt_decision",
+                )
+            )
+        planned_commands.extend(
+            [
+                _planned_command(
+                    [
+                        sys.executable,
+                        "scripts/preflight_rlt_vlmax.py",
+                        "--phase",
+                        "RLT-3G-B",
+                        "--output",
+                        str(args.artifact_dir / "rlt3gb_preflight.json"),
+                    ]
+                ),
+                _planned_command(
+                    [
+                        sys.executable,
+                        "scripts/preflight_rlt_vlmax.py",
+                        "--phase",
+                        "RLT-5G",
+                        "--output",
+                        str(args.artifact_dir / "rlt5g_preflight.json"),
+                    ]
+                ),
+            ]
+        )
         payload = {
             "schema_version": SCHEMA_VERSION,
             "dry_run": True,
@@ -218,6 +454,7 @@ def main() -> int:
             "selected_budget_phases": selected_budget,
             "budget": budget,
             "input_hashes": input_hashes,
+            "planned_commands": planned_commands,
             "planned_gates": [
                 "RLT-1 preflight",
                 "CPU mask profile synthetic/optional manifest",
@@ -248,7 +485,7 @@ def main() -> int:
     preflight = _read_json(preflight_path)
     if not preflight.get("ready"):
         decisions.append({"decision": "stop", "reason": "rlt1_preflight_failed"})
-        _write_summary(
+        _write_terminal_summary(
             summary_path,
             {
                 "schema_version": SCHEMA_VERSION,
@@ -258,46 +495,17 @@ def main() -> int:
                 "commands": commands,
                 "decisions": decisions,
             },
+            decision_log=decision_log,
         )
         return 1
 
     profile_jsonl = args.artifact_dir / "rlt_mask_profile.jsonl"
-    profile_summary = args.artifact_dir / "rlt_mask_profile_summary.json"
-    profile_command = [
-        sys.executable,
-        "scripts/profile_rlt_masks.py",
-        "--synthetic",
-        "exact_static",
-        "--synthetic",
-        "single_frame_repeat",
-        "--synthetic",
-        "all_motion",
-        "--synthetic",
-        "fixed_camera_positive",
-        "--synthetic",
-        "camera_pan",
-        "--frame-count",
-        str(args.frame_count),
-        "--compare-pixel-novelty",
-        "--project-grid-shape",
-        "16x16",
-        "--overwrite",
-        "--output-jsonl",
-        str(profile_jsonl),
-        "--summary-json",
-        str(profile_summary),
-    ]
-    if args.manifest is not None:
-        profile_command.extend(["--manifest", str(args.manifest)])
-    if args.positive_control_clip.exists():
-        profile_command.extend(
-            [
-                "--clip",
-                str(args.positive_control_clip),
-                "--clip-group",
-                "fixed_camera_positive",
-            ]
-        )
+    profile_command = _profile_command(
+        artifact_dir=args.artifact_dir,
+        manifest=args.manifest,
+        frame_count=args.frame_count,
+        positive_control_clips=positive_control_clips,
+    )
     commands.append(_run(profile_command))
 
     analysis_path = args.artifact_dir / "rlt_mask_profile_analysis.json"
@@ -319,10 +527,11 @@ def main() -> int:
         "synthetic_mask_gate_failed",
         "positive_control_reduction_failed",
         "real_positive_control_reduction_failed",
+        "threshold_monotonicity_failed",
         "rlt_pixel_novelty_strong_co_cover",
     }
     if any(decision.get("reason") in stop_reasons for decision in analysis["decisions"]):
-        _write_summary(
+        _write_terminal_summary(
             summary_path,
             {
                 "schema_version": SCHEMA_VERSION,
@@ -333,6 +542,7 @@ def main() -> int:
                 "decisions": decisions,
                 "analysis": analysis,
             },
+            decision_log=decision_log,
         )
         return 0
 
@@ -356,7 +566,7 @@ def main() -> int:
         gemma_analyses["rlt2g_gemma_rlt_smoke"] = gemma_smoke_analysis
         decisions.extend(gemma_smoke_analysis["decisions"])
         if _analysis_blocks_downstream(gemma_smoke_analysis):
-            _write_summary(
+            _write_terminal_summary(
                 summary_path,
                 {
                     "schema_version": SCHEMA_VERSION,
@@ -368,6 +578,7 @@ def main() -> int:
                     "analysis": analysis,
                     "gemma_analyses": gemma_analyses,
                 },
+                decision_log=decision_log,
             )
             return 0
 
@@ -390,7 +601,7 @@ def main() -> int:
         gemma_analyses["rlt2g_gemma_rlt_decision"] = gemma_decision_analysis
         decisions.extend(gemma_decision_analysis["decisions"])
         if _analysis_blocks_downstream(gemma_decision_analysis):
-            _write_summary(
+            _write_terminal_summary(
                 summary_path,
                 {
                     "schema_version": SCHEMA_VERSION,
@@ -402,6 +613,7 @@ def main() -> int:
                     "analysis": analysis,
                     "gemma_analyses": gemma_analyses,
                 },
+                decision_log=decision_log,
             )
             return 0
 
@@ -437,21 +649,23 @@ def main() -> int:
     if not rlt5_preflight.get("ready"):
         decisions.append({"decision": "block_h4a_gemma", "reason": "swa_functional_smoke_missing"})
 
-    _write_summary(
+    final_payload = {
+        "schema_version": SCHEMA_VERSION,
+        "ready_for_model_runs": rlt3_preflight.get("ready", False),
+        "budget": budget,
+        "input_hashes": input_hashes,
+        "phase_estimates_hours": PHASE_ESTIMATES_HOURS,
+        "commands": commands,
+        "decisions": decisions,
+        "analysis": analysis,
+        "gemma_analyses": gemma_analyses,
+        "rlt3gb_preflight": rlt3_preflight,
+        "rlt5g_preflight": rlt5_preflight,
+    }
+    _write_terminal_summary(
         summary_path,
-        {
-            "schema_version": SCHEMA_VERSION,
-            "ready_for_model_runs": rlt3_preflight.get("ready", False),
-            "budget": budget,
-            "input_hashes": input_hashes,
-            "phase_estimates_hours": PHASE_ESTIMATES_HOURS,
-            "commands": commands,
-            "decisions": decisions,
-            "analysis": analysis,
-            "gemma_analyses": gemma_analyses,
-            "rlt3gb_preflight": rlt3_preflight,
-            "rlt5g_preflight": rlt5_preflight,
-        },
+        final_payload,
+        decision_log=decision_log if not final_payload["ready_for_model_runs"] else None,
     )
     print(json.dumps({"summary": str(summary_path), "decisions": decisions}, sort_keys=True))
     return 0

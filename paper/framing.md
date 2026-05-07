@@ -438,6 +438,14 @@ revised pre-release source §8 and codex 2026-04-16 review, the paper must state
 5. **Composition remains ceiling-bound boundary evidence**: temporal ×
    KV-compression ratios are not assumed from independent-layer projections;
    direct stacked runs must earn any composition claim end-to-end.
+   The RLT/VLMaxxing preregistration keeps this boundary: RLT-style
+   run-length admission is a candidate *visual-admission* primitive, while
+   any denominator-separation or cache-prefix-shrinking claim remains
+   hypothesis until the paired runner gates land. Early CPU profiling says
+   RLT and pixel-novelty are correlated but not equivalent on real clips
+   (real-only mean Jaccard below the 0.90 co-cover gate), so the next
+   paper-safe stance is to measure the model cell rather than prune the
+   comparison away.
 6. **Per-frame binary decision**: our mechanism cannot prune WITHIN
    novel frames. On all-dynamic content, temporal caching provides
    near-zero benefit. This is a fundamental limitation, not a

@@ -1,0 +1,186 @@
+{
+  "accuracy_contract": {
+    "combined": "The combined pane shows the conservative pixel-domain union of VLMaxxing fresh regions and RLT representative-token regions. It visualizes the preregistered composition candidate, not an already-earned speedup claim.",
+    "rlt": "RLT panes are computed with codec_through.rlt_masks on the same square-padded frames used by Track A benchmark decoding, using tau=0.1, tubelet_size=2, 224x224 ImageNet-normalized input, and patch_size=16.",
+    "vlmaxxing": "Fresh/reuse boxes are recomputed with the existing Fig. 1 Qwen routing-budget policy, not hand annotated."
+  },
+  "clips": [
+    {
+      "benchmark": "TOMATO",
+      "end_s": 2.0,
+      "fps": 12.0,
+      "frame_count": 24,
+      "key": "tomato_0298_00",
+      "mean_composition_stats": {
+        "combined_refresh_fraction": 0.35284391534391535,
+        "overlap_fraction": 0.06084089191232048,
+        "rlt_admit_fraction": 0.20619803476946333,
+        "vlmax_fresh_fraction": 0.2074867724867725
+      },
+      "rlt_mask_summary": {
+        "first_tubelet_token_count": 392,
+        "floor_active": false,
+        "floor_active_token_count": 0,
+        "frame_count": 24,
+        "keep_rate": 0.1526360544217687,
+        "kept_token_count": 718,
+        "per_frame_keep_counts": [
+          196,
+          196,
+          15,
+          15,
+          16,
+          16,
+          15,
+          15,
+          12,
+          12,
+          15,
+          15,
+          15,
+          15,
+          15,
+          15,
+          15,
+          15,
+          16,
+          16,
+          15,
+          15,
+          14,
+          14
+        ],
+        "run_length_histogram": {
+          "1": 111,
+          "11": 1,
+          "12": 163,
+          "2": 35,
+          "3": 28,
+          "4": 8,
+          "5": 2,
+          "6": 3,
+          "7": 5,
+          "8": 2,
+          "9": 1
+        },
+        "threshold_active_token_count": 326,
+        "tokens_per_frame": 196,
+        "tubelet_count": 12
+      },
+      "source_video": "/Users/jfb/s/codec-through/data/benchmarks/tomato/videos/object/0298-00.mp4",
+      "start_s": 0.0,
+      "thumbnail_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/thumbnails/tomato_0298_00_rlt_vlmax_composition.png",
+      "video_id": "0298-00",
+      "video_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/tomato_0298_00_rlt_vlmax_composition.mp4"
+    },
+    {
+      "benchmark": "VideoMME",
+      "end_s": 207.89,
+      "fps": 12.0,
+      "frame_count": 18,
+      "key": "videomme_380",
+      "mean_composition_stats": {
+        "combined_refresh_fraction": 0.3804698916603679,
+        "overlap_fraction": 0.09470647518266566,
+        "rlt_admit_fraction": 0.2239858906525573,
+        "vlmax_fresh_fraction": 0.2511904761904762
+      },
+      "rlt_mask_summary": {
+        "first_tubelet_token_count": 392,
+        "floor_active": false,
+        "floor_active_token_count": 0,
+        "frame_count": 18,
+        "keep_rate": 0.1746031746031746,
+        "kept_token_count": 616,
+        "per_frame_keep_counts": [
+          196,
+          196,
+          15,
+          15,
+          15,
+          15,
+          16,
+          16,
+          13,
+          13,
+          16,
+          16,
+          15,
+          15,
+          6,
+          6,
+          16,
+          16
+        ],
+        "run_length_histogram": {
+          "1": 111,
+          "2": 15,
+          "3": 1,
+          "4": 1,
+          "5": 1,
+          "9": 179
+        },
+        "threshold_active_token_count": 224,
+        "tokens_per_frame": 196,
+        "tubelet_count": 9
+      },
+      "source_video": "/Users/jfb/s/codec-through/data/benchmarks/videomme/videos/2Bns2m5Bg4M.mp4",
+      "start_s": 206.39,
+      "thumbnail_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/thumbnails/videomme_380_rlt_vlmax_composition.png",
+      "video_id": "380",
+      "video_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/videomme_380_rlt_vlmax_composition.mp4"
+    },
+    {
+      "benchmark": "VideoMME",
+      "end_s": 1.0,
+      "fps": 12.0,
+      "frame_count": 12,
+      "key": "videomme_267",
+      "mean_composition_stats": {
+        "combined_refresh_fraction": 0.6086167800453514,
+        "overlap_fraction": 0.30614512471655325,
+        "rlt_admit_fraction": 0.4973544973544974,
+        "vlmax_fresh_fraction": 0.41740740740740745
+      },
+      "rlt_mask_summary": {
+        "first_tubelet_token_count": 392,
+        "floor_active": false,
+        "floor_active_token_count": 0,
+        "frame_count": 12,
+        "keep_rate": 0.35714285714285715,
+        "kept_token_count": 840,
+        "per_frame_keep_counts": [
+          196,
+          196,
+          48,
+          48,
+          45,
+          45,
+          44,
+          44,
+          44,
+          44,
+          43,
+          43
+        ],
+        "run_length_histogram": {
+          "1": 267,
+          "2": 1,
+          "4": 1,
+          "5": 3,
+          "6": 148
+        },
+        "threshold_active_token_count": 448,
+        "tokens_per_frame": 196,
+        "tubelet_count": 6
+      },
+      "source_video": "/Users/jfb/s/codec-through/data/benchmarks/videomme/videos/Atf_Af1q_5w.mp4",
+      "start_s": 0.0,
+      "thumbnail_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/thumbnails/videomme_267_rlt_vlmax_composition.png",
+      "video_id": "267",
+      "video_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/videomme_267_rlt_vlmax_composition.mp4"
+    }
+  ],
+  "purpose": "Scientifically grounded visualization of the RLT/VLMaxxing composition hypothesis on the same three videos used by the VLMaxxing overlay reel.",
+  "schema_version": "rlt_vlmax_composition_overlay_v1"
+}

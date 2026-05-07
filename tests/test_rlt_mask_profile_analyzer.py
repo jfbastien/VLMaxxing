@@ -24,6 +24,7 @@ def _row(
     source: str = "synthetic",
     feature_scorer_jaccard: float | None = None,
     feature_scorer_ms: float | None = None,
+    threshold_sweep: list[dict[str, float]] | None = None,
 ) -> dict[str, Any]:
     row = {
         "kind": "item",
@@ -39,6 +40,8 @@ def _row(
         "floor_active_token_count": 0,
         "threshold_active_token_count": 1,
     }
+    if threshold_sweep is not None:
+        row["threshold_sweep"] = threshold_sweep
     if feature_scorer_jaccard is not None:
         row["feature_scorer_jaccard"] = feature_scorer_jaccard
     if feature_scorer_ms is not None:
@@ -179,6 +182,27 @@ def test_rlt_profile_analyzer_keeps_synthetic_co_cover_diagnostic(tmp_path: Path
     )
 
 
+def test_rlt_profile_analyzer_gates_co_cover_on_real_rows_only(tmp_path: Path) -> None:
+    payload = _run_analyzer(
+        tmp_path,
+        [
+            _row("exact_static", 0.25, 1.0),
+            _row("single_frame_repeat", 0.25, 1.0),
+            _row("all_motion", 1.0, 1.0),
+            _row("fixed_camera_positive", 0.25, 1.0),
+            _row("fixed_camera_positive", 0.25, 0.77, source="manifest"),
+        ],
+    )
+
+    assert payload["mean_pixel_novelty_jaccard"] > 0.90
+    assert payload["mean_pixel_novelty_jaccard_real"] == 0.77
+    assert payload["co_cover_null"] is False
+    assert payload["strong_co_cover_null"] is False
+    assert all(
+        decision["reason"] != "rlt_pixel_novelty_co_cover" for decision in payload["decisions"]
+    )
+
+
 def test_rlt_profile_analyzer_skips_h15b_when_feature_prior_fails(
     tmp_path: Path,
 ) -> None:
@@ -257,4 +281,56 @@ def test_rlt_profile_analyzer_accepts_h15_mechanism_when_feature_prior_passes(
     assert payload["h1_5_feature_prior_pass"] is True
     assert all(
         decision["reason"] != "feature_prior_mechanism_failed" for decision in payload["decisions"]
+    )
+
+
+def test_rlt_profile_analyzer_accepts_monotonic_threshold_sweep(tmp_path: Path) -> None:
+    payload = _run_analyzer(
+        tmp_path,
+        [
+            _row(
+                "exact_static",
+                0.25,
+                0.4,
+                threshold_sweep=[
+                    {"threshold": 0.05, "keep_rate": 0.50},
+                    {"threshold": 0.10, "keep_rate": 0.25},
+                    {"threshold": 0.20, "keep_rate": 0.25},
+                ],
+            ),
+            _row("single_frame_repeat", 0.25, 0.4),
+            _row("all_motion", 1.0, 0.4),
+            _row("fixed_camera_positive", 0.25, 0.4),
+        ],
+    )
+
+    assert payload["threshold_monotonicity_present"] is True
+    assert payload["threshold_monotonicity_pass"] is True
+    assert all(
+        decision["reason"] != "threshold_monotonicity_failed" for decision in payload["decisions"]
+    )
+
+
+def test_rlt_profile_analyzer_stops_on_nonmonotonic_threshold_sweep(tmp_path: Path) -> None:
+    payload = _run_analyzer(
+        tmp_path,
+        [
+            _row(
+                "exact_static",
+                0.25,
+                0.4,
+                threshold_sweep=[
+                    {"threshold": 0.05, "keep_rate": 0.25},
+                    {"threshold": 0.10, "keep_rate": 0.40},
+                ],
+            ),
+            _row("single_frame_repeat", 0.25, 0.4),
+            _row("all_motion", 1.0, 0.4),
+            _row("fixed_camera_positive", 0.25, 0.4),
+        ],
+    )
+
+    assert payload["threshold_monotonicity_pass"] is False
+    assert any(
+        decision["reason"] == "threshold_monotonicity_failed" for decision in payload["decisions"]
     )

@@ -76,7 +76,8 @@ from typing import Any, Literal, cast
 
 import mlx.core as mx
 import numpy as np
-from mlx_vlm import generate, load
+from mlx_vlm import load
+from mlx_vlm.generate import stream_generate
 from mlx_vlm.utils import prepare_inputs
 from PIL import Image
 
@@ -394,6 +395,9 @@ class GenerateStats:
 
     text: str
     elapsed_ms: float
+    multimodal_prefill_ms: float
+    text_generation_ms: float
+    prompt_time_source: str
     prompt_tokens: int
     generation_tokens: int
     prompt_tps: float
@@ -421,13 +425,19 @@ def _run_generate(
     cached_image_features: mx.array | None,
     max_tokens: int,
 ) -> GenerateStats:
-    """Invoke mlx-vlm ``generate`` and return generation stats + wall_ms."""
+    """Invoke mlx-vlm streaming generation with direct first-yield timing."""
     t0 = time.perf_counter_ns()
     mx.random.seed(42)
     kwargs = dict(extra)
     if cached_image_features is not None:
         kwargs["cached_image_features"] = cached_image_features
-    response = generate(
+    tokenizer = processor.tokenizer if hasattr(processor, "tokenizer") else processor
+    tokenizer.stopping_criteria.reset(model.config.eos_token_id)
+
+    text = ""
+    first_yield_ns: int | None = None
+    last_response: Any | None = None
+    for response in stream_generate(
         model,
         processor,
         "",
@@ -437,15 +447,35 @@ def _run_generate(
         max_tokens=max_tokens,
         temperature=0.0,
         **kwargs,
-    )
+    ):
+        if first_yield_ns is None:
+            first_yield_ns = time.perf_counter_ns()
+        text += str(response.text)
+        last_response = response
     elapsed_ms = (time.perf_counter_ns() - t0) / 1_000_000
+    if first_yield_ns is None or last_response is None:
+        return GenerateStats(
+            text=text,
+            elapsed_ms=elapsed_ms,
+            multimodal_prefill_ms=0.0,
+            text_generation_ms=elapsed_ms,
+            prompt_time_source="stream_generate_no_yield",
+            prompt_tokens=0,
+            generation_tokens=0,
+            prompt_tps=0.0,
+            generation_tps=0.0,
+        )
+    multimodal_prefill_ms = (first_yield_ns - t0) / 1_000_000
     return GenerateStats(
-        text=str(response.text),
+        text=text,
         elapsed_ms=elapsed_ms,
-        prompt_tokens=int(getattr(response, "prompt_tokens", 0)),
-        generation_tokens=int(getattr(response, "generation_tokens", 0)),
-        prompt_tps=float(getattr(response, "prompt_tps", 0.0)),
-        generation_tps=float(getattr(response, "generation_tps", 0.0)),
+        multimodal_prefill_ms=multimodal_prefill_ms,
+        text_generation_ms=max(0.0, elapsed_ms - multimodal_prefill_ms),
+        prompt_time_source="stream_generate_first_yield_wall_clock",
+        prompt_tokens=int(getattr(last_response, "prompt_tokens", 0)),
+        generation_tokens=int(getattr(last_response, "generation_tokens", 0)),
+        prompt_tps=float(getattr(last_response, "prompt_tps", 0.0)),
+        generation_tps=float(getattr(last_response, "generation_tps", 0.0)),
     )
 
 
@@ -703,27 +733,22 @@ def _process_one_item(
     )
     pruned_text = pruned_stats.text
     pruned_generate_ms = pruned_stats.elapsed_ms
-    dense_prefill_ms = _stage_ms_from_tps(
+    dense_prefill_ms = dense_stats.multimodal_prefill_ms
+    pruned_prefill_ms = pruned_stats.multimodal_prefill_ms
+    dense_text_generation_ms = dense_stats.text_generation_ms
+    pruned_text_generation_ms = pruned_stats.text_generation_ms
+    mask_metadata["pruned_warmup_generate_ms"] = pruned_warmup_generate_ms
+    mask_metadata["prompt_time_source"] = dense_stats.prompt_time_source
+    mask_metadata["dense_prefill_ms_from_tps"] = _stage_ms_from_tps(
         tokens=dense_stats.prompt_tokens,
         tokens_per_second=dense_stats.prompt_tps,
         stage="dense multimodal prefill",
     )
-    pruned_prefill_ms = _stage_ms_from_tps(
+    mask_metadata["pruned_prefill_ms_from_tps"] = _stage_ms_from_tps(
         tokens=pruned_stats.prompt_tokens,
         tokens_per_second=pruned_stats.prompt_tps,
         stage="pruned multimodal prefill",
     )
-    dense_text_generation_ms = _stage_ms_from_tps(
-        tokens=dense_stats.generation_tokens,
-        tokens_per_second=dense_stats.generation_tps,
-        stage="dense text generation",
-    )
-    pruned_text_generation_ms = _stage_ms_from_tps(
-        tokens=pruned_stats.generation_tokens,
-        tokens_per_second=pruned_stats.generation_tps,
-        stage="pruned text generation",
-    )
-    mask_metadata["pruned_warmup_generate_ms"] = pruned_warmup_generate_ms
 
     # End-to-end wall-clocks. Both branches pay decode + processor + vision +
     # generate; only the pruned branch pays novelty + mask + prune. Dense does

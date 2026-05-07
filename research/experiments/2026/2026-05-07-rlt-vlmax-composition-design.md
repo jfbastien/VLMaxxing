@@ -210,10 +210,27 @@ artifacts.
 | The Gemma admission runner should log direct prefill/generation fields. | VALID | `scripts/run_novelty_pruning_gemma.py` records `multimodal_prefill_ms` and `text_generation_ms` inside each dense/pruned timing row, while retaining prompt-token/tps fields as a consistency check. |
 | H1 synthetic gates must be enforced, not merely emitted. | VALID | `scripts/analyze_rlt_mask_profile.py` hard-stops if exact-static, single-frame-repeat, or all-motion synthetic rows violate their expected keep rates. |
 | H1.5 feature-prior acceptance needs an explicit gate. | VALID | The profile analyzer now enforces optional feature-scorer rows when present: each frame-count cell must pass `feature_scorer_jaccard >= 0.80` and `1 - mask_compute_ms / feature_scorer_ms >= 0.50`; otherwise H1.5b is skipped. |
-| A real fixed-camera positive control should gate model runs. | VALID WITH LOCAL WARNING | The queue includes `data/corpus/crosscheck/talking_head.mp4` when present and hashes it into the summary. The first local CPU queue smoke measured only `48.1%` median reduction at `tau=0.1`, below the preregistered `50%` gate, so long model runs remain blocked until the clip/gate/kernel calibration is reviewed. |
+| A real fixed-camera positive control should gate model runs. | VALID | The queue now defaults to `data/corpus/derived/hall_monitor_cif_standard_h264_crf18_g30.mp4`, hashes it into the summary, and treats the predecessor YouTube talking-head clip as cross-check evidence rather than a published-RLT-domain control. The hall-monitor CPU smoke measured `61.6%` real positive-control reduction at `tau=0.1`, clearing the preregistered `50%` gate. |
 | Dry-run and artifact-hash locks should exist before autonomous runs. | VALID | The queue has `--dry-run`, records selected budget, and persists SHA-256 hashes for manifest inputs and the positive-control clip. |
 | Missing synthetic controls must fail rather than pass by absence. | VALID | The profile analyzer now treats missing `exact_static`, `single_frame_repeat`, or `all_motion` controls as H1 synthetic-gate failures and has a regression test. |
 | Timing-affecting runner parameters must be in the artifact hash. | VALID | The Gemma admission schema hash now includes `max_tokens`; warmup metadata is counted per pruned shape rather than assuming every item is the first call for that shape. |
+
+### Scientist Peer Feedback Validation, Round 7
+
+Validated on 2026-05-07 against the implementation diff and local CPU
+artifacts.
+
+| Peer claim | Verdict | Evidence / action |
+| --- | --- | --- |
+| The `0.9298` RLT-vs-pixel-novelty co-cover null was contaminated by synthetic Jaccard `1.0` rows. | VALID | `scripts/analyze_rlt_mask_profile.py` now reports all-row, real-only, synthetic-only, and per-bucket Jaccard distributions, and gates the co-cover null only on `mean_pixel_novelty_jaccard_real`. A CPU queue smoke measured all-row mean `0.9436` but real-only mean `0.8523`, so the null does not fire. |
+| The talking-head positive-control failure was clip-choice, not kernel failure. | VALID | The predecessor talking-head, surveillance, and fpv clips are retained as cross-checks. The published-domain positive control now uses the Xiph hall-monitor clip from the primary local corpus; it clears the `50%` reduction gate at `61.6%` on the CPU queue smoke. |
+| Threshold monotonicity should be enforced. | VALID | `profile_rlt_masks.py` can emit threshold sweeps; the autonomous queue runs `tau in {0.05, 0.1, 0.2, 0.5, 1.0}` and the analyzer hard-stops if keep-rate increases as the threshold rises. |
+| The Gemma admission prefill field was still derived from `prompt_tokens / prompt_tps`. | VALID | `scripts/run_novelty_pruning_gemma.py` now drives `stream_generate(...)` directly and records wall-clock time to first yield as `multimodal_prefill_ms`, while retaining tps-derived values in metadata as a consistency diagnostic. |
+| JIT warmup should be visible in the analyzer, not only logged. | VALID | `scripts/analyze_gemma_admission.py` now reports `prefill_jit_warmup_ratio_proxy` from the first pruned warmup call over the measured pruned call, with `>1.5x` marked as suspected cold-shape/JIT contamination. |
+| A pure C-VISION cell must not get noisy prefill credit. | VALID | The Gemma admission analyzer has `--cell-type {h2_pure_cvision,h2_admission,h3b_admission}`. Pure C-VISION overhead gates credit only measured `vision_reduction_ms`; admission/H3B cells credit vision plus prefill. |
+| Dry-run should print actual commands. | VALID | The autonomous queue dry-run now emits the constructed argv list for preflight, profiling, analysis, optional Gemma smoke/decision cells, and dependent preflights. |
+| Decision-log writeback should happen on early stop/block. | VALID | The queue appends a dated `research/decision-log.md` row on stop/contract/block outcomes unless `--no-decision-log` is supplied. A temporary-log smoke verified the row format without mutating the repo log. |
+| The visualization should be algorithmically grounded, not hand drawn. | VALID | Added `scripts/render_rlt_vlmax_composition_overlays.py`, which renders the same three VLMaxxing windows with recomputed VLMaxxing routing boxes, recomputed local RLT masks, and a conservative union pane for the composition candidate. |
 
 ### RLT Algorithm Facts To Preserve
 

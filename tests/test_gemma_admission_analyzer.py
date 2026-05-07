@@ -49,6 +49,7 @@ def _analyze(
     *,
     require_overhead_gate: bool = True,
     timing_min_n: int = 1,
+    cell_type: analyzer.CellType = "h2_admission",
 ) -> dict[str, Any]:
     return analyzer.analyze(
         rows,
@@ -57,6 +58,7 @@ def _analyze(
         require_overhead_gate=require_overhead_gate,
         timing_min_n=timing_min_n,
         n_bootstrap=0,
+        cell_type=cell_type,
     )
 
 
@@ -164,6 +166,39 @@ def test_gemma_admission_analyzer_prefers_direct_multimodal_prefill_field() -> N
 
     assert summary["total_prefill_reduction_ms"] == 100.0
     assert summary["overhead_gate_pass"] is True
+
+
+def test_gemma_admission_analyzer_pure_cvision_does_not_credit_prefill_noise() -> None:
+    rows = [
+        _row(
+            f"item-{idx}",
+            dense_prompt_tokens=1000,
+            pruned_prompt_tokens=500,
+            dense_vision_ms=100.0,
+            pruned_vision_ms=100.0,
+            mask_ms=2.0,
+            prune_ms=1.0,
+        )
+        for idx in range(20)
+    ]
+
+    summary = _analyze(rows, timing_min_n=20, cell_type="h2_pure_cvision")
+
+    assert summary["total_prefill_reduction_ms"] > 0.0
+    assert summary["total_credited_stage_reduction_ms"] == 0.0
+    assert summary["overhead_gate_pass"] is False
+    assert summary["decisions"][0]["reason"] == "gemma_admission_overhead_dominated"
+
+
+def test_gemma_admission_analyzer_reports_pruned_warmup_ratio() -> None:
+    row = _row("a")
+    row["metadata"] = {"pruned_warmup_generate_ms": [240.0]}
+    row["pruned_timing_ms"]["generate"] = 120.0
+
+    summary = _analyze([row], require_overhead_gate=False)
+
+    assert summary["prefill_jit_warmup_ratio_proxy"] == 2.0
+    assert summary["prefill_jit_warmup_suspected"] is True
 
 
 def test_gemma_admission_analyzer_enforces_bucket_gate_when_powered() -> None:

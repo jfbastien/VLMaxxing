@@ -14,6 +14,7 @@ POSITIVE_CONTROL_KINDS = {"fixed_camera_positive"}
 STATIC_KINDS = {"exact_static", "single_frame_repeat", "fixed_camera_positive"}
 MOTION_KINDS = {"all_motion", "camera_pan"}
 SYNTHETIC_KEEP_RATE_TOLERANCE = 1e-6
+THRESHOLD_MONOTONICITY_TOLERANCE = 1e-9
 
 
 def _load_jsonl(path: Path) -> tuple[dict[str, Any] | None, list[dict[str, Any]]]:
@@ -72,6 +73,29 @@ def _jaccards(rows: list[dict[str, Any]]) -> list[float]:
         for row in rows
         if row.get("pixel_novelty_jaccard") is not None
     ]
+
+
+def _jaccard_distribution(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    values = _jaccards(rows)
+    return {
+        "n": len(values),
+        "mean": _mean(values),
+        "median": _median(values),
+        "min": float(min(values)) if values else None,
+        "max": float(max(values)) if values else None,
+    }
+
+
+def _jaccard_distributions_by_bucket(rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    by_bucket: dict[str, list[dict[str, Any]]] = {}
+    for row in rows:
+        if row.get("pixel_novelty_jaccard") is None:
+            continue
+        by_bucket.setdefault(_kind(row), []).append(row)
+    return {
+        bucket: _jaccard_distribution(bucket_rows)
+        for bucket, bucket_rows in sorted(by_bucket.items())
+    }
 
 
 def _feature_scorer_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -194,6 +218,64 @@ def _synthetic_gate_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def _threshold_monotonicity_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    checks: list[dict[str, Any]] = []
+    failures: list[dict[str, Any]] = []
+    for row in rows:
+        sweep = row.get("threshold_sweep")
+        if not isinstance(sweep, list) or not sweep:
+            continue
+        pairs = sorted(
+            (
+                (float(point["threshold"]), float(point["keep_rate"]))
+                for point in sweep
+                if isinstance(point, dict)
+                and point.get("threshold") is not None
+                and point.get("keep_rate") is not None
+            ),
+            key=lambda pair: pair[0],
+        )
+        if len(pairs) < 2:
+            continue
+        row_failures: list[dict[str, float]] = []
+        for (prev_threshold, prev_keep_rate), (threshold, keep_rate) in zip(
+            pairs, pairs[1:], strict=False
+        ):
+            if keep_rate > prev_keep_rate + THRESHOLD_MONOTONICITY_TOLERANCE:
+                row_failures.append(
+                    {
+                        "prev_threshold": prev_threshold,
+                        "prev_keep_rate": prev_keep_rate,
+                        "threshold": threshold,
+                        "keep_rate": keep_rate,
+                    }
+                )
+        check = {
+            "item_id": row.get("item_id"),
+            "kind": _kind(row),
+            "n_thresholds": len(pairs),
+            "pass": not row_failures,
+            "pairs": [
+                {"threshold": threshold, "keep_rate": keep_rate} for threshold, keep_rate in pairs
+            ],
+        }
+        checks.append(check)
+        if row_failures:
+            failures.append(
+                {
+                    "item_id": row.get("item_id"),
+                    "kind": _kind(row),
+                    "failures": row_failures,
+                }
+            )
+    return {
+        "threshold_monotonicity_present": bool(checks),
+        "threshold_monotonicity_pass": not failures if checks else None,
+        "threshold_monotonicity_checks": checks,
+        "threshold_monotonicity_failures": failures,
+    }
+
+
 def analyze(
     rows: list[dict[str, Any]],
     *,
@@ -213,8 +295,13 @@ def analyze(
     static_reductions = _reductions(static_rows)
     motion_reductions = _reductions(motion_rows)
     jaccards = _jaccards(rows)
-    has_non_synthetic_jaccard = _has_non_synthetic_jaccard(rows)
+    real_rows = [row for row in rows if not _is_synthetic(row)]
+    synthetic_rows = [row for row in rows if _is_synthetic(row)]
+    real_jaccards = _jaccards(real_rows)
+    synthetic_jaccards = _jaccards(synthetic_rows)
+    has_non_synthetic_jaccard = bool(real_jaccards)
     synthetic_gates = _synthetic_gate_summary(rows)
+    threshold_monotonicity = _threshold_monotonicity_summary(rows)
     feature_prior = _feature_scorer_summary(
         rows,
         feature_jaccard_gate=feature_jaccard_gate,
@@ -232,6 +319,10 @@ def analyze(
     )
     mean_jaccard = _mean(jaccards)
     median_jaccard = _median(jaccards)
+    mean_real_jaccard = _mean(real_jaccards)
+    median_real_jaccard = _median(real_jaccards)
+    mean_synthetic_jaccard = _mean(synthetic_jaccards)
+    median_synthetic_jaccard = _median(synthetic_jaccards)
 
     positive_control_pass = (
         median_positive_reduction is not None
@@ -243,14 +334,14 @@ def analyze(
     )
     positive_control_missing = median_positive_reduction is None
     co_cover_null = (
-        mean_jaccard is not None
+        mean_real_jaccard is not None
         and has_non_synthetic_jaccard
-        and mean_jaccard >= co_cover_jaccard_gate
+        and mean_real_jaccard >= co_cover_jaccard_gate
     )
     strong_co_cover_null = (
-        mean_jaccard is not None
+        mean_real_jaccard is not None
         and has_non_synthetic_jaccard
-        and mean_jaccard >= strong_co_cover_jaccard_gate
+        and mean_real_jaccard >= strong_co_cover_jaccard_gate
     )
     synthetic_co_cover_diagnostic = (
         mean_jaccard is not None
@@ -267,6 +358,15 @@ def analyze(
                 "decision": "stop",
                 "reason": "synthetic_mask_gate_failed",
                 "details": synthetic_gates["synthetic_gate_failures"],
+            }
+        )
+        skip_phases.extend(["RLT-2G", "RLT-3G-A", "RLT-3G-B", "RLT-4Q", "RLT-5G", "RLT-5Q"])
+    if threshold_monotonicity["threshold_monotonicity_pass"] is False:
+        decisions.append(
+            {
+                "decision": "stop",
+                "reason": "threshold_monotonicity_failed",
+                "details": threshold_monotonicity["threshold_monotonicity_failures"],
             }
         )
         skip_phases.extend(["RLT-2G", "RLT-3G-A", "RLT-3G-B", "RLT-4Q", "RLT-5G", "RLT-5Q"])
@@ -299,7 +399,10 @@ def analyze(
             {
                 "decision": "stop",
                 "reason": "rlt_pixel_novelty_strong_co_cover",
-                "details": {"mean_jaccard": mean_jaccard, "gate": strong_co_cover_jaccard_gate},
+                "details": {
+                    "mean_real_jaccard": mean_real_jaccard,
+                    "gate": strong_co_cover_jaccard_gate,
+                },
             }
         )
         skip_phases.extend(["RLT-2G", "RLT-3G-A", "RLT-3G-B", "RLT-4Q", "RLT-5G", "RLT-5Q"])
@@ -308,7 +411,10 @@ def analyze(
             {
                 "decision": "skip_h1_5b",
                 "reason": "rlt_pixel_novelty_co_cover",
-                "details": {"mean_jaccard": mean_jaccard, "gate": co_cover_jaccard_gate},
+                "details": {
+                    "mean_real_jaccard": mean_real_jaccard,
+                    "gate": co_cover_jaccard_gate,
+                },
             }
         )
         skip_phases.append("RLT-1.5b")
@@ -336,6 +442,7 @@ def analyze(
     return {
         "n_items": len(rows),
         **synthetic_gates,
+        **threshold_monotonicity,
         "bucket_counts": {
             "positive_control": len(positive_rows),
             "real_positive_control": len(real_positive_rows),
@@ -358,6 +465,17 @@ def analyze(
         "bucket_gap_pass": bucket_gap_pass if static_motion_gap is not None else None,
         "mean_pixel_novelty_jaccard": mean_jaccard,
         "median_pixel_novelty_jaccard": median_jaccard,
+        "mean_pixel_novelty_jaccard_real": mean_real_jaccard,
+        "median_pixel_novelty_jaccard_real": median_real_jaccard,
+        "mean_pixel_novelty_jaccard_synthetic": mean_synthetic_jaccard,
+        "median_pixel_novelty_jaccard_synthetic": median_synthetic_jaccard,
+        "pixel_novelty_jaccard_distribution": _jaccard_distribution(rows),
+        "pixel_novelty_jaccard_distribution_real": _jaccard_distribution(real_rows),
+        "pixel_novelty_jaccard_distribution_synthetic": _jaccard_distribution(synthetic_rows),
+        "pixel_novelty_jaccard_real_per_bucket": _jaccard_distributions_by_bucket(real_rows),
+        "pixel_novelty_jaccard_synthetic_per_bucket": _jaccard_distributions_by_bucket(
+            synthetic_rows
+        ),
         "has_non_synthetic_jaccard": has_non_synthetic_jaccard,
         "synthetic_co_cover_diagnostic": synthetic_co_cover_diagnostic,
         "co_cover_null": co_cover_null,
