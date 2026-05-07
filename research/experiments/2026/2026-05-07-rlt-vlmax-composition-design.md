@@ -1369,6 +1369,12 @@ Status:
   "prefill regressed" interpretation from Gemma/Qwen smokes must be checked
   with at least one same-shape warmup or repeated-call diagnostic before it can
   influence hypothesis status.
+- The prefill-kernel microbenchmark uses synthetic Gemma-shape hidden states
+  rather than real vision-tower outputs. It is valid as substrate wall-clock
+  evidence for sequence-length and `prefill_step_size` effects, but not as a
+  numerical simulation of actual visual feature values. Paper-facing plots must
+  report warm-shape `min_ms_per_token` and record whether all measured shapes
+  were warmed and whether measurement order was shuffled.
 - ToMe/DynamicViT-style feature-dependent token merging/pruning is not a clean
   H3B denominator-separation comparator. It belongs in H3A scorer-stacking or
   future feature-dependent baselines once comparable local instrumentation

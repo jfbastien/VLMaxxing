@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any, cast
 
 SCHEMA_VERSION = "rlt_followup_queue_v1"
+GEMMA_TRACK_B_SCHEMA_VERSION = "phase1_63g_gemma_track_b_v5"
 DEFAULT_ARTIFACT_DIR = Path("research/experiments/2026/artifacts/rlt_followup_queue")
 DEFAULT_MODEL_PATH = Path.home() / "models" / "gemma-4-e4b-it-4bit"
 DEFAULT_VIDEOMME_MANIFEST = Path("research/benchmark_manifests/videomme_combined_v1_n60.toml")
@@ -20,7 +21,7 @@ DEFAULT_TOMATO_MANIFEST = Path("research/benchmark_manifests/tomato_motion_dev_v
 DEFAULT_MVBENCH_MANIFEST = Path("research/benchmark_manifests/mvbench_motion_dev_v2.toml")
 
 PHASE_ESTIMATES_HOURS = {
-    "prefill-kernel-microbench": [0.2, 1.0],
+    "prefill-kernel-microbench": [0.35, 1.35],
     "prefill-step-1500-n30": [0.6, 1.3],
     "prefill-step-4096-n30": [0.6, 1.3],
     "cvision-rlt-smoke": [0.1, 0.4],
@@ -132,12 +133,18 @@ def _gemma_admission_commands(
     return [run_command, analyze_command]
 
 
-def _prefill_kernel_benchmark_command(*, artifact_dir: Path, model_path: Path) -> list[str]:
+def _prefill_kernel_benchmark_command(
+    *, artifact_dir: Path, model_path: Path, rss_guard_mb: int
+) -> list[str]:
     return [
         sys.executable,
         "scripts/benchmark_mlx_vlm_prefill_kernel.py",
         "--model-path",
         str(model_path),
+        "--warm-all-shapes",
+        "--shuffle",
+        "--rss-guard-mb",
+        str(rss_guard_mb),
         "--output",
         str(artifact_dir / "prefill_kernel_microbench.json"),
     ]
@@ -224,6 +231,9 @@ def _cvision_commands(
             "Gemma C-VISION sparse execution with fixed-K token scoring "
             f"({score_mode}); scatter-back preserves prompt geometry."
         ),
+        "--require-schema-version",
+        GEMMA_TRACK_B_SCHEMA_VERSION,
+        "--require-scorer-timings",
     ]
     return [dense, sparse, analyze]
 
@@ -231,7 +241,61 @@ def _cvision_commands(
 def _run_command_group(
     commands: list[list[str]], *, allow_failure: bool = True
 ) -> list[dict[str, Any]]:
-    return [_run(command, allow_failure=allow_failure) for command in commands]
+    results: list[dict[str, Any]] = []
+    for command in commands:
+        result = _run(command, allow_failure=True)
+        results.append(result)
+        if int(result["returncode"]) != 0:
+            if not allow_failure:
+                raise RuntimeError(json.dumps(result, indent=2))
+            break
+    return results
+
+
+def _has_failed(results: list[dict[str, Any]]) -> bool:
+    return any(int(result["returncode"]) != 0 for result in results)
+
+
+def _failure_decision(
+    *,
+    phase: str,
+    results: list[dict[str, Any]],
+    skipped: list[str] | None = None,
+) -> dict[str, Any]:
+    failed = [result for result in results if int(result["returncode"]) != 0]
+    return {
+        "decision": "stop" if skipped is None else "skip",
+        "reason": f"{phase}_command_failed",
+        "phase": phase,
+        "failed_command": failed[0]["command"] if failed else None,
+        "returncode": failed[0]["returncode"] if failed else None,
+        **({"skip": skipped} if skipped is not None else {}),
+    }
+
+
+def _read_analysis_after_success(
+    *,
+    results: list[dict[str, Any]],
+    path: Path,
+    phase: str,
+    decisions: list[dict[str, Any]],
+    skipped: list[str] | None = None,
+) -> dict[str, Any] | None:
+    if _has_failed(results):
+        decisions.append(_failure_decision(phase=phase, results=results, skipped=skipped))
+        return None
+    if not path.exists():
+        decisions.append(
+            {
+                "decision": "stop" if skipped is None else "skip",
+                "reason": f"{phase}_analysis_missing",
+                "phase": phase,
+                "missing_path": str(path),
+                **({"skip": skipped} if skipped is not None else {}),
+            }
+        )
+        return None
+    return _read_json(path)
 
 
 def _phase_passed_cvision(analysis: dict[str, Any]) -> bool:
@@ -244,6 +308,8 @@ def _phase_passed_cvision(analysis: dict[str, Any]) -> bool:
         and analysis.get("pass_sparse_vision")
         and analysis.get("pass_e2e_positive")
         and analysis.get("pass_bucket_e2e_positive")
+        and analysis.get("pass_parse_failure_delta")
+        and analysis.get("pass_parse_failure_rate")
         and analysis.get("pass_ceiling_explained")
     )
 
@@ -269,6 +335,7 @@ def main() -> int:
     parser.add_argument("--rss-guard-mb", type=int, default=9000)
     parser.add_argument("--prefill-diagnostic-n-items", type=int, default=30)
     parser.add_argument("--cvision-n-items", type=int, default=30)
+    parser.add_argument("--cooldown-after-microbench-seconds", type=float, default=180.0)
     parser.add_argument("--run-prefill-diagnostics", action="store_true")
     parser.add_argument("--run-cvision-rlt", action="store_true")
     parser.add_argument("--run-cvision-expansion", action="store_true")
@@ -280,7 +347,7 @@ def main() -> int:
             "same manifests for head-to-head interpretation."
         ),
     )
-    parser.add_argument("--max-planned-hours", type=float, default=18.0)
+    parser.add_argument("--max-planned-hours", type=float, default=19.0)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--summary", type=Path)
     args = parser.parse_args()
@@ -291,6 +358,10 @@ def main() -> int:
         raise SystemExit("--cvision-n-items must be positive")
     if args.run_max_min_triangulation and not args.run_cvision_rlt:
         raise SystemExit("--run-max-min-triangulation requires --run-cvision-rlt")
+    if args.run_cvision_expansion and not args.run_cvision_rlt:
+        raise SystemExit("--run-cvision-expansion requires --run-cvision-rlt")
+    if args.cooldown_after_microbench_seconds < 0:
+        raise SystemExit("--cooldown-after-microbench-seconds must be nonnegative")
     phases: list[str] = []
     if args.run_prefill_diagnostics:
         phases.append("prefill-kernel-microbench")
@@ -317,6 +388,7 @@ def main() -> int:
     prefill_kernel_command = _prefill_kernel_benchmark_command(
         artifact_dir=args.artifact_dir,
         model_path=args.gemma_model_path,
+        rss_guard_mb=args.rss_guard_mb,
     )
     prefill_1500_commands = _gemma_admission_commands(
         artifact_dir=args.artifact_dir,
@@ -463,19 +535,33 @@ def main() -> int:
                 "budget": budget,
                 "planned_commands": planned,
                 "early_cancel_tree": [
-                    (
-                        "Run a synthetic mlx-vlm prefill-kernel micro-benchmark first "
-                        "to explain chunk-threshold substrate effects without video work."
+                    *(
+                        [
+                            (
+                                "Run a synthetic mlx-vlm prefill-kernel micro-benchmark "
+                                "with all shapes warmed and shuffled; cooldown before "
+                                "video timing diagnostics."
+                            ),
+                            (
+                                "Run prefill_step_size=1500 first; skip 4096 if "
+                                "same-path chunking makes RLT faster."
+                            ),
+                        ]
+                        if args.run_prefill_diagnostics
+                        else []
                     ),
-                    (
-                        "Run prefill_step_size=1500 first; skip 4096 if "
-                        "same-path chunking makes RLT faster."
-                    ),
-                    "Run C-VISION RLT n=1 smoke; skip VideoMME decision if smoke fails.",
-                    (
-                        "Run C-VISION RLT VideoMME n=30; skip TOMATO/MVBench "
-                        "expansion and max-min triangulation unless it passes fidelity, "
-                        "sparse-vision, ceiling, bucket, and E2E gates."
+                    *(
+                        [
+                            ("Run C-VISION RLT n=1 smoke; skip VideoMME decision if smoke fails."),
+                            (
+                                "Run C-VISION RLT VideoMME n=30; skip TOMATO/MVBench "
+                                "expansion and max-min triangulation unless it passes "
+                                "fidelity, parse-failure, sparse-vision, ceiling, bucket, "
+                                "and E2E gates."
+                            ),
+                        ]
+                        if args.run_cvision_rlt
+                        else []
                     ),
                 ],
             },
@@ -487,14 +573,48 @@ def main() -> int:
     decisions: list[dict[str, Any]] = []
     analyses: dict[str, Any] = {}
     if args.run_prefill_diagnostics:
-        commands.append(_run(prefill_kernel_command, allow_failure=True))
+        kernel_result = _run(prefill_kernel_command, allow_failure=True)
+        commands.append(kernel_result)
         kernel_path = args.artifact_dir / "prefill_kernel_microbench.json"
-        if kernel_path.exists():
+        if int(kernel_result["returncode"]) == 0 and kernel_path.exists():
             analyses["prefill_kernel_microbench"] = _read_json(kernel_path)
-        commands.extend(_run_command_group(prefill_1500_commands))
-        analysis_1500 = _read_json(args.artifact_dir / "h3b_prefill_step1500_analysis.json")
-        analyses["h3b_prefill_step1500"] = analysis_1500
-        if _phase_passed_prefill_same_path(analysis_1500):
+        else:
+            decisions.append(
+                {
+                    "decision": "continue",
+                    "reason": "prefill_kernel_microbench_unavailable",
+                    "phase": "prefill_kernel_microbench",
+                    "returncode": kernel_result["returncode"],
+                }
+            )
+        if args.cooldown_after_microbench_seconds > 0:
+            cooldown_started = time.perf_counter()
+            time.sleep(args.cooldown_after_microbench_seconds)
+            commands.append(
+                {
+                    "command": [
+                        "sleep",
+                        str(args.cooldown_after_microbench_seconds),
+                    ],
+                    "returncode": 0,
+                    "elapsed_seconds": time.perf_counter() - cooldown_started,
+                    "stdout_tail": "",
+                    "stderr_tail": "",
+                    "reason": "cooldown_after_prefill_kernel_microbench",
+                }
+            )
+        prefill_1500_results = _run_command_group(prefill_1500_commands)
+        commands.extend(prefill_1500_results)
+        analysis_1500 = _read_analysis_after_success(
+            results=prefill_1500_results,
+            path=args.artifact_dir / "h3b_prefill_step1500_analysis.json",
+            phase="h3b_prefill_step1500",
+            decisions=decisions,
+            skipped=["prefill_step_4096"],
+        )
+        if analysis_1500 is not None:
+            analyses["h3b_prefill_step1500"] = analysis_1500
+        if analysis_1500 is not None and _phase_passed_prefill_same_path(analysis_1500):
             decisions.append(
                 {
                     "decision": "skip",
@@ -502,17 +622,33 @@ def main() -> int:
                     "skipped_phase": "prefill_step_4096",
                 }
             )
-        else:
-            commands.extend(_run_command_group(prefill_4096_commands))
-            analyses["h3b_prefill_step4096"] = _read_json(
-                args.artifact_dir / "h3b_prefill_step4096_analysis.json"
+        elif analysis_1500 is not None:
+            prefill_4096_results = _run_command_group(prefill_4096_commands)
+            commands.extend(prefill_4096_results)
+            analysis_4096 = _read_analysis_after_success(
+                results=prefill_4096_results,
+                path=args.artifact_dir / "h3b_prefill_step4096_analysis.json",
+                phase="h3b_prefill_step4096",
+                decisions=decisions,
             )
+            if analysis_4096 is not None:
+                analyses["h3b_prefill_step4096"] = analysis_4096
     cvision_videomme_passed = False
     if args.run_cvision_rlt:
-        commands.extend(_run_command_group(cvision_smoke_commands))
-        smoke_analysis = _read_json(args.artifact_dir / "cvision_rlt_smoke_analysis.json")
-        analyses["cvision_rlt_smoke"] = smoke_analysis
-        if not smoke_analysis.get("pass_complete_pairing"):
+        smoke_results = _run_command_group(cvision_smoke_commands)
+        commands.extend(smoke_results)
+        smoke_analysis = _read_analysis_after_success(
+            results=smoke_results,
+            path=args.artifact_dir / "cvision_rlt_smoke_analysis.json",
+            phase="cvision_rlt_smoke",
+            decisions=decisions,
+            skipped=["cvision_rlt_videomme", "cvision_rlt_expansion"],
+        )
+        if smoke_analysis is not None:
+            analyses["cvision_rlt_smoke"] = smoke_analysis
+        if smoke_analysis is None:
+            pass
+        elif not smoke_analysis.get("pass_complete_pairing"):
             decisions.append(
                 {
                     "decision": "stop",
@@ -521,11 +657,23 @@ def main() -> int:
                 }
             )
         else:
-            commands.extend(_run_command_group(cvision_videomme_commands))
-            videomme_analysis = _read_json(args.artifact_dir / "cvision_rlt_videomme_analysis.json")
-            analyses["cvision_rlt_videomme"] = videomme_analysis
-            cvision_videomme_passed = _phase_passed_cvision(videomme_analysis)
-            if not cvision_videomme_passed:
+            videomme_results = _run_command_group(cvision_videomme_commands)
+            commands.extend(videomme_results)
+            videomme_analysis = _read_analysis_after_success(
+                results=videomme_results,
+                path=args.artifact_dir / "cvision_rlt_videomme_analysis.json",
+                phase="cvision_rlt_videomme",
+                decisions=decisions,
+                skipped=[
+                    "cvision_rlt_expansion",
+                    "cvision_maxmin_videomme",
+                    "cvision_maxmin_expansion",
+                ],
+            )
+            if videomme_analysis is not None:
+                analyses["cvision_rlt_videomme"] = videomme_analysis
+                cvision_videomme_passed = _phase_passed_cvision(videomme_analysis)
+            if videomme_analysis is not None and not cvision_videomme_passed:
                 decisions.append(
                     {
                         "decision": "skip",
@@ -538,10 +686,16 @@ def main() -> int:
                     }
                 )
     if args.run_max_min_triangulation and cvision_videomme_passed:
-        commands.extend(_run_command_group(cvision_maxmin_videomme_commands))
-        analyses["cvision_maxmin_videomme"] = _read_json(
-            args.artifact_dir / "cvision_maxmin_videomme_analysis.json"
+        maxmin_videomme_results = _run_command_group(cvision_maxmin_videomme_commands)
+        commands.extend(maxmin_videomme_results)
+        maxmin_videomme_analysis = _read_analysis_after_success(
+            results=maxmin_videomme_results,
+            path=args.artifact_dir / "cvision_maxmin_videomme_analysis.json",
+            phase="cvision_maxmin_videomme",
+            decisions=decisions,
         )
+        if maxmin_videomme_analysis is not None:
+            analyses["cvision_maxmin_videomme"] = maxmin_videomme_analysis
     elif args.run_max_min_triangulation and args.run_cvision_rlt and not cvision_videomme_passed:
         decisions.append(
             {
@@ -551,16 +705,28 @@ def main() -> int:
         )
     if args.run_cvision_expansion and cvision_videomme_passed:
         for benchmark, phase_commands in expansion_commands.items():
-            commands.extend(_run_command_group(phase_commands))
-            analyses[f"cvision_rlt_{benchmark}"] = _read_json(
-                args.artifact_dir / f"cvision_rlt_{benchmark}_analysis.json"
+            expansion_results = _run_command_group(phase_commands)
+            commands.extend(expansion_results)
+            expansion_analysis = _read_analysis_after_success(
+                results=expansion_results,
+                path=args.artifact_dir / f"cvision_rlt_{benchmark}_analysis.json",
+                phase=f"cvision_rlt_{benchmark}",
+                decisions=decisions,
             )
+            if expansion_analysis is not None:
+                analyses[f"cvision_rlt_{benchmark}"] = expansion_analysis
         if args.run_max_min_triangulation:
             for benchmark, phase_commands in maxmin_expansion_commands.items():
-                commands.extend(_run_command_group(phase_commands))
-                analyses[f"cvision_maxmin_{benchmark}"] = _read_json(
-                    args.artifact_dir / f"cvision_maxmin_{benchmark}_analysis.json"
+                maxmin_expansion_results = _run_command_group(phase_commands)
+                commands.extend(maxmin_expansion_results)
+                maxmin_expansion_analysis = _read_analysis_after_success(
+                    results=maxmin_expansion_results,
+                    path=args.artifact_dir / f"cvision_maxmin_{benchmark}_analysis.json",
+                    phase=f"cvision_maxmin_{benchmark}",
+                    decisions=decisions,
                 )
+                if maxmin_expansion_analysis is not None:
+                    analyses[f"cvision_maxmin_{benchmark}"] = maxmin_expansion_analysis
     elif args.run_cvision_expansion and not cvision_videomme_passed:
         decisions.append(
             {

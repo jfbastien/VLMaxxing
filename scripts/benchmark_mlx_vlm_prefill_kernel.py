@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import random
 import time
 from pathlib import Path
 from typing import Any, cast
@@ -20,10 +21,17 @@ import numpy as np
 from mlx_vlm import load
 from mlx_vlm.generate import cache
 
+from codec_through.memory_guard import check_rss_guard
+
 DEFAULT_MODEL_PATH = Path.home() / "models" / "gemma-4-e4b-it-4bit"
 DEFAULT_SEQ_LENS = [1024, 1500, 1573, 2048, 2188, 2560, 3072]
 DEFAULT_PREFILL_STEPS = [1024, 1500, 2048, 4096]
 SCHEMA_VERSION = "mlx_vlm_prefill_kernel_bench_v1"
+DTYPES = {
+    "bfloat16": mx.bfloat16,
+    "float16": mx.float16,
+    "float32": mx.float32,
+}
 
 
 def _parse_int_list(value: str) -> list[int]:
@@ -70,9 +78,11 @@ def _run_prefill_once(
     seq_len: int,
     prefill_step_size: int,
     hidden_size: int,
+    dtype: Any,
 ) -> dict[str, Any]:
     input_ids = mx.zeros((1, seq_len), dtype=mx.int32)
-    inputs_embeds = mx.random.normal((1, seq_len, hidden_size))
+    inputs_embeds = mx.random.normal((1, seq_len, hidden_size)).astype(dtype)
+    mx.eval(input_ids, inputs_embeds)
     prompt_cache = cache.make_prompt_cache(model.language_model)
     language_model_calls = 0
     t0 = time.perf_counter_ns()
@@ -102,26 +112,120 @@ def _run_prefill_once(
     return {
         "seq_len": seq_len,
         "prefill_step_size": prefill_step_size,
+        "dtype": str(dtype).removeprefix("<class '").removesuffix("'>"),
         "chunked": seq_len > prefill_step_size,
         "language_model_calls": language_model_calls,
         "elapsed_ms": elapsed_ms,
+        "ms_per_token": float(elapsed_ms / seq_len),
         "tokens_per_second": float(seq_len / (elapsed_ms / 1000.0)) if elapsed_ms > 0 else 0.0,
     }
 
 
+def _measurement_plan(
+    *,
+    seq_lens: list[int],
+    prefill_step_sizes: list[int],
+    repeats: int,
+    shuffle: bool,
+    seed: int,
+) -> list[dict[str, int]]:
+    plan = [
+        {
+            "seq_len": seq_len,
+            "prefill_step_size": prefill_step_size,
+            "repeat_idx": repeat_idx,
+        }
+        for seq_len in seq_lens
+        for prefill_step_size in prefill_step_sizes
+        for repeat_idx in range(repeats)
+    ]
+    if shuffle:
+        random.Random(seed).shuffle(plan)
+    return plan
+
+
 def _summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
-    groups: dict[str, list[float]] = {}
+    groups: dict[str, list[dict[str, Any]]] = {}
     for row in rows:
         key = f"{row['seq_len']}@{row['prefill_step_size']}"
-        groups.setdefault(key, []).append(float(row["elapsed_ms"]))
+        groups.setdefault(key, []).append(row)
     return {
         key: {
-            "mean_ms": float(np.mean(values)),
-            "min_ms": float(np.min(values)),
-            "max_ms": float(np.max(values)),
+            "seq_len": int(values[0]["seq_len"]),
+            "prefill_step_size": int(values[0]["prefill_step_size"]),
+            "chunked": bool(values[0]["chunked"]),
+            "mean_ms": float(np.mean([float(value["elapsed_ms"]) for value in values])),
+            "min_ms": float(np.min([float(value["elapsed_ms"]) for value in values])),
+            "max_ms": float(np.max([float(value["elapsed_ms"]) for value in values])),
+            "mean_ms_per_token": float(np.mean([float(value["ms_per_token"]) for value in values])),
+            "min_ms_per_token": float(np.min([float(value["ms_per_token"]) for value in values])),
+            "max_ms_per_token": float(np.max([float(value["ms_per_token"]) for value in values])),
             "n": len(values),
         }
         for key, values in sorted(groups.items())
+    }
+
+
+def _substrate_verdict(summary: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    single_candidates = [
+        (key, value)
+        for key, value in summary.items()
+        if not bool(value.get("chunked")) and int(value.get("seq_len", 0)) >= 1000
+    ]
+    chunked_candidates = [
+        (key, value)
+        for key, value in summary.items()
+        if bool(value.get("chunked")) and int(value.get("seq_len", 0)) >= 1000
+    ]
+    if not single_candidates or not chunked_candidates:
+        return {
+            "verdict": "insufficient_data",
+            "presentation_metric": "min_ms_per_token",
+        }
+
+    def distance_to_h3b_single(item: tuple[str, dict[str, Any]]) -> tuple[int, int]:
+        _key, value = item
+        return (
+            abs(int(value["seq_len"]) - 1573),
+            abs(int(value["prefill_step_size"]) - 2048),
+        )
+
+    def distance_to_h3b_dense(item: tuple[str, dict[str, Any]]) -> tuple[int, int]:
+        _key, value = item
+        return (
+            abs(int(value["seq_len"]) - 2188),
+            abs(int(value["prefill_step_size"]) - 2048),
+        )
+
+    single_key, single = min(single_candidates, key=distance_to_h3b_single)
+    chunked_key, chunked = min(chunked_candidates, key=distance_to_h3b_dense)
+    single_ms = float(single["min_ms"])
+    chunked_ms = float(chunked["min_ms"])
+    single_ms_per_token = float(single["min_ms_per_token"])
+    chunked_ms_per_token = float(chunked["min_ms_per_token"])
+    ratio = single_ms_per_token / chunked_ms_per_token if chunked_ms_per_token > 0.0 else None
+    absolute_delta_ms = single_ms - chunked_ms
+    if ratio is not None and ratio >= 1.25 and absolute_delta_ms > 0.0:
+        verdict = "chunked_path_lower_latency_despite_more_tokens"
+    elif ratio is not None and ratio >= 1.25:
+        verdict = "chunked_path_lower_ms_per_token"
+    else:
+        verdict = "no_large_chunked_advantage"
+    return {
+        "verdict": verdict,
+        "presentation_metric": "min_ms_per_token",
+        "single_shot_key": single_key,
+        "chunked_key": chunked_key,
+        "single_shot_min_ms": single_ms,
+        "chunked_min_ms": chunked_ms,
+        "single_minus_chunked_min_ms": absolute_delta_ms,
+        "single_shot_min_ms_per_token": single_ms_per_token,
+        "chunked_min_ms_per_token": chunked_ms_per_token,
+        "single_over_chunked_ms_per_token_ratio": ratio,
+        "note": (
+            "Uses warm min_ms and min_ms_per_token; the verdict distinguishes "
+            "absolute latency from per-token efficiency."
+        ),
     }
 
 
@@ -132,6 +236,19 @@ def main() -> int:
     parser.add_argument("--prefill-step-sizes", type=_parse_int_list, default=DEFAULT_PREFILL_STEPS)
     parser.add_argument("--warmup-repeats", type=int, default=1)
     parser.add_argument("--repeats", type=int, default=3)
+    parser.add_argument("--dtype", choices=sorted(DTYPES), default="bfloat16")
+    parser.add_argument(
+        "--warm-all-shapes",
+        action="store_true",
+        help="Run one discarded pass for every (seq_len, prefill_step_size) before timing.",
+    )
+    parser.add_argument(
+        "--shuffle",
+        action="store_true",
+        help="Shuffle timed measurement order to spread thermal drift across combinations.",
+    )
+    parser.add_argument("--seed", type=int, default=20260507)
+    parser.add_argument("--rss-guard-mb", type=int, default=0)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if args.warmup_repeats < 0:
@@ -141,6 +258,9 @@ def main() -> int:
 
     model, _processor = load(args.model_path)
     hidden_size = _hidden_size(model)
+    dtype = DTYPES[str(args.dtype)]
+    if args.rss_guard_mb > 0:
+        check_rss_guard(args.rss_guard_mb, stage="post_prefill_bench_model_load")
     rows: list[dict[str, Any]] = []
     max_seq_len = max(cast(list[int], args.seq_lens))
     first_step = cast(list[int], args.prefill_step_sizes)[0]
@@ -150,22 +270,50 @@ def main() -> int:
             seq_len=max_seq_len,
             prefill_step_size=first_step,
             hidden_size=hidden_size,
+            dtype=dtype,
         )
         mx.clear_cache()
-
-    for seq_len in cast(list[int], args.seq_lens):
-        for prefill_step_size in cast(list[int], args.prefill_step_sizes):
-            for repeat_idx in range(args.repeats):
-                mx.random.seed(42 + repeat_idx)
-                row = _run_prefill_once(
+        if args.rss_guard_mb > 0:
+            check_rss_guard(args.rss_guard_mb, stage="prefill_bench_warmup")
+    if args.warm_all_shapes:
+        for seq_len in cast(list[int], args.seq_lens):
+            for prefill_step_size in cast(list[int], args.prefill_step_sizes):
+                _run_prefill_once(
                     model,
                     seq_len=seq_len,
                     prefill_step_size=prefill_step_size,
                     hidden_size=hidden_size,
+                    dtype=dtype,
                 )
-                row["repeat_idx"] = repeat_idx
-                rows.append(row)
                 mx.clear_cache()
+                if args.rss_guard_mb > 0:
+                    check_rss_guard(
+                        args.rss_guard_mb,
+                        stage=f"prefill_bench_warm_shape_{seq_len}_{prefill_step_size}",
+                    )
+
+    plan = _measurement_plan(
+        seq_lens=cast(list[int], args.seq_lens),
+        prefill_step_sizes=cast(list[int], args.prefill_step_sizes),
+        repeats=args.repeats,
+        shuffle=args.shuffle,
+        seed=args.seed,
+    )
+    for measurement_idx, measurement in enumerate(plan):
+        mx.random.seed(42 + measurement["repeat_idx"])
+        row = _run_prefill_once(
+            model,
+            seq_len=measurement["seq_len"],
+            prefill_step_size=measurement["prefill_step_size"],
+            hidden_size=hidden_size,
+            dtype=dtype,
+        )
+        row["repeat_idx"] = measurement["repeat_idx"]
+        row["measurement_idx"] = measurement_idx
+        rows.append(row)
+        mx.clear_cache()
+
+    summary = _summarize(rows)
 
     payload = {
         "schema_version": SCHEMA_VERSION,
@@ -173,10 +321,16 @@ def main() -> int:
         "seq_lens": args.seq_lens,
         "prefill_step_sizes": args.prefill_step_sizes,
         "warmup_repeats": args.warmup_repeats,
+        "warm_all_shapes": args.warm_all_shapes,
         "repeats": args.repeats,
+        "dtype": args.dtype,
+        "shuffle": args.shuffle,
+        "seed": args.seed,
+        "rss_guard_mb": args.rss_guard_mb,
         "hidden_size": hidden_size,
         "rows": rows,
-        "summary": _summarize(rows),
+        "summary": summary,
+        "substrate_verdict": _substrate_verdict(summary),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")

@@ -12,7 +12,8 @@ from pathlib import Path
 from typing import Any
 
 
-def _load_jsonl(path: Path) -> list[dict[str, Any]]:
+def _load_jsonl(path: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    schema: dict[str, Any] | None = None
     rows: list[dict[str, Any]] = []
     with path.open() as handle:
         for line in handle:
@@ -20,9 +21,12 @@ def _load_jsonl(path: Path) -> list[dict[str, Any]]:
             if stripped:
                 payload = json.loads(stripped)
                 if payload.get("kind") == "schema":
+                    schema = payload
                     continue
                 rows.append(payload)
-    return rows
+    if schema is None:
+        raise ValueError(f"{path} is missing schema row")
+    return schema, rows
 
 
 def _index(rows: list[dict[str, Any]], *, label: str) -> dict[str, dict[str, Any]]:
@@ -56,7 +60,10 @@ def _optional_timing(row: dict[str, Any], key: str, *, default: float = 0.0) -> 
 
 
 def _paired_rows(
-    dense_rows: list[dict[str, Any]], sparse_rows: list[dict[str, Any]]
+    dense_rows: list[dict[str, Any]],
+    sparse_rows: list[dict[str, Any]],
+    *,
+    require_scorer_timings: bool = False,
 ) -> list[dict[str, Any]]:
     dense = _index(dense_rows, label="dense")
     sparse = _index(sparse_rows, label="sparse")
@@ -72,6 +79,25 @@ def _paired_rows(
         sparse_row = sparse[item_id]
         dense_correct = bool(dense_row.get("correct", False))
         sparse_correct = bool(sparse_row.get("correct", False))
+        scorer_timing = _timing if require_scorer_timings else _optional_timing
+        dense_vision_excluding_scorer = (
+            _timing(dense_row, "vision_excluding_scorer")
+            if require_scorer_timings
+            else _optional_timing(
+                dense_row,
+                "vision_excluding_scorer",
+                default=_timing(dense_row, "vision"),
+            )
+        )
+        sparse_vision_excluding_scorer = (
+            _timing(sparse_row, "vision_excluding_scorer")
+            if require_scorer_timings
+            else _optional_timing(
+                sparse_row,
+                "vision_excluding_scorer",
+                default=_timing(sparse_row, "vision"),
+            )
+        )
         paired.append(
             {
                 "item_id": item_id,
@@ -88,28 +114,20 @@ def _paired_rows(
                 "sparse_processor_ms": _timing(sparse_row, "processor"),
                 "dense_vision_ms": _timing(dense_row, "vision"),
                 "sparse_vision_ms": _timing(sparse_row, "vision"),
-                "dense_scorer_total_ms": _optional_timing(dense_row, "scorer_total"),
-                "sparse_scorer_total_ms": _optional_timing(sparse_row, "scorer_total"),
-                "dense_scorer_prepare_ms": _optional_timing(dense_row, "scorer_prepare"),
-                "sparse_scorer_prepare_ms": _optional_timing(sparse_row, "scorer_prepare"),
-                "dense_scorer_keep_mask_ms": _optional_timing(
+                "dense_scorer_total_ms": scorer_timing(dense_row, "scorer_total"),
+                "sparse_scorer_total_ms": scorer_timing(sparse_row, "scorer_total"),
+                "dense_scorer_prepare_ms": scorer_timing(dense_row, "scorer_prepare"),
+                "sparse_scorer_prepare_ms": scorer_timing(sparse_row, "scorer_prepare"),
+                "dense_scorer_keep_mask_ms": scorer_timing(
                     dense_row,
                     "scorer_keep_mask",
                 ),
-                "sparse_scorer_keep_mask_ms": _optional_timing(
+                "sparse_scorer_keep_mask_ms": scorer_timing(
                     sparse_row,
                     "scorer_keep_mask",
                 ),
-                "dense_vision_excluding_scorer_ms": _optional_timing(
-                    dense_row,
-                    "vision_excluding_scorer",
-                    default=_timing(dense_row, "vision"),
-                ),
-                "sparse_vision_excluding_scorer_ms": _optional_timing(
-                    sparse_row,
-                    "vision_excluding_scorer",
-                    default=_timing(sparse_row, "vision"),
-                ),
+                "dense_vision_excluding_scorer_ms": dense_vision_excluding_scorer,
+                "sparse_vision_excluding_scorer_ms": sparse_vision_excluding_scorer,
                 "dense_generate_ms": _timing(dense_row, "generate"),
                 "sparse_generate_ms": _timing(sparse_row, "generate"),
                 "dense_end_to_end_ms": _timing(dense_row, "end_to_end"),
@@ -181,6 +199,8 @@ def _summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
     )
     dense_scorer_total = sum(float(row["dense_scorer_total_ms"]) for row in rows)
     sparse_scorer_total = sum(float(row["sparse_scorer_total_ms"]) for row in rows)
+    dense_scorer_prepare = sum(float(row["dense_scorer_prepare_ms"]) for row in rows)
+    sparse_scorer_prepare = sum(float(row["sparse_scorer_prepare_ms"]) for row in rows)
     dense_e2e = sum(float(row["dense_end_to_end_ms"]) for row in rows)
     sparse_e2e = sum(float(row["sparse_end_to_end_ms"]) for row in rows)
     vision_share_dense = dense_vision / dense_e2e if dense_e2e > 0 else 0.0
@@ -195,6 +215,14 @@ def _summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
         if vision_share_dense * vision_reduction < 1.0
         else None
     )
+    predicted_sparse_e2e_with_scorer_prepare = (
+        dense_e2e - (dense_vision - sparse_vision) + (sparse_scorer_prepare - dense_scorer_prepare)
+    )
+    predicted_e2e_speedup_with_scorer_prepare = (
+        dense_e2e / predicted_sparse_e2e_with_scorer_prepare
+        if predicted_sparse_e2e_with_scorer_prepare > 0
+        else None
+    )
     actual_e2e_speedup = dense_e2e / sparse_e2e if sparse_e2e > 0 else None
     keep_rates = [
         float(row["sparse_kept_groups"]) / float(row["sparse_total_groups"])
@@ -203,20 +231,34 @@ def _summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
         and row.get("sparse_total_groups") is not None
         and float(row["sparse_total_groups"]) > 0
     ]
+    comparable_choice_rows = [
+        row
+        for row in rows
+        if row["dense_choice_index"] is not None and row["sparse_choice_index"] is not None
+    ]
+    dense_parse_failures = sum(row["dense_parse_failure"] for row in rows)
+    sparse_parse_failures = sum(row["sparse_parse_failure"] for row in rows)
     return {
         "n": len(rows),
         "dense_accuracy": _accuracy(rows, "dense_correct"),
         "sparse_accuracy": _accuracy(rows, "sparse_correct"),
         "accuracy_delta_sparse_minus_dense": _accuracy_delta(rows),
         "accuracy_delta_sparse_minus_dense_ci95": _bootstrap_ci(rows, metric=_accuracy_delta),
-        "choice_agreement": sum(
-            row["dense_choice_index"] == row["sparse_choice_index"] for row in rows
-        )
-        / len(rows),
-        "dense_parse_failures": sum(row["dense_parse_failure"] for row in rows),
-        "sparse_parse_failures": sum(row["sparse_parse_failure"] for row in rows),
-        "parse_failure_delta_sparse_minus_dense": sum(row["sparse_parse_failure"] for row in rows)
-        - sum(row["dense_parse_failure"] for row in rows),
+        "choice_agreement": (
+            sum(
+                row["dense_choice_index"] == row["sparse_choice_index"]
+                for row in comparable_choice_rows
+            )
+            / len(comparable_choice_rows)
+            if comparable_choice_rows
+            else 0.0
+        ),
+        "choice_agreement_denominator": len(comparable_choice_rows),
+        "dense_parse_failures": dense_parse_failures,
+        "sparse_parse_failures": sparse_parse_failures,
+        "dense_parse_failure_fraction": dense_parse_failures / len(rows) if rows else 0.0,
+        "sparse_parse_failure_fraction": sparse_parse_failures / len(rows) if rows else 0.0,
+        "parse_failure_delta_sparse_minus_dense": sparse_parse_failures - dense_parse_failures,
         "mean_keep_rate": _mean(keep_rates),
         "vision_share_dense": vision_share_dense,
         "vision_reduction": vision_reduction,
@@ -238,9 +280,18 @@ def _summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
             metric=_e2e_speedup,
         ),
         "predicted_e2e_speedup_from_vision_only": predicted_e2e_speedup,
-        "actual_minus_predicted_e2e_speedup": (
+        "predicted_e2e_speedup_from_vision_and_scorer_prepare": (
+            predicted_e2e_speedup_with_scorer_prepare
+        ),
+        "actual_minus_predicted_e2e_speedup_from_vision_only": (
             actual_e2e_speedup - predicted_e2e_speedup
             if actual_e2e_speedup is not None and predicted_e2e_speedup is not None
+            else None
+        ),
+        "actual_minus_predicted_e2e_speedup": (
+            actual_e2e_speedup - predicted_e2e_speedup_with_scorer_prepare
+            if actual_e2e_speedup is not None
+            and predicted_e2e_speedup_with_scorer_prepare is not None
             else None
         ),
         "mean_dense_decode_ms": _mean([float(row["dense_decode_ms"]) for row in rows]),
@@ -321,6 +372,9 @@ def main() -> int:
     parser.add_argument("--bucket-e2e-min-pass", type=int, default=2)
     parser.add_argument("--bucket-e2e-min-n", type=int, default=7)
     parser.add_argument("--parse-failure-delta-max", type=int, default=2)
+    parser.add_argument("--parse-failure-max-fraction", type=float, default=0.25)
+    parser.add_argument("--require-schema-version")
+    parser.add_argument("--require-scorer-timings", action="store_true")
     parser.add_argument(
         "--sparse-execution-scope",
         default=(
@@ -332,11 +386,22 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    dense_rows = _load_jsonl(args.dense_jsonl)
-    sparse_rows = _load_jsonl(args.sparse_jsonl)
+    dense_schema, dense_rows = _load_jsonl(args.dense_jsonl)
+    sparse_schema, sparse_rows = _load_jsonl(args.sparse_jsonl)
+    if args.require_schema_version is not None:
+        for label, schema in (("dense", dense_schema), ("sparse", sparse_schema)):
+            if schema.get("schema_version") != args.require_schema_version:
+                raise ValueError(
+                    f"{label} schema_version {schema.get('schema_version')!r} "
+                    f"does not match required {args.require_schema_version!r}"
+                )
     dense_summary = json.loads(args.dense_summary.read_text())
     sparse_summary = json.loads(args.sparse_summary.read_text())
-    rows = _paired_rows(dense_rows, sparse_rows)
+    rows = _paired_rows(
+        dense_rows,
+        sparse_rows,
+        require_scorer_timings=args.require_scorer_timings,
+    )
     summary = _summarize(rows)
     by_group = {
         group: _summarize([row for row in rows if str(row.get("group")) == group])
@@ -352,6 +417,8 @@ def main() -> int:
     payload = {
         "dense_jsonl": args.dense_jsonl.as_posix(),
         "sparse_jsonl": args.sparse_jsonl.as_posix(),
+        "dense_schema_version": dense_schema.get("schema_version"),
+        "sparse_schema_version": sparse_schema.get("schema_version"),
         "dense_summary": args.dense_summary.as_posix(),
         "sparse_summary": args.sparse_summary.as_posix(),
         "sparse_execution_scope": args.sparse_execution_scope,
@@ -375,6 +442,11 @@ def main() -> int:
         "parse_failure_delta_max": args.parse_failure_delta_max,
         "pass_parse_failure_delta": summary["parse_failure_delta_sparse_minus_dense"]
         <= args.parse_failure_delta_max,
+        "parse_failure_max_fraction": args.parse_failure_max_fraction,
+        "pass_parse_failure_rate": (
+            summary["dense_parse_failure_fraction"] <= args.parse_failure_max_fraction
+            and summary["sparse_parse_failure_fraction"] <= args.parse_failure_max_fraction
+        ),
         "pass_fidelity": summary["accuracy_delta_sparse_minus_dense"] >= -0.05,
         "pass_sparse_vision": summary["vision_reduction"] >= 0.25,
         "pass_e2e_positive": summary["actual_e2e_speedup_dense_over_sparse"] is not None
