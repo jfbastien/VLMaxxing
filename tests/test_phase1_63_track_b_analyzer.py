@@ -56,6 +56,7 @@ def _run_analyzer(
     _write_jsonl(
         dense_jsonl,
         [
+            {"kind": "schema", "schema_version": "phase1_51v_sparse_v2"},
             _row(
                 "a",
                 correct=True,
@@ -79,6 +80,7 @@ def _run_analyzer(
     _write_jsonl(
         sparse_jsonl,
         [
+            {"kind": "schema", "schema_version": "phase1_51v_sparse_v2"},
             _row(
                 "a",
                 correct=True,

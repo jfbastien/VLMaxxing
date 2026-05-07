@@ -178,11 +178,23 @@ Validated on 2026-05-07 against the current branch after commit `2ea0a5e`.
 | The mask helper should pin a stable pixel domain. | VALID | The implementation default is post-decode raw frames resized to `224x224`, ImageNet-normalized before the RLT threshold, with downstream model-grid projection logged separately. This matches the RLT threshold domain while keeping masks cacheable across models. |
 | Mask-grid projection should be charged separately. | VALID | RLT profiler rows now record `mask_compute_ms` and `mask_project_ms` separately. |
 | Pure mask tests should not be MLX-gated. | VALID | `tests/test_rlt_masks.py` is NumPy/Pillow-only and must run without `tests/_mlx_probe.py`. |
-| Runners need a durable resume key and schema row. | VALID | New profiler artifacts use JSONL row 0 with `schema_version` and a SHA-256 over manifest path/content hash, frame count, mask config, random seed, and comparison options. Mismatched artifacts hard-fail unless explicitly overwritten. |
+| Runners need a durable resume key and schema row. | VALID | Profiler artifacts use JSONL row 0 with `schema_version` and a SHA-256 over manifest path/content hash, frame count, mask config, random seed, and comparison options. Long-running first-turn runners also emit row-0 schema records after timing-field changes. Mismatched artifacts hard-fail unless explicitly overwritten. |
 | Multiple comparisons need confirmatory versus exploratory separation. | VALID | H2, H3B, and H4A are the confirmatory family for this preregistration; H1, H1.5, H1.5b, H3A, H4B, H5/H6/RLT-7 are exploratory or prerequisite mechanisms unless promoted by a follow-up preregistration. |
 | Total compute can exceed two days if every cell runs. | VALID | Added early-cancel rules: strong RLT-vs-pixel-novelty co-cover can stop model runs, failed RLT-1 static/positive-control grounding stops RLT-style claims, and failed prefill/SWA preflight blocks dependent cells before smokes. |
 | ToMe/DynamicViT deserve an explicit non-comparison note. | VALID | Added a reviewer-defense note: ToMe/DynamicViT are feature-dependent token-merging/pruning baselines, relevant to H3A scorer-stacking but not the clean denominator-separation cell. |
 | RLT-7 should run beside RLT-1 because duration metadata is essentially free. | VALID | Implementation order now logs duration-anchor metadata during RLT-1 profiling rather than waiting until after all long model runs. |
+
+### Scientist Peer Feedback Validation, Round 5
+
+Validated on 2026-05-07 against the current implementation diff.
+
+| Peer claim | Verdict | Evidence / action |
+| --- | --- | --- |
+| `--prune-placeholders=none` must be a true bypass. | VALID | The Gemma runner now skips `prune_image_placeholders(...)` in `none` mode, reuses dense input IDs/features, records `placeholder_prune_ms=0`, and has an MLX-gated unit test guarding the bypass. |
+| RLT config fields drifted from the preregistered kernel contract. | VALID | `RLTMaskConfig` now records `image_size`, `patch_size`, explicit `pixel_scale`, `first_tubelet_mode`, `window_min_keep`, `ordering`, and an optional grid override. The default grid is canonical `224/16 -> 14x14`; Gemma admission projects to `16x16` and charges `mask_project_ms`. |
+| First-turn runner timing schemas changed without schema bumps. | VALID | `scripts/run_phase1_51V.py`, `scripts/run_phase1_63G_gemma_track_b.py`, and the Gemma admission runner now write row-0 schema records with bumped schema versions before item rows. |
+| RLT-vs-pixel-novelty null should be decided before long model runs. | VALID | Added `scripts/analyze_rlt_mask_profile.py` and `scripts/run_rlt_autonomous_queue.py`. Synthetic-only co-cover is diagnostic; real manifest/content-bucket co-cover is required before canceling model phases. |
+| Runtime estimates and early-cancel ordering must be encoded, not only prose. | VALID | The autonomous queue records phase-hour estimates and stops before dependent cells when positive-control, pixel-novelty co-cover, prefill-split, or SWA-cache gates block. |
 
 ### RLT Algorithm Facts To Preserve
 
@@ -578,10 +590,13 @@ Implementation:
 - Add `RLTMaskConfig` with:
   - `threshold`
   - `tubelet_size`
+  - `image_size`
   - `patch_size`
+  - optional `grid_shape` override; default derives the canonical RLT grid as
+    `image_size // patch_size` (`224/16 -> 14x14`)
   - `normalize_mode` (`none`, `imagenet`)
-  - `first_tubelet_mode` (`keep`)
-  - `grid_shape`
+  - explicit `pixel_scale` (`uint8`, `float01`)
+  - `first_tubelet_mode` (`full_grid`)
   - `window_min_keep`
   - `ordering` (`time_major`)
 - Add `compute_rlt_keep_mask_from_frames(...)`.
@@ -602,8 +617,8 @@ Tests:
   requested tubelet comparison,
 - token order is time-major,
 - threshold monotonicity,
-- declared `normalize_mode` hard-fails if input statistics are inconsistent
-  with the declared domain,
+- declared `normalize_mode` and `pixel_scale` hard-fail if input statistics are
+  inconsistent with the declared domain,
 - RLT length-encoding alignment is tested against the RLT clone before any
   local length/duration embedding code is allowed,
 - shape mismatch hard-fails,
@@ -1125,14 +1140,23 @@ Status:
 - Early-cancel rules:
   - if RLT-1 synthetic tests or fixed-camera positive controls fail, stop
     model runs and debug the mask kernel/domain;
-  - if RLT and pixel-novelty co-cover at `>=0.95` Jaccard across buckets,
+  - if RLT and pixel-novelty co-cover at `>=0.95` Jaccard across real
+    manifest/content buckets,
     cancel H1.5b/H3/H4 model runs and report the negative mechanism result
     unless a cheaper-overhead comparison still matters operationally;
+  - if only synthetic controls reach the co-cover gate, record it as a
+    diagnostic and continue to real-bucket profiling before stopping model
+    phases;
   - if prefill split or Gemma SWA functional smoke fails, skip dependent cells
     rather than producing artifacts that cannot satisfy the gates.
 - Sequential conservative runtime can exceed `50 h` if every extension cell
   runs. The queue should expose the cumulative estimate and add cancel points
   before any selected slate exceeds `30 h` on the 16 GB M3 machine.
+- `scripts/run_rlt_autonomous_queue.py` is the first encoded queue. It runs
+  RLT-1 preflight, CPU profiling, profile analysis, and dependent preflights
+  in value order. It blocks H3B until `--prefill-split-smoke-json` is supplied
+  and blocks Gemma H4A/H5G until `--run-swa-smoke` passes the functional
+  cache-correctness smoke.
 - Claude/Codex supervision should interpret only completed artifacts and should
   record negative outcomes in this note, `research/decision-log.md`, and
   paper-facing docs only when a hypothesis changes status. If contribution
@@ -1213,7 +1237,9 @@ After pure-mask implementation:
 
 - `uv run pytest tests/test_rlt_masks.py`
 - `uv run python scripts/profile_rlt_masks.py --synthetic exact_static --synthetic single_frame_repeat --synthetic all_motion --frame-count 8 --overwrite --output-jsonl /tmp/rlt_mask_profile.jsonl --summary-json /tmp/rlt_mask_profile_summary.json`
-- `uv run python scripts/profile_rlt_masks.py --synthetic exact_static --synthetic fixed_camera_positive --synthetic camera_pan --frame-count 8 --compare-pixel-novelty --project-grid-shape 14x20 --overwrite --output-jsonl /tmp/rlt_mask_profile_compare.jsonl --summary-json /tmp/rlt_mask_profile_compare_summary.json`
+- `uv run python scripts/profile_rlt_masks.py --synthetic exact_static --synthetic fixed_camera_positive --synthetic camera_pan --frame-count 8 --compare-pixel-novelty --project-grid-shape 16x16 --overwrite --output-jsonl /tmp/rlt_mask_profile_compare.jsonl --summary-json /tmp/rlt_mask_profile_compare_summary.json`
+- `uv run python scripts/analyze_rlt_mask_profile.py --profile-jsonl /tmp/rlt_mask_profile_compare.jsonl --output /tmp/rlt_mask_profile_compare_analysis.json`
+- `uv run python scripts/run_rlt_autonomous_queue.py --artifact-dir /tmp/rlt_autonomous_queue_smoke --summary /tmp/rlt_autonomous_queue_smoke_summary.json`
 - `uv run python scripts/preflight_rlt_vlmax.py --phase RLT-1 --output /tmp/rlt_vlmax_preflight.json`
 - `uv run pytest tests/test_temporal.py tests/test_novelty_pruning.py`
 

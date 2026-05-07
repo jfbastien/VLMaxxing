@@ -56,6 +56,34 @@ def test_exact_static_keeps_only_first_tubelet() -> None:
     assert result.per_frame_keep_counts() == [16, 16, 0, 0, 0, 0, 0, 0]
 
 
+def test_default_grid_shape_matches_published_rlt_patch_size() -> None:
+    cfg = RLTMaskConfig(threshold=0.1, tubelet_size=2)
+
+    result = compute_rlt_keep_mask_from_array(
+        np.full((4, 224, 224, 3), 64.0, dtype=np.float32),
+        config=cfg,
+    )
+
+    assert result.frame_keep_mask.shape == (4, 14, 14)
+    assert cfg.as_dict()["grid_shape"] == [14, 14]
+    assert cfg.as_dict()["grid_shape_source"] == "patch_size"
+    assert cfg.as_dict()["ordering"] == "time_major"
+
+
+def test_224_to_16_projection_operating_point() -> None:
+    cfg = RLTMaskConfig(threshold=0.1, tubelet_size=2)
+    result = compute_rlt_keep_mask_from_array(
+        np.full((4, 224, 224, 3), 64.0, dtype=np.float32),
+        config=cfg,
+    )
+
+    projected = project_bool_grid(result.frame_keep_mask, (16, 16))
+
+    assert projected.shape == (4, 16, 16)
+    assert projected[:2].all()
+    assert not projected[2:].any()
+
+
 def test_single_frame_repeat_with_unit_tubelet_keeps_one_over_n() -> None:
     cfg = RLTMaskConfig(
         threshold=0.1,
@@ -123,6 +151,37 @@ def test_threshold_monotonicity() -> None:
     assert rates == sorted(rates, reverse=True)
 
 
+def test_kernel_is_deterministic() -> None:
+    cfg = RLTMaskConfig(
+        threshold=0.1,
+        tubelet_size=2,
+        image_size=(16, 16),
+        grid_shape=(4, 4),
+        normalize_mode="imagenet",
+    )
+    frames = _motion_frames(8)
+
+    first = compute_rlt_keep_mask_from_array(frames, config=cfg)
+    second = compute_rlt_keep_mask_from_array(frames, config=cfg)
+
+    assert np.array_equal(first.frame_keep_mask, second.frame_keep_mask)
+    assert np.array_equal(first.frame_run_lengths, second.frame_run_lengths)
+
+
+def test_time_major_ordering_is_explicit_and_observable() -> None:
+    cfg = RLTMaskConfig(
+        threshold=0.1,
+        tubelet_size=2,
+        image_size=(16, 16),
+        grid_shape=(2, 2),
+        normalize_mode="imagenet",
+    )
+    result = compute_rlt_keep_mask_from_array(_constant_frames(4), config=cfg)
+
+    assert cfg.as_dict()["ordering"] == "time_major"
+    assert result.frame_keep_mask.reshape(-1).tolist() == [True] * 8 + [False] * 8
+
+
 def test_minimum_frame_guard_hard_fails() -> None:
     cfg = RLTMaskConfig(tubelet_size=2, image_size=(16, 16), grid_shape=(4, 4))
     with pytest.raises(ValueError, match="cannot form two tubelets"):
@@ -157,8 +216,49 @@ def test_imagenet_mode_rejects_negative_raw_values() -> None:
     )
     negative_raw = np.full((4, 16, 16, 3), -0.1, dtype=np.float32)
 
-    with pytest.raises(ValueError, match="expects raw RGB"):
+    with pytest.raises(ValueError, match="nonnegative raw RGB"):
         compute_rlt_keep_mask_from_array(negative_raw, config=cfg)
+
+
+def test_float01_pixel_scale_matches_uint8_scale() -> None:
+    uint8_cfg = RLTMaskConfig(
+        threshold=0.1,
+        tubelet_size=2,
+        image_size=(16, 16),
+        grid_shape=(4, 4),
+        normalize_mode="imagenet",
+        pixel_scale="uint8",
+    )
+    float01_cfg = RLTMaskConfig(
+        threshold=0.1,
+        tubelet_size=2,
+        image_size=(16, 16),
+        grid_shape=(4, 4),
+        normalize_mode="imagenet",
+        pixel_scale="float01",
+    )
+    uint8_result = compute_rlt_keep_mask_from_array(_motion_frames(4), config=uint8_cfg)
+    float01_result = compute_rlt_keep_mask_from_array(
+        _motion_frames(4) / 255.0,
+        config=float01_cfg,
+    )
+
+    assert np.array_equal(uint8_result.frame_keep_mask, float01_result.frame_keep_mask)
+    assert np.allclose(uint8_result.tubelet_scores, float01_result.tubelet_scores)
+
+
+def test_float01_pixel_scale_rejects_uint8_values() -> None:
+    cfg = RLTMaskConfig(
+        threshold=0.1,
+        tubelet_size=2,
+        image_size=(16, 16),
+        grid_shape=(4, 4),
+        normalize_mode="imagenet",
+        pixel_scale="float01",
+    )
+
+    with pytest.raises(ValueError, match="float01"):
+        compute_rlt_keep_mask_from_array(_motion_frames(4), config=cfg)
 
 
 def test_compute_from_frames_resizes_and_normalizes() -> None:
@@ -184,12 +284,13 @@ def test_per_frame_floor_flags_added_tokens() -> None:
         image_size=(16, 16),
         grid_shape=(4, 4),
         normalize_mode="imagenet",
-        per_frame_min_keep=2,
+        window_min_keep=2,
     )
 
     result = compute_rlt_keep_mask_from_array(_constant_frames(4), config=cfg)
 
     assert result.per_frame_keep_counts() == [16, 16, 2, 2]
+    assert result.threshold_active_token_count == 0
     assert result.floor_active_token_count == 4
     assert result.floor_active
 
@@ -240,3 +341,17 @@ def test_jaccard_and_summary_and_hash_are_stable() -> None:
     assert jaccard(left, right) == pytest.approx(1.0 / 3.0)
     assert mask_summary(result)["kept_token_count"] == 32
     assert artifact_config_hash(cfg.as_dict()) == artifact_config_hash(cfg.as_dict())
+
+
+def test_shape_mismatch_hard_fails() -> None:
+    cfg = RLTMaskConfig(tubelet_size=2, image_size=(16, 16), grid_shape=(4, 4))
+
+    with pytest.raises(ValueError, match="frames must be"):
+        compute_rlt_keep_mask_from_array(np.zeros((4, 16, 16), dtype=np.float32), config=cfg)
+
+
+def test_grid_shape_larger_than_pixels_hard_fails() -> None:
+    cfg = RLTMaskConfig(tubelet_size=2, image_size=(16, 16), grid_shape=(32, 32))
+
+    with pytest.raises(ValueError, match="cannot exceed"):
+        compute_rlt_keep_mask_from_array(_constant_frames(4), config=cfg)

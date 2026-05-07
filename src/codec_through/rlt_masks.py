@@ -27,6 +27,9 @@ import numpy.typing as npt
 from PIL import Image
 
 NormalizeMode = Literal["imagenet", "none", "pre_normalized_imagenet"]
+PixelScale = Literal["uint8", "float01"]
+FirstTubeletMode = Literal["full_grid"]
+TokenOrdering = Literal["time_major"]
 FloatArray = npt.NDArray[np.floating[Any]]
 BoolArray = npt.NDArray[np.bool_]
 IntArray = npt.NDArray[np.integer[Any]]
@@ -42,18 +45,40 @@ class RLTMaskConfig:
     threshold: float = 0.1
     tubelet_size: int = 2
     image_size: tuple[int, int] = (224, 224)
-    grid_shape: tuple[int, int] = (16, 16)
+    patch_size: int = 16
+    grid_shape: tuple[int, int] | None = None
     normalize_mode: NormalizeMode = "imagenet"
-    per_frame_min_keep: int = 0
+    pixel_scale: PixelScale = "uint8"
+    first_tubelet_mode: FirstTubeletMode = "full_grid"
+    window_min_keep: int = 0
+    ordering: TokenOrdering = "time_major"
+
+    def resolved_grid_shape(self) -> tuple[int, int]:
+        if self.grid_shape is not None:
+            return self.grid_shape
+        height, width = self.image_size
+        if self.patch_size <= 0:
+            raise ValueError(f"patch_size must be positive, got {self.patch_size}")
+        if height % self.patch_size != 0 or width % self.patch_size != 0:
+            raise ValueError(
+                f"image_size {self.image_size} must be divisible by patch_size "
+                f"{self.patch_size} when grid_shape is not overridden"
+            )
+        return height // self.patch_size, width // self.patch_size
 
     def as_dict(self) -> dict[str, Any]:
         return {
             "threshold": self.threshold,
             "tubelet_size": self.tubelet_size,
             "image_size": list(self.image_size),
-            "grid_shape": list(self.grid_shape),
+            "patch_size": self.patch_size,
+            "grid_shape": list(self.resolved_grid_shape()),
+            "grid_shape_source": "override" if self.grid_shape is not None else "patch_size",
             "normalize_mode": self.normalize_mode,
-            "per_frame_min_keep": self.per_frame_min_keep,
+            "pixel_scale": self.pixel_scale,
+            "first_tubelet_mode": self.first_tubelet_mode,
+            "window_min_keep": self.window_min_keep,
+            "ordering": self.ordering,
         }
 
 
@@ -118,6 +143,7 @@ def coerce_frames_to_array(
     *,
     image_size: tuple[int, int],
     normalize_mode: NormalizeMode,
+    pixel_scale: PixelScale,
 ) -> FloatArray:
     """Convert PIL/NumPy frames to ``(T, H, W, 3)`` float32.
 
@@ -138,6 +164,8 @@ def coerce_frames_to_array(
         if isinstance(frame, Image.Image):
             if normalize_mode == "pre_normalized_imagenet":
                 raise ValueError("PIL frames cannot be declared pre_normalized_imagenet")
+            if pixel_scale != "uint8":
+                raise ValueError("PIL frames are uint8-domain; use pixel_scale='uint8'")
             image = frame.convert("RGB").resize((width, height), Image.Resampling.BICUBIC)
             arrays.append(np.asarray(image, dtype=np.float32))
             continue
@@ -153,15 +181,20 @@ def coerce_frames_to_array(
                 )
             arrays.append(arr.astype(np.float32, copy=False))
         else:
-            image = Image.fromarray(_raw_frame_to_uint8(arr))
+            image = Image.fromarray(_raw_frame_to_uint8(arr, pixel_scale=pixel_scale))
             image = image.resize((width, height), Image.Resampling.BICUBIC)
             arrays.append(np.asarray(image, dtype=np.float32))
 
     stacked = np.stack(arrays, axis=0).astype(np.float32, copy=False)
-    return normalize_frame_array(stacked, mode=normalize_mode)
+    return normalize_frame_array(stacked, mode=normalize_mode, pixel_scale="uint8")
 
 
-def normalize_frame_array(frames: FloatArray, *, mode: NormalizeMode) -> FloatArray:
+def normalize_frame_array(
+    frames: FloatArray,
+    *,
+    mode: NormalizeMode,
+    pixel_scale: PixelScale = "uint8",
+) -> FloatArray:
     """Normalize or validate a ``(T, H, W, 3)`` frame tensor."""
 
     arr = np.asarray(frames, dtype=np.float32)
@@ -186,12 +219,27 @@ def normalize_frame_array(frames: FloatArray, *, mode: NormalizeMode) -> FloatAr
         return arr
 
     if mode == "imagenet":
-        if min_value < 0.0 or max_value > 255.0:
+        if min_value < 0.0:
             raise ValueError(
-                "normalize_mode='imagenet' expects raw RGB pixels in [0, 255] "
-                f"or [0, 1], got range [{min_value:.3f}, {max_value:.3f}]"
+                "normalize_mode='imagenet' expects nonnegative raw RGB pixels, "
+                f"got range [{min_value:.3f}, {max_value:.3f}]"
             )
-        scaled = arr / 255.0 if max_value > 1.5 else arr.copy()
+        if pixel_scale == "uint8":
+            if max_value > 255.0:
+                raise ValueError(
+                    "pixel_scale='uint8' expects raw RGB pixels in [0, 255], "
+                    f"got range [{min_value:.3f}, {max_value:.3f}]"
+                )
+            scaled = arr / 255.0
+        elif pixel_scale == "float01":
+            if max_value > 1.0:
+                raise ValueError(
+                    "pixel_scale='float01' expects raw RGB pixels in [0, 1], "
+                    f"got range [{min_value:.3f}, {max_value:.3f}]"
+                )
+            scaled = arr.copy()
+        else:
+            raise ValueError(f"unknown pixel scale {pixel_scale!r}")
         return (scaled - IMAGENET_MEAN.reshape(1, 1, 1, 3)) / IMAGENET_STD.reshape(1, 1, 1, 3)
 
     if mode == "pre_normalized_imagenet":
@@ -221,6 +269,7 @@ def compute_rlt_keep_mask_from_frames(
         frames,
         image_size=config.image_size,
         normalize_mode=config.normalize_mode,
+        pixel_scale=config.pixel_scale,
     )
     return compute_rlt_keep_mask_from_array(arr, config=config, frames_are_normalized=True)
 
@@ -239,23 +288,25 @@ def compute_rlt_keep_mask_from_array(
 
     arr = np.asarray(frames, dtype=np.float32)
     if not frames_are_normalized:
-        arr = normalize_frame_array(arr, mode=config.normalize_mode)
+        arr = normalize_frame_array(arr, mode=config.normalize_mode, pixel_scale=config.pixel_scale)
     _validate_config_against_frames(config, arr)
 
     tubelet_size = config.tubelet_size
     frame_count = int(arr.shape[0])
     tubelet_count = frame_count // tubelet_size
-    rows, cols = config.grid_shape
+    rows, cols = config.resolved_grid_shape()
 
     tubelet_scores = np.zeros((tubelet_count, rows, cols), dtype=np.float32)
     tubelet_keep = np.zeros((tubelet_count, rows, cols), dtype=bool)
+    if config.first_tubelet_mode != "full_grid":
+        raise ValueError(f"unsupported first_tubelet_mode {config.first_tubelet_mode!r}")
     tubelet_keep[0] = True
 
     for tubelet_idx in range(1, tubelet_count):
         prev_start = (tubelet_idx - 1) * tubelet_size
         curr_end = tubelet_idx * tubelet_size + tubelet_size - 1
         diff = np.abs(arr[curr_end] - arr[prev_start]).mean(axis=2)
-        scores = aggregate_to_grid(diff, config.grid_shape)
+        scores = aggregate_to_grid(diff, config.resolved_grid_shape())
         tubelet_scores[tubelet_idx] = scores
         tubelet_keep[tubelet_idx] = scores > config.threshold
 
@@ -266,7 +317,7 @@ def compute_rlt_keep_mask_from_array(
     frame_keep, floor_mask = apply_per_frame_floor(
         frame_keep,
         scores=np.repeat(tubelet_scores, tubelet_size, axis=0),
-        per_frame_min_keep=config.per_frame_min_keep,
+        per_frame_min_keep=config.window_min_keep,
     )
 
     return RLTMaskResult(
@@ -434,8 +485,14 @@ def _validate_config_against_frames(config: RLTMaskConfig, frames: FloatArray) -
         raise ValueError(f"threshold must be nonnegative, got {config.threshold}")
     if config.tubelet_size <= 0:
         raise ValueError(f"tubelet_size must be positive, got {config.tubelet_size}")
-    if config.per_frame_min_keep < 0:
-        raise ValueError("per_frame_min_keep must be nonnegative")
+    if config.patch_size <= 0:
+        raise ValueError(f"patch_size must be positive, got {config.patch_size}")
+    if config.window_min_keep < 0:
+        raise ValueError("window_min_keep must be nonnegative")
+    if config.first_tubelet_mode != "full_grid":
+        raise ValueError(f"unsupported first_tubelet_mode {config.first_tubelet_mode!r}")
+    if config.ordering != "time_major":
+        raise ValueError(f"unsupported ordering {config.ordering!r}")
     if frames.ndim != 4 or frames.shape[3] != 3:
         raise ValueError(f"frames must be (T, H, W, 3), got {frames.shape}")
     if frames.shape[0] < 2 * config.tubelet_size:
@@ -446,32 +503,51 @@ def _validate_config_against_frames(config: RLTMaskConfig, frames: FloatArray) -
         raise ValueError(
             f"frame_count {frames.shape[0]} must be divisible by tubelet_size {config.tubelet_size}"
         )
-    rows, cols = config.grid_shape
+    rows, cols = config.resolved_grid_shape()
     if rows <= 0 or cols <= 0:
-        raise ValueError(f"grid_shape must be positive, got {config.grid_shape}")
+        raise ValueError(f"grid_shape must be positive, got {config.resolved_grid_shape()}")
     if rows > frames.shape[1] or cols > frames.shape[2]:
+        frame_size = frames.shape[1:3]
         raise ValueError(
-            f"grid_shape {config.grid_shape} cannot exceed frame size {frames.shape[1:3]}"
+            f"grid_shape {config.resolved_grid_shape()} cannot exceed frame size {frame_size}"
         )
-    if config.per_frame_min_keep > rows * cols:
+    if config.window_min_keep > rows * cols:
         raise ValueError(
-            f"per_frame_min_keep {config.per_frame_min_keep} exceeds tokens per frame {rows * cols}"
+            f"window_min_keep {config.window_min_keep} exceeds tokens per frame {rows * cols}"
         )
 
 
-def _raw_frame_to_uint8(arr: npt.NDArray[Any]) -> npt.NDArray[np.uint8]:
+def _raw_frame_to_uint8(
+    arr: npt.NDArray[Any],
+    *,
+    pixel_scale: PixelScale,
+) -> npt.NDArray[np.uint8]:
     numeric = np.asarray(arr)
     if not np.issubdtype(numeric.dtype, np.number):
         raise ValueError(f"array frame must be numeric, got {numeric.dtype}")
     numeric_f = numeric.astype(np.float32, copy=False)
     min_value = float(numeric_f.min())
     max_value = float(numeric_f.max())
-    if min_value < 0.0 or max_value > 255.0:
+    if min_value < 0.0:
         raise ValueError(
-            f"raw frame arrays must be in [0, 255] or [0, 1], got "
-            f"[{min_value:.3f}, {max_value:.3f}]"
+            f"raw frame arrays must be nonnegative, got [{min_value:.3f}, {max_value:.3f}]"
         )
-    scaled = numeric_f * 255.0 if max_value <= 1.5 else numeric_f
+    if pixel_scale == "uint8":
+        if max_value > 255.0:
+            raise ValueError(
+                f"pixel_scale='uint8' expects arrays in [0, 255], got "
+                f"[{min_value:.3f}, {max_value:.3f}]"
+            )
+        scaled = numeric_f
+    elif pixel_scale == "float01":
+        if max_value > 1.0:
+            raise ValueError(
+                f"pixel_scale='float01' expects arrays in [0, 1], got "
+                f"[{min_value:.3f}, {max_value:.3f}]"
+            )
+        scaled = numeric_f * 255.0
+    else:
+        raise ValueError(f"unknown pixel scale {pixel_scale!r}")
     return np.clip(np.rint(scaled), 0, 255).astype(np.uint8)
 
 

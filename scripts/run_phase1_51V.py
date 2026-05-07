@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import gc
+import hashlib
 import importlib.util
 import json
 import sys
@@ -45,6 +46,7 @@ from codec_through.qwen_vision_pruning import qwen_groups_per_frame  # noqa: E40
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RUNNER_PATH = REPO_ROOT / "scripts" / "run_benchmark_track_a.py"
 DEFAULT_MODEL_PATH = Path.home() / "models" / "Qwen2.5-VL-7B-Instruct-4bit"
+SCHEMA_VERSION = "phase1_51v_sparse_v2"
 
 
 @dataclass(frozen=True, slots=True)
@@ -215,6 +217,31 @@ def _stage_ms_from_tps(*, tokens: int, tokens_per_second: float, stage: str) -> 
     return float(tokens / tokens_per_second * 1000.0)
 
 
+def _artifact_hash(payload: dict[str, Any]) -> str:
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _schema_row(args: argparse.Namespace) -> dict[str, Any]:
+    payload = {
+        "manifest": str(args.manifest),
+        "model_path": str(args.model_path),
+        "frame_count": args.frame_count,
+        "max_tokens": args.max_tokens,
+        "vision_tower_layer": args.vision_tower_layer,
+        "vision_tower_keep_rate": args.vision_tower_keep_rate,
+        "score_mode": args.score_mode,
+        "score_seed": args.score_seed,
+    }
+    return {
+        "kind": "schema",
+        "schema_version": SCHEMA_VERSION,
+        "artifact_config_hash": _artifact_hash(payload),
+        "artifact_payload": payload,
+        "timing_split": "exact_prompt_or_generation_tokens_divided_by_mlx_vlm_reported_tps",
+    }
+
+
 def _load_manifest_items(runner: Any, manifest_path: Path) -> list[Any]:
     payload = tomllib.loads(manifest_path.read_text())
     return cast(list[Any], runner._load_items_by_id(payload["benchmark"], payload["item_ids"]))
@@ -222,6 +249,7 @@ def _load_manifest_items(runner: Any, manifest_path: Path) -> list[Any]:
 
 def _record_payload(record: ItemResult) -> dict[str, Any]:
     return {
+        "kind": "item",
         "item_id": record.item_id,
         "benchmark": record.benchmark,
         "group": record.group,
@@ -355,6 +383,7 @@ def main() -> int:
     results: list[ItemResult] = []
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w") as handle:
+        handle.write(json.dumps(_schema_row(args), sort_keys=True) + "\n")
         for item in items:
             raw, decode_ms, processor_ms = _prepare_item(
                 runner,
@@ -418,7 +447,7 @@ def main() -> int:
                 peak_memory_gb=stats.peak_memory_gb,
             )
             results.append(record)
-            handle.write(json.dumps(_record_payload(record)) + "\n")
+            handle.write(json.dumps(_record_payload(record), sort_keys=True) + "\n")
             handle.flush()
             _clear_runtime_state()
             if args.rss_guard_mb > 0:
@@ -427,6 +456,7 @@ def main() -> int:
     summary = _summarize(results)
     summary.update(
         {
+            "schema_version": SCHEMA_VERSION,
             "manifest": str(args.manifest),
             "model_path": str(args.model_path),
             "frame_count": args.frame_count,

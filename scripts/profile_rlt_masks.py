@@ -262,6 +262,7 @@ def _profile_one(
         frames,
         image_size=config.image_size,
         normalize_mode=config.normalize_mode,
+        pixel_scale=config.pixel_scale,
     )
     t1 = time.perf_counter()
     result = compute_rlt_keep_mask_from_array(arr, config=config, frames_are_normalized=True)
@@ -348,14 +349,16 @@ def main() -> int:
     parser.add_argument("--threshold", type=float, default=0.1)
     parser.add_argument("--tubelet-size", type=int, default=2)
     parser.add_argument("--image-size", type=int, default=224)
-    parser.add_argument("--grid-shape", type=_parse_grid, default=(16, 16))
+    parser.add_argument("--patch-size", type=int, default=16)
+    parser.add_argument("--grid-shape", type=_parse_grid)
     parser.add_argument("--project-grid-shape", type=_parse_grid)
     parser.add_argument(
         "--normalize-mode",
         choices=["imagenet", "none", "pre_normalized_imagenet"],
         default="imagenet",
     )
-    parser.add_argument("--per-frame-min-keep", type=int, default=0)
+    parser.add_argument("--pixel-scale", choices=["uint8", "float01"], default="uint8")
+    parser.add_argument("--window-min-keep", "--per-frame-min-keep", type=int, default=0)
     parser.add_argument(
         "--synthetic",
         action="append",
@@ -396,9 +399,13 @@ def main() -> int:
         threshold=args.threshold,
         tubelet_size=args.tubelet_size,
         image_size=(args.image_size, args.image_size),
+        patch_size=args.patch_size,
         grid_shape=args.grid_shape,
         normalize_mode=args.normalize_mode,
-        per_frame_min_keep=args.per_frame_min_keep,
+        pixel_scale=args.pixel_scale,
+        first_tubelet_mode="full_grid",
+        window_min_keep=args.window_min_keep,
+        ordering="time_major",
     )
     artifact_payload = _artifact_payload(args, config)
     run_hash = artifact_config_hash(artifact_payload)

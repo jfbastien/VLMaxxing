@@ -64,6 +64,7 @@ from __future__ import annotations
 
 import argparse
 import gc
+import hashlib
 import importlib.util
 import json
 import sys
@@ -75,8 +76,8 @@ from typing import Any, Literal, cast
 
 import mlx.core as mx
 import numpy as np
-from mlx_vlm import generate, load  # type: ignore[import-untyped]
-from mlx_vlm.utils import prepare_inputs  # type: ignore[import-untyped]
+from mlx_vlm import generate, load
+from mlx_vlm.utils import prepare_inputs
 from PIL import Image
 
 from codec_through.answers import extract_choice
@@ -94,6 +95,7 @@ from codec_through.rlt_masks import (
     RLTMaskConfig,
     compute_rlt_keep_mask_from_frames,
     mask_summary,
+    project_bool_grid,
 )
 from codec_through.video_decode import decode_uniform_frames
 
@@ -112,6 +114,7 @@ DEFAULT_MODEL_PATH = Path.home() / "models" / "gemma-4-e4b-it-4bit"
 # is stale / decorative; trust the observed emission.
 GEMMA_IMAGE_SIZE = 512
 GEMMA_GRID_SHAPE = (16, 16)  # 256 soft tokens per image, runtime-verified.
+SCHEMA_VERSION = "phase1_51r_gemma_admission_v2"
 # Anchor arms that actually need per-token vision features. Others skip the
 # (1, F*280, hidden) host-float32 mirror, which saved ~1–2 GB per item on the
 # 2026-04-18 OOM repro without changing any science.
@@ -238,6 +241,52 @@ class ItemResult:
     metadata: dict[str, Any] = field(default_factory=dict)
 
 
+@dataclass(frozen=True, slots=True)
+class PlaceholderPruneApplication:
+    input_ids: Any
+    image_features: Any
+    kept_per_frame: list[int]
+    elapsed_ms: float
+    bypassed: bool
+
+
+def _apply_placeholder_prune_for_generation(
+    *,
+    prune_placeholders: PlaceholderPruneMode,
+    input_ids_np: np.ndarray,
+    dense_input_ids: Any,
+    vision_features: Any,
+    keep_mask: np.ndarray,
+    image_token_id: int,
+) -> PlaceholderPruneApplication:
+    """Apply placeholder pruning, or strictly bypass it for dense controls."""
+
+    if keep_mask.ndim != 2:
+        raise ValueError(f"keep_mask must be 2D, got {keep_mask.shape}")
+    if prune_placeholders == "none":
+        return PlaceholderPruneApplication(
+            input_ids=dense_input_ids,
+            image_features=vision_features,
+            kept_per_frame=[int(keep_mask.shape[1])] * int(keep_mask.shape[0]),
+            elapsed_ms=0.0,
+            bypassed=True,
+        )
+
+    t_stage = time.perf_counter_ns()
+    pruned = prune_image_placeholders(input_ids_np, keep_mask, image_token_id=image_token_id)
+    pruned_input_ids = mx.array(pruned.input_ids[None, :])  # (1, new_seq_len)
+    gathered_features = vision_features[:, mx.array(pruned.feature_indices), :]
+    mx.eval(gathered_features)
+    elapsed_ms = (time.perf_counter_ns() - t_stage) / 1_000_000
+    return PlaceholderPruneApplication(
+        input_ids=pruned_input_ids,
+        image_features=gathered_features,
+        kept_per_frame=pruned.kept_per_frame.tolist(),
+        elapsed_ms=elapsed_ms,
+        bypassed=False,
+    )
+
+
 def _letterbox_square(frame: Image.Image, size: int = GEMMA_IMAGE_SIZE) -> Image.Image:
     """Resize + center-pad to ``size``×``size`` preserving aspect ratio."""
     width, height = frame.size
@@ -301,6 +350,31 @@ def _mean_token_attention_proxy(features: np.ndarray) -> np.ndarray:
     """
     norms = np.linalg.norm(features, axis=-1)
     return cast(np.ndarray, norms.astype(np.float32))
+
+
+def _artifact_hash(payload: dict[str, Any]) -> str:
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _schema_row(args: argparse.Namespace, rlt_config: RLTMaskConfig) -> dict[str, Any]:
+    payload = {
+        "manifest": str(args.manifest),
+        "model_path": str(args.model_path),
+        "frame_count": args.frame_count,
+        "anchor_arm": args.anchor_arm,
+        "keep_rate": args.keep_rate,
+        "prune_placeholders": args.prune_placeholders,
+        "rlt_config": rlt_config.as_dict() if args.prune_placeholders == "rlt" else None,
+        "vision_tower_layer": args.vision_tower_layer,
+        "vision_tower_keep_rate": args.vision_tower_keep_rate,
+    }
+    return {
+        "kind": "schema",
+        "schema_version": SCHEMA_VERSION,
+        "artifact_config_hash": _artifact_hash(payload),
+        "artifact_payload": payload,
+    }
 
 
 @dataclass(frozen=True, slots=True)
@@ -484,7 +558,10 @@ def _process_one_item(
         mask_metadata.update({"mask_policy": scorer_arm, "mask_domain": "gemma_letterboxed_512"})
     elif prune_placeholders == "rlt":
         rlt_result = compute_rlt_keep_mask_from_frames(frames, config=rlt_config)
-        keep_mask = rlt_result.frame_keep_mask.reshape(frame_count, -1)
+        t_project = time.perf_counter_ns()
+        projected_rlt_mask = project_bool_grid(rlt_result.frame_keep_mask, GEMMA_GRID_SHAPE)
+        mask_project_ms = (time.perf_counter_ns() - t_project) / 1_000_000
+        keep_mask = projected_rlt_mask.reshape(frame_count, -1)
         if keep_mask.shape != (frame_count, GEMMA_GRID_SHAPE[0] * GEMMA_GRID_SHAPE[1]):
             raise RuntimeError(
                 f"RLT keep mask shape {keep_mask.shape} does not match Gemma placeholders "
@@ -494,6 +571,8 @@ def _process_one_item(
             {
                 "mask_policy": "rlt",
                 "mask_domain": "gemma_letterboxed_frames_resized_224_imagenet",
+                "mask_project_ms": mask_project_ms,
+                "projected_grid_shape": list(GEMMA_GRID_SHAPE),
                 "rlt_summary": mask_summary(rlt_result),
             }
         )
@@ -505,16 +584,29 @@ def _process_one_item(
     mask_ms = (time.perf_counter_ns() - t_stage) / 1_000_000
 
     # --- Stage 6: prune input_ids + gather features (pruned branch only) ---
-    t_stage = time.perf_counter_ns()
     image_token_id = int(model.config.image_token_id)
-    pruned = prune_image_placeholders(input_ids_np, keep_mask, image_token_id=image_token_id)
-    pruned_input_ids = mx.array(pruned.input_ids[None, :])  # (1, new_seq_len)
-    gathered_features = vision_features[:, mx.array(pruned.feature_indices), :]
-    mx.eval(gathered_features)
-    prune_ms = (time.perf_counter_ns() - t_stage) / 1_000_000
+    dense_input_ids = mx.array(raw["input_ids"])
+    prune_application = _apply_placeholder_prune_for_generation(
+        prune_placeholders=prune_placeholders,
+        input_ids_np=input_ids_np,
+        dense_input_ids=dense_input_ids,
+        vision_features=vision_features,
+        keep_mask=keep_mask,
+        image_token_id=image_token_id,
+    )
+    pruned_input_ids = prune_application.input_ids
+    gathered_features = prune_application.image_features
+    kept_per_frame = prune_application.kept_per_frame
+    prune_ms = prune_application.elapsed_ms
+    mask_metadata.update(
+        {
+            "dense_placeholder_count": observed_placeholders,
+            "pruned_placeholder_count": int(sum(kept_per_frame)),
+            "placeholder_prune_bypassed": prune_application.bypassed,
+        }
+    )
 
     # --- Stage 7: dense baseline generate ---
-    dense_input_ids = mx.array(raw["input_ids"])
     dense_stats = _run_generate(
         model,
         processor,
@@ -535,15 +627,18 @@ def _process_one_item(
     # --- Stage 8: pruned generate ---
     # Pruned mask: same attention_mask slots minus the dropped image positions.
     # We regenerate the mask by taking the attention_mask row and selecting kept columns.
-    attn_np = np.asarray(raw["attention_mask"], dtype=np.int32).reshape(-1)
-    # Boolean selector for kept tokens: non-image tokens always kept; image tokens per keep_mask.
-    image_token_positions = np.asarray(input_ids_np == image_token_id)
-    placeholder_keep = np.zeros(input_ids_np.shape[0], dtype=bool)
-    flat_keep = keep_mask.reshape(-1)
-    placeholder_keep[image_token_positions] = flat_keep
-    survivor = np.where(image_token_positions, placeholder_keep, True)
-    pruned_attn = attn_np[survivor]
-    pruned_mask = mx.array(pruned_attn[None, :])
+    if prune_placeholders == "none":
+        pruned_mask = mask
+    else:
+        attn_np = np.asarray(raw["attention_mask"], dtype=np.int32).reshape(-1)
+        # Boolean selector: non-image tokens always kept; image tokens follow keep_mask.
+        image_token_positions = np.asarray(input_ids_np == image_token_id)
+        placeholder_keep = np.zeros(input_ids_np.shape[0], dtype=bool)
+        flat_keep = keep_mask.reshape(-1)
+        placeholder_keep[image_token_positions] = flat_keep
+        survivor = np.where(image_token_positions, placeholder_keep, True)
+        pruned_attn = attn_np[survivor]
+        pruned_mask = mx.array(pruned_attn[None, :])
 
     pruned_stats = _run_generate(
         model,
@@ -582,7 +677,7 @@ def _process_one_item(
         n_frames=frame_count,
         tokens_per_frame=GEMMA_GRID_SHAPE[0] * GEMMA_GRID_SHAPE[1],
         kept_tokens_total=int(keep_mask.sum()),
-        kept_per_frame=pruned.kept_per_frame.tolist(),
+        kept_per_frame=kept_per_frame,
         dense_text=dense_text,
         pruned_text=pruned_text,
         dense_correct=(dense_choice is not None and dense_choice == item.answer_index),
@@ -679,7 +774,11 @@ def _summarize(records: list[ItemResult]) -> dict[str, Any]:
         "mean_dense_vision_ms": float(np.mean([r.dense_timing.vision_ms for r in records])),
         "mean_pruned_novelty_ms": float(np.mean([r.pruned_timing.novelty_ms for r in records])),
         "mean_pruned_mask_ms": float(np.mean([r.pruned_timing.mask_ms for r in records])),
+        "mean_pruned_mask_compute_ms": float(np.mean([r.pruned_timing.mask_ms for r in records])),
         "mean_pruned_prune_ms": float(np.mean([r.pruned_timing.prune_ms for r in records])),
+        "mean_pruned_placeholder_prune_ms": float(
+            np.mean([r.pruned_timing.prune_ms for r in records])
+        ),
         "dense_parse_failures": sum(1 for r in records if r.dense_parse_failure),
         "pruned_parse_failures": sum(1 for r in records if r.pruned_parse_failure),
         "mean_dense_prompt_tokens": float(np.mean([r.dense_prompt_tokens for r in records])),
@@ -721,6 +820,7 @@ def _load_manifest_items(runner: Any, manifest_path: Path) -> list[Any]:
 
 def _record_payload(record: ItemResult) -> dict[str, Any]:
     return {
+        "kind": "item",
         "item_id": record.item_id,
         "benchmark": record.benchmark,
         "group": record.group,
@@ -752,7 +852,9 @@ def _record_payload(record: ItemResult) -> dict[str, Any]:
             "processor": record.pruned_timing.processor_ms,
             "novelty": record.pruned_timing.novelty_ms,
             "mask": record.pruned_timing.mask_ms,
+            "mask_compute": record.pruned_timing.mask_ms,
             "prune": record.pruned_timing.prune_ms,
+            "placeholder_prune": record.pruned_timing.prune_ms,
             "vision": record.pruned_timing.vision_ms,
             "generate": record.pruned_timing.generate_ms,
             "end_to_end": record.pruned_timing.end_to_end_ms,
@@ -846,9 +948,13 @@ def main() -> int:
         threshold=args.rlt_threshold,
         tubelet_size=args.rlt_tubelet_size,
         image_size=(args.rlt_image_size, args.rlt_image_size),
-        grid_shape=GEMMA_GRID_SHAPE,
+        patch_size=16,
+        grid_shape=None,
         normalize_mode="imagenet",
-        per_frame_min_keep=args.rlt_per_frame_min_keep,
+        pixel_scale="uint8",
+        first_tubelet_mode="full_grid",
+        window_min_keep=args.rlt_per_frame_min_keep,
+        ordering="time_major",
     )
 
     runner = _load_runner_module()
@@ -886,6 +992,7 @@ def main() -> int:
     args.output.parent.mkdir(parents=True, exist_ok=True)
     records: list[ItemResult] = []
     with args.output.open("w") as out_f:
+        out_f.write(json.dumps(_schema_row(args, rlt_config), sort_keys=True) + "\n")
         for idx, item in enumerate(items):
             _clear_runtime_state()
             try:
@@ -925,6 +1032,7 @@ def main() -> int:
 
     summary = {
         "manifest": str(args.manifest),
+        "schema_version": SCHEMA_VERSION,
         "model_path": str(args.model_path),
         "anchor_arm": args.anchor_arm,
         "keep_rate": args.keep_rate,

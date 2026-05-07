@@ -18,7 +18,10 @@ def _load_jsonl(path: Path) -> list[dict[str, Any]]:
         for line in handle:
             stripped = line.strip()
             if stripped:
-                rows.append(json.loads(stripped))
+                payload = json.loads(stripped)
+                if payload.get("kind") == "schema":
+                    continue
+                rows.append(payload)
     return rows
 
 
