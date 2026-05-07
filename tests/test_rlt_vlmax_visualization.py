@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import io
+from pathlib import Path
 from types import SimpleNamespace
 
 import numpy as np
@@ -75,3 +76,10 @@ def test_composition_stats_names_expose_active_pixel_denominator() -> None:
     assert stats["combined_refresh_active_pixel_fraction"] == 0.50
     assert stats["overlap_active_pixel_fraction"] == 0.0
     assert "rlt_admit_fraction" not in stats
+
+
+def test_repo_relative_manifest_paths_are_portable() -> None:
+    path = renderer.REPO_ROOT / "research" / "experiments" / "artifact.json"
+
+    assert renderer._repo_relative_str(path) == "research/experiments/artifact.json"
+    assert renderer._repo_relative_str(Path("relative/path.json")) == "relative/path.json"

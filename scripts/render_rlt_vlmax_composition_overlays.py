@@ -106,6 +106,13 @@ def _git_sha() -> str | None:
     return completed.stdout.strip() or None
 
 
+def _repo_relative_str(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(REPO_ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
 def _draw_text(
     draw: ImageDraw.ImageDraw,
     xy: tuple[int, int],
@@ -291,7 +298,7 @@ def _read_analysis_metrics(artifact_dir: Path) -> dict[str, dict[str, Any]]:
         rlt_scorer = all_summary.get("mean_sparse_scorer_total_ms")
         maxmin_scorer = maxmin_summary.get("mean_sparse_scorer_total_ms")
         metrics[benchmark] = {
-            "analysis_path": str(analysis_path),
+            "analysis_path": _repo_relative_str(analysis_path),
             "measured_item_ids": measured_item_ids,
             "e2e_speedup": all_summary.get("actual_e2e_speedup_dense_over_sparse"),
             "e2e_speedup_ci95": all_summary.get("actual_e2e_speedup_dense_over_sparse_ci95"),
@@ -506,9 +513,9 @@ def render_clip(
         "key": spec.key,
         "benchmark": spec.benchmark,
         "video_id": spec.video_id,
-        "video_path": str(video_path),
-        "thumbnail_path": str(thumb_path),
-        "source_video": str(spec.video_path),
+        "video_path": _repo_relative_str(video_path),
+        "thumbnail_path": _repo_relative_str(thumb_path),
+        "source_video": _repo_relative_str(Path(spec.video_path)),
         "start_s": spec.start_s,
         "end_s": spec.end_s,
         "frame_count": len(frames),

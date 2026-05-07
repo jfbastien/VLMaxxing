@@ -2,7 +2,7 @@
 date: 2026-05-07
 status: design/preregistration draft
 related:
-  - /Users/jfb/Downloads/2411.05222v1.pdf
+  - local RLT paper PDF: 2411.05222v1.pdf
   - rlt/
   - paper/claim-matrix.md
   - docs/methodology/performance.md
@@ -23,8 +23,8 @@ and if so which denominator does the combined system actually reduce?
 
 ### Source Status
 
-- **RLT paper/code numbers:** imported result. The local PDF is
-  `/Users/jfb/Downloads/2411.05222v1.pdf`; the local clone is `rlt/`.
+- **RLT paper/code numbers:** imported result. The local paper PDF was reviewed
+  from `2411.05222v1.pdf`; the local clone is `rlt/`.
 - **VLMaxxing paper/repo numbers:** reproduced here or bounded local evidence
   only where already recorded in `paper/claim-matrix.md` and
   `docs/reproduction-status.md`.
@@ -299,12 +299,12 @@ Round 9 local verification:
   `ready=false` when it used the historical 26B B0b default; that target is
   not viable on the 16 GB M3 local machine.
 - The RLT preflight now uses the local small Gemma target by default:
-  `/Users/jfb/models/gemma-4-e4b-it-4bit`. The B0b cache-correctness smoke no
+  `$HOME/models/gemma-4-e4b-it-4bit`. The B0b cache-correctness smoke no
   longer requires `HF_TOKEN` when `--model-id` points at an existing local
   model, and it skips locally missing VideoMME videos when choosing a smoke
   item.
 - `scripts/preflight_rlt_vlmax.py --phase RLT-5G --run-swa-smoke
-  --swa-smoke-model-id /Users/jfb/models/gemma-4-e4b-it-4bit` returned
+  --swa-smoke-model-id "$HOME/models/gemma-4-e4b-it-4bit"` returned
   `ready=true` in `~93 s`. The active `mlx-vlm` install still lacks the
   SWA-trim marker, so this is a small-model functional safety smoke, not a 26B
   claim.
@@ -341,7 +341,7 @@ Round 10 autonomous-readiness update:
     `multimodal_prefill_ms=4700.5`, `text_generation_ms=53.5`.
   - `rlt3gb_preflight.json`: `ready=true`.
   - `rlt5g_preflight.json`: `ready=true` with local
-    `/Users/jfb/models/gemma-4-e4b-it-4bit` SWA functional smoke.
+    `$HOME/models/gemma-4-e4b-it-4bit` SWA functional smoke.
   - `queue_summary.json`: `ready_for_model_runs=true`.
 - Updated dry-run budget for the local autonomous H3B path with SWA smoke:
   low/high estimate is now `2.57-7.50 h`.
@@ -1412,7 +1412,7 @@ Plan-design review completed before this commit:
 - Four sub-agents completed and were closed: one RLT paper/code researcher, one
   repo insertion-point explorer, one scientific plan reviewer, and one
   implementation-risk reviewer. Their required changes are incorporated above.
-- `/Users/jfb/.local/bin/ai-workflow run-checks` reported no required checks
+- `ai-workflow run-checks` reported no required checks
   configured.
 - Scientist peer feedback was validated against the repo and local RLT source
   on 2026-05-07. Valid findings are recorded in the feedback-validation table

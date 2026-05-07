@@ -13,12 +13,14 @@ from typing import Any, cast
 
 SCHEMA_VERSION = "rlt_followup_queue_v1"
 GEMMA_TRACK_B_SCHEMA_VERSION = "phase1_63g_gemma_track_b_v5"
+REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_ARTIFACT_DIR = Path("research/experiments/2026/artifacts/rlt_followup_queue")
 DEFAULT_MODEL_PATH = Path.home() / "models" / "gemma-4-e4b-it-4bit"
 DEFAULT_VIDEOMME_MANIFEST = Path("research/benchmark_manifests/videomme_combined_v1_n60.toml")
 DEFAULT_SMOKE_MANIFEST = Path("research/benchmark_manifests/videomme_dev_v1.toml")
 DEFAULT_TOMATO_MANIFEST = Path("research/benchmark_manifests/tomato_motion_dev_v2.toml")
 DEFAULT_MVBENCH_MANIFEST = Path("research/benchmark_manifests/mvbench_motion_dev_v2.toml")
+DEFAULT_COMPOSITION_PREFILL_STEP_SIZE = 1024
 
 PHASE_ESTIMATES_HOURS = {
     "prefill-kernel-microbench": [0.35, 1.35],
@@ -43,11 +45,40 @@ PHASE_ESTIMATES_HOURS = {
 }
 
 
+def _portable_arg(arg: str) -> str:
+    path = Path(arg)
+    if not path.is_absolute():
+        return arg
+    try:
+        return path.relative_to(REPO_ROOT).as_posix()
+    except ValueError:
+        pass
+    home = Path.home()
+    try:
+        return f"$HOME/{path.relative_to(home).as_posix()}"
+    except ValueError:
+        return arg
+
+
+def _portable_command(command: list[str]) -> list[str]:
+    return [_portable_arg(arg) for arg in command]
+
+
+def _portable_planned(planned: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [
+        {
+            **item,
+            "command": _portable_command(cast(list[str], item["command"])),
+        }
+        for item in planned
+    ]
+
+
 def _run(command: list[str], *, allow_failure: bool = False) -> dict[str, Any]:
     started = time.perf_counter()
     completed = subprocess.run(command, capture_output=True, text=True, check=False)
     payload = {
-        "command": command,
+        "command": _portable_command(command),
         "returncode": completed.returncode,
         "elapsed_seconds": time.perf_counter() - started,
         "stdout_tail": completed.stdout[-4000:],
@@ -269,7 +300,7 @@ def _gemma_composition_commands(
     n_items: int,
     rss_guard_mb: int,
     label: str,
-    prefill_step_size: int = 1500,
+    prefill_step_size: int = DEFAULT_COMPOSITION_PREFILL_STEP_SIZE,
     vision_keep_rate: float = 0.5,
 ) -> list[list[str]]:
     jsonl_path = artifact_dir / f"{label}.jsonl"
@@ -464,8 +495,18 @@ def main() -> int:
         action="store_true",
         help=(
             "Run RLT prompt admission on top of RLT-as-C-VISION at "
-            "prefill_step_size=1500. This measures incremental composition, "
-            "not a full dense-vs-composed baseline."
+            "the composition prefill step size. This measures incremental "
+            "composition, not a full dense-vs-composed baseline."
+        ),
+    )
+    parser.add_argument(
+        "--composition-prefill-step-size",
+        type=int,
+        default=DEFAULT_COMPOSITION_PREFILL_STEP_SIZE,
+        help=(
+            "Prefill step size for incremental composition cells. The default "
+            "keeps typical pruned prompts on the chunked prefill path to avoid "
+            "the MLX-VLM single-shot substrate trap observed near 1500 tokens."
         ),
     )
     parser.add_argument(
@@ -500,6 +541,8 @@ def main() -> int:
         raise SystemExit("--run-keep-rate-sweep requires --run-cvision-rlt")
     if args.cooldown_after_microbench_seconds < 0:
         raise SystemExit("--cooldown-after-microbench-seconds must be nonnegative")
+    if args.composition_prefill_step_size <= 0:
+        raise SystemExit("--composition-prefill-step-size must be positive")
     keep_rates = _parse_keep_rates(args.cvision_keep_rates)
     phases: list[str] = []
     if args.run_prefill_diagnostics:
@@ -683,6 +726,7 @@ def main() -> int:
             n_items=args.cvision_n_items if benchmark == "videomme" else 0,
             rss_guard_mb=args.rss_guard_mb,
             label=f"composition_rlt_{benchmark}",
+            prefill_step_size=args.composition_prefill_step_size,
         )
         for benchmark, manifest in benchmark_manifests.items()
     }
@@ -777,7 +821,7 @@ def main() -> int:
                 "schema_version": SCHEMA_VERSION,
                 "dry_run": True,
                 "budget": budget,
-                "planned_commands": planned,
+                "planned_commands": _portable_planned(planned),
                 "early_cancel_tree": [
                     *(
                         [

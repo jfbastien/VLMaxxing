@@ -22,6 +22,22 @@ def test_prefill_kernel_command_uses_paper_grade_controls(tmp_path: Path) -> Non
     assert command[command.index("--rss-guard-mb") + 1] == "8123"
 
 
+def test_portable_command_rewrites_repo_and_home_paths() -> None:
+    command = [
+        str(queue.REPO_ROOT / ".venv" / "bin" / "python3"),
+        str(Path.home() / "models" / "gemma-4-e4b-it-4bit"),
+        "scripts/run.py",
+    ]
+
+    portable = queue._portable_command(command)
+
+    assert portable == [
+        ".venv/bin/python3",
+        "$HOME/models/gemma-4-e4b-it-4bit",
+        "scripts/run.py",
+    ]
+
+
 def test_phase_passed_cvision_requires_sparse_induced_parse_gate_only() -> None:
     base: dict[str, Any] = {
         "pass_complete_pairing": True,
@@ -120,5 +136,20 @@ def test_composition_command_uses_rlt_for_admission_and_cvision(tmp_path: Path) 
 
     assert run_command[run_command.index("--prune-placeholders") + 1] == "rlt"
     assert run_command[run_command.index("--vision-tower-score-mode") + 1] == "rlt_topk"
-    assert run_command[run_command.index("--prefill-step-size") + 1] == "1500"
+    assert run_command[run_command.index("--prefill-step-size") + 1] == "1024"
     assert analyze_command[analyze_command.index("--cell-type") + 1] == "h3b_admission"
+
+
+def test_composition_command_allows_prefill_step_override(tmp_path: Path) -> None:
+    run_command, _analyze_command = queue._gemma_composition_commands(
+        artifact_dir=tmp_path,
+        manifest=Path("manifest.toml"),
+        model_path=Path("model"),
+        frame_count=8,
+        n_items=30,
+        rss_guard_mb=9000,
+        label="composition_rlt_videomme",
+        prefill_step_size=1536,
+    )
+
+    assert run_command[run_command.index("--prefill-step-size") + 1] == "1536"

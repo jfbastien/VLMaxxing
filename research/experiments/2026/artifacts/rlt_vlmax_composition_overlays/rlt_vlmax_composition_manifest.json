@@ -58,7 +58,7 @@
           -0.13333333333333336,
           0.06666666666666668
         ],
-        "analysis_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_followup_queue/cvision_rlt_tomato_analysis.json",
+        "analysis_path": "research/experiments/2026/artifacts/rlt_followup_queue/cvision_rlt_tomato_analysis.json",
         "e2e_speedup": 1.3153079125970009,
         "e2e_speedup_ci95": [
           1.2396915499078274,
@@ -162,11 +162,11 @@
         "tokens_per_frame": 196,
         "tubelet_count": 13
       },
-      "source_video": "/Users/jfb/s/codec-through/data/benchmarks/tomato/videos/object/0298-00.mp4",
+      "source_video": "data/benchmarks/tomato/videos/object/0298-00.mp4",
       "start_s": 0.0,
-      "thumbnail_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/thumbnails/tomato_0298_00_rlt_vlmax_composition.png",
+      "thumbnail_path": "research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/thumbnails/tomato_0298_00_rlt_vlmax_composition.png",
       "video_id": "0298-00",
-      "video_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/tomato_0298_00_rlt_vlmax_composition.mp4"
+      "video_path": "research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/tomato_0298_00_rlt_vlmax_composition.mp4"
     },
     {
       "benchmark": "VideoMME",
@@ -187,7 +187,7 @@
           -0.06666666666666671,
           0.13333333333333336
         ],
-        "analysis_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_followup_queue/cvision_rlt_videomme_analysis.json",
+        "analysis_path": "research/experiments/2026/artifacts/rlt_followup_queue/cvision_rlt_videomme_analysis.json",
         "e2e_speedup": 1.0580529066462667,
         "e2e_speedup_ci95": [
           1.0356985713539992,
@@ -277,11 +277,11 @@
         "tokens_per_frame": 196,
         "tubelet_count": 10
       },
-      "source_video": "/Users/jfb/s/codec-through/data/benchmarks/videomme/videos/2Bns2m5Bg4M.mp4",
+      "source_video": "data/benchmarks/videomme/videos/2Bns2m5Bg4M.mp4",
       "start_s": 206.39,
-      "thumbnail_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/thumbnails/videomme_380_rlt_vlmax_composition.png",
+      "thumbnail_path": "research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/thumbnails/videomme_380_rlt_vlmax_composition.png",
       "video_id": "380",
-      "video_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/videomme_380_rlt_vlmax_composition.mp4"
+      "video_path": "research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/videomme_380_rlt_vlmax_composition.mp4"
     },
     {
       "benchmark": "VideoMME",
@@ -302,7 +302,7 @@
           -0.06666666666666671,
           0.13333333333333336
         ],
-        "analysis_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_followup_queue/cvision_rlt_videomme_analysis.json",
+        "analysis_path": "research/experiments/2026/artifacts/rlt_followup_queue/cvision_rlt_videomme_analysis.json",
         "e2e_speedup": 1.0580529066462667,
         "e2e_speedup_ci95": [
           1.0356985713539992,
@@ -387,14 +387,14 @@
         "tokens_per_frame": 196,
         "tubelet_count": 7
       },
-      "source_video": "/Users/jfb/s/codec-through/data/benchmarks/videomme/videos/Atf_Af1q_5w.mp4",
+      "source_video": "data/benchmarks/videomme/videos/Atf_Af1q_5w.mp4",
       "start_s": 0.0,
-      "thumbnail_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/thumbnails/videomme_267_rlt_vlmax_composition.png",
+      "thumbnail_path": "research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/thumbnails/videomme_267_rlt_vlmax_composition.png",
       "video_id": "267",
-      "video_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/videomme_267_rlt_vlmax_composition.mp4"
+      "video_path": "research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/videomme_267_rlt_vlmax_composition.mp4"
     }
   ],
-  "git_sha": "52ade82fa1c8d0087ea0d614366081dabaa1c345",
+  "git_sha": "0e9785f2f6396b1ceabbeedbc1ad4245b6a74965",
   "measured_results": {
     "mvbench": {
       "accuracy_delta": 0.033333333333333326,
@@ -402,7 +402,7 @@
         -0.10000000000000003,
         0.16666666666666669
       ],
-      "analysis_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_followup_queue/cvision_rlt_mvbench_analysis.json",
+      "analysis_path": "research/experiments/2026/artifacts/rlt_followup_queue/cvision_rlt_mvbench_analysis.json",
       "e2e_speedup": 1.4018453313733155,
       "e2e_speedup_ci95": [
         1.362931616509754,
@@ -452,7 +452,7 @@
         -0.13333333333333336,
         0.06666666666666668
       ],
-      "analysis_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_followup_queue/cvision_rlt_tomato_analysis.json",
+      "analysis_path": "research/experiments/2026/artifacts/rlt_followup_queue/cvision_rlt_tomato_analysis.json",
       "e2e_speedup": 1.3153079125970009,
       "e2e_speedup_ci95": [
         1.2396915499078274,
@@ -502,7 +502,7 @@
         -0.06666666666666671,
         0.13333333333333336
       ],
-      "analysis_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_followup_queue/cvision_rlt_videomme_analysis.json",
+      "analysis_path": "research/experiments/2026/artifacts/rlt_followup_queue/cvision_rlt_videomme_analysis.json",
       "e2e_speedup": 1.0580529066462667,
       "e2e_speedup_ci95": [
         1.0356985713539992,
