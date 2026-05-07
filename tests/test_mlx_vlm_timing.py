@@ -12,6 +12,8 @@ def test_chunked_prefill_steps_matches_mlx_vlm_boundary() -> None:
     assert chunked_prefill_steps(686) == 1
     assert chunked_prefill_steps(2048) == 1
     assert chunked_prefill_steps(2225) == 2
+    assert chunked_prefill_steps(1573, prefill_step_size=1500) == 2
+    assert chunked_prefill_steps(2225, prefill_step_size=4096) == 1
 
 
 def test_chunked_prefill_steps_rejects_empty_prompt() -> None:

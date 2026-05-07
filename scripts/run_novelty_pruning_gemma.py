@@ -377,6 +377,7 @@ def _schema_row(args: argparse.Namespace, rlt_config: RLTMaskConfig) -> dict[str
         "anchor_arm": args.anchor_arm,
         "keep_rate": args.keep_rate,
         "max_tokens": args.max_tokens,
+        "prefill_step_size": getattr(args, "prefill_step_size", 2048),
         "prune_placeholders": args.prune_placeholders,
         "rlt_config": rlt_config.as_dict() if args.prune_placeholders == "rlt" else None,
         "n_warmup": args.n_warmup,
@@ -430,6 +431,7 @@ def _run_generate(
     extra: dict[str, mx.array],
     cached_image_features: mx.array | None,
     max_tokens: int,
+    prefill_step_size: int,
 ) -> GenerateStats:
     """Invoke mlx-vlm streaming generation with direct first-yield timing."""
     t0 = time.perf_counter_ns()
@@ -451,6 +453,7 @@ def _run_generate(
         pixel_values=pixel_values,
         mask=mask,
         max_tokens=max_tokens,
+        prefill_step_size=prefill_step_size,
         temperature=0.0,
         **kwargs,
     ):
@@ -505,6 +508,7 @@ def _process_one_item(
     rlt_config: RLTMaskConfig,
     frame_count: int,
     max_tokens: int,
+    prefill_step_size: int,
     item_index: int,
     n_warmup: int,
     arm_order: ArmOrderMode,
@@ -661,6 +665,7 @@ def _process_one_item(
         pruned_shape_observation_counts,
         seq_len=pruned_seq_len,
         n_warmup=n_warmup,
+        prefill_step_size=prefill_step_size,
     )
     mask_metadata.update(
         {
@@ -669,8 +674,13 @@ def _process_one_item(
             "placeholder_prune_bypassed": prune_application.bypassed,
             "dense_input_ids_seq_len": int(dense_input_ids.shape[1]),
             "pruned_input_ids_seq_len": pruned_seq_len,
-            "dense_chunked_prefill_steps": chunked_prefill_steps(int(dense_input_ids.shape[1])),
-            "pruned_chunked_prefill_steps": chunked_prefill_steps(pruned_seq_len),
+            "prefill_step_size": prefill_step_size,
+            "dense_chunked_prefill_steps": chunked_prefill_steps(
+                int(dense_input_ids.shape[1]), prefill_step_size=prefill_step_size
+            ),
+            "pruned_chunked_prefill_steps": chunked_prefill_steps(
+                pruned_seq_len, prefill_step_size=prefill_step_size
+            ),
             "mlx_metal_clear_cache_called": True,
             "prepare_inputs_warmed": False,
             "pruned_warmup_calls": n_warmup,
@@ -711,6 +721,7 @@ def _process_one_item(
             extra=extra,
             cached_image_features=vision_features,
             max_tokens=max_tokens,
+            prefill_step_size=prefill_step_size,
         )
 
     def run_pruned_branch() -> GenerateStats:
@@ -723,6 +734,7 @@ def _process_one_item(
             extra=extra,
             cached_image_features=gathered_features,
             max_tokens=max_tokens,
+            prefill_step_size=prefill_step_size,
         )
 
     pruned_warmup_generate_ms: list[float] = []
@@ -1212,6 +1224,17 @@ def main() -> int:
         ),
     )
     parser.add_argument("--max-tokens", type=int, default=32)
+    parser.add_argument(
+        "--prefill-step-size",
+        type=int,
+        default=2048,
+        help=(
+            "MLX-VLM prompt-prefill chunk size. Diagnostics can force both dense "
+            "and pruned prompts onto the same prefill path by setting this below "
+            "both sequence lengths (for chunked) or above both sequence lengths "
+            "(for single-shot)."
+        ),
+    )
     parser.add_argument("--model-path", type=Path, default=DEFAULT_MODEL_PATH)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--summary", type=Path, required=True)
@@ -1250,6 +1273,8 @@ def main() -> int:
         raise SystemExit(f"model path missing: {args.model_path}")
     if args.n_warmup < 0:
         raise SystemExit(f"--n-warmup must be nonnegative, got {args.n_warmup}")
+    if args.prefill_step_size <= 0:
+        raise SystemExit(f"--prefill-step-size must be positive, got {args.prefill_step_size}")
     if args.anchor_arm == "cls_attention_proxy":
         print(
             "WARNING: cls_attention_proxy uses a per-token L2-norm proxy, not "
@@ -1310,6 +1335,7 @@ def main() -> int:
             "rlt_config": rlt_config.as_dict() if args.prune_placeholders == "rlt" else None,
             "frame_count": args.frame_count,
             "max_tokens": args.max_tokens,
+            "prefill_step_size": args.prefill_step_size,
             "n_warmup": args.n_warmup,
             "arm_order": args.arm_order,
             "resume": True,
@@ -1375,6 +1401,7 @@ def main() -> int:
                     rlt_config=rlt_config,
                     frame_count=args.frame_count,
                     max_tokens=args.max_tokens,
+                    prefill_step_size=args.prefill_step_size,
                     item_index=idx,
                     n_warmup=args.n_warmup,
                     arm_order=cast(ArmOrderMode, args.arm_order),
@@ -1415,6 +1442,7 @@ def main() -> int:
         "rlt_config": rlt_config.as_dict() if args.prune_placeholders == "rlt" else None,
         "frame_count": args.frame_count,
         "max_tokens": args.max_tokens,
+        "prefill_step_size": args.prefill_step_size,
         "n_warmup": args.n_warmup,
         "arm_order": args.arm_order,
         "resume": args.resume,

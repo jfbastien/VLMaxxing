@@ -19,6 +19,7 @@ from typing import Any, Literal
 
 SCHEMA_VERSION = "gemma_admission_analysis_v2"
 CellType = Literal["h2_pure_cvision", "h2_admission", "h3b_admission"]
+QUALITY_EPSILON = 1e-12
 
 
 def _load_jsonl(path: Path) -> tuple[dict[str, Any] | None, list[dict[str, Any]]]:
@@ -121,7 +122,7 @@ def _quality_summary(
         pruned_bucket = _accuracy(bucket_rows, "pruned_correct")
         delta = pruned_bucket - dense_bucket
         evaluated = len(bucket_rows) >= bucket_min_n
-        passed = delta >= quality_delta_floor if evaluated else None
+        passed = delta + QUALITY_EPSILON >= quality_delta_floor if evaluated else None
         if evaluated and not passed:
             bucket_failures.append(bucket)
         if not evaluated:
@@ -138,7 +139,7 @@ def _quality_summary(
         "dense_accuracy": dense_acc,
         "pruned_accuracy": pruned_acc,
         "accuracy_delta_pruned_minus_dense": aggregate_delta,
-        "aggregate_quality_gate_pass": aggregate_delta >= quality_delta_floor,
+        "aggregate_quality_gate_pass": aggregate_delta + QUALITY_EPSILON >= quality_delta_floor,
         "bucket_quality_gate_pass": not bucket_failures,
         "bucket_quality_gate_inconclusive": len(rows) >= bucket_min_n and bool(bucket_underpowered),
         "bucket_failures": bucket_failures,

@@ -17,6 +17,8 @@ from codec_through.rlt_masks import (
     compute_rlt_keep_mask_from_array,
     compute_rlt_keep_mask_from_frames,
     compute_tubelet_run_lengths,
+    fixed_budget_rlt_score_mask,
+    fixed_budget_rlt_score_mask_for_positions,
     jaccard,
     mask_summary,
     project_bool_grid,
@@ -324,6 +326,50 @@ def test_aggregate_and_projection_helpers() -> None:
     assert float_projected.shape == (4, 4)
     assert bool_projected[0, 0] == bool_projected[1, 1]
     assert float_projected[3, 3] == pytest.approx(12.5)
+
+
+def test_fixed_budget_rlt_score_mask_keeps_uniform_k_after_projection() -> None:
+    cfg = RLTMaskConfig(
+        threshold=0.1,
+        tubelet_size=2,
+        image_size=(16, 16),
+        grid_shape=(4, 4),
+        normalize_mode="imagenet",
+    )
+    frames = _constant_frames(4)
+    frames[3, 8:, 8:] = 255.0
+    result = compute_rlt_keep_mask_from_array(frames, config=cfg)
+
+    keep = fixed_budget_rlt_score_mask(result, out_grid_shape=(8, 8), keep_rate=0.25)
+
+    assert keep.shape == (4, 8, 8)
+    assert keep.reshape(4, -1).sum(axis=1).tolist() == [16, 16, 16, 16]
+    assert keep[2:, 4:, 4:].any()
+
+
+def test_fixed_budget_rlt_score_mask_for_positions_ignores_padding() -> None:
+    cfg = RLTMaskConfig(
+        threshold=0.1,
+        tubelet_size=2,
+        image_size=(16, 16),
+        grid_shape=(4, 4),
+        normalize_mode="imagenet",
+    )
+    frames = _constant_frames(4)
+    frames[3, 8:, 8:] = 255.0
+    result = compute_rlt_keep_mask_from_array(frames, config=cfg)
+    real_positions = np.array([[x, y] for y in range(4) for x in range(4)], dtype=np.int64)
+    padded_positions = np.concatenate(
+        [real_positions, np.full((4, 2), -1, dtype=np.int64)],
+        axis=0,
+    )
+    positions = np.stack([padded_positions] * 4, axis=0)
+
+    keep = fixed_budget_rlt_score_mask_for_positions(result, positions=positions, keep_rate=0.5)
+
+    assert keep.shape == (4, 20)
+    assert keep.sum(axis=1).tolist() == [8, 8, 8, 8]
+    assert not keep[:, 16:].any()
 
 
 def test_jaccard_and_summary_and_hash_are_stable() -> None:

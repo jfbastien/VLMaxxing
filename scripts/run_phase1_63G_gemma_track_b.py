@@ -28,6 +28,13 @@ mx.set_memory_limit(12 * 1024**3)
 from codec_through.answers import extract_choice  # noqa: E402
 from codec_through.memory_guard import check_rss_guard, rss_mb  # noqa: E402
 from codec_through.pruned_vision_tower import PruneConfig, patch_vision_tower  # noqa: E402
+from codec_through.rlt_masks import (  # noqa: E402
+    RLTMaskConfig,
+    compute_rlt_keep_mask_from_frames,
+    fixed_budget_rlt_score_mask,
+    fixed_budget_rlt_score_mask_for_positions,
+    mask_summary,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RUNNER_PATH = REPO_ROOT / "scripts" / "run_benchmark_track_a.py"
@@ -67,6 +74,7 @@ class ItemResult:
     total_groups: int
     kept_groups_per_frame: list[int]
     peak_memory_gb: float
+    metadata: dict[str, Any]
 
 
 def _load_runner_module() -> Any:
@@ -115,7 +123,7 @@ def _prepare_item(
     item: Any,
     *,
     frame_count: int,
-) -> tuple[dict[str, Any], float, float]:
+) -> tuple[dict[str, Any], list[Any], float, float]:
     if hasattr(processor, "image_processor"):
         if hasattr(processor.image_processor, "do_resize"):
             processor.image_processor.do_resize = False
@@ -135,7 +143,7 @@ def _prepare_item(
     t1 = time.perf_counter_ns()
     raw = _build_prompt(processor, frames, item.question)
     processor_ms = (time.perf_counter_ns() - t1) / 1_000_000
-    return raw, decode_ms, processor_ms
+    return raw, frames, decode_ms, processor_ms
 
 
 def _compute_gemma_features(model: Any, raw: dict[str, Any]) -> tuple[mx.array, float]:
@@ -243,6 +251,21 @@ def _artifact_hash(payload: dict[str, Any]) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
+def _rlt_config_from_args(args: argparse.Namespace) -> RLTMaskConfig:
+    return RLTMaskConfig(
+        threshold=args.rlt_threshold,
+        tubelet_size=args.rlt_tubelet_size,
+        image_size=(args.rlt_image_size, args.rlt_image_size),
+        patch_size=16,
+        grid_shape=None,
+        normalize_mode="imagenet",
+        pixel_scale="uint8",
+        first_tubelet_mode="full_grid",
+        window_min_keep=args.rlt_per_frame_min_keep,
+        ordering="time_major",
+    )
+
+
 def _schema_row(args: argparse.Namespace) -> dict[str, Any]:
     payload = {
         "manifest": str(args.manifest),
@@ -251,6 +274,12 @@ def _schema_row(args: argparse.Namespace) -> dict[str, Any]:
         "max_tokens": args.max_tokens,
         "vision_tower_layer": args.vision_tower_layer,
         "vision_tower_keep_rate": args.vision_tower_keep_rate,
+        "vision_tower_score_mode": args.vision_tower_score_mode,
+        "rlt_config": (
+            _rlt_config_from_args(args).as_dict()
+            if args.vision_tower_score_mode == "rlt_topk"
+            else None
+        ),
     }
     return {
         "kind": "schema",
@@ -269,6 +298,26 @@ def _clear_runtime_state() -> None:
 def _load_manifest_items(runner: Any, manifest_path: Path) -> list[Any]:
     payload = tomllib.loads(manifest_path.read_text())
     return cast(list[Any], runner._load_items_by_id(payload["benchmark"], payload["item_ids"]))
+
+
+def _load_output_rows_for_resume(path: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    schema: dict[str, Any] | None = None
+    rows: list[dict[str, Any]] = []
+    with path.open("r", encoding="utf-8") as handle:
+        for line in handle:
+            stripped = line.strip()
+            if not stripped:
+                continue
+            payload = json.loads(stripped)
+            if payload.get("kind") == "schema":
+                schema = payload
+            elif payload.get("kind") in (None, "item"):
+                rows.append(payload)
+            else:
+                raise ValueError(f"unexpected row kind in {path}: {payload.get('kind')!r}")
+    if schema is None:
+        raise ValueError(f"{path} is missing schema row")
+    return schema, rows
 
 
 def _record_payload(record: ItemResult) -> dict[str, Any]:
@@ -301,6 +350,66 @@ def _record_payload(record: ItemResult) -> dict[str, Any]:
         "total_groups": record.total_groups,
         "kept_groups_per_frame": record.kept_groups_per_frame,
         "peak_memory_gb": record.peak_memory_gb,
+        "metadata": record.metadata,
+    }
+
+
+def _timing_from_payload(row: dict[str, Any], key: str) -> float:
+    timings = row.get("timing_ms")
+    if not isinstance(timings, dict):
+        raise ValueError(f"missing timing_ms in {row.get('item_id')}")
+    value = timings.get(key)
+    if value is None:
+        raise ValueError(f"missing timing_ms.{key} in {row.get('item_id')}")
+    return float(value)
+
+
+def _summarize_payload_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    if not rows:
+        return {"n_items": 0}
+    return {
+        "n_items": len(rows),
+        "dense_accuracy": sum(1 for row in rows if row.get("correct")) / len(rows),
+        "dense_parse_failures": sum(1 for row in rows if row.get("parse_failure")),
+        "mean_decode_ms": float(np.mean([_timing_from_payload(row, "decode") for row in rows])),
+        "mean_processor_ms": float(
+            np.mean([_timing_from_payload(row, "processor") for row in rows])
+        ),
+        "mean_dense_vision_ms": float(
+            np.mean([_timing_from_payload(row, "vision") for row in rows])
+        ),
+        "mean_dense_multimodal_prefill_ms": float(
+            np.mean([_timing_from_payload(row, "multimodal_prefill_ms") for row in rows])
+        ),
+        "mean_dense_text_generation_ms": float(
+            np.mean([_timing_from_payload(row, "text_generation_ms") for row in rows])
+        ),
+        "mean_dense_generate_ms": float(
+            np.mean([_timing_from_payload(row, "generate") for row in rows])
+        ),
+        "mean_dense_end_to_end_ms": float(
+            np.mean([_timing_from_payload(row, "end_to_end") for row in rows])
+        ),
+        "mean_dense_prompt_tokens": float(np.mean([row.get("prompt_tokens", 0) for row in rows])),
+        "mean_dense_generation_tokens": float(
+            np.mean([row.get("generation_tokens", 0) for row in rows])
+        ),
+        "mean_dense_prompt_tps": float(np.mean([row.get("prompt_tps", 0.0) for row in rows])),
+        "mean_dense_generation_tps": float(
+            np.mean([row.get("generation_tps", 0.0) for row in rows])
+        ),
+        "mean_peak_memory_gb": float(np.mean([row.get("peak_memory_gb", 0.0) for row in rows])),
+        "mean_kept_groups": float(np.mean([row.get("kept_groups", 0) for row in rows])),
+        "mean_total_groups": float(np.mean([row.get("total_groups", 0) for row in rows])),
+        "mean_effective_keep_rate": float(
+            np.mean(
+                [
+                    float(row.get("kept_groups", 0)) / float(row.get("total_groups", 1))
+                    for row in rows
+                    if float(row.get("total_groups", 0)) > 0.0
+                ]
+            )
+        ),
     }
 
 
@@ -351,9 +460,31 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--summary", type=Path, required=True)
     parser.add_argument("--allow-dirty", action="store_true")
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help=(
+            "Append to an existing JSONL with the same artifact_config_hash and skip "
+            "completed item_ids. This is required for autonomous follow-up sweeps."
+        ),
+    )
     parser.add_argument("--rss-guard-mb", type=int, default=0)
     parser.add_argument("--vision-tower-layer", type=int, default=2)
     parser.add_argument("--vision-tower-keep-rate", type=float, default=1.0)
+    parser.add_argument(
+        "--vision-tower-score-mode",
+        choices=("magnitude", "rlt_topk"),
+        default="magnitude",
+        help=(
+            "Sparse-vision token scorer. 'magnitude' is the existing hidden-state "
+            "L2 scorer; 'rlt_topk' ranks tokens by RLT same-position motion scores "
+            "and keeps a fixed K per frame for the scatter-back wrapper."
+        ),
+    )
+    parser.add_argument("--rlt-threshold", type=float, default=0.1)
+    parser.add_argument("--rlt-tubelet-size", type=int, default=2)
+    parser.add_argument("--rlt-image-size", type=int, default=224)
+    parser.add_argument("--rlt-per-frame-min-keep", type=int, default=1)
     args = parser.parse_args()
 
     runner = _load_runner_module()
@@ -364,6 +495,61 @@ def main() -> int:
     if not items:
         raise SystemExit("no items loaded from manifest")
 
+    schema_row = _schema_row(args)
+    existing_rows: list[dict[str, Any]] = []
+    completed_item_ids: set[str] = set()
+    if args.resume and args.output.exists() and args.output.stat().st_size > 0:
+        existing_schema, existing_rows = _load_output_rows_for_resume(args.output)
+        if existing_schema.get("artifact_config_hash") != schema_row["artifact_config_hash"]:
+            raise SystemExit(
+                "refusing to resume because artifact_config_hash changed: "
+                f"existing={existing_schema.get('artifact_config_hash')} "
+                f"current={schema_row['artifact_config_hash']}"
+            )
+        completed_item_ids = {str(row["item_id"]) for row in existing_rows}
+        print(
+            f"[resume] loaded {len(existing_rows)} completed rows from {args.output}; "
+            f"skipping {len(completed_item_ids)} item_ids"
+        )
+    pending_items = [item for item in items if item.item_id not in completed_item_ids]
+    if args.resume and not pending_items:
+        summary = _summarize_payload_rows(existing_rows)
+        summary.update(
+            {
+                "schema_version": SCHEMA_VERSION,
+                "manifest": str(args.manifest),
+                "model_path": str(args.model_path),
+                "frame_count": args.frame_count,
+                "n_frames": args.frame_count,
+                "max_tokens": args.max_tokens,
+                "vision_tower_patched": args.vision_tower_keep_rate < 1.0,
+                "vision_tower_layer": (
+                    args.vision_tower_layer if args.vision_tower_keep_rate < 1.0 else None
+                ),
+                "vision_tower_keep_rate": (
+                    args.vision_tower_keep_rate if args.vision_tower_keep_rate < 1.0 else None
+                ),
+                "vision_tower_score_mode": (
+                    args.vision_tower_score_mode if args.vision_tower_keep_rate < 1.0 else None
+                ),
+                "rlt_config": (
+                    _rlt_config_from_args(args).as_dict()
+                    if args.vision_tower_keep_rate < 1.0
+                    and args.vision_tower_score_mode == "rlt_topk"
+                    else None
+                ),
+                "rss_guard_mb": args.rss_guard_mb if args.rss_guard_mb > 0 else None,
+                "final_rss_mb": None,
+                "resume": True,
+                "resumed_existing_rows": len(existing_rows),
+                "new_rows": 0,
+            }
+        )
+        args.summary.parent.mkdir(parents=True, exist_ok=True)
+        args.summary.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
+        print(f"[resume] all {len(existing_rows)} rows already complete; summary refreshed")
+        return 0
+
     model, processor = cast(tuple[Any, Any], load(str(args.model_path)))
     if getattr(model.config, "model_type", None) != "gemma4":
         raise SystemExit(
@@ -372,19 +558,53 @@ def main() -> int:
         )
 
     vt_patched = args.vision_tower_keep_rate < 1.0
+    if args.vision_tower_score_mode == "rlt_topk" and not vt_patched:
+        raise SystemExit(
+            "--vision-tower-score-mode rlt_topk requires --vision-tower-keep-rate < 1.0"
+        )
+    rlt_config = _rlt_config_from_args(args)
+    rlt_keep_holder: dict[str, Any] = {}
     if vt_patched:
+        keep_mask_fn: Any | None = None
+        if args.vision_tower_score_mode == "rlt_topk":
+
+            def keep_mask_fn(hidden_states: mx.array, positions: mx.array) -> mx.array:
+                if "rlt_result" not in rlt_keep_holder:
+                    raise RuntimeError("RLT result was not prepared before vision_tower call")
+                rlt_result = rlt_keep_holder["rlt_result"]
+                pos_np = np.array(positions)
+                valid_counts = ((pos_np[:, :, 0] >= 0) & (pos_np[:, :, 1] >= 0)).sum(axis=1)
+                mask_np = fixed_budget_rlt_score_mask_for_positions(
+                    rlt_result,
+                    positions=pos_np,
+                    keep_rate=args.vision_tower_keep_rate,
+                )
+                rlt_keep_holder["last_mask_np"] = mask_np
+                rlt_keep_holder["last_valid_counts"] = [int(value) for value in valid_counts]
+                mask = mx.array(mask_np)
+                expected = (int(hidden_states.shape[0]), int(hidden_states.shape[1]))
+                if tuple(mask.shape) != expected:
+                    raise ValueError(
+                        f"RLT keep mask shape {tuple(mask.shape)} does not match "
+                        f"vision hidden_states rows/tokens {expected}"
+                    )
+                return mask
+
         patch_vision_tower(
             model,
             PruneConfig(
                 layer_idx=args.vision_tower_layer,
                 keep_rate=args.vision_tower_keep_rate,
             ),
+            keep_mask_fn=keep_mask_fn,
         )
 
     if args.rss_guard_mb > 0:
         check_rss_guard(args.rss_guard_mb, stage="post_model_load")
 
-    tokens_per_frame = GEMMA_GRID_SHAPE[0] * GEMMA_GRID_SHAPE[1]
+    tokens_per_frame = int(
+        getattr(model.vision_tower, "max_patches", GEMMA_GRID_SHAPE[0] * GEMMA_GRID_SHAPE[1])
+    )
     total_groups = args.frame_count * tokens_per_frame
     kept_per_frame = (
         max(1, int(tokens_per_frame * args.vision_tower_keep_rate))
@@ -393,18 +613,74 @@ def main() -> int:
     )
     kept_groups = args.frame_count * kept_per_frame
 
-    results: list[ItemResult] = []
+    record_rows: list[dict[str, Any]] = list(existing_rows)
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    with args.output.open("w") as handle:
-        handle.write(json.dumps(_schema_row(args), sort_keys=True) + "\n")
-        for item in items:
-            raw, decode_ms, processor_ms = _prepare_item(
+    output_mode = "a" if args.resume and existing_rows else "w"
+    with args.output.open(output_mode) as handle:
+        if output_mode == "w":
+            handle.write(json.dumps(schema_row, sort_keys=True) + "\n")
+        for item in pending_items:
+            raw, frames, decode_ms, processor_ms = _prepare_item(
                 runner,
                 processor,
                 item,
                 frame_count=args.frame_count,
             )
+            item_metadata: dict[str, Any] = {
+                "vision_tower_score_mode": args.vision_tower_score_mode,
+            }
+            actual_total_groups = total_groups
+            actual_kept_per_frame = [kept_per_frame] * args.frame_count
+            actual_kept_groups = kept_groups
+            if vt_patched and args.vision_tower_score_mode == "rlt_topk":
+                rlt_result = compute_rlt_keep_mask_from_frames(frames, config=rlt_config)
+                projected_placeholder_mask = fixed_budget_rlt_score_mask(
+                    rlt_result,
+                    out_grid_shape=GEMMA_GRID_SHAPE,
+                    keep_rate=args.vision_tower_keep_rate,
+                )
+                rlt_keep_holder["rlt_result"] = rlt_result
+                rlt_keep_holder.pop("last_mask_np", None)
+                item_metadata.update(
+                    {
+                        "rlt_config": rlt_config.as_dict(),
+                        "rlt_mask_policy": "rlt_score_topk_fixed_k",
+                        "rlt_mask_domain": (
+                            "gemma_internal_encoder_positions_from_letterboxed_frames_"
+                            "resized_224_imagenet"
+                        ),
+                        "rlt_summary": mask_summary(rlt_result),
+                        "rlt_score_grid_shape": list(rlt_result.config.resolved_grid_shape()),
+                        "rlt_placeholder_projected_keep_rate": float(
+                            projected_placeholder_mask.sum() / projected_placeholder_mask.size
+                        ),
+                    }
+                )
             features, vision_ms = _compute_gemma_features(model, raw)
+            if vt_patched and args.vision_tower_score_mode == "rlt_topk":
+                last_mask = rlt_keep_holder.get("last_mask_np")
+                if last_mask is None:
+                    raise RuntimeError("rlt_topk keep_mask_fn did not run inside vision_tower")
+                last_mask_np = np.asarray(last_mask, dtype=bool)
+                actual_kept_per_frame = [int(row.sum()) for row in last_mask_np]
+                if len(set(actual_kept_per_frame)) != 1:
+                    raise RuntimeError(
+                        "rlt_topk scorer must emit uniform per-frame K; got "
+                        f"{actual_kept_per_frame}"
+                    )
+                actual_kept_groups = int(last_mask_np.sum())
+                valid_counts = [
+                    int(value) for value in cast(list[int], rlt_keep_holder["last_valid_counts"])
+                ]
+                actual_total_groups = int(sum(valid_counts))
+                item_metadata.update(
+                    {
+                        "gemma_encoder_positions_per_frame": int(last_mask_np.shape[1]),
+                        "gemma_encoder_valid_positions_per_frame": valid_counts,
+                        "gemma_encoder_kept_per_frame": actual_kept_per_frame,
+                        "rlt_budget_domain": "valid_encoder_positions",
+                    }
+                )
             stats = _run_generate(
                 model,
                 processor,
@@ -435,19 +711,21 @@ def main() -> int:
                 generation_tokens=stats.generation_tokens,
                 prompt_tps=stats.prompt_tps,
                 generation_tps=stats.generation_tps,
-                kept_groups=kept_groups,
-                total_groups=total_groups,
-                kept_groups_per_frame=[kept_per_frame] * args.frame_count,
+                kept_groups=actual_kept_groups,
+                total_groups=actual_total_groups,
+                kept_groups_per_frame=actual_kept_per_frame,
                 peak_memory_gb=stats.peak_memory_gb,
+                metadata=item_metadata,
             )
-            results.append(record)
-            handle.write(json.dumps(_record_payload(record), sort_keys=True) + "\n")
+            row = _record_payload(record)
+            record_rows.append(row)
+            handle.write(json.dumps(row, sort_keys=True) + "\n")
             handle.flush()
             _clear_runtime_state()
             if args.rss_guard_mb > 0:
                 check_rss_guard(args.rss_guard_mb, stage=f"post_item:{item.item_id}")
 
-    summary = _summarize(results)
+    summary = _summarize_payload_rows(record_rows)
     summary.update(
         {
             "schema_version": SCHEMA_VERSION,
@@ -459,6 +737,12 @@ def main() -> int:
             "vision_tower_patched": vt_patched,
             "vision_tower_layer": args.vision_tower_layer if vt_patched else None,
             "vision_tower_keep_rate": args.vision_tower_keep_rate if vt_patched else None,
+            "vision_tower_score_mode": args.vision_tower_score_mode if vt_patched else None,
+            "rlt_config": (
+                rlt_config.as_dict()
+                if vt_patched and args.vision_tower_score_mode == "rlt_topk"
+                else None
+            ),
             "rss_guard_mb": args.rss_guard_mb if args.rss_guard_mb > 0 else None,
             "final_rss_mb": rss_mb(),
         }

@@ -87,6 +87,17 @@ def test_gemma_admission_analyzer_stops_on_aggregate_quality_failure() -> None:
     assert "RLT-3G-A" in summary["skip_phases"]
 
 
+def test_gemma_admission_analyzer_treats_quality_floor_as_inclusive() -> None:
+    rows = [_row(f"good-{idx}", group="short") for idx in range(19)]
+    rows.append(_row("boundary", group="short", dense_correct=True, pruned_correct=False))
+
+    summary = _analyze(rows)
+
+    assert summary["accuracy_delta_pruned_minus_dense"] == -0.050000000000000044
+    assert summary["aggregate_quality_gate_pass"] is True
+    assert summary["buckets"]["short"]["quality_gate_pass"] is True
+
+
 def test_gemma_admission_analyzer_stops_on_overhead_dominated_arm() -> None:
     rows = [
         _row(

@@ -449,6 +449,95 @@ def project_float_grid(scores: FloatArray, out_grid_shape: tuple[int, int]) -> F
     return arr[..., row_idx, :][..., :, col_idx]
 
 
+def fixed_budget_rlt_score_mask(
+    result: RLTMaskResult,
+    *,
+    out_grid_shape: tuple[int, int],
+    keep_rate: float,
+) -> BoolArray:
+    """Return a fixed-K per-frame mask ranked by RLT tubelet-change scores.
+
+    The published RLT threshold mask has variable per-frame token counts. Gemma's
+    scatter-back sparse-vision wrapper requires the same K on every frame row,
+    so this helper uses RLT's same-position motion scores as a scorer rather
+    than as the final thresholded mask. That makes the experiment a faithful
+    "RLT-as-scorer for C-VISION" cell, not a variable-length RLT port.
+    """
+
+    if not (0.0 < keep_rate <= 1.0):
+        raise ValueError(f"keep_rate must be in (0, 1], got {keep_rate}")
+    rows, cols = out_grid_shape
+    if rows <= 0 or cols <= 0:
+        raise ValueError(f"out_grid_shape must be positive, got {out_grid_shape}")
+    frame_scores = np.repeat(result.tubelet_scores, result.config.tubelet_size, axis=0)
+    frame_scores = frame_scores[: result.frame_count]
+    projected_scores = project_float_grid(frame_scores, out_grid_shape)
+    frames = int(projected_scores.shape[0])
+    tokens_per_frame = rows * cols
+    k = max(1, int(tokens_per_frame * keep_rate))
+    keep = np.zeros((frames, rows, cols), dtype=bool)
+    keep_flat = keep.reshape(frames, tokens_per_frame)
+    for frame_idx in range(frames):
+        keep_flat[frame_idx, _top_k_indices(projected_scores[frame_idx], k)] = True
+    return keep
+
+
+def fixed_budget_rlt_score_mask_for_positions(
+    result: RLTMaskResult,
+    *,
+    positions: npt.NDArray[Any],
+    keep_rate: float,
+    budget_domain: Literal["valid_positions", "row_length"] = "valid_positions",
+) -> BoolArray:
+    """Return a fixed-K mask for an encoder's explicit ``[x, y]`` positions.
+
+    Gemma's vision encoder prunes before the pooler, where each frame row has
+    ``max_patches`` entries and padded positions are encoded as ``[-1, -1]``.
+    This helper projects RLT scores to the real encoder grid for each row and
+    ranks only valid patch positions by default. Use ``budget_domain="row_length"``
+    only when intentionally matching a scorer whose K includes padded slots.
+    """
+
+    if not (0.0 < keep_rate <= 1.0):
+        raise ValueError(f"keep_rate must be in (0, 1], got {keep_rate}")
+    pos = np.asarray(positions, dtype=np.int64)
+    if pos.ndim != 3 or pos.shape[-1] != 2:
+        raise ValueError(f"positions must be [B, L, 2], got {pos.shape}")
+    rows, row_len, _ = pos.shape
+    if rows != result.frame_count:
+        raise ValueError(f"position rows {rows} must match RLT frame_count {result.frame_count}")
+    frame_scores = np.repeat(result.tubelet_scores, result.config.tubelet_size, axis=0)
+    frame_scores = frame_scores[: result.frame_count]
+    keep = np.zeros((rows, row_len), dtype=bool)
+    kept_counts: list[int] = []
+    for row_idx in range(rows):
+        xy = pos[row_idx]
+        valid = (xy[:, 0] >= 0) & (xy[:, 1] >= 0)
+        valid_count = int(valid.sum())
+        if valid_count <= 0:
+            raise ValueError(f"row {row_idx} has no valid encoder positions")
+        if budget_domain == "valid_positions":
+            k = max(1, int(valid_count * keep_rate))
+        elif budget_domain == "row_length":
+            k = max(1, int(row_len * keep_rate))
+        else:
+            raise ValueError(f"unknown budget_domain {budget_domain!r}")
+        if valid_count < k:
+            k = valid_count
+        max_x = int(xy[valid, 0].max()) + 1
+        max_y = int(xy[valid, 1].max()) + 1
+        score_grid = project_float_grid(frame_scores[row_idx], (max_y, max_x))
+        token_scores = np.full((row_len,), -np.inf, dtype=np.float32)
+        token_scores[valid] = score_grid[xy[valid, 1], xy[valid, 0]]
+        keep[row_idx, _top_k_indices(token_scores, k)] = True
+        kept_counts.append(k)
+    if len(set(kept_counts)) != 1:
+        raise ValueError(
+            f"RLT fixed-budget mask must keep uniform K across rows; got {kept_counts}"
+        )
+    return keep
+
+
 def jaccard(a: BoolArray, b: BoolArray) -> float:
     """Jaccard overlap for two boolean masks."""
 
