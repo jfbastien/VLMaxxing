@@ -1,3 +1,11 @@
 === Thu May  7 23:07:31 JST 2026 Phase 1: RLT-as-C-VISION TOMATO (n=30) ===
 [1.63] wrote research/experiments/2026/artifacts/rlt_followup_queue/cvision_rlt_tomato_analysis.json
 === Thu May  7 23:22:56 JST 2026 Phase 2: RLT-as-C-VISION MVBench (n=30) ===
+[1.63] wrote research/experiments/2026/artifacts/rlt_followup_queue/cvision_rlt_mvbench_analysis.json
+=== Thu May  7 23:36:02 JST 2026 Phase 3: max-min VideoMME (sparse only, reuse RLT dense) ===
+[1.63] wrote research/experiments/2026/artifacts/rlt_followup_queue/cvision_maxmin_videomme_analysis.json
+=== Fri May  8 00:08:39 JST 2026 Phase 4: max-min TOMATO (sparse only, reuse Phase-1 RLT dense) ===
+[1.63] wrote research/experiments/2026/artifacts/rlt_followup_queue/cvision_maxmin_tomato_analysis.json
+=== Fri May  8 00:15:33 JST 2026 Phase 5: max-min MVBench (sparse only, reuse Phase-2 RLT dense) ===
+[1.63] wrote research/experiments/2026/artifacts/rlt_followup_queue/cvision_maxmin_mvbench_analysis.json
+=== Fri May  8 00:21:08 JST 2026 ALL PHASES COMPLETE ===
