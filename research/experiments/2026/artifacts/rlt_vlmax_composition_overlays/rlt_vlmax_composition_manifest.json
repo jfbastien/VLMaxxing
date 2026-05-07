@@ -1,22 +1,13 @@
 {
   "accuracy_contract": {
-    "combined": "Measured C-VISION mode shows skipped vision-tower compute, not a pixel-domain union. The old union view is retained only under panel_mode=preregistration_overlay and should not be used as the post-result speedup explanation.",
-    "denominators": "Overlay fractions are active-crop pixel fractions for visualization. The manifest records the Gemma token-domain keep rate separately.",
-    "mask_reconstruction": "The renderer reconstructs fixed-K RLT C-VISION masks from the logged config and local source videos. The committed JSONLs record counts and timings, not per-position boolean masks; this visualization is therefore algorithmically faithful but not a replay of persisted mask arrays.",
-    "rlt": "RLT panes are computed with codec_through.rlt_masks on the same square-padded frames, using tau=0.1, tubelet_size=2, 224x224 ImageNet-normalized input, and patch_size=16. Measured C-VISION mode converts those scores to a fixed-K top-50% Gemma 32x32 encoder mask, matching the rlt_topk scorer used by the runner.",
+    "combined": "The combined pane shows a conservative pixel-domain union of VLMaxxing fresh regions and RLT representative-token regions. It visualizes complementarity and possible composition, not an already-measured union runtime.",
+    "denominators": "Overlay fractions are active-crop pixel fractions for visualization. The manifest records the RLT token-domain keep rate separately.",
+    "measured_result_context": "The HUD's measured speedups and scorer-cost ratios come from RLT-as-C-VISION benchmark artifacts. They contextualize the visual intuition, but the overlay masks themselves are not exact replays of the Gemma runtime C-VISION masks.",
+    "rlt": "RLT panes are computed with codec_through.rlt_masks on the same square-padded frames, using tau=0.1, tubelet_size=2, 224x224 ImageNet-normalized input, and patch_size=16. The visualization shows the thresholded RLT keep mask, mask only, no length encoding.",
     "rlt_frame_parity": "Displayed frame counts match the existing VLMaxxing windows. If a window has an odd frame count, the renderer duplicates the final frame only for RLT mask computation, then displays the original frame sequence.",
-    "vlmaxxing": "In measured_c_vision mode, VLMaxxing means Gemma sparse-vision scatter-back: the prompt geometry is unchanged while the vision tower computes only fixed-K encoder positions. In preregistration mode, fresh/reuse boxes are recomputed with the older Fig. 1 Qwen routing-budget policy."
+    "vlmaxxing": "Fresh/reuse boxes are recomputed with the existing Fig. 1 Qwen routing-budget policy, not hand annotated. This pane visualizes the VLMaxxing routing intuition, not the Gemma sparse-vision runtime mask."
   },
   "algorithm_policy": {
-    "gemma_cvision": {
-      "grid_shape": [
-        32,
-        32
-      ],
-      "keep_rate": 0.5,
-      "scatter_back": true,
-      "score_mode": "rlt_topk_fixed_k"
-    },
     "rlt": {
       "first_tubelet_mode": "full_grid",
       "grid_shape": [
@@ -54,16 +45,12 @@
       "end_s": 2.0,
       "fps": 12.0,
       "frame_count": 25,
-      "gemma_cvision_grid_shape": [
-        32,
-        32
-      ],
-      "gemma_cvision_keep_rate": 0.5,
       "key": "tomato_0298_00",
-      "mean_composition_stats": null,
-      "mean_measured_cvision_stats": {
-        "kept_active_pixel_fraction": 0.8523891156462585,
-        "skipped_active_pixel_fraction": 0.14761088435374148
+      "mean_composition_stats": {
+        "combined_refresh_active_pixel_fraction": 0.33876553287981864,
+        "overlap_active_pixel_fraction": 0.045907482993197274,
+        "rlt_admit_active_pixel_fraction": 0.18209523809523812,
+        "vlmax_fresh_active_pixel_fraction": 0.2025777777777778
       },
       "measured_benchmark_result": {
         "accuracy_delta": -0.033333333333333326,
@@ -116,7 +103,8 @@
         "vision_share_dense": 0.38593421315003
       },
       "measured_item_exact": false,
-      "panel_mode": "measured_c_vision",
+      "measured_result_exact_item": false,
+      "panel_mode": "composition_explanation",
       "rlt_duplicate_last_frame_count": 1,
       "rlt_input_frame_count": 26,
       "rlt_keep_rate_token_domain": 0.1346153846153846,
@@ -176,9 +164,9 @@
       },
       "source_video": "/Users/jfb/s/codec-through/data/benchmarks/tomato/videos/object/0298-00.mp4",
       "start_s": 0.0,
-      "thumbnail_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/thumbnails/tomato_0298_00_rlt_cvision_mechanism.png",
+      "thumbnail_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/thumbnails/tomato_0298_00_rlt_vlmax_composition.png",
       "video_id": "0298-00",
-      "video_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/tomato_0298_00_rlt_cvision_mechanism.mp4"
+      "video_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/tomato_0298_00_rlt_vlmax_composition.mp4"
     },
     {
       "benchmark": "VideoMME",
@@ -186,16 +174,12 @@
       "end_s": 207.89,
       "fps": 12.0,
       "frame_count": 19,
-      "gemma_cvision_grid_shape": [
-        32,
-        32
-      ],
-      "gemma_cvision_keep_rate": 0.5,
       "key": "videomme_380",
-      "mean_composition_stats": null,
-      "mean_measured_cvision_stats": {
-        "kept_active_pixel_fraction": 0.6527321279388949,
-        "skipped_active_pixel_fraction": 0.3472678720611051
+      "mean_composition_stats": {
+        "combined_refresh_active_pixel_fraction": 0.36528225325217806,
+        "overlap_active_pixel_fraction": 0.09030433225921947,
+        "rlt_admit_active_pixel_fraction": 0.21458407924573333,
+        "vlmax_fresh_active_pixel_fraction": 0.24100250626566413
       },
       "measured_benchmark_result": {
         "accuracy_delta": 0.033333333333333326,
@@ -248,7 +232,8 @@
         "vision_share_dense": 0.08692696651333291
       },
       "measured_item_exact": true,
-      "panel_mode": "measured_c_vision",
+      "measured_result_exact_item": true,
+      "panel_mode": "composition_explanation",
       "rlt_duplicate_last_frame_count": 1,
       "rlt_input_frame_count": 20,
       "rlt_keep_rate_token_domain": 0.1586734693877551,
@@ -294,9 +279,9 @@
       },
       "source_video": "/Users/jfb/s/codec-through/data/benchmarks/videomme/videos/2Bns2m5Bg4M.mp4",
       "start_s": 206.39,
-      "thumbnail_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/thumbnails/videomme_380_rlt_cvision_mechanism.png",
+      "thumbnail_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/thumbnails/videomme_380_rlt_vlmax_composition.png",
       "video_id": "380",
-      "video_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/videomme_380_rlt_cvision_mechanism.mp4"
+      "video_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/videomme_380_rlt_vlmax_composition.mp4"
     },
     {
       "benchmark": "VideoMME",
@@ -304,16 +289,12 @@
       "end_s": 1.0,
       "fps": 12.0,
       "frame_count": 13,
-      "gemma_cvision_grid_shape": [
-        32,
-        32
-      ],
-      "gemma_cvision_keep_rate": 0.5,
       "key": "videomme_267",
-      "mean_composition_stats": null,
-      "mean_measured_cvision_stats": {
-        "kept_active_pixel_fraction": 0.8305594802023373,
-        "skipped_active_pixel_fraction": 0.16944051979766264
+      "mean_composition_stats": {
+        "combined_refresh_active_pixel_fraction": 0.5939577882435025,
+        "overlap_active_pixel_fraction": 0.30568812140240714,
+        "rlt_admit_active_pixel_fraction": 0.4876678876678877,
+        "vlmax_fresh_active_pixel_fraction": 0.41197802197802197
       },
       "measured_benchmark_result": {
         "accuracy_delta": 0.033333333333333326,
@@ -366,7 +347,8 @@
         "vision_share_dense": 0.08692696651333291
       },
       "measured_item_exact": false,
-      "panel_mode": "measured_c_vision",
+      "measured_result_exact_item": false,
+      "panel_mode": "composition_explanation",
       "rlt_duplicate_last_frame_count": 1,
       "rlt_input_frame_count": 14,
       "rlt_keep_rate_token_domain": 0.336734693877551,
@@ -407,12 +389,12 @@
       },
       "source_video": "/Users/jfb/s/codec-through/data/benchmarks/videomme/videos/Atf_Af1q_5w.mp4",
       "start_s": 0.0,
-      "thumbnail_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/thumbnails/videomme_267_rlt_cvision_mechanism.png",
+      "thumbnail_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/thumbnails/videomme_267_rlt_vlmax_composition.png",
       "video_id": "267",
-      "video_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/videomme_267_rlt_cvision_mechanism.mp4"
+      "video_path": "/Users/jfb/s/codec-through/research/experiments/2026/artifacts/rlt_vlmax_composition_overlays/videomme_267_rlt_vlmax_composition.mp4"
     }
   ],
-  "git_sha": "fa7b7f4c9156d0bff1aa33baa80f7f4f2fe42286",
+  "git_sha": "52ade82fa1c8d0087ea0d614366081dabaa1c345",
   "measured_results": {
     "mvbench": {
       "accuracy_delta": 0.033333333333333326,
@@ -565,8 +547,8 @@
       "vision_share_dense": 0.08692696651333291
     }
   },
-  "panel_mode": "measured_c_vision",
-  "purpose": "Post-result RLT/VLMaxxing visualization. In measured_c_vision mode the panes show the measured Gemma C-VISION mechanism: dense encoder positions, fixed-K RLT-kept positions, and skipped compute.",
+  "panel_mode": "composition_explanation",
+  "purpose": "Scientifically grounded human explanation of why VLMaxxing routing and RLT motion masks are plausible composition partners. The overlays use the same three videos as the VLMaxxing reel and include measured RLT-as-C-VISION benchmark context in the HUD.",
   "rlt_config_hash": "22b8f586e04b1b43328227c1ddcd44a7c0370e2d7d57f241295446fde6f39c34",
-  "schema_version": "rlt_cvision_mechanism_overlay_v1"
+  "schema_version": "rlt_vlmax_composition_overlay_v2"
 }
