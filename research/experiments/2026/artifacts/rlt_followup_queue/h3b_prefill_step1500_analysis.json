@@ -1,0 +1,164 @@
+{
+  "accuracy_delta_pruned_minus_dense": -0.13333333333333336,
+  "aggregate_quality_gate_pass": false,
+  "bootstrap": {
+    "accuracy_delta_pruned_minus_dense_ci95": [
+      -0.2666666666666667,
+      -0.033333333333333326
+    ],
+    "e2e_speedup_dense_over_pruned_ci95": [
+      0.9997189210949402,
+      1.0155204323280091
+    ],
+    "n_bootstrap": 500,
+    "overhead_budget_minus_overhead_ms_ci95": [
+      2134.2214570000065,
+      32700.013007
+    ]
+  },
+  "bucket_failures": [
+    "long",
+    "medium",
+    "short"
+  ],
+  "bucket_quality_gate_inconclusive": false,
+  "bucket_quality_gate_pass": false,
+  "bucket_underpowered": [],
+  "buckets": {
+    "long": {
+      "accuracy_delta_pruned_minus_dense": -0.10000000000000003,
+      "dense_accuracy": 0.4,
+      "n": 10,
+      "pruned_accuracy": 0.3,
+      "quality_gate_evaluated": true,
+      "quality_gate_pass": false
+    },
+    "medium": {
+      "accuracy_delta_pruned_minus_dense": -0.2,
+      "dense_accuracy": 0.4,
+      "n": 10,
+      "pruned_accuracy": 0.2,
+      "quality_gate_evaluated": true,
+      "quality_gate_pass": false
+    },
+    "short": {
+      "accuracy_delta_pruned_minus_dense": -0.10000000000000003,
+      "dense_accuracy": 0.4,
+      "n": 10,
+      "pruned_accuracy": 0.3,
+      "quality_gate_evaluated": true,
+      "quality_gate_pass": false
+    }
+  },
+  "cell_type": "h3b_admission",
+  "choice_agreement": 0.7666666666666667,
+  "decisions": [
+    {
+      "decision": "stop",
+      "details": {
+        "accuracy_delta_pruned_minus_dense": -0.13333333333333336,
+        "bucket_failures": [
+          "long",
+          "medium",
+          "short"
+        ],
+        "gate": -0.05
+      },
+      "reason": "gemma_admission_quality_gate_failed"
+    }
+  ],
+  "dense_accuracy": 0.4,
+  "dense_e2e_total_ms": 1966477.053791,
+  "dense_parse_failures": 4,
+  "e2e_speedup_dense_over_pruned": 1.008066007792697,
+  "gates": {
+    "bucket_min_n": 1,
+    "cell_type": "h3b_admission",
+    "n_bootstrap": 500,
+    "overhead_gate_required": true,
+    "quality_delta_floor": -0.05,
+    "timing_min_n": 5
+  },
+  "jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/h3b_prefill_step1500.jsonl",
+  "mean_dense_prefill_ms": 5827.738954166666,
+  "mean_dense_vision_ms": 6092.218184733333,
+  "mean_overhead_ms": 31.822963833333336,
+  "mean_pruned_prefill_ms": 5166.616355599999,
+  "mean_pruned_vision_ms": 6092.218184733333,
+  "n_items": 30,
+  "overhead_gate_evaluated": true,
+  "overhead_gate_pass": true,
+  "prefill_jit_warmup_ratio": 1.233361911057523,
+  "prefill_jit_warmup_ratios": {
+    "max": 1.233361911057523,
+    "mean": 1.0082729344310926,
+    "min": 0.8022323355303146,
+    "n": 30
+  },
+  "prefill_jit_warmup_suspected": false,
+  "pruned_accuracy": 0.26666666666666666,
+  "pruned_e2e_total_ms": 1950742.350788,
+  "pruned_generate_warmup_ratio_proxy": 1.1759488325212064,
+  "pruned_generate_warmup_ratios": {
+    "max": 1.1759488325212064,
+    "mean": 0.9994186878414542,
+    "min": 0.8062336116088303,
+    "n": 30
+  },
+  "pruned_generate_warmup_suspected": false,
+  "pruned_parse_failures": 3,
+  "runner_schema": {
+    "artifact_config_hash": "f9fab9f55a0d67c12e6ab3a13b8288c56d7dec4a58c1337af659e8f07709c22a",
+    "artifact_payload": {
+      "anchor_arm": "gemma_structural",
+      "arm_order": "abba",
+      "frame_count": 8,
+      "keep_rate": 0.5,
+      "manifest": "research/benchmark_manifests/videomme_combined_v1_n60.toml",
+      "max_tokens": 32,
+      "model_path": "/Users/jfb/models/gemma-4-e4b-it-4bit",
+      "n_warmup": 1,
+      "prefill_step_size": 1500,
+      "prune_placeholders": "rlt",
+      "rlt_config": {
+        "first_tubelet_mode": "full_grid",
+        "grid_shape": [
+          14,
+          14
+        ],
+        "grid_shape_source": "patch_size",
+        "image_size": [
+          224,
+          224
+        ],
+        "normalize_mode": "imagenet",
+        "ordering": "time_major",
+        "patch_size": 16,
+        "pixel_scale": "uint8",
+        "threshold": 0.1,
+        "tubelet_size": 2,
+        "window_min_keep": 1
+      },
+      "vision_tower_keep_rate": 1.0,
+      "vision_tower_layer": 1
+    },
+    "kind": "schema",
+    "schema_version": "phase1_51r_gemma_admission_v4"
+  },
+  "runner_summary_schema_version": "phase1_51r_gemma_admission_v4",
+  "schema_version": "gemma_admission_analysis_v2",
+  "skip_phases": [
+    "RLT-3G-A",
+    "RLT-3G-B",
+    "RLT-4Q",
+    "RLT-5G",
+    "RLT-5Q"
+  ],
+  "summary_json": "research/experiments/2026/artifacts/rlt_followup_queue/h3b_prefill_step1500_summary.json",
+  "timing_min_n": 5,
+  "total_credited_stage_reduction_ms": 19833.677957000007,
+  "total_overhead_budget_ms": 19833.677957000007,
+  "total_overhead_ms": 954.6889150000001,
+  "total_prefill_reduction_ms": 19833.677957000007,
+  "total_vision_reduction_ms": 0.0
+}
