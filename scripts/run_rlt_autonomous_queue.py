@@ -18,6 +18,9 @@ from typing import Any
 
 SCHEMA_VERSION = "rlt_autonomous_queue_v1"
 DEFAULT_ARTIFACT_DIR = Path("research/experiments/2026/artifacts/rlt_autonomous_queue")
+DEFAULT_GEMMA_MODEL_PATH = Path.home() / "models" / "gemma-4-e4b-it-4bit"
+DEFAULT_GEMMA_MANIFEST = Path("research/benchmark_manifests/videomme_combined_v1_n60.toml")
+DEFAULT_GEMMA_SMOKE_MANIFEST = Path("research/benchmark_manifests/videomme_dev_v1.toml")
 PHASE_ESTIMATES_HOURS = {
     "RLT-1-preflight": [0.02, 0.05],
     "RLT-1-profiler-synthetic": [0.02, 0.10],
@@ -68,6 +71,62 @@ def _write_summary(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def _run_gemma_admission_cell(
+    *,
+    artifact_dir: Path,
+    manifest: Path,
+    model_path: Path,
+    frame_count: int,
+    n_items: int,
+    rss_guard_mb: int,
+    label: str,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    jsonl_path = artifact_dir / f"{label}.jsonl"
+    summary_path = artifact_dir / f"{label}_summary.json"
+    analysis_path = artifact_dir / f"{label}_analysis.json"
+    commands: list[dict[str, Any]] = []
+    command = [
+        sys.executable,
+        "scripts/run_novelty_pruning_gemma.py",
+        "--manifest",
+        str(manifest),
+        "--frame-count",
+        str(frame_count),
+        "--anchor-arm",
+        "gemma_structural",
+        "--keep-rate",
+        "0.5",
+        "--prune-placeholders",
+        "rlt",
+        "--model-path",
+        str(model_path),
+        "--rss-guard-mb",
+        str(rss_guard_mb),
+        "--output",
+        str(jsonl_path),
+        "--summary",
+        str(summary_path),
+    ]
+    if n_items > 0:
+        command.extend(["--n-items", str(n_items)])
+    commands.append(_run(command))
+    commands.append(
+        _run(
+            [
+                sys.executable,
+                "scripts/analyze_gemma_admission.py",
+                "--jsonl",
+                str(jsonl_path),
+                "--summary-json",
+                str(summary_path),
+                "--output",
+                str(analysis_path),
+            ]
+        )
+    )
+    return commands, _read_json(analysis_path)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--artifact-dir", type=Path, default=DEFAULT_ARTIFACT_DIR)
@@ -75,6 +134,11 @@ def main() -> int:
     parser.add_argument("--frame-count", type=int, default=8)
     parser.add_argument("--prefill-split-smoke-json", type=Path)
     parser.add_argument("--run-model-smokes", action="store_true")
+    parser.add_argument("--run-gemma-decision-cell", action="store_true")
+    parser.add_argument("--gemma-model-path", type=Path, default=DEFAULT_GEMMA_MODEL_PATH)
+    parser.add_argument("--gemma-manifest", type=Path, default=DEFAULT_GEMMA_MANIFEST)
+    parser.add_argument("--gemma-smoke-manifest", type=Path, default=DEFAULT_GEMMA_SMOKE_MANIFEST)
+    parser.add_argument("--gemma-rss-guard-mb", type=int, default=9000)
     parser.add_argument("--run-swa-smoke", action="store_true")
     parser.add_argument("--max-planned-hours", type=float, default=30.0)
     parser.add_argument("--summary", type=Path)
@@ -89,6 +153,8 @@ def main() -> int:
         selected_budget.append("RLT-1-profiler-n60")
     if args.run_model_smokes:
         selected_budget.append("RLT-2G-gemma-smoke")
+    if args.run_gemma_decision_cell:
+        selected_budget.append("RLT-2G-gemma-n60")
     budget = _total_budget(selected_budget)
     if budget["high_hours"] > args.max_planned_hours:
         raise SystemExit(
@@ -187,6 +253,71 @@ def main() -> int:
         )
         return 0
 
+    gemma_analyses: dict[str, Any] = {}
+    if args.run_model_smokes:
+        if not args.gemma_model_path.exists():
+            raise SystemExit(f"Gemma model path missing: {args.gemma_model_path}")
+        gemma_commands, gemma_smoke_analysis = _run_gemma_admission_cell(
+            artifact_dir=args.artifact_dir,
+            manifest=args.gemma_smoke_manifest,
+            model_path=args.gemma_model_path,
+            frame_count=args.frame_count,
+            n_items=1,
+            rss_guard_mb=args.gemma_rss_guard_mb,
+            label="rlt2g_gemma_rlt_smoke",
+        )
+        commands.extend(gemma_commands)
+        gemma_analyses["rlt2g_gemma_rlt_smoke"] = gemma_smoke_analysis
+        decisions.extend(gemma_smoke_analysis["decisions"])
+        if any(
+            decision.get("decision") == "stop" for decision in gemma_smoke_analysis["decisions"]
+        ):
+            _write_summary(
+                summary_path,
+                {
+                    "schema_version": SCHEMA_VERSION,
+                    "ready_for_model_runs": False,
+                    "budget": budget,
+                    "commands": commands,
+                    "decisions": decisions,
+                    "analysis": analysis,
+                    "gemma_analyses": gemma_analyses,
+                },
+            )
+            return 0
+
+    if args.run_gemma_decision_cell:
+        if not args.gemma_model_path.exists():
+            raise SystemExit(f"Gemma model path missing: {args.gemma_model_path}")
+        gemma_commands, gemma_decision_analysis = _run_gemma_admission_cell(
+            artifact_dir=args.artifact_dir,
+            manifest=args.gemma_manifest,
+            model_path=args.gemma_model_path,
+            frame_count=args.frame_count,
+            n_items=0,
+            rss_guard_mb=args.gemma_rss_guard_mb,
+            label="rlt2g_gemma_rlt_decision",
+        )
+        commands.extend(gemma_commands)
+        gemma_analyses["rlt2g_gemma_rlt_decision"] = gemma_decision_analysis
+        decisions.extend(gemma_decision_analysis["decisions"])
+        if any(
+            decision.get("decision") == "stop" for decision in gemma_decision_analysis["decisions"]
+        ):
+            _write_summary(
+                summary_path,
+                {
+                    "schema_version": SCHEMA_VERSION,
+                    "ready_for_model_runs": False,
+                    "budget": budget,
+                    "commands": commands,
+                    "decisions": decisions,
+                    "analysis": analysis,
+                    "gemma_analyses": gemma_analyses,
+                },
+            )
+            return 0
+
     rlt3_preflight_path = args.artifact_dir / "rlt3gb_preflight.json"
     rlt3_command = [
         sys.executable,
@@ -219,17 +350,6 @@ def main() -> int:
     if not rlt5_preflight.get("ready"):
         decisions.append({"decision": "block_h4a_gemma", "reason": "swa_functional_smoke_missing"})
 
-    if args.run_model_smokes:
-        decisions.append(
-            {
-                "decision": "model_smokes_not_embedded",
-                "reason": (
-                    "Run Gemma/Qwen smoke commands after prefill/SWA prerequisites are ready; "
-                    "this queue stops before MLX model work unless those gates pass."
-                ),
-            }
-        )
-
     _write_summary(
         summary_path,
         {
@@ -240,6 +360,7 @@ def main() -> int:
             "commands": commands,
             "decisions": decisions,
             "analysis": analysis,
+            "gemma_analyses": gemma_analyses,
             "rlt3gb_preflight": rlt3_preflight,
             "rlt5g_preflight": rlt5_preflight,
         },

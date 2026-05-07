@@ -195,6 +195,7 @@ Validated on 2026-05-07 against the current implementation diff.
 | First-turn runner timing schemas changed without schema bumps. | VALID | `scripts/run_phase1_51V.py`, `scripts/run_phase1_63G_gemma_track_b.py`, and the Gemma admission runner now write row-0 schema records with bumped schema versions before item rows. |
 | RLT-vs-pixel-novelty null should be decided before long model runs. | VALID | Added `scripts/analyze_rlt_mask_profile.py` and `scripts/run_rlt_autonomous_queue.py`. Synthetic-only co-cover is diagnostic; real manifest/content-bucket co-cover is required before canceling model phases. |
 | Runtime estimates and early-cancel ordering must be encoded, not only prose. | VALID | The autonomous queue records phase-hour estimates and stops before dependent cells when positive-control, pixel-novelty co-cover, prefill-split, or SWA-cache gates block. |
+| Model-cell outcomes should be analyzed automatically. | VALID | Added `scripts/analyze_gemma_admission.py`; explicit Gemma smoke/decision cells in `scripts/run_rlt_autonomous_queue.py` now analyze paired dense/pruned quality, per-bucket gates, prompt-prefill reduction, and mask/prune overhead before allowing H3. |
 
 ### RLT Algorithm Facts To Preserve
 
@@ -1157,6 +1158,9 @@ Status:
   in value order. It blocks H3B until `--prefill-split-smoke-json` is supplied
   and blocks Gemma H4A/H5G until `--run-swa-smoke` passes the functional
   cache-correctness smoke.
+- With `--run-model-smokes` or `--run-gemma-decision-cell`, the queue runs the
+  Gemma RLT admission cell, calls `scripts/analyze_gemma_admission.py`, and
+  stops H3 if paired quality or the preregistered overhead gate fails.
 - Claude/Codex supervision should interpret only completed artifacts and should
   record negative outcomes in this note, `research/decision-log.md`, and
   paper-facing docs only when a hypothesis changes status. If contribution
@@ -1240,6 +1244,7 @@ After pure-mask implementation:
 - `uv run python scripts/profile_rlt_masks.py --synthetic exact_static --synthetic fixed_camera_positive --synthetic camera_pan --frame-count 8 --compare-pixel-novelty --project-grid-shape 16x16 --overwrite --output-jsonl /tmp/rlt_mask_profile_compare.jsonl --summary-json /tmp/rlt_mask_profile_compare_summary.json`
 - `uv run python scripts/analyze_rlt_mask_profile.py --profile-jsonl /tmp/rlt_mask_profile_compare.jsonl --output /tmp/rlt_mask_profile_compare_analysis.json`
 - `uv run python scripts/run_rlt_autonomous_queue.py --artifact-dir /tmp/rlt_autonomous_queue_smoke --summary /tmp/rlt_autonomous_queue_smoke_summary.json`
+- `uv run pytest tests/test_gemma_admission_analyzer.py`
 - `uv run python scripts/preflight_rlt_vlmax.py --phase RLT-1 --output /tmp/rlt_vlmax_preflight.json`
 - `uv run pytest tests/test_temporal.py tests/test_novelty_pruning.py`
 
