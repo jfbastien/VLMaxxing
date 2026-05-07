@@ -40,6 +40,8 @@ This file only routes work inside `docs/`.
 
 - [literature-map-2026-04-16.md](literature-map-2026-04-16.md) — current
   positioning map
+- [onevision-encoder-research-2026-05-08.md](onevision-encoder-research-2026-05-08.md)
+  — primary-source notes for OneVision-Encoder and VLMaxxing integration
 - [benchmark-taxonomy.md](benchmark-taxonomy.md) — why each benchmark is
   active or deferred
 - [related-work-table.md](related-work-table.md) — paper-facing

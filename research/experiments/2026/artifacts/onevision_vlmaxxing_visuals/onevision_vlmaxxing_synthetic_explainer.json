@@ -1,0 +1,40 @@
+{
+  "frames": 16,
+  "grid_shape": [
+    8,
+    8
+  ],
+  "image": "research/experiments/2026/artifacts/onevision_vlmaxxing_visuals/onevision_vlmaxxing_synthetic_explainer.png",
+  "spatial_bias": {
+    "boundary_fraction": 0.3333333333333333,
+    "center_fraction": 0.375,
+    "entropy_bits": 5.839661719245795,
+    "mean_center_distance": 0.5455418683994329
+  },
+  "temporal_coverage": {
+    "entropy_bits": 1.9182958340544896,
+    "max_gap": 1,
+    "mean_gap": 1.0,
+    "observed_fraction": 0.5625,
+    "observed_frames": 9
+  },
+  "token_budget": 96,
+  "tokens_by_frame": [
+    64,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ]
+}
