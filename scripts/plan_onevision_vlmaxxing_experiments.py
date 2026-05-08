@@ -52,7 +52,7 @@ def build_schedule() -> list[ExperimentStep]:
                 "reproduces the algorithmic surface needed for local tests."
             ),
             success_gate=(
-                "Unit tests pass for anchors, budget overflow, stable tie-breaking, synthetic motion localization, "
+                "Unit tests pass for anchors, budget overflow, stable tie-breaking, toy score localization, "
                 "temporal coverage, spatial-bias diagnostics, and macroblock fusion projection invariants."
             ),
             skip_rule="If these tests fail, skip every downstream OneVision integration.",
@@ -71,28 +71,29 @@ def build_schedule() -> list[ExperimentStep]:
         ExperimentStep(
             stage="OV-1",
             track="visualization-method",
-            question="Do codec scores allocate tokens sensibly on synthetic and real video before any VLM inference?",
+            question="Do codec scores allocate tokens sensibly on existing paper videos before any VLM inference?",
             hypothesis=(
                 "Motion/residual fusion will expose whether anchor budget, temporal coverage, center bias, and edge/OCR "
                 "starvation are sane enough to justify model runs."
             ),
             success_gate=(
                 "Render token-allocation-over-time plus selected-patch overlays for the three established clips when "
-                "raw videos are available; synthetic fallback must remain available for CI and review."
+                "raw source videos are present; scheduled evidence must fail closed when any source clip is missing."
             ),
             skip_rule=(
-                "If raw videos are absent, keep synthetic/metadata artifacts and block model-facing promotion until "
-                "a real-video allocation audit is run on the target clips."
+                "If raw videos are absent, restore benchmark assets first. Do not promote synthetic or generated-overlay "
+                "artifacts as OV-1 evidence."
             ),
-            setup_effort="real-video artifact path implemented; run only when raw clips are available",
-            eta_m3="3-6 hours with video extraction; < 1 hour synthetic/status-only",
-            eta_m5="1-3 hours with video extraction; < 1 hour synthetic/status-only",
+            setup_effort="real-video artifact path implemented; preflight checks source assets before render",
+            eta_m3="3-6 hours with video extraction after assets are restored",
+            eta_m5="1-3 hours with video extraction after assets are restored",
             compute_lane="CPU plus optional PyAV research dependency",
             uses_local_accelerator=False,
             requires_nvidia=False,
             defer_until="after OV-0",
             commands=[
-                "uv run python scripts/render_onevision_vlmaxxing_visual.py --mode auto",
+                "uv run python scripts/preflight_onevision_vlmaxxing.py --scope ov1",
+                "uv run python scripts/render_onevision_vlmaxxing_visual.py",
                 "uv run python scripts/render_codec_through_video_overlays.py",
             ],
             artifacts=[
@@ -109,15 +110,15 @@ def build_schedule() -> list[ExperimentStep]:
                 "not a new hard BlockStatistic label."
             ),
             success_gate=(
-                "CLI flags and artifact schema exist for motion-only, residual-only, fused weighted, and max-age "
-                "staleness gating in run_phase1_29_planner_accuracy_probe.py; validate zero-weight lanes and "
-                "matched-item pixel max_abs regressions before model runs."
+                "CLI flags, artifact schema, lazy-runtime guards, and regression tests exist for motion-only, "
+                "residual-only, fused weighted, and max-age staleness gating in "
+                "run_phase1_29_planner_accuracy_probe.py."
             ),
             skip_rule=(
                 "If the adapter cannot reproduce existing Phase 1.29 codec-score behavior on cached/small inputs, "
                 "do not start OV-3 model inference."
             ),
-            setup_effort="implemented; pending CPU-only checks and optional cached-input smoke",
+            setup_effort="implemented; pending final CPU-only checks and optional cached-input smoke",
             eta_m3="< 1 hour checks; no model run",
             eta_m5="< 1 hour checks; no model run",
             compute_lane="CPU",
@@ -267,14 +268,18 @@ def build_schedule() -> list[ExperimentStep]:
                 "until an LMM head or probe stack is reproduced."
             ),
             success_gate=(
-                "When the machine is free, run CPU/MPS/PyTorch or MLX-parity smoke on image and sparse-video encoder outputs; "
+                "When the machine is free, run PyTorch/MPS or MLX-parity smoke on image and sparse-video encoder outputs; "
                 "treat output-shape/parity as feasibility evidence, not QA accuracy."
             ),
             skip_rule=(
                 "Skip if it requires flash-attention/CUDA for inference or if eager attention at target token counts exceeds "
                 "local memory; move to NVIDIA only if encoder probes answer a paper-relevant question."
             ),
-            setup_effort="1 day for PyTorch/MPS smoke or about 1 week for a careful MLX encoder port with parity debugging",
+            setup_effort=(
+                "1-3 days for PyTorch/MPS feasibility with load plus single-clip forward parity; "
+                "about 1 calendar week for a careful MLX port with weight conversion, 3D RoPE parity, "
+                "and single-clip forward parity"
+            ),
             eta_m3="defer until machine free; smoke only",
             eta_m5="defer until machine free; smoke plus small probes",
             compute_lane="local encoder-only first; NVIDIA only for official stack",
@@ -332,7 +337,7 @@ def build_schedule() -> list[ExperimentStep]:
             success_gate=(
                 "Emit JSON/CSV/Markdown rows for OneVision imported results, local patchification reproduction, "
                 "VLMaxxing baselines, fused Track A, sparse Track B, C-PERSIST, combined session accounting, and "
-                "OV-Encoder feasibility."
+                "OV-Encoder feasibility, including headline_numeric and target_to_beat fields."
             ),
             skip_rule="If model results are absent, emit the preregistered plan table with hypothesis rows only.",
             setup_effort="implemented planning artifact; update after experiments complete",

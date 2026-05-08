@@ -147,6 +147,51 @@ def test_project_fused_motion_residual_zero_weight_lanes_match_inputs() -> None:
     assert np.array_equal(residual_only, residual)
 
 
+def test_macroblock_score_plane_supports_all_score_sources() -> None:
+    macroblocks = np.zeros((1, 2), dtype=MB_TEST_DTYPE)
+    macroblocks["mv_magnitude"] = np.array([[1.0, 2.0]], dtype=np.float32)
+    macroblocks["mv_magnitude_back"] = np.array([[3.0, 1.0]], dtype=np.float32)
+    macroblocks["residual_energy"] = np.array([[0.25, 4.0]], dtype=np.float32)
+    macroblocks["intra_flag"] = np.array([[False, True]], dtype=np.bool_)
+    macroblocks["cbf"] = np.array([[True, False]], dtype=np.bool_)
+
+    assert np.array_equal(
+        macroblock_motion_magnitude(macroblocks),
+        np.array([[3.0, 2.0]], dtype=np.float32),
+    )
+    assert np.array_equal(
+        macroblock_score_plane(macroblocks, source=CodecScoreSource.NOVEL_CODED),
+        np.array([[1.0, 1.0]], dtype=np.float32),
+    )
+    assert np.array_equal(
+        macroblock_score_plane(macroblocks, source=CodecScoreSource.MOTION),
+        np.array([[3.0, 2.0]], dtype=np.float32),
+    )
+    assert np.array_equal(
+        macroblock_score_plane(macroblocks, source=CodecScoreSource.RESIDUAL),
+        np.array([[0.25, 4.0]], dtype=np.float32),
+    )
+    assert np.allclose(
+        macroblock_score_plane(
+            macroblocks,
+            source=CodecScoreSource.FUSED,
+            normalize_inputs=False,
+        ),
+        np.array([[1.625, 3.0]], dtype=np.float32),
+    )
+
+
+def test_macroblock_motion_magnitude_sanitizes_nan_and_inf() -> None:
+    macroblocks = np.zeros((1, 3), dtype=MB_TEST_DTYPE)
+    macroblocks["mv_magnitude"] = np.array([[np.nan, np.inf, 2.0]], dtype=np.float32)
+    macroblocks["mv_magnitude_back"] = np.array([[0.0, 1.0, np.nan]], dtype=np.float32)
+
+    assert np.array_equal(
+        macroblock_motion_magnitude(macroblocks),
+        np.array([[0.0, 1.0, 2.0]], dtype=np.float32),
+    )
+
+
 def test_project_macroblock_metadata_to_token_grid_uses_selected_source() -> None:
     macroblocks = np.zeros((2, 2), dtype=MB_TEST_DTYPE)
     macroblocks["mv_magnitude"] = np.array([[1.0, 2.0], [3.0, 4.0]], dtype=np.float32)

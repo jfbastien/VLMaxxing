@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Render a CPU-only OneVision + VLMaxxing explainer figure.
-
-The default path uses synthetic score volumes so the visualization can be
-checked without benchmark videos, PyAV, MLX, or model inference.
-"""
+"""Render CPU-only OneVision + VLMaxxing real-video allocation figures."""
 
 from __future__ import annotations
 
@@ -432,6 +428,9 @@ def render_synthetic(out_dir: Path) -> dict[str, object]:
     image.save(out_png)
     summary = {
         "image": str(out_png),
+        "developer_only": True,
+        "scientific_evidence": False,
+        "promotion_blocked": True,
         "token_budget": config.token_budget,
         "frames": FRAMES,
         "grid_shape": list(GRID_SHAPE),
@@ -468,14 +467,24 @@ def render_real_clips(
     *,
     frame_count: int,
     token_budget: int | None,
-    allow_missing: bool,
+    clip_keys: tuple[str, ...] | None = None,
 ) -> dict[str, object]:
+    selected_clips = REAL_CLIPS
+    if clip_keys is not None:
+        by_name = {clip.name: clip for clip in REAL_CLIPS}
+        unknown = sorted(set(clip_keys) - set(by_name))
+        if unknown:
+            raise ValueError(f"unknown clip key(s): {unknown}")
+        selected_clips = tuple(by_name[key] for key in clip_keys)
+    missing = [str(clip.video_path) for clip in selected_clips if not clip.video_path.exists()]
+    if missing:
+        raise FileNotFoundError(
+            "missing raw source videos for real OneVision visualization: "
+            + ", ".join(missing)
+            + ". Run scripts/preflight_onevision_vlmaxxing.py for fetch commands."
+        )
     summaries: list[dict[str, object]] = []
-    missing: list[str] = []
-    for clip in REAL_CLIPS:
-        if not clip.video_path.exists():
-            missing.append(str(clip.video_path))
-            continue
+    for clip in selected_clips:
         summaries.append(
             _render_real_clip(
                 clip,
@@ -488,8 +497,9 @@ def render_real_clips(
         "mode": "real",
         "frame_count": frame_count,
         "requested_token_budget": token_budget,
+        "requested_clips": list(clip_keys) if clip_keys is not None else "all",
         "clips": summaries,
-        "missing_sources": missing,
+        "missing_sources": [],
         "score_sources": [source.value for source in REAL_SCORE_SOURCES],
         "residual_extractor": "pyav_motion_compensated_reconstructed_y_proxy",
         "artifact_schema": "onevision_vlmaxxing_real_video_v1",
@@ -504,10 +514,6 @@ def render_real_clips(
         synthetic_summary=None,
         real_summary=payload,
     )
-    if missing and not allow_missing:
-        raise FileNotFoundError(
-            "missing raw source videos for real OneVision visualization: " + ", ".join(missing)
-        )
     return payload
 
 
@@ -1103,9 +1109,12 @@ def _write_run_manifest(
     payload = {
         "schema": "onevision_vlmaxxing_visual_manifest_v1",
         "mode": mode,
+        "scientific_evidence": mode == "real",
+        "promotion_blocked": mode != "real",
         "synthetic": synthetic_summary,
         "real": real_summary,
         "notes": [
+            "Synthetic mode is developer-only drawing smoke, not an OV-1 fallback.",
             "Real-video artifacts use repo-local H.264 motion/residual proxies.",
             "The visual budget is not an end-to-end latency or accuracy claim.",
             "The fused score source is OneVision-style, not upstream cv_reader residual parity.",
@@ -1162,51 +1171,38 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
     parser.add_argument(
-        "--mode",
-        choices=("synthetic", "real", "auto"),
-        default="auto",
-        help="Render synthetic fallback, real-video allocation, or both when assets exist.",
+        "--dev-synthetic",
+        action="store_true",
+        help=(
+            "Render a developer-only synthetic smoke figure. This is not a scientific "
+            "fallback and is not used by the experiment schedule."
+        ),
     )
     parser.add_argument("--frame-count", type=int, default=16)
+    parser.add_argument(
+        "--clip",
+        action="append",
+        choices=tuple(clip.name for clip in REAL_CLIPS),
+        help="Optional real-video clip key to render. Repeat for multiple clips.",
+    )
     parser.add_argument(
         "--token-budget",
         type=int,
         default=None,
-        help="Real-video token budget. Defaults to 12.5% of dense sampled tokens.",
-    )
-    parser.add_argument(
-        "--allow-missing",
-        action="store_true",
-        help="Do not fail real/auto mode when raw benchmark videos are absent.",
+        help="Real-video token budget. Defaults to 12.5%% of dense sampled tokens.",
     )
     args = parser.parse_args()
-    if args.mode == "synthetic":
+    if args.dev_synthetic:
         summary = render_synthetic(args.out_dir)
         print(summary["image"])
-    elif args.mode == "real":
-        summary = render_real_clips(
-            args.out_dir,
-            frame_count=args.frame_count,
-            token_budget=args.token_budget,
-            allow_missing=bool(args.allow_missing),
-        )
-        print(args.out_dir / "onevision_real_video_status.json")
-    else:
-        synthetic = render_synthetic(args.out_dir)
-        real = render_real_clips(
-            args.out_dir,
-            frame_count=args.frame_count,
-            token_budget=args.token_budget,
-            allow_missing=True,
-        )
-        _write_run_manifest(
-            args.out_dir,
-            mode="auto",
-            synthetic_summary=synthetic,
-            real_summary=real,
-        )
-        print(synthetic["image"])
-        print(args.out_dir / "onevision_real_video_status.json")
+        return
+    render_real_clips(
+        args.out_dir,
+        frame_count=args.frame_count,
+        token_budget=args.token_budget,
+        clip_keys=tuple(args.clip) if args.clip is not None else None,
+    )
+    print(args.out_dir / "onevision_real_video_status.json")
 
 
 if __name__ == "__main__":

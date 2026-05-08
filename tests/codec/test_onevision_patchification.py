@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+from typing import cast
+
 import numpy as np
 import pytest
 
 from codec_through.codec.onevision_patchification import (
+    FuseMode,
     PatchificationConfig,
     VisiblePatch,
     count_tokens_by_frame,
@@ -96,6 +99,70 @@ def test_percentile_normalize_and_fuse_motion_residual() -> None:
 
     assert np.allclose(normalized, np.array([0.0, 0.5, 1.0], dtype=np.float32))
     assert np.allclose(fused, np.array([0.25, 0.39473686, 1.0], dtype=np.float32))
+
+
+@pytest.mark.parametrize(
+    ("mode", "expected"),
+    [
+        ("sum", np.array([3.0, 4.0], dtype=np.float32)),
+        ("max", np.array([2.0, 3.0], dtype=np.float32)),
+        ("geomean", np.array([np.sqrt(2.0), np.sqrt(3.0)], dtype=np.float32)),
+    ],
+)
+def test_fuse_motion_residual_exposed_modes(mode: str, expected: np.ndarray) -> None:
+    motion = np.array([1.0, 3.0], dtype=np.float32)
+    residual = np.array([2.0, 1.0], dtype=np.float32)
+
+    fused = fuse_motion_residual(
+        motion,
+        residual,
+        mode=cast(FuseMode, mode),
+        motion_weight=1.0,
+        residual_weight=1.0,
+        normalize_inputs=False,
+    )
+
+    assert np.allclose(fused, expected)
+
+
+def test_fuse_motion_residual_rejects_all_zero_weights() -> None:
+    with pytest.raises(ValueError, match="at least one fusion weight"):
+        fuse_motion_residual(
+            np.ones((2,), dtype=np.float32),
+            np.ones((2,), dtype=np.float32),
+            motion_weight=0.0,
+            residual_weight=0.0,
+        )
+
+
+def test_percentile_normalize_default_clips_and_zero_scale() -> None:
+    values = np.array([0.0, 1.0, 2.0, 100.0], dtype=np.float32)
+    normalized = percentile_normalize(values)
+
+    assert float(normalized.max()) == 1.0
+    assert np.array_equal(
+        percentile_normalize(np.zeros((3,), dtype=np.float32)),
+        np.zeros((3,), dtype=np.float32),
+    )
+
+
+def test_select_visible_patches_budget_edge_cases() -> None:
+    with pytest.raises(ValueError, match="token_budget must be positive"):
+        PatchificationConfig(token_budget=0)
+
+    scores = np.array([[[3.0, 2.0], [1.0, 0.0]], [[9.0, 8.0], [7.0, 6.0]]], dtype=np.float32)
+    patches = select_visible_patches(
+        scores,
+        config=PatchificationConfig(token_budget=4, anchor_frames=(0,)),
+    )
+
+    assert [patch.source for patch in patches] == ["anchor", "anchor", "anchor", "anchor"]
+    assert visible_indices_array(patches).tolist() == [
+        [0, 0, 0],
+        [0, 0, 1],
+        [0, 1, 0],
+        [0, 1, 1],
+    ]
 
 
 def test_temporal_coverage_and_counts() -> None:
