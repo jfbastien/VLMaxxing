@@ -591,6 +591,10 @@
     1600,
     900
   ],
+  "generated_at": "2026-05-08T05:54:06Z",
+  "git_commit": "f4444c1e36122473368930cdd1327c881bb3938c",
+  "git_dirty": false,
+  "git_dirty_scope": "repository excluding OneVision visualization output artifact directories",
   "schema": "onevision_vlmaxxing_explainer_videos_v1",
   "scientific_guardrails": [
     "No synthetic fallback exists in this renderer.",

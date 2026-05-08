@@ -366,6 +366,10 @@
     }
   ],
   "frame_count": 16,
+  "generated_at": "2026-05-08T05:55:39Z",
+  "git_commit": "f4444c1e36122473368930cdd1327c881bb3938c",
+  "git_dirty": false,
+  "git_dirty_scope": "repository excluding OneVision visualization output artifact directories",
   "missing_sources": [],
   "mode": "real",
   "projection_geometry": {
