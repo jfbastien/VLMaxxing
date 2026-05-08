@@ -71,7 +71,9 @@ ways.
 
 `reproduced here`: This branch has CPU-only patchification code, macroblock
 motion/residual fusion projection, unit tests, synthetic visualization tooling,
-and a generated schedule. No VLM inference was run for this phase.
+real-video visualization artifact plumbing, Phase 1.29 score-source CLI wiring,
+comparison-table scaffolding, and a generated schedule. No VLM inference was
+run for this phase.
 
 Existing visualization windows to reuse when raw videos are present:
 
@@ -146,11 +148,11 @@ uv run python scripts/render_onevision_vlmaxxing_visual.py
 
 Still needed:
 
-- add a real-video path for the three established clips;
-- extract motion/residual metadata through the existing H.264 helper;
-- render token allocation over all sampled frames;
-- overlay selected patches, anchor consumption, center/boundary share, and
-  edge/OCR starvation diagnostics.
+- run the real-video path when the raw clips are available and the machine is
+  free;
+- review `allocation_summary.json`, `score_volumes.npz`,
+  `token_allocation.csv`, `selected_patches.jsonl`, and
+  `starvation_metrics.csv` for the three clips before model promotion.
 
 Success gate: synthetic figure remains CI-friendly, and real-video allocation
 audits exist before OV-3 model runs.
@@ -176,10 +178,8 @@ Already added:
 
 Still needed before model inference:
 
-- CLI flags in `run_phase1_29_planner_accuracy_probe.py` for motion-only,
-  residual-only, fused weighted, and bounded-staleness score sources;
-- artifact schema recording score source, normalization, weights, and residual
-  extractor;
+- run CPU-only checks for the newly added CLI flags in
+  `run_phase1_29_planner_accuracy_probe.py`;
 - a same-item regression against current pixel `max_abs` and Phase 1.29 codec
   baselines;
 - optional runner integration in `run_benchmark_track_a.py` only after the
@@ -245,6 +245,8 @@ operational noise.
 Required compute: Linux/NVIDIA environment or Lambda-style 1xH100/A100. M5 is
 not recommended for the official stack because the public instructions target
 CUDA, Docker `--gpus all`, CUDA PyTorch, and flash-attention-style components.
+Also budget 2-4 hours for first-time `cv_reader` plus patched-FFmpeg setup
+before counting the parity run itself.
 
 Metrics:
 
@@ -262,7 +264,8 @@ codec-internal residual extractor.
 Skip rule: Defer unless OV-3 dev passes or we explicitly want a small
 credibility run before model promotion.
 
-ETA: NVIDIA 3-6 hours for a parity oracle; M3/M5 not recommended.
+ETA: NVIDIA 2-4 hours setup plus 3-6 hours for a parity oracle; M3/M5 not
+recommended.
 
 ### OV-5: Track A Holdout
 
@@ -327,8 +330,13 @@ MLX port assessment:
 Skip rule: Defer while other benchmarks run. Do not run local PyTorch/MPS/MLX
 smokes in this planning phase.
 
-ETA: 1 day for PyTorch/MPS feasibility, 2-4 days for a careful MLX encoder
-port if it becomes scientifically useful.
+Patch-size caveat: Stage 1 selects 16-pixel source patches, while the released
+encoder card reports a 14-pixel ViT patch size for Stage 2. Any local encoder
+probe must preserve the Stage 2 packing/position conversion instead of feeding
+our 16-pixel source grid directly as ViT positions.
+
+ETA: 1 day for PyTorch/MPS feasibility, about 1 week for a careful MLX encoder
+port with parity debugging if it becomes scientifically useful.
 
 ### OV-8: C-PERSIST Session Economics
 
@@ -353,7 +361,31 @@ stage-share ceilings and do not claim a working combined runtime.
 
 ETA: M3 6-10 hours accounting only; M5 8-14 hours model-backed if OV-6 gates.
 
-### OV-9: Editor Feedback Packet
+### OV-9: Comparison Table
+
+Track: comparison-accounting
+
+Hypothesis: A fixed comparison table will prevent denominator drift when
+comparing imported OneVision patch/accuracy results, reproduced VLMaxxing
+baselines, Track A fused scoring, Track B sparse timing, C-PERSIST, and
+combined session accounting.
+
+Run now:
+
+```bash
+uv run python scripts/build_onevision_vlmaxxing_comparison_table.py
+```
+
+Success gate: JSON/CSV/Markdown rows exist with `imported result`,
+`reproduced here`, and `hypothesis` status labels and explicit denominator
+columns.
+
+Skip rule: If model results are absent, emit the preregistered plan table only;
+do not fill result cells speculatively.
+
+ETA: under 1 minute.
+
+### OV-10: Editor Feedback Packet
 
 Track: paper-editor-feedback
 

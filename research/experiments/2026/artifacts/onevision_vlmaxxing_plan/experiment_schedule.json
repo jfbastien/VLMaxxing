@@ -32,17 +32,17 @@
         "research/experiments/2026/artifacts/codec_through_video_overlays_exploratory/"
       ],
       "commands": [
-        "uv run python scripts/render_onevision_vlmaxxing_visual.py",
+        "uv run python scripts/render_onevision_vlmaxxing_visual.py --mode auto",
         "uv run python scripts/render_codec_through_video_overlays.py"
       ],
       "compute_lane": "CPU plus optional PyAV research dependency",
       "defer_until": "after OV-0",
-      "eta_m3": "3-6 hours with video extraction; < 1 hour synthetic",
-      "eta_m5": "1-3 hours with video extraction; < 1 hour synthetic",
+      "eta_m3": "3-6 hours with video extraction; < 1 hour synthetic/status-only",
+      "eta_m5": "1-3 hours with video extraction; < 1 hour synthetic/status-only",
       "hypothesis": "Motion/residual fusion will expose whether anchor budget, temporal coverage, center bias, and edge/OCR starvation are sane enough to justify model runs.",
       "question": "Do codec scores allocate tokens sensibly on synthetic and real video before any VLM inference?",
       "requires_nvidia": false,
-      "setup_effort": "real-video code path still needed",
+      "setup_effort": "real-video artifact path implemented; run only when raw clips are available",
       "skip_rule": "If raw videos are absent, keep synthetic/metadata artifacts and block model-facing promotion until a real-video allocation audit is run on the target clips.",
       "stage": "OV-1",
       "success_gate": "Render token-allocation-over-time plus selected-patch overlays for the three established clips when raw videos are available; synthetic fallback must remain available for CI and review.",
@@ -59,15 +59,15 @@
       ],
       "compute_lane": "CPU",
       "defer_until": "after OV-1 visual sanity or explicit override",
-      "eta_m3": "4-8 hours coding; no model run",
-      "eta_m5": "same code review only; no model run",
+      "eta_m3": "< 1 hour checks; no model run",
+      "eta_m5": "< 1 hour checks; no model run",
       "hypothesis": "The safest first runnable integration is a continuous-score adapter over existing H.264 metadata, not a new hard BlockStatistic label.",
       "question": "Can OneVision-style fused scores be consumed by existing Track A planners?",
       "requires_nvidia": false,
-      "setup_effort": "4-8 hours coding before model time",
+      "setup_effort": "implemented; pending CPU-only checks and optional cached-input smoke",
       "skip_rule": "If the adapter cannot reproduce existing Phase 1.29 codec-score behavior on cached/small inputs, do not start OV-3 model inference.",
       "stage": "OV-2",
-      "success_gate": "Add CLI flags and artifact schema for motion-only, residual-only, fused weighted, and bounded-staleness score sources in run_phase1_29_planner_accuracy_probe.py; validate zero-weight lanes and matched-item pixel max_abs regressions before model runs.",
+      "success_gate": "CLI flags and artifact schema exist for motion-only, residual-only, fused weighted, and max-age staleness gating in run_phase1_29_planner_accuracy_probe.py; validate zero-weight lanes and matched-item pixel max_abs regressions before model runs.",
       "track": "implementation-wiring",
       "uses_local_accelerator": false
     },
@@ -76,7 +76,9 @@
         "research/experiments/2026/artifacts/onevision_track_a_dev/"
       ],
       "commands": [
-        "uv run python scripts/run_phase1_29_planner_accuracy_probe.py <onevision-dev-ablation args>",
+        "uv run python scripts/run_phase1_29_planner_accuracy_probe.py --codec-score-source motion <dev args>",
+        "uv run python scripts/run_phase1_29_planner_accuracy_probe.py --codec-score-source residual <dev args>",
+        "uv run python scripts/run_phase1_29_planner_accuracy_probe.py --codec-score-source fused --fusion-mode weighted <dev args>",
         "uv run python scripts/run_benchmark_track_a.py <promoted onevision planner args>"
       ],
       "compute_lane": "local MLX one model at a time",
@@ -104,11 +106,11 @@
       "compute_lane": "NVIDIA Linux box or Lambda 1xH100/A100",
       "defer_until": "after OV-3 dev passes",
       "eta_m3": "not feasible",
-      "eta_m5": "not recommended; CUDA stack is the wrong target",
+      "eta_m5": "not recommended; CUDA/cv_reader stack is the wrong target",
       "hypothesis": "After matching frame sampling, padding, grid size, anchors, and budget, allocator selection should match upstream under identical score planes; independent residual-score correlation is expected to be weaker unless we use cv_reader or an equivalent codec-internal residual extractor.",
       "question": "Does the clean-room allocator agree with upstream OneVision preprocessing?",
       "requires_nvidia": true,
-      "setup_effort": "NVIDIA/Linux environment plus cv_reader dependency investigation",
+      "setup_effort": "NVIDIA/Linux environment plus cv_reader patched-FFmpeg build; add 2-4 hours first-time dependency setup before the parity run",
       "skip_rule": "Defer this until OV-3 dev passes. If it fails, debug sampling, padding, score normalization, cv_reader residuals, and I-frame policy one variable at a time.",
       "stage": "OV-4",
       "success_gate": "Identical-score Jaccard >= 0.90 for selected positions; independent-extraction results reported with separate motion-only and residual-only correlations rather than a single brittle Spearman gate.",
@@ -173,7 +175,7 @@
       "hypothesis": "OV-Encoder can be a third vision-encoder probe locally, but it is not a third VLM comparable to Qwen/Gemma until an LMM head or probe stack is reproduced.",
       "question": "Should OV-Encoder itself become a third local model family?",
       "requires_nvidia": false,
-      "setup_effort": "1 day for PyTorch/MPS smoke or 2-4 days for a careful MLX encoder port",
+      "setup_effort": "1 day for PyTorch/MPS smoke or about 1 week for a careful MLX encoder port with parity debugging",
       "skip_rule": "Skip if it requires flash-attention/CUDA for inference or if eager attention at target token counts exceeds local memory; move to NVIDIA only if encoder probes answer a paper-relevant question.",
       "stage": "OV-7",
       "success_gate": "When the machine is free, run CPU/MPS/PyTorch or MLX-parity smoke on image and sparse-video encoder outputs; treat output-shape/parity as feasibility evidence, not QA accuracy.",
@@ -204,13 +206,36 @@
     },
     {
       "artifacts": [
+        "research/experiments/2026/artifacts/onevision_vlmaxxing_plan/comparison_table_plan.json",
+        "research/experiments/2026/artifacts/onevision_vlmaxxing_plan/comparison_table_plan.csv",
+        "research/experiments/2026/artifacts/onevision_vlmaxxing_plan/comparison_table_plan.md"
+      ],
+      "commands": [
+        "uv run python scripts/build_onevision_vlmaxxing_comparison_table.py"
+      ],
+      "compute_lane": "CPU/documentation",
+      "defer_until": "after OV-0 for plan table; after OV-3/OV-8 for result-filled table",
+      "eta_m3": "< 1 minute",
+      "eta_m5": "< 1 minute",
+      "hypothesis": "A fixed comparison table with status labels and denominator columns will prevent imported patch compression, Track A answer stability, Track B timing, and C-PERSIST session savings from being collapsed into one speedup number.",
+      "question": "How should OneVision, VLMaxxing, and combined techniques be compared without denominator drift?",
+      "requires_nvidia": false,
+      "setup_effort": "implemented planning artifact; update after experiments complete",
+      "skip_rule": "If model results are absent, emit the preregistered plan table with hypothesis rows only.",
+      "stage": "OV-9",
+      "success_gate": "Emit JSON/CSV/Markdown rows for OneVision imported results, local patchification reproduction, VLMaxxing baselines, fused Track A, sparse Track B, C-PERSIST, combined session accounting, and OV-Encoder feasibility.",
+      "track": "comparison-table",
+      "uses_local_accelerator": false
+    },
+    {
+      "artifacts": [
         "research/experiments/2026/artifacts/onevision_editor_feedback/"
       ],
       "commands": [
         "manual: draft editor feedback from completed artifacts"
       ],
       "compute_lane": "CPU/documentation",
-      "defer_until": "after OV-3 through OV-8 outcomes are known",
+      "defer_until": "after OV-3 through OV-9 outcomes are known",
       "eta_m3": "1-3 hours",
       "eta_m5": "1-3 hours",
       "hypothesis": "The editor-facing update will either add OneVision as trained codec-aligned related work plus diagnostic evidence, or promote a new combined runtime result only if Track B gates pass.",
@@ -218,7 +243,7 @@
       "requires_nvidia": false,
       "setup_effort": "1-3 hours after artifacts exist",
       "skip_rule": "Do not edit manuscript prose until this memo is reviewed.",
-      "stage": "OV-9",
+      "stage": "OV-10",
       "success_gate": "Prepare an editor memo listing imported OneVision claims, reproduced local claims, failed hypotheses, decision-log reopen status, and exact paper sections that should change.",
       "track": "paper-editor-feedback",
       "uses_local_accelerator": false

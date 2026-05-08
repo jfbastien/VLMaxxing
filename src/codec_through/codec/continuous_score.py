@@ -28,7 +28,7 @@ CODEC_SCORE_UNITS: dict[CodecScoreSource, str] = {
     CodecScoreSource.NOVEL_CODED: "fraction_intra_or_coded_block_flag",
     CodecScoreSource.MOTION: "macroblock_motion_vector_magnitude_pixels",
     CodecScoreSource.RESIDUAL: "repo_local_reconstructed_y_residual_proxy",
-    CodecScoreSource.FUSED: "motion_residual_fused_score",
+    CodecScoreSource.FUSED: "onevision_style_motion_residual_fused_score",
 }
 
 
