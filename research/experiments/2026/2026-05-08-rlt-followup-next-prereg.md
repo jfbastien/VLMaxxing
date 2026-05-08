@@ -26,6 +26,16 @@ The round-17 queue then added three reproduced-here facts:
 The next queue closes those two remaining paper gaps without changing the paper
 source before the results exist.
 
+The round-18 queue then added two reproduced-here facts:
+
+- Direct dense-vs-full-composition is strongly E2E-positive but not uniformly
+  quality-clean: VideoMME `1.070x` with Δacc `-0.033`, TOMATO `1.275x` with
+  Δacc `0.000`, and MVBench `1.899x` with Δacc `-0.167`. The failures are
+  bucket-local rather than global.
+- Valid-position magnitude does not close the gap to RLT. Fixing K accounting
+  helps the control, but it still trails RLT on this stack; the saliency signal
+  matters, not just the budget denominator.
+
 ## Local M3/M4-Class Queue
 
 Command shape:
@@ -39,6 +49,7 @@ uv run python scripts/run_rlt_followup_queue.py \
   --run-magnitude-valid-head-to-head \
   --run-composition-incremental \
   --run-composition-direct \
+  --run-composition-rescue \
   --run-keep-rate-sweep
 ```
 
@@ -103,6 +114,33 @@ round-17 estimates: roughly VideoMME `1.08-1.12x`, TOMATO `1.35-1.45x`, MVBench
 `1.55-1.75x`. A miss falsifies the multiplicative-composition framing and
 should replace estimates with measured direct values.
 
+### H2c: Bucket-Specific Composition Rescue
+
+Hypothesis: the direct-composition quality loss is group-local and recoverable
+by raising K only in the failed groups. This follows the RLT literature's core
+assumption that temporal redundancy is not uniformly distributed, and matches
+the observed round-18 failures:
+
+- VideoMME failed `long` and `medium`; rescue uses keep-rate `0.7` for those
+  two groups and keeps `short` at `0.5`.
+- TOMATO failed `direction`; rescue uses keep-rate `0.85` for `direction` and
+  keeps `rotation` / `shape_trend` at `0.5`.
+- MVBench failed `moving_attribute` and `object_interaction`; rescue uses
+  keep-rate `0.85` for those groups and keeps the other motion groups at `0.5`.
+
+Gate: run only after RLT VideoMME core C-VISION gates pass. If the base direct
+composition already passes all direct gates for a benchmark, skip that
+benchmark's rescue cell. A rescue pass requires aggregate fidelity, positive
+E2E, sparse-induced parse-failure parity, and bucket-level quality+E2E.
+
+Expected result: VideoMME should trade a small amount of speed for cleaner
+quality (`~1.03-1.06x`). TOMATO should remain meaningfully positive
+(`~1.15-1.25x`) if `direction` was the only sensitive group. MVBench is the
+decisive cell: success would turn the `1.90x` speed frontier into a safer
+class-conditional policy around `1.45-1.70x`; failure would say fine-grained
+attribute/interaction questions need query-aware or static-detail protection,
+not just more tokens in the same RLT policy.
+
 ### H3: Keep-Rate Pareto Sweep
 
 Hypothesis: the Pareto knee for RLT-as-C-VISION is around `keep_rate=0.4-0.5`
@@ -140,12 +178,16 @@ uv run python scripts/run_rlt_followup_queue.py \
   --run-max-min-triangulation \
   --run-magnitude-valid-head-to-head \
   --run-magnitude-head-to-head \
+  --run-composition-direct \
+  --run-composition-rescue \
   --run-keep-rate-sweep
 ```
 
 Hypothesis: absolute E2E speedup may shrink as language/decode share grows, but
 the scorer-cost ratio should widen because max-min scales with feature dimension
-while RLT scoring stays raw-pixel-domain.
+while RLT scoring stays raw-pixel-domain. Composition and rescue cells now pass
+the same `--mlx-memory-limit-gb` cap as Track-B C-VISION cells so high-memory
+runs fail inside MLX rather than through whole-system memory pressure.
 
 First gate on M5: n=1 smoke must pass shape, schema, scorer-timing, and memory
 guards before any n=30 cells continue.
@@ -157,7 +199,9 @@ guards before any n=30 cells continue.
    valid-position magnitude, composition, and keep-rate sweep.
 3. If composition quality fails, do not claim composition; keep C-VISION-only
    claims intact.
-4. Direct full composition supersedes multiplicative estimates wherever it
+4. Bucket-specific rescue supersedes failed direct-composition rows only if it
+   clears the direct full-composition gate with measured E2E still above 1.0.
+5. Direct full composition supersedes multiplicative estimates wherever it
    completes; estimates remain hypotheses only.
-5. Keep-rate sweep runs only after the base RLT VideoMME gate because it is a
+6. Keep-rate sweep runs only after the base RLT VideoMME gate because it is a
    Pareto refinement, not a rescue path for a failed base method.

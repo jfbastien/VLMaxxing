@@ -185,6 +185,28 @@ def test_composition_command_allows_prefill_step_override(tmp_path: Path) -> Non
     assert run_command[run_command.index("--mlx-memory-limit-gb") + 1] == "60"
 
 
+def test_composition_command_can_set_group_specific_keep_rates(tmp_path: Path) -> None:
+    run_command, _analyze_command = queue._gemma_composition_commands(
+        artifact_dir=tmp_path,
+        manifest=Path("manifest.toml"),
+        model_path=Path("model"),
+        frame_count=8,
+        n_items=30,
+        rss_guard_mb=9000,
+        mlx_memory_limit_gb=12.0,
+        label="composition_rlt_mvbench_rescue",
+        group_keep_rates={"moving_attribute": 0.85, "object_interaction": 0.85},
+        group_vision_keep_rates={"moving_attribute": 0.85, "object_interaction": 0.85},
+    )
+
+    assert run_command[run_command.index("--group-keep-rates") + 1] == (
+        "moving_attribute=0.85,object_interaction=0.85"
+    )
+    assert run_command[run_command.index("--group-vision-keep-rates") + 1] == (
+        "moving_attribute=0.85,object_interaction=0.85"
+    )
+
+
 def test_full_composition_commands_build_dense_reference_and_composed_arm(tmp_path: Path) -> None:
     dense, composed, analyze = queue._gemma_full_composition_commands(
         artifact_dir=tmp_path,
@@ -207,6 +229,34 @@ def test_full_composition_commands_build_dense_reference_and_composed_arm(tmp_pa
     assert composed[composed.index("--prefill-step-size") + 1] == "1024"
     assert "scripts/analyze_gemma_full_composition.py" in analyze
     assert str(tmp_path / "full_composition_rlt_videomme_analysis.json") in analyze
+
+
+def test_full_composition_commands_can_build_adaptive_rescue_label(tmp_path: Path) -> None:
+    dense, composed, analyze = queue._gemma_full_composition_commands(
+        artifact_dir=tmp_path,
+        manifest=Path("manifest.toml"),
+        model_path=Path("model"),
+        frame_count=8,
+        n_items=30,
+        expected_items=30,
+        rss_guard_mb=9000,
+        mlx_memory_limit_gb=60.0,
+        benchmark="mvbench",
+        prefill_step_size=1024,
+        label="full_composition_rlt_rescue_mvbench",
+        group_keep_rates={"moving_attribute": 0.85, "object_interaction": 0.85},
+        group_vision_keep_rates={"moving_attribute": 0.85, "object_interaction": 0.85},
+    )
+
+    assert str(tmp_path / "full_composition_rlt_rescue_mvbench_dense.jsonl") in dense
+    assert str(tmp_path / "full_composition_rlt_rescue_mvbench_composed.jsonl") in composed
+    assert composed[composed.index("--group-keep-rates") + 1] == (
+        "moving_attribute=0.85,object_interaction=0.85"
+    )
+    assert composed[composed.index("--group-vision-keep-rates") + 1] == (
+        "moving_attribute=0.85,object_interaction=0.85"
+    )
+    assert str(tmp_path / "full_composition_rlt_rescue_mvbench_analysis.json") in analyze
 
 
 def test_phase_passed_full_composition_requires_direct_gates() -> None:

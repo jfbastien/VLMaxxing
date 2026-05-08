@@ -21,6 +21,14 @@ DEFAULT_SMOKE_MANIFEST = Path("research/benchmark_manifests/videomme_dev_v1.toml
 DEFAULT_TOMATO_MANIFEST = Path("research/benchmark_manifests/tomato_motion_dev_v2.toml")
 DEFAULT_MVBENCH_MANIFEST = Path("research/benchmark_manifests/mvbench_motion_dev_v2.toml")
 DEFAULT_COMPOSITION_PREFILL_STEP_SIZE = 1024
+ADAPTIVE_COMPOSITION_GROUP_KEEP_RATES: dict[str, dict[str, float]] = {
+    # Round-18 direct-composition failures were bucket-local. These rescue
+    # policies raise K only in the failed groups instead of paying a global
+    # speed penalty.
+    "videomme": {"long": 0.7, "medium": 0.7},
+    "tomato": {"direction": 0.85},
+    "mvbench": {"moving_attribute": 0.85, "object_interaction": 0.85},
+}
 
 PHASE_ESTIMATES_HOURS = {
     "prefill-kernel-microbench": [0.35, 1.35],
@@ -45,6 +53,9 @@ PHASE_ESTIMATES_HOURS = {
     "full-composition-rlt-videomme-n30": [1.0, 2.2],
     "full-composition-rlt-tomato-n30": [1.0, 2.0],
     "full-composition-rlt-mvbench-n30": [1.0, 2.0],
+    "full-composition-rlt-rescue-videomme-n30": [1.0, 2.2],
+    "full-composition-rlt-rescue-tomato-n30": [1.0, 2.0],
+    "full-composition-rlt-rescue-mvbench-n30": [1.0, 2.0],
     "cvision-kr-sweep-tomato": [1.2, 2.4],
     "cvision-kr-sweep-mvbench": [1.2, 2.4],
     "cvision-kr-sweep-videomme": [1.4, 3.0],
@@ -111,6 +122,10 @@ def _budget(phases: list[str]) -> dict[str, float]:
     low = sum(PHASE_ESTIMATES_HOURS[phase][0] for phase in phases)
     high = sum(PHASE_ESTIMATES_HOURS[phase][1] for phase in phases)
     return {"low_hours": low, "high_hours": high}
+
+
+def _format_group_keep_rates(rates: dict[str, float]) -> str:
+    return ",".join(f"{group}={rate:.6g}" for group, rate in sorted(rates.items()))
 
 
 def _gemma_admission_commands(
@@ -315,6 +330,8 @@ def _gemma_composition_commands(
     label: str,
     prefill_step_size: int = DEFAULT_COMPOSITION_PREFILL_STEP_SIZE,
     vision_keep_rate: float = 0.5,
+    group_keep_rates: dict[str, float] | None = None,
+    group_vision_keep_rates: dict[str, float] | None = None,
 ) -> list[list[str]]:
     jsonl_path = artifact_dir / f"{label}.jsonl"
     summary_path = artifact_dir / f"{label}_summary.json"
@@ -356,6 +373,12 @@ def _gemma_composition_commands(
     ]
     if n_items > 0:
         run_command.extend(["--n-items", str(n_items)])
+    if group_keep_rates:
+        run_command.extend(["--group-keep-rates", _format_group_keep_rates(group_keep_rates)])
+    if group_vision_keep_rates:
+        run_command.extend(
+            ["--group-vision-keep-rates", _format_group_keep_rates(group_vision_keep_rates)]
+        )
     analyze_command = [
         sys.executable,
         "scripts/analyze_gemma_admission.py",
@@ -390,13 +413,24 @@ def _gemma_full_composition_commands(
     benchmark: str,
     prefill_step_size: int = DEFAULT_COMPOSITION_PREFILL_STEP_SIZE,
     vision_keep_rate: float = 0.5,
+    label: str | None = None,
+    group_keep_rates: dict[str, float] | None = None,
+    group_vision_keep_rates: dict[str, float] | None = None,
 ) -> list[list[str]]:
-    dense_jsonl = artifact_dir / f"full_composition_dense_{benchmark}.jsonl"
-    dense_summary = artifact_dir / f"full_composition_dense_{benchmark}_summary.json"
-    composed_jsonl = artifact_dir / f"full_composition_rlt_{benchmark}.jsonl"
-    composed_summary = artifact_dir / f"full_composition_rlt_{benchmark}_summary.json"
-    analysis_path = artifact_dir / f"full_composition_rlt_{benchmark}_analysis.json"
-    paired_path = artifact_dir / f"full_composition_rlt_{benchmark}_paired.jsonl"
+    if label is None:
+        dense_jsonl = artifact_dir / f"full_composition_dense_{benchmark}.jsonl"
+        dense_summary = artifact_dir / f"full_composition_dense_{benchmark}_summary.json"
+        composed_jsonl = artifact_dir / f"full_composition_rlt_{benchmark}.jsonl"
+        composed_summary = artifact_dir / f"full_composition_rlt_{benchmark}_summary.json"
+        analysis_path = artifact_dir / f"full_composition_rlt_{benchmark}_analysis.json"
+        paired_path = artifact_dir / f"full_composition_rlt_{benchmark}_paired.jsonl"
+    else:
+        dense_jsonl = artifact_dir / f"{label}_dense.jsonl"
+        dense_summary = artifact_dir / f"{label}_dense_summary.json"
+        composed_jsonl = artifact_dir / f"{label}_composed.jsonl"
+        composed_summary = artifact_dir / f"{label}_composed_summary.json"
+        analysis_path = artifact_dir / f"{label}_analysis.json"
+        paired_path = artifact_dir / f"{label}_paired.jsonl"
     base = [
         sys.executable,
         "scripts/run_novelty_pruning_gemma.py",
@@ -451,6 +485,12 @@ def _gemma_full_composition_commands(
     if n_items > 0:
         dense.extend(["--n-items", str(n_items)])
         composed.extend(["--n-items", str(n_items)])
+    if group_keep_rates:
+        composed.extend(["--group-keep-rates", _format_group_keep_rates(group_keep_rates)])
+    if group_vision_keep_rates:
+        composed.extend(
+            ["--group-vision-keep-rates", _format_group_keep_rates(group_vision_keep_rates)]
+        )
     analyze = [
         sys.executable,
         "scripts/analyze_gemma_full_composition.py",
@@ -649,6 +689,15 @@ def main() -> int:
         ),
     )
     parser.add_argument(
+        "--run-composition-rescue",
+        action="store_true",
+        help=(
+            "Run bucket-specific keep-rate rescue cells after the direct "
+            "composition measurement. The policy raises K only in groups that "
+            "failed the round-18 direct-composition quality gate."
+        ),
+    )
+    parser.add_argument(
         "--composition-prefill-step-size",
         type=int,
         default=DEFAULT_COMPOSITION_PREFILL_STEP_SIZE,
@@ -669,7 +718,7 @@ def main() -> int:
         default="tomato",
     )
     parser.add_argument("--cvision-keep-rates", default="0.3,0.5,0.7,0.85")
-    parser.add_argument("--max-planned-hours", type=float, default=40.0)
+    parser.add_argument("--max-planned-hours", type=float, default=48.0)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--summary", type=Path)
     args = parser.parse_args()
@@ -690,6 +739,8 @@ def main() -> int:
         raise SystemExit("--run-composition-incremental requires --run-cvision-rlt")
     if args.run_composition_direct and not args.run_cvision_rlt:
         raise SystemExit("--run-composition-direct requires --run-cvision-rlt")
+    if args.run_composition_rescue and not args.run_cvision_rlt:
+        raise SystemExit("--run-composition-rescue requires --run-cvision-rlt")
     if args.run_keep_rate_sweep and not args.run_cvision_rlt:
         raise SystemExit("--run-keep-rate-sweep requires --run-cvision-rlt")
     if args.cooldown_after_microbench_seconds < 0:
@@ -742,6 +793,14 @@ def main() -> int:
                 "full-composition-rlt-videomme-n30",
                 "full-composition-rlt-tomato-n30",
                 "full-composition-rlt-mvbench-n30",
+            ]
+        )
+    if args.run_composition_rescue:
+        phases.extend(
+            [
+                "full-composition-rlt-rescue-videomme-n30",
+                "full-composition-rlt-rescue-tomato-n30",
+                "full-composition-rlt-rescue-mvbench-n30",
             ]
         )
     if args.run_keep_rate_sweep:
@@ -944,6 +1003,24 @@ def main() -> int:
         )
         for benchmark, manifest in benchmark_manifests.items()
     }
+    composition_rescue_commands = {
+        benchmark: _gemma_full_composition_commands(
+            artifact_dir=args.artifact_dir,
+            manifest=manifest,
+            model_path=args.gemma_model_path,
+            frame_count=args.frame_count,
+            n_items=args.cvision_n_items if benchmark == "videomme" else 0,
+            expected_items=benchmark_expected_items[benchmark],
+            rss_guard_mb=args.rss_guard_mb,
+            mlx_memory_limit_gb=args.mlx_memory_limit_gb,
+            benchmark=benchmark,
+            prefill_step_size=args.composition_prefill_step_size,
+            label=f"full_composition_rlt_rescue_{benchmark}",
+            group_keep_rates=ADAPTIVE_COMPOSITION_GROUP_KEEP_RATES[benchmark],
+            group_vision_keep_rates=ADAPTIVE_COMPOSITION_GROUP_KEEP_RATES[benchmark],
+        )
+        for benchmark, manifest in benchmark_manifests.items()
+    }
     sweep_manifest = benchmark_manifests[args.keep_rate_sweep_benchmark]
     sweep_expected_items = benchmark_expected_items[args.keep_rate_sweep_benchmark]
     keep_rate_sweep_commands = {
@@ -1035,6 +1112,18 @@ def main() -> int:
                 }
                 for c in phase_commands
             )
+    if args.run_composition_rescue:
+        for benchmark, phase_commands in composition_rescue_commands.items():
+            planned.extend(
+                {
+                    "phase": (
+                        f"full_composition_rlt_rescue_{benchmark}_"
+                        "if_base_direct_composition_needs_quality_rescue"
+                    ),
+                    "command": c,
+                }
+                for c in phase_commands
+            )
     if args.run_keep_rate_sweep:
         for rate, phase_commands in keep_rate_sweep_commands.items():
             planned.extend(
@@ -1084,6 +1173,19 @@ def main() -> int:
                             ),
                         ]
                         if args.run_cvision_rlt
+                        else []
+                    ),
+                    *(
+                        [
+                            (
+                                "Run bucket-specific full-composition rescue only after "
+                                "RLT VideoMME core gates pass. The rescue raises keep-rate "
+                                "only in quality-failed groups from the direct composition "
+                                "cell, and skips a benchmark whose base direct composition "
+                                "already passes all full-composition gates."
+                            )
+                        ]
+                        if args.run_composition_rescue
                         else []
                     ),
                 ],
@@ -1352,6 +1454,45 @@ def main() -> int:
             {
                 "decision": "skip",
                 "reason": "full_composition_requires_rlt_videomme_pass",
+            }
+        )
+    if args.run_composition_rescue and cvision_videomme_passed:
+        for benchmark, phase_commands in composition_rescue_commands.items():
+            base_analysis = analyses.get(f"full_composition_rlt_{benchmark}")
+            if isinstance(base_analysis, dict) and _phase_passed_full_composition(base_analysis):
+                decisions.append(
+                    {
+                        "decision": "skip",
+                        "reason": f"full_composition_rlt_{benchmark}_already_passed",
+                        "skipped_phase": f"full_composition_rlt_rescue_{benchmark}",
+                    }
+                )
+                continue
+            rescue_results = _run_command_group(phase_commands)
+            commands.extend(rescue_results)
+            rescue_label = f"full_composition_rlt_rescue_{benchmark}"
+            rescue_analysis = _read_analysis_after_success(
+                results=rescue_results,
+                path=args.artifact_dir / f"{rescue_label}_analysis.json",
+                phase=rescue_label,
+                decisions=decisions,
+            )
+            if rescue_analysis is not None:
+                analyses[rescue_label] = rescue_analysis
+                if not _phase_passed_full_composition(rescue_analysis):
+                    decisions.append(
+                        {
+                            "decision": "continue",
+                            "reason": f"{rescue_label}_did_not_earn_gate",
+                            "phase": rescue_label,
+                            "details": rescue_analysis.get("decisions", []),
+                        }
+                    )
+    elif args.run_composition_rescue and not cvision_videomme_passed:
+        decisions.append(
+            {
+                "decision": "skip",
+                "reason": "full_composition_rescue_requires_rlt_videomme_pass",
             }
         )
     if args.run_keep_rate_sweep and cvision_videomme_passed:

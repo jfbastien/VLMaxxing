@@ -99,11 +99,13 @@ def test_schema_hash_includes_max_tokens() -> None:
         frame_count=8,
         anchor_arm="gemma_structural",
         keep_rate=0.5,
+        group_keep_rates={},
         prune_placeholders="none",
         n_warmup=1,
         max_tokens=16,
         vision_tower_layer=1,
         vision_tower_keep_rate=1.0,
+        group_vision_keep_rates={},
     )
     longer = argparse.Namespace(**{**vars(base), "max_tokens": 32})
 
@@ -113,6 +115,50 @@ def test_schema_hash_includes_max_tokens() -> None:
     assert base_row["artifact_payload"]["max_tokens"] == 16
     assert longer_row["artifact_payload"]["max_tokens"] == 32
     assert base_row["artifact_config_hash"] != longer_row["artifact_config_hash"]
+
+
+def test_schema_hash_includes_group_keep_rate_overrides() -> None:
+    base = argparse.Namespace(
+        manifest="manifest.toml",
+        model_path="gemma",
+        frame_count=8,
+        anchor_arm="gemma_structural",
+        keep_rate=0.5,
+        group_keep_rates={},
+        prune_placeholders="rlt",
+        n_warmup=1,
+        max_tokens=16,
+        vision_tower_layer=1,
+        vision_tower_keep_rate=0.5,
+        group_vision_keep_rates={},
+        vision_tower_score_mode="rlt_topk",
+        arm_order="abba",
+        prefill_step_size=1024,
+    )
+    adaptive = argparse.Namespace(
+        **{
+            **vars(base),
+            "group_keep_rates": {"moving_attribute": 0.85},
+            "group_vision_keep_rates": {"moving_attribute": 0.85},
+        }
+    )
+
+    base_row = runner._schema_row(base, RLTMaskConfig())
+    adaptive_row = runner._schema_row(adaptive, RLTMaskConfig())
+
+    assert adaptive_row["artifact_payload"]["group_keep_rates"] == {"moving_attribute": 0.85}
+    assert adaptive_row["artifact_payload"]["group_vision_tower_keep_rates"] == {
+        "moving_attribute": 0.85
+    }
+    assert base_row["artifact_config_hash"] != adaptive_row["artifact_config_hash"]
+
+
+def test_group_keep_rate_parser_and_resolver() -> None:
+    parsed = runner._parse_group_keep_rates("long=0.7,medium=0.85")
+
+    assert parsed == {"long": 0.7, "medium": 0.85}
+    assert runner._resolve_group_keep_rate(0.5, parsed, "long") == 0.7
+    assert runner._resolve_group_keep_rate(0.5, parsed, "short") == 0.5
 
 
 def test_record_payload_emits_direct_prefill_and_generation_fields() -> None:

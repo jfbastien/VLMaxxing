@@ -371,6 +371,38 @@ def _mean(values: list[float]) -> float:
     return sum(values) / len(values) if values else 0.0
 
 
+def _parse_group_keep_rates(raw: str) -> dict[str, float]:
+    """Parse ``group=rate`` overrides used for bucket-specific rescue cells."""
+    if not raw.strip():
+        return {}
+    parsed: dict[str, float] = {}
+    for part in raw.replace(",", " ").split():
+        if "=" not in part:
+            raise argparse.ArgumentTypeError(
+                f"group keep-rate entries must be group=rate, got {part!r}"
+            )
+        group, value = part.split("=", 1)
+        group = group.strip()
+        if not group:
+            raise argparse.ArgumentTypeError(f"group keep-rate entry has empty group: {part!r}")
+        try:
+            rate = float(value)
+        except ValueError as exc:
+            raise argparse.ArgumentTypeError(
+                f"group keep-rate for {group!r} must be a number, got {value!r}"
+            ) from exc
+        if not (0.0 < rate <= 1.0):
+            raise argparse.ArgumentTypeError(
+                f"group keep-rate for {group!r} must be in (0, 1], got {rate}"
+            )
+        parsed[group] = rate
+    return parsed
+
+
+def _resolve_group_keep_rate(default: float, overrides: dict[str, float], group: str) -> float:
+    return float(overrides.get(group, default))
+
+
 def _schema_row(args: argparse.Namespace, rlt_config: RLTMaskConfig) -> dict[str, Any]:
     payload = {
         "manifest": str(args.manifest),
@@ -378,6 +410,7 @@ def _schema_row(args: argparse.Namespace, rlt_config: RLTMaskConfig) -> dict[str
         "frame_count": args.frame_count,
         "anchor_arm": args.anchor_arm,
         "keep_rate": args.keep_rate,
+        "group_keep_rates": args.group_keep_rates,
         "max_tokens": args.max_tokens,
         "prefill_step_size": getattr(args, "prefill_step_size", 2048),
         "prune_placeholders": args.prune_placeholders,
@@ -391,6 +424,7 @@ def _schema_row(args: argparse.Namespace, rlt_config: RLTMaskConfig) -> dict[str
         "arm_order": getattr(args, "arm_order", "dense_first"),
         "vision_tower_layer": args.vision_tower_layer,
         "vision_tower_keep_rate": args.vision_tower_keep_rate,
+        "group_vision_tower_keep_rates": args.group_vision_keep_rates,
         "vision_tower_score_mode": getattr(args, "vision_tower_score_mode", "magnitude"),
     }
     return {
@@ -584,6 +618,7 @@ def _process_one_item(
         rlt_result = compute_rlt_keep_mask_from_frames(frames, config=rlt_config)
         vision_scorer_prepare_ms = (time.perf_counter_ns() - t_stage) / 1_000_000
         rlt_vision_holder["rlt_result"] = rlt_result
+        rlt_vision_holder["current_vision_keep_rate"] = vision_tower_keep_rate
         rlt_vision_holder.pop("last_mask_np", None)
         rlt_vision_holder.pop("last_keep_mask_ms", None)
 
@@ -1360,6 +1395,27 @@ def main() -> int:
             "the same RLT motion scores as placeholder admission."
         ),
     )
+    parser.add_argument(
+        "--group-keep-rates",
+        type=_parse_group_keep_rates,
+        default={},
+        metavar="GROUP=RATE[,GROUP=RATE...]",
+        help=(
+            "Override --keep-rate for selected manifest groups. Used for "
+            "bucket-specific accuracy-rescue experiments after direct "
+            "composition identified group-local quality failures."
+        ),
+    )
+    parser.add_argument(
+        "--group-vision-keep-rates",
+        type=_parse_group_keep_rates,
+        default={},
+        metavar="GROUP=RATE[,GROUP=RATE...]",
+        help=(
+            "Override --vision-tower-keep-rate for selected manifest groups. "
+            "When omitted, all groups use --vision-tower-keep-rate."
+        ),
+    )
     args = parser.parse_args()
 
     if not args.model_path.exists():
@@ -1371,6 +1427,10 @@ def main() -> int:
     if args.mlx_memory_limit_gb < 0.0:
         raise SystemExit(
             f"--mlx-memory-limit-gb must be nonnegative, got {args.mlx_memory_limit_gb}"
+        )
+    if args.group_vision_keep_rates and args.vision_tower_score_mode != "rlt_topk":
+        raise SystemExit(
+            "--group-vision-keep-rates currently requires --vision-tower-score-mode rlt_topk"
         )
     if args.mlx_memory_limit_gb > 0.0:
         mx.set_memory_limit(int(args.mlx_memory_limit_gb * 1024**3))
@@ -1424,12 +1484,16 @@ def main() -> int:
         (idx, item) for idx, item in enumerate(items) if item.item_id not in completed_item_ids
     ]
     if args.resume and not pending_items:
+        resume_vt_patched = args.vision_tower_keep_rate < 1.0 or any(
+            rate < 1.0 for rate in args.group_vision_keep_rates.values()
+        )
         summary = {
             "manifest": str(args.manifest),
             "schema_version": SCHEMA_VERSION,
             "model_path": str(args.model_path),
             "anchor_arm": args.anchor_arm,
             "keep_rate": args.keep_rate,
+            "group_keep_rates": args.group_keep_rates,
             "prune_placeholders": args.prune_placeholders,
             "rlt_config": (
                 rlt_config.as_dict()
@@ -1445,15 +1509,12 @@ def main() -> int:
             "resume": True,
             "resumed_existing_rows": len(existing_rows),
             "new_rows": 0,
-            "vision_tower_patched": args.vision_tower_keep_rate < 1.0,
-            "vision_tower_layer": (
-                args.vision_tower_layer if args.vision_tower_keep_rate < 1.0 else None
-            ),
-            "vision_tower_keep_rate": (
-                args.vision_tower_keep_rate if args.vision_tower_keep_rate < 1.0 else None
-            ),
+            "vision_tower_patched": resume_vt_patched,
+            "vision_tower_layer": (args.vision_tower_layer if resume_vt_patched else None),
+            "vision_tower_keep_rate": (args.vision_tower_keep_rate if resume_vt_patched else None),
+            "group_vision_tower_keep_rates": args.group_vision_keep_rates,
             "vision_tower_score_mode": (
-                args.vision_tower_score_mode if args.vision_tower_keep_rate < 1.0 else None
+                args.vision_tower_score_mode if resume_vt_patched else None
             ),
             **_summarize_payload_rows(existing_rows),
         }
@@ -1469,14 +1530,21 @@ def main() -> int:
     print(f"[rss after load] {rss_mb():.0f} MiB")
     check_rss_guard(args.rss_guard_mb, stage="after_model_load")
 
-    vt_patched = args.vision_tower_keep_rate < 1.0
+    vt_patched = args.vision_tower_keep_rate < 1.0 or any(
+        rate < 1.0 for rate in args.group_vision_keep_rates.values()
+    )
     rlt_vision_holder: dict[str, Any] | None = (
         {} if args.vision_tower_score_mode == "rlt_topk" else None
     )
     if vt_patched:
-        if not (0.0 < args.vision_tower_keep_rate < 1.0):
+        configured_patch_rate = min(
+            [args.vision_tower_keep_rate, *args.group_vision_keep_rates.values()]
+        )
+        if not (0.0 < configured_patch_rate <= 1.0):
             raise SystemExit(
-                f"--vision-tower-keep-rate must be in (0, 1); got {args.vision_tower_keep_rate}"
+                "vision-tower keep-rates must be in (0, 1]; got "
+                f"default={args.vision_tower_keep_rate} "
+                f"group_overrides={args.group_vision_keep_rates}"
             )
         keep_mask_fn = None
         if args.vision_tower_score_mode == "rlt_topk":
@@ -1492,7 +1560,9 @@ def main() -> int:
                 mask_np = fixed_budget_rlt_score_mask_for_positions(
                     rlt_vision_holder["rlt_result"],
                     positions=pos_np,
-                    keep_rate=args.vision_tower_keep_rate,
+                    keep_rate=float(
+                        rlt_vision_holder.get("current_vision_keep_rate", configured_patch_rate)
+                    ),
                 )
                 rlt_vision_holder["last_valid_counts"] = [int(value) for value in valid_counts]
                 rlt_vision_holder["last_keep_mask_ms"] = (
@@ -1512,13 +1582,13 @@ def main() -> int:
             model,
             PruneConfig(
                 layer_idx=args.vision_tower_layer,
-                keep_rate=args.vision_tower_keep_rate,
+                keep_rate=configured_patch_rate,
             ),
             keep_mask_fn=keep_mask_fn,
         )
         print(
             f"[1.51V] vision-tower patched: layer={args.vision_tower_layer} "
-            f"keep_rate={args.vision_tower_keep_rate} "
+            f"keep_rate={configured_patch_rate} "
             f"score_mode={args.vision_tower_score_mode}"
         )
 
@@ -1531,6 +1601,13 @@ def main() -> int:
             out_f.write(json.dumps(schema_row, sort_keys=True) + "\n")
         for idx, item in pending_items:
             _clear_runtime_state()
+            item_group = str(getattr(item, "group", "unknown"))
+            item_keep_rate = _resolve_group_keep_rate(
+                args.keep_rate, args.group_keep_rates, item_group
+            )
+            item_vision_keep_rate = _resolve_group_keep_rate(
+                args.vision_tower_keep_rate, args.group_vision_keep_rates, item_group
+            )
             try:
                 record = _process_one_item(
                     model,
@@ -1538,7 +1615,7 @@ def main() -> int:
                     runner,
                     item,
                     anchor_arm=cast(AnchorArm, args.anchor_arm),
-                    keep_rate=args.keep_rate,
+                    keep_rate=item_keep_rate,
                     prune_placeholders=cast(PlaceholderPruneMode, args.prune_placeholders),
                     rlt_config=rlt_config,
                     frame_count=args.frame_count,
@@ -1552,7 +1629,7 @@ def main() -> int:
                         VisionTowerScoreMode,
                         args.vision_tower_score_mode,
                     ),
-                    vision_tower_keep_rate=args.vision_tower_keep_rate,
+                    vision_tower_keep_rate=item_vision_keep_rate,
                     rlt_vision_holder=rlt_vision_holder,
                 )
             except Exception as exc:
@@ -1586,6 +1663,7 @@ def main() -> int:
         "model_path": str(args.model_path),
         "anchor_arm": args.anchor_arm,
         "keep_rate": args.keep_rate,
+        "group_keep_rates": args.group_keep_rates,
         "prune_placeholders": args.prune_placeholders,
         "rlt_config": (
             rlt_config.as_dict()
@@ -1604,6 +1682,7 @@ def main() -> int:
         "vision_tower_patched": vt_patched,
         "vision_tower_layer": args.vision_tower_layer if vt_patched else None,
         "vision_tower_keep_rate": args.vision_tower_keep_rate if vt_patched else None,
+        "group_vision_tower_keep_rates": args.group_vision_keep_rates,
         "vision_tower_score_mode": args.vision_tower_score_mode if vt_patched else None,
         **_summarize_payload_rows(all_rows),
     }
