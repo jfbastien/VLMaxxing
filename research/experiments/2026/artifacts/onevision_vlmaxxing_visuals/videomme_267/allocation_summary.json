@@ -1,0 +1,121 @@
+{
+  "artifacts": {
+    "allocation_summary": "research/experiments/2026/artifacts/onevision_vlmaxxing_visuals/videomme_267/allocation_summary.json",
+    "score_volumes": "research/experiments/2026/artifacts/onevision_vlmaxxing_visuals/videomme_267/score_volumes.npz",
+    "selected_overlay_contact_sheet": "research/experiments/2026/artifacts/onevision_vlmaxxing_visuals/videomme_267/selected_overlay_contact_sheet.png",
+    "selected_patches_jsonl": "research/experiments/2026/artifacts/onevision_vlmaxxing_visuals/videomme_267/selected_patches.jsonl",
+    "starvation_metrics": "research/experiments/2026/artifacts/onevision_vlmaxxing_visuals/videomme_267/starvation_metrics.csv",
+    "starvation_summary": "research/experiments/2026/artifacts/onevision_vlmaxxing_visuals/videomme_267/starvation_summary.png",
+    "token_allocation": "research/experiments/2026/artifacts/onevision_vlmaxxing_visuals/videomme_267/token_allocation.csv",
+    "token_timeline": "research/experiments/2026/artifacts/onevision_vlmaxxing_visuals/videomme_267/token_timeline.png",
+    "visible_indices": "research/experiments/2026/artifacts/onevision_vlmaxxing_visuals/videomme_267/visible_indices.npy"
+  },
+  "clip": "videomme_267",
+  "frame_count": 16,
+  "grid_shape": [
+    20,
+    20
+  ],
+  "projection_geometry": {
+    "canvas_size": 560,
+    "local_grid": "VLMaxxing/Qwen-style visualization token grid",
+    "onevision_encoder_reference": {
+      "vit_patch_size": 14
+    },
+    "token_block": 28,
+    "upstream_stage1_reference": {
+      "canvas_size": 576,
+      "source_patch_size": 16
+    }
+  },
+  "requested_token_budget": null,
+  "residual_extractor": "pyav_motion_compensated_reconstructed_y_proxy",
+  "sampled_absolute_frames": [
+    0,
+    1,
+    3,
+    5,
+    6,
+    8,
+    10,
+    11,
+    13,
+    15,
+    16,
+    18,
+    20,
+    21,
+    23,
+    25
+  ],
+  "sampled_relative_frames": [
+    0,
+    1,
+    3,
+    5,
+    6,
+    8,
+    10,
+    11,
+    13,
+    15,
+    16,
+    18,
+    20,
+    21,
+    23,
+    25
+  ],
+  "score_source": "fused",
+  "score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+  "source_video_provenance": {
+    "path": "data/benchmarks/videomme/videos/Atf_Af1q_5w.mp4",
+    "sha256": "6dc6f1868d2e398463ddbaf1ca7059d602dcf0ea8ed86744878eb921a68f9d3c",
+    "size_bytes": 7673183
+  },
+  "spatial_bias": {
+    "boundary_fraction": 0.17,
+    "center_fraction": 0.3025,
+    "entropy_bits": 7.671965911482509,
+    "mean_center_distance": 0.5586660182274593
+  },
+  "starvation_summary": {
+    "boundary_max_deficit": 0.026008169418811677,
+    "boundary_mean_deficit": -0.08632285947762985,
+    "center_max_deficit": 0.13851648544753795,
+    "center_mean_deficit": 0.040133185796682486,
+    "ocr_edge_proxy_top15_max_deficit": -0.00015625185554757337,
+    "ocr_edge_proxy_top15_mean_deficit": -0.06844723030977545
+  },
+  "temporal_coverage": {
+    "entropy_bits": 2.926422619437064,
+    "max_gap": 1,
+    "mean_gap": 1.0,
+    "observed_fraction": 1.0,
+    "observed_frames": 16
+  },
+  "token_budget": 800,
+  "tokens_by_sampled_frame": [
+    400,
+    19,
+    19,
+    20,
+    36,
+    38,
+    39,
+    20,
+    16,
+    23,
+    32,
+    33,
+    31,
+    25,
+    26,
+    23
+  ],
+  "video_path": "data/benchmarks/videomme/videos/Atf_Af1q_5w.mp4",
+  "window_seconds": [
+    0.0,
+    1.0
+  ]
+}

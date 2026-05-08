@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import shutil
 import tomllib
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -121,6 +122,15 @@ def _check_path(
     full_path = REPO_ROOT / path
     if full_path.exists():
         return Check(name=name, status="ok", detail=str(path), used_for=used_for)
+    dangling_symlink_remedy = _dangling_benchmark_symlink_remedy(path)
+    if dangling_symlink_remedy is not None:
+        return Check(
+            name=name,
+            status="missing",
+            detail=str(path),
+            used_for=used_for,
+            remedy=dangling_symlink_remedy,
+        )
     local_restore = _local_restore_remedy(path)
     combined_remedy = remedy
     if local_restore is not None:
@@ -131,6 +141,25 @@ def _check_path(
         detail=str(path),
         used_for=used_for,
         remedy=combined_remedy,
+    )
+
+
+def _dangling_benchmark_symlink_remedy(relative_path: Path) -> str | None:
+    if relative_path.is_absolute():
+        return None
+    benchmark_root_relative = Path("data/benchmarks")
+    try:
+        relative_path.relative_to(benchmark_root_relative)
+    except ValueError:
+        return None
+
+    benchmark_root = REPO_ROOT / benchmark_root_relative
+    if not benchmark_root.is_symlink() or benchmark_root.exists():
+        return None
+    target = benchmark_root.resolve(strict=False)
+    return (
+        f"{benchmark_root_relative} is a dangling symlink to {target}; restore that target "
+        f"or recreate the symlink before fetching individual benchmark files"
     )
 
 
@@ -265,8 +294,8 @@ def _build_checks(*, scope: Scope) -> list[Check]:
             name="no synthetic visual fallback",
             status="ok",
             detail=(
-                "render_onevision_vlmaxxing_visual.py defaults to real-video rendering and "
-                "fails on missing clips"
+                "OneVision visual and explainer-video renderers default to real videos and "
+                "fail on missing clips"
             ),
             used_for="OV-1 scientific visualization gate",
         )
@@ -373,6 +402,18 @@ def _build_checks(*, scope: Scope) -> list[Check]:
                     remedy=clip.fetch_hint,
                 )
             )
+        ffmpeg_path = shutil.which("ffmpeg")
+        checks.append(
+            Check(
+                name="executable: ffmpeg",
+                status="ok" if ffmpeg_path is not None else "missing",
+                detail=ffmpeg_path or "not found on PATH",
+                used_for="OV-1 real-video explainer MP4 encoding",
+                remedy=None
+                if ffmpeg_path is not None
+                else "install ffmpeg before rendering explainer videos",
+            )
+        )
     required_modules = [("av", "uv sync --group research")]
     if scope in {"all", "ov3"}:
         required_modules.append(("pyarrow", "uv sync --group benchmark"))

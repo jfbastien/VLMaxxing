@@ -187,6 +187,7 @@ Current implementation:
 ```bash
 uv run python scripts/preflight_onevision_vlmaxxing.py --scope ov1
 uv run python scripts/render_onevision_vlmaxxing_visual.py
+uv run python scripts/render_onevision_vlmaxxing_explainer_videos.py
 ```
 
 Still needed:
@@ -194,9 +195,13 @@ Still needed:
 - review `allocation_summary.json`, `score_volumes.npz`,
   `token_allocation.csv`, `selected_patches.jsonl`, and
   `starvation_metrics.csv` for the three clips before model promotion.
+- review `explainer_video_manifest.json` and the per-clip VLMaxxing,
+  OneVision-style, and combined explainer MP4s. These videos are explanatory
+  artifacts only; model-bearing claims still require OV-3/OV-6.
 
 Success gate: real-video allocation audits exist for all three existing paper
-clips before OV-3 model runs.
+clips before OV-3 model runs, and no synthetic or generated-overlay artifact is
+accepted as a source-video substitute.
 
 Skip rule: If raw videos are absent, fail OV-1 and restore source assets before
 continuing. Do not use synthetic figures or generated overlays as substitutes.
@@ -271,9 +276,9 @@ Metrics:
 Success gate: no increase in parse failures, <= 1% paired-choice drift on
 gated dev cells, and strict Pareto improvement over current Track A baselines.
 
-Skip rule: If fused scoring underperforms pixel `max_abs` on the first dev
-tranche, skip holdout promotion, external parity, Track B, and combined runtime
-claims.
+Skip rule: If fused scoring underperforms pixel `max_abs` or legacy
+`novel_coded` on the first dev tranche, skip holdout promotion, external
+parity, Track B, and combined runtime claims.
 
 ETA after wiring: M3 24-40 hours sequential; M5 12-24 hours sequential. The
 cache key intentionally includes `codec_score_source`, so the ablation grid

@@ -94,11 +94,11 @@ def build_schedule() -> list[ExperimentStep]:
             commands=[
                 "uv run python scripts/preflight_onevision_vlmaxxing.py --scope ov1",
                 "uv run python scripts/render_onevision_vlmaxxing_visual.py",
-                "uv run python scripts/render_codec_through_video_overlays.py",
+                "uv run python scripts/render_onevision_vlmaxxing_explainer_videos.py",
             ],
             artifacts=[
                 "research/experiments/2026/artifacts/onevision_vlmaxxing_visuals/",
-                "research/experiments/2026/artifacts/codec_through_video_overlays_exploratory/",
+                "research/experiments/2026/artifacts/onevision_vlmaxxing_explainer_videos/",
             ],
         ),
         ExperimentStep(
@@ -147,8 +147,8 @@ def build_schedule() -> list[ExperimentStep]:
                 "improvement in fresh-budget versus current Track A baselines."
             ),
             skip_rule=(
-                "If fused scoring underperforms pixel max_abs on the first dev tranche, skip holdout promotion, skip "
-                "OV-4/OV-6 model runs, and report a diagnostic related-work result."
+                "If fused scoring underperforms pixel max_abs or legacy novel_coded on the first dev tranche, skip "
+                "holdout promotion, skip OV-4/OV-6 model runs, and report a diagnostic related-work result."
             ),
             setup_effort="requires OV-2 runner wiring",
             eta_m3="24-40 hours sequential after wiring; cache keys intentionally separate score sources",
@@ -309,7 +309,7 @@ def build_schedule() -> list[ExperimentStep]:
                 "stage-share accounting."
             ),
             skip_rule=(
-                "If OV-6 has no fidelity-clean sparse-vision cell, use synthetic stage-share ceilings only and do not claim "
+                "If OV-6 has no fidelity-clean sparse-vision cell, use analytic stage-share ceilings only and do not claim "
                 "a working combined runtime."
             ),
             setup_effort="requires OV-6 pass for model-backed runtime; otherwise accounting-only",

@@ -1,0 +1,195 @@
+{
+  "clip": {
+    "benchmark": "TOMATO",
+    "end_seconds": 2.0,
+    "item_id": "tomato:rotation:0298-00",
+    "key": "tomato_0298_00",
+    "role": "existing paper visualization: high-reuse routing example",
+    "source_video_provenance": {
+      "path": "data/benchmarks/tomato/videos/object/0298-00.mp4",
+      "sha256": "3a9dd54481facc14c8f08f2e5b482f1363d0bd269fa2b300284b447d39f36a4a",
+      "size_bytes": 2159339
+    },
+    "start_seconds": 0.0,
+    "video_id": "0298-00",
+    "video_path": "data/benchmarks/tomato/videos/object/0298-00.mp4"
+  },
+  "frame_count": 16,
+  "outputs": {
+    "combined": "research/experiments/2026/artifacts/onevision_vlmaxxing_explainer_videos/tomato_0298_00/tomato_0298_00_combined.mp4",
+    "onevision": "research/experiments/2026/artifacts/onevision_vlmaxxing_explainer_videos/tomato_0298_00/tomato_0298_00_onevision.mp4",
+    "vlmaxxing": "research/experiments/2026/artifacts/onevision_vlmaxxing_explainer_videos/tomato_0298_00/tomato_0298_00_vlmaxxing.mp4"
+  },
+  "sampled_absolute_frames": [
+    0,
+    4,
+    8,
+    12,
+    16,
+    20,
+    24,
+    28,
+    32,
+    36,
+    40,
+    44,
+    48,
+    52,
+    56,
+    60
+  ],
+  "sampled_relative_frames": [
+    0,
+    4,
+    8,
+    12,
+    16,
+    20,
+    24,
+    28,
+    32,
+    36,
+    40,
+    44,
+    48,
+    52,
+    56,
+    60
+  ],
+  "score_units": {
+    "fused": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+    "motion": "macroblock_motion_vector_magnitude_pixels",
+    "novel_coded": "fraction_intra_or_coded_block_flag",
+    "residual": "repo_local_reconstructed_y_residual_proxy"
+  },
+  "spatial_bias": {
+    "boundary_fraction": 0.095,
+    "center_fraction": 0.57625,
+    "entropy_bits": 8.041756236742591,
+    "mean_center_distance": 0.4143540071184791
+  },
+  "temporal_coverage": {
+    "entropy_bits": 2.9358766072587414,
+    "max_gap": 1,
+    "mean_gap": 1.0,
+    "observed_fraction": 1.0,
+    "observed_frames": 16
+  },
+  "token_budget": 800,
+  "tokens_by_frame": [
+    400,
+    38,
+    25,
+    18,
+    23,
+    25,
+    31,
+    16,
+    39,
+    26,
+    26,
+    30,
+    26,
+    25,
+    27,
+    25
+  ],
+  "transition_stats": [
+    {
+      "fresh": 0.0,
+      "has_transition": 0.0,
+      "reused": 0.0,
+      "stale": 0.0
+    },
+    {
+      "fresh": 0.12,
+      "has_transition": 1.0,
+      "reused": 0.88,
+      "stale": 0.0
+    },
+    {
+      "fresh": 0.11,
+      "has_transition": 1.0,
+      "reused": 0.89,
+      "stale": 0.0
+    },
+    {
+      "fresh": 0.115,
+      "has_transition": 1.0,
+      "reused": 0.885,
+      "stale": 0.0
+    },
+    {
+      "fresh": 0.12,
+      "has_transition": 1.0,
+      "reused": 0.88,
+      "stale": 0.0
+    },
+    {
+      "fresh": 0.89,
+      "has_transition": 1.0,
+      "reused": 0.11,
+      "stale": 0.8
+    },
+    {
+      "fresh": 0.105,
+      "has_transition": 1.0,
+      "reused": 0.895,
+      "stale": 0.0
+    },
+    {
+      "fresh": 0.125,
+      "has_transition": 1.0,
+      "reused": 0.875,
+      "stale": 0.01
+    },
+    {
+      "fresh": 0.11,
+      "has_transition": 1.0,
+      "reused": 0.89,
+      "stale": 0.0
+    },
+    {
+      "fresh": 0.115,
+      "has_transition": 1.0,
+      "reused": 0.885,
+      "stale": 0.0
+    },
+    {
+      "fresh": 0.855,
+      "has_transition": 1.0,
+      "reused": 0.145,
+      "stale": 0.76
+    },
+    {
+      "fresh": 0.11,
+      "has_transition": 1.0,
+      "reused": 0.89,
+      "stale": 0.0
+    },
+    {
+      "fresh": 0.115,
+      "has_transition": 1.0,
+      "reused": 0.885,
+      "stale": 0.005
+    },
+    {
+      "fresh": 0.09,
+      "has_transition": 1.0,
+      "reused": 0.91,
+      "stale": 0.005
+    },
+    {
+      "fresh": 0.11,
+      "has_transition": 1.0,
+      "reused": 0.89,
+      "stale": 0.01
+    },
+    {
+      "fresh": 0.84,
+      "has_transition": 1.0,
+      "reused": 0.16,
+      "stale": 0.755
+    }
+  ]
+}

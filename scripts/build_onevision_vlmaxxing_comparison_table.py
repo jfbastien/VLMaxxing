@@ -114,12 +114,14 @@ ROWS = (
         primary_metric="codec-minus-pixel accuracy, dense agreement, selection Jaccard",
         headline_numeric="pending local result",
         target_to_beat=(
-            "strict Pareto improvement over pixel max_abs at matched fresh budget, "
-            "<= 1% paired-choice drift, no parse-failure increase"
+            "strict Pareto improvement over both pixel max_abs and legacy novel_coded "
+            "at matched fresh budget, <= 1% paired-choice drift, no parse-failure increase"
         ),
         e2e_policy="not a work-skipped speedup claim",
         local_reproduction="sequential Qwen then Gemma planner ablation",
-        planned_gate="beat pixel max_abs on dev and holdout without higher drift",
+        planned_gate=(
+            "beat both pixel max_abs and novel_coded on dev and holdout without higher drift"
+        ),
         artifact_or_source="planned OV-3/OV-5 results",
     ),
     ComparisonRow(

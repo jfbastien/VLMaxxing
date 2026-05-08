@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 from dataclasses import dataclass
 from pathlib import Path
@@ -33,6 +34,7 @@ from codec_through.codec.onevision_patchification import (
 )
 
 DEFAULT_OUT_DIR = Path("research/experiments/2026/artifacts/onevision_vlmaxxing_visuals")
+REPO_ROOT = Path(__file__).resolve().parent.parent
 GRID_SHAPE = (8, 8)
 FRAMES = 16
 CELL = 20
@@ -681,6 +683,7 @@ def _render_real_clip(
     summary = {
         "clip": clip.name,
         "video_path": str(clip.video_path),
+        "source_video_provenance": _source_video_provenance(clip.video_path),
         "window_seconds": [clip.start_seconds, clip.end_seconds],
         "frame_count": frame_count,
         "sampled_relative_frames": sampled_rel,
@@ -1138,6 +1141,25 @@ def _representative_patch_frames(
         return [0, total_frames // 2, total_frames - 1]
     middle = observed[len(observed) // 2]
     return [observed[0], middle, observed[-1]]
+
+
+def _source_video_provenance(path: Path) -> dict[str, object]:
+    full_path = path if path.is_absolute() else REPO_ROOT / path
+    if not full_path.exists():
+        raise FileNotFoundError(f"required source video is missing: {path}")
+    return {
+        "path": str(path),
+        "sha256": _sha256_file(full_path),
+        "size_bytes": full_path.stat().st_size,
+    }
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def _active_box_for_canvas(

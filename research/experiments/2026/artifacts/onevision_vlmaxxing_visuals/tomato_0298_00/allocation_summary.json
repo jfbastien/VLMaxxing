@@ -1,0 +1,121 @@
+{
+  "artifacts": {
+    "allocation_summary": "research/experiments/2026/artifacts/onevision_vlmaxxing_visuals/tomato_0298_00/allocation_summary.json",
+    "score_volumes": "research/experiments/2026/artifacts/onevision_vlmaxxing_visuals/tomato_0298_00/score_volumes.npz",
+    "selected_overlay_contact_sheet": "research/experiments/2026/artifacts/onevision_vlmaxxing_visuals/tomato_0298_00/selected_overlay_contact_sheet.png",
+    "selected_patches_jsonl": "research/experiments/2026/artifacts/onevision_vlmaxxing_visuals/tomato_0298_00/selected_patches.jsonl",
+    "starvation_metrics": "research/experiments/2026/artifacts/onevision_vlmaxxing_visuals/tomato_0298_00/starvation_metrics.csv",
+    "starvation_summary": "research/experiments/2026/artifacts/onevision_vlmaxxing_visuals/tomato_0298_00/starvation_summary.png",
+    "token_allocation": "research/experiments/2026/artifacts/onevision_vlmaxxing_visuals/tomato_0298_00/token_allocation.csv",
+    "token_timeline": "research/experiments/2026/artifacts/onevision_vlmaxxing_visuals/tomato_0298_00/token_timeline.png",
+    "visible_indices": "research/experiments/2026/artifacts/onevision_vlmaxxing_visuals/tomato_0298_00/visible_indices.npy"
+  },
+  "clip": "tomato_0298_00",
+  "frame_count": 16,
+  "grid_shape": [
+    20,
+    20
+  ],
+  "projection_geometry": {
+    "canvas_size": 560,
+    "local_grid": "VLMaxxing/Qwen-style visualization token grid",
+    "onevision_encoder_reference": {
+      "vit_patch_size": 14
+    },
+    "token_block": 28,
+    "upstream_stage1_reference": {
+      "canvas_size": 576,
+      "source_patch_size": 16
+    }
+  },
+  "requested_token_budget": null,
+  "residual_extractor": "pyav_motion_compensated_reconstructed_y_proxy",
+  "sampled_absolute_frames": [
+    0,
+    4,
+    8,
+    12,
+    16,
+    20,
+    24,
+    28,
+    32,
+    36,
+    40,
+    44,
+    48,
+    52,
+    56,
+    60
+  ],
+  "sampled_relative_frames": [
+    0,
+    4,
+    8,
+    12,
+    16,
+    20,
+    24,
+    28,
+    32,
+    36,
+    40,
+    44,
+    48,
+    52,
+    56,
+    60
+  ],
+  "score_source": "fused",
+  "score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+  "source_video_provenance": {
+    "path": "data/benchmarks/tomato/videos/object/0298-00.mp4",
+    "sha256": "3a9dd54481facc14c8f08f2e5b482f1363d0bd269fa2b300284b447d39f36a4a",
+    "size_bytes": 2159339
+  },
+  "spatial_bias": {
+    "boundary_fraction": 0.095,
+    "center_fraction": 0.57625,
+    "entropy_bits": 8.041756236742591,
+    "mean_center_distance": 0.4143540071184791
+  },
+  "starvation_summary": {
+    "boundary_max_deficit": 0.07961683143444598,
+    "boundary_mean_deficit": -0.007764614006580755,
+    "center_max_deficit": 0.31164105185427504,
+    "center_mean_deficit": -0.022345528571469146,
+    "ocr_edge_proxy_top15_max_deficit": 0.09849591834291094,
+    "ocr_edge_proxy_top15_mean_deficit": -0.005704948248040386
+  },
+  "temporal_coverage": {
+    "entropy_bits": 2.9358766072587414,
+    "max_gap": 1,
+    "mean_gap": 1.0,
+    "observed_fraction": 1.0,
+    "observed_frames": 16
+  },
+  "token_budget": 800,
+  "tokens_by_sampled_frame": [
+    400,
+    38,
+    25,
+    18,
+    23,
+    25,
+    31,
+    16,
+    39,
+    26,
+    26,
+    30,
+    26,
+    25,
+    27,
+    25
+  ],
+  "video_path": "data/benchmarks/tomato/videos/object/0298-00.mp4",
+  "window_seconds": [
+    0.0,
+    2.0
+  ]
+}
