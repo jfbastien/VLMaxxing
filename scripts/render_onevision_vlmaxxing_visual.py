@@ -258,7 +258,7 @@ def render_synthetic(out_dir: Path) -> dict[str, object]:
     )
     draw.text(
         (48, 70),
-        "Synthetic CPU-only explainer: budgets are visual evidence, not model accuracy or speedup.",
+        "DEV ONLY synthetic smoke: not evidence; this toy field can show anchor-budget pathology.",
         fill=(74, 81, 93),
         font=body_font(),
     )

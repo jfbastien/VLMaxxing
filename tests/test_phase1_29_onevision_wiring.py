@@ -83,6 +83,15 @@ def test_validate_codec_score_args_rejects_bad_weights() -> None:
         )
 
 
+def test_runtime_module_guard_fails_before_lazy_load() -> None:
+    module = _load_probe_module()
+    module.runner = None
+    module.mx = None
+
+    with pytest.raises(RuntimeError, match="call _load_runtime_modules"):
+        module._require_runtime_modules()
+
+
 def test_validate_no_windowed_items_rejects_before_cache_reuse() -> None:
     module = _load_probe_module()
     item = SimpleNamespace(item_id="videomme:short:267-2", start_seconds=0.0, end_seconds=None)

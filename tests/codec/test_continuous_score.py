@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from codec_through.codec.continuous_score import (
     CodecScoreSource,
@@ -182,6 +183,13 @@ def test_macroblock_score_plane_supports_all_score_sources() -> None:
         ),
         np.array([[1.625, 3.0]], dtype=np.float32),
     )
+
+
+def test_macroblock_score_plane_rejects_missing_required_fields() -> None:
+    macroblocks = np.zeros((1, 1), dtype=np.dtype([("intra_flag", np.bool_)]))
+
+    with pytest.raises(ValueError, match="macroblocks missing required fields: \\['cbf'\\]"):
+        macroblock_score_plane(macroblocks, source=CodecScoreSource.NOVEL_CODED)
 
 
 def test_macroblock_motion_magnitude_sanitizes_nan_and_inf() -> None:

@@ -239,8 +239,8 @@ input smoke. No model time.
 Track: Track A semantic substitution
 
 Hypothesis: Continuous motion+residual scoring with per-item calibration beats
-pixel `max_abs` and motion-only/residual-only ablations on paired answer
-stability at matched fresh budgets.
+pixel `max_abs`, legacy `novel_coded`, and motion-only/residual-only ablations
+on paired answer stability at matched fresh budgets.
 
 Use existing baselines:
 
@@ -251,6 +251,7 @@ Use existing baselines:
 Ablations:
 
 - pixel `max_abs`;
+- legacy `novel_coded` (`intra_flag | cbf`) continuous codec score;
 - motion-vector magnitude;
 - residual energy from this repo's proxy;
 - motion/residual weighted fusion;
@@ -274,7 +275,11 @@ Skip rule: If fused scoring underperforms pixel `max_abs` on the first dev
 tranche, skip holdout promotion, external parity, Track B, and combined runtime
 claims.
 
-ETA after wiring: M3 18-30 hours sequential; M5 8-14 hours sequential.
+ETA after wiring: M3 24-40 hours sequential; M5 12-24 hours sequential. The
+cache key intentionally includes `codec_score_source`, so the ablation grid
+pays separate codec-score precompute per score source unless we later split
+source-independent pixel/active-box caches from source-dependent codec-score
+caches.
 
 ### OV-4: External Parity Oracle
 

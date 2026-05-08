@@ -101,6 +101,20 @@ Gemma note:
 
 ## Evaluation Data Setup
 
+Benchmark assets are large and are ignored by git through `/data/`. If you
+have a sibling checkout with populated benchmark assets, prefer a symlink over
+duplicating the videos:
+
+```bash
+mv data/benchmarks /private/tmp/codec-through-2-benchmarks-backup
+ln -s ~/s/codec-through/data/benchmarks data/benchmarks
+uv run python scripts/preflight_onevision_vlmaxxing.py --scope all --no-write-json
+```
+
+The OneVision preflight also looks for a sibling `codec-through` checkout and
+prints local restore commands when a symlink is not present. If that sibling
+checkout is absent, use the fetch scripts below.
+
 Bring up the local primary corpus and derived H.264 files:
 
 ```bash
