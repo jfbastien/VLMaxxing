@@ -1,0 +1,147 @@
+{
+  "accuracy_delta_pruned_minus_dense": 0.06666666666666667,
+  "aggregate_quality_gate_pass": true,
+  "bootstrap": {
+    "accuracy_delta_pruned_minus_dense_ci95": [
+      -0.06666666666666668,
+      0.2
+    ],
+    "e2e_speedup_dense_over_pruned_ci95": [
+      1.04955967869581,
+      1.1047721447481136
+    ],
+    "n_bootstrap": 500,
+    "overhead_budget_minus_overhead_ms_ci95": [
+      39271.215995,
+      56493.81083599999
+    ]
+  },
+  "bucket_failures": [],
+  "bucket_quality_gate_inconclusive": false,
+  "bucket_quality_gate_pass": true,
+  "bucket_underpowered": [],
+  "buckets": {
+    "direction": {
+      "accuracy_delta_pruned_minus_dense": 0.0,
+      "dense_accuracy": 0.1,
+      "n": 10,
+      "pruned_accuracy": 0.1,
+      "quality_gate_evaluated": true,
+      "quality_gate_pass": true
+    },
+    "rotation": {
+      "accuracy_delta_pruned_minus_dense": 0.0,
+      "dense_accuracy": 0.1,
+      "n": 10,
+      "pruned_accuracy": 0.1,
+      "quality_gate_evaluated": true,
+      "quality_gate_pass": true
+    },
+    "shape_trend": {
+      "accuracy_delta_pruned_minus_dense": 0.2,
+      "dense_accuracy": 0.0,
+      "n": 10,
+      "pruned_accuracy": 0.2,
+      "quality_gate_evaluated": true,
+      "quality_gate_pass": true
+    }
+  },
+  "cell_type": "h3b_admission",
+  "choice_agreement": 0.5517241379310345,
+  "choice_agreement_denominator": 29,
+  "decisions": [
+    {
+      "decision": "continue",
+      "reason": "gemma_admission_gates_survived"
+    }
+  ],
+  "dense_accuracy": 0.06666666666666667,
+  "dense_e2e_total_ms": 463334.90604,
+  "dense_parse_failures": 0,
+  "e2e_speedup_dense_over_pruned": 1.0759601052777026,
+  "gates": {
+    "bucket_min_n": 1,
+    "cell_type": "h3b_admission",
+    "n_bootstrap": 500,
+    "overhead_gate_required": true,
+    "quality_delta_floor": -0.05,
+    "timing_min_n": 5
+  },
+  "jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/composition_rlt_tomato.jsonl",
+  "mean_dense_prefill_ms": 7506.920236033333,
+  "mean_dense_vision_ms": 4024.3986777666664,
+  "mean_overhead_ms": 3.566215133333334,
+  "mean_pruned_prefill_ms": 5924.736080633334,
+  "mean_pruned_vision_ms": 4024.3986777666664,
+  "n_items": 30,
+  "overhead_gate_evaluated": true,
+  "overhead_gate_pass": true,
+  "prefill_jit_warmup_ratio": 1.2924494257295633,
+  "prefill_jit_warmup_ratios": {
+    "max": 1.2924494257295633,
+    "mean": 1.0098373887098298,
+    "min": 0.8206061121715564,
+    "n": 30
+  },
+  "prefill_jit_warmup_suspected": false,
+  "pruned_accuracy": 0.13333333333333333,
+  "pruned_e2e_total_ms": 430624.614953,
+  "pruned_generate_warmup_ratio_proxy": 1.1990389711223892,
+  "pruned_generate_warmup_ratios": {
+    "max": 1.1990389711223892,
+    "mean": 1.0026272828251526,
+    "min": 0.7837961084385225,
+    "n": 30
+  },
+  "pruned_generate_warmup_suspected": false,
+  "pruned_parse_failures": 1,
+  "runner_schema": {
+    "artifact_config_hash": "2d5da8e4d4ab7a31ca832b0dd979f9bca4ec698673897a31d5482d456d295b4c",
+    "artifact_payload": {
+      "anchor_arm": "gemma_structural",
+      "arm_order": "abba",
+      "frame_count": 8,
+      "keep_rate": 0.5,
+      "manifest": "research/benchmark_manifests/tomato_motion_dev_v2.toml",
+      "max_tokens": 32,
+      "model_path": "/Users/jfb/models/gemma-4-e4b-it-4bit",
+      "n_warmup": 1,
+      "prefill_step_size": 1024,
+      "prune_placeholders": "rlt",
+      "rlt_config": {
+        "first_tubelet_mode": "full_grid",
+        "grid_shape": [
+          14,
+          14
+        ],
+        "grid_shape_source": "patch_size",
+        "image_size": [
+          224,
+          224
+        ],
+        "normalize_mode": "imagenet",
+        "ordering": "time_major",
+        "patch_size": 16,
+        "pixel_scale": "uint8",
+        "threshold": 0.1,
+        "tubelet_size": 2,
+        "window_min_keep": 1
+      },
+      "vision_tower_keep_rate": 0.5,
+      "vision_tower_layer": 1,
+      "vision_tower_score_mode": "rlt_topk"
+    },
+    "kind": "schema",
+    "schema_version": "phase1_51r_gemma_admission_v4"
+  },
+  "runner_summary_schema_version": "phase1_51r_gemma_admission_v4",
+  "schema_version": "gemma_admission_analysis_v2",
+  "skip_phases": [],
+  "summary_json": "research/experiments/2026/artifacts/rlt_followup_queue/composition_rlt_tomato_summary.json",
+  "timing_min_n": 5,
+  "total_credited_stage_reduction_ms": 47465.52466199998,
+  "total_overhead_budget_ms": 47465.52466199998,
+  "total_overhead_ms": 106.98645400000001,
+  "total_prefill_reduction_ms": 47465.52466199998,
+  "total_vision_reduction_ms": 0.0
+}
