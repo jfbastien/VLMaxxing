@@ -1,7 +1,7 @@
 {
   "dense_accuracy": 0.43333333333333335,
   "dense_parse_failures": 5,
-  "final_rss_mb": 5496.03125,
+  "final_rss_mb": null,
   "frame_count": 8,
   "manifest": "research/benchmark_manifests/videomme_combined_v1_n60.toml",
   "max_tokens": 32,
@@ -27,6 +27,9 @@
   "model_path": "/Users/jfb/models/gemma-4-e4b-it-4bit",
   "n_frames": 8,
   "n_items": 30,
+  "new_rows": 0,
+  "resume": true,
+  "resumed_existing_rows": 30,
   "rlt_config": null,
   "rss_guard_mb": 9000,
   "schema_version": "phase1_63g_gemma_track_b_v5",
@@ -34,15 +37,5 @@
   "vision_tower_layer": 2,
   "vision_tower_patched": true,
   "vision_tower_score_mode": "max_min_diversity",
-  "warmup_groups": [
-    "long",
-    "medium",
-    "short"
-  ],
-  "warmup_item_ids": [
-    "videomme:long:669-1",
-    "videomme:medium:320-3",
-    "videomme:short:037-2"
-  ],
   "warmup_items": 3
 }

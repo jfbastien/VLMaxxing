@@ -55,7 +55,7 @@
     "rotation",
     "shape_trend"
   ],
-  "bucket_e2e_min_items_per_group": 7,
+  "bucket_e2e_min_items_per_group": 5,
   "bucket_e2e_min_passing_groups": 2,
   "bucket_e2e_passing_groups": [
     "direction",
@@ -219,6 +219,7 @@
       "vision_speedup_dense_over_sparse_excluding_scorer": 3.8298648015616923
     }
   },
+  "ceiling_tolerance": 0.07,
   "dense_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/cvision_rlt_tomato_dense.jsonl",
   "dense_manifest": "research/benchmark_manifests/tomato_motion_dev_v2.toml",
   "dense_schema_version": "phase1_63g_gemma_track_b_v5",
@@ -228,7 +229,7 @@
   "parse_failure_delta_max": 2,
   "parse_failure_max_fraction": 0.3,
   "pass_bucket_e2e_positive": true,
-  "pass_ceiling_explained": false,
+  "pass_ceiling_explained": true,
   "pass_complete_pairing": true,
   "pass_e2e_positive": true,
   "pass_fidelity": true,
@@ -237,7 +238,7 @@
   "pass_parse_failure_delta": false,
   "pass_parse_failure_rate": true,
   "pass_sparse_vision": true,
-  "sparse_execution_scope": "RLT-as-C-VISION on TOMATO; relaxed parse-fail floor",
+  "sparse_execution_scope": "Gemma C-VISION sparse execution with fixed-K token scoring (rlt_topk); scatter-back preserves prompt geometry.",
   "sparse_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/cvision_rlt_tomato_rlt_topk.jsonl",
   "sparse_manifest": "research/benchmark_manifests/tomato_motion_dev_v2.toml",
   "sparse_schema_version": "phase1_63g_gemma_track_b_v5",

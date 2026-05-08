@@ -1,7 +1,7 @@
 {
   "dense_accuracy": 0.13333333333333333,
   "dense_parse_failures": 9,
-  "final_rss_mb": 5681.171875,
+  "final_rss_mb": null,
   "frame_count": 8,
   "manifest": "research/benchmark_manifests/tomato_motion_dev_v2.toml",
   "max_tokens": 32,
@@ -27,6 +27,9 @@
   "model_path": "/Users/jfb/models/gemma-4-e4b-it-4bit",
   "n_frames": 8,
   "n_items": 30,
+  "new_rows": 0,
+  "resume": true,
+  "resumed_existing_rows": 30,
   "rlt_config": null,
   "rss_guard_mb": 9000,
   "schema_version": "phase1_63g_gemma_track_b_v5",
@@ -34,15 +37,5 @@
   "vision_tower_layer": 2,
   "vision_tower_patched": true,
   "vision_tower_score_mode": "max_min_diversity",
-  "warmup_groups": [
-    "direction",
-    "rotation",
-    "shape_trend"
-  ],
-  "warmup_item_ids": [
-    "tomato:direction:0231-04",
-    "tomato:rotation:0215-06",
-    "tomato:shape_trend:0209-04"
-  ],
   "warmup_items": 3
 }
