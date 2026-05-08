@@ -84,15 +84,15 @@ def build_schedule() -> list[ExperimentStep]:
                 "If raw videos are absent, keep synthetic/metadata artifacts and block model-facing promotion until "
                 "a real-video allocation audit is run on the target clips."
             ),
-            setup_effort="real-video code path still needed",
-            eta_m3="3-6 hours with video extraction; < 1 hour synthetic",
-            eta_m5="1-3 hours with video extraction; < 1 hour synthetic",
+            setup_effort="real-video artifact path implemented; run only when raw clips are available",
+            eta_m3="3-6 hours with video extraction; < 1 hour synthetic/status-only",
+            eta_m5="1-3 hours with video extraction; < 1 hour synthetic/status-only",
             compute_lane="CPU plus optional PyAV research dependency",
             uses_local_accelerator=False,
             requires_nvidia=False,
             defer_until="after OV-0",
             commands=[
-                "uv run python scripts/render_onevision_vlmaxxing_visual.py",
+                "uv run python scripts/render_onevision_vlmaxxing_visual.py --mode auto",
                 "uv run python scripts/render_codec_through_video_overlays.py",
             ],
             artifacts=[
@@ -109,17 +109,17 @@ def build_schedule() -> list[ExperimentStep]:
                 "not a new hard BlockStatistic label."
             ),
             success_gate=(
-                "Add CLI flags and artifact schema for motion-only, residual-only, fused weighted, and bounded-staleness "
-                "score sources in run_phase1_29_planner_accuracy_probe.py; validate zero-weight lanes and matched-item "
-                "pixel max_abs regressions before model runs."
+                "CLI flags and artifact schema exist for motion-only, residual-only, fused weighted, and max-age "
+                "staleness gating in run_phase1_29_planner_accuracy_probe.py; validate zero-weight lanes and "
+                "matched-item pixel max_abs regressions before model runs."
             ),
             skip_rule=(
                 "If the adapter cannot reproduce existing Phase 1.29 codec-score behavior on cached/small inputs, "
                 "do not start OV-3 model inference."
             ),
-            setup_effort="4-8 hours coding before model time",
-            eta_m3="4-8 hours coding; no model run",
-            eta_m5="same code review only; no model run",
+            setup_effort="implemented; pending CPU-only checks and optional cached-input smoke",
+            eta_m3="< 1 hour checks; no model run",
+            eta_m5="< 1 hour checks; no model run",
             compute_lane="CPU",
             uses_local_accelerator=False,
             requires_nvidia=False,
@@ -156,7 +156,9 @@ def build_schedule() -> list[ExperimentStep]:
             requires_nvidia=False,
             defer_until="after OV-2 passes",
             commands=[
-                "uv run python scripts/run_phase1_29_planner_accuracy_probe.py <onevision-dev-ablation args>",
+                "uv run python scripts/run_phase1_29_planner_accuracy_probe.py --codec-score-source motion <dev args>",
+                "uv run python scripts/run_phase1_29_planner_accuracy_probe.py --codec-score-source residual <dev args>",
+                "uv run python scripts/run_phase1_29_planner_accuracy_probe.py --codec-score-source fused --fusion-mode weighted <dev args>",
                 "uv run python scripts/run_benchmark_track_a.py <promoted onevision planner args>",
             ],
             artifacts=[
@@ -180,9 +182,12 @@ def build_schedule() -> list[ExperimentStep]:
                 "Defer this until OV-3 dev passes. If it fails, debug sampling, padding, score normalization, cv_reader "
                 "residuals, and I-frame policy one variable at a time."
             ),
-            setup_effort="NVIDIA/Linux environment plus cv_reader dependency investigation",
+            setup_effort=(
+                "NVIDIA/Linux environment plus cv_reader patched-FFmpeg build; add 2-4 hours first-time dependency "
+                "setup before the parity run"
+            ),
             eta_m3="not feasible",
-            eta_m5="not recommended; CUDA stack is the wrong target",
+            eta_m5="not recommended; CUDA/cv_reader stack is the wrong target",
             compute_lane="NVIDIA Linux box or Lambda 1xH100/A100",
             uses_local_accelerator=False,
             requires_nvidia=True,
@@ -269,7 +274,7 @@ def build_schedule() -> list[ExperimentStep]:
                 "Skip if it requires flash-attention/CUDA for inference or if eager attention at target token counts exceeds "
                 "local memory; move to NVIDIA only if encoder probes answer a paper-relevant question."
             ),
-            setup_effort="1 day for PyTorch/MPS smoke or 2-4 days for a careful MLX encoder port",
+            setup_effort="1 day for PyTorch/MPS smoke or about 1 week for a careful MLX encoder port with parity debugging",
             eta_m3="defer until machine free; smoke only",
             eta_m5="defer until machine free; smoke plus small probes",
             compute_lane="local encoder-only first; NVIDIA only for official stack",
@@ -317,6 +322,37 @@ def build_schedule() -> list[ExperimentStep]:
         ),
         ExperimentStep(
             stage="OV-9",
+            track="comparison-table",
+            question="How should OneVision, VLMaxxing, and combined techniques be compared without denominator drift?",
+            hypothesis=(
+                "A fixed comparison table with status labels and denominator columns will prevent imported patch "
+                "compression, Track A answer stability, Track B timing, and C-PERSIST session savings from being "
+                "collapsed into one speedup number."
+            ),
+            success_gate=(
+                "Emit JSON/CSV/Markdown rows for OneVision imported results, local patchification reproduction, "
+                "VLMaxxing baselines, fused Track A, sparse Track B, C-PERSIST, combined session accounting, and "
+                "OV-Encoder feasibility."
+            ),
+            skip_rule="If model results are absent, emit the preregistered plan table with hypothesis rows only.",
+            setup_effort="implemented planning artifact; update after experiments complete",
+            eta_m3="< 1 minute",
+            eta_m5="< 1 minute",
+            compute_lane="CPU/documentation",
+            uses_local_accelerator=False,
+            requires_nvidia=False,
+            defer_until="after OV-0 for plan table; after OV-3/OV-8 for result-filled table",
+            commands=[
+                "uv run python scripts/build_onevision_vlmaxxing_comparison_table.py",
+            ],
+            artifacts=[
+                "research/experiments/2026/artifacts/onevision_vlmaxxing_plan/comparison_table_plan.json",
+                "research/experiments/2026/artifacts/onevision_vlmaxxing_plan/comparison_table_plan.csv",
+                "research/experiments/2026/artifacts/onevision_vlmaxxing_plan/comparison_table_plan.md",
+            ],
+        ),
+        ExperimentStep(
+            stage="OV-10",
             track="paper-editor-feedback",
             question="What manuscript changes are justified after the evidence is in?",
             hypothesis=(
@@ -334,7 +370,7 @@ def build_schedule() -> list[ExperimentStep]:
             compute_lane="CPU/documentation",
             uses_local_accelerator=False,
             requires_nvidia=False,
-            defer_until="after OV-3 through OV-8 outcomes are known",
+            defer_until="after OV-3 through OV-9 outcomes are known",
             commands=[
                 "manual: draft editor feedback from completed artifacts",
             ],

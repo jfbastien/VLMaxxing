@@ -77,6 +77,11 @@ clear enough to reproduce without copying code:
 `imported result`: Stage 2 packs selected patches or mosaics and can emit
 `positions_thw.npy`, which is the model-facing position metadata. The public
 README also shows direct model calls with explicit `patch_positions`.
+The patch sizes are stage-specific: upstream Stage 1 selects 16-pixel source
+patches on a 576-square preprocessing canvas, while the released encoder model
+card reports a 14-pixel ViT patch size for the Stage 2 encoder. Do not feed a
+Stage 1 16-pixel selection grid directly into the encoder without the Stage 2
+packing/position conversion.
 
 `imported result`: In the released preprocessing code, Stage 1 depends on
 `cv_reader` and computes residual energy from decoded residual frames as luma
@@ -151,6 +156,8 @@ Single NVIDIA box, A100/H100:
   about $3.29/GPU-hour as of the current pricing page.
 - Prefer this tier for upstream `cv_reader` / CUDA dependency checks. Apple
   Silicon is not the right target for the official OneVision Docker/CUDA stack.
+- Budget 2-4 hours of first-time setup for `cv_reader` and its patched-FFmpeg
+  dependency before counting the 3-6 hour parity run.
 
 8-GPU or 16-node NVIDIA:
 
@@ -207,8 +214,9 @@ External review in this branch raised several concrete issues. Verdicts:
   allocator parity from independent-residual correlation.
 - `VALID`: the initial implementation was a primitive, not a runnable Track A
   or Track B lane. A macroblock-to-token fused projection adapter now exists in
-  `codec_through.codec.continuous_score`, but runner CLI integration remains a
-  required pre-model step.
+  `codec_through.codec.continuous_score`, and the Phase 1.29 probe now exposes
+  motion-only, residual-only, fused-score, fusion-weight, and max-age controls
+  with score-source metadata in artifacts.
 - `VALID`: the prior decision-log entry for "Continuous H.264 spatial scoring
   as saliency oracle" must be explicitly reopened before promotion. OneVision
   is new external evidence for a targeted reread; it is not by itself local
@@ -238,8 +246,9 @@ Porting options:
   straightforward ViT with Conv2d patch embedding, QKV attention, MLP, LayerNorm
   or RMSNorm, and explicit 3D RoPE. It is nontrivial because we must convert
   safetensors weights, implement patch-position RoPE exactly, and validate
-  PyTorch-vs-MLX output parity on small inputs. It is useful if we want many
-  local encoder probes without PyTorch/MPS overhead.
+  PyTorch-vs-MLX output parity on small inputs. Plan for about one week, not a
+  two-day patch, if the result needs to support paper claims. It is useful if
+  we want many local encoder probes without PyTorch/MPS overhead.
 - Full LMM use: defer. The released encoder can support representation and
   feature-drift experiments locally, but answer-drift comparisons require a
   language-model integration path and should not be mixed with Qwen/Gemma VLM
@@ -258,6 +267,10 @@ Adopt now:
   starvation checks.
 - Four-stage visualization: dense video, uniform sampling, score/freshness map,
   sparse selected patches.
+- Denominator-separated comparison tables for imported OneVision results,
+  reproduced VLMaxxing baselines, and OneVision+VLMaxxing hypotheses. The
+  branch now emits a JSON/CSV/Markdown plan table under
+  `research/experiments/2026/artifacts/onevision_vlmaxxing_plan/`.
 
 Adopt only as future trained work:
 

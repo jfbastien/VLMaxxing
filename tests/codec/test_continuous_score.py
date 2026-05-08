@@ -3,15 +3,38 @@ from __future__ import annotations
 import numpy as np
 
 from codec_through.codec.continuous_score import (
+    CodecScoreSource,
     calibrate_score_thresholds,
     class_share_vector,
     classify_score_grid,
+    macroblock_motion_magnitude,
+    macroblock_score_plane,
     project_fused_motion_residual_to_token_grid,
+    project_macroblock_metadata_to_token_grid,
     project_macroblock_scores_to_token_grid,
     sparse_pair_spans,
     sparse_sample_indices,
 )
 from codec_through.temporal import BlockClass
+
+MB_TEST_DTYPE = np.dtype(
+    [
+        ("x", np.int32),
+        ("y", np.int32),
+        ("mv_x", np.float32),
+        ("mv_y", np.float32),
+        ("mv_x_back", np.float32),
+        ("mv_y_back", np.float32),
+        ("mv_magnitude", np.float32),
+        ("mv_magnitude_back", np.float32),
+        ("intra_flag", np.bool_),
+        ("inter_flag", np.bool_),
+        ("cbf", np.bool_),
+        ("pred_mode", np.int32),
+        ("qp", np.float32),
+        ("residual_energy", np.float32),
+    ]
+)
 
 
 def test_sparse_sample_indices_match_linspace_contract() -> None:
@@ -42,6 +65,34 @@ def test_project_macroblock_scores_to_token_grid_respects_padding() -> None:
         dtype=np.float32,
     )
     assert np.allclose(projected, expected)
+
+
+def test_project_macroblock_scores_to_token_grid_clips_resize_overshoot() -> None:
+    projected = project_macroblock_scores_to_token_grid(
+        np.array([[0.0, 1.0], [1.0, 0.0]], dtype=np.float32),
+        macroblock_size=16,
+        frame_width=32,
+        frame_height=32,
+        canvas_size=64,
+        active_box=(0, 0, 64, 64),
+        token_block=16,
+    )
+
+    assert float(projected.min()) >= 0.0
+    assert float(projected.max()) <= 1.0
+
+
+def test_project_macroblock_scores_to_token_grid_rejects_wrong_geometry() -> None:
+    with np.testing.assert_raises(ValueError):
+        project_macroblock_scores_to_token_grid(
+            np.ones((4, 2), dtype=np.float32),
+            macroblock_size=16,
+            frame_width=32,
+            frame_height=32,
+            canvas_size=32,
+            active_box=(0, 0, 32, 32),
+            token_block=16,
+        )
 
 
 def test_project_fused_motion_residual_to_token_grid_matches_weighted_fusion() -> None:
@@ -97,6 +148,60 @@ def test_project_fused_motion_residual_zero_weight_lanes_match_inputs() -> None:
 
     assert np.array_equal(motion_only, motion)
     assert np.array_equal(residual_only, residual)
+
+
+def test_macroblock_score_plane_supports_all_score_sources() -> None:
+    macroblocks = np.zeros((1, 2), dtype=MB_TEST_DTYPE)
+    macroblocks["mv_magnitude"] = np.array([[1.0, 2.0]], dtype=np.float32)
+    macroblocks["mv_magnitude_back"] = np.array([[3.0, 1.0]], dtype=np.float32)
+    macroblocks["residual_energy"] = np.array([[0.25, 4.0]], dtype=np.float32)
+    macroblocks["intra_flag"] = np.array([[False, True]], dtype=np.bool_)
+    macroblocks["cbf"] = np.array([[True, False]], dtype=np.bool_)
+
+    assert np.array_equal(
+        macroblock_motion_magnitude(macroblocks),
+        np.array([[3.0, 2.0]], dtype=np.float32),
+    )
+    assert np.array_equal(
+        macroblock_score_plane(macroblocks, source=CodecScoreSource.NOVEL_CODED),
+        np.array([[1.0, 1.0]], dtype=np.float32),
+    )
+    assert np.array_equal(
+        macroblock_score_plane(macroblocks, source=CodecScoreSource.MOTION),
+        np.array([[3.0, 2.0]], dtype=np.float32),
+    )
+    assert np.array_equal(
+        macroblock_score_plane(macroblocks, source=CodecScoreSource.RESIDUAL),
+        np.array([[0.25, 4.0]], dtype=np.float32),
+    )
+    assert np.allclose(
+        macroblock_score_plane(
+            macroblocks,
+            source=CodecScoreSource.FUSED,
+            normalize_inputs=False,
+        ),
+        np.array([[1.625, 3.0]], dtype=np.float32),
+    )
+
+
+def test_project_macroblock_metadata_to_token_grid_uses_selected_source() -> None:
+    macroblocks = np.zeros((2, 2), dtype=MB_TEST_DTYPE)
+    macroblocks["mv_magnitude"] = np.array([[1.0, 2.0], [3.0, 4.0]], dtype=np.float32)
+    macroblocks["residual_energy"] = np.array([[4.0, 3.0], [2.0, 1.0]], dtype=np.float32)
+
+    projected = project_macroblock_metadata_to_token_grid(
+        macroblocks,
+        source=CodecScoreSource.FUSED,
+        macroblock_size=16,
+        frame_width=32,
+        frame_height=32,
+        canvas_size=32,
+        active_box=(0, 0, 32, 32),
+        token_block=16,
+        normalize_inputs=False,
+    )
+
+    assert np.allclose(projected, np.full((2, 2), 2.5, dtype=np.float32))
 
 
 def test_calibrate_score_thresholds_and_classify_score_grid() -> None:

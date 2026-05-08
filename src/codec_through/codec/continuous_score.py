@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import StrEnum
 
 import numpy as np
 import numpy.typing as npt
@@ -10,6 +11,23 @@ from PIL import Image
 
 from codec_through.codec.onevision_patchification import FuseMode, fuse_motion_residual
 from codec_through.temporal import BlockClass
+
+
+class CodecScoreSource(StrEnum):
+    """Codec-derived score planes available to planner probes."""
+
+    NOVEL_CODED = "novel_coded"
+    MOTION = "motion"
+    RESIDUAL = "residual"
+    FUSED = "fused"
+
+
+CODEC_SCORE_UNITS: dict[CodecScoreSource, str] = {
+    CodecScoreSource.NOVEL_CODED: "fraction_intra_or_coded_block_flag",
+    CodecScoreSource.MOTION: "macroblock_motion_vector_magnitude_pixels",
+    CodecScoreSource.RESIDUAL: "repo_local_reconstructed_y_residual_proxy",
+    CodecScoreSource.FUSED: "onevision_style_motion_residual_fused_score",
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -106,6 +124,20 @@ def project_macroblock_scores_to_token_grid(
         macroblock_size,
         axis=1,
     )
+    expected_height = macroblock_scores.shape[0] * macroblock_size
+    expected_width = macroblock_scores.shape[1] * macroblock_size
+    if expected_height < frame_height or expected_height - frame_height >= macroblock_size:
+        raise ValueError(
+            "macroblock_scores height does not match frame geometry: "
+            f"{macroblock_scores.shape[0]} rows at macroblock_size={macroblock_size} "
+            f"for frame_height={frame_height}"
+        )
+    if expected_width < frame_width or expected_width - frame_width >= macroblock_size:
+        raise ValueError(
+            "macroblock_scores width does not match frame geometry: "
+            f"{macroblock_scores.shape[1]} cols at macroblock_size={macroblock_size} "
+            f"for frame_width={frame_width}"
+        )
     expanded = expanded[:frame_height, :frame_width]
     if expanded.shape != (frame_height, frame_width):
         raise ValueError(
@@ -118,7 +150,10 @@ def project_macroblock_scores_to_token_grid(
         Image.Resampling.BICUBIC,
     )
     canvas = np.zeros((canvas_size, canvas_size), dtype=np.float32)
-    canvas[top:bottom, left:right] = np.asarray(resized, dtype=np.float32)
+    projected = np.asarray(resized, dtype=np.float32)
+    min_score = float(np.nanmin(macroblock_scores))
+    max_score = float(np.nanmax(macroblock_scores))
+    canvas[top:bottom, left:right] = np.clip(projected, min_score, max_score)
     return mean_pool_blocks(canvas, block_size=token_block)
 
 
@@ -163,6 +198,130 @@ def project_fused_motion_residual_to_token_grid(
         active_box=active_box,
         token_block=token_block,
     )
+
+
+def macroblock_motion_magnitude(macroblocks: np.ndarray) -> npt.NDArray[np.float32]:
+    """Return the larger available forward/backward MV magnitude per macroblock."""
+
+    _validate_macroblock_fields(
+        macroblocks,
+        required=("mv_magnitude", "mv_magnitude_back"),
+    )
+    forward = np.asarray(macroblocks["mv_magnitude"], dtype=np.float32)
+    backward = np.asarray(macroblocks["mv_magnitude_back"], dtype=np.float32)
+    forward = np.nan_to_num(forward, nan=0.0, posinf=0.0, neginf=0.0)
+    backward = np.nan_to_num(backward, nan=0.0, posinf=0.0, neginf=0.0)
+    return np.maximum(forward, backward).astype(np.float32)
+
+
+def macroblock_residual_energy(macroblocks: np.ndarray) -> npt.NDArray[np.float32]:
+    """Return the repo-local residual-energy proxy per macroblock."""
+
+    _validate_macroblock_fields(macroblocks, required=("residual_energy",))
+    return np.asarray(macroblocks["residual_energy"], dtype=np.float32)
+
+
+def macroblock_score_plane(
+    macroblocks: np.ndarray,
+    *,
+    source: CodecScoreSource | str,
+    mode: FuseMode = "weighted",
+    motion_weight: float = 1.0,
+    residual_weight: float = 1.0,
+    normalize_inputs: bool = True,
+) -> npt.NDArray[np.float32]:
+    """Build a continuous score plane from H264MetadataExtractor macroblocks."""
+
+    score_source = CodecScoreSource(source)
+    if score_source is CodecScoreSource.NOVEL_CODED:
+        _validate_macroblock_fields(macroblocks, required=("intra_flag", "cbf"))
+        return np.asarray(
+            macroblocks["intra_flag"] | macroblocks["cbf"],
+            dtype=np.float32,
+        )
+    motion = macroblock_motion_magnitude(macroblocks)
+    if score_source is CodecScoreSource.MOTION:
+        return motion
+    residual = macroblock_residual_energy(macroblocks)
+    if score_source is CodecScoreSource.RESIDUAL:
+        return residual
+    if score_source is CodecScoreSource.FUSED:
+        return fuse_motion_residual(
+            motion,
+            residual,
+            mode=mode,
+            motion_weight=motion_weight,
+            residual_weight=residual_weight,
+            normalize_inputs=normalize_inputs,
+        )
+    raise ValueError(f"unsupported codec score source: {source}")
+
+
+def project_macroblock_metadata_to_token_grid(
+    macroblocks: np.ndarray,
+    *,
+    source: CodecScoreSource | str,
+    macroblock_size: int,
+    frame_width: int,
+    frame_height: int,
+    canvas_size: int,
+    active_box: tuple[int, int, int, int],
+    token_block: int,
+    mode: FuseMode = "weighted",
+    motion_weight: float = 1.0,
+    residual_weight: float = 1.0,
+    normalize_inputs: bool = True,
+) -> npt.NDArray[np.float32]:
+    """Build and project a macroblock score plane into the model token grid."""
+
+    score_plane = macroblock_score_plane(
+        macroblocks,
+        source=source,
+        mode=mode,
+        motion_weight=motion_weight,
+        residual_weight=residual_weight,
+        normalize_inputs=normalize_inputs,
+    )
+    return project_macroblock_scores_to_token_grid(
+        score_plane,
+        macroblock_size=macroblock_size,
+        frame_width=frame_width,
+        frame_height=frame_height,
+        canvas_size=canvas_size,
+        active_box=active_box,
+        token_block=token_block,
+    )
+
+
+def codec_score_units(
+    source: CodecScoreSource | str,
+    *,
+    fusion_mode: FuseMode = "weighted",
+    motion_weight: float = 1.0,
+    residual_weight: float = 1.0,
+    normalize_inputs: bool = True,
+) -> str:
+    """Return the physical/proxy units for a codec score source."""
+
+    score_source = CodecScoreSource(source)
+    if score_source is not CodecScoreSource.FUSED:
+        return CODEC_SCORE_UNITS[score_source]
+    normalization = "percentile_normalized_inputs" if normalize_inputs else "raw_inputs"
+    return (
+        f"{CODEC_SCORE_UNITS[score_source]}:"
+        f"mode={fusion_mode},motion_weight={motion_weight},"
+        f"residual_weight={residual_weight},{normalization}"
+    )
+
+
+def _validate_macroblock_fields(macroblocks: np.ndarray, *, required: tuple[str, ...]) -> None:
+    if macroblocks.ndim != 2:
+        raise ValueError("macroblocks must be a 2D structured array")
+    if macroblocks.dtype.fields is None:
+        raise ValueError("macroblocks must be a structured array")
+    missing = [field for field in required if field not in macroblocks.dtype.fields]
+    if missing:
+        raise ValueError(f"macroblocks missing required fields: {missing}")
 
 
 def calibrate_score_thresholds(
