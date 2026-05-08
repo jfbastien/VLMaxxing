@@ -315,6 +315,49 @@ def project_macroblock_metadata_to_token_grid(
     )
 
 
+def project_fused_motion_residual_to_token_grid(
+    macroblock_motion: npt.NDArray[np.float32],
+    macroblock_residual: npt.NDArray[np.float32],
+    *,
+    macroblock_size: int,
+    frame_width: int,
+    frame_height: int,
+    canvas_size: int,
+    active_box: tuple[int, int, int, int],
+    token_block: int,
+    mode: FuseMode = "weighted",
+    motion_weight: float = 1.0,
+    residual_weight: float = 1.0,
+    normalize_inputs: bool = True,
+) -> npt.NDArray[np.float32]:
+    """Fuse MB motion/residual scores and project them into the model token grid."""
+
+    if macroblock_motion.shape != macroblock_residual.shape:
+        raise ValueError(
+            "macroblock_motion and macroblock_residual must have the same shape, "
+            f"got {macroblock_motion.shape} and {macroblock_residual.shape}"
+        )
+    if macroblock_motion.ndim != 2:
+        raise ValueError("macroblock_motion and macroblock_residual must be 2D")
+    fused = fuse_motion_residual(
+        macroblock_motion,
+        macroblock_residual,
+        mode=mode,
+        motion_weight=motion_weight,
+        residual_weight=residual_weight,
+        normalize_inputs=normalize_inputs,
+    )
+    return project_macroblock_scores_to_token_grid(
+        fused,
+        macroblock_size=macroblock_size,
+        frame_width=frame_width,
+        frame_height=frame_height,
+        canvas_size=canvas_size,
+        active_box=active_box,
+        token_block=token_block,
+    )
+
+
 def codec_score_units(
     source: CodecScoreSource | str,
     *,

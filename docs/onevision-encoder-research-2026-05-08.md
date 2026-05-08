@@ -78,6 +78,14 @@ clear enough to reproduce without copying code:
 `positions_thw.npy`, which is the model-facing position metadata. The public
 README also shows direct model calls with explicit `patch_positions`.
 
+`imported result`: In the released preprocessing code, Stage 1 depends on
+`cv_reader` and computes residual energy from decoded residual frames as luma
+deviation from the neutral residual value. That is not the same signal as this
+repo's `H264MetadataExtractor`, which uses PyAV motion vectors plus a
+motion-compensated reconstructed-Y residual proxy. Therefore, upstream parity
+must treat residual extraction as a controlled variance source unless we use
+`cv_reader` or an equivalent codec-internal residual extractor.
+
 `reproduced here`: This branch adds a CPU-only clean-room primitive in
 `src/codec_through/codec/onevision_patchification.py` that implements:
 
@@ -108,6 +116,12 @@ claims. The paper's Section 4.1 reports a two-stage pretraining run on 128 A800
 GPUs, with large-scale image/video/OCR data. That is not feasible on a 16 GB
 M3 Air, and it is not the experiment we need for the current paper.
 
+`imported result`: The public repository also includes a single-node
+`ov_encoder_large_stage2_residual_8gpus.sh` training entrypoint. That script is
+a released training recipe, not evidence that the paper's full pretraining
+claim used only 8 GPUs; the arXiv v3 implementation section states 128 A800
+GPUs.
+
 `hypothesis`: A useful external parity run needs one NVIDIA environment, not
 paper-scale training. The parity objective is to run upstream preprocessing on
 20-50 clips and compare selected THW positions, not to retrain OV-Encoder.
@@ -135,6 +149,8 @@ Single NVIDIA box, A100/H100:
 - Science value: separates our implementation bugs from model/backend limits.
 - Rough cost: Lambda lists 1x A100 at about $1.99/GPU-hour and 1x H100 PCIe at
   about $3.29/GPU-hour as of the current pricing page.
+- Prefer this tier for upstream `cv_reader` / CUDA dependency checks. Apple
+  Silicon is not the right target for the official OneVision Docker/CUDA stack.
 
 8-GPU or 16-node NVIDIA:
 
@@ -173,6 +189,61 @@ Corrections and caution:
 - The current repo already has negative evidence for naive codec-native labels.
   We should build on continuous score calibration, not reintroduce hard MAX/OR
   H.264 labels as a default planner.
+
+## Review Validation Update
+
+External review in this branch raised several concrete issues. Verdicts:
+
+- `FALSE POSITIVE`: the note did not claim `positions_thw.npy` is a Stage 1
+  output. It already says Stage 1 writes `visidx_thw.npy`/`frame_ids.npy`/meta
+  and Stage 2 can emit `positions_thw.npy`. This note now states that more
+  explicitly.
+- `FALSE POSITIVE`: the 128 A800 pretraining claim is primary-source backed by
+  arXiv v3 Section 4.1. The public 8-GPU script is a recipe, not the full
+  paper-training disclosure.
+- `VALID`: residual-signal parity is a real caveat. Upstream Stage 1 uses
+  `cv_reader` residual frames; this repo currently uses a reconstructed-Y
+  motion-compensated residual proxy. Parity gates now separate identical-score
+  allocator parity from independent-residual correlation.
+- `VALID`: the initial implementation was a primitive, not a runnable Track A
+  or Track B lane. A macroblock-to-token fused projection adapter now exists in
+  `codec_through.codec.continuous_score`, but runner CLI integration remains a
+  required pre-model step.
+- `VALID`: the prior decision-log entry for "Continuous H.264 spatial scoring
+  as saliency oracle" must be explicitly reopened before promotion. OneVision
+  is new external evidence for a targeted reread; it is not by itself local
+  proof that codec scores are semantic saliency.
+
+## OV Model Local Feasibility
+
+`imported result`: The Hugging Face collection currently lists
+`lmms-lab-encoder/onevision-encoder-large` and
+`lmms-lab-encoder/onevision-encoder-large-lang`, both 0.3B-parameter vision
+encoders. The model card reports BF16 safetensors around 631 MB for the base
+large encoder, patch size 14, 24 ViT layers, hidden size 1024, 16 heads, and
+3D RoPE.
+
+`hypothesis`: The model is likely small enough to run encoder-only experiments
+on the M3/M5 in memory, especially at image scale or sparse 2048-token video
+budgets. It is not a third local VLM equivalent to Qwen/Gemma unless we also
+wire an LMM head or run their LLaVA-NeXT probe stack.
+
+Porting options:
+
+- PyTorch/MPS smoke: probably the fastest local feasibility check, but the
+  public examples target CUDA and `flash_attention_2`; we would need to force
+  eager attention or patch the config. This should be tried only when the
+  machine is free.
+- MLX port: feasible for encoder-only science because the architecture is a
+  straightforward ViT with Conv2d patch embedding, QKV attention, MLP, LayerNorm
+  or RMSNorm, and explicit 3D RoPE. It is nontrivial because we must convert
+  safetensors weights, implement patch-position RoPE exactly, and validate
+  PyTorch-vs-MLX output parity on small inputs. It is useful if we want many
+  local encoder probes without PyTorch/MPS overhead.
+- Full LMM use: defer. The released encoder can support representation and
+  feature-drift experiments locally, but answer-drift comparisons require a
+  language-model integration path and should not be mixed with Qwen/Gemma VLM
+  claims until that stack is reproduced.
 
 ## References And Ideas To Adopt
 
