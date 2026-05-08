@@ -1312,6 +1312,16 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--summary", type=Path, required=True)
     parser.add_argument(
+        "--mlx-memory-limit-gb",
+        type=float,
+        default=0.0,
+        help=(
+            "Set MLX's allocator memory cap before model load. Default 0 preserves "
+            "historical behavior. Use a positive value for large autonomous runs "
+            "where allocation failures should surface before system memory pressure."
+        ),
+    )
+    parser.add_argument(
         "--rss-guard-mb",
         type=int,
         default=0,
@@ -1358,6 +1368,12 @@ def main() -> int:
         raise SystemExit(f"--n-warmup must be nonnegative, got {args.n_warmup}")
     if args.prefill_step_size <= 0:
         raise SystemExit(f"--prefill-step-size must be positive, got {args.prefill_step_size}")
+    if args.mlx_memory_limit_gb < 0.0:
+        raise SystemExit(
+            f"--mlx-memory-limit-gb must be nonnegative, got {args.mlx_memory_limit_gb}"
+        )
+    if args.mlx_memory_limit_gb > 0.0:
+        mx.set_memory_limit(int(args.mlx_memory_limit_gb * 1024**3))
     if args.anchor_arm == "cls_attention_proxy":
         print(
             "WARNING: cls_attention_proxy uses a per-token L2-norm proxy, not "
@@ -1423,6 +1439,7 @@ def main() -> int:
             "frame_count": args.frame_count,
             "max_tokens": args.max_tokens,
             "prefill_step_size": args.prefill_step_size,
+            "mlx_memory_limit_gb": args.mlx_memory_limit_gb,
             "n_warmup": args.n_warmup,
             "arm_order": args.arm_order,
             "resume": True,
@@ -1578,6 +1595,7 @@ def main() -> int:
         "frame_count": args.frame_count,
         "max_tokens": args.max_tokens,
         "prefill_step_size": args.prefill_step_size,
+        "mlx_memory_limit_gb": args.mlx_memory_limit_gb,
         "n_warmup": args.n_warmup,
         "arm_order": args.arm_order,
         "resume": args.resume,

@@ -157,11 +157,13 @@ def test_composition_command_uses_rlt_for_admission_and_cvision(tmp_path: Path) 
         frame_count=8,
         n_items=30,
         rss_guard_mb=9000,
+        mlx_memory_limit_gb=12.0,
         label="composition_rlt_videomme",
     )
 
     assert run_command[run_command.index("--prune-placeholders") + 1] == "rlt"
     assert run_command[run_command.index("--vision-tower-score-mode") + 1] == "rlt_topk"
+    assert run_command[run_command.index("--mlx-memory-limit-gb") + 1] == "12"
     assert run_command[run_command.index("--prefill-step-size") + 1] == "1024"
     assert analyze_command[analyze_command.index("--cell-type") + 1] == "h3b_admission"
 
@@ -174,11 +176,13 @@ def test_composition_command_allows_prefill_step_override(tmp_path: Path) -> Non
         frame_count=8,
         n_items=30,
         rss_guard_mb=9000,
+        mlx_memory_limit_gb=60.0,
         label="composition_rlt_videomme",
         prefill_step_size=1536,
     )
 
     assert run_command[run_command.index("--prefill-step-size") + 1] == "1536"
+    assert run_command[run_command.index("--mlx-memory-limit-gb") + 1] == "60"
 
 
 def test_full_composition_commands_build_dense_reference_and_composed_arm(tmp_path: Path) -> None:
@@ -190,11 +194,13 @@ def test_full_composition_commands_build_dense_reference_and_composed_arm(tmp_pa
         n_items=30,
         expected_items=30,
         rss_guard_mb=9000,
+        mlx_memory_limit_gb=60.0,
         benchmark="videomme",
         prefill_step_size=1024,
     )
 
     assert dense[dense.index("--prune-placeholders") + 1] == "none"
+    assert dense[dense.index("--mlx-memory-limit-gb") + 1] == "60"
     assert dense[dense.index("--vision-tower-keep-rate") + 1] == "1.0"
     assert composed[composed.index("--prune-placeholders") + 1] == "rlt"
     assert composed[composed.index("--vision-tower-score-mode") + 1] == "rlt_topk"
