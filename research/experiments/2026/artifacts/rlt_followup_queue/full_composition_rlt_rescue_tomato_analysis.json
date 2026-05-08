@@ -1,0 +1,81 @@
+{
+  "cell_type": "direct_dense_vs_rlt_cvision_plus_admission",
+  "composed_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_rescue_tomato_composed.jsonl",
+  "decisions": [
+    {
+      "decision": "stop",
+      "failed": [
+        "pass_bucket_quality_and_e2e"
+      ],
+      "reason": "full_composition_gate_failed"
+    }
+  ],
+  "dense_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_rescue_tomato_dense.jsonl",
+  "expected_items": 30,
+  "schema_version": "gemma_full_composition_analysis_v1",
+  "summary": {
+    "accuracy_delta_ci95": [
+      -0.23333333333333334,
+      0.13333333333333336
+    ],
+    "accuracy_delta_composed_minus_dense": -0.033333333333333326,
+    "bucket_failures": [
+      "direction"
+    ],
+    "bucket_underpowered": [],
+    "by_group": {
+      "direction": {
+        "accuracy_delta_composed_minus_dense": -0.2,
+        "composed_accuracy": 0.0,
+        "dense_accuracy": 0.2,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.0214849154837289,
+        "gate_evaluated": true,
+        "n": 10,
+        "quality_gate_pass": false
+      },
+      "rotation": {
+        "accuracy_delta_composed_minus_dense": 0.0,
+        "composed_accuracy": 0.1,
+        "dense_accuracy": 0.1,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.3339493343476514,
+        "gate_evaluated": true,
+        "n": 10,
+        "quality_gate_pass": true
+      },
+      "shape_trend": {
+        "accuracy_delta_composed_minus_dense": 0.1,
+        "composed_accuracy": 0.2,
+        "dense_accuracy": 0.1,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.3767866727152855,
+        "gate_evaluated": true,
+        "n": 10,
+        "quality_gate_pass": true
+      }
+    },
+    "composed_accuracy": 0.1,
+    "composed_total_e2e_ms": 377692.662127,
+    "dense_accuracy": 0.13333333333333333,
+    "dense_total_e2e_ms": 464941.958087,
+    "e2e_speedup_ci95": [
+      1.1561863300174064,
+      1.2991541538983138
+    ],
+    "e2e_speedup_dense_over_composed": 1.2310060658013584,
+    "mean_composed_end_to_end_ms": 12589.755404233332,
+    "mean_composed_prefill_ms": 5057.099318133333,
+    "mean_composed_vision_ms": 3672.1744249999997,
+    "mean_dense_end_to_end_ms": 15498.065269566667,
+    "mean_dense_prefill_ms": 6024.320587533333,
+    "mean_dense_vision_ms": 5980.5237083,
+    "n_items": 30,
+    "parse_failure_delta_composed_minus_dense": -1,
+    "pass_bucket_quality_and_e2e": false,
+    "pass_complete_pairing": true,
+    "pass_e2e_positive": true,
+    "pass_fidelity": true,
+    "pass_parse_failure_delta": true
+  }
+}
