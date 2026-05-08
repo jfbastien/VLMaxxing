@@ -70,10 +70,10 @@ ways.
 ## Current Local Setup
 
 `reproduced here`: This branch has CPU-only patchification code, macroblock
-motion/residual fusion projection, unit tests, synthetic visualization tooling,
-real-video visualization artifact plumbing, Phase 1.29 score-source CLI wiring,
-comparison-table scaffolding, and a generated schedule. No VLM inference was
-run for this phase.
+motion/residual fusion projection, unit tests, fail-closed real-video
+visualization plumbing, a CPU-only preflight script, Phase 1.29 score-source
+CLI wiring, comparison-table scaffolding, and a generated schedule. No VLM
+inference was run for this phase.
 
 Existing visualization windows to reuse when raw videos are present:
 
@@ -87,6 +87,48 @@ Existing visualization windows to reuse when raw videos are present:
 These are the same three windows used by the existing codec-through overlay
 artifacts under
 `research/experiments/2026/artifacts/codec_through_video_overlays_exploratory/`.
+They are not new OneVision-specific examples and must not be used as tuning
+items for OV-3.
+
+## Before Kickoff: Asset Preflight
+
+`reproduced here`: On this checkout, the benchmark source media are required
+inputs, and generated overlays or developer synthetic figures are not accepted
+as scientific substitutes. Run:
+
+```bash
+uv run python scripts/preflight_onevision_vlmaxxing.py --scope ov1
+```
+
+The preflight checks exactly which assets are present, what each is used for,
+and how to restore it. If the sibling checkout
+`/Users/jfb/s/codec-through` is present, it can restore the current-paper
+visualization clips and metadata locally; otherwise use the repo fetchers.
+
+Required source clips for OV-1:
+
+- `data/benchmarks/tomato/videos/object/0298-00.mp4`:
+  `tomato:rotation:0298-00`, existing high-reuse paper visualization.
+- `data/benchmarks/videomme/videos/2Bns2m5Bg4M.mp4`:
+  `videomme:medium:380-3`, existing VideoMME visual anchor.
+- `data/benchmarks/videomme/videos/Atf_Af1q_5w.mp4`:
+  `videomme:short:267-2`, existing lower-reuse boundary visualization.
+
+Fetch/restore commands when local copies are absent:
+
+```bash
+uv run python scripts/fetch_benchmarks.py --dataset tomato --mode all --tomato-video-source auto
+uv run python scripts/fetch_benchmarks.py --dataset videomme --mode metadata
+uv run python scripts/fetch_videomme_subset.py --manifest research/benchmark_manifests/videomme_dev_v1.toml --manifest research/benchmark_manifests/videomme_holdout_v1.toml --cache-dir data/benchmarks/videomme/downloads/hf_cache
+```
+
+For OV-3's default dev tranche, run the broader gate and verify that every
+video referenced by `research/benchmark_manifests/videomme_dev_v1_short_only.toml`
+is present:
+
+```bash
+uv run python scripts/preflight_onevision_vlmaxxing.py --scope all
+```
 
 ## Machine-Readable Schedule
 
@@ -126,7 +168,7 @@ uv run pytest tests/codec/test_onevision_patchification.py tests/codec/test_cont
 ```
 
 Success gate: tests pass for anchors, budget overflow, stable tie-breaking,
-synthetic motion localization, score fusion, zero-weight motion/residual lanes,
+toy score localization, score fusion, zero-weight motion/residual lanes,
 temporal coverage, and spatial-bias diagnostics.
 
 Skip rule: If OV-0 fails, skip every downstream OneVision integration.
@@ -143,22 +185,21 @@ motion/residual score is sane before any model time is spent.
 Current implementation:
 
 ```bash
+uv run python scripts/preflight_onevision_vlmaxxing.py --scope ov1
 uv run python scripts/render_onevision_vlmaxxing_visual.py
 ```
 
 Still needed:
 
-- run the real-video path when the raw clips are available and the machine is
-  free;
 - review `allocation_summary.json`, `score_volumes.npz`,
   `token_allocation.csv`, `selected_patches.jsonl`, and
   `starvation_metrics.csv` for the three clips before model promotion.
 
-Success gate: synthetic figure remains CI-friendly, and real-video allocation
-audits exist before OV-3 model runs.
+Success gate: real-video allocation audits exist for all three existing paper
+clips before OV-3 model runs.
 
-Skip rule: If raw videos are absent, keep synthetic/metadata artifacts and
-block model-facing promotion until a real-video allocation audit is run.
+Skip rule: If raw videos are absent, fail OV-1 and restore source assets before
+continuing. Do not use synthetic figures or generated overlays as substitutes.
 
 ETA: M3 3-6 hours with video extraction; M5 1-3 hours.
 
@@ -174,12 +215,12 @@ Already added:
 - `project_fused_motion_residual_to_token_grid` in
   `codec_through.codec.continuous_score`;
 - tests that zero residual weight matches motion-only and zero motion weight
-  matches residual-only.
+  matches residual-only;
+- lazy-runtime guards and tests for runner error paths, cache metadata
+  mismatch, and windowed-item rejection.
 
 Still needed before model inference:
 
-- run CPU-only checks for the newly added CLI flags in
-  `run_phase1_29_planner_accuracy_probe.py`;
 - a same-item regression against current pixel `max_abs` and Phase 1.29 codec
   baselines;
 - optional runner integration in `run_benchmark_track_a.py` only after the
@@ -190,7 +231,8 @@ cached inputs and all algorithmic invariants pass.
 
 Skip rule: If OV-2 fails, do not start OV-3 model inference.
 
-ETA: 4-8 hours coding; no model time.
+ETA: implementation complete; under 1 hour for CPU checks and optional cached
+input smoke. No model time.
 
 ### OV-3: Track A Dev Ablation
 
@@ -377,8 +419,9 @@ uv run python scripts/build_onevision_vlmaxxing_comparison_table.py
 ```
 
 Success gate: JSON/CSV/Markdown rows exist with `imported result`,
-`reproduced here`, and `hypothesis` status labels and explicit denominator
-columns.
+`reproduced here`, and `hypothesis` status labels, explicit denominator
+columns, headline numeric values where known, and target-to-beat gates for
+local hypotheses.
 
 Skip rule: If model results are absent, emit the preregistered plan table only;
 do not fill result cells speculatively.

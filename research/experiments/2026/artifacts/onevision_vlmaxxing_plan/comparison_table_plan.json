@@ -3,88 +3,104 @@
     "artifact_or_source": "arXiv v3 and LMMS-Lab page",
     "denominator": "visual patches/tokens and benchmark accuracy",
     "e2e_policy": "do not convert to wall-clock speedup without measured stage share",
+    "headline_numeric": "imported: 3.1%-25.0% dense patches retained, i.e. 75.0%-96.9% patch reduction versus 64 dense frames / 16,384 patches",
     "intervention_layer": "trained codec-aligned visual encoder",
     "local_reproduction": "not fully reproduced locally; full pretraining is cluster-scale",
     "planned_gate": "cite only as imported trained-encoder counterpart",
     "primary_metric": "reported patch reduction and multimodal benchmark accuracy",
     "status": "imported result",
-    "system": "OneVision-Encoder paper"
+    "system": "OneVision-Encoder paper",
+    "target_to_beat": "not a local target; use as trained-encoder prior and compare only under its own patch/accuracy denominator"
   },
   {
     "artifact_or_source": "src/codec_through/codec/onevision_patchification.py",
     "denominator": "selected token locations before VLM inference",
     "e2e_policy": "no E2E speedup claim",
+    "headline_numeric": "reproduced: deterministic visible-index allocator; no accuracy/speed claim",
     "intervention_layer": "codec-derived motion/residual Top-K allocator",
     "local_reproduction": "CPU tests plus real-video allocation artifact path; audit pending until raw clips are present",
     "planned_gate": "allocation must not collapse to anchor-only or edge/OCR starvation",
     "primary_metric": "visible-index parity, token allocation over time, spatial-bias audit",
     "status": "reproduced here",
-    "system": "OneVision clean-room patchification"
+    "system": "OneVision clean-room patchification",
+    "target_to_beat": "identical-score upstream Jaccard >= 0.90 if OV-4 parity is funded; real-video allocation must avoid anchor collapse and starvation"
   },
   {
     "artifact_or_source": "scripts/run_phase1_29_planner_accuracy_probe.py",
     "denominator": "paired answer stability at matched reuse/fresh budget",
     "e2e_policy": "not a work-skipped speedup claim",
+    "headline_numeric": "artifact-derived baseline; fill from Phase 1.29/1.57 summaries",
     "intervention_layer": "semantic substitution over frozen VLM features",
     "local_reproduction": "existing Phase 1.29/1.57-style artifacts",
     "planned_gate": "baseline for fused-codec planner comparison",
     "primary_metric": "paired choice/correctness drift and parse failures",
     "status": "reproduced here",
-    "system": "VLMaxxing Track A pixel-diff baseline"
+    "system": "VLMaxxing Track A pixel-diff baseline",
+    "target_to_beat": "serves as matched-budget baseline for fused planner; exact dev/holdout numbers must be copied from the selected baseline artifact"
   },
   {
     "artifact_or_source": "planned OV-3/OV-5 results",
     "denominator": "paired answer stability at matched reuse/fresh budget",
     "e2e_policy": "not a work-skipped speedup claim",
+    "headline_numeric": "pending local result",
     "intervention_layer": "motion/residual score source for VLMaxxing planner",
     "local_reproduction": "sequential Qwen then Gemma planner ablation",
     "planned_gate": "beat pixel max_abs on dev and holdout without higher drift",
     "primary_metric": "codec-minus-pixel accuracy, dense agreement, selection Jaccard",
     "status": "hypothesis",
-    "system": "OneVision-style fused planner + VLMaxxing Track A"
+    "system": "OneVision-style fused planner + VLMaxxing Track A",
+    "target_to_beat": "strict Pareto improvement over pixel max_abs at matched fresh budget, <= 1% paired-choice drift, no parse-failure increase"
   },
   {
     "artifact_or_source": "planned OV-6 results",
     "denominator": "vision-stage and end-to-end wall-clock timing",
     "e2e_policy": "report component and E2E separately; no multiplied speedups",
+    "headline_numeric": "pending local result",
     "intervention_layer": "real vision-stage work skipped or sparse evidence lane",
     "local_reproduction": "M5-only Qwen first; Gemma only if Qwen gates clean",
     "planned_gate": "fidelity-clean cell at useful keep-rate",
     "primary_metric": "latency, paired drift, parse failures, stage-share ceiling",
     "status": "hypothesis",
-    "system": "OneVision-style sparse evidence + VLMaxxing Track B"
+    "system": "OneVision-style sparse evidence + VLMaxxing Track B",
+    "target_to_beat": "beat current sparse-vision boundaries at matched keep-rate: Qwen clean VideoMME 8f around 1.113x E2E, Gemma 32f short around 1.316x, and Qwen low-gain boundary around 1.032x only with fidelity caveat"
   },
   {
     "artifact_or_source": "current paper claim matrix and C-PERSIST artifacts",
     "denominator": "setup-inclusive same-video session latency",
     "e2e_policy": "report separately from first-ingest pruning",
+    "headline_numeric": "reproduced: repaired same-video follow-up speedup 14.90x-35.92x with 0/93 paired choice/correctness drift in the tested breadth setting",
     "intervention_layer": "same-video follow-up prefix/cache reuse",
     "local_reproduction": "existing local Qwen/Gemma C-PERSIST runs",
     "planned_gate": "unchanged baseline for composition accounting",
     "primary_metric": "follow-up latency, paired drift, session speedup by turns",
     "status": "reproduced here",
-    "system": "VLMaxxing C-PERSIST"
+    "system": "VLMaxxing C-PERSIST",
+    "target_to_beat": "unchanged baseline for after-ingest reuse; combined rows must improve session economics without changing C-PERSIST fidelity"
   },
   {
     "artifact_or_source": "planned OV-8 results",
     "denominator": "two lanes: first-query vision tokens; follow-up setup-inclusive session wall-clock",
     "e2e_policy": "only report measured E2E when Track B backend skips real work",
+    "headline_numeric": "pending local result",
     "intervention_layer": "codec-sparse ingest plus same-video state reuse",
     "local_reproduction": "run only after Track A/Track B gates decide what is meaningful",
     "planned_gate": "composition must improve session economics without conflating denominators",
     "primary_metric": "lane-separated stage-share ceiling, session speedup, paired drift",
     "status": "hypothesis",
-    "system": "OneVision-style first ingest + VLMaxxing C-PERSIST"
+    "system": "OneVision-style first ingest + VLMaxxing C-PERSIST",
+    "target_to_beat": "setup-inclusive session curve at 1/2/5/10/50 same-video questions; do not multiply OneVision patch reduction by C-PERSIST follow-up speedup"
   },
   {
     "artifact_or_source": "planned OV-7 result",
     "denominator": "encoder feature extraction and saliency diagnostics",
     "e2e_policy": "not a third VLM unless an LMM head is reproduced",
+    "headline_numeric": "imported model size: about 0.3B params / 631 MB BF16 encoder",
     "intervention_layer": "third encoder-only representation probe",
     "local_reproduction": "deferred MLX or CPU smoke after planner results",
     "planned_gate": "single-clip feature parity before any paper claim",
     "primary_metric": "load parity, patch-size/3D-RoPE correctness, saliency correlation",
     "status": "hypothesis",
-    "system": "OneVision-Encoder local feasibility"
+    "system": "OneVision-Encoder local feasibility",
+    "target_to_beat": "single-clip PyTorch/MPS or MLX forward parity before any encoder-derived saliency result is used in the paper"
   }
 ]

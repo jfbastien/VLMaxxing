@@ -25,6 +25,8 @@ class ComparisonRow:
     intervention_layer: str
     denominator: str
     primary_metric: str
+    headline_numeric: str
+    target_to_beat: str
     e2e_policy: str
     local_reproduction: str
     planned_gate: str
@@ -38,6 +40,14 @@ ROWS = (
         intervention_layer="trained codec-aligned visual encoder",
         denominator="visual patches/tokens and benchmark accuracy",
         primary_metric="reported patch reduction and multimodal benchmark accuracy",
+        headline_numeric=(
+            "imported: 3.1%-25.0% dense patches retained, i.e. 75.0%-96.9% "
+            "patch reduction versus 64 dense frames / 16,384 patches"
+        ),
+        target_to_beat=(
+            "not a local target; use as trained-encoder prior and compare only under "
+            "its own patch/accuracy denominator"
+        ),
         e2e_policy="do not convert to wall-clock speedup without measured stage share",
         local_reproduction="not fully reproduced locally; full pretraining is cluster-scale",
         planned_gate="cite only as imported trained-encoder counterpart",
@@ -49,6 +59,13 @@ ROWS = (
         intervention_layer="codec-derived motion/residual Top-K allocator",
         denominator="selected token locations before VLM inference",
         primary_metric="visible-index parity, token allocation over time, spatial-bias audit",
+        headline_numeric=(
+            "reproduced: deterministic visible-index allocator; no accuracy/speed claim"
+        ),
+        target_to_beat=(
+            "identical-score upstream Jaccard >= 0.90 if OV-4 parity is funded; "
+            "real-video allocation must avoid anchor collapse and starvation"
+        ),
         e2e_policy="no E2E speedup claim",
         local_reproduction=(
             "CPU tests plus real-video allocation artifact path; audit pending until "
@@ -63,6 +80,11 @@ ROWS = (
         intervention_layer="semantic substitution over frozen VLM features",
         denominator="paired answer stability at matched reuse/fresh budget",
         primary_metric="paired choice/correctness drift and parse failures",
+        headline_numeric="artifact-derived baseline; fill from Phase 1.29/1.57 summaries",
+        target_to_beat=(
+            "serves as matched-budget baseline for fused planner; exact dev/holdout "
+            "numbers must be copied from the selected baseline artifact"
+        ),
         e2e_policy="not a work-skipped speedup claim",
         local_reproduction="existing Phase 1.29/1.57-style artifacts",
         planned_gate="baseline for fused-codec planner comparison",
@@ -74,6 +96,11 @@ ROWS = (
         intervention_layer="motion/residual score source for VLMaxxing planner",
         denominator="paired answer stability at matched reuse/fresh budget",
         primary_metric="codec-minus-pixel accuracy, dense agreement, selection Jaccard",
+        headline_numeric="pending local result",
+        target_to_beat=(
+            "strict Pareto improvement over pixel max_abs at matched fresh budget, "
+            "<= 1% paired-choice drift, no parse-failure increase"
+        ),
         e2e_policy="not a work-skipped speedup claim",
         local_reproduction="sequential Qwen then Gemma planner ablation",
         planned_gate="beat pixel max_abs on dev and holdout without higher drift",
@@ -85,6 +112,12 @@ ROWS = (
         intervention_layer="real vision-stage work skipped or sparse evidence lane",
         denominator="vision-stage and end-to-end wall-clock timing",
         primary_metric="latency, paired drift, parse failures, stage-share ceiling",
+        headline_numeric="pending local result",
+        target_to_beat=(
+            "beat current sparse-vision boundaries at matched keep-rate: Qwen clean "
+            "VideoMME 8f around 1.113x E2E, Gemma 32f short around 1.316x, and "
+            "Qwen low-gain boundary around 1.032x only with fidelity caveat"
+        ),
         e2e_policy="report component and E2E separately; no multiplied speedups",
         local_reproduction="M5-only Qwen first; Gemma only if Qwen gates clean",
         planned_gate="fidelity-clean cell at useful keep-rate",
@@ -96,6 +129,14 @@ ROWS = (
         intervention_layer="same-video follow-up prefix/cache reuse",
         denominator="setup-inclusive same-video session latency",
         primary_metric="follow-up latency, paired drift, session speedup by turns",
+        headline_numeric=(
+            "reproduced: repaired same-video follow-up speedup 14.90x-35.92x with "
+            "0/93 paired choice/correctness drift in the tested breadth setting"
+        ),
+        target_to_beat=(
+            "unchanged baseline for after-ingest reuse; combined rows must improve "
+            "session economics without changing C-PERSIST fidelity"
+        ),
         e2e_policy="report separately from first-ingest pruning",
         local_reproduction="existing local Qwen/Gemma C-PERSIST runs",
         planned_gate="unchanged baseline for composition accounting",
@@ -109,6 +150,11 @@ ROWS = (
             "two lanes: first-query vision tokens; follow-up setup-inclusive session wall-clock"
         ),
         primary_metric="lane-separated stage-share ceiling, session speedup, paired drift",
+        headline_numeric="pending local result",
+        target_to_beat=(
+            "setup-inclusive session curve at 1/2/5/10/50 same-video questions; "
+            "do not multiply OneVision patch reduction by C-PERSIST follow-up speedup"
+        ),
         e2e_policy="only report measured E2E when Track B backend skips real work",
         local_reproduction="run only after Track A/Track B gates decide what is meaningful",
         planned_gate="composition must improve session economics without conflating denominators",
@@ -120,6 +166,11 @@ ROWS = (
         intervention_layer="third encoder-only representation probe",
         denominator="encoder feature extraction and saliency diagnostics",
         primary_metric="load parity, patch-size/3D-RoPE correctness, saliency correlation",
+        headline_numeric="imported model size: about 0.3B params / 631 MB BF16 encoder",
+        target_to_beat=(
+            "single-clip PyTorch/MPS or MLX forward parity before any encoder-derived "
+            "saliency result is used in the paper"
+        ),
         e2e_policy="not a third VLM unless an LMM head is reproduced",
         local_reproduction="deferred MLX or CPU smoke after planner results",
         planned_gate="single-clip feature parity before any paper claim",
@@ -141,7 +192,7 @@ def main() -> None:
 
     json_path.write_text(json.dumps(rows, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     with csv_path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0].keys()))
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0].keys()), lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 

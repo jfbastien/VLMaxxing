@@ -101,15 +101,16 @@ must treat residual extraction as a controlled variance source unless we use
 - visible-index export;
 - temporal coverage and spatial-bias diagnostics.
 
-Unit tests cover anchor/budget invariants, synthetic motion localization,
-stable tie-breaking, score fusion, temporal coverage, and center/boundary
-diagnostics.
+Unit tests cover anchor/budget invariants, toy motion localization, stable
+tie-breaking, score fusion modes and errors, temporal coverage, runner wiring,
+cache metadata guards, and center/boundary diagnostics.
 
 ## What We Can Reproduce Locally
 
 `reproduced here`: On the M3 MacBook Air, we can reproduce algorithmic
-patchification, score fusion, deterministic visible indices, synthetic
-visualizations, and scheduler artifacts without model inference.
+patchification, score fusion, deterministic visible indices, fail-closed
+real-video visualization plumbing, preflight checks, and scheduler artifacts
+without model inference.
 
 `hypothesis`: With benchmark assets present, the M3 can also run CPU codec
 metadata allocation analysis over the three established visualization clips and
@@ -135,8 +136,10 @@ paper-scale training. The parity objective is to run upstream preprocessing on
 
 M3 16 GB Air:
 
-- Good for CPU unit tests, synthetic figures, schedule generation, small
-  metadata-only allocation audits.
+- Good for CPU unit tests, schedule generation, preflight checks, and small
+  metadata-only allocation audits. Developer-only synthetic smoke output may be
+  used to test drawing code, but it is not scientific evidence and is not a
+  fallback for OV-1.
 - Not good for broad Qwen/Gemma sweeps while other experiments are running.
 - Not suitable for upstream OneVision model evaluation or any full training.
 

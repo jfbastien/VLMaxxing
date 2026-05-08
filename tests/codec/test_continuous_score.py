@@ -184,6 +184,17 @@ def test_macroblock_score_plane_supports_all_score_sources() -> None:
     )
 
 
+def test_macroblock_motion_magnitude_sanitizes_nan_and_inf() -> None:
+    macroblocks = np.zeros((1, 3), dtype=MB_TEST_DTYPE)
+    macroblocks["mv_magnitude"] = np.array([[np.nan, np.inf, 2.0]], dtype=np.float32)
+    macroblocks["mv_magnitude_back"] = np.array([[0.0, 1.0, np.nan]], dtype=np.float32)
+
+    assert np.array_equal(
+        macroblock_motion_magnitude(macroblocks),
+        np.array([[0.0, 1.0, 2.0]], dtype=np.float32),
+    )
+
+
 def test_project_macroblock_metadata_to_token_grid_uses_selected_source() -> None:
     macroblocks = np.zeros((2, 2), dtype=MB_TEST_DTYPE)
     macroblocks["mv_magnitude"] = np.array([[1.0, 2.0], [3.0, 4.0]], dtype=np.float32)
