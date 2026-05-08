@@ -6,6 +6,7 @@ from codec_through.codec.continuous_score import (
     calibrate_score_thresholds,
     class_share_vector,
     classify_score_grid,
+    project_fused_motion_residual_to_token_grid,
     project_macroblock_scores_to_token_grid,
     sparse_pair_spans,
     sparse_sample_indices,
@@ -41,6 +42,61 @@ def test_project_macroblock_scores_to_token_grid_respects_padding() -> None:
         dtype=np.float32,
     )
     assert np.allclose(projected, expected)
+
+
+def test_project_fused_motion_residual_to_token_grid_matches_weighted_fusion() -> None:
+    motion = np.array([[1.0, 0.0], [0.0, 0.0]], dtype=np.float32)
+    residual = np.array([[0.0, 3.0], [0.0, 0.0]], dtype=np.float32)
+
+    projected = project_fused_motion_residual_to_token_grid(
+        motion,
+        residual,
+        macroblock_size=16,
+        frame_width=32,
+        frame_height=32,
+        canvas_size=32,
+        active_box=(0, 0, 32, 32),
+        token_block=16,
+        mode="weighted",
+        normalize_inputs=False,
+    )
+
+    assert np.allclose(projected, np.array([[0.5, 1.5], [0.0, 0.0]], dtype=np.float32))
+
+
+def test_project_fused_motion_residual_zero_weight_lanes_match_inputs() -> None:
+    motion = np.array([[1.0, 2.0], [3.0, 4.0]], dtype=np.float32)
+    residual = np.array([[4.0, 3.0], [2.0, 1.0]], dtype=np.float32)
+
+    motion_only = project_fused_motion_residual_to_token_grid(
+        motion,
+        residual,
+        macroblock_size=16,
+        frame_width=32,
+        frame_height=32,
+        canvas_size=32,
+        active_box=(0, 0, 32, 32),
+        token_block=16,
+        motion_weight=1.0,
+        residual_weight=0.0,
+        normalize_inputs=False,
+    )
+    residual_only = project_fused_motion_residual_to_token_grid(
+        motion,
+        residual,
+        macroblock_size=16,
+        frame_width=32,
+        frame_height=32,
+        canvas_size=32,
+        active_box=(0, 0, 32, 32),
+        token_block=16,
+        motion_weight=0.0,
+        residual_weight=1.0,
+        normalize_inputs=False,
+    )
+
+    assert np.array_equal(motion_only, motion)
+    assert np.array_equal(residual_only, residual)
 
 
 def test_calibrate_score_thresholds_and_classify_score_grid() -> None:

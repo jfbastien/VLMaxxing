@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
+# ruff: noqa: E501,I001
 """Emit the sequential OneVision + VLMaxxing experiment schedule.
 
 This script is intentionally a planner, not an executor. It records the order,
-gates, skip rules, and compute lane for the work so a later runner can consume
+gates, skip rules, compute lane, and setup effort so a later runner can consume
 the JSON without risking model or GPU work during planning.
 """
-# ruff: noqa: E501
 
 from __future__ import annotations
 
@@ -13,6 +13,7 @@ import argparse
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
+
 
 DEFAULT_OUTPUT = Path(
     "research/experiments/2026/artifacts/onevision_vlmaxxing_plan/experiment_schedule.json"
@@ -27,11 +28,13 @@ class ExperimentStep:
     hypothesis: str
     success_gate: str
     skip_rule: str
+    setup_effort: str
     eta_m3: str
     eta_m5: str
     compute_lane: str
-    runs_models: bool
-    requires_gpu: bool
+    uses_local_accelerator: bool
+    requires_nvidia: bool
+    defer_until: str
     commands: list[str]
     artifacts: list[str]
 
@@ -45,191 +48,49 @@ def build_schedule() -> list[ExperimentStep]:
             track="reproduction-method",
             question="Can the clean-room patch allocator match OneVision's public codec input contract?",
             hypothesis=(
-                "A deterministic motion/residual Top-K allocator with full-frame anchors and "
-                "THW visible indices reproduces the algorithmic surface needed for local tests."
+                "A deterministic motion/residual Top-K allocator with full-frame anchors and THW visible indices "
+                "reproduces the algorithmic surface needed for local tests."
             ),
             success_gate=(
-                "Unit tests pass for anchors, budget overflow, stable tie-breaking, synthetic "
-                "motion localization, temporal coverage, and spatial-bias diagnostics."
+                "Unit tests pass for anchors, budget overflow, stable tie-breaking, synthetic motion localization, "
+                "temporal coverage, spatial-bias diagnostics, and macroblock fusion projection invariants."
             ),
             skip_rule="If these tests fail, skip every downstream OneVision integration.",
+            setup_effort="complete",
             eta_m3="< 10 minutes",
             eta_m5="< 10 minutes",
             compute_lane="CPU",
-            runs_models=False,
-            requires_gpu=False,
+            uses_local_accelerator=False,
+            requires_nvidia=False,
+            defer_until="none",
             commands=[
-                "uv run pytest tests/codec/test_onevision_patchification.py",
+                "uv run pytest tests/codec/test_onevision_patchification.py tests/codec/test_continuous_score.py",
             ],
             artifacts=[],
         ),
         ExperimentStep(
             stage="OV-1",
-            track="reproduction-method",
-            question="Do codec scores allocate tokens sensibly on local videos before any VLM inference?",
+            track="visualization-method",
+            question="Do codec scores allocate tokens sensibly on synthetic and real video before any VLM inference?",
             hypothesis=(
-                "Motion/residual fusion will place more sparse tokens on moving actors, text flashes, "
-                "and camera-change boundaries than uniform frame sampling at the same token budget."
+                "Motion/residual fusion will expose whether anchor budget, temporal coverage, center bias, and edge/OCR "
+                "starvation are sane enough to justify model runs."
             ),
             success_gate=(
-                "For the three existing visualization clips and a small benchmark subset, report "
-                "token counts by frame, center/boundary fractions, temporal entropy, and overlays."
+                "Render token-allocation-over-time plus selected-patch overlays for the three established clips when "
+                "raw videos are available; synthetic fallback must remain available for CI and review."
             ),
             skip_rule=(
-                "If raw videos are absent, generate metadata-only/synthetic visualizations and defer "
-                "real-video overlays until benchmark assets are restored."
+                "If raw videos are absent, keep synthetic/metadata artifacts and block model-facing promotion until "
+                "a real-video allocation audit is run on the target clips."
             ),
-            eta_m3="1-3 hours depending on codec metadata extraction",
-            eta_m5="30-90 minutes",
+            setup_effort="real-video code path still needed",
+            eta_m3="3-6 hours with video extraction; < 1 hour synthetic",
+            eta_m5="1-3 hours with video extraction; < 1 hour synthetic",
             compute_lane="CPU plus optional PyAV research dependency",
-            runs_models=False,
-            requires_gpu=False,
-            commands=[
-                "uv run python scripts/render_onevision_vlmaxxing_visual.py",
-                "uv run python scripts/run_phase1_29_planner_accuracy_probe.py --help",
-            ],
-            artifacts=[
-                "research/experiments/2026/artifacts/onevision_vlmaxxing_visuals/",
-            ],
-        ),
-        ExperimentStep(
-            stage="OV-2",
-            track="external-parity",
-            question="Does the clean-room allocator agree with upstream OneVision preprocessing?",
-            hypothesis=(
-                "After matching sampled frames, padding policy, grid size, anchors, and budget, "
-                "selected THW positions should be equivalent up to decoder and residual-proxy differences."
-            ),
-            success_gate=(
-                "On 20-50 clips, Jaccard >= 0.90 for selected positions when the same score planes are "
-                "used, and Spearman >= 0.85 for per-patch scores under independent extraction."
-            ),
-            skip_rule=(
-                "If parity fails, stop model-facing claims and inspect frame sampling, padding, "
-                "I-frame policy, and score normalization one variable at a time."
-            ),
-            eta_m3="not recommended",
-            eta_m5="4-8 hours if upstream deps build",
-            compute_lane="NVIDIA oracle preferred; CPU can validate only score-free invariants",
-            runs_models=False,
-            requires_gpu=True,
-            commands=[
-                "external: run upstream stage1/stage2 in an isolated checkout",
-                "external: compare upstream visidx_thw.npy against clean-room visible indices",
-            ],
-            artifacts=[
-                "research/experiments/2026/artifacts/onevision_parity_oracle/",
-            ],
-        ),
-        ExperimentStep(
-            stage="OV-3",
-            track="Track A",
-            question="Does OneVision-style scoring improve semantic substitution before real work is skipped?",
-            hypothesis=(
-                "Continuous motion+residual scoring with per-item calibration will beat pixel max_abs "
-                "and motion-only/residual-only ablations on paired answer stability at matched budgets."
-            ),
-            success_gate=(
-                "No increase in parse failures, <= 1% paired-choice drift on gated cells, and a "
-                "strict Pareto improvement in fresh-budget versus current Track A baselines."
-            ),
-            skip_rule=(
-                "If residual-only or fused scoring underperforms pixel max_abs on the first dev tranche, "
-                "skip holdout promotion and keep it as a diagnostic related-work result."
-            ),
-            eta_m3="6-18 hours sequential, model-dependent",
-            eta_m5="3-8 hours sequential",
-            compute_lane="local MLX one model at a time",
-            runs_models=True,
-            requires_gpu=False,
-            commands=[
-                "uv run python scripts/run_phase1_29_planner_accuracy_probe.py <codec-ablation args>",
-                "uv run python scripts/run_benchmark_track_a.py <promoted planner args>",
-            ],
-            artifacts=[
-                "research/experiments/2026/artifacts/onevision_track_a_ablation/",
-            ],
-        ),
-        ExperimentStep(
-            stage="OV-4",
-            track="Track B",
-            question="Can OneVision-style allocation improve real sparse vision work skipped?",
-            hypothesis=(
-                "Within already-fresh VLMaxxing regions, OneVision-style Top-K patch allocation will "
-                "recover more task fidelity per token than current magnitude_norm keep-rate policies."
-            ),
-            success_gate=(
-                "At matched keep-rate, improve paired correctness/format over Phase 1.63J Qwen and "
-                "Phase 1.63G Gemma boundaries while preserving measured vision-stage timing gains."
-            ),
-            skip_rule=(
-                "If the first Qwen dev tranche fails fidelity at all keep-rates, skip Gemma and treat "
-                "the result as a trained-encoder motivation rather than a frozen-backend claim."
-            ),
-            eta_m3="not recommended for broad sweeps",
-            eta_m5="8-24 hours sequential",
-            compute_lane="M5 128GB preferred; no concurrent model jobs",
-            runs_models=True,
-            requires_gpu=False,
-            commands=[
-                "uv run python scripts/run_phase1_51V.py <onevision-allocator args>",
-                "uv run python scripts/run_phase1_63G_gemma_track_b.py <onevision-allocator args>",
-            ],
-            artifacts=[
-                "research/experiments/2026/artifacts/onevision_track_b_sparse/",
-            ],
-        ),
-        ExperimentStep(
-            stage="OV-5",
-            track="C-PERSIST",
-            question="How do cold-ingest sparse allocation and follow-up reuse compose without double counting?",
-            hypothesis=(
-                "A OneVision-like cold ingest can reduce first-query vision work, while C-PERSIST "
-                "dominates same-video follow-up latency; session-inclusive speedups must be reported "
-                "by query count, not multiplied."
-            ),
-            success_gate=(
-                "Report setup-inclusive session curves for 1, 2, 5, 10, and 50 same-video questions "
-                "with paired drift and stage-share accounting."
-            ),
-            skip_rule=(
-                "If OV-4 has no fidelity-clean sparse-vision cell, use synthetic stage-share ceilings "
-                "only and do not claim a working combined runtime."
-            ),
-            eta_m3="2-6 hours for accounting only; model run deferred",
-            eta_m5="4-12 hours sequential for model-backed replication",
-            compute_lane="M5 128GB for model-backed replication",
-            runs_models=True,
-            requires_gpu=False,
-            commands=[
-                "uv run python scripts/run_phase1_55L_many_turn_cpersist.py <combined args>",
-                "uv run python scripts/build_c_persist_setup_inclusive.py <combined artifacts>",
-            ],
-            artifacts=[
-                "research/experiments/2026/artifacts/onevision_cpersist_session/",
-            ],
-        ),
-        ExperimentStep(
-            stage="OV-6",
-            track="visualization",
-            question="Can humans see the distinction between saliency, freshness, and cache reuse?",
-            hypothesis=(
-                "A four-stage OneVision-style explainer plus VLMaxxing fresh/reused overlays will make "
-                "the denominator separation visually legible."
-            ),
-            success_gate=(
-                "Render original/dense, codec-score, VLMaxxing reuse, and combined fresh-thinned panels "
-                "for the three established videos or synthetic fallbacks, with separate token budgets."
-            ),
-            skip_rule=(
-                "If raw videos are missing, publish synthetic/metadata figures only and mark real-video "
-                "renders as blocked on local assets."
-            ),
-            eta_m3="< 1 hour synthetic; 1-3 hours with video extraction",
-            eta_m5="< 1 hour synthetic; 30-90 minutes with video extraction",
-            compute_lane="CPU",
-            runs_models=False,
-            requires_gpu=False,
+            uses_local_accelerator=False,
+            requires_nvidia=False,
+            defer_until="after OV-0",
             commands=[
                 "uv run python scripts/render_onevision_vlmaxxing_visual.py",
                 "uv run python scripts/render_codec_through_video_overlays.py",
@@ -240,27 +101,240 @@ def build_schedule() -> list[ExperimentStep]:
             ],
         ),
         ExperimentStep(
+            stage="OV-2",
+            track="implementation-wiring",
+            question="Can OneVision-style fused scores be consumed by existing Track A planners?",
+            hypothesis=(
+                "The safest first runnable integration is a continuous-score adapter over existing H.264 metadata, "
+                "not a new hard BlockStatistic label."
+            ),
+            success_gate=(
+                "Add CLI flags and artifact schema for motion-only, residual-only, fused weighted, and bounded-staleness "
+                "score sources in run_phase1_29_planner_accuracy_probe.py; validate zero-weight lanes and matched-item "
+                "pixel max_abs regressions before model runs."
+            ),
+            skip_rule=(
+                "If the adapter cannot reproduce existing Phase 1.29 codec-score behavior on cached/small inputs, "
+                "do not start OV-3 model inference."
+            ),
+            setup_effort="4-8 hours coding before model time",
+            eta_m3="4-8 hours coding; no model run",
+            eta_m5="same code review only; no model run",
+            compute_lane="CPU",
+            uses_local_accelerator=False,
+            requires_nvidia=False,
+            defer_until="after OV-1 visual sanity or explicit override",
+            commands=[
+                "uv run pytest tests/codec/test_continuous_score.py tests/codec/test_onevision_patchification.py",
+                "uv run python scripts/run_phase1_29_planner_accuracy_probe.py --help",
+            ],
+            artifacts=[
+                "research/experiments/2026/artifacts/onevision_track_a_wiring/",
+            ],
+        ),
+        ExperimentStep(
+            stage="OV-3",
+            track="Track A dev",
+            question="Does OneVision-style scoring improve semantic substitution before real work is skipped?",
+            hypothesis=(
+                "Continuous motion+residual scoring with per-item calibration will beat pixel max_abs and motion-only/"
+                "residual-only ablations on paired answer stability at matched fresh budgets."
+            ),
+            success_gate=(
+                "No increase in parse failures, <= 1% paired-choice drift on gated dev cells, and a strict Pareto "
+                "improvement in fresh-budget versus current Track A baselines."
+            ),
+            skip_rule=(
+                "If fused scoring underperforms pixel max_abs on the first dev tranche, skip holdout promotion, skip "
+                "OV-4/OV-6 model runs, and report a diagnostic related-work result."
+            ),
+            setup_effort="requires OV-2 runner wiring",
+            eta_m3="18-30 hours sequential after wiring",
+            eta_m5="8-14 hours sequential after wiring",
+            compute_lane="local MLX one model at a time",
+            uses_local_accelerator=True,
+            requires_nvidia=False,
+            defer_until="after OV-2 passes",
+            commands=[
+                "uv run python scripts/run_phase1_29_planner_accuracy_probe.py <onevision-dev-ablation args>",
+                "uv run python scripts/run_benchmark_track_a.py <promoted onevision planner args>",
+            ],
+            artifacts=[
+                "research/experiments/2026/artifacts/onevision_track_a_dev/",
+            ],
+        ),
+        ExperimentStep(
+            stage="OV-4",
+            track="external-parity",
+            question="Does the clean-room allocator agree with upstream OneVision preprocessing?",
+            hypothesis=(
+                "After matching frame sampling, padding, grid size, anchors, and budget, allocator selection should match "
+                "upstream under identical score planes; independent residual-score correlation is expected to be weaker "
+                "unless we use cv_reader or an equivalent codec-internal residual extractor."
+            ),
+            success_gate=(
+                "Identical-score Jaccard >= 0.90 for selected positions; independent-extraction results reported with "
+                "separate motion-only and residual-only correlations rather than a single brittle Spearman gate."
+            ),
+            skip_rule=(
+                "Defer this until OV-3 dev passes. If it fails, debug sampling, padding, score normalization, cv_reader "
+                "residuals, and I-frame policy one variable at a time."
+            ),
+            setup_effort="NVIDIA/Linux environment plus cv_reader dependency investigation",
+            eta_m3="not feasible",
+            eta_m5="not recommended; CUDA stack is the wrong target",
+            compute_lane="NVIDIA Linux box or Lambda 1xH100/A100",
+            uses_local_accelerator=False,
+            requires_nvidia=True,
+            defer_until="after OV-3 dev passes",
+            commands=[
+                "external: run upstream stage1/stage2 in an isolated NVIDIA/Linux environment",
+                "external: compare upstream visidx_thw.npy and positions_thw.npy against clean-room visible indices",
+            ],
+            artifacts=[
+                "research/experiments/2026/artifacts/onevision_parity_oracle/",
+            ],
+        ),
+        ExperimentStep(
+            stage="OV-5",
+            track="Track A holdout",
+            question="Does a dev-positive fused codec planner transfer to holdout and cross-family slices?",
+            hypothesis=(
+                "If OneVision-style scoring is real rather than calibration noise, it should survive duration buckets, "
+                "benchmark splits, and at least one cross-family check."
+            ),
+            success_gate=(
+                "Holdout cells remain parse-clean, preserve paired correctness within gate, and improve or match the "
+                "current Track A Pareto frontier."
+            ),
+            skip_rule="If holdout regresses, do not promote as a paper result; preserve as a bounded diagnostic.",
+            setup_effort="requires OV-3 dev pass",
+            eta_m3="+12 hours Qwen/Gemma after dev",
+            eta_m5="+6 hours Qwen/Gemma after dev",
+            compute_lane="local MLX one model at a time",
+            uses_local_accelerator=True,
+            requires_nvidia=False,
+            defer_until="after OV-3 dev passes",
+            commands=[
+                "uv run python scripts/run_benchmark_track_a.py <onevision-holdout args>",
+            ],
+            artifacts=[
+                "research/experiments/2026/artifacts/onevision_track_a_holdout/",
+            ],
+        ),
+        ExperimentStep(
+            stage="OV-6",
+            track="Track B",
+            question="Can OneVision-style allocation improve real sparse vision work skipped?",
+            hypothesis=(
+                "Within already-fresh VLMaxxing regions, OneVision-style Top-K patch allocation may recover more task "
+                "fidelity per token than current magnitude_norm keep-rate policies, but frozen towers are likely brittle."
+            ),
+            success_gate=(
+                "At matched keep-rate, improve paired correctness/format over Phase 1.63J Qwen and Phase 1.63G Gemma "
+                "boundaries while preserving measured vision-stage timing gains."
+            ),
+            skip_rule=(
+                "If the first Qwen dev tranche fails fidelity at all keep-rates, skip Gemma and treat the result as "
+                "evidence that trained sparse encoders are needed."
+            ),
+            setup_effort="requires OV-3/OV-5 evidence and separate sparse-tower scorer wiring",
+            eta_m3="not recommended for broad sweeps",
+            eta_m5="16-28 hours Qwen, +12 hours Gemma only if Qwen gates",
+            compute_lane="M5 128GB preferred; no concurrent model jobs",
+            uses_local_accelerator=True,
+            requires_nvidia=False,
+            defer_until="after OV-5 or explicit high-risk override",
+            commands=[
+                "uv run python scripts/run_phase1_51V.py <onevision-allocator args>",
+                "uv run python scripts/run_phase1_63G_gemma_track_b.py <onevision-allocator args>",
+            ],
+            artifacts=[
+                "research/experiments/2026/artifacts/onevision_track_b_sparse/",
+            ],
+        ),
+        ExperimentStep(
             stage="OV-7",
+            track="OV-Encoder local feasibility",
+            question="Should OV-Encoder itself become a third local model family?",
+            hypothesis=(
+                "OV-Encoder can be a third vision-encoder probe locally, but it is not a third VLM comparable to Qwen/Gemma "
+                "until an LMM head or probe stack is reproduced."
+            ),
+            success_gate=(
+                "When the machine is free, run CPU/MPS/PyTorch or MLX-parity smoke on image and sparse-video encoder outputs; "
+                "treat output-shape/parity as feasibility evidence, not QA accuracy."
+            ),
+            skip_rule=(
+                "Skip if it requires flash-attention/CUDA for inference or if eager attention at target token counts exceeds "
+                "local memory; move to NVIDIA only if encoder probes answer a paper-relevant question."
+            ),
+            setup_effort="1 day for PyTorch/MPS smoke or 2-4 days for a careful MLX encoder port",
+            eta_m3="defer until machine free; smoke only",
+            eta_m5="defer until machine free; smoke plus small probes",
+            compute_lane="local encoder-only first; NVIDIA only for official stack",
+            uses_local_accelerator=True,
+            requires_nvidia=False,
+            defer_until="after OV-1/OV-3 clarifies paper value",
+            commands=[
+                "manual future: transformers eager-attention smoke without flash_attention_2",
+                "manual future: MLX weight-conversion parity smoke if PyTorch/MPS is too slow",
+            ],
+            artifacts=[
+                "research/experiments/2026/artifacts/onevision_encoder_local_feasibility/",
+            ],
+        ),
+        ExperimentStep(
+            stage="OV-8",
+            track="C-PERSIST",
+            question="How do cold-ingest sparse allocation and follow-up reuse compose without double counting?",
+            hypothesis=(
+                "A OneVision-like cold ingest can reduce first-query vision work, while C-PERSIST dominates same-video "
+                "follow-up latency; session-inclusive speedups must be reported by query count, not multiplied."
+            ),
+            success_gate=(
+                "Report setup-inclusive session curves for 1, 2, 5, 10, and 50 same-video questions with paired drift and "
+                "stage-share accounting."
+            ),
+            skip_rule=(
+                "If OV-6 has no fidelity-clean sparse-vision cell, use synthetic stage-share ceilings only and do not claim "
+                "a working combined runtime."
+            ),
+            setup_effort="requires OV-6 pass for model-backed runtime; otherwise accounting-only",
+            eta_m3="6-10 hours accounting only; model run deferred",
+            eta_m5="8-14 hours model-backed if OV-6 gates",
+            compute_lane="M5 128GB for model-backed replication",
+            uses_local_accelerator=True,
+            requires_nvidia=False,
+            defer_until="after OV-6 or as accounting-only after OV-5",
+            commands=[
+                "uv run python scripts/run_phase1_55L_many_turn_cpersist.py <combined args>",
+                "uv run python scripts/build_c_persist_setup_inclusive.py <combined artifacts>",
+            ],
+            artifacts=[
+                "research/experiments/2026/artifacts/onevision_cpersist_session/",
+            ],
+        ),
+        ExperimentStep(
+            stage="OV-9",
             track="paper-editor-feedback",
             question="What manuscript changes are justified after the evidence is in?",
             hypothesis=(
-                "The editor-facing update will either add OneVision as trained codec-aligned related "
-                "work plus new negative/diagnostic evidence, or promote a new combined runtime result "
-                "if Track B gates pass."
+                "The editor-facing update will either add OneVision as trained codec-aligned related work plus diagnostic "
+                "evidence, or promote a new combined runtime result only if Track B gates pass."
             ),
             success_gate=(
-                "Prepare an editor memo listing imported OneVision claims, reproduced local claims, "
-                "failed hypotheses, and exact paper sections that should change."
+                "Prepare an editor memo listing imported OneVision claims, reproduced local claims, failed hypotheses, "
+                "decision-log reopen status, and exact paper sections that should change."
             ),
-            skip_rule=(
-                "Do not edit manuscript prose until OV-3 through OV-6 have completed and the editor "
-                "feedback packet has been reviewed."
-            ),
-            eta_m3="1-2 hours after artifacts exist",
-            eta_m5="1-2 hours after artifacts exist",
+            skip_rule="Do not edit manuscript prose until this memo is reviewed.",
+            setup_effort="1-3 hours after artifacts exist",
+            eta_m3="1-3 hours",
+            eta_m5="1-3 hours",
             compute_lane="CPU/documentation",
-            runs_models=False,
-            requires_gpu=False,
+            uses_local_accelerator=False,
+            requires_nvidia=False,
+            defer_until="after OV-3 through OV-8 outcomes are known",
             commands=[
                 "manual: draft editor feedback from completed artifacts",
             ],
@@ -280,7 +354,11 @@ def main() -> None:
     schedule = build_schedule()
     payload = {
         "name": "onevision_vlmaxxing_sequential_schedule",
-        "concurrency_policy": "no concurrent GPU/model jobs; execute steps in listed order",
+        "concurrency_policy": "no concurrent model jobs; no model jobs while user benchmarks are active",
+        "field_notes": {
+            "uses_local_accelerator": "Apple MLX/MPS/GPU-style local acceleration may be used later; do not run now.",
+            "requires_nvidia": "Requires NVIDIA/Linux/CUDA stack, not merely Apple Silicon local acceleration.",
+        },
         "generated_by": Path(__file__).name,
         "steps": [asdict(step) for step in schedule],
     }
