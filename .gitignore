@@ -35,3 +35,7 @@ paper/arxiv/generated/tex/build_meta.tex
 # experiment note in git; regenerate MP4s/stills/zips locally.
 research/experiments/2026/artifacts/codec_through_cinematic_reels_exploratory/
 research/experiments/2026/artifacts/codec_through_cinematic_reels_code_review.zip
+
+# Upstream RLT paper repo clone (third-party, ~45 MB). Used as a local read-only
+# reference during the RLT/VLMaxxing composition work; not vendored or imported.
+/rlt/

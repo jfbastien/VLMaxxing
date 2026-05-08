@@ -1,0 +1,85 @@
+{
+  "checks": {
+    "prefill_split": {
+      "detail": {
+        "scripts/run_phase1_51V.py": {
+          "exists": true,
+          "fields": {
+            "multimodal_prefill_ms": true,
+            "text_generation_ms": true
+          }
+        },
+        "scripts/run_phase1_63G_gemma_track_b.py": {
+          "exists": true,
+          "fields": {
+            "multimodal_prefill_ms": true,
+            "text_generation_ms": true
+          }
+        }
+      },
+      "ready": true,
+      "required": false
+    },
+    "required_paths": {
+      "research/benchmark_manifests/videomme_combined_v1_n60.toml": {
+        "detail": "research/benchmark_manifests/videomme_combined_v1_n60.toml",
+        "ready": true,
+        "required": true
+      },
+      "research/benchmark_manifests/videomme_dev_v1.toml": {
+        "detail": "research/benchmark_manifests/videomme_dev_v1.toml",
+        "ready": true,
+        "required": true
+      },
+      "research/benchmark_manifests/videomme_holdout_v1.toml": {
+        "detail": "research/benchmark_manifests/videomme_holdout_v1.toml",
+        "ready": true,
+        "required": true
+      },
+      "research/benchmark_manifests/videomme_holdout_v1_short_only.toml": {
+        "detail": "research/benchmark_manifests/videomme_holdout_v1_short_only.toml",
+        "ready": true,
+        "required": true
+      },
+      "research/experiments/2026/2026-05-07-rlt-vlmax-composition-design.md": {
+        "detail": "research/experiments/2026/2026-05-07-rlt-vlmax-composition-design.md",
+        "ready": true,
+        "required": true
+      },
+      "scripts/profile_rlt_masks.py": {
+        "detail": "scripts/profile_rlt_masks.py",
+        "ready": true,
+        "required": true
+      },
+      "src/codec_through/rlt_masks.py": {
+        "detail": "src/codec_through/rlt_masks.py",
+        "ready": true,
+        "required": true
+      }
+    },
+    "swa_functional_smoke": {
+      "detail": "Gemma H4A requires --run-swa-smoke for a go/no-go check. --allow-swa-marker-only is diagnostic and does not support paper-facing H4A claims.",
+      "ready": false,
+      "required": true
+    },
+    "swa_marker": {
+      "detail": {
+        "marker_hits": {
+          "RotatingKVCache": true,
+          "Topology-aware trim": false,
+          "can_trim_prompt_cache": false,
+          "trim_prompt_cache": false
+        },
+        "module_path": "/Users/jfb/s/codec-through/.venv/lib/python3.12/site-packages/mlx_vlm/generate.py",
+        "note": "Marker presence is a fast screen only. Gemma H4A also requires the functional cache-correctness smoke."
+      },
+      "ready": false,
+      "required": false
+    }
+  },
+  "ready": false,
+  "schema_version": "rlt_vlmax_preflight_v1",
+  "selected_phases": [
+    "RLT-5G"
+  ]
+}
