@@ -1,0 +1,66 @@
+{
+  "dense_accuracy": 0.1,
+  "dense_parse_failures": 6,
+  "final_rss_mb": 5425.171875,
+  "frame_count": 8,
+  "manifest": "research/benchmark_manifests/tomato_motion_dev_v2.toml",
+  "max_tokens": 32,
+  "mean_decode_ms": 2544.9993388666667,
+  "mean_dense_end_to_end_ms": 10069.931923566666,
+  "mean_dense_generate_ms": 6082.756751333332,
+  "mean_dense_generation_tokens": 15.0,
+  "mean_dense_generation_tps": 44.257074979762116,
+  "mean_dense_multimodal_prefill_ms": 5580.117016566667,
+  "mean_dense_prompt_tokens": 996.3333333333334,
+  "mean_dense_prompt_tps": 182.08302762864747,
+  "mean_dense_text_generation_ms": 502.6397347666667,
+  "mean_dense_vision_excluding_scorer_ms": 1412.0589083999998,
+  "mean_dense_vision_ms": 1412.7106666999998,
+  "mean_effective_keep_rate": 0.2998046875,
+  "mean_kept_groups": 2456.0,
+  "mean_peak_memory_gb": 6.985806694933332,
+  "mean_processor_ms": 10.174341533333331,
+  "mean_scorer_keep_mask_ms": 0.6517583000000002,
+  "mean_scorer_prepare_ms": 19.290825133333332,
+  "mean_scorer_total_ms": 19.94258343333333,
+  "mean_total_groups": 8192.0,
+  "model_path": "/Users/jfb/models/gemma-4-e4b-it-4bit",
+  "n_frames": 8,
+  "n_items": 30,
+  "rlt_config": {
+    "first_tubelet_mode": "full_grid",
+    "grid_shape": [
+      14,
+      14
+    ],
+    "grid_shape_source": "patch_size",
+    "image_size": [
+      224,
+      224
+    ],
+    "normalize_mode": "imagenet",
+    "ordering": "time_major",
+    "patch_size": 16,
+    "pixel_scale": "uint8",
+    "threshold": 0.1,
+    "tubelet_size": 2,
+    "window_min_keep": 1
+  },
+  "rss_guard_mb": 9000,
+  "schema_version": "phase1_63g_gemma_track_b_v5",
+  "vision_tower_keep_rate": 0.3,
+  "vision_tower_layer": 2,
+  "vision_tower_patched": true,
+  "vision_tower_score_mode": "rlt_topk",
+  "warmup_groups": [
+    "direction",
+    "rotation",
+    "shape_trend"
+  ],
+  "warmup_item_ids": [
+    "tomato:direction:0231-04",
+    "tomato:rotation:0215-06",
+    "tomato:shape_trend:0209-04"
+  ],
+  "warmup_items": 3
+}
