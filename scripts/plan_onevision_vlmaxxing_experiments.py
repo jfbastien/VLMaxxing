@@ -138,8 +138,9 @@ def build_schedule() -> list[ExperimentStep]:
             track="Track A dev",
             question="Does OneVision-style scoring improve semantic substitution before real work is skipped?",
             hypothesis=(
-                "Continuous motion+residual scoring with per-item calibration will beat pixel max_abs and motion-only/"
-                "residual-only ablations on paired answer stability at matched fresh budgets."
+                "Continuous motion+residual scoring with per-item calibration will beat pixel max_abs, legacy "
+                "novel_coded, and motion-only/residual-only ablations on paired answer stability at matched fresh "
+                "budgets."
             ),
             success_gate=(
                 "No increase in parse failures, <= 1% paired-choice drift on gated dev cells, and a strict Pareto "
@@ -150,13 +151,14 @@ def build_schedule() -> list[ExperimentStep]:
                 "OV-4/OV-6 model runs, and report a diagnostic related-work result."
             ),
             setup_effort="requires OV-2 runner wiring",
-            eta_m3="18-30 hours sequential after wiring",
-            eta_m5="8-14 hours sequential after wiring",
+            eta_m3="24-40 hours sequential after wiring; cache keys intentionally separate score sources",
+            eta_m5="12-24 hours sequential after wiring; cache keys intentionally separate score sources",
             compute_lane="local MLX one model at a time",
             uses_local_accelerator=True,
             requires_nvidia=False,
             defer_until="after OV-2 passes",
             commands=[
+                "uv run python scripts/run_phase1_29_planner_accuracy_probe.py --codec-score-source novel_coded <dev args>",
                 "uv run python scripts/run_phase1_29_planner_accuracy_probe.py --codec-score-source motion <dev args>",
                 "uv run python scripts/run_phase1_29_planner_accuracy_probe.py --codec-score-source residual <dev args>",
                 "uv run python scripts/run_phase1_29_planner_accuracy_probe.py --codec-score-source fused --fusion-mode weighted <dev args>",

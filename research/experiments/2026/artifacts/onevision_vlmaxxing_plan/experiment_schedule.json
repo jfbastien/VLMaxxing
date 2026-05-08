@@ -77,6 +77,7 @@
         "research/experiments/2026/artifacts/onevision_track_a_dev/"
       ],
       "commands": [
+        "uv run python scripts/run_phase1_29_planner_accuracy_probe.py --codec-score-source novel_coded <dev args>",
         "uv run python scripts/run_phase1_29_planner_accuracy_probe.py --codec-score-source motion <dev args>",
         "uv run python scripts/run_phase1_29_planner_accuracy_probe.py --codec-score-source residual <dev args>",
         "uv run python scripts/run_phase1_29_planner_accuracy_probe.py --codec-score-source fused --fusion-mode weighted <dev args>",
@@ -84,9 +85,9 @@
       ],
       "compute_lane": "local MLX one model at a time",
       "defer_until": "after OV-2 passes",
-      "eta_m3": "18-30 hours sequential after wiring",
-      "eta_m5": "8-14 hours sequential after wiring",
-      "hypothesis": "Continuous motion+residual scoring with per-item calibration will beat pixel max_abs and motion-only/residual-only ablations on paired answer stability at matched fresh budgets.",
+      "eta_m3": "24-40 hours sequential after wiring; cache keys intentionally separate score sources",
+      "eta_m5": "12-24 hours sequential after wiring; cache keys intentionally separate score sources",
+      "hypothesis": "Continuous motion+residual scoring with per-item calibration will beat pixel max_abs, legacy novel_coded, and motion-only/residual-only ablations on paired answer stability at matched fresh budgets.",
       "question": "Does OneVision-style scoring improve semantic substitution before real work is skipped?",
       "requires_nvidia": false,
       "setup_effort": "requires OV-2 runner wiring",

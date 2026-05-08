@@ -91,6 +91,22 @@ ROWS = (
         artifact_or_source="scripts/run_phase1_29_planner_accuracy_probe.py",
     ),
     ComparisonRow(
+        system="VLMaxxing Track A novel_coded codec baseline",
+        status="reproduced here",
+        intervention_layer="legacy continuous H.264 intra|cbf score source",
+        denominator="paired answer stability at matched reuse/fresh budget",
+        primary_metric="paired drift, dense agreement, selection Jaccard versus fused planner",
+        headline_numeric="artifact-derived Phase 1.29/1.29B codec baseline",
+        target_to_beat=(
+            "fused planner must beat or match novel_coded as well as pixel max_abs before "
+            "reopening continuous H.264 saliency as a paper result"
+        ),
+        e2e_policy="not a work-skipped speedup claim",
+        local_reproduction="runner default --codec-score-source novel_coded",
+        planned_gate="decision-log reopen baseline for continuous codec scoring",
+        artifact_or_source="scripts/run_phase1_29_planner_accuracy_probe.py",
+    ),
+    ComparisonRow(
         system="OneVision-style fused planner + VLMaxxing Track A",
         status="hypothesis",
         intervention_layer="motion/residual score source for VLMaxxing planner",
