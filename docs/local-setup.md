@@ -149,6 +149,12 @@ The source of truth for clip ids and local paths is:
 
 - [data/corpus/manifest.toml](../data/corpus/manifest.toml)
 
+For the OneVision + VLMaxxing real-video visualization gate, the three
+paper-facing benchmark clip windows are pinned in
+`scripts/preflight_onevision_vlmaxxing.py` and
+`scripts/render_onevision_vlmaxxing_explainer_videos.py`, because those are
+benchmark-native source videos rather than primary local corpus clips.
+
 The policy for what belongs in each corpus tier is:
 
 - [docs/clip-policy.md](clip-policy.md)

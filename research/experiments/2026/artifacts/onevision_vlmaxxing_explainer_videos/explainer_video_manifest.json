@@ -1,0 +1,602 @@
+{
+  "clip_summaries": [
+    {
+      "clip": {
+        "benchmark": "TOMATO",
+        "end_seconds": 2.0,
+        "item_id": "tomato:rotation:0298-00",
+        "key": "tomato_0298_00",
+        "role": "existing paper visualization: high-reuse routing example",
+        "source_video_provenance": {
+          "path": "data/benchmarks/tomato/videos/object/0298-00.mp4",
+          "sha256": "3a9dd54481facc14c8f08f2e5b482f1363d0bd269fa2b300284b447d39f36a4a",
+          "size_bytes": 2159339
+        },
+        "start_seconds": 0.0,
+        "video_id": "0298-00",
+        "video_path": "data/benchmarks/tomato/videos/object/0298-00.mp4"
+      },
+      "frame_count": 16,
+      "outputs": {
+        "combined": "research/experiments/2026/artifacts/onevision_vlmaxxing_explainer_videos/tomato_0298_00/tomato_0298_00_combined.mp4",
+        "onevision": "research/experiments/2026/artifacts/onevision_vlmaxxing_explainer_videos/tomato_0298_00/tomato_0298_00_onevision.mp4",
+        "vlmaxxing": "research/experiments/2026/artifacts/onevision_vlmaxxing_explainer_videos/tomato_0298_00/tomato_0298_00_vlmaxxing.mp4"
+      },
+      "sampled_absolute_frames": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        20,
+        24,
+        28,
+        32,
+        36,
+        40,
+        44,
+        48,
+        52,
+        56,
+        60
+      ],
+      "sampled_relative_frames": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        20,
+        24,
+        28,
+        32,
+        36,
+        40,
+        44,
+        48,
+        52,
+        56,
+        60
+      ],
+      "score_units": {
+        "fused": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+        "motion": "macroblock_motion_vector_magnitude_pixels",
+        "novel_coded": "fraction_intra_or_coded_block_flag",
+        "residual": "repo_local_reconstructed_y_residual_proxy"
+      },
+      "spatial_bias": {
+        "boundary_fraction": 0.095,
+        "center_fraction": 0.57625,
+        "entropy_bits": 8.041756236742591,
+        "mean_center_distance": 0.4143540071184791
+      },
+      "temporal_coverage": {
+        "entropy_bits": 2.9358766072587414,
+        "max_gap": 1,
+        "mean_gap": 1.0,
+        "observed_fraction": 1.0,
+        "observed_frames": 16
+      },
+      "token_budget": 800,
+      "tokens_by_frame": [
+        400,
+        38,
+        25,
+        18,
+        23,
+        25,
+        31,
+        16,
+        39,
+        26,
+        26,
+        30,
+        26,
+        25,
+        27,
+        25
+      ],
+      "transition_stats": [
+        {
+          "fresh": 0.0,
+          "has_transition": 0.0,
+          "reused": 0.0,
+          "stale": 0.0
+        },
+        {
+          "fresh": 0.12,
+          "has_transition": 1.0,
+          "reused": 0.88,
+          "stale": 0.0
+        },
+        {
+          "fresh": 0.11,
+          "has_transition": 1.0,
+          "reused": 0.89,
+          "stale": 0.0
+        },
+        {
+          "fresh": 0.115,
+          "has_transition": 1.0,
+          "reused": 0.885,
+          "stale": 0.0
+        },
+        {
+          "fresh": 0.12,
+          "has_transition": 1.0,
+          "reused": 0.88,
+          "stale": 0.0
+        },
+        {
+          "fresh": 0.89,
+          "has_transition": 1.0,
+          "reused": 0.11,
+          "stale": 0.8
+        },
+        {
+          "fresh": 0.105,
+          "has_transition": 1.0,
+          "reused": 0.895,
+          "stale": 0.0
+        },
+        {
+          "fresh": 0.125,
+          "has_transition": 1.0,
+          "reused": 0.875,
+          "stale": 0.01
+        },
+        {
+          "fresh": 0.11,
+          "has_transition": 1.0,
+          "reused": 0.89,
+          "stale": 0.0
+        },
+        {
+          "fresh": 0.115,
+          "has_transition": 1.0,
+          "reused": 0.885,
+          "stale": 0.0
+        },
+        {
+          "fresh": 0.855,
+          "has_transition": 1.0,
+          "reused": 0.145,
+          "stale": 0.76
+        },
+        {
+          "fresh": 0.11,
+          "has_transition": 1.0,
+          "reused": 0.89,
+          "stale": 0.0
+        },
+        {
+          "fresh": 0.115,
+          "has_transition": 1.0,
+          "reused": 0.885,
+          "stale": 0.005
+        },
+        {
+          "fresh": 0.09,
+          "has_transition": 1.0,
+          "reused": 0.91,
+          "stale": 0.005
+        },
+        {
+          "fresh": 0.11,
+          "has_transition": 1.0,
+          "reused": 0.89,
+          "stale": 0.01
+        },
+        {
+          "fresh": 0.84,
+          "has_transition": 1.0,
+          "reused": 0.16,
+          "stale": 0.755
+        }
+      ]
+    },
+    {
+      "clip": {
+        "benchmark": "VideoMME",
+        "end_seconds": 207.89,
+        "item_id": "videomme:medium:380-3",
+        "key": "videomme_380",
+        "role": "existing paper visualization: VideoMME visual anchor",
+        "source_video_provenance": {
+          "path": "data/benchmarks/videomme/videos/2Bns2m5Bg4M.mp4",
+          "sha256": "71296264c031489f6532816a2dcae5420c06bb65143ac70fd55a90beae681154",
+          "size_bytes": 17834681
+        },
+        "start_seconds": 206.39,
+        "video_id": "2Bns2m5Bg4M",
+        "video_path": "data/benchmarks/videomme/videos/2Bns2m5Bg4M.mp4"
+      },
+      "frame_count": 16,
+      "outputs": {
+        "combined": "research/experiments/2026/artifacts/onevision_vlmaxxing_explainer_videos/videomme_380/videomme_380_combined.mp4",
+        "onevision": "research/experiments/2026/artifacts/onevision_vlmaxxing_explainer_videos/videomme_380/videomme_380_onevision.mp4",
+        "vlmaxxing": "research/experiments/2026/artifacts/onevision_vlmaxxing_explainer_videos/videomme_380/videomme_380_vlmaxxing.mp4"
+      },
+      "sampled_absolute_frames": [
+        5160,
+        5162,
+        5164,
+        5167,
+        5169,
+        5172,
+        5174,
+        5177,
+        5179,
+        5182,
+        5184,
+        5187,
+        5189,
+        5192,
+        5194,
+        5197
+      ],
+      "sampled_relative_frames": [
+        0,
+        2,
+        4,
+        7,
+        9,
+        12,
+        14,
+        17,
+        19,
+        22,
+        24,
+        27,
+        29,
+        32,
+        34,
+        37
+      ],
+      "score_units": {
+        "fused": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+        "motion": "macroblock_motion_vector_magnitude_pixels",
+        "novel_coded": "fraction_intra_or_coded_block_flag",
+        "residual": "repo_local_reconstructed_y_residual_proxy"
+      },
+      "spatial_bias": {
+        "boundary_fraction": 0.095,
+        "center_fraction": 0.5975,
+        "entropy_bits": 7.7814652219408575,
+        "mean_center_distance": 0.38996887860196405
+      },
+      "temporal_coverage": {
+        "entropy_bits": 2.9452823067740583,
+        "max_gap": 1,
+        "mean_gap": 1.0,
+        "observed_fraction": 1.0,
+        "observed_frames": 16
+      },
+      "token_budget": 800,
+      "tokens_by_frame": [
+        400,
+        26,
+        33,
+        32,
+        29,
+        26,
+        26,
+        20,
+        29,
+        22,
+        27,
+        24,
+        21,
+        30,
+        23,
+        32
+      ],
+      "transition_stats": [
+        {
+          "fresh": 0.0,
+          "has_transition": 0.0,
+          "reused": 0.0,
+          "stale": 0.0
+        },
+        {
+          "fresh": 0.185,
+          "has_transition": 1.0,
+          "reused": 0.815,
+          "stale": 0.0
+        },
+        {
+          "fresh": 0.18,
+          "has_transition": 1.0,
+          "reused": 0.82,
+          "stale": 0.0
+        },
+        {
+          "fresh": 0.18,
+          "has_transition": 1.0,
+          "reused": 0.82,
+          "stale": 0.0
+        },
+        {
+          "fresh": 0.175,
+          "has_transition": 1.0,
+          "reused": 0.825,
+          "stale": 0.0
+        },
+        {
+          "fresh": 0.92,
+          "has_transition": 1.0,
+          "reused": 0.08,
+          "stale": 0.795
+        },
+        {
+          "fresh": 0.175,
+          "has_transition": 1.0,
+          "reused": 0.825,
+          "stale": 0.01
+        },
+        {
+          "fresh": 0.19,
+          "has_transition": 1.0,
+          "reused": 0.81,
+          "stale": 0.0
+        },
+        {
+          "fresh": 0.07,
+          "has_transition": 1.0,
+          "reused": 0.93,
+          "stale": 0.0
+        },
+        {
+          "fresh": 0.2,
+          "has_transition": 1.0,
+          "reused": 0.8,
+          "stale": 0.0
+        },
+        {
+          "fresh": 0.9,
+          "has_transition": 1.0,
+          "reused": 0.1,
+          "stale": 0.79
+        },
+        {
+          "fresh": 0.175,
+          "has_transition": 1.0,
+          "reused": 0.825,
+          "stale": 0.01
+        },
+        {
+          "fresh": 0.18,
+          "has_transition": 1.0,
+          "reused": 0.82,
+          "stale": 0.0
+        },
+        {
+          "fresh": 0.185,
+          "has_transition": 1.0,
+          "reused": 0.815,
+          "stale": 0.0
+        },
+        {
+          "fresh": 0.18,
+          "has_transition": 1.0,
+          "reused": 0.82,
+          "stale": 0.005
+        },
+        {
+          "fresh": 0.93,
+          "has_transition": 1.0,
+          "reused": 0.07,
+          "stale": 0.79
+        }
+      ]
+    },
+    {
+      "clip": {
+        "benchmark": "VideoMME",
+        "end_seconds": 1.0,
+        "item_id": "videomme:short:267-2",
+        "key": "videomme_267",
+        "role": "existing paper visualization: lower-reuse boundary",
+        "source_video_provenance": {
+          "path": "data/benchmarks/videomme/videos/Atf_Af1q_5w.mp4",
+          "sha256": "6dc6f1868d2e398463ddbaf1ca7059d602dcf0ea8ed86744878eb921a68f9d3c",
+          "size_bytes": 7673183
+        },
+        "start_seconds": 0.0,
+        "video_id": "Atf_Af1q_5w",
+        "video_path": "data/benchmarks/videomme/videos/Atf_Af1q_5w.mp4"
+      },
+      "frame_count": 16,
+      "outputs": {
+        "combined": "research/experiments/2026/artifacts/onevision_vlmaxxing_explainer_videos/videomme_267/videomme_267_combined.mp4",
+        "onevision": "research/experiments/2026/artifacts/onevision_vlmaxxing_explainer_videos/videomme_267/videomme_267_onevision.mp4",
+        "vlmaxxing": "research/experiments/2026/artifacts/onevision_vlmaxxing_explainer_videos/videomme_267/videomme_267_vlmaxxing.mp4"
+      },
+      "sampled_absolute_frames": [
+        0,
+        1,
+        3,
+        5,
+        6,
+        8,
+        10,
+        11,
+        13,
+        15,
+        16,
+        18,
+        20,
+        21,
+        23,
+        25
+      ],
+      "sampled_relative_frames": [
+        0,
+        1,
+        3,
+        5,
+        6,
+        8,
+        10,
+        11,
+        13,
+        15,
+        16,
+        18,
+        20,
+        21,
+        23,
+        25
+      ],
+      "score_units": {
+        "fused": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+        "motion": "macroblock_motion_vector_magnitude_pixels",
+        "novel_coded": "fraction_intra_or_coded_block_flag",
+        "residual": "repo_local_reconstructed_y_residual_proxy"
+      },
+      "spatial_bias": {
+        "boundary_fraction": 0.17,
+        "center_fraction": 0.3025,
+        "entropy_bits": 7.671965911482509,
+        "mean_center_distance": 0.5586660182274593
+      },
+      "temporal_coverage": {
+        "entropy_bits": 2.926422619437064,
+        "max_gap": 1,
+        "mean_gap": 1.0,
+        "observed_fraction": 1.0,
+        "observed_frames": 16
+      },
+      "token_budget": 800,
+      "tokens_by_frame": [
+        400,
+        19,
+        19,
+        20,
+        36,
+        38,
+        39,
+        20,
+        16,
+        23,
+        32,
+        33,
+        31,
+        25,
+        26,
+        23
+      ],
+      "transition_stats": [
+        {
+          "fresh": 0.0,
+          "has_transition": 0.0,
+          "reused": 0.0,
+          "stale": 0.0
+        },
+        {
+          "fresh": 0.34,
+          "has_transition": 1.0,
+          "reused": 0.66,
+          "stale": 0.0
+        },
+        {
+          "fresh": 0.44,
+          "has_transition": 1.0,
+          "reused": 0.56,
+          "stale": 0.0
+        },
+        {
+          "fresh": 0.445,
+          "has_transition": 1.0,
+          "reused": 0.555,
+          "stale": 0.0
+        },
+        {
+          "fresh": 0.39,
+          "has_transition": 1.0,
+          "reused": 0.61,
+          "stale": 0.0
+        },
+        {
+          "fresh": 0.985,
+          "has_transition": 1.0,
+          "reused": 0.015,
+          "stale": 0.55
+        },
+        {
+          "fresh": 0.42,
+          "has_transition": 1.0,
+          "reused": 0.58,
+          "stale": 0.0
+        },
+        {
+          "fresh": 0.355,
+          "has_transition": 1.0,
+          "reused": 0.645,
+          "stale": 0.0
+        },
+        {
+          "fresh": 0.42,
+          "has_transition": 1.0,
+          "reused": 0.58,
+          "stale": 0.01
+        },
+        {
+          "fresh": 0.405,
+          "has_transition": 1.0,
+          "reused": 0.595,
+          "stale": 0.005
+        },
+        {
+          "fresh": 0.89,
+          "has_transition": 1.0,
+          "reused": 0.11,
+          "stale": 0.55
+        },
+        {
+          "fresh": 0.4,
+          "has_transition": 1.0,
+          "reused": 0.6,
+          "stale": 0.005
+        },
+        {
+          "fresh": 0.39,
+          "has_transition": 1.0,
+          "reused": 0.61,
+          "stale": 0.01
+        },
+        {
+          "fresh": 0.36,
+          "has_transition": 1.0,
+          "reused": 0.64,
+          "stale": 0.025
+        },
+        {
+          "fresh": 0.38,
+          "has_transition": 1.0,
+          "reused": 0.62,
+          "stale": 0.01
+        },
+        {
+          "fresh": 0.925,
+          "has_transition": 1.0,
+          "reused": 0.075,
+          "stale": 0.555
+        }
+      ]
+    }
+  ],
+  "fps": 4.0,
+  "frame_size": [
+    1600,
+    900
+  ],
+  "schema": "onevision_vlmaxxing_explainer_videos_v1",
+  "scientific_guardrails": [
+    "No synthetic fallback exists in this renderer.",
+    "All outputs are derived from the three established real benchmark clips.",
+    "VLMaxxing, OneVision, and combined denominators are shown separately.",
+    "Combined videos are hypothesis visualizations until OV-3/OV-6 model runs complete."
+  ],
+  "status": "ok"
+}

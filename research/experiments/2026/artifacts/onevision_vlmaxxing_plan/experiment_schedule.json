@@ -29,12 +29,12 @@
     {
       "artifacts": [
         "research/experiments/2026/artifacts/onevision_vlmaxxing_visuals/",
-        "research/experiments/2026/artifacts/codec_through_video_overlays_exploratory/"
+        "research/experiments/2026/artifacts/onevision_vlmaxxing_explainer_videos/"
       ],
       "commands": [
         "uv run python scripts/preflight_onevision_vlmaxxing.py --scope ov1",
         "uv run python scripts/render_onevision_vlmaxxing_visual.py",
-        "uv run python scripts/render_codec_through_video_overlays.py"
+        "uv run python scripts/render_onevision_vlmaxxing_explainer_videos.py"
       ],
       "compute_lane": "CPU plus optional PyAV research dependency",
       "defer_until": "after OV-0",
@@ -91,7 +91,7 @@
       "question": "Does OneVision-style scoring improve semantic substitution before real work is skipped?",
       "requires_nvidia": false,
       "setup_effort": "requires OV-2 runner wiring",
-      "skip_rule": "If fused scoring underperforms pixel max_abs on the first dev tranche, skip holdout promotion, skip OV-4/OV-6 model runs, and report a diagnostic related-work result.",
+      "skip_rule": "If fused scoring underperforms pixel max_abs or legacy novel_coded on the first dev tranche, skip holdout promotion, skip OV-4/OV-6 model runs, and report a diagnostic related-work result.",
       "stage": "OV-3",
       "success_gate": "No increase in parse failures, <= 1% paired-choice drift on gated dev cells, and a strict Pareto improvement in fresh-budget versus current Track A baselines.",
       "track": "Track A dev",
@@ -200,7 +200,7 @@
       "question": "How do cold-ingest sparse allocation and follow-up reuse compose without double counting?",
       "requires_nvidia": false,
       "setup_effort": "requires OV-6 pass for model-backed runtime; otherwise accounting-only",
-      "skip_rule": "If OV-6 has no fidelity-clean sparse-vision cell, use synthetic stage-share ceilings only and do not claim a working combined runtime.",
+      "skip_rule": "If OV-6 has no fidelity-clean sparse-vision cell, use analytic stage-share ceilings only and do not claim a working combined runtime.",
       "stage": "OV-8",
       "success_gate": "Report setup-inclusive session curves for 1, 2, 5, 10, and 50 same-video questions with paired drift and stage-share accounting.",
       "track": "C-PERSIST",
