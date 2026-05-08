@@ -1,0 +1,103 @@
+{
+  "cell_type": "direct_dense_vs_rlt_cvision_plus_admission",
+  "composed_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_mvbench.jsonl",
+  "decisions": [
+    {
+      "decision": "stop",
+      "failed": [
+        "pass_fidelity",
+        "pass_bucket_quality_and_e2e"
+      ],
+      "reason": "full_composition_gate_failed"
+    }
+  ],
+  "dense_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_dense_mvbench.jsonl",
+  "expected_items": 30,
+  "schema_version": "gemma_full_composition_analysis_v1",
+  "summary": {
+    "accuracy_delta_ci95": [
+      -0.33333333333333337,
+      0.0
+    ],
+    "accuracy_delta_composed_minus_dense": -0.16666666666666663,
+    "bucket_failures": [
+      "moving_attribute",
+      "object_interaction"
+    ],
+    "bucket_underpowered": [],
+    "by_group": {
+      "action_localization": {
+        "accuracy_delta_composed_minus_dense": 0.0,
+        "composed_accuracy": 0.8333333333333334,
+        "dense_accuracy": 0.8333333333333334,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.5706408320986067,
+        "gate_evaluated": true,
+        "n": 6,
+        "quality_gate_pass": true
+      },
+      "fine_grained_action": {
+        "accuracy_delta_composed_minus_dense": 0.0,
+        "composed_accuracy": 0.5,
+        "dense_accuracy": 0.5,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.756346302012542,
+        "gate_evaluated": true,
+        "n": 6,
+        "quality_gate_pass": true
+      },
+      "moving_attribute": {
+        "accuracy_delta_composed_minus_dense": -0.5,
+        "composed_accuracy": 0.3333333333333333,
+        "dense_accuracy": 0.8333333333333334,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 2.135045381688356,
+        "gate_evaluated": true,
+        "n": 6,
+        "quality_gate_pass": false
+      },
+      "moving_direction": {
+        "accuracy_delta_composed_minus_dense": 0.16666666666666663,
+        "composed_accuracy": 0.6666666666666666,
+        "dense_accuracy": 0.5,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 2.204020798277129,
+        "gate_evaluated": true,
+        "n": 6,
+        "quality_gate_pass": true
+      },
+      "object_interaction": {
+        "accuracy_delta_composed_minus_dense": -0.5,
+        "composed_accuracy": 0.16666666666666666,
+        "dense_accuracy": 0.6666666666666666,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.978562144940387,
+        "gate_evaluated": true,
+        "n": 6,
+        "quality_gate_pass": false
+      }
+    },
+    "composed_accuracy": 0.5,
+    "composed_total_e2e_ms": 270654.385112,
+    "dense_accuracy": 0.6666666666666666,
+    "dense_total_e2e_ms": 514025.424454,
+    "e2e_speedup_ci95": [
+      1.7856027271623218,
+      2.0136365719349585
+    ],
+    "e2e_speedup_dense_over_composed": 1.8991948873885425,
+    "mean_composed_end_to_end_ms": 9021.812837066665,
+    "mean_composed_prefill_ms": 4397.049959733334,
+    "mean_composed_vision_ms": 3619.667081766667,
+    "mean_dense_end_to_end_ms": 17134.180815133335,
+    "mean_dense_prefill_ms": 7649.4571096,
+    "mean_dense_vision_ms": 8248.384202766667,
+    "n_items": 30,
+    "parse_failure_delta_composed_minus_dense": 1,
+    "pass_bucket_quality_and_e2e": false,
+    "pass_complete_pairing": true,
+    "pass_e2e_positive": true,
+    "pass_fidelity": false,
+    "pass_parse_failure_delta": true
+  }
+}
