@@ -271,6 +271,8 @@ Metrics:
 - aggregate accuracy only as secondary context;
 - fresh-frame/block budget;
 - per-duration bucket results;
+- worst single-frame starvation deficit for center, boundary, and OCR-edge
+  proxy regions, not just mean deficit;
 - decision-log reopen status for continuous H.264 saliency.
 
 Success gate: no increase in parse failures, <= 1% paired-choice drift on

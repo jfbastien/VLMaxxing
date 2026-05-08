@@ -17,6 +17,7 @@ import shutil
 import subprocess
 import sys
 from dataclasses import asdict, dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal
 
@@ -53,6 +54,7 @@ from find_fig1_candidates import (  # noqa: E402
 )
 
 DEFAULT_OUT_DIR = Path("research/experiments/2026/artifacts/onevision_vlmaxxing_explainer_videos")
+ONEVISION_VISUALS_OUT_DIR = Path("research/experiments/2026/artifacts/onevision_vlmaxxing_visuals")
 OUTPUT_SIZE = (1600, 900)
 VIDEO_BOX = (44, 112, 964, 808)
 PANEL_BOX = (1008, 112, 1556, 808)
@@ -281,7 +283,9 @@ def write_mp4(frames: list[Image.Image], out_path: Path, *, fps: float) -> None:
     return_code = proc.wait()
     stderr = proc.stderr.read().decode("utf-8", errors="replace") if proc.stderr else ""
     if return_code != 0 or write_error is not None:
-        detail = stderr.strip() or repr(write_error) if write_error is not None else stderr.strip()
+        detail = stderr.strip()
+        if not detail and write_error is not None:
+            detail = repr(write_error)
         raise RuntimeError(f"ffmpeg failed for {out_path} with code {return_code}: {detail}")
 
 
@@ -806,6 +810,37 @@ def _sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _artifact_metadata(*, exclude_paths: tuple[Path, ...] = ()) -> dict[str, object]:
+    return {
+        "generated_at": datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "git_commit": _git_output("rev-parse", "HEAD"),
+        "git_dirty": _git_dirty(exclude_paths=exclude_paths),
+        "git_dirty_scope": (
+            "repository excluding OneVision visualization output artifact directories"
+        ),
+    }
+
+
+def _git_dirty(*, exclude_paths: tuple[Path, ...]) -> bool:
+    args = ["status", "--porcelain", "--untracked-files=all", "--", "."]
+    for path in exclude_paths:
+        args.append(f":(exclude){_repo_relative(path)}")
+    return bool(_git_output(*args))
+
+
+def _git_output(*args: str) -> str | None:
+    result = subprocess.run(
+        ["git", *args],
+        cwd=REPO_ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return None
+    return result.stdout.strip()
+
+
 def _summary_for_state(state: ClipState, outputs: dict[str, str]) -> dict[str, Any]:
     coverage = temporal_coverage(state.patches, total_frames=len(state.frames))
     bias = spatial_bias(
@@ -843,6 +878,7 @@ def write_manifest(out_dir: Path, summaries: list[dict[str, Any]], *, fps: float
     payload = {
         "schema": "onevision_vlmaxxing_explainer_videos_v1",
         "status": "ok",
+        **_artifact_metadata(exclude_paths=(out_dir, REPO_ROOT / ONEVISION_VISUALS_OUT_DIR)),
         "scientific_guardrails": [
             "No synthetic fallback exists in this renderer.",
             "All outputs are derived from the three established real benchmark clips.",

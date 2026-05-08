@@ -7,7 +7,9 @@ import argparse
 import csv
 import hashlib
 import json
+import subprocess
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 
 import numpy as np
@@ -34,6 +36,9 @@ from codec_through.codec.onevision_patchification import (
 )
 
 DEFAULT_OUT_DIR = Path("research/experiments/2026/artifacts/onevision_vlmaxxing_visuals")
+EXPLAINER_VIDEOS_OUT_DIR = Path(
+    "research/experiments/2026/artifacts/onevision_vlmaxxing_explainer_videos"
+)
 REPO_ROOT = Path(__file__).resolve().parent.parent
 GRID_SHAPE = (8, 8)
 FRAMES = 16
@@ -260,7 +265,7 @@ def render_synthetic(out_dir: Path) -> dict[str, object]:
     )
     draw.text(
         (48, 70),
-        "DEV ONLY synthetic smoke: not evidence; this toy field can show anchor-budget pathology.",
+        "Synthetic developer-only smoke test. Real benchmark clips produce different allocations.",
         fill=(74, 81, 93),
         font=body_font(),
     )
@@ -497,6 +502,7 @@ def render_real_clips(
         )
     payload: dict[str, object] = {
         "mode": "real",
+        **_artifact_metadata(exclude_paths=(out_dir, REPO_ROOT / EXPLAINER_VIDEOS_OUT_DIR)),
         "frame_count": frame_count,
         "requested_token_budget": token_budget,
         "requested_clips": list(clip_keys) if clip_keys is not None else "all",
@@ -1112,6 +1118,7 @@ def _write_run_manifest(
     payload = {
         "schema": "onevision_vlmaxxing_visual_manifest_v1",
         "mode": mode,
+        **_artifact_metadata(exclude_paths=(out_dir, REPO_ROOT / EXPLAINER_VIDEOS_OUT_DIR)),
         "scientific_evidence": mode == "real",
         "promotion_blocked": mode != "real",
         "synthetic": synthetic_summary,
@@ -1160,6 +1167,44 @@ def _sha256_file(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _artifact_metadata(*, exclude_paths: tuple[Path, ...] = ()) -> dict[str, object]:
+    return {
+        "generated_at": datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "git_commit": _git_output("rev-parse", "HEAD"),
+        "git_dirty": _git_dirty(exclude_paths=exclude_paths),
+        "git_dirty_scope": (
+            "repository excluding OneVision visualization output artifact directories"
+        ),
+    }
+
+
+def _git_dirty(*, exclude_paths: tuple[Path, ...]) -> bool:
+    args = ["status", "--porcelain", "--untracked-files=all", "--", "."]
+    for path in exclude_paths:
+        args.append(f":(exclude){_repo_relative(path)}")
+    return bool(_git_output(*args))
+
+
+def _repo_relative(path: Path) -> str:
+    try:
+        return str(path.relative_to(REPO_ROOT))
+    except ValueError:
+        return str(path)
+
+
+def _git_output(*args: str) -> str | None:
+    result = subprocess.run(
+        ["git", *args],
+        cwd=REPO_ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return None
+    return result.stdout.strip()
 
 
 def _active_box_for_canvas(
