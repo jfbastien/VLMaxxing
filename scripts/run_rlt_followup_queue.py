@@ -20,6 +20,11 @@ DEFAULT_VIDEOMME_MANIFEST = Path("research/benchmark_manifests/videomme_combined
 DEFAULT_SMOKE_MANIFEST = Path("research/benchmark_manifests/videomme_dev_v1.toml")
 DEFAULT_TOMATO_MANIFEST = Path("research/benchmark_manifests/tomato_motion_dev_v2.toml")
 DEFAULT_MVBENCH_MANIFEST = Path("research/benchmark_manifests/mvbench_motion_dev_v2.toml")
+DEFAULT_VIDEOMME_HOLDOUT_MANIFEST = Path("research/benchmark_manifests/videomme_holdout_v1.toml")
+DEFAULT_TOMATO_HOLDOUT_MANIFEST = Path("research/benchmark_manifests/tomato_motion_holdout_v2.toml")
+DEFAULT_MVBENCH_HOLDOUT_MANIFEST = Path(
+    "research/benchmark_manifests/mvbench_motion_holdout_v2.toml"
+)
 DEFAULT_COMPOSITION_PREFILL_STEP_SIZE = 1024
 ADAPTIVE_COMPOSITION_GROUP_KEEP_RATES: dict[str, dict[str, float]] = {
     # Round-18 direct-composition failures were bucket-local. These rescue
@@ -56,6 +61,12 @@ PHASE_ESTIMATES_HOURS = {
     "full-composition-rlt-rescue-videomme-n30": [1.0, 2.2],
     "full-composition-rlt-rescue-tomato-n30": [1.0, 2.0],
     "full-composition-rlt-rescue-mvbench-n30": [1.0, 2.0],
+    "full-composition-rlt-holdout-videomme-n30": [1.0, 2.2],
+    "full-composition-rlt-holdout-tomato-n30": [1.0, 2.0],
+    "full-composition-rlt-holdout-mvbench-n30": [1.0, 2.0],
+    "full-composition-rlt-rescue-holdout-videomme-n30": [1.0, 2.2],
+    "full-composition-rlt-rescue-holdout-tomato-n30": [1.0, 2.0],
+    "full-composition-rlt-rescue-holdout-mvbench-n30": [1.0, 2.0],
     "cvision-kr-sweep-tomato": [1.2, 2.4],
     "cvision-kr-sweep-mvbench": [1.2, 2.4],
     "cvision-kr-sweep-videomme": [1.4, 3.0],
@@ -626,6 +637,21 @@ def main() -> int:
     parser.add_argument("--smoke-manifest", type=Path, default=DEFAULT_SMOKE_MANIFEST)
     parser.add_argument("--tomato-manifest", type=Path, default=DEFAULT_TOMATO_MANIFEST)
     parser.add_argument("--mvbench-manifest", type=Path, default=DEFAULT_MVBENCH_MANIFEST)
+    parser.add_argument(
+        "--videomme-holdout-manifest",
+        type=Path,
+        default=DEFAULT_VIDEOMME_HOLDOUT_MANIFEST,
+    )
+    parser.add_argument(
+        "--tomato-holdout-manifest",
+        type=Path,
+        default=DEFAULT_TOMATO_HOLDOUT_MANIFEST,
+    )
+    parser.add_argument(
+        "--mvbench-holdout-manifest",
+        type=Path,
+        default=DEFAULT_MVBENCH_HOLDOUT_MANIFEST,
+    )
     parser.add_argument("--frame-count", type=int, default=8)
     parser.add_argument("--rss-guard-mb", type=int, default=9000)
     parser.add_argument(
@@ -698,6 +724,22 @@ def main() -> int:
         ),
     )
     parser.add_argument(
+        "--run-composition-holdout",
+        action="store_true",
+        help=(
+            "Run direct dense-vs-composed cells on disjoint holdout manifests. "
+            "This is the replication path for the paper-facing composition claim."
+        ),
+    )
+    parser.add_argument(
+        "--run-composition-rescue-holdout",
+        action="store_true",
+        help=(
+            "Run the bucket-specific rescue policy on disjoint holdout manifests. "
+            "Skips a benchmark if its base holdout direct-composition gate passes."
+        ),
+    )
+    parser.add_argument(
         "--composition-prefill-step-size",
         type=int,
         default=DEFAULT_COMPOSITION_PREFILL_STEP_SIZE,
@@ -718,7 +760,7 @@ def main() -> int:
         default="tomato",
     )
     parser.add_argument("--cvision-keep-rates", default="0.3,0.5,0.7,0.85")
-    parser.add_argument("--max-planned-hours", type=float, default=48.0)
+    parser.add_argument("--max-planned-hours", type=float, default=60.0)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--summary", type=Path)
     args = parser.parse_args()
@@ -741,6 +783,10 @@ def main() -> int:
         raise SystemExit("--run-composition-direct requires --run-cvision-rlt")
     if args.run_composition_rescue and not args.run_cvision_rlt:
         raise SystemExit("--run-composition-rescue requires --run-cvision-rlt")
+    if args.run_composition_holdout and not args.run_cvision_rlt:
+        raise SystemExit("--run-composition-holdout requires --run-cvision-rlt")
+    if args.run_composition_rescue_holdout and not args.run_cvision_rlt:
+        raise SystemExit("--run-composition-rescue-holdout requires --run-cvision-rlt")
     if args.run_keep_rate_sweep and not args.run_cvision_rlt:
         raise SystemExit("--run-keep-rate-sweep requires --run-cvision-rlt")
     if args.cooldown_after_microbench_seconds < 0:
@@ -801,6 +847,22 @@ def main() -> int:
                 "full-composition-rlt-rescue-videomme-n30",
                 "full-composition-rlt-rescue-tomato-n30",
                 "full-composition-rlt-rescue-mvbench-n30",
+            ]
+        )
+    if args.run_composition_holdout:
+        phases.extend(
+            [
+                "full-composition-rlt-holdout-videomme-n30",
+                "full-composition-rlt-holdout-tomato-n30",
+                "full-composition-rlt-holdout-mvbench-n30",
+            ]
+        )
+    if args.run_composition_rescue_holdout:
+        phases.extend(
+            [
+                "full-composition-rlt-rescue-holdout-videomme-n30",
+                "full-composition-rlt-rescue-holdout-tomato-n30",
+                "full-composition-rlt-rescue-holdout-mvbench-n30",
             ]
         )
     if args.run_keep_rate_sweep:
@@ -1021,6 +1083,50 @@ def main() -> int:
         )
         for benchmark, manifest in benchmark_manifests.items()
     }
+    holdout_manifests = {
+        "videomme": args.videomme_holdout_manifest,
+        "tomato": args.tomato_holdout_manifest,
+        "mvbench": args.mvbench_holdout_manifest,
+    }
+    holdout_expected_items = {
+        "videomme": 30,
+        "tomato": 30,
+        "mvbench": 30,
+    }
+    full_composition_holdout_commands = {
+        benchmark: _gemma_full_composition_commands(
+            artifact_dir=args.artifact_dir,
+            manifest=manifest,
+            model_path=args.gemma_model_path,
+            frame_count=args.frame_count,
+            n_items=0,
+            expected_items=holdout_expected_items[benchmark],
+            rss_guard_mb=args.rss_guard_mb,
+            mlx_memory_limit_gb=args.mlx_memory_limit_gb,
+            benchmark=benchmark,
+            prefill_step_size=args.composition_prefill_step_size,
+            label=f"full_composition_rlt_holdout_{benchmark}",
+        )
+        for benchmark, manifest in holdout_manifests.items()
+    }
+    composition_rescue_holdout_commands = {
+        benchmark: _gemma_full_composition_commands(
+            artifact_dir=args.artifact_dir,
+            manifest=manifest,
+            model_path=args.gemma_model_path,
+            frame_count=args.frame_count,
+            n_items=0,
+            expected_items=holdout_expected_items[benchmark],
+            rss_guard_mb=args.rss_guard_mb,
+            mlx_memory_limit_gb=args.mlx_memory_limit_gb,
+            benchmark=benchmark,
+            prefill_step_size=args.composition_prefill_step_size,
+            label=f"full_composition_rlt_rescue_holdout_{benchmark}",
+            group_keep_rates=ADAPTIVE_COMPOSITION_GROUP_KEEP_RATES[benchmark],
+            group_vision_keep_rates=ADAPTIVE_COMPOSITION_GROUP_KEEP_RATES[benchmark],
+        )
+        for benchmark, manifest in holdout_manifests.items()
+    }
     sweep_manifest = benchmark_manifests[args.keep_rate_sweep_benchmark]
     sweep_expected_items = benchmark_expected_items[args.keep_rate_sweep_benchmark]
     keep_rate_sweep_commands = {
@@ -1124,6 +1230,29 @@ def main() -> int:
                 }
                 for c in phase_commands
             )
+    if args.run_composition_holdout:
+        for benchmark, phase_commands in full_composition_holdout_commands.items():
+            planned.extend(
+                {
+                    "phase": (
+                        f"full_composition_rlt_holdout_{benchmark}_if_rlt_videomme_core_passes"
+                    ),
+                    "command": c,
+                }
+                for c in phase_commands
+            )
+    if args.run_composition_rescue_holdout:
+        for benchmark, phase_commands in composition_rescue_holdout_commands.items():
+            planned.extend(
+                {
+                    "phase": (
+                        f"full_composition_rlt_rescue_holdout_{benchmark}_"
+                        "if_holdout_direct_composition_needs_quality_rescue"
+                    ),
+                    "command": c,
+                }
+                for c in phase_commands
+            )
     if args.run_keep_rate_sweep:
         for rate, phase_commands in keep_rate_sweep_commands.items():
             planned.extend(
@@ -1186,6 +1315,30 @@ def main() -> int:
                             )
                         ]
                         if args.run_composition_rescue
+                        else []
+                    ),
+                    *(
+                        [
+                            (
+                                "Run direct dense-vs-full-composition on disjoint holdout "
+                                "manifests after RLT VideoMME core gates pass. These rows "
+                                "replicate or weaken the dev-slice composition story; they "
+                                "do not inherit dev results."
+                            )
+                        ]
+                        if args.run_composition_holdout
+                        else []
+                    ),
+                    *(
+                        [
+                            (
+                                "Run holdout rescue only for benchmarks whose holdout "
+                                "direct-composition cell does not clear all direct gates. "
+                                "A rescue result supersedes a failed holdout row only if "
+                                "it clears aggregate and bucket quality gates."
+                            )
+                        ]
+                        if args.run_composition_rescue_holdout
                         else []
                     ),
                 ],
@@ -1493,6 +1646,80 @@ def main() -> int:
             {
                 "decision": "skip",
                 "reason": "full_composition_rescue_requires_rlt_videomme_pass",
+            }
+        )
+    if args.run_composition_holdout and cvision_videomme_passed:
+        for benchmark, phase_commands in full_composition_holdout_commands.items():
+            holdout_results = _run_command_group(phase_commands)
+            commands.extend(holdout_results)
+            holdout_label = f"full_composition_rlt_holdout_{benchmark}"
+            holdout_analysis = _read_analysis_after_success(
+                results=holdout_results,
+                path=args.artifact_dir / f"{holdout_label}_analysis.json",
+                phase=holdout_label,
+                decisions=decisions,
+            )
+            if holdout_analysis is not None:
+                analyses[holdout_label] = holdout_analysis
+                if not _phase_passed_full_composition(holdout_analysis):
+                    decisions.append(
+                        {
+                            "decision": "continue",
+                            "reason": f"{holdout_label}_did_not_earn_gate",
+                            "phase": holdout_label,
+                            "details": holdout_analysis.get("decisions", []),
+                        }
+                    )
+    elif args.run_composition_holdout and not cvision_videomme_passed:
+        decisions.append(
+            {
+                "decision": "skip",
+                "reason": "full_composition_holdout_requires_rlt_videomme_pass",
+            }
+        )
+    if args.run_composition_rescue_holdout and cvision_videomme_passed:
+        for benchmark, phase_commands in composition_rescue_holdout_commands.items():
+            holdout_label = f"full_composition_rlt_holdout_{benchmark}"
+            base_analysis = analyses.get(holdout_label)
+            if not isinstance(base_analysis, dict):
+                base_path = args.artifact_dir / f"{holdout_label}_analysis.json"
+                if base_path.exists():
+                    base_analysis = _read_json(base_path)
+                    analyses[holdout_label] = base_analysis
+            if isinstance(base_analysis, dict) and _phase_passed_full_composition(base_analysis):
+                decisions.append(
+                    {
+                        "decision": "skip",
+                        "reason": f"{holdout_label}_already_passed",
+                        "skipped_phase": f"full_composition_rlt_rescue_holdout_{benchmark}",
+                    }
+                )
+                continue
+            rescue_holdout_results = _run_command_group(phase_commands)
+            commands.extend(rescue_holdout_results)
+            rescue_holdout_label = f"full_composition_rlt_rescue_holdout_{benchmark}"
+            rescue_holdout_analysis = _read_analysis_after_success(
+                results=rescue_holdout_results,
+                path=args.artifact_dir / f"{rescue_holdout_label}_analysis.json",
+                phase=rescue_holdout_label,
+                decisions=decisions,
+            )
+            if rescue_holdout_analysis is not None:
+                analyses[rescue_holdout_label] = rescue_holdout_analysis
+                if not _phase_passed_full_composition(rescue_holdout_analysis):
+                    decisions.append(
+                        {
+                            "decision": "continue",
+                            "reason": f"{rescue_holdout_label}_did_not_earn_gate",
+                            "phase": rescue_holdout_label,
+                            "details": rescue_holdout_analysis.get("decisions", []),
+                        }
+                    )
+    elif args.run_composition_rescue_holdout and not cvision_videomme_passed:
+        decisions.append(
+            {
+                "decision": "skip",
+                "reason": "full_composition_rescue_holdout_requires_rlt_videomme_pass",
             }
         )
     if args.run_keep_rate_sweep and cvision_videomme_passed:

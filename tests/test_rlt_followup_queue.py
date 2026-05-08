@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -98,6 +99,72 @@ def test_expansion_requires_video_mme_rlt_gate(tmp_path: Path) -> None:
 
     assert completed.returncode != 0
     assert "--run-cvision-expansion requires --run-cvision-rlt" in completed.stderr
+
+
+def test_holdout_composition_requires_video_mme_rlt_gate(tmp_path: Path) -> None:
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_rlt_followup_queue.py",
+            "--run-composition-holdout",
+            "--dry-run",
+            "--summary",
+            str(tmp_path / "summary.json"),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode != 0
+    assert "--run-composition-holdout requires --run-cvision-rlt" in completed.stderr
+
+
+def test_holdout_dry_run_plans_disjoint_direct_and_rescue_cells(tmp_path: Path) -> None:
+    summary_path = tmp_path / "summary.json"
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_rlt_followup_queue.py",
+            "--run-cvision-rlt",
+            "--run-composition-holdout",
+            "--run-composition-rescue-holdout",
+            "--dry-run",
+            "--summary",
+            str(summary_path),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(summary_path.read_text(encoding="utf-8"))
+    planned = payload["planned_commands"]
+    phases = {item["phase"] for item in planned}
+    commands = [item["command"] for item in planned]
+
+    assert "full_composition_rlt_holdout_mvbench_if_rlt_videomme_core_passes" in phases
+    assert (
+        "full_composition_rlt_rescue_holdout_mvbench_"
+        "if_holdout_direct_composition_needs_quality_rescue"
+    ) in phases
+    assert any(
+        "research/benchmark_manifests/mvbench_motion_holdout_v2.toml" in command
+        and any(
+            arg.endswith("full_composition_rlt_holdout_mvbench_composed.jsonl") for arg in command
+        )
+        for command in commands
+    )
+    assert any(
+        "--group-keep-rates" in command
+        and "moving_attribute=0.85,object_interaction=0.85" in command
+        and any(
+            arg.endswith("full_composition_rlt_rescue_holdout_mvbench_composed.jsonl")
+            for arg in command
+        )
+        for command in commands
+    )
 
 
 def test_cvision_commands_can_reuse_dense_and_set_keep_rate(tmp_path: Path) -> None:

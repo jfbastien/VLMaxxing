@@ -36,6 +36,21 @@ The round-18 queue then added two reproduced-here facts:
   helps the control, but it still trails RLT on this stack; the saliency signal
   matters, not just the budget denominator.
 
+The round-19 queue then added three reproduced-here facts:
+
+- Bucket-specific rescue is not a universal quality fix. VideoMME rescue remains
+  essentially unchanged, TOMATO rescue weakens quality, and MVBench rescue trades
+  the `1.899x` speed frontier for `1.403x` while recovering
+  `object_interaction`.
+- MVBench `moving_attribute` remains the hard counterexample: raising both
+  admission and vision keep-rate to `0.85` does not recover the bucket. The
+  result points away from "just keep more motion tokens" and toward a later
+  query-aware/static-detail policy.
+- The direct-composition speed frontier is real, but the quality story must be
+  phrased gate-first. The clean local claim today is "RLT C-VISION is robustly
+  positive; full composition is high-upside and benchmark/bucket conditional,"
+  not "MVBench rescue is paper-clean."
+
 ## Local M3/M4-Class Queue
 
 Command shape:
@@ -50,6 +65,8 @@ uv run python scripts/run_rlt_followup_queue.py \
   --run-composition-incremental \
   --run-composition-direct \
   --run-composition-rescue \
+  --run-composition-holdout \
+  --run-composition-rescue-holdout \
   --run-keep-rate-sweep
 ```
 
@@ -153,6 +170,32 @@ dense JSONL when present.
 Expected result: `0.3` is the likely quality-stress point; `0.5` remains the
 balanced point; `0.7/0.85` should approach dense quality with smaller speedups.
 
+### H4: Disjoint Holdout Composition Replication
+
+Hypothesis: direct full composition should replicate as an E2E-positive result
+on disjoint VideoMME, TOMATO, and MVBench holdout manifests, but the quality
+gate may remain bucket-conditional. This is the replication gate for any
+paper-facing full-composition headline.
+
+Scope: `--run-composition-holdout` uses the existing holdout manifests:
+
+- `videomme_holdout_v1.toml` (`30` items)
+- `tomato_motion_holdout_v2.toml` (`30` items)
+- `mvbench_motion_holdout_v2.toml` (`30` items, `6` per group)
+
+Gate: run only after the RLT VideoMME core C-VISION gate passes. Each benchmark
+must independently clear aggregate fidelity, positive measured E2E,
+sparse-induced parse-failure parity, and bucket-level quality+E2E. If a direct
+holdout cell fails, `--run-composition-rescue-holdout` applies the same
+pre-registered group keep-rate override for that benchmark and supersedes the
+base row only if it clears the same gates.
+
+Expected result: VideoMME should remain modestly positive and decode-limited;
+TOMATO should remain positive if the dev result was not slice-specific; MVBench
+is the decisive replication. If holdout MVBench again shows large speed with a
+`moving_attribute` failure, the paper should promote the failure as the
+query-aware motivation rather than tune another global RLT keep-rate.
+
 ### Ceiling Diagnostic Note
 
 The predicted-from-vision Amdahl ceiling is a diagnostic, not a hard result
@@ -180,6 +223,8 @@ uv run python scripts/run_rlt_followup_queue.py \
   --run-magnitude-head-to-head \
   --run-composition-direct \
   --run-composition-rescue \
+  --run-composition-holdout \
+  --run-composition-rescue-holdout \
   --run-keep-rate-sweep
 ```
 
@@ -203,5 +248,8 @@ guards before any n=30 cells continue.
    clears the direct full-composition gate with measured E2E still above 1.0.
 5. Direct full composition supersedes multiplicative estimates wherever it
    completes; estimates remain hypotheses only.
-6. Keep-rate sweep runs only after the base RLT VideoMME gate because it is a
+6. Holdout composition is the replication gate. Dev-slice full composition
+   should not become the headline unless the corresponding holdout cell supports
+   it or the paper explicitly labels the dev result as exploratory.
+7. Keep-rate sweep runs only after the base RLT VideoMME gate because it is a
    Pareto refinement, not a rescue path for a failed base method.
