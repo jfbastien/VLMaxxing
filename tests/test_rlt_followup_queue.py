@@ -108,6 +108,7 @@ def test_cvision_commands_can_reuse_dense_and_set_keep_rate(tmp_path: Path) -> N
         frame_count=8,
         n_items=30,
         rss_guard_mb=9000,
+        mlx_memory_limit_gb=12.0,
         label="cvision_rlt_tomato_kr030",
         expected_items=30,
         score_mode="rlt_topk",
@@ -121,6 +122,31 @@ def test_cvision_commands_can_reuse_dense_and_set_keep_rate(tmp_path: Path) -> N
     assert sparse[sparse.index("--vision-tower-keep-rate") + 1] == "0.3"
     assert str(tmp_path / "cvision_rlt_tomato_dense.jsonl") in analyze
     assert str(tmp_path / "cvision_rlt_tomato_kr030_analysis.json") in analyze
+
+
+def test_cvision_commands_can_run_valid_position_magnitude(tmp_path: Path) -> None:
+    commands = queue._cvision_commands(
+        artifact_dir=tmp_path,
+        manifest=Path("manifest.toml"),
+        model_path=Path("model"),
+        frame_count=8,
+        n_items=30,
+        rss_guard_mb=9000,
+        mlx_memory_limit_gb=60.0,
+        label="cvision_magnitude_valid_videomme",
+        expected_items=30,
+        score_mode="magnitude_valid",
+        dense_source_label="cvision_rlt_videomme",
+        include_dense_command=False,
+    )
+
+    sparse, analyze = commands
+
+    assert len(commands) == 2
+    assert sparse[sparse.index("--vision-tower-score-mode") + 1] == "magnitude_valid"
+    assert sparse[sparse.index("--mlx-memory-limit-gb") + 1] == "60"
+    assert str(tmp_path / "cvision_rlt_videomme_dense.jsonl") in analyze
+    assert str(tmp_path / "cvision_magnitude_valid_videomme_analysis.json") in analyze
 
 
 def test_composition_command_uses_rlt_for_admission_and_cvision(tmp_path: Path) -> None:
@@ -153,3 +179,40 @@ def test_composition_command_allows_prefill_step_override(tmp_path: Path) -> Non
     )
 
     assert run_command[run_command.index("--prefill-step-size") + 1] == "1536"
+
+
+def test_full_composition_commands_build_dense_reference_and_composed_arm(tmp_path: Path) -> None:
+    dense, composed, analyze = queue._gemma_full_composition_commands(
+        artifact_dir=tmp_path,
+        manifest=Path("manifest.toml"),
+        model_path=Path("model"),
+        frame_count=8,
+        n_items=30,
+        expected_items=30,
+        rss_guard_mb=9000,
+        benchmark="videomme",
+        prefill_step_size=1024,
+    )
+
+    assert dense[dense.index("--prune-placeholders") + 1] == "none"
+    assert dense[dense.index("--vision-tower-keep-rate") + 1] == "1.0"
+    assert composed[composed.index("--prune-placeholders") + 1] == "rlt"
+    assert composed[composed.index("--vision-tower-score-mode") + 1] == "rlt_topk"
+    assert composed[composed.index("--prefill-step-size") + 1] == "1024"
+    assert "scripts/analyze_gemma_full_composition.py" in analyze
+    assert str(tmp_path / "full_composition_rlt_videomme_analysis.json") in analyze
+
+
+def test_phase_passed_full_composition_requires_direct_gates() -> None:
+    analysis = {
+        "summary": {
+            "pass_fidelity": True,
+            "pass_e2e_positive": True,
+            "pass_parse_failure_delta": True,
+            "pass_bucket_quality_and_e2e": True,
+        }
+    }
+    assert queue._phase_passed_full_composition(analysis)
+
+    analysis["summary"]["pass_bucket_quality_and_e2e"] = False
+    assert not queue._phase_passed_full_composition(analysis)

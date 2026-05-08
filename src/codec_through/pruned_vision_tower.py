@@ -60,6 +60,44 @@ def magnitude_keep_mask(hidden_states: mx.array, positions: mx.array, keep_rate:
     return keep_mask
 
 
+def magnitude_valid_keep_mask(
+    hidden_states: mx.array, positions: mx.array, keep_rate: float
+) -> mx.array:
+    """Top-k magnitude mask budgeted over valid encoder positions only.
+
+    Gemma's encoder rows can include padded positions with negative coordinates.
+    The historical magnitude mask budgets K over the full padded row length.
+    This control uses the same hidden-state magnitude scores but applies the
+    keep-rate denominator to valid positions, matching the RLT and max-min
+    C-VISION scorer domain.
+    """
+    B, L, _ = hidden_states.shape
+    if positions.shape[:2] != (B, L) or positions.shape[-1] != 2:
+        raise ValueError(
+            f"positions shape {positions.shape} does not match hidden_states {hidden_states.shape}"
+        )
+    valid = (positions[:, :, 0] >= 0) & (positions[:, :, 1] >= 0)
+    valid_counts_arr = valid.astype(mx.int32).sum(axis=1)
+    mx.eval(valid_counts_arr)
+    valid_counts = [int(valid_counts_arr[row].item()) for row in range(B)]
+    if not valid_counts:
+        raise ValueError("positions must contain at least one row")
+    if any(count <= 0 for count in valid_counts):
+        raise ValueError(f"every row must contain at least one valid position; got {valid_counts}")
+    keep_counts = [max(1, int(count * keep_rate)) for count in valid_counts]
+    if len(set(keep_counts)) != 1:
+        raise ValueError(f"magnitude_valid must keep uniform K across rows; got {keep_counts}")
+
+    scores = mx.linalg.norm(hidden_states.astype(mx.float32), axis=-1)  # [B, L]
+    minus_inf = mx.full(scores.shape, -1.0e30, dtype=scores.dtype)
+    scores = mx.where(valid, scores, minus_inf)
+    k = keep_counts[0]
+    order = mx.argsort(scores, axis=-1)
+    top_k = order[:, -k:]
+    one_hot = cast(mx.array, mx.expand_dims(top_k, -1) == mx.expand_dims(mx.arange(L), 0))
+    return mx.any(one_hot, axis=1) & valid
+
+
 def _slice_keep(x: mx.array, indices: mx.array, axis: int) -> mx.array:
     """Per-row gather along `axis` using integer indices [B, K].
 

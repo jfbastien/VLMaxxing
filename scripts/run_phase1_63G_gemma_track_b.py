@@ -21,13 +21,13 @@ from mlx_vlm import load, stream_generate
 from mlx_vlm.utils import prepare_inputs
 from PIL import Image
 
-# Avoid IOGPU state-inconsistency panics under allocation churn
-# (CVE-2026-28834-class GPU-driver race, unpatched on macOS 26.3).
-mx.set_memory_limit(12 * 1024**3)
-
 from codec_through.answers import extract_choice  # noqa: E402
 from codec_through.memory_guard import check_rss_guard, rss_mb  # noqa: E402
-from codec_through.pruned_vision_tower import PruneConfig, patch_vision_tower  # noqa: E402
+from codec_through.pruned_vision_tower import (  # noqa: E402
+    PruneConfig,
+    magnitude_valid_keep_mask,
+    patch_vision_tower,
+)
 from codec_through.rlt_masks import (  # noqa: E402
     RLTMaskConfig,
     compute_rlt_keep_mask_from_frames,
@@ -42,6 +42,7 @@ DEFAULT_MODEL_PATH = Path.home() / "models" / "gemma-4-e4b-it-4bit"
 GEMMA_IMAGE_SIZE = 512
 GEMMA_GRID_SHAPE = (16, 16)
 SCHEMA_VERSION = "phase1_63g_gemma_track_b_v5"
+DEFAULT_MLX_MEMORY_LIMIT_GB = 12.0
 
 
 @dataclass(frozen=True, slots=True)
@@ -598,6 +599,16 @@ def main() -> int:
     parser.add_argument("--model-path", type=Path, default=DEFAULT_MODEL_PATH)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--summary", type=Path, required=True)
+    parser.add_argument(
+        "--mlx-memory-limit-gb",
+        type=float,
+        default=DEFAULT_MLX_MEMORY_LIMIT_GB,
+        help=(
+            "Set MLX's allocator memory cap before model load. The local 16GB "
+            "laptop default is 12GB to avoid macOS GPU-driver allocation panics; "
+            "larger machines can raise it, and 0 disables this script-level cap."
+        ),
+    )
     parser.add_argument("--allow-dirty", action="store_true")
     parser.add_argument(
         "--resume",
@@ -622,12 +633,14 @@ def main() -> int:
     parser.add_argument("--vision-tower-keep-rate", type=float, default=1.0)
     parser.add_argument(
         "--vision-tower-score-mode",
-        choices=("magnitude", "rlt_topk", "max_min_diversity"),
+        choices=("magnitude", "magnitude_valid", "rlt_topk", "max_min_diversity"),
         default="magnitude",
         help=(
             "Sparse-vision token scorer. 'magnitude' is the existing hidden-state "
-            "L2 scorer; 'rlt_topk' ranks tokens by RLT same-position motion scores "
-            "and keeps a fixed K per frame for the scatter-back wrapper; "
+            "L2 scorer budgeted over the padded encoder row; 'magnitude_valid' "
+            "uses the same L2 scorer but budgets K over valid encoder positions; "
+            "'rlt_topk' ranks tokens by RLT same-position motion scores and keeps "
+            "a fixed K per frame for the scatter-back wrapper; "
             "'max_min_diversity' is the expensive feature-dependent comparator."
         ),
     )
@@ -638,6 +651,12 @@ def main() -> int:
     args = parser.parse_args()
     if args.warmup_items < 0:
         raise SystemExit("--warmup-items must be nonnegative")
+    if args.mlx_memory_limit_gb < 0.0:
+        raise SystemExit("--mlx-memory-limit-gb must be nonnegative")
+    if args.mlx_memory_limit_gb > 0.0:
+        # Avoid IOGPU state-inconsistency panics under allocation churn
+        # (CVE-2026-28834-class GPU-driver race, unpatched on macOS 26.3).
+        mx.set_memory_limit(int(args.mlx_memory_limit_gb * 1024**3))
 
     runner = _load_runner_module()
     runner._ensure_clean_git_tree(allow_dirty=args.allow_dirty)
@@ -675,6 +694,7 @@ def main() -> int:
                 "n_frames": args.frame_count,
                 "max_tokens": args.max_tokens,
                 "warmup_items": args.warmup_items,
+                "mlx_memory_limit_gb": args.mlx_memory_limit_gb,
                 "vision_tower_patched": args.vision_tower_keep_rate < 1.0,
                 "vision_tower_layer": (
                     args.vision_tower_layer if args.vision_tower_keep_rate < 1.0 else None
@@ -711,16 +731,23 @@ def main() -> int:
         )
 
     vt_patched = args.vision_tower_keep_rate < 1.0
-    if args.vision_tower_score_mode in {"rlt_topk", "max_min_diversity"} and not vt_patched:
+    if (
+        args.vision_tower_score_mode in {"magnitude_valid", "rlt_topk", "max_min_diversity"}
+        and not vt_patched
+    ):
         raise SystemExit(
-            "--vision-tower-score-mode rlt_topk/max_min_diversity requires "
+            "--vision-tower-score-mode magnitude_valid/rlt_topk/max_min_diversity requires "
             "--vision-tower-keep-rate < 1.0"
         )
     rlt_config = _rlt_config_from_args(args)
     rlt_keep_holder: dict[str, Any] = {}
     if vt_patched:
         keep_mask_fn: Any | None = None
-        if args.vision_tower_score_mode in {"rlt_topk", "max_min_diversity"}:
+        if args.vision_tower_score_mode in {
+            "magnitude_valid",
+            "rlt_topk",
+            "max_min_diversity",
+        }:
 
             def keep_mask_fn(hidden_states: mx.array, positions: mx.array) -> mx.array:
                 scorer_t0 = time.perf_counter_ns()
@@ -736,13 +763,23 @@ def main() -> int:
                         keep_rate=args.vision_tower_keep_rate,
                     )
                     rlt_keep_holder["last_valid_counts"] = [int(value) for value in valid_counts]
-                else:
+                elif args.vision_tower_score_mode == "max_min_diversity":
                     mask_np, valid_count_list = _max_min_diversity_mask_for_positions(
                         hidden_states,
                         positions,
                         keep_rate=args.vision_tower_keep_rate,
                     )
                     rlt_keep_holder["last_valid_counts"] = valid_count_list
+                else:
+                    mask = magnitude_valid_keep_mask(
+                        hidden_states,
+                        positions,
+                        keep_rate=args.vision_tower_keep_rate,
+                    )
+                    pos_np = np.array(positions)
+                    valid_counts = ((pos_np[:, :, 0] >= 0) & (pos_np[:, :, 1] >= 0)).sum(axis=1)
+                    mask_np = np.array(mask)
+                    rlt_keep_holder["last_valid_counts"] = [int(value) for value in valid_counts]
                 rlt_keep_holder["last_keep_mask_ms"] = (
                     time.perf_counter_ns() - scorer_t0
                 ) / 1_000_000
@@ -785,6 +822,17 @@ def main() -> int:
             return 0.0
         rlt_keep_holder.pop("last_mask_np", None)
         rlt_keep_holder.pop("last_keep_mask_ms", None)
+        if args.vision_tower_score_mode == "magnitude_valid":
+            metadata.update(
+                {
+                    "feature_scorer_policy": "magnitude_valid_fixed_k",
+                    "feature_scorer_domain": "gemma_valid_encoder_positions",
+                    "scorer_implementation_substrate": "mlx",
+                }
+            )
+            scorer_prepare_ms = (time.perf_counter_ns() - prepare_t0) / 1_000_000
+            metadata["scorer_prepare_ms"] = scorer_prepare_ms
+            return scorer_prepare_ms
         if args.vision_tower_score_mode == "max_min_diversity":
             metadata.update(
                 {
@@ -828,7 +876,10 @@ def main() -> int:
         return scorer_prepare_ms
 
     def record_sparse_scorer_after_vision(metadata: dict[str, Any]) -> tuple[int, int, list[int]]:
-        if not (vt_patched and args.vision_tower_score_mode in {"rlt_topk", "max_min_diversity"}):
+        if not (
+            vt_patched
+            and args.vision_tower_score_mode in {"magnitude_valid", "rlt_topk", "max_min_diversity"}
+        ):
             return kept_groups, total_groups, [kept_per_frame] * args.frame_count
         last_mask = rlt_keep_holder.get("last_mask_np")
         if last_mask is None:
@@ -855,7 +906,9 @@ def main() -> int:
                 "sparse_budget_domain": "valid_encoder_positions",
                 "scorer_keep_mask_ms": scorer_keep_mask_ms,
                 "scorer_total_ms": scorer_prepare_ms + scorer_keep_mask_ms,
-                "scorer_implementation_substrate": "numpy_cpu",
+                "scorer_implementation_substrate": (
+                    "mlx" if args.vision_tower_score_mode == "magnitude_valid" else "numpy_cpu"
+                ),
                 **(
                     {"rlt_budget_domain": "valid_encoder_positions"}
                     if args.vision_tower_score_mode == "rlt_topk"
@@ -970,6 +1023,7 @@ def main() -> int:
             "n_frames": args.frame_count,
             "max_tokens": args.max_tokens,
             "warmup_items": args.warmup_items,
+            "mlx_memory_limit_gb": args.mlx_memory_limit_gb,
             "warmup_item_ids": [str(item.item_id) for item in warmup_items],
             "warmup_groups": [str(item.group) for item in warmup_items],
             "vision_tower_patched": vt_patched,

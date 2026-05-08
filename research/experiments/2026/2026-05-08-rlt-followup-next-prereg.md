@@ -1,6 +1,6 @@
 # 2026-05-08 RLT/VLMaxxing Follow-Up Queue Preregistration
 
-Status: preregistered, not yet executed in this note.
+Status: round-17 queue executed; follow-up controls preregistered below.
 
 ## Context
 
@@ -14,8 +14,17 @@ The 2026-05-08 RLT follow-up run produced three reproduced-here facts:
   regresses, while lower prefill thresholds can recover positive prefill
   reduction by keeping both arms on the chunked path.
 
-The next queue is designed to close comparison and composition gaps without
-changing the paper source before the results exist.
+The round-17 queue then added three reproduced-here facts:
+
+- The old magnitude scorer is not a clean control: it budgets K over the padded
+  encoder row, while RLT and max-min budget K over valid encoder positions.
+- Incremental composition is positive on all three benchmarks, but it is not a
+  full dense-vs-composed measurement because both branches share RLT C-VISION.
+- TOMATO keep-rate sweep supports `keep_rate=0.5` as the current Pareto knee;
+  `0.3` is faster but visibly quality-stressed at n=30.
+
+The next queue closes those two remaining paper gaps without changing the paper
+source before the results exist.
 
 ## Local M3/M4-Class Queue
 
@@ -27,7 +36,9 @@ uv run python scripts/run_rlt_followup_queue.py \
   --run-cvision-expansion \
   --run-max-min-triangulation \
   --run-magnitude-head-to-head \
+  --run-magnitude-valid-head-to-head \
   --run-composition-incremental \
+  --run-composition-direct \
   --run-keep-rate-sweep
 ```
 
@@ -44,6 +55,22 @@ ceiling diagnostic are reported but not hard gates.
 Expected result: E2E within 1-3% of RLT on TOMATO/MVBench; quality is the
 unknown axis.
 
+### H1b: Valid-Position Magnitude Control
+
+Hypothesis: valid-position magnitude should recover a meaningful fraction of
+the old magnitude scorer's lost speed, because it no longer spends K on padded
+encoder slots. If it matches RLT on speed and quality, the paper should frame
+RLT primarily as a cheaper/pre-vision scorer. If it still loses, the stronger
+claim is that pixel-domain temporal motion is a better saliency signal for
+these video-QA workloads.
+
+Gate: same C-VISION core gates as H1. This control reuses dense baselines and
+therefore runs only after the RLT VideoMME gate.
+
+Expected result: VideoMME improves from the old magnitude `0.97x` regression;
+TOMATO/MVBench move closer to RLT but may still lag if hidden-state magnitude
+is a worse task-relevance signal.
+
 ### H2: Incremental Composition
 
 Hypothesis: RLT prompt admission adds a small positive gain on top of
@@ -58,6 +85,23 @@ placeholders versus RLT-pruned placeholders.
 
 Expected result: VideoMME near 1.00-1.02x incremental E2E. Quality failure kills
 the composition claim, but still supports the current C-VISION-only claim.
+
+### H2b: Direct Full Composition
+
+Hypothesis: dense baseline versus full RLT stack (`RLT-as-C-VISION + RLT prompt
+admission`, both at `prefill_step_size=1024`) should exceed the multiplicative
+estimate's lower bound but may not exactly equal the product because decode,
+generation length, and MLX chunking interact with the branch timings.
+
+Scope: this is the paper-facing full-stack measurement. It uses a dense
+reference artifact with no sparse vision and no placeholder admission, paired
+against a composed artifact with RLT sparse vision and RLT placeholder
+admission. It does not reuse the incremental-composition dense branch.
+
+Expected result: full dense-to-composed speedups in the neighborhood of the
+round-17 estimates: roughly VideoMME `1.08-1.12x`, TOMATO `1.35-1.45x`, MVBench
+`1.55-1.75x`. A miss falsifies the multiplicative-composition framing and
+should replace estimates with measured direct values.
 
 ### H3: Keep-Rate Pareto Sweep
 
@@ -89,10 +133,12 @@ Use the same Gemma family as the paper-scale target, not Gemma 3:
 uv run python scripts/run_rlt_followup_queue.py \
   --gemma-model-path "$HOME/models/gemma-4-26b-a4b-it-4bit" \
   --rss-guard-mb 60000 \
+  --mlx-memory-limit-gb 60 \
   --artifact-dir research/experiments/2026/artifacts/rlt_followup_queue_m5_gemma4_26b \
   --run-cvision-rlt \
   --run-cvision-expansion \
   --run-max-min-triangulation \
+  --run-magnitude-valid-head-to-head \
   --run-magnitude-head-to-head \
   --run-keep-rate-sweep
 ```
@@ -108,8 +154,10 @@ guards before any n=30 cells continue.
 
 1. If RLT C-VISION smoke fails pairing or schema, stop all model cells.
 2. If RLT VideoMME fails core C-VISION gates, skip expansion, max-min, magnitude,
-   composition, and keep-rate sweep.
+   valid-position magnitude, composition, and keep-rate sweep.
 3. If composition quality fails, do not claim composition; keep C-VISION-only
    claims intact.
-4. Keep-rate sweep runs only after the base RLT VideoMME gate because it is a
+4. Direct full composition supersedes multiplicative estimates wherever it
+   completes; estimates remain hypotheses only.
+5. Keep-rate sweep runs only after the base RLT VideoMME gate because it is a
    Pareto refinement, not a rescue path for a failed base method.

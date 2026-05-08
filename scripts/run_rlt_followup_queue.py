@@ -36,9 +36,15 @@ PHASE_ESTIMATES_HOURS = {
     "cvision-magnitude-videomme-n30": [0.8, 1.8],
     "cvision-magnitude-tomato-n30": [0.8, 1.6],
     "cvision-magnitude-mvbench-n30": [0.8, 1.6],
+    "cvision-magnitude-valid-videomme-n30": [0.8, 1.8],
+    "cvision-magnitude-valid-tomato-n30": [0.8, 1.6],
+    "cvision-magnitude-valid-mvbench-n30": [0.8, 1.6],
     "composition-rlt-videomme-n30": [0.6, 1.3],
     "composition-rlt-tomato-n30": [0.6, 1.2],
     "composition-rlt-mvbench-n30": [0.6, 1.2],
+    "full-composition-rlt-videomme-n30": [1.0, 2.2],
+    "full-composition-rlt-tomato-n30": [1.0, 2.0],
+    "full-composition-rlt-mvbench-n30": [1.0, 2.0],
     "cvision-kr-sweep-tomato": [1.2, 2.4],
     "cvision-kr-sweep-mvbench": [1.2, 2.4],
     "cvision-kr-sweep-videomme": [1.4, 3.0],
@@ -198,6 +204,7 @@ def _cvision_commands(
     frame_count: int,
     n_items: int,
     rss_guard_mb: int,
+    mlx_memory_limit_gb: float,
     label: str,
     expected_items: int,
     score_mode: str = "rlt_topk",
@@ -228,6 +235,8 @@ def _cvision_commands(
         str(model_path),
         "--rss-guard-mb",
         str(rss_guard_mb),
+        "--mlx-memory-limit-gb",
+        f"{mlx_memory_limit_gb:.6g}",
         "--resume",
         "--allow-dirty",
         "--warmup-items",
@@ -362,6 +371,98 @@ def _gemma_composition_commands(
     return [run_command, analyze_command]
 
 
+def _gemma_full_composition_commands(
+    *,
+    artifact_dir: Path,
+    manifest: Path,
+    model_path: Path,
+    frame_count: int,
+    n_items: int,
+    expected_items: int,
+    rss_guard_mb: int,
+    benchmark: str,
+    prefill_step_size: int = DEFAULT_COMPOSITION_PREFILL_STEP_SIZE,
+    vision_keep_rate: float = 0.5,
+) -> list[list[str]]:
+    dense_jsonl = artifact_dir / f"full_composition_dense_{benchmark}.jsonl"
+    dense_summary = artifact_dir / f"full_composition_dense_{benchmark}_summary.json"
+    composed_jsonl = artifact_dir / f"full_composition_rlt_{benchmark}.jsonl"
+    composed_summary = artifact_dir / f"full_composition_rlt_{benchmark}_summary.json"
+    analysis_path = artifact_dir / f"full_composition_rlt_{benchmark}_analysis.json"
+    paired_path = artifact_dir / f"full_composition_rlt_{benchmark}_paired.jsonl"
+    base = [
+        sys.executable,
+        "scripts/run_novelty_pruning_gemma.py",
+        "--manifest",
+        str(manifest),
+        "--frame-count",
+        str(frame_count),
+        "--anchor-arm",
+        "gemma_structural",
+        "--prefill-step-size",
+        str(prefill_step_size),
+        "--model-path",
+        str(model_path),
+        "--rss-guard-mb",
+        str(rss_guard_mb),
+        "--n-warmup",
+        "1",
+        "--arm-order",
+        "abba",
+        "--resume",
+    ]
+    dense = [
+        *base,
+        "--keep-rate",
+        "1.0",
+        "--prune-placeholders",
+        "none",
+        "--vision-tower-keep-rate",
+        "1.0",
+        "--output",
+        str(dense_jsonl),
+        "--summary",
+        str(dense_summary),
+    ]
+    composed = [
+        *base,
+        "--keep-rate",
+        "0.5",
+        "--prune-placeholders",
+        "rlt",
+        "--vision-tower-keep-rate",
+        f"{vision_keep_rate:.6g}",
+        "--vision-tower-score-mode",
+        "rlt_topk",
+        "--output",
+        str(composed_jsonl),
+        "--summary",
+        str(composed_summary),
+    ]
+    if n_items > 0:
+        dense.extend(["--n-items", str(n_items)])
+        composed.extend(["--n-items", str(n_items)])
+    analyze = [
+        sys.executable,
+        "scripts/analyze_gemma_full_composition.py",
+        "--dense-jsonl",
+        str(dense_jsonl),
+        "--composed-jsonl",
+        str(composed_jsonl),
+        "--output",
+        str(analysis_path),
+        "--paired-items",
+        str(paired_path),
+        "--expected-items",
+        str(expected_items),
+        "--bucket-min-n",
+        "5",
+        "--n-bootstrap",
+        "500",
+    ]
+    return [dense, composed, analyze]
+
+
 def _run_command_group(
     commands: list[list[str]], *, allow_failure: bool = True
 ) -> list[dict[str, Any]]:
@@ -447,6 +548,17 @@ def _phase_passed_prefill_same_path(analysis: dict[str, Any]) -> bool:
     )
 
 
+def _phase_passed_full_composition(analysis: dict[str, Any]) -> bool:
+    summary = analysis.get("summary")
+    return bool(
+        isinstance(summary, dict)
+        and summary.get("pass_fidelity")
+        and summary.get("pass_e2e_positive")
+        and summary.get("pass_parse_failure_delta")
+        and summary.get("pass_bucket_quality_and_e2e")
+    )
+
+
 def _parse_keep_rates(raw: str) -> list[float]:
     rates = [float(part.strip()) for part in raw.replace(",", " ").split() if part.strip()]
     if not rates:
@@ -467,6 +579,16 @@ def main() -> int:
     parser.add_argument("--mvbench-manifest", type=Path, default=DEFAULT_MVBENCH_MANIFEST)
     parser.add_argument("--frame-count", type=int, default=8)
     parser.add_argument("--rss-guard-mb", type=int, default=9000)
+    parser.add_argument(
+        "--mlx-memory-limit-gb",
+        type=float,
+        default=12.0,
+        help=(
+            "MLX allocator cap passed to Track-B C-VISION subprocesses. "
+            "Use a larger value or 0 on high-memory hosts such as the M5 "
+            "128GB machine; local default stays conservative for 16GB Macs."
+        ),
+    )
     parser.add_argument("--prefill-diagnostic-n-items", type=int, default=30)
     parser.add_argument("--cvision-n-items", type=int, default=30)
     parser.add_argument("--cooldown-after-microbench-seconds", type=float, default=180.0)
@@ -491,12 +613,30 @@ def main() -> int:
         ),
     )
     parser.add_argument(
+        "--run-magnitude-valid-head-to-head",
+        action="store_true",
+        help=(
+            "Run the hidden-state magnitude scorer with K budgeted over valid "
+            "Gemma encoder positions. This is the fair control for the old "
+            "padded-row magnitude scorer."
+        ),
+    )
+    parser.add_argument(
         "--run-composition-incremental",
         action="store_true",
         help=(
             "Run RLT prompt admission on top of RLT-as-C-VISION at "
             "the composition prefill step size. This measures incremental "
             "composition, not a full dense-vs-composed baseline."
+        ),
+    )
+    parser.add_argument(
+        "--run-composition-direct",
+        action="store_true",
+        help=(
+            "Run direct dense baseline versus RLT-as-C-VISION plus RLT prompt "
+            "admission at the same prefill step size. This is the paper-facing "
+            "full-stack composition cell."
         ),
     )
     parser.add_argument(
@@ -520,7 +660,7 @@ def main() -> int:
         default="tomato",
     )
     parser.add_argument("--cvision-keep-rates", default="0.3,0.5,0.7,0.85")
-    parser.add_argument("--max-planned-hours", type=float, default=28.0)
+    parser.add_argument("--max-planned-hours", type=float, default=40.0)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--summary", type=Path)
     args = parser.parse_args()
@@ -535,12 +675,18 @@ def main() -> int:
         raise SystemExit("--run-cvision-expansion requires --run-cvision-rlt")
     if args.run_magnitude_head_to_head and not args.run_cvision_rlt:
         raise SystemExit("--run-magnitude-head-to-head requires --run-cvision-rlt")
+    if args.run_magnitude_valid_head_to_head and not args.run_cvision_rlt:
+        raise SystemExit("--run-magnitude-valid-head-to-head requires --run-cvision-rlt")
     if args.run_composition_incremental and not args.run_cvision_rlt:
         raise SystemExit("--run-composition-incremental requires --run-cvision-rlt")
+    if args.run_composition_direct and not args.run_cvision_rlt:
+        raise SystemExit("--run-composition-direct requires --run-cvision-rlt")
     if args.run_keep_rate_sweep and not args.run_cvision_rlt:
         raise SystemExit("--run-keep-rate-sweep requires --run-cvision-rlt")
     if args.cooldown_after_microbench_seconds < 0:
         raise SystemExit("--cooldown-after-microbench-seconds must be nonnegative")
+    if args.mlx_memory_limit_gb < 0.0:
+        raise SystemExit("--mlx-memory-limit-gb must be nonnegative")
     if args.composition_prefill_step_size <= 0:
         raise SystemExit("--composition-prefill-step-size must be positive")
     keep_rates = _parse_keep_rates(args.cvision_keep_rates)
@@ -565,12 +711,28 @@ def main() -> int:
                 "cvision-magnitude-mvbench-n30",
             ]
         )
+    if args.run_magnitude_valid_head_to_head:
+        phases.extend(
+            [
+                "cvision-magnitude-valid-videomme-n30",
+                "cvision-magnitude-valid-tomato-n30",
+                "cvision-magnitude-valid-mvbench-n30",
+            ]
+        )
     if args.run_composition_incremental:
         phases.extend(
             [
                 "composition-rlt-videomme-n30",
                 "composition-rlt-tomato-n30",
                 "composition-rlt-mvbench-n30",
+            ]
+        )
+    if args.run_composition_direct:
+        phases.extend(
+            [
+                "full-composition-rlt-videomme-n30",
+                "full-composition-rlt-tomato-n30",
+                "full-composition-rlt-mvbench-n30",
             ]
         )
     if args.run_keep_rate_sweep:
@@ -617,6 +779,7 @@ def main() -> int:
         frame_count=args.frame_count,
         n_items=1,
         rss_guard_mb=args.rss_guard_mb,
+        mlx_memory_limit_gb=args.mlx_memory_limit_gb,
         label="cvision_rlt_smoke",
         expected_items=1,
         score_mode="rlt_topk",
@@ -628,6 +791,7 @@ def main() -> int:
         frame_count=args.frame_count,
         n_items=args.cvision_n_items,
         rss_guard_mb=args.rss_guard_mb,
+        mlx_memory_limit_gb=args.mlx_memory_limit_gb,
         label="cvision_rlt_videomme",
         expected_items=args.cvision_n_items,
         score_mode="rlt_topk",
@@ -639,6 +803,7 @@ def main() -> int:
         frame_count=args.frame_count,
         n_items=args.cvision_n_items,
         rss_guard_mb=args.rss_guard_mb,
+        mlx_memory_limit_gb=args.mlx_memory_limit_gb,
         label="cvision_maxmin_videomme",
         expected_items=args.cvision_n_items,
         score_mode="max_min_diversity",
@@ -651,6 +816,7 @@ def main() -> int:
             frame_count=args.frame_count,
             n_items=0,
             rss_guard_mb=args.rss_guard_mb,
+            mlx_memory_limit_gb=args.mlx_memory_limit_gb,
             label="cvision_rlt_tomato",
             expected_items=30,
             score_mode="rlt_topk",
@@ -662,6 +828,7 @@ def main() -> int:
             frame_count=args.frame_count,
             n_items=0,
             rss_guard_mb=args.rss_guard_mb,
+            mlx_memory_limit_gb=args.mlx_memory_limit_gb,
             label="cvision_rlt_mvbench",
             expected_items=30,
             score_mode="rlt_topk",
@@ -675,6 +842,7 @@ def main() -> int:
             frame_count=args.frame_count,
             n_items=0,
             rss_guard_mb=args.rss_guard_mb,
+            mlx_memory_limit_gb=args.mlx_memory_limit_gb,
             label="cvision_maxmin_tomato",
             expected_items=30,
             score_mode="max_min_diversity",
@@ -686,6 +854,7 @@ def main() -> int:
             frame_count=args.frame_count,
             n_items=0,
             rss_guard_mb=args.rss_guard_mb,
+            mlx_memory_limit_gb=args.mlx_memory_limit_gb,
             label="cvision_maxmin_mvbench",
             expected_items=30,
             score_mode="max_min_diversity",
@@ -709,9 +878,27 @@ def main() -> int:
             frame_count=args.frame_count,
             n_items=args.cvision_n_items if benchmark == "videomme" else 0,
             rss_guard_mb=args.rss_guard_mb,
+            mlx_memory_limit_gb=args.mlx_memory_limit_gb,
             label=f"cvision_magnitude_{benchmark}",
             expected_items=benchmark_expected_items[benchmark],
             score_mode="magnitude",
+            dense_source_label=f"cvision_rlt_{benchmark}",
+            include_dense_command=False,
+        )
+        for benchmark, manifest in benchmark_manifests.items()
+    }
+    magnitude_valid_commands = {
+        benchmark: _cvision_commands(
+            artifact_dir=args.artifact_dir,
+            manifest=manifest,
+            model_path=args.gemma_model_path,
+            frame_count=args.frame_count,
+            n_items=args.cvision_n_items if benchmark == "videomme" else 0,
+            rss_guard_mb=args.rss_guard_mb,
+            mlx_memory_limit_gb=args.mlx_memory_limit_gb,
+            label=f"cvision_magnitude_valid_{benchmark}",
+            expected_items=benchmark_expected_items[benchmark],
+            score_mode="magnitude_valid",
             dense_source_label=f"cvision_rlt_{benchmark}",
             include_dense_command=False,
         )
@@ -730,6 +917,20 @@ def main() -> int:
         )
         for benchmark, manifest in benchmark_manifests.items()
     }
+    full_composition_commands = {
+        benchmark: _gemma_full_composition_commands(
+            artifact_dir=args.artifact_dir,
+            manifest=manifest,
+            model_path=args.gemma_model_path,
+            frame_count=args.frame_count,
+            n_items=args.cvision_n_items if benchmark == "videomme" else 0,
+            expected_items=benchmark_expected_items[benchmark],
+            rss_guard_mb=args.rss_guard_mb,
+            benchmark=benchmark,
+            prefill_step_size=args.composition_prefill_step_size,
+        )
+        for benchmark, manifest in benchmark_manifests.items()
+    }
     sweep_manifest = benchmark_manifests[args.keep_rate_sweep_benchmark]
     sweep_expected_items = benchmark_expected_items[args.keep_rate_sweep_benchmark]
     keep_rate_sweep_commands = {
@@ -740,6 +941,7 @@ def main() -> int:
             frame_count=args.frame_count,
             n_items=(args.cvision_n_items if args.keep_rate_sweep_benchmark == "videomme" else 0),
             rss_guard_mb=args.rss_guard_mb,
+            mlx_memory_limit_gb=args.mlx_memory_limit_gb,
             label=(f"cvision_rlt_{args.keep_rate_sweep_benchmark}_kr{int(round(rate * 100)):03d}"),
             expected_items=sweep_expected_items,
             score_mode="rlt_topk",
@@ -793,11 +995,29 @@ def main() -> int:
                 }
                 for c in phase_commands
             )
+    if args.run_magnitude_valid_head_to_head:
+        for benchmark, phase_commands in magnitude_valid_commands.items():
+            planned.extend(
+                {
+                    "phase": f"cvision_magnitude_valid_{benchmark}_if_rlt_videomme_core_passes",
+                    "command": c,
+                }
+                for c in phase_commands
+            )
     if args.run_composition_incremental:
         for benchmark, phase_commands in composition_commands.items():
             planned.extend(
                 {
                     "phase": f"composition_rlt_{benchmark}_if_rlt_videomme_core_passes",
+                    "command": c,
+                }
+                for c in phase_commands
+            )
+    if args.run_composition_direct:
+        for benchmark, phase_commands in full_composition_commands.items():
+            planned.extend(
+                {
+                    "phase": f"full_composition_rlt_{benchmark}_if_rlt_videomme_core_passes",
                     "command": c,
                 }
                 for c in phase_commands
@@ -1043,6 +1263,25 @@ def main() -> int:
                 "reason": "cvision_magnitude_requires_rlt_videomme_pass",
             }
         )
+    if args.run_magnitude_valid_head_to_head and cvision_videomme_passed:
+        for benchmark, phase_commands in magnitude_valid_commands.items():
+            magnitude_valid_results = _run_command_group(phase_commands)
+            commands.extend(magnitude_valid_results)
+            magnitude_valid_analysis = _read_analysis_after_success(
+                results=magnitude_valid_results,
+                path=args.artifact_dir / f"cvision_magnitude_valid_{benchmark}_analysis.json",
+                phase=f"cvision_magnitude_valid_{benchmark}",
+                decisions=decisions,
+            )
+            if magnitude_valid_analysis is not None:
+                analyses[f"cvision_magnitude_valid_{benchmark}"] = magnitude_valid_analysis
+    elif args.run_magnitude_valid_head_to_head and not cvision_videomme_passed:
+        decisions.append(
+            {
+                "decision": "skip",
+                "reason": "cvision_magnitude_valid_requires_rlt_videomme_pass",
+            }
+        )
     if args.run_composition_incremental and cvision_videomme_passed:
         for benchmark, phase_commands in composition_commands.items():
             composition_results = _run_command_group(phase_commands)
@@ -1072,6 +1311,34 @@ def main() -> int:
             {
                 "decision": "skip",
                 "reason": "composition_requires_rlt_videomme_pass",
+            }
+        )
+    if args.run_composition_direct and cvision_videomme_passed:
+        for benchmark, phase_commands in full_composition_commands.items():
+            full_composition_results = _run_command_group(phase_commands)
+            commands.extend(full_composition_results)
+            full_composition_analysis = _read_analysis_after_success(
+                results=full_composition_results,
+                path=args.artifact_dir / f"full_composition_rlt_{benchmark}_analysis.json",
+                phase=f"full_composition_rlt_{benchmark}",
+                decisions=decisions,
+            )
+            if full_composition_analysis is not None:
+                analyses[f"full_composition_rlt_{benchmark}"] = full_composition_analysis
+                if not _phase_passed_full_composition(full_composition_analysis):
+                    decisions.append(
+                        {
+                            "decision": "continue",
+                            "reason": f"full_composition_rlt_{benchmark}_did_not_earn_gate",
+                            "phase": f"full_composition_rlt_{benchmark}",
+                            "details": full_composition_analysis.get("decisions", []),
+                        }
+                    )
+    elif args.run_composition_direct and not cvision_videomme_passed:
+        decisions.append(
+            {
+                "decision": "skip",
+                "reason": "full_composition_requires_rlt_videomme_pass",
             }
         )
     if args.run_keep_rate_sweep and cvision_videomme_passed:

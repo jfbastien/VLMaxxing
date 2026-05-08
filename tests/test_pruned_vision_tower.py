@@ -14,7 +14,7 @@ if not mlx_is_usable():
 
 import mlx.core as mx
 
-from codec_through.pruned_vision_tower import _keep_indices
+from codec_through.pruned_vision_tower import _keep_indices, magnitude_valid_keep_mask
 
 
 def test_keep_indices_hard_fails_variable_row_counts() -> None:
@@ -61,3 +61,53 @@ def test_keep_indices_accepts_uniform_row_counts() -> None:
     assert indices.shape == (2, 2)
     rows = cast(list[list[int]], indices.tolist())
     assert [sorted(row) for row in rows] == [[0, 2], [1, 3]]
+
+
+def test_magnitude_valid_keep_mask_never_selects_padded_positions() -> None:
+    hidden = mx.array(
+        [
+            [
+                [1.0],
+                [2.0],
+                [3.0],
+                [1000.0],
+                [900.0],
+                [800.0],
+            ]
+        ]
+    )
+    positions = mx.array(
+        [
+            [
+                [0, 0],
+                [0, 1],
+                [0, 2],
+                [-1, -1],
+                [-1, -1],
+                [-1, -1],
+            ]
+        ]
+    )
+
+    keep = magnitude_valid_keep_mask(hidden, positions, keep_rate=2 / 3)
+
+    kept = cast(list[list[bool]], keep.tolist())
+    assert kept == [[False, True, True, False, False, False]]
+
+
+def test_magnitude_valid_keep_mask_hard_fails_nonuniform_k() -> None:
+    hidden = mx.array(
+        [
+            [[1.0], [2.0], [3.0], [4.0]],
+            [[1.0], [2.0], [3.0], [4.0]],
+        ]
+    )
+    positions = mx.array(
+        [
+            [[0, 0], [0, 1], [0, 2], [-1, -1]],
+            [[0, 0], [0, 1], [0, 2], [0, 3]],
+        ]
+    )
+
+    with pytest.raises(ValueError, match="uniform K"):
+        magnitude_valid_keep_mask(hidden, positions, keep_rate=0.5)
