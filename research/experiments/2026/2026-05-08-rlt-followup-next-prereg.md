@@ -67,6 +67,8 @@ uv run python scripts/run_rlt_followup_queue.py \
   --run-composition-rescue \
   --run-composition-holdout \
   --run-composition-rescue-holdout \
+  --run-moving-attribute-bracket \
+  --run-composition-combined-analysis \
   --run-keep-rate-sweep
 ```
 
@@ -158,6 +160,25 @@ class-conditional policy around `1.45-1.70x`; failure would say fine-grained
 attribute/interaction questions need query-aware or static-detail protection,
 not just more tokens in the same RLT policy.
 
+### H2d: MVBench Moving-Attribute Dense-Bracket
+
+Hypothesis: if `moving_attribute` is merely token-budget-bound, then setting
+that bucket to `keep_rate=1.0` while preserving the known `object_interaction`
+rescue at `0.85` should recover the bucket. If it does not recover, the failure
+is structural: RLT's motion prior is dropping static appearance evidence that
+must be protected by query-aware/static-detail routing rather than more of the
+same motion-ranked tokens.
+
+Scope: `--run-moving-attribute-bracket` runs one MVBench full-composition cell:
+`moving_attribute=1.0`, `object_interaction=0.85`, all other groups at the base
+`0.5` keep-rate. It is not a new headline policy unless it recovers quality
+with measured E2E still above `1.0`; its primary role is diagnosis.
+
+Expected result: if `moving_attribute` remains near the dev-slice `Delta acc =
+-0.50`, query-aware/static-detail routing becomes the right next branch. If it
+recovers, the current paper should frame the failure as budget-bound and use a
+per-bucket dense fallback or higher-K policy for that class.
+
 ### H3: Keep-Rate Pareto Sweep
 
 Hypothesis: the Pareto knee for RLT-as-C-VISION is around `keep_rate=0.4-0.5`
@@ -183,6 +204,10 @@ Scope: `--run-composition-holdout` uses the existing holdout manifests:
 - `tomato_motion_holdout_v2.toml` (`30` items)
 - `mvbench_motion_holdout_v2.toml` (`30` items, `6` per group)
 
+Footgun: `videomme_combined_v1_n60.toml` is the dev+holdout superset. Dev-only
+and holdout-only replication must use `videomme_dev_v1.toml` and
+`videomme_holdout_v1.toml` explicitly when the boundary matters.
+
 Gate: run only after the RLT VideoMME core C-VISION gate passes. Each benchmark
 must independently clear aggregate fidelity, positive measured E2E,
 sparse-induced parse-failure parity, and bucket-level quality+E2E. If a direct
@@ -195,6 +220,22 @@ TOMATO should remain positive if the dev result was not slice-specific; MVBench
 is the decisive replication. If holdout MVBench again shows large speed with a
 `moving_attribute` failure, the paper should promote the failure as the
 query-aware motivation rather than tune another global RLT keep-rate.
+
+### H4b: Pooled Dev+Holdout Analysis
+
+Hypothesis: pooling dev and holdout rows after both have been measured should
+tighten confidence intervals without changing the qualitative result. This is
+an analyzer-only pass; it is not a new measurement.
+
+Scope: `--run-composition-combined-analysis` runs n=60 analyzer passes for
+direct full composition and rescue composition by concatenating the paired dev
+and holdout JSONLs. It requires both source artifacts to exist and hard-fails
+on duplicate item IDs.
+
+Expected result: the n=60 direct and rescue summaries should either confirm the
+dev narrative with tighter CIs, or reveal that the dev slice was too optimistic.
+If dev and holdout disagree materially, the paper should report replication
+variance instead of a single pooled headline.
 
 ### Ceiling Diagnostic Note
 
@@ -211,8 +252,10 @@ parse failures.
 Use the same Gemma family as the paper-scale target, not Gemma 3:
 
 ```bash
+export GEMMA_MODEL_PATH=/path/to/sams/gemma-4-26b-or-paper-target-mlx-model
 uv run python scripts/run_rlt_followup_queue.py \
-  --gemma-model-path "$HOME/models/gemma-4-26b-a4b-it-4bit" \
+  --gemma-model-path "$GEMMA_MODEL_PATH" \
+  --frame-count 8 \
   --rss-guard-mb 60000 \
   --mlx-memory-limit-gb 60 \
   --artifact-dir research/experiments/2026/artifacts/rlt_followup_queue_m5_gemma4_26b \
@@ -225,6 +268,8 @@ uv run python scripts/run_rlt_followup_queue.py \
   --run-composition-rescue \
   --run-composition-holdout \
   --run-composition-rescue-holdout \
+  --run-moving-attribute-bracket \
+  --run-composition-combined-analysis \
   --run-keep-rate-sweep
 ```
 
@@ -234,8 +279,18 @@ while RLT scoring stays raw-pixel-domain. Composition and rescue cells now pass
 the same `--mlx-memory-limit-gb` cap as Track-B C-VISION cells so high-memory
 runs fail inside MLX rather than through whole-system memory pressure.
 
+Operational blocker before M5 launch: verify the exact model directory and
+`model.config.model_type` on Sam's machine with an n=1 smoke. Do not assume a
+username or the illustrative path above; `$GEMMA_MODEL_PATH` must point to the
+actual MLX model used by this paper's Gemma-family scale check.
+
 First gate on M5: n=1 smoke must pass shape, schema, scorer-timing, and memory
 guards before any n=30 cells continue.
+
+The M5 block intentionally skips `--run-composition-incremental`: direct
+dense-vs-full-composition supersedes the incremental cell for the paper-facing
+scale check. It also keeps `--frame-count 8` explicit to avoid mixing in the
+known non-monotonic frame-count effects from earlier scale studies.
 
 ## Cancellation Tree
 
@@ -251,5 +306,11 @@ guards before any n=30 cells continue.
 6. Holdout composition is the replication gate. Dev-slice full composition
    should not become the headline unless the corresponding holdout cell supports
    it or the paper explicitly labels the dev result as exploratory.
-7. Keep-rate sweep runs only after the base RLT VideoMME gate because it is a
+7. The moving-attribute bracket runs only after the base RLT VideoMME gate and
+   answers a diagnostic question: budget-bound failure versus structural
+   query-aware/static-detail need.
+8. Pooled dev+holdout analysis runs only after source artifacts exist. It
+   increases analysis power but does not replace reporting dev/holdout
+   replication separately when they disagree.
+9. Keep-rate sweep runs only after the base RLT VideoMME gate because it is a
    Pareto refinement, not a rescue path for a failed base method.

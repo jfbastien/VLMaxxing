@@ -100,6 +100,70 @@ def test_full_composition_analyzer_pairs_dense_reference_against_composed(tmp_pa
     assert len(paired.read_text().strip().splitlines()) == 5
 
 
+def test_full_composition_analyzer_combines_disjoint_sources(tmp_path: Path) -> None:
+    dense_dev = tmp_path / "dense_dev.jsonl"
+    composed_dev = tmp_path / "composed_dev.jsonl"
+    dense_holdout = tmp_path / "dense_holdout.jsonl"
+    composed_holdout = tmp_path / "composed_holdout.jsonl"
+    output = tmp_path / "analysis.json"
+    paired = tmp_path / "paired.jsonl"
+    dev_items = [
+        _row(f"dev-{idx}", group="short", dense_correct=True, pruned_correct=True)
+        for idx in range(5)
+    ]
+    holdout_items = [
+        _row(f"holdout-{idx}", group="short", dense_correct=True, pruned_correct=True)
+        for idx in range(5)
+    ]
+    dense_schema = _schema(prune_placeholders="none", vision_keep_rate=1.0)
+    composed_schema = _schema(prune_placeholders="rlt", vision_keep_rate=0.5)
+    _write_jsonl(dense_dev, [dense_schema, *dev_items])
+    _write_jsonl(composed_dev, [composed_schema, *dev_items])
+    _write_jsonl(dense_holdout, [dense_schema, *holdout_items])
+    _write_jsonl(composed_holdout, [composed_schema, *holdout_items])
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/analyze_gemma_full_composition.py",
+            "--dense-jsonl",
+            str(dense_dev),
+            "--dense-jsonl",
+            str(dense_holdout),
+            "--composed-jsonl",
+            str(composed_dev),
+            "--composed-jsonl",
+            str(composed_holdout),
+            "--output",
+            str(output),
+            "--paired-items",
+            str(paired),
+            "--expected-items",
+            "10",
+            "--bucket-min-n",
+            "10",
+            "--n-bootstrap",
+            "50",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    analysis = json.loads(output.read_text())
+    assert analysis["summary"]["n_items"] == 10
+    assert analysis["source_pairs"] == [
+        {"dense_jsonl": str(dense_dev), "composed_jsonl": str(composed_dev), "n_items": 5},
+        {
+            "dense_jsonl": str(dense_holdout),
+            "composed_jsonl": str(composed_holdout),
+            "n_items": 5,
+        },
+    ]
+    assert len(paired.read_text().strip().splitlines()) == 10
+
+
 def test_full_composition_analyzer_rejects_sparse_dense_reference(tmp_path: Path) -> None:
     dense = tmp_path / "dense.jsonl"
     composed = tmp_path / "composed.jsonl"

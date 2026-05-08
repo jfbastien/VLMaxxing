@@ -50,6 +50,9 @@ Local preliminary facts, all reproduced here:
   row near `1.9x` E2E, but quality is not uniformly clean.
 - Bucket-specific rescue by raising keep-rate to `0.85` recovers MVBench
   `object_interaction`, but does **not** recover MVBench `moving_attribute`.
+  On the dev slice, `moving_attribute` stayed at dense accuracy `0.833`,
+  composed accuracy `0.333`, and `Delta acc = -0.50` under both the base
+  `keep_rate=0.5` composition and the `moving_attribute=0.85` rescue policy.
 
 That last point is the discovery. `moving_attribute` asks questions such as
 which object has what attribute while motion is occurring. A motion-only scorer
@@ -143,7 +146,8 @@ Mapping:
 | table statistics | frame/token redundancy statistics |
 | index scan | cheap motion/RLT pass |
 | join order | order of visual evidence acquisition |
-| adaptive query processing | repair pass after low confidence |
+| System R-style static plan | choose the initial evidence mix from query class and cost |
+| Eddies-style adaptive routing | repair pass or re-ordering after low confidence |
 | cost model | E2E latency model with vision/decode/generate shares |
 | exact answer | paired VLM fidelity target |
 
@@ -179,14 +183,26 @@ floor reserves evidence that motion ranking may never surface.
 Falsification: raising RLT K and adding a static-detail floor produce the same
 per-item repairs and the same errors.
 
-### H4: The right unit is an evidence plan, not a token scorer
+### H4A: Structured evidence plans beat scalar token scores
 
 A single scalar token score cannot express "keep endpoint frame at higher
 resolution, keep object-pair coverage, and keep motion deltas elsewhere."
 Query-aware routing should choose a structured plan.
 
-Falsification: a scalar text-guided token scorer dominates structured planning
-on quality, E2E, and implementation cost.
+Falsification: a strong scalar query-aware scorer, such as FlashVLM-style
+text-guided token scoring, matches or beats structured plans on paired fidelity
+under the same valid-position budget, including fixed and random coverage
+controls.
+
+### H4B: Planner benefit survives total-cost accounting
+
+An evidence plan is only useful if the quality it recovers is worth the scorer,
+planner, repair, and re-prefill costs it adds. The unit of comparison is the
+full measured runtime, not just mask quality.
+
+Falsification: the structured planner recovers quality but loses E2E to a
+simpler policy such as higher fixed RLT K, fixed static coverage, or dense
+fallback after all costs are counted.
 
 ## Candidate Experiments
 
@@ -272,6 +288,10 @@ plans.
 
 Falsify if query-conditioned generation length or substrate effects dominate
 the cost model without a usable correction.
+
+This is secondary scope. A cost model makes the paper stronger, but the first
+paper can stand on Q1-Q5 if the measured policy beats fixed/random coverage and
+simple scalar scorers under total-cost accounting.
 
 ## What Would Make This A Separate Paper
 
@@ -376,6 +396,31 @@ for pre-vision evidence planning, but it is a necessary comparator.
 Guardrail paper. Treat its critique as mandatory: compare against random and
 fixed coverage, and be skeptical of attention/language-guided scores unless
 they beat simple baselines under matched evaluation.
+
+- [Frame-Voyager: Learning to Query Frames for Video Large Language Models,
+  ICLR 2025 / arXiv 2410.03226](https://arxiv.org/abs/2410.03226)
+
+Use: venue-backed evidence that frame selection should be conditioned on the
+textual query and can be learned from Video-LLM loss rankings. Boundary:
+trained frame-combination selection, not training-free token routing or a
+pre-vision C-VISION scorer. This is the closest prior to the "evidence plan"
+idea; the proposed paper must explain why costed, training-free token/frame
+planning is different from a learned frame-combination policy.
+
+- [M-LLM Based Video Frame Selection for Efficient Video Understanding, CVPR
+  2025 / arXiv 2502.19680](https://arxiv.org/abs/2502.19680)
+
+Use: trained query-adaptive frame selector with spatial and temporal
+pseudo-labeling. Boundary: frame-level selection with extra model/scorer cost,
+not structured token-budget planning inside C-VISION.
+
+- [FlashVLM: Text-Guided Visual Token Selection for Large Multimodal Models,
+  arXiv 2512.20561](https://arxiv.org/abs/2512.20561)
+
+Use: text-guided scalar visual-token scoring baseline. Boundary:
+under-submission preprint; cite as preprint only. It is a key H4A comparator
+because a strong scalar token scorer could falsify the need for structured
+evidence plans.
 
 ### Database query planning analogy
 

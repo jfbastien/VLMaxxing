@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 from typing import Any
 
@@ -159,12 +160,116 @@ def test_holdout_dry_run_plans_disjoint_direct_and_rescue_cells(tmp_path: Path) 
     assert any(
         "--group-keep-rates" in command
         and "moving_attribute=0.85,object_interaction=0.85" in command
+        and "research/benchmark_manifests/mvbench_motion_holdout_v2.toml" in command
         and any(
             arg.endswith("full_composition_rlt_rescue_holdout_mvbench_composed.jsonl")
             for arg in command
         )
         for command in commands
     )
+
+
+def test_benchmark_holdout_manifests_are_disjoint_from_dev() -> None:
+    def manifest_item_ids(path: Path) -> set[str]:
+        payload = tomllib.loads(path.read_text(encoding="utf-8"))
+        if "item_ids" in payload:
+            return {str(item_id) for item_id in payload["item_ids"]}
+        return {str(item["id"]) for item in payload["items"]}
+
+    pairs = [
+        (
+            Path("research/benchmark_manifests/videomme_dev_v1.toml"),
+            Path("research/benchmark_manifests/videomme_holdout_v1.toml"),
+        ),
+        (
+            Path("research/benchmark_manifests/tomato_motion_dev_v2.toml"),
+            Path("research/benchmark_manifests/tomato_motion_holdout_v2.toml"),
+        ),
+        (
+            Path("research/benchmark_manifests/mvbench_motion_dev_v2.toml"),
+            Path("research/benchmark_manifests/mvbench_motion_holdout_v2.toml"),
+        ),
+    ]
+    for dev_path, holdout_path in pairs:
+        assert manifest_item_ids(dev_path).isdisjoint(manifest_item_ids(holdout_path)), (
+            dev_path,
+            holdout_path,
+        )
+
+
+def test_moving_attribute_bracket_dry_run_plans_kr100_cell(tmp_path: Path) -> None:
+    summary_path = tmp_path / "summary.json"
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_rlt_followup_queue.py",
+            "--run-cvision-rlt",
+            "--run-moving-attribute-bracket",
+            "--dry-run",
+            "--summary",
+            str(summary_path),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(summary_path.read_text(encoding="utf-8"))
+    commands = [item["command"] for item in payload["planned_commands"]]
+
+    assert any(
+        "--group-keep-rates" in command
+        and "moving_attribute=1,object_interaction=0.85" in command
+        and any(
+            arg.endswith("full_composition_rlt_mvbench_moving_attribute_kr100_composed.jsonl")
+            for arg in command
+        )
+        for command in commands
+    )
+
+
+def test_combined_composition_analysis_dry_run_uses_dev_and_holdout_jsonls(
+    tmp_path: Path,
+) -> None:
+    summary_path = tmp_path / "summary.json"
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_rlt_followup_queue.py",
+            "--run-cvision-rlt",
+            "--run-composition-combined-analysis",
+            "--dry-run",
+            "--summary",
+            str(summary_path),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(summary_path.read_text(encoding="utf-8"))
+    commands = [item["command"] for item in payload["planned_commands"]]
+    combined = next(
+        command
+        for command in commands
+        if any(
+            arg.endswith("full_composition_rlt_combined_mvbench_analysis.json") for arg in command
+        )
+    )
+
+    assert combined.count("--dense-jsonl") == 2
+    assert combined.count("--composed-jsonl") == 2
+    assert (
+        "research/experiments/2026/artifacts/rlt_followup_queue/"
+        "full_composition_dense_mvbench.jsonl"
+    ) in combined
+    assert (
+        "research/experiments/2026/artifacts/rlt_followup_queue/"
+        "full_composition_rlt_holdout_mvbench_composed.jsonl"
+    ) in combined
+    assert combined[combined.index("--expected-items") + 1] == "60"
 
 
 def test_cvision_commands_can_reuse_dense_and_set_keep_rate(tmp_path: Path) -> None:

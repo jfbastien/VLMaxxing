@@ -154,16 +154,23 @@ duration-conditional partial reproduction + 1.55D frontier-partial):
    better point-estimate quality. The stronger, defensible claim is that a
    cheap raw-frame motion prior reaches the same speed class as a much more
    expensive learned scorer and beats both old magnitude controls on this
-   stack.
+   stack. The valid-position magnitude control was preregistered and falsified:
+   fixing the padded-row K budget did **not** close the gap. RLT's advantage is
+   therefore the saliency signal, not just accounting.
 
    Direct RLT full composition is high-upside but not yet a clean headline:
-   VideoMME/TOMATO/MVBench dev cells land positive E2E, including a MVBench
-   speed-frontier row near `1.9x`, but rescue still fails the preregistered
-   bucket gate on `moving_attribute`. Treat composition as benchmark- and
-   bucket-conditional until disjoint holdout direct+rescue rows reproduce the
-   effect. The `moving_attribute` miss is a valuable future-work signal for
-   query-aware/static-detail routing, not a reason to tune another global RLT
-   keep-rate on this branch.
+   VideoMME/TOMATO/MVBench dev cells land positive E2E. The MVBench direct
+   speed-frontier row is **1.899×** with `Delta acc=-0.167`; the rescue policy
+   that raises K on `moving_attribute` and `object_interaction` lands around
+   **1.403×** while recovering `object_interaction` but still missing
+   `moving_attribute`. Treat composition as benchmark- and bucket-conditional
+   until disjoint holdout direct+rescue rows reproduce the effect. Also do not
+   use multiplicative Amdahl products as composition claims: direct
+   measurement under- and over-shoots component products depending on
+   benchmark, so the methodology contribution is "measure the composition,
+   do not multiply the components." The `moving_attribute` miss is a valuable
+   future-work signal for query-aware/static-detail routing, not a reason to
+   tune another global RLT keep-rate on this branch.
 
 These three claims align on a common analytical frame: **share ×
 reduction → `1/(1 − share × reduction)` ceiling**, with

@@ -34,6 +34,14 @@ ADAPTIVE_COMPOSITION_GROUP_KEEP_RATES: dict[str, dict[str, float]] = {
     "tomato": {"direction": 0.85},
     "mvbench": {"moving_attribute": 0.85, "object_interaction": 0.85},
 }
+MVBENCH_MOVING_ATTRIBUTE_BRACKET_KEEP_RATES: dict[str, float] = {
+    # Round-19 rescue recovered object_interaction at 0.85 but not
+    # moving_attribute. This bracket keeps the known rescue for
+    # object_interaction while testing whether full retention recovers the
+    # remaining moving_attribute failure.
+    "moving_attribute": 1.0,
+    "object_interaction": 0.85,
+}
 
 PHASE_ESTIMATES_HOURS = {
     "prefill-kernel-microbench": [0.35, 1.35],
@@ -67,6 +75,13 @@ PHASE_ESTIMATES_HOURS = {
     "full-composition-rlt-rescue-holdout-videomme-n30": [1.0, 2.2],
     "full-composition-rlt-rescue-holdout-tomato-n30": [1.0, 2.0],
     "full-composition-rlt-rescue-holdout-mvbench-n30": [1.0, 2.0],
+    "full-composition-rlt-mvbench-moving-attribute-kr100-n30": [1.0, 2.0],
+    "full-composition-rlt-combined-videomme-n60-analysis": [0.02, 0.08],
+    "full-composition-rlt-combined-tomato-n60-analysis": [0.02, 0.08],
+    "full-composition-rlt-combined-mvbench-n60-analysis": [0.02, 0.08],
+    "full-composition-rlt-rescue-combined-videomme-n60-analysis": [0.02, 0.08],
+    "full-composition-rlt-rescue-combined-tomato-n60-analysis": [0.02, 0.08],
+    "full-composition-rlt-rescue-combined-mvbench-n60-analysis": [0.02, 0.08],
     "cvision-kr-sweep-tomato": [1.2, 2.4],
     "cvision-kr-sweep-mvbench": [1.2, 2.4],
     "cvision-kr-sweep-videomme": [1.4, 3.0],
@@ -523,6 +538,41 @@ def _gemma_full_composition_commands(
     return [dense, composed, analyze]
 
 
+def _gemma_full_composition_combined_analysis_command(
+    *,
+    artifact_dir: Path,
+    dense_jsonls: list[Path],
+    composed_jsonls: list[Path],
+    expected_items: int,
+    output_label: str,
+) -> list[str]:
+    output = artifact_dir / f"{output_label}_analysis.json"
+    paired = artifact_dir / f"{output_label}_paired.jsonl"
+    command = [
+        sys.executable,
+        "scripts/analyze_gemma_full_composition.py",
+    ]
+    for dense_jsonl in dense_jsonls:
+        command.extend(["--dense-jsonl", str(dense_jsonl)])
+    for composed_jsonl in composed_jsonls:
+        command.extend(["--composed-jsonl", str(composed_jsonl)])
+    command.extend(
+        [
+            "--output",
+            str(output),
+            "--paired-items",
+            str(paired),
+            "--expected-items",
+            str(expected_items),
+            "--bucket-min-n",
+            "10",
+            "--n-bootstrap",
+            "1000",
+        ]
+    )
+    return command
+
+
 def _run_command_group(
     commands: list[list[str]], *, allow_failure: bool = True
 ) -> list[dict[str, Any]]:
@@ -740,6 +790,23 @@ def main() -> int:
         ),
     )
     parser.add_argument(
+        "--run-moving-attribute-bracket",
+        action="store_true",
+        help=(
+            "Run an MVBench full-composition bracket cell with moving_attribute "
+            "at kr=1.0 and object_interaction at the known rescue kr=0.85. "
+            "This distinguishes budget-bound failure from structural query need."
+        ),
+    )
+    parser.add_argument(
+        "--run-composition-combined-analysis",
+        action="store_true",
+        help=(
+            "After dev and holdout direct-composition artifacts exist, run pooled "
+            "n=60 analyzer passes for direct and rescue composition claims."
+        ),
+    )
+    parser.add_argument(
         "--composition-prefill-step-size",
         type=int,
         default=DEFAULT_COMPOSITION_PREFILL_STEP_SIZE,
@@ -787,6 +854,10 @@ def main() -> int:
         raise SystemExit("--run-composition-holdout requires --run-cvision-rlt")
     if args.run_composition_rescue_holdout and not args.run_cvision_rlt:
         raise SystemExit("--run-composition-rescue-holdout requires --run-cvision-rlt")
+    if args.run_moving_attribute_bracket and not args.run_cvision_rlt:
+        raise SystemExit("--run-moving-attribute-bracket requires --run-cvision-rlt")
+    if args.run_composition_combined_analysis and not args.run_cvision_rlt:
+        raise SystemExit("--run-composition-combined-analysis requires --run-cvision-rlt")
     if args.run_keep_rate_sweep and not args.run_cvision_rlt:
         raise SystemExit("--run-keep-rate-sweep requires --run-cvision-rlt")
     if args.cooldown_after_microbench_seconds < 0:
@@ -863,6 +934,19 @@ def main() -> int:
                 "full-composition-rlt-rescue-holdout-videomme-n30",
                 "full-composition-rlt-rescue-holdout-tomato-n30",
                 "full-composition-rlt-rescue-holdout-mvbench-n30",
+            ]
+        )
+    if args.run_moving_attribute_bracket:
+        phases.append("full-composition-rlt-mvbench-moving-attribute-kr100-n30")
+    if args.run_composition_combined_analysis:
+        phases.extend(
+            [
+                "full-composition-rlt-combined-videomme-n60-analysis",
+                "full-composition-rlt-combined-tomato-n60-analysis",
+                "full-composition-rlt-combined-mvbench-n60-analysis",
+                "full-composition-rlt-rescue-combined-videomme-n60-analysis",
+                "full-composition-rlt-rescue-combined-tomato-n60-analysis",
+                "full-composition-rlt-rescue-combined-mvbench-n60-analysis",
             ]
         )
     if args.run_keep_rate_sweep:
@@ -1127,6 +1211,54 @@ def main() -> int:
         )
         for benchmark, manifest in holdout_manifests.items()
     }
+    moving_attribute_bracket_commands = _gemma_full_composition_commands(
+        artifact_dir=args.artifact_dir,
+        manifest=args.mvbench_manifest,
+        model_path=args.gemma_model_path,
+        frame_count=args.frame_count,
+        n_items=0,
+        expected_items=30,
+        rss_guard_mb=args.rss_guard_mb,
+        mlx_memory_limit_gb=args.mlx_memory_limit_gb,
+        benchmark="mvbench",
+        prefill_step_size=args.composition_prefill_step_size,
+        label="full_composition_rlt_mvbench_moving_attribute_kr100",
+        group_keep_rates=MVBENCH_MOVING_ATTRIBUTE_BRACKET_KEEP_RATES,
+        group_vision_keep_rates=MVBENCH_MOVING_ATTRIBUTE_BRACKET_KEEP_RATES,
+    )
+    full_composition_combined_commands = {
+        benchmark: _gemma_full_composition_combined_analysis_command(
+            artifact_dir=args.artifact_dir,
+            dense_jsonls=[
+                args.artifact_dir / f"full_composition_dense_{benchmark}.jsonl",
+                args.artifact_dir / f"full_composition_rlt_holdout_{benchmark}_dense.jsonl",
+            ],
+            composed_jsonls=[
+                args.artifact_dir / f"full_composition_rlt_{benchmark}.jsonl",
+                args.artifact_dir / f"full_composition_rlt_holdout_{benchmark}_composed.jsonl",
+            ],
+            expected_items=60,
+            output_label=f"full_composition_rlt_combined_{benchmark}",
+        )
+        for benchmark in benchmark_manifests
+    }
+    full_composition_rescue_combined_commands = {
+        benchmark: _gemma_full_composition_combined_analysis_command(
+            artifact_dir=args.artifact_dir,
+            dense_jsonls=[
+                args.artifact_dir / f"full_composition_rlt_rescue_{benchmark}_dense.jsonl",
+                args.artifact_dir / f"full_composition_rlt_rescue_holdout_{benchmark}_dense.jsonl",
+            ],
+            composed_jsonls=[
+                args.artifact_dir / f"full_composition_rlt_rescue_{benchmark}_composed.jsonl",
+                args.artifact_dir
+                / f"full_composition_rlt_rescue_holdout_{benchmark}_composed.jsonl",
+            ],
+            expected_items=60,
+            output_label=f"full_composition_rlt_rescue_combined_{benchmark}",
+        )
+        for benchmark in benchmark_manifests
+    }
     sweep_manifest = benchmark_manifests[args.keep_rate_sweep_benchmark]
     sweep_expected_items = benchmark_expected_items[args.keep_rate_sweep_benchmark]
     keep_rate_sweep_commands = {
@@ -1253,6 +1385,38 @@ def main() -> int:
                 }
                 for c in phase_commands
             )
+    if args.run_moving_attribute_bracket:
+        planned.extend(
+            {
+                "phase": (
+                    "full_composition_rlt_mvbench_moving_attribute_kr100_"
+                    "if_rlt_videomme_core_passes"
+                ),
+                "command": c,
+            }
+            for c in moving_attribute_bracket_commands
+        )
+    if args.run_composition_combined_analysis:
+        for benchmark, command in full_composition_combined_commands.items():
+            planned.append(
+                {
+                    "phase": (
+                        f"full_composition_rlt_combined_{benchmark}_"
+                        "if_dev_and_holdout_artifacts_exist"
+                    ),
+                    "command": command,
+                }
+            )
+        for benchmark, command in full_composition_rescue_combined_commands.items():
+            planned.append(
+                {
+                    "phase": (
+                        f"full_composition_rlt_rescue_combined_{benchmark}_"
+                        "if_dev_and_holdout_artifacts_exist"
+                    ),
+                    "command": command,
+                }
+            )
     if args.run_keep_rate_sweep:
         for rate, phase_commands in keep_rate_sweep_commands.items():
             planned.extend(
@@ -1339,6 +1503,30 @@ def main() -> int:
                             )
                         ]
                         if args.run_composition_rescue_holdout
+                        else []
+                    ),
+                    *(
+                        [
+                            (
+                                "Run the MVBench moving_attribute kr=1.0 bracket only "
+                                "after RLT VideoMME core gates pass. This brackets "
+                                "whether the residual moving_attribute failure is a "
+                                "token-budget problem or a structural saliency problem."
+                            )
+                        ]
+                        if args.run_moving_attribute_bracket
+                        else []
+                    ),
+                    *(
+                        [
+                            (
+                                "Run pooled dev+holdout n=60 analyzer passes only after "
+                                "RLT VideoMME core gates pass. These are analyzer-only "
+                                "commands and require the corresponding dev and holdout "
+                                "JSONLs to exist."
+                            )
+                        ]
+                        if args.run_composition_combined_analysis
                         else []
                     ),
                 ],
@@ -1720,6 +1908,69 @@ def main() -> int:
             {
                 "decision": "skip",
                 "reason": "full_composition_rescue_holdout_requires_rlt_videomme_pass",
+            }
+        )
+    if args.run_moving_attribute_bracket and cvision_videomme_passed:
+        bracket_label = "full_composition_rlt_mvbench_moving_attribute_kr100"
+        bracket_results = _run_command_group(moving_attribute_bracket_commands)
+        commands.extend(bracket_results)
+        bracket_analysis = _read_analysis_after_success(
+            results=bracket_results,
+            path=args.artifact_dir / f"{bracket_label}_analysis.json",
+            phase=bracket_label,
+            decisions=decisions,
+        )
+        if bracket_analysis is not None:
+            analyses[bracket_label] = bracket_analysis
+            if not _phase_passed_full_composition(bracket_analysis):
+                decisions.append(
+                    {
+                        "decision": "continue",
+                        "reason": f"{bracket_label}_did_not_earn_gate",
+                        "phase": bracket_label,
+                        "details": bracket_analysis.get("decisions", []),
+                    }
+                )
+    elif args.run_moving_attribute_bracket and not cvision_videomme_passed:
+        decisions.append(
+            {
+                "decision": "skip",
+                "reason": "moving_attribute_bracket_requires_rlt_videomme_pass",
+            }
+        )
+    if args.run_composition_combined_analysis and cvision_videomme_passed:
+        combined_commands = [
+            (f"full_composition_rlt_combined_{benchmark}", command)
+            for benchmark, command in full_composition_combined_commands.items()
+        ] + [
+            (f"full_composition_rlt_rescue_combined_{benchmark}", command)
+            for benchmark, command in full_composition_rescue_combined_commands.items()
+        ]
+        for label, command in combined_commands:
+            combined_results = _run_command_group([command])
+            commands.extend(combined_results)
+            combined_analysis = _read_analysis_after_success(
+                results=combined_results,
+                path=args.artifact_dir / f"{label}_analysis.json",
+                phase=label,
+                decisions=decisions,
+            )
+            if combined_analysis is not None:
+                analyses[label] = combined_analysis
+                if not _phase_passed_full_composition(combined_analysis):
+                    decisions.append(
+                        {
+                            "decision": "continue",
+                            "reason": f"{label}_did_not_earn_gate",
+                            "phase": label,
+                            "details": combined_analysis.get("decisions", []),
+                        }
+                    )
+    elif args.run_composition_combined_analysis and not cvision_videomme_passed:
+        decisions.append(
+            {
+                "decision": "skip",
+                "reason": "full_composition_combined_analysis_requires_rlt_videomme_pass",
             }
         )
     if args.run_keep_rate_sweep and cvision_videomme_passed:

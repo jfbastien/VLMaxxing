@@ -218,12 +218,12 @@ def _paired_rows(
     dense_rows: list[dict[str, Any]],
     composed_rows: list[dict[str, Any]],
     *,
-    expected_items: int,
+    expected_items: int | None,
 ) -> list[dict[str, Any]]:
     dense_by_item = _rows_by_item(dense_rows)
     composed_by_item = _rows_by_item(composed_rows)
     paired_ids = sorted(set(dense_by_item) & set(composed_by_item))
-    if len(paired_ids) != expected_items:
+    if expected_items is not None and len(paired_ids) != expected_items:
         raise ValueError(
             f"expected {expected_items} paired items, found {len(paired_ids)} "
             f"(dense={len(dense_by_item)}, composed={len(composed_by_item)})"
@@ -262,8 +262,8 @@ def _paired_rows(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--dense-jsonl", type=Path, required=True)
-    parser.add_argument("--composed-jsonl", type=Path, required=True)
+    parser.add_argument("--dense-jsonl", type=Path, required=True, action="append")
+    parser.add_argument("--composed-jsonl", type=Path, required=True, action="append")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--paired-items", type=Path, required=True)
     parser.add_argument("--expected-items", type=int, required=True)
@@ -272,10 +272,44 @@ def main() -> int:
     parser.add_argument("--n-bootstrap", type=int, default=1000)
     args = parser.parse_args()
 
-    dense_schema, dense_rows = _load_jsonl(args.dense_jsonl)
-    composed_schema, composed_rows = _load_jsonl(args.composed_jsonl)
-    _require_contract(dense_schema, composed_schema)
-    paired = _paired_rows(dense_rows, composed_rows, expected_items=args.expected_items)
+    dense_paths: list[Path] = args.dense_jsonl
+    composed_paths: list[Path] = args.composed_jsonl
+    if len(dense_paths) != len(composed_paths):
+        raise ValueError(
+            f"got {len(dense_paths)} dense JSONLs but {len(composed_paths)} composed JSONLs"
+        )
+    paired: list[dict[str, Any]] = []
+    source_pairs: list[dict[str, Any]] = []
+    for dense_path, composed_path in zip(dense_paths, composed_paths, strict=True):
+        dense_schema, dense_rows = _load_jsonl(dense_path)
+        composed_schema, composed_rows = _load_jsonl(composed_path)
+        _require_contract(dense_schema, composed_schema)
+        source_paired = _paired_rows(dense_rows, composed_rows, expected_items=None)
+        source_pairs.append(
+            {
+                "dense_jsonl": str(dense_path),
+                "composed_jsonl": str(composed_path),
+                "n_items": len(source_paired),
+            }
+        )
+        paired.extend(source_paired)
+    seen_item_ids: set[str] = set()
+    duplicate_item_ids: list[str] = []
+    for row in paired:
+        item_id = str(row["item_id"])
+        if item_id in seen_item_ids:
+            duplicate_item_ids.append(item_id)
+        seen_item_ids.add(item_id)
+    if duplicate_item_ids:
+        raise ValueError(
+            "combined analysis has duplicate item_ids across sources: "
+            + ", ".join(sorted(duplicate_item_ids)[:5])
+        )
+    if len(paired) != args.expected_items:
+        raise ValueError(
+            f"expected {args.expected_items} paired items, found {len(paired)} "
+            f"across {len(source_pairs)} source pair(s)"
+        )
     summary = _summarize(
         paired,
         quality_delta_floor=args.quality_delta_floor,
@@ -310,8 +344,13 @@ def main() -> int:
 
     output = {
         "schema_version": SCHEMA_VERSION,
-        "dense_jsonl": str(args.dense_jsonl),
-        "composed_jsonl": str(args.composed_jsonl),
+        "dense_jsonl": (
+            str(dense_paths[0]) if len(dense_paths) == 1 else [str(p) for p in dense_paths]
+        ),
+        "composed_jsonl": (
+            str(composed_paths[0]) if len(composed_paths) == 1 else [str(p) for p in composed_paths]
+        ),
+        "source_pairs": source_pairs,
         "expected_items": args.expected_items,
         "cell_type": "direct_dense_vs_rlt_cvision_plus_admission",
         "summary": summary,
