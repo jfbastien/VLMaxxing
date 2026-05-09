@@ -13,6 +13,13 @@
   "dense_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_rescue_tomato_dense.jsonl",
   "expected_items": 30,
   "schema_version": "gemma_full_composition_analysis_v1",
+  "source_pairs": [
+    {
+      "composed_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_rescue_tomato_composed.jsonl",
+      "dense_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_rescue_tomato_dense.jsonl",
+      "n_items": 30
+    }
+  ],
   "summary": {
     "accuracy_delta_ci95": [
       -0.23333333333333334,
