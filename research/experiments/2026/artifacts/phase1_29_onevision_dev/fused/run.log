@@ -1,0 +1,54 @@
+[ov3] === source=fused starting 2026-05-09T08:46:42Z ===
+[precompute] 1/10 videomme:short:037-2 computing
+[precompute] cached 1/10 items to research/experiments/2026/artifacts/phase1_29_onevision_dev/fused/precompute_cache.json
+[precompute] 2/10 videomme:short:100-2 computing
+[precompute] cached 2/10 items to research/experiments/2026/artifacts/phase1_29_onevision_dev/fused/precompute_cache.json
+[precompute] 3/10 videomme:short:116-3 computing
+[precompute] cached 3/10 items to research/experiments/2026/artifacts/phase1_29_onevision_dev/fused/precompute_cache.json
+[precompute] 4/10 videomme:short:120-2 computing
+[precompute] cached 4/10 items to research/experiments/2026/artifacts/phase1_29_onevision_dev/fused/precompute_cache.json
+[precompute] 5/10 videomme:short:158-3 computing
+[precompute] cached 5/10 items to research/experiments/2026/artifacts/phase1_29_onevision_dev/fused/precompute_cache.json
+[precompute] 6/10 videomme:short:160-1 computing
+[precompute] cached 6/10 items to research/experiments/2026/artifacts/phase1_29_onevision_dev/fused/precompute_cache.json
+[precompute] 7/10 videomme:short:210-2 computing
+[precompute] cached 7/10 items to research/experiments/2026/artifacts/phase1_29_onevision_dev/fused/precompute_cache.json
+[precompute] 8/10 videomme:short:264-1 computing
+[precompute] cached 8/10 items to research/experiments/2026/artifacts/phase1_29_onevision_dev/fused/precompute_cache.json
+[precompute] 9/10 videomme:short:278-3 computing
+[precompute] cached 9/10 items to research/experiments/2026/artifacts/phase1_29_onevision_dev/fused/precompute_cache.json
+[precompute] 10/10 videomme:short:282-2 computing
+[precompute] cached 10/10 items to research/experiments/2026/artifacts/phase1_29_onevision_dev/fused/precompute_cache.json
+Prefill:   0%|          | 0/3295 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3295 [00:17<00:10, 118.51tok/s]Prefill: 100%|█████████▉| 3294/3295 [00:24<00:00, 140.01tok/s]Prefill: 100%|█████████▉| 3294/3295 [00:24<00:00, 135.43tok/s]
+Prefill:   0%|          | 0/3295 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3295 [00:11<00:06, 181.50tok/s]Prefill: 100%|█████████▉| 3294/3295 [00:18<00:00, 177.03tok/s]Prefill: 100%|█████████▉| 3294/3295 [00:18<00:00, 177.85tok/s]
+Prefill:   0%|          | 0/3295 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3295 [00:11<00:06, 181.97tok/s]Prefill: 100%|█████████▉| 3294/3295 [00:18<00:00, 177.15tok/s]Prefill: 100%|█████████▉| 3294/3295 [00:18<00:00, 178.03tok/s]
+Prefill:   0%|          | 0/3275 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3275 [00:27<00:16, 73.74tok/s]Prefill: 100%|█████████▉| 3274/3275 [00:41<00:00, 81.25tok/s]Prefill: 100%|█████████▉| 3274/3275 [00:41<00:00, 79.72tok/s]
+Prefill:   0%|          | 0/3275 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3275 [00:18<00:10, 112.85tok/s]Prefill: 100%|█████████▉| 3274/3275 [00:27<00:00, 119.14tok/s]Prefill: 100%|█████████▉| 3274/3275 [00:27<00:00, 117.90tok/s]
+Prefill:   0%|          | 0/3275 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3275 [00:13<00:08, 150.19tok/s]Prefill: 100%|█████████▉| 3274/3275 [00:21<00:00, 148.99tok/s]Prefill: 100%|█████████▉| 3274/3275 [00:21<00:00, 149.21tok/s]
+Prefill:   0%|          | 0/3276 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3276 [00:20<00:12, 98.47tok/s]Prefill: 100%|█████████▉| 3275/3276 [00:29<00:00, 114.67tok/s]Prefill: 100%|█████████▉| 3275/3276 [00:29<00:00, 111.24tok/s]
+Prefill:   0%|          | 0/3276 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3276 [00:13<00:08, 150.80tok/s]Prefill: 100%|█████████▉| 3275/3276 [00:22<00:00, 143.57tok/s]Prefill: 100%|█████████▉| 3275/3276 [00:22<00:00, 144.87tok/s]
+Prefill:   0%|          | 0/3276 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3276 [00:15<00:09, 134.36tok/s]Prefill: 100%|█████████▉| 3275/3276 [00:24<00:00, 131.39tok/s]Prefill: 100%|█████████▉| 3275/3276 [00:24<00:00, 131.94tok/s]
+Prefill:   0%|          | 0/3289 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3289 [00:23<00:14, 85.72tok/s]Prefill: 100%|█████████▉| 3288/3289 [00:32<00:00, 105.26tok/s]Prefill: 100%|█████████▉| 3288/3289 [00:32<00:00, 100.96tok/s]
+Prefill:   0%|          | 0/3289 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3289 [00:13<00:08, 153.57tok/s]Prefill: 100%|█████████▉| 3288/3289 [00:21<00:00, 152.03tok/s]Prefill: 100%|█████████▉| 3288/3289 [00:21<00:00, 152.32tok/s]
+Prefill:   0%|          | 0/3289 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3289 [00:12<00:07, 158.40tok/s]Prefill: 100%|█████████▉| 3288/3289 [00:21<00:00, 153.15tok/s]Prefill: 100%|█████████▉| 3288/3289 [00:21<00:00, 154.11tok/s]
+Prefill:   0%|          | 0/3312 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3312 [00:22<00:14, 89.43tok/s]Prefill: 100%|█████████▉| 3311/3312 [00:31<00:00, 110.03tok/s]Prefill: 100%|█████████▉| 3311/3312 [00:31<00:00, 105.52tok/s]
+Prefill:   0%|          | 0/3312 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3312 [00:13<00:08, 155.17tok/s]Prefill: 100%|█████████▉| 3311/3312 [00:21<00:00, 150.74tok/s]Prefill: 100%|█████████▉| 3311/3312 [00:21<00:00, 151.54tok/s]
+Prefill:   0%|          | 0/3312 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3312 [00:13<00:08, 146.72tok/s]Prefill: 100%|█████████▉| 3311/3312 [00:23<00:00, 140.04tok/s]Prefill: 100%|█████████▉| 3311/3312 [00:23<00:00, 141.23tok/s]
+Prefill:   0%|          | 0/3279 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3279 [00:22<00:13, 92.93tok/s]Prefill: 100%|█████████▉| 3278/3279 [00:30<00:00, 112.39tok/s]Prefill: 100%|█████████▉| 3278/3279 [00:30<00:00, 108.14tok/s]
+Prefill:   0%|          | 0/3279 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3279 [00:13<00:07, 154.46tok/s]Prefill: 100%|█████████▉| 3278/3279 [00:22<00:00, 146.21tok/s]Prefill: 100%|█████████▉| 3278/3279 [00:22<00:00, 147.69tok/s]
+Prefill:   0%|          | 0/3279 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3279 [00:13<00:08, 152.85tok/s]Prefill: 100%|█████████▉| 3278/3279 [00:22<00:00, 148.11tok/s]Prefill: 100%|█████████▉| 3278/3279 [00:22<00:00, 148.98tok/s]
+Prefill:   0%|          | 0/3279 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3279 [00:22<00:13, 92.41tok/s]Prefill: 100%|█████████▉| 3278/3279 [00:31<00:00, 108.83tok/s]Prefill: 100%|█████████▉| 3278/3279 [00:31<00:00, 105.32tok/s]
+Prefill:   0%|          | 0/3279 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3279 [00:13<00:08, 152.90tok/s]Prefill: 100%|█████████▉| 3278/3279 [00:21<00:00, 149.45tok/s]Prefill: 100%|█████████▉| 3278/3279 [00:21<00:00, 150.08tok/s]
+Prefill:   0%|          | 0/3279 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3279 [00:13<00:07, 154.05tok/s]Prefill: 100%|█████████▉| 3278/3279 [00:21<00:00, 150.41tok/s]Prefill: 100%|█████████▉| 3278/3279 [00:21<00:00, 151.08tok/s]
+Prefill:   0%|          | 0/3273 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3273 [00:22<00:13, 89.52tok/s]Prefill: 100%|█████████▉| 3272/3273 [00:31<00:00, 110.01tok/s]Prefill: 100%|█████████▉| 3272/3273 [00:31<00:00, 105.48tok/s]
+Prefill:   0%|          | 0/3273 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3273 [00:13<00:07, 155.13tok/s]Prefill: 100%|█████████▉| 3272/3273 [00:21<00:00, 151.16tok/s]Prefill: 100%|█████████▉| 3272/3273 [00:21<00:00, 151.89tok/s]
+Prefill:   0%|          | 0/3273 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3273 [00:13<00:08, 151.58tok/s]Prefill: 100%|█████████▉| 3272/3273 [00:22<00:00, 142.86tok/s]Prefill: 100%|█████████▉| 3272/3273 [00:22<00:00, 144.42tok/s]
+Prefill:   0%|          | 0/3293 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3293 [00:21<00:13, 94.99tok/s]Prefill: 100%|█████████▉| 3292/3293 [00:29<00:00, 115.59tok/s]Prefill: 100%|█████████▉| 3292/3293 [00:29<00:00, 111.09tok/s]
+Prefill:   0%|          | 0/3293 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3293 [00:12<00:07, 159.47tok/s]Prefill: 100%|█████████▉| 3292/3293 [00:21<00:00, 148.86tok/s]Prefill: 100%|█████████▉| 3292/3293 [00:21<00:00, 150.73tok/s]
+Prefill:   0%|          | 0/3293 [00:00<?, ?tok/s]Prefill:  62%|██████▏   | 2048/3293 [00:13<00:08, 149.65tok/s]Prefill: 100%|█████████▉| 3292/3293 [00:22<00:00, 147.14tok/s]Prefill: 100%|█████████▉| 3292/3293 [00:22<00:00, 147.60tok/s]
+Prefill:   0%|          | 0/3270 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3270 [00:21<00:13, 93.60tok/s]Prefill: 100%|█████████▉| 3269/3270 [00:30<00:00, 110.17tok/s]Prefill: 100%|█████████▉| 3269/3270 [00:30<00:00, 106.62tok/s]
+Prefill:   0%|          | 0/3270 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3270 [00:13<00:07, 154.73tok/s]Prefill: 100%|█████████▉| 3269/3270 [00:21<00:00, 150.84tok/s]Prefill: 100%|█████████▉| 3269/3270 [00:21<00:00, 151.56tok/s]
+Prefill:   0%|          | 0/3270 [00:00<?, ?tok/s]Prefill:  63%|██████▎   | 2048/3270 [00:13<00:07, 153.27tok/s]Prefill: 100%|█████████▉| 3269/3270 [00:22<00:00, 146.87tok/s]Prefill: 100%|█████████▉| 3269/3270 [00:22<00:00, 148.03tok/s]
+Wrote research/experiments/2026/artifacts/phase1_29_onevision_dev/fused/results.jsonl
+Wrote research/experiments/2026/artifacts/phase1_29_onevision_dev/fused/summary.json
+[ov3] === source=fused done 2026-05-09T09:04:28Z ===
