@@ -1,6 +1,6 @@
 # Literature Map — Post-CodecSight Repositioning
 
-Date: 2026-04-16
+Date: 2026-05-10
 Parent: [PLAN.md](../PLAN.md)
 Current verified table: [related-work-table.md](related-work-table.md)
 
@@ -13,6 +13,15 @@ frontier on temporal-reasoning benchmarks with real measured skipped
 compute. As of 2026-04-29, bounded measured sparse-vision evidence exists,
 but broad sparse-backend coverage, sparse LM prefill, and composition remain
 target claims — do not cite those broader claims as proven work.
+
+2026-05-10 query-aware update: a separate query-aware visual-routing paper is
+plausible, but only under a narrower novelty boundary. The related-work surface
+already contains query-adaptive frame selection, query-adaptive static/dynamic
+token allocation, text-guided scalar token pruning, learned query-aware token
+selectors, and critiques where simple fixed/random/duplication-aware baselines
+beat importance scores. A future VLMaxxing follow-on should therefore claim
+**operator-level visual evidence planning under measured cost**, not first
+query-aware pruning.
 
 ## Four-axis taxonomy of video-VLM efficiency
 
@@ -221,6 +230,63 @@ comparison):
    (density clustering hook needs reimplementation).
 3. **VisionZip / SparseVLM / VScan** — defer. All require torch or
    HF hooks unavailable on MLX.
+
+### Query-aware video routing — verified 2026-05-10
+
+This cluster is future-work for a follow-on paper, not a current reproduced
+contribution. The deep-research conclusion is blunt: "query-aware selection"
+alone is not novel enough. The paper has to be about a **plan** that chooses
+among physical evidence operators: motion scan, static-detail floor, endpoint
+anchors, optional higher resolution, and repair. That is different from a
+single scalar token score only if the experiments prove it.
+
+Closest priors:
+
+- **Static or Dynamic** (EMNLP 2025) is the closest conceptual neighbor. It
+  explicitly chooses between static keyframe detail and delta-frame temporal
+  evidence from the query, without model updates. Any future paper must cite it
+  early and explain why our claim is operator-level planning inside a measured
+  frozen runtime, not merely static/dynamic allocation.
+- **Q-Frame** (ICCV 2025 / arXiv 2506.22139) is a training-free query-aware
+  frame selection and multi-resolution method using CLIP-like text-image
+  matching and Gumbel-Max. It is the natural frame-level and resolution-
+  adaptation prior.
+- **Frame-Voyager** (ICLR 2025 / arXiv 2410.03226) and **M-LLM Based Video
+  Frame Selection** (CVPR 2025) are learned query-conditioned frame selectors.
+  They force us to justify the training-free and cost-accounted nature of the
+  proposed planner.
+- **PruneVid** (ACL Findings 2025), **SparseVLM** (ICML 2025), **QTSplus**
+  (arXiv 2511.11910), **LongVU** (arXiv 2410.17434), and **FlashVLM**
+  (arXiv 2512.20561) cover text-guided, cross-modal, and query-aware token
+  scoring/compression at different stages. They are mandatory novelty
+  boundaries and, where feasible, scalar-query comparators.
+- **Token Pruning in MLLMs: Are We Solving the Right Problem?** (ACL Findings
+  2025) and **DART** (EMNLP 2025) turn fixed/random/duplication-aware controls
+  into mandatory baselines. If random or duplication-aware coverage matches the
+  query planner at matched K, the standalone-paper claim is dead.
+
+Database analogy:
+
+- **System R** supports the "declarative query -> physical access path under a
+  cost model" framing.
+- **Eddies** supports adaptive repair/re-routing when runtime evidence changes.
+- **BlinkDB** is the better semantic analogy because visual evidence routing is
+  approximate: speedups must be paired with answer-fidelity/error bars, not
+  exact semantics.
+
+Recommended future-branch experiment tree:
+
+1. Audit existing Round-20 failures per item; stop if parse/evaluator
+   ambiguity dominates.
+2. Add matched-budget operator controls before adding query-aware logic:
+   fixed uniform coverage, deterministic random valid-position coverage,
+   duplication-aware coverage, RLT + endpoint anchors, RLT + static-detail
+   floor.
+3. Add one scalar query-aware comparator, ideally FlashVLM-like, Q-Frame-like,
+   or CLIP text-frame similarity if feasible on MLX.
+4. Only then test a rule-based evidence planner. It earns a standalone paper
+   only if it beats fixed/random/duplication and scalar query-aware controls
+   under total-cost accounting, then transfers beyond one MVBench bucket.
 
 ### StreamingVLM / StreamMem / LiveVLM / V-Rex — long-horizon memory
 
