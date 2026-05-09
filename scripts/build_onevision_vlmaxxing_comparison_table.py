@@ -80,13 +80,18 @@ ROWS = (
         intervention_layer="semantic substitution over frozen VLM features",
         denominator="paired answer stability at matched reuse/fresh budget",
         primary_metric="paired choice/correctness drift and parse failures",
-        headline_numeric="artifact-derived baseline; fill from Phase 1.29/1.57 summaries",
+        headline_numeric=(
+            "OV-3 dev VideoMME short n=10: pixel_acc=0.700, dense_acc=0.800, "
+            "pixel→dense agreement 0.900, mean active reuse 0.125"
+        ),
         target_to_beat=(
-            "serves as matched-budget baseline for fused planner; exact dev/holdout "
-            "numbers must be copied from the selected baseline artifact"
+            "serves as matched-budget baseline; codec sources must beat 0.700 codec_acc "
+            "without raising paired-choice drift above the 0.900 pixel→dense baseline"
         ),
         e2e_policy="not a work-skipped speedup claim",
-        local_reproduction="existing Phase 1.29/1.57-style artifacts",
+        local_reproduction=(
+            "research/experiments/2026/artifacts/phase1_29_onevision_dev/comparison.md"
+        ),
         planned_gate="baseline for fused-codec planner comparison",
         artifact_or_source="scripts/run_phase1_29_planner_accuracy_probe.py",
     ),
@@ -96,13 +101,19 @@ ROWS = (
         intervention_layer="legacy continuous H.264 intra|cbf score source",
         denominator="paired answer stability at matched reuse/fresh budget",
         primary_metric="paired drift, dense agreement, selection Jaccard versus fused planner",
-        headline_numeric="artifact-derived Phase 1.29/1.29B codec baseline",
+        headline_numeric=(
+            "OV-3 dev VideoMME short n=10: codec_acc=0.800 = dense, pixel_acc=0.700, "
+            "codec→dense agreement 1.000 (0/10 paired-choice drift), pair_jaccard=0.614"
+        ),
         target_to_beat=(
             "fused planner must beat or match novel_coded as well as pixel max_abs before "
-            "reopening continuous H.264 saliency as a paper result"
+            "reopening continuous H.264 saliency as a paper result; novel_coded passed "
+            "the dev gate with +10 percentage points over pixel and zero drift"
         ),
         e2e_policy="not a work-skipped speedup claim",
-        local_reproduction="runner default --codec-score-source novel_coded",
+        local_reproduction=(
+            "research/experiments/2026/artifacts/phase1_29_onevision_dev/novel_coded/"
+        ),
         planned_gate="decision-log reopen baseline for continuous codec scoring",
         artifact_or_source="scripts/run_phase1_29_planner_accuracy_probe.py",
     ),
@@ -112,13 +123,21 @@ ROWS = (
         intervention_layer="motion/residual score source for VLMaxxing planner",
         denominator="paired answer stability at matched reuse/fresh budget",
         primary_metric="codec-minus-pixel accuracy, dense agreement, selection Jaccard",
-        headline_numeric="pending local result",
+        headline_numeric=(
+            "OV-3 dev VideoMME short n=10: codec_acc=0.700 = pixel_acc, codec→dense "
+            "agreement 0.900 (1/10 paired-choice drift), pair_jaccard=0.565; matches "
+            "the pixel answer set exactly (codec→pixel 1.000); fused did not beat "
+            "novel_coded so the dev gate fails, motion-only / residual-only / novel_coded "
+            "each reached 0.800 with zero drift on the same tranche"
+        ),
         target_to_beat=(
             "strict Pareto improvement over both pixel max_abs and legacy novel_coded "
             "at matched fresh budget, <= 1% paired-choice drift, no parse-failure increase"
         ),
         e2e_policy="not a work-skipped speedup claim",
-        local_reproduction="sequential Qwen then Gemma planner ablation",
+        local_reproduction=(
+            "research/experiments/2026/artifacts/phase1_29_onevision_dev/fused/"
+        ),
         planned_gate=(
             "beat both pixel max_abs and novel_coded on dev and holdout without higher drift"
         ),
