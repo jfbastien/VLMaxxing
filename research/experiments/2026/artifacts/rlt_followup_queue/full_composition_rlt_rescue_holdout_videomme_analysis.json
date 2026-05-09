@@ -1,0 +1,90 @@
+{
+  "cell_type": "direct_dense_vs_rlt_cvision_plus_admission",
+  "composed_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_rescue_holdout_videomme_composed.jsonl",
+  "decisions": [
+    {
+      "decision": "stop",
+      "failed": [
+        "pass_fidelity",
+        "pass_bucket_quality_and_e2e"
+      ],
+      "reason": "full_composition_gate_failed"
+    }
+  ],
+  "dense_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_rescue_holdout_videomme_dense.jsonl",
+  "expected_items": 30,
+  "schema_version": "gemma_full_composition_analysis_v1",
+  "source_pairs": [
+    {
+      "composed_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_rescue_holdout_videomme_composed.jsonl",
+      "dense_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_rescue_holdout_videomme_dense.jsonl",
+      "n_items": 30
+    }
+  ],
+  "summary": {
+    "accuracy_delta_ci95": [
+      -0.2,
+      0.06666666666666665
+    ],
+    "accuracy_delta_composed_minus_dense": -0.06666666666666665,
+    "bucket_failures": [
+      "long",
+      "medium"
+    ],
+    "bucket_underpowered": [],
+    "by_group": {
+      "long": {
+        "accuracy_delta_composed_minus_dense": -0.09999999999999998,
+        "composed_accuracy": 0.6,
+        "dense_accuracy": 0.7,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.0552212672312755,
+        "gate_evaluated": true,
+        "n": 10,
+        "quality_gate_pass": false
+      },
+      "medium": {
+        "accuracy_delta_composed_minus_dense": -0.10000000000000003,
+        "composed_accuracy": 0.3,
+        "dense_accuracy": 0.4,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.1937257837177362,
+        "gate_evaluated": true,
+        "n": 10,
+        "quality_gate_pass": false
+      },
+      "short": {
+        "accuracy_delta_composed_minus_dense": 0.0,
+        "composed_accuracy": 0.4,
+        "dense_accuracy": 0.4,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.4501635684547063,
+        "gate_evaluated": true,
+        "n": 10,
+        "quality_gate_pass": true
+      }
+    },
+    "composed_accuracy": 0.43333333333333335,
+    "composed_total_e2e_ms": 1812257.798916,
+    "dense_accuracy": 0.5,
+    "dense_total_e2e_ms": 2002815.362913,
+    "e2e_speedup_ci95": [
+      1.0716714781911092,
+      1.1665522771902737
+    ],
+    "e2e_speedup_dense_over_composed": 1.105149258626991,
+    "mean_composed_end_to_end_ms": 60408.5932972,
+    "mean_composed_prefill_ms": 3614.761915366667,
+    "mean_composed_vision_ms": 3064.4013264333335,
+    "mean_dense_end_to_end_ms": 66760.5120971,
+    "mean_dense_prefill_ms": 5626.177830566667,
+    "mean_dense_vision_ms": 5513.238926366667,
+    "n_items": 30,
+    "parse_failure_delta_composed_minus_dense": 0,
+    "pass_bucket_quality_and_e2e": false,
+    "pass_complete_pairing": true,
+    "pass_e2e_positive": true,
+    "pass_fidelity": false,
+    "pass_parse_failure_delta": true
+  }
+}

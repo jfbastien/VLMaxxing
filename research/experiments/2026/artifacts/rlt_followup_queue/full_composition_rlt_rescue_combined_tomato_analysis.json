@@ -1,0 +1,101 @@
+{
+  "cell_type": "direct_dense_vs_rlt_cvision_plus_admission",
+  "composed_jsonl": [
+    "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_rescue_tomato_composed.jsonl",
+    "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_rescue_holdout_tomato_composed.jsonl"
+  ],
+  "decisions": [
+    {
+      "decision": "stop",
+      "failed": [
+        "pass_fidelity",
+        "pass_bucket_quality_and_e2e"
+      ],
+      "reason": "full_composition_gate_failed"
+    }
+  ],
+  "dense_jsonl": [
+    "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_rescue_tomato_dense.jsonl",
+    "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_rescue_holdout_tomato_dense.jsonl"
+  ],
+  "expected_items": 60,
+  "schema_version": "gemma_full_composition_analysis_v1",
+  "source_pairs": [
+    {
+      "composed_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_rescue_tomato_composed.jsonl",
+      "dense_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_rescue_tomato_dense.jsonl",
+      "n_items": 30
+    },
+    {
+      "composed_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_rescue_holdout_tomato_composed.jsonl",
+      "dense_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_rescue_holdout_tomato_dense.jsonl",
+      "n_items": 30
+    }
+  ],
+  "summary": {
+    "accuracy_delta_ci95": [
+      -0.21666666666666667,
+      0.05
+    ],
+    "accuracy_delta_composed_minus_dense": -0.08333333333333334,
+    "bucket_failures": [
+      "direction",
+      "rotation"
+    ],
+    "bucket_underpowered": [],
+    "by_group": {
+      "direction": {
+        "accuracy_delta_composed_minus_dense": -0.15,
+        "composed_accuracy": 0.0,
+        "dense_accuracy": 0.15,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.0555663914811777,
+        "gate_evaluated": true,
+        "n": 20,
+        "quality_gate_pass": false
+      },
+      "rotation": {
+        "accuracy_delta_composed_minus_dense": -0.15,
+        "composed_accuracy": 0.1,
+        "dense_accuracy": 0.25,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.335502230501895,
+        "gate_evaluated": true,
+        "n": 20,
+        "quality_gate_pass": false
+      },
+      "shape_trend": {
+        "accuracy_delta_composed_minus_dense": 0.04999999999999999,
+        "composed_accuracy": 0.25,
+        "dense_accuracy": 0.2,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.351613006731823,
+        "gate_evaluated": true,
+        "n": 20,
+        "quality_gate_pass": true
+      }
+    },
+    "composed_accuracy": 0.11666666666666667,
+    "composed_total_e2e_ms": 732496.245456,
+    "dense_accuracy": 0.2,
+    "dense_total_e2e_ms": 906400.806089,
+    "e2e_speedup_ci95": [
+      1.1928779008330772,
+      1.2847984047579013
+    ],
+    "e2e_speedup_dense_over_composed": 1.2374135863655376,
+    "mean_composed_end_to_end_ms": 12208.2707576,
+    "mean_composed_prefill_ms": 4745.877829166667,
+    "mean_composed_vision_ms": 3595.9350041166667,
+    "mean_dense_end_to_end_ms": 15106.680101483333,
+    "mean_dense_prefill_ms": 5847.921024333334,
+    "mean_dense_vision_ms": 5899.333427066666,
+    "n_items": 60,
+    "parse_failure_delta_composed_minus_dense": -1,
+    "pass_bucket_quality_and_e2e": false,
+    "pass_complete_pairing": true,
+    "pass_e2e_positive": true,
+    "pass_fidelity": false,
+    "pass_parse_failure_delta": true
+  }
+}

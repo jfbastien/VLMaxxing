@@ -1,0 +1,120 @@
+{
+  "cell_type": "direct_dense_vs_rlt_cvision_plus_admission",
+  "composed_jsonl": [
+    "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_rescue_mvbench_composed.jsonl",
+    "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_rescue_holdout_mvbench_composed.jsonl"
+  ],
+  "decisions": [
+    {
+      "decision": "stop",
+      "failed": [
+        "pass_bucket_quality_and_e2e"
+      ],
+      "reason": "full_composition_gate_failed"
+    }
+  ],
+  "dense_jsonl": [
+    "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_rescue_mvbench_dense.jsonl",
+    "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_rescue_holdout_mvbench_dense.jsonl"
+  ],
+  "expected_items": 60,
+  "schema_version": "gemma_full_composition_analysis_v1",
+  "source_pairs": [
+    {
+      "composed_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_rescue_mvbench_composed.jsonl",
+      "dense_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_rescue_mvbench_dense.jsonl",
+      "n_items": 30
+    },
+    {
+      "composed_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_rescue_holdout_mvbench_composed.jsonl",
+      "dense_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_rescue_holdout_mvbench_dense.jsonl",
+      "n_items": 30
+    }
+  ],
+  "summary": {
+    "accuracy_delta_ci95": [
+      -0.15000000000000002,
+      0.03333333333333338
+    ],
+    "accuracy_delta_composed_minus_dense": -0.04999999999999993,
+    "bucket_failures": [
+      "action_localization",
+      "moving_attribute"
+    ],
+    "bucket_underpowered": [],
+    "by_group": {
+      "action_localization": {
+        "accuracy_delta_composed_minus_dense": -0.08333333333333326,
+        "composed_accuracy": 0.5833333333333334,
+        "dense_accuracy": 0.6666666666666666,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.5525879710417858,
+        "gate_evaluated": true,
+        "n": 12,
+        "quality_gate_pass": false
+      },
+      "fine_grained_action": {
+        "accuracy_delta_composed_minus_dense": 0.0,
+        "composed_accuracy": 0.4166666666666667,
+        "dense_accuracy": 0.4166666666666667,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.5495979564676683,
+        "gate_evaluated": true,
+        "n": 12,
+        "quality_gate_pass": true
+      },
+      "moving_attribute": {
+        "accuracy_delta_composed_minus_dense": -0.24999999999999994,
+        "composed_accuracy": 0.4166666666666667,
+        "dense_accuracy": 0.6666666666666666,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.3202082139731075,
+        "gate_evaluated": true,
+        "n": 12,
+        "quality_gate_pass": false
+      },
+      "moving_direction": {
+        "accuracy_delta_composed_minus_dense": 0.08333333333333337,
+        "composed_accuracy": 0.5833333333333334,
+        "dense_accuracy": 0.5,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.5805072005087644,
+        "gate_evaluated": true,
+        "n": 12,
+        "quality_gate_pass": true
+      },
+      "object_interaction": {
+        "accuracy_delta_composed_minus_dense": 0.0,
+        "composed_accuracy": 0.5833333333333334,
+        "dense_accuracy": 0.5833333333333334,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.2341758782648293,
+        "gate_evaluated": true,
+        "n": 12,
+        "quality_gate_pass": true
+      }
+    },
+    "composed_accuracy": 0.5166666666666667,
+    "composed_total_e2e_ms": 527510.942318,
+    "dense_accuracy": 0.5666666666666667,
+    "dense_total_e2e_ms": 755795.129841,
+    "e2e_speedup_ci95": [
+      1.3803584638439976,
+      1.4863476699944516
+    ],
+    "e2e_speedup_dense_over_composed": 1.4327572552710823,
+    "mean_composed_end_to_end_ms": 8791.849038633334,
+    "mean_composed_prefill_ms": 4079.2251451166667,
+    "mean_composed_vision_ms": 3838.1894048833333,
+    "mean_dense_end_to_end_ms": 12596.585497349999,
+    "mean_dense_prefill_ms": 5673.104640266667,
+    "mean_dense_vision_ms": 6028.030708383333,
+    "n_items": 60,
+    "parse_failure_delta_composed_minus_dense": 2,
+    "pass_bucket_quality_and_e2e": false,
+    "pass_complete_pairing": true,
+    "pass_e2e_positive": true,
+    "pass_fidelity": true,
+    "pass_parse_failure_delta": true
+  }
+}

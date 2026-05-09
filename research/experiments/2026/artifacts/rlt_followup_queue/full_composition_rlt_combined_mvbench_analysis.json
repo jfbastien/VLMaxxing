@@ -1,0 +1,122 @@
+{
+  "cell_type": "direct_dense_vs_rlt_cvision_plus_admission",
+  "composed_jsonl": [
+    "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_mvbench.jsonl",
+    "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_holdout_mvbench_composed.jsonl"
+  ],
+  "decisions": [
+    {
+      "decision": "stop",
+      "failed": [
+        "pass_fidelity",
+        "pass_bucket_quality_and_e2e"
+      ],
+      "reason": "full_composition_gate_failed"
+    }
+  ],
+  "dense_jsonl": [
+    "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_dense_mvbench.jsonl",
+    "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_holdout_mvbench_dense.jsonl"
+  ],
+  "expected_items": 60,
+  "schema_version": "gemma_full_composition_analysis_v1",
+  "source_pairs": [
+    {
+      "composed_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_mvbench.jsonl",
+      "dense_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_dense_mvbench.jsonl",
+      "n_items": 30
+    },
+    {
+      "composed_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_holdout_mvbench_composed.jsonl",
+      "dense_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_holdout_mvbench_dense.jsonl",
+      "n_items": 30
+    }
+  ],
+  "summary": {
+    "accuracy_delta_ci95": [
+      -0.21666666666666673,
+      -0.016666666666666663
+    ],
+    "accuracy_delta_composed_minus_dense": -0.11666666666666664,
+    "bucket_failures": [
+      "action_localization",
+      "moving_attribute",
+      "object_interaction"
+    ],
+    "bucket_underpowered": [],
+    "by_group": {
+      "action_localization": {
+        "accuracy_delta_composed_minus_dense": -0.08333333333333326,
+        "composed_accuracy": 0.5833333333333334,
+        "dense_accuracy": 0.6666666666666666,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.7406318976737813,
+        "gate_evaluated": true,
+        "n": 12,
+        "quality_gate_pass": false
+      },
+      "fine_grained_action": {
+        "accuracy_delta_composed_minus_dense": 0.0,
+        "composed_accuracy": 0.4166666666666667,
+        "dense_accuracy": 0.4166666666666667,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.8635439292154392,
+        "gate_evaluated": true,
+        "n": 12,
+        "quality_gate_pass": true
+      },
+      "moving_attribute": {
+        "accuracy_delta_composed_minus_dense": -0.24999999999999994,
+        "composed_accuracy": 0.4166666666666667,
+        "dense_accuracy": 0.6666666666666666,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.9004619841267432,
+        "gate_evaluated": true,
+        "n": 12,
+        "quality_gate_pass": false
+      },
+      "moving_direction": {
+        "accuracy_delta_composed_minus_dense": 0.08333333333333337,
+        "composed_accuracy": 0.5833333333333334,
+        "dense_accuracy": 0.5,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.92298169144322,
+        "gate_evaluated": true,
+        "n": 12,
+        "quality_gate_pass": true
+      },
+      "object_interaction": {
+        "accuracy_delta_composed_minus_dense": -0.33333333333333337,
+        "composed_accuracy": 0.25,
+        "dense_accuracy": 0.5833333333333334,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.806836700216967,
+        "gate_evaluated": true,
+        "n": 12,
+        "quality_gate_pass": false
+      }
+    },
+    "composed_accuracy": 0.45,
+    "composed_total_e2e_ms": 516953.75886,
+    "dense_accuracy": 0.5666666666666667,
+    "dense_total_e2e_ms": 952186.529788,
+    "e2e_speedup_ci95": [
+      1.762963194713688,
+      1.9218136750671686
+    ],
+    "e2e_speedup_dense_over_composed": 1.8419181860439253,
+    "mean_composed_end_to_end_ms": 8615.895981,
+    "mean_composed_prefill_ms": 4215.43252565,
+    "mean_composed_vision_ms": 3459.6682151,
+    "mean_dense_end_to_end_ms": 15869.775496466667,
+    "mean_dense_prefill_ms": 7040.304969433333,
+    "mean_dense_vision_ms": 7584.84530965,
+    "n_items": 60,
+    "parse_failure_delta_composed_minus_dense": 1,
+    "pass_bucket_quality_and_e2e": false,
+    "pass_complete_pairing": true,
+    "pass_e2e_positive": true,
+    "pass_fidelity": false,
+    "pass_parse_failure_delta": true
+  }
+}
