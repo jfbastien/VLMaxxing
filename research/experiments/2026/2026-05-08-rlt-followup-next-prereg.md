@@ -1,6 +1,7 @@
 # 2026-05-08 RLT/VLMaxxing Follow-Up Queue Preregistration
 
-Status: round-17 queue executed; follow-up controls preregistered below.
+Status: round-20 queue executed; follow-up controls and pooled replication
+results recorded below.
 
 ## Context
 
@@ -50,6 +51,28 @@ The round-19 queue then added three reproduced-here facts:
   phrased gate-first. The clean local claim today is "RLT C-VISION is robustly
   positive; full composition is high-upside and benchmark/bucket conditional,"
   not "MVBench rescue is paper-clean."
+
+The round-20 queue then added disjoint holdout and pooled n=60 evidence:
+
+- Aggressive direct composition (`keep_rate=0.5` everywhere) is speed-positive
+  but not quality-clean: pooled n=60 E2E is VideoMME `1.029x`, TOMATO `1.233x`,
+  and MVBench `1.842x`, with MVBench aggregate Δacc CI entirely negative
+  (`[-0.217, -0.017]`).
+- The bucket-rescue policy preserves the speed story while softening aggregate
+  quality risk: pooled n=60 rescue E2E is VideoMME `1.078x`, TOMATO `1.237x`,
+  and MVBench `1.433x`. Aggregate fidelity passes the analyzer floor for
+  VideoMME and MVBench, but TOMATO remains below the floor and all three rescue
+  rows retain at least one bucket-level gate failure. This is aggregate-clean
+  enough for a cautious paper table, not a universal quality-clean claim.
+- Holdout replication matters. Direct holdout is weaker than dev on every
+  benchmark: VideoMME `0.984x` versus dev `1.070x`, TOMATO `1.190x` versus
+  dev `1.275x`, and MVBench `1.779x` versus dev `1.899x`. The pooled n=60 rows
+  are the honest paper-facing numbers.
+- The MVBench `moving_attribute` boundary narrowed. On the dev split,
+  `moving_attribute` still has Δacc `-0.50` even with `keep_rate=1.0`, but
+  holdout `moving_attribute` is clean at the base `0.5` policy. This is an
+  item/content-class variance signal, not proof that the whole bucket is
+  universally unrecoverable.
 
 ## Local M3/M4-Class Queue
 
@@ -249,7 +272,11 @@ parse failures.
 
 ## M5 128GB Queue
 
-Use the same Gemma family as the paper-scale target, not Gemma 3:
+Use the same Gemma family as the paper-scale target, not Gemma 3. Round-20
+pooled results make full composition a bucket-conditional frontier rather than
+the clean paper headline, so M5 time should first test scorer transfer and
+cost-scaling. Composition on M5 is optional diagnostic work unless a new
+query-aware/static-detail policy is ready.
 
 ```bash
 export GEMMA_MODEL_PATH=/path/to/sams/gemma-4-26b-or-paper-target-mlx-model
@@ -264,20 +291,14 @@ uv run python scripts/run_rlt_followup_queue.py \
   --run-max-min-triangulation \
   --run-magnitude-valid-head-to-head \
   --run-magnitude-head-to-head \
-  --run-composition-direct \
-  --run-composition-rescue \
-  --run-composition-holdout \
-  --run-composition-rescue-holdout \
-  --run-moving-attribute-bracket \
-  --run-composition-combined-analysis \
   --run-keep-rate-sweep
 ```
 
 Hypothesis: absolute E2E speedup may shrink as language/decode share grows, but
-the scorer-cost ratio should widen because max-min scales with feature dimension
-while RLT scoring stays raw-pixel-domain. Composition and rescue cells now pass
-the same `--mlx-memory-limit-gb` cap as Track-B C-VISION cells so high-memory
-runs fail inside MLX rather than through whole-system memory pressure.
+the scorer-cost ratio should widen because max-min scales with feature
+dimension while RLT scoring stays raw-pixel-domain. The M5 pass should answer:
+does the cheap raw-frame RLT scorer remain competitive with max-min and
+magnitude controls on the paper-scale Gemma-family runtime?
 
 Operational blocker before M5 launch: verify the exact model directory and
 `model.config.model_type` on Sam's machine with an n=1 smoke. Do not assume a
@@ -285,12 +306,28 @@ username or the illustrative path above; `$GEMMA_MODEL_PATH` must point to the
 actual MLX model used by this paper's Gemma-family scale check.
 
 First gate on M5: n=1 smoke must pass shape, schema, scorer-timing, and memory
-guards before any n=30 cells continue.
+guards before any n=30 cells continue. Keep `--frame-count 8` explicit to avoid
+mixing in the known non-monotonic frame-count effects from earlier scale
+studies.
 
-The M5 block intentionally skips `--run-composition-incremental`: direct
-dense-vs-full-composition supersedes the incremental cell for the paper-facing
-scale check. It also keeps `--frame-count 8` explicit to avoid mixing in the
-known non-monotonic frame-count effects from earlier scale studies.
+Optional diagnostic only, not the default M5 ask:
+
+```bash
+uv run python scripts/run_rlt_followup_queue.py \
+  --gemma-model-path "$GEMMA_MODEL_PATH" \
+  --frame-count 8 \
+  --rss-guard-mb 60000 \
+  --mlx-memory-limit-gb 60 \
+  --artifact-dir research/experiments/2026/artifacts/rlt_followup_queue_m5_gemma4_26b_composition \
+  --run-cvision-rlt \
+  --run-composition-direct \
+  --run-composition-rescue
+```
+
+Run that only if the M5 scorer-transfer pass lands cleanly or if the paper
+needs a scale check of the already-known composition boundary. Holdout,
+combined-analysis, and moving-attribute bracket cells are lower-value on M5
+until a new policy exists.
 
 ## Cancellation Tree
 

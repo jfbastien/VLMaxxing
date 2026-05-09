@@ -46,20 +46,25 @@ Local preliminary facts, all reproduced here:
   seconds per item. RLT reaches the same speed class as max-min at roughly two
   orders of magnitude lower scorer cost.
 - Direct RLT full composition is high-upside but bucket-conditional. The
-  dev-slice speed frontier is strong, including an MVBench direct-composition
-  row near `1.9x` E2E, but quality is not uniformly clean.
+  dev+holdout pooled speed frontier is strong, including an MVBench
+  direct-composition row at `1.842x` E2E, but quality is not uniformly clean.
 - Bucket-specific rescue by raising keep-rate to `0.85` recovers MVBench
-  `object_interaction`, but does **not** recover MVBench `moving_attribute`.
-  On the dev slice, `moving_attribute` stayed at dense accuracy `0.833`,
-  composed accuracy `0.333`, and `Delta acc = -0.50` under both the base
-  `keep_rate=0.5` composition and the `moving_attribute=0.85` rescue policy.
+  `object_interaction`, but pooled rescue still has bucket failures:
+  VideoMME `long`/`medium`, TOMATO `direction`/`rotation`, and MVBench
+  `action_localization`/`moving_attribute`.
+- `moving_attribute` is the sharpest example, not a universal law. On the dev
+  slice, `moving_attribute` stayed at dense accuracy `0.833`, composed accuracy
+  `0.333`, and `Delta acc = -0.50` even when its keep-rate was raised to `1.0`.
+  On the disjoint holdout slice, however, `moving_attribute` was clean at the
+  base `keep_rate=0.5`. The failure is item/content-class variance, not proof
+  that the whole bucket is deterministically unrecoverable.
 
-That last point is the discovery. `moving_attribute` asks questions such as
-which object has what attribute while motion is occurring. A motion-only scorer
-can keep the changing regions while still dropping static appearance evidence:
-color, shape, material, endpoint state, and object identity. Raising K inside
-the same motion policy did not solve it. The next method should not be "keep
-more motion tokens." It should be "plan the visual evidence from the query."
+That last point is the discovery. Motion-only routing is excellent when motion
+is the evidence, but the query can ask for something else: static appearance,
+endpoint state, object identity, object relations, or a localized action cue.
+Raising K inside the same motion policy sometimes recovers a class and
+sometimes does not. The next method should not be "keep more motion tokens."
+It should be "plan the visual evidence from the query."
 
 Relevant local source files:
 
@@ -453,13 +458,15 @@ approximate and must be empirically gated.
 
 ## Near-Term Recommendation
 
-Finish the current RLT/VLMaxxing branch first: disjoint holdout replication and
-M5 scale checks. Then fork a query-aware branch with a narrow first target:
+The current RLT/VLMaxxing branch has already run disjoint holdout replication.
+Before forking implementation, finish any desired M5 scorer-transfer scale
+check. Then fork a query-aware branch with a narrow first target:
 
 ```text
-Recover MVBench moving_attribute by adding query-conditioned static detail to
-RLT C-VISION, while preserving most of the RLT speedup and beating fixed/random
-coverage controls.
+Recover static/detail-sensitive failures under pooled composition by adding
+query-conditioned static detail to RLT C-VISION, while preserving most of the
+RLT speedup and beating fixed/random coverage controls. Use MVBench
+moving_attribute as the first stress test, not as the only target.
 ```
 
 If that lands, the research direction is strong enough for its own paper.

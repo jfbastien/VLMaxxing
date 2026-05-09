@@ -26,10 +26,9 @@ It is NOT the place for raw experimental detail. Evidence lives in:
 - [research/falsified-hypotheses.md](../research/falsified-hypotheses.md) —
   what the evidence has ruled out
 
-Last material update: 2026-05-09 (RLT/VLMaxxing follow-up reframed RLT as a
-strong C-VISION scorer, not a universal prompt-admission/composition oracle;
-full composition is high-upside but bucket-conditional and still needs holdout
-replication before headline promotion).
+Last material update: 2026-05-09 (RLT/VLMaxxing holdout + pooled n=60
+replication landed; RLT is a strong C-VISION scorer, while full composition
+remains bucket-conditional rather than a clean headline).
 
 ## Current Manuscript Position (2026-05-03)
 
@@ -158,18 +157,19 @@ duration-conditional partial reproduction + 1.55D frontier-partial):
    fixing the padded-row K budget did **not** close the gap. RLT's advantage is
    therefore the saliency signal, not just accounting.
 
-   Direct RLT full composition is high-upside but not yet a clean headline:
-   VideoMME/TOMATO/MVBench dev cells land positive E2E. The MVBench direct
-   speed-frontier row is **1.899×** with `Delta acc=-0.167`; the rescue policy
-   that raises K on `moving_attribute` and `object_interaction` lands around
-   **1.403×** while recovering `object_interaction` but still missing
-   `moving_attribute`. Treat composition as benchmark- and bucket-conditional
-   until disjoint holdout direct+rescue rows reproduce the effect. Also do not
-   use multiplicative Amdahl products as composition claims: direct
+   Direct RLT full composition is high-upside but not the clean headline:
+   pooled dev+holdout n=60 direct rows are E2E-positive at **1.029× /
+   1.233× / 1.842×** for VideoMME / TOMATO / MVBench, but the aggressive
+   MVBench row has a decisive aggregate fidelity loss. The bucket-rescue
+   policy gives the paper-safer speed row: **1.078× / 1.237× / 1.433×** at
+   pooled n=60, with aggregate fidelity passing for VideoMME and MVBench but
+   bucket gates still false. Treat composition as a speed/quality frontier and
+   class-conditional operating point, not a universal quality-clean row. Also
+   do not use multiplicative Amdahl products as composition claims: direct
    measurement under- and over-shoots component products depending on
    benchmark, so the methodology contribution is "measure the composition,
-   do not multiply the components." The `moving_attribute` miss is a valuable
-   future-work signal for query-aware/static-detail routing, not a reason to
+   do not multiply the components." The residual bucket failures are valuable
+   future-work signals for query-aware/static-detail routing, not a reason to
    tune another global RLT keep-rate on this branch.
 
 These three claims align on a common analytical frame: **share ×

@@ -21,6 +21,23 @@ from typing import Any
 
 SCHEMA_VERSION = "gemma_full_composition_analysis_v1"
 QUALITY_EPSILON = 1e-12
+COMBINED_POLICY_INVARIANT_KEYS = (
+    "anchor_arm",
+    "arm_order",
+    "frame_count",
+    "group_keep_rates",
+    "group_vision_tower_keep_rates",
+    "keep_rate",
+    "max_tokens",
+    "model_path",
+    "n_warmup",
+    "prefill_step_size",
+    "prune_placeholders",
+    "rlt_config",
+    "vision_tower_keep_rate",
+    "vision_tower_layer",
+    "vision_tower_score_mode",
+)
 
 
 def _load_jsonl(path: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
@@ -74,6 +91,31 @@ def _require_contract(dense_schema: dict[str, Any], composed_schema: dict[str, A
                 f"dense/composed schemas disagree on {key}: "
                 f"{dense.get(key)!r} vs {composed.get(key)!r}"
             )
+
+
+def _combined_policy_signature(
+    dense_schema: dict[str, Any], composed_schema: dict[str, Any]
+) -> dict[str, dict[str, Any]]:
+    def subset(payload: dict[str, Any]) -> dict[str, Any]:
+        values: dict[str, Any] = {}
+        for key in COMBINED_POLICY_INVARIANT_KEYS:
+            if key in {"group_keep_rates", "group_vision_tower_keep_rates"}:
+                value = payload.get(key)
+                if value is None:
+                    value = {}
+            elif key not in payload:
+                continue
+            else:
+                value = payload.get(key)
+            if key in {"group_keep_rates", "group_vision_tower_keep_rates"} and value is None:
+                value = {}
+            values[key] = value
+        return values
+
+    return {
+        "dense": subset(_artifact_payload(dense_schema)),
+        "composed": subset(_artifact_payload(composed_schema)),
+    }
 
 
 def _rows_by_item(rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
@@ -280,10 +322,16 @@ def main() -> int:
         )
     paired: list[dict[str, Any]] = []
     source_pairs: list[dict[str, Any]] = []
+    policy_signature: dict[str, dict[str, Any]] | None = None
     for dense_path, composed_path in zip(dense_paths, composed_paths, strict=True):
         dense_schema, dense_rows = _load_jsonl(dense_path)
         composed_schema, composed_rows = _load_jsonl(composed_path)
         _require_contract(dense_schema, composed_schema)
+        source_signature = _combined_policy_signature(dense_schema, composed_schema)
+        if policy_signature is None:
+            policy_signature = source_signature
+        elif source_signature != policy_signature:
+            raise ValueError("combined analysis source pairs disagree on policy/config invariants")
         source_paired = _paired_rows(dense_rows, composed_rows, expected_items=None)
         source_pairs.append(
             {

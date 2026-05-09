@@ -7,13 +7,15 @@ from pathlib import Path
 from typing import Any
 
 
-def _schema(*, prune_placeholders: str, vision_keep_rate: float) -> dict[str, Any]:
+def _schema(
+    *, prune_placeholders: str, vision_keep_rate: float, frame_count: int = 8
+) -> dict[str, Any]:
     return {
         "kind": "schema",
         "schema_version": "phase1_51r_gemma_admission_v4",
         "artifact_payload": {
             "manifest": "manifest.toml",
-            "frame_count": 8,
+            "frame_count": frame_count,
             "prefill_step_size": 1024,
             "prune_placeholders": prune_placeholders,
             "vision_tower_keep_rate": vision_keep_rate,
@@ -162,6 +164,68 @@ def test_full_composition_analyzer_combines_disjoint_sources(tmp_path: Path) -> 
         },
     ]
     assert len(paired.read_text().strip().splitlines()) == 10
+
+
+def test_full_composition_analyzer_rejects_mixed_combined_policy(
+    tmp_path: Path,
+) -> None:
+    dense_dev = tmp_path / "dense_dev.jsonl"
+    composed_dev = tmp_path / "composed_dev.jsonl"
+    dense_holdout = tmp_path / "dense_holdout.jsonl"
+    composed_holdout = tmp_path / "composed_holdout.jsonl"
+    output = tmp_path / "analysis.json"
+    paired = tmp_path / "paired.jsonl"
+    dev_items = [_row("dev-0", group="short", dense_correct=True, pruned_correct=True)]
+    holdout_items = [_row("holdout-0", group="short", dense_correct=True, pruned_correct=True)]
+    _write_jsonl(
+        dense_dev,
+        [_schema(prune_placeholders="none", vision_keep_rate=1.0), *dev_items],
+    )
+    _write_jsonl(
+        composed_dev,
+        [_schema(prune_placeholders="rlt", vision_keep_rate=0.5), *dev_items],
+    )
+    _write_jsonl(
+        dense_holdout,
+        [
+            _schema(prune_placeholders="none", vision_keep_rate=1.0, frame_count=16),
+            *holdout_items,
+        ],
+    )
+    _write_jsonl(
+        composed_holdout,
+        [
+            _schema(prune_placeholders="rlt", vision_keep_rate=0.5, frame_count=16),
+            *holdout_items,
+        ],
+    )
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/analyze_gemma_full_composition.py",
+            "--dense-jsonl",
+            str(dense_dev),
+            "--dense-jsonl",
+            str(dense_holdout),
+            "--composed-jsonl",
+            str(composed_dev),
+            "--composed-jsonl",
+            str(composed_holdout),
+            "--output",
+            str(output),
+            "--paired-items",
+            str(paired),
+            "--expected-items",
+            "2",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode != 0
+    assert "source pairs disagree on policy/config invariants" in completed.stderr
 
 
 def test_full_composition_analyzer_rejects_sparse_dense_reference(tmp_path: Path) -> None:
