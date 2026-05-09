@@ -1,0 +1,245 @@
+{
+  "active_box_policy": "uniform_decode_active_box_for_current_sampled_frame",
+  "calibration_mode": "per-item",
+  "calibration_source": "live-pixel",
+  "codec_accuracy": 0.8,
+  "codec_dense_agreement": 1.0,
+  "codec_minus_pixel_accuracy": 0.1,
+  "codec_pixel_agreement": 0.9,
+  "codec_reuse_ratio_mean_active": 0.12114285721576641,
+  "codec_score_source": "residual",
+  "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+  "dense_accuracy": 0.8,
+  "environment": {
+    "datasets": "4.8.4",
+    "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "git_dirty": true,
+    "git_sha": "680bcee9aabec753cf4403131984de11f908831e",
+    "huggingface_hub": "1.10.1",
+    "mlx_vlm_module": "/Users/jfb/s/codec-through-2/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
+    "model_path": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
+    "platform": "darwin",
+    "python": "3.12.12"
+  },
+  "frame_count": 8,
+  "fusion": {
+    "mode": "weighted",
+    "motion_weight": 1.0,
+    "normalize_inputs": true,
+    "residual_extractor": "pyav_motion_compensated_reconstructed_y_proxy",
+    "residual_weight": 1.0
+  },
+  "h264_extractor": {
+    "b_cbf_thresh": 6.0,
+    "cbf_thresh": 3.0,
+    "mv_only": false,
+    "novel_thresh": 8.0,
+    "static_thresh": 3.0,
+    "zero_mv_thresh": 0.5
+  },
+  "items": [
+    {
+      "codec_choice_index": 2,
+      "codec_correct": true,
+      "codec_extract_s": 25.42824375,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 0.6483376026153564,
+        "static": 0.5946841835975647
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:037-2",
+      "pair_selection_jaccard_mean": 0.6758793013298351,
+      "pixel_choice_index": 0,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 8.810830625,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 1.6708358526229858,
+        "static": 1.3261638879776
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:100-2",
+      "pair_selection_jaccard_mean": 0.30062794348508637,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 18.179464708,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 0.5566110014915466,
+        "static": 0.35027962923049927
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:116-3",
+      "pair_selection_jaccard_mean": 0.8571428571428571,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 13.153132583,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 0.7918006181716919,
+        "static": 0.2702873945236206
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:120-2",
+      "pair_selection_jaccard_mean": 0.4813101943286275,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 2,
+      "codec_correct": false,
+      "codec_extract_s": 16.0805775,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 0.5369573831558228,
+        "static": 0.036510225385427475
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:158-3",
+      "pair_selection_jaccard_mean": 0.5714285714285714,
+      "pixel_choice_index": 2,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 2,
+      "codec_correct": true,
+      "codec_extract_s": 12.536455792,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 0.036427970975637436,
+        "static": 0.021483175456523895
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:160-1",
+      "pair_selection_jaccard_mean": 0.5758928571428571,
+      "pixel_choice_index": 2,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 21.240258916,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 0.09123779833316803,
+        "static": 0.0330863893032074
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:210-2",
+      "pair_selection_jaccard_mean": 0.8571428571428571,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 15.352279958,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 1.4595577716827393,
+        "static": 0.5702309608459473
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:264-1",
+      "pair_selection_jaccard_mean": 0.7142857142857143,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 19.4652435,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 3.1582114696502686,
+        "static": 1.460925817489624
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:278-3",
+      "pair_selection_jaccard_mean": 0.8571428571428571,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": false,
+      "codec_extract_s": 21.875064666,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 1.4968254566192627,
+        "static": 0.3717098534107208
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:282-2",
+      "pair_selection_jaccard_mean": 0.2735624520463456,
+      "pixel_choice_index": 3,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    }
+  ],
+  "manifest_path": "research/benchmark_manifests/videomme_dev_v1_short_only.toml",
+  "n_items": 10,
+  "pair_selection_jaccard_mean": 0.6164415605475608,
+  "phase": "1.29",
+  "pixel_accuracy": 0.7,
+  "pixel_dense_agreement": 0.9,
+  "pixel_reuse_ratio_mean_active": 0.12507142847669975,
+  "planner": {
+    "max_age": null,
+    "pixel_change_threshold": 8.0,
+    "reuse_classes": [
+      "static",
+      "shifted"
+    ],
+    "shifted_threshold": 8.0,
+    "static_threshold": 3.0,
+    "statistic": "mean",
+    "sticky_window": null,
+    "top_k": 16
+  },
+  "precompute_cache_path": "research/experiments/2026/artifacts/phase1_29_onevision_dev/residual/precompute_cache.json",
+  "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project",
+  "score_projection_version": 2
+}
