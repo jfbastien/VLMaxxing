@@ -82,6 +82,68 @@ Canonical N=20 result on the 20 unique items:
    in continuous-score mode — but the dev-tranche evidence that they match dense at zero
    drift is paper-worthy.
 
+## The single divergent item — `videomme:short:037-2`
+
+Per-item forensics across all four codec sources at N=20:
+
+| | dense | pixel | codec | correct? |
+|---|---|---|---|---|
+| ground truth | — | — | — | choice 2 |
+| Qwen dense (no caching) | **2** | — | — | ✓ |
+| pixel max_abs cache | — | **0** | — | ✗ |
+| novel_coded codec cache | — | — | **2** | ✓ |
+| motion-only codec cache | — | — | **2** | ✓ |
+| residual-only codec cache | — | — | **2** | ✓ |
+| **OneVision fused** codec cache | — | — | **0** | ✗ (matches pixel) |
+
+This is the only item that disagrees among the configurations. **The codec doesn't just
+match dense — it rescues the answer that pixel-diff loses.** Three independent codec
+signals converge on the correct choice while pixel and the OneVision-style fused score
+both pick the wrong one. The fused score's `codec→pixel = 20/20` agreement is *not*
+a virtue here: on 037-2 it inherits pixel's wrong answer.
+
+## Selection overlap does not predict answer agreement on this slice
+
+`pair_selection_jaccard_mean` distributions across N=20:
+
+| source | min | median | max |
+|---|---|---|---|
+| novel_coded | 0.143 | 0.571 | 1.000 |
+| motion | **0.014** | 0.500 | 0.857 |
+| residual | 0.143 | 0.571 | 0.857 |
+| fused | 0.127 | 0.500 | 0.857 |
+
+Motion has 8 of 20 items at jaccard < 0.3 — practically zero tile-overlap with pixel —
+and still hits codec→dense on every one. Strict statistical correlation isn't estimable
+because codec→dense is constant at 20/20 for the simple sources, but the descriptive
+claim is clean: low Jaccard did not prevent dense agreement on this slice, and the
+paper should not lean on Jaccard as a quality signal. The redundancy is real evidence
+that the model can land on the right answer from substantially different fresh-tile
+sets at this budget.
+
+## Codec extraction overhead — honest accounting
+
+Per-item H.264 metadata extraction time at N=20 (median across sources):
+
+| source | median codec_extract_s | min | max |
+|---|---|---|---|
+| novel_coded | 18.71 | 6.35 | 27.21 |
+| motion | 18.65 | 6.34 | 27.00 |
+| residual | 19.39 | 6.54 | 28.44 |
+| fused | 18.66 | 6.43 | 27.14 |
+
+Median ~19 seconds per item to extract H.264 metadata for an 8-frame sample on M3 16GB
+via PyAV. For comparison, codec-cached inference median in our results is ~22–23 s/item
+and dense inference median is ~30–32 s/item — extraction is ~80% of codec-cached
+inference time, **not orders of magnitude smaller**.
+
+The "free signal" framing is principled, not literal: every video decoder computes
+this metadata as a byproduct of decompression, so a decoder-integrated implementation
+would surface it for ~zero. The 19 s/item we measure is our PyAV-based extraction
+re-decoding the video separately — an upper bound on the deployed cost, not the floor.
+Residual is consistently 3–5% slower than the others (extra reconstructed-Y
+subtraction). Reporting both numbers in the paper keeps the claim honest.
+
 ## Industry impact framing — the WOW
 
 > Frozen Qwen2.5-VL-7B with codec-fed Track A reuse, ~10% of vision blocks refreshed
@@ -139,4 +201,4 @@ Artifacts:
 - `research/experiments/2026/artifacts/phase1_29_onevision_dev_n20_short/{comparison,*}.{md,json}`
 - `research/experiments/2026/artifacts/onevision_vlmaxxing_plan/comparison_table_plan.md`
 
-Total CPU+GPU time on M5: ~3.5h sequential for OV-3 + OV-3 broader.
+Total wall on M3 16GB MBA (MLX, unified GPU): ~3.5h sequential for OV-3 + OV-3 broader.
