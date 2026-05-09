@@ -495,7 +495,7 @@ cache-aware sparse-token interface as future work.
 - residual: codec_acc 0.800, codec→dense 10/10, pair_jaccard 0.616
 - fused: codec_acc 0.700 = pixel, codec→dense 9/10, codec→pixel 10/10, pair_jaccard 0.565
 
-Wall: 71 minutes M5, 4 sources sequential.
+Wall: 71 minutes on M3 16GB MBA (MLX, unified GPU), 4 sources sequential.
 Artifact: `research/experiments/2026/artifacts/phase1_29_onevision_dev/`.
 
 ### 2026-05-09 — OV-3 broader N=20, VideoMME short dev∪holdout
@@ -505,7 +505,7 @@ Artifact: `research/experiments/2026/artifacts/phase1_29_onevision_dev/`.
 - residual: codec_acc 0.750, codec→dense 20/20, pair_jaccard 0.546
 - fused: codec_acc 0.700 = pixel, codec→dense 19/20, codec→pixel 20/20, pair_jaccard 0.492
 
-Wall: ~2.5 hours M5, 4 sources sequential.
+Wall: ~2.5 hours on M3 16GB MBA (MLX, unified GPU), 4 sources sequential.
 Artifact: `research/experiments/2026/artifacts/phase1_29_onevision_dev_n20_short/`.
 
 ### Aggregate (20 unique items; n=10 dev is a subset of n=20 broader)
