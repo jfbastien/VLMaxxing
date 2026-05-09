@@ -488,5 +488,44 @@ cache-aware sparse-token interface as future work.
 
 ## Execution Log
 
-Pending model work. This phase has run CPU-only tests and generated planning
-artifacts only; no GPU/model experiment has been run.
+### 2026-05-09 — OV-3 dev n=10, VideoMME short, Qwen2.5-VL-7B-4bit, 8 frames
+
+- novel_coded: codec_acc 0.800 = dense, pixel 0.700, codec→dense 10/10, pair_jaccard 0.614
+- motion: codec_acc 0.800, codec→dense 10/10, pair_jaccard 0.520
+- residual: codec_acc 0.800, codec→dense 10/10, pair_jaccard 0.616
+- fused: codec_acc 0.700 = pixel, codec→dense 9/10, codec→pixel 10/10, pair_jaccard 0.565
+
+Wall: 71 minutes M5, 4 sources sequential.
+Artifact: `research/experiments/2026/artifacts/phase1_29_onevision_dev/`.
+
+### 2026-05-09 — OV-3 broader N=20, VideoMME short dev∪holdout
+
+- novel_coded: codec_acc 0.750 = dense, pixel 0.700, codec→dense 20/20, pair_jaccard 0.560
+- motion: codec_acc 0.750, codec→dense 20/20, pair_jaccard 0.451
+- residual: codec_acc 0.750, codec→dense 20/20, pair_jaccard 0.546
+- fused: codec_acc 0.700 = pixel, codec→dense 19/20, codec→pixel 20/20, pair_jaccard 0.492
+
+Wall: ~2.5 hours M5, 4 sources sequential.
+Artifact: `research/experiments/2026/artifacts/phase1_29_onevision_dev_n20_short/`.
+
+### Aggregate (20 unique items; n=10 dev is a subset of n=20 broader)
+
+The n=10 and n=20 passes share the 10 dev items by construction (n=20 manifest =
+n=10 dev ∪ 10 new holdout). The two passes agree on the overlap. Canonical N is 20
+unique items, evidenced by the n=20 summaries.
+
+- novel_coded / motion / residual: codec→dense **20/20** (100%) at N=20, +5pp over pixel.
+- fused: codec→dense **19/20** (95%) at N=20, codec→pixel 20/20 (matches pixel answer
+  set exactly), +0pp over pixel.
+- pixel max_abs: pixel→dense **19/20** (95%) at N=20.
+- Mean active reuse 0.09–0.10 codec versus 0.10 pixel — same spend, no drift on the
+  simple codec sources, persistent drift on the fused score.
+
+The decision-log reopen condition for "Continuous H.264 spatial scoring as saliency
+oracle" is satisfied for novel_coded, motion, and residual. The fused score does not
+satisfy the reopen gate: it matches pixel rather than beating both pixel and novel_coded.
+
+Editor packet: `research/experiments/2026/artifacts/onevision_vlmaxxing_plan/editor_packet_draft.md`.
+
+OV-4 (NVIDIA parity) and OV-6 (Track B sparse vision) remain deferred. OV-8 (C-PERSIST
+session economics) is CPU-only accounting and can run without new model time.

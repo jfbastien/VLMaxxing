@@ -78,10 +78,14 @@ def main() -> None:
     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
     args = parser.parse_args()
 
-    rows = [_format_row(source, _load(args.out_dir, source)) for source in SOURCES]
+    summaries = {source: _load(args.out_dir, source) for source in SOURCES}
+    rows = [_format_row(source, summaries[source]) for source in SOURCES]
+    manifests = sorted({str(summaries[source]["manifest_path"]) for source in SOURCES})
+    if len(manifests) != 1:
+        raise ValueError(f"per-source summaries disagree on manifest_path: {manifests}")
     payload = {
         "phase": "OV-3",
-        "manifest": "videomme_dev_v1_short_only.toml",
+        "manifest": manifests[0],
         "model": "Qwen2.5-VL-7B-Instruct-4bit",
         "frame_count": 8,
         "max_tokens": 32,
