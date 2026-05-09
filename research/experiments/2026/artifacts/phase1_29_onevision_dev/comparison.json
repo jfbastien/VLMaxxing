@@ -1,6 +1,6 @@
 {
   "frame_count": 8,
-  "manifest": "videomme_dev_v1_short_only.toml",
+  "manifest": "research/benchmark_manifests/videomme_dev_v1_short_only.toml",
   "max_tokens": 32,
   "model": "Qwen2.5-VL-7B-Instruct-4bit",
   "phase": "OV-3",
