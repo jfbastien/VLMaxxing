@@ -56,6 +56,16 @@ broader pass spanning both):
   dense=0.800 vs codec=0.700 on those 10 items. The "codec preserves dense" claim
   is real, but when dense itself drifts the comparison can go either direction.
 
+- **Frame=16 robustness check breaks the codec→dense=20/20 pattern.** Re-running
+  novel_coded on the same 20-item manifest at frame_count=16 gives codec_acc=0.750
+  = pixel_acc, codec→dense=0.950 (1 drift), and codec→pixel=1.000 (codec selects
+  the pixel answer set on every item). This is the same pixel-mimicry pathology
+  fused exhibited at frame=8. The codec advantage at frame=8 does not generalize
+  to frame=16; at higher frame budget the codec score's tile selections converge
+  with pixel max_abs (jaccard 0.600 vs frame=8's 0.560, codec_reuse 0.144 vs
+  0.103). The configuration window where codec helps appears to be specifically
+  frame=8 / matched-share calibration / VideoMME short.
+
 The honest paper claim: at this configuration, codec saliency demonstrably tracks
 the frozen dense backbone (Wilson lower 84%) and is more deterministic than dense
 across driver invocations. The fused score regresses to pixel-mimicry. We do not
