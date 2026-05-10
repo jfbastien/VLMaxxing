@@ -362,7 +362,8 @@ def main() -> None:
             }
         payload["tranches"].append(tpayload)
 
-    payload["dense_determinism"] = _dense_determinism(tranches)
+    if len(tranches) >= 3:
+        payload["dense_determinism"] = _dense_determinism(tuple(tranches[:3]))
     payload["multiple_comparisons"] = _multiple_comparisons_summary(payload["tranches"])
 
     # Aggregate extraction timing across all tranches and sources.
@@ -394,17 +395,18 @@ def main() -> None:
                 f"{c['codec_dense_agreement']['wilson_95_ci'][1]:.3f}] | "
                 f"{mc['mcnemar_exact_p_two_sided']:.3f} ({mc['interpretation']}) |"
             )
-    print()
-    print("## Dense determinism (driver-session overlaps)")
-    dd = payload["dense_determinism"]
-    print(f"- pair 1 (dev vs n=20 on 10 dev items): {dd['pair1_dev_vs_n20']['flips']} flips / {dd['pair1_dev_vs_n20']['n_items']}")
-    print(f"- pair 2 (n=20 vs disjoint on 10 holdout items): {dd['pair2_n20_vs_disjoint']['flips']} flips / {dd['pair2_n20_vs_disjoint']['n_items']}")
-    a = dd["aggregate"]
-    print(
-        f"- aggregate: {a['successes']}/{a['n']} = {a['rate']:.3f}, "
-        f"Wilson 95% [{a['wilson_95_ci'][0]:.3f}, {a['wilson_95_ci'][1]:.3f}], "
-        f"Clopper-Pearson [{a['clopper_pearson_95_ci'][0]:.3f}, {a['clopper_pearson_95_ci'][1]:.3f}]"
-    )
+    if "dense_determinism" in payload:
+        print()
+        print("## Dense determinism (driver-session overlaps)")
+        dd = payload["dense_determinism"]
+        print(f"- pair 1 (dev vs n=20 on 10 dev items): {dd['pair1_dev_vs_n20']['flips']} flips / {dd['pair1_dev_vs_n20']['n_items']}")
+        print(f"- pair 2 (n=20 vs disjoint on 10 holdout items): {dd['pair2_n20_vs_disjoint']['flips']} flips / {dd['pair2_n20_vs_disjoint']['n_items']}")
+        a = dd["aggregate"]
+        print(
+            f"- aggregate: {a['successes']}/{a['n']} = {a['rate']:.3f}, "
+            f"Wilson 95% [{a['wilson_95_ci'][0]:.3f}, {a['wilson_95_ci'][1]:.3f}], "
+            f"Clopper-Pearson [{a['clopper_pearson_95_ci'][0]:.3f}, {a['clopper_pearson_95_ci'][1]:.3f}]"
+        )
     print()
     print("## Codec extraction timing (s, aggregated)")
     et = payload["extraction_timing"]
