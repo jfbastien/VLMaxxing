@@ -1,0 +1,310 @@
+{
+  "all_sources_aggregate": {
+    "fused": {
+      "codec_acc": 0.7,
+      "codec_correct": 28,
+      "codec_matches_pixel_correct": 40,
+      "codec_rescues_pixel": 0,
+      "dense_acc": 0.775,
+      "dense_correct": 31,
+      "n": 40,
+      "pixel_acc": 0.7,
+      "pixel_correct": 28,
+      "pixel_rescues_codec": 0
+    },
+    "motion": {
+      "codec_acc": 0.75,
+      "codec_correct": 30,
+      "codec_matches_pixel_correct": 38,
+      "codec_rescues_pixel": 2,
+      "dense_acc": 0.775,
+      "dense_correct": 31,
+      "n": 40,
+      "pixel_acc": 0.7,
+      "pixel_correct": 28,
+      "pixel_rescues_codec": 0
+    },
+    "novel_coded": {
+      "codec_acc": 0.75,
+      "codec_correct": 30,
+      "codec_matches_pixel_correct": 38,
+      "codec_rescues_pixel": 2,
+      "dense_acc": 0.775,
+      "dense_correct": 31,
+      "n": 40,
+      "pixel_acc": 0.7,
+      "pixel_correct": 28,
+      "pixel_rescues_codec": 0
+    },
+    "residual": {
+      "codec_acc": 0.75,
+      "codec_correct": 30,
+      "codec_matches_pixel_correct": 38,
+      "codec_rescues_pixel": 2,
+      "dense_acc": 0.775,
+      "dense_correct": 31,
+      "n": 40,
+      "pixel_acc": 0.7,
+      "pixel_correct": 28,
+      "pixel_rescues_codec": 0
+    }
+  },
+  "tranches": [
+    {
+      "by_source": {
+        "fused": {
+          "codec_acc": 0.7,
+          "codec_correct": 7,
+          "codec_matches_pixel_correct": 10,
+          "codec_rescues_pixel": 0,
+          "dense_acc": 0.8,
+          "dense_correct": 8,
+          "n": 10,
+          "pixel_acc": 0.7,
+          "pixel_correct": 7,
+          "pixel_rescues_codec": 0
+        },
+        "motion": {
+          "codec_acc": 0.8,
+          "codec_correct": 8,
+          "codec_matches_pixel_correct": 9,
+          "codec_rescues_pixel": 1,
+          "dense_acc": 0.8,
+          "dense_correct": 8,
+          "n": 10,
+          "pixel_acc": 0.7,
+          "pixel_correct": 7,
+          "pixel_rescues_codec": 0
+        },
+        "novel_coded": {
+          "codec_acc": 0.8,
+          "codec_correct": 8,
+          "codec_matches_pixel_correct": 9,
+          "codec_rescues_pixel": 1,
+          "dense_acc": 0.8,
+          "dense_correct": 8,
+          "n": 10,
+          "pixel_acc": 0.7,
+          "pixel_correct": 7,
+          "pixel_rescues_codec": 0
+        },
+        "residual": {
+          "codec_acc": 0.8,
+          "codec_correct": 8,
+          "codec_matches_pixel_correct": 9,
+          "codec_rescues_pixel": 1,
+          "dense_acc": 0.8,
+          "dense_correct": 8,
+          "n": 10,
+          "pixel_acc": 0.7,
+          "pixel_correct": 7,
+          "pixel_rescues_codec": 0
+        }
+      },
+      "disagreements": [
+        {
+          "answer_index": 2,
+          "by_source": [
+            {
+              "answer_index": 2,
+              "codec_choice": 2,
+              "codec_correct": true,
+              "dense_choice": 2,
+              "dense_correct": true,
+              "pixel_choice": 0,
+              "pixel_correct": false,
+              "source": "novel_coded"
+            },
+            {
+              "answer_index": 2,
+              "codec_choice": 2,
+              "codec_correct": true,
+              "dense_choice": 2,
+              "dense_correct": true,
+              "pixel_choice": 0,
+              "pixel_correct": false,
+              "source": "motion"
+            },
+            {
+              "answer_index": 2,
+              "codec_choice": 2,
+              "codec_correct": true,
+              "dense_choice": 2,
+              "dense_correct": true,
+              "pixel_choice": 0,
+              "pixel_correct": false,
+              "source": "residual"
+            },
+            {
+              "answer_index": 2,
+              "codec_choice": 0,
+              "codec_correct": false,
+              "dense_choice": 2,
+              "dense_correct": true,
+              "pixel_choice": 0,
+              "pixel_correct": false,
+              "source": "fused"
+            }
+          ],
+          "item_id": "videomme:short:037-2"
+        }
+      ],
+      "path": "research/experiments/2026/artifacts/phase1_29_onevision_dev"
+    },
+    {
+      "by_source": {
+        "fused": {
+          "codec_acc": 0.7,
+          "codec_correct": 14,
+          "codec_matches_pixel_correct": 20,
+          "codec_rescues_pixel": 0,
+          "dense_acc": 0.75,
+          "dense_correct": 15,
+          "n": 20,
+          "pixel_acc": 0.7,
+          "pixel_correct": 14,
+          "pixel_rescues_codec": 0
+        },
+        "motion": {
+          "codec_acc": 0.75,
+          "codec_correct": 15,
+          "codec_matches_pixel_correct": 19,
+          "codec_rescues_pixel": 1,
+          "dense_acc": 0.75,
+          "dense_correct": 15,
+          "n": 20,
+          "pixel_acc": 0.7,
+          "pixel_correct": 14,
+          "pixel_rescues_codec": 0
+        },
+        "novel_coded": {
+          "codec_acc": 0.75,
+          "codec_correct": 15,
+          "codec_matches_pixel_correct": 19,
+          "codec_rescues_pixel": 1,
+          "dense_acc": 0.75,
+          "dense_correct": 15,
+          "n": 20,
+          "pixel_acc": 0.7,
+          "pixel_correct": 14,
+          "pixel_rescues_codec": 0
+        },
+        "residual": {
+          "codec_acc": 0.75,
+          "codec_correct": 15,
+          "codec_matches_pixel_correct": 19,
+          "codec_rescues_pixel": 1,
+          "dense_acc": 0.75,
+          "dense_correct": 15,
+          "n": 20,
+          "pixel_acc": 0.7,
+          "pixel_correct": 14,
+          "pixel_rescues_codec": 0
+        }
+      },
+      "disagreements": [
+        {
+          "answer_index": 2,
+          "by_source": [
+            {
+              "answer_index": 2,
+              "codec_choice": 2,
+              "codec_correct": true,
+              "dense_choice": 2,
+              "dense_correct": true,
+              "pixel_choice": 0,
+              "pixel_correct": false,
+              "source": "novel_coded"
+            },
+            {
+              "answer_index": 2,
+              "codec_choice": 2,
+              "codec_correct": true,
+              "dense_choice": 2,
+              "dense_correct": true,
+              "pixel_choice": 0,
+              "pixel_correct": false,
+              "source": "motion"
+            },
+            {
+              "answer_index": 2,
+              "codec_choice": 2,
+              "codec_correct": true,
+              "dense_choice": 2,
+              "dense_correct": true,
+              "pixel_choice": 0,
+              "pixel_correct": false,
+              "source": "residual"
+            },
+            {
+              "answer_index": 2,
+              "codec_choice": 0,
+              "codec_correct": false,
+              "dense_choice": 2,
+              "dense_correct": true,
+              "pixel_choice": 0,
+              "pixel_correct": false,
+              "source": "fused"
+            }
+          ],
+          "item_id": "videomme:short:037-2"
+        }
+      ],
+      "path": "research/experiments/2026/artifacts/phase1_29_onevision_dev_n20_short"
+    },
+    {
+      "by_source": {
+        "fused": {
+          "codec_acc": 0.7,
+          "codec_correct": 7,
+          "codec_matches_pixel_correct": 10,
+          "codec_rescues_pixel": 0,
+          "dense_acc": 0.8,
+          "dense_correct": 8,
+          "n": 10,
+          "pixel_acc": 0.7,
+          "pixel_correct": 7,
+          "pixel_rescues_codec": 0
+        },
+        "motion": {
+          "codec_acc": 0.7,
+          "codec_correct": 7,
+          "codec_matches_pixel_correct": 10,
+          "codec_rescues_pixel": 0,
+          "dense_acc": 0.8,
+          "dense_correct": 8,
+          "n": 10,
+          "pixel_acc": 0.7,
+          "pixel_correct": 7,
+          "pixel_rescues_codec": 0
+        },
+        "novel_coded": {
+          "codec_acc": 0.7,
+          "codec_correct": 7,
+          "codec_matches_pixel_correct": 10,
+          "codec_rescues_pixel": 0,
+          "dense_acc": 0.8,
+          "dense_correct": 8,
+          "n": 10,
+          "pixel_acc": 0.7,
+          "pixel_correct": 7,
+          "pixel_rescues_codec": 0
+        },
+        "residual": {
+          "codec_acc": 0.7,
+          "codec_correct": 7,
+          "codec_matches_pixel_correct": 10,
+          "codec_rescues_pixel": 0,
+          "dense_acc": 0.8,
+          "dense_correct": 8,
+          "n": 10,
+          "pixel_acc": 0.7,
+          "pixel_correct": 7,
+          "pixel_rescues_codec": 0
+        }
+      },
+      "disagreements": [],
+      "path": "research/experiments/2026/artifacts/phase1_29_onevision_holdout_disjoint"
+    }
+  ]
+}
