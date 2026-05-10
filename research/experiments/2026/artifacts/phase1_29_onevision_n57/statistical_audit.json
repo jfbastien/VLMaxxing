@@ -1,0 +1,334 @@
+{
+  "extraction_timing": {
+    "max_s": 29.357937958,
+    "mean_s": 18.486071409877194,
+    "median_s": 19.3708295625,
+    "min_s": 6.543203959,
+    "n": 228,
+    "p95_s": 28.120951584
+  },
+  "multiple_comparisons": {
+    "bonferroni_alpha_for_per_cell_at_family_05": 0.0125,
+    "n_cells_compared": 4,
+    "note": "We tested 4 codec sources \u00d7 3 tranches = 12 cells. Per-cell McNemar p-values must be compared against alpha = 0.05 / 12 \u2248 0.0042 for family-wise control under Bonferroni. Most p-values here are >0.05 even uncorrected at this N; the multiple-comparisons concern is directional, not the limiting factor."
+  },
+  "tranches": [
+    {
+      "by_source": {
+        "fused": {
+          "correctness": {
+            "codec": {
+              "clopper_pearson_95_ci": [
+                0.5476,
+                0.8009
+              ],
+              "n": 57,
+              "rate": 0.6842105263157895,
+              "successes": 39,
+              "wilson_95_ci": [
+                0.5552,
+                0.79
+              ]
+            },
+            "codec_dense_agreement": {
+              "clopper_pearson_95_ci": [
+                0.8538,
+                0.989
+              ],
+              "n": 57,
+              "rate": 0.9473684210526315,
+              "successes": 54,
+              "wilson_95_ci": [
+                0.8563,
+                0.9819
+              ]
+            },
+            "codec_pixel_agreement": {
+              "clopper_pearson_95_ci": [
+                0.8789,
+                0.9957
+              ],
+              "n": 57,
+              "rate": 0.9649122807017544,
+              "successes": 55,
+              "wilson_95_ci": [
+                0.8808,
+                0.9903
+              ]
+            },
+            "dense": {
+              "clopper_pearson_95_ci": [
+                0.5294,
+                0.786
+              ],
+              "n": 57,
+              "rate": 0.6666666666666666,
+              "successes": 38,
+              "wilson_95_ci": [
+                0.5372,
+                0.7751
+              ]
+            },
+            "n": 57,
+            "pixel": {
+              "clopper_pearson_95_ci": [
+                0.5113,
+                0.7709
+              ],
+              "n": 57,
+              "rate": 0.6491228070175439,
+              "successes": 37,
+              "wilson_95_ci": [
+                0.5194,
+                0.76
+              ]
+            }
+          },
+          "mcnemar_codec_vs_pixel": {
+            "interpretation": "INCONCLUSIVE",
+            "mcnemar_exact_p_two_sided": 0.5,
+            "n": 57,
+            "rows_broken_by_codec": 0,
+            "rows_concordant": 55,
+            "rows_fixed_by_codec": 2
+          }
+        },
+        "motion": {
+          "correctness": {
+            "codec": {
+              "clopper_pearson_95_ci": [
+                0.5476,
+                0.8009
+              ],
+              "n": 57,
+              "rate": 0.6842105263157895,
+              "successes": 39,
+              "wilson_95_ci": [
+                0.5552,
+                0.79
+              ]
+            },
+            "codec_dense_agreement": {
+              "clopper_pearson_95_ci": [
+                0.8538,
+                0.989
+              ],
+              "n": 57,
+              "rate": 0.9473684210526315,
+              "successes": 54,
+              "wilson_95_ci": [
+                0.8563,
+                0.9819
+              ]
+            },
+            "codec_pixel_agreement": {
+              "clopper_pearson_95_ci": [
+                0.8789,
+                0.9957
+              ],
+              "n": 57,
+              "rate": 0.9649122807017544,
+              "successes": 55,
+              "wilson_95_ci": [
+                0.8808,
+                0.9903
+              ]
+            },
+            "dense": {
+              "clopper_pearson_95_ci": [
+                0.5294,
+                0.786
+              ],
+              "n": 57,
+              "rate": 0.6666666666666666,
+              "successes": 38,
+              "wilson_95_ci": [
+                0.5372,
+                0.7751
+              ]
+            },
+            "n": 57,
+            "pixel": {
+              "clopper_pearson_95_ci": [
+                0.5113,
+                0.7709
+              ],
+              "n": 57,
+              "rate": 0.6491228070175439,
+              "successes": 37,
+              "wilson_95_ci": [
+                0.5194,
+                0.76
+              ]
+            }
+          },
+          "mcnemar_codec_vs_pixel": {
+            "interpretation": "INCONCLUSIVE",
+            "mcnemar_exact_p_two_sided": 0.5,
+            "n": 57,
+            "rows_broken_by_codec": 0,
+            "rows_concordant": 55,
+            "rows_fixed_by_codec": 2
+          }
+        },
+        "novel_coded": {
+          "correctness": {
+            "codec": {
+              "clopper_pearson_95_ci": [
+                0.566,
+                0.8157
+              ],
+              "n": 57,
+              "rate": 0.7017543859649122,
+              "successes": 40,
+              "wilson_95_ci": [
+                0.5734,
+                0.8047
+              ]
+            },
+            "codec_dense_agreement": {
+              "clopper_pearson_95_ci": [
+                0.8789,
+                0.9957
+              ],
+              "n": 57,
+              "rate": 0.9649122807017544,
+              "successes": 55,
+              "wilson_95_ci": [
+                0.8808,
+                0.9903
+              ]
+            },
+            "codec_pixel_agreement": {
+              "clopper_pearson_95_ci": [
+                0.8538,
+                0.989
+              ],
+              "n": 57,
+              "rate": 0.9473684210526315,
+              "successes": 54,
+              "wilson_95_ci": [
+                0.8563,
+                0.9819
+              ]
+            },
+            "dense": {
+              "clopper_pearson_95_ci": [
+                0.5294,
+                0.786
+              ],
+              "n": 57,
+              "rate": 0.6666666666666666,
+              "successes": 38,
+              "wilson_95_ci": [
+                0.5372,
+                0.7751
+              ]
+            },
+            "n": 57,
+            "pixel": {
+              "clopper_pearson_95_ci": [
+                0.5113,
+                0.7709
+              ],
+              "n": 57,
+              "rate": 0.6491228070175439,
+              "successes": 37,
+              "wilson_95_ci": [
+                0.5194,
+                0.76
+              ]
+            }
+          },
+          "mcnemar_codec_vs_pixel": {
+            "interpretation": "INCONCLUSIVE",
+            "mcnemar_exact_p_two_sided": 0.25,
+            "n": 57,
+            "rows_broken_by_codec": 0,
+            "rows_concordant": 54,
+            "rows_fixed_by_codec": 3
+          }
+        },
+        "residual": {
+          "correctness": {
+            "codec": {
+              "clopper_pearson_95_ci": [
+                0.5476,
+                0.8009
+              ],
+              "n": 57,
+              "rate": 0.6842105263157895,
+              "successes": 39,
+              "wilson_95_ci": [
+                0.5552,
+                0.79
+              ]
+            },
+            "codec_dense_agreement": {
+              "clopper_pearson_95_ci": [
+                0.9061,
+                0.9996
+              ],
+              "n": 57,
+              "rate": 0.9824561403508771,
+              "successes": 56,
+              "wilson_95_ci": [
+                0.9071,
+                0.9969
+              ]
+            },
+            "codec_pixel_agreement": {
+              "clopper_pearson_95_ci": [
+                0.8789,
+                0.9957
+              ],
+              "n": 57,
+              "rate": 0.9649122807017544,
+              "successes": 55,
+              "wilson_95_ci": [
+                0.8808,
+                0.9903
+              ]
+            },
+            "dense": {
+              "clopper_pearson_95_ci": [
+                0.5294,
+                0.786
+              ],
+              "n": 57,
+              "rate": 0.6666666666666666,
+              "successes": 38,
+              "wilson_95_ci": [
+                0.5372,
+                0.7751
+              ]
+            },
+            "n": 57,
+            "pixel": {
+              "clopper_pearson_95_ci": [
+                0.5113,
+                0.7709
+              ],
+              "n": 57,
+              "rate": 0.6491228070175439,
+              "successes": 37,
+              "wilson_95_ci": [
+                0.5194,
+                0.76
+              ]
+            }
+          },
+          "mcnemar_codec_vs_pixel": {
+            "interpretation": "INCONCLUSIVE",
+            "mcnemar_exact_p_two_sided": 0.5,
+            "n": 57,
+            "rows_broken_by_codec": 0,
+            "rows_concordant": 55,
+            "rows_fixed_by_codec": 2
+          }
+        }
+      },
+      "path": "research/experiments/2026/artifacts/phase1_29_onevision_n57"
+    }
+  ]
+}

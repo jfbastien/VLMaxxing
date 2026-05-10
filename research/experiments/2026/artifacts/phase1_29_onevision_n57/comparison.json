@@ -1,0 +1,69 @@
+{
+  "frame_count": 8,
+  "manifest": "research/benchmark_manifests/videomme_short_present_v1_n57.toml",
+  "max_tokens": 32,
+  "model": "Qwen2.5-VL-7B-Instruct-4bit",
+  "phase": "OV-3",
+  "rows": [
+    {
+      "codec_accuracy": 0.7017543859649122,
+      "codec_dense_agreement": 0.9649122807017544,
+      "codec_minus_pixel_accuracy": 0.05263157894736842,
+      "codec_pixel_agreement": 0.9473684210526315,
+      "codec_reuse_ratio_mean_active": 0.10086466153537418,
+      "codec_score_units": "fraction_intra_or_coded_block_flag",
+      "dense_accuracy": 0.6666666666666666,
+      "n_items": 57,
+      "pair_selection_jaccard_mean": 0.5589875164623392,
+      "pixel_accuracy": 0.6491228070175439,
+      "pixel_dense_agreement": 0.9473684210526315,
+      "pixel_reuse_ratio_mean_active": 0.10789473678328489,
+      "source": "novel_coded"
+    },
+    {
+      "codec_accuracy": 0.6842105263157895,
+      "codec_dense_agreement": 0.9473684210526315,
+      "codec_minus_pixel_accuracy": 0.03508771929824561,
+      "codec_pixel_agreement": 0.9649122807017544,
+      "codec_reuse_ratio_mean_active": 0.09793233096291472,
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "dense_accuracy": 0.6666666666666666,
+      "n_items": 57,
+      "pair_selection_jaccard_mean": 0.45208657390386986,
+      "pixel_accuracy": 0.6491228070175439,
+      "pixel_dense_agreement": 0.9473684210526315,
+      "pixel_reuse_ratio_mean_active": 0.10789473678328489,
+      "source": "motion"
+    },
+    {
+      "codec_accuracy": 0.6842105263157895,
+      "codec_dense_agreement": 0.9824561403508771,
+      "codec_minus_pixel_accuracy": 0.03508771929824561,
+      "codec_pixel_agreement": 0.9649122807017544,
+      "codec_reuse_ratio_mean_active": 0.10398496204244913,
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "dense_accuracy": 0.6666666666666666,
+      "n_items": 57,
+      "pair_selection_jaccard_mean": 0.5447791373418713,
+      "pixel_accuracy": 0.6491228070175439,
+      "pixel_dense_agreement": 0.9473684210526315,
+      "pixel_reuse_ratio_mean_active": 0.10789473678328489,
+      "source": "residual"
+    },
+    {
+      "codec_accuracy": 0.6842105263157895,
+      "codec_dense_agreement": 0.9473684210526315,
+      "codec_minus_pixel_accuracy": 0.03508771929824561,
+      "codec_pixel_agreement": 0.9649122807017544,
+      "codec_reuse_ratio_mean_active": 0.09872180443341122,
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "dense_accuracy": 0.6666666666666666,
+      "n_items": 57,
+      "pair_selection_jaccard_mean": 0.49493683344018485,
+      "pixel_accuracy": 0.6491228070175439,
+      "pixel_dense_agreement": 0.9473684210526315,
+      "pixel_reuse_ratio_mean_active": 0.10789473678328489,
+      "source": "fused"
+    }
+  ]
+}
