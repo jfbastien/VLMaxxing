@@ -1,0 +1,69 @@
+{
+  "frame_count": 8,
+  "manifest": "research/benchmark_manifests/videomme_holdout_v1_short_only.toml",
+  "max_tokens": 32,
+  "model": "Qwen2.5-VL-7B-Instruct-4bit",
+  "phase": "OV-3",
+  "rows": [
+    {
+      "codec_accuracy": 0.7,
+      "codec_dense_agreement": 0.9,
+      "codec_minus_pixel_accuracy": 0.0,
+      "codec_pixel_agreement": 1.0,
+      "codec_reuse_ratio_mean_active": 0.07428571388923697,
+      "codec_score_units": "fraction_intra_or_coded_block_flag",
+      "dense_accuracy": 0.8,
+      "n_items": 10,
+      "pair_selection_jaccard_mean": 0.5056227825597429,
+      "pixel_accuracy": 0.7,
+      "pixel_dense_agreement": 0.9,
+      "pixel_reuse_ratio_mean_active": 0.0801428571210376,
+      "source": "novel_coded"
+    },
+    {
+      "codec_accuracy": 0.7,
+      "codec_dense_agreement": 0.9,
+      "codec_minus_pixel_accuracy": 0.0,
+      "codec_pixel_agreement": 1.0,
+      "codec_reuse_ratio_mean_active": 0.07499999976051705,
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "dense_accuracy": 0.8,
+      "n_items": 10,
+      "pair_selection_jaccard_mean": 0.3823183730744405,
+      "pixel_accuracy": 0.7,
+      "pixel_dense_agreement": 0.9,
+      "pixel_reuse_ratio_mean_active": 0.0801428571210376,
+      "source": "motion"
+    },
+    {
+      "codec_accuracy": 0.7,
+      "codec_dense_agreement": 0.9,
+      "codec_minus_pixel_accuracy": 0.0,
+      "codec_pixel_agreement": 1.0,
+      "codec_reuse_ratio_mean_active": 0.07642857066488692,
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "dense_accuracy": 0.8,
+      "n_items": 10,
+      "pair_selection_jaccard_mean": 0.475781657544852,
+      "pixel_accuracy": 0.7,
+      "pixel_dense_agreement": 0.9,
+      "pixel_reuse_ratio_mean_active": 0.0801428571210376,
+      "source": "residual"
+    },
+    {
+      "codec_accuracy": 0.7,
+      "codec_dense_agreement": 0.9,
+      "codec_minus_pixel_accuracy": 0.0,
+      "codec_pixel_agreement": 1.0,
+      "codec_reuse_ratio_mean_active": 0.07264285670327289,
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "dense_accuracy": 0.8,
+      "n_items": 10,
+      "pair_selection_jaccard_mean": 0.41842872668081765,
+      "pixel_accuracy": 0.7,
+      "pixel_dense_agreement": 0.9,
+      "pixel_reuse_ratio_mean_active": 0.0801428571210376,
+      "source": "fused"
+    }
+  ]
+}
