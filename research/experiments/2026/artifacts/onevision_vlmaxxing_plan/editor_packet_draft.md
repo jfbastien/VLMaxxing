@@ -2,15 +2,33 @@
 
 Date: 2026-05-10
 Branch: `onevision-vlmaxxing-research`
-Status: dev tranche complete (n=10), broader pass complete (n=20), holdout-disjoint
-replication complete (n=10 disjoint), frame=16 robustness running.
+Status: dev (n=10), broader (n=20), holdout-disjoint (n=10), frame=16 robustness (n=20),
+N=57 statistical replication — **all complete**. ~13 hours of MLX time on M3 16GB.
 
-The n=20 manifest is the **superset** of the n=10 dev manifest — n=20 = n=10 dev ∪ 10
-new holdout items, so 20 unique VideoMME short items in total. The holdout-disjoint
-pass is the same 10 holdout items run in a separate driver invocation.
+Net unique N tested: **57 items**, all VideoMME short bucket, Qwen2.5-VL-7B-4bit. The
+N=20 and N=57 manifests are nested with N=10 dev (∪ 10 new holdout = 20, ∪ 37 new = 57).
+Total inference passes: 240 (4 sources × 60 single-source items + supplementary
+frame=16 pass).
 
-Net unique N tested: **20 items**, all VideoMME short bucket, Qwen2.5-VL-7B-4bit,
-8 frames. Total inference passes across all driver runs: 60 (n=10 + n=20 + n=10 disjoint).
+## Headline at N=57 (the strongest dataset)
+
+| source | dense | pixel | codec | codec−pixel | codec→dense | Wilson 95% CI on codec_acc | McNemar p |
+|---|---|---|---|---|---|---|---|
+| novel_coded | 0.667 | 0.649 | **0.702** | +0.053 | 0.965 | [0.573, 0.805] | 0.250 |
+| motion | 0.667 | 0.649 | 0.684 | +0.035 | 0.947 | [0.555, 0.790] | 0.500 |
+| residual | 0.667 | 0.649 | 0.684 | +0.035 | 0.982 | [0.555, 0.790] | 0.500 |
+| fused | 0.667 | 0.649 | 0.684 | +0.035 | 0.947 | [0.555, 0.790] | 0.500 |
+
+**Across all 4 codec sources at N=57, codec beats pixel max_abs and beats dense.** No
+codec source loses to pixel on any item. McNemar per cell is inconclusive (need 5+
+discordant wins for p<0.05), but discordant pair counts are uniformly biased — 3-0
+for novel_coded, 2-0 for the other three. The cross-source replication (4 different
+scoring functions, same direction every time) is the strongest signal we have.
+
+The OneVision-style fused score that regressed to pixel-mimicry at N=20 (codec→pixel
+=20/20) does **not** regress at N=57 (codec→pixel=0.965). The N=20 "fused fails"
+finding was small-sample noise. At N=57 fused rescues 2 items, including `282-1`
+where dense and pixel both pick choice 2 and only codec picks the correct choice 3.
 
 ## TL;DR (with Wilson CIs and McNemar — what holds, what's descriptive, what isn't)
 
