@@ -12,22 +12,31 @@ pass is the same 10 holdout items run in a separate driver invocation.
 Net unique N tested: **20 items**, all VideoMME short bucket, Qwen2.5-VL-7B-4bit,
 8 frames. Total inference passes across all driver runs: 60 (n=10 + n=20 + n=10 disjoint).
 
-## TL;DR
+## TL;DR (tightened by direct ground-truth analysis)
 
-Three independent codec score sources track frozen-Qwen dense answers **exactly** on
-20/20 unique items at matched fresh budget. Pixel max_abs drifts from dense on 1 of 20.
-The OneVision-style motion+residual fused score regresses to the pixel baseline (19/20
-dense, 20/20 pixel). Codec saliency wins; fancy fusion does not.
+At matched ~10% mean active reuse on VideoMME short with Qwen2.5-VL-7B-4bit at 8
+frames, three independent codec score sources track frozen-Qwen dense answers within
+**1 item out of 20 unique items**. Across 60 paired inference passes (n=10 dev +
+n=20 broader + n=10 disjoint × 3 simple sources), the absolute correctness picture is:
 
-**Stronger claim from the holdout-disjoint replication:** the codec planner is
-**deterministic across driver invocations**, while the dense baseline is not. On the
-10 holdout items run in a fresh driver session, codec answers were byte-identical to
-their N=20 counterparts on every item, but dense's answer flipped on 1 item between
-sessions (066-3: dense=3 in N=20, dense=2 in disjoint; codec stayed at 3 throughout).
-The codec-cached forward pass is more stable than the dense forward pass — likely
-because feature reuse bypasses some source of non-determinism in the dense vision-tower
-path. Concretely, **the planner-quality metric "codec→dense agreement" is bottlenecked
-by dense's own variance**, not by the codec.
+- **Codec rescues pixel on exactly one item** (`videomme:short:037-2`, ground truth 2,
+  pixel says 0, codec says 2). This is the +5 percentage point codec-over-pixel
+  headline at N=20 — not a distributional advantage, a specific rescue item.
+- **The codec planner is deterministic across driver invocations.** Pixel and codec
+  answers were byte-identical on every item in both runs of the 10 holdout items.
+  Dense flipped its answer on 1 item between sessions (066-3, 3 → 2). Codec-cached
+  forward passes are more stable than the dense forward pass.
+- **Codec doesn't always beat dense.** On the disjoint pass, dense flipped 066-3 to
+  correct while codec stayed wrong, putting dense at 8/10 vs codec at 7/10 on those
+  10 items. The "codec=dense" claim from N=20 was conditional on a single dense run.
+- **OneVision-style fused fusion never rescues, always mimics pixel.** Codec→pixel =
+  20/20 across all tranches; codec_correct equals pixel_correct on every item.
+
+The honest paper claim: at this configuration, codec saliency does not lose to pixel
+max_abs, recovers a known pixel-drift item, and exposes that the dense forward pass
+itself is not perfectly run-to-run stable on this hardware. The fused score's
+structural failure mode (regression to pixel-baseline answer set) replicates across
+all three tranches.
 
 ## Headline numbers
 
