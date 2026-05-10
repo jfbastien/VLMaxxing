@@ -1,0 +1,1091 @@
+{
+  "active_box_policy": "uniform_decode_active_box_for_current_sampled_frame",
+  "calibration_mode": "per-item",
+  "calibration_source": "live-pixel",
+  "codec_accuracy": 0.6842105263157895,
+  "codec_dense_agreement": 0.9473684210526315,
+  "codec_minus_pixel_accuracy": 0.03508771929824561,
+  "codec_pixel_agreement": 0.9649122807017544,
+  "codec_reuse_ratio_mean_active": 0.09793233096291472,
+  "codec_score_source": "motion",
+  "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+  "dense_accuracy": 0.6666666666666666,
+  "environment": {
+    "datasets": "4.8.4",
+    "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "git_dirty": true,
+    "git_sha": "d18536decc2f2f5462be4eb9c8eac6d1a7667f54",
+    "huggingface_hub": "1.10.1",
+    "mlx_vlm_module": "/Users/jfb/s/codec-through-2/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
+    "model_path": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
+    "platform": "darwin",
+    "python": "3.12.12"
+  },
+  "frame_count": 8,
+  "fusion": {
+    "mode": "weighted",
+    "motion_weight": 1.0,
+    "normalize_inputs": true,
+    "residual_extractor": "pyav_motion_compensated_reconstructed_y_proxy",
+    "residual_weight": 1.0
+  },
+  "h264_extractor": {
+    "b_cbf_thresh": 6.0,
+    "cbf_thresh": 3.0,
+    "mv_only": false,
+    "novel_thresh": 8.0,
+    "static_thresh": 3.0,
+    "zero_mv_thresh": 0.5
+  },
+  "items": [
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 10.289745458,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.41151419281959534,
+        "static": 0.13149744272232056
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:100-1",
+      "pair_selection_jaccard_mean": 0.1609105180533752,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 9.734150833,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.41151419281959534,
+        "static": 0.13149744272232056
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:100-2",
+      "pair_selection_jaccard_mean": 0.1609105180533752,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 0,
+      "codec_correct": true,
+      "codec_extract_s": 8.953246583,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.41151419281959534,
+        "static": 0.13149744272232056
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:100-3",
+      "pair_selection_jaccard_mean": 0.1609105180533752,
+      "pixel_choice_index": 0,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 15.515437042,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.8161041736602783,
+        "static": 0.17913952469825745
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:264-1",
+      "pair_selection_jaccard_mean": 0.7142857142857143,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 0,
+      "codec_correct": true,
+      "codec_extract_s": 15.374226625,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.8161041736602783,
+        "static": 0.17913952469825745
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:264-2",
+      "pair_selection_jaccard_mean": 0.7142857142857143,
+      "pixel_choice_index": 0,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": false,
+      "codec_extract_s": 15.184210084,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.8161041736602783,
+        "static": 0.17913952469825745
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:264-3",
+      "pair_selection_jaccard_mean": 0.7142857142857143,
+      "pixel_choice_index": 3,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 0,
+      "codec_correct": true,
+      "codec_extract_s": 19.486346083,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 1.0731743574142456,
+        "static": 0.8749433755874634
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:267-1",
+      "pair_selection_jaccard_mean": 0.7142857142857143,
+      "pixel_choice_index": 0,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 19.430628167,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 1.0731743574142456,
+        "static": 0.8749433755874634
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:267-2",
+      "pair_selection_jaccard_mean": 0.7142857142857143,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 19.828891333,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 1.0731743574142456,
+        "static": 0.8749433755874634
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:267-3",
+      "pair_selection_jaccard_mean": 0.7142857142857143,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 19.912186416,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.04992424324154854,
+        "static": 0.037067607045173645
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:070-1",
+      "pair_selection_jaccard_mean": 0.6705004277159966,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": false,
+      "codec_extract_s": 19.87026975,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.04992424324154854,
+        "static": 0.037067607045173645
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:070-2",
+      "pair_selection_jaccard_mean": 0.6705004277159966,
+      "pixel_choice_index": 3,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 2,
+      "codec_correct": true,
+      "codec_extract_s": 20.023601125,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.04992424324154854,
+        "static": 0.037067607045173645
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:070-3",
+      "pair_selection_jaccard_mean": 0.6705004277159966,
+      "pixel_choice_index": 2,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 25.088329917,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.34431394934654236,
+        "static": 0.3169305920600891
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:037-1",
+      "pair_selection_jaccard_mean": 0.6944289016371018,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 2,
+      "codec_correct": true,
+      "codec_extract_s": 25.600177875,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.34431394934654236,
+        "static": 0.3169305920600891
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:037-2",
+      "pair_selection_jaccard_mean": 0.6944289016371018,
+      "pixel_choice_index": 0,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 25.37086025,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.34431394934654236,
+        "static": 0.3169305920600891
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:037-3",
+      "pair_selection_jaccard_mean": 0.6944289016371018,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": false,
+      "codec_extract_s": 19.350335666,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.5048013925552368,
+        "static": 0.35806259512901306
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:074-1",
+      "pair_selection_jaccard_mean": 0.15670146201614107,
+      "pixel_choice_index": 1,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": false,
+      "codec_extract_s": 19.507757,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.5048013925552368,
+        "static": 0.35806259512901306
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:074-2",
+      "pair_selection_jaccard_mean": 0.15670146201614107,
+      "pixel_choice_index": 3,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 19.458133375,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.5048013925552368,
+        "static": 0.35806259512901306
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:074-3",
+      "pair_selection_jaccard_mean": 0.15670146201614107,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": false,
+      "codec_extract_s": 11.655329125,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.5377269983291626,
+        "static": 0.07919193804264069
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:136-1",
+      "pair_selection_jaccard_mean": 0.03571428571428571,
+      "pixel_choice_index": 1,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 0,
+      "codec_correct": true,
+      "codec_extract_s": 11.374778958,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.5377269983291626,
+        "static": 0.07919193804264069
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:136-2",
+      "pair_selection_jaccard_mean": 0.03571428571428571,
+      "pixel_choice_index": 0,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": false,
+      "codec_extract_s": 11.366746833,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.5377269983291626,
+        "static": 0.07919193804264069
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:136-3",
+      "pair_selection_jaccard_mean": 0.03571428571428571,
+      "pixel_choice_index": 1,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 23.81357175,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 1.267903208732605,
+        "static": 0.8008459806442261
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:282-1",
+      "pair_selection_jaccard_mean": 0.03902313533461075,
+      "pixel_choice_index": 2,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": false,
+      "codec_extract_s": 23.461932709,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 1.267903208732605,
+        "static": 0.8008459806442261
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:282-2",
+      "pair_selection_jaccard_mean": 0.03902313533461075,
+      "pixel_choice_index": 3,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": false,
+      "codec_extract_s": 23.90393425,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 1.267903208732605,
+        "static": 0.8008459806442261
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:282-3",
+      "pair_selection_jaccard_mean": 0.03902313533461075,
+      "pixel_choice_index": 1,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": false,
+      "codec_extract_s": 28.532660625,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 1.497988224029541,
+        "static": 0.4383562505245209
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:293-1",
+      "pair_selection_jaccard_mean": 0.014285714285714287,
+      "pixel_choice_index": 3,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": false,
+      "codec_extract_s": 28.696325,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 1.497988224029541,
+        "static": 0.4383562505245209
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:293-2",
+      "pair_selection_jaccard_mean": 0.014285714285714287,
+      "pixel_choice_index": 3,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": false,
+      "codec_extract_s": 29.357937958,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 1.497988224029541,
+        "static": 0.4383562505245209
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:293-3",
+      "pair_selection_jaccard_mean": 0.014285714285714287,
+      "pixel_choice_index": 3,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": false,
+      "codec_extract_s": 19.926947084,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.21783627569675446,
+        "static": 0.15083980560302734
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:280-1",
+      "pair_selection_jaccard_mean": 0.2197913648217908,
+      "pixel_choice_index": 1,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 20.719784416,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.21783627569675446,
+        "static": 0.15083980560302734
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:280-2",
+      "pair_selection_jaccard_mean": 0.2197913648217908,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 17.536967458,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.21783627569675446,
+        "static": 0.15083980560302734
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:280-3",
+      "pair_selection_jaccard_mean": 0.2197913648217908,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 21.474573375,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.006939022336155176,
+        "static": 0.0026883939281105995
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:210-1",
+      "pair_selection_jaccard_mean": 0.8571428571428571,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 21.228424708,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.006939022336155176,
+        "static": 0.0026883939281105995
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:210-2",
+      "pair_selection_jaccard_mean": 0.8571428571428571,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": false,
+      "codec_extract_s": 21.465775416,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.006939022336155176,
+        "static": 0.0026883939281105995
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:210-3",
+      "pair_selection_jaccard_mean": 0.8571428571428571,
+      "pixel_choice_index": 1,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 19.410110833,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 2.346451759338379,
+        "static": 1.0085622072219849
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:278-1",
+      "pair_selection_jaccard_mean": 0.8571428571428571,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 19.410436417,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 2.346451759338379,
+        "static": 1.0085622072219849
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:278-2",
+      "pair_selection_jaccard_mean": 0.8571428571428571,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 19.664385583,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 2.346451759338379,
+        "static": 1.0085622072219849
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:278-3",
+      "pair_selection_jaccard_mean": 0.8571428571428571,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": false,
+      "codec_extract_s": 18.985515709,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.8374155759811401,
+        "static": 0.4559198021888733
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:062-1",
+      "pair_selection_jaccard_mean": 0.8571428571428571,
+      "pixel_choice_index": 1,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 19.604120416,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.8374155759811401,
+        "static": 0.4559198021888733
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:062-2",
+      "pair_selection_jaccard_mean": 0.8571428571428571,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 2,
+      "codec_correct": true,
+      "codec_extract_s": 19.23935975,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.8374155759811401,
+        "static": 0.4559198021888733
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:062-3",
+      "pair_selection_jaccard_mean": 0.8571428571428571,
+      "pixel_choice_index": 2,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 2,
+      "codec_correct": true,
+      "codec_extract_s": 13.181993083,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.0,
+        "static": 0.0
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:160-1",
+      "pair_selection_jaccard_mean": 0.5714285714285714,
+      "pixel_choice_index": 2,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 13.473740625,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.0,
+        "static": 0.0
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:160-2",
+      "pair_selection_jaccard_mean": 0.5714285714285714,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 13.256871083,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.0,
+        "static": 0.0
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:160-3",
+      "pair_selection_jaccard_mean": 0.5714285714285714,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 19.613635208,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.6377489566802979,
+        "static": 0.3489692807197571
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:116-1",
+      "pair_selection_jaccard_mean": 0.7142857142857143,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 19.533952833,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.6377489566802979,
+        "static": 0.3489692807197571
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:116-2",
+      "pair_selection_jaccard_mean": 0.7142857142857143,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 19.712870458,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.6377489566802979,
+        "static": 0.3489692807197571
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:116-3",
+      "pair_selection_jaccard_mean": 0.7142857142857143,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 14.467773208,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 1.1187493801116943,
+        "static": 0.7280896306037903
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:120-1",
+      "pair_selection_jaccard_mean": 0.01495576126117998,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 14.159545292,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 1.1187493801116943,
+        "static": 0.7280896306037903
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:120-2",
+      "pair_selection_jaccard_mean": 0.01495576126117998,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": false,
+      "codec_extract_s": 14.214538458,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 1.1187493801116943,
+        "static": 0.7280896306037903
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:120-3",
+      "pair_selection_jaccard_mean": 0.01495576126117998,
+      "pixel_choice_index": 3,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 0,
+      "codec_correct": true,
+      "codec_extract_s": 17.701467083,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.34076830744743347,
+        "static": 0.007310693152248859
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:158-1",
+      "pair_selection_jaccard_mean": 0.5714285714285714,
+      "pixel_choice_index": 0,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": false,
+      "codec_extract_s": 17.658296125,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.34076830744743347,
+        "static": 0.007310693152248859
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:158-2",
+      "pair_selection_jaccard_mean": 0.5714285714285714,
+      "pixel_choice_index": 1,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 2,
+      "codec_correct": false,
+      "codec_extract_s": 18.016622209,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.34076830744743347,
+        "static": 0.007310693152248859
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:158-3",
+      "pair_selection_jaccard_mean": 0.5714285714285714,
+      "pixel_choice_index": 2,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 22.022345917,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.06968164443969727,
+        "static": 0.00010977657802868634
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:066-1",
+      "pair_selection_jaccard_mean": 0.29761904761904756,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 22.516979042,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.06968164443969727,
+        "static": 0.00010977657802868634
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:066-2",
+      "pair_selection_jaccard_mean": 0.29761904761904756,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": false,
+      "codec_extract_s": 22.394023834,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.06968164443969727,
+        "static": 0.00010977657802868634
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:066-3",
+      "pair_selection_jaccard_mean": 0.29761904761904756,
+      "pixel_choice_index": 3,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 6.739573875,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.16035813093185425,
+        "static": 0.0028566571418195963
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:126-1",
+      "pair_selection_jaccard_mean": 0.42857142857142855,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 6.970610708,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.16035813093185425,
+        "static": 0.0028566571418195963
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:126-2",
+      "pair_selection_jaccard_mean": 0.42857142857142855,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 7.062798625,
+      "codec_score_source": "motion",
+      "codec_score_units": "macroblock_motion_vector_magnitude_pixels",
+      "codec_thresholds": {
+        "shifted": 0.16035813093185425,
+        "static": 0.0028566571418195963
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:126-3",
+      "pair_selection_jaccard_mean": 0.42857142857142855,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    }
+  ],
+  "manifest_path": "research/benchmark_manifests/videomme_short_present_v1_n57.toml",
+  "n_items": 57,
+  "pair_selection_jaccard_mean": 0.45208657390386986,
+  "phase": "1.29",
+  "pixel_accuracy": 0.6491228070175439,
+  "pixel_dense_agreement": 0.9473684210526315,
+  "pixel_reuse_ratio_mean_active": 0.10789473678328489,
+  "planner": {
+    "max_age": null,
+    "pixel_change_threshold": 8.0,
+    "reuse_classes": [
+      "static",
+      "shifted"
+    ],
+    "shifted_threshold": 8.0,
+    "static_threshold": 3.0,
+    "statistic": "mean",
+    "sticky_window": null,
+    "top_k": 16
+  },
+  "precompute_cache_path": "research/experiments/2026/artifacts/phase1_29_onevision_n57/motion/precompute_cache.json",
+  "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project",
+  "score_projection_version": 2
+}
