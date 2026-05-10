@@ -1,0 +1,425 @@
+{
+  "active_box_policy": "uniform_decode_active_box_for_current_sampled_frame",
+  "calibration_mode": "per-item",
+  "calibration_source": "live-pixel",
+  "codec_accuracy": 0.75,
+  "codec_dense_agreement": 0.95,
+  "codec_minus_pixel_accuracy": 0.0,
+  "codec_pixel_agreement": 1.0,
+  "codec_reuse_ratio_mean_active": 0.14448333311515552,
+  "codec_score_source": "novel_coded",
+  "codec_score_units": "fraction_intra_or_coded_block_flag",
+  "dense_accuracy": 0.7,
+  "environment": {
+    "datasets": "4.8.4",
+    "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "git_dirty": true,
+    "git_sha": "71e728a50a13f09c6746d475037f9c717d6d1dd2",
+    "huggingface_hub": "1.10.1",
+    "mlx_vlm_module": "/Users/jfb/s/codec-through-2/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
+    "model_path": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
+    "platform": "darwin",
+    "python": "3.12.12"
+  },
+  "frame_count": 16,
+  "fusion": {
+    "mode": "weighted",
+    "motion_weight": 1.0,
+    "normalize_inputs": true,
+    "residual_extractor": "pyav_motion_compensated_reconstructed_y_proxy",
+    "residual_weight": 1.0
+  },
+  "h264_extractor": {
+    "b_cbf_thresh": 6.0,
+    "cbf_thresh": 3.0,
+    "mv_only": false,
+    "novel_thresh": 8.0,
+    "static_thresh": 3.0,
+    "zero_mv_thresh": 0.5
+  },
+  "items": [
+    {
+      "codec_choice_index": 2,
+      "codec_correct": true,
+      "codec_extract_s": 23.842391083,
+      "codec_score_source": "novel_coded",
+      "codec_score_units": "fraction_intra_or_coded_block_flag",
+      "codec_thresholds": {
+        "shifted": 0.022140895947813988,
+        "static": 0.01930331252515316
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:037-2",
+      "pair_selection_jaccard_mean": 0.8121945311006581,
+      "pixel_choice_index": 2,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 8.794659792,
+      "codec_score_source": "novel_coded",
+      "codec_score_units": "fraction_intra_or_coded_block_flag",
+      "codec_thresholds": {
+        "shifted": 0.06432359665632248,
+        "static": 0.019026964902877808
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:100-2",
+      "pair_selection_jaccard_mean": 0.6,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 18.306616167,
+      "codec_score_source": "novel_coded",
+      "codec_score_units": "fraction_intra_or_coded_block_flag",
+      "codec_thresholds": {
+        "shifted": 0.00846654549241066,
+        "static": 0.007936508394777775
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:116-3",
+      "pair_selection_jaccard_mean": 0.8044444444444444,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 13.148564416,
+      "codec_score_source": "novel_coded",
+      "codec_score_units": "fraction_intra_or_coded_block_flag",
+      "codec_thresholds": {
+        "shifted": 0.05608432739973068,
+        "static": 0.003924669697880745
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:120-2",
+      "pair_selection_jaccard_mean": 0.5165432222895513,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 2,
+      "codec_correct": false,
+      "codec_extract_s": 16.293166709,
+      "codec_score_source": "novel_coded",
+      "codec_score_units": "fraction_intra_or_coded_block_flag",
+      "codec_thresholds": {
+        "shifted": 0.010637546889483929,
+        "static": 0.004833511542528868
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:158-3",
+      "pair_selection_jaccard_mean": 0.5624341085271318,
+      "pixel_choice_index": 2,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 2,
+      "codec_correct": true,
+      "codec_extract_s": 12.672519584,
+      "codec_score_source": "novel_coded",
+      "codec_score_units": "fraction_intra_or_coded_block_flag",
+      "codec_thresholds": {
+        "shifted": 0.009259258396923542,
+        "static": 0.0
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:160-1",
+      "pair_selection_jaccard_mean": 0.7602996254681648,
+      "pixel_choice_index": 2,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 21.424006541,
+      "codec_score_source": "novel_coded",
+      "codec_score_units": "fraction_intra_or_coded_block_flag",
+      "codec_thresholds": {
+        "shifted": 0.005677964072674513,
+        "static": 0.0054334793239831924
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:210-2",
+      "pair_selection_jaccard_mean": 0.5602564102564103,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 15.484094167,
+      "codec_score_source": "novel_coded",
+      "codec_score_units": "fraction_intra_or_coded_block_flag",
+      "codec_thresholds": {
+        "shifted": 0.008567195385694504,
+        "static": 0.0053589376620948315
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:264-1",
+      "pair_selection_jaccard_mean": 0.7384615384615384,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 19.759374417,
+      "codec_score_source": "novel_coded",
+      "codec_score_units": "fraction_intra_or_coded_block_flag",
+      "codec_thresholds": {
+        "shifted": 0.08704850822687149,
+        "static": 0.031690582633018494
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:278-3",
+      "pair_selection_jaccard_mean": 0.8761904761904762,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 22.201125,
+      "codec_score_source": "novel_coded",
+      "codec_score_units": "fraction_intra_or_coded_block_flag",
+      "codec_thresholds": {
+        "shifted": 0.03965508192777634,
+        "static": 0.006850943900644779
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:282-2",
+      "pair_selection_jaccard_mean": 0.4194990217311359,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 2,
+      "codec_correct": true,
+      "codec_extract_s": 19.015427708,
+      "codec_score_source": "novel_coded",
+      "codec_score_units": "fraction_intra_or_coded_block_flag",
+      "codec_thresholds": {
+        "shifted": 0.009586065076291561,
+        "static": 0.006780039984732866
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:062-3",
+      "pair_selection_jaccard_mean": 0.5587301587301586,
+      "pixel_choice_index": 2,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": false,
+      "codec_extract_s": 20.795692,
+      "codec_score_source": "novel_coded",
+      "codec_score_units": "fraction_intra_or_coded_block_flag",
+      "codec_thresholds": {
+        "shifted": 0.017966613173484802,
+        "static": 0.011904763989150524
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:066-3",
+      "pair_selection_jaccard_mean": 0.5138278073204915,
+      "pixel_choice_index": 3,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 2,
+      "codec_correct": true,
+      "codec_extract_s": 20.645773958,
+      "codec_score_source": "novel_coded",
+      "codec_score_units": "fraction_intra_or_coded_block_flag",
+      "codec_thresholds": {
+        "shifted": 0.01176470797508955,
+        "static": 0.010297350585460663
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:070-3",
+      "pair_selection_jaccard_mean": 0.6047501665449599,
+      "pixel_choice_index": 2,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 18.903172042,
+      "codec_score_source": "novel_coded",
+      "codec_score_units": "fraction_intra_or_coded_block_flag",
+      "codec_thresholds": {
+        "shifted": 0.007760991808027029,
+        "static": 0.006578948814421892
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:074-3",
+      "pair_selection_jaccard_mean": 0.25190545558323335,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 6.35496975,
+      "codec_score_source": "novel_coded",
+      "codec_score_units": "fraction_intra_or_coded_block_flag",
+      "codec_thresholds": {
+        "shifted": 0.017499420791864395,
+        "static": 0.004052945412695408
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:126-1",
+      "pair_selection_jaccard_mean": 0.6434012908265295,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 6.443372792,
+      "codec_score_source": "novel_coded",
+      "codec_score_units": "fraction_intra_or_coded_block_flag",
+      "codec_thresholds": {
+        "shifted": 0.017499420791864395,
+        "static": 0.004052945412695408
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:126-2",
+      "pair_selection_jaccard_mean": 0.6434012908265295,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": false,
+      "codec_extract_s": 11.189027667,
+      "codec_score_source": "novel_coded",
+      "codec_score_units": "fraction_intra_or_coded_block_flag",
+      "codec_thresholds": {
+        "shifted": 0.014075953513383865,
+        "static": 0.007893111556768417
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:136-3",
+      "pair_selection_jaccard_mean": 0.6,
+      "pixel_choice_index": 1,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 20.481808041,
+      "codec_score_source": "novel_coded",
+      "codec_score_units": "fraction_intra_or_coded_block_flag",
+      "codec_thresholds": {
+        "shifted": 0.008086254820227623,
+        "static": 0.003910558298230171
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:267-2",
+      "pair_selection_jaccard_mean": 0.8666666666666667,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 2,
+      "codec_correct": false,
+      "codec_extract_s": 18.913164542,
+      "codec_score_source": "novel_coded",
+      "codec_score_units": "fraction_intra_or_coded_block_flag",
+      "codec_thresholds": {
+        "shifted": 0.014285711571574211,
+        "static": 0.011921780183911324
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:280-3",
+      "pair_selection_jaccard_mean": 0.40168483978957437,
+      "pixel_choice_index": 2,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": false,
+      "codec_extract_s": 27.207472958,
+      "codec_score_source": "novel_coded",
+      "codec_score_units": "fraction_intra_or_coded_block_flag",
+      "codec_thresholds": {
+        "shifted": 0.067019522190094,
+        "static": 0.022111689671874046
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:293-1",
+      "pair_selection_jaccard_mean": 0.27154958546256597,
+      "pixel_choice_index": 3,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    }
+  ],
+  "manifest_path": "research/benchmark_manifests/videomme_short_dev_holdout_v1_n20.toml",
+  "n_items": 20,
+  "pair_selection_jaccard_mean": 0.600312032011011,
+  "phase": "1.29",
+  "pixel_accuracy": 0.75,
+  "pixel_dense_agreement": 0.95,
+  "pixel_reuse_ratio_mean_active": 0.1469833332952112,
+  "planner": {
+    "max_age": null,
+    "pixel_change_threshold": 8.0,
+    "reuse_classes": [
+      "static",
+      "shifted"
+    ],
+    "shifted_threshold": 8.0,
+    "static_threshold": 3.0,
+    "statistic": "mean",
+    "sticky_window": null,
+    "top_k": 16
+  },
+  "precompute_cache_path": "research/experiments/2026/artifacts/phase1_29_onevision_dev_n20_short_f16/novel_coded/precompute_cache.json",
+  "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project",
+  "score_projection_version": 2
+}
