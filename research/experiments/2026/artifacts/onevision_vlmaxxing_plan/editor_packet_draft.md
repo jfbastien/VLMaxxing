@@ -12,31 +12,55 @@ pass is the same 10 holdout items run in a separate driver invocation.
 Net unique N tested: **20 items**, all VideoMME short bucket, Qwen2.5-VL-7B-4bit,
 8 frames. Total inference passes across all driver runs: 60 (n=10 + n=20 + n=10 disjoint).
 
-## TL;DR (tightened by direct ground-truth analysis)
+## TL;DR (with Wilson CIs and McNemar — what holds, what's descriptive, what isn't)
 
 At matched ~10% mean active reuse on VideoMME short with Qwen2.5-VL-7B-4bit at 8
-frames, three independent codec score sources track frozen-Qwen dense answers within
-**1 item out of 20 unique items**. Across 60 paired inference passes (n=10 dev +
-n=20 broader + n=10 disjoint × 3 simple sources), the absolute correctness picture is:
+frames, across N=20 unique items (n=10 dev + n=10 disjoint holdout, with the n=20
+broader pass spanning both):
 
-- **Codec rescues pixel on exactly one item** (`videomme:short:037-2`, ground truth 2,
-  pixel says 0, codec says 2). This is the +5 percentage point codec-over-pixel
-  headline at N=20 — not a distributional advantage, a specific rescue item.
-- **The codec planner is deterministic across driver invocations.** Pixel and codec
-  answers were byte-identical on every item in both runs of the 10 holdout items.
-  Dense flipped its answer on 1 item between sessions (066-3, 3 → 2). Codec-cached
-  forward passes are more stable than the dense forward pass.
-- **Codec doesn't always beat dense.** On the disjoint pass, dense flipped 066-3 to
-  correct while codec stayed wrong, putting dense at 8/10 vs codec at 7/10 on those
-  10 items. The "codec=dense" claim from N=20 was conditional on a single dense run.
-- **OneVision-style fused fusion never rescues, always mimics pixel.** Codec→pixel =
-  20/20 across all tranches; codec_correct equals pixel_correct on every item.
+**Decision-bearing claims (statistically supported):**
 
-The honest paper claim: at this configuration, codec saliency does not lose to pixel
-max_abs, recovers a known pixel-drift item, and exposes that the dense forward pass
-itself is not perfectly run-to-run stable on this hardware. The fused score's
-structural failure mode (regression to pixel-baseline answer set) replicates across
-all three tranches.
+- **Codec→dense agreement is at least 84%.** At N=20 with novel_coded / motion /
+  residual, codec choice equals dense choice on every item (rate 1.000). Wilson 95%
+  lower bound on this rate is **0.839**. The codec planner reliably produces the
+  same answer the frozen dense backbone produces, conditional on dense being stable.
+
+- **The codec planner is more deterministic than the dense backbone.** Across two
+  pairs of driver-session overlaps (10 dev items × 2 sessions + 10 holdout items × 2
+  sessions = 20 per-item dense-vs-dense comparisons), dense flipped its answer on
+  1/20. Wilson 95% CI for the dense flip rate: [0.009, 0.236]. Pixel and codec
+  answers were byte-identical across sessions on every item.
+
+- **Codec→pixel agreement and codec→dense agreement diverge for fused.** On every
+  fused cell across all three tranches, codec→pixel = 1.000 (literal answer-set
+  mimicry of pixel). Fused never rescues a pixel-drift item.
+
+**Descriptive observations (not significant at this N):**
+
+- Codec saliency rescues pixel on item `videomme:short:037-2` in dev (ground truth 2,
+  pixel says 0, codec says 2). This is the only item across N=20 where codec and
+  pixel disagree on correctness. The +5 percentage point gap at N=20 is exactly this
+  one item.
+
+- Per-cell McNemar exact two-sided p-values (codec_correct vs pixel_correct) are
+  **1.000 across all 12 cells** (4 sources × 3 tranches). The discordant pair counts
+  are (1, 0) at most. We do not have statistical evidence that codec beats pixel
+  max_abs at this N.
+
+- Wilson 95% CI for codec_acc at N=20 (simple sources): **[0.531, 0.888]**. The
+  observed 0.750 is consistent with anything in that range.
+
+**Boundary observations:**
+
+- On the disjoint pass, dense flipped 066-3 to correct while codec stayed wrong;
+  dense=0.800 vs codec=0.700 on those 10 items. The "codec preserves dense" claim
+  is real, but when dense itself drifts the comparison can go either direction.
+
+The honest paper claim: at this configuration, codec saliency demonstrably tracks
+the frozen dense backbone (Wilson lower 84%) and is more deterministic than dense
+across driver invocations. The fused score regresses to pixel-mimicry. We do not
+have statistical evidence that simple codec sources outperform pixel max_abs at
+N=20; that requires a substantially larger replication.
 
 ## Headline numbers
 
