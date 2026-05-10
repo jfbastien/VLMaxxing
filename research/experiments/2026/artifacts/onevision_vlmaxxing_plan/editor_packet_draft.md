@@ -1,13 +1,16 @@
 # Editor Packet — OneVision × VLMaxxing OV-3 Track A Findings
 
-Date: 2026-05-09
+Date: 2026-05-10
 Branch: `onevision-vlmaxxing-research`
-Status: dev tranche complete (n=10), broader pass complete (n=20). The n=20 manifest is
-the **superset** of the n=10 dev manifest — n=20 = n=10 dev ∪ 10 new holdout items, so
-20 unique VideoMME short items in total. The two passes are nested; numbers agree on the
-overlap.
+Status: dev tranche complete (n=10), broader pass complete (n=20), holdout-disjoint
+replication complete (n=10 disjoint), frame=16 robustness running.
 
-Net unique N tested: **20 items**, all VideoMME short bucket, Qwen2.5-VL-7B-4bit, 8 frames.
+The n=20 manifest is the **superset** of the n=10 dev manifest — n=20 = n=10 dev ∪ 10
+new holdout items, so 20 unique VideoMME short items in total. The holdout-disjoint
+pass is the same 10 holdout items run in a separate driver invocation.
+
+Net unique N tested: **20 items**, all VideoMME short bucket, Qwen2.5-VL-7B-4bit,
+8 frames. Total inference passes across all driver runs: 60 (n=10 + n=20 + n=10 disjoint).
 
 ## TL;DR
 
@@ -15,6 +18,16 @@ Three independent codec score sources track frozen-Qwen dense answers **exactly*
 20/20 unique items at matched fresh budget. Pixel max_abs drifts from dense on 1 of 20.
 The OneVision-style motion+residual fused score regresses to the pixel baseline (19/20
 dense, 20/20 pixel). Codec saliency wins; fancy fusion does not.
+
+**Stronger claim from the holdout-disjoint replication:** the codec planner is
+**deterministic across driver invocations**, while the dense baseline is not. On the
+10 holdout items run in a fresh driver session, codec answers were byte-identical to
+their N=20 counterparts on every item, but dense's answer flipped on 1 item between
+sessions (066-3: dense=3 in N=20, dense=2 in disjoint; codec stayed at 3 throughout).
+The codec-cached forward pass is more stable than the dense forward pass — likely
+because feature reuse bypasses some source of non-determinism in the dense vision-tower
+path. Concretely, **the planner-quality metric "codec→dense agreement" is bottlenecked
+by dense's own variance**, not by the codec.
 
 ## Headline numbers
 
@@ -41,7 +54,8 @@ VideoMME short, Qwen2.5-VL-7B-4bit, 8 frames, mean active reuse ~0.10:
 ### Aggregate (20 unique items; n=10 dev is a subset of n=20 broader)
 
 The n=10 and n=20 passes share the 10 dev items by construction; the 10 holdout items
-appear only in the n=20 pass. The two passes agree on the 10-item overlap.
+appear only in the n=20 pass. The two passes agree on the 10-item overlap. The
+holdout-disjoint pass replays just the 10 holdout items in a fresh driver session.
 
 Canonical N=20 result on the 20 unique items:
 
@@ -50,6 +64,24 @@ Canonical N=20 result on the 20 unique items:
 - residual: codec→dense **20/20**, +5pp over pixel
 - fused: codec→dense **19/20 (95%)**, +0pp over pixel; codec→pixel **20/20**
 - pixel max_abs: pixel→dense **19/20 (95%)** when dense_acc was 0.750
+
+### Holdout-disjoint replication (10 items, fresh driver session)
+
+| source | codec→dense | codec→pixel | jaccard |
+|---|---|---|---|
+| novel_coded | 9/10 | **10/10** | 0.506 |
+| motion | 9/10 | **10/10** | 0.382 |
+| residual | 9/10 | **10/10** | 0.476 |
+| fused | 9/10 | **10/10** | 0.418 |
+
+**The same 1/10 disagreement across all four sources.** All four sources' codec choices
+are byte-identical to their N=20 counterparts on every one of the 10 items. The
+9/10 codec→dense is driven by a single dense flip on 066-3 between the two driver
+sessions: dense answered 3 in N=20 and 2 in this disjoint pass, while codec
+deterministically answered 3 in both. Pair-selection Jaccard varies materially across
+sources (0.382 to 0.506) — different codec signals pick different tile sets — but every
+source produces the same final answer on every item, evidence that the model is robust
+to which "right enough" tile set the planner refreshes.
 
 ## What this changes in the manuscript
 
