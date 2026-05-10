@@ -1,0 +1,996 @@
+{
+  "dense_determinism": {
+    "aggregate": {
+      "clopper_pearson_95_ci": [
+        0.0013,
+        0.2487
+      ],
+      "n": 20,
+      "rate": 0.05,
+      "successes": 1,
+      "wilson_95_ci": [
+        0.0089,
+        0.2361
+      ]
+    },
+    "interpretation": "Dense flipped on 1/20 per-item dense-vs-dense comparisons across two-driver-session overlaps. Wilson 95% upper bound on the flip rate is 0.236.",
+    "pair1_dev_vs_n20": {
+      "flipped_items": [],
+      "flips": 0,
+      "n_items": 10
+    },
+    "pair2_n20_vs_disjoint": {
+      "flipped_items": [
+        "videomme:short:066-3"
+      ],
+      "flips": 1,
+      "n_items": 10
+    }
+  },
+  "extraction_timing": {
+    "max_s": 30.570451,
+    "mean_s": 17.356717821925,
+    "median_s": 18.731093811999997,
+    "min_s": 6.207276834,
+    "n": 160,
+    "p95_s": 26.484540333
+  },
+  "multiple_comparisons": {
+    "bonferroni_alpha_for_per_cell_at_family_05": 0.0042,
+    "n_cells_compared": 12,
+    "note": "We tested 4 codec sources \u00d7 3 tranches = 12 cells. Per-cell McNemar p-values must be compared against alpha = 0.05 / 12 \u2248 0.0042 for family-wise control under Bonferroni. Most p-values here are >0.05 even uncorrected at this N; the multiple-comparisons concern is directional, not the limiting factor."
+  },
+  "tranches": [
+    {
+      "by_source": {
+        "fused": {
+          "correctness": {
+            "codec": {
+              "clopper_pearson_95_ci": [
+                0.3475,
+                0.9333
+              ],
+              "n": 10,
+              "rate": 0.7,
+              "successes": 7,
+              "wilson_95_ci": [
+                0.3968,
+                0.8922
+              ]
+            },
+            "codec_dense_agreement": {
+              "clopper_pearson_95_ci": [
+                0.555,
+                0.9975
+              ],
+              "n": 10,
+              "rate": 0.9,
+              "successes": 9,
+              "wilson_95_ci": [
+                0.5958,
+                0.9821
+              ]
+            },
+            "codec_pixel_agreement": {
+              "clopper_pearson_95_ci": [
+                0.6915,
+                1.0
+              ],
+              "n": 10,
+              "rate": 1.0,
+              "successes": 10,
+              "wilson_95_ci": [
+                0.7225,
+                1.0
+              ]
+            },
+            "dense": {
+              "clopper_pearson_95_ci": [
+                0.4439,
+                0.9748
+              ],
+              "n": 10,
+              "rate": 0.8,
+              "successes": 8,
+              "wilson_95_ci": [
+                0.4902,
+                0.9433
+              ]
+            },
+            "n": 10,
+            "pixel": {
+              "clopper_pearson_95_ci": [
+                0.3475,
+                0.9333
+              ],
+              "n": 10,
+              "rate": 0.7,
+              "successes": 7,
+              "wilson_95_ci": [
+                0.3968,
+                0.8922
+              ]
+            }
+          },
+          "mcnemar_codec_vs_pixel": {
+            "interpretation": "INCONCLUSIVE",
+            "mcnemar_exact_p_two_sided": 1.0,
+            "n": 10,
+            "rows_broken_by_codec": 0,
+            "rows_concordant": 10,
+            "rows_fixed_by_codec": 0
+          }
+        },
+        "motion": {
+          "correctness": {
+            "codec": {
+              "clopper_pearson_95_ci": [
+                0.4439,
+                0.9748
+              ],
+              "n": 10,
+              "rate": 0.8,
+              "successes": 8,
+              "wilson_95_ci": [
+                0.4902,
+                0.9433
+              ]
+            },
+            "codec_dense_agreement": {
+              "clopper_pearson_95_ci": [
+                0.6915,
+                1.0
+              ],
+              "n": 10,
+              "rate": 1.0,
+              "successes": 10,
+              "wilson_95_ci": [
+                0.7225,
+                1.0
+              ]
+            },
+            "codec_pixel_agreement": {
+              "clopper_pearson_95_ci": [
+                0.555,
+                0.9975
+              ],
+              "n": 10,
+              "rate": 0.9,
+              "successes": 9,
+              "wilson_95_ci": [
+                0.5958,
+                0.9821
+              ]
+            },
+            "dense": {
+              "clopper_pearson_95_ci": [
+                0.4439,
+                0.9748
+              ],
+              "n": 10,
+              "rate": 0.8,
+              "successes": 8,
+              "wilson_95_ci": [
+                0.4902,
+                0.9433
+              ]
+            },
+            "n": 10,
+            "pixel": {
+              "clopper_pearson_95_ci": [
+                0.3475,
+                0.9333
+              ],
+              "n": 10,
+              "rate": 0.7,
+              "successes": 7,
+              "wilson_95_ci": [
+                0.3968,
+                0.8922
+              ]
+            }
+          },
+          "mcnemar_codec_vs_pixel": {
+            "interpretation": "INCONCLUSIVE",
+            "mcnemar_exact_p_two_sided": 1.0,
+            "n": 10,
+            "rows_broken_by_codec": 0,
+            "rows_concordant": 9,
+            "rows_fixed_by_codec": 1
+          }
+        },
+        "novel_coded": {
+          "correctness": {
+            "codec": {
+              "clopper_pearson_95_ci": [
+                0.4439,
+                0.9748
+              ],
+              "n": 10,
+              "rate": 0.8,
+              "successes": 8,
+              "wilson_95_ci": [
+                0.4902,
+                0.9433
+              ]
+            },
+            "codec_dense_agreement": {
+              "clopper_pearson_95_ci": [
+                0.6915,
+                1.0
+              ],
+              "n": 10,
+              "rate": 1.0,
+              "successes": 10,
+              "wilson_95_ci": [
+                0.7225,
+                1.0
+              ]
+            },
+            "codec_pixel_agreement": {
+              "clopper_pearson_95_ci": [
+                0.555,
+                0.9975
+              ],
+              "n": 10,
+              "rate": 0.9,
+              "successes": 9,
+              "wilson_95_ci": [
+                0.5958,
+                0.9821
+              ]
+            },
+            "dense": {
+              "clopper_pearson_95_ci": [
+                0.4439,
+                0.9748
+              ],
+              "n": 10,
+              "rate": 0.8,
+              "successes": 8,
+              "wilson_95_ci": [
+                0.4902,
+                0.9433
+              ]
+            },
+            "n": 10,
+            "pixel": {
+              "clopper_pearson_95_ci": [
+                0.3475,
+                0.9333
+              ],
+              "n": 10,
+              "rate": 0.7,
+              "successes": 7,
+              "wilson_95_ci": [
+                0.3968,
+                0.8922
+              ]
+            }
+          },
+          "mcnemar_codec_vs_pixel": {
+            "interpretation": "INCONCLUSIVE",
+            "mcnemar_exact_p_two_sided": 1.0,
+            "n": 10,
+            "rows_broken_by_codec": 0,
+            "rows_concordant": 9,
+            "rows_fixed_by_codec": 1
+          }
+        },
+        "residual": {
+          "correctness": {
+            "codec": {
+              "clopper_pearson_95_ci": [
+                0.4439,
+                0.9748
+              ],
+              "n": 10,
+              "rate": 0.8,
+              "successes": 8,
+              "wilson_95_ci": [
+                0.4902,
+                0.9433
+              ]
+            },
+            "codec_dense_agreement": {
+              "clopper_pearson_95_ci": [
+                0.6915,
+                1.0
+              ],
+              "n": 10,
+              "rate": 1.0,
+              "successes": 10,
+              "wilson_95_ci": [
+                0.7225,
+                1.0
+              ]
+            },
+            "codec_pixel_agreement": {
+              "clopper_pearson_95_ci": [
+                0.555,
+                0.9975
+              ],
+              "n": 10,
+              "rate": 0.9,
+              "successes": 9,
+              "wilson_95_ci": [
+                0.5958,
+                0.9821
+              ]
+            },
+            "dense": {
+              "clopper_pearson_95_ci": [
+                0.4439,
+                0.9748
+              ],
+              "n": 10,
+              "rate": 0.8,
+              "successes": 8,
+              "wilson_95_ci": [
+                0.4902,
+                0.9433
+              ]
+            },
+            "n": 10,
+            "pixel": {
+              "clopper_pearson_95_ci": [
+                0.3475,
+                0.9333
+              ],
+              "n": 10,
+              "rate": 0.7,
+              "successes": 7,
+              "wilson_95_ci": [
+                0.3968,
+                0.8922
+              ]
+            }
+          },
+          "mcnemar_codec_vs_pixel": {
+            "interpretation": "INCONCLUSIVE",
+            "mcnemar_exact_p_two_sided": 1.0,
+            "n": 10,
+            "rows_broken_by_codec": 0,
+            "rows_concordant": 9,
+            "rows_fixed_by_codec": 1
+          }
+        }
+      },
+      "path": "research/experiments/2026/artifacts/phase1_29_onevision_dev"
+    },
+    {
+      "by_source": {
+        "fused": {
+          "correctness": {
+            "codec": {
+              "clopper_pearson_95_ci": [
+                0.4572,
+                0.8811
+              ],
+              "n": 20,
+              "rate": 0.7,
+              "successes": 14,
+              "wilson_95_ci": [
+                0.481,
+                0.8545
+              ]
+            },
+            "codec_dense_agreement": {
+              "clopper_pearson_95_ci": [
+                0.7513,
+                0.9987
+              ],
+              "n": 20,
+              "rate": 0.95,
+              "successes": 19,
+              "wilson_95_ci": [
+                0.7639,
+                0.9911
+              ]
+            },
+            "codec_pixel_agreement": {
+              "clopper_pearson_95_ci": [
+                0.8316,
+                1.0
+              ],
+              "n": 20,
+              "rate": 1.0,
+              "successes": 20,
+              "wilson_95_ci": [
+                0.8389,
+                1.0
+              ]
+            },
+            "dense": {
+              "clopper_pearson_95_ci": [
+                0.509,
+                0.9134
+              ],
+              "n": 20,
+              "rate": 0.75,
+              "successes": 15,
+              "wilson_95_ci": [
+                0.5313,
+                0.8881
+              ]
+            },
+            "n": 20,
+            "pixel": {
+              "clopper_pearson_95_ci": [
+                0.4572,
+                0.8811
+              ],
+              "n": 20,
+              "rate": 0.7,
+              "successes": 14,
+              "wilson_95_ci": [
+                0.481,
+                0.8545
+              ]
+            }
+          },
+          "mcnemar_codec_vs_pixel": {
+            "interpretation": "INCONCLUSIVE",
+            "mcnemar_exact_p_two_sided": 1.0,
+            "n": 20,
+            "rows_broken_by_codec": 0,
+            "rows_concordant": 20,
+            "rows_fixed_by_codec": 0
+          }
+        },
+        "motion": {
+          "correctness": {
+            "codec": {
+              "clopper_pearson_95_ci": [
+                0.509,
+                0.9134
+              ],
+              "n": 20,
+              "rate": 0.75,
+              "successes": 15,
+              "wilson_95_ci": [
+                0.5313,
+                0.8881
+              ]
+            },
+            "codec_dense_agreement": {
+              "clopper_pearson_95_ci": [
+                0.8316,
+                1.0
+              ],
+              "n": 20,
+              "rate": 1.0,
+              "successes": 20,
+              "wilson_95_ci": [
+                0.8389,
+                1.0
+              ]
+            },
+            "codec_pixel_agreement": {
+              "clopper_pearson_95_ci": [
+                0.7513,
+                0.9987
+              ],
+              "n": 20,
+              "rate": 0.95,
+              "successes": 19,
+              "wilson_95_ci": [
+                0.7639,
+                0.9911
+              ]
+            },
+            "dense": {
+              "clopper_pearson_95_ci": [
+                0.509,
+                0.9134
+              ],
+              "n": 20,
+              "rate": 0.75,
+              "successes": 15,
+              "wilson_95_ci": [
+                0.5313,
+                0.8881
+              ]
+            },
+            "n": 20,
+            "pixel": {
+              "clopper_pearson_95_ci": [
+                0.4572,
+                0.8811
+              ],
+              "n": 20,
+              "rate": 0.7,
+              "successes": 14,
+              "wilson_95_ci": [
+                0.481,
+                0.8545
+              ]
+            }
+          },
+          "mcnemar_codec_vs_pixel": {
+            "interpretation": "INCONCLUSIVE",
+            "mcnemar_exact_p_two_sided": 1.0,
+            "n": 20,
+            "rows_broken_by_codec": 0,
+            "rows_concordant": 19,
+            "rows_fixed_by_codec": 1
+          }
+        },
+        "novel_coded": {
+          "correctness": {
+            "codec": {
+              "clopper_pearson_95_ci": [
+                0.509,
+                0.9134
+              ],
+              "n": 20,
+              "rate": 0.75,
+              "successes": 15,
+              "wilson_95_ci": [
+                0.5313,
+                0.8881
+              ]
+            },
+            "codec_dense_agreement": {
+              "clopper_pearson_95_ci": [
+                0.8316,
+                1.0
+              ],
+              "n": 20,
+              "rate": 1.0,
+              "successes": 20,
+              "wilson_95_ci": [
+                0.8389,
+                1.0
+              ]
+            },
+            "codec_pixel_agreement": {
+              "clopper_pearson_95_ci": [
+                0.7513,
+                0.9987
+              ],
+              "n": 20,
+              "rate": 0.95,
+              "successes": 19,
+              "wilson_95_ci": [
+                0.7639,
+                0.9911
+              ]
+            },
+            "dense": {
+              "clopper_pearson_95_ci": [
+                0.509,
+                0.9134
+              ],
+              "n": 20,
+              "rate": 0.75,
+              "successes": 15,
+              "wilson_95_ci": [
+                0.5313,
+                0.8881
+              ]
+            },
+            "n": 20,
+            "pixel": {
+              "clopper_pearson_95_ci": [
+                0.4572,
+                0.8811
+              ],
+              "n": 20,
+              "rate": 0.7,
+              "successes": 14,
+              "wilson_95_ci": [
+                0.481,
+                0.8545
+              ]
+            }
+          },
+          "mcnemar_codec_vs_pixel": {
+            "interpretation": "INCONCLUSIVE",
+            "mcnemar_exact_p_two_sided": 1.0,
+            "n": 20,
+            "rows_broken_by_codec": 0,
+            "rows_concordant": 19,
+            "rows_fixed_by_codec": 1
+          }
+        },
+        "residual": {
+          "correctness": {
+            "codec": {
+              "clopper_pearson_95_ci": [
+                0.509,
+                0.9134
+              ],
+              "n": 20,
+              "rate": 0.75,
+              "successes": 15,
+              "wilson_95_ci": [
+                0.5313,
+                0.8881
+              ]
+            },
+            "codec_dense_agreement": {
+              "clopper_pearson_95_ci": [
+                0.8316,
+                1.0
+              ],
+              "n": 20,
+              "rate": 1.0,
+              "successes": 20,
+              "wilson_95_ci": [
+                0.8389,
+                1.0
+              ]
+            },
+            "codec_pixel_agreement": {
+              "clopper_pearson_95_ci": [
+                0.7513,
+                0.9987
+              ],
+              "n": 20,
+              "rate": 0.95,
+              "successes": 19,
+              "wilson_95_ci": [
+                0.7639,
+                0.9911
+              ]
+            },
+            "dense": {
+              "clopper_pearson_95_ci": [
+                0.509,
+                0.9134
+              ],
+              "n": 20,
+              "rate": 0.75,
+              "successes": 15,
+              "wilson_95_ci": [
+                0.5313,
+                0.8881
+              ]
+            },
+            "n": 20,
+            "pixel": {
+              "clopper_pearson_95_ci": [
+                0.4572,
+                0.8811
+              ],
+              "n": 20,
+              "rate": 0.7,
+              "successes": 14,
+              "wilson_95_ci": [
+                0.481,
+                0.8545
+              ]
+            }
+          },
+          "mcnemar_codec_vs_pixel": {
+            "interpretation": "INCONCLUSIVE",
+            "mcnemar_exact_p_two_sided": 1.0,
+            "n": 20,
+            "rows_broken_by_codec": 0,
+            "rows_concordant": 19,
+            "rows_fixed_by_codec": 1
+          }
+        }
+      },
+      "path": "research/experiments/2026/artifacts/phase1_29_onevision_dev_n20_short"
+    },
+    {
+      "by_source": {
+        "fused": {
+          "correctness": {
+            "codec": {
+              "clopper_pearson_95_ci": [
+                0.3475,
+                0.9333
+              ],
+              "n": 10,
+              "rate": 0.7,
+              "successes": 7,
+              "wilson_95_ci": [
+                0.3968,
+                0.8922
+              ]
+            },
+            "codec_dense_agreement": {
+              "clopper_pearson_95_ci": [
+                0.555,
+                0.9975
+              ],
+              "n": 10,
+              "rate": 0.9,
+              "successes": 9,
+              "wilson_95_ci": [
+                0.5958,
+                0.9821
+              ]
+            },
+            "codec_pixel_agreement": {
+              "clopper_pearson_95_ci": [
+                0.6915,
+                1.0
+              ],
+              "n": 10,
+              "rate": 1.0,
+              "successes": 10,
+              "wilson_95_ci": [
+                0.7225,
+                1.0
+              ]
+            },
+            "dense": {
+              "clopper_pearson_95_ci": [
+                0.4439,
+                0.9748
+              ],
+              "n": 10,
+              "rate": 0.8,
+              "successes": 8,
+              "wilson_95_ci": [
+                0.4902,
+                0.9433
+              ]
+            },
+            "n": 10,
+            "pixel": {
+              "clopper_pearson_95_ci": [
+                0.3475,
+                0.9333
+              ],
+              "n": 10,
+              "rate": 0.7,
+              "successes": 7,
+              "wilson_95_ci": [
+                0.3968,
+                0.8922
+              ]
+            }
+          },
+          "mcnemar_codec_vs_pixel": {
+            "interpretation": "INCONCLUSIVE",
+            "mcnemar_exact_p_two_sided": 1.0,
+            "n": 10,
+            "rows_broken_by_codec": 0,
+            "rows_concordant": 10,
+            "rows_fixed_by_codec": 0
+          }
+        },
+        "motion": {
+          "correctness": {
+            "codec": {
+              "clopper_pearson_95_ci": [
+                0.3475,
+                0.9333
+              ],
+              "n": 10,
+              "rate": 0.7,
+              "successes": 7,
+              "wilson_95_ci": [
+                0.3968,
+                0.8922
+              ]
+            },
+            "codec_dense_agreement": {
+              "clopper_pearson_95_ci": [
+                0.555,
+                0.9975
+              ],
+              "n": 10,
+              "rate": 0.9,
+              "successes": 9,
+              "wilson_95_ci": [
+                0.5958,
+                0.9821
+              ]
+            },
+            "codec_pixel_agreement": {
+              "clopper_pearson_95_ci": [
+                0.6915,
+                1.0
+              ],
+              "n": 10,
+              "rate": 1.0,
+              "successes": 10,
+              "wilson_95_ci": [
+                0.7225,
+                1.0
+              ]
+            },
+            "dense": {
+              "clopper_pearson_95_ci": [
+                0.4439,
+                0.9748
+              ],
+              "n": 10,
+              "rate": 0.8,
+              "successes": 8,
+              "wilson_95_ci": [
+                0.4902,
+                0.9433
+              ]
+            },
+            "n": 10,
+            "pixel": {
+              "clopper_pearson_95_ci": [
+                0.3475,
+                0.9333
+              ],
+              "n": 10,
+              "rate": 0.7,
+              "successes": 7,
+              "wilson_95_ci": [
+                0.3968,
+                0.8922
+              ]
+            }
+          },
+          "mcnemar_codec_vs_pixel": {
+            "interpretation": "INCONCLUSIVE",
+            "mcnemar_exact_p_two_sided": 1.0,
+            "n": 10,
+            "rows_broken_by_codec": 0,
+            "rows_concordant": 10,
+            "rows_fixed_by_codec": 0
+          }
+        },
+        "novel_coded": {
+          "correctness": {
+            "codec": {
+              "clopper_pearson_95_ci": [
+                0.3475,
+                0.9333
+              ],
+              "n": 10,
+              "rate": 0.7,
+              "successes": 7,
+              "wilson_95_ci": [
+                0.3968,
+                0.8922
+              ]
+            },
+            "codec_dense_agreement": {
+              "clopper_pearson_95_ci": [
+                0.555,
+                0.9975
+              ],
+              "n": 10,
+              "rate": 0.9,
+              "successes": 9,
+              "wilson_95_ci": [
+                0.5958,
+                0.9821
+              ]
+            },
+            "codec_pixel_agreement": {
+              "clopper_pearson_95_ci": [
+                0.6915,
+                1.0
+              ],
+              "n": 10,
+              "rate": 1.0,
+              "successes": 10,
+              "wilson_95_ci": [
+                0.7225,
+                1.0
+              ]
+            },
+            "dense": {
+              "clopper_pearson_95_ci": [
+                0.4439,
+                0.9748
+              ],
+              "n": 10,
+              "rate": 0.8,
+              "successes": 8,
+              "wilson_95_ci": [
+                0.4902,
+                0.9433
+              ]
+            },
+            "n": 10,
+            "pixel": {
+              "clopper_pearson_95_ci": [
+                0.3475,
+                0.9333
+              ],
+              "n": 10,
+              "rate": 0.7,
+              "successes": 7,
+              "wilson_95_ci": [
+                0.3968,
+                0.8922
+              ]
+            }
+          },
+          "mcnemar_codec_vs_pixel": {
+            "interpretation": "INCONCLUSIVE",
+            "mcnemar_exact_p_two_sided": 1.0,
+            "n": 10,
+            "rows_broken_by_codec": 0,
+            "rows_concordant": 10,
+            "rows_fixed_by_codec": 0
+          }
+        },
+        "residual": {
+          "correctness": {
+            "codec": {
+              "clopper_pearson_95_ci": [
+                0.3475,
+                0.9333
+              ],
+              "n": 10,
+              "rate": 0.7,
+              "successes": 7,
+              "wilson_95_ci": [
+                0.3968,
+                0.8922
+              ]
+            },
+            "codec_dense_agreement": {
+              "clopper_pearson_95_ci": [
+                0.555,
+                0.9975
+              ],
+              "n": 10,
+              "rate": 0.9,
+              "successes": 9,
+              "wilson_95_ci": [
+                0.5958,
+                0.9821
+              ]
+            },
+            "codec_pixel_agreement": {
+              "clopper_pearson_95_ci": [
+                0.6915,
+                1.0
+              ],
+              "n": 10,
+              "rate": 1.0,
+              "successes": 10,
+              "wilson_95_ci": [
+                0.7225,
+                1.0
+              ]
+            },
+            "dense": {
+              "clopper_pearson_95_ci": [
+                0.4439,
+                0.9748
+              ],
+              "n": 10,
+              "rate": 0.8,
+              "successes": 8,
+              "wilson_95_ci": [
+                0.4902,
+                0.9433
+              ]
+            },
+            "n": 10,
+            "pixel": {
+              "clopper_pearson_95_ci": [
+                0.3475,
+                0.9333
+              ],
+              "n": 10,
+              "rate": 0.7,
+              "successes": 7,
+              "wilson_95_ci": [
+                0.3968,
+                0.8922
+              ]
+            }
+          },
+          "mcnemar_codec_vs_pixel": {
+            "interpretation": "INCONCLUSIVE",
+            "mcnemar_exact_p_two_sided": 1.0,
+            "n": 10,
+            "rows_broken_by_codec": 0,
+            "rows_concordant": 10,
+            "rows_fixed_by_codec": 0
+          }
+        }
+      },
+      "path": "research/experiments/2026/artifacts/phase1_29_onevision_holdout_disjoint"
+    }
+  ]
+}
