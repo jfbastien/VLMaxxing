@@ -83,11 +83,14 @@ def main() -> None:
     manifests = sorted({str(summaries[source]["manifest_path"]) for source in SOURCES})
     if len(manifests) != 1:
         raise ValueError(f"per-source summaries disagree on manifest_path: {manifests}")
+    frame_counts = sorted({int(summaries[source]["frame_count"]) for source in SOURCES})  # type: ignore[arg-type]
+    if len(frame_counts) != 1:
+        raise ValueError(f"per-source summaries disagree on frame_count: {frame_counts}")
     payload = {
         "phase": "OV-3",
         "manifest": manifests[0],
         "model": "Qwen2.5-VL-7B-Instruct-4bit",
-        "frame_count": 8,
+        "frame_count": frame_counts[0],
         "max_tokens": 32,
         "rows": rows,
     }
