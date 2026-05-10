@@ -1,0 +1,425 @@
+{
+  "active_box_policy": "uniform_decode_active_box_for_current_sampled_frame",
+  "calibration_mode": "per-item",
+  "calibration_source": "live-pixel",
+  "codec_accuracy": 0.75,
+  "codec_dense_agreement": 0.95,
+  "codec_minus_pixel_accuracy": 0.0,
+  "codec_pixel_agreement": 1.0,
+  "codec_reuse_ratio_mean_active": 0.14834999937564133,
+  "codec_score_source": "residual",
+  "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+  "dense_accuracy": 0.7,
+  "environment": {
+    "datasets": "4.8.4",
+    "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "git_dirty": true,
+    "git_sha": "f35fc0afb24e0515f7ef458bb0f7422376fe1739",
+    "huggingface_hub": "1.10.1",
+    "mlx_vlm_module": "/Users/jfb/s/codec-through-2/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
+    "model_path": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
+    "platform": "darwin",
+    "python": "3.12.12"
+  },
+  "frame_count": 16,
+  "fusion": {
+    "mode": "weighted",
+    "motion_weight": 1.0,
+    "normalize_inputs": true,
+    "residual_extractor": "pyav_motion_compensated_reconstructed_y_proxy",
+    "residual_weight": 1.0
+  },
+  "h264_extractor": {
+    "b_cbf_thresh": 6.0,
+    "cbf_thresh": 3.0,
+    "mv_only": false,
+    "novel_thresh": 8.0,
+    "static_thresh": 3.0,
+    "zero_mv_thresh": 0.5
+  },
+  "items": [
+    {
+      "codec_choice_index": 2,
+      "codec_correct": true,
+      "codec_extract_s": 26.645387042,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 0.48093849420547485,
+        "static": 0.3999078869819641
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:037-2",
+      "pair_selection_jaccard_mean": 0.7984606756896035,
+      "pixel_choice_index": 2,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 9.176147583,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 0.8512599468231201,
+        "static": 0.25504395365715027
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:100-2",
+      "pair_selection_jaccard_mean": 0.6729166666666667,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 18.402008667,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 0.13656893372535706,
+        "static": 0.10453971475362778
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:116-3",
+      "pair_selection_jaccard_mean": 0.842020202020202,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 13.490695,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 1.014914631843567,
+        "static": 0.30635136365890503
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:120-2",
+      "pair_selection_jaccard_mean": 0.5187898428533854,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 2,
+      "codec_correct": false,
+      "codec_extract_s": 16.271733709,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 0.7225404977798462,
+        "static": 0.010717135854065418
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:158-3",
+      "pair_selection_jaccard_mean": 0.578962962962963,
+      "pixel_choice_index": 2,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 2,
+      "codec_correct": true,
+      "codec_extract_s": 12.665292375,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 0.03423115238547325,
+        "static": 0.012604393064975739
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:160-1",
+      "pair_selection_jaccard_mean": 0.7857480969743491,
+      "pixel_choice_index": 2,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 21.559988458,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 0.2291448712348938,
+        "static": 0.12139907479286194
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:210-2",
+      "pair_selection_jaccard_mean": 0.3742138364779874,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 15.441115375,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 0.2147829830646515,
+        "static": 0.1383248120546341
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:264-1",
+      "pair_selection_jaccard_mean": 0.737037037037037,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 19.629496125,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 1.679030179977417,
+        "static": 0.4450607895851135
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:278-3",
+      "pair_selection_jaccard_mean": 0.8666666666666667,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 22.150580292,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 0.778224766254425,
+        "static": 0.22254961729049683
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:282-2",
+      "pair_selection_jaccard_mean": 0.40948385793247943,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 2,
+      "codec_correct": true,
+      "codec_extract_s": 19.209747166,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 0.19309461116790771,
+        "static": 0.10985039919614792
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:062-3",
+      "pair_selection_jaccard_mean": 0.5903030303030303,
+      "pixel_choice_index": 2,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": false,
+      "codec_extract_s": 21.112367958,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 0.2633751332759857,
+        "static": 0.1097271591424942
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:066-3",
+      "pair_selection_jaccard_mean": 0.5245397027433427,
+      "pixel_choice_index": 3,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 2,
+      "codec_correct": true,
+      "codec_extract_s": 20.635229709,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 0.03464002534747124,
+        "static": 0.01181991957128048
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:070-3",
+      "pair_selection_jaccard_mean": 0.7379180972197865,
+      "pixel_choice_index": 2,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 19.297231583,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 0.17893938720226288,
+        "static": 0.07481656968593597
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:074-3",
+      "pair_selection_jaccard_mean": 0.3719987847341319,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 6.499561125,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 0.4717388451099396,
+        "static": 0.09206707030534744
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:126-1",
+      "pair_selection_jaccard_mean": 0.7198381173257834,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 6.492708625,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 0.4717388451099396,
+        "static": 0.09206707030534744
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:126-2",
+      "pair_selection_jaccard_mean": 0.7198381173257834,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": false,
+      "codec_extract_s": 11.242932125,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 0.824617862701416,
+        "static": 0.24915626645088196
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:136-3",
+      "pair_selection_jaccard_mean": 0.6,
+      "pixel_choice_index": 1,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 21.099947542,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 0.5998260974884033,
+        "static": 0.2746831178665161
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:267-2",
+      "pair_selection_jaccard_mean": 0.9333333333333333,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 2,
+      "codec_correct": false,
+      "codec_extract_s": 18.850682333,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 0.302849143743515,
+        "static": 0.22906112670898438
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:280-3",
+      "pair_selection_jaccard_mean": 0.45036537106304547,
+      "pixel_choice_index": 2,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": false,
+      "codec_extract_s": 28.103636917,
+      "codec_score_source": "residual",
+      "codec_score_units": "repo_local_reconstructed_y_residual_proxy",
+      "codec_thresholds": {
+        "shifted": 1.190521001815796,
+        "static": 0.3725288212299347
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:293-1",
+      "pair_selection_jaccard_mean": 0.1482075658040199,
+      "pixel_choice_index": 3,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    }
+  ],
+  "manifest_path": "research/benchmark_manifests/videomme_short_dev_holdout_v1_n20.toml",
+  "n_items": 20,
+  "pair_selection_jaccard_mean": 0.6190320982566798,
+  "phase": "1.29",
+  "pixel_accuracy": 0.75,
+  "pixel_dense_agreement": 0.95,
+  "pixel_reuse_ratio_mean_active": 0.1469833332952112,
+  "planner": {
+    "max_age": null,
+    "pixel_change_threshold": 8.0,
+    "reuse_classes": [
+      "static",
+      "shifted"
+    ],
+    "shifted_threshold": 8.0,
+    "static_threshold": 3.0,
+    "statistic": "mean",
+    "sticky_window": null,
+    "top_k": 16
+  },
+  "precompute_cache_path": "research/experiments/2026/artifacts/phase1_29_onevision_dev_n20_short_f16/residual/precompute_cache.json",
+  "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project",
+  "score_projection_version": 2
+}
