@@ -1,0 +1,1091 @@
+{
+  "active_box_policy": "uniform_decode_active_box_for_current_sampled_frame",
+  "calibration_mode": "per-item",
+  "calibration_source": "live-pixel",
+  "codec_accuracy": 0.6842105263157895,
+  "codec_dense_agreement": 0.9473684210526315,
+  "codec_minus_pixel_accuracy": 0.03508771929824561,
+  "codec_pixel_agreement": 0.9649122807017544,
+  "codec_reuse_ratio_mean_active": 0.09872180443341122,
+  "codec_score_source": "fused",
+  "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+  "dense_accuracy": 0.6666666666666666,
+  "environment": {
+    "datasets": "4.8.4",
+    "ffmpeg": "ffmpeg version 8.1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "git_dirty": true,
+    "git_sha": "adb54da52133155263a41be341a2c9dc6fc9e1b4",
+    "huggingface_hub": "1.10.1",
+    "mlx_vlm_module": "/Users/jfb/s/codec-through-2/.venv/lib/python3.12/site-packages/mlx_vlm/__init__.py",
+    "model_path": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
+    "platform": "darwin",
+    "python": "3.12.12"
+  },
+  "frame_count": 8,
+  "fusion": {
+    "mode": "weighted",
+    "motion_weight": 1.0,
+    "normalize_inputs": true,
+    "residual_extractor": "pyav_motion_compensated_reconstructed_y_proxy",
+    "residual_weight": 1.0
+  },
+  "h264_extractor": {
+    "b_cbf_thresh": 6.0,
+    "cbf_thresh": 3.0,
+    "mv_only": false,
+    "novel_thresh": 8.0,
+    "static_thresh": 3.0,
+    "zero_mv_thresh": 0.5
+  },
+  "items": [
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 12.74568875,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.08554007858037949,
+        "static": 0.04389828443527222
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:100-1",
+      "pair_selection_jaccard_mean": 0.2912087912087912,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 11.065416833,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.08554007858037949,
+        "static": 0.04389828443527222
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:100-2",
+      "pair_selection_jaccard_mean": 0.2912087912087912,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 0,
+      "codec_correct": true,
+      "codec_extract_s": 11.089641083,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.08554007858037949,
+        "static": 0.04389828443527222
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:100-3",
+      "pair_selection_jaccard_mean": 0.2912087912087912,
+      "pixel_choice_index": 0,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 19.306489166,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.07840922474861145,
+        "static": 0.01665351912379265
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:264-1",
+      "pair_selection_jaccard_mean": 0.7142857142857143,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 0,
+      "codec_correct": true,
+      "codec_extract_s": 19.250891,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.07840922474861145,
+        "static": 0.01665351912379265
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:264-2",
+      "pair_selection_jaccard_mean": 0.7142857142857143,
+      "pixel_choice_index": 0,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": false,
+      "codec_extract_s": 19.503733542,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.07840922474861145,
+        "static": 0.01665351912379265
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:264-3",
+      "pair_selection_jaccard_mean": 0.7142857142857143,
+      "pixel_choice_index": 3,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 0,
+      "codec_correct": true,
+      "codec_extract_s": 23.951401583,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.055036984384059906,
+        "static": 0.049013759940862656
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:267-1",
+      "pair_selection_jaccard_mean": 0.7142857142857143,
+      "pixel_choice_index": 0,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 26.1220685,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.055036984384059906,
+        "static": 0.049013759940862656
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:267-2",
+      "pair_selection_jaccard_mean": 0.7142857142857143,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 25.676028292,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.055036984384059906,
+        "static": 0.049013759940862656
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:267-3",
+      "pair_selection_jaccard_mean": 0.7142857142857143,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 24.978973834,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.004976613912731409,
+        "static": 0.0036479709669947624
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:070-1",
+      "pair_selection_jaccard_mean": 0.67677897574124,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": false,
+      "codec_extract_s": 24.496400708,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.004976613912731409,
+        "static": 0.0036479709669947624
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:070-2",
+      "pair_selection_jaccard_mean": 0.67677897574124,
+      "pixel_choice_index": 3,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 2,
+      "codec_correct": true,
+      "codec_extract_s": 25.672621125,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.004976613912731409,
+        "static": 0.0036479709669947624
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:070-3",
+      "pair_selection_jaccard_mean": 0.67677897574124,
+      "pixel_choice_index": 2,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 28.510524708,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.014181897044181824,
+        "static": 0.013085933402180672
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:037-1",
+      "pair_selection_jaccard_mean": 0.6890197020462143,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 0,
+      "codec_correct": false,
+      "codec_extract_s": 26.974032042,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.014181897044181824,
+        "static": 0.013085933402180672
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:037-2",
+      "pair_selection_jaccard_mean": 0.6890197020462143,
+      "pixel_choice_index": 0,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 27.044290416,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.014181897044181824,
+        "static": 0.013085933402180672
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:037-3",
+      "pair_selection_jaccard_mean": 0.6890197020462143,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": false,
+      "codec_extract_s": 19.489463209,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.07637827843427658,
+        "static": 0.04729143902659416
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:074-1",
+      "pair_selection_jaccard_mean": 0.1265159827371809,
+      "pixel_choice_index": 1,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": false,
+      "codec_extract_s": 19.346974917,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.07637827843427658,
+        "static": 0.04729143902659416
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:074-2",
+      "pair_selection_jaccard_mean": 0.1265159827371809,
+      "pixel_choice_index": 3,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 20.75543525,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.07637827843427658,
+        "static": 0.04729143902659416
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:074-3",
+      "pair_selection_jaccard_mean": 0.1265159827371809,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 0,
+      "codec_correct": true,
+      "codec_extract_s": 11.382351875,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.051566801965236664,
+        "static": 0.014872342348098755
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:136-1",
+      "pair_selection_jaccard_mean": 0.3,
+      "pixel_choice_index": 1,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 0,
+      "codec_correct": true,
+      "codec_extract_s": 12.490390792,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.051566801965236664,
+        "static": 0.014872342348098755
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:136-2",
+      "pair_selection_jaccard_mean": 0.3,
+      "pixel_choice_index": 0,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": false,
+      "codec_extract_s": 12.839348625,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.051566801965236664,
+        "static": 0.014872342348098755
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:136-3",
+      "pair_selection_jaccard_mean": 0.3,
+      "pixel_choice_index": 1,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 24.836059708,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.16139358282089233,
+        "static": 0.0815231129527092
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:282-1",
+      "pair_selection_jaccard_mean": 0.34854814456440064,
+      "pixel_choice_index": 2,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": false,
+      "codec_extract_s": 23.562553334,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.16139358282089233,
+        "static": 0.0815231129527092
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:282-2",
+      "pair_selection_jaccard_mean": 0.34854814456440064,
+      "pixel_choice_index": 3,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": false,
+      "codec_extract_s": 23.466652042,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.16139358282089233,
+        "static": 0.0815231129527092
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:282-3",
+      "pair_selection_jaccard_mean": 0.34854814456440064,
+      "pixel_choice_index": 1,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": false,
+      "codec_extract_s": 28.120951584,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.0668695941567421,
+        "static": 0.041197482496500015
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:293-1",
+      "pair_selection_jaccard_mean": 0.14285714285714285,
+      "pixel_choice_index": 3,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": false,
+      "codec_extract_s": 28.589618542,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.0668695941567421,
+        "static": 0.041197482496500015
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:293-2",
+      "pair_selection_jaccard_mean": 0.14285714285714285,
+      "pixel_choice_index": 3,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": false,
+      "codec_extract_s": 28.701789959,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.0668695941567421,
+        "static": 0.041197482496500015
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:293-3",
+      "pair_selection_jaccard_mean": 0.14285714285714285,
+      "pixel_choice_index": 3,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": false,
+      "codec_extract_s": 19.977471416,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.015030979178845882,
+        "static": 0.011273023672401905
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:280-1",
+      "pair_selection_jaccard_mean": 0.2151030955017666,
+      "pixel_choice_index": 1,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 19.679347959,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.015030979178845882,
+        "static": 0.011273023672401905
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:280-2",
+      "pair_selection_jaccard_mean": 0.2151030955017666,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 20.08473925,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.015030979178845882,
+        "static": 0.011273023672401905
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:280-3",
+      "pair_selection_jaccard_mean": 0.2151030955017666,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 24.32093975,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.011877169832587242,
+        "static": 0.004735543392598629
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:210-1",
+      "pair_selection_jaccard_mean": 0.7142857142857143,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 24.803808333,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.011877169832587242,
+        "static": 0.004735543392598629
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:210-2",
+      "pair_selection_jaccard_mean": 0.7142857142857143,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": false,
+      "codec_extract_s": 24.624141125,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.011877169832587242,
+        "static": 0.004735543392598629
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:210-3",
+      "pair_selection_jaccard_mean": 0.7142857142857143,
+      "pixel_choice_index": 1,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 22.554218916,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.11340488493442535,
+        "static": 0.06162343546748161
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:278-1",
+      "pair_selection_jaccard_mean": 0.8571428571428571,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 22.657731292,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.11340488493442535,
+        "static": 0.06162343546748161
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:278-2",
+      "pair_selection_jaccard_mean": 0.8571428571428571,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 19.999675834,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.11340488493442535,
+        "static": 0.06162343546748161
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:278-3",
+      "pair_selection_jaccard_mean": 0.8571428571428571,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": false,
+      "codec_extract_s": 18.709066083,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.03393721580505371,
+        "static": 0.016725141555070877
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:062-1",
+      "pair_selection_jaccard_mean": 0.8571428571428571,
+      "pixel_choice_index": 1,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 18.596514458,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.03393721580505371,
+        "static": 0.016725141555070877
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:062-2",
+      "pair_selection_jaccard_mean": 0.8571428571428571,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 2,
+      "codec_correct": true,
+      "codec_extract_s": 18.701103917,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.03393721580505371,
+        "static": 0.016725141555070877
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:062-3",
+      "pair_selection_jaccard_mean": 0.8571428571428571,
+      "pixel_choice_index": 2,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 2,
+      "codec_correct": true,
+      "codec_extract_s": 12.974541667,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.010843651369214058,
+        "static": 0.005994418170303106
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:160-1",
+      "pair_selection_jaccard_mean": 0.5714285714285714,
+      "pixel_choice_index": 2,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 13.155563375,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.010843651369214058,
+        "static": 0.005994418170303106
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:160-2",
+      "pair_selection_jaccard_mean": 0.5714285714285714,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 12.671674666,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.010843651369214058,
+        "static": 0.005994418170303106
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:160-3",
+      "pair_selection_jaccard_mean": 0.5714285714285714,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 18.814365,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.037238191813230515,
+        "static": 0.020454125478863716
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:116-1",
+      "pair_selection_jaccard_mean": 0.7142857142857143,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 19.362296875,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.037238191813230515,
+        "static": 0.020454125478863716
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:116-2",
+      "pair_selection_jaccard_mean": 0.7142857142857143,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 18.956958083,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.037238191813230515,
+        "static": 0.020454125478863716
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:116-3",
+      "pair_selection_jaccard_mean": 0.7142857142857143,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 14.00295225,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.132915660738945,
+        "static": 0.07448176294565201
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:120-1",
+      "pair_selection_jaccard_mean": 0.17645021645021644,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 13.909772834,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.132915660738945,
+        "static": 0.07448176294565201
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:120-2",
+      "pair_selection_jaccard_mean": 0.17645021645021644,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": false,
+      "codec_extract_s": 13.963268917,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.132915660738945,
+        "static": 0.07448176294565201
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:120-3",
+      "pair_selection_jaccard_mean": 0.17645021645021644,
+      "pixel_choice_index": 3,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 0,
+      "codec_correct": true,
+      "codec_extract_s": 17.408781791,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.033356696367263794,
+        "static": 0.005210672505199909
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:158-1",
+      "pair_selection_jaccard_mean": 0.5714285714285714,
+      "pixel_choice_index": 0,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": false,
+      "codec_extract_s": 17.091979083,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.033356696367263794,
+        "static": 0.005210672505199909
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:158-2",
+      "pair_selection_jaccard_mean": 0.5714285714285714,
+      "pixel_choice_index": 1,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 2,
+      "codec_correct": false,
+      "codec_extract_s": 17.286385833,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.033356696367263794,
+        "static": 0.005210672505199909
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:158-3",
+      "pair_selection_jaccard_mean": 0.5714285714285714,
+      "pixel_choice_index": 2,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 21.4891705,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.009090768173336983,
+        "static": 0.0019131157314404845
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:066-1",
+      "pair_selection_jaccard_mean": 0.29446064139941697,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 21.536153167,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.009090768173336983,
+        "static": 0.0019131157314404845
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:066-2",
+      "pair_selection_jaccard_mean": 0.29446064139941697,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": false,
+      "codec_extract_s": 21.991884417,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.009090768173336983,
+        "static": 0.0019131157314404845
+      },
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:066-3",
+      "pair_selection_jaccard_mean": 0.29446064139941697,
+      "pixel_choice_index": 3,
+      "pixel_correct": false,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 3,
+      "codec_correct": true,
+      "codec_extract_s": 6.65120725,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.008701079525053501,
+        "static": 0.005567180458456278
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:126-1",
+      "pair_selection_jaccard_mean": 0.42857142857142855,
+      "pixel_choice_index": 3,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 6.63140375,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.008701079525053501,
+        "static": 0.005567180458456278
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:126-2",
+      "pair_selection_jaccard_mean": 0.42857142857142855,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    },
+    {
+      "codec_choice_index": 1,
+      "codec_correct": true,
+      "codec_extract_s": 6.543203959,
+      "codec_score_source": "fused",
+      "codec_score_units": "onevision_style_motion_residual_fused_score:mode=weighted,motion_weight=1.0,residual_weight=1.0,percentile_normalized_inputs",
+      "codec_thresholds": {
+        "shifted": 0.008701079525053501,
+        "static": 0.005567180458456278
+      },
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:126-3",
+      "pair_selection_jaccard_mean": 0.42857142857142855,
+      "pixel_choice_index": 1,
+      "pixel_correct": true,
+      "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project"
+    }
+  ],
+  "manifest_path": "research/benchmark_manifests/videomme_short_present_v1_n57.toml",
+  "n_items": 57,
+  "pair_selection_jaccard_mean": 0.49493683344018485,
+  "phase": "1.29",
+  "pixel_accuracy": 0.6491228070175439,
+  "pixel_dense_agreement": 0.9473684210526315,
+  "pixel_reuse_ratio_mean_active": 0.10789473678328489,
+  "planner": {
+    "max_age": null,
+    "pixel_change_threshold": 8.0,
+    "reuse_classes": [
+      "static",
+      "shifted"
+    ],
+    "shifted_threshold": 8.0,
+    "static_threshold": 3.0,
+    "statistic": "mean",
+    "sticky_window": null,
+    "top_k": 16
+  },
+  "precompute_cache_path": "research/experiments/2026/artifacts/phase1_29_onevision_n57/fused/precompute_cache.json",
+  "score_pair_reduction": "native_macroblock_mean_over_sparse_pair_span_then_project",
+  "score_projection_version": 2
+}
