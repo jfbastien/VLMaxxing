@@ -235,13 +235,23 @@ comparison):
 
 This cluster is future-work for a follow-on paper, not a current reproduced
 contribution. The deep-research conclusion is blunt: "query-aware selection"
-alone is not novel enough. The paper has to be about a **plan** that chooses
-among physical evidence operators: motion scan, static-detail floor, endpoint
-anchors, optional higher resolution, and repair. That is different from a
-single scalar token score only if the experiments prove it.
+and "active evidence seeking" alone are not novel enough. The paper has to be
+about a **plan** that chooses among physical evidence operators: RLT
+redundancy scan, static-detail floor, endpoint anchors, optional higher
+resolution, and repair. That is different from a single scalar token score or
+agentic observe loop only if the experiments prove it.
 
 Closest priors:
 
+- **Active Video Perception** (arXiv 2512.05774) is the closest high-level
+  prior. It explicitly runs a planner-observer-reflector loop over what, when,
+  and where to observe and reports better accuracy with much lower inference
+  time/input tokens than a DVD-style agentic baseline. Our future claim must be
+  lower-level typed evidence operators with measured per-operator cost, or it
+  loses to AVP.
+- **QuoTA** (arXiv 2503.08689) is the closest query-budget prior. It performs
+  training-free ante-hoc token assignment from query relevance and CoT query
+  decomposition. It must be treated as a scalar/query-budget comparator.
 - **Static or Dynamic** (EMNLP 2025) is the closest conceptual neighbor. It
   explicitly chooses between static keyframe detail and delta-frame temporal
   evidence from the query, without model updates. Any future paper must cite it
@@ -256,14 +266,18 @@ Closest priors:
   They force us to justify the training-free and cost-accounted nature of the
   proposed planner.
 - **PruneVid** (ACL Findings 2025), **SparseVLM** (ICML 2025), **QTSplus**
-  (arXiv 2511.11910), **LongVU** (arXiv 2410.17434), and **FlashVLM**
-  (arXiv 2512.20561) cover text-guided, cross-modal, and query-aware token
-  scoring/compression at different stages. They are mandatory novelty
-  boundaries and, where feasible, scalar-query comparators.
+  (arXiv 2511.11910), **LongVU** (arXiv 2410.17434), **FlashVLM**
+  (arXiv 2512.20561), and **Inference Compute-Optimal Video VLMs** (ACL 2025)
+  cover text-guided, cross-modal, query-aware, and compute-frontier allocation
+  at different stages. They are mandatory novelty boundaries and, where
+  feasible, scalar-query/computation-frontier comparators.
 - **Token Pruning in MLLMs: Are We Solving the Right Problem?** (ACL Findings
-  2025) and **DART** (EMNLP 2025) turn fixed/random/duplication-aware controls
-  into mandatory baselines. If random or duplication-aware coverage matches the
-  query planner at matched K, the standalone-paper claim is dead.
+  2025), **DART** (EMNLP 2025), and **Principles of Visual Tokens** (arXiv
+  2411.13626) turn fixed/random/duplication-aware controls into mandatory
+  baselines. DART and the ACL critique paper have author overlap; cite both
+  but treat them as one line of evidence. If random or duplication-aware
+  coverage matches the query planner at matched K, the standalone-paper claim
+  is dead.
 
 Database analogy:
 
@@ -273,6 +287,17 @@ Database analogy:
 - **BlinkDB** is the better semantic analogy because visual evidence routing is
   approximate: speedups must be paired with answer-fidelity/error bars, not
   exact semantics.
+
+Stronger technical analogies:
+
+- **Anytime/contract algorithms** frame the repair gate as bounded
+  computation: answer now or buy more quality with more compute.
+- **Value-of-information / metareasoning** gives the decision rule: buy an
+  evidence operator only when the expected improvement in answer quality is
+  worth the measured cost.
+- **Multi-fidelity optimization** frames operators as fidelity/cost choices.
+  This is the right home for the cost model, even if the first implementation
+  is a simple frontier predictor rather than a full Bayesian optimizer.
 
 Recommended future-branch experiment tree:
 

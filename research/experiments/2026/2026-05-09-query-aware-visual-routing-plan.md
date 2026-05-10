@@ -23,6 +23,16 @@ strong scalar query-aware scorers. If the win collapses to "use more K" or "use
 one scalar query score," this belongs as a VLMaxxing appendix or ablation, not
 as a separate paper.
 
+2026-05-10 peer-review update: Active Video Perception and QuoTA are first-class
+closest priors, not footnotes. AVP already frames long-video understanding as
+iterative active evidence seeking with a planner-observer-reflector loop. QuoTA
+already performs training-free query-oriented token assignment via CoT query
+decomposition. Our only defensible gap is lower-level, typed physical evidence
+operators inside a frozen C-VISION runtime with measured per-operator costs.
+The technical framing should lean on anytime/contract algorithms, value of
+information, and multi-fidelity cost allocation; database query planning remains
+an explanatory analogy for systems readers.
+
 ## One-Sentence Thesis
 
 Video VLM acceleration should be planned from the question. Motion-only routing
@@ -43,10 +53,11 @@ VLMs. The current paper centers on three axes:
 - **C-PERSIST**: after-ingest same-video follow-up reuse. The expensive prefix
   is paid once; later questions reuse state.
 
-The query-aware idea comes from a sharp C-VISION/RLT result. We used RLT
-motion scores as the C-VISION scorer on Gemma 4 E4B / MLX-VLM. RLT is cheap:
-it scores raw frames before the model runs. The competing max-min diversity
-scorer is much more expensive because it works over encoder hidden states.
+The query-aware idea comes from a sharp C-VISION/RLT result. We used RLT's
+raw-patch run-length redundancy signal as the C-VISION scorer on Gemma 4 E4B /
+MLX-VLM. RLT is cheap: it scores raw frames before the model runs. The
+competing max-min diversity scorer is much more expensive because it works over
+encoder hidden states.
 
 Local preliminary facts, all reproduced here:
 
@@ -64,22 +75,36 @@ Local preliminary facts, all reproduced here:
   `action_localization`/`moving_attribute`.
 - `moving_attribute` is the sharpest example, not a universal law. On the dev
   slice, `moving_attribute` stayed at dense accuracy `0.833`, composed accuracy
-  `0.333`, and `Delta acc = -0.50` even when its keep-rate was raised to `1.0`.
+  `0.333`, and `Delta acc = -0.50` in a `keep_rate=1.0` diagnostic bracket.
   On the disjoint holdout slice, however, `moving_attribute` was clean at the
   base `keep_rate=0.5`. The failure is item/content-class variance, not proof
   that the whole bucket is deterministically unrecoverable.
 
-That last point is the discovery. Motion-only routing is excellent when motion
-is the evidence, but the query can ask for something else: static appearance,
-endpoint state, object identity, object relations, or a localized action cue.
-Raising K inside the same motion policy sometimes recovers a class and
-sometimes does not. The next method should not be "keep more motion tokens."
-It should be "plan the visual evidence from the query."
+Important correction from the 2026-05-10 peer review: the dev
+`moving_attribute` `keep_rate=1.0` bracket is **not** a clean full-stack
+oracle. The queue configured both prompt-admission and C-VISION group overrides
+to `1.0`, and the moving-attribute rows report `vision_tower_keep_rate=1.0`;
+operationally, that disables C-VISION pruning for those rows. Prompt admission,
+however, still uses thresholded RLT masking rather than a fixed-K full-retention
+budget, and the same rows still keep only about `0.31-0.34` of RLT prompt
+tokens. Treat the bracket as "full C-VISION retention plus thresholded RLT
+prompt admission did not rescue the dev failures," not as proof that full
+prompt evidence or oracle-K cannot help. A true full-retention/oracle-K probe
+must separately prove prompt and C-VISION retention.
 
-Round-20 also means some obvious falsification work is already done. We have
+That last point is the discovery. Redundancy-first routing is excellent when
+redundancy is the evidence-saving opportunity, but the query can ask for
+something else: static appearance, endpoint state, object identity, object
+relations, or a localized action cue.
+Raising K inside the same redundancy-ranked policy sometimes recovers a class
+and sometimes does not. The next method should not be "keep more tokens under
+the same scorer." It should be "plan the visual evidence from the query."
+
+Round-20 also means some obvious falsification work is partially done. We have
 already run disjoint holdout replication and a dev-slice `moving_attribute`
-`keep_rate=1.0` bracket. The next branch should not repeat those cells as if
-they were unknown. It should use them as boundary evidence and move directly to
+full-C-VISION diagnostic bracket, but the bracket is not a clean full-stack
+oracle because prompt admission remained thresholded. The next branch should
+first audit the harness and run an instrumented oracle-K probe, then move to
 matched-budget operator ablations: static-detail floors, endpoint anchors,
 fixed coverage, random coverage, duplication-aware coverage, and one scalar
 query-aware comparator.
@@ -128,9 +153,9 @@ transformer training/inference by removing repeated token runs while preserving
 accuracy on action-recognition/video tasks.
 
 Our use of RLT is not a reproduction of RLT's original VideoMAE/action
-recognition setup. It is a transfer test: use RLT's raw-frame motion prior as
-the scorer inside C-VISION and, separately, as a prompt-admission policy for a
-video VLM.
+recognition setup. It is a transfer test: use RLT's raw-patch redundancy signal
+as the scorer inside C-VISION and, separately, as a prompt-admission policy for
+a video VLM.
 
 ### Query-Aware Visual Routing
 
@@ -185,23 +210,36 @@ re-routing, and BlinkDB is useful because it makes latency/error trade-offs
 explicit. The paper should use all three analogies carefully and never imply
 database-style correctness guarantees.
 
+The technical home should be broader than databases. Anytime/contract
+algorithms describe the repair gate more precisely: the system can return a
+cheap first answer, then spend more compute to improve expected answer quality.
+Value-of-information and metareasoning describe the decision rule more
+precisely: pay for the operator whose expected reduction in answer uncertainty
+is worth its cost. Multi-fidelity optimization describes the cost model more
+precisely: different operators are different fidelity/cost levels, and the
+planner should spend the next unit of compute where expected quality gain per
+unit cost is largest. The database analogy should remain a systems-reader
+metaphor, not the mathematical claim.
+
 ## Deep-Research Assessment: Verdict And Novelty Boundary
 
 The external assessment is **VALID** on the main point: query-aware selection is
-not novel by itself. Related work already includes query-adaptive static/dynamic
-allocation, learned query-conditioned frame selection, training-free
-query-aware frame selection, learned query-aware token selection with adaptive
-budgets, training-free text-guided token pruning, and critiques showing that
-importance scores can lose to random/fixed baselines.
+not novel by itself. Related work already includes active-perception
+plan/observe/reflect loops, query-adaptive static/dynamic allocation, learned
+query-conditioned frame selection, training-free query-aware frame selection,
+query-oriented token budget assignment, learned query-aware token selection
+with adaptive budgets, training-free text-guided token pruning, and critiques
+showing that importance scores can lose to random/fixed baselines.
 
 What remains plausibly new:
 
-1. **Operator-level plans, not scalar scores.** The planner chooses physical
+1. **Operator-level plans, not scalar scores or agentic interaction alone.** The planner chooses physical
    evidence operators such as motion scan, static-detail floor, endpoint
    anchors, resolution changes, and repair. It does not merely rank tokens by
-   one query-conditioned scalar.
+   one query-conditioned scalar, and it does not only ask an agent to observe
+   more pixels.
 2. **Training-free, pre-vision default.** RLT remains the cheap first-stage
-   evidence scan. More expensive query-aware operators are paid only when the
+   redundancy scan. More expensive query-aware operators are paid only when the
    query or risk signal justifies them.
 3. **Total-cost accounting.** The unit is dense-paired fidelity versus measured
    decode + scorer + vision + prefill + generate + repair cost. Token count
@@ -214,10 +252,13 @@ What remains plausibly new:
 What we must not claim:
 
 - first query-aware frame or token selection method;
+- first active visual evidence-seeking loop;
 - exact database-style query optimization;
 - universal recovery of `moving_attribute` or any single bucket;
 - a standalone paper if fixed/random coverage or higher K explains the effect;
 - speedup without end-to-end scorer and repair costs.
+- a standalone paper without positioning against Active Video Perception and
+  QuoTA.
 
 ## Core Hypotheses
 
@@ -225,13 +266,18 @@ What we must not claim:
 
 Some `moving_attribute` and adjacent static/detail-sensitive items fail because
 the query asks for appearance, endpoint state, object identity, object
-relations, or localized action cues that a motion-first score can under-cover.
+relations, or localized action cues that a redundancy-first score can
+under-cover.
 A query-aware planner that adds endpoint/static-detail evidence should recover
 those items at a lower cost than globally raising keep-rate.
 
 Falsification: fixed static coverage, random valid-token selection, or a
 duplication-aware control matches the query-aware planner on the same failed
 items at the same valid-position budget.
+
+Minimum evidence standard: do not claim this from n=6 buckets. A bucket-specific
+claim needs either n>=30 in the target bucket or a clearly labeled diagnostic
+result with exact item counts and per-item recovery overlap.
 
 ### H2: Motion-first, query-repair is cheaper than query-aware everywhere
 
@@ -244,11 +290,22 @@ the repair gate fires so often that it becomes dense-by-another-name.
 
 ### H3: Static-detail floors repair a different failure class than higher K
 
-Raising RLT K keeps more of the same motion-ranked evidence. A static-detail
-floor reserves evidence that motion ranking may never surface.
+Raising RLT K keeps more of the same redundancy-ranked evidence. A
+static-detail floor reserves evidence that redundancy ranking may never surface.
 
 Falsification: raising RLT K and adding a static-detail floor produce the same
-per-item repairs and the same errors.
+per-item repairs and the same errors. Accept/reject should use per-item
+recovery overlap, not only aggregate accuracy.
+
+### H1c: Identity binding is a separate failure class
+
+`object_interaction` and some `moving_attribute` items may fail because the
+model loses object identity binding, not because it lacks static detail. A
+cheap first-frame identity anchor, endpoint pair, or object-track proxy could
+repair relation questions without repairing appearance questions.
+
+Falsification: identity/endpoint anchors repair the same items as static-detail
+floors and do not produce a distinct recovery set.
 
 ### H4A: Structured evidence plans beat scalar token scores
 
@@ -271,6 +328,20 @@ Falsification: the structured planner recovers quality but loses E2E to a
 simpler policy such as higher fixed RLT K, fixed static coverage, or dense
 fallback after all costs are counted.
 
+### H5: The planner has a useful cost model
+
+A visual evidence planner should not be a bag of heuristics. It should predict
+which operator is worth paying for from measured decode, scorer, vision,
+prefill, generation, and repair costs, plus a rough expected-fidelity gain.
+The first version can be simple; it does not need a full Bayesian optimizer.
+
+Accept if predicted E2E is within 5-10% of measured E2E across held-out plans
+and the chosen plan remains on the measured speed/fidelity frontier.
+
+Falsification: substrate effects, generation-length covariance, or repair
+variance dominate enough that the cost model cannot rank plans better than a
+fixed policy.
+
 ## Candidate Experiments
 
 All experiments should use the same rigor as the current RLT/VLMaxxing branch:
@@ -286,7 +357,9 @@ Use the existing round-20 artifacts before writing new routing code. Build a
 per-item table for direct and rescue composition: dense answer, composed
 answer, correctness, parse status, bucket, group keep-rate, prompt-admission
 K, C-VISION K, and whether the item was fixed by rescue, harmed by rescue, or
-unchanged.
+unchanged. The table must expose whether C-VISION kept-position accounting is
+present for each row; rows without that accounting cannot support claims about
+vision-token saturation.
 
 Accept if the failure set clusters around interpretable evidence needs:
 appearance-under-motion, endpoint state, object relation, temporal order, or
@@ -295,17 +368,41 @@ non-determinism, or evaluator ambiguity.
 
 Resource estimate: analyzer-only, minutes on this machine.
 
+#### Q0b: Harness gate and oracle-K probe
+
+Before any query-aware method, run a true dense-equivalence/oracle probe on the
+target buckets:
+
+- dense baseline;
+- composition path with placeholder admission disabled and C-VISION disabled;
+- RLT prompt admission with C-VISION full retention;
+- RLT C-VISION with prompt admission disabled;
+- full RLT at `kr=0.5/0.7/0.85/1.0`, where `kr=1.0` must prove both
+  `gemma_encoder_kept_per_frame == gemma_encoder_valid_positions_per_frame`
+  for C-VISION and no prompt-placeholder pruning for prompt admission.
+
+Accept if the harness passes shape/schema/scatter equivalence and the oracle-K
+rows report explicit kept-position accounting. If `kr=1.0` recovers target
+failures, the first paper direction is bucket-aware budget scheduling, not
+static-detail planning. If `kr=1.0` does not recover after the accounting is
+proven, then static/detail/identity/endpoint operators become scientifically
+motivated.
+
+Resource estimate: small targeted slice first; run n>=30 per target bucket
+before making a bucket-level claim.
+
 #### Q1: Matched-budget operator ablation
 
 Target MVBench `moving_attribute` and `object_interaction` first, with TOMATO
 `direction`/`rotation` and VideoMME `long`/`medium` as regression probes. Run
 matched valid-position K across:
 
-- RLT motion score;
+- RLT raw-patch redundancy score;
 - higher-K RLT where not already measured;
 - fixed uniform coverage;
 - deterministic random valid-position coverage, multi-seed;
 - duplication-aware coverage, DART-style where feasible;
+- first-frame-only and last-frame-only endpoint baselines;
 - RLT plus endpoint anchors;
 - RLT plus a low-rate static-detail floor;
 - RLT plus endpoint anchors plus static-detail floor.
@@ -323,10 +420,12 @@ longer if deterministic random/duplication controls need new runner support.
 Implement or approximate one strong scalar query-aware baseline. Preferred
 order:
 
-1. FlashVLM-style text-guided visual-token score if it can be implemented
+1. QuoTA-style query-oriented token/frame budget assignment if it can be
+   approximated without a second heavy model loop.
+2. FlashVLM-style text-guided visual-token score if it can be implemented
    locally without training and without adding a heavy dependency.
-2. CLIP/Q-Frame-style query-frame similarity plus valid-position allocation.
-3. SparseVLM/PruneVid-style text-guided token relevance if local hooks can be
+3. CLIP/Q-Frame-style query-frame similarity plus valid-position allocation.
+4. SparseVLM/PruneVid-style text-guided token relevance if local hooks can be
    made faithful.
 
 Accept structured planning only if it beats the scalar baseline on the target
@@ -337,11 +436,27 @@ C-VISION," not visual query planning.
 Resource estimate: highly implementation-dependent; smoke first on n=1 before
 any benchmark cells.
 
+#### Q2b: QuoTA-style query budget assignment
+
+QuoTA is too close to ignore. Build the cheapest faithful local approximation
+before claiming structured planning:
+
+- decompose the query into evidence needs using either lexical rules or a
+  frozen LVLM/text model;
+- assign frame-level or group-level token budgets before vision/decoder
+  interactions;
+- keep total valid-position K matched to the structured planner.
+
+Accept operator-level novelty only if the typed operator plan beats this
+query-budget baseline on paired fidelity or total cost. If QuoTA-style budget
+assignment matches the plan, the paper should become "query-budgeted C-VISION"
+or a VLMaxxing appendix.
+
 #### Q3: Rule-based visual evidence planner
 
 After Q1/Q2 identify useful operators, add a cheap query classifier:
 
-- motion/action queries -> RLT motion-first;
+- motion/action queries -> RLT redundancy-first;
 - appearance/material/color/state queries -> RLT + static-detail floor;
 - begin/end/first/last queries -> endpoint anchors + RLT;
 - object interaction/relation queries -> static-detail floor + motion, with
@@ -353,6 +468,36 @@ global policy on disjoint holdout. Reject if the rules overfit the dev buckets
 or trigger so often that the method becomes dense-by-another-name.
 
 Resource estimate: local n=30 dev + n=30 holdout per benchmark, gated by Q1/Q2.
+
+#### Q3b: Active-perception baseline
+
+Active Video Perception (AVP) is the closest high-level prior: it explicitly
+runs a planner-observer-reflector loop and decides what/when/where to observe.
+If the query-aware branch survives Q1-Q3, implement a stripped-down AVP-like
+baseline or at least compare against its published cost/quality point. The
+distinction we need to prove is typed low-level evidence operators with
+measured per-operator cost, not merely iterative evidence seeking.
+
+Accept a strong planner claim only if our method is cheaper or better on the
+same target regime than a reasonable AVP-style loop, or if the paper explicitly
+narrow-scopes itself to non-agentic first-pass VLM runtime routing.
+
+#### Q3c: Value-of-information / anytime policy
+
+Formalize repair as a bounded-computation decision: answer now, or buy another
+evidence operator. The first implementation can use a simple risk score rather
+than a learned uncertainty model, but the paper should report:
+
+- first-pass answer quality and latency;
+- repair trigger rate;
+- recovered failures;
+- false repairs;
+- marginal latency per recovered answer;
+- estimated value of computation/evidence versus measured cost.
+
+Accept if the policy buys statistically meaningful fidelity improvement per
+unit cost and remains on the E2E frontier. Reject if the policy behaves like
+dense fallback or cannot predict which items need repair.
 
 #### Q4: Transfer and benchmark breadth
 
@@ -381,14 +526,28 @@ Accept if repair fires on less than 40% of target items and improves paired
 fidelity enough that total E2E remains above the simpler fixed-K policy.
 Reject if repair is effectively dense fallback.
 
+#### Q6: Robustness and statistical discipline
+
+Before paper claims:
+
+- preregister one primary endpoint per experiment family;
+- control multiple comparisons with Holm-Bonferroni or a preregistered
+  primary/secondary hierarchy;
+- require n>=30 per target bucket for bucket-level claims;
+- keep dev-rule design and holdout evaluation separate with timestamped rule
+  files;
+- run adversarial paraphrases for query-classifier stability;
+- reject a planner if broad-regression benchmarks show Δacc below the
+  preregistered tolerance, even when target buckets improve.
+
 #### Cancellation tree
 
 ```mermaid
 flowchart TD
     A[Harness/schema/scatter smoke] --> B{Dense-equivalent controls pass?}
     B -- No --> C[Fix harness; no research claim]
-    B -- Yes --> D[Q0 per-item audit]
-    D --> E{Failure reproducible and interpretable?}
+    B -- Yes --> D[Q0 per-item audit + Q0b oracle-K]
+    D --> E{Failure reproducible, instrumented, and interpretable?}
     E -- No --> F[Stop; keep as future-work note]
     E -- Yes --> G[Q1 matched-budget operator ablation]
     G --> H{High-K alone closes gap?}
@@ -565,6 +724,22 @@ not designed to preserve static appearance details when motion saliency is low.
 Most directly relevant. It explicitly separates static keyframe detail from
 dynamic delta evidence and chooses allocation from the query.
 
+- [Active Video Perception: Iterative Evidence Seeking for Agentic Long Video
+  Understanding, arXiv 2512.05774](https://arxiv.org/abs/2512.05774)
+
+Closest high-level prior. It uses a planner-observer-reflector loop to decide
+what, when, and where to observe, then iterates until evidence is sufficient.
+Boundary: agentic long-video interaction, not low-level typed evidence
+operators inside a C-VISION runtime. Any standalone paper must position against
+AVP explicitly.
+
+- [QuoTA: Query-oriented Token Assignment via CoT Query Decouple for Long Video
+  Comprehension, arXiv 2503.08689](https://arxiv.org/abs/2503.08689)
+
+Closest query-budget prior. It is training-free and assigns visual tokens from
+query relevance after CoT query decomposition. Boundary: query-oriented budget
+assignment/scoring, not an operator menu with measured per-operator costs.
+
 - [Q-Frame: Query-aware Frame Selection and Multi-Resolution Adaptation for
   Video-LLMs, ICCV 2025](https://openaccess.thecvf.com/content/ICCV2025/html/Zhang_Q-Frame_Query-aware_Frame_Selection_and_Multi-Resolution_Adaptation_for_Video-LLMs_ICCV_2025_paper.html)
 
@@ -613,7 +788,23 @@ they beat simple baselines under matched evaluation.
 
 Guardrail and baseline source. It argues duplication can matter more than
 importance and reports strong training-free pruning. Use a duplication-aware
-control when feasible.
+control when feasible. Note author overlap with the token-pruning critique
+paper; treat them as one line of evidence rather than independent witnesses.
+
+- [Principles of Visual Tokens for Efficient Video Understanding,
+  arXiv 2411.13626](https://arxiv.org/abs/2411.13626)
+
+Guardrail and theory source. It argues visual-token value follows a Pareto
+distribution and that many token-selection methods do not beat random
+discarding. Scope caveat: this is video understanding/action-recognition
+evidence, not direct VLM QA proof.
+
+- [Inference Compute-Optimal Video Vision Language Models, ACL
+  2025](https://aclanthology.org/2025.acl-long.117/)
+
+Compute-frontier source. It studies allocation across model size, frame count,
+and visual tokens per frame under fixed inference compute. Use it to motivate
+cost-frontier reporting and avoid token-count-only claims.
 
 - [Frame-Voyager: Learning to Query Frames for Video Large Language Models,
   ICLR 2025 / arXiv 2410.03226](https://arxiv.org/abs/2410.03226)
@@ -653,6 +844,26 @@ evidence plans.
 Use these for framing, not for overclaiming. The analogy is "choose access
 paths from predicates and costs"; the key difference is that visual plans are
 approximate and must be empirically gated.
+
+### Anytime, value-of-information, and multi-fidelity planning
+
+- [Composing Real-Time Systems / Anytime Algorithms, IJCAI
+  1991](https://www.ijcai.org/Proceedings/91-1/Papers/034.pdf)
+- [Optimal Composition of Real-Time Systems, Artificial Intelligence
+  1996](https://people.eecs.berkeley.edu/~russell/papers/aij-anytime.pdf)
+- [Principles of Metareasoning, Artificial Intelligence
+  1991](https://doi.org/10.1016/0004-3702(91)90015-C)
+- [Information Value Theory, IEEE TSSC
+  1966](https://doi.org/10.1109/TSSC.1966.300074)
+- [Multi-fidelity Bayesian Optimisation with Continuous Approximations, ICML
+  2017](https://proceedings.mlr.press/v70/kandasamy17a.html)
+- [Multi-fidelity Bayesian Optimization: A Review, arXiv
+  2311.13050](https://arxiv.org/abs/2311.13050)
+
+Use these as the technical home for repair and cost allocation. The first
+planner does not need a full Bayesian optimizer, but it should be clear that
+operators are cost/fidelity choices and repair is a bounded-computation
+decision.
 
 ## Handoff Questions For The Next Scientist
 
