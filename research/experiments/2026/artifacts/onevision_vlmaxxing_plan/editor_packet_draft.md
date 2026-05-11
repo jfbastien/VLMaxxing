@@ -1,10 +1,39 @@
-# Editor Packet — OneVision x VLMaxxing OV-3 Track A Findings
+# Editor Packet — OneVision x VLMaxxing OV-3 / OV-6 Findings
 
-Date: 2026-05-10
+Date: 2026-05-11
 Branch: `onevision-vlmaxxing-research`
 Hardware: M3 16GB MacBook Air, MLX unified GPU
-Status: OV-3 Track A complete through dev, N=20, holdout-disjoint, frame=16, and N=57
-statistical replication. Track B timing is not done.
+Status: OV-3 Track A complete (dev, N=20, holdout-disjoint, frame=16, N=57 replication).
+OV-6 Track B smoke complete (6 arms × 10 items, single keep-rate, single layer).
+
+## OV-6 Track B Smoke (the new result)
+
+Six arms at frame_count=8, keep_rate=0.5, prune layer=2 on the 10-item short manifest:
+
+| arm | accuracy | vision_ms | e2e_ms | codec_extract_s/item |
+|---|---|---|---|---|
+| dense (no prune) | **0.800** | 9065 | 37707 | — |
+| magnitude_norm kr=0.5 | 0.600 | 5887 | 38508 | — |
+| uniform_random kr=0.5 | 0.400 | 6145 | 39857 | — |
+| codec_novel_coded kr=0.5 | 0.400 | 5547 | 41925 | 20.32 |
+| codec_motion kr=0.5 | 0.400 | 6338 | 41568 | 22.26 |
+| codec_residual kr=0.5 | 0.500 | 5843 | 37016 | 20.13 |
+
+**Codec planning is a refresh oracle (Track A), not an importance oracle (Track B).**
+At kr=0.5 layer=2, the codec sources that beat pixel max_abs at Track A semantic
+substitution match or lose to random-pruning at Track B importance selection. None
+of the three codec sources beats `magnitude_norm`, which reads the model's own
+layer-2 hidden-state L2 norm. The best codec arm (`residual`, 0.500) is 10 percentage
+points below `magnitude_norm` and 30 pp below dense.
+
+Mechanism: codec metadata reports pixel-space novelty — *which regions changed* —
+not *which regions carry the answer*. The vision tower has already abstracted away
+from raw pixels by layer 2, and the right importance signal at that layer comes
+from the model itself. Track A wins were never about importance; they were about
+preserving the answer when reusing stable state. Different question, different
+denominator.
+
+## Bottom Line
 
 ## Bottom Line
 
