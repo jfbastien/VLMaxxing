@@ -258,14 +258,21 @@ def build_schedule() -> list[ExperimentStep]:
                 "provenance fields, and CPU alignment tests"
             ),
             eta_m3="2-4 hours coding plus 1-2 hours for an 8f smoke; broad sweeps not recommended",
-            eta_m5="8-16 hours Qwen broader sweep, +6-12 hours Gemma only if Qwen gates",
-            compute_lane="M3 smoke allowed when free; M5 128GB preferred for broad sweeps; no concurrent model jobs",
+            eta_m5=(
+                "8-16 hours Qwen broader sweep after M3 smoke gates; +6-12 hours Gemma "
+                "only if Qwen gates"
+            ),
+            compute_lane=(
+                "M3 smoke allowed when free; M5 128GB broad sweep only after M3 8f "
+                "alignment and fidelity gates; no concurrent model jobs"
+            ),
             uses_local_accelerator=True,
             requires_nvidia=False,
             defer_until="after OV-3 N=57 review; before OV-8",
             commands=[
                 "uv run python scripts/run_phase1_51V.py --score-mode codec_grid --codec-score-source novel_coded <smoke args>",
                 "uv run python scripts/run_phase1_51V.py --score-mode codec_grid --codec-score-source motion <smoke args>",
+                "M5 only after smoke: broaden Qwen 8f; run 16f only if 8f gates; run 32f only if 16f gates",
                 "uv run python scripts/run_phase1_63G_gemma_track_b.py <onevision-allocator args>",
             ],
             artifacts=[

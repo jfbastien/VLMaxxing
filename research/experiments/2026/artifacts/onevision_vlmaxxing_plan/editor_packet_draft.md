@@ -51,9 +51,9 @@ pixel=0.750, dense=0.700, codec->pixel=20/20, codec->dense=19/20. The frame=8 co
 advantage over pixel does not automatically generalize to frame=16.
 
 `reproduced here`: The OneVision-style fused score is not the preferred frozen-backend
-planner. The earlier N=20 "fused fails" conclusion was too strong; at N=57 fused is
-positive by point estimate. But it does not beat the simpler codec sources and it
-collapses to pixel at frame=16 along with the others.
+planner. The earlier N=20 "fused fails" conclusion was too strong because that manifest
+did not contain the later N=57 fused-rescue rows. Separately, frame=16 is an operating
+point where fused and all other codec sources collapse to the pixel answer set.
 
 ## What We Should Not Claim
 
@@ -118,7 +118,9 @@ signals more cheaply, but that is a systems hypothesis until measured.
    vision-stage pruning at 8 frames without losing the OV-3 fidelity signal. This is
    the required step before any E2E speedup claim. Expected implementation cost is
    closer to 200-350 LoC than 80-150 because post-window Qwen group alignment and CPU
-   tests matter.
+   tests matter. Use M5 only after the M3 8-frame smoke passes both alignment and
+   fidelity: broaden Qwen 8f first, run 16f only if 8f gates, and run 32f only if 16f
+   gates.
 
 2. **OV-8 C-PERSIST composition after OV-6**
    Use setup-inclusive session accounting: `sparse first query + (Q-1) * measured

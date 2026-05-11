@@ -127,8 +127,8 @@ ROWS = (
         headline_numeric=(
             "OV-3 N=57 VideoMME short, 8 frames: fused codec_acc=0.684 (+2/57 over "
             "pixel, McNemar p=0.50), codec→dense=54/57, codec→pixel=55/57; N=20 "
-            "pixel-mimicry was small-sample noise, while frame=16 collapses to pixel "
-            "for all codec sources"
+            "fused-equals-pixel was a manifest-coverage artifact, while frame=16 is "
+            "a separate operating-point boundary where all codec sources collapse to pixel"
         ),
         target_to_beat=(
             "does not beat the simpler codec sources at N=57, so do not promote fusion "
@@ -159,8 +159,13 @@ ROWS = (
             "Qwen low-gain boundary around 1.032x only with fidelity caveat"
         ),
         e2e_policy="report component and E2E separately; no multiplied speedups",
-        local_reproduction="M3 8f smoke first; M5 128GB for broader 16f/32f sweeps",
-        planned_gate="fidelity-clean cell at useful keep-rate with measured vision/E2E timing",
+        local_reproduction=(
+            "M3 8f smoke first; M5 128GB only after smoke validates alignment and fidelity"
+        ),
+        planned_gate=(
+            "M5 broad sweep only after M3 8f smoke is fidelity-clean; 16f only after "
+            "8f gates; 32f only after 16f gates"
+        ),
         artifact_or_source="planned OV-6 results",
     ),
     ComparisonRow(
