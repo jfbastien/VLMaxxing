@@ -1,183 +1,132 @@
-# OV-3 Full Analysis: What We Found, What Remains
+# OV-3 Full Analysis: Final Track A Readout And Next Gates
 
 Date: 2026-05-10
-Hardware: M3 16GB MBA, MLX unified GPU, ~5h cumulative GPU time so far.
+Hardware: M3 16GB MacBook Air, MLX unified GPU
+Scope: Qwen2.5-VL-7B-4bit, VideoMME short, Track A semantic substitution.
 
-## What we know firmly
+## Final Result
 
-After 60 inference passes across n=10 dev, n=20 dev∪holdout, and n=10 holdout-disjoint
-on Qwen2.5-VL-7B-4bit at 8 frames:
+The OV-3 result is a bounded positive Track A signal. It is not yet a systems
+speedup.
 
-1. **Three independent codec score sources track frozen-Qwen dense answers exactly on
-   20/20 unique items**: novel_coded (`intra | cbf`), motion-vector magnitude, residual
-   energy. Each codec source picks materially different tile sets (Jaccard 0.014 to
-   1.0) but the model produces the same final answer on every item.
+At 8 frames on 57 VideoMME-short items, all four codec score sources beat pixel
+`max_abs` and dense by point estimate at matched active-refresh budget:
 
-2. **OneVision-style weighted motion+residual fusion regresses to the pixel baseline.**
-   On all 30 codec-cached inferences across the three passes, fused matches the pixel
-   answer set on every item. The fancier signal is strictly worse than its components
-   here.
+| source | dense | pixel | codec | codec - pixel | codec->dense | codec->pixel | McNemar fixes/breaks |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| novel_coded | 0.667 | 0.649 | 0.702 | +0.053 | 55/57 | 54/57 | 3 / 0 |
+| motion | 0.667 | 0.649 | 0.684 | +0.035 | 54/57 | 55/57 | 2 / 0 |
+| residual | 0.667 | 0.649 | 0.684 | +0.035 | 56/57 | 55/57 | 2 / 0 |
+| fused | 0.667 | 0.649 | 0.684 | +0.035 | 54/57 | 55/57 | 2 / 0 |
 
-3. **The codec planner is deterministic across driver invocations; the dense baseline
-   is not.** On the 10 holdout items run twice (n=20 session and disjoint session),
-   pixel and codec answers were byte-identical in both runs on every item. Dense
-   flipped on item 066-3 between sessions (3 → 2). Codec_cached forward passes are
-   more stable than dense.
+None of the per-source McNemar tests is significant: novel_coded p=0.25, the other
+sources p=0.50. The correct statistical interpretation is "consistent positive
+direction across sources, underpowered per-cell tests", not "codec significantly
+beats pixel."
 
-4. **Pixel max_abs drifts from dense on a fixed share of items, codec does not.** On
-   item 037-2 in the dev tranche (ground truth 2): dense says 2, pixel says 0, three
-   simple codec sources say 2. Codec rescues the answer pixel loses.
+## What Changed From The Interim N=20 Readout
 
-5. **H.264 metadata extraction overhead via PyAV: ~19s/item median on M3.** This is
-   ~80% of codec-cached inference time, not orders of magnitude smaller. The "free
-   signal" framing is principled (every video decoder computes this metadata anyway)
-   but our PyAV-based extraction re-decodes separately. A decoder-integrated
-   implementation would amortize this; the measured cost is an upper bound.
+The N=20 result overcalled two things.
 
-## What we discovered that wasn't obvious going in
+First, "simple codec sources preserve dense on 20/20" was true on that slice but did
+not remain exact at N=57. Final codec->dense agreement is still high, 54/57 to 56/57,
+but no source is perfect.
 
-### Dense's run-to-run instability
+Second, "fused fails" was too strong. At N=57, fused is positive by point estimate and
+rescues two pixel-wrong rows. It still does not beat the simpler codec sources, and it
+collapses to pixel at frame=16, so it should not be promoted as the preferred planner.
 
-I expected the dense baseline to be a fixed reference. It isn't. Item 066-3 flipped
-its dense answer between two driver sessions on the same model, same prompt, same
-input. The cached forward passes (pixel-cached, codec-cached) didn't move. This means:
+## Boundary Conditions
 
-- "codec→dense agreement" as a metric is bottlenecked by dense's variance, not the
-  codec planner.
-- The planner-quality story is *understated* by codec→dense numbers. The codec
-  planner is producing a *more stable* answer than dense.
-- Implication for the paper: report codec→dense, but also report codec→ground-truth
-  directly, and measure dense→dense across re-runs. Otherwise the planner-quality
-  metric is confounded.
+Frame budget matters. At frame_count=16 on the N=20 manifest, every codec source
+matches the pixel answer set exactly: codec=0.750, pixel=0.750, dense=0.700,
+codec->pixel=20/20, codec->dense=19/20. The frame=8 advantage over pixel is not a
+general frame-budget claim.
 
-### Pair-jaccard is a misleading proxy
+Dense is not a perfectly stable reference on this hardware. Across two driver-session
+overlaps, dense flipped 1/20 answers while pixel and codec had 0/20 flips in the same
+overlaps. This is a caveat on dense-agreement metrics, not a broad determinism theorem.
 
-Motion-only at jaccard 0.014 (essentially zero overlap with pixel's tile selection)
-still hits codec→dense on every item. Selection overlap does not predict downstream
-agreement on this slice. The model is robust to *which* tiles are kept fresh, as long
-as the planner keeps a "right enough" set. This argues against using Jaccard as a
-quality signal in any future ablation.
+PyAV metadata extraction is expensive in the current harness: median about
+19.4 seconds/item and p95 about 28.1 seconds/item in the N=57 statistical audit. A
+decoder-integrated implementation may make this cheap, but our current repo-local
+implementation does a separate extraction pass.
 
-### Fused fails by mimicking pixel, not by being noisy
+## Paper Interpretation
 
-The OneVision fusion picks tile selections that, after threshold calibration, end up
-producing the **same final answer set as pixel max_abs on every item**. Fused
-codec→pixel = 20/20. This is a structural failure mode of fusion-then-threshold, not
-a noise problem. The threshold calibration is share-based (picks thresholds to hit
-target static/shifted shares), so the fusion's percentile-normalized magnitude
-distribution converges with pixel's high-magnitude regions because both end up
-triggering on similar high-energy zones. The fix would be either (a) absolute
-thresholds tied to physical units, or (b) a less-collapsing fusion (e.g., max
-instead of weighted mean), or (c) the fancy fusion is just the wrong intervention
-for a frozen-backend planner.
+The strongest honest paper contribution from OV-3 is:
 
-## What remains to be done
+- OneVision-Encoder is the trained codec-aligned encoder counterpart.
+- VLMaxxing can use codec metadata as a frozen-runtime refresh oracle in Track A.
+- The local evidence reopens continuous H.264 spatial scoring as a bounded hypothesis:
+  VideoMME short, Qwen2.5-VL-7B-4bit, 8 frames, matched-budget semantic substitution.
+- The result is diagnostic until Track B shows real skipped work.
 
-### Running now: frame=16 robustness on 20-item manifest
+Do not use "WOW" language around speed yet. The industry-relevant claim becomes real
+only if OV-6 shows measured vision-stage or end-to-end savings at fidelity-clean
+codec pruning.
 
-ETA ~3-4h on M3. Tests whether codec→dense=20/20 holds at 2x frame budget. The
-8-frame result might depend on the specific budget; 16-frame is a natural deployment
-point and shifts the keep-rate operating point.
+## Recommended Next Experiments
 
-### Highest-value next experiments, in order
+### 1. OV-6 Track B Codec Sparse Vision
 
-**1. Wire codec scores into Track B (OV-6) — 2-4h coding + smoke**
+Hypothesis: the best simple OV-3 codec source can drive real Qwen sparse vision at
+8 frames with less fidelity loss than current magnitude_norm / uniform_random baselines.
 
-This is the actual industry-impact lane. Track A (semantic substitution) preserves
-answers; Track B (real vision-stage work skipped) gives wall-clock E2E speedup.
+Implementation requirements:
 
-Wiring plan, ~80-150 LoC:
-- `QwenVisionPruneConfig` (`src/codec_through/qwen_pruned_vision_tower.py:38-50`):
-  add `codec_score_grid: np.ndarray | None = None` field.
-- `_group_scores` (line 65): add `"codec_grid"` mode that returns the precomputed
-  per-group score array directly.
-- Call site (line 197): pass `config.codec_score_grid` through.
-- `scripts/run_phase1_51V.py`: add `--codec-score-source` CLI flag, compute per-item
-  codec score (same path as Phase 1.29), pool to merged-group level via
-  `qwen_groups_per_frame`, attach to config.
-- Smoke on 7-item C-PERSIST video set or 10-item short dev (~1h GPU on M3).
+- Add a `codec_grid` score path to `src/codec_through/qwen_pruned_vision_tower.py`.
+- Build pure helpers that map per-frame codec grids into Qwen merged groups, then into
+  post-window group order.
+- Reject shape mismatches, NaN/inf scores, negative scores, and frame-count mismatch.
+- Add runner provenance fields for score source, fusion mode, projection version, and
+  metadata extraction cost.
+- Add CPU tests for synthetic grid alignment, frame-0/anchor policy, and setup-inclusive
+  accounting.
 
-Memory: Phase 1.51V peaks ~6.7GB on M3 16GB. Tight but feasible.
+Expected cost: 200-350 LoC if done cleanly, plus 1-2h GPU for an M3 8f smoke. Use M5
+for broader 16f/32f sweeps.
 
-**2. Direct ground-truth analysis on existing data — 30 min CPU only**
+### 2. OV-8 C-PERSIST Composition
 
-We have answer_index in every results.jsonl row. Recompute codec_correct,
-pixel_correct, dense_correct directly without depending on dense as the reference.
-This separates "did codec match dense" (planner quality) from "did codec produce the
-correct answer" (deployment quality). Probably tells a sharper story than what we
-have now.
+Run only after OV-6 produces dense-vs-codec timing rows. The first pass should be
+artifact-level accounting:
 
-**3. Multi-seed dense characterization — 2.5h GPU**
+`session_time(Q) = measured_sparse_first_query + (Q - 1) * measured_C-PERSIST_followup`
 
-Run the n=20 driver a second time on the same manifest. Compare dense answers across
-the two driver sessions. Quantify the dense-flip rate (we observed 1 in 10 in our
-single overlap; a clean re-run gives us a tighter rate estimate). This directly
-addresses the dense-non-determinism finding.
+Do not multiply speedup ratios across denominators.
 
-**4. Threshold sensitivity sweep — 4h GPU**
+### 3. TOMATO Motion Replication
 
-The current thresholds are calibrated per-item from pixel-derived target_shares. Try
-absolute thresholds (e.g., motion_magnitude > 1.0 px) and a higher static_share
-(0.50, 0.70) to see if codec→dense holds across the operating space or only at the
-share-matched point.
+Hypothesis: if codec scores are genuinely useful saliency proxies, motion-heavy TOMATO
+items should preserve or strengthen the codec-over-pixel direction. If TOMATO reverses,
+the claim stays VideoMME-short-specific.
 
-**5. TOMATO motion-heavy benchmark — 4h GPU**
+### 4. Threshold Sensitivity
 
-We've only tested VideoMME short. TOMATO's motion-heavy items would stress-test the
-codec saliency claim. Manifest exists: `tomato_motion_dev_v2.toml` and similar.
-Different bucket, different bias.
+Hypothesis: the N=57 signal may depend on share-matched calibration. Sweep static/fresh
+budget and absolute-score thresholds at frame_count=8 before adding any tuned policy.
 
-**6. Frame=32 budget — 6-8h GPU**
+### 5. Dense Determinism Multi-Seed
 
-If frame=16 holds the codec→dense=20/20 line, frame=32 tests the upper bound. Memory
-may push 14GB peak; M3 16GB is tight here.
+Hypothesis: dense instability is small but nonzero on this local MLX stack. A rerun of
+the N=57 driver would tighten the flip-rate interval and help decide whether
+codec->dense should remain a primary metric or be demoted behind ground-truth direct
+accuracy.
 
-### Not feasible without significant work
+## M5 Update
 
-- **OV-4 NVIDIA parity oracle**: requires `cv_reader` + CUDA + Linux. ~$30 Lambda
-  H100 evening. Worth it for upstream-parity credibility, optional otherwise.
-- **OV-6 Track B + C-PERSIST composition**: needs OV-6 wiring done first. Then ~3-4h
-  to plumb session-level timings into `build_c_persist_setup_inclusive.py`.
-- **Cross-family Gemma OV-3**: the runner hardcodes Qwen feature replay. Would need
-  a Gemma-aware wrapper (~100-200 LoC). Not urgent given the cross-source replication
-  on Qwen.
+The M5 should not rerun the whole exploratory tree first. Use it for work that is
+memory- or wall-clock-bound on the M3:
 
-## What this looks like to the paper editor
+1. OV-6 broad Track B sweep after the M3 8f smoke validates alignment.
+2. 16f and 32f Track B cells only if 8f fidelity is clean.
+3. TOMATO motion replication if the M3 is occupied.
+4. Multi-seed dense characterization overnight if Track B is blocked.
 
-The current evidence supports:
+## Query-Aware / RLT Boundary
 
-1. **Strong claim, narrowly bounded**: at matched ~10% mean active reuse on VideoMME
-   short with Qwen2.5-VL-7B-4bit at 8 frames, codec saliency (any of three simple
-   sources) preserves dense answers on 20/20 unique items while pixel max_abs drifts
-   on 1/20.
-
-2. **Negative result, reproducible**: OneVision-style weighted motion+residual fusion
-   does not transfer to a frozen-backend Track A planner; it converges to pixel-
-   baseline behavior on every item tested.
-
-3. **Methodological caveat, important**: dense's run-to-run instability means
-   codec→dense is a *lower bound* on planner quality. The codec planner is more
-   stable than dense.
-
-4. **Decision-log reopen**: continuous H.264 spatial scoring is empirically reopened
-   for VideoMME short / Qwen / 8-frame, with bounded scope.
-
-What the paper still needs (in order of impact):
-
-- Wall-clock E2E speedup numbers from Track B (OV-6) at the codec-validated operating
-  point. This is the "WOW for industry" the framing claims and we don't have it yet.
-- Frame budget robustness (frame=16 running; frame=32 if M3 holds).
-- Cross-benchmark replication (TOMATO motion).
-- Either multi-seed dense characterization, or a switch to ground-truth-direct
-  reporting that doesn't depend on dense's stability.
-
-## Honest assessment
-
-We did good Track A science. The negative result on fusion is publishable as a
-boundary claim. The positive result on simple codec sources is publishable conditional
-on the dense-determinism caveat.
-
-We have NOT yet done the industry-impact lane (Track B E2E timing). Without that, the
-WOW framing is aspirational. The next 3-5h on M3 should produce frame=16 robustness;
-the next 5-8h after that should produce a Track B smoke. That's the work to commit
-to before the paper draft moves.
+Do not implement query-aware routing on this branch. The useful cross-pollination is
+conceptual: codec score planes may become physical evidence operators in a later
+query-aware/RLT planner. That needs a separate design/dev/holdout split and should not
+reuse OV-3 inspected items for rule design.

@@ -81,74 +81,70 @@ ROWS = (
         denominator="paired answer stability at matched reuse/fresh budget",
         primary_metric="paired choice/correctness drift and parse failures",
         headline_numeric=(
-            "OV-3 N=20 unique VideoMME short items (dev n=10 ⊂ broader n=20): "
-            "pixel_acc=0.700, dense_acc=0.750-0.800, pixel→dense 19/20 at N=20, "
-            "mean active reuse 0.103-0.125"
+            "OV-3 N=57 VideoMME short, 8 frames: pixel_acc=0.649, dense_acc=0.667, "
+            "pixel→dense=54/57, mean active reuse=0.108"
         ),
         target_to_beat=(
-            "serves as matched-budget baseline; codec sources must beat 0.700 codec_acc "
-            "without raising paired-choice drift above pixel→dense"
+            "serves as matched-budget baseline; codec sources must beat pixel at the same "
+            "fresh budget without increasing parse failures or rows broken versus pixel"
         ),
         e2e_policy="not a work-skipped speedup claim",
         local_reproduction=(
-            "research/experiments/2026/artifacts/phase1_29_onevision_dev/comparison.md "
-            "and phase1_29_onevision_dev_n20_short/comparison.md"
+            "research/experiments/2026/artifacts/phase1_29_onevision_n57/comparison.md"
         ),
-        planned_gate="baseline for fused-codec planner comparison",
+        planned_gate="baseline for codec-source Track A comparison",
         artifact_or_source="scripts/run_phase1_29_planner_accuracy_probe.py",
     ),
     ComparisonRow(
-        system="VLMaxxing Track A novel_coded codec baseline",
+        system="VLMaxxing Track A simple codec sources",
         status="reproduced here",
-        intervention_layer="legacy continuous H.264 intra|cbf score source",
+        intervention_layer="legacy continuous H.264 intra|cbf, motion, and residual score sources",
         denominator="paired answer stability at matched reuse/fresh budget",
-        primary_metric="paired drift, dense agreement, selection Jaccard versus fused planner",
+        primary_metric="codec accuracy, pixel comparison, dense agreement, selection Jaccard",
         headline_numeric=(
-            "OV-3 N=20 unique VideoMME short items: codec→dense 20/20 (zero paired-"
-            "choice drift), codec_acc=0.750 = dense, pixel_acc=0.700, codec_minus_pixel "
-            "+5 percentage points; replicated across novel_coded, motion-only, and "
-            "residual-only on the same items at both n=10 dev and n=20 broader passes"
+            "OV-3 N=57 VideoMME short, 8 frames: novel_coded codec_acc=0.702 "
+            "(+3/57 over pixel, McNemar p=0.25), motion/residual codec_acc=0.684 "
+            "(+2/57 over pixel, p=0.50), codec→dense=54-56/57, mean active reuse=0.098-0.104"
         ),
         target_to_beat=(
-            "fused planner must beat or match novel_coded as well as pixel max_abs before "
-            "reopening continuous H.264 saliency as a paper result; novel_coded passes "
-            "with +5 percentage points over pixel and 20/20 dense agreement on N=20"
+            "reopens continuous H.264 spatial scoring only as a bounded Track A "
+            "hypothesis: positive point estimates and no rows broken versus pixel, "
+            "but individual McNemar cells remain inconclusive"
         ),
         e2e_policy="not a work-skipped speedup claim",
         local_reproduction=(
-            "research/experiments/2026/artifacts/phase1_29_onevision_dev/novel_coded/ "
-            "and phase1_29_onevision_dev_n20_short/novel_coded/"
+            "research/experiments/2026/artifacts/phase1_29_onevision_n57/{novel_coded,motion,residual}/"
         ),
-        planned_gate="decision-log reopen baseline for continuous codec scoring",
+        planned_gate="bounded decision-log reopen; use best simple source for Track B smoke",
         artifact_or_source="scripts/run_phase1_29_planner_accuracy_probe.py",
     ),
     ComparisonRow(
         system="OneVision-style fused planner + VLMaxxing Track A",
-        status="hypothesis",
+        status="reproduced here",
         intervention_layer="motion/residual score source for VLMaxxing planner",
         denominator="paired answer stability at matched reuse/fresh budget",
         primary_metric="codec-minus-pixel accuracy, dense agreement, selection Jaccard",
         headline_numeric=(
-            "OV-3 N=20 unique VideoMME short items: codec_acc=0.700 = pixel_acc, "
-            "codec→dense 19/20, codec→pixel 20/20 (fused selects the pixel answer set "
-            "on every item), pair_jaccard 0.49-0.57; reject: novel_coded / motion / "
-            "residual all reach codec→dense 20/20 with +5 percentage points, fused "
-            "matches pixel"
+            "OV-3 N=57 VideoMME short, 8 frames: fused codec_acc=0.684 (+2/57 over "
+            "pixel, McNemar p=0.50), codec→dense=54/57, codec→pixel=55/57; N=20 "
+            "pixel-mimicry was small-sample noise, while frame=16 collapses to pixel "
+            "for all codec sources"
         ),
         target_to_beat=(
-            "strict Pareto improvement over both pixel max_abs and legacy novel_coded "
-            "at matched fresh budget, <= 1% paired-choice drift, no parse-failure "
-            "increase; gate fails on this slice"
+            "does not beat the simpler codec sources at N=57, so do not promote fusion "
+            "as the preferred frozen-backend planner without a separate tuned/design "
+            "split"
         ),
         e2e_policy="not a work-skipped speedup claim",
         local_reproduction=(
-            "research/experiments/2026/artifacts/phase1_29_onevision_dev/fused/ and "
-            "phase1_29_onevision_dev_n20_short/fused/"
+            "research/experiments/2026/artifacts/phase1_29_onevision_n57/fused/ and "
+            "phase1_29_onevision_dev_n20_short_f16/fused/"
         ),
         planned_gate=(
-            "beat both pixel max_abs and novel_coded on dev and holdout without higher drift"
+            "descriptive positive at N=57; boundary at frame=16; simple sources remain "
+            "the OV-6 candidates"
         ),
-        artifact_or_source="planned OV-3/OV-5 results",
+        artifact_or_source="OV-3 N=57 and frame=16 artifacts",
     ),
     ComparisonRow(
         system="OneVision-style sparse evidence + VLMaxxing Track B",
@@ -163,8 +159,8 @@ ROWS = (
             "Qwen low-gain boundary around 1.032x only with fidelity caveat"
         ),
         e2e_policy="report component and E2E separately; no multiplied speedups",
-        local_reproduction="M5-only Qwen first; Gemma only if Qwen gates clean",
-        planned_gate="fidelity-clean cell at useful keep-rate",
+        local_reproduction="M3 8f smoke first; M5 128GB for broader 16f/32f sweeps",
+        planned_gate="fidelity-clean cell at useful keep-rate with measured vision/E2E timing",
         artifact_or_source="planned OV-6 results",
     ),
     ComparisonRow(

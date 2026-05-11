@@ -18,6 +18,7 @@ import math
 from dataclasses import dataclass
 from pathlib import Path
 from statistics import mean, median
+from typing import Any
 
 DEFAULT_TRANCHES = (
     Path("research/experiments/2026/artifacts/phase1_29_onevision_dev"),
@@ -48,14 +49,8 @@ def clopper_pearson_ci(successes: int, n: int, *, alpha: float = 0.05) -> tuple[
 
     if n <= 0:
         return (0.0, 0.0)
-    if successes == 0:
-        lower = 0.0
-    else:
-        lower = _beta_ppf(alpha / 2, successes, n - successes + 1)
-    if successes == n:
-        upper = 1.0
-    else:
-        upper = _beta_ppf(1 - alpha / 2, successes + 1, n - successes)
+    lower = 0.0 if successes == 0 else _beta_ppf(alpha / 2, successes, n - successes + 1)
+    upper = 1.0 if successes == n else _beta_ppf(1 - alpha / 2, successes + 1, n - successes)
     return (lower, upper)
 
 
@@ -143,7 +138,7 @@ def mcnemar_exact(b: int, c: int) -> float:
     k = min(b, c)
     # Two-sided exact: 2 * P(X <= k) under Binomial(n, 0.5), capped at 1.
     p_one_sided = sum(math.comb(n, i) for i in range(k + 1)) / (2**n)
-    return min(1.0, 2.0 * p_one_sided)
+    return float(min(1.0, 2.0 * p_one_sided))
 
 
 # ---- data loading ----
@@ -161,7 +156,7 @@ class ItemRow:
     codec_extract_s: float
 
 
-def _row(item: dict) -> ItemRow:
+def _row(item: dict[str, Any]) -> ItemRow:
     return ItemRow(
         item_id=str(item["item_id"]),
         dense_choice=item.get("dense", {}).get("choice_index"),
@@ -188,7 +183,7 @@ def _load_source(tranche: Path, source: str) -> list[ItemRow]:
 # ---- analyses ----
 
 
-def _proportion_with_ci(num: int, n: int) -> dict:
+def _proportion_with_ci(num: int, n: int) -> dict[str, Any]:
     wilson = wilson_ci(num, n)
     cp = clopper_pearson_ci(num, n)
     return {
@@ -200,7 +195,7 @@ def _proportion_with_ci(num: int, n: int) -> dict:
     }
 
 
-def _per_source_correctness(rows: list[ItemRow]) -> dict:
+def _per_source_correctness(rows: list[ItemRow]) -> dict[str, Any]:
     n = len(rows)
     if n == 0:
         return {}
@@ -218,7 +213,7 @@ def _per_source_correctness(rows: list[ItemRow]) -> dict:
     }
 
 
-def _mcnemar_codec_vs_pixel(rows: list[ItemRow]) -> dict:
+def _mcnemar_codec_vs_pixel(rows: list[ItemRow]) -> dict[str, Any]:
     """Paired test on correctness: rows fixed by codec vs broken by codec."""
 
     fixed = sum(r.codec_correct and not r.pixel_correct for r in rows)
@@ -231,14 +226,16 @@ def _mcnemar_codec_vs_pixel(rows: list[ItemRow]) -> dict:
         "n": len(rows),
         "mcnemar_exact_p_two_sided": round(p, 4),
         "interpretation": (
-            "PASS" if p < 0.05 and fixed > broken
-            else "FAIL" if p < 0.05 and broken > fixed
+            "PASS"
+            if p < 0.05 and fixed > broken
+            else "FAIL"
+            if p < 0.05 and broken > fixed
             else "INCONCLUSIVE"
         ),
     }
 
 
-def _dense_determinism(tranches: tuple[Path, ...]) -> dict:
+def _dense_determinism(tranches: tuple[Path, ...]) -> dict[str, Any]:
     """Compare dense answers across the two driver-session overlaps.
 
     Pair 1: dev (n=10) vs n=20 broader on the 10 dev items.
@@ -259,9 +256,7 @@ def _dense_determinism(tranches: tuple[Path, ...]) -> dict:
     pair2_items = sorted(set(n20.keys()) & set(disjoint.keys()))
 
     pair1_flips = sum(1 for i in pair1_items if dev[i].dense_choice != n20[i].dense_choice)
-    pair2_flips = sum(
-        1 for i in pair2_items if n20[i].dense_choice != disjoint[i].dense_choice
-    )
+    pair2_flips = sum(1 for i in pair2_items if n20[i].dense_choice != disjoint[i].dense_choice)
 
     n_total = len(pair1_items) + len(pair2_items)
     flips_total = pair1_flips + pair2_flips
@@ -269,9 +264,7 @@ def _dense_determinism(tranches: tuple[Path, ...]) -> dict:
         "pair1_dev_vs_n20": {
             "n_items": len(pair1_items),
             "flips": pair1_flips,
-            "flipped_items": [
-                i for i in pair1_items if dev[i].dense_choice != n20[i].dense_choice
-            ],
+            "flipped_items": [i for i in pair1_items if dev[i].dense_choice != n20[i].dense_choice],
         },
         "pair2_n20_vs_disjoint": {
             "n_items": len(pair2_items),
@@ -289,7 +282,7 @@ def _dense_determinism(tranches: tuple[Path, ...]) -> dict:
     }
 
 
-def _codec_extract_timing(rows: list[ItemRow]) -> dict:
+def _codec_extract_timing(rows: list[ItemRow]) -> dict[str, Any]:
     times = [r.codec_extract_s for r in rows if r.codec_extract_s > 0]
     if not times:
         return {}
@@ -306,24 +299,36 @@ def _codec_extract_timing(rows: list[ItemRow]) -> dict:
     }
 
 
-def _multiple_comparisons_summary(per_tranche_results: list[dict]) -> dict:
-    """Bonferroni-corrected family-wise error commentary for our 12 cells."""
+def _multiple_comparisons_summary(per_tranche_results: list[dict[str, Any]]) -> dict[str, Any]:
+    """Bonferroni-corrected family-wise error commentary for loaded cells."""
 
-    n_cells = sum(
-        1 for r in per_tranche_results for _ in r.get("by_source", {})
-    )
+    n_cells = sum(1 for r in per_tranche_results for _ in r.get("by_source", {}))
+    n_tranches = len(per_tranche_results)
+    n_sources = sorted({source for r in per_tranche_results for source in r.get("by_source", {})})
+    if n_cells == 0:
+        note = "No McNemar cells were loaded; multiple-comparisons correction is undefined."
+    elif n_cells == 4 and n_tranches == 1:
+        note = (
+            "This audit contains one tranche with 4 codec sources, so a Bonferroni "
+            "family-wise alpha of 0.05 / 4 applies within this artifact. Earlier "
+            "exploratory OV-3 tranches should be described separately unless they are "
+            "loaded into the same audit."
+        )
+    else:
+        note = (
+            f"This audit contains {n_tranches} tranche(s) and {len(n_sources)} codec "
+            f"source(s), for {n_cells} McNemar cells. Per-cell p-values should be "
+            f"compared against alpha = 0.05 / {n_cells} for family-wise Bonferroni "
+            "control. If a paper claim combines additional exploratory tranches, "
+            "regenerate this audit with those tranches included or label the added "
+            "cells descriptively."
+        )
     return {
         "n_cells_compared": n_cells,
         "bonferroni_alpha_for_per_cell_at_family_05": round(0.05 / n_cells, 4)
         if n_cells > 0
         else None,
-        "note": (
-            "We tested 4 codec sources × 3 tranches = 12 cells. Per-cell McNemar "
-            "p-values must be compared against alpha = 0.05 / 12 ≈ 0.0042 for "
-            "family-wise control under Bonferroni. Most p-values here are >0.05 "
-            "even uncorrected at this N; the multiple-comparisons concern is "
-            "directional, not the limiting factor."
-        ),
+        "note": note,
     }
 
 
@@ -349,9 +354,9 @@ def main() -> None:
 
     tranches = tuple(args.tranche) if args.tranche else DEFAULT_TRANCHES
 
-    payload: dict = {"tranches": [], "extraction_timing": {}}
+    payload: dict[str, Any] = {"tranches": [], "extraction_timing": {}}
     for tranche in tranches:
-        tpayload: dict = {"path": str(tranche), "by_source": {}}
+        tpayload: dict[str, Any] = {"path": str(tranche), "by_source": {}}
         for source in SOURCES:
             rows = _load_source(tranche, source)
             if not rows:
@@ -379,7 +384,10 @@ def main() -> None:
     # Print summary.
     print(f"# Statistical audit across {len(tranches)} tranches\n")
     print("## Per-cell correctness with Wilson 95% CI")
-    print("| tranche | source | n | codec_acc | codec Wilson CI | codec→dense agreement | agreement Wilson CI | mcnemar p (codec vs pixel) |")
+    print(
+        "| tranche | source | n | codec_acc | codec Wilson CI | codec→dense agreement | "
+        "agreement Wilson CI | mcnemar p (codec vs pixel) |"
+    )
     print("|---|---|---|---|---|---|---|---|")
     for t in payload["tranches"]:
         tname = Path(t["path"]).name
@@ -399,13 +407,22 @@ def main() -> None:
         print()
         print("## Dense determinism (driver-session overlaps)")
         dd = payload["dense_determinism"]
-        print(f"- pair 1 (dev vs n=20 on 10 dev items): {dd['pair1_dev_vs_n20']['flips']} flips / {dd['pair1_dev_vs_n20']['n_items']}")
-        print(f"- pair 2 (n=20 vs disjoint on 10 holdout items): {dd['pair2_n20_vs_disjoint']['flips']} flips / {dd['pair2_n20_vs_disjoint']['n_items']}")
+        print(
+            "- pair 1 (dev vs n=20 on 10 dev items): "
+            f"{dd['pair1_dev_vs_n20']['flips']} flips / "
+            f"{dd['pair1_dev_vs_n20']['n_items']}"
+        )
+        print(
+            "- pair 2 (n=20 vs disjoint on 10 holdout items): "
+            f"{dd['pair2_n20_vs_disjoint']['flips']} flips / "
+            f"{dd['pair2_n20_vs_disjoint']['n_items']}"
+        )
         a = dd["aggregate"]
         print(
             f"- aggregate: {a['successes']}/{a['n']} = {a['rate']:.3f}, "
             f"Wilson 95% [{a['wilson_95_ci'][0]:.3f}, {a['wilson_95_ci'][1]:.3f}], "
-            f"Clopper-Pearson [{a['clopper_pearson_95_ci'][0]:.3f}, {a['clopper_pearson_95_ci'][1]:.3f}]"
+            f"Clopper-Pearson [{a['clopper_pearson_95_ci'][0]:.3f}, "
+            f"{a['clopper_pearson_95_ci'][1]:.3f}]"
         )
     print()
     print("## Codec extraction timing (s, aggregated)")
