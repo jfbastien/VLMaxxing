@@ -94,3 +94,13 @@ def test_pool_token_grid_to_merged_groups_rejects_3d_input() -> None:
 def test_pool_token_grid_to_merged_groups_rejects_empty_iterator() -> None:
     with pytest.raises(ValueError, match="at least one frame"):
         pool_token_grid_to_merged_groups([], spatial_merge_size=2)
+
+
+def test_pool_token_grid_to_merged_groups_flatten_passthrough_when_stride_one() -> None:
+    # When the per-frame token grid is already at merged-group resolution,
+    # spatial_merge_size=1 should just flatten in frame-major / row-major order.
+    frame_a = np.array([[1.0, 2.0], [3.0, 4.0]], dtype=np.float32)
+    frame_b = np.array([[10.0, 20.0], [30.0, 40.0]], dtype=np.float32)
+    pooled = pool_token_grid_to_merged_groups([frame_a, frame_b], spatial_merge_size=1)
+
+    assert pooled.tolist() == [1.0, 2.0, 3.0, 4.0, 10.0, 20.0, 30.0, 40.0]

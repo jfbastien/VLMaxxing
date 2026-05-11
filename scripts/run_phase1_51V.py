@@ -54,8 +54,12 @@ from codec_through.qwen_vision_pruning import (  # noqa: E402
 from codec_through.video_decode import _count_frames  # noqa: E402
 
 QWEN_BENCHMARK_FRAME_SIZE = 560
+# Each token block at this size already corresponds to one Qwen merged-group:
+# (spatial_merge_size=2 * patch_size=14)^2 = 28*28 pixels, so the 20x20 token
+# grid is at merged-group resolution and we flatten with spatial_merge_size=1
+# instead of pooling again.
 QWEN_BLOCK_SIZE = 28
-QWEN_SPATIAL_MERGE = 2
+QWEN_GROUP_FLATTEN_STRIDE = 1
 CODEC_SCORE_SOURCE_CHOICES: tuple[str, ...] = tuple(source.value for source in CodecScoreSource)
 FUSION_MODE_CHOICES: tuple[FuseMode, ...] = ("weighted", "sum", "max", "geomean")
 
@@ -507,7 +511,7 @@ def main() -> int:
                 )
                 codec_extract_total_s += codec_extract_s
                 merged_group_scores = pool_token_grid_to_merged_groups(
-                    codec_grids, spatial_merge_size=QWEN_SPATIAL_MERGE
+                    codec_grids, spatial_merge_size=QWEN_GROUP_FLATTEN_STRIDE
                 )
                 model.vision_tower.set_codec_score_grid(merged_group_scores)
             features, vision_ms, prune_info = _compute_qwen_features(model, raw)
