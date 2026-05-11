@@ -1,0 +1,76 @@
+{
+  "frame_count": 8,
+  "keep_rate": 0.5,
+  "layer": 2,
+  "manifest": "videomme_dev_v1_short_only.toml",
+  "model": "Qwen2.5-VL-7B-Instruct-4bit",
+  "phase": "OV-6",
+  "rows": [
+    {
+      "accuracy": 0.8,
+      "arm": "dense",
+      "codec_extract_mean_s_per_item": null,
+      "effective_keep_rate": 1.0,
+      "mean_e2e_ms": 37707.398745700004,
+      "mean_peak_memory_gb": 6.669820939199999,
+      "mean_vision_ms": 9065.445008400002,
+      "median_e2e_ms": 39280.356041499996,
+      "n_items": 10
+    },
+    {
+      "accuracy": 0.6,
+      "arm": "magnitude_norm_kr050",
+      "codec_extract_mean_s_per_item": null,
+      "effective_keep_rate": 0.5,
+      "mean_e2e_ms": 38507.595796,
+      "mean_peak_memory_gb": 6.613656057,
+      "mean_vision_ms": 5887.3781374,
+      "median_e2e_ms": 38615.244209,
+      "n_items": 10
+    },
+    {
+      "accuracy": 0.4,
+      "arm": "uniform_random_kr050",
+      "codec_extract_mean_s_per_item": null,
+      "effective_keep_rate": 0.5,
+      "mean_e2e_ms": 39856.95945350001,
+      "mean_peak_memory_gb": 6.613663535199999,
+      "mean_vision_ms": 6144.9894582,
+      "median_e2e_ms": 39594.2788325,
+      "n_items": 10
+    },
+    {
+      "accuracy": 0.4,
+      "arm": "codec_novel_coded_kr050",
+      "codec_extract_mean_s_per_item": 20.322207558400002,
+      "effective_keep_rate": 0.5,
+      "mean_e2e_ms": 41925.488470899996,
+      "mean_peak_memory_gb": 6.613678211200001,
+      "mean_vision_ms": 5547.10875,
+      "median_e2e_ms": 40739.817104500005,
+      "n_items": 10
+    },
+    {
+      "accuracy": 0.4,
+      "arm": "codec_motion_kr050",
+      "codec_extract_mean_s_per_item": 22.255303041500003,
+      "effective_keep_rate": 0.5,
+      "mean_e2e_ms": 41568.3998042,
+      "mean_peak_memory_gb": 6.613678211200001,
+      "mean_vision_ms": 6338.0380915000005,
+      "median_e2e_ms": 41677.7806465,
+      "n_items": 10
+    },
+    {
+      "accuracy": 0.5,
+      "arm": "codec_residual_kr050",
+      "codec_extract_mean_s_per_item": 20.132055245799997,
+      "effective_keep_rate": 0.5,
+      "mean_e2e_ms": 37016.26470839999,
+      "mean_peak_memory_gb": 6.613678211200001,
+      "mean_vision_ms": 5843.3279501,
+      "median_e2e_ms": 36444.263167,
+      "n_items": 10
+    }
+  ]
+}
