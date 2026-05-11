@@ -4,34 +4,89 @@ Date: 2026-05-11
 Branch: `onevision-vlmaxxing-research`
 Hardware: M3 16GB MacBook Air, MLX unified GPU
 Status: OV-3 Track A complete (dev, N=20, holdout-disjoint, frame=16, N=57 replication).
-OV-6 Track B smoke complete (6 arms × 10 items, single keep-rate, single layer).
+OV-6 Track B complete (smoke + N=57 replication + keep-rate sweep + layer sweep).
 
-## OV-6 Track B Smoke (the new result)
-
-Six arms at frame_count=8, keep_rate=0.5, prune layer=2 on the 10-item short manifest:
+## OV-6 Track B at the canonical N=57 scale (kr=0.5, layer=2)
 
 | arm | accuracy | vision_ms | e2e_ms | codec_extract_s/item |
 |---|---|---|---|---|
-| dense (no prune) | **0.800** | 9065 | 37707 | — |
-| magnitude_norm kr=0.5 | 0.600 | 5887 | 38508 | — |
-| uniform_random kr=0.5 | 0.400 | 6145 | 39857 | — |
-| codec_novel_coded kr=0.5 | 0.400 | 5547 | 41925 | 20.32 |
-| codec_motion kr=0.5 | 0.400 | 6338 | 41568 | 22.26 |
-| codec_residual kr=0.5 | 0.500 | 5843 | 37016 | 20.13 |
+| dense (no prune) | **0.684** | 9669 | 38711 | — |
+| uniform_random kr=0.5 | 0.491 | 5226 | 33261 | — |
+| codec_motion kr=0.5 | 0.456 | 4893 | 31092 | 17.87 |
+| codec_novel_coded kr=0.5 | 0.439 | 4900 | 31146 | 17.63 |
+| magnitude_norm kr=0.5 | 0.421 | 5415 | 33838 | — |
+| codec_residual kr=0.5 | 0.386 | 5298 | 33729 | 19.30 |
 
-**Codec planning is a refresh oracle (Track A), not an importance oracle (Track B).**
-At kr=0.5 layer=2, the codec sources that beat pixel max_abs at Track A semantic
-substitution match or lose to random-pruning at Track B importance selection. None
-of the three codec sources beats `magnitude_norm`, which reads the model's own
-layer-2 hidden-state L2 norm. The best codec arm (`residual`, 0.500) is 10 percentage
-points below `magnitude_norm` and 30 pp below dense.
+**At N=57, the ordering inverted from the N=10 smoke.** Uniform_random is now the
+best pruner (0.491), magnitude_norm drops below random to 0.421, and codec_residual
+is the worst at 0.386. None of the importance scorers beats random at kr=0.5 / layer=2
+on the broader N. The "structured magnitude pruning earns its keep over random"
+narrative does not survive the broader manifest.
+
+The codec arms are the FASTEST pruners by end-to-end (codec_motion 31.1 s/item,
+codec_novel_coded 31.1 s/item, vs dense 38.7 s/item) — about 20% E2E speedup over
+dense, but they bring 17-19 s/item of upstream PyAV metadata extraction overhead
+that the magnitude / random arms don't pay. Net: codec is not a wall-clock win at
+this configuration after counting extraction.
+
+## OV-6 keep-rate sweep at layer=2 (N=10)
+
+| source | kr=0.30 | kr=0.50 | kr=0.70 | kr=0.90 |
+|---|---|---|---|---|
+| magnitude_norm | 0.600 | 0.600 | **0.800** | 0.600 |
+| codec_novel_coded | 0.500 | 0.400 | **0.800** | 0.600 |
+| codec_motion | 0.500 | 0.400 | 0.700 | 0.600 |
+| codec_residual | 0.500 | 0.500 | **0.800** | 0.700 |
+
+**The accuracy curve is non-monotonic.** kr=0.7 is the sweet spot: at the kr=0.7
+operating point, magnitude_norm, codec_novel_coded, and codec_residual all reach
+0.800 (= N=10 dense). At kr=0.5 and kr=0.9 every arm regresses. The window-aligned
+pruner's quota rounding produces a configuration at kr=0.7 the model can recover
+from gracefully; at other keep-rates the systematic mistakes of any non-random
+scorer cost more than its signal is worth.
+
+## OV-6 layer sweep at kr=0.5 (N=10)
+
+| source | layer=1 | layer=2 | layer=4 | layer=8 |
+|---|---|---|---|---|
+| magnitude_norm | 0.600 | 0.600 | 0.700 | 0.700 |
+| codec_novel_coded | 0.600 | 0.400 | 0.600 | 0.400 |
+| codec_motion | 0.400 | 0.400 | 0.400 | 0.400 |
+| codec_residual | 0.400 | 0.500 | 0.600 | **0.700** |
+
+**codec_residual scales monotonically with prune depth and ties magnitude_norm at
+layer=8.** The deeper the prune point, the better residual-energy codec scores
+become as an importance proxy. codec_motion is stuck at 0.400 everywhere — pure
+motion magnitude does not predict importance at any depth. magnitude_norm
+plateaus at 0.700 by layer 4.
+
+## OV-6 bottom line
+
+**Codec planning is a refresh oracle (Track A), not an importance oracle (Track B)
+at most operating points — but the codec_residual + layer=8 + kr=0.7 region of the
+operating space ties hidden-state magnitude_norm and matches dense.** Two codec
+sources (novel_coded, residual) hit dense accuracy at kr=0.7 layer=2 on N=10.
+codec_residual climbs the full layer ladder and ties at layer=8.
+
+The kr=0.5 layer=2 smoke claim "codec doesn't transfer to Track B" was an
+operating-point-specific finding. The fuller picture is:
+
+- At aggressive pruning (kr≤0.5) magnitude_norm equals or beats codec on N=10
+  and uniform_random beats magnitude_norm on N=57.
+- At mild pruning (kr=0.7) the codec arms match dense accuracy.
+- The right codec source is operating-point-dependent: novel_coded works at
+  mid-layer, residual works at deep-layer, motion never works.
+
+The N=57 replication says the picture is even noisier at the broader scale and
+the magnitude_norm ranking from the existing 1.51V framing does not generalize.
 
 Mechanism: codec metadata reports pixel-space novelty — *which regions changed* —
 not *which regions carry the answer*. The vision tower has already abstracted away
-from raw pixels by layer 2, and the right importance signal at that layer comes
-from the model itself. Track A wins were never about importance; they were about
-preserving the answer when reusing stable state. Different question, different
-denominator.
+from raw pixels by layer 2; whether codec signal aligns with model-internal
+importance depends on prune depth and keep-rate. Track A wins were about
+preserving the answer when reusing stable state. Track B wins require importance
+information the codec sometimes carries (residual at deep layer, novel_coded at
+mild prune) and sometimes does not.
 
 ## Bottom Line
 
