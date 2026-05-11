@@ -370,8 +370,11 @@ alignment, provenance fields, and CPU tests for shape/order/NaN rejection. Estim
 200-350 LoC if done cleanly.
 
 ETA: M3 2-4 hours coding plus 1-2 hours for an 8-frame smoke when the GPU is free.
-Use M5 128GB for broader 16/32-frame sweeps or Gemma; estimate 8-16 hours Qwen,
-+6-12 hours Gemma only if Qwen gates.
+Use M5 128GB only after the M3 8f smoke validates codec-grid alignment and fidelity:
+broaden Qwen at 8f first, run 16f only if 8f gates, run 32f only if 16f gates and
+memory headroom is acceptable, and run Gemma only after Qwen has a clean cell worth
+cross-family confirmation. Estimate 8-16 hours Qwen, +6-12 hours Gemma only if Qwen
+gates.
 
 ### OV-7: OV-Encoder Local Feasibility
 
@@ -541,8 +544,9 @@ Interpretation:
   N=57, with no rows broken versus pixel.
 - `reproduced here`: individual McNemar tests remain inconclusive; this is a bounded
   positive Track A signal, not per-cell statistical significance.
-- `reproduced here`: the N=20 "fused fails" interpretation was overcalled. Fused is
-  positive at N=57 but does not beat simpler codec sources.
+- `reproduced here`: the N=20 "fused fails" interpretation was overcalled. The N=20
+  manifest did not contain the later N=57 fused-rescue rows; frame_count=16 is a
+  separate operating-point boundary where all codec sources collapse to pixel.
 - `reproduced here`: frame_count=16 collapses all codec sources to the pixel answer set
   on the N=20 manifest, so the positive result is bounded to the 8-frame operating point.
 - `reproduced here`: H.264 extraction through the current PyAV path costs about

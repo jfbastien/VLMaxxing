@@ -32,9 +32,10 @@ First, "simple codec sources preserve dense on 20/20" was true on that slice but
 not remain exact at N=57. Final codec->dense agreement is still high, 54/57 to 56/57,
 but no source is perfect.
 
-Second, "fused fails" was too strong. At N=57, fused is positive by point estimate and
-rescues two pixel-wrong rows. It still does not beat the simpler codec sources, and it
-collapses to pixel at frame=16, so it should not be promoted as the preferred planner.
+Second, "fused fails" was too strong. The N=20 manifest did not contain the later N=57
+fused-rescue rows, so fused-equals-pixel at N=20 was a manifest-coverage artifact. It
+still does not beat the simpler codec sources, and the frame=16 collapse is a separate
+operating-point boundary affecting every codec source.
 
 ## Boundary Conditions
 
@@ -85,7 +86,7 @@ Implementation requirements:
   accounting.
 
 Expected cost: 200-350 LoC if done cleanly, plus 1-2h GPU for an M3 8f smoke. Use M5
-for broader 16f/32f sweeps.
+only after the M3 smoke proves codec-grid alignment and lands a fidelity-clean cell.
 
 ### 2. OV-8 C-PERSIST Composition
 
@@ -116,13 +117,15 @@ accuracy.
 
 ## M5 Update
 
-The M5 should not rerun the whole exploratory tree first. Use it for work that is
-memory- or wall-clock-bound on the M3:
+The M5 should not rerun the whole exploratory tree first. It should execute only after
+the M3 8-frame smoke validates codec-grid ordering and produces a fidelity-clean cell:
 
-1. OV-6 broad Track B sweep after the M3 8f smoke validates alignment.
-2. 16f and 32f Track B cells only if 8f fidelity is clean.
-3. TOMATO motion replication if the M3 is occupied.
-4. Multi-seed dense characterization overnight if Track B is blocked.
+1. Broaden Qwen Track B at 8f on M5 only after M3 smoke gates.
+2. Run 16f Track B only if 8f remains fidelity-clean with measured timing gain.
+3. Run 32f Track B only if 16f remains fidelity-clean and memory headroom is acceptable.
+4. Run Gemma only after Qwen has a clean cell worth cross-family confirmation.
+5. Use spare M5 time for TOMATO motion replication or multi-seed dense characterization
+   if Track B is blocked.
 
 ## Query-Aware / RLT Boundary
 

@@ -39,8 +39,10 @@ notes.
    - natural-dialogue C-PERSIST and one adjacent-method comparison are the
      highest-value main-track science gaps after the current integration pass
    - OneVision follow-up: run OV-6 Track B codec-grid sparse vision before any
-     E2E speedup language; use the M3 only for an 8-frame smoke and the M5 for
-     broader 16/32-frame or TOMATO sweeps
+     E2E speedup language; use the M3 only for an 8-frame smoke, then use the
+     M5 only after that smoke validates codec-grid alignment and fidelity. On
+     M5, broaden Qwen 8f first; run 16f only if 8f gates, 32f only if 16f gates,
+     and Gemma only after Qwen has a clean cell worth confirming.
 
 2. **Freeze artifact provenance.**
    - every paper table/figure cell needs a source artifact path or a visible
