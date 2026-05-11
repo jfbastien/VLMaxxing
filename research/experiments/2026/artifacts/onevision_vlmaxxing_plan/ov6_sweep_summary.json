@@ -1,0 +1,239 @@
+{
+  "kr_sweep": {
+    "keep_rates": [
+      0.3,
+      0.5,
+      0.7,
+      0.9
+    ],
+    "layer": 2,
+    "rows": [
+      {
+        "kr0.30": {
+          "accuracy": 0.6,
+          "e2e_ms": 32786.7786379,
+          "effective_keep_rate": 0.3125,
+          "vision_ms": 3821.6061794
+        },
+        "kr0.50": {
+          "accuracy": 0.6,
+          "e2e_ms": 38507.595796,
+          "effective_keep_rate": 0.5,
+          "vision_ms": 5887.3781374
+        },
+        "kr0.70": {
+          "accuracy": 0.8,
+          "e2e_ms": 39094.185570999995,
+          "effective_keep_rate": 0.6875,
+          "vision_ms": 7328.4403749
+        },
+        "kr0.90": {
+          "accuracy": 0.6,
+          "e2e_ms": 44182.9328874,
+          "effective_keep_rate": 0.875,
+          "vision_ms": 10065.7651126
+        },
+        "source": "magnitude_norm"
+      },
+      {
+        "kr0.30": {
+          "accuracy": 0.5,
+          "e2e_ms": 35692.8081916,
+          "effective_keep_rate": 0.3125,
+          "vision_ms": 4123.6558832
+        },
+        "kr0.50": {
+          "accuracy": 0.4,
+          "e2e_ms": 41925.488470899996,
+          "effective_keep_rate": 0.5,
+          "vision_ms": 5547.10875
+        },
+        "kr0.70": {
+          "accuracy": 0.8,
+          "e2e_ms": 41081.59273730001,
+          "effective_keep_rate": 0.6875,
+          "vision_ms": 7936.1652751
+        },
+        "kr0.90": {
+          "accuracy": 0.6,
+          "e2e_ms": 44695.9898792,
+          "effective_keep_rate": 0.875,
+          "vision_ms": 9984.4115289
+        },
+        "source": "codec_novel_coded"
+      },
+      {
+        "kr0.30": {
+          "accuracy": 0.5,
+          "e2e_ms": 31063.9253503,
+          "effective_keep_rate": 0.3125,
+          "vision_ms": 3520.7089374
+        },
+        "kr0.50": {
+          "accuracy": 0.4,
+          "e2e_ms": 41568.3998042,
+          "effective_keep_rate": 0.5,
+          "vision_ms": 6338.0380915000005
+        },
+        "kr0.70": {
+          "accuracy": 0.7,
+          "e2e_ms": 40876.0757085,
+          "effective_keep_rate": 0.6875,
+          "vision_ms": 7857.2302291999995
+        },
+        "kr0.90": {
+          "accuracy": 0.6,
+          "e2e_ms": 41896.79363310001,
+          "effective_keep_rate": 0.875,
+          "vision_ms": 9620.850712399999
+        },
+        "source": "codec_motion"
+      },
+      {
+        "kr0.30": {
+          "accuracy": 0.5,
+          "e2e_ms": 30414.167370599997,
+          "effective_keep_rate": 0.3125,
+          "vision_ms": 3419.4319499999997
+        },
+        "kr0.50": {
+          "accuracy": 0.5,
+          "e2e_ms": 37016.26470839999,
+          "effective_keep_rate": 0.5,
+          "vision_ms": 5843.3279501
+        },
+        "kr0.70": {
+          "accuracy": 0.8,
+          "e2e_ms": 34295.6724331,
+          "effective_keep_rate": 0.6875,
+          "vision_ms": 6619.562070800001
+        },
+        "kr0.90": {
+          "accuracy": 0.7,
+          "e2e_ms": 36175.03702480001,
+          "effective_keep_rate": 0.875,
+          "vision_ms": 8206.9482166
+        },
+        "source": "codec_residual"
+      }
+    ],
+    "sources": [
+      "magnitude_norm",
+      "codec_novel_coded",
+      "codec_motion",
+      "codec_residual"
+    ]
+  },
+  "layer_sweep": {
+    "keep_rate": 0.5,
+    "layers": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "rows": [
+      {
+        "l1": {
+          "accuracy": 0.6,
+          "e2e_ms": 34660.684242,
+          "vision_ms": 5293.329729399999
+        },
+        "l2": {
+          "accuracy": 0.6,
+          "e2e_ms": 38507.595796,
+          "vision_ms": 5887.3781374
+        },
+        "l4": {
+          "accuracy": 0.7,
+          "e2e_ms": 34801.3887044,
+          "vision_ms": 5645.0286458
+        },
+        "l8": {
+          "accuracy": 0.7,
+          "e2e_ms": 35107.303871100004,
+          "vision_ms": 6162.3665292999995
+        },
+        "source": "magnitude_norm"
+      },
+      {
+        "l1": {
+          "accuracy": 0.6,
+          "e2e_ms": 31910.2977708,
+          "vision_ms": 4826.4250166
+        },
+        "l2": {
+          "accuracy": 0.4,
+          "e2e_ms": 41925.488470899996,
+          "vision_ms": 5547.10875
+        },
+        "l4": {
+          "accuracy": 0.6,
+          "e2e_ms": 31967.6287664,
+          "vision_ms": 5100.906024899999
+        },
+        "l8": {
+          "accuracy": 0.4,
+          "e2e_ms": 32400.034833,
+          "vision_ms": 5692.5541833
+        },
+        "source": "codec_novel_coded"
+      },
+      {
+        "l1": {
+          "accuracy": 0.4,
+          "e2e_ms": 34477.8434249,
+          "vision_ms": 5217.774208299999
+        },
+        "l2": {
+          "accuracy": 0.4,
+          "e2e_ms": 41568.3998042,
+          "vision_ms": 6338.0380915000005
+        },
+        "l4": {
+          "accuracy": 0.4,
+          "e2e_ms": 31820.0414085,
+          "vision_ms": 5135.3343376
+        },
+        "l8": {
+          "accuracy": 0.4,
+          "e2e_ms": 32833.5769544,
+          "vision_ms": 5754.4059750999995
+        },
+        "source": "codec_motion"
+      },
+      {
+        "l1": {
+          "accuracy": 0.4,
+          "e2e_ms": 34576.9165749,
+          "vision_ms": 5197.2324624
+        },
+        "l2": {
+          "accuracy": 0.5,
+          "e2e_ms": 37016.26470839999,
+          "vision_ms": 5843.3279501
+        },
+        "l4": {
+          "accuracy": 0.6,
+          "e2e_ms": 32176.8909959,
+          "vision_ms": 5265.4721583
+        },
+        "l8": {
+          "accuracy": 0.7,
+          "e2e_ms": 32818.6805705,
+          "vision_ms": 5726.9957292
+        },
+        "source": "codec_residual"
+      }
+    ],
+    "sources": [
+      "magnitude_norm",
+      "codec_novel_coded",
+      "codec_motion",
+      "codec_residual"
+    ]
+  },
+  "manifest": "videomme_dev_v1_short_only.toml",
+  "n_items": 10,
+  "phase": "OV-6"
+}
