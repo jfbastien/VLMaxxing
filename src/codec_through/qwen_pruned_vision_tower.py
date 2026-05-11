@@ -43,11 +43,13 @@ class QwenVisionPruneConfig:
     # before the keep-rate quota is applied. "magnitude_norm" (default) is the
     # original 1.51V Qwen scorer (FasterVLM-style L2-norm of the group's mean
     # hidden state). "uniform_random" is a deterministic-seeded competitor
-    # baseline used by the 1.51VC positioning experiment to test whether
-    # structured magnitude pruning earns its keep over random selection at
-    # matched keep-rate.
+    # baseline. "codec_grid" reads a per-item codec-derived score grid set
+    # via set_codec_score_grid on the wrapper.
     score_mode: str = "magnitude_norm"
     score_seed: int = 42
+    # Optional metadata about the codec source when score_mode == "codec_grid";
+    # not used at runtime, only for provenance recording.
+    codec_score_source: str | None = None
 
 
 def _dense_cu_seqlens(grid_thw: mx.array) -> mx.array:
@@ -67,6 +69,8 @@ def _group_scores(
     *,
     mode: str = "magnitude_norm",
     seed: int = 42,
+    codec_score_grid: np.ndarray | None = None,
+    window_index: np.ndarray | None = None,
 ) -> np.ndarray:
     if mode == "magnitude_norm":
         mean_hidden = mx.mean(group_hidden_states.astype(mx.float32), axis=1)
@@ -74,12 +78,34 @@ def _group_scores(
         mx.eval(scores)
         return np.asarray(scores, dtype=np.float32)
     if mode == "uniform_random":
-        # Deterministic seeded random. Same seed across calls for reproducibility.
         n_groups = int(group_hidden_states.shape[0])
         rng = np.random.default_rng(int(seed))
         return rng.random(size=n_groups, dtype=np.float32)
+    if mode == "codec_grid":
+        if codec_score_grid is None:
+            raise ValueError("score_mode 'codec_grid' requires a codec score grid")
+        n_groups = int(group_hidden_states.shape[0])
+        grid = np.asarray(codec_score_grid, dtype=np.float32).reshape(-1)
+        if grid.shape[0] != n_groups:
+            raise ValueError(
+                f"codec score grid has {grid.shape[0]} groups but the model "
+                f"vision tower expects {n_groups}"
+            )
+        if not np.all(np.isfinite(grid)):
+            raise ValueError("codec score grid contains non-finite values")
+        if np.any(grid < 0.0):
+            raise ValueError("codec score grid contains negative values")
+        if window_index is None:
+            return grid
+        window = np.asarray(window_index, dtype=np.int64).reshape(-1)
+        if window.shape[0] != n_groups:
+            raise ValueError(
+                f"window_index has {window.shape[0]} entries but expected {n_groups}"
+            )
+        return grid[window]
     raise ValueError(
-        f"unknown score_mode {mode!r}; expected one of: magnitude_norm, uniform_random"
+        f"unknown score_mode {mode!r}; expected one of: "
+        "magnitude_norm, uniform_random, codec_grid"
     )
 
 
@@ -113,15 +139,35 @@ def _dedup_cu_window_seqlens(cu_window_seqlens: mx.array) -> mx.array:
 
 class _QwenPrunedVisionWrapper:
     _last_prune_info: dict[str, Any] | None
+    _codec_score_grid: np.ndarray | None
 
     def __init__(self, wrapped: Any, config: QwenVisionPruneConfig) -> None:
         object.__setattr__(self, "_wrapped", wrapped)
         object.__setattr__(self, "_config", config)
         object.__setattr__(self, "_last_prune_info", None)
+        object.__setattr__(self, "_codec_score_grid", None)
 
     @property
     def last_prune_info(self) -> dict[str, Any] | None:
         return self._last_prune_info
+
+    def set_codec_score_grid(self, grid: np.ndarray | None) -> None:
+        """Attach a per-item codec score grid in pre-window-permutation group order.
+
+        The grid must have length equal to the model's merged-group total
+        (sum of groups_per_frame across the item's frames). It is consumed by
+        the next ``__call__`` and not retained across calls.
+        """
+
+        if grid is None:
+            object.__setattr__(self, "_codec_score_grid", None)
+            return
+        array = np.asarray(grid, dtype=np.float32).reshape(-1)
+        if not np.all(np.isfinite(array)):
+            raise ValueError("codec score grid contains non-finite values")
+        if np.any(array < 0.0):
+            raise ValueError("codec score grid contains negative values")
+        object.__setattr__(self, "_codec_score_grid", array)
 
     def __getattr__(self, name: str) -> Any:
         return getattr(self._wrapped, name)
@@ -193,10 +239,17 @@ class _QwenPrunedVisionWrapper:
                     total_groups, model.spatial_merge_unit, hidden
                 )
                 group_rotary = rotary_pos_emb.reshape(total_groups, model.spatial_merge_unit, -1)
+                window_index_np = (
+                    np.asarray(window_index.tolist(), dtype=np.int64)
+                    if config.score_mode == "codec_grid"
+                    else None
+                )
                 scores = _group_scores(
                     group_hidden_states,
                     mode=config.score_mode,
                     seed=config.score_seed,
+                    codec_score_grid=self._codec_score_grid,
+                    window_index=window_index_np,
                 )
                 groups_per_frame = qwen_groups_per_frame(
                     np.asarray(grid_thw.tolist(), dtype=np.int64),
@@ -273,6 +326,11 @@ class _QwenPrunedVisionWrapper:
         hidden_states = model.merger(hidden_states)
         reverse_indices = mx.argsort(window_index, axis=0)
         hidden_states = hidden_states[reverse_indices, :]
+        # Consume the per-item codec score grid so the next call must set its
+        # own grid explicitly; this turns "forgot to set the new item's grid"
+        # into a loud failure instead of silently reusing the previous item's
+        # scores when merged-group counts happen to match.
+        object.__setattr__(self, "_codec_score_grid", None)
         return hidden_states
 
 

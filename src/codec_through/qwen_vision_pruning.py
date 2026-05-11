@@ -152,6 +152,55 @@ def qwen_window_aligned_prune_plan(
     )
 
 
+def pool_token_grid_to_merged_groups(
+    token_grids: Iterable[npt.NDArray[np.floating]],
+    *,
+    spatial_merge_size: int,
+) -> npt.NDArray[np.float32]:
+    """Pool per-frame token-level codec score grids into merged-group scores.
+
+    Inputs are per-frame 2D arrays of shape ``(grid_h, grid_w)`` at the token
+    granularity Qwen consumes (e.g., 20x20 at canvas=560, token_block=28).
+    Each ``(spatial_merge_size, spatial_merge_size)`` block is mean-pooled into
+    a single merged-group score, and frames are concatenated in input order.
+    The result is a 1D array in pre-window-permutation group order matching
+    ``qwen_groups_per_frame``: frame-major, then row-major within each frame.
+
+    Hard-fails on shape mismatches, NaN/Inf, or negative entries — codec score
+    sources are non-negative by construction.
+    """
+
+    if spatial_merge_size <= 0:
+        raise ValueError("spatial_merge_size must be positive")
+    pooled: list[npt.NDArray[np.float32]] = []
+    for index, grid in enumerate(token_grids):
+        array = np.asarray(grid, dtype=np.float32)
+        if array.ndim != 2:
+            raise ValueError(
+                f"per-frame token grid {index} must be 2D, got shape {array.shape}"
+            )
+        rows, cols = array.shape
+        if rows % spatial_merge_size != 0 or cols % spatial_merge_size != 0:
+            raise ValueError(
+                f"per-frame token grid {index} shape {array.shape} is not divisible "
+                f"by spatial_merge_size={spatial_merge_size}"
+            )
+        if not np.all(np.isfinite(array)):
+            raise ValueError(f"per-frame token grid {index} contains non-finite values")
+        if np.any(array < 0.0):
+            raise ValueError(f"per-frame token grid {index} contains negative values")
+        merged_rows = rows // spatial_merge_size
+        merged_cols = cols // spatial_merge_size
+        reshaped = array.reshape(
+            merged_rows, spatial_merge_size, merged_cols, spatial_merge_size
+        )
+        merged = reshaped.transpose(0, 2, 1, 3).mean(axis=(2, 3))
+        pooled.append(merged.reshape(-1).astype(np.float32))
+    if not pooled:
+        raise ValueError("token_grids must contain at least one frame")
+    return np.concatenate(pooled, axis=0)
+
+
 def qwen_compact_cu_seqlens(
     kept_groups: Iterable[int],
     *,
