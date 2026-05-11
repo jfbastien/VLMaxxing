@@ -36,11 +36,28 @@ from mlx_vlm.utils import prepare_inputs  # noqa: E402
 
 from codec_through.answers import extract_choice  # noqa: E402
 from codec_through.memory_guard import check_rss_guard, rss_mb  # noqa: E402
+from codec_through.codec.continuous_score import (  # noqa: E402
+    CodecScoreSource,
+    project_macroblock_metadata_to_token_grid,
+    sparse_sample_indices,
+)
+from codec_through.codec.h264_metadata import H264MetadataExtractor  # noqa: E402
+from codec_through.codec.onevision_patchification import FuseMode  # noqa: E402
 from codec_through.qwen_pruned_vision_tower import (  # noqa: E402
     QwenVisionPruneConfig,
     patch_qwen_vision_tower,
 )
-from codec_through.qwen_vision_pruning import qwen_groups_per_frame  # noqa: E402
+from codec_through.qwen_vision_pruning import (  # noqa: E402
+    pool_token_grid_to_merged_groups,
+    qwen_groups_per_frame,
+)
+from codec_through.video_decode import _count_frames  # noqa: E402
+
+QWEN_BENCHMARK_FRAME_SIZE = 560
+QWEN_BLOCK_SIZE = 28
+QWEN_SPATIAL_MERGE = 2
+CODEC_SCORE_SOURCE_CHOICES: tuple[str, ...] = tuple(source.value for source in CodecScoreSource)
+FUSION_MODE_CHOICES: tuple[FuseMode, ...] = ("weighted", "sum", "max", "geomean")
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RUNNER_PATH = REPO_ROOT / "scripts" / "run_benchmark_track_a.py"
@@ -105,15 +122,101 @@ def _build_prompt(processor: Any, frames: list[Any], question: str) -> dict[str,
     return cast(dict[str, Any], prepare_inputs(processor, images=frames, prompts=rendered))
 
 
+def _per_frame_codec_token_grids(
+    item: Any,
+    *,
+    frame_count: int,
+    active_boxes: list[tuple[int, int, int, int]],
+    codec_score_source: CodecScoreSource,
+    fusion_mode: FuseMode,
+    motion_weight: float,
+    residual_weight: float,
+    normalize_fusion_inputs: bool,
+) -> tuple[list[np.ndarray], float]:
+    """Compute per-sampled-frame token-grid codec scores and the extraction wall-time.
+
+    Uses the same sparse_sample_indices contract as the Phase 1.29 probe so
+    Track B codec scoring is consistent with Track A. For each sampled frame
+    we read its H264 macroblock metadata and project to the Qwen token grid
+    via the existing continuous_score helper. Anchor handling is implicit in
+    the score source: novel_coded marks I-frames maximally novel, so frame 0
+    typically scores high. We do not force a separate full-frame anchor.
+
+    The active_boxes argument must match the decoder's per-frame square-pad
+    geometry so codec scores align with the same canvas regions the model
+    sees in pixel space.
+    """
+
+    if item.start_seconds is not None or item.end_seconds is not None:
+        raise ValueError(
+            f"codec score extraction for windowed clips is not implemented for "
+            f"{item.item_id}; clear start_seconds/end_seconds before running Track B"
+        )
+    if len(active_boxes) != frame_count:
+        raise ValueError(
+            f"expected {frame_count} active boxes for {item.item_id}, "
+            f"got {len(active_boxes)}"
+        )
+
+    total_frames = _count_frames(
+        item.video_path,
+        start_seconds=item.start_seconds,
+        end_seconds=item.end_seconds,
+    )
+    sampled = sparse_sample_indices(total_frames, frame_count)
+
+    t0 = time.perf_counter_ns()
+    extractor = H264MetadataExtractor(str(item.video_path), max_frames=sampled[-1] + 1)
+    frame_metadata_by_index: dict[int, Any] = {}
+    sampled_set = set(sampled)
+    for index, metadata in enumerate(extractor.iter_frames()):
+        if index in sampled_set:
+            frame_metadata_by_index[index] = metadata
+        if index >= sampled[-1]:
+            break
+    extract_s = (time.perf_counter_ns() - t0) / 1_000_000_000
+
+    if len(frame_metadata_by_index) != frame_count:
+        raise ValueError(
+            f"H264MetadataExtractor missed sampled frames for {item.item_id}; "
+            f"wanted {frame_count}, got {len(frame_metadata_by_index)}"
+        )
+
+    token_grids: list[np.ndarray] = []
+    for sampled_index, active_box in zip(sampled, active_boxes, strict=True):
+        metadata = frame_metadata_by_index[sampled_index]
+        token_grid = project_macroblock_metadata_to_token_grid(
+            metadata.macroblocks,
+            source=codec_score_source,
+            macroblock_size=extractor.mb_size,
+            frame_width=extractor.width,
+            frame_height=extractor.height,
+            canvas_size=QWEN_BENCHMARK_FRAME_SIZE,
+            active_box=active_box,
+            token_block=QWEN_BLOCK_SIZE,
+            mode=fusion_mode,
+            motion_weight=motion_weight,
+            residual_weight=residual_weight,
+            normalize_inputs=normalize_fusion_inputs,
+        )
+        # Codec scores must be non-negative; clamp tiny negatives from bicubic
+        # rounding so the strict non-negative gate downstream is not tripped by
+        # numerical noise.
+        token_grid = np.clip(token_grid, a_min=0.0, a_max=None)
+        token_grids.append(np.asarray(token_grid, dtype=np.float32))
+
+    return token_grids, float(extract_s)
+
+
 def _prepare_item(
     runner: Any,
     processor: Any,
     item: Any,
     *,
     frame_count: int,
-) -> tuple[dict[str, Any], float, float]:
+) -> tuple[dict[str, Any], float, float, list[tuple[int, int, int, int]]]:
     t0 = time.perf_counter_ns()
-    frames, _active_boxes = runner._decode_uniform_frames(
+    frames, active_boxes = runner._decode_uniform_frames(
         item.video_path,
         frame_count=frame_count,
         start_seconds=item.start_seconds,
@@ -124,7 +227,7 @@ def _prepare_item(
     t1 = time.perf_counter_ns()
     raw = _build_prompt(processor, frames, item.question)
     processor_ms = (time.perf_counter_ns() - t1) / 1_000_000
-    return raw, decode_ms, processor_ms
+    return raw, decode_ms, processor_ms, active_boxes
 
 
 def _compute_qwen_features(
@@ -284,14 +387,15 @@ def main() -> int:
         "--score-mode",
         type=str,
         default="magnitude_norm",
-        choices=("magnitude_norm", "uniform_random"),
+        choices=("magnitude_norm", "uniform_random", "codec_grid"),
         help=(
             "How to rank merged-token groups at the prune layer. "
             "'magnitude_norm' is the default 1.51V Qwen scorer "
-            "(L2 norm of group-mean hidden state; not a faithful FastV/"
-            "FasterVLM attention-weight implementation). "
+            "(L2 norm of group-mean hidden state). "
             "'uniform_random' is the 1.51VC competitor-positioning baseline "
-            "(deterministic-seeded random scores at matched keep-rate)."
+            "(deterministic-seeded random scores at matched keep-rate). "
+            "'codec_grid' ranks groups by a per-item codec-derived score grid "
+            "set via --codec-score-source."
         ),
     )
     parser.add_argument(
@@ -300,7 +404,45 @@ def main() -> int:
         default=42,
         help="Seed for --score-mode uniform_random (ignored otherwise).",
     )
+    parser.add_argument(
+        "--codec-score-source",
+        type=str,
+        default=None,
+        choices=CODEC_SCORE_SOURCE_CHOICES,
+        help=(
+            "When --score-mode=codec_grid, which OV-3 codec score source to use. "
+            "Choices: novel_coded (intra|cbf), motion, residual, fused."
+        ),
+    )
+    parser.add_argument(
+        "--fusion-mode",
+        type=str,
+        default="weighted",
+        choices=FUSION_MODE_CHOICES,
+        help="Fusion mode used only when --codec-score-source=fused.",
+    )
+    parser.add_argument(
+        "--motion-weight",
+        type=float,
+        default=1.0,
+        help="Motion weight used only when --codec-score-source=fused.",
+    )
+    parser.add_argument(
+        "--residual-weight",
+        type=float,
+        default=1.0,
+        help="Residual weight used only when --codec-score-source=fused.",
+    )
+    parser.add_argument(
+        "--no-normalize-fusion-inputs",
+        action="store_true",
+        help="Disable percentile normalization before motion/residual fusion.",
+    )
     args = parser.parse_args()
+    if args.score_mode == "codec_grid" and args.codec_score_source is None:
+        parser.error("--score-mode=codec_grid requires --codec-score-source")
+    if args.score_mode != "codec_grid" and args.codec_score_source is not None:
+        parser.error("--codec-score-source requires --score-mode=codec_grid")
 
     runner = _load_runner_module()
     runner._ensure_clean_git_tree(allow_dirty=args.allow_dirty)
@@ -326,22 +468,48 @@ def main() -> int:
                 keep_rate=args.vision_tower_keep_rate,
                 score_mode=args.score_mode,
                 score_seed=args.score_seed,
+                codec_score_source=args.codec_score_source,
             ),
         )
+
+    codec_score_source = (
+        CodecScoreSource(args.codec_score_source)
+        if args.codec_score_source is not None
+        else None
+    )
+    fusion_mode = cast(FuseMode, args.fusion_mode)
+    normalize_fusion_inputs = not bool(args.no_normalize_fusion_inputs)
 
     if args.rss_guard_mb > 0:
         check_rss_guard(args.rss_guard_mb, stage="post_model_load")
 
     results: list[ItemResult] = []
     args.output.parent.mkdir(parents=True, exist_ok=True)
+    codec_extract_total_s = 0.0
     with args.output.open("w") as handle:
         for item in items:
-            raw, decode_ms, processor_ms = _prepare_item(
+            raw, decode_ms, processor_ms, active_boxes = _prepare_item(
                 runner,
                 processor,
                 item,
                 frame_count=args.frame_count,
             )
+            if vt_patched and codec_score_source is not None:
+                codec_grids, codec_extract_s = _per_frame_codec_token_grids(
+                    item,
+                    frame_count=args.frame_count,
+                    active_boxes=active_boxes,
+                    codec_score_source=codec_score_source,
+                    fusion_mode=fusion_mode,
+                    motion_weight=float(args.motion_weight),
+                    residual_weight=float(args.residual_weight),
+                    normalize_fusion_inputs=normalize_fusion_inputs,
+                )
+                codec_extract_total_s += codec_extract_s
+                merged_group_scores = pool_token_grid_to_merged_groups(
+                    codec_grids, spatial_merge_size=QWEN_SPATIAL_MERGE
+                )
+                model.vision_tower.set_codec_score_grid(merged_group_scores)
             features, vision_ms, prune_info = _compute_qwen_features(model, raw)
             stats = _run_generate(
                 model,
@@ -407,6 +575,35 @@ def main() -> int:
             "score_seed": args.score_seed
             if vt_patched and args.score_mode == "uniform_random"
             else None,
+            "codec_score_source": args.codec_score_source if vt_patched else None,
+            "codec_fusion_mode": (
+                args.fusion_mode
+                if vt_patched and args.codec_score_source == "fused"
+                else None
+            ),
+            "codec_motion_weight": (
+                float(args.motion_weight)
+                if vt_patched and args.codec_score_source == "fused"
+                else None
+            ),
+            "codec_residual_weight": (
+                float(args.residual_weight)
+                if vt_patched and args.codec_score_source == "fused"
+                else None
+            ),
+            "codec_normalize_fusion_inputs": (
+                normalize_fusion_inputs
+                if vt_patched and args.codec_score_source == "fused"
+                else None
+            ),
+            "codec_extract_total_s": (
+                float(codec_extract_total_s) if codec_score_source is not None else None
+            ),
+            "codec_extract_mean_s_per_item": (
+                float(codec_extract_total_s / len(results))
+                if codec_score_source is not None and results
+                else None
+            ),
             "rss_guard_mb": args.rss_guard_mb if args.rss_guard_mb > 0 else None,
             "final_rss_mb": rss_mb(),
         }
