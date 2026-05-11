@@ -1,0 +1,145 @@
+{
+  "checks": [
+    {
+      "detail": "OneVision visual and explainer-video renderers default to real videos and fail on missing clips",
+      "name": "no synthetic visual fallback",
+      "remedy": null,
+      "status": "ok",
+      "used_for": "OV-1 scientific visualization gate"
+    },
+    {
+      "detail": "all",
+      "name": "preflight scope",
+      "remedy": null,
+      "status": "ok",
+      "used_for": "scope-specific readiness gate"
+    },
+    {
+      "detail": "/Users/jfb/models/Qwen2.5-VL-7B-Instruct-4bit",
+      "name": "Qwen default model path",
+      "remedy": null,
+      "status": "ok",
+      "used_for": "OV-3 local Qwen model-bearing run"
+    },
+    {
+      "detail": "research/experiments/2026/artifacts/phase1_57/qwen_8f_dev30.json",
+      "name": "Phase 1.57 reference summary",
+      "remedy": null,
+      "status": "ok",
+      "used_for": "OV-2/OV-3 --calibration-source=artifact option"
+    },
+    {
+      "detail": "research/benchmark_manifests/videomme_dev_v1_short_only.toml",
+      "name": "manifest: videomme_dev_v1_short_only.toml",
+      "remedy": null,
+      "status": "ok",
+      "used_for": "experiment item selection"
+    },
+    {
+      "detail": "research/benchmark_manifests/videomme_dev_v1.toml",
+      "name": "manifest: videomme_dev_v1.toml",
+      "remedy": null,
+      "status": "ok",
+      "used_for": "experiment item selection"
+    },
+    {
+      "detail": "research/benchmark_manifests/videomme_holdout_v1.toml",
+      "name": "manifest: videomme_holdout_v1.toml",
+      "remedy": null,
+      "status": "ok",
+      "used_for": "experiment item selection"
+    },
+    {
+      "detail": "research/benchmark_manifests/tomato_motion_holdout_v2.toml",
+      "name": "manifest: tomato_motion_holdout_v2.toml",
+      "remedy": null,
+      "status": "ok",
+      "used_for": "experiment item selection"
+    },
+    {
+      "detail": "6 parquet files",
+      "name": "TOMATO metadata parquet",
+      "remedy": null,
+      "status": "ok",
+      "used_for": "TOMATO manifest loading and clip provenance"
+    },
+    {
+      "detail": "data/benchmarks/videomme/hf/videomme/test-00000-of-00001.parquet",
+      "name": "VideoMME metadata parquet",
+      "remedy": null,
+      "status": "ok",
+      "used_for": "VideoMME item_id to videoID resolution"
+    },
+    {
+      "detail": "10 videos present",
+      "name": "videomme manifest assets: videomme_dev_v1_short_only.toml",
+      "remedy": null,
+      "status": "ok",
+      "used_for": "OV-3/OV-5 manifest video availability"
+    },
+    {
+      "detail": "29 videos present",
+      "name": "videomme manifest assets: videomme_dev_v1.toml",
+      "remedy": null,
+      "status": "ok",
+      "used_for": "OV-3/OV-5 manifest video availability"
+    },
+    {
+      "detail": "29 videos present",
+      "name": "videomme manifest assets: videomme_holdout_v1.toml",
+      "remedy": null,
+      "status": "ok",
+      "used_for": "OV-3/OV-5 manifest video availability"
+    },
+    {
+      "detail": "data/benchmarks/tomato/videos/object/0298-00.mp4",
+      "name": "visualization clip: tomato_0298_00",
+      "remedy": null,
+      "status": "ok",
+      "used_for": "existing paper visualization: high-reuse routing example; item_id=tomato:rotation:0298-00"
+    },
+    {
+      "detail": "data/benchmarks/videomme/videos/2Bns2m5Bg4M.mp4",
+      "name": "visualization clip: videomme_380",
+      "remedy": null,
+      "status": "ok",
+      "used_for": "existing paper visualization: VideoMME visual anchor; item_id=videomme:medium:380-3"
+    },
+    {
+      "detail": "data/benchmarks/videomme/videos/Atf_Af1q_5w.mp4",
+      "name": "visualization clip: videomme_267",
+      "remedy": null,
+      "status": "ok",
+      "used_for": "existing paper visualization: lower-reuse boundary; item_id=videomme:short:267-2"
+    },
+    {
+      "detail": "/opt/homebrew/bin/ffmpeg",
+      "name": "executable: ffmpeg",
+      "remedy": null,
+      "status": "ok",
+      "used_for": "OV-1 real-video explainer MP4 encoding"
+    },
+    {
+      "detail": "av",
+      "name": "python module: av",
+      "remedy": null,
+      "status": "ok",
+      "used_for": "codec metadata / benchmark manifest inspection"
+    },
+    {
+      "detail": "pyarrow",
+      "name": "python module: pyarrow",
+      "remedy": null,
+      "status": "ok",
+      "used_for": "codec metadata / benchmark manifest inspection"
+    }
+  ],
+  "counts": {
+    "missing": 0,
+    "ok": 19,
+    "warning": 0
+  },
+  "ready": true,
+  "repo_root": "/Users/jfb/s/codec-through-2",
+  "schema": "onevision_vlmaxxing_preflight_v1"
+}

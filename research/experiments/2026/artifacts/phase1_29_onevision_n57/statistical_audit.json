@@ -10,7 +10,7 @@
   "multiple_comparisons": {
     "bonferroni_alpha_for_per_cell_at_family_05": 0.0125,
     "n_cells_compared": 4,
-    "note": "We tested 4 codec sources \u00d7 3 tranches = 12 cells. Per-cell McNemar p-values must be compared against alpha = 0.05 / 12 \u2248 0.0042 for family-wise control under Bonferroni. Most p-values here are >0.05 even uncorrected at this N; the multiple-comparisons concern is directional, not the limiting factor."
+    "note": "This audit contains one tranche with 4 codec sources, so a Bonferroni family-wise alpha of 0.05 / 4 applies within this artifact. Earlier exploratory OV-3 tranches should be described separately unless they are loaded into the same audit."
   },
   "tranches": [
     {

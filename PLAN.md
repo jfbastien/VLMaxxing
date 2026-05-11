@@ -27,6 +27,11 @@ notes.
   dense remains a serious baseline.
 - 26B follow-up reuse remains diagnostic until a topology-safe path preserves
   correctness without surrendering the speed path.
+- **OneVision x VLMaxxing Track A** has a bounded positive codec-source signal
+  on VideoMME short / Qwen2.5-VL-7B-4bit / 8 frames. Treat it as semantic
+  substitution evidence only: N=57 point estimates favor codec over pixel, but
+  per-source McNemar tests are inconclusive and frame=16 collapses codec to the
+  pixel answer set.
 
 ## Active Gates Before Paper/OSS Freeze
 
@@ -41,6 +46,9 @@ notes.
      highest-value main-track science gaps after the current integration pass
    - defer query-aware implementation until a separate branch can inherit the
      stage-cost ledger and run fresh held-out fixed/random/admission controls
+   - OneVision follow-up: run OV-6 Track B codec-grid sparse vision before any
+     E2E speedup language; use the M3 only for an 8-frame smoke and the M5 for
+     broader 16/32-frame or TOMATO sweeps
 
 2. **Freeze artifact provenance.**
    - every paper table/figure cell needs a source artifact path or a visible

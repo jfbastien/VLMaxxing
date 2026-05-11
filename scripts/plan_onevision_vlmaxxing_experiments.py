@@ -136,19 +136,21 @@ def build_schedule() -> list[ExperimentStep]:
         ExperimentStep(
             stage="OV-3",
             track="Track A dev",
-            question="Does OneVision-style scoring improve semantic substitution before real work is skipped?",
+            question="Do codec-native score sources improve semantic substitution before real work is skipped?",
             hypothesis=(
-                "Continuous motion+residual scoring with per-item calibration will beat pixel max_abs, legacy "
-                "novel_coded, and motion-only/residual-only ablations on paired answer stability at matched fresh "
-                "budgets."
+                "Continuous H.264 score planes can be a better Track A refresh oracle than pixel max_abs at the "
+                "matched fresh-budget point, but the best frozen-backend source may be a simple codec signal rather "
+                "than OneVision-style weighted fusion."
             ),
             success_gate=(
-                "No increase in parse failures, <= 1% paired-choice drift on gated dev cells, and a strict Pareto "
-                "improvement in fresh-budget versus current Track A baselines."
+                "For paper-facing promotion, require no parse-failure increase, no rows broken versus pixel, "
+                "positive codec-minus-pixel point estimates on a replication tranche, and confidence intervals / "
+                "McNemar reported instead of treating small-N wins as significance."
             ),
             skip_rule=(
-                "If fused scoring underperforms pixel max_abs or legacy novel_coded on the first dev tranche, skip "
-                "holdout promotion, skip OV-4/OV-6 model runs, and report a diagnostic related-work result."
+                "If every codec source fails to beat pixel at matched budget, stop at diagnostic evidence. If fused "
+                "does not beat simpler sources, carry the best simple source into OV-6 rather than treating fusion "
+                "as the method."
             ),
             setup_effort="requires OV-2 runner wiring",
             eta_m3="24-40 hours sequential after wiring; cache keys intentionally separate score sources",
@@ -165,7 +167,7 @@ def build_schedule() -> list[ExperimentStep]:
                 "uv run python scripts/run_benchmark_track_a.py <promoted onevision planner args>",
             ],
             artifacts=[
-                "research/experiments/2026/artifacts/onevision_track_a_dev/",
+                "research/experiments/2026/artifacts/phase1_29_onevision_n57/",
             ],
         ),
         ExperimentStep(
@@ -206,28 +208,33 @@ def build_schedule() -> list[ExperimentStep]:
         ExperimentStep(
             stage="OV-5",
             track="Track A holdout",
-            question="Does a dev-positive fused codec planner transfer to holdout and cross-family slices?",
+            question="Does the codec-source Track A signal transfer beyond VideoMME short / 8 frames?",
             hypothesis=(
-                "If OneVision-style scoring is real rather than calibration noise, it should survive duration buckets, "
-                "benchmark splits, and at least one cross-family check."
+                "If codec-native scoring is real rather than a VideoMME-short operating-point artifact, it should "
+                "survive at least one cross-benchmark or threshold-sensitivity test. Frame=16 already shows that "
+                "the advantage over pixel does not automatically transfer across frame budgets."
             ),
             success_gate=(
-                "Holdout cells remain parse-clean, preserve paired correctness within gate, and improve or match the "
-                "current Track A Pareto frontier."
+                "Report TOMATO or larger-VideoMME results with Wilson intervals, paired tests, and explicit "
+                "operating-point labels; promote only sources that remain parse-clean and do not break pixel-correct rows."
             ),
-            skip_rule="If holdout regresses, do not promote as a paper result; preserve as a bounded diagnostic.",
-            setup_effort="requires OV-3 dev pass",
-            eta_m3="+12 hours Qwen/Gemma after dev",
-            eta_m5="+6 hours Qwen/Gemma after dev",
+            skip_rule=(
+                "If cross-benchmark or threshold sensitivity collapses to pixel or reverses correctness, keep OV-3 "
+                "as bounded VideoMME-short evidence and do not generalize."
+            ),
+            setup_effort="requires OV-3 N=57 artifacts; no query-aware tuning in this branch",
+            eta_m3="4-7 hours per focused replication cell",
+            eta_m5="2-4 hours per focused replication cell",
             compute_lane="local MLX one model at a time",
             uses_local_accelerator=True,
             requires_nvidia=False,
             defer_until="after OV-3 dev passes",
             commands=[
-                "uv run python scripts/run_benchmark_track_a.py <onevision-holdout args>",
+                "future: TOMATO motion codec-source replication",
+                "future: threshold-sensitivity sweep at frame_count=8",
             ],
             artifacts=[
-                "research/experiments/2026/artifacts/onevision_track_a_holdout/",
+                "research/experiments/2026/artifacts/onevision_track_a_replication/",
             ],
         ),
         ExperimentStep(
@@ -235,26 +242,30 @@ def build_schedule() -> list[ExperimentStep]:
             track="Track B",
             question="Can OneVision-style allocation improve real sparse vision work skipped?",
             hypothesis=(
-                "Within already-fresh VLMaxxing regions, OneVision-style Top-K patch allocation may recover more task "
-                "fidelity per token than current magnitude_norm keep-rate policies, but frozen towers are likely brittle."
+                "The OV-3 Track A signal can only become a systems result if the same codec source can drive real "
+                "vision-stage pruning without losing fidelity. Simple codec sources should be tested before weighted fusion."
             ),
             success_gate=(
-                "At matched keep-rate, improve paired correctness/format over Phase 1.63J Qwen and Phase 1.63G Gemma "
-                "boundaries while preserving measured vision-stage timing gains."
+                "At matched keep-rate, preserve paired correctness/format against dense and improve measured "
+                "vision-stage or end-to-end timing over the current magnitude_norm / uniform_random sparse-vision baselines."
             ),
             skip_rule=(
-                "If the first Qwen dev tranche fails fidelity at all keep-rates, skip Gemma and treat the result as "
-                "evidence that trained sparse encoders are needed."
+                "If the first Qwen 8f smoke fails fidelity at all keep-rates, skip Gemma and treat the result as "
+                "evidence that the Track A codec oracle does not transfer to frozen Track B sparse execution."
             ),
-            setup_effort="requires OV-3/OV-5 evidence and separate sparse-tower scorer wiring",
-            eta_m3="not recommended for broad sweeps",
-            eta_m5="16-28 hours Qwen, +12 hours Gemma only if Qwen gates",
-            compute_lane="M5 128GB preferred; no concurrent model jobs",
+            setup_effort=(
+                "requires separate sparse-tower scorer wiring: codec-grid construction, post-window group alignment, "
+                "provenance fields, and CPU alignment tests"
+            ),
+            eta_m3="2-4 hours coding plus 1-2 hours for an 8f smoke; broad sweeps not recommended",
+            eta_m5="8-16 hours Qwen broader sweep, +6-12 hours Gemma only if Qwen gates",
+            compute_lane="M3 smoke allowed when free; M5 128GB preferred for broad sweeps; no concurrent model jobs",
             uses_local_accelerator=True,
             requires_nvidia=False,
-            defer_until="after OV-5 or explicit high-risk override",
+            defer_until="after OV-3 N=57 review; before OV-8",
             commands=[
-                "uv run python scripts/run_phase1_51V.py <onevision-allocator args>",
+                "uv run python scripts/run_phase1_51V.py --score-mode codec_grid --codec-score-source novel_coded <smoke args>",
+                "uv run python scripts/run_phase1_51V.py --score-mode codec_grid --codec-score-source motion <smoke args>",
                 "uv run python scripts/run_phase1_63G_gemma_track_b.py <onevision-allocator args>",
             ],
             artifacts=[
@@ -312,9 +323,9 @@ def build_schedule() -> list[ExperimentStep]:
                 "If OV-6 has no fidelity-clean sparse-vision cell, use analytic stage-share ceilings only and do not claim "
                 "a working combined runtime."
             ),
-            setup_effort="requires OV-6 pass for model-backed runtime; otherwise accounting-only",
-            eta_m3="6-10 hours accounting only; model run deferred",
-            eta_m5="8-14 hours model-backed if OV-6 gates",
+            setup_effort="requires OV-6 dense-vs-codec timing rows for model-backed runtime; otherwise ceiling-only",
+            eta_m3="3-4 hours artifact-level accounting after OV-6; no new session driver needed for first pass",
+            eta_m5="6-10 hours model-backed if OV-6 gates and a fresh session run is justified",
             compute_lane="M5 128GB for model-backed replication",
             uses_local_accelerator=True,
             requires_nvidia=False,

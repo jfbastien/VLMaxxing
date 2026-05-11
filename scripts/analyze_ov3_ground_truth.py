@@ -90,15 +90,9 @@ def _stats(rows: list[ItemRow]) -> dict[str, float | int]:
         "dense_acc": sum(r.dense_correct for r in rows) / n,
         "pixel_acc": sum(r.pixel_correct for r in rows) / n,
         "codec_acc": sum(r.codec_correct for r in rows) / n,
-        "codec_rescues_pixel": sum(
-            r.codec_correct and not r.pixel_correct for r in rows
-        ),
-        "pixel_rescues_codec": sum(
-            r.pixel_correct and not r.codec_correct for r in rows
-        ),
-        "codec_matches_pixel_correct": sum(
-            r.codec_correct == r.pixel_correct for r in rows
-        ),
+        "codec_rescues_pixel": sum(r.codec_correct and not r.pixel_correct for r in rows),
+        "pixel_rescues_codec": sum(r.pixel_correct and not r.codec_correct for r in rows),
+        "codec_matches_pixel_correct": sum(r.codec_correct == r.pixel_correct for r in rows),
     }
 
 
@@ -131,9 +125,7 @@ def _disagreement_table(rows_by_source: dict[str, list[ItemRow]]) -> list[dict]:
 
         codec_choices = {e["codec_choice"] for e in entries}
         pixel_choice = entries[0]["pixel_choice"]
-        any_disagrees_with_pixel = any(
-            e["codec_choice"] != pixel_choice for e in entries
-        )
+        any_disagrees_with_pixel = any(e["codec_choice"] != pixel_choice for e in entries)
         if len(codec_choices) > 1 or any_disagrees_with_pixel:
             out.append(
                 {

@@ -275,12 +275,19 @@ Metrics:
   proxy regions, not just mean deficit;
 - decision-log reopen status for continuous H.264 saliency.
 
-Success gate: no increase in parse failures, <= 1% paired-choice drift on
+Original success gate: no increase in parse failures, <= 1% paired-choice drift on
 gated dev cells, and strict Pareto improvement over current Track A baselines.
 
-Skip rule: If fused scoring underperforms pixel `max_abs` or legacy
+Post-run interpretation: the final N=57 exploratory replication supports a bounded
+codec-source Track A hypothesis, not a strict fusion-specific win. Fused is positive
+by point estimate at N=57 but does not beat the simpler codec sources.
+
+Original skip rule: If fused scoring underperforms pixel `max_abs` or legacy
 `novel_coded` on the first dev tranche, skip holdout promotion, external
 parity, Track B, and combined runtime claims.
+
+Post-run override for future work: use the best simple codec source for OV-6 if Track B
+is run. Do not promote fused as the preferred planner without a fresh design/dev split.
 
 ETA after wiring: M3 24-40 hours sequential; M5 12-24 hours sequential. The
 cache key intentionally includes `codec_score_source`, so the ablation grid
@@ -335,15 +342,20 @@ within gate, and improve or match the current Track A Pareto frontier.
 Skip rule: If holdout regresses, do not promote as a paper result; preserve as
 a bounded diagnostic.
 
-ETA after dev pass: M3 +12 hours Qwen/Gemma; M5 +6 hours Qwen/Gemma.
+Post-run update: frame_count=16 already falsified simple frame-budget transfer, so the
+next Track A replication should prioritize TOMATO motion or threshold sensitivity
+instead of another nested VideoMME-short holdout. Estimate M3 4-7 hours per focused
+replication cell; M5 2-4 hours per focused cell.
 
 ### OV-6: Track B Sparse Vision
 
 Track: Track B real skipped work
 
-Hypothesis: Within already-fresh VLMaxxing regions, OneVision-style Top-K patch
-allocation may recover more task fidelity per token than current
-`magnitude_norm` keep-rate policies, but frozen towers are likely brittle.
+Hypothesis: A simple codec source from OV-3, starting with `novel_coded`, can drive
+real sparse-vision execution at 8 frames with better fidelity than current
+`magnitude_norm` or `uniform_random` keep-rate policies. OneVision-style weighted
+fusion is not the first Track B candidate because it does not beat simpler sources at
+N=57.
 
 Success gate: At matched keep-rate, improve paired correctness/format over
 Phase 1.63J Qwen and Phase 1.63G Gemma boundaries while preserving measured
@@ -353,8 +365,13 @@ Skip rule: If the first Qwen dev tranche fails fidelity at all keep-rates,
 skip Gemma and treat the result as evidence that trained sparse encoders are
 needed.
 
-ETA: M3 not recommended for broad sweeps; M5 16-28 hours Qwen, +12 hours Gemma
-only if Qwen gates.
+Implementation gate before GPU: add codec-grid construction, Qwen post-window group
+alignment, provenance fields, and CPU tests for shape/order/NaN rejection. Estimate
+200-350 LoC if done cleanly.
+
+ETA: M3 2-4 hours coding plus 1-2 hours for an 8-frame smoke when the GPU is free.
+Use M5 128GB for broader 16/32-frame sweeps or Gemma; estimate 8-16 hours Qwen,
++6-12 hours Gemma only if Qwen gates.
 
 ### OV-7: OV-Encoder Local Feasibility
 
@@ -413,7 +430,9 @@ Success gate: paired-drift-clean session curves with stage-share accounting.
 Skip rule: If OV-6 has no fidelity-clean sparse-vision cell, use only
 stage-share ceilings and do not claim a working combined runtime.
 
-ETA: M3 6-10 hours accounting only; M5 8-14 hours model-backed if OV-6 gates.
+ETA: 3-4 hours artifact-level accounting after OV-6 emits dense-vs-codec first-query
+timing rows. A fresh model-backed session run is only needed if the artifact-level
+composition looks promising.
 
 ### OV-9: Comparison Table
 
@@ -488,44 +507,54 @@ cache-aware sparse-token interface as future work.
 
 ## Execution Log
 
-### 2026-05-09 — OV-3 dev n=10, VideoMME short, Qwen2.5-VL-7B-4bit, 8 frames
+### 2026-05-09 to 2026-05-10 — OV-3 Track A closure
 
-- novel_coded: codec_acc 0.800 = dense, pixel 0.700, codec→dense 10/10, pair_jaccard 0.614
-- motion: codec_acc 0.800, codec→dense 10/10, pair_jaccard 0.520
-- residual: codec_acc 0.800, codec→dense 10/10, pair_jaccard 0.616
-- fused: codec_acc 0.700 = pixel, codec→dense 9/10, codec→pixel 10/10, pair_jaccard 0.565
+All model runs used Qwen2.5-VL-7B-4bit on an M3 16GB MacBook Air with MLX unified GPU.
+The original preregistered dev pass was extended with exploratory N=20, holdout-disjoint,
+frame=16, and N=57 replication passes. These extensions are useful evidence but should be
+labeled exploratory unless a later prereg repeats them.
 
-Wall: 71 minutes on M3 16GB MBA (MLX, unified GPU), 4 sources sequential.
-Artifact: `research/experiments/2026/artifacts/phase1_29_onevision_dev/`.
+Completed artifacts:
 
-### 2026-05-09 — OV-3 broader N=20, VideoMME short dev∪holdout
+- `research/experiments/2026/artifacts/phase1_29_onevision_dev/` — n=10 dev, 8 frames.
+- `research/experiments/2026/artifacts/phase1_29_onevision_dev_n20_short/` — n=20
+  dev∪holdout, 8 frames.
+- `research/experiments/2026/artifacts/phase1_29_onevision_holdout_disjoint/` — the
+  10 holdout items rerun in a fresh driver session.
+- `research/experiments/2026/artifacts/phase1_29_onevision_dev_n20_short_f16/` —
+  n=20 frame_count=16 boundary pass.
+- `research/experiments/2026/artifacts/phase1_29_onevision_n57/` — n=57 statistical
+  replication, 8 frames.
 
-- novel_coded: codec_acc 0.750 = dense, pixel 0.700, codec→dense 20/20, pair_jaccard 0.560
-- motion: codec_acc 0.750, codec→dense 20/20, pair_jaccard 0.451
-- residual: codec_acc 0.750, codec→dense 20/20, pair_jaccard 0.546
-- fused: codec_acc 0.700 = pixel, codec→dense 19/20, codec→pixel 20/20, pair_jaccard 0.492
+Final N=57 table, VideoMME short, 8 frames:
 
-Wall: ~2.5 hours on M3 16GB MBA (MLX, unified GPU), 4 sources sequential.
-Artifact: `research/experiments/2026/artifacts/phase1_29_onevision_dev_n20_short/`.
+| source | dense | pixel | codec | codec−pixel | codec→dense | McNemar fixes/breaks | p |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| novel_coded | 0.667 | 0.649 | 0.702 | +0.053 | 55/57 | 3 / 0 | 0.250 |
+| motion | 0.667 | 0.649 | 0.684 | +0.035 | 54/57 | 2 / 0 | 0.500 |
+| residual | 0.667 | 0.649 | 0.684 | +0.035 | 56/57 | 2 / 0 | 0.500 |
+| fused | 0.667 | 0.649 | 0.684 | +0.035 | 54/57 | 2 / 0 | 0.500 |
 
-### Aggregate (20 unique items; n=10 dev is a subset of n=20 broader)
+Interpretation:
 
-The n=10 and n=20 passes share the 10 dev items by construction (n=20 manifest =
-n=10 dev ∪ 10 new holdout). The two passes agree on the overlap. Canonical N is 20
-unique items, evidenced by the n=20 summaries.
+- `reproduced here`: all four codec sources beat pixel and dense by point estimate at
+  N=57, with no rows broken versus pixel.
+- `reproduced here`: individual McNemar tests remain inconclusive; this is a bounded
+  positive Track A signal, not per-cell statistical significance.
+- `reproduced here`: the N=20 "fused fails" interpretation was overcalled. Fused is
+  positive at N=57 but does not beat simpler codec sources.
+- `reproduced here`: frame_count=16 collapses all codec sources to the pixel answer set
+  on the N=20 manifest, so the positive result is bounded to the 8-frame operating point.
+- `reproduced here`: H.264 extraction through the current PyAV path costs about
+  19 seconds/item median on M3; decoder-integrated "free metadata" remains a systems
+  hypothesis until measured.
 
-- novel_coded / motion / residual: codec→dense **20/20** (100%) at N=20, +5pp over pixel.
-- fused: codec→dense **19/20** (95%) at N=20, codec→pixel 20/20 (matches pixel answer
-  set exactly), +0pp over pixel.
-- pixel max_abs: pixel→dense **19/20** (95%) at N=20.
-- Mean active reuse 0.09–0.10 codec versus 0.10 pixel — same spend, no drift on the
-  simple codec sources, persistent drift on the fused score.
+Decision-log status: continuous H.264 spatial scoring should move from `Deprioritized`
+to `bounded active hypothesis` for VideoMME short / Qwen / 8-frame Track A. It is not a
+general paper claim and not Track B evidence.
 
-The decision-log reopen condition for "Continuous H.264 spatial scoring as saliency
-oracle" is satisfied for novel_coded, motion, and residual. The fused score does not
-satisfy the reopen gate: it matches pixel rather than beating both pixel and novel_coded.
+Editor packet:
+`research/experiments/2026/artifacts/onevision_vlmaxxing_plan/editor_packet_draft.md`.
 
-Editor packet: `research/experiments/2026/artifacts/onevision_vlmaxxing_plan/editor_packet_draft.md`.
-
-OV-4 (NVIDIA parity) and OV-6 (Track B sparse vision) remain deferred. OV-8 (C-PERSIST
-session economics) is CPU-only accounting and can run without new model time.
+Next gate: OV-6 Track B codec-grid sparse vision. OV-8 C-PERSIST composition depends on
+OV-6 measured first-query timing rows and must use setup-inclusive accounting.
