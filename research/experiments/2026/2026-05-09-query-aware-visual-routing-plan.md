@@ -33,12 +33,120 @@ The technical framing should lean on anytime/contract algorithms, value of
 information, and multi-fidelity cost allocation; database query planning remains
 an explanatory analogy for systems readers.
 
+2026-05-10 design-pass update (post deep-research, post peer-review):
+
+- Operators are now precisely defined (`redundancy-topk`, `static-floor`,
+  `endpoint-anchor`, `identity-anchor`, `query-budget`, `repair-pass`)
+  with composition rules and free parameters; vague "evidence operator"
+  language has been retired.
+- Q0b oracle-K is specified as a 2x2 of (admission ON/OFF) x (C-VISION
+  ON/OFF) plus a kr sweep. Cell (c) "admit OFF / vision ON" is already
+  supported by the runner (`--prune-placeholders=none` with
+  `--vision-tower-score-mode=rlt_topk`); the missing work is queue
+  plumbing plus analyzer-contract expansion.
+- H5 cost model is specified as a linear regression with named features,
+  training set (Q0b artifacts), held-out validation, and a MAPE >= 25%
+  abort condition.
+- Q2b QuoTA approximation is specified as Gemma self-scoring via
+  binary-choice logprob (Option B), with mlx-vlm logprob-extraction risk
+  flagged as a pre-implementation smoke check.
+- Q3b AVP handling is tiered: related-work positioning by default
+  because there is no matched benchmark/protocol overlap, a
+  single-operator AVP-mimic as the actual local baseline, and full
+  reimplementation only under rebuttal pressure.
+- Q4 transfer specifies TempCompass first (preregistered ingest exists)
+  and de-promises LongVideoBench (no ingest plan, hardware-marginal on
+  M3 16GB).
+- Q6 statistical preregistration is concrete: paired bootstrap CI is the
+  primary inferential object; numeric MDEs are deliberately not quoted
+  until an exact paired-binary simulation is written; independent
+  benchmark families use Holm-Bonferroni internally, TOST equivalence
+  margin Δ_equiv = 0.10, Fisher exact for set-overlap with explicit
+  power caveat.
+- Cross-validation discipline now requires a fresh `design_v1` slice
+  because Round-20 dev has been inspected for the failure taxonomy and
+  is therefore burned for rule design.
+- Risk register added: per-Q failure modes, Plan B for each, and five
+  hard "stop the project" conditions.
+
+2026-05-10 cross-validation pass (third revision, post external review):
+
+- Q0b cell (c) corrected: the runner already supports
+  `--prune-placeholders=none` with C-VISION enabled
+  (`run_novelty_pruning_gemma.py:614` is independent of placeholder
+  pruning). The real gap is queue plumbing
+  (`run_rlt_followup_queue.py`) plus an analyzer-contract expansion in
+  `analyze_gemma_full_composition.py`. No new runner mode is needed.
+- Operator K units corrected: all operators output sets of *encoder
+  valid positions* from `gemma_encoder_valid_positions_per_frame`, not
+  prompt placeholders (256) and not RLT scoring grid (196). The valid
+  encoder count can differ by runner/substrate, so static-floor stride
+  and K are derived from the current artifact rather than hard-coded.
+- Statistics MDE table replaced: continuous-Wald approximations
+  violated the discrete bound |Δacc| ≤ p_d. Numeric MDEs removed; the
+  qualitative "n=30 cannot reliably resolve effects below ~0.20" is
+  retained, with a note that McNemar exact simulation is the right
+  follow-up if a referee insists on a numeric threshold.
+- Multiple-comparisons text reconciled: three independent confirmatory
+  families (one per benchmark), each Holm-Bonferroni-corrected
+  *internally including the primary*. Cross-family inflation bounded
+  at FWER ≤ 0.143 explicitly.
+- H5 split into H5a (linear cost model, fittable on Q0b/Q1/Q2) and
+  H5b (P_repair calibration, gated on Q3c/Q5 landing). H5a is no
+  longer blocked on repair data that does not yet exist.
+- H5 row-count claim removed: replaced "~540 rows" with "row count
+  depends on which Q1 variants land; name held-out benchmark in
+  prereg." Plan-level rows are explicitly defined as one row per
+  (item, plan) pair.
+- Q3b Tier 1 narrowed: AVP cannot be a matched-budget baseline because
+  Q4 dropped LongVideoBench, removing protocol overlap. Tier 1 is now
+  related-work positioning only; the actual matched-protocol baseline
+  is the Tier 2 AVP-mimic (relabel of `repair-pass`) on our MVBench /
+  TempCompass manifests.
+
+2026-05-12 fourth revision (post ChatGPT deep-review pass 3):
+
+- Substrate-aware V: V=1024 on Track-B/`magnitude_valid` artifacts but
+  V=2304 on composition/admission artifacts (verified across
+  `cvision_magnitude_valid_*.jsonl` vs `composition_rlt_*.jsonl`).
+  Operator K is now defined as `kr * V_per_row` rather than a hard
+  number; static-floor stride examples cover both the 32x32 (V=1024)
+  and 48x48 (V=2304) grids.
+- "Motion-only routing" thesis line corrected to "Redundancy-first
+  routing" (case-sensitive grep miss in prior revision).
+- Oracle accounting uses existing fields `dense_placeholder_count`,
+  `pruned_placeholder_count`, `placeholder_prune_bypassed` (verified
+  at `run_novelty_pruning_gemma.py:771-773`); no schema-version bump
+  required.
+- Output-format normalization added: MVBench's `"Best Option: ("`
+  extraction protocol mandated so cost comparisons aren't contaminated
+  by answer verbosity. Logprob switch over `{A,B,C,D}` is explicitly
+  rejected as a comparability-breaker.
+- AVP-mimic relabeled "one-step active escalation" (AVP is strictly
+  iterative-until-converged per arXiv 2512.05774; a one-step
+  degenerate is not a faithful reimplementation).
+- TempCompass scope made honest: it validates temporal-aspect transfer
+  only; static-detail and identity-binding claims need separate
+  evidence.
+- `identity-anchor` first-frame-coverage gate added to Q0: if
+  first-frame entity coverage on `object_interaction` < 60%, drop the
+  operator before Q1.
+- `static-floor` overflow rule added: clip + log when F > K; reject
+  the stride if overflow rate exceeds 10% of items.
+- `query-budget` operator spec tightened on three gaps:
+  largest-remainders sum-preserving rounding, min-one allocation,
+  uniform-scores fallback to `redundancy-topk` with null-signal log.
+- New "First Implementation Branch" section: code changes, mandatory
+  dual-ledger columns (placeholder + encoder), two-table presentation
+  mandate (strict per-frame K vs video-level budget), and six smoke
+  tests that gate Q1 startup.
+
 ## One-Sentence Thesis
 
-Video VLM acceleration should be planned from the question. Motion-only routing
-is an excellent cheap default, but the query decides whether the model needs
-motion evidence, static appearance detail, endpoint frames, object relations,
-or a repair pass. This is visual query planning.
+Video VLM acceleration should be planned from the question.
+Redundancy-first routing is an excellent cheap default, but the query decides
+whether the model needs motion evidence, static appearance detail, endpoint
+frames, object relations, or a repair pass. This is visual query planning.
 
 ## Why This Exists
 
@@ -171,6 +279,134 @@ question as a query plan input:
 
 The output is a visual evidence plan: frame selection, resolution selection,
 token budget, static-detail floor, motion budget, and optional repair policy.
+
+## Operator Definitions
+
+The "operator" abstraction is load-bearing. Vague operator names invite
+reviewer skepticism that the planner is just heuristics with extra steps.
+Each operator must be definable as a function that takes (query, frames,
+budget) and returns a set of valid encoder positions to keep, with a
+measured cost. First-paper operators:
+
+**Output-format normalization.** Before any operator timing claim, lock
+the answer-extraction protocol so cost comparisons aren't contaminated
+by answer verbosity. Use MVBench's reference protocol: prompt suffix
+`"Best Option: ("` and parse the next parenthesis-enclosed letter
+(achieves ~100% extraction on MVBench per its CVPR 2024 release). This
+is a *constrained-generation* extraction, not a log-prob switch, so it
+preserves comparability with our existing Round-20 free-form numbers
+where the post-hoc parser already accepted the same single-letter
+answer. Do **not** switch to true logprob scoring over `{A,B,C,D}` — it
+breaks comparability with prior arms (SparseVLM, Static-or-Dynamic,
+Frame-Voyager, QuoTA all report MCQ accuracy not logprobs) and adds
+implementation risk we don't need. If a per-arm `generation_tokens`
+distribution shifts by more than 1 token-equivalent across operators on
+a target slice, flag for verbosity audit and consider tightening the
+prompt suffix; otherwise no further normalization is required.
+
+**Scale convention.** All operators output sets of *encoder valid
+positions* — the unit reported by
+`gemma_encoder_valid_positions_per_frame` in the runner JSONL. Do not
+hard-code this count: Track-B C-VISION artifacts have observed V=1024
+valid encoder positions per frame, while the composition/admission
+runner has observed V=2304 valid encoder positions per frame on related
+Gemma-4-E4B runs. The Q0b/Q1 runners must read V from the current row
+and, for grid operators such as `static-floor`, must also record or
+derive the valid encoder grid shape before fixing stride values.
+The RLT scorer operates on a 14x14=196 raw-patch grid (`rlt_config.grid_shape`)
+and projects onto the encoder grid via `project_bool_grid` to produce the
+C-VISION mask. Do not conflate the encoder valid-position grid (observed
+V=1024 or V=2304 depending on runner/substrate), the prompt-placeholder
+grid (256 per frame after Gemma's resampler), or the RLT scoring grid
+(196). Matched-budget comparison is on the encoder valid-position grid,
+since that is what `kr` and `kept_groups` measure.
+
+| Operator | Input | Output (per frame) | Free parameters | Cost class |
+|---|---|---|---|---|
+| `redundancy-topk` | RLT raw-patch run-length scores | top-K encoder positions by projected RLT score, K = `vision_tower_keep_rate * V` where V = `gemma_encoder_valid_positions_per_frame` for that row | `K` | tens of ms / item |
+| `static-floor` | uniform sub-grid index set on the encoder grid | a fixed set of F < K encoder positions sampled at a regular sub-grid stride (e.g., stride 4 gives F=64 on a 32x32 valid grid, but F=144 on a 48x48 valid grid) | `F`, sub-grid stride | zero (precomputable, position indices only) |
+| `endpoint-anchor` | frame indices | union of *all* encoder positions in the first-frame and last-frame; other frames default to `redundancy-topk` | `anchor frame indices` (default: 0 and N-1) | zero |
+| `identity-anchor` | frame indices | all encoder positions of the first frame at full resolution; other frames default to `redundancy-topk` | `anchor frame index` (default: 0) | zero |
+| `query-budget` (QuoTA-style) | per-frame relevance score | per-frame budget B^i = round(S_norm^i * total_K), then keep top-B^i encoder positions by `redundancy-topk` within frame | `scoring model`, `total_K` | one extra forward pass per frame for self-scoring (see Q2b cost) |
+| `repair-pass` | first-pass answer + uncertainty score | re-run with prompt-admission OFF or with `redundancy-topk` at higher K, only if uncertainty > threshold | `uncertainty threshold` | one extra prefill + decode for triggered items |
+
+**Composition rule.** For operators that act on every frame
+(`redundancy-topk`, `static-floor`), the default matched comparison is
+per-frame: cap the union at `K = vision_tower_keep_rate * V` for that
+frame. Example: if the current row reports V=1024 and `kr=0.5`, then
+K=512; if `static-floor` reserves F=64 positions, `redundancy-topk`
+receives `K_remaining = 448` positions from the complement. If the row
+reports V=2304, the corresponding K is 1152 and the floor size must be
+recomputed from the logged valid grid shape. **No double-counting**: if
+a position is in the static floor it is not eligible for the
+redundancy-topk budget.
+
+Endpoint/identity anchors are different because they deliberately spend
+more than K on selected frames. For those operators, use matched
+*video-level* budget accounting: total budget is `sum_i K_i` over all
+frames; an anchored frame debits V_i from that total; the remaining
+budget is allocated across non-anchor frames by `redundancy-topk` from
+the complement. Report endpoint/identity results separately from the
+strict per-frame-K table so reviewers can see which budget convention is
+being used.
+
+**Why the static-floor stride matters.** On a 32x32 encoder grid (V=1024):
+stride 2 yields F=256, stride 4 yields F=64, stride 8 yields F=16. On a
+48x48 encoder grid (V=2304), the same strides yield F=576, F=144, and
+F=36.
+Sub-grid stride controls how much of the visual budget is spent on
+guaranteed coverage versus redundancy-ranked. Q1 should sweep stride in
+{2, 4, 8} as a hyperparameter; a planner that wins at one stride but
+not others is overfit. (Encoder grid shape may differ across substrates;
+read `gemma_encoder_valid_positions_per_frame` from a current artifact
+before fixing strides for a new substrate.)
+
+**Why endpoint-anchor and identity-anchor are separate.** Endpoint-anchor
+spends positions on *both* ends of the video (helps "begin/end/first/last"
+queries). Identity-anchor spends positions only on the first frame (helps
+"what is the X" object identification queries). H1c predicts they recover
+*different* item sets — preregister this as the per-item-overlap test, not
+as aggregate accuracy.
+
+**Static-floor overflow.** If `F > K` for any frame (i.e., the chosen
+sub-grid stride reserves more positions than the per-frame budget
+allows), clip `F` to `K`, log the event as a per-row metadata field
+`static_floor_overflow=true`, and report the count of overflowed
+frames per cell in Q1 tables. Do *not* silently shrink `K` or drop the
+floor — that would change the matched-budget contract without
+disclosure. If overflow rate exceeds 10% of items in any cell, the
+stride is too coarse for the substrate and Q1 should not present that
+stride as a finalist.
+
+**Query-budget operator: integer-budget allocation.** The QuoTA-style
+output `B^i = round(S_norm^i * total_K)` is under-defined in three
+ways that affect comparability:
+
+1. **Sum preservation.** After per-frame rounding, `sum_i B^i` may not
+   equal `total_K`. Resolve by computing all `B^i` as
+   `floor(S_norm^i * total_K)`, then distributing the residual
+   `total_K - sum_i floor(...)` to the frames with the largest
+   fractional parts (largest-remainders / Hamilton method). This
+   preserves the global sum exactly and is deterministic.
+2. **Minimum allocation.** Some frames may receive `B^i = 0`. Pick one
+   discipline before Q2b smoke runs and document: either (i) min-zero
+   (a frame can be fully skipped) or (ii) min-one (every frame keeps
+   at least one position, e.g., the highest-RLT position). Min-one is
+   safer because it preserves a per-frame minimum invariant that
+   prompt-geometry assumes; preregister min-one unless smoke-test
+   measurements show it changes results materially.
+3. **Uniform-score fallback.** If all per-frame relevance scores
+   `S^i` are within a configurable epsilon of each other
+   (default eps=0.05), the QuoTA-style allocation degenerates to
+   uniform-K and the operator's "query-aware" signal is null for that
+   item. Detect, log as `query_budget_signal=null`, and fall back to
+   `redundancy-topk` for that item. Report the null-signal rate per
+   cell; if it exceeds 30% the scorer is providing no usable signal.
+
+**What is *not* an operator in the first paper.** Multi-resolution scaling,
+object-pair detection, learned policies, and per-token RLT-vs-saliency
+ensembling are deferred. Each adds a free parameter and an implementation
+risk. If the first paper needs them to win, the contribution is too narrow.
 
 ## Database Query Planning Analogy
 
@@ -328,19 +564,82 @@ Falsification: the structured planner recovers quality but loses E2E to a
 simpler policy such as higher fixed RLT K, fixed static coverage, or dense
 fallback after all costs are counted.
 
-### H5: The planner has a useful cost model
+### H5a: The planner has a useful cost model (no-repair version)
 
-A visual evidence planner should not be a bag of heuristics. It should predict
-which operator is worth paying for from measured decode, scorer, vision,
-prefill, generation, and repair costs, plus a rough expected-fidelity gain.
-The first version can be simple; it does not need a full Bayesian optimizer.
+A visual evidence planner should not be a bag of heuristics. It should
+predict which non-repair operator is worth paying for from measured
+decode, scorer, vision, prefill, and generation costs, plus a rough
+expected-fidelity gain. The first version can be simple; it does not
+need a full Bayesian optimizer.
 
-Accept if predicted E2E is within 5-10% of measured E2E across held-out plans
-and the chosen plan remains on the measured speed/fidelity frontier.
+**Concrete cost-model spec (first version, no repair term).**
 
-Falsification: substrate effects, generation-length covariance, or repair
-variance dominate enough that the cost model cannot rank plans better than a
-fixed policy.
+Per-plan predicted E2E is a linear regression:
+
+```
+predicted_e2e_ms =
+    beta_0
+  + beta_dec * mean_dense_decode_ms
+  + beta_vis * mean_dense_vision_ms * (1 - vision_reduction)
+  + beta_pre * mean_dense_prefill_ms * (1 - placeholder_reduction)
+  + beta_scr * scorer_cost_ms
+  + beta_gen * mean_dense_generate_ms
+```
+
+where:
+- `mean_dense_*` come from cell (a) of Q0b on the same item;
+- `vision_reduction` is the operator-determined per-frame compute reduction;
+- `placeholder_reduction` is the operator-determined prompt-admission
+  reduction;
+- `scorer_cost_ms` is operator-defined (zero for `static-floor` /
+  `endpoint-anchor` / `identity-anchor`; tens of ms for `redundancy-topk`;
+  one forward-pass per frame for `query-budget`).
+
+**Training rows.** Plan-level rows accumulate across Q0b
+(oracle/kr-sweep cells), Q1 (operator variants), and Q2 (scalar
+comparators). One row per (item, plan) pair. Hold out one full
+benchmark for validation; fit on the other two. Concrete row count
+depends on which Q1 operator variants and Q2 comparators land — name
+the held-out benchmark in the prereg, do not pre-quote a row count.
+
+**Acceptance gate.** The H5a cost model is useful if:
+
+1. predicted E2E is within +/- 10% of measured E2E on the held-out
+   benchmark (mean absolute percentage error);
+2. the cost-model-ranked top-3 plans for each query overlap >=2/3 with the
+   measured top-3 plans on held-out items.
+
+**Falsification.** Substrate effects (thermal, prefill_step_size variance)
+or generation-length covariance with operator dominate enough that the
+cost model cannot rank plans better than a fixed-policy baseline. If
+MAPE > 25% on held-out, drop the cost-model claim and demote H5a to a
+discussion section.
+
+**Scope note.** A learned (non-linear) cost model is deferred to
+follow-up work. The SIGMOD 2025 finding ("How Good are Learned Cost
+Models, Really?") is that traditional parametric models often beat
+learned ones in end-to-end query optimization; preregister the linear
+baseline as the primary version and only escalate to a learned model if
+the linear one materially fails.
+
+### H5b: Repair probability is calibrated (deferred)
+
+Once Q3c/Q5 produce repair-pass artifacts, extend the H5a regression
+with one term:
+
+```
+predicted_e2e_ms_with_repair = predicted_e2e_ms_h5a +
+    beta_rep * (P_repair * (mean_dense_prefill_ms + mean_dense_generate_ms))
+```
+
+and add a calibration acceptance gate:
+
+3. when the planner predicts repair fires for class X items at rate p,
+   observed repair rate on class X items is in [p - 0.1, p + 0.1].
+
+H5b is gated on Q3c/Q5 landing; H5a can be fitted and validated using
+Q0b/Q1/Q2 alone. Do not block the cost-model claim on repair data that
+does not exist yet.
 
 ## Candidate Experiments
 
@@ -366,30 +665,102 @@ appearance-under-motion, endpoint state, object relation, temporal order, or
 localized action. Falsify if failures are dominated by parse drift,
 non-determinism, or evaluator ambiguity.
 
-Resource estimate: analyzer-only, minutes on this machine.
+**Q0 also gates `identity-anchor`.** The operator assumes the queried
+entity is visible in frame 0. MVBench is explicitly designed to require
+multi-frame evidence (all 20 tasks; CVPR 2024, arXiv 2311.17005), so
+this assumption is *a priori* brittle. As part of Q0, manually inspect
+each `object_interaction` dev item and label whether the queried entity
+is visible in the first frame. Report the coverage rate. **Gate**: if
+first-frame entity coverage on `object_interaction` is below 60%, drop
+`identity-anchor` from the operator menu before Q1 starts; otherwise
+proceed. This is cheap (n=30 items, minutes of manual labeling) and
+prevents wasting a Q1 cell on a structurally broken operator.
+
+Resource estimate: analyzer-only plus ~30 minutes of manual frame-0
+labeling on `object_interaction` dev.
 
 #### Q0b: Harness gate and oracle-K probe
 
 Before any query-aware method, run a true dense-equivalence/oracle probe on the
-target buckets:
+target buckets. The probe is a 2x2 of (prompt-admission ON/OFF) x (C-VISION
+ON/OFF) plus a kr sweep on the ON/ON cell:
 
-- dense baseline;
-- composition path with placeholder admission disabled and C-VISION disabled;
-- RLT prompt admission with C-VISION full retention;
-- RLT C-VISION with prompt admission disabled;
-- full RLT at `kr=0.5/0.7/0.85/1.0`, where `kr=1.0` must prove both
-  `gemma_encoder_kept_per_frame == gemma_encoder_valid_positions_per_frame`
-  for C-VISION and no prompt-placeholder pruning for prompt admission.
+| Cell | prompt-admission | C-VISION | runner flags | runs today? |
+|---|---|---|---|---|
+| (a) dense-equivalent | OFF | OFF | `--prune-placeholders=none --vision-tower-keep-rate=1.0 --vision-tower-score-mode=magnitude` | yes (current dense arm: `run_novelty_pruning_gemma.py:702-704`) |
+| (b) admit ON / vision OFF | RLT-thresholded | OFF | `--prune-placeholders=rlt --vision-tower-keep-rate=1.0 --vision-tower-score-mode=magnitude` | yes (`run_novelty_pruning_gemma.py:689-700`) |
+| (c) admit OFF / vision ON | OFF | RLT-topk | `--prune-placeholders=none --vision-tower-keep-rate=0.5 --vision-tower-score-mode=rlt_topk` | yes at runner level (see note below) |
+| (d) admit ON / vision ON | RLT-thresholded | RLT-topk | current composition default | yes (`run_novelty_pruning_gemma.py:614-745`) |
+| (d) kr sweep | RLT-thresholded | kr in {0.5, 0.7, 0.85, 1.0} | as (d), vary `--vision-tower-keep-rate` | yes |
 
-Accept if the harness passes shape/schema/scatter equivalence and the oracle-K
-rows report explicit kept-position accounting. If `kr=1.0` recovers target
-failures, the first paper direction is bucket-aware budget scheduling, not
-static-detail planning. If `kr=1.0` does not recover after the accounting is
-proven, then static/detail/identity/endpoint operators become scientifically
-motivated.
+**Cell (c) is supported at the runner level today.** The C-VISION scorer
+prep at `run_novelty_pruning_gemma.py:614` runs whenever
+`vision_tower_keep_rate < 1.0` and `vision_tower_score_mode == "rlt_topk"`,
+*independent of* `prune_placeholders`. The `prune_placeholders="none"`
+branch at `run_novelty_pruning_gemma.py:702-704` then sets the
+placeholder keep-mask to all-ones (no admission pruning), but does not
+disable the C-VISION mask. Cell (c) requires no new runner mode.
 
-Resource estimate: small targeted slice first; run n>=30 per target bucket
-before making a bucket-level claim.
+The actual gap is at two higher layers:
+
+1. **Queue support.** `scripts/run_rlt_followup_queue.py` does not yet
+   have a flag/cell that emits this combination. Add a queue cell that
+   schedules the (`--prune-placeholders=none`, `--vision-tower-keep-rate=0.5`,
+   `--vision-tower-score-mode=rlt_topk`) artifact alongside the existing
+   composition cells.
+2. **Analyzer contract.** `scripts/analyze_gemma_full_composition.py`
+   currently accepts only one dense vs composed pairing
+   (dense: `prune_placeholders=none` AND `vision_tower_keep_rate>=1.0`;
+   composed: `prune_placeholders=rlt` AND `vision_tower_keep_rate<1.0`).
+   Expand the contract to accept a "C-VISION-only composed" arm
+   (`prune_placeholders=none` AND `vision_tower_keep_rate<1.0`) paired
+   with the same dense baseline. This is the cell-(c) row.
+
+Estimated cost: half a day for queue plumbing plus analyzer-contract
+expansion (no scorer or schema-version changes needed).
+
+**Oracle accounting.** The `kr=1.0` cells in (b) and (d) must prove
+`gemma_encoder_kept_per_frame == gemma_encoder_valid_positions_per_frame`
+per-row from the JSONL output (these fields exist today at
+`run_novelty_pruning_gemma.py:735-736` and `run_phase1_63G_gemma_track_b.py:904-905`).
+Cell (a) (and any `prune_placeholders=none` arm) must additionally prove
+that the placeholder keep-mask is all-ones. Current rows already expose
+the needed facts as metadata: `dense_placeholder_count`,
+`pruned_placeholder_count`, and `placeholder_prune_bypassed`. The cell
+(c) analyzer should assert `dense_placeholder_count ==
+pruned_placeholder_count` and `placeholder_prune_bypassed is true` for
+`prune_placeholders=none`. Optional aliases such as
+`placeholder_kept_per_item` and `placeholder_total_per_item` are allowed
+for readability, but they are not required for correctness and should not
+force a schema-version bump.
+
+**Decision rules.**
+
+- If cell (a) does not match dense baseline within paired bootstrap CI on
+  every target bucket, the harness is broken and no further claim stands.
+  Stop and fix.
+- If cell (d) at `kr=1.0` recovers all target failures within CI, the failure
+  is budget-bound and the first paper direction is bucket-aware budget
+  scheduling, not operator planning. Reframe the contribution.
+- If cell (b) at `kr=1.0` recovers target failures but cell (c) at
+  `kr=1.0` does not, the failure is C-VISION-bound (vision tower drops the
+  needed evidence regardless of admission). Static/detail operators are
+  motivated.
+- If cell (c) at `kr=1.0` recovers target failures but cell (b) at
+  `kr=1.0` does not, the failure is admission-bound (prompt-side RLT
+  threshold is too aggressive). The first method should be admission
+  scheduling, not C-VISION operators.
+- If both (b) and (c) at `kr=1.0` recover and only (d) fails, the failure is
+  *interaction* between admission and C-VISION pruning; this is the most
+  interesting case and motivates the full operator planner.
+- If neither (b), (c), nor (d) at `kr=1.0` recovers, the failure is
+  evidence-class-bound — no amount of the same scorer fixes it, and
+  query-aware operators are scientifically necessary.
+
+Resource estimate: a half-day of queue/analyzer code, then one targeted run
+of ~6 cells x 30 items per target bucket. Run n>=30 per target bucket before
+making any bucket-level claim; n=6 was the round-20 fragility warning, do
+not repeat it.
 
 #### Q1: Matched-budget operator ablation
 
@@ -439,18 +810,60 @@ any benchmark cells.
 #### Q2b: QuoTA-style query budget assignment
 
 QuoTA is too close to ignore. Build the cheapest faithful local approximation
-before claiming structured planning:
+before claiming structured planning. The approximation must satisfy QuoTA's
+three core mechanism properties so that QuoTA's authors cannot dismiss it:
+(i) query-conditioned per-frame scoring; (ii) scoring done by an LVLM (not
+CLIP); (iii) score-proportional budget assignment.
 
-- decompose the query into evidence needs using either lexical rules or a
-  frozen LVLM/text model;
-- assign frame-level or group-level token budgets before vision/decoder
-  interactions;
-- keep total valid-position K matched to the structured planner.
+**Recommended implementation: Gemma self-scoring (Option B).**
 
-Accept operator-level novelty only if the typed operator plan beats this
-query-budget baseline on paired fidelity or total cost. If QuoTA-style budget
-assignment matches the plan, the paper should become "query-budgeted C-VISION"
-or a VLMaxxing appendix.
+For each (item, frame) pair, query Gemma-4-E4B-IT-4bit with QuoTA's binary
+prompt:
+
+```
+Does this frame contain any information to answer the given query:
+{query}? A. Yes. B. No. Answer the letter directly.
+```
+
+Extract `S^i = P(token "A" | prompt, frame_i)` from the output logits.
+Normalize across frames: `S_norm^i = S^i / sum_j S^j`. Per-frame budget:
+`B^i = round(S_norm^i * total_K)`. Within each frame, keep the top-B^i
+positions ranked by `redundancy-topk` so the QuoTA arm and the structured
+arm differ only in *budget allocation across frames*, not in within-frame
+position choice.
+
+**Estimated cost: 8-12 hours** for: prompt construction; logit extraction
+hook in mlx-vlm; normalization and budget-to-position mapping; runner
+plumbing; smoke test.
+
+**Critical pre-implementation check.** mlx-vlm's generation API must
+expose per-token logprobs. If the API only returns sampled tokens, Option B
+requires a fork (~+1 day risk). Verify before committing: smoke-test
+extraction of `logprobs("A")` and `logprobs("B")` on a single (frame,
+question) pair before any benchmark cells run.
+
+**Why not CLIP (Option C).** The QuoTA paper's own ablation (Table 6)
+shows CLIP scoring underperforms their LVLM scorer by 1.9pp on Video-MME
+and explicitly identifies it as a strawman. A reviewer reading QuoTA will
+cite that ablation to dismiss a CLIP-based approximation. CLIP also adds a
+torch dependency we currently do not need.
+
+**Why not lexical rules.** Pure lexical rules on the query do not see any
+frame; they are temporal slot weighting, not query-conditioned visual
+scoring. QuoTA's authors would correctly say "this isn't a QuoTA
+approximation."
+
+**Fallback if Option B is blocked.** If mlx-vlm logprob extraction proves
+infeasible, build the lexical rule baseline anyway and label it explicitly:
+"query-conditioned temporal weighting (not LVLM scoring)." Do not call it
+QuoTA.
+
+**Gate.** Accept operator-level novelty only if the typed operator plan
+beats this query-budget baseline on paired fidelity *or* total cost (not
+both required, but the trade must be favorable). If QuoTA-style budget
+assignment matches the structured plan on the failure-class items at
+matched K and similar cost, the paper contribution is "query-budgeted
+C-VISION substrate" or a VLMaxxing appendix.
 
 #### Q3: Rule-based visual evidence planner
 
@@ -472,15 +885,47 @@ Resource estimate: local n=30 dev + n=30 holdout per benchmark, gated by Q1/Q2.
 #### Q3b: Active-perception baseline
 
 Active Video Perception (AVP) is the closest high-level prior: it explicitly
-runs a planner-observer-reflector loop and decides what/when/where to observe.
-If the query-aware branch survives Q1-Q3, implement a stripped-down AVP-like
-baseline or at least compare against its published cost/quality point. The
-distinction we need to prove is typed low-level evidence operators with
-measured per-operator cost, not merely iterative evidence seeking.
+runs a planner-observer-reflector loop and decides what/when/where to
+observe. The contribution-distinction we need to prove is typed low-level
+evidence operators with measured per-operator cost inside a frozen C-VISION
+runtime, not merely iterative evidence seeking.
 
-Accept a strong planner claim only if our method is cheaper or better on the
-same target regime than a reasonable AVP-style loop, or if the paper explicitly
-narrow-scopes itself to non-agentic first-pass VLM runtime routing.
+**Tiered approach (do not reimplement AVP unless forced to).**
+
+1. **Tier 1 (default): related-work positioning only.** AVP evaluates
+   on LVBench (long-video). Since Q4 drops LongVideoBench from our
+   transfer plan, there is no shared benchmark/protocol with AVP, so
+   AVP cannot serve as a matched-budget baseline. Position AVP as the
+   closest high-level prior in the related-work section, note the
+   absence of protocol overlap explicitly, and do *not* paste AVP's
+   reported numbers next to ours as if they were comparable. (If a
+   reviewer later requests a direct comparison, that escalates to
+   Tier 2 or Tier 3.)
+
+2. **Tier 2 (actual baseline): one-step active escalation inside our
+   substrate.** Implement a single-step escalation: (a) run cheap
+   first-pass with `redundancy-topk`, (b) on low-confidence outputs,
+   re-run *exactly once* with full prompt admission and a higher K. Do
+   not call this "AVP-mimic" — AVP is strictly iterative-until-converged
+   (confidence threshold τ_conf=0.7, max-round cap; verified arXiv
+   2512.05774), and a one-step degenerate case is not a faithful
+   reimplementation. Label the row "one-step active escalation
+   (`repair-pass` operator)" on the same MVBench/TempCompass manifests
+   we use for our typed-operator planner. This is the defensible
+   matched-protocol comparison against the active-perception line
+   without reimplementing AVP's reflector and confidence-scoring
+   modules.
+
+3. **Tier 3 (only if reviewer requires): full planner-observer-reflector
+   reimplementation.** This is months of work and a separate workshop
+   submission at best. Do not commit to Tier 3 unless rebuttal-pressure
+   makes it necessary.
+
+Accept a strong planner claim if Tier 2 leaves a defensible gap (typed
+operators with measured per-operator cost beats single-operator
+observe-more-pixels). If our Tier-2 mimic dominates the typed planner on
+both fidelity and cost, the paper should narrow to "an active-perception
+loop with a measured cost model" and drop the typed-operator framing.
 
 #### Q3c: Value-of-information / anytime policy
 
@@ -506,15 +951,48 @@ used to design the rules:
 
 - TempCompass for temporal aspect isolation, especially direction, order, and
   attribute-change;
-- LongVideoBench for long-context referred reasoning;
+- LongVideoBench only as an optional later stress test if storage and
+  ingestion are explicitly approved;
 - VideoMME and TOMATO as broad regression checks.
 
-Accept a standalone paper only if the planner transfers beyond one MVBench
-diagnostic bucket. If it does not transfer, keep the result as a focused
-VLMaxxing appendix or workshop paper.
+**What TempCompass transfer can and cannot claim.** TempCompass tests
+five temporal aspects: action, speed, direction, attribute_change, and
+event order (ACL 2024 Findings, arXiv 2403.00476). It is a
+temporal-isolation benchmark with no object-identity-binding or
+static-detail-floor tasks. Therefore TempCompass transfer can validate
+**redundancy-topk + endpoint-anchor** wins on temporal queries, but
+**cannot** validate `static-floor` or `identity-anchor` wins by itself.
+If the H1c story (identity binding) is core to the paper, TempCompass
+alone is insufficient transfer evidence. State this honestly in the
+paper: TempCompass evidence covers temporal aspects; static/identity
+claims rest on MVBench `moving_attribute` / `object_interaction` and on
+any future identity-binding benchmark we ingest. Do not generalize
+TempCompass wins into evidence for operator-classes it doesn't probe.
 
-Resource estimate: dataset ingestion may dominate; start with manifest smoke
-and n=10 pilot before any full run.
+**Ingestion prereq status (2026-05-10).**
+
+| Benchmark | Manifest exists? | Loader exists? | Ingest plan? | Estimated effort to first n=30 cell |
+|---|---|---|---|---|
+| TempCompass | no | no | yes (`research/experiments/2026/2026-04-16-phase-1_25-tempcompass-ingest.md`, preregistered, lower priority than 1.26/1.27/1.28) | 1-2 hours (manifest gen + loader hook); HF dataset pulls cleanly |
+| LongVideoBench | no | no | **none** | unknown — needs a fresh prereg, dataset is 50-150 GB, and storage path needs to be agreed |
+| VideoMME (regression) | yes (`videomme_combined_v1_n60.toml` + duration subsets) | yes | n/a | 0; reuse |
+| TOMATO (regression) | yes (`tomato_motion_dev_v2.toml` and friends) | yes | n/a | 0; reuse |
+
+**Recommendation.** Make TempCompass the first transfer target because it
+already has a preregistered ingest plan and the M3 16GB constraint is not
+threatened. Defer LongVideoBench until after TempCompass results are in,
+and only commit to it if the typed-operator claim survives Q1-Q3 cleanly
+on both MVBench dev and TempCompass — otherwise the LongVideoBench cost
+is not justified by the contribution at risk.
+
+Accept a standalone paper only if the planner transfers beyond one MVBench
+diagnostic bucket and beats fixed/random/QuoTA on TempCompass at matched
+K. If it does not transfer, keep the result as a focused VLMaxxing
+appendix or workshop paper.
+
+Resource estimate: TempCompass ingest 1-2 hours; per-bucket smoke
+n=10 then full n=30 if smoke passes. LongVideoBench is unbudgeted and
+should not be promised in the prereg.
 
 #### Q5: Repair and approximate-query framing
 
@@ -528,17 +1006,96 @@ Reject if repair is effectively dense fallback.
 
 #### Q6: Robustness and statistical discipline
 
-Before paper claims:
+Before any paper claim, lock the following preregistration block.
 
-- preregister one primary endpoint per experiment family;
-- control multiple comparisons with Holm-Bonferroni or a preregistered
-  primary/secondary hierarchy;
-- require n>=30 per target bucket for bucket-level claims;
-- keep dev-rule design and holdout evaluation separate with timestamped rule
-  files;
-- run adversarial paraphrases for query-classifier stability;
-- reject a planner if broad-regression benchmarks show Δacc below the
-  preregistered tolerance, even when target buckets improve.
+**Power reality at n=30.** Paired binary accuracy is bounded:
+|Δacc| ≤ p_d trivially, since Δacc = (b - c) / n where b + c is the
+discordant-pair count. So at low p_d, the test simply has no power for
+*any* effect — there is no "minimum detectable effect" because the
+mechanically possible Δacc range collapses. Continuous-Wald MDE
+approximations violate this discrete bound and should not be quoted at
+this n.
+
+The honest position is qualitative: at n=30, the paired-bootstrap CI
+half-width is empirically ~0.18 (from prior rounds), so only effects
+with |Δacc| > ~0.20 produce CIs that exclude zero. McNemar exact
+simulation can be substituted for a numeric MDE if a referee insists on
+one — preregister the simulation script (e.g., 10000 trials of paired
+binary draws under H0 and a range of H1) before quoting any specific
+threshold.
+
+**The primary inferential object is therefore the paired-bootstrap 95%
+CI, not NHST rejection.** Claims of operator superiority on n=30
+require either (a) CI excludes zero by a margin of at least 0.10, or
+(b) n is increased to 100+ on the target bucket for the primary
+contrast. The prereg must say which.
+
+**Primary endpoint per experiment family.**
+
+| Family | Primary endpoint | Pre-specified slice | n target |
+|---|---|---|---|
+| H1 (query→evidence mix) | structured-plan accuracy minus best fixed/random control | MVBench moving_attribute, dev | 30 (CI estimation) + 100 (CI rejection) on the winning operator |
+| H1c (identity binding) | identity-anchor recovery set vs static-floor recovery set, Fisher exact 2x2 | MVBench object_interaction, dev | 30 |
+| H4A (structure vs scalar) | structured-plan vs Q2b-QuoTA-mimic, paired Δacc | union of MVBench moving_attribute + object_interaction | 60 (pooled) |
+| H4B (total cost) | structured-plan vs higher-K RLT, ratio of (Δacc / Δ_E2E_ms) | per-benchmark pooled | 30 per benchmark |
+| H5a (cost model, no repair) | MAPE on held-out benchmark E2E predictions | one held-out benchmark of {MVBench, VideoMME, TOMATO} | plan-level ledger from Q0b-Q2 |
+| H5b (P_repair calibration) | calibration error on repair fire rate | gated on Q3c/Q5 landing | plan-level ledger from Q3c-Q5 |
+
+**Multiple-comparisons procedure.** Three independent confirmatory
+families, one per benchmark (MVBench, TOMATO, VideoMME).
+
+- Each family contains one primary contrast (best-operator vs dense
+  baseline on the designated primary bucket) plus secondary
+  operator-variant tests (family size <= 8 per benchmark).
+- *Within each family*: Holm-Bonferroni at alpha=0.05 over the primary
+  plus all secondaries (so the primary itself is part of the corrected
+  family, not exempt from it).
+- *Across families*: cross-family multiplicity is not corrected. With
+  three independent families at per-family alpha=0.05, the
+  per-experiment FWER inflation is bounded above by 1-(1-0.05)^3 ~=
+  0.143; this is the standard convention in clinical trials with
+  pre-specified independent confirmatory endpoints.
+- If a referee requires strict global FWER, fall back to Holm-Bonferroni
+  across all 3 x 8 = 24 tests at adjusted alpha = 0.05/24 ~= 0.0021 per
+  test. Preregister both options and report which one is in force.
+- Bucket-stratified secondary results inside each family are exploratory
+  and labeled as such; they carry no FWER guarantee.
+- Benjamini-Hochberg FDR at q=0.05 may be reported alongside as a
+  secondary discovery list.
+
+**Equivalence (TOST) for "structure ≈ scalar" failure mode.** Margin
+Δ_equiv = 0.10 (TOST at Δ_equiv = 0.05 is underpowered at n=30; that
+tighter bound is unachievable without n>200). Declare practical
+equivalence only if the 90% CI on (structured_acc - scalar_acc) lies
+entirely within [-0.10, +0.10]. Failure to reject at the tighter margin
+is *not* evidence of equivalence.
+
+**Set-overlap claims (H1c, rescue-set analyses).** Fisher exact on the
+2x2 of (rescued by X) x (rescued by Y). With n=30 and typical rescue
+counts of 3-7 items, expected cell counts are 2-5; chi-squared is
+invalid, and Fisher exact has very low power. Report exact p-value AND
+raw overlap count. Treat as descriptive at n_rescued < 10 per arm;
+formal claims require OR >= 4 with >=10 rescued items per arm.
+
+**Bootstrap procedure.** 2000 resamples, sample (sparse_i, dense_i)
+*pairs* with replacement preserving duplicates (no `set()` coercion —
+this team has been bitten by set-coercion shrinking CIs ~25-40%; lint
+the analyzer for it).
+
+**Discipline rules.**
+- Require n>=30 per target bucket for any bucket-level claim; n=6 was
+  the round-20 fragility warning.
+- Keep rule design and holdout evaluation separate with timestamped rule
+  files; rules edited after seeing holdout invalidate the holdout claim.
+- Rerun adversarial paraphrases for query-classifier stability:
+  rephrase 20% of queries semantically-equivalently and require
+  classifier output stability >= 90%.
+- Reject a planner if any broad-regression benchmark shows Δacc < -0.05
+  on its pooled accuracy with paired CI excluding zero, even when target
+  buckets improve.
+- Forbid post-hoc bucket selection. The primary buckets (moving_attribute
+  / object_interaction / direction / rotation / long / medium) are fixed
+  in this prereg.
 
 #### Cancellation tree
 
@@ -560,7 +1117,7 @@ flowchart TD
     M -- Yes --> O[Q3 rule planner dev+holdout]
     O --> P{Transfers to disjoint holdout?}
     P -- No --> Q[Workshop/diagnostic paper only]
-    P -- Yes --> R[Q4 transfer to TempCompass/LongVideoBench]
+    P -- Yes --> R[Q4 transfer to TempCompass first; LongVideoBench optional]
     R --> S{Transfers beyond MVBench?}
     S -- No --> T[VLMaxxing appendix or narrow workshop claim]
     S -- Yes --> U[Standalone visual evidence planning paper]
@@ -664,7 +1221,7 @@ The standalone paper is not "RLT, but query-aware." It is:
 
 Potential claims:
 
-1. Motion-only routing is a strong default but fails predictably on static
+1. Redundancy-first routing is a strong default but can fail on static
    attribute questions.
 2. A lightweight query planner can choose among motion, static, endpoint, and
    repair evidence plans.
@@ -692,6 +1249,183 @@ planner for frozen VLM runtimes.
   planning with measured answer-fidelity gates.
 - Track per-bucket results. Aggregate accuracy can hide the exact class the
   planner is supposed to repair.
+
+### Cross-validation discipline
+
+Round-20 dev artifacts have been inspected for the failure taxonomy that
+motivates this plan. **Dev is therefore burned for rule design.** Treat
+the existing dev manifests as *test* data going forward, and carve out a
+fresh "design slice" for any rule-tuning step.
+
+Recommended discipline:
+
+1. **Carve a `design_v1` manifest** for each target benchmark (MVBench,
+   TOMATO, VideoMME), disjoint from existing `dev_v1` and `holdout_v1`,
+   n=30 per target bucket. Sample with a fresh seed.
+2. **Rule design uses only `design_v1`.** Lexical rule lists, query
+   classifier thresholds, static-floor stride, repair-trigger threshold —
+   all tuned on design_v1 only.
+3. **`dev_v1` becomes the validation slice.** Run the frozen rule planner
+   on dev_v1; if it does not generalize from design_v1 to dev_v1, do not
+   evaluate on holdout_v1.
+4. **`holdout_v1` is touched once, at paper time.** Each touch of the
+   holdout consumes a "look budget"; the more times it is queried, the
+   weaker the generalization claim.
+5. **Timestamp the rule files.** A rule file modified after the
+   holdout_v1 evaluation must be treated as a new policy and re-validated
+   against a fresh holdout slice.
+
+This is non-negotiable. Round-19 discovered a per-bucket asymmetry by
+inspecting dev; if we then tune rules on the same dev, the asymmetry
+itself becomes a hyperparameter, and any "this generalizes" claim is
+illusory.
+
+## First Implementation Branch
+
+When the next branch starts, the goal is to get **Q0 → Q0b → Q1** to a
+publish-or-kill decision before any planner, repair, or cost-model work
+is implemented. Repair-pass (Q3c/Q5), AVP-mimic (Q3b Tier 2), QuoTA
+self-scoring (Q2b), and H5b are deliberately *not* on the first-branch
+critical path. The reason is that all four pull the work toward
+active-perception or learned-cost-model territory where AVP and SIGMOD
+priors are stronger; the standalone paper claim depends on operator
+planning *without* those modules.
+
+### Code changes for the first branch
+
+1. **Queue plumbing for Q0b cell (c).** Add a `--run-cvision-only`
+   (or similarly named) flag to `scripts/run_rlt_followup_queue.py`
+   that emits the `--prune-placeholders=none`,
+   `--vision-tower-keep-rate=0.5`, `--vision-tower-score-mode=rlt_topk`
+   combination paired against the existing dense baseline.
+2. **Analyzer contract expansion** in
+   `scripts/analyze_gemma_full_composition.py`: accept the
+   "C-VISION-only composed" arm
+   (`prune_placeholders=none` AND `vision_tower_keep_rate<1.0`) as a
+   valid composed arm against the same dense baseline. Update the
+   contract docstring; do not bump schema version.
+3. **Operator-plan metadata** in output JSONL (added by Q1 runner
+   plumbing, but the schema should be locked now):
+   `operator_plan` (string), `operator_budget_mode`
+   (per_frame or video_level), `floor_stride`, `anchor_frames`,
+   `query_budget_scores`, `random_seed`, `scorer_cost_ms`,
+   `static_floor_overflow`, and the two ledger columns below.
+
+### Mandatory ledger columns
+
+Every per-row JSONL output must include **both** ledgers as first-class
+metadata fields. Existing fields are noted in parentheses; missing fields
+must be added by the first-branch runner plumbing:
+
+| Ledger | Required fields | Today? |
+|---|---|---|
+| Placeholder admission | `dense_placeholder_count`, `pruned_placeholder_count`, `placeholder_prune_bypassed`, `placeholder_reduction` (derived = 1 - pruned/dense) | first three exist (`run_novelty_pruning_gemma.py:771-773`); `placeholder_reduction` is derived in analyzer |
+| Encoder positions | `gemma_encoder_valid_positions_per_frame`, `gemma_encoder_kept_per_frame`, `vision_reduction` (derived = 1 - kept/valid, per frame, then averaged) | exist (`run_novelty_pruning_gemma.py:735-736`, `run_phase1_63G_gemma_track_b.py:904-905`) |
+| Timing | `scorer_prepare_ms`, `scorer_keep_mask_ms`, `multimodal_prefill_ms`, `vision_excluding_scorer_ms`, `decode_ms`, `text_generation_ms`, `end_to_end_ms` | exist |
+| Operator | `operator_plan`, `operator_budget_mode`, `floor_stride`, `anchor_frames`, `query_budget_scores`, `random_seed`, `static_floor_overflow` | new in Q1 schema |
+
+A row missing any field in rows 1-3 above must be flagged invalid by the
+analyzer. The two-ledger separation is non-negotiable: a plan that
+reduces placeholders but not encoder compute is *not* equivalent to a
+plan that reduces encoder compute but not placeholders, even at the
+same nominal `K`. Conflating them is one of the field's recurring
+reviewer-bait errors.
+
+### Two presentation tables (Q1 onward)
+
+All Q1/Q2/Q3 result tables must be presented as **two parallel tables**,
+one per matched-budget convention:
+
+- **Strict per-frame-K table**: includes `redundancy-topk`,
+  `static-floor`, `redundancy-topk + static-floor`, fixed uniform
+  coverage, random valid-position coverage, duplication-aware coverage,
+  `query-budget` (QuoTA-style). All operators here debit budget per
+  frame.
+- **Video-level-budget table**: includes `endpoint-anchor`,
+  `identity-anchor`, and any other operator that spends >K on one frame
+  by debiting from the global budget. Compared on the same total
+  valid-position count summed across frames, not per-frame.
+
+Reviewer-facing figures may overlay both onto one E2E-vs-accuracy
+frontier plot, but the underlying tables must be separate and labeled.
+Mixing the two without disclosure is a "your anchors are getting free
+detail" objection waiting to happen.
+
+### Smoke tests before any Q1 cell runs
+
+The following six smoke tests must pass before any matched-budget
+operator ablation is run. All are small (single-item or per-frame
+arithmetic), all are deterministic, and all should be wired as
+`pytest` cases under `tests/` or as a single `scripts/smoke_q0b.py`
+gate script.
+
+1. **Dense-equivalence smoke.** Cell (a) at kr=1.0, n=1 item:
+   `pruned_placeholder_count == dense_placeholder_count`,
+   `placeholder_prune_bypassed == true`,
+   `kept_groups_per_frame == valid_positions_per_frame`. Compare the
+   generated answer to the dense reference: must be identical.
+2. **Placeholder-bypass smoke.** With `--prune-placeholders=none`,
+   `placeholder_prune_bypassed` must be true and
+   `pruned_placeholder_count == dense_placeholder_count` on every row.
+3. **No-double-counting smoke.** Synthetic test on a 32x32 valid grid:
+   construct `static-floor` at stride 4 (F=64) and
+   `redundancy-topk` with K=448 from the complement of the floor set.
+   Assert `floor ∩ topk == ∅` and `|floor ∪ topk| == 512`.
+4. **Stride arithmetic smoke.** For `V=1024` (32x32 grid) and
+   `V=2304` (48x48 grid), stride={2,4,8} must yield the static-floor
+   sizes listed in the operator-definitions table.
+   Refuse to run if grid shape isn't readable from the row.
+5. **Anchor-accounting smoke.** Construct an `endpoint-anchor` plan
+   with 8 frames, anchored to frames 0 and 7 at V=1024 each. Assert
+   the video-level debit (2*1024 = 2048) plus the remaining per-frame
+   budget (6 frames * K_remaining) equals the declared
+   `total_valid_positions` budget. Assert no per-frame K is negative.
+6. **Random reproducibility smoke.** With a fixed seed, two runs of
+   random valid-position coverage must produce identical kept-position
+   sets on every row. Multi-seed runs must produce *different*
+   kept-position sets across seeds. (Catches accidental
+   pseudo-randomness or seed-ignored code paths.)
+
+A failure in any of these six should block Q1 from starting until
+fixed. They are cheap to write and have very high diagnostic value.
+
+## Risk Register
+
+For each Q in the experimental tree, the most likely failure mode and
+its Plan B. The planning standard is "what kills this experiment?" not
+"what makes it succeed?"
+
+| Q | Most likely failure | Probability | Plan B |
+|---|---|---|---|
+| Q0 | Round-20 artifacts lack per-item C-VISION kept-position accounting; failure clustering inconclusive | Medium | Re-run a small (n=12 per bucket) Q0b cell first to populate the missing fields; defer Q0 taxonomy until Q0b lands |
+| Q0 (identity-anchor gate) | First-frame entity coverage <60% on MVBench `object_interaction` items; identity-anchor structurally broken | Medium-high | Drop `identity-anchor` from the operator menu before Q1; replace any identity-binding hypothesis with "queried-entity-bearing frame anchor" once such a frame can be cheaply identified |
+| Q0b | Cell-(c) implementation in `run_novelty_pruning_gemma.py` interacts badly with the prefill_step_size=1024 substrate fix; wrong kept-position accounting | Low-medium | Run cell (a) and cell (d) at kr=1.0 first as sanity checks; refuse to interpret cell (c) until accounting fields reconcile |
+| Q1 | Fixed/random/duplication coverage matches the structured plan at matched K | Medium-high | This is a *paper-killer for the standalone* but converts cleanly to a VLMaxxing appendix on "matched-budget coverage as a strong baseline." Do not pretend it's a planner win |
+| Q2 / Q2b | mlx-vlm does not expose per-token logprobs; QuoTA self-scoring blocked | Medium | Tier down to lexical-rule baseline (label honestly: "query-conditioned temporal weighting, not LVLM scoring"); paper claim narrows to "structured beats lexical" |
+| Q3 | Lexical rule classifier does not generalize from design_v1 to dev_v1 (overfits trigger words) | Medium-high | Substitute a small frozen classifier (Gemma text-only call), or narrow the rule taxonomy to fewer classes |
+| Q3b (AVP) | Related-work framing overstates comparability to AVP despite no shared benchmark/protocol | Low | Keep AVP numbers in related work only; if a direct challenge arises, run the Tier-2 AVP-mimic on our manifests instead of comparing against AVP's published LVBench rows |
+| Q3c (VOI/anytime) | Repair-trigger uncertainty estimate is uncalibrated; repair fires nearly always | Medium | If repair fires >40% of items, drop the operator from the planner and report it only as a discussion-section ablation |
+| Q4 (transfer) | TempCompass ingest blocks on dataset access or schema drift | Low | Switch the transfer claim to ActivityNet or NExT-QA (existing video corpora with overlapping query types); tighten paper claim to "transfers to one TempCompass-class benchmark" |
+| Q4 (LongVideoBench) | Dataset is 50-150 GB, M3 16GB cannot host without offloading | High | Drop LongVideoBench; do not promise it in the prereg |
+| Q5 (repair) | Cost of the extra prefill consumes the E2E gain on most repaired items | High | Restrict repair to items where uncertainty signal exceeds a high threshold; if even then it loses E2E, drop repair from the paper |
+| Q6 (statistics) | Holm-corrected primary tests do not survive at alpha=0.05; only directional trends found | Medium | Frame the paper as estimation-with-CI rather than rejection; explicitly state the underpowered nature of bucket-level claims |
+
+### Hard "stop the project" conditions
+
+These are not tradeoffs — if they trigger, the standalone-paper path is
+dead and the work becomes a VLMaxxing appendix:
+
+1. Q0b cell (a) does not match dense baseline within paired CI. The
+   harness is broken and any "operator wins" claim is meaningless.
+2. Q0b cell (d) at kr=1.0 recovers all target failures within CI. The
+   failure is budget-bound; reframe as bucket-aware budget scheduling.
+3. Q1 winner is fixed-uniform or random coverage. The pruning-critique
+   literature predicts this; honor the prediction.
+4. Q2b QuoTA-mimic matches the structured plan on both fidelity AND
+   total cost. The contribution collapses to "a query-budget signal
+   is enough."
+5. Q3 design→dev generalization gap exceeds the design→dev gap of a
+   global non-query-aware policy. The query-conditioning is overfitting.
 
 ## Literature Starting Points
 
