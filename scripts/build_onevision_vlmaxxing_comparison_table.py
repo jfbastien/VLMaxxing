@@ -175,9 +175,9 @@ ROWS = (
             "onevision_vlmaxxing_plan/ov6_track_b_statistical_audit.json"
         ),
         planned_gate=(
-            "next gate is Gemma codec-grid wiring plus M5/Qwen broader runs only "
-            "after CPU geometry checks; random baseline needs multi-seed before "
-            "paper-facing negative claims about magnitude_norm"
+            "next gate is Gemma smoke with pre-pool codec-grid geometry; random "
+            "baseline needs multi-seed before paper-facing negative claims about "
+            "magnitude_norm; M5 is for broader confirmation only after M3 gates"
         ),
         artifact_or_source="OV-6 Qwen M3 artifacts and statistical audit",
     ),
@@ -211,14 +211,15 @@ ROWS = (
         headline_numeric=(
             "OV-8 accounting with Qwen codec_novel_coded kr=0.7/layer=2 first query: "
             "model-side sparse first query is 33.3s vs dense 38.7s; including current "
-            "PyAV extraction it is 52.1s. With existing C-PERSIST horizon-50 followups, "
-            "setup-inclusive speedups remain positive by Q>=2 under included extraction "
-            "for adaptive_post_q2/refresh10, but this is not a live combined run."
+            "PyAV extraction it is 52.1s; first-query correctness drift is 12/57 versus "
+            "dense. With existing C-PERSIST horizon-50 followups, setup-inclusive "
+            "speedups remain positive by Q>=2 under included extraction for "
+            "adaptive_post_q2/refresh10, but this is not a live combined run."
         ),
         target_to_beat=(
-            "live combined runtime only after artifact-level accounting plus paired "
-            "first-query fidelity justify a fresh protocol; keep included/excluded "
-            "codec-extraction denominators separate"
+            "live combined runtime only after a fidelity-clean first-query sparse cell "
+            "or a preregistered accuracy/speed trade-off justifies a fresh protocol; "
+            "keep included/excluded codec-extraction denominators separate"
         ),
         e2e_policy="only report measured E2E when Track B backend skips real work",
         local_reproduction=(

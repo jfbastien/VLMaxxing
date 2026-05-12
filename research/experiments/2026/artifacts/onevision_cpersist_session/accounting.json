@@ -3,6 +3,15 @@
   "cpersist_source": "research/experiments/2026/artifacts/phase1_55L_many_turn_cpersist/summary.json",
   "dense_first_query_ms": 38710.86412808772,
   "dense_first_query_source": "research/experiments/2026/artifacts/phase1_51V_ov6_n57/dense/summary.json",
+  "first_query_pairing": {
+    "choice_drift": 12,
+    "correctness_drift": 12,
+    "dense_parse_failures": 0,
+    "n": 57,
+    "sparse_correct_dense_wrong": 4,
+    "sparse_parse_failures": 0,
+    "sparse_wrong_dense_correct": 8
+  },
   "guardrails": [
     "This is not a live combined session run.",
     "Do not multiply OV-6 and C-PERSIST speedup ratios.",

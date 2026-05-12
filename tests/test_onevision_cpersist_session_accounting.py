@@ -11,11 +11,28 @@ def _write_summary(path: Path, payload: dict[str, object]) -> None:
     (path / "summary.json").write_text(json.dumps(payload) + "\n")
 
 
+def _write_results(path: Path, rows: list[tuple[str, bool, int]]) -> None:
+    with (path / "results.jsonl").open("w") as handle:
+        for item_id, correct, choice_index in rows:
+            handle.write(
+                json.dumps(
+                    {
+                        "item_id": item_id,
+                        "correct": correct,
+                        "parse_failure": False,
+                        "choice_index": choice_index,
+                    }
+                )
+                + "\n"
+            )
+
+
 def test_onevision_cpersist_accounting_reports_codec_inclusion_modes(tmp_path: Path) -> None:
     dense = tmp_path / "dense"
     sparse = tmp_path / "sparse"
     cpersist = tmp_path / "cpersist.json"
     _write_summary(dense, {"mean_dense_end_to_end_ms": 100.0})
+    _write_results(dense, [("a", True, 0), ("b", False, 1)])
     _write_summary(
         sparse,
         {
@@ -23,6 +40,7 @@ def test_onevision_cpersist_accounting_reports_codec_inclusion_modes(tmp_path: P
             "codec_extract_mean_s_per_item": 0.05,
         },
     )
+    _write_results(sparse, [("a", False, 1), ("b", True, 1)])
     cpersist.write_text(
         json.dumps(
             {
@@ -53,6 +71,10 @@ def test_onevision_cpersist_accounting_reports_codec_inclusion_modes(tmp_path: P
 
     assert payload["sparse_first_query_ms_excluding_codec_extract"] == 70.0
     assert payload["sparse_first_query_ms_including_current_pyav_extract"] == 120.0
+    assert payload["first_query_pairing"]["choice_drift"] == 1
+    assert payload["first_query_pairing"]["correctness_drift"] == 2
+    assert payload["first_query_pairing"]["sparse_correct_dense_wrong"] == 1
+    assert payload["first_query_pairing"]["sparse_wrong_dense_correct"] == 1
     rows = {row["codec_extraction_policy"]: row for row in payload["rows"]}
     excluded_q2 = rows["excluded_model_side"]["session_curve"][1]
     included_q2 = rows["included_current_pyav"]["session_curve"][1]

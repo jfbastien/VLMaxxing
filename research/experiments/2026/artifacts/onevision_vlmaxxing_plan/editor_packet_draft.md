@@ -18,9 +18,10 @@ OV-6 Track B complete (smoke + N=57 replication + keep-rate sweep + layer sweep)
 | codec_residual kr=0.5 | 0.386 | 5298 | 33729 | 19.30 |
 
 **At N=57, the ordering inverted from the N=10 smoke.** Uniform_random is now the
-best pruner (0.491), magnitude_norm drops below random to 0.421, and codec_residual
-is the worst at 0.386. None of the importance scorers beats random at kr=0.5 / layer=2
-on the broader N. The "structured magnitude pruning earns its keep over random"
+best pruner by point estimate (0.491), magnitude_norm drops below random to 0.421,
+and codec_residual is the worst at 0.386. None of the importance scorers exceeds
+random by point estimate at kr=0.5 / layer=2 on the broader N. The "structured
+magnitude pruning earns its keep over random"
 narrative does not survive the broader manifest.
 
 The codec arms are the FASTEST pruners by end-to-end (codec_motion 31.1 s/item,
@@ -101,7 +102,7 @@ or precomputed.
 **codec_residual at deep prune layer exactly ties magnitude_norm at the broader N.**
 Both land 31/57 = 0.544, with balanced paired discordants (6 fixes / 6 breaks,
 McNemar `p=1.0`). The N=10 layer sweep suggested a monotonic residual-with-depth
-curve; the N=57 promotion confirms the layer-8 endpoint tie, not the full curve.
+curve; the N=57 promotion supports the layer-8 endpoint tie, not the full curve.
 
 ## OV-6 bottom line
 
@@ -113,10 +114,14 @@ The strongest claim, confirmed at N=57:
 1. At kr=0.7 / layer=2 / N=57, `codec_novel_coded` is the best tested sparse arm
    by point estimate: 0.614 versus 0.544 for magnitude_norm and 0.684 for dense.
    All three codec sources exceed magnitude_norm by point estimate, but paired
-   tests remain inconclusive.
+   tests remain inconclusive. This is the concrete deployment hook: decoder-native
+   H.264 metadata is a plausible sparse-vision ranking signal, but the current
+   PyAV side path costs about 19 s/item and must be precomputed or integrated into
+   the decoder before this becomes an end-to-end wall-clock win.
 
 2. At kr=0.5 / layer=8 / N=57, **codec_residual exactly ties magnitude_norm**
-   (both at 0.544), confirming the N=10 monotonic-climb-with-depth finding.
+   (both at 0.544), supporting the promoted layer-8 endpoint from the N=10 sweep
+   but not independently confirming the full monotonic-with-depth curve.
 
 The kr=0.5 / layer=2 smoke claim "codec doesn't transfer to Track B" was
 operating-point-specific. The fuller picture:
@@ -124,7 +129,8 @@ operating-point-specific. The fuller picture:
 - At aggressive pruning (kr=0.5 / layer=2), magnitude_norm is not a robust baseline:
   uniform_random, codec_motion, and codec_novel_coded all exceed it by point
   estimate at N=57, but none earns a paired significance gate.
-- At kr=0.7 the three codec arms beat magnitude_norm; codec_novel_coded by 7pp.
+- At kr=0.7 all three codec arms exceed magnitude_norm by point estimate;
+  codec_novel_coded by 7pp.
 - At deep prune layer (l=8) codec_residual climbs to tie magnitude_norm.
 - The right codec source is operating-point-dependent: novel_coded works at mild
   prune, residual works at deep layer, motion is consistently the worst codec
@@ -144,9 +150,11 @@ preserving the answer when reusing stable state. Track B wins require importance
 information the codec sometimes carries (residual at deep layer, novel_coded at
 mild prune) and sometimes does not.
 
-## Bottom Line
+The frozen-backend boundary identified here motivates a trained sparse-token
+interface: this is the gap OneVision-Encoder's training-time contribution targets
+and VLMaxxing's runtime-only framing intentionally leaves open.
 
-## Bottom Line
+## OV-3 Bottom Line
 
 The final OV-3 result is a bounded positive Track A signal, not an end-to-end
 systems result.
@@ -239,6 +247,12 @@ Use a sober version:
 > kr=0.7/layer=2 by point estimate, but the paired test is inconclusive and
 > current PyAV extraction erases model-side wall-clock savings.
 
+The results are the story: codec metadata helps as a refresh oracle in Track A,
+is a bounded ranking candidate in Track B, and composes with C-PERSIST only as
+setup-inclusive session accounting unless a live combined protocol is run. The
+denominator discipline keeps those results honest; it is not the headline by
+itself.
+
 Avoid stronger language:
 
 - Do not say "free" without qualifying that our PyAV path re-decodes and costs about
@@ -269,9 +283,10 @@ signals more cheaply, but that is a systems hypothesis until measured.
    Artifact-level accounting is now available at
    `research/experiments/2026/artifacts/onevision_cpersist_session/accounting.json`.
    It uses two denominators: model-side first-query E2E excluding extraction, and
-   conservative first-query E2E including current PyAV extraction. Treat it as
-   accounting only; a fresh model-backed session run needs a separate preregistered
-   protocol.
+   conservative first-query E2E including current PyAV extraction. The accounting
+   now records 12/57 first-query choice/correctness drift versus dense, so treat it
+   as accounting only; a fresh model-backed session run needs either a fidelity-clean
+   first-query cell or an explicit preregistered accuracy/speed trade-off.
 
 3. **TOMATO motion replication**
    Tests whether the codec signal survives outside VideoMME short.
