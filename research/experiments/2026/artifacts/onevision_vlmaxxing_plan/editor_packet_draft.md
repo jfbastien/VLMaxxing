@@ -300,6 +300,108 @@ signals more cheaply, but that is a systems hypothesis until measured.
    Useful but secondary. It tightens the dense instability caveat; it does not replace
    Track B.
 
+## Follow-up Sweep (Preregistered, 4 Phases)
+
+A 14-hour back-to-back MLX sweep ran the four preregistered controls on M3.
+All four phases completed; all four preregistered gates were met.
+
+### Phase 1: Qwen random multi-seed (OV-6 robustness)
+
+Setup: Qwen 2.5-VL-7B-4bit, VideoMME-short N=57, kr=0.5 / layer=2, frame=8.
+Tests whether the OV-6 "uniform_random beats magnitude_norm" inversion is
+seed-stable. Magnitude baseline: 24/57 = 0.421.
+
+| seed | random acc | gap vs mag | paired b/c | McNemar exact p |
+|---:|---:|---:|---:|---:|
+| 1   | 0.544 (31/57) | +12.3 pp | 10/3 | 0.0923 |
+| 7   | 0.509 (29/57) | +8.8 pp  | 8/3  | 0.2266 |
+| 42  | 0.491 (28/57) | +7.0 pp  | 8/4  | 0.3877 |
+| 100 | 0.509 (29/57) | +8.8 pp  | 9/4  | 0.2668 |
+| mean| 0.513         | +9.2 pp  | -    | -      |
+
+Preregistered gate (>=3/4 seeds random >= magnitude): **4/4 satisfied**, no
+falsifying seed. The inversion is seed-stable.
+
+### Phase 2: Gemma cross-family codec-grid smoke
+
+Setup: Gemma 4 E4B + SigLIP, VideoMME-short N=10, kr=0.70 / layer=2,
+pre-pool 48x48 patch grid (encoder length 2520 with [-1,-1] padding
+excluded from pruning). Paired vs magnitude_norm.
+
+| arm | acc | kr | paired b/c |
+|---|---:|---:|---:|
+| dense              | 0.500 | 1.00 | -   |
+| magnitude_norm     | 0.400 | 0.70 | -   |
+| uniform_random     | 0.300 | 0.70 | 0/1 |
+| codec_novel_coded  | 0.600 | 0.70 | 3/1 |
+| codec_motion       | 0.600 | 0.70 | 3/1 |
+| codec_residual     | 0.500 | 0.70 | 2/1 |
+
+Preregistered smoke gate (codec_novel_coded >= magnitude on Gemma):
+**satisfied**. All three codec sources at least match magnitude by point
+estimate; novel_coded and motion both add 3 paired wins for 1 loss.
+Cross-family codec-grid wiring works. N=10 yields no statistical claim;
+contribution is qualitative transfer.
+
+### Phase 3: TOMATO motion replication (boundary)
+
+Setup: Qwen 2.5-VL-7B-4bit, TOMATO motion-dev v2 N=30, kr=0.70 / layer=2.
+Cross-benchmark stress test on motion-heavy items where codec scores
+should have the best chance to differentiate.
+
+| arm | acc | vs mag b/c | vs dense b/c | E2E ms |
+|---|---:|---:|---:|---:|
+| dense              | 0.267 | 5/1 | -   | 46000 |
+| magnitude_norm     | 0.133 | -   | 1/5 | 34676 |
+| uniform_random     | 0.133 | 0/0 | 1/5 | 39991 |
+| codec_novel_coded  | 0.167 | 2/1 | 1/4 | 45877 |
+| codec_motion       | 0.167 | 2/1 | 2/5 | 40095 |
+| codec_residual     | 0.133 | 0/0 | 1/5 | 39590 |
+
+Magnitude prune halves dense accuracy (0.267 -> 0.133) on TOMATO motion at
+kr=0.69. Codec_novel_coded and codec_motion edge magnitude by +1 item but
+remain at chance floor. Honest boundary: codec scores do not rescue motion
+at this prune rate / frame budget. Wall-clock with codec extract overhead
+nearly cancels prune savings on novel_coded (45.9s vs dense 46.0s); the
+codec story requires session-level amortization, not per-query savings.
+
+### Phase 4: OV-3 pooled calibration sensitivity (Track A)
+
+Setup: Qwen 2.5-VL-7B-4bit, VideoMME-short N=57, **pooled** (not per-item)
+calibration thresholds. Tests whether the refresh oracle still tracks dense
+without bespoke per-item threshold fitting.
+
+| source | codec acc | dense acc | codec->dense | reuse_ratio |
+|---|---:|---:|---:|---:|
+| novel_coded | 0.6842 | 0.6667 | 0.9825 | 0.1062 |
+| motion      | 0.6842 | 0.6667 | 0.9825 | 0.1076 |
+| residual    | 0.6842 | 0.6667 | 0.9825 | 0.1065 |
+| fused       | 0.6667 | 0.6667 | 0.9649 | 0.1093 |
+
+Wilson 95% lower bound on codec_dense_agreement: 0.91 (single sources),
+0.88 (fused). Preregistered gate (Wilson lower >= 0.80): **all four
+sources pass**. Three single sources are bit-identical on accuracy and
+agreement -- pooled thresholds collapse score-source choice. Pick one
+source for production. Fused trails by one item (55/57 vs 56/57) and is
+not preferred.
+
+## Bottom Line After the Follow-up Sweep
+
+The four-phase sweep tightens two claims and bounds a third:
+
+1. **Track B OV-6 magnitude-prior failure is robust.** Random beats
+   magnitude on 4/4 seeds at kr=0.5/layer=2 on Qwen, and codec_novel_coded
+   beats magnitude on Gemma at the smoke gate. The "obvious heuristic"
+   (magnitude_norm) is not the right baseline at moderate prune rates.
+2. **Track A refresh oracle is calibration-robust.** Pooled thresholds
+   give Wilson-lower 0.91 codec->dense agreement, with ~10.6 - 10.9%
+   active-frame reuse. Production deployment doesn't need per-item
+   threshold fitting.
+3. **Motion-heavy benchmarks at frame=8 / kr=0.69 are headroom-limited.**
+   No prune scheme escapes the chance floor; codec scores edge magnitude
+   by one item. The codec advantage does not generalize to TOMATO motion
+   at this operating point.
+
 ## Artifact Pointers
 
 - N=57 comparison:
@@ -311,3 +413,11 @@ signals more cheaply, but that is a systems hypothesis until measured.
 - OV-1 visual artifacts:
   `research/experiments/2026/artifacts/onevision_vlmaxxing_visuals/`
   and `research/experiments/2026/artifacts/onevision_vlmaxxing_explainer_videos/`
+- Phase 1 multi-seed audit:
+  `research/experiments/2026/artifacts/phase1_51V_ov6_random_multiseed/random_multiseed_summary.md`
+- Phase 2 Gemma smoke:
+  `research/experiments/2026/artifacts/phase1_63G_ov6_gemma_codec_smoke/`
+- Phase 3 TOMATO motion:
+  `research/experiments/2026/artifacts/phase1_51V_ov6_tomato_motion_kr070_l2/`
+- Phase 4 pooled calibration:
+  `research/experiments/2026/artifacts/phase1_29_onevision_n57_pooled_calibration/`
