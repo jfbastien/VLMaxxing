@@ -143,25 +143,28 @@
     },
     {
       "artifacts": [
-        "research/experiments/2026/artifacts/onevision_track_b_sparse/"
+        "research/experiments/2026/artifacts/phase1_51V_ov6_n57/",
+        "research/experiments/2026/artifacts/phase1_51V_ov6_n57_kr070_l2/",
+        "research/experiments/2026/artifacts/phase1_51V_ov6_n57_kr050_l8/",
+        "research/experiments/2026/artifacts/onevision_vlmaxxing_plan/ov6_track_b_statistical_audit.json"
       ],
       "commands": [
-        "uv run python scripts/run_phase1_51V.py --score-mode codec_grid --codec-score-source novel_coded <smoke args>",
-        "uv run python scripts/run_phase1_51V.py --score-mode codec_grid --codec-score-source motion <smoke args>",
-        "M5 only after smoke: broaden Qwen 8f; run 16f only if 8f gates; run 32f only if 16f gates",
-        "uv run python scripts/run_phase1_63G_gemma_track_b.py <onevision-allocator args>"
+        "DONE: scripts/run_ov6_full_sweep.sh",
+        "DONE: scripts/run_ov6_n57_promotions.sh",
+        "uv run python scripts/analyze_ov6_track_b.py",
+        "NEXT: scripts/run_ov6_gemma_codec_smoke.sh"
       ],
-      "compute_lane": "M3 smoke allowed when free; M5 128GB broad sweep only after M3 8f alignment and fidelity gates; no concurrent model jobs",
-      "defer_until": "after OV-3 N=57 review; before OV-8",
-      "eta_m3": "2-4 hours coding plus 1-2 hours for an 8f smoke; broad sweeps not recommended",
-      "eta_m5": "8-16 hours Qwen broader sweep after M3 smoke gates; +6-12 hours Gemma only if Qwen gates",
-      "hypothesis": "The OV-3 Track A signal can only become a systems result if the same codec source can drive real vision-stage pruning without losing fidelity. Simple codec sources should be tested before weighted fusion.",
+      "compute_lane": "Qwen M3 runs complete; Gemma CPU wiring complete; next is one Gemma model job at a time; M5 only for broader preregistered confirmation",
+      "defer_until": "Qwen complete; Gemma smoke depends on machine availability",
+      "eta_m3": "Gemma one-item/short smoke 1-2 hours; no broad M3 sweeps unless specifically approved",
+      "eta_m5": "Gemma N=57 or Qwen cross-benchmark confirmation 6-12 hours per focused cell after M3 smoke gates",
+      "hypothesis": "The OV-3 Track A signal can become a systems result only at operating points where codec score grids preserve sparse-vision fidelity. Qwen shows bounded point-estimate Track B evidence, not a broad net wall-clock speedup after current PyAV extraction.",
       "question": "Can OneVision-style allocation improve real sparse vision work skipped?",
       "requires_nvidia": false,
-      "setup_effort": "requires separate sparse-tower scorer wiring: codec-grid construction, post-window group alignment, provenance fields, and CPU alignment tests",
-      "skip_rule": "If the first Qwen 8f smoke fails fidelity at all keep-rates, skip Gemma and treat the result as evidence that the Track A codec oracle does not transfer to frozen Track B sparse execution.",
+      "setup_effort": "Qwen and Gemma codec-grid CPU wiring complete; Gemma still needs GPU smoke before broader use",
+      "skip_rule": "If Gemma one-item/short smoke shows geometry mismatch, stale codec-grid reuse, or paired format/fidelity regressions beyond the existing Gemma Track B caveat, stop Gemma and keep OV-6 as Qwen-only bounded evidence.",
       "stage": "OV-6",
-      "success_gate": "At matched keep-rate, preserve paired correctness/format against dense and improve measured vision-stage or end-to-end timing over the current magnitude_norm / uniform_random sparse-vision baselines.",
+      "success_gate": "For Qwen, report as bounded point-estimate evidence unless paired tests gate; for Gemma, first gate on exact geometry/provenance and paired dense-vs-sparse format/fidelity before any cross-family claim.",
       "track": "Track B",
       "uses_local_accelerator": true
     },
@@ -192,18 +195,18 @@
         "research/experiments/2026/artifacts/onevision_cpersist_session/"
       ],
       "commands": [
-        "uv run python scripts/run_phase1_55L_many_turn_cpersist.py <combined args>",
-        "uv run python scripts/build_c_persist_setup_inclusive.py <combined artifacts>"
+        "uv run python scripts/build_onevision_cpersist_session_accounting.py <OV-6 and C-PERSIST artifacts>",
+        "optional later: uv run python scripts/run_phase1_55L_many_turn_cpersist.py <fresh combined args>"
       ],
-      "compute_lane": "M5 128GB for model-backed replication",
-      "defer_until": "after OV-6 or as accounting-only after OV-5",
-      "eta_m3": "3-4 hours artifact-level accounting after OV-6; no new session driver needed for first pass",
-      "eta_m5": "6-10 hours model-backed if OV-6 gates and a fresh session run is justified",
+      "compute_lane": "CPU artifact-level accounting first; M5 only if the accounting shows a publishable combined curve worth model-backed replication",
+      "defer_until": "after OV-6 statistical audit",
+      "eta_m3": "under 1 hour artifact-level accounting after builder exists; no model run",
+      "eta_m5": "6-10 hours model-backed only if artifact-level accounting and fidelity gates justify a fresh session protocol",
       "hypothesis": "A OneVision-like cold ingest can reduce first-query vision work, while C-PERSIST dominates same-video follow-up latency; session-inclusive speedups must be reported by query count, not multiplied.",
       "question": "How do cold-ingest sparse allocation and follow-up reuse compose without double counting?",
       "requires_nvidia": false,
-      "setup_effort": "requires OV-6 dense-vs-codec timing rows for model-backed runtime; otherwise ceiling-only",
-      "skip_rule": "If OV-6 has no fidelity-clean sparse-vision cell, use analytic stage-share ceilings only and do not claim a working combined runtime.",
+      "setup_effort": "requires artifact-level builder that ingests OV-6 dense/sparse first-query rows, C-PERSIST follow-up metrics, and codec-extraction inclusion policy",
+      "skip_rule": "If OV-6's best cell remains point-estimate-only or extraction-counted first-query economics are negative, report only bounded setup-inclusive accounting and no combined runtime claim.",
       "stage": "OV-8",
       "success_gate": "Report setup-inclusive session curves for 1, 2, 5, 10, and 50 same-video questions with paired drift and stage-share accounting.",
       "track": "C-PERSIST",

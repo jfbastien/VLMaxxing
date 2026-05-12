@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import numpy as np
-
 import pytest
 
 from codec_through.qwen_vision_pruning import (
@@ -49,12 +48,8 @@ def test_qwen_compact_cu_seqlens_uses_merge_unit() -> None:
 
 
 def test_pool_token_grid_to_merged_groups_frame_major_order() -> None:
-    frame_a = np.array(
-        [[1.0, 2.0, 5.0, 6.0], [3.0, 4.0, 7.0, 8.0]], dtype=np.float32
-    )
-    frame_b = np.array(
-        [[10.0, 10.0, 20.0, 20.0], [10.0, 10.0, 20.0, 20.0]], dtype=np.float32
-    )
+    frame_a = np.array([[1.0, 2.0, 5.0, 6.0], [3.0, 4.0, 7.0, 8.0]], dtype=np.float32)
+    frame_b = np.array([[10.0, 10.0, 20.0, 20.0], [10.0, 10.0, 20.0, 20.0]], dtype=np.float32)
     pooled = pool_token_grid_to_merged_groups([frame_a, frame_b], spatial_merge_size=2)
 
     assert pooled.tolist() == [2.5, 6.5, 10.0, 20.0]

@@ -1,0 +1,284 @@
+{
+  "codec_extract_mean_s_per_item": 18.825406862578955,
+  "cpersist_source": "research/experiments/2026/artifacts/phase1_55L_many_turn_cpersist/summary.json",
+  "dense_first_query_ms": 38710.86412808772,
+  "dense_first_query_source": "research/experiments/2026/artifacts/phase1_51V_ov6_n57/dense/summary.json",
+  "guardrails": [
+    "This is not a live combined session run.",
+    "Do not multiply OV-6 and C-PERSIST speedup ratios.",
+    "The included_current_pyav rows are the conservative local wall-clock denominator.",
+    "The excluded_model_side rows represent a precomputed or decoder-integrated metadata hypothesis."
+  ],
+  "phase": "OV-8",
+  "query_counts": [
+    1,
+    2,
+    5,
+    10,
+    50
+  ],
+  "rows": [
+    {
+      "codec_extraction_policy": "excluded_model_side",
+      "first_query_ms": 33252.57521775438,
+      "followup_choice_drift": 3,
+      "followup_correctness_drift": 2,
+      "followup_median_ms": 7361.972875,
+      "followup_n": 343,
+      "followup_pathological": 0,
+      "horizon": 50,
+      "policy": "fixed_k1",
+      "session_curve": [
+        {
+          "dense_cold_every_query_ms": 38710.86412808772,
+          "n_total_queries": 1.0,
+          "sparse_first_plus_cpersist_followups_ms": 33252.57521775438,
+          "speedup_dense_over_combined": 1.1641463518115438
+        },
+        {
+          "dense_cold_every_query_ms": 77421.72825617544,
+          "n_total_queries": 2.0,
+          "sparse_first_plus_cpersist_followups_ms": 40614.54809275438,
+          "speedup_dense_over_combined": 1.9062560558192556
+        },
+        {
+          "dense_cold_every_query_ms": 193554.3206404386,
+          "n_total_queries": 5.0,
+          "sparse_first_plus_cpersist_followups_ms": 62700.46671775439,
+          "speedup_dense_over_combined": 3.0869677814636005
+        },
+        {
+          "dense_cold_every_query_ms": 387108.6412808772,
+          "n_total_queries": 10.0,
+          "sparse_first_plus_cpersist_followups_ms": 99510.33109275438,
+          "speedup_dense_over_combined": 3.8901351953100236
+        },
+        {
+          "dense_cold_every_query_ms": 1935543.206404386,
+          "n_total_queries": 50.0,
+          "sparse_first_plus_cpersist_followups_ms": 393989.2460927544,
+          "speedup_dense_over_combined": 4.912680296732549
+        }
+      ]
+    },
+    {
+      "codec_extraction_policy": "included_current_pyav",
+      "first_query_ms": 52077.98208033334,
+      "followup_choice_drift": 3,
+      "followup_correctness_drift": 2,
+      "followup_median_ms": 7361.972875,
+      "followup_n": 343,
+      "followup_pathological": 0,
+      "horizon": 50,
+      "policy": "fixed_k1",
+      "session_curve": [
+        {
+          "dense_cold_every_query_ms": 38710.86412808772,
+          "n_total_queries": 1.0,
+          "sparse_first_plus_cpersist_followups_ms": 52077.98208033334,
+          "speedup_dense_over_combined": 0.7433249634821476
+        },
+        {
+          "dense_cold_every_query_ms": 77421.72825617544,
+          "n_total_queries": 2.0,
+          "sparse_first_plus_cpersist_followups_ms": 59439.95495533334,
+          "speedup_dense_over_combined": 1.302519968501905
+        },
+        {
+          "dense_cold_every_query_ms": 193554.3206404386,
+          "n_total_queries": 5.0,
+          "sparse_first_plus_cpersist_followups_ms": 81525.87358033334,
+          "speedup_dense_over_combined": 2.374145926197473
+        },
+        {
+          "dense_cold_every_query_ms": 387108.6412808772,
+          "n_total_queries": 10.0,
+          "sparse_first_plus_cpersist_followups_ms": 118335.73795533334,
+          "speedup_dense_over_combined": 3.2712741558006257
+        },
+        {
+          "dense_cold_every_query_ms": 1935543.206404386,
+          "n_total_queries": 50.0,
+          "sparse_first_plus_cpersist_followups_ms": 412814.65295533335,
+          "speedup_dense_over_combined": 4.688649476339718
+        }
+      ]
+    },
+    {
+      "codec_extraction_policy": "excluded_model_side",
+      "first_query_ms": 33252.57521775438,
+      "followup_choice_drift": 0,
+      "followup_correctness_drift": 0,
+      "followup_median_ms": 770.653709,
+      "followup_n": 343,
+      "followup_pathological": 0,
+      "horizon": 50,
+      "policy": "adaptive_post_q2",
+      "session_curve": [
+        {
+          "dense_cold_every_query_ms": 38710.86412808772,
+          "n_total_queries": 1.0,
+          "sparse_first_plus_cpersist_followups_ms": 33252.57521775438,
+          "speedup_dense_over_combined": 1.1641463518115438
+        },
+        {
+          "dense_cold_every_query_ms": 77421.72825617544,
+          "n_total_queries": 2.0,
+          "sparse_first_plus_cpersist_followups_ms": 34023.22892675438,
+          "speedup_dense_over_combined": 2.2755549869428875
+        },
+        {
+          "dense_cold_every_query_ms": 193554.3206404386,
+          "n_total_queries": 5.0,
+          "sparse_first_plus_cpersist_followups_ms": 36335.190053754384,
+          "speedup_dense_over_combined": 5.326910918976721
+        },
+        {
+          "dense_cold_every_query_ms": 387108.6412808772,
+          "n_total_queries": 10.0,
+          "sparse_first_plus_cpersist_followups_ms": 40188.45859875438,
+          "speedup_dense_over_combined": 9.632333629557898
+        },
+        {
+          "dense_cold_every_query_ms": 1935543.206404386,
+          "n_total_queries": 50.0,
+          "sparse_first_plus_cpersist_followups_ms": 71014.60695875439,
+          "speedup_dense_over_combined": 27.25556458446019
+        }
+      ]
+    },
+    {
+      "codec_extraction_policy": "included_current_pyav",
+      "first_query_ms": 52077.98208033334,
+      "followup_choice_drift": 0,
+      "followup_correctness_drift": 0,
+      "followup_median_ms": 770.653709,
+      "followup_n": 343,
+      "followup_pathological": 0,
+      "horizon": 50,
+      "policy": "adaptive_post_q2",
+      "session_curve": [
+        {
+          "dense_cold_every_query_ms": 38710.86412808772,
+          "n_total_queries": 1.0,
+          "sparse_first_plus_cpersist_followups_ms": 52077.98208033334,
+          "speedup_dense_over_combined": 0.7433249634821476
+        },
+        {
+          "dense_cold_every_query_ms": 77421.72825617544,
+          "n_total_queries": 2.0,
+          "sparse_first_plus_cpersist_followups_ms": 52848.63578933334,
+          "speedup_dense_over_combined": 1.4649711785332742
+        },
+        {
+          "dense_cold_every_query_ms": 193554.3206404386,
+          "n_total_queries": 5.0,
+          "sparse_first_plus_cpersist_followups_ms": 55160.59691633334,
+          "speedup_dense_over_combined": 3.5089236059939397
+        },
+        {
+          "dense_cold_every_query_ms": 387108.6412808772,
+          "n_total_queries": 10.0,
+          "sparse_first_plus_cpersist_followups_ms": 59013.86546133334,
+          "speedup_dense_over_combined": 6.559621849114694
+        },
+        {
+          "dense_cold_every_query_ms": 1935543.206404386,
+          "n_total_queries": 50.0,
+          "sparse_first_plus_cpersist_followups_ms": 89840.01382133334,
+          "speedup_dense_over_combined": 21.544333355220093
+        }
+      ]
+    },
+    {
+      "codec_extraction_policy": "excluded_model_side",
+      "first_query_ms": 33252.57521775438,
+      "followup_choice_drift": 0,
+      "followup_correctness_drift": 0,
+      "followup_median_ms": 705.96375,
+      "followup_n": 343,
+      "followup_pathological": 0,
+      "horizon": 50,
+      "policy": "refresh10",
+      "session_curve": [
+        {
+          "dense_cold_every_query_ms": 38710.86412808772,
+          "n_total_queries": 1.0,
+          "sparse_first_plus_cpersist_followups_ms": 33252.57521775438,
+          "speedup_dense_over_combined": 1.1641463518115438
+        },
+        {
+          "dense_cold_every_query_ms": 77421.72825617544,
+          "n_total_queries": 2.0,
+          "sparse_first_plus_cpersist_followups_ms": 33958.538967754386,
+          "speedup_dense_over_combined": 2.279889848314496
+        },
+        {
+          "dense_cold_every_query_ms": 193554.3206404386,
+          "n_total_queries": 5.0,
+          "sparse_first_plus_cpersist_followups_ms": 36076.43021775439,
+          "speedup_dense_over_combined": 5.365118429738212
+        },
+        {
+          "dense_cold_every_query_ms": 387108.6412808772,
+          "n_total_queries": 10.0,
+          "sparse_first_plus_cpersist_followups_ms": 39606.248967754385,
+          "speedup_dense_over_combined": 9.773928391856636
+        },
+        {
+          "dense_cold_every_query_ms": 1935543.206404386,
+          "n_total_queries": 50.0,
+          "sparse_first_plus_cpersist_followups_ms": 67844.79896775438,
+          "speedup_dense_over_combined": 28.52898432677678
+        }
+      ]
+    },
+    {
+      "codec_extraction_policy": "included_current_pyav",
+      "first_query_ms": 52077.98208033334,
+      "followup_choice_drift": 0,
+      "followup_correctness_drift": 0,
+      "followup_median_ms": 705.96375,
+      "followup_n": 343,
+      "followup_pathological": 0,
+      "horizon": 50,
+      "policy": "refresh10",
+      "session_curve": [
+        {
+          "dense_cold_every_query_ms": 38710.86412808772,
+          "n_total_queries": 1.0,
+          "sparse_first_plus_cpersist_followups_ms": 52077.98208033334,
+          "speedup_dense_over_combined": 0.7433249634821476
+        },
+        {
+          "dense_cold_every_query_ms": 77421.72825617544,
+          "n_total_queries": 2.0,
+          "sparse_first_plus_cpersist_followups_ms": 52783.945830333345,
+          "speedup_dense_over_combined": 1.4667665904522715
+        },
+        {
+          "dense_cold_every_query_ms": 193554.3206404386,
+          "n_total_queries": 5.0,
+          "sparse_first_plus_cpersist_followups_ms": 54901.837080333346,
+          "speedup_dense_over_combined": 3.525461640877817
+        },
+        {
+          "dense_cold_every_query_ms": 387108.6412808772,
+          "n_total_queries": 10.0,
+          "sparse_first_plus_cpersist_followups_ms": 58431.655830333344,
+          "speedup_dense_over_combined": 6.624981540911927
+        },
+        {
+          "dense_cold_every_query_ms": 1935543.206404386,
+          "n_total_queries": 50.0,
+          "sparse_first_plus_cpersist_followups_ms": 86670.20583033335,
+          "speedup_dense_over_combined": 22.33227887093552
+        }
+      ]
+    }
+  ],
+  "sparse_first_query_ms_excluding_codec_extract": 33252.57521775438,
+  "sparse_first_query_ms_including_current_pyav_extract": 52077.98208033334,
+  "sparse_first_query_source": "research/experiments/2026/artifacts/phase1_51V_ov6_n57_kr070_l2/codec_novel_coded/summary.json",
+  "status": "artifact-level accounting only"
+}

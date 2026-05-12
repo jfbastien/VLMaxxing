@@ -555,10 +555,86 @@ Interpretation:
 
 Decision-log status: continuous H.264 spatial scoring should move from `Deprioritized`
 to `bounded active hypothesis` for VideoMME short / Qwen / 8-frame Track A. It is not a
-general paper claim and not Track B evidence.
+general paper claim.
 
 Editor packet:
 `research/experiments/2026/artifacts/onevision_vlmaxxing_plan/editor_packet_draft.md`.
 
-Next gate: OV-6 Track B codec-grid sparse vision. OV-8 C-PERSIST composition depends on
-OV-6 measured first-query timing rows and must use setup-inclusive accounting.
+### 2026-05-12 — OV-6 Track B Qwen closure
+
+All model runs used Qwen2.5-VL-7B-4bit on an M3 16GB MacBook Air with MLX unified GPU.
+The run sequence was exploratory beyond the original smoke: N=57 kr=0.5/layer=2,
+N=10 keep-rate and layer sweeps, then N=57 promotions of the two best-looking cells.
+
+Completed artifacts:
+
+- `research/experiments/2026/artifacts/phase1_51V_ov6_n57/` — N=57 kr=0.5/layer=2
+  dense, magnitude, random, and three codec sources.
+- `research/experiments/2026/artifacts/phase1_51V_ov6_kr_sweep/` — N=10 keep-rate
+  sweep at layer=2.
+- `research/experiments/2026/artifacts/phase1_51V_ov6_layer_sweep/` — N=10 layer
+  sweep at kr=0.5.
+- `research/experiments/2026/artifacts/phase1_51V_ov6_n57_kr070_l2/` — N=57
+  promotion of the kr=0.7/layer=2 cell.
+- `research/experiments/2026/artifacts/phase1_51V_ov6_n57_kr050_l8/` — N=57
+  promotion of the kr=0.5/layer=8 cell.
+- `research/experiments/2026/artifacts/onevision_vlmaxxing_plan/ov6_track_b_statistical_audit.json`
+  — Wilson/McNemar audit of the N=57 Track B cells.
+
+Interpretation:
+
+- `reproduced here`: at kr=0.7/layer=2/N=57, `codec_novel_coded` is the best tested
+  sparse arm by point estimate: 35/57 (0.614) versus 31/57 (0.544) for
+  `magnitude_norm` and 39/57 (0.684) for dense. The paired test remains inconclusive
+  (5 fixes / 1 break, McNemar p=0.2188).
+- `reproduced here`: at kr=0.5/layer=8/N=57, `codec_residual` ties `magnitude_norm`
+  at 31/57, with balanced paired discordants (6 fixes / 6 breaks).
+- `reproduced here`: at kr=0.5/layer=2/N=57, `uniform_random` exceeds
+  `magnitude_norm` by point estimate (28/57 versus 24/57), but this is a single-seed
+  random result and is not a paper claim without multi-seed replication.
+- `reproduced here`: current model-side E2E timings exclude separate PyAV H.264
+  metadata extraction. Counting extraction, codec arms are slower end-to-end on this
+  repo-local implementation. Net speedup language requires precomputed or
+  decoder-integrated metadata.
+
+Decision-log status: Track B codec-grid sparse vision moves to a bounded active
+hypothesis, not a broad C-VISION headline. The next scientific gates are Gemma
+codec-grid cross-family wiring, multi-seed random at the surprising kr=0.5/layer=2
+cell, and cross-benchmark/frame-budget transfer if the paper needs broader scope.
+
+Next gate: OV-8 can run only as artifact-level setup-inclusive accounting until a
+fresh session protocol is justified. It must report both model-side first-query E2E
+and conservative first-query E2E including current codec extraction.
+
+### 2026-05-12 — OV-8 artifact-level accounting
+
+Completed artifact:
+
+- `research/experiments/2026/artifacts/onevision_cpersist_session/accounting.json`
+
+Interpretation:
+
+- `reproduced here`: with `codec_novel_coded` kr=0.7/layer=2 as the first-query
+  sparse cell, model-side first-query E2E is 33.3 s versus 38.7 s for dense.
+  Including current PyAV codec extraction, the same first query is 52.1 s.
+- `reproduced here`: setup-inclusive composition remains positive by Q>=2 for the
+  fast C-PERSIST policies even when current extraction is included, but this is
+  artifact-level accounting, not a live combined session run.
+- `hypothesis`: a live combined run is useful only after Gemma/cross-benchmark or
+  larger-N evidence justifies spending model time; do not multiply component ratios.
+
+### 2026-05-12 — Gemma codec-grid implementation gate
+
+CPU-only implementation landed for the Gemma Track B follow-up:
+
+- `src/codec_through/pruned_vision_tower.py` now supports `magnitude_norm`,
+  `uniform_random`, and external `codec_grid` score modes.
+- `scripts/run_phase1_63G_gemma_track_b.py` can project H.264 score sources to
+  Gemma's 512-canvas / 16x16 token geometry and records codec provenance.
+- `scripts/run_ov6_gemma_codec_smoke.sh` is the first GPU smoke entry point.
+
+Hypothesis for the next model run: if Qwen's bounded codec-grid Track B result is
+not architecture-specific, Gemma should preserve paired sparse-vs-dense behavior at
+the same family of operating points. Falsifier: shape/provenance mismatch, stale
+codec-grid reuse, or paired Gemma format/fidelity regression beyond the existing
+Gemma Track B caveat.

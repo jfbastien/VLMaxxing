@@ -22,9 +22,17 @@ from mlx_vlm.utils import prepare_inputs
 from PIL import Image
 
 from codec_through.answers import extract_choice  # noqa: E402
+from codec_through.codec.continuous_score import (  # noqa: E402
+    CodecScoreSource,
+    project_macroblock_metadata_to_token_grid,
+    sparse_sample_indices,
+)
+from codec_through.codec.h264_metadata import H264MetadataExtractor  # noqa: E402
+from codec_through.codec.onevision_patchification import FuseMode  # noqa: E402
 from codec_through.memory_guard import check_rss_guard, rss_mb  # noqa: E402
 from codec_through.pruned_vision_tower import (  # noqa: E402
     PruneConfig,
+    magnitude_keep_mask,
     magnitude_valid_keep_mask,
     patch_vision_tower,
 )
@@ -35,6 +43,7 @@ from codec_through.rlt_masks import (  # noqa: E402
     fixed_budget_rlt_score_mask_for_positions,
     mask_summary,
 )
+from codec_through.video_decode import _count_frames  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RUNNER_PATH = REPO_ROOT / "scripts" / "run_benchmark_track_a.py"
@@ -43,6 +52,9 @@ GEMMA_IMAGE_SIZE = 512
 GEMMA_GRID_SHAPE = (16, 16)
 SCHEMA_VERSION = "phase1_63g_gemma_track_b_v5"
 DEFAULT_MLX_MEMORY_LIMIT_GB = 12.0
+GEMMA_TOKEN_BLOCK = GEMMA_IMAGE_SIZE // GEMMA_GRID_SHAPE[0]
+CODEC_SCORE_SOURCE_CHOICES: tuple[str, ...] = tuple(source.value for source in CodecScoreSource)
+FUSION_MODE_CHOICES: tuple[FuseMode, ...] = ("weighted", "sum", "max", "geomean")
 
 
 @dataclass(frozen=True, slots=True)
@@ -97,16 +109,34 @@ def _load_runner_module() -> Any:
     return module
 
 
-def _letterbox_square(frame: Any, size: int = GEMMA_IMAGE_SIZE) -> Any:
+def _resize_square_with_active_box(
+    frame: Any,
+    active_box: tuple[int, int, int, int],
+    *,
+    size: int = GEMMA_IMAGE_SIZE,
+) -> tuple[Any, tuple[int, int, int, int]]:
+    """Resize the shared 560-square benchmark frame to Gemma's 512 canvas.
+
+    ``run_benchmark_track_a._decode_uniform_frames`` already returns a square
+    padded frame plus the active content box. Re-letterboxing the square would
+    lose that content box, so we scale the frame and box together.
+    """
+
     width, height = frame.size
-    scale = min(size / width, size / height)
-    resized = frame.resize(
-        (max(1, round(width * scale)), max(1, round(height * scale))),
-        Image.Resampling.BICUBIC,
+    if width != height:
+        raise ValueError(f"expected square benchmark frame before Gemma resize, got {frame.size}")
+    scale = size / width
+    resized = frame.resize((size, size), Image.Resampling.BICUBIC)
+    left, top, right, bottom = active_box
+    scaled_box = (
+        max(0, min(size, round(left * scale))),
+        max(0, min(size, round(top * scale))),
+        max(0, min(size, round(right * scale))),
+        max(0, min(size, round(bottom * scale))),
     )
-    canvas = Image.new("RGB", (size, size), color=(0, 0, 0))
-    canvas.paste(resized, ((size - resized.width) // 2, (size - resized.height) // 2))
-    return canvas
+    if scaled_box[0] >= scaled_box[2] or scaled_box[1] >= scaled_box[3]:
+        raise ValueError(f"scaled active box is empty: {scaled_box}")
+    return resized, scaled_box
 
 
 def _build_prompt(processor: Any, frames: list[Any], question: str) -> dict[str, Any]:
@@ -126,7 +156,7 @@ def _prepare_item(
     item: Any,
     *,
     frame_count: int,
-) -> tuple[dict[str, Any], list[Any], float, float]:
+) -> tuple[dict[str, Any], list[Any], float, float, list[tuple[int, int, int, int]]]:
     if hasattr(processor, "image_processor"):
         if hasattr(processor.image_processor, "do_resize"):
             processor.image_processor.do_resize = False
@@ -134,19 +164,112 @@ def _prepare_item(
             processor.image_processor.do_image_splitting = False
 
     t0 = time.perf_counter_ns()
-    frames, _active_boxes = runner._decode_uniform_frames(
+    frames, active_boxes = runner._decode_uniform_frames(
         item.video_path,
         frame_count=frame_count,
         start_seconds=item.start_seconds,
         end_seconds=item.end_seconds,
     )
-    frames = [_letterbox_square(frame) for frame in frames]
+    converted = [
+        _resize_square_with_active_box(frame, active_box)
+        for frame, active_box in zip(frames, active_boxes, strict=True)
+    ]
+    frames = [frame for frame, _active_box in converted]
+    gemma_active_boxes = [active_box for _frame, active_box in converted]
     decode_ms = (time.perf_counter_ns() - t0) / 1_000_000
 
     t1 = time.perf_counter_ns()
     raw = _build_prompt(processor, frames, item.question)
     processor_ms = (time.perf_counter_ns() - t1) / 1_000_000
-    return raw, frames, decode_ms, processor_ms
+    return raw, frames, decode_ms, processor_ms, gemma_active_boxes
+
+
+def _validate_gemma_placeholders(model: Any, raw: dict[str, Any], *, frame_count: int) -> None:
+    input_ids = np.asarray(raw["input_ids"], dtype=np.int64).reshape(-1)
+    image_token_id = int(model.config.image_token_id)
+    observed = int((input_ids == image_token_id).sum())
+    expected = frame_count * GEMMA_GRID_SHAPE[0] * GEMMA_GRID_SHAPE[1]
+    if observed != expected:
+        raise RuntimeError(
+            f"Gemma placeholder-count mismatch: processor emitted {observed} "
+            f"image tokens for {frame_count} frames; driver assumed {expected} "
+            f"({frame_count} x {GEMMA_GRID_SHAPE[0]}x{GEMMA_GRID_SHAPE[1]})."
+        )
+
+
+def _per_frame_codec_token_grids(
+    item: Any,
+    *,
+    frame_count: int,
+    active_boxes: list[tuple[int, int, int, int]],
+    codec_score_source: CodecScoreSource,
+    fusion_mode: FuseMode,
+    motion_weight: float,
+    residual_weight: float,
+    normalize_fusion_inputs: bool,
+) -> tuple[list[np.ndarray], float]:
+    """Compute per-sampled-frame codec scores on Gemma's 512/16x16 grid."""
+
+    if item.start_seconds is not None or item.end_seconds is not None:
+        raise ValueError(
+            f"codec score extraction for windowed clips is not implemented for "
+            f"{item.item_id}; clear start_seconds/end_seconds before running Gemma Track B"
+        )
+    if len(active_boxes) != frame_count:
+        raise ValueError(
+            f"expected {frame_count} active boxes for {item.item_id}, got {len(active_boxes)}"
+        )
+
+    total_frames = _count_frames(
+        item.video_path,
+        start_seconds=item.start_seconds,
+        end_seconds=item.end_seconds,
+    )
+    sampled = sparse_sample_indices(total_frames, frame_count)
+
+    t0 = time.perf_counter_ns()
+    extractor = H264MetadataExtractor(str(item.video_path), max_frames=sampled[-1] + 1)
+    frame_metadata_by_index: dict[int, Any] = {}
+    sampled_set = set(sampled)
+    for index, metadata in enumerate(extractor.iter_frames()):
+        if index in sampled_set:
+            frame_metadata_by_index[index] = metadata
+        if index >= sampled[-1]:
+            break
+    extract_s = (time.perf_counter_ns() - t0) / 1_000_000_000
+
+    if len(frame_metadata_by_index) != frame_count:
+        raise ValueError(
+            f"H264MetadataExtractor missed sampled frames for {item.item_id}; "
+            f"wanted {frame_count}, got {len(frame_metadata_by_index)}"
+        )
+
+    token_grids: list[np.ndarray] = []
+    for sampled_index, active_box in zip(sampled, active_boxes, strict=True):
+        metadata = frame_metadata_by_index[sampled_index]
+        token_grid = project_macroblock_metadata_to_token_grid(
+            metadata.macroblocks,
+            source=codec_score_source,
+            macroblock_size=extractor.mb_size,
+            frame_width=extractor.width,
+            frame_height=extractor.height,
+            canvas_size=GEMMA_IMAGE_SIZE,
+            active_box=active_box,
+            token_block=GEMMA_TOKEN_BLOCK,
+            mode=fusion_mode,
+            motion_weight=motion_weight,
+            residual_weight=residual_weight,
+            normalize_inputs=normalize_fusion_inputs,
+        )
+        expected_shape = GEMMA_GRID_SHAPE
+        if token_grid.shape != expected_shape:
+            raise ValueError(
+                f"Gemma codec score grid for {item.item_id} has shape {token_grid.shape}, "
+                f"expected {expected_shape}"
+            )
+        token_grids.append(np.clip(token_grid, a_min=0.0, a_max=None).astype(np.float32))
+
+    return token_grids, float(extract_s)
 
 
 def _compute_gemma_features(model: Any, raw: dict[str, Any]) -> tuple[mx.array, float]:
@@ -339,6 +462,23 @@ def _schema_row(args: argparse.Namespace) -> dict[str, Any]:
         "vision_tower_layer": args.vision_tower_layer,
         "vision_tower_keep_rate": args.vision_tower_keep_rate,
         "vision_tower_score_mode": args.vision_tower_score_mode,
+        "score_mode": args.score_mode,
+        "score_seed": args.score_seed if args.score_mode == "uniform_random" else None,
+        "codec_score_source": args.codec_score_source,
+        "codec_fusion_mode": (
+            args.fusion_mode if args.codec_score_source == "fused" else None
+        ),
+        "codec_motion_weight": (
+            float(args.motion_weight) if args.codec_score_source == "fused" else None
+        ),
+        "codec_residual_weight": (
+            float(args.residual_weight) if args.codec_score_source == "fused" else None
+        ),
+        "codec_normalize_fusion_inputs": (
+            not bool(args.no_normalize_fusion_inputs)
+            if args.codec_score_source == "fused"
+            else None
+        ),
         "scorer_timing_schema": 1,
         "rlt_config": (
             _rlt_config_from_args(args).as_dict()
@@ -633,7 +773,15 @@ def main() -> int:
     parser.add_argument("--vision-tower-keep-rate", type=float, default=1.0)
     parser.add_argument(
         "--vision-tower-score-mode",
-        choices=("magnitude", "magnitude_valid", "rlt_topk", "max_min_diversity"),
+        choices=(
+            "magnitude",
+            "magnitude_valid",
+            "rlt_topk",
+            "max_min_diversity",
+            "magnitude_norm",
+            "uniform_random",
+            "codec_grid",
+        ),
         default="magnitude",
         help=(
             "Sparse-vision token scorer. 'magnitude' is the existing hidden-state "
@@ -641,9 +789,39 @@ def main() -> int:
             "uses the same L2 scorer but budgets K over valid encoder positions; "
             "'rlt_topk' ranks tokens by RLT same-position motion scores and keeps "
             "a fixed K per frame for the scatter-back wrapper; "
-            "'max_min_diversity' is the expensive feature-dependent comparator."
+            "'max_min_diversity' is the expensive feature-dependent comparator; "
+            "'uniform_random' and 'codec_grid' are OneVision sparse-ranking controls."
         ),
     )
+    parser.add_argument(
+        "--score-mode",
+        type=str,
+        default=None,
+        choices=("magnitude_norm", "uniform_random", "codec_grid"),
+        help="Alias for the OneVision sparse-ranking score modes.",
+    )
+    parser.add_argument(
+        "--score-seed",
+        type=int,
+        default=42,
+        help="Seed for --score-mode uniform_random.",
+    )
+    parser.add_argument(
+        "--codec-score-source",
+        type=str,
+        default=None,
+        choices=CODEC_SCORE_SOURCE_CHOICES,
+        help="When --score-mode=codec_grid, which H.264 score source to use.",
+    )
+    parser.add_argument(
+        "--fusion-mode",
+        type=str,
+        default="weighted",
+        choices=FUSION_MODE_CHOICES,
+    )
+    parser.add_argument("--motion-weight", type=float, default=1.0)
+    parser.add_argument("--residual-weight", type=float, default=1.0)
+    parser.add_argument("--no-normalize-fusion-inputs", action="store_true")
     parser.add_argument("--rlt-threshold", type=float, default=0.1)
     parser.add_argument("--rlt-tubelet-size", type=int, default=2)
     parser.add_argument("--rlt-image-size", type=int, default=224)
@@ -657,6 +835,22 @@ def main() -> int:
         # Avoid IOGPU state-inconsistency panics under allocation churn
         # (CVE-2026-28834-class GPU-driver race, unpatched on macOS 26.3).
         mx.set_memory_limit(int(args.mlx_memory_limit_gb * 1024**3))
+    if args.score_mode is not None:
+        if args.vision_tower_score_mode != "magnitude":
+            parser.error("--score-mode cannot be combined with --vision-tower-score-mode")
+        args.vision_tower_score_mode = args.score_mode
+    score_mode = str(args.vision_tower_score_mode)
+    args.score_mode = (
+        score_mode
+        if score_mode in {"magnitude_norm", "uniform_random", "codec_grid"}
+        else None
+    )
+    if score_mode == "codec_grid" and args.codec_score_source is None:
+        parser.error("--score-mode=codec_grid requires --codec-score-source")
+    if score_mode != "codec_grid" and args.codec_score_source is not None:
+        parser.error("--codec-score-source requires --score-mode=codec_grid")
+    if args.vision_tower_keep_rate >= 1.0 and score_mode not in {"magnitude", "magnitude_norm"}:
+        parser.error("sparse score modes require --vision-tower-keep-rate < 1.0")
 
     runner = _load_runner_module()
     runner._ensure_clean_git_tree(allow_dirty=args.allow_dirty)
@@ -705,6 +899,42 @@ def main() -> int:
                 "vision_tower_score_mode": (
                     args.vision_tower_score_mode if args.vision_tower_keep_rate < 1.0 else None
                 ),
+                "score_mode": args.score_mode if args.vision_tower_keep_rate < 1.0 else None,
+                "score_seed": (
+                    args.score_seed
+                    if args.vision_tower_keep_rate < 1.0
+                    and args.score_mode == "uniform_random"
+                    else None
+                ),
+                "codec_score_source": (
+                    args.codec_score_source if args.vision_tower_keep_rate < 1.0 else None
+                ),
+                "codec_fusion_mode": (
+                    args.fusion_mode
+                    if args.vision_tower_keep_rate < 1.0
+                    and args.codec_score_source == "fused"
+                    else None
+                ),
+                "codec_motion_weight": (
+                    float(args.motion_weight)
+                    if args.vision_tower_keep_rate < 1.0
+                    and args.codec_score_source == "fused"
+                    else None
+                ),
+                "codec_residual_weight": (
+                    float(args.residual_weight)
+                    if args.vision_tower_keep_rate < 1.0
+                    and args.codec_score_source == "fused"
+                    else None
+                ),
+                "codec_normalize_fusion_inputs": (
+                    not bool(args.no_normalize_fusion_inputs)
+                    if args.vision_tower_keep_rate < 1.0
+                    and args.codec_score_source == "fused"
+                    else None
+                ),
+                "codec_extract_total_s": None,
+                "codec_extract_mean_s_per_item": None,
                 "rlt_config": (
                     _rlt_config_from_args(args).as_dict()
                     if args.vision_tower_keep_rate < 1.0
@@ -743,7 +973,16 @@ def main() -> int:
     rlt_keep_holder: dict[str, Any] = {}
     if vt_patched:
         keep_mask_fn: Any | None = None
-        if args.vision_tower_score_mode in {
+        if args.vision_tower_score_mode == "magnitude":
+
+            def keep_mask_fn(hidden_states: mx.array, positions: mx.array) -> mx.array:
+                return magnitude_keep_mask(
+                    hidden_states,
+                    positions,
+                    keep_rate=args.vision_tower_keep_rate,
+                )
+
+        elif args.vision_tower_score_mode in {
             "magnitude_valid",
             "rlt_topk",
             "max_min_diversity",
@@ -798,9 +1037,18 @@ def main() -> int:
             PruneConfig(
                 layer_idx=args.vision_tower_layer,
                 keep_rate=args.vision_tower_keep_rate,
+                score_mode=args.score_mode or "magnitude_norm",
+                score_seed=args.score_seed,
+                codec_score_source=args.codec_score_source,
             ),
             keep_mask_fn=keep_mask_fn,
         )
+
+    codec_score_source = (
+        CodecScoreSource(args.codec_score_source) if args.codec_score_source is not None else None
+    )
+    fusion_mode = cast(FuseMode, args.fusion_mode)
+    normalize_fusion_inputs = not bool(args.no_normalize_fusion_inputs)
 
     if args.rss_guard_mb > 0:
         check_rss_guard(args.rss_guard_mb, stage="post_model_load")
@@ -921,14 +1169,28 @@ def main() -> int:
     warmup_items = _select_warmup_items(items, args.warmup_items)
     for warmup_item in warmup_items:
         _clear_runtime_state()
-        warm_raw, warm_frames, _decode_ms, _processor_ms = _prepare_item(
+        warm_raw, warm_frames, _decode_ms, _processor_ms, warm_active_boxes = _prepare_item(
             runner,
             processor,
             warmup_item,
             frame_count=args.frame_count,
         )
+        _validate_gemma_placeholders(model, warm_raw, frame_count=args.frame_count)
         warm_metadata: dict[str, Any] = {}
         prepare_sparse_scorer_for_frames(warm_frames, warm_metadata)
+        if vt_patched and codec_score_source is not None:
+            codec_grids, _codec_extract_s = _per_frame_codec_token_grids(
+                warmup_item,
+                frame_count=args.frame_count,
+                active_boxes=warm_active_boxes,
+                codec_score_source=codec_score_source,
+                fusion_mode=fusion_mode,
+                motion_weight=float(args.motion_weight),
+                residual_weight=float(args.residual_weight),
+                normalize_fusion_inputs=normalize_fusion_inputs,
+            )
+            score_grid = np.stack(codec_grids, axis=0).astype(np.float32)
+            model.vision_tower.encoder.set_codec_score_grid(score_grid)
         warm_features, _vision_ms = _compute_gemma_features(model, warm_raw)
         _run_generate(
             model,
@@ -946,16 +1208,38 @@ def main() -> int:
         if output_mode == "w":
             handle.write(json.dumps(schema_row, sort_keys=True) + "\n")
         for item in pending_items:
-            raw, frames, decode_ms, processor_ms = _prepare_item(
+            raw, frames, decode_ms, processor_ms, active_boxes = _prepare_item(
                 runner,
                 processor,
                 item,
                 frame_count=args.frame_count,
             )
+            _validate_gemma_placeholders(model, raw, frame_count=args.frame_count)
             item_metadata: dict[str, Any] = {
                 "vision_tower_score_mode": args.vision_tower_score_mode,
             }
             scorer_prepare_ms = prepare_sparse_scorer_for_frames(frames, item_metadata)
+            if vt_patched and codec_score_source is not None:
+                codec_grids, codec_extract_s = _per_frame_codec_token_grids(
+                    item,
+                    frame_count=args.frame_count,
+                    active_boxes=active_boxes,
+                    codec_score_source=codec_score_source,
+                    fusion_mode=fusion_mode,
+                    motion_weight=float(args.motion_weight),
+                    residual_weight=float(args.residual_weight),
+                    normalize_fusion_inputs=normalize_fusion_inputs,
+                )
+                score_grid = np.stack(codec_grids, axis=0).astype(np.float32)
+                model.vision_tower.encoder.set_codec_score_grid(score_grid)
+                scorer_prepare_ms += codec_extract_s * 1000.0
+                item_metadata["scorer_prepare_ms"] = scorer_prepare_ms
+                item_metadata.update(
+                    {
+                        "codec_score_source": args.codec_score_source,
+                        "codec_extract_ms": codec_extract_s * 1000.0,
+                    }
+                )
             features, vision_ms = _compute_gemma_features(model, raw)
             actual_kept_groups, actual_total_groups, actual_kept_per_frame = (
                 record_sparse_scorer_after_vision(item_metadata)
@@ -1013,6 +1297,12 @@ def main() -> int:
             if args.rss_guard_mb > 0:
                 check_rss_guard(args.rss_guard_mb, stage=f"post_item:{item.item_id}")
 
+    codec_extract_row_seconds = [
+        float(row.get("metadata", {}).get("codec_extract_ms", 0.0)) / 1000.0
+        for row in record_rows
+        if isinstance(row.get("metadata"), dict)
+        and row.get("metadata", {}).get("codec_extract_ms") is not None
+    ]
     summary = _summarize_payload_rows(record_rows)
     summary.update(
         {
@@ -1030,6 +1320,37 @@ def main() -> int:
             "vision_tower_layer": args.vision_tower_layer if vt_patched else None,
             "vision_tower_keep_rate": args.vision_tower_keep_rate if vt_patched else None,
             "vision_tower_score_mode": args.vision_tower_score_mode if vt_patched else None,
+            "score_mode": args.score_mode if vt_patched else None,
+            "score_seed": (
+                args.score_seed if vt_patched and args.score_mode == "uniform_random" else None
+            ),
+            "codec_score_source": args.codec_score_source if vt_patched else None,
+            "codec_fusion_mode": (
+                args.fusion_mode if vt_patched and args.codec_score_source == "fused" else None
+            ),
+            "codec_motion_weight": (
+                float(args.motion_weight)
+                if vt_patched and args.codec_score_source == "fused"
+                else None
+            ),
+            "codec_residual_weight": (
+                float(args.residual_weight)
+                if vt_patched and args.codec_score_source == "fused"
+                else None
+            ),
+            "codec_normalize_fusion_inputs": (
+                normalize_fusion_inputs
+                if vt_patched and args.codec_score_source == "fused"
+                else None
+            ),
+            "codec_extract_total_s": (
+                float(sum(codec_extract_row_seconds)) if codec_score_source is not None else None
+            ),
+            "codec_extract_mean_s_per_item": (
+                float(np.mean(codec_extract_row_seconds))
+                if codec_score_source is not None and codec_extract_row_seconds
+                else None
+            ),
             "rlt_config": (
                 rlt_config.as_dict()
                 if vt_patched and args.vision_tower_score_mode == "rlt_topk"

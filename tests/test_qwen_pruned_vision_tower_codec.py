@@ -8,13 +8,14 @@ the smoke run; here we only need to make sure the alignment math is correct.
 
 from __future__ import annotations
 
+import mlx.core as mx
 import numpy as np
 import pytest
 
 from codec_through.qwen_pruned_vision_tower import (
     QwenVisionPruneConfig,
-    _QwenPrunedVisionWrapper,
     _group_scores,
+    _QwenPrunedVisionWrapper,
 )
 
 
@@ -33,7 +34,7 @@ class _StubModel:
 
 def test_group_scores_codec_grid_returns_input_when_no_window_permutation() -> None:
     grid = np.array([3.0, 1.0, 4.0, 1.0, 5.0, 9.0, 2.0, 6.0], dtype=np.float32)
-    fake_groups = np.zeros((8, 4, 8), dtype=np.float32)
+    fake_groups = mx.zeros((8, 4, 8))
     scores = _group_scores(
         fake_groups,
         mode="codec_grid",
@@ -46,7 +47,7 @@ def test_group_scores_codec_grid_returns_input_when_no_window_permutation() -> N
 def test_group_scores_codec_grid_applies_window_permutation() -> None:
     grid = np.array([10.0, 20.0, 30.0, 40.0], dtype=np.float32)
     window_index = np.array([2, 0, 3, 1], dtype=np.int64)
-    fake_groups = np.zeros((4, 4, 8), dtype=np.float32)
+    fake_groups = mx.zeros((4, 4, 8))
     scores = _group_scores(
         fake_groups,
         mode="codec_grid",
@@ -57,7 +58,7 @@ def test_group_scores_codec_grid_applies_window_permutation() -> None:
 
 
 def test_group_scores_codec_grid_rejects_size_mismatch() -> None:
-    fake_groups = np.zeros((4, 4, 8), dtype=np.float32)
+    fake_groups = mx.zeros((4, 4, 8))
     with pytest.raises(ValueError, match="expects 4"):
         _group_scores(
             fake_groups,
@@ -67,7 +68,7 @@ def test_group_scores_codec_grid_rejects_size_mismatch() -> None:
 
 
 def test_group_scores_codec_grid_rejects_nan() -> None:
-    fake_groups = np.zeros((2, 4, 8), dtype=np.float32)
+    fake_groups = mx.zeros((2, 4, 8))
     with pytest.raises(ValueError, match="non-finite"):
         _group_scores(
             fake_groups,
@@ -77,7 +78,7 @@ def test_group_scores_codec_grid_rejects_nan() -> None:
 
 
 def test_group_scores_codec_grid_rejects_negative() -> None:
-    fake_groups = np.zeros((2, 4, 8), dtype=np.float32)
+    fake_groups = mx.zeros((2, 4, 8))
     with pytest.raises(ValueError, match="negative"):
         _group_scores(
             fake_groups,
@@ -87,13 +88,13 @@ def test_group_scores_codec_grid_rejects_negative() -> None:
 
 
 def test_group_scores_codec_grid_requires_grid_when_mode_selected() -> None:
-    fake_groups = np.zeros((2, 4, 8), dtype=np.float32)
+    fake_groups = mx.zeros((2, 4, 8))
     with pytest.raises(ValueError, match="requires a codec score grid"):
         _group_scores(fake_groups, mode="codec_grid", codec_score_grid=None)
 
 
 def test_group_scores_unknown_mode_rejected_in_message() -> None:
-    fake_groups = np.zeros((2, 4, 8), dtype=np.float32)
+    fake_groups = mx.zeros((2, 4, 8))
     with pytest.raises(ValueError, match="codec_grid"):
         _group_scores(fake_groups, mode="not_a_real_mode")
 

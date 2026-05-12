@@ -99,13 +99,10 @@ def _group_scores(
             return grid
         window = np.asarray(window_index, dtype=np.int64).reshape(-1)
         if window.shape[0] != n_groups:
-            raise ValueError(
-                f"window_index has {window.shape[0]} entries but expected {n_groups}"
-            )
+            raise ValueError(f"window_index has {window.shape[0]} entries but expected {n_groups}")
         return grid[window]
     raise ValueError(
-        f"unknown score_mode {mode!r}; expected one of: "
-        "magnitude_norm, uniform_random, codec_grid"
+        f"unknown score_mode {mode!r}; expected one of: magnitude_norm, uniform_random, codec_grid"
     )
 
 
