@@ -52,8 +52,8 @@ an explanatory analogy for systems readers.
   flagged as a pre-implementation smoke check.
 - Q3b AVP handling is tiered: related-work positioning by default
   because there is no matched benchmark/protocol overlap, a
-  single-operator AVP-mimic as the actual local baseline, and full
-  reimplementation only under rebuttal pressure.
+  one-step active-escalation control as the actual local baseline, and
+  full reimplementation only under rebuttal pressure.
 - Q4 transfer specifies TempCompass first (preregistered ingest exists)
   and de-promises LongVideoBench (no ingest plan, hardware-marginal on
   M3 16GB).
@@ -87,10 +87,9 @@ an explanatory analogy for systems readers.
   qualitative "n=30 cannot reliably resolve effects below ~0.20" is
   retained, with a note that McNemar exact simulation is the right
   follow-up if a referee insists on a numeric threshold.
-- Multiple-comparisons text reconciled: three independent confirmatory
-  families (one per benchmark), each Holm-Bonferroni-corrected
-  *internally including the primary*. Cross-family inflation bounded
-  at FWER ≤ 0.143 explicitly.
+- Multiple-comparisons text narrowed: one primary confirmatory family
+  carries the standalone-paper claim; other benchmark families are
+  transfer/supportive unless explicitly re-preregistered.
 - H5 split into H5a (linear cost model, fittable on Q0b/Q1/Q2) and
   H5b (P_repair calibration, gated on Q3c/Q5 landing). H5a is no
   longer blocked on repair data that does not yet exist.
@@ -101,8 +100,8 @@ an explanatory analogy for systems readers.
 - Q3b Tier 1 narrowed: AVP cannot be a matched-budget baseline because
   Q4 dropped LongVideoBench, removing protocol overlap. Tier 1 is now
   related-work positioning only; the actual matched-protocol baseline
-  is the Tier 2 AVP-mimic (relabel of `repair-pass`) on our MVBench /
-  TempCompass manifests.
+  is the Tier 2 one-step active escalation (`repair-pass`) on our
+  MVBench / TempCompass manifests.
 
 2026-05-12 fourth revision (post ChatGPT deep-review pass 3):
 
@@ -143,10 +142,10 @@ an explanatory analogy for systems readers.
 
 ## One-Sentence Thesis
 
-Video VLM acceleration should be planned from the question.
-Redundancy-first routing is an excellent cheap default, but the query decides
-whether the model needs motion evidence, static appearance detail, endpoint
-frames, object relations, or a repair pass. This is visual query planning.
+For frozen video VLM runtimes, typed visual evidence operators should beat a
+single scalar query score when the question demands different physical evidence:
+motion, static detail, endpoint state, object relation, or a bounded repair
+pass.
 
 ## Why This Exists
 
@@ -290,19 +289,28 @@ measured cost. First-paper operators:
 
 **Output-format normalization.** Before any operator timing claim, lock
 the answer-extraction protocol so cost comparisons aren't contaminated
-by answer verbosity. Use MVBench's reference protocol: prompt suffix
-`"Best Option: ("` and parse the next parenthesis-enclosed letter
-(achieves ~100% extraction on MVBench per its CVPR 2024 release). This
-is a *constrained-generation* extraction, not a log-prob switch, so it
-preserves comparability with our existing Round-20 free-form numbers
-where the post-hoc parser already accepted the same single-letter
-answer. Do **not** switch to true logprob scoring over `{A,B,C,D}` — it
+by answer verbosity. Use MVBench's benchmark-style prompt suffix
+`"Best Option: ("` and parse the next parenthesis-enclosed letter; log
+the parse-success rate for every arm. This is a prompt-format and
+parser-normalization step, not a log-prob switch, so it preserves
+comparability with our existing Round-20 free-form numbers where the
+post-hoc parser already accepted the same single-letter answer. Do
+**not** switch to true logprob scoring over `{A,B,C,D}` — it
 breaks comparability with prior arms (SparseVLM, Static-or-Dynamic,
 Frame-Voyager, QuoTA all report MCQ accuracy not logprobs) and adds
 implementation risk we don't need. If a per-arm `generation_tokens`
 distribution shifts by more than 1 token-equivalent across operators on
 a target slice, flag for verbosity audit and consider tightening the
 prompt suffix; otherwise no further normalization is required.
+
+For new Q0b/Q1 cells, run a small prompt-cap smoke before the benchmark
+cell and use the smallest `max_tokens` cap that preserves parse success
+on the smoke slice. Prefer a one-letter/closed-parenthesis stop condition
+if the local generation API supports it without changing answer scoring.
+If not, keep the benchmark-style suffix and require the token-distribution
+audit above. The point is to remove generation-length covariance from
+operator comparisons without switching to a different log-prob evaluation
+protocol.
 
 **Scale convention.** All operators output sets of *encoder valid
 positions* — the unit reported by
@@ -687,7 +695,7 @@ ON/OFF) plus a kr sweep on the ON/ON cell:
 
 | Cell | prompt-admission | C-VISION | runner flags | runs today? |
 |---|---|---|---|---|
-| (a) dense-equivalent | OFF | OFF | `--prune-placeholders=none --vision-tower-keep-rate=1.0 --vision-tower-score-mode=magnitude` | yes (current dense arm: `run_novelty_pruning_gemma.py:702-704`) |
+| (a) dense-equivalent | OFF | OFF | `--prune-placeholders=none --vision-tower-keep-rate=1.0 --vision-tower-score-mode=magnitude` | yes (current dense arm: `run_novelty_pruning_gemma.py:710-712`) |
 | (b) admit ON / vision OFF | RLT-thresholded | OFF | `--prune-placeholders=rlt --vision-tower-keep-rate=1.0 --vision-tower-score-mode=magnitude` | yes (`run_novelty_pruning_gemma.py:689-700`) |
 | (c) admit OFF / vision ON | OFF | RLT-topk | `--prune-placeholders=none --vision-tower-keep-rate=0.5 --vision-tower-score-mode=rlt_topk` | yes at runner level (see note below) |
 | (d) admit ON / vision ON | RLT-thresholded | RLT-topk | current composition default | yes (`run_novelty_pruning_gemma.py:614-745`) |
@@ -697,7 +705,7 @@ ON/OFF) plus a kr sweep on the ON/ON cell:
 prep at `run_novelty_pruning_gemma.py:614` runs whenever
 `vision_tower_keep_rate < 1.0` and `vision_tower_score_mode == "rlt_topk"`,
 *independent of* `prune_placeholders`. The `prune_placeholders="none"`
-branch at `run_novelty_pruning_gemma.py:702-704` then sets the
+branch at `run_novelty_pruning_gemma.py:710-712` then sets the
 placeholder keep-mask to all-ones (no admission pruning), but does not
 disable the C-VISION mask. Cell (c) requires no new runner mode.
 
@@ -1030,38 +1038,30 @@ require either (a) CI excludes zero by a margin of at least 0.10, or
 (b) n is increased to 100+ on the target bucket for the primary
 contrast. The prereg must say which.
 
-**Primary endpoint per experiment family.**
+**Primary endpoint and supportive families.**
 
-| Family | Primary endpoint | Pre-specified slice | n target |
+There is one confirmatory family for the standalone-paper claim. Other
+families are supportive/transfer unless they are separately
+preregistered in a later branch with their own holdout.
+
+| Family | Endpoint | Pre-specified slice | n target | Role |
 |---|---|---|---|
-| H1 (query→evidence mix) | structured-plan accuracy minus best fixed/random control | MVBench moving_attribute, dev | 30 (CI estimation) + 100 (CI rejection) on the winning operator |
-| H1c (identity binding) | identity-anchor recovery set vs static-floor recovery set, Fisher exact 2x2 | MVBench object_interaction, dev | 30 |
-| H4A (structure vs scalar) | structured-plan vs Q2b-QuoTA-mimic, paired Δacc | union of MVBench moving_attribute + object_interaction | 60 (pooled) |
-| H4B (total cost) | structured-plan vs higher-K RLT, ratio of (Δacc / Δ_E2E_ms) | per-benchmark pooled | 30 per benchmark |
-| H5a (cost model, no repair) | MAPE on held-out benchmark E2E predictions | one held-out benchmark of {MVBench, VideoMME, TOMATO} | plan-level ledger from Q0b-Q2 |
-| H5b (P_repair calibration) | calibration error on repair fire rate | gated on Q3c/Q5 landing | plan-level ledger from Q3c-Q5 |
+| H4A/H4B primary | structured-plan vs best of fixed/random/duplication/higher-K RLT and Q2b-QuoTA-mimic, reported as paired Δacc and E2E frontier position | union of MVBench moving_attribute + object_interaction on frozen validation slice | 60 pooled for estimation; n>=100 on the winning operator for rejection-style claim | confirmatory |
+| H1 (query→evidence mix) | structured-plan accuracy minus best fixed/random control | MVBench moving_attribute, dev/design slice | 30 diagnostic; 100 for claim | supportive unless chosen as primary before run |
+| H1c (identity binding) | identity-anchor recovery set vs static-floor recovery set, Fisher exact 2x2 | MVBench object_interaction | 30 diagnostic | descriptive unless rescued counts >=10 per arm |
+| H4B transfer | structured-plan vs higher-K RLT, ratio of (Δacc / Δ_E2E_ms) | TOMATO / VideoMME / TempCompass slices not used for rule design | 30 per benchmark | transfer/supportive |
+| H5a (cost model, no repair) | MAPE on held-out benchmark E2E predictions | one held-out benchmark of {MVBench, VideoMME, TOMATO} | plan-level ledger from Q0b-Q2 | systems support |
+| H5b (P_repair calibration) | calibration error on repair fire rate | gated on Q3c/Q5 landing | plan-level ledger from Q3c-Q5 | deferred |
 
-**Multiple-comparisons procedure.** Three independent confirmatory
-families, one per benchmark (MVBench, TOMATO, VideoMME).
-
-- Each family contains one primary contrast (best-operator vs dense
-  baseline on the designated primary bucket) plus secondary
-  operator-variant tests (family size <= 8 per benchmark).
-- *Within each family*: Holm-Bonferroni at alpha=0.05 over the primary
-  plus all secondaries (so the primary itself is part of the corrected
-  family, not exempt from it).
-- *Across families*: cross-family multiplicity is not corrected. With
-  three independent families at per-family alpha=0.05, the
-  per-experiment FWER inflation is bounded above by 1-(1-0.05)^3 ~=
-  0.143; this is the standard convention in clinical trials with
-  pre-specified independent confirmatory endpoints.
-- If a referee requires strict global FWER, fall back to Holm-Bonferroni
-  across all 3 x 8 = 24 tests at adjusted alpha = 0.05/24 ~= 0.0021 per
-  test. Preregister both options and report which one is in force.
-- Bucket-stratified secondary results inside each family are exploratory
-  and labeled as such; they carry no FWER guarantee.
-- Benjamini-Hochberg FDR at q=0.05 may be reported alongside as a
-  secondary discovery list.
+**Multiple-comparisons procedure.** The confirmatory family is the
+single H4A/H4B primary slice above. Apply Holm-Bonferroni at alpha=0.05
+over the primary contrast plus its preregistered operator-variant tests
+(family size <= 8). Transfer benchmarks, bucket-stratified rows,
+identity-overlap rows, and cost-model diagnostics are supportive unless
+explicitly promoted in a new preregistration. They should be reported
+with paired CIs and raw counts, not used to multiply the standalone
+claim. Benjamini-Hochberg FDR at q=0.05 may be reported alongside as a
+secondary discovery list for exploratory operator/bucket findings.
 
 **Equivalence (TOST) for "structure ≈ scalar" failure mode.** Margin
 Δ_equiv = 0.10 (TOST at Δ_equiv = 0.05 is underpowered at n=30; that
@@ -1284,9 +1284,10 @@ illusory.
 
 When the next branch starts, the goal is to get **Q0 → Q0b → Q1** to a
 publish-or-kill decision before any planner, repair, or cost-model work
-is implemented. Repair-pass (Q3c/Q5), AVP-mimic (Q3b Tier 2), QuoTA
-self-scoring (Q2b), and H5b are deliberately *not* on the first-branch
-critical path. The reason is that all four pull the work toward
+is implemented. Repair-pass (Q3c/Q5), one-step active escalation
+(Q3b Tier 2), QuoTA self-scoring (Q2b), and H5b are deliberately *not*
+on the first-branch critical path. The reason is that all four pull the
+work toward
 active-perception or learned-cost-model territory where AVP and SIGMOD
 priors are stronger; the standalone paper claim depends on operator
 planning *without* those modules.
@@ -1322,14 +1323,18 @@ must be added by the first-branch runner plumbing:
 | Placeholder admission | `dense_placeholder_count`, `pruned_placeholder_count`, `placeholder_prune_bypassed`, `placeholder_reduction` (derived = 1 - pruned/dense) | first three exist (`run_novelty_pruning_gemma.py:771-773`); `placeholder_reduction` is derived in analyzer |
 | Encoder positions | `gemma_encoder_valid_positions_per_frame`, `gemma_encoder_kept_per_frame`, `vision_reduction` (derived = 1 - kept/valid, per frame, then averaged) | exist (`run_novelty_pruning_gemma.py:735-736`, `run_phase1_63G_gemma_track_b.py:904-905`) |
 | Timing | `scorer_prepare_ms`, `scorer_keep_mask_ms`, `multimodal_prefill_ms`, `vision_excluding_scorer_ms`, `decode_ms`, `text_generation_ms`, `end_to_end_ms` | exist |
-| Operator | `operator_plan`, `operator_budget_mode`, `floor_stride`, `anchor_frames`, `query_budget_scores`, `random_seed`, `static_floor_overflow` | new in Q1 schema |
+| Pairing / outcome | `item_id`, `benchmark`, `group`, `dense_correct`, `pruned_correct`, `dense_parse_failure`, `pruned_parse_failure`, paired dense/sparse row key | mostly exist in current paired/analyzer outputs; require in Q0b/Q1 analyzer inputs |
+| Operator | `operator_plan`, `operator_budget_mode`, `floor_stride`, `anchor_frames`, `query_budget_scores`, `random_seed`, `static_floor_overflow`, `reserved_positions_per_frame`, `complement_size_per_frame`, `operator_overlap_count_per_frame` | new in Q1 schema |
 
-A row missing any field in rows 1-3 above must be flagged invalid by the
+A row missing any field in rows 1-4 above must be flagged invalid by the
 analyzer. The two-ledger separation is non-negotiable: a plan that
 reduces placeholders but not encoder compute is *not* equivalent to a
 plan that reduces encoder compute but not placeholders, even at the
 same nominal `K`. Conflating them is one of the field's recurring
-reviewer-bait errors.
+reviewer-bait errors. For operator-composition rows, the analyzer must
+also assert that `operator_overlap_count_per_frame == 0` after
+complement subtraction unless the operator explicitly declares
+intentional overlap and accounts for it in the budget debit.
 
 ### Two presentation tables (Q1 onward)
 
@@ -1399,11 +1404,11 @@ its Plan B. The planning standard is "what kills this experiment?" not
 |---|---|---|---|
 | Q0 | Round-20 artifacts lack per-item C-VISION kept-position accounting; failure clustering inconclusive | Medium | Re-run a small (n=12 per bucket) Q0b cell first to populate the missing fields; defer Q0 taxonomy until Q0b lands |
 | Q0 (identity-anchor gate) | First-frame entity coverage <60% on MVBench `object_interaction` items; identity-anchor structurally broken | Medium-high | Drop `identity-anchor` from the operator menu before Q1; replace any identity-binding hypothesis with "queried-entity-bearing frame anchor" once such a frame can be cheaply identified |
-| Q0b | Cell-(c) implementation in `run_novelty_pruning_gemma.py` interacts badly with the prefill_step_size=1024 substrate fix; wrong kept-position accounting | Low-medium | Run cell (a) and cell (d) at kr=1.0 first as sanity checks; refuse to interpret cell (c) until accounting fields reconcile |
+| Q0b | Cell-(c) queue/analyzer integration interacts badly with the prefill_step_size=1024 substrate fix; wrong kept-position accounting | Low-medium | Run cell (a) and cell (d) at kr=1.0 first as sanity checks; refuse to interpret cell (c) until accounting fields reconcile |
 | Q1 | Fixed/random/duplication coverage matches the structured plan at matched K | Medium-high | This is a *paper-killer for the standalone* but converts cleanly to a VLMaxxing appendix on "matched-budget coverage as a strong baseline." Do not pretend it's a planner win |
 | Q2 / Q2b | mlx-vlm does not expose per-token logprobs; QuoTA self-scoring blocked | Medium | Tier down to lexical-rule baseline (label honestly: "query-conditioned temporal weighting, not LVLM scoring"); paper claim narrows to "structured beats lexical" |
 | Q3 | Lexical rule classifier does not generalize from design_v1 to dev_v1 (overfits trigger words) | Medium-high | Substitute a small frozen classifier (Gemma text-only call), or narrow the rule taxonomy to fewer classes |
-| Q3b (AVP) | Related-work framing overstates comparability to AVP despite no shared benchmark/protocol | Low | Keep AVP numbers in related work only; if a direct challenge arises, run the Tier-2 AVP-mimic on our manifests instead of comparing against AVP's published LVBench rows |
+| Q3b (AVP) | Related-work framing overstates comparability to AVP despite no shared benchmark/protocol | Low | Keep AVP numbers in related work only; if a direct challenge arises, run the Tier-2 one-step active-escalation control on our manifests instead of comparing against AVP's published LVBench rows |
 | Q3c (VOI/anytime) | Repair-trigger uncertainty estimate is uncalibrated; repair fires nearly always | Medium | If repair fires >40% of items, drop the operator from the planner and report it only as a discussion-section ablation |
 | Q4 (transfer) | TempCompass ingest blocks on dataset access or schema drift | Low | Switch the transfer claim to ActivityNet or NExT-QA (existing video corpora with overlapping query types); tighten paper claim to "transfers to one TempCompass-class benchmark" |
 | Q4 (LongVideoBench) | Dataset is 50-150 GB, M3 16GB cannot host without offloading | High | Drop LongVideoBench; do not promise it in the prereg |
