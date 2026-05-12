@@ -565,6 +565,16 @@ def main() -> int:
             f"{getattr(model.config, 'model_type', None)!r}"
         )
     geometry = _gemma_codec_geometry(model)
+    print(
+        "[phase1_63G] gemma_geometry "
+        f"image_size={geometry.image_size} "
+        f"soft_grid={geometry.soft_grid_shape[0]}x{geometry.soft_grid_shape[1]} "
+        f"patch_grid={geometry.patch_grid_shape[0]}x{geometry.patch_grid_shape[1]} "
+        f"patch_size={geometry.patch_size} "
+        f"pooling_kernel={geometry.pooling_kernel_size} "
+        f"max_patches={geometry.max_patches}",
+        flush=True,
+    )
 
     vt_patched = args.vision_tower_keep_rate < 1.0
     if vt_patched:

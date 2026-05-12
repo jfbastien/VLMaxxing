@@ -258,7 +258,7 @@ def build_schedule() -> list[ExperimentStep]:
             ),
             setup_effort=(
                 "Qwen codec-grid complete; Gemma codec-grid CPU wiring complete with flattened/padded pre-pool "
-                "score-grid guard; Gemma still needs GPU smoke before broader use"
+                "score-grid guard; Gemma needs the N=10 GPU smoke before broader use"
             ),
             eta_m3=(
                 "Gemma N=10 smoke 1-2 hours; Qwen random multi-seed about 2-3 hours; "

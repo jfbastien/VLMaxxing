@@ -275,8 +275,9 @@ signals more cheaply, but that is a systems hypothesis until measured.
    Hypothesis: if codec-grid sparse vision is model-family robust, Gemma should
    preserve paired sparse-vs-dense fidelity at the same operating-point family.
    The CPU wiring is now present: Gemma accepts external codec grids on the
-   512-canvas / 16x16 token geometry and has placeholder-count and score-shape
-   guards. The next step is a one-item or N=10 GPU smoke via
+   768-canvas / 48x48 pre-pool patch grid, pads scores to the local encoder
+   length, excludes padded positions from Top-K, and has placeholder-count and
+   score-shape guards. The next scientific step is the N=10 GPU smoke via
    `scripts/run_ov6_gemma_codec_smoke.sh`.
 
 2. **OV-8 C-PERSIST composition after OV-6**

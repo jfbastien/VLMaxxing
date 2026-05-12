@@ -163,7 +163,7 @@
       "hypothesis": "The OV-3 Track A signal can become a systems result only at operating points where codec score grids preserve sparse-vision fidelity. Qwen shows bounded point-estimate Track B evidence, not a broad net wall-clock speedup after current PyAV extraction.",
       "question": "Can OneVision-style allocation improve real sparse vision work skipped?",
       "requires_nvidia": false,
-      "setup_effort": "Qwen codec-grid complete; Gemma codec-grid CPU wiring complete with flattened/padded pre-pool score-grid guard; Gemma still needs GPU smoke before broader use",
+      "setup_effort": "Qwen codec-grid complete; Gemma codec-grid CPU wiring complete with flattened/padded pre-pool score-grid guard; Gemma needs the N=10 GPU smoke before broader use",
       "skip_rule": "If Gemma one-item/short smoke shows geometry mismatch, stale codec-grid reuse, or paired format/fidelity regressions beyond the existing Gemma Track B caveat, stop Gemma and keep OV-6 as Qwen-only bounded evidence.",
       "stage": "OV-6",
       "success_gate": "For Qwen, report as bounded point-estimate evidence unless paired tests gate; for Gemma, first gate on exact geometry/provenance and paired dense-vs-sparse format/fidelity before any cross-family claim.",
