@@ -1,0 +1,109 @@
+{
+  "falsification": "Any seed where magnitude_norm exceeds random by at least 3 items.",
+  "gate": "All tested random seeds must be >= magnitude_norm by point estimate.",
+  "gate_status": {
+    "falsifying_seeds": [],
+    "n_seeds": 4,
+    "passes_point_estimate_gate": true,
+    "seeds_random_ge_magnitude": 4
+  },
+  "magnitude_norm": {
+    "accuracy": {
+      "correct": 24,
+      "n": 57,
+      "rate": 0.42105263157894735,
+      "wilson_95_ci": [
+        0.3019,
+        0.5502
+      ]
+    },
+    "mean_e2e_ms": 39594.2569987193,
+    "mean_vision_ms": 6326.224521982456,
+    "summary_path": "research/experiments/2026/artifacts/phase1_51V_ov6_random_multiseed/magnitude_norm/summary.json"
+  },
+  "phase": "OV-6",
+  "question": "Is uniform_random >= magnitude_norm at kr=0.5/layer=2 seed-stable?",
+  "random_seeds": [
+    {
+      "accuracy": {
+        "correct": 31,
+        "n": 57,
+        "rate": 0.543859649122807,
+        "wilson_95_ci": [
+          0.4159,
+          0.6663
+        ]
+      },
+      "arm": "uniform_random_seed1",
+      "mean_e2e_ms": 35233.32618642105,
+      "mean_vision_ms": 5567.894557824561,
+      "paired_vs_magnitude": {
+        "mcnemar_exact_p_two_sided": 0.0923,
+        "random_correct_magnitude_wrong": 10,
+        "random_wrong_magnitude_correct": 3
+      },
+      "summary_path": "research/experiments/2026/artifacts/phase1_51V_ov6_random_multiseed/uniform_random_seed1/summary.json"
+    },
+    {
+      "accuracy": {
+        "correct": 29,
+        "n": 57,
+        "rate": 0.5087719298245614,
+        "wilson_95_ci": [
+          0.3826,
+          0.6338
+        ]
+      },
+      "arm": "uniform_random_seed100",
+      "mean_e2e_ms": 38451.167684947366,
+      "mean_vision_ms": 6080.371019035088,
+      "paired_vs_magnitude": {
+        "mcnemar_exact_p_two_sided": 0.2668,
+        "random_correct_magnitude_wrong": 9,
+        "random_wrong_magnitude_correct": 4
+      },
+      "summary_path": "research/experiments/2026/artifacts/phase1_51V_ov6_random_multiseed/uniform_random_seed100/summary.json"
+    },
+    {
+      "accuracy": {
+        "correct": 28,
+        "n": 57,
+        "rate": 0.49122807017543857,
+        "wilson_95_ci": [
+          0.3662,
+          0.6174
+        ]
+      },
+      "arm": "uniform_random_seed42",
+      "mean_e2e_ms": 35067.88616066666,
+      "mean_vision_ms": 5535.131230947369,
+      "paired_vs_magnitude": {
+        "mcnemar_exact_p_two_sided": 0.3877,
+        "random_correct_magnitude_wrong": 8,
+        "random_wrong_magnitude_correct": 4
+      },
+      "summary_path": "research/experiments/2026/artifacts/phase1_51V_ov6_random_multiseed/uniform_random_seed42/summary.json"
+    },
+    {
+      "accuracy": {
+        "correct": 29,
+        "n": 57,
+        "rate": 0.5087719298245614,
+        "wilson_95_ci": [
+          0.3826,
+          0.6338
+        ]
+      },
+      "arm": "uniform_random_seed7",
+      "mean_e2e_ms": 34902.318978912284,
+      "mean_vision_ms": 5506.3057427193,
+      "paired_vs_magnitude": {
+        "mcnemar_exact_p_two_sided": 0.2266,
+        "random_correct_magnitude_wrong": 8,
+        "random_wrong_magnitude_correct": 3
+      },
+      "summary_path": "research/experiments/2026/artifacts/phase1_51V_ov6_random_multiseed/uniform_random_seed7/summary.json"
+    }
+  ],
+  "root": "research/experiments/2026/artifacts/phase1_51V_ov6_random_multiseed"
+}
