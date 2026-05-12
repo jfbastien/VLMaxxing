@@ -211,7 +211,7 @@ def build_schedule() -> list[ExperimentStep]:
             question="Does the codec-source Track A signal transfer beyond VideoMME short / 8 frames?",
             hypothesis=(
                 "If codec-native scoring is real rather than a VideoMME-short operating-point artifact, it should "
-                "survive at least one cross-benchmark or threshold-sensitivity test. Frame=16 already shows that "
+                "survive at least one cross-benchmark or calibration-sensitivity test. Frame=16 already shows that "
                 "the advantage over pixel does not automatically transfer across frame budgets."
             ),
             success_gate=(
@@ -219,8 +219,8 @@ def build_schedule() -> list[ExperimentStep]:
                 "operating-point labels; promote only sources that remain parse-clean and do not break pixel-correct rows."
             ),
             skip_rule=(
-                "If cross-benchmark or threshold sensitivity collapses to pixel or reverses correctness, keep OV-3 "
-                "as bounded VideoMME-short evidence and do not generalize."
+                "If cross-benchmark or pooled-calibration sensitivity collapses to pixel or reverses correctness, "
+                "keep OV-3 as bounded VideoMME-short evidence and do not generalize."
             ),
             setup_effort="requires OV-3 N=57 artifacts; no query-aware tuning in this branch",
             eta_m3="4-7 hours per focused replication cell",
@@ -230,8 +230,8 @@ def build_schedule() -> list[ExperimentStep]:
             requires_nvidia=False,
             defer_until="after OV-3 dev passes",
             commands=[
-                "future: TOMATO motion codec-source replication",
-                "future: threshold-sensitivity sweep at frame_count=8",
+                "scripts/run_ov6_qwen_tomato_replication.sh",
+                "scripts/run_ov3_h264_calibration_sensitivity.sh",
             ],
             artifacts=[
                 "research/experiments/2026/artifacts/onevision_track_a_replication/",
@@ -242,41 +242,51 @@ def build_schedule() -> list[ExperimentStep]:
             track="Track B",
             question="Can OneVision-style allocation improve real sparse vision work skipped?",
             hypothesis=(
-                "The OV-3 Track A signal can only become a systems result if the same codec source can drive real "
-                "vision-stage pruning without losing fidelity. Simple codec sources should be tested before weighted fusion."
+                "The OV-3 Track A signal can become a systems result only at operating points where codec score "
+                "grids preserve sparse-vision fidelity. Qwen shows bounded point-estimate Track B evidence, not a "
+                "broad net wall-clock speedup after current PyAV extraction."
             ),
             success_gate=(
-                "At matched keep-rate, preserve paired correctness/format against dense and improve measured "
-                "vision-stage or end-to-end timing over the current magnitude_norm / uniform_random sparse-vision baselines."
+                "For Qwen, report as bounded point-estimate evidence unless paired tests gate; for Gemma, first "
+                "gate on exact geometry/provenance and paired dense-vs-sparse format/fidelity before any "
+                "cross-family claim."
             ),
             skip_rule=(
-                "If the first Qwen 8f smoke fails fidelity at all keep-rates, skip Gemma and treat the result as "
-                "evidence that the Track A codec oracle does not transfer to frozen Track B sparse execution."
+                "If Gemma one-item/short smoke shows geometry mismatch, stale codec-grid reuse, or paired "
+                "format/fidelity regressions beyond the existing Gemma Track B caveat, stop Gemma and keep OV-6 "
+                "as Qwen-only bounded evidence."
             ),
             setup_effort=(
-                "requires separate sparse-tower scorer wiring: codec-grid construction, post-window group alignment, "
-                "provenance fields, and CPU alignment tests"
+                "Qwen codec-grid complete; Gemma codec-grid CPU wiring complete with flattened/padded pre-pool "
+                "score-grid guard; Gemma still needs GPU smoke before broader use"
             ),
-            eta_m3="2-4 hours coding plus 1-2 hours for an 8f smoke; broad sweeps not recommended",
+            eta_m3=(
+                "Gemma N=10 smoke 1-2 hours; Qwen random multi-seed about 2-3 hours; "
+                "Qwen TOMATO focused cell about 4 hours; run sequentially"
+            ),
             eta_m5=(
-                "8-16 hours Qwen broader sweep after M3 smoke gates; +6-12 hours Gemma "
-                "only if Qwen gates"
+                "Gemma N=57 or Qwen cross-benchmark confirmation 4-8 hours per focused cell after M3 smoke gates"
             ),
             compute_lane=(
-                "M3 smoke allowed when free; M5 128GB broad sweep only after M3 8f "
-                "alignment and fidelity gates; no concurrent model jobs"
+                "Qwen M3 runs complete; Gemma CPU wiring complete; next is one Gemma model job at a time; "
+                "M5 only for broader preregistered confirmation"
             ),
             uses_local_accelerator=True,
             requires_nvidia=False,
-            defer_until="after OV-3 N=57 review; before OV-8",
+            defer_until="Qwen complete; Gemma smoke depends on machine availability",
             commands=[
-                "uv run python scripts/run_phase1_51V.py --score-mode codec_grid --codec-score-source novel_coded <smoke args>",
-                "uv run python scripts/run_phase1_51V.py --score-mode codec_grid --codec-score-source motion <smoke args>",
-                "M5 only after smoke: broaden Qwen 8f; run 16f only if 8f gates; run 32f only if 16f gates",
-                "uv run python scripts/run_phase1_63G_gemma_track_b.py <onevision-allocator args>",
+                "DONE: scripts/run_ov6_full_sweep.sh",
+                "DONE: scripts/run_ov6_n57_promotions.sh",
+                "uv run python scripts/analyze_ov6_track_b.py",
+                "NEXT: scripts/run_ov6_gemma_codec_smoke.sh",
+                "NEXT: scripts/run_ov6_qwen_random_multiseed.sh",
+                "NEXT: scripts/run_ov6_qwen_tomato_replication.sh",
             ],
             artifacts=[
-                "research/experiments/2026/artifacts/onevision_track_b_sparse/",
+                "research/experiments/2026/artifacts/phase1_51V_ov6_n57/",
+                "research/experiments/2026/artifacts/phase1_51V_ov6_n57_kr070_l2/",
+                "research/experiments/2026/artifacts/phase1_51V_ov6_n57_kr050_l8/",
+                "research/experiments/2026/artifacts/onevision_vlmaxxing_plan/ov6_track_b_statistical_audit.json",
             ],
         ),
         ExperimentStep(

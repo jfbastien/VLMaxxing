@@ -64,18 +64,54 @@ def magnitude_keep_mask(hidden_states: mx.array, positions: mx.array, keep_rate:
     return keep_mask
 
 
-def _topk_keep_mask_from_scores(scores: mx.array, keep_rate: float) -> mx.array:
+def _valid_position_mask(positions: mx.array) -> mx.array:
+    """Return [B, L] mask for non-padding Gemma patch positions."""
+
+    if positions.ndim != 3 or positions.shape[-1] != 2:
+        raise ValueError(f"positions must have shape [B, L, 2], got {positions.shape}")
+    return mx.all(positions >= 0, axis=-1)
+
+
+def _topk_keep_mask_from_scores(
+    scores: mx.array,
+    keep_rate: float,
+    *,
+    valid_mask: mx.array | None = None,
+) -> mx.array:
     """Build a per-row top-k keep mask from score matrix [B, L]."""
 
     if scores.ndim != 2:
         raise ValueError(f"scores must have shape [B, L], got {scores.shape}")
-    _B, L = scores.shape
+    _B, full_length = scores.shape
     if not (0.0 < keep_rate <= 1.0):
         raise ValueError(f"keep_rate must be in (0, 1], got {keep_rate}")
-    k = max(1, int(L * keep_rate))
+    if valid_mask is not None:
+        if valid_mask.shape != scores.shape:
+            raise ValueError(
+                f"valid_mask shape {valid_mask.shape} does not match scores {scores.shape}"
+            )
+        valid_counts = valid_mask.astype(mx.int32).sum(axis=-1)
+        valid_counts_np = np.asarray(valid_counts)
+        if np.any(valid_counts_np <= 0):
+            raise ValueError(
+                "cannot prune Gemma tokens because at least one frame has no valid positions"
+            )
+        if np.any(valid_counts_np != valid_counts_np[0]):
+            raise ValueError(
+                "Gemma sparse pruning requires equal valid-token counts per frame; "
+                f"got {valid_counts_np.tolist()}"
+            )
+        effective_length = int(valid_counts_np[0])
+        scores = mx.where(valid_mask, scores, mx.array(float("-inf"), dtype=scores.dtype))
+    else:
+        effective_length = int(full_length)
+    k = max(1, int(effective_length * keep_rate))
     order = mx.argsort(scores.astype(mx.float32), axis=-1)
     top_k = order[:, -k:]
-    one_hot = cast(mx.array, mx.expand_dims(top_k, -1) == mx.expand_dims(mx.arange(L), 0))
+    one_hot = cast(
+        mx.array,
+        mx.expand_dims(top_k, -1) == mx.expand_dims(mx.arange(full_length), 0),
+    )
     return mx.any(one_hot, axis=1)
 
 
@@ -118,12 +154,21 @@ def score_keep_mask(
     """Return a keep mask for magnitude, random, or external codec scoring."""
 
     if config.score_mode == "magnitude_norm":
-        return magnitude_keep_mask(hidden_states, positions, config.keep_rate)
+        scores = mx.linalg.norm(hidden_states.astype(mx.float32), axis=-1)
+        return _topk_keep_mask_from_scores(
+            scores,
+            config.keep_rate,
+            valid_mask=_valid_position_mask(positions),
+        )
     B, L, _D = hidden_states.shape
     if config.score_mode == "uniform_random":
         rng = np.random.default_rng(int(config.score_seed))
         scores_np = rng.random(size=(int(B), int(L)), dtype=np.float32)
-        return _topk_keep_mask_from_scores(mx.array(scores_np), config.keep_rate)
+        return _topk_keep_mask_from_scores(
+            mx.array(scores_np),
+            config.keep_rate,
+            valid_mask=_valid_position_mask(positions),
+        )
     if config.score_mode == "codec_grid":
         if codec_score_grid is None:
             raise ValueError("score_mode 'codec_grid' requires a codec score grid")
@@ -132,7 +177,11 @@ def score_keep_mask(
             batch_size=int(B),
             tokens_per_frame=int(L),
         )
-        return _topk_keep_mask_from_scores(mx.array(scores_np), config.keep_rate)
+        return _topk_keep_mask_from_scores(
+            mx.array(scores_np),
+            config.keep_rate,
+            valid_mask=_valid_position_mask(positions),
+        )
     raise ValueError(
         f"unknown score_mode {config.score_mode!r}; expected one of: "
         "magnitude_norm, uniform_random, codec_grid"

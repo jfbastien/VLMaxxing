@@ -39,11 +39,35 @@ from codec_through.video_decode import _count_frames  # noqa: E402
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RUNNER_PATH = REPO_ROOT / "scripts" / "run_benchmark_track_a.py"
 DEFAULT_MODEL_PATH = Path.home() / "models" / "gemma-4-e4b-it-4bit"
-GEMMA_IMAGE_SIZE = 512
-GEMMA_GRID_SHAPE = (16, 16)
-GEMMA_TOKEN_BLOCK = GEMMA_IMAGE_SIZE // GEMMA_GRID_SHAPE[0]
+GEMMA_SOFT_GRID_SHAPE = (16, 16)
+GEMMA_PATCH_SIZE = 16
+GEMMA_POOLING_KERNEL_SIZE = 3
+GEMMA_PATCH_GRID_SHAPE = (
+    GEMMA_SOFT_GRID_SHAPE[0] * GEMMA_POOLING_KERNEL_SIZE,
+    GEMMA_SOFT_GRID_SHAPE[1] * GEMMA_POOLING_KERNEL_SIZE,
+)
+GEMMA_IMAGE_SIZE = GEMMA_PATCH_GRID_SHAPE[0] * GEMMA_PATCH_SIZE
+GEMMA_TOKEN_BLOCK = GEMMA_PATCH_SIZE
 CODEC_SCORE_SOURCE_CHOICES: tuple[str, ...] = tuple(source.value for source in CodecScoreSource)
 FUSION_MODE_CHOICES: tuple[FuseMode, ...] = ("weighted", "sum", "max", "geomean")
+
+
+@dataclass(frozen=True, slots=True)
+class GemmaCodecGeometry:
+    image_size: int
+    soft_grid_shape: tuple[int, int]
+    patch_grid_shape: tuple[int, int]
+    patch_size: int
+    pooling_kernel_size: int
+    max_patches: int
+
+    @property
+    def soft_tokens_per_frame(self) -> int:
+        return self.soft_grid_shape[0] * self.soft_grid_shape[1]
+
+    @property
+    def real_patches_per_frame(self) -> int:
+        return self.patch_grid_shape[0] * self.patch_grid_shape[1]
 
 
 @dataclass(frozen=True, slots=True)
@@ -99,7 +123,7 @@ def _resize_square_with_active_box(
     *,
     size: int = GEMMA_IMAGE_SIZE,
 ) -> tuple[Any, tuple[int, int, int, int]]:
-    """Resize the shared 560-square benchmark frame to Gemma's 512 canvas.
+    """Resize the shared 560-square benchmark frame to Gemma's fixed canvas.
 
     ``run_benchmark_track_a._decode_uniform_frames`` already returns a square
     padded frame plus the active content box. Re-letterboxing the square would
@@ -168,16 +192,69 @@ def _prepare_item(
     return raw, decode_ms, processor_ms, gemma_active_boxes
 
 
-def _validate_gemma_placeholders(model: Any, raw: dict[str, Any], *, frame_count: int) -> None:
+def _gemma_codec_geometry(model: Any) -> GemmaCodecGeometry:
+    vision_tower = model.vision_tower
+    patch_size = int(getattr(vision_tower, "patch_size", GEMMA_PATCH_SIZE))
+    pooling_kernel_size = int(
+        getattr(vision_tower, "pooling_kernel_size", GEMMA_POOLING_KERNEL_SIZE)
+    )
+    default_output_length = int(
+        getattr(
+            vision_tower,
+            "default_output_length",
+            GEMMA_SOFT_GRID_SHAPE[0] * GEMMA_SOFT_GRID_SHAPE[1],
+        )
+    )
+    max_patches = int(
+        getattr(vision_tower, "max_patches", default_output_length * pooling_kernel_size**2)
+    )
+    soft_grid_shape = GEMMA_SOFT_GRID_SHAPE
+    patch_grid_shape = (
+        soft_grid_shape[0] * pooling_kernel_size,
+        soft_grid_shape[1] * pooling_kernel_size,
+    )
+    real_patches = patch_grid_shape[0] * patch_grid_shape[1]
+    if patch_size != GEMMA_PATCH_SIZE:
+        raise ValueError(
+            f"Gemma codec path expected patch_size={GEMMA_PATCH_SIZE}, got {patch_size}"
+        )
+    if pooling_kernel_size != GEMMA_POOLING_KERNEL_SIZE:
+        raise ValueError(
+            f"Gemma codec path expected pooling_kernel_size={GEMMA_POOLING_KERNEL_SIZE}, "
+            f"got {pooling_kernel_size}"
+        )
+    if real_patches > max_patches:
+        raise ValueError(
+            f"Gemma codec path needs {real_patches} real patches but "
+            f"model max_patches={max_patches}"
+        )
+    return GemmaCodecGeometry(
+        image_size=patch_grid_shape[0] * patch_size,
+        soft_grid_shape=soft_grid_shape,
+        patch_grid_shape=patch_grid_shape,
+        patch_size=patch_size,
+        pooling_kernel_size=pooling_kernel_size,
+        max_patches=max_patches,
+    )
+
+
+def _validate_gemma_placeholders(
+    model: Any,
+    raw: dict[str, Any],
+    *,
+    frame_count: int,
+    geometry: GemmaCodecGeometry | None = None,
+) -> None:
+    geometry = geometry or _gemma_codec_geometry(model)
     input_ids = np.asarray(raw["input_ids"], dtype=np.int64).reshape(-1)
     image_token_id = int(model.config.image_token_id)
     observed = int((input_ids == image_token_id).sum())
-    expected = frame_count * GEMMA_GRID_SHAPE[0] * GEMMA_GRID_SHAPE[1]
+    expected = frame_count * geometry.soft_tokens_per_frame
     if observed != expected:
         raise RuntimeError(
             f"Gemma placeholder-count mismatch: processor emitted {observed} "
             f"image tokens for {frame_count} frames; driver assumed {expected} "
-            f"({frame_count} x {GEMMA_GRID_SHAPE[0]}x{GEMMA_GRID_SHAPE[1]})."
+            f"({frame_count} x {geometry.soft_grid_shape[0]}x{geometry.soft_grid_shape[1]})."
         )
 
 
@@ -186,13 +263,14 @@ def _per_frame_codec_token_grids(
     *,
     frame_count: int,
     active_boxes: list[tuple[int, int, int, int]],
+    geometry: GemmaCodecGeometry,
     codec_score_source: CodecScoreSource,
     fusion_mode: FuseMode,
     motion_weight: float,
     residual_weight: float,
     normalize_fusion_inputs: bool,
 ) -> tuple[list[np.ndarray], float]:
-    """Compute per-sampled-frame codec scores on Gemma's 512/16x16 grid."""
+    """Compute per-sampled-frame codec scores on Gemma's pre-pool patch grid."""
 
     if item.start_seconds is not None or item.end_seconds is not None:
         raise ValueError(
@@ -237,15 +315,15 @@ def _per_frame_codec_token_grids(
             macroblock_size=extractor.mb_size,
             frame_width=extractor.width,
             frame_height=extractor.height,
-            canvas_size=GEMMA_IMAGE_SIZE,
+            canvas_size=geometry.image_size,
             active_box=active_box,
-            token_block=GEMMA_TOKEN_BLOCK,
+            token_block=geometry.patch_size,
             mode=fusion_mode,
             motion_weight=motion_weight,
             residual_weight=residual_weight,
             normalize_inputs=normalize_fusion_inputs,
         )
-        expected_shape = GEMMA_GRID_SHAPE
+        expected_shape = geometry.patch_grid_shape
         if token_grid.shape != expected_shape:
             raise ValueError(
                 f"Gemma codec score grid for {item.item_id} has shape {token_grid.shape}, "
@@ -254,6 +332,39 @@ def _per_frame_codec_token_grids(
         token_grids.append(np.clip(token_grid, a_min=0.0, a_max=None).astype(np.float32))
 
     return token_grids, float(extract_s)
+
+
+def _stack_gemma_codec_score_grid(
+    codec_grids: list[np.ndarray],
+    *,
+    geometry: GemmaCodecGeometry,
+) -> np.ndarray:
+    """Flatten and pad per-frame patch score grids into Gemma encoder [B, L] form."""
+
+    if not codec_grids:
+        raise ValueError("cannot stack an empty Gemma codec score grid list")
+    flattened: list[np.ndarray] = []
+    for index, grid in enumerate(codec_grids):
+        array = np.asarray(grid, dtype=np.float32)
+        if array.shape != geometry.patch_grid_shape:
+            raise ValueError(
+                f"Gemma codec score grid at frame {index} has shape {array.shape}, "
+                f"expected {geometry.patch_grid_shape}"
+            )
+        if not np.all(np.isfinite(array)):
+            raise ValueError(f"Gemma codec score grid at frame {index} contains non-finite values")
+        if np.any(array < 0.0):
+            raise ValueError(f"Gemma codec score grid at frame {index} contains negative values")
+        flat = array.reshape(-1)
+        if flat.shape[0] > geometry.max_patches:
+            raise ValueError(
+                f"Gemma codec score grid at frame {index} has {flat.shape[0]} patches, "
+                f"exceeding max_patches={geometry.max_patches}"
+            )
+        if flat.shape[0] < geometry.max_patches:
+            flat = np.pad(flat, (0, geometry.max_patches - flat.shape[0]), constant_values=0.0)
+        flattened.append(flat)
+    return np.stack(flattened, axis=0).astype(np.float32, copy=False)
 
 
 def _compute_gemma_features(model: Any, raw: dict[str, Any]) -> tuple[mx.array, float]:
@@ -453,6 +564,7 @@ def main() -> int:
             f"run_phase1_63G_gemma_track_b.py supports gemma4 only; got "
             f"{getattr(model.config, 'model_type', None)!r}"
         )
+    geometry = _gemma_codec_geometry(model)
 
     vt_patched = args.vision_tower_keep_rate < 1.0
     if vt_patched:
@@ -476,7 +588,7 @@ def main() -> int:
     if args.rss_guard_mb > 0:
         check_rss_guard(args.rss_guard_mb, stage="post_model_load")
 
-    tokens_per_frame = GEMMA_GRID_SHAPE[0] * GEMMA_GRID_SHAPE[1]
+    tokens_per_frame = geometry.real_patches_per_frame
     total_groups = args.frame_count * tokens_per_frame
     kept_per_frame = (
         max(1, int(tokens_per_frame * args.vision_tower_keep_rate))
@@ -496,12 +608,18 @@ def main() -> int:
                 item,
                 frame_count=args.frame_count,
             )
-            _validate_gemma_placeholders(model, raw, frame_count=args.frame_count)
+            _validate_gemma_placeholders(
+                model,
+                raw,
+                frame_count=args.frame_count,
+                geometry=geometry,
+            )
             if vt_patched and codec_score_source is not None:
                 codec_grids, codec_extract_s = _per_frame_codec_token_grids(
                     item,
                     frame_count=args.frame_count,
                     active_boxes=active_boxes,
+                    geometry=geometry,
                     codec_score_source=codec_score_source,
                     fusion_mode=fusion_mode,
                     motion_weight=float(args.motion_weight),
@@ -509,7 +627,7 @@ def main() -> int:
                     normalize_fusion_inputs=normalize_fusion_inputs,
                 )
                 codec_extract_total_s += codec_extract_s
-                score_grid = np.stack(codec_grids, axis=0).astype(np.float32)
+                score_grid = _stack_gemma_codec_score_grid(codec_grids, geometry=geometry)
                 model.vision_tower.encoder.set_codec_score_grid(score_grid)
             features, vision_ms = _compute_gemma_features(model, raw)
             stats = _run_generate(
@@ -560,6 +678,12 @@ def main() -> int:
             "frame_count": args.frame_count,
             "n_frames": args.frame_count,
             "max_tokens": args.max_tokens,
+            "gemma_image_size": geometry.image_size,
+            "gemma_soft_grid_shape": list(geometry.soft_grid_shape),
+            "gemma_patch_grid_shape": list(geometry.patch_grid_shape),
+            "gemma_patch_size": geometry.patch_size,
+            "gemma_pooling_kernel_size": geometry.pooling_kernel_size,
+            "gemma_encoder_max_patches": geometry.max_patches,
             "vision_tower_patched": vt_patched,
             "vision_tower_layer": args.vision_tower_layer if vt_patched else None,
             "vision_tower_keep_rate": args.vision_tower_keep_rate if vt_patched else None,

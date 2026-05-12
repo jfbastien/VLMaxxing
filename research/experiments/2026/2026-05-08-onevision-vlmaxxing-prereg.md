@@ -343,7 +343,7 @@ Skip rule: If holdout regresses, do not promote as a paper result; preserve as
 a bounded diagnostic.
 
 Post-run update: frame_count=16 already falsified simple frame-budget transfer, so the
-next Track A replication should prioritize TOMATO motion or threshold sensitivity
+next Track A replication should prioritize TOMATO motion or pooled-calibration sensitivity
 instead of another nested VideoMME-short holdout. Estimate M3 4-7 hours per focused
 replication cell; M5 2-4 hours per focused cell.
 
@@ -617,6 +617,9 @@ Interpretation:
 - `reproduced here`: with `codec_novel_coded` kr=0.7/layer=2 as the first-query
   sparse cell, model-side first-query E2E is 33.3 s versus 38.7 s for dense.
   Including current PyAV codec extraction, the same first query is 52.1 s.
+- `reproduced here`: first-query sparse-vs-dense drift is 12/57 for both choice
+  and correctness on that Track B cell. This blocks any fidelity-clean live
+  composition claim.
 - `reproduced here`: setup-inclusive composition remains positive by Q>=2 for the
   fast C-PERSIST policies even when current extraction is included, but this is
   artifact-level accounting, not a live combined session run.
@@ -630,7 +633,8 @@ CPU-only implementation landed for the Gemma Track B follow-up:
 - `src/codec_through/pruned_vision_tower.py` now supports `magnitude_norm`,
   `uniform_random`, and external `codec_grid` score modes.
 - `scripts/run_phase1_63G_gemma_track_b.py` can project H.264 score sources to
-  Gemma's 512-canvas / 16x16 token geometry and records codec provenance.
+  Gemma's 768-canvas / 48x48 pre-pool patch geometry, pad scores to the local
+  encoder length, and record codec provenance.
 - `scripts/run_ov6_gemma_codec_smoke.sh` is the first GPU smoke entry point.
 
 Hypothesis for the next model run: if Qwen's bounded codec-grid Track B result is
@@ -638,3 +642,76 @@ not architecture-specific, Gemma should preserve paired sparse-vs-dense behavior
 the same family of operating points. Falsifier: shape/provenance mismatch, stale
 codec-grid reuse, or paired Gemma format/fidelity regression beyond the existing
 Gemma Track B caveat.
+
+### 2026-05-12 — Next experiment queue
+
+These runs are preregistered as follow-ups after the Qwen OV-6 closure. They
+remain separate from query-aware/RLT work; do not tune on inspected OV-3/OV-6
+items and do not mix query-aware evidence into the OneVision chain on this branch.
+
+1. **Gemma Track B smoke**
+
+   Hypothesis: if Qwen's kr=0.7/layer=2 codec-grid point estimate reflects a
+   model-family-robust property of codec metadata as a sparse-vision ranking
+   signal, Gemma should match or exceed `magnitude_norm` by point estimate on the
+   same 10-item short manifest at kr=0.7/layer=2.
+
+   Null: the Qwen result is architecture-specific to Qwen's windowed sparse
+   vision geometry and does not transfer to Gemma.
+
+   Gate: `codec_novel_coded >= magnitude_norm` by point estimate on N=10, with
+   paired sparse-vs-dense format failures no worse than the existing Gemma Track B
+   caveat. Promote to broader Gemma only if the smoke gates.
+
+   Falsifier: any codec-grid geometry/provenance failure, stale score-grid reuse,
+   or `codec_novel_coded < uniform_random` on N=10.
+
+   Command: `scripts/run_ov6_gemma_codec_smoke.sh`.
+
+2. **Qwen random multi-seed**
+
+   Hypothesis: the kr=0.5/layer=2 `uniform_random > magnitude_norm` point-estimate
+   inversion is seed-stable rather than seed-42 noise.
+
+   Null: at least one alternate seed reverses the ordering materially.
+
+   Gate: all tested seeds in `{1, 7, 42, 100}` have `uniform_random >= magnitude_norm`
+   by point estimate on the N=57 VideoMME-short manifest.
+
+   Falsifier: any seed where `magnitude_norm` exceeds random by at least three
+   items.
+
+   Command: `scripts/run_ov6_qwen_random_multiseed.sh`.
+
+3. **Qwen TOMATO motion replication**
+
+   Hypothesis: if codec saliency is especially useful for motion-rich content,
+   `codec_novel_coded` at kr=0.7/layer=2 should match or exceed `magnitude_norm`
+   by point estimate on TOMATO motion items.
+
+   Null: the Qwen Track B codec signal is VideoMME-short-specific.
+
+   Gate: `codec_novel_coded >= magnitude_norm` by point estimate on
+   `tomato_motion_dev_v2.toml`, with Wilson intervals and paired tests reported.
+
+   Falsifier: codec sources collapse to random or break magnitude-correct rows
+   without corresponding fixes.
+
+   Command: `scripts/run_ov6_qwen_tomato_replication.sh`.
+
+4. **H.264 calibration sensitivity**
+
+   Hypothesis: the Track A H.264 result should not depend entirely on per-item
+   live-pixel share matching. Pooled calibration at frame_count=8 should preserve
+   positive codec-minus-pixel point estimates for at least `novel_coded`.
+
+   Null: pooled calibration collapses codec answers to pixel or reverses the
+   codec-minus-pixel direction.
+
+   Gate: `novel_coded` remains parse-clean and does not break pixel-correct rows
+   without compensating fixes under pooled calibration.
+
+   Falsifier: pooled calibration produces higher parse failures or negative
+   codec-minus-pixel point estimate.
+
+   Command: `scripts/run_ov3_h264_calibration_sensitivity.sh`.

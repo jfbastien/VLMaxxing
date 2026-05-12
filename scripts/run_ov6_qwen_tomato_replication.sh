@@ -1,24 +1,24 @@
 #!/usr/bin/env bash
-# OV-6 Gemma codec-grid smoke.
+# OV-6 Qwen TOMATO motion replication.
 #
-# CPU wiring must pass before this GPU job runs. The smoke intentionally uses a
-# short N so geometry/provenance issues fail quickly before any broad Gemma run.
+# Hypothesis: if the kr=0.7/layer=2 codec_novel_coded point-estimate advantage
+# is not VideoMME-short-specific, it should survive on TOMATO motion items.
 
 set -euo pipefail
 LAST_ARM=""
-trap 'echo "[ov6-gemma] arm $LAST_ARM failed at $(date -u +%Y-%m-%dT%H:%M:%SZ)"' ERR
+trap 'echo "[ov6-tomato] arm $LAST_ARM failed at $(date -u +%Y-%m-%dT%H:%M:%SZ)"' ERR
 
 cd "$(dirname "$0")/.."
 
-PY="${OV6G_PYTHON:-uv run python}"
-MODEL_PATH="${OV6G_MODEL_PATH:-$HOME/models/gemma-4-e4b-it-4bit}"
-MANIFEST="${OV6G_MANIFEST:-research/benchmark_manifests/videomme_dev_v1_short_only.toml}"
-OUT_DIR="${OV6G_OUT_DIR:-research/experiments/2026/artifacts/phase1_63G_ov6_gemma_codec_smoke}"
-N_ITEMS="${OV6G_N_ITEMS:-10}"
-FRAME_COUNT="${OV6G_FRAME_COUNT:-8}"
-KEEP_RATE="${OV6G_KEEP_RATE:-0.70}"
-LAYER="${OV6G_LAYER:-2}"
-RSS_GUARD_MB="${RSS_GUARD_MB:-9000}"
+PY="${OV6T_PYTHON:-uv run python}"
+MODEL_PATH="${OV6T_MODEL_PATH:-$HOME/models/Qwen2.5-VL-7B-Instruct-4bit}"
+MANIFEST="${OV6T_MANIFEST:-research/benchmark_manifests/tomato_motion_dev_v2.toml}"
+OUT_DIR="${OV6T_OUT_DIR:-research/experiments/2026/artifacts/phase1_51V_ov6_tomato_motion_kr070_l2}"
+N_ITEMS="${OV6T_N_ITEMS:-0}"
+FRAME_COUNT="${OV6T_FRAME_COUNT:-8}"
+MAX_TOKENS="${OV6T_MAX_TOKENS:-32}"
+LAYER="${OV6T_LAYER:-2}"
+KEEP_RATE="${OV6T_KEEP_RATE:-0.70}"
 
 mkdir -p "$OUT_DIR"
 
@@ -27,26 +27,27 @@ run_arm() {
   shift 1
   local arm_dir="$OUT_DIR/$label"
   if [[ -f "$arm_dir/summary.json" ]]; then
-    echo "[ov6-gemma] === arm=$label SKIP (already done) ==="
+    echo "[ov6-tomato] === arm=$label SKIP (already done) ==="
     return 0
   fi
   mkdir -p "$arm_dir"
   LAST_ARM="$label"
-  echo "[ov6-gemma] === arm=$label starting $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
-  ${PY} scripts/run_phase1_63G_gemma_track_b.py \
+  echo "[ov6-tomato] === arm=$label starting $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
+  ${PY} scripts/run_phase1_51V.py \
     --manifest "$MANIFEST" \
     --n-items "$N_ITEMS" \
-    --frame-count "$FRAME_COUNT" \
-    --max-tokens 32 \
     --model-path "$MODEL_PATH" \
-    --rss-guard-mb "$RSS_GUARD_MB" \
+    --frame-count "$FRAME_COUNT" \
+    --max-tokens "$MAX_TOKENS" \
     --output "$arm_dir/results.jsonl" \
     --summary "$arm_dir/summary.json" \
     --allow-dirty \
     "$@" \
     2>&1 | tee "$arm_dir/run.log"
-  echo "[ov6-gemma] === arm=$label done $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
+  echo "[ov6-tomato] === arm=$label done $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
 }
+
+echo "[ov6-tomato] manifest=$MANIFEST keep_rate=$KEEP_RATE layer=$LAYER n_items=$N_ITEMS"
 
 run_arm dense \
   --vision-tower-keep-rate 1.0

@@ -2,6 +2,8 @@
 
 This is accounting-only, not a live combined runtime claim.
 
+First-query sparse-vs-dense pairing: choice_drift=12/57; correctness_drift=12/57.
+
 ## fixed_k1 — excluded_model_side
 
 first_query_ms=33253; followup_median_ms=7362; followup_drift=2/343

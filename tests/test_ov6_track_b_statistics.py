@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from scripts.analyze_ov6_qwen_random_multiseed import analyze as analyze_random_multiseed
 from scripts.analyze_ov6_track_b import build_payload
 
 
@@ -80,3 +81,35 @@ def test_ov6_track_b_audit_computes_paired_mcnemar_and_net_e2e(tmp_path: Path) -
     assert paired["a_correct_b_wrong"] == 1
     assert paired["a_wrong_b_correct"] == 0
     assert paired["mcnemar_exact_p_two_sided"] == 1.0
+
+
+def test_ov6_random_multiseed_flags_unstable_random_baseline(tmp_path: Path) -> None:
+    rows_mag = [
+        ("a", True, 0),
+        ("b", True, 1),
+        ("c", True, 2),
+        ("d", False, 3),
+    ]
+    rows_seed1 = [
+        ("a", True, 0),
+        ("b", True, 1),
+        ("c", False, 0),
+        ("d", True, 3),
+    ]
+    rows_seed7 = [
+        ("a", False, 1),
+        ("b", False, 2),
+        ("c", False, 3),
+        ("d", False, 0),
+    ]
+    _write_arm(tmp_path / "magnitude_norm", rows=rows_mag)
+    _write_arm(tmp_path / "uniform_random_seed1", rows=rows_seed1)
+    _write_arm(tmp_path / "uniform_random_seed7", rows=rows_seed7)
+
+    payload = analyze_random_multiseed(tmp_path)
+
+    assert payload["magnitude_norm"]["accuracy"]["correct"] == 3
+    assert payload["gate_status"]["seeds_random_ge_magnitude"] == 1
+    assert payload["gate_status"]["n_seeds"] == 2
+    assert payload["gate_status"]["passes_point_estimate_gate"] is False
+    assert payload["gate_status"]["falsifying_seeds"] == ["uniform_random_seed7"]

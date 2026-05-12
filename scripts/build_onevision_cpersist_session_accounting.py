@@ -33,6 +33,59 @@ def _load_json(path: Path) -> dict[str, Any]:
     return cast(dict[str, Any], payload)
 
 
+def _load_jsonl_by_item(path: Path) -> dict[str, dict[str, Any]]:
+    if not path.exists():
+        raise FileNotFoundError(path)
+    rows: dict[str, dict[str, Any]] = {}
+    with path.open() as handle:
+        for line in handle:
+            payload = json.loads(line)
+            if not isinstance(payload, dict):
+                raise ValueError(f"JSONL row is not an object: {path}")
+            item_id = str(payload["item_id"])
+            if item_id in rows:
+                raise ValueError(f"duplicate item_id {item_id} in {path}")
+            rows[item_id] = cast(dict[str, Any], payload)
+    return rows
+
+
+def _first_query_pairing(*, dense_dir: Path, sparse_dir: Path) -> dict[str, Any]:
+    dense_rows = _load_jsonl_by_item(dense_dir / "results.jsonl")
+    sparse_rows = _load_jsonl_by_item(sparse_dir / "results.jsonl")
+    if set(dense_rows) != set(sparse_rows):
+        raise ValueError(
+            "dense/sparse first-query item mismatch: "
+            f"dense_only={sorted(set(dense_rows) - set(sparse_rows))[:5]} "
+            f"sparse_only={sorted(set(sparse_rows) - set(dense_rows))[:5]}"
+        )
+    choice_drift = 0
+    correctness_drift = 0
+    sparse_correct_dense_wrong = 0
+    sparse_wrong_dense_correct = 0
+    dense_parse_failures = 0
+    sparse_parse_failures = 0
+    for item_id in sorted(dense_rows):
+        dense = dense_rows[item_id]
+        sparse = sparse_rows[item_id]
+        dense_correct = bool(dense["correct"])
+        sparse_correct = bool(sparse["correct"])
+        dense_parse_failures += int(bool(dense.get("parse_failure", False)))
+        sparse_parse_failures += int(bool(sparse.get("parse_failure", False)))
+        choice_drift += int(dense.get("choice_index") != sparse.get("choice_index"))
+        correctness_drift += int(dense_correct != sparse_correct)
+        sparse_correct_dense_wrong += int(sparse_correct and not dense_correct)
+        sparse_wrong_dense_correct += int(dense_correct and not sparse_correct)
+    return {
+        "n": len(dense_rows),
+        "choice_drift": choice_drift,
+        "correctness_drift": correctness_drift,
+        "dense_parse_failures": dense_parse_failures,
+        "sparse_parse_failures": sparse_parse_failures,
+        "sparse_correct_dense_wrong": sparse_correct_dense_wrong,
+        "sparse_wrong_dense_correct": sparse_wrong_dense_correct,
+    }
+
+
 def _select_cpersist_cells(summary: dict[str, Any], *, horizon: int) -> list[dict[str, Any]]:
     cells = [cell for cell in summary.get("cells", []) if int(cell.get("horizon", -1)) == horizon]
     if not cells:
@@ -79,6 +132,7 @@ def build_payload(
     sparse_first_including_codec_ms = sparse_first_excluding_codec_ms + (
         float(codec_extract_s) * 1000.0 if codec_extract_s is not None else 0.0
     )
+    first_query_pairing = _first_query_pairing(dense_dir=dense_dir, sparse_dir=sparse_dir)
 
     rows: list[dict[str, Any]] = []
     for cell in cpersist_cells:
@@ -129,6 +183,7 @@ def build_payload(
         "sparse_first_query_ms_excluding_codec_extract": sparse_first_excluding_codec_ms,
         "sparse_first_query_ms_including_current_pyav_extract": sparse_first_including_codec_ms,
         "codec_extract_mean_s_per_item": codec_extract_s,
+        "first_query_pairing": first_query_pairing,
         "guardrails": [
             "This is not a live combined session run.",
             "Do not multiply OV-6 and C-PERSIST speedup ratios.",
@@ -145,6 +200,12 @@ def _markdown(payload: dict[str, Any]) -> str:
         "# OV-8 Artifact-Level Session Accounting",
         "",
         "This is accounting-only, not a live combined runtime claim.",
+        "",
+        "First-query sparse-vs-dense pairing: "
+        f"choice_drift={payload['first_query_pairing']['choice_drift']}/"
+        f"{payload['first_query_pairing']['n']}; "
+        f"correctness_drift={payload['first_query_pairing']['correctness_drift']}/"
+        f"{payload['first_query_pairing']['n']}.",
         "",
     ]
     for row in payload["rows"]:
