@@ -74,13 +74,19 @@ Both N=10 sweet-spot cells were promoted to N=57:
 | codec_motion | 0.561 | +1.7pp |
 | magnitude_norm | 0.544 | — |
 
-**All three codec sources beat magnitude_norm at the broader N.** The codec_novel_coded
-gap (+7pp) is the strongest Track B finding from this branch and is not a small-sample
-artifact: at kr=0.5 layer=2 N=57 codec_novel_coded was only +1.8pp over magnitude_norm,
-but at kr=0.7 the lead widens to +7pp. The "free lunch" interpretation from N=10
-(0.800 = dense) doesn't fully replicate at N=57 (dense itself drops to 0.684 on the
-broader manifest, and codec drops with it), but **the relative ordering — codec beats
-magnitude — survives.**
+**All three codec sources beat magnitude_norm by point estimate at the broader N.**
+The strongest cell is `codec_novel_coded`: 35/57 versus 31/57 for magnitude_norm
+(+7.0pp; Wilson 95% CI for codec accuracy `[0.484, 0.729]`). The paired test is
+still inconclusive: codec fixes five magnitude-wrong rows and breaks one
+magnitude-correct row, exact McNemar `p=0.2188`. The "free lunch" interpretation
+from N=10 (0.800 = dense) does not replicate at N=57, but the operating-point
+ordering is useful enough to promote as a bounded Track B candidate.
+
+Timing caveat: model-side E2E for `codec_novel_coded` is 33.3 s/item versus
+34.4 s/item for magnitude_norm, but this excludes the current separate PyAV
+metadata extraction path. Counting that repo-local extraction overhead gives
+52.1 s/item, so this is not a net wall-clock win until metadata is decoder-integrated
+or precomputed.
 
 ### Cell 2: kr=0.5 / layer=8 / N=57
 
@@ -93,22 +99,21 @@ magnitude — survives.**
 | codec_novel_coded | 0.404 | -14.0pp |
 
 **codec_residual at deep prune layer exactly ties magnitude_norm at the broader N.**
-The N=10 layer-sweep monotonic climb (0.400→0.700 across l=1→8) and the resulting
-tie with magnitude_norm both replicate. codec_residual is the codec source that
-carries useful importance signal AT DEEP LAYERS, where the model's hidden state has
-drifted further from raw pixels.
+Both land 31/57 = 0.544, with balanced paired discordants (6 fixes / 6 breaks,
+McNemar `p=1.0`). The N=10 layer sweep suggested a monotonic residual-with-depth
+curve; the N=57 promotion confirms the layer-8 endpoint tie, not the full curve.
 
 ## OV-6 bottom line
 
-**Codec planning is a real Track B importance oracle at two specific operating
-points on Qwen2.5-VL-7B-4bit / VideoMME short / 8 frames.**
+**Codec planning is a bounded Track B candidate at specific operating points on
+Qwen2.5-VL-7B-4bit / VideoMME short / 8 frames.**
 
 The strongest claim, confirmed at N=57:
 
-1. At kr=0.7 / layer=2 / N=57, **codec_novel_coded beats magnitude_norm by 7
-   percentage points** (0.614 vs 0.544) and lands within 7pp of dense (0.684).
-   All three codec sources (novel_coded, residual, motion) beat the existing 1.51V
-   magnitude_norm baseline.
+1. At kr=0.7 / layer=2 / N=57, `codec_novel_coded` is the best tested sparse arm
+   by point estimate: 0.614 versus 0.544 for magnitude_norm and 0.684 for dense.
+   All three codec sources exceed magnitude_norm by point estimate, but paired
+   tests remain inconclusive.
 
 2. At kr=0.5 / layer=8 / N=57, **codec_residual exactly ties magnitude_norm**
    (both at 0.544), confirming the N=10 monotonic-climb-with-depth finding.
@@ -116,8 +121,9 @@ The strongest claim, confirmed at N=57:
 The kr=0.5 / layer=2 smoke claim "codec doesn't transfer to Track B" was
 operating-point-specific. The fuller picture:
 
-- At aggressive pruning (kr=0.5 / layer=2) magnitude_norm has a small lead, and
-  on N=57 uniform_random even beats magnitude.
+- At aggressive pruning (kr=0.5 / layer=2), magnitude_norm is not a robust baseline:
+  uniform_random, codec_motion, and codec_novel_coded all exceed it by point
+  estimate at N=57, but none earns a paired significance gate.
 - At kr=0.7 the three codec arms beat magnitude_norm; codec_novel_coded by 7pp.
 - At deep prune layer (l=8) codec_residual climbs to tie magnitude_norm.
 - The right codec source is operating-point-dependent: novel_coded works at mild
@@ -126,8 +132,9 @@ operating-point-specific. The fuller picture:
 
 The N=57 replication says the magnitude_norm ranking from the existing 1.51V
 framing also depends on the operating point: at kr=0.5 / layer=2 uniform_random
-beats magnitude_norm, while at kr=0.7 / layer=2 or kr=0.5 / layer=8 magnitude
-recovers significantly.
+beats magnitude_norm by point estimate, while at kr=0.7 / layer=2 and kr=0.5 /
+layer=8 magnitude remains a useful reference. Multi-seed random is required
+before turning the random result into a paper claim.
 
 Mechanism: codec metadata reports pixel-space novelty — *which regions changed* —
 not *which regions carry the answer*. The vision tower has already abstracted away
@@ -227,13 +234,17 @@ Use a sober version:
 > H.264 macroblock metadata already computed by video decoders is a plausible refresh
 > signal for frozen VLM reuse. In local Track A tests on 57 short VideoMME items, it
 > improved point-estimate accuracy over pixel difference at the same active-refresh
-> budget without retraining.
+> budget without retraining. In Track B, the same metadata produces a bounded
+> sparse-vision candidate: `codec_novel_coded` is the best tested arm at
+> kr=0.7/layer=2 by point estimate, but the paired test is inconclusive and
+> current PyAV extraction erases model-side wall-clock savings.
 
-Avoid the current stronger language until OV-6:
+Avoid stronger language:
 
 - Do not say "free" without qualifying that our PyAV path re-decodes and costs about
   19 seconds/item median on M3.
-- Do not say "10x less vision work" until Track B measures skipped vision work.
+- Do not say "codec significantly beats magnitude_norm" for OV-6; the best N=57
+  Track B cell is +4/57 with McNemar `p=0.2188`.
 - Do not multiply OneVision patch reduction by C-PERSIST follow-up speedups.
 
 ## Extraction Cost
@@ -246,18 +257,21 @@ signals more cheaply, but that is a systems hypothesis until measured.
 
 ## Next Experiments
 
-1. **OV-6 Track B codec-grid sparse vision**
-   Hypothesis: a simple codec source, probably `novel_coded` first, can drive real
-   vision-stage pruning at 8 frames without losing the OV-3 fidelity signal. This is
-   the required step before any E2E speedup claim. Expected implementation cost is
-   closer to 200-350 LoC than 80-150 because post-window Qwen group alignment and CPU
-   tests matter. Use M5 only after the M3 8-frame smoke passes both alignment and
-   fidelity: broaden Qwen 8f first, run 16f only if 8f gates, and run 32f only if 16f
-   gates.
+1. **Gemma OV-6 codec-grid cross-family check**
+   Hypothesis: if codec-grid sparse vision is model-family robust, Gemma should
+   preserve paired sparse-vs-dense fidelity at the same operating-point family.
+   The CPU wiring is now present: Gemma accepts external codec grids on the
+   512-canvas / 16x16 token geometry and has placeholder-count and score-shape
+   guards. The next step is a one-item or N=10 GPU smoke via
+   `scripts/run_ov6_gemma_codec_smoke.sh`.
 
 2. **OV-8 C-PERSIST composition after OV-6**
-   Use setup-inclusive session accounting: `sparse first query + (Q-1) * measured
-   follow-up`, not multiplied ratios.
+   Artifact-level accounting is now available at
+   `research/experiments/2026/artifacts/onevision_cpersist_session/accounting.json`.
+   It uses two denominators: model-side first-query E2E excluding extraction, and
+   conservative first-query E2E including current PyAV extraction. Treat it as
+   accounting only; a fresh model-backed session run needs a separate preregistered
+   protocol.
 
 3. **TOMATO motion replication**
    Tests whether the codec signal survives outside VideoMME short.

@@ -95,7 +95,11 @@ def _accuracy_md(rows: list[dict], col_keys: tuple[str, ...]) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--out-dir", type=Path, default=REPO_ROOT / "research/experiments/2026/artifacts/onevision_vlmaxxing_plan")
+    parser.add_argument(
+        "--out-dir",
+        type=Path,
+        default=REPO_ROOT / "research/experiments/2026/artifacts/onevision_vlmaxxing_plan",
+    )
     args = parser.parse_args()
 
     kr_rows = _kr_table_rows()

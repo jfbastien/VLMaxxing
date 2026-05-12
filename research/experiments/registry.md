@@ -40,15 +40,17 @@ Entries are ordered by phase_id (chronological within each 1.x range).
 
 ```yaml
 - phase_id: onevision-vlmaxxing-20260508
-  status: proposed
+  status: completed through OV-6 Qwen; Gemma/OV-8 follow-ups pending
   authoritative_note: research/experiments/2026/2026-05-08-onevision-vlmaxxing-prereg.md
   authoritative_artifacts:
     - research/experiments/2026/artifacts/onevision_vlmaxxing_plan/experiment_schedule.json
     - research/experiments/2026/artifacts/onevision_vlmaxxing_visuals/
-  current_best_policy: "pending; preregisters OneVision-style codec patchification, Track A/Track B ablations, session accounting, and visualization work"
+    - research/experiments/2026/artifacts/phase1_29_onevision_n57/statistical_audit.json
+    - research/experiments/2026/artifacts/onevision_vlmaxxing_plan/ov6_track_b_statistical_audit.json
+  current_best_policy: "bounded codec-source evidence: Track A positive point estimates over pixel at N=57/8f; Track B codec_novel_coded is best tested Qwen sparse arm at kr=0.7/layer=2 by point estimate, but paired tests remain inconclusive and current PyAV extraction erases net wall-clock savings"
   supersedes: []
   paper_relevance: diagnostic/proposed new science
-  prereg_outcome:
+  prereg_outcome: Accepted with caveat / bounded
 
 - phase_id: 1.55L
   status: completed

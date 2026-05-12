@@ -1,0 +1,762 @@
+{
+  "benchmark": "VideoMME short locally-present N=57",
+  "cells": [
+    {
+      "arms": {
+        "codec_motion": {
+          "accuracy": {
+            "n": 57,
+            "rate": 0.45614035087719296,
+            "successes": 26,
+            "wilson_95_ci": [
+              0.3337,
+              0.5841
+            ]
+          },
+          "codec_extract_mean_s_per_item": 17.873161080385962,
+          "effective_keep_rate": 0.5,
+          "kind": "codec",
+          "label": "codec_motion",
+          "mean_e2e_ms_excluding_codec_extract": 31091.915509561404,
+          "mean_e2e_ms_including_codec_extract": 48965.07658994736,
+          "mean_vision_ms": 4892.542609596491,
+          "n_items": 57,
+          "parse_failures": 0,
+          "path": "research/experiments/2026/artifacts/phase1_51V_ov6_n57/codec_motion_kr050"
+        },
+        "codec_novel_coded": {
+          "accuracy": {
+            "n": 57,
+            "rate": 0.43859649122807015,
+            "successes": 25,
+            "wilson_95_ci": [
+              0.3177,
+              0.5672
+            ]
+          },
+          "codec_extract_mean_s_per_item": 17.626680558456137,
+          "effective_keep_rate": 0.5,
+          "kind": "codec",
+          "label": "codec_novel_coded",
+          "mean_e2e_ms_excluding_codec_extract": 31145.716384578947,
+          "mean_e2e_ms_including_codec_extract": 48772.396943035084,
+          "mean_vision_ms": 4899.806086263157,
+          "n_items": 57,
+          "parse_failures": 0,
+          "path": "research/experiments/2026/artifacts/phase1_51V_ov6_n57/codec_novel_coded_kr050"
+        },
+        "codec_residual": {
+          "accuracy": {
+            "n": 57,
+            "rate": 0.38596491228070173,
+            "successes": 22,
+            "wilson_95_ci": [
+              0.2706,
+              0.5157
+            ]
+          },
+          "codec_extract_mean_s_per_item": 19.297995643894737,
+          "effective_keep_rate": 0.5,
+          "kind": "codec",
+          "label": "codec_residual",
+          "mean_e2e_ms_excluding_codec_extract": 33729.029707035086,
+          "mean_e2e_ms_including_codec_extract": 53027.02535092982,
+          "mean_vision_ms": 5298.266279228071,
+          "n_items": 57,
+          "parse_failures": 1,
+          "path": "research/experiments/2026/artifacts/phase1_51V_ov6_n57/codec_residual_kr050"
+        },
+        "dense": {
+          "accuracy": {
+            "n": 57,
+            "rate": 0.6842105263157895,
+            "successes": 39,
+            "wilson_95_ci": [
+              0.5552,
+              0.79
+            ]
+          },
+          "codec_extract_mean_s_per_item": null,
+          "effective_keep_rate": 1.0,
+          "kind": "dense",
+          "label": "dense",
+          "mean_e2e_ms_excluding_codec_extract": 38710.86412808772,
+          "mean_e2e_ms_including_codec_extract": 38710.86412808772,
+          "mean_vision_ms": 9669.213915964914,
+          "n_items": 57,
+          "parse_failures": 0,
+          "path": "research/experiments/2026/artifacts/phase1_51V_ov6_n57/dense"
+        },
+        "magnitude_norm": {
+          "accuracy": {
+            "n": 57,
+            "rate": 0.42105263157894735,
+            "successes": 24,
+            "wilson_95_ci": [
+              0.3019,
+              0.5502
+            ]
+          },
+          "codec_extract_mean_s_per_item": null,
+          "effective_keep_rate": 0.5,
+          "kind": "baseline",
+          "label": "magnitude_norm",
+          "mean_e2e_ms_excluding_codec_extract": 33838.216766105266,
+          "mean_e2e_ms_including_codec_extract": 33838.216766105266,
+          "mean_vision_ms": 5415.1580847543855,
+          "n_items": 57,
+          "parse_failures": 0,
+          "path": "research/experiments/2026/artifacts/phase1_51V_ov6_n57/magnitude_norm_kr050"
+        },
+        "uniform_random": {
+          "accuracy": {
+            "n": 57,
+            "rate": 0.49122807017543857,
+            "successes": 28,
+            "wilson_95_ci": [
+              0.3662,
+              0.6174
+            ]
+          },
+          "codec_extract_mean_s_per_item": null,
+          "effective_keep_rate": 0.5,
+          "kind": "random",
+          "label": "uniform_random",
+          "mean_e2e_ms_excluding_codec_extract": 33260.853776280695,
+          "mean_e2e_ms_including_codec_extract": 33260.853776280695,
+          "mean_vision_ms": 5225.875049649123,
+          "n_items": 57,
+          "parse_failures": 0,
+          "path": "research/experiments/2026/artifacts/phase1_51V_ov6_n57/uniform_random_kr050"
+        }
+      },
+      "keep_rate": 0.5,
+      "label": "kr0.5_layer2_n57",
+      "layer": 2,
+      "paired_comparisons": {
+        "codec_motion_vs_dense": {
+          "a_correct_b_wrong": 4,
+          "a_wrong_b_correct": 17,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.5964912280701754,
+            "successes": 34,
+            "wilson_95_ci": [
+              0.467,
+              0.7138
+            ]
+          },
+          "concordant_correctness": 36,
+          "mcnemar_exact_p_two_sided": 0.0072,
+          "n": 57
+        },
+        "codec_motion_vs_magnitude_norm": {
+          "a_correct_b_wrong": 7,
+          "a_wrong_b_correct": 5,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.7192982456140351,
+            "successes": 41,
+            "wilson_95_ci": [
+              0.5917,
+              0.8192
+            ]
+          },
+          "concordant_correctness": 45,
+          "mcnemar_exact_p_two_sided": 0.7744,
+          "n": 57
+        },
+        "codec_motion_vs_uniform_random": {
+          "a_correct_b_wrong": 4,
+          "a_wrong_b_correct": 6,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.7719298245614035,
+            "successes": 44,
+            "wilson_95_ci": [
+              0.6479,
+              0.8616
+            ]
+          },
+          "concordant_correctness": 47,
+          "mcnemar_exact_p_two_sided": 0.7539,
+          "n": 57
+        },
+        "codec_novel_coded_vs_dense": {
+          "a_correct_b_wrong": 5,
+          "a_wrong_b_correct": 19,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.543859649122807,
+            "successes": 31,
+            "wilson_95_ci": [
+              0.4159,
+              0.6663
+            ]
+          },
+          "concordant_correctness": 33,
+          "mcnemar_exact_p_two_sided": 0.0066,
+          "n": 57
+        },
+        "codec_novel_coded_vs_magnitude_norm": {
+          "a_correct_b_wrong": 8,
+          "a_wrong_b_correct": 7,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.6842105263157895,
+            "successes": 39,
+            "wilson_95_ci": [
+              0.5552,
+              0.79
+            ]
+          },
+          "concordant_correctness": 42,
+          "mcnemar_exact_p_two_sided": 1.0,
+          "n": 57
+        },
+        "codec_novel_coded_vs_uniform_random": {
+          "a_correct_b_wrong": 6,
+          "a_wrong_b_correct": 9,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.6666666666666666,
+            "successes": 38,
+            "wilson_95_ci": [
+              0.5372,
+              0.7751
+            ]
+          },
+          "concordant_correctness": 42,
+          "mcnemar_exact_p_two_sided": 0.6072,
+          "n": 57
+        },
+        "codec_residual_vs_dense": {
+          "a_correct_b_wrong": 3,
+          "a_wrong_b_correct": 20,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.5789473684210527,
+            "successes": 33,
+            "wilson_95_ci": [
+              0.4498,
+              0.6981
+            ]
+          },
+          "concordant_correctness": 34,
+          "mcnemar_exact_p_two_sided": 0.0005,
+          "n": 57
+        },
+        "codec_residual_vs_magnitude_norm": {
+          "a_correct_b_wrong": 7,
+          "a_wrong_b_correct": 9,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.6666666666666666,
+            "successes": 38,
+            "wilson_95_ci": [
+              0.5372,
+              0.7751
+            ]
+          },
+          "concordant_correctness": 41,
+          "mcnemar_exact_p_two_sided": 0.8036,
+          "n": 57
+        },
+        "codec_residual_vs_uniform_random": {
+          "a_correct_b_wrong": 3,
+          "a_wrong_b_correct": 9,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.7543859649122807,
+            "successes": 43,
+            "wilson_95_ci": [
+              0.629,
+              0.8477
+            ]
+          },
+          "concordant_correctness": 45,
+          "mcnemar_exact_p_two_sided": 0.146,
+          "n": 57
+        },
+        "magnitude_norm_vs_dense": {
+          "a_correct_b_wrong": 4,
+          "a_wrong_b_correct": 19,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.5964912280701754,
+            "successes": 34,
+            "wilson_95_ci": [
+              0.467,
+              0.7138
+            ]
+          },
+          "concordant_correctness": 34,
+          "mcnemar_exact_p_two_sided": 0.0026,
+          "n": 57
+        },
+        "magnitude_norm_vs_uniform_random": {
+          "a_correct_b_wrong": 4,
+          "a_wrong_b_correct": 8,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.7192982456140351,
+            "successes": 41,
+            "wilson_95_ci": [
+              0.5917,
+              0.8192
+            ]
+          },
+          "concordant_correctness": 45,
+          "mcnemar_exact_p_two_sided": 0.3877,
+          "n": 57
+        },
+        "uniform_random_vs_dense": {
+          "a_correct_b_wrong": 4,
+          "a_wrong_b_correct": 15,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.6491228070175439,
+            "successes": 37,
+            "wilson_95_ci": [
+              0.5194,
+              0.76
+            ]
+          },
+          "concordant_correctness": 38,
+          "mcnemar_exact_p_two_sided": 0.0192,
+          "n": 57
+        },
+        "uniform_random_vs_magnitude_norm": {
+          "a_correct_b_wrong": 8,
+          "a_wrong_b_correct": 4,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.7192982456140351,
+            "successes": 41,
+            "wilson_95_ci": [
+              0.5917,
+              0.8192
+            ]
+          },
+          "concordant_correctness": 45,
+          "mcnemar_exact_p_two_sided": 0.3877,
+          "n": 57
+        }
+      }
+    },
+    {
+      "arms": {
+        "codec_motion": {
+          "accuracy": {
+            "n": 57,
+            "rate": 0.5614035087719298,
+            "successes": 32,
+            "wilson_95_ci": [
+              0.4328,
+              0.6823
+            ]
+          },
+          "codec_extract_mean_s_per_item": 19.013039092157896,
+          "effective_keep_rate": 0.6875,
+          "kind": "codec",
+          "label": "codec_motion",
+          "mean_e2e_ms_excluding_codec_extract": 33403.090132385965,
+          "mean_e2e_ms_including_codec_extract": 52416.12922454386,
+          "mean_vision_ms": 6533.1982252280695,
+          "n_items": 57,
+          "parse_failures": 0,
+          "path": "research/experiments/2026/artifacts/phase1_51V_ov6_n57_kr070_l2/codec_motion"
+        },
+        "codec_novel_coded": {
+          "accuracy": {
+            "n": 57,
+            "rate": 0.6140350877192983,
+            "successes": 35,
+            "wilson_95_ci": [
+              0.4843,
+              0.7294
+            ]
+          },
+          "codec_extract_mean_s_per_item": 18.825406862578955,
+          "effective_keep_rate": 0.6875,
+          "kind": "codec",
+          "label": "codec_novel_coded",
+          "mean_e2e_ms_excluding_codec_extract": 33252.57521775438,
+          "mean_e2e_ms_including_codec_extract": 52077.98208033334,
+          "mean_vision_ms": 6490.287504368421,
+          "n_items": 57,
+          "parse_failures": 0,
+          "path": "research/experiments/2026/artifacts/phase1_51V_ov6_n57_kr070_l2/codec_novel_coded"
+        },
+        "codec_residual": {
+          "accuracy": {
+            "n": 57,
+            "rate": 0.5789473684210527,
+            "successes": 33,
+            "wilson_95_ci": [
+              0.4498,
+              0.6981
+            ]
+          },
+          "codec_extract_mean_s_per_item": 20.507259596421047,
+          "effective_keep_rate": 0.6875,
+          "kind": "codec",
+          "label": "codec_residual",
+          "mean_e2e_ms_excluding_codec_extract": 37557.385827473685,
+          "mean_e2e_ms_including_codec_extract": 58064.64542389473,
+          "mean_vision_ms": 7353.734003649121,
+          "n_items": 57,
+          "parse_failures": 0,
+          "path": "research/experiments/2026/artifacts/phase1_51V_ov6_n57_kr070_l2/codec_residual"
+        },
+        "magnitude_norm": {
+          "accuracy": {
+            "n": 57,
+            "rate": 0.543859649122807,
+            "successes": 31,
+            "wilson_95_ci": [
+              0.4159,
+              0.6663
+            ]
+          },
+          "codec_extract_mean_s_per_item": null,
+          "effective_keep_rate": 0.6875,
+          "kind": "baseline",
+          "label": "magnitude_norm",
+          "mean_e2e_ms_excluding_codec_extract": 34442.24264780702,
+          "mean_e2e_ms_including_codec_extract": 34442.24264780702,
+          "mean_vision_ms": 6591.748054210526,
+          "n_items": 57,
+          "parse_failures": 0,
+          "path": "research/experiments/2026/artifacts/phase1_51V_ov6_n57_kr070_l2/magnitude_norm"
+        }
+      },
+      "keep_rate": 0.7,
+      "label": "kr0.7_layer2_n57",
+      "layer": 2,
+      "paired_comparisons": {
+        "codec_motion_vs_dense": {
+          "a_correct_b_wrong": 3,
+          "a_wrong_b_correct": 10,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.7719298245614035,
+            "successes": 44,
+            "wilson_95_ci": [
+              0.6479,
+              0.8616
+            ]
+          },
+          "concordant_correctness": 44,
+          "mcnemar_exact_p_two_sided": 0.0923,
+          "n": 57
+        },
+        "codec_motion_vs_magnitude_norm": {
+          "a_correct_b_wrong": 3,
+          "a_wrong_b_correct": 2,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.9122807017543859,
+            "successes": 52,
+            "wilson_95_ci": [
+              0.8105,
+              0.9619
+            ]
+          },
+          "concordant_correctness": 52,
+          "mcnemar_exact_p_two_sided": 1.0,
+          "n": 57
+        },
+        "codec_novel_coded_vs_dense": {
+          "a_correct_b_wrong": 4,
+          "a_wrong_b_correct": 8,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.7894736842105263,
+            "successes": 45,
+            "wilson_95_ci": [
+              0.6671,
+              0.8753
+            ]
+          },
+          "concordant_correctness": 45,
+          "mcnemar_exact_p_two_sided": 0.3877,
+          "n": 57
+        },
+        "codec_novel_coded_vs_magnitude_norm": {
+          "a_correct_b_wrong": 5,
+          "a_wrong_b_correct": 1,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.8947368421052632,
+            "successes": 51,
+            "wilson_95_ci": [
+              0.7888,
+              0.9509
+            ]
+          },
+          "concordant_correctness": 51,
+          "mcnemar_exact_p_two_sided": 0.2188,
+          "n": 57
+        },
+        "codec_residual_vs_dense": {
+          "a_correct_b_wrong": 3,
+          "a_wrong_b_correct": 9,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.7894736842105263,
+            "successes": 45,
+            "wilson_95_ci": [
+              0.6671,
+              0.8753
+            ]
+          },
+          "concordant_correctness": 45,
+          "mcnemar_exact_p_two_sided": 0.146,
+          "n": 57
+        },
+        "codec_residual_vs_magnitude_norm": {
+          "a_correct_b_wrong": 5,
+          "a_wrong_b_correct": 3,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.8596491228070176,
+            "successes": 49,
+            "wilson_95_ci": [
+              0.7468,
+              0.9271
+            ]
+          },
+          "concordant_correctness": 49,
+          "mcnemar_exact_p_two_sided": 0.7266,
+          "n": 57
+        },
+        "magnitude_norm_vs_dense": {
+          "a_correct_b_wrong": 3,
+          "a_wrong_b_correct": 11,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.7543859649122807,
+            "successes": 43,
+            "wilson_95_ci": [
+              0.629,
+              0.8477
+            ]
+          },
+          "concordant_correctness": 43,
+          "mcnemar_exact_p_two_sided": 0.0574,
+          "n": 57
+        }
+      }
+    },
+    {
+      "arms": {
+        "codec_motion": {
+          "accuracy": {
+            "n": 57,
+            "rate": 0.42105263157894735,
+            "successes": 24,
+            "wilson_95_ci": [
+              0.3019,
+              0.5502
+            ]
+          },
+          "codec_extract_mean_s_per_item": 22.883367766771926,
+          "effective_keep_rate": 0.5,
+          "kind": "codec",
+          "label": "codec_motion",
+          "mean_e2e_ms_excluding_codec_extract": 41094.84951607018,
+          "mean_e2e_ms_including_codec_extract": 63978.2172828421,
+          "mean_vision_ms": 7280.383084052632,
+          "n_items": 57,
+          "parse_failures": 0,
+          "path": "research/experiments/2026/artifacts/phase1_51V_ov6_n57_kr050_l8/codec_motion"
+        },
+        "codec_novel_coded": {
+          "accuracy": {
+            "n": 57,
+            "rate": 0.40350877192982454,
+            "successes": 23,
+            "wilson_95_ci": [
+              0.2862,
+              0.533
+            ]
+          },
+          "codec_extract_mean_s_per_item": 20.03410961256141,
+          "effective_keep_rate": 0.5,
+          "kind": "codec",
+          "label": "codec_novel_coded",
+          "mean_e2e_ms_excluding_codec_extract": 36048.11066368421,
+          "mean_e2e_ms_including_codec_extract": 56082.220276245615,
+          "mean_vision_ms": 6404.320877210526,
+          "n_items": 57,
+          "parse_failures": 0,
+          "path": "research/experiments/2026/artifacts/phase1_51V_ov6_n57_kr050_l8/codec_novel_coded"
+        },
+        "codec_residual": {
+          "accuracy": {
+            "n": 57,
+            "rate": 0.543859649122807,
+            "successes": 31,
+            "wilson_95_ci": [
+              0.4159,
+              0.6663
+            ]
+          },
+          "codec_extract_mean_s_per_item": 19.91087492254386,
+          "effective_keep_rate": 0.5,
+          "kind": "codec",
+          "label": "codec_residual",
+          "mean_e2e_ms_excluding_codec_extract": 35635.211755087716,
+          "mean_e2e_ms_including_codec_extract": 55546.08667763158,
+          "mean_vision_ms": 6389.3849919298245,
+          "n_items": 57,
+          "parse_failures": 0,
+          "path": "research/experiments/2026/artifacts/phase1_51V_ov6_n57_kr050_l8/codec_residual"
+        },
+        "magnitude_norm": {
+          "accuracy": {
+            "n": 57,
+            "rate": 0.543859649122807,
+            "successes": 31,
+            "wilson_95_ci": [
+              0.4159,
+              0.6663
+            ]
+          },
+          "codec_extract_mean_s_per_item": null,
+          "effective_keep_rate": 0.5,
+          "kind": "baseline",
+          "label": "magnitude_norm",
+          "mean_e2e_ms_excluding_codec_extract": 37244.71284947369,
+          "mean_e2e_ms_including_codec_extract": 37244.71284947369,
+          "mean_vision_ms": 6639.400029245614,
+          "n_items": 57,
+          "parse_failures": 0,
+          "path": "research/experiments/2026/artifacts/phase1_51V_ov6_n57_kr050_l8/magnitude_norm"
+        }
+      },
+      "keep_rate": 0.5,
+      "label": "kr0.5_layer8_n57",
+      "layer": 8,
+      "paired_comparisons": {
+        "codec_motion_vs_dense": {
+          "a_correct_b_wrong": 3,
+          "a_wrong_b_correct": 18,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.5964912280701754,
+            "successes": 34,
+            "wilson_95_ci": [
+              0.467,
+              0.7138
+            ]
+          },
+          "concordant_correctness": 36,
+          "mcnemar_exact_p_two_sided": 0.0015,
+          "n": 57
+        },
+        "codec_motion_vs_magnitude_norm": {
+          "a_correct_b_wrong": 5,
+          "a_wrong_b_correct": 12,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.6491228070175439,
+            "successes": 37,
+            "wilson_95_ci": [
+              0.5194,
+              0.76
+            ]
+          },
+          "concordant_correctness": 40,
+          "mcnemar_exact_p_two_sided": 0.1435,
+          "n": 57
+        },
+        "codec_novel_coded_vs_dense": {
+          "a_correct_b_wrong": 3,
+          "a_wrong_b_correct": 19,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.543859649122807,
+            "successes": 31,
+            "wilson_95_ci": [
+              0.4159,
+              0.6663
+            ]
+          },
+          "concordant_correctness": 35,
+          "mcnemar_exact_p_two_sided": 0.0009,
+          "n": 57
+        },
+        "codec_novel_coded_vs_magnitude_norm": {
+          "a_correct_b_wrong": 5,
+          "a_wrong_b_correct": 13,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.6140350877192983,
+            "successes": 35,
+            "wilson_95_ci": [
+              0.4843,
+              0.7294
+            ]
+          },
+          "concordant_correctness": 39,
+          "mcnemar_exact_p_two_sided": 0.0963,
+          "n": 57
+        },
+        "codec_residual_vs_dense": {
+          "a_correct_b_wrong": 5,
+          "a_wrong_b_correct": 13,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.6666666666666666,
+            "successes": 38,
+            "wilson_95_ci": [
+              0.5372,
+              0.7751
+            ]
+          },
+          "concordant_correctness": 39,
+          "mcnemar_exact_p_two_sided": 0.0963,
+          "n": 57
+        },
+        "codec_residual_vs_magnitude_norm": {
+          "a_correct_b_wrong": 6,
+          "a_wrong_b_correct": 6,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.7368421052631579,
+            "successes": 42,
+            "wilson_95_ci": [
+              0.6102,
+              0.8335
+            ]
+          },
+          "concordant_correctness": 45,
+          "mcnemar_exact_p_two_sided": 1.0,
+          "n": 57
+        },
+        "magnitude_norm_vs_dense": {
+          "a_correct_b_wrong": 3,
+          "a_wrong_b_correct": 11,
+          "choice_agreement": {
+            "n": 57,
+            "rate": 0.7368421052631579,
+            "successes": 42,
+            "wilson_95_ci": [
+              0.6102,
+              0.8335
+            ]
+          },
+          "concordant_correctness": 43,
+          "mcnemar_exact_p_two_sided": 0.0574,
+          "n": 57
+        }
+      }
+    }
+  ],
+  "frame_count": 8,
+  "model": "Qwen2.5-VL-7B-Instruct-4bit",
+  "phase": "OV-6",
+  "status": "reproduced here"
+}

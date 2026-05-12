@@ -148,25 +148,38 @@ ROWS = (
     ),
     ComparisonRow(
         system="OneVision-style sparse evidence + VLMaxxing Track B",
-        status="hypothesis",
+        status="reproduced here",
         intervention_layer="real vision-stage work skipped or sparse evidence lane",
         denominator="vision-stage and end-to-end wall-clock timing",
-        primary_metric="latency, paired drift, parse failures, stage-share ceiling",
-        headline_numeric="pending local result",
+        primary_metric=(
+            "accuracy, paired sparse-vs-baseline correctness, vision-stage timing, "
+            "E2E timing with and without codec extraction"
+        ),
+        headline_numeric=(
+            "OV-6 N=57 VideoMME short, Qwen 7B 8f: at kr=0.7/layer=2, "
+            "codec_novel_coded=35/57 (0.614) vs magnitude_norm=31/57 (0.544), "
+            "paired fixes/breaks=5/1, McNemar p=0.2188; model-side E2E 33.3s "
+            "excludes 18.8s/item PyAV extraction, so current net E2E is 52.1s. "
+            "At kr=0.5/layer=8, codec_residual ties magnitude_norm at 31/57."
+        ),
         target_to_beat=(
-            "beat current sparse-vision boundaries at matched keep-rate: Qwen clean "
-            "VideoMME 8f around 1.113x E2E, Gemma 32f short around 1.316x, and "
-            "Qwen low-gain boundary around 1.032x only with fidelity caveat"
+            "promote only as bounded point-estimate evidence until cross-family, "
+            "multi-seed random, or larger-N paired tests gate; do not claim net "
+            "wall-clock speedup unless codec metadata extraction is precomputed or "
+            "decoder-integrated"
         ),
         e2e_policy="report component and E2E separately; no multiplied speedups",
         local_reproduction=(
-            "M3 8f smoke first; M5 128GB only after smoke validates alignment and fidelity"
+            "research/experiments/2026/artifacts/phase1_51V_ov6_n57_kr070_l2/ "
+            "and phase1_51V_ov6_n57_kr050_l8/; statistical audit in "
+            "onevision_vlmaxxing_plan/ov6_track_b_statistical_audit.json"
         ),
         planned_gate=(
-            "M5 broad sweep only after M3 8f smoke is fidelity-clean; 16f only after "
-            "8f gates; 32f only after 16f gates"
+            "next gate is Gemma codec-grid wiring plus M5/Qwen broader runs only "
+            "after CPU geometry checks; random baseline needs multi-seed before "
+            "paper-facing negative claims about magnitude_norm"
         ),
-        artifact_or_source="planned OV-6 results",
+        artifact_or_source="OV-6 Qwen M3 artifacts and statistical audit",
     ),
     ComparisonRow(
         system="VLMaxxing C-PERSIST",
@@ -189,21 +202,30 @@ ROWS = (
     ),
     ComparisonRow(
         system="OneVision-style first ingest + VLMaxxing C-PERSIST",
-        status="hypothesis",
+        status="reproduced here (artifact-level accounting)",
         intervention_layer="codec-sparse ingest plus same-video state reuse",
         denominator=(
             "two lanes: first-query vision tokens; follow-up setup-inclusive session wall-clock"
         ),
         primary_metric="lane-separated stage-share ceiling, session speedup, paired drift",
-        headline_numeric="pending local result",
+        headline_numeric=(
+            "OV-8 accounting with Qwen codec_novel_coded kr=0.7/layer=2 first query: "
+            "model-side sparse first query is 33.3s vs dense 38.7s; including current "
+            "PyAV extraction it is 52.1s. With existing C-PERSIST horizon-50 followups, "
+            "setup-inclusive speedups remain positive by Q>=2 under included extraction "
+            "for adaptive_post_q2/refresh10, but this is not a live combined run."
+        ),
         target_to_beat=(
-            "setup-inclusive session curve at 1/2/5/10/50 same-video questions; "
-            "do not multiply OneVision patch reduction by C-PERSIST follow-up speedup"
+            "live combined runtime only after artifact-level accounting plus paired "
+            "first-query fidelity justify a fresh protocol; keep included/excluded "
+            "codec-extraction denominators separate"
         ),
         e2e_policy="only report measured E2E when Track B backend skips real work",
-        local_reproduction="run only after Track A/Track B gates decide what is meaningful",
-        planned_gate="composition must improve session economics without conflating denominators",
-        artifact_or_source="planned OV-8 results",
+        local_reproduction=(
+            "research/experiments/2026/artifacts/onevision_cpersist_session/accounting.json"
+        ),
+        planned_gate=("accounting-only result; live session requires a separate preregistered run"),
+        artifact_or_source="OV-8 artifact-level accounting",
     ),
     ComparisonRow(
         system="OneVision-Encoder local feasibility",

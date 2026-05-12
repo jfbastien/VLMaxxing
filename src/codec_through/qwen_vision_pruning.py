@@ -176,9 +176,7 @@ def pool_token_grid_to_merged_groups(
     for index, grid in enumerate(token_grids):
         array = np.asarray(grid, dtype=np.float32)
         if array.ndim != 2:
-            raise ValueError(
-                f"per-frame token grid {index} must be 2D, got shape {array.shape}"
-            )
+            raise ValueError(f"per-frame token grid {index} must be 2D, got shape {array.shape}")
         rows, cols = array.shape
         if rows % spatial_merge_size != 0 or cols % spatial_merge_size != 0:
             raise ValueError(
@@ -191,9 +189,7 @@ def pool_token_grid_to_merged_groups(
             raise ValueError(f"per-frame token grid {index} contains negative values")
         merged_rows = rows // spatial_merge_size
         merged_cols = cols // spatial_merge_size
-        reshaped = array.reshape(
-            merged_rows, spatial_merge_size, merged_cols, spatial_merge_size
-        )
+        reshaped = array.reshape(merged_rows, spatial_merge_size, merged_cols, spatial_merge_size)
         merged = reshaped.transpose(0, 2, 1, 3).mean(axis=(2, 3))
         pooled.append(merged.reshape(-1).astype(np.float32))
     if not pooled:

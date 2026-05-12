@@ -28,6 +28,11 @@ notes.
   substitution evidence only: N=57 point estimates favor codec over pixel, but
   per-source McNemar tests are inconclusive and frame=16 collapses codec to the
   pixel answer set.
+- **OneVision x VLMaxxing Track B** has bounded Qwen evidence, not a broad
+  speedup claim. At VideoMME short / Qwen2.5-VL-7B-4bit / 8 frames,
+  `codec_novel_coded` at kr=0.7/layer=2 is the best tested sparse arm by point
+  estimate over `magnitude_norm`, but paired tests remain inconclusive and
+  current PyAV metadata extraction erases model-side wall-clock savings.
 
 ## Active Gates Before Paper/OSS Freeze
 
@@ -38,11 +43,12 @@ notes.
      markdown, personal handoff prompts, or screenshots
    - natural-dialogue C-PERSIST and one adjacent-method comparison are the
      highest-value main-track science gaps after the current integration pass
-   - OneVision follow-up: run OV-6 Track B codec-grid sparse vision before any
-     E2E speedup language; use the M3 only for an 8-frame smoke, then use the
-     M5 only after that smoke validates codec-grid alignment and fidelity. On
-     M5, broaden Qwen 8f first; run 16f only if 8f gates, 32f only if 16f gates,
-     and Gemma only after Qwen has a clean cell worth confirming.
+   - OneVision follow-up: Qwen OV-6 has landed as bounded point-estimate Track B
+     evidence. Next, run Gemma only after codec-grid geometry is wired and
+     CPU-tested; use M5 for broader Qwen only after preregistering whether the
+     question is larger-N power, cross-benchmark transfer, or frame-budget
+     transfer. Do not claim net codec wall-clock speedup until metadata
+     extraction is precomputed or decoder-integrated.
 
 2. **Freeze artifact provenance.**
    - every paper table/figure cell needs a source artifact path or a visible

@@ -35,7 +35,6 @@ mx.set_memory_limit(12 * 1024**3)
 from mlx_vlm.utils import prepare_inputs  # noqa: E402
 
 from codec_through.answers import extract_choice  # noqa: E402
-from codec_through.memory_guard import check_rss_guard, rss_mb  # noqa: E402
 from codec_through.codec.continuous_score import (  # noqa: E402
     CodecScoreSource,
     project_macroblock_metadata_to_token_grid,
@@ -43,6 +42,7 @@ from codec_through.codec.continuous_score import (  # noqa: E402
 )
 from codec_through.codec.h264_metadata import H264MetadataExtractor  # noqa: E402
 from codec_through.codec.onevision_patchification import FuseMode  # noqa: E402
+from codec_through.memory_guard import check_rss_guard, rss_mb  # noqa: E402
 from codec_through.qwen_pruned_vision_tower import (  # noqa: E402
     QwenVisionPruneConfig,
     patch_qwen_vision_tower,
@@ -158,8 +158,7 @@ def _per_frame_codec_token_grids(
         )
     if len(active_boxes) != frame_count:
         raise ValueError(
-            f"expected {frame_count} active boxes for {item.item_id}, "
-            f"got {len(active_boxes)}"
+            f"expected {frame_count} active boxes for {item.item_id}, got {len(active_boxes)}"
         )
 
     total_frames = _count_frames(
@@ -477,9 +476,7 @@ def main() -> int:
         )
 
     codec_score_source = (
-        CodecScoreSource(args.codec_score_source)
-        if args.codec_score_source is not None
-        else None
+        CodecScoreSource(args.codec_score_source) if args.codec_score_source is not None else None
     )
     fusion_mode = cast(FuseMode, args.fusion_mode)
     normalize_fusion_inputs = not bool(args.no_normalize_fusion_inputs)
@@ -581,9 +578,7 @@ def main() -> int:
             else None,
             "codec_score_source": args.codec_score_source if vt_patched else None,
             "codec_fusion_mode": (
-                args.fusion_mode
-                if vt_patched and args.codec_score_source == "fused"
-                else None
+                args.fusion_mode if vt_patched and args.codec_score_source == "fused" else None
             ),
             "codec_motion_weight": (
                 float(args.motion_weight)

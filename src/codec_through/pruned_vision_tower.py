@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from typing import Any, cast
 
 import mlx.core as mx
+import numpy as np
 
 KeepMaskFn = Callable[[mx.array, mx.array], mx.array]
 """(hidden_states [B,L,D], positions [B,L,2]) -> bool keep-mask [B,L].
@@ -36,6 +37,9 @@ class PruneConfig:
 
     layer_idx: int
     keep_rate: float
+    score_mode: str = "magnitude_norm"
+    score_seed: int = 42
+    codec_score_source: str | None = None
 
 
 def magnitude_keep_mask(hidden_states: mx.array, positions: mx.array, keep_rate: float) -> mx.array:
@@ -58,6 +62,81 @@ def magnitude_keep_mask(hidden_states: mx.array, positions: mx.array, keep_rate:
     )  # [B, k, L]
     keep_mask = mx.any(one_hot, axis=1)  # [B, L] bool
     return keep_mask
+
+
+def _topk_keep_mask_from_scores(scores: mx.array, keep_rate: float) -> mx.array:
+    """Build a per-row top-k keep mask from score matrix [B, L]."""
+
+    if scores.ndim != 2:
+        raise ValueError(f"scores must have shape [B, L], got {scores.shape}")
+    _B, L = scores.shape
+    if not (0.0 < keep_rate <= 1.0):
+        raise ValueError(f"keep_rate must be in (0, 1], got {keep_rate}")
+    k = max(1, int(L * keep_rate))
+    order = mx.argsort(scores.astype(mx.float32), axis=-1)
+    top_k = order[:, -k:]
+    one_hot = cast(mx.array, mx.expand_dims(top_k, -1) == mx.expand_dims(mx.arange(L), 0))
+    return mx.any(one_hot, axis=1)
+
+
+def _validate_codec_score_grid(
+    grid: np.ndarray,
+    *,
+    batch_size: int,
+    tokens_per_frame: int,
+) -> np.ndarray:
+    array = np.asarray(grid, dtype=np.float32)
+    if array.ndim == 1:
+        expected = batch_size * tokens_per_frame
+        if array.shape[0] != expected:
+            raise ValueError(
+                f"codec score grid has {array.shape[0]} values but Gemma expects "
+                f"{expected} ({batch_size} frames x {tokens_per_frame} tokens)"
+            )
+        array = array.reshape(batch_size, tokens_per_frame)
+    elif array.ndim == 2:
+        if array.shape != (batch_size, tokens_per_frame):
+            raise ValueError(
+                f"codec score grid has shape {array.shape} but Gemma expects "
+                f"{(batch_size, tokens_per_frame)}"
+            )
+    else:
+        raise ValueError(f"codec score grid must be 1D or 2D, got shape {array.shape}")
+    if not np.all(np.isfinite(array)):
+        raise ValueError("codec score grid contains non-finite values")
+    if np.any(array < 0.0):
+        raise ValueError("codec score grid contains negative values")
+    return array
+
+
+def score_keep_mask(
+    hidden_states: mx.array,
+    positions: mx.array,
+    config: PruneConfig,
+    codec_score_grid: np.ndarray | None,
+) -> mx.array:
+    """Return a keep mask for magnitude, random, or external codec scoring."""
+
+    if config.score_mode == "magnitude_norm":
+        return magnitude_keep_mask(hidden_states, positions, config.keep_rate)
+    B, L, _D = hidden_states.shape
+    if config.score_mode == "uniform_random":
+        rng = np.random.default_rng(int(config.score_seed))
+        scores_np = rng.random(size=(int(B), int(L)), dtype=np.float32)
+        return _topk_keep_mask_from_scores(mx.array(scores_np), config.keep_rate)
+    if config.score_mode == "codec_grid":
+        if codec_score_grid is None:
+            raise ValueError("score_mode 'codec_grid' requires a codec score grid")
+        scores_np = _validate_codec_score_grid(
+            codec_score_grid,
+            batch_size=int(B),
+            tokens_per_frame=int(L),
+        )
+        return _topk_keep_mask_from_scores(mx.array(scores_np), config.keep_rate)
+    raise ValueError(
+        f"unknown score_mode {config.score_mode!r}; expected one of: "
+        "magnitude_norm, uniform_random, codec_grid"
+    )
 
 
 def _slice_keep(x: mx.array, indices: mx.array, axis: int) -> mx.array:
@@ -159,16 +238,49 @@ class _PrunedEncoderWrapper:
     replacement. Other attribute access forwards to the wrapped encoder.
     """
 
-    def __init__(self, wrapped: Any, new_call: Callable[..., mx.array]) -> None:
+    def __init__(
+        self,
+        wrapped: Any,
+        config: PruneConfig,
+        keep_mask_fn: KeepMaskFn | None = None,
+    ) -> None:
         object.__setattr__(self, "_wrapped", wrapped)
-        object.__setattr__(self, "_new_call", new_call)
+        object.__setattr__(self, "_config", config)
+        object.__setattr__(self, "_codec_score_grid", None)
+        if keep_mask_fn is None:
+            keep_mask_fn = lambda h, p: score_keep_mask(  # noqa: E731
+                h,
+                p,
+                self._config,
+                self._codec_score_grid,
+            )
+        object.__setattr__(
+            self,
+            "_new_call",
+            make_pruned_encoder_call(wrapped, config, keep_mask_fn),
+        )
 
     def __call__(self, *args: Any, **kwargs: Any) -> mx.array:
-        result: mx.array = self._new_call(*args, **kwargs)
-        return result
+        try:
+            result: mx.array = self._new_call(*args, **kwargs)
+            return result
+        finally:
+            if self._config.score_mode == "codec_grid":
+                object.__setattr__(self, "_codec_score_grid", None)
 
     def __getattr__(self, name: str) -> Any:
         return getattr(self._wrapped, name)
+
+    def set_codec_score_grid(self, grid: np.ndarray | None) -> None:
+        if grid is None:
+            object.__setattr__(self, "_codec_score_grid", None)
+            return
+        array = np.asarray(grid, dtype=np.float32)
+        if not np.all(np.isfinite(array)):
+            raise ValueError("codec score grid contains non-finite values")
+        if np.any(array < 0.0):
+            raise ValueError("codec score grid contains negative values")
+        object.__setattr__(self, "_codec_score_grid", array.copy())
 
 
 def patch_vision_tower(
@@ -181,8 +293,6 @@ def patch_vision_tower(
     the encoder attribute for a wrapper whose class defines `__call__`.
     """
     if keep_mask_fn is None:
-        kr = config.keep_rate
-        keep_mask_fn = lambda h, p: magnitude_keep_mask(h, p, kr)  # noqa: E731
+        keep_mask_fn = None
     encoder = model.vision_tower.encoder
-    new_call = make_pruned_encoder_call(encoder, config, keep_mask_fn)
-    model.vision_tower.encoder = _PrunedEncoderWrapper(encoder, new_call)
+    model.vision_tower.encoder = _PrunedEncoderWrapper(encoder, config, keep_mask_fn)
