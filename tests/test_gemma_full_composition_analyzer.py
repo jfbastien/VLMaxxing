@@ -8,8 +8,14 @@ from typing import Any
 
 
 def _schema(
-    *, prune_placeholders: str, vision_keep_rate: float, frame_count: int = 8
+    *,
+    prune_placeholders: str,
+    vision_keep_rate: float,
+    frame_count: int = 8,
+    vision_score_mode: str | None = None,
 ) -> dict[str, Any]:
+    if vision_score_mode is None:
+        vision_score_mode = "rlt_topk" if vision_keep_rate < 1.0 else "magnitude"
     return {
         "kind": "schema",
         "schema_version": "phase1_51r_gemma_admission_v4",
@@ -19,7 +25,7 @@ def _schema(
             "prefill_step_size": 1024,
             "prune_placeholders": prune_placeholders,
             "vision_tower_keep_rate": vision_keep_rate,
-            "vision_tower_score_mode": "rlt_topk" if vision_keep_rate < 1.0 else "magnitude",
+            "vision_tower_score_mode": vision_score_mode,
         },
     }
 
@@ -52,8 +58,28 @@ def _row(item_id: str, *, group: str, dense_correct: bool, pruned_correct: bool)
         "metadata": {
             "vision_tower_keep_rate": 0.5,
             "vision_tower_score_mode": "rlt_topk",
+            "dense_placeholder_count": 2048,
+            "pruned_placeholder_count": 1240,
+            "placeholder_prune_bypassed": False,
+            "gemma_encoder_valid_positions_per_frame": [1024] * 8,
+            "gemma_encoder_kept_per_frame": [512] * 8,
         },
     }
+
+
+def _dense_equiv_row(
+    item_id: str, *, group: str, dense_correct: bool, pruned_correct: bool
+) -> dict[str, Any]:
+    row = _row(item_id, group=group, dense_correct=dense_correct, pruned_correct=pruned_correct)
+    row["pruned_prompt_tokens"] = row["dense_prompt_tokens"]
+    row["metadata"] = {
+        "vision_tower_keep_rate": 1.0,
+        "vision_tower_score_mode": "magnitude",
+        "dense_placeholder_count": 2048,
+        "pruned_placeholder_count": 2048,
+        "placeholder_prune_bypassed": True,
+    }
+    return row
 
 
 def _write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
@@ -97,9 +123,13 @@ def test_full_composition_analyzer_pairs_dense_reference_against_composed(tmp_pa
     assert completed.returncode == 0, completed.stderr
     analysis = json.loads(output.read_text())
     assert analysis["decisions"][0]["decision"] == "continue"
+    assert analysis["cell_type"] == "rlt_admission_plus_rlt_cvision"
     assert analysis["summary"]["e2e_speedup_dense_over_composed"] == 1.25
     assert analysis["summary"]["pass_bucket_quality_and_e2e"]
-    assert len(paired.read_text().strip().splitlines()) == 5
+    paired_rows = [json.loads(line) for line in paired.read_text().strip().splitlines()]
+    assert len(paired_rows) == 5
+    assert paired_rows[0]["placeholder_reduction"] > 0.0
+    assert paired_rows[0]["vision_reduction"] == 0.5
 
 
 def test_full_composition_analyzer_combines_disjoint_sources(tmp_path: Path) -> None:
@@ -259,3 +289,146 @@ def test_full_composition_analyzer_rejects_sparse_dense_reference(tmp_path: Path
 
     assert completed.returncode != 0
     assert "dense reference must not use sparse vision" in completed.stderr
+
+
+def test_full_composition_analyzer_accepts_cvision_only_arm(tmp_path: Path) -> None:
+    dense = tmp_path / "dense.jsonl"
+    composed = tmp_path / "composed.jsonl"
+    output = tmp_path / "analysis.json"
+    paired = tmp_path / "paired.jsonl"
+    items = [
+        _dense_equiv_row(f"item-{idx}", group="short", dense_correct=True, pruned_correct=True)
+        for idx in range(5)
+    ]
+    for item in items:
+        item["metadata"]["gemma_encoder_valid_positions_per_frame"] = [1024] * 8
+        item["metadata"]["gemma_encoder_kept_per_frame"] = [512] * 8
+    composed_schema = _schema(prune_placeholders="none", vision_keep_rate=0.5)
+    _write_jsonl(dense, [_schema(prune_placeholders="none", vision_keep_rate=1.0), *items])
+    _write_jsonl(composed, [composed_schema, *items])
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/analyze_gemma_full_composition.py",
+            "--dense-jsonl",
+            str(dense),
+            "--composed-jsonl",
+            str(composed),
+            "--output",
+            str(output),
+            "--paired-items",
+            str(paired),
+            "--expected-items",
+            "5",
+            "--n-bootstrap",
+            "50",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    analysis = json.loads(output.read_text())
+    assert analysis["cell_type"] == "rlt_cvision_only"
+    paired_rows = [json.loads(line) for line in paired.read_text().strip().splitlines()]
+    assert paired_rows[0]["placeholder_prune_bypassed"]
+    assert paired_rows[0]["placeholder_reduction"] == 0.0
+
+
+def test_full_composition_analyzer_accepts_cvision_oracle_at_keep_rate_one(
+    tmp_path: Path,
+) -> None:
+    dense = tmp_path / "dense.jsonl"
+    composed = tmp_path / "composed.jsonl"
+    output = tmp_path / "analysis.json"
+    paired = tmp_path / "paired.jsonl"
+    items = [
+        _dense_equiv_row(f"item-{idx}", group="short", dense_correct=True, pruned_correct=True)
+        for idx in range(5)
+    ]
+    for item in items:
+        item["metadata"]["vision_tower_score_mode"] = "rlt_topk"
+        item["metadata"]["gemma_encoder_valid_positions_per_frame"] = [1024] * 8
+        item["metadata"]["gemma_encoder_kept_per_frame"] = [1024] * 8
+    _write_jsonl(dense, [_schema(prune_placeholders="none", vision_keep_rate=1.0), *items])
+    _write_jsonl(
+        composed,
+        [
+            _schema(
+                prune_placeholders="none",
+                vision_keep_rate=1.0,
+                vision_score_mode="rlt_topk",
+            ),
+            *items,
+        ],
+    )
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/analyze_gemma_full_composition.py",
+            "--dense-jsonl",
+            str(dense),
+            "--composed-jsonl",
+            str(composed),
+            "--output",
+            str(output),
+            "--paired-items",
+            str(paired),
+            "--expected-items",
+            "5",
+            "--n-bootstrap",
+            "50",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    analysis = json.loads(output.read_text())
+    assert analysis["cell_type"] == "rlt_cvision_only"
+    paired_rows = [json.loads(line) for line in paired.read_text().strip().splitlines()]
+    assert paired_rows[0]["vision_reduction"] == 0.0
+
+
+def test_full_composition_analyzer_accepts_dense_equivalent_arm(tmp_path: Path) -> None:
+    dense = tmp_path / "dense.jsonl"
+    composed = tmp_path / "composed.jsonl"
+    output = tmp_path / "analysis.json"
+    paired = tmp_path / "paired.jsonl"
+    items = [
+        _dense_equiv_row(f"item-{idx}", group="short", dense_correct=True, pruned_correct=True)
+        for idx in range(5)
+    ]
+    _write_jsonl(dense, [_schema(prune_placeholders="none", vision_keep_rate=1.0), *items])
+    _write_jsonl(composed, [_schema(prune_placeholders="none", vision_keep_rate=1.0), *items])
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/analyze_gemma_full_composition.py",
+            "--dense-jsonl",
+            str(dense),
+            "--composed-jsonl",
+            str(composed),
+            "--output",
+            str(output),
+            "--paired-items",
+            str(paired),
+            "--expected-items",
+            "5",
+            "--n-bootstrap",
+            "50",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    analysis = json.loads(output.read_text())
+    assert analysis["cell_type"] == "dense_equivalent"
+    assert analysis["summary"]["pass_dense_equivalence"]

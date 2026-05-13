@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Analyze direct dense-vs-full RLT composition artifacts.
+"""Analyze direct dense-vs-RLT composition artifacts.
 
 This pairs a dense-reference ``run_novelty_pruning_gemma.py`` artifact
-(``prune_placeholders=none``, no sparse vision) against a composed artifact
-(``prune_placeholders=rlt`` plus RLT-as-C-VISION). It exists because the
-incremental composition cell compares prompt admission on top of an already
-sparse-vision baseline; this analyzer measures the paper-facing full-stack
-question directly.
+(``prune_placeholders=none``, no sparse vision) against a candidate artifact.
+The candidate can be dense-equivalent, RLT prompt admission only, RLT
+C-VISION only, or the full RLT admission + C-VISION composition. Q0b uses the
+same pairing and ledger fields to separate prompt-side and encoder-side
+failure modes before query-routing operators are allowed to run.
 """
 
 from __future__ import annotations
@@ -19,8 +19,14 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-SCHEMA_VERSION = "gemma_full_composition_analysis_v1"
+SCHEMA_VERSION = "gemma_full_composition_analysis_v2"
 QUALITY_EPSILON = 1e-12
+QUERY_CVISION_SCORE_MODES = {
+    "rlt_topk",
+    "rlt_topk_static_floor",
+    "fixed_uniform",
+    "random_valid",
+}
 COMBINED_POLICY_INVARIANT_KEYS = (
     "anchor_arm",
     "arm_order",
@@ -38,6 +44,12 @@ COMBINED_POLICY_INVARIANT_KEYS = (
     "vision_tower_layer",
     "vision_tower_score_mode",
 )
+
+
+def _safe_float(value: Any, default: float) -> float:
+    if value is None:
+        return default
+    return float(value)
 
 
 def _load_jsonl(path: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
@@ -72,29 +84,47 @@ def _artifact_payload(schema: dict[str, Any]) -> dict[str, Any]:
     return payload
 
 
-def _require_contract(dense_schema: dict[str, Any], composed_schema: dict[str, Any]) -> None:
+def _composed_arm_kind(composed: dict[str, Any]) -> str:
+    prune_placeholders = composed.get("prune_placeholders")
+    vision_keep_rate = _safe_float(composed.get("vision_tower_keep_rate"), 1.0)
+    score_mode = composed.get("vision_tower_score_mode")
+    uses_query_cvision = score_mode in QUERY_CVISION_SCORE_MODES
+
+    if prune_placeholders == "none" and not uses_query_cvision:
+        return "dense_equivalent"
+    if prune_placeholders == "rlt" and not uses_query_cvision:
+        return "rlt_admission_only"
+    if prune_placeholders == "none" and uses_query_cvision:
+        return "rlt_cvision_only" if score_mode == "rlt_topk" else f"{score_mode}_cvision_only"
+    if prune_placeholders == "rlt" and score_mode == "rlt_topk":
+        return "rlt_admission_plus_rlt_cvision"
+    raise ValueError(
+        "unsupported composed arm contract: "
+        f"prune_placeholders={prune_placeholders!r} "
+        f"vision_tower_keep_rate={vision_keep_rate!r} "
+        f"vision_tower_score_mode={score_mode!r}"
+    )
+
+
+def _require_contract(dense_schema: dict[str, Any], composed_schema: dict[str, Any]) -> str:
     dense = _artifact_payload(dense_schema)
     composed = _artifact_payload(composed_schema)
     if dense.get("prune_placeholders") != "none":
         raise ValueError("dense reference must use prune_placeholders=none")
-    if float(dense.get("vision_tower_keep_rate", 1.0)) < 1.0:
+    if _safe_float(dense.get("vision_tower_keep_rate"), 1.0) < 1.0:
         raise ValueError("dense reference must not use sparse vision")
-    if composed.get("prune_placeholders") != "rlt":
-        raise ValueError("composed artifact must use prune_placeholders=rlt")
-    if composed.get("vision_tower_score_mode") != "rlt_topk":
-        raise ValueError("composed artifact must use RLT C-VISION scoring")
-    if float(composed.get("vision_tower_keep_rate", 1.0)) >= 1.0:
-        raise ValueError("composed artifact must use sparse vision")
+    cell_type = _composed_arm_kind(composed)
     for key in ("manifest", "frame_count", "prefill_step_size"):
         if dense.get(key) != composed.get(key):
             raise ValueError(
                 f"dense/composed schemas disagree on {key}: "
                 f"{dense.get(key)!r} vs {composed.get(key)!r}"
             )
+    return cell_type
 
 
 def _combined_policy_signature(
-    dense_schema: dict[str, Any], composed_schema: dict[str, Any]
+    dense_schema: dict[str, Any], composed_schema: dict[str, Any], *, cell_type: str
 ) -> dict[str, dict[str, Any]]:
     def subset(payload: dict[str, Any]) -> dict[str, Any]:
         values: dict[str, Any] = {}
@@ -113,6 +143,7 @@ def _combined_policy_signature(
         return values
 
     return {
+        "cell_type": {"value": cell_type},
         "dense": subset(_artifact_payload(dense_schema)),
         "composed": subset(_artifact_payload(composed_schema)),
     }
@@ -190,9 +221,23 @@ def _group_rows(rows: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
     return dict(grouped)
 
 
+def _count_by_key(rows: list[dict[str, Any]], key: str) -> dict[str, int]:
+    counts: dict[str, int] = defaultdict(int)
+    for row in rows:
+        counts[str(row.get(key, "unknown"))] += 1
+    return dict(sorted(counts.items()))
+
+
+def _choice_agreement(rows: list[dict[str, Any]]) -> float:
+    if not rows:
+        return 0.0
+    return sum(not bool(row["choice_changed"]) for row in rows) / len(rows)
+
+
 def _summarize(
     rows: list[dict[str, Any]],
     *,
+    cell_type: str,
     quality_delta_floor: float,
     bucket_min_n: int,
     n_bootstrap: int,
@@ -224,11 +269,22 @@ def _summarize(
             "composed_accuracy": _accuracy(group_rows, "composed_correct"),
             "accuracy_delta_composed_minus_dense": group_delta,
             "e2e_speedup_dense_over_composed": group_speedup,
+            "failure_taxonomy": _count_by_key(group_rows, "correctness_transition"),
+            "parse_taxonomy": _count_by_key(group_rows, "parse_transition"),
+            "choice_agreement": _choice_agreement(group_rows),
             "gate_evaluated": evaluated,
             "quality_gate_pass": pass_quality,
             "e2e_gate_pass": pass_e2e,
         }
+    choice_changes = sum(bool(row["choice_changed"]) for row in rows)
+    dense_equivalence = (
+        cell_type == "dense_equivalent"
+        and accuracy_delta == 0.0
+        and parse_delta == 0
+        and choice_changes == 0
+    )
     return {
+        "cell_type": cell_type,
         "n_items": len(rows),
         "dense_accuracy": dense_acc,
         "composed_accuracy": composed_acc,
@@ -245,7 +301,12 @@ def _summarize(
         "mean_dense_prefill_ms": _mean([float(row["dense_prefill_ms"]) for row in rows]),
         "mean_composed_prefill_ms": _mean([float(row["composed_prefill_ms"]) for row in rows]),
         "parse_failure_delta_composed_minus_dense": parse_delta,
+        "choice_changed_count": choice_changes,
+        "choice_agreement": _choice_agreement(rows),
+        "failure_taxonomy": _count_by_key(rows, "correctness_transition"),
+        "parse_taxonomy": _count_by_key(rows, "parse_transition"),
         "pass_complete_pairing": True,
+        "pass_dense_equivalence": dense_equivalence if cell_type == "dense_equivalent" else None,
         "pass_fidelity": accuracy_delta + QUALITY_EPSILON >= quality_delta_floor,
         "pass_e2e_positive": dense_e2e > composed_e2e,
         "pass_parse_failure_delta": parse_delta <= 2,
@@ -261,6 +322,7 @@ def _paired_rows(
     composed_rows: list[dict[str, Any]],
     *,
     expected_items: int | None,
+    cell_type: str,
 ) -> list[dict[str, Any]]:
     dense_by_item = _rows_by_item(dense_rows)
     composed_by_item = _rows_by_item(composed_rows)
@@ -276,18 +338,83 @@ def _paired_rows(
         composed = composed_by_item[item_id]
         if dense.get("answer_index") != composed.get("answer_index"):
             raise ValueError(f"answer mismatch for {item_id}")
+        dense_metadata = dense.get("metadata", {})
+        composed_metadata = composed.get("metadata", {})
+        if not isinstance(dense_metadata, dict):
+            dense_metadata = {}
+        if not isinstance(composed_metadata, dict):
+            composed_metadata = {}
+        placeholder_total = composed_metadata.get("dense_placeholder_count")
+        placeholder_kept = composed_metadata.get("pruned_placeholder_count")
+        placeholder_bypassed = composed_metadata.get("placeholder_prune_bypassed")
+        if placeholder_total is None or placeholder_kept is None or placeholder_bypassed is None:
+            raise ValueError(f"{item_id} missing placeholder ledger fields")
+        placeholder_total_i = int(placeholder_total)
+        placeholder_kept_i = int(placeholder_kept)
+        if placeholder_total_i <= 0:
+            raise ValueError(f"{item_id} has nonpositive dense_placeholder_count")
+        if cell_type == "dense_equivalent" or cell_type.endswith("_cvision_only"):
+            if not bool(placeholder_bypassed):
+                raise ValueError(f"{item_id} expected placeholder_prune_bypassed=true")
+            if placeholder_total_i != placeholder_kept_i:
+                raise ValueError(
+                    f"{item_id} expected dense placeholder count, got "
+                    f"{placeholder_kept_i}/{placeholder_total_i}"
+                )
+        encoder_valid = composed_metadata.get("gemma_encoder_valid_positions_per_frame")
+        encoder_kept = composed_metadata.get("gemma_encoder_kept_per_frame")
+        require_encoder = cell_type.endswith("_cvision_only") or cell_type in {
+            "rlt_admission_plus_rlt_cvision",
+        }
+        if require_encoder and (encoder_valid is None or encoder_kept is None):
+            raise ValueError(f"{item_id} missing Gemma encoder kept/valid ledger fields")
+        vision_reduction = None
+        if encoder_valid is not None and encoder_kept is not None:
+            valid_values = [int(value) for value in encoder_valid]
+            kept_values = [int(value) for value in encoder_kept]
+            if len(valid_values) != len(kept_values):
+                raise ValueError(f"{item_id} encoder kept/valid length mismatch")
+            reductions = [
+                1.0 - (kept / valid)
+                for kept, valid in zip(kept_values, valid_values, strict=True)
+                if valid > 0
+            ]
+            vision_reduction = _mean(reductions)
+        dense_correct = bool(dense.get("dense_correct"))
+        composed_correct = bool(composed.get("pruned_correct"))
+        if dense_correct and composed_correct:
+            correctness_transition = "preserved_correct"
+        elif dense_correct and not composed_correct:
+            correctness_transition = "harmed"
+        elif not dense_correct and composed_correct:
+            correctness_transition = "recovered"
+        else:
+            correctness_transition = "unchanged_wrong"
+        dense_parse_failure = bool(dense.get("dense_parse_failure"))
+        composed_parse_failure = bool(composed.get("pruned_parse_failure"))
+        if dense_parse_failure == composed_parse_failure:
+            parse_transition = "parse_same"
+        elif dense_parse_failure:
+            parse_transition = "parse_recovered"
+        else:
+            parse_transition = "parse_harmed"
         rows.append(
             {
+                "paired_row_key": item_id,
+                "cell_type": cell_type,
                 "item_id": item_id,
                 "benchmark": dense.get("benchmark"),
                 "group": dense.get("group"),
                 "answer_index": dense.get("answer_index"),
-                "dense_correct": bool(dense.get("dense_correct")),
-                "composed_correct": bool(composed.get("pruned_correct")),
-                "dense_parse_failure": bool(dense.get("dense_parse_failure")),
-                "composed_parse_failure": bool(composed.get("pruned_parse_failure")),
+                "dense_correct": dense_correct,
+                "composed_correct": composed_correct,
+                "correctness_transition": correctness_transition,
+                "dense_parse_failure": dense_parse_failure,
+                "composed_parse_failure": composed_parse_failure,
+                "parse_transition": parse_transition,
                 "dense_choice": dense.get("dense_choice"),
                 "composed_choice": composed.get("pruned_choice"),
+                "choice_changed": dense.get("dense_choice") != composed.get("pruned_choice"),
                 "dense_end_to_end_ms": _timing(dense, "dense", "end_to_end"),
                 "composed_end_to_end_ms": _timing(composed, "pruned", "end_to_end"),
                 "dense_vision_ms": _timing(dense, "dense", "vision"),
@@ -296,7 +423,15 @@ def _paired_rows(
                 "composed_prefill_ms": _timing(composed, "pruned", "multimodal_prefill_ms"),
                 "dense_prompt_tokens": dense.get("dense_prompt_tokens"),
                 "composed_prompt_tokens": composed.get("pruned_prompt_tokens"),
-                "composed_metadata": composed.get("metadata", {}),
+                "dense_metadata": dense_metadata,
+                "composed_metadata": composed_metadata,
+                "dense_placeholder_count": placeholder_total_i,
+                "composed_placeholder_count": placeholder_kept_i,
+                "placeholder_prune_bypassed": bool(placeholder_bypassed),
+                "placeholder_reduction": 1.0 - (placeholder_kept_i / placeholder_total_i),
+                "gemma_encoder_valid_positions_per_frame": encoder_valid,
+                "gemma_encoder_kept_per_frame": encoder_kept,
+                "vision_reduction": vision_reduction,
             }
         )
     return rows
@@ -326,13 +461,20 @@ def main() -> int:
     for dense_path, composed_path in zip(dense_paths, composed_paths, strict=True):
         dense_schema, dense_rows = _load_jsonl(dense_path)
         composed_schema, composed_rows = _load_jsonl(composed_path)
-        _require_contract(dense_schema, composed_schema)
-        source_signature = _combined_policy_signature(dense_schema, composed_schema)
+        cell_type = _require_contract(dense_schema, composed_schema)
+        source_signature = _combined_policy_signature(
+            dense_schema, composed_schema, cell_type=cell_type
+        )
         if policy_signature is None:
             policy_signature = source_signature
         elif source_signature != policy_signature:
             raise ValueError("combined analysis source pairs disagree on policy/config invariants")
-        source_paired = _paired_rows(dense_rows, composed_rows, expected_items=None)
+        source_paired = _paired_rows(
+            dense_rows,
+            composed_rows,
+            expected_items=None,
+            cell_type=cell_type,
+        )
         source_pairs.append(
             {
                 "dense_jsonl": str(dense_path),
@@ -358,37 +500,41 @@ def main() -> int:
             f"expected {args.expected_items} paired items, found {len(paired)} "
             f"across {len(source_pairs)} source pair(s)"
         )
+    summary_cell_type = (
+        next(iter(policy_signature["cell_type"].values())) if policy_signature else "unknown"
+    )
     summary = _summarize(
         paired,
+        cell_type=summary_cell_type,
         quality_delta_floor=args.quality_delta_floor,
         bucket_min_n=args.bucket_min_n,
         n_bootstrap=args.n_bootstrap,
     )
     decisions: list[dict[str, Any]] = []
-    if not (
-        summary["pass_fidelity"]
-        and summary["pass_e2e_positive"]
-        and summary["pass_parse_failure_delta"]
-        and summary["pass_bucket_quality_and_e2e"]
-    ):
+    direct_gate_keys = (
+        "pass_fidelity",
+        "pass_e2e_positive",
+        "pass_parse_failure_delta",
+        "pass_bucket_quality_and_e2e",
+    )
+    dense_equivalence_gate = summary.get("cell_type") == "dense_equivalent"
+    if dense_equivalence_gate:
+        gate_passed = bool(summary.get("pass_dense_equivalence"))
+        failed = ["pass_dense_equivalence"] if not gate_passed else []
+    else:
+        gate_passed = all(bool(summary[key]) for key in direct_gate_keys)
+        failed = [key for key in direct_gate_keys if not summary[key]]
+
+    if not gate_passed:
         decisions.append(
             {
                 "decision": "stop",
-                "reason": "full_composition_gate_failed",
-                "failed": [
-                    key
-                    for key in (
-                        "pass_fidelity",
-                        "pass_e2e_positive",
-                        "pass_parse_failure_delta",
-                        "pass_bucket_quality_and_e2e",
-                    )
-                    if not summary[key]
-                ],
+                "reason": "direct_pair_gate_failed",
+                "failed": failed,
             }
         )
     else:
-        decisions.append({"decision": "continue", "reason": "full_composition_gate_passed"})
+        decisions.append({"decision": "continue", "reason": "direct_pair_gate_passed"})
 
     output = {
         "schema_version": SCHEMA_VERSION,
@@ -400,7 +546,7 @@ def main() -> int:
         ),
         "source_pairs": source_pairs,
         "expected_items": args.expected_items,
-        "cell_type": "direct_dense_vs_rlt_cvision_plus_admission",
+        "cell_type": summary["cell_type"],
         "summary": summary,
         "decisions": decisions,
     }

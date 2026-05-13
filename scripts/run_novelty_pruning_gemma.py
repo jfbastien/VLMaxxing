@@ -43,7 +43,7 @@ Anchor-arm support in v0:
   literature baseline and to sanity-check the proxy itself.
 
 Usage:
-    uv run python scripts/run_novelty_pruning_gemma.py \\
+    .venv/bin/python scripts/run_novelty_pruning_gemma.py \\
         --manifest research/benchmark_manifests/videomme_dev_v1.toml \\
         --anchor-arm none --keep-rate 0.5 \\
         --output research/experiments/2026/artifacts/phase1_51R_dev/none_kr50.jsonl \\
@@ -96,6 +96,11 @@ from codec_through.novelty_pruning import (
     prune_image_placeholders,
 )
 from codec_through.pruned_vision_tower import PruneConfig, patch_vision_tower
+from codec_through.query_routing import (
+    fixed_uniform_mask_for_positions,
+    random_valid_mask_for_positions,
+    rlt_static_floor_mask_for_positions,
+)
 from codec_through.rlt_masks import (
     RLTMaskConfig,
     compute_rlt_keep_mask_from_frames,
@@ -129,7 +134,19 @@ _FEATURE_DEPENDENT_ARMS: frozenset[AnchorArm] = frozenset(
 )
 PlaceholderPruneMode = Literal["anchor", "structural", "rlt", "none"]
 ArmOrderMode = Literal["dense_first", "abba"]
-VisionTowerScoreMode = Literal["magnitude", "rlt_topk"]
+VisionTowerScoreMode = Literal[
+    "magnitude",
+    "rlt_topk",
+    "rlt_topk_static_floor",
+    "fixed_uniform",
+    "random_valid",
+]
+RLT_VISION_SCORE_MODES = {"rlt_topk", "rlt_topk_static_floor"}
+QUERY_ROUTING_VISION_SCORE_MODES = {
+    "rlt_topk_static_floor",
+    "fixed_uniform",
+    "random_valid",
+}
 
 
 def _clear_runtime_state() -> None:
@@ -417,7 +434,7 @@ def _schema_row(args: argparse.Namespace, rlt_config: RLTMaskConfig) -> dict[str
         "rlt_config": (
             rlt_config.as_dict()
             if args.prune_placeholders == "rlt"
-            or getattr(args, "vision_tower_score_mode", "magnitude") == "rlt_topk"
+            or getattr(args, "vision_tower_score_mode", "magnitude") in RLT_VISION_SCORE_MODES
             else None
         ),
         "n_warmup": args.n_warmup,
@@ -426,6 +443,8 @@ def _schema_row(args: argparse.Namespace, rlt_config: RLTMaskConfig) -> dict[str
         "vision_tower_keep_rate": args.vision_tower_keep_rate,
         "group_vision_tower_keep_rates": args.group_vision_keep_rates,
         "vision_tower_score_mode": getattr(args, "vision_tower_score_mode", "magnitude"),
+        "vision_static_floor_stride": getattr(args, "vision_static_floor_stride", None),
+        "vision_random_seed": getattr(args, "vision_random_seed", None),
     }
     return {
         "kind": "schema",
@@ -558,6 +577,8 @@ def _process_one_item(
     vision_tower_score_mode: VisionTowerScoreMode,
     vision_tower_keep_rate: float,
     rlt_vision_holder: dict[str, Any] | None,
+    vision_static_floor_stride: int,
+    vision_random_seed: int,
 ) -> ItemResult:
     # --- Stage 1: decode ---
     # Shared: both branches pay this cost once per item (the frames are the
@@ -611,16 +632,21 @@ def _process_one_item(
     # RLTMaskResult that the prompt-pruning path later projects.
     rlt_result: Any | None = None
     vision_scorer_prepare_ms = 0.0
-    if vision_tower_keep_rate < 1.0 and vision_tower_score_mode == "rlt_topk":
+    if rlt_vision_holder is not None:
+        rlt_vision_holder["current_vision_keep_rate"] = vision_tower_keep_rate
+        rlt_vision_holder.pop("last_mask_np", None)
+        rlt_vision_holder.pop("last_keep_mask_ms", None)
+        rlt_vision_holder.pop("last_operator_ledger", None)
+    vision_tower_operator_active = (
+        vision_tower_score_mode != "magnitude" and rlt_vision_holder is not None
+    )
+    if vision_tower_operator_active and vision_tower_score_mode in RLT_VISION_SCORE_MODES:
         if rlt_vision_holder is None:
             raise RuntimeError("RLT C-VISION requested without rlt_vision_holder")
         t_stage = time.perf_counter_ns()
         rlt_result = compute_rlt_keep_mask_from_frames(frames, config=rlt_config)
         vision_scorer_prepare_ms = (time.perf_counter_ns() - t_stage) / 1_000_000
         rlt_vision_holder["rlt_result"] = rlt_result
-        rlt_vision_holder["current_vision_keep_rate"] = vision_tower_keep_rate
-        rlt_vision_holder.pop("last_mask_np", None)
-        rlt_vision_holder.pop("last_keep_mask_ms", None)
 
     # --- Stage 3: novelty (placeholder-pruning scorer only when needed) ---
     novelty: np.ndarray | None = None
@@ -713,14 +739,12 @@ def _process_one_item(
     else:
         raise ValueError(f"unknown prune_placeholders mode {prune_placeholders!r}")
     mask_ms = (time.perf_counter_ns() - t_stage) / 1_000_000
-    if (
-        vision_tower_keep_rate < 1.0
-        and vision_tower_score_mode == "rlt_topk"
-        and rlt_vision_holder is not None
-    ):
+    if vision_tower_operator_active:
+        if rlt_vision_holder is None:
+            raise RuntimeError("internal error: missing C-VISION operator holder")
         last_mask = rlt_vision_holder.get("last_mask_np")
         if last_mask is None:
-            raise RuntimeError("RLT C-VISION keep_mask_fn did not run inside vision_tower")
+            raise RuntimeError("C-VISION keep_mask_fn did not run inside vision_tower")
         last_mask_np = np.asarray(last_mask, dtype=bool)
         actual_kept_per_frame = [int(row.sum()) for row in last_mask_np]
         if len(set(actual_kept_per_frame)) != 1:
@@ -737,12 +761,22 @@ def _process_one_item(
                 "vision_scorer_keep_mask_ms": vision_scorer_keep_mask_ms,
                 "vision_scorer_total_ms": vision_scorer_prepare_ms + vision_scorer_keep_mask_ms,
                 "rlt_cvision_budget_domain": "valid_encoder_positions",
-                "rlt_cvision_scope": (
-                    "incremental prompt admission on top of RLT-as-C-VISION; "
-                    "both branches share the sparse vision-tower features"
+                "cvision_scope": (
+                    "prompt_admission_plus_cvision"
+                    if prune_placeholders == "rlt"
+                    else "cvision_only_placeholder_bypass"
                 ),
+                "operator_plan": vision_tower_score_mode,
+                "operator_budget_mode": "per_frame",
             }
         )
+        operator_ledger = rlt_vision_holder.get("last_operator_ledger")
+        if isinstance(operator_ledger, dict):
+            mask_metadata.update(operator_ledger)
+        if vision_tower_score_mode == "rlt_topk_static_floor":
+            mask_metadata["floor_stride"] = vision_static_floor_stride
+        if vision_tower_score_mode == "random_valid":
+            mask_metadata["random_seed"] = vision_random_seed
 
     # --- Stage 6: prune input_ids + gather features (pruned branch only) ---
     image_token_id = int(model.config.image_token_id)
@@ -1372,7 +1406,8 @@ def main() -> int:
         default=1,
         help=(
             "Phase 1.51V: apply vision-tower keep mask AFTER this layer index "
-            "(0..N-1). Only active when --vision-tower-keep-rate < 1.0."
+            "(0..N-1). Active when sparse vision is enabled, including "
+            "query-routing oracle cells at keep_rate=1.0."
         ),
     )
     parser.add_argument(
@@ -1387,13 +1422,32 @@ def main() -> int:
     )
     parser.add_argument(
         "--vision-tower-score-mode",
-        choices=("magnitude", "rlt_topk"),
+        choices=(
+            "magnitude",
+            "rlt_topk",
+            "rlt_topk_static_floor",
+            "fixed_uniform",
+            "random_valid",
+        ),
         default="magnitude",
         help=(
-            "Sparse vision-tower scoring policy when --vision-tower-keep-rate < 1.0. "
+            "Sparse vision-tower scoring policy when the vision tower is patched. "
             "'magnitude' preserves the historical C-VISION patch; 'rlt_topk' uses "
-            "the same RLT motion scores as placeholder admission."
+            "the same RLT redundancy scores as placeholder admission; the query-routing "
+            "modes add static-floor, fixed, and random controls."
         ),
+    )
+    parser.add_argument(
+        "--vision-static-floor-stride",
+        type=int,
+        default=4,
+        help="Stride for rlt_topk_static_floor query-routing C-VISION masks.",
+    )
+    parser.add_argument(
+        "--vision-random-seed",
+        type=int,
+        default=20260514,
+        help="Seed for random_valid query-routing C-VISION masks.",
     )
     parser.add_argument(
         "--group-keep-rates",
@@ -1428,10 +1482,12 @@ def main() -> int:
         raise SystemExit(
             f"--mlx-memory-limit-gb must be nonnegative, got {args.mlx_memory_limit_gb}"
         )
-    if args.group_vision_keep_rates and args.vision_tower_score_mode != "rlt_topk":
+    if args.group_vision_keep_rates and args.vision_tower_score_mode not in RLT_VISION_SCORE_MODES:
         raise SystemExit(
-            "--group-vision-keep-rates currently requires --vision-tower-score-mode rlt_topk"
+            "--group-vision-keep-rates currently requires an RLT-based vision score mode"
         )
+    if args.vision_static_floor_stride <= 0:
+        raise SystemExit("--vision-static-floor-stride must be positive")
     if args.mlx_memory_limit_gb > 0.0:
         mx.set_memory_limit(int(args.mlx_memory_limit_gb * 1024**3))
     if args.anchor_arm == "cls_attention_proxy":
@@ -1484,8 +1540,10 @@ def main() -> int:
         (idx, item) for idx, item in enumerate(items) if item.item_id not in completed_item_ids
     ]
     if args.resume and not pending_items:
-        resume_vt_patched = args.vision_tower_keep_rate < 1.0 or any(
-            rate < 1.0 for rate in args.group_vision_keep_rates.values()
+        resume_vt_patched = (
+            args.vision_tower_score_mode != "magnitude"
+            or args.vision_tower_keep_rate < 1.0
+            or any(rate < 1.0 for rate in args.group_vision_keep_rates.values())
         )
         summary = {
             "manifest": str(args.manifest),
@@ -1497,7 +1555,8 @@ def main() -> int:
             "prune_placeholders": args.prune_placeholders,
             "rlt_config": (
                 rlt_config.as_dict()
-                if args.prune_placeholders == "rlt" or args.vision_tower_score_mode == "rlt_topk"
+                if args.prune_placeholders == "rlt"
+                or args.vision_tower_score_mode in RLT_VISION_SCORE_MODES
                 else None
             ),
             "frame_count": args.frame_count,
@@ -1516,6 +1575,8 @@ def main() -> int:
             "vision_tower_score_mode": (
                 args.vision_tower_score_mode if resume_vt_patched else None
             ),
+            "vision_static_floor_stride": args.vision_static_floor_stride,
+            "vision_random_seed": args.vision_random_seed,
             **_summarize_payload_rows(existing_rows),
         }
         args.summary.parent.mkdir(parents=True, exist_ok=True)
@@ -1530,11 +1591,13 @@ def main() -> int:
     print(f"[rss after load] {rss_mb():.0f} MiB")
     check_rss_guard(args.rss_guard_mb, stage="after_model_load")
 
-    vt_patched = args.vision_tower_keep_rate < 1.0 or any(
-        rate < 1.0 for rate in args.group_vision_keep_rates.values()
+    vt_patched = (
+        args.vision_tower_score_mode != "magnitude"
+        or args.vision_tower_keep_rate < 1.0
+        or any(rate < 1.0 for rate in args.group_vision_keep_rates.values())
     )
     rlt_vision_holder: dict[str, Any] | None = (
-        {} if args.vision_tower_score_mode == "rlt_topk" else None
+        {} if args.vision_tower_score_mode != "magnitude" else None
     )
     if vt_patched:
         configured_patch_rate = min(
@@ -1547,7 +1610,7 @@ def main() -> int:
                 f"group_overrides={args.group_vision_keep_rates}"
             )
         keep_mask_fn = None
-        if args.vision_tower_score_mode == "rlt_topk":
+        if args.vision_tower_score_mode in RLT_VISION_SCORE_MODES:
             if rlt_vision_holder is None:
                 raise RuntimeError("internal error: missing RLT vision holder")
 
@@ -1557,13 +1620,31 @@ def main() -> int:
                     raise RuntimeError("RLT result was not prepared before vision_tower call")
                 pos_np = np.array(positions)
                 valid_counts = ((pos_np[:, :, 0] >= 0) & (pos_np[:, :, 1] >= 0)).sum(axis=1)
-                mask_np = fixed_budget_rlt_score_mask_for_positions(
-                    rlt_vision_holder["rlt_result"],
-                    positions=pos_np,
-                    keep_rate=float(
-                        rlt_vision_holder.get("current_vision_keep_rate", configured_patch_rate)
-                    ),
+                current_keep_rate = float(
+                    rlt_vision_holder.get("current_vision_keep_rate", configured_patch_rate)
                 )
+                if args.vision_tower_score_mode == "rlt_topk_static_floor":
+                    mask_np, ledger = rlt_static_floor_mask_for_positions(
+                        rlt_vision_holder["rlt_result"],
+                        positions=pos_np,
+                        keep_rate=current_keep_rate,
+                        floor_stride=args.vision_static_floor_stride,
+                    )
+                    rlt_vision_holder["last_operator_ledger"] = ledger.as_dict()
+                else:
+                    mask_np = fixed_budget_rlt_score_mask_for_positions(
+                        rlt_vision_holder["rlt_result"],
+                        positions=pos_np,
+                        keep_rate=current_keep_rate,
+                    )
+                    rlt_vision_holder["last_operator_ledger"] = {
+                        "operator_plan": "redundancy_topk",
+                        "operator_budget_mode": "per_frame",
+                        "reserved_positions_per_frame": [0] * int(mask_np.shape[0]),
+                        "complement_size_per_frame": [int(value) for value in valid_counts],
+                        "operator_overlap_count_per_frame": [0] * int(mask_np.shape[0]),
+                        "static_floor_overflow": False,
+                    }
                 rlt_vision_holder["last_valid_counts"] = [int(value) for value in valid_counts]
                 rlt_vision_holder["last_keep_mask_ms"] = (
                     time.perf_counter_ns() - scorer_t0
@@ -1577,6 +1658,51 @@ def main() -> int:
                         f"vision hidden_states rows/tokens {expected}"
                     )
                 return mask
+        elif args.vision_tower_score_mode == "fixed_uniform":
+            if rlt_vision_holder is None:
+                raise RuntimeError("internal error: missing vision holder")
+
+            def keep_mask_fn(hidden_states: mx.array, positions: mx.array) -> mx.array:
+                del hidden_states
+                scorer_t0 = time.perf_counter_ns()
+                pos_np = np.array(positions)
+                valid_counts = ((pos_np[:, :, 0] >= 0) & (pos_np[:, :, 1] >= 0)).sum(axis=1)
+                mask_np, ledger = fixed_uniform_mask_for_positions(
+                    pos_np,
+                    keep_rate=float(
+                        rlt_vision_holder.get("current_vision_keep_rate", configured_patch_rate)
+                    ),
+                )
+                rlt_vision_holder["last_operator_ledger"] = ledger.as_dict()
+                rlt_vision_holder["last_valid_counts"] = [int(value) for value in valid_counts]
+                rlt_vision_holder["last_keep_mask_ms"] = (
+                    time.perf_counter_ns() - scorer_t0
+                ) / 1_000_000
+                rlt_vision_holder["last_mask_np"] = mask_np
+                return mx.array(mask_np)
+        elif args.vision_tower_score_mode == "random_valid":
+            if rlt_vision_holder is None:
+                raise RuntimeError("internal error: missing vision holder")
+
+            def keep_mask_fn(hidden_states: mx.array, positions: mx.array) -> mx.array:
+                del hidden_states
+                scorer_t0 = time.perf_counter_ns()
+                pos_np = np.array(positions)
+                valid_counts = ((pos_np[:, :, 0] >= 0) & (pos_np[:, :, 1] >= 0)).sum(axis=1)
+                mask_np, ledger = random_valid_mask_for_positions(
+                    pos_np,
+                    keep_rate=float(
+                        rlt_vision_holder.get("current_vision_keep_rate", configured_patch_rate)
+                    ),
+                    seed=args.vision_random_seed,
+                )
+                rlt_vision_holder["last_operator_ledger"] = ledger.as_dict()
+                rlt_vision_holder["last_valid_counts"] = [int(value) for value in valid_counts]
+                rlt_vision_holder["last_keep_mask_ms"] = (
+                    time.perf_counter_ns() - scorer_t0
+                ) / 1_000_000
+                rlt_vision_holder["last_mask_np"] = mask_np
+                return mx.array(mask_np)
 
         patch_vision_tower(
             model,
@@ -1631,6 +1757,8 @@ def main() -> int:
                     ),
                     vision_tower_keep_rate=item_vision_keep_rate,
                     rlt_vision_holder=rlt_vision_holder,
+                    vision_static_floor_stride=args.vision_static_floor_stride,
+                    vision_random_seed=args.vision_random_seed,
                 )
             except Exception as exc:
                 print(f"[{idx + 1}/{len(items)}] {item.item_id}: FAILED {exc!r}", file=sys.stderr)
@@ -1667,7 +1795,8 @@ def main() -> int:
         "prune_placeholders": args.prune_placeholders,
         "rlt_config": (
             rlt_config.as_dict()
-            if args.prune_placeholders == "rlt" or args.vision_tower_score_mode == "rlt_topk"
+            if args.prune_placeholders == "rlt"
+            or args.vision_tower_score_mode in RLT_VISION_SCORE_MODES
             else None
         ),
         "frame_count": args.frame_count,
@@ -1684,6 +1813,8 @@ def main() -> int:
         "vision_tower_keep_rate": args.vision_tower_keep_rate if vt_patched else None,
         "group_vision_tower_keep_rates": args.group_vision_keep_rates,
         "vision_tower_score_mode": args.vision_tower_score_mode if vt_patched else None,
+        "vision_static_floor_stride": args.vision_static_floor_stride,
+        "vision_random_seed": args.vision_random_seed,
         **_summarize_payload_rows(all_rows),
     }
     args.summary.parent.mkdir(parents=True, exist_ok=True)

@@ -13,6 +13,16 @@ Evidence labels:
 - `imported result`: from cited literature, not reproduced in this repo.
 - `hypothesis`: proposed next work.
 
+2026-05-14 implementation prereg: the first executable branch is implemented
+as Q0b/Q1 infrastructure, not as planner/repair work. See
+`research/experiments/2026/2026-05-14-query-routing-q0b-q1-prereg.md`.
+The queue now has `--run-query-routing-q0b`, `--run-query-routing-q1`, and
+`--query-routing-benchmarks`; the analyzer accepts dense-equivalent,
+admission-only, C-VISION-only, and full-composition direct-pair arms; and Q1
+has deterministic `rlt_topk_static_floor`, `fixed_uniform`, and
+`random_valid` C-VISION modes. These cells can earn only a proceed-to-Q2
+verdict until scalar-query baselines are run.
+
 2026-05-10 deep-research update: ChatGPT's external literature assessment
 largely validates the direction but narrows the novelty boundary. The surface
 form "query-aware video token/frame selection" is crowded. A standalone paper
@@ -701,36 +711,20 @@ ON/OFF) plus a kr sweep on the ON/ON cell:
 | (d) admit ON / vision ON | RLT-thresholded | RLT-topk | current composition default | yes (`run_novelty_pruning_gemma.py:614-745`) |
 | (d) kr sweep | RLT-thresholded | kr in {0.5, 0.7, 0.85, 1.0} | as (d), vary `--vision-tower-keep-rate` | yes |
 
-**Cell (c) is supported at the runner level today.** The C-VISION scorer
-prep at `run_novelty_pruning_gemma.py:614` runs whenever
-`vision_tower_keep_rate < 1.0` and `vision_tower_score_mode == "rlt_topk"`,
-*independent of* `prune_placeholders`. The `prune_placeholders="none"`
-branch at `run_novelty_pruning_gemma.py:710-712` then sets the
-placeholder keep-mask to all-ones (no admission pruning), but does not
-disable the C-VISION mask. Cell (c) requires no new runner mode.
+**Cell (c) is supported and queued in the first implementation branch.**
+The C-VISION scorer prep now runs whenever a non-`magnitude` C-VISION
+operator is active, independent of `prune_placeholders` and including
+oracle `keep_rate=1.0` rows. The `prune_placeholders="none"` branch then
+sets the placeholder keep-mask to all-ones (no admission pruning), but does
+not disable the C-VISION mask. `scripts/run_rlt_followup_queue.py` emits
+the Q0b cell grid under `--run-query-routing-q0b`, and
+`scripts/analyze_gemma_full_composition.py` accepts dense-equivalent,
+admission-only, C-VISION-only, and full-composition pairings.
 
-The actual gap is at two higher layers:
-
-1. **Queue support.** `scripts/run_rlt_followup_queue.py` does not yet
-   have a flag/cell that emits this combination. Add a queue cell that
-   schedules the (`--prune-placeholders=none`, `--vision-tower-keep-rate=0.5`,
-   `--vision-tower-score-mode=rlt_topk`) artifact alongside the existing
-   composition cells.
-2. **Analyzer contract.** `scripts/analyze_gemma_full_composition.py`
-   currently accepts only one dense vs composed pairing
-   (dense: `prune_placeholders=none` AND `vision_tower_keep_rate>=1.0`;
-   composed: `prune_placeholders=rlt` AND `vision_tower_keep_rate<1.0`).
-   Expand the contract to accept a "C-VISION-only composed" arm
-   (`prune_placeholders=none` AND `vision_tower_keep_rate<1.0`) paired
-   with the same dense baseline. This is the cell-(c) row.
-
-Estimated cost: half a day for queue plumbing plus analyzer-contract
-expansion (no scorer or schema-version changes needed).
-
-**Oracle accounting.** The `kr=1.0` cells in (b) and (d) must prove
+**Oracle accounting.** The `kr=1.0` C-VISION cells must prove
 `gemma_encoder_kept_per_frame == gemma_encoder_valid_positions_per_frame`
 per-row from the JSONL output (these fields exist today at
-`run_novelty_pruning_gemma.py:735-736` and `run_phase1_63G_gemma_track_b.py:904-905`).
+`run_novelty_pruning_gemma.py` and `run_phase1_63G_gemma_track_b.py`).
 Cell (a) (and any `prune_placeholders=none` arm) must additionally prove
 that the placeholder keep-mask is all-ones. Current rows already expose
 the needed facts as metadata: `dense_placeholder_count`,
