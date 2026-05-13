@@ -276,31 +276,73 @@ signals more cheaply, but that is a systems hypothesis until measured.
 ## Remaining Experiments After This Packet
 
 The four preregistered controls have now run; see the follow-up sweep below.
-The remaining useful work is narrower and should run in this order:
+The remaining useful work is narrower and should run in this order. The
+M3-versus-M5 split is doctrine: M3 is for implementation, extraction-sidecar
+work, analysis, and small N=10 engineering smokes; M5 is for preregistered
+confirmation runs where RAM, thermal stability, and runtime matter. Every new
+run must have a gate and a falsifier; no open-ended sweeps on either machine.
 
-1. **M3 sidecar equivalence gate**
+1. **M3 sidecar equivalence gates** (cheap, unblocking)
    Build precomputed H.264 score sidecars and compare live-PyAV Track B arms
    against sidecar-loaded arms on small Qwen and Gemma slices. Acceptance is
-   geometry/frame-budget specific: Qwen 8f, Qwen 16f, and Gemma 8f each require
-   zero choice drift, zero correctness drift, zero kept-group drift, current
-   manifest/commit/projection-version provenance, and sidecar load below one
-   second/item. This tests whether codec extraction can be amortized without
-   changing the scientific result.
+   geometry / frame-budget specific: Qwen 8f, Qwen 16f, and Gemma 8f each
+   require zero choice drift, zero correctness drift, zero kept-group drift,
+   current manifest / commit / projection-version provenance, and sidecar load
+   below one second / item *and* faster than live extraction. Scripts:
+   `scripts/run_ov6_sidecar_equivalence.sh` (Qwen 8f),
+   `OV6S_FRAME_COUNT=16 scripts/run_ov6_sidecar_equivalence.sh` (Qwen 16f),
+   `scripts/run_ov6_gemma_sidecar_equivalence.sh` (Gemma 8f). Each gate
+   produces `sidecar_equivalence.json` and is validated by
+   `scripts/validate_ov6_sidecar_equivalence_gate.py`. The M5 launchers below
+   refuse to run unless the matching gate has `gate_pass: true`.
 
-2. **M5 confirmation, only under the fresh preregistration**
-   Use the M5 for focused confirmation questions: Qwen hardware/timing parity,
-   Gemma N=57 cross-family transfer, and Qwen 16-frame boundary transfer. Do not
-   run a broad exploratory tree.
+2. **M3 TOMATO kr=0.5 / layer=2 / N=10 boundary diagnostic**
+   Disambiguate the Phase-3 collapse: is the TOMATO motion floor driven by the
+   frame budget (frame=8 too few for motion) or by the prune rate (kr=0.69 too
+   aggressive)? At N=10 this is a small engineering smoke, M3-appropriate.
+   Script: `scripts/run_ov6_tomato_kr050_boundary_smoke.sh`. Gate: if any
+   sparse arm at this keep rate exceeds 0.20 accuracy (vs Phase-3 collapse
+   band <=0.17), prune rate is the lever. If all sparse arms remain <=0.17,
+   the frame budget is the boundary.
 
-3. **OV-8 composition policy**
-   Artifact-level accounting exists, but first-query correctness drift is 12/57
-   for the Qwen codec_novel_coded kr=0.7/layer=2 cell. A live C-PERSIST
-   composition run needs either a fidelity-clean first-query cell or an explicit
-   preregistered accuracy/speed trade-off.
+3. **M5 confirmation runs, gated on the M3 equivalence artifacts**
+   - `scripts/run_ov6_m5_qwen_parity.sh` -- Qwen kr=0.7 / layer=2 / N=57 with
+     sidecar-loaded codec scores. Hypothesis: the M3 codec_novel_coded
+     point-estimate ordering is hardware-stable when extraction is moved out
+     of model timing.
+   - `scripts/run_ov6_m5_gemma_n57_confirmation.sh` -- Gemma kr=0.7 / layer=2
+     / N=57. Hypothesis: the N=10 Gemma codec-grid smoke was not a wiring
+     artifact; codec_novel_coded remains competitive with magnitude_norm at
+     the broader N.
+   - `scripts/run_ov6_m5_qwen_frame16_boundary.sh` -- Qwen kr=0.7 / layer=2
+     at frame=16 / N=57. Hypothesis: the kr=0.7 / layer=2 codec-grid window
+     does not survive at 16 frames, matching the OV-3 Track A frame=16
+     boundary.
+   - `scripts/run_ov6_m5_gemma_kr05_inversion.sh` -- Gemma kr=0.5 / layer=2
+     / N=57 random-vs-magnitude multi-seed (seeds {1, 7, 42, 100}).
+     Hypothesis: the Phase-1 Qwen uniform_random > magnitude_norm inversion
+     reproduces cross-family on Gemma at the same operating cell. This run
+     does not use codec arms; the M3 sidecar gate is not required.
+     Preregistered gate: >=3/4 seeds satisfy random >= magnitude by point
+     estimate; falsifier: any seed where magnitude beats random by >=3 items,
+     or <=1/4 seeds satisfy the gate. Analysis path:
+     `scripts/analyze_ov6_qwen_random_multiseed.py --root <out_dir>
+     --label Gemma`.
 
-4. **Dense determinism multi-seed**
-   Useful but secondary. It tightens the dense instability caveat; it does not
-   replace Track B or the codec extraction question.
+4. **OV-8 composition policy** (still blocked)
+   Artifact-level accounting exists, but first-query correctness drift is
+   12/57 for the Qwen codec_novel_coded kr=0.7/layer=2 cell. A live
+   C-PERSIST composition run needs either a fidelity-clean first-query cell
+   or an explicit preregistered accuracy/speed trade-off. The OV-8 validator
+   keeps live composition status pinned to "artifact-level accounting only".
+
+5. **Dense determinism multi-seed**
+   Useful but secondary. It tightens the dense instability caveat; it does
+   not replace Track B or the codec extraction question.
+
+Verification status of this packet: `make check` is green at the current
+HEAD (326 tests pass, ruff format, ruff check, mypy, artifact integrity).
+A mypy variance bug in the sidecar test file was fixed in this pass.
 
 ## Follow-up Sweep (Preregistered, 4 Phases)
 
