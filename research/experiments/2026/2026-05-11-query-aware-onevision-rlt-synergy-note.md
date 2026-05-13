@@ -38,7 +38,10 @@ fresh design/dev/holdout split.
 5. **Operational runner pattern.**  
    The RLT queue-runner pattern is useful for later OneVision queues: phase estimates,
    dependency gates, dry-run mode, elapsed timing, command capture, skip/stop decisions,
-   and summary JSON. Import the scaffolding later, not the RLT science.
+   and summary JSON. The codec-score sidecar contract added for OV-6 is also useful
+   future scaffolding: query-aware/RLT runs can consume precomputed physical evidence
+   planes without re-extracting H.264 metadata or changing the OneVision evidence chain.
+   Import the scaffolding later, not the RLT science.
 
 6. **Query-aware role selection, not query-aware tuning here.**
    The completed OV-6 follow-up sweep suggests the same H.264 signal plays different

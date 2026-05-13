@@ -11,7 +11,7 @@ trap 'echo "[ov6-random] arm $LAST_ARM failed at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 cd "$(dirname "$0")/.."
 
-PY="${OV6R_PYTHON:-uv run python}"
+PY="${OV6R_PYTHON:-./.venv/bin/python}"
 MODEL_PATH="${OV6R_MODEL_PATH:-$HOME/models/Qwen2.5-VL-7B-Instruct-4bit}"
 MANIFEST="${OV6R_MANIFEST:-research/benchmark_manifests/videomme_short_present_v1_n57.toml}"
 OUT_DIR="${OV6R_OUT_DIR:-research/experiments/2026/artifacts/phase1_51V_ov6_random_multiseed}"
@@ -23,18 +23,25 @@ SEEDS=(${OV6R_SEEDS:-1 7 42 100})
 
 mkdir -p "$OUT_DIR"
 
+validate_arm() {
+  local label="$1"
+  shift 1
+  local arm_dir="$OUT_DIR/$label"
+  "${PY}" scripts/validate_track_b_arm_artifact.py \
+    --arm-dir "$arm_dir" \
+    --manifest "$MANIFEST" \
+    --model-path "$MODEL_PATH" \
+    --frame-count "$FRAME_COUNT" \
+    --max-tokens "$MAX_TOKENS" \
+    "$@"
+}
+
 run_arm() {
   local label="$1"
   shift 1
   local arm_dir="$OUT_DIR/$label"
   if [[ -f "$arm_dir/summary.json" || -f "$arm_dir/results.jsonl" ]]; then
-    if ${PY} scripts/validate_track_b_arm_artifact.py \
-      --arm-dir "$arm_dir" \
-      --manifest "$MANIFEST" \
-      --model-path "$MODEL_PATH" \
-      --frame-count "$FRAME_COUNT" \
-      --max-tokens "$MAX_TOKENS" \
-      "$@" >/dev/null; then
+    if validate_arm "$label" "$@" >/dev/null; then
       echo "[ov6-random] === arm=$label SKIP (validated existing artifact) ==="
       return 0
     fi
@@ -44,16 +51,16 @@ run_arm() {
   mkdir -p "$arm_dir"
   LAST_ARM="$label"
   echo "[ov6-random] === arm=$label starting $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
-  ${PY} scripts/run_phase1_51V.py \
+  "${PY}" scripts/run_phase1_51V.py \
     --manifest "$MANIFEST" \
     --model-path "$MODEL_PATH" \
     --frame-count "$FRAME_COUNT" \
     --max-tokens "$MAX_TOKENS" \
     --output "$arm_dir/results.jsonl" \
     --summary "$arm_dir/summary.json" \
-    --allow-dirty \
     "$@" \
     2>&1 | tee "$arm_dir/run.log"
+  validate_arm "$label" "$@"
   echo "[ov6-random] === arm=$label done $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
 }
 
@@ -72,4 +79,4 @@ for seed in "${SEEDS[@]}"; do
     --score-seed "$seed"
 done
 
-${PY} scripts/analyze_ov6_qwen_random_multiseed.py --root "$OUT_DIR"
+"${PY}" scripts/analyze_ov6_qwen_random_multiseed.py --root "$OUT_DIR"

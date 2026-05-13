@@ -29,6 +29,13 @@ from codec_through.codec.continuous_score import (  # noqa: E402
 )
 from codec_through.codec.h264_metadata import H264MetadataExtractor  # noqa: E402
 from codec_through.codec.onevision_patchification import FuseMode  # noqa: E402
+from codec_through.codec.score_sidecar import (  # noqa: E402
+    SCORE_SIDECAR_PROJECTION_VERSION,
+    read_score_sidecar,
+    require_sidecar_metadata,
+    score_config_id,
+    sidecar_path,
+)
 from codec_through.memory_guard import check_rss_guard, rss_mb  # noqa: E402
 from codec_through.provenance import artifact_metadata  # noqa: E402
 from codec_through.pruned_vision_tower import (  # noqa: E402
@@ -49,6 +56,7 @@ from codec_through.video_decode import _count_frames  # noqa: E402
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RUNNER_PATH = REPO_ROOT / "scripts" / "run_benchmark_track_a.py"
 DEFAULT_MODEL_PATH = Path.home() / "models" / "gemma-4-e4b-it-4bit"
+ARTIFACTS_ROOT = REPO_ROOT / "research" / "experiments" / "2026" / "artifacts"
 GEMMA_SOFT_GRID_SHAPE = (16, 16)
 GEMMA_PATCH_SIZE = 16
 GEMMA_POOLING_KERNEL_SIZE = 3
@@ -62,6 +70,7 @@ SCHEMA_VERSION = "phase1_63g_gemma_track_b_v5"
 DEFAULT_MLX_MEMORY_LIMIT_GB = 12.0
 CODEC_SCORE_SOURCE_CHOICES: tuple[str, ...] = tuple(source.value for source in CodecScoreSource)
 FUSION_MODE_CHOICES: tuple[FuseMode, ...] = ("weighted", "sum", "max", "geomean")
+GEMMA_SIDECAR_GEOMETRY = "gemma_prepool_patches_v1"
 
 
 @dataclass(frozen=True, slots=True)
@@ -87,12 +96,14 @@ class StageTimings:
     decode_ms: float
     processor_ms: float
     scorer_prepare_ms: float
+    codec_score_runtime_ms: float
     vision_ms: float
     scorer_keep_mask_ms: float
     multimodal_prefill_ms: float
     text_generation_ms: float
     generate_ms: float
     end_to_end_ms: float
+    end_to_end_including_score_ms: float
 
 
 @dataclass(frozen=True, slots=True)
@@ -132,6 +143,26 @@ def _load_runner_module() -> Any:
         sys.modules.pop(name, None)
         raise
     return module
+
+
+def _artifact_exclude_paths(
+    *,
+    output: Path,
+    summary: Path,
+    sidecar_dir: Path | None,
+) -> list[Path]:
+    paths = [output.parent, summary.parent]
+    candidates: list[Path | None] = [output.parent.parent]
+    if sidecar_dir is not None:
+        candidates.extend([sidecar_dir, sidecar_dir.parent])
+    artifacts_root = ARTIFACTS_ROOT.resolve(strict=False)
+    for candidate in candidates:
+        if candidate is None:
+            continue
+        resolved = candidate.resolve(strict=False)
+        if resolved.is_relative_to(artifacts_root):
+            paths.append(candidate)
+    return paths
 
 
 def _resize_square_with_active_box(
@@ -382,6 +413,47 @@ def _stack_gemma_codec_score_grid(
             flat = np.pad(flat, (0, geometry.max_patches - flat.shape[0]), constant_values=0.0)
         flattened.append(flat)
     return np.stack(flattened, axis=0).astype(np.float32, copy=False)
+
+
+def _load_gemma_sidecar_scores(
+    sidecar_root: Path,
+    item: Any,
+    *,
+    frame_count: int,
+    codec_score_source: CodecScoreSource,
+    geometry: GemmaCodecGeometry,
+    score_config: str,
+) -> tuple[np.ndarray, float, dict[str, Any]]:
+    t0 = time.perf_counter_ns()
+    path = sidecar_path(
+        sidecar_root,
+        item_id=item.item_id,
+        source=codec_score_source.value,
+        geometry=GEMMA_SIDECAR_GEOMETRY,
+        score_config=score_config,
+    )
+    score_grid, metadata = read_score_sidecar(path)
+    load_s = (time.perf_counter_ns() - t0) / 1_000_000_000
+    require_sidecar_metadata(
+        metadata,
+        item_id=item.item_id,
+        source=codec_score_source.value,
+        geometry=GEMMA_SIDECAR_GEOMETRY,
+        frame_count=frame_count,
+        score_config=score_config,
+    )
+    if metadata.get("score_projection_version") != SCORE_SIDECAR_PROJECTION_VERSION:
+        raise ValueError(
+            "Gemma sidecar score projection version mismatch: "
+            f"actual={metadata.get('score_projection_version')!r} "
+            f"expected={SCORE_SIDECAR_PROJECTION_VERSION!r}"
+        )
+    if score_grid.shape != (frame_count, geometry.max_patches):
+        raise ValueError(
+            f"Gemma sidecar score grid has shape {score_grid.shape}, "
+            f"expected {(frame_count, geometry.max_patches)}"
+        )
+    return score_grid.astype(np.float32, copy=False), float(load_s), metadata
 
 
 def _compute_gemma_features(model: Any, raw: dict[str, Any]) -> tuple[mx.array, float]:
@@ -679,6 +751,7 @@ def _record_payload(record: ItemResult) -> dict[str, Any]:
             "processor": record.timings.processor_ms,
             "scorer_prepare": record.timings.scorer_prepare_ms,
             "scorer_prepare_ms": record.timings.scorer_prepare_ms,
+            "codec_score_runtime": record.timings.codec_score_runtime_ms,
             "vision": record.timings.vision_ms,
             "scorer_keep_mask": record.timings.scorer_keep_mask_ms,
             "scorer_keep_mask_ms": record.timings.scorer_keep_mask_ms,
@@ -699,6 +772,9 @@ def _record_payload(record: ItemResult) -> dict[str, Any]:
             "text_generation_ms": record.timings.text_generation_ms,
             "generate": record.timings.generate_ms,
             "end_to_end": record.timings.end_to_end_ms,
+            "end_to_end_including_codec_score_runtime": (
+                record.timings.end_to_end_including_score_ms
+            ),
         },
         "prompt_tokens": record.prompt_tokens,
         "generation_tokens": record.generation_tokens,
@@ -827,6 +903,12 @@ def _summarize(records: list[ItemResult]) -> dict[str, Any]:
         "mean_dense_end_to_end_ms": float(
             np.mean([record.timings.end_to_end_ms for record in records])
         ),
+        "mean_end_to_end_including_codec_score_runtime_ms": float(
+            np.mean([record.timings.end_to_end_including_score_ms for record in records])
+        ),
+        "mean_codec_score_runtime_ms": float(
+            np.mean([record.timings.codec_score_runtime_ms for record in records])
+        ),
         "mean_dense_prompt_tokens": float(np.mean([record.prompt_tokens for record in records])),
         "mean_dense_generation_tokens": float(
             np.mean([record.generation_tokens for record in records])
@@ -926,6 +1008,16 @@ def main() -> int:
         help="When --score-mode=codec_grid, which H.264 score source to use.",
     )
     parser.add_argument(
+        "--codec-score-sidecar-dir",
+        type=Path,
+        default=None,
+        help=(
+            "Directory of precomputed codec score sidecars. When set with "
+            "--score-mode=codec_grid, the runner loads runner-ready Gemma score grids "
+            "instead of doing live PyAV extraction."
+        ),
+    )
+    parser.add_argument(
         "--fusion-mode",
         type=str,
         default="weighted",
@@ -959,7 +1051,14 @@ def main() -> int:
     )
     run_provenance = artifact_metadata(
         REPO_ROOT,
-        dirty_scope="full worktree before this arm writes output artifacts",
+        dirty_scope=(
+            "worktree before this arm writes output artifacts, excluding this run output root"
+        ),
+        exclude_paths=_artifact_exclude_paths(
+            output=args.output,
+            summary=args.summary,
+            sidecar_dir=args.codec_score_sidecar_dir,
+        ),
     )
     if score_mode == "codec_grid" and args.codec_score_source is None:
         parser.error("--score-mode=codec_grid requires --codec-score-source")
@@ -967,6 +1066,15 @@ def main() -> int:
         parser.error("--codec-score-source requires --score-mode=codec_grid")
     if args.vision_tower_keep_rate >= 1.0 and score_mode not in {"magnitude", "magnitude_norm"}:
         parser.error("sparse score modes require --vision-tower-keep-rate < 1.0")
+    if args.codec_score_sidecar_dir is not None and (
+        args.vision_tower_keep_rate >= 1.0
+        or score_mode != "codec_grid"
+        or args.codec_score_source is None
+    ):
+        parser.error(
+            "--codec-score-sidecar-dir is valid only for patched "
+            "--score-mode=codec_grid arms with --codec-score-source"
+        )
 
     runner = _load_runner_module()
     runner._ensure_clean_git_tree(allow_dirty=args.allow_dirty)
@@ -1176,6 +1284,19 @@ def main() -> int:
     )
     fusion_mode = cast(FuseMode, args.fusion_mode)
     normalize_fusion_inputs = not bool(args.no_normalize_fusion_inputs)
+    score_config = (
+        score_config_id(
+            source=codec_score_source.value,
+            frame_count=args.frame_count,
+            projection_version=SCORE_SIDECAR_PROJECTION_VERSION,
+            fusion_mode=fusion_mode,
+            motion_weight=float(args.motion_weight),
+            residual_weight=float(args.residual_weight),
+            normalize_fusion_inputs=normalize_fusion_inputs,
+        )
+        if codec_score_source is not None
+        else None
+    )
 
     if args.rss_guard_mb > 0:
         check_rss_guard(args.rss_guard_mb, stage="post_model_load")
@@ -1338,6 +1459,8 @@ def main() -> int:
 
     record_rows: list[dict[str, Any]] = list(existing_rows)
     args.output.parent.mkdir(parents=True, exist_ok=True)
+    using_sidecar = args.codec_score_sidecar_dir is not None
+    codec_sidecar_metadata: list[dict[str, Any]] = []
     output_mode = "a" if args.resume and existing_rows else "w"
     with args.output.open(output_mode) as handle:
         if output_mode == "w":
@@ -1359,26 +1482,57 @@ def main() -> int:
                 "vision_tower_score_mode": args.vision_tower_score_mode,
             }
             scorer_prepare_ms = prepare_sparse_scorer_for_frames(frames, item_metadata)
+            score_runtime_ms = 0.0
             if vt_patched and codec_score_source is not None:
-                codec_grids, codec_extract_s = _per_frame_codec_token_grids(
-                    item,
-                    frame_count=args.frame_count,
-                    active_boxes=active_boxes,
-                    geometry=geometry,
-                    codec_score_source=codec_score_source,
-                    fusion_mode=fusion_mode,
-                    motion_weight=float(args.motion_weight),
-                    residual_weight=float(args.residual_weight),
-                    normalize_fusion_inputs=normalize_fusion_inputs,
-                )
-                score_grid = _stack_gemma_codec_score_grid(codec_grids, geometry=geometry)
+                if args.codec_score_sidecar_dir is not None:
+                    if score_config is None:
+                        raise AssertionError("score_config must be set for codec sidecars")
+                    score_grid, codec_load_s, sidecar_metadata = _load_gemma_sidecar_scores(
+                        args.codec_score_sidecar_dir,
+                        item,
+                        frame_count=args.frame_count,
+                        codec_score_source=codec_score_source,
+                        geometry=geometry,
+                        score_config=score_config,
+                    )
+                    score_runtime_ms = codec_load_s * 1000.0
+                    codec_sidecar_metadata.append(
+                        {
+                            "item_id": item.item_id,
+                            "sidecar_git_commit": sidecar_metadata.get("git_commit"),
+                            "sidecar_git_dirty": sidecar_metadata.get("git_dirty"),
+                            "sidecar_codec_extract_s": sidecar_metadata.get("codec_extract_s"),
+                            "sidecar_score_projection_version": sidecar_metadata.get(
+                                "score_projection_version"
+                            ),
+                            "sidecar_score_config_id": sidecar_metadata.get("score_config_id"),
+                            "sidecar_score_grid_sha256": sidecar_metadata.get("score_grid_sha256"),
+                        }
+                    )
+                    item_metadata["codec_sidecar_load_ms"] = score_runtime_ms
+                else:
+                    codec_grids, codec_extract_s = _per_frame_codec_token_grids(
+                        item,
+                        frame_count=args.frame_count,
+                        active_boxes=active_boxes,
+                        geometry=geometry,
+                        codec_score_source=codec_score_source,
+                        fusion_mode=fusion_mode,
+                        motion_weight=float(args.motion_weight),
+                        residual_weight=float(args.residual_weight),
+                        normalize_fusion_inputs=normalize_fusion_inputs,
+                    )
+                    score_runtime_ms = codec_extract_s * 1000.0
+                    score_grid = _stack_gemma_codec_score_grid(codec_grids, geometry=geometry)
+                    item_metadata["codec_extract_ms"] = score_runtime_ms
                 model.vision_tower.encoder.set_codec_score_grid(score_grid)
-                scorer_prepare_ms += codec_extract_s * 1000.0
-                item_metadata["scorer_prepare_ms"] = scorer_prepare_ms
+                scorer_prepare_ms += score_runtime_ms
                 item_metadata.update(
                     {
                         "codec_score_source": args.codec_score_source,
-                        "codec_extract_ms": codec_extract_s * 1000.0,
+                        "codec_score_runtime_ms": score_runtime_ms,
+                        "codec_score_runtime_source": "sidecar" if using_sidecar else "live_pyav",
+                        "scorer_prepare_ms": scorer_prepare_ms,
                     }
                 )
             features, vision_ms = _compute_gemma_features(model, raw)
@@ -1398,6 +1552,8 @@ def main() -> int:
                 max_tokens=args.max_tokens,
             )
             choice_index = extract_choice(stats.text, item.candidates)
+            base_end_to_end_ms = decode_ms + processor_ms + vision_ms + stats.elapsed_ms
+            score_inclusive_end_to_end_ms = base_end_to_end_ms + scorer_prepare_ms
             record = ItemResult(
                 item_id=item.item_id,
                 benchmark=item.benchmark,
@@ -1411,14 +1567,18 @@ def main() -> int:
                     decode_ms=decode_ms,
                     processor_ms=processor_ms,
                     scorer_prepare_ms=scorer_prepare_ms,
+                    codec_score_runtime_ms=score_runtime_ms,
                     vision_ms=vision_ms,
                     scorer_keep_mask_ms=scorer_keep_mask_ms,
                     multimodal_prefill_ms=stats.multimodal_prefill_ms,
                     text_generation_ms=stats.text_generation_ms,
                     generate_ms=stats.elapsed_ms,
                     end_to_end_ms=(
-                        decode_ms + processor_ms + scorer_prepare_ms + vision_ms + stats.elapsed_ms
+                        base_end_to_end_ms
+                        if codec_score_source is not None
+                        else score_inclusive_end_to_end_ms
                     ),
+                    end_to_end_including_score_ms=score_inclusive_end_to_end_ms,
                 ),
                 prompt_tokens=stats.prompt_tokens,
                 generation_tokens=stats.generation_tokens,
@@ -1443,6 +1603,12 @@ def main() -> int:
         for row in record_rows
         if isinstance(row.get("metadata"), dict)
         and row.get("metadata", {}).get("codec_extract_ms") is not None
+    ]
+    codec_sidecar_load_row_seconds = [
+        float(row.get("metadata", {}).get("codec_sidecar_load_ms", 0.0)) / 1000.0
+        for row in record_rows
+        if isinstance(row.get("metadata"), dict)
+        and row.get("metadata", {}).get("codec_sidecar_load_ms") is not None
     ]
     summary = _summarize_payload_rows(record_rows)
     summary.update(
@@ -1503,6 +1669,24 @@ def main() -> int:
                 if vt_patched and args.vision_tower_score_mode == "rlt_topk"
                 else None
             ),
+            "codec_score_runtime_source": ("sidecar" if using_sidecar else "live_pyav")
+            if codec_score_source is not None
+            else None,
+            "codec_score_sidecar_dir": str(args.codec_score_sidecar_dir) if using_sidecar else None,
+            "codec_score_sidecar_geometry": (GEMMA_SIDECAR_GEOMETRY if using_sidecar else None),
+            "codec_score_sidecar_config_id": (score_config if using_sidecar else None),
+            "codec_score_projection_version": (
+                SCORE_SIDECAR_PROJECTION_VERSION if codec_score_source is not None else None
+            ),
+            "codec_sidecar_load_total_s": (
+                float(sum(codec_sidecar_load_row_seconds)) if using_sidecar else None
+            ),
+            "codec_sidecar_load_mean_s_per_item": (
+                float(np.mean(codec_sidecar_load_row_seconds))
+                if using_sidecar and codec_sidecar_load_row_seconds
+                else None
+            ),
+            "codec_sidecar_items": codec_sidecar_metadata if using_sidecar else None,
             "rss_guard_mb": args.rss_guard_mb if args.rss_guard_mb > 0 else None,
             "final_rss_mb": rss_mb(),
             **run_provenance,

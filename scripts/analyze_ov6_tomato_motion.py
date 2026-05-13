@@ -103,17 +103,25 @@ def analyze(root: Path) -> dict[str, Any]:
     for arm in ARMS:
         summary = summaries[arm]
         codec_extract = summary.get("codec_extract_mean_s_per_item")
+        sidecar_load = summary.get("codec_sidecar_load_mean_s_per_item")
         e2e_ms = float(summary["mean_dense_end_to_end_ms"])
+        e2e_with_score = float(
+            summary.get(
+                "mean_end_to_end_including_codec_score_runtime_ms",
+                e2e_ms + float(codec_extract) * 1000.0 if codec_extract is not None else e2e_ms,
+            )
+        )
         arm_payloads[arm] = {
             "summary_path": str(root / arm / "summary.json"),
             "accuracy": _accuracy(rows[arm]),
             "parse_failures": sum(1 for row in rows[arm].values() if bool(row["parse_failure"])),
             "mean_vision_ms": float(summary["mean_dense_vision_ms"]),
             "mean_e2e_ms_excluding_codec_extract": e2e_ms,
-            "mean_e2e_ms_including_codec_extract": (
-                e2e_ms + float(codec_extract) * 1000.0 if codec_extract is not None else e2e_ms
-            ),
+            "mean_e2e_ms_including_codec_extract": e2e_with_score,
+            "mean_e2e_ms_including_score_runtime": e2e_with_score,
             "codec_extract_mean_s_per_item": codec_extract,
+            "codec_sidecar_load_mean_s_per_item": sidecar_load,
+            "codec_score_runtime_source": summary.get("codec_score_runtime_source"),
         }
 
     comparisons: dict[str, Any] = {}

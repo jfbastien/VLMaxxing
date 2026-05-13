@@ -8,15 +8,26 @@ the smoke run; here we only need to make sure the alignment math is correct.
 
 from __future__ import annotations
 
+from pathlib import Path
+from types import SimpleNamespace
+
 import mlx.core as mx
 import numpy as np
 import pytest
 
+from codec_through.codec.continuous_score import CodecScoreSource
+from codec_through.codec.score_sidecar import (
+    SCORE_SIDECAR_PROJECTION_VERSION,
+    score_config_id,
+    sidecar_path,
+    write_score_sidecar,
+)
 from codec_through.qwen_pruned_vision_tower import (
     QwenVisionPruneConfig,
     _group_scores,
     _QwenPrunedVisionWrapper,
 )
+from scripts.run_phase1_51V import QWEN_SIDECAR_GEOMETRY, _load_qwen_sidecar_scores
 
 
 class _StubModelBlock:
@@ -136,3 +147,76 @@ def test_config_records_codec_score_source_for_provenance() -> None:
     )
     assert config.score_mode == "codec_grid"
     assert config.codec_score_source == "novel_coded"
+
+
+def test_qwen_sidecar_loader_accepts_matching_grid(tmp_path: Path) -> None:
+    item_id = "qwen/item"
+    item = SimpleNamespace(item_id=item_id)
+    config_id = score_config_id(source="novel_coded", frame_count=8)
+    path = sidecar_path(
+        tmp_path,
+        item_id=item_id,
+        source="novel_coded",
+        geometry=QWEN_SIDECAR_GEOMETRY,
+        score_config=config_id,
+    )
+    write_score_sidecar(
+        path,
+        score_grid=np.array([0.0, 1.0, 2.0, 3.0], dtype=np.float32),
+        metadata={
+            "item_id": item_id,
+            "codec_score_source": "novel_coded",
+            "geometry": QWEN_SIDECAR_GEOMETRY,
+            "frame_count": 8,
+            "score_config_id": config_id,
+            "score_projection_version": SCORE_SIDECAR_PROJECTION_VERSION,
+        },
+    )
+
+    score_grid, load_s, metadata = _load_qwen_sidecar_scores(
+        tmp_path,
+        item,
+        frame_count=8,
+        codec_score_source=CodecScoreSource.NOVEL_CODED,
+        score_config=config_id,
+        expected_groups=4,
+    )
+
+    assert score_grid.tolist() == [0.0, 1.0, 2.0, 3.0]
+    assert load_s >= 0.0
+    assert metadata["score_config_id"] == config_id
+
+
+def test_qwen_sidecar_loader_rejects_group_count_mismatch(tmp_path: Path) -> None:
+    item_id = "qwen/item"
+    item = SimpleNamespace(item_id=item_id)
+    config_id = score_config_id(source="novel_coded", frame_count=8)
+    path = sidecar_path(
+        tmp_path,
+        item_id=item_id,
+        source="novel_coded",
+        geometry=QWEN_SIDECAR_GEOMETRY,
+        score_config=config_id,
+    )
+    write_score_sidecar(
+        path,
+        score_grid=np.array([0.0, 1.0, 2.0], dtype=np.float32),
+        metadata={
+            "item_id": item_id,
+            "codec_score_source": "novel_coded",
+            "geometry": QWEN_SIDECAR_GEOMETRY,
+            "frame_count": 8,
+            "score_config_id": config_id,
+            "score_projection_version": SCORE_SIDECAR_PROJECTION_VERSION,
+        },
+    )
+
+    with pytest.raises(ValueError, match="expected 4"):
+        _load_qwen_sidecar_scores(
+            tmp_path,
+            item,
+            frame_count=8,
+            codec_score_source=CodecScoreSource.NOVEL_CODED,
+            score_config=config_id,
+            expected_groups=4,
+        )
