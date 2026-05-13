@@ -296,14 +296,15 @@ run must have a gate and a falsifier; no open-ended sweeps on either machine.
    `scripts/validate_ov6_sidecar_equivalence_gate.py`. The M5 launchers below
    refuse to run unless the matching gate has `gate_pass: true`.
 
-2. **M3 TOMATO kr=0.5 / layer=2 / N=10 boundary diagnostic**
-   Disambiguate the Phase-3 collapse: is the TOMATO motion floor driven by the
-   frame budget (frame=8 too few for motion) or by the prune rate (kr=0.69 too
-   aggressive)? At N=10 this is a small engineering smoke, M3-appropriate.
-   Script: `scripts/run_ov6_tomato_kr050_boundary_smoke.sh`. Gate: if any
-   sparse arm at this keep rate exceeds 0.20 accuracy (vs Phase-3 collapse
-   band <=0.17), prune rate is the lever. If all sparse arms remain <=0.17,
-   the frame budget is the boundary.
+2. **M3 TOMATO kr=0.9 / layer=2 / balanced N=9 boundary diagnostic**
+   Disambiguate the Phase-3 collapse with the right direction of intervention:
+   `kr=0.9` is a milder prune than the previous kr~0.69 operating point. Use a
+   balanced 3/3/3 TOMATO motion slice so the smoke is not just "direction"
+   items. Script: `scripts/run_ov6_tomato_kr090_boundary_smoke.sh`. Gate: best
+   sparse arm is within one item of dense and above the prior sparse-floor band
+   (>0.22 on N=9). If dense remains weak or all sparse arms stay at floor, do
+   not spend M5 time on TOMATO in this branch. The older kr=0.5 script is only
+   an aggressive-prune negative control.
 
 3. **M5 confirmation runs, gated on the M3 equivalence artifacts**
    - `scripts/run_ov6_m5_qwen_parity.sh` -- Qwen kr=0.7 / layer=2 / N=57 with
@@ -327,7 +328,7 @@ run must have a gate and a falsifier; no open-ended sweeps on either machine.
      estimate; falsifier: any seed where magnitude beats random by >=3 items,
      or <=1/4 seeds satisfy the gate. Analysis path:
      `scripts/analyze_ov6_qwen_random_multiseed.py --root <out_dir>
-     --label Gemma`.
+     --label Gemma --min-pass-seeds 3`.
 
 4. **OV-8 composition policy** (still blocked)
    Artifact-level accounting exists, but first-query correctness drift is
@@ -340,9 +341,10 @@ run must have a gate and a falsifier; no open-ended sweeps on either machine.
    Useful but secondary. It tightens the dense instability caveat; it does
    not replace Track B or the codec extraction question.
 
-Verification status of this packet: `make check` is green at the current
-HEAD (326 tests pass, ruff format, ruff check, mypy, artifact integrity).
-A mypy variance bug in the sidecar test file was fixed in this pass.
+Verification status of this packet: direct no-UV checks pass at the current
+HEAD (`ruff format --check .`, `ruff check .`, `mypy src tests`, full pytest,
+and artifact integrity). A mypy variance bug in the sidecar test file was fixed
+in this pass.
 
 ## Follow-up Sweep (Preregistered, 4 Phases)
 

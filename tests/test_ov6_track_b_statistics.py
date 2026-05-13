@@ -160,6 +160,39 @@ def test_ov6_random_multiseed_flags_unstable_random_baseline(tmp_path: Path) -> 
     assert payload["gate_status"]["falsifying_seeds"] == ["uniform_random_seed7"]
 
 
+def test_ov6_random_multiseed_allows_preregistered_min_seed_gate(tmp_path: Path) -> None:
+    rows_mag = [
+        ("a", True, 0),
+        ("b", True, 1),
+        ("c", False, 2),
+        ("d", False, 3),
+    ]
+    rows_ge = [
+        ("a", True, 0),
+        ("b", False, 1),
+        ("c", True, 2),
+        ("d", False, 3),
+    ]
+    rows_lt_by_one = [
+        ("a", True, 0),
+        ("b", False, 1),
+        ("c", False, 2),
+        ("d", False, 3),
+    ]
+    _write_arm(tmp_path / "magnitude_norm", rows=rows_mag)
+    _write_arm(tmp_path / "uniform_random_seed1", rows=rows_ge)
+    _write_arm(tmp_path / "uniform_random_seed7", rows=rows_ge)
+    _write_arm(tmp_path / "uniform_random_seed42", rows=rows_ge)
+    _write_arm(tmp_path / "uniform_random_seed100", rows=rows_lt_by_one)
+
+    payload = analyze_random_multiseed(tmp_path, min_pass_seeds=3, falsify_loss_margin=3)
+
+    assert payload["gate_status"]["seeds_random_ge_magnitude"] == 3
+    assert payload["gate_status"]["min_pass_seeds"] == 3
+    assert payload["gate_status"]["passes_point_estimate_gate"] is True
+    assert payload["gate_status"]["falsifying_seeds"] == []
+
+
 def test_ov6_tomato_motion_audit_reports_boundary_gate(tmp_path: Path) -> None:
     rows_dense = [("a", True, 0), ("b", True, 1), ("c", False, 2), ("d", False, 3)]
     rows_mag = [("a", False, 2), ("b", True, 1), ("c", False, 2), ("d", False, 3)]

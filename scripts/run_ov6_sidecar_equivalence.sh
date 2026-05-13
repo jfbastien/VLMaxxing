@@ -116,4 +116,4 @@ for source in "${SOURCES[@]}"; do
     --codec-score-sidecar-dir "$SIDECAR_DIR"
 done
 
-"${PY}" scripts/analyze_ov6_sidecar_equivalence.py --root "$OUT_DIR"
+"${PY}" scripts/analyze_ov6_sidecar_equivalence.py --root "$OUT_DIR" --sources "${SOURCES[@]}"

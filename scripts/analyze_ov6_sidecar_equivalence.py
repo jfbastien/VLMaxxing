@@ -162,11 +162,12 @@ def _markdown(payload: dict[str, Any]) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, required=True)
+    parser.add_argument("--sources", nargs="+", default=list(SOURCES))
     parser.add_argument("--out-json", type=Path, default=None)
     parser.add_argument("--out-md", type=Path, default=None)
     args = parser.parse_args()
 
-    payload = analyze(args.root)
+    payload = analyze(args.root, sources=tuple(args.sources))
     out_json = args.out_json or args.root / "sidecar_equivalence.json"
     out_md = args.out_md or args.root / "sidecar_equivalence.md"
     out_json.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
