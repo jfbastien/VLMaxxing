@@ -30,6 +30,7 @@ from codec_through.codec.continuous_score import (  # noqa: E402
 from codec_through.codec.h264_metadata import H264MetadataExtractor  # noqa: E402
 from codec_through.codec.onevision_patchification import FuseMode  # noqa: E402
 from codec_through.memory_guard import check_rss_guard, rss_mb  # noqa: E402
+from codec_through.provenance import artifact_metadata  # noqa: E402
 from codec_through.pruned_vision_tower import (  # noqa: E402
     PruneConfig,
     magnitude_keep_mask,
@@ -956,6 +957,10 @@ def main() -> int:
         if score_mode in {"magnitude_norm", "uniform_random", "codec_grid"}
         else None
     )
+    run_provenance = artifact_metadata(
+        REPO_ROOT,
+        dirty_scope="full worktree before this arm writes output artifacts",
+    )
     if score_mode == "codec_grid" and args.codec_score_source is None:
         parser.error("--score-mode=codec_grid requires --codec-score-source")
     if score_mode != "codec_grid" and args.codec_score_source is not None:
@@ -1500,6 +1505,7 @@ def main() -> int:
             ),
             "rss_guard_mb": args.rss_guard_mb if args.rss_guard_mb > 0 else None,
             "final_rss_mb": rss_mb(),
+            **run_provenance,
         }
     )
     args.summary.parent.mkdir(parents=True, exist_ok=True)

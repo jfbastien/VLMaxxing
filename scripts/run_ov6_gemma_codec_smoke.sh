@@ -16,6 +16,7 @@ MANIFEST="${OV6G_MANIFEST:-research/benchmark_manifests/videomme_dev_v1_short_on
 OUT_DIR="${OV6G_OUT_DIR:-research/experiments/2026/artifacts/phase1_63G_ov6_gemma_codec_smoke}"
 N_ITEMS="${OV6G_N_ITEMS:-10}"
 FRAME_COUNT="${OV6G_FRAME_COUNT:-8}"
+MAX_TOKENS="${OV6G_MAX_TOKENS:-32}"
 KEEP_RATE="${OV6G_KEEP_RATE:-0.70}"
 LAYER="${OV6G_LAYER:-2}"
 RSS_GUARD_MB="${RSS_GUARD_MB:-9000}"
@@ -26,9 +27,20 @@ run_arm() {
   local label="$1"
   shift 1
   local arm_dir="$OUT_DIR/$label"
-  if [[ -f "$arm_dir/summary.json" ]]; then
-    echo "[ov6-gemma] === arm=$label SKIP (already done) ==="
-    return 0
+  if [[ -f "$arm_dir/summary.json" || -f "$arm_dir/results.jsonl" ]]; then
+    if ${PY} scripts/validate_track_b_arm_artifact.py \
+      --arm-dir "$arm_dir" \
+      --manifest "$MANIFEST" \
+      --model-path "$MODEL_PATH" \
+      --n-items "$N_ITEMS" \
+      --frame-count "$FRAME_COUNT" \
+      --max-tokens "$MAX_TOKENS" \
+      "$@" >/dev/null; then
+      echo "[ov6-gemma] === arm=$label SKIP (validated existing artifact) ==="
+      return 0
+    fi
+    echo "[ov6-gemma] === arm=$label existing artifact failed validation ===" >&2
+    return 1
   fi
   mkdir -p "$arm_dir"
   LAST_ARM="$label"
@@ -37,7 +49,7 @@ run_arm() {
     --manifest "$MANIFEST" \
     --n-items "$N_ITEMS" \
     --frame-count "$FRAME_COUNT" \
-    --max-tokens 32 \
+    --max-tokens "$MAX_TOKENS" \
     --model-path "$MODEL_PATH" \
     --rss-guard-mb "$RSS_GUARD_MB" \
     --output "$arm_dir/results.jsonl" \
