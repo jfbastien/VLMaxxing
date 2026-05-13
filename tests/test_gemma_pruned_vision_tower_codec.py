@@ -3,10 +3,19 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
-import mlx.core as mx
 import numpy as np
 import pytest
 from PIL import Image
+
+from tests._mlx_probe import mlx_is_usable
+
+if not mlx_is_usable():
+    pytest.skip(
+        "mlx.core not usable on this host (import or Metal-init fails); see tests/_mlx_probe.py",
+        allow_module_level=True,
+    )
+
+import mlx.core as mx
 
 from codec_through.codec.continuous_score import CodecScoreSource
 from codec_through.codec.score_sidecar import (

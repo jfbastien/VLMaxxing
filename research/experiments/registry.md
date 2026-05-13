@@ -63,10 +63,12 @@ Entries are ordered by phase_id (chronological within each 1.x range).
     - research/experiments/2026/artifacts/phase1_51V_ov6_sidecar_equivalence/
     - research/experiments/2026/artifacts/phase1_51V_ov6_sidecar_equivalence_f16/
     - research/experiments/2026/artifacts/phase1_63G_ov6_gemma_sidecar_equivalence/
+    - research/experiments/2026/artifacts/phase1_51V_ov6_tomato_motion_kr090_l2_balanced_smoke/
     - research/experiments/2026/artifacts/m5_ov6_qwen_n57_kr070_l2_parity/
+    - research/experiments/2026/artifacts/m5_ov6_gemma_n57_kr050_l2_random_multiseed/
     - research/experiments/2026/artifacts/m5_ov6_gemma_n57_kr070_l2_confirmation/
     - research/experiments/2026/artifacts/m5_ov6_qwen_n57_16f_kr070_l2_boundary/
-  current_best_policy: "Run matching M3 sidecar equivalence before each sidecar-backed M5 confirmation. Use M5 for focused Qwen parity/timing, Gemma N=57 cross-family transfer, and one Qwen frame=16 boundary cell; do not run an open sweep."
+  current_best_policy: "Run matching M3 sidecar equivalence before each sidecar-backed M5 confirmation. Use M3 for Qwen/Gemma sidecar gates and balanced TOMATO keep-rate boundary smoke. Use M5 for focused Qwen parity/timing, Gemma kr=0.5 random-vs-magnitude transfer, Gemma N=57 codec transfer, and one Qwen frame=16 boundary cell; do not run an open sweep."
   supersedes: []
   paper_relevance: diagnostic/confirmation
   prereg_outcome:

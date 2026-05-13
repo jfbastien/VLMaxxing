@@ -1,0 +1,15 @@
+benchmark = "tomato"
+source = "balanced subset of tomato_motion_dev_v2"
+description = "N=9 balanced TOMATO motion smoke slice: 3 direction, 3 rotation, 3 shape_trend items. Used for cheap keep-rate boundary diagnostics, not a paper-power sample."
+
+item_ids = [
+  "tomato:direction:0231-04",
+  "tomato:direction:0231-05",
+  "tomato:direction:0231-06",
+  "tomato:rotation:0215-06",
+  "tomato:rotation:0215-07",
+  "tomato:rotation:0216-08",
+  "tomato:shape_trend:0209-04",
+  "tomato:shape_trend:0209-05",
+  "tomato:shape_trend:0231-07",
+]

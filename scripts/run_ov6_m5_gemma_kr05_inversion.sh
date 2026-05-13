@@ -95,4 +95,8 @@ for seed in "${SEEDS[@]}"; do
     --score-seed "$seed"
 done
 
-"${PY}" scripts/analyze_ov6_qwen_random_multiseed.py --root "$OUT_DIR" --label "Gemma"
+"${PY}" scripts/analyze_ov6_qwen_random_multiseed.py \
+  --root "$OUT_DIR" \
+  --label "Gemma" \
+  --min-pass-seeds 3 \
+  --falsify-loss-margin 3

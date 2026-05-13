@@ -66,6 +66,43 @@ Interpretation:
 - FAIL: do not use sidecars for claim-bearing M5 runs; debug geometry, config
   hashing, and active-box projection before more GPU time.
 
+## M3 TOMATO Keep-Rate Boundary Smoke
+
+Question: did the TOMATO motion Track B collapse come from an overly aggressive
+keep rate, or from frame/content/model headroom at 8 frames?
+
+Hypothesis: if prune rate is the main boundary, a milder `kr=0.9` setting on a
+balanced N=9 TOMATO motion slice should lift at least one sparse arm toward
+dense. If dense remains weak or all sparse arms stay near the prior sparse
+floor, TOMATO remains a boundary diagnostic rather than an M5 target.
+
+Command:
+
+```bash
+scripts/run_ov6_tomato_kr090_boundary_smoke.sh
+```
+
+Artifacts:
+
+- `research/experiments/2026/artifacts/phase1_51V_ov6_tomato_motion_kr090_l2_balanced_smoke/`
+
+Success gate for follow-up:
+
+- best sparse arm is within one item of dense on the balanced N=9 slice;
+- best sparse arm exceeds the previous sparse-floor band (`> 0.22` on N=9).
+
+Falsification:
+
+- dense is still weak on the balanced slice; or
+- all sparse arms remain at or below the prior sparse-floor band.
+
+Interpretation:
+
+- PASS: TOMATO motion has a keep-rate-sensitive sparse window worth a focused
+  follow-up.
+- FAIL: do not spend M5 time on TOMATO in this branch; keep it as a bounded
+  negative/boundary result.
+
 ## M5 Qwen Parity / Timing Confirmation
 
 Question: does the Qwen kr=0.7/layer=2 codec point-estimate ordering reproduce
@@ -87,7 +124,8 @@ Artifacts:
 
 Success gate:
 
-- `codec_novel_coded >= magnitude_norm` by point estimate;
+- `codec_novel_coded >= magnitude_norm` and `>= uniform_random` by point
+  estimate;
 - no parse-failure increase;
 - sidecar load timing reported separately;
 - paired tests and Wilson intervals emitted by `analyze_track_b_arm_set.py`.
@@ -97,6 +135,40 @@ Falsification:
 - codec falls below magnitude by at least three items;
 - sidecar provenance or shape validation fails;
 - model-side timing gain disappears after excluding score runtime.
+
+## M5 Gemma kr=0.5 Random-vs-Magnitude Confirmation
+
+Question: does the Qwen `uniform_random > magnitude_norm` inversion at
+kr=0.5/layer=2 transfer to Gemma's SigLIP-family vision tower?
+
+Hypothesis: on Gemma E4B, at least 3/4 random seeds satisfy
+`uniform_random >= magnitude_norm` by point estimate on N=57 VideoMME-short.
+
+Command:
+
+```bash
+scripts/run_ov6_m5_gemma_kr05_inversion.sh
+```
+
+Artifacts:
+
+- `research/experiments/2026/artifacts/m5_ov6_gemma_n57_kr050_l2_random_multiseed/`
+
+Success gate:
+
+- at least 3/4 seeds satisfy `uniform_random >= magnitude_norm` by point
+  estimate;
+- no seed has `magnitude_norm` ahead by three or more items.
+
+Falsification:
+
+- at most 1/4 seeds satisfy the point-estimate gate; or
+- any seed has `magnitude_norm` ahead by three or more items.
+
+Interpretation:
+
+- PASS: the magnitude-prior failure is not Qwen-only at this operating point.
+- FAIL: keep the magnitude-prior failure claim scoped to Qwen kr=0.5/layer=2.
 
 ## M5 Gemma N=57 Cross-Family Confirmation
 

@@ -260,30 +260,43 @@ def build_schedule() -> list[ExperimentStep]:
                 "as Qwen-only bounded evidence."
             ),
             setup_effort=(
-                "Qwen codec-grid complete; Gemma codec-grid N=10 smoke complete with flattened/padded pre-pool "
-                "score-grid guard; remaining broader runs require fresh preregistration and provenance-clean output dirs"
+                "Qwen codec-grid complete; Gemma codec-grid N=10 smoke complete; sidecar build/load path and "
+                "M5 wrapper scripts added with provenance-clean output dirs"
             ),
             eta_m3=(
-                "completed for current branch; future broader Gemma or M5 confirmation should use new output dirs "
-                "and run only after a fresh gate"
+                "sidecar equivalence: Qwen 8f, Qwen 16f, and Gemma 8f small-N gates, expected under 1 hour each "
+                "plus sidecar build; TOMATO kr=0.9 balanced smoke is a small diagnostic"
             ),
             eta_m5=(
-                "recommended next only for a preregistered power run: 4-8 hours per focused cell, not an open sweep"
+                "focused confirmation only: Qwen parity 4-8h, Gemma kr=0.5 inversion 4-8h, Gemma N=57 codec "
+                "transfer 4-8h, Qwen 16f boundary 6-10h"
             ),
             compute_lane=(
-                "Qwen and Gemma M3 follow-ups complete; M5 only for broader preregistered confirmation or live OV-8"
+                "Qwen and Gemma M3 follow-ups complete; remaining M3 work is geometry-specific sidecar "
+                "equivalence plus balanced TOMATO smoke, then focused M5 confirmation"
             ),
             uses_local_accelerator=True,
             requires_nvidia=False,
-            defer_until="complete for current branch; M5 follow-up requires fresh preregistration",
+            defer_until=(
+                "run matching M3 sidecar equivalence for each sidecar-backed M5 geometry/frame budget before M5; "
+                "live OV-8 remains blocked by first-query drift policy"
+            ),
             commands=[
                 "DONE: scripts/run_ov6_full_sweep.sh",
                 "DONE: scripts/run_ov6_n57_promotions.sh",
-                "DONE: uv run python scripts/analyze_ov6_track_b.py",
+                "DONE: scripts/analyze_ov6_track_b.py",
                 "DONE: scripts/run_ov6_gemma_codec_smoke.sh",
                 "DONE: scripts/run_ov6_qwen_random_multiseed.sh",
                 "DONE: scripts/run_ov6_qwen_tomato_replication.sh",
                 "DONE: scripts/run_ov3_h264_calibration_sensitivity.sh",
+                "NEXT M3: scripts/run_ov6_sidecar_equivalence.sh",
+                "NEXT M3: OV6S_FRAME_COUNT=16 scripts/run_ov6_sidecar_equivalence.sh",
+                "NEXT M3: scripts/run_ov6_gemma_sidecar_equivalence.sh",
+                "NEXT M3: scripts/run_ov6_tomato_kr090_boundary_smoke.sh",
+                "M5 gated: scripts/run_ov6_m5_qwen_parity.sh",
+                "M5 gated: scripts/run_ov6_m5_gemma_kr05_inversion.sh",
+                "M5 gated: scripts/run_ov6_m5_gemma_n57_confirmation.sh",
+                "M5 gated: scripts/run_ov6_m5_qwen_frame16_boundary.sh",
             ],
             artifacts=[
                 "research/experiments/2026/artifacts/phase1_51V_ov6_n57/",
@@ -293,6 +306,14 @@ def build_schedule() -> list[ExperimentStep]:
                 "research/experiments/2026/artifacts/phase1_51V_ov6_random_multiseed/",
                 "research/experiments/2026/artifacts/phase1_63G_ov6_gemma_codec_smoke/",
                 "research/experiments/2026/artifacts/phase1_51V_ov6_tomato_motion_kr070_l2/",
+                "research/experiments/2026/artifacts/phase1_51V_ov6_sidecar_equivalence/",
+                "research/experiments/2026/artifacts/phase1_51V_ov6_sidecar_equivalence_f16/",
+                "research/experiments/2026/artifacts/phase1_63G_ov6_gemma_sidecar_equivalence/",
+                "research/experiments/2026/artifacts/phase1_51V_ov6_tomato_motion_kr090_l2_balanced_smoke/",
+                "research/experiments/2026/artifacts/m5_ov6_qwen_n57_kr070_l2_parity/",
+                "research/experiments/2026/artifacts/m5_ov6_gemma_n57_kr050_l2_random_multiseed/",
+                "research/experiments/2026/artifacts/m5_ov6_gemma_n57_kr070_l2_confirmation/",
+                "research/experiments/2026/artifacts/m5_ov6_qwen_n57_16f_kr070_l2_boundary/",
             ],
         ),
         ExperimentStep(

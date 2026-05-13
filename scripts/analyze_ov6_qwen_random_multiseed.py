@@ -80,7 +80,13 @@ def _paired(
     }
 
 
-def analyze(root: Path, label: str = "Qwen") -> dict[str, Any]:
+def analyze(
+    root: Path,
+    label: str = "Qwen",
+    *,
+    min_pass_seeds: int | None = None,
+    falsify_loss_margin: int = 3,
+) -> dict[str, Any]:
     magnitude_dir = root / "magnitude_norm"
     if not (magnitude_dir / "results.jsonl").exists():
         raise FileNotFoundError(f"missing magnitude baseline under {magnitude_dir}")
@@ -102,7 +108,7 @@ def analyze(root: Path, label: str = "Qwen") -> dict[str, Any]:
         paired = _paired(rows, magnitude_rows)
         if int(acc["correct"]) >= magnitude_correct:
             seeds_random_ge_magnitude += 1
-        if magnitude_correct - int(acc["correct"]) >= 3:
+        if magnitude_correct - int(acc["correct"]) >= falsify_loss_margin:
             falsifying_seeds.append(random_dir.name)
         seed_rows.append(
             {
@@ -116,13 +122,23 @@ def analyze(root: Path, label: str = "Qwen") -> dict[str, Any]:
         )
 
     magnitude_acc = _accuracy(magnitude_rows)
+    required_passes = len(seed_rows) if min_pass_seeds is None else min_pass_seeds
+    if required_passes < 1 or required_passes > len(seed_rows):
+        raise ValueError(
+            f"min_pass_seeds must be between 1 and {len(seed_rows)}, got {required_passes}"
+        )
     return {
         "phase": "OV-6",
         "label": label,
         "question": "Is uniform_random >= magnitude_norm at kr=0.5/layer=2 seed-stable?",
         "root": str(root),
-        "gate": "All tested random seeds must be >= magnitude_norm by point estimate.",
-        "falsification": "Any seed where magnitude_norm exceeds random by at least 3 items.",
+        "gate": (
+            f"At least {required_passes}/{len(seed_rows)} tested random seeds must be "
+            ">= magnitude_norm by point estimate."
+        ),
+        "falsification": (
+            f"Any seed where magnitude_norm exceeds random by at least {falsify_loss_margin} items."
+        ),
         "magnitude_norm": {
             "summary_path": str(magnitude_dir / "summary.json"),
             "accuracy": magnitude_acc,
@@ -133,7 +149,9 @@ def analyze(root: Path, label: str = "Qwen") -> dict[str, Any]:
         "gate_status": {
             "seeds_random_ge_magnitude": seeds_random_ge_magnitude,
             "n_seeds": len(seed_rows),
-            "passes_point_estimate_gate": seeds_random_ge_magnitude == len(seed_rows),
+            "min_pass_seeds": required_passes,
+            "falsify_loss_margin": falsify_loss_margin,
+            "passes_point_estimate_gate": seeds_random_ge_magnitude >= required_passes,
             "falsifying_seeds": falsifying_seeds,
         },
     }
@@ -190,11 +208,18 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=DEFAULT_ROOT)
     parser.add_argument("--label", type=str, default="Qwen")
+    parser.add_argument("--min-pass-seeds", type=int, default=None)
+    parser.add_argument("--falsify-loss-margin", type=int, default=3)
     parser.add_argument("--out-json", type=Path, default=None)
     parser.add_argument("--out-md", type=Path, default=None)
     args = parser.parse_args()
 
-    payload = analyze(args.root, label=args.label)
+    payload = analyze(
+        args.root,
+        label=args.label,
+        min_pass_seeds=args.min_pass_seeds,
+        falsify_loss_margin=args.falsify_loss_margin,
+    )
     out_json = args.out_json or args.root / "random_multiseed_summary.json"
     out_md = args.out_md or args.root / "random_multiseed_summary.md"
     out_json.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
