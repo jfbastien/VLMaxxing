@@ -223,18 +223,21 @@ def build_schedule() -> list[ExperimentStep]:
                 "keep OV-3 as bounded VideoMME-short evidence and do not generalize."
             ),
             setup_effort="requires OV-3 N=57 artifacts; no query-aware tuning in this branch",
-            eta_m3="4-7 hours per focused replication cell",
-            eta_m5="2-4 hours per focused replication cell",
-            compute_lane="local MLX one model at a time",
+            eta_m3="completed: TOMATO focused cell plus pooled calibration; future M3 only with a fresh prereg",
+            eta_m5="future: 2-4 hours per focused replication cell only after fresh preregistration",
+            compute_lane="completed on local MLX; M5 only for broader preregistered confirmation",
             uses_local_accelerator=True,
             requires_nvidia=False,
-            defer_until="after OV-3 dev passes",
+            defer_until="complete for current branch",
             commands=[
-                "scripts/run_ov6_qwen_tomato_replication.sh",
-                "scripts/run_ov3_h264_calibration_sensitivity.sh",
+                "DONE: scripts/run_ov6_qwen_tomato_replication.sh",
+                "DONE: uv run python scripts/analyze_ov6_tomato_motion.py",
+                "DONE: scripts/run_ov3_h264_calibration_sensitivity.sh",
             ],
             artifacts=[
-                "research/experiments/2026/artifacts/onevision_track_a_replication/",
+                "research/experiments/2026/artifacts/phase1_51V_ov6_tomato_motion_kr070_l2/",
+                "research/experiments/2026/artifacts/phase1_51V_ov6_tomato_motion_kr070_l2/statistical_audit.json",
+                "research/experiments/2026/artifacts/phase1_29_onevision_n57_pooled_calibration/",
             ],
         ),
         ExperimentStep(
@@ -257,36 +260,39 @@ def build_schedule() -> list[ExperimentStep]:
                 "as Qwen-only bounded evidence."
             ),
             setup_effort=(
-                "Qwen codec-grid complete; Gemma codec-grid CPU wiring complete with flattened/padded pre-pool "
-                "score-grid guard; Gemma needs the N=10 GPU smoke before broader use"
+                "Qwen codec-grid complete; Gemma codec-grid N=10 smoke complete with flattened/padded pre-pool "
+                "score-grid guard; remaining broader runs require fresh preregistration and provenance-clean output dirs"
             ),
             eta_m3=(
-                "Gemma N=10 smoke 1-2 hours; Qwen random multi-seed about 2-3 hours; "
-                "Qwen TOMATO focused cell about 4 hours; run sequentially"
+                "completed for current branch; future broader Gemma or M5 confirmation should use new output dirs "
+                "and run only after a fresh gate"
             ),
             eta_m5=(
-                "Gemma N=57 or Qwen cross-benchmark confirmation 4-8 hours per focused cell after M3 smoke gates"
+                "recommended next only for a preregistered power run: 4-8 hours per focused cell, not an open sweep"
             ),
             compute_lane=(
-                "Qwen M3 runs complete; Gemma CPU wiring complete; next is one Gemma model job at a time; "
-                "M5 only for broader preregistered confirmation"
+                "Qwen and Gemma M3 follow-ups complete; M5 only for broader preregistered confirmation or live OV-8"
             ),
             uses_local_accelerator=True,
             requires_nvidia=False,
-            defer_until="Qwen complete; Gemma smoke depends on machine availability",
+            defer_until="complete for current branch; M5 follow-up requires fresh preregistration",
             commands=[
                 "DONE: scripts/run_ov6_full_sweep.sh",
                 "DONE: scripts/run_ov6_n57_promotions.sh",
-                "uv run python scripts/analyze_ov6_track_b.py",
-                "NEXT: scripts/run_ov6_gemma_codec_smoke.sh",
-                "NEXT: scripts/run_ov6_qwen_random_multiseed.sh",
-                "NEXT: scripts/run_ov6_qwen_tomato_replication.sh",
+                "DONE: uv run python scripts/analyze_ov6_track_b.py",
+                "DONE: scripts/run_ov6_gemma_codec_smoke.sh",
+                "DONE: scripts/run_ov6_qwen_random_multiseed.sh",
+                "DONE: scripts/run_ov6_qwen_tomato_replication.sh",
+                "DONE: scripts/run_ov3_h264_calibration_sensitivity.sh",
             ],
             artifacts=[
                 "research/experiments/2026/artifacts/phase1_51V_ov6_n57/",
                 "research/experiments/2026/artifacts/phase1_51V_ov6_n57_kr070_l2/",
                 "research/experiments/2026/artifacts/phase1_51V_ov6_n57_kr050_l8/",
                 "research/experiments/2026/artifacts/onevision_vlmaxxing_plan/ov6_track_b_statistical_audit.json",
+                "research/experiments/2026/artifacts/phase1_51V_ov6_random_multiseed/",
+                "research/experiments/2026/artifacts/phase1_63G_ov6_gemma_codec_smoke/",
+                "research/experiments/2026/artifacts/phase1_51V_ov6_tomato_motion_kr070_l2/",
             ],
         ),
         ExperimentStep(
@@ -337,19 +343,22 @@ def build_schedule() -> list[ExperimentStep]:
                 "stage-share accounting."
             ),
             skip_rule=(
-                "If OV-6 has no fidelity-clean sparse-vision cell, use analytic stage-share ceilings only and do not claim "
-                "a working combined runtime."
+                "If first-query sparse-vs-dense drift remains material, use analytic stage-share ceilings only and do not "
+                "claim fidelity-clean composition."
             ),
-            setup_effort="requires OV-6 dense-vs-codec timing rows for model-backed runtime; otherwise ceiling-only",
-            eta_m3="3-4 hours artifact-level accounting after OV-6; no new session driver needed for first pass",
-            eta_m5="6-10 hours model-backed if OV-6 gates and a fresh session run is justified",
+            setup_effort=(
+                "artifact-level accounting exists; live composition needs a new session driver or explicit accuracy/speed "
+                "tradeoff because current best codec cell has first-query drift"
+            ),
+            eta_m3="accounting complete; live run not recommended on M3 until fidelity policy is chosen",
+            eta_m5="6-10 hours model-backed only after fresh preregistration and a first-query drift policy",
             compute_lane="M5 128GB for model-backed replication",
             uses_local_accelerator=True,
             requires_nvidia=False,
-            defer_until="after OV-6 or as accounting-only after OV-5",
+            defer_until="after explicit decision to accept first-query drift or after a fidelity-clean sparse cell appears",
             commands=[
-                "uv run python scripts/run_phase1_55L_many_turn_cpersist.py <combined args>",
-                "uv run python scripts/build_c_persist_setup_inclusive.py <combined artifacts>",
+                "DONE/accounting: uv run python scripts/build_c_persist_setup_inclusive.py <combined artifacts>",
+                "future/live: uv run python scripts/run_phase1_55L_many_turn_cpersist.py <combined args>",
             ],
             artifacts=[
                 "research/experiments/2026/artifacts/onevision_cpersist_session/",

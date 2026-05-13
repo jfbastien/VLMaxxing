@@ -68,10 +68,12 @@ ROWS = (
         ),
         e2e_policy="no E2E speedup claim",
         local_reproduction=(
-            "CPU tests plus real-video allocation artifact path; audit pending until "
-            "raw clips are present"
+            "CPU tests plus real-video allocation artifacts under "
+            "onevision_vlmaxxing_visuals/ and onevision_vlmaxxing_explainer_videos/"
         ),
-        planned_gate="allocation must not collapse to anchor-only or edge/OCR starvation",
+        planned_gate=(
+            "real-video allocation gate passed; use as explanation artifact, not accuracy evidence"
+        ),
         artifact_or_source="src/codec_through/codec/onevision_patchification.py",
     ),
     ComparisonRow(
@@ -160,24 +162,30 @@ ROWS = (
             "codec_novel_coded=35/57 (0.614) vs magnitude_norm=31/57 (0.544), "
             "paired fixes/breaks=5/1, McNemar p=0.2188; model-side E2E 33.3s "
             "excludes 18.8s/item PyAV extraction, so current net E2E is 52.1s. "
-            "At kr=0.5/layer=8, codec_residual ties magnitude_norm at 31/57."
+            "At kr=0.5/layer=8, codec_residual ties magnitude_norm at 31/57. "
+            "Follow-up controls: random beats magnitude on 4/4 Qwen seeds at "
+            "kr=0.5/layer=2; Gemma N=10 codec_novel_coded smoke is 6/10 vs "
+            "magnitude 4/10; TOMATO motion remains low-headroom with codec_novel_coded "
+            "5/30 vs magnitude 4/30."
         ),
         target_to_beat=(
-            "promote only as bounded point-estimate evidence until cross-family, "
-            "multi-seed random, or larger-N paired tests gate; do not claim net "
-            "wall-clock speedup unless codec metadata extraction is precomputed or "
-            "decoder-integrated"
+            "promote only as bounded point-estimate evidence: cross-family and "
+            "multi-seed controls are directionally supportive, TOMATO is a boundary, "
+            "and no net wall-clock speedup is claimable unless codec metadata "
+            "extraction is precomputed or decoder-integrated"
         ),
         e2e_policy="report component and E2E separately; no multiplied speedups",
         local_reproduction=(
             "research/experiments/2026/artifacts/phase1_51V_ov6_n57_kr070_l2/ "
             "and phase1_51V_ov6_n57_kr050_l8/; statistical audit in "
-            "onevision_vlmaxxing_plan/ov6_track_b_statistical_audit.json"
+            "onevision_vlmaxxing_plan/ov6_track_b_statistical_audit.json; follow-up "
+            "artifacts in phase1_51V_ov6_random_multiseed/, "
+            "phase1_63G_ov6_gemma_codec_smoke/, and "
+            "phase1_51V_ov6_tomato_motion_kr070_l2/ with TOMATO statistical_audit.json"
         ),
         planned_gate=(
-            "next gate is Gemma smoke with pre-pool codec-grid geometry; random "
-            "baseline needs multi-seed before paper-facing negative claims about "
-            "magnitude_norm; M5 is for broader confirmation only after M3 gates"
+            "M3 follow-up gates completed; M5 is for broader confirmation only after "
+            "a fresh preregistered power/transfer question"
         ),
         artifact_or_source="OV-6 Qwen M3 artifacts and statistical audit",
     ),

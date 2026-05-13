@@ -9,12 +9,12 @@
 #   4. OV-3 H.264 calibration sensitivity (~4h M3) — pooled-vs-per-item
 #      calibration robustness for Track A.
 #
-# Each child runner has its own skip-if-exists per arm, so this meta-driver
-# can be restarted after a partial run. Use ERR trap so a single failing
-# arm does not abort the entire sweep.
+# Each child runner validates existing arm artifacts before skip-if-exists reuse,
+# so this meta-driver can be restarted after a partial run. A single failing
+# arm aborts the sweep; do not mark later phases done after a failed child.
 
-set -uo pipefail
-trap 'echo "[meta] $LAST_PHASE failed at $(date -u +%Y-%m-%dT%H:%M:%SZ); continuing"' ERR
+set -euo pipefail
+trap 'echo "[meta] $LAST_PHASE failed at $(date -u +%Y-%m-%dT%H:%M:%SZ)"' ERR
 
 cd "$(dirname "$0")/.."
 

@@ -27,9 +27,18 @@ echo "[ov3-calib] manifest=$MANIFEST_PATH calibration=$CALIBRATION_MODE/$CALIBRA
 
 for SRC in "${SOURCES[@]}"; do
   SRC_DIR="$OUT_BASE/$SRC"
-  if [[ -f "$SRC_DIR/summary.json" ]]; then
-    echo "[ov3-calib] === source=$SRC SKIP (already done) ==="
-    continue
+  if [[ -f "$SRC_DIR/summary.json" || -f "$SRC_DIR/results.jsonl" || -f "$SRC_DIR/precompute_cache.json" ]]; then
+    if ${PY} scripts/validate_ov3_calibration_arm_artifact.py \
+      --arm-dir "$SRC_DIR" \
+      --codec-score-source "$SRC" \
+      --frame-count "$FRAME_COUNT" \
+      --calibration-mode "$CALIBRATION_MODE" \
+      --calibration-source "$CALIBRATION_SOURCE" >/dev/null; then
+      echo "[ov3-calib] === source=$SRC SKIP (validated existing artifact) ==="
+      continue
+    fi
+    echo "[ov3-calib] === source=$SRC existing artifact failed validation ===" >&2
+    exit 1
   fi
   mkdir -p "$SRC_DIR"
   CACHE_PATH="$SRC_DIR/precompute_cache.json"

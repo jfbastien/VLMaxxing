@@ -507,14 +507,17 @@ will exercise first.
 
 Candidate line worth keeping:
 
-> The codec already knows what changed. Stop re-encoding what didn't.
+> The codec already knows where the pixels changed. Use it as a refresh prior,
+> not as a semantic oracle.
 
 First-page paper language should keep the line's energy while qualifying it:
 today's sparse-QA planner mostly uses pixel diff; phase 1.29 is local
-codec-native planner-substitution evidence; decoder-integrated codec-speed
-evidence remains future work. The stronger claim is not "we already built the
-machine codec." It is "we measured which cross-layer temporal signals a frozen
-VLM runtime can use, and the failures define requirements for future media."
+codec-native planner-substitution evidence; OV-6 shows codec metadata can be a
+bounded sparse-ranking candidate at specific operating points; decoder-integrated
+codec-speed evidence remains future work. The stronger claim is not "we already
+built the machine codec." It is "we measured which cross-layer temporal signals
+a frozen VLM runtime can use, and the failures define requirements for future
+media."
 
 The systems-engineering thesis:
 
@@ -525,9 +528,9 @@ The systems-engineering thesis:
 - part of the opportunity is not inventing new model internals first,
   but recovering cross-layer wins that existing systems left on the
   table
-- denominator discipline is part of the contribution: the paper should be fun
-  because the waste is visible, not because the speedups are multiplied past
-  their measured regime
+- evidence discipline is the guardrail, not the payoff: the paper should be fun
+  because the waste and the measured wins are visible, while the denominators
+  prevent us from multiplying results past their measured regime
 
 Framing to keep distinct from adjacent work:
 

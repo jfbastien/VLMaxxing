@@ -24,11 +24,11 @@ random by point estimate at kr=0.5 / layer=2 on the broader N. The "structured
 magnitude pruning earns its keep over random"
 narrative does not survive the broader manifest.
 
-The codec arms are the FASTEST pruners by end-to-end (codec_motion 31.1 s/item,
-codec_novel_coded 31.1 s/item, vs dense 38.7 s/item) — about 20% E2E speedup over
-dense, but they bring 17-19 s/item of upstream PyAV metadata extraction overhead
-that the magnitude / random arms don't pay. Net: codec is not a wall-clock win at
-this configuration after counting extraction.
+The codec arms have the lowest model-side end-to-end times among the pruners
+(codec_motion 31.1 s/item, codec_novel_coded 31.1 s/item, vs dense 38.7 s/item),
+but they bring 17-19 s/item of upstream PyAV metadata extraction overhead that the
+magnitude / random arms do not pay. Net: codec is not a wall-clock win at this
+configuration after counting extraction.
 
 ## OV-6 keep-rate sweep at layer=2 (N=10)
 
@@ -41,10 +41,10 @@ this configuration after counting extraction.
 
 **The accuracy curve is non-monotonic.** kr=0.7 is the sweet spot: at the kr=0.7
 operating point, magnitude_norm, codec_novel_coded, and codec_residual all reach
-0.800 (= N=10 dense). At kr=0.5 and kr=0.9 every arm regresses. The window-aligned
-pruner's quota rounding produces a configuration at kr=0.7 the model can recover
-from gracefully; at other keep-rates the systematic mistakes of any non-random
-scorer cost more than its signal is worth.
+0.800 (= N=10 dense). At kr=0.5 and kr=0.9 every arm regresses. Treat this as an
+operating-point observation, not a mechanism proof: the promoted N=57 cells below
+show that the kr=0.7 window survives better than the kr=0.5/layer=2 smoke, but the
+curve remains model-, layer-, and benchmark-conditioned.
 
 ## OV-6 layer sweep at kr=0.5 (N=10)
 
@@ -139,8 +139,8 @@ operating-point-specific. The fuller picture:
 The N=57 replication says the magnitude_norm ranking from the existing 1.51V
 framing also depends on the operating point: at kr=0.5 / layer=2 uniform_random
 beats magnitude_norm by point estimate, while at kr=0.7 / layer=2 and kr=0.5 /
-layer=8 magnitude remains a useful reference. Multi-seed random is required
-before turning the random result into a paper claim.
+layer=8 magnitude remains a useful reference. The follow-up sweep below confirms
+the kr=0.5/layer=2 random-over-magnitude inversion across four seeds.
 
 Mechanism: codec metadata reports pixel-space novelty — *which regions changed* —
 not *which regions carry the answer*. The vision tower has already abstracted away
@@ -159,8 +159,11 @@ and VLMaxxing's runtime-only framing intentionally leaves open.
 The final OV-3 result is a bounded positive Track A signal, not an end-to-end
 systems result.
 
-At 8 frames on 57 VideoMME-short items, every codec source beats both pixel
-`max_abs` and dense by point estimate at the same approximate active-refresh budget.
+At 8 frames on 57 VideoMME-short items, every codec source beats pixel
+`max_abs` by point estimate at the same approximate active-refresh budget, and
+scores at or above the local dense run on this slice. Dense itself showed
+driver-to-driver instability in the overlap audit, so do not phrase this as
+codec being inherently more accurate than dense.
 The per-source McNemar tests are inconclusive, but all discordant correctness pairs
 favor codec over pixel:
 
@@ -214,8 +217,9 @@ point where fused and all other codec sources collapse to the pixel answer set.
   residual extractor.
 - No statistically significant codec-over-pixel superiority per source. The point
   estimates favor codec, but McNemar p-values are 0.25 to 0.50 at N=57.
-- No generalization beyond VideoMME short / Qwen / 8 frames until TOMATO, threshold,
-  and frame-budget tests land.
+- No broad generalization beyond the tested operating points. The follow-up sweep
+  adds TOMATO and pooled-calibration evidence, but TOMATO is a boundary result and
+  frame=16 remains a codec-to-pixel collapse.
 
 ## Paper Narrative
 
@@ -269,41 +273,37 @@ Across the N=57 audit, median extraction time is about 19.4 seconds/item, p95 ab
 extraction and decoding. A decoder-integrated implementation could surface the same
 signals more cheaply, but that is a systems hypothesis until measured.
 
-## Next Experiments
+## Remaining Experiments After This Packet
 
-1. **Gemma OV-6 codec-grid cross-family check**
-   Hypothesis: if codec-grid sparse vision is model-family robust, Gemma should
-   preserve paired sparse-vs-dense fidelity at the same operating-point family.
-   The CPU wiring is now present: Gemma accepts external codec grids on the
-   768-canvas / 48x48 pre-pool patch grid, pads scores to the local encoder
-   length, excludes padded positions from Top-K, and has placeholder-count and
-   score-shape guards. The next scientific step is the N=10 GPU smoke via
-   `scripts/run_ov6_gemma_codec_smoke.sh`.
+The four preregistered controls have now run; see the follow-up sweep below.
+The remaining useful work is narrower:
 
-2. **OV-8 C-PERSIST composition after OV-6**
-   Artifact-level accounting is now available at
-   `research/experiments/2026/artifacts/onevision_cpersist_session/accounting.json`.
-   It uses two denominators: model-side first-query E2E excluding extraction, and
-   conservative first-query E2E including current PyAV extraction. The accounting
-   now records 12/57 first-query choice/correctness drift versus dense, so treat it
-   as accounting only; a fresh model-backed session run needs either a fidelity-clean
-   first-query cell or an explicit preregistered accuracy/speed trade-off.
+1. **M5 confirmation, only after a fresh preregistration**
+   Use the M5 for a focused broader-N Gemma or Qwen confirmation only if the
+   question is explicitly power, cross-family transfer, or frame-budget transfer.
+   Do not run a broad exploratory tree.
 
-3. **TOMATO motion replication**
-   Tests whether the codec signal survives outside VideoMME short.
+2. **Codec extraction systems path**
+   The current PyAV path is the dominant blocker. The next systems experiment is a
+   precomputed sidecar or decoder-integrated metadata path that measures whether
+   H.264 score extraction can be amortized or surfaced cheaply enough for Track B.
 
-4. **Threshold sensitivity at frame=8**
-   Tests whether the N=57 signal is an operating-point artifact of share-matched
-   calibration.
+3. **OV-8 live composition**
+   Artifact-level accounting exists, but first-query correctness drift is 12/57 for
+   the Qwen codec_novel_coded kr=0.7/layer=2 cell. A live C-PERSIST composition run
+   needs either a fidelity-clean first-query cell or an explicit preregistered
+   accuracy/speed trade-off.
 
-5. **Dense determinism multi-seed**
-   Useful but secondary. It tightens the dense instability caveat; it does not replace
-   Track B.
+4. **Dense determinism multi-seed**
+   Useful but secondary. It tightens the dense instability caveat; it does not
+   replace Track B or the codec extraction question.
 
 ## Follow-up Sweep (Preregistered, 4 Phases)
 
 A 14-hour back-to-back MLX sweep ran the four preregistered controls on M3.
-All four phases completed; all four preregistered gates were met.
+All four phases completed; their preregistered gates were met. Confidence-bound
+summaries below are post-run robustness checks unless explicitly named in the
+gate.
 
 ### Phase 1: Qwen random multi-seed (OV-6 robustness)
 
@@ -319,7 +319,7 @@ seed-stable. Magnitude baseline: 24/57 = 0.421.
 | 100 | 0.509 (29/57) | +8.8 pp  | 9/4  | 0.2668 |
 | mean| 0.513         | +9.2 pp  | -    | -      |
 
-Preregistered gate (>=3/4 seeds random >= magnitude): **4/4 satisfied**, no
+Preregistered gate (all tested seeds random >= magnitude): **4/4 satisfied**, no
 falsifying seed. The inversion is seed-stable.
 
 ### Phase 2: Gemma cross-family codec-grid smoke
@@ -379,30 +379,39 @@ without bespoke per-item threshold fitting.
 | fused       | 0.6667 | 0.6667 | 0.9649 | 0.1093 |
 
 Wilson 95% lower bound on codec_dense_agreement: 0.91 (single sources),
-0.88 (fused). Preregistered gate (Wilson lower >= 0.80): **all four
-sources pass**. Three single sources are bit-identical on accuracy and
-agreement -- pooled thresholds collapse score-source choice. Pick one
-source for production. Fused trails by one item (55/57 vs 56/57) and is
-not preferred.
+0.88 (fused). The preregistered gate was parse-clean execution plus
+nonnegative codec-minus-pixel behavior under pooled calibration; that gate
+passes. The Wilson lower bound is a post-run robustness summary. Three single
+sources are bit-identical on accuracy and agreement -- pooled thresholds
+collapse score-source choice. Use one simple source for future systems tests.
+Fused trails by one item (55/57 vs 56/57) and is not preferred.
 
 ## Bottom Line After the Follow-up Sweep
 
 The four-phase sweep tightens two claims and bounds a third:
 
-1. **Track B OV-6 magnitude-prior failure is robust.** Random beats
-   magnitude on 4/4 seeds at kr=0.5/layer=2 on Qwen, and codec_novel_coded
-   beats magnitude on Gemma at the smoke gate. The "obvious heuristic"
-   (magnitude_norm) is not the right baseline at moderate prune rates.
+1. **Track B OV-6 magnitude-prior failure is seed-stable at one Qwen operating
+   point.** Random beats magnitude on 4/4 seeds at kr=0.5/layer=2 on Qwen, and
+   codec_novel_coded beats magnitude on Gemma at the smoke gate. The "obvious
+   heuristic" (magnitude_norm) is not a safe default at this Qwen kr=0.5/layer=2
+   cell, and random must remain a required baseline. It remains useful at other
+   tested cells.
 2. **Track A refresh oracle is calibration-robust.** Pooled thresholds
    give Wilson-lower 0.91 codec->dense agreement, with ~10.6 - 10.9%
-   active-frame reuse. Production deployment doesn't need per-item
-   threshold fitting.
+   active-frame reuse. On this VideoMME-short/Qwen/8f slice, deployment does not
+   need per-item threshold fitting.
 3. **Motion-heavy benchmarks at frame=8 / kr=0.69 are headroom-limited.**
    No prune scheme escapes the chance floor; codec scores edge magnitude
    by one item. The codec advantage does not generalize to TOMATO motion
    at this operating point.
 
 ## Artifact Pointers
+
+Verification note: the completed OV-6 Track B artifacts were produced before the
+Track B runner summaries recorded `git_commit` / `git_dirty` fields. The raw
+summary and per-item rows are committed and the audits below validate their
+counts and paired item sets. Future Track B and pooled-calibration runners now
+record run provenance and refuse stale skip-if-exists reuse.
 
 - N=57 comparison:
   `research/experiments/2026/artifacts/phase1_29_onevision_n57/comparison.json`
@@ -419,5 +428,6 @@ The four-phase sweep tightens two claims and bounds a third:
   `research/experiments/2026/artifacts/phase1_63G_ov6_gemma_codec_smoke/`
 - Phase 3 TOMATO motion:
   `research/experiments/2026/artifacts/phase1_51V_ov6_tomato_motion_kr070_l2/`
+  and `research/experiments/2026/artifacts/phase1_51V_ov6_tomato_motion_kr070_l2/statistical_audit.md`
 - Phase 4 pooled calibration:
   `research/experiments/2026/artifacts/phase1_29_onevision_n57_pooled_calibration/`

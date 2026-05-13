@@ -1,6 +1,6 @@
 # Current Plan
 
-Last updated: 2026-05-11.
+Last updated: 2026-05-13.
 
 This file is the active roadmap only. Historical phase detail lives in dated
 experiment notes and [research/experiments/registry.md](research/experiments/registry.md).
@@ -32,7 +32,10 @@ notes.
   speedup claim. At VideoMME short / Qwen2.5-VL-7B-4bit / 8 frames,
   `codec_novel_coded` at kr=0.7/layer=2 is the best tested sparse arm by point
   estimate over `magnitude_norm`, but paired tests remain inconclusive and
-  current PyAV metadata extraction erases model-side wall-clock savings.
+  current PyAV metadata extraction erases model-side wall-clock savings. The
+  follow-up sweep adds two boundaries: Qwen random beats magnitude on 4/4 seeds
+  at kr=0.5/layer=2, while TOMATO motion stays near chance and is not rescued by
+  codec scoring.
 
 ## Active Gates Before Paper/OSS Freeze
 
@@ -44,11 +47,11 @@ notes.
    - natural-dialogue C-PERSIST and one adjacent-method comparison are the
      highest-value main-track science gaps after the current integration pass
    - OneVision follow-up: Qwen OV-6 has landed as bounded point-estimate Track B
-     evidence. Next, run Gemma only after codec-grid geometry is wired and
-     CPU-tested; use M5 for broader Qwen only after preregistering whether the
-     question is larger-N power, cross-benchmark transfer, or frame-budget
-     transfer. Do not claim net codec wall-clock speedup until metadata
-     extraction is precomputed or decoder-integrated.
+     evidence, Gemma N=10 smoke clears the cross-family wiring gate, TOMATO is a
+     boundary result, and pooled H.264 calibration preserves Track A
+     codec-to-dense agreement. Use M5 only for a preregistered broader-N or
+     frame-budget confirmation. Do not claim net codec wall-clock speedup until
+     metadata extraction is precomputed or decoder-integrated.
 
 2. **Freeze artifact provenance.**
    - every paper table/figure cell needs a source artifact path or a visible

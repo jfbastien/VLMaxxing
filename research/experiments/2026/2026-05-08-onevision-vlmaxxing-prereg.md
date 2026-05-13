@@ -540,8 +540,10 @@ Final N=57 table, VideoMME short, 8 frames:
 
 Interpretation:
 
-- `reproduced here`: all four codec sources beat pixel and dense by point estimate at
-  N=57, with no rows broken versus pixel.
+- `reproduced here`: all four codec sources beat pixel by point estimate at
+  N=57, with no rows broken versus pixel. They also score at or above the local
+  dense run on this slice, but dense showed run-to-run instability in overlap
+  checks, so this is not a broad "codec beats dense" claim.
 - `reproduced here`: individual McNemar tests remain inconclusive; this is a bounded
   positive Track A signal, not per-cell statistical significance.
 - `reproduced here`: the N=20 "fused fails" interpretation was overcalled. The N=20
@@ -715,3 +717,43 @@ items and do not mix query-aware evidence into the OneVision chain on this branc
    codec-minus-pixel point estimate.
 
    Command: `scripts/run_ov3_h264_calibration_sensitivity.sh`.
+
+### 2026-05-13 — Four-phase follow-up sweep results
+
+Completed artifacts:
+
+- `research/experiments/2026/artifacts/phase1_51V_ov6_random_multiseed/`
+- `research/experiments/2026/artifacts/phase1_63G_ov6_gemma_codec_smoke/`
+- `research/experiments/2026/artifacts/phase1_51V_ov6_tomato_motion_kr070_l2/`
+- `research/experiments/2026/artifacts/phase1_51V_ov6_tomato_motion_kr070_l2/statistical_audit.md`
+- `research/experiments/2026/artifacts/phase1_29_onevision_n57_pooled_calibration/`
+
+Interpretation:
+
+- `reproduced here`: the Qwen kr=0.5/layer=2 random-over-magnitude inversion is
+  seed-stable on the tested seeds. `uniform_random` beats `magnitude_norm` on
+  4/4 seeds `{1, 7, 42, 100}` at N=57; no seed meets the preregistered
+  falsifier where magnitude exceeds random by at least three items.
+- `reproduced here`: Gemma 4 E4B N=10 codec-grid smoke clears the cross-family
+  wiring gate. `codec_novel_coded` and `codec_motion` both land 6/10 versus
+  `magnitude_norm` 4/10, with paired wins/losses 3/1. This is qualitative
+  transfer evidence only; N=10 is not a statistical claim.
+- `reproduced here`: TOMATO motion is a boundary result. Dense is 8/30,
+  `magnitude_norm` 4/30, `codec_novel_coded` and `codec_motion` 5/30, and
+  `codec_residual` 4/30. Codec edges magnitude by one item but does not rescue
+  the low-headroom frame=8/kr=0.7 regime.
+- `reproduced here`: OV-3 pooled H.264 calibration preserves Track A
+  codec-to-dense agreement on VideoMME-short N=57. `novel_coded`, `motion`, and
+  `residual` are each 39/57 codec accuracy, 56/57 codec-to-dense agreement, and
+  about 10.6-10.8% active reuse; `fused` trails at 38/57 and 55/57.
+
+Decision-log status: Track A H.264 refresh is now calibration-robust on the
+tested VideoMME-short/Qwen/8f slice. Track B codec-grid remains a bounded
+point-estimate candidate rather than a broad speedup result; the next systems
+gate is metadata extraction cost, not another immediate GPU sweep.
+
+Provenance caveat: the completed OV-6 Track B summaries predate the runner-level
+`git_commit` / `git_dirty` fields added after review. The committed raw rows and
+summary counts are still auditable, and follow-up validators now hard-fail stale
+or partial skip-if-exists reuse. Future M3/M5 runs should use fresh output
+directories with provenance-bearing summaries.

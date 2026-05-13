@@ -121,16 +121,19 @@
     },
     {
       "artifacts": [
-        "research/experiments/2026/artifacts/onevision_track_a_replication/"
+        "research/experiments/2026/artifacts/phase1_51V_ov6_tomato_motion_kr070_l2/",
+        "research/experiments/2026/artifacts/phase1_51V_ov6_tomato_motion_kr070_l2/statistical_audit.json",
+        "research/experiments/2026/artifacts/phase1_29_onevision_n57_pooled_calibration/"
       ],
       "commands": [
-        "scripts/run_ov6_qwen_tomato_replication.sh",
-        "scripts/run_ov3_h264_calibration_sensitivity.sh"
+        "DONE: scripts/run_ov6_qwen_tomato_replication.sh",
+        "DONE: uv run python scripts/analyze_ov6_tomato_motion.py",
+        "DONE: scripts/run_ov3_h264_calibration_sensitivity.sh"
       ],
-      "compute_lane": "local MLX one model at a time",
-      "defer_until": "after OV-3 dev passes",
-      "eta_m3": "4-7 hours per focused replication cell",
-      "eta_m5": "2-4 hours per focused replication cell",
+      "compute_lane": "completed on local MLX; M5 only for broader preregistered confirmation",
+      "defer_until": "complete for current branch",
+      "eta_m3": "completed: TOMATO focused cell plus pooled calibration; future M3 only with a fresh prereg",
+      "eta_m5": "future: 2-4 hours per focused replication cell only after fresh preregistration",
       "hypothesis": "If codec-native scoring is real rather than a VideoMME-short operating-point artifact, it should survive at least one cross-benchmark or calibration-sensitivity test. Frame=16 already shows that the advantage over pixel does not automatically transfer across frame budgets.",
       "question": "Does the codec-source Track A signal transfer beyond VideoMME short / 8 frames?",
       "requires_nvidia": false,
@@ -146,24 +149,28 @@
         "research/experiments/2026/artifacts/phase1_51V_ov6_n57/",
         "research/experiments/2026/artifacts/phase1_51V_ov6_n57_kr070_l2/",
         "research/experiments/2026/artifacts/phase1_51V_ov6_n57_kr050_l8/",
-        "research/experiments/2026/artifacts/onevision_vlmaxxing_plan/ov6_track_b_statistical_audit.json"
+        "research/experiments/2026/artifacts/onevision_vlmaxxing_plan/ov6_track_b_statistical_audit.json",
+        "research/experiments/2026/artifacts/phase1_51V_ov6_random_multiseed/",
+        "research/experiments/2026/artifacts/phase1_63G_ov6_gemma_codec_smoke/",
+        "research/experiments/2026/artifacts/phase1_51V_ov6_tomato_motion_kr070_l2/"
       ],
       "commands": [
         "DONE: scripts/run_ov6_full_sweep.sh",
         "DONE: scripts/run_ov6_n57_promotions.sh",
-        "uv run python scripts/analyze_ov6_track_b.py",
-        "NEXT: scripts/run_ov6_gemma_codec_smoke.sh",
-        "NEXT: scripts/run_ov6_qwen_random_multiseed.sh",
-        "NEXT: scripts/run_ov6_qwen_tomato_replication.sh"
+        "DONE: uv run python scripts/analyze_ov6_track_b.py",
+        "DONE: scripts/run_ov6_gemma_codec_smoke.sh",
+        "DONE: scripts/run_ov6_qwen_random_multiseed.sh",
+        "DONE: scripts/run_ov6_qwen_tomato_replication.sh",
+        "DONE: scripts/run_ov3_h264_calibration_sensitivity.sh"
       ],
-      "compute_lane": "Qwen M3 runs complete; Gemma CPU wiring complete; next is one Gemma model job at a time; M5 only for broader preregistered confirmation",
-      "defer_until": "Qwen complete; Gemma smoke depends on machine availability",
-      "eta_m3": "Gemma N=10 smoke 1-2 hours; Qwen random multi-seed about 2-3 hours; Qwen TOMATO focused cell about 4 hours; run sequentially",
-      "eta_m5": "Gemma N=57 or Qwen cross-benchmark confirmation 4-8 hours per focused cell after M3 smoke gates",
+      "compute_lane": "Qwen and Gemma M3 follow-ups complete; M5 only for broader preregistered confirmation or live OV-8",
+      "defer_until": "complete for current branch; M5 follow-up requires fresh preregistration",
+      "eta_m3": "completed for current branch; future broader Gemma or M5 confirmation should use new output dirs and run only after a fresh gate",
+      "eta_m5": "recommended next only for a preregistered power run: 4-8 hours per focused cell, not an open sweep",
       "hypothesis": "The OV-3 Track A signal can become a systems result only at operating points where codec score grids preserve sparse-vision fidelity. Qwen shows bounded point-estimate Track B evidence, not a broad net wall-clock speedup after current PyAV extraction.",
       "question": "Can OneVision-style allocation improve real sparse vision work skipped?",
       "requires_nvidia": false,
-      "setup_effort": "Qwen codec-grid complete; Gemma codec-grid CPU wiring complete with flattened/padded pre-pool score-grid guard; Gemma needs the N=10 GPU smoke before broader use",
+      "setup_effort": "Qwen codec-grid complete; Gemma codec-grid N=10 smoke complete with flattened/padded pre-pool score-grid guard; remaining broader runs require fresh preregistration and provenance-clean output dirs",
       "skip_rule": "If Gemma one-item/short smoke shows geometry mismatch, stale codec-grid reuse, or paired format/fidelity regressions beyond the existing Gemma Track B caveat, stop Gemma and keep OV-6 as Qwen-only bounded evidence.",
       "stage": "OV-6",
       "success_gate": "For Qwen, report as bounded point-estimate evidence unless paired tests gate; for Gemma, first gate on exact geometry/provenance and paired dense-vs-sparse format/fidelity before any cross-family claim.",
@@ -197,18 +204,18 @@
         "research/experiments/2026/artifacts/onevision_cpersist_session/"
       ],
       "commands": [
-        "uv run python scripts/run_phase1_55L_many_turn_cpersist.py <combined args>",
-        "uv run python scripts/build_c_persist_setup_inclusive.py <combined artifacts>"
+        "DONE/accounting: uv run python scripts/build_c_persist_setup_inclusive.py <combined artifacts>",
+        "future/live: uv run python scripts/run_phase1_55L_many_turn_cpersist.py <combined args>"
       ],
       "compute_lane": "M5 128GB for model-backed replication",
-      "defer_until": "after OV-6 or as accounting-only after OV-5",
-      "eta_m3": "3-4 hours artifact-level accounting after OV-6; no new session driver needed for first pass",
-      "eta_m5": "6-10 hours model-backed if OV-6 gates and a fresh session run is justified",
+      "defer_until": "after explicit decision to accept first-query drift or after a fidelity-clean sparse cell appears",
+      "eta_m3": "accounting complete; live run not recommended on M3 until fidelity policy is chosen",
+      "eta_m5": "6-10 hours model-backed only after fresh preregistration and a first-query drift policy",
       "hypothesis": "A OneVision-like cold ingest can reduce first-query vision work, while C-PERSIST dominates same-video follow-up latency; session-inclusive speedups must be reported by query count, not multiplied.",
       "question": "How do cold-ingest sparse allocation and follow-up reuse compose without double counting?",
       "requires_nvidia": false,
-      "setup_effort": "requires OV-6 dense-vs-codec timing rows for model-backed runtime; otherwise ceiling-only",
-      "skip_rule": "If OV-6 has no fidelity-clean sparse-vision cell, use analytic stage-share ceilings only and do not claim a working combined runtime.",
+      "setup_effort": "artifact-level accounting exists; live composition needs a new session driver or explicit accuracy/speed tradeoff because current best codec cell has first-query drift",
+      "skip_rule": "If first-query sparse-vs-dense drift remains material, use analytic stage-share ceilings only and do not claim fidelity-clean composition.",
       "stage": "OV-8",
       "success_gate": "Report setup-inclusive session curves for 1, 2, 5, 10, and 50 same-video questions with paired drift and stage-share accounting.",
       "track": "C-PERSIST",

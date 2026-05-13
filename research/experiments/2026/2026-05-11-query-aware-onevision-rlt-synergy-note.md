@@ -40,10 +40,18 @@ fresh design/dev/holdout split.
    dependency gates, dry-run mode, elapsed timing, command capture, skip/stop decisions,
    and summary JSON. Import the scaffolding later, not the RLT science.
 
+6. **Query-aware role selection, not query-aware tuning here.**
+   The completed OV-6 follow-up sweep suggests the same H.264 signal plays different
+   roles in different denominators: refresh prior in Track A, bounded sparse-ranking
+   candidate in Track B, and setup-cost input for C-PERSIST accounting. A later
+   query-aware branch should test whether the query can choose between codec evidence,
+   random selection, and model-internal magnitude without tuning on inspected OV-3/OV-6
+   items. This branch should not implement that selector.
+
 ## Explicit Non-Goals For This Branch
 
 - No query-aware implementation.
 - No RLT operator claims in the OneVision editor packet.
 - No sibling-repo artifacts as OneVision provenance.
-- No promotion of codec saliency beyond the bounded OV-3 result until OV-6 and
-  replication cells are measured.
+- No promotion of codec saliency beyond the bounded OV-3 / OV-6 results without
+  a new query-aware preregistration and fresh item split.

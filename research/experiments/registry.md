@@ -1,6 +1,6 @@
 # Experiment Registry (Machine-Readable)
 
-Last updated: 2026-05-08
+Last updated: 2026-05-13
 
 This is the primary source of per-phase experiment state. It is the phase
 ledger, not the paper claim ledger. Use `paper/claim-matrix.md` for
@@ -40,14 +40,18 @@ Entries are ordered by phase_id (chronological within each 1.x range).
 
 ```yaml
 - phase_id: onevision-vlmaxxing-20260508
-  status: completed through OV-6 Qwen; Gemma/OV-8 follow-ups pending
+  status: completed through four-phase follow-up sweep; live OV-8 and M5 confirmations pending
   authoritative_note: research/experiments/2026/2026-05-08-onevision-vlmaxxing-prereg.md
   authoritative_artifacts:
     - research/experiments/2026/artifacts/onevision_vlmaxxing_plan/experiment_schedule.json
     - research/experiments/2026/artifacts/onevision_vlmaxxing_visuals/
     - research/experiments/2026/artifacts/phase1_29_onevision_n57/statistical_audit.json
     - research/experiments/2026/artifacts/onevision_vlmaxxing_plan/ov6_track_b_statistical_audit.json
-  current_best_policy: "bounded codec-source evidence: Track A positive point estimates over pixel at N=57/8f; Track B codec_novel_coded is best tested Qwen sparse arm at kr=0.7/layer=2 by point estimate, but paired tests remain inconclusive and current PyAV extraction erases net wall-clock savings"
+    - research/experiments/2026/artifacts/phase1_51V_ov6_random_multiseed/random_multiseed_summary.json
+    - research/experiments/2026/artifacts/phase1_63G_ov6_gemma_codec_smoke/
+    - research/experiments/2026/artifacts/phase1_51V_ov6_tomato_motion_kr070_l2/statistical_audit.json
+    - research/experiments/2026/artifacts/phase1_29_onevision_n57_pooled_calibration/
+  current_best_policy: "bounded codec-source evidence: Track A positive point estimates over pixel at N=57/8f and pooled-calibration codec->dense agreement 56/57 for simple sources; Track B codec_novel_coded is best tested Qwen sparse arm at kr=0.7/layer=2 by point estimate, but paired tests remain inconclusive and current PyAV extraction erases net wall-clock savings. Follow-up controls show random beats magnitude on 4/4 Qwen seeds at kr=0.5/layer=2, Gemma N=10 codec-grid smoke gates, and TOMATO motion is a low-headroom boundary."
   supersedes: []
   paper_relevance: diagnostic/proposed new science
   prereg_outcome: Accepted with caveat / bounded
