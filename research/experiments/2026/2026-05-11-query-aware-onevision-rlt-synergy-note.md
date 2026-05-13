@@ -51,6 +51,20 @@ fresh design/dev/holdout split.
    random selection, and model-internal magnitude without tuning on inspected OV-3/OV-6
    items. This branch should not implement that selector.
 
+7. **Sidecar architecture makes cheap query-aware A/B feasible.**
+   The H.264 score sidecar contract (`src/codec_through/codec/score_sidecar.py`,
+   built via `scripts/build_ov6_codec_score_sidecars.py`) caches normalized codec
+   score grids per (manifest item, source, geometry, frame count, projection
+   version) tuple, sha256-bound to score config. Once an M3 sidecar-equivalence
+   gate has demonstrated zero-drift parity with live PyAV extraction, a future
+   query-aware run can compare codec / random / magnitude routing decisions on
+   the same item without re-extracting H.264 metadata. The dominant per-item
+   cost in OV-6 (10-19s PyAV extract on M3) becomes a one-time setup. The
+   query-aware branch should reuse this sidecar contract; it should not invent
+   a parallel cache and it should not bypass the manifest_item_ids /
+   score_config_id binding, since that binding is what makes the cached
+   decision provenance auditable.
+
 ## Explicit Non-Goals For This Branch
 
 - No query-aware implementation.
