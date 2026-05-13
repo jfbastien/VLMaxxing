@@ -80,7 +80,7 @@ def _paired(
     }
 
 
-def analyze(root: Path) -> dict[str, Any]:
+def analyze(root: Path, label: str = "Qwen") -> dict[str, Any]:
     magnitude_dir = root / "magnitude_norm"
     if not (magnitude_dir / "results.jsonl").exists():
         raise FileNotFoundError(f"missing magnitude baseline under {magnitude_dir}")
@@ -118,6 +118,7 @@ def analyze(root: Path) -> dict[str, Any]:
     magnitude_acc = _accuracy(magnitude_rows)
     return {
         "phase": "OV-6",
+        "label": label,
         "question": "Is uniform_random >= magnitude_norm at kr=0.5/layer=2 seed-stable?",
         "root": str(root),
         "gate": "All tested random seeds must be >= magnitude_norm by point estimate.",
@@ -140,8 +141,9 @@ def analyze(root: Path) -> dict[str, Any]:
 
 def _markdown(payload: dict[str, Any]) -> str:
     mag = payload["magnitude_norm"]["accuracy"]
+    label = payload.get("label", "Qwen")
     lines = [
-        "# OV-6 Qwen Random Multi-Seed Audit",
+        f"# OV-6 {label} Random Multi-Seed Audit",
         "",
         f"Gate: {payload['gate']}",
         f"Falsification: {payload['falsification']}",
@@ -187,11 +189,12 @@ def _markdown(payload: dict[str, Any]) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=DEFAULT_ROOT)
+    parser.add_argument("--label", type=str, default="Qwen")
     parser.add_argument("--out-json", type=Path, default=None)
     parser.add_argument("--out-md", type=Path, default=None)
     args = parser.parse_args()
 
-    payload = analyze(args.root)
+    payload = analyze(args.root, label=args.label)
     out_json = args.out_json or args.root / "random_multiseed_summary.json"
     out_md = args.out_md or args.root / "random_multiseed_summary.md"
     out_json.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")

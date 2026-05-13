@@ -325,7 +325,7 @@ def test_sidecar_equivalence_analyzer_gates_zero_drift(tmp_path: Path) -> None:
         ("sidecar_novel_coded", "sidecar"),
     ):
         _write_result_row(root / label / "results.jsonl")
-        summary = {
+        summary: dict[str, object] = {
             "codec_score_runtime_source": runtime_source,
             "codec_extract_mean_s_per_item": 2.0 if runtime_source == "live_pyav" else None,
             "codec_sidecar_load_mean_s_per_item": 0.002 if runtime_source == "sidecar" else None,
@@ -345,7 +345,7 @@ def test_sidecar_equivalence_gate_validator_requires_passed_gate(tmp_path: Path)
         ("sidecar_novel_coded", "sidecar"),
     ):
         _write_result_row(tmp_path / label / "results.jsonl")
-        summary = {
+        summary: dict[str, object] = {
             "codec_score_runtime_source": runtime_source,
             "codec_extract_mean_s_per_item": 2.0 if runtime_source == "live_pyav" else None,
             "codec_sidecar_load_mean_s_per_item": 0.002 if runtime_source == "sidecar" else None,
