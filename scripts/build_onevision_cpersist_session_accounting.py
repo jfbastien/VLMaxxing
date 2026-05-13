@@ -129,8 +129,22 @@ def build_payload(
     dense_first_ms = float(dense_summary["mean_dense_end_to_end_ms"])
     sparse_first_excluding_codec_ms = float(sparse_summary["mean_dense_end_to_end_ms"])
     codec_extract_s = sparse_summary.get("codec_extract_mean_s_per_item")
+    sidecar_load_s = sparse_summary.get("codec_sidecar_load_mean_s_per_item")
+    runtime_source = sparse_summary.get("codec_score_runtime_source")
+    if runtime_source not in {None, "live_pyav", "sidecar"}:
+        raise ValueError(f"unknown codec_score_runtime_source: {runtime_source!r}")
+    if runtime_source == "live_pyav" and codec_extract_s is None:
+        raise ValueError("live_pyav sparse source is missing codec_extract_mean_s_per_item")
+    if runtime_source == "sidecar" and sidecar_load_s is None:
+        raise ValueError("sidecar sparse source is missing codec_sidecar_load_mean_s_per_item")
     sparse_first_including_codec_ms = sparse_first_excluding_codec_ms + (
         float(codec_extract_s) * 1000.0 if codec_extract_s is not None else 0.0
+    )
+    sparse_first_including_runtime_score_ms = float(
+        sparse_summary.get(
+            "mean_end_to_end_including_codec_score_runtime_ms",
+            sparse_first_including_codec_ms,
+        )
     )
     first_query_pairing = _first_query_pairing(dense_dir=dense_dir, sparse_dir=sparse_dir)
 
@@ -159,18 +173,32 @@ def build_payload(
                 ),
             }
         )
-        rows.append(
-            {
-                **row_base,
-                "codec_extraction_policy": "included_current_pyav",
-                "first_query_ms": sparse_first_including_codec_ms,
-                "session_curve": _session_curve(
-                    dense_first_ms=dense_first_ms,
-                    sparse_first_ms=sparse_first_including_codec_ms,
-                    follow_ms=follow_ms,
-                ),
-            }
-        )
+        if codec_extract_s is not None:
+            rows.append(
+                {
+                    **row_base,
+                    "codec_extraction_policy": "included_current_pyav",
+                    "first_query_ms": sparse_first_including_codec_ms,
+                    "session_curve": _session_curve(
+                        dense_first_ms=dense_first_ms,
+                        sparse_first_ms=sparse_first_including_codec_ms,
+                        follow_ms=follow_ms,
+                    ),
+                }
+            )
+        if runtime_source == "sidecar":
+            rows.append(
+                {
+                    **row_base,
+                    "codec_extraction_policy": "included_sidecar_load",
+                    "first_query_ms": sparse_first_including_runtime_score_ms,
+                    "session_curve": _session_curve(
+                        dense_first_ms=dense_first_ms,
+                        sparse_first_ms=sparse_first_including_runtime_score_ms,
+                        follow_ms=follow_ms,
+                    ),
+                }
+            )
 
     return {
         "phase": "OV-8",
@@ -182,8 +210,13 @@ def build_payload(
         "dense_first_query_ms": dense_first_ms,
         "sparse_first_query_ms_excluding_codec_extract": sparse_first_excluding_codec_ms,
         "sparse_first_query_ms_including_current_pyav_extract": sparse_first_including_codec_ms,
+        "sparse_first_query_ms_including_runtime_score": sparse_first_including_runtime_score_ms,
         "codec_extract_mean_s_per_item": codec_extract_s,
+        "codec_sidecar_load_mean_s_per_item": sidecar_load_s,
+        "codec_score_runtime_source": runtime_source,
         "first_query_pairing": first_query_pairing,
+        "first_query_drift_clean": first_query_pairing["correctness_drift"] == 0
+        and first_query_pairing["choice_drift"] == 0,
         "guardrails": [
             "This is not a live combined session run.",
             "Do not multiply OV-6 and C-PERSIST speedup ratios.",

@@ -59,6 +59,7 @@ This file only routes work inside `docs/`.
 - [methodology/performance.md](methodology/performance.md)
 - [methodology/preprocessing.md](methodology/preprocessing.md)
 - [methodology/timing-harness.md](methodology/timing-harness.md)
+- [methodology/codec-score-denominators.md](methodology/codec-score-denominators.md)
 - [clip-policy.md](clip-policy.md)
 - [benchmark-setup.md](benchmark-setup.md)
 - [videomme-download-handoff.md](videomme-download-handoff.md)

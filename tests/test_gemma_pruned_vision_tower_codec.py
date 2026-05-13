@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from types import SimpleNamespace
 
 import mlx.core as mx
@@ -7,6 +8,13 @@ import numpy as np
 import pytest
 from PIL import Image
 
+from codec_through.codec.continuous_score import CodecScoreSource
+from codec_through.codec.score_sidecar import (
+    SCORE_SIDECAR_PROJECTION_VERSION,
+    score_config_id,
+    sidecar_path,
+    write_score_sidecar,
+)
 from codec_through.pruned_vision_tower import (
     PruneConfig,
     _PrunedEncoderWrapper,
@@ -15,8 +23,10 @@ from codec_through.pruned_vision_tower import (
 from scripts.run_phase1_63G_gemma_track_b import (
     GEMMA_IMAGE_SIZE,
     GEMMA_PATCH_GRID_SHAPE,
+    GEMMA_SIDECAR_GEOMETRY,
     GEMMA_SOFT_GRID_SHAPE,
     GemmaCodecGeometry,
+    _load_gemma_sidecar_scores,
     _resize_square_with_active_box,
     _stack_gemma_codec_score_grid,
     _validate_gemma_placeholders,
@@ -149,3 +159,92 @@ def test_gemma_placeholder_guard_uses_runtime_grid_shape() -> None:
     raw_bad = {"input_ids": np.full((1, expected - 1), image_token_id, dtype=np.int64)}
     with pytest.raises(RuntimeError, match="placeholder-count mismatch"):
         _validate_gemma_placeholders(model, raw_bad, frame_count=frame_count, geometry=GEOMETRY)
+
+
+def test_gemma_sidecar_loader_accepts_padded_patch_grid(tmp_path: Path) -> None:
+    item_id = "gemma/item"
+    item = SimpleNamespace(item_id=item_id)
+    geometry = GemmaCodecGeometry(
+        image_size=32,
+        soft_grid_shape=(1, 1),
+        patch_grid_shape=(1, 2),
+        patch_size=16,
+        pooling_kernel_size=1,
+        max_patches=4,
+    )
+    config_id = score_config_id(source="novel_coded", frame_count=2)
+    path = sidecar_path(
+        tmp_path,
+        item_id=item_id,
+        source="novel_coded",
+        geometry=GEMMA_SIDECAR_GEOMETRY,
+        score_config=config_id,
+    )
+    write_score_sidecar(
+        path,
+        score_grid=np.array([[1.0, 2.0, 0.0, 0.0], [3.0, 4.0, 0.0, 0.0]], dtype=np.float32),
+        metadata={
+            "item_id": item_id,
+            "codec_score_source": "novel_coded",
+            "geometry": GEMMA_SIDECAR_GEOMETRY,
+            "frame_count": 2,
+            "score_config_id": config_id,
+            "score_projection_version": SCORE_SIDECAR_PROJECTION_VERSION,
+        },
+    )
+
+    score_grid, load_s, metadata = _load_gemma_sidecar_scores(
+        tmp_path,
+        item,
+        frame_count=2,
+        codec_score_source=CodecScoreSource.NOVEL_CODED,
+        geometry=geometry,
+        score_config=config_id,
+    )
+
+    assert score_grid.shape == (2, 4)
+    assert load_s >= 0.0
+    assert metadata["score_config_id"] == config_id
+
+
+def test_gemma_sidecar_loader_rejects_encoder_length_mismatch(tmp_path: Path) -> None:
+    item_id = "gemma/item"
+    item = SimpleNamespace(item_id=item_id)
+    geometry = GemmaCodecGeometry(
+        image_size=32,
+        soft_grid_shape=(1, 1),
+        patch_grid_shape=(1, 2),
+        patch_size=16,
+        pooling_kernel_size=1,
+        max_patches=4,
+    )
+    config_id = score_config_id(source="novel_coded", frame_count=2)
+    path = sidecar_path(
+        tmp_path,
+        item_id=item_id,
+        source="novel_coded",
+        geometry=GEMMA_SIDECAR_GEOMETRY,
+        score_config=config_id,
+    )
+    write_score_sidecar(
+        path,
+        score_grid=np.ones((2, 3), dtype=np.float32),
+        metadata={
+            "item_id": item_id,
+            "codec_score_source": "novel_coded",
+            "geometry": GEMMA_SIDECAR_GEOMETRY,
+            "frame_count": 2,
+            "score_config_id": config_id,
+            "score_projection_version": SCORE_SIDECAR_PROJECTION_VERSION,
+        },
+    )
+
+    with pytest.raises(ValueError, match="expected"):
+        _load_gemma_sidecar_scores(
+            tmp_path,
+            item,
+            frame_count=2,
+            codec_score_source=CodecScoreSource.NOVEL_CODED,
+            geometry=geometry,
+            score_config=config_id,
+        )

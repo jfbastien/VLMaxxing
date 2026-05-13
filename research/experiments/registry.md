@@ -40,7 +40,7 @@ Entries are ordered by phase_id (chronological within each 1.x range).
 
 ```yaml
 - phase_id: onevision-vlmaxxing-20260508
-  status: completed through four-phase follow-up sweep; live OV-8 and M5 confirmations pending
+  status: completed through four-phase follow-up sweep; M3 sidecar gate and M5 confirmations preregistered
   authoritative_note: research/experiments/2026/2026-05-08-onevision-vlmaxxing-prereg.md
   authoritative_artifacts:
     - research/experiments/2026/artifacts/onevision_vlmaxxing_plan/experiment_schedule.json
@@ -55,6 +55,21 @@ Entries are ordered by phase_id (chronological within each 1.x range).
   supersedes: []
   paper_relevance: diagnostic/proposed new science
   prereg_outcome: Accepted with caveat / bounded
+
+- phase_id: onevision-vlmaxxing-m5-20260513
+  status: preregistered
+  authoritative_note: research/experiments/2026/2026-05-13-onevision-m5-confirmation-prereg.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/phase1_51V_ov6_sidecar_equivalence/
+    - research/experiments/2026/artifacts/phase1_51V_ov6_sidecar_equivalence_f16/
+    - research/experiments/2026/artifacts/phase1_63G_ov6_gemma_sidecar_equivalence/
+    - research/experiments/2026/artifacts/m5_ov6_qwen_n57_kr070_l2_parity/
+    - research/experiments/2026/artifacts/m5_ov6_gemma_n57_kr070_l2_confirmation/
+    - research/experiments/2026/artifacts/m5_ov6_qwen_n57_16f_kr070_l2_boundary/
+  current_best_policy: "Run matching M3 sidecar equivalence before each sidecar-backed M5 confirmation. Use M5 for focused Qwen parity/timing, Gemma N=57 cross-family transfer, and one Qwen frame=16 boundary cell; do not run an open sweep."
+  supersedes: []
+  paper_relevance: diagnostic/confirmation
+  prereg_outcome:
 
 - phase_id: 1.55L
   status: completed

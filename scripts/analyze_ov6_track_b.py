@@ -133,8 +133,14 @@ def _arm_summary(spec: ArmSpec) -> dict[str, Any]:
     n = len(rows)
     correct = sum(1 for row in rows.values() if bool(row["correct"]))
     codec_extract = summary.get("codec_extract_mean_s_per_item")
+    sidecar_load = summary.get("codec_sidecar_load_mean_s_per_item")
     e2e_ms = float(summary["mean_dense_end_to_end_ms"])
-    net_e2e_ms = e2e_ms + (float(codec_extract) * 1000.0 if codec_extract is not None else 0.0)
+    net_e2e_ms = float(
+        summary.get(
+            "mean_end_to_end_including_codec_score_runtime_ms",
+            e2e_ms + (float(codec_extract) * 1000.0 if codec_extract is not None else 0.0),
+        )
+    )
     return {
         "label": spec.label,
         "kind": spec.kind,
@@ -145,7 +151,10 @@ def _arm_summary(spec: ArmSpec) -> dict[str, Any]:
         "mean_vision_ms": float(summary["mean_dense_vision_ms"]),
         "mean_e2e_ms_excluding_codec_extract": e2e_ms,
         "mean_e2e_ms_including_codec_extract": net_e2e_ms,
+        "mean_e2e_ms_including_score_runtime": net_e2e_ms,
         "codec_extract_mean_s_per_item": codec_extract,
+        "codec_sidecar_load_mean_s_per_item": sidecar_load,
+        "codec_score_runtime_source": summary.get("codec_score_runtime_source"),
         "effective_keep_rate": summary.get("mean_effective_keep_rate"),
     }
 
@@ -221,13 +230,23 @@ def _markdown(payload: dict[str, Any]) -> str:
         lines.append(f"## {cell['label']}")
         lines.append("")
         lines.append(
-            "| arm | acc | Wilson 95% CI | vision_ms | e2e_ms | e2e+codec_ms | codec_extract_s |"
+            "| arm | acc | Wilson 95% CI | vision_ms | e2e_ms | e2e+score_ms | score_runtime |"
         )
-        lines.append("| --- | ---: | --- | ---: | ---: | ---: | ---: |")
+        lines.append("| --- | ---: | --- | ---: | ---: | ---: | --- |")
         for arm in cell["arms"].values():
             acc = arm["accuracy"]
             ci = acc["wilson_95_ci"]
             codec_extract = arm["codec_extract_mean_s_per_item"]
+            sidecar_load = arm["codec_sidecar_load_mean_s_per_item"]
+            runtime_source = arm["codec_score_runtime_source"]
+            if codec_extract is not None:
+                runtime_cell = f"live_pyav {float(codec_extract):.2f}s"
+            elif sidecar_load is not None:
+                runtime_cell = f"sidecar {float(sidecar_load):.4f}s"
+            elif runtime_source:
+                runtime_cell = str(runtime_source)
+            else:
+                runtime_cell = "-"
             lines.append(
                 "| "
                 + " | ".join(
@@ -237,8 +256,8 @@ def _markdown(payload: dict[str, Any]) -> str:
                         f"[{ci[0]:.3f}, {ci[1]:.3f}]",
                         f"{arm['mean_vision_ms']:.0f}",
                         f"{arm['mean_e2e_ms_excluding_codec_extract']:.0f}",
-                        f"{arm['mean_e2e_ms_including_codec_extract']:.0f}",
-                        (f"{float(codec_extract):.2f}" if codec_extract is not None else "-"),
+                        f"{arm['mean_e2e_ms_including_score_runtime']:.0f}",
+                        runtime_cell,
                     ]
                 )
                 + " |"

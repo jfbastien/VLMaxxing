@@ -80,3 +80,54 @@ def test_onevision_cpersist_accounting_reports_codec_inclusion_modes(tmp_path: P
     included_q2 = rows["included_current_pyav"]["session_curve"][1]
     assert excluded_q2["speedup_dense_over_combined"] == 2.5
     assert round(included_q2["speedup_dense_over_combined"], 4) == round(200 / 130, 4)
+
+
+def test_onevision_cpersist_accounting_reports_sidecar_load_mode(tmp_path: Path) -> None:
+    dense = tmp_path / "dense"
+    sparse = tmp_path / "sparse"
+    cpersist = tmp_path / "cpersist.json"
+    _write_summary(dense, {"mean_dense_end_to_end_ms": 100.0})
+    _write_results(dense, [("a", True, 0)])
+    _write_summary(
+        sparse,
+        {
+            "mean_dense_end_to_end_ms": 70.0,
+            "codec_score_runtime_source": "sidecar",
+            "codec_sidecar_load_mean_s_per_item": 0.002,
+            "mean_end_to_end_including_codec_score_runtime_ms": 72.0,
+        },
+    )
+    _write_results(sparse, [("a", True, 0)])
+    cpersist.write_text(
+        json.dumps(
+            {
+                "cells": [
+                    {
+                        "policy": "fixed_k1",
+                        "horizon": 50,
+                        "followup_only": {
+                            "median_total_elapsed_ms": 10.0,
+                            "choice_drift": 0,
+                            "correctness_drift": 0,
+                            "n": 49,
+                            "pathological": 0,
+                        },
+                    }
+                ]
+            }
+        )
+        + "\n"
+    )
+
+    payload = build_payload(
+        dense_dir=dense,
+        sparse_dir=sparse,
+        cpersist_summary_path=cpersist,
+        horizon=50,
+    )
+
+    assert payload["codec_score_runtime_source"] == "sidecar"
+    assert payload["sparse_first_query_ms_including_runtime_score"] == 72.0
+    rows = {row["codec_extraction_policy"]: row for row in payload["rows"]}
+    assert "included_current_pyav" not in rows
+    assert rows["included_sidecar_load"]["first_query_ms"] == 72.0

@@ -10,10 +10,12 @@ trap 'echo "[ov6-tomato] arm $LAST_ARM failed at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 cd "$(dirname "$0")/.."
 
-PY="${OV6T_PYTHON:-uv run python}"
+PY="${OV6T_PYTHON:-./.venv/bin/python}"
 MODEL_PATH="${OV6T_MODEL_PATH:-$HOME/models/Qwen2.5-VL-7B-Instruct-4bit}"
 MANIFEST="${OV6T_MANIFEST:-research/benchmark_manifests/tomato_motion_dev_v2.toml}"
 OUT_DIR="${OV6T_OUT_DIR:-research/experiments/2026/artifacts/phase1_51V_ov6_tomato_motion_kr070_l2}"
+SIDECAR_DIR="${OV6T_CODEC_SCORE_SIDECAR_DIR:-}"
+SIDECAR_MANIFEST="${OV6T_CODEC_SCORE_SIDECAR_MANIFEST:-}"
 N_ITEMS="${OV6T_N_ITEMS:-0}"
 FRAME_COUNT="${OV6T_FRAME_COUNT:-8}"
 MAX_TOKENS="${OV6T_MAX_TOKENS:-32}"
@@ -22,19 +24,48 @@ KEEP_RATE="${OV6T_KEEP_RATE:-0.70}"
 
 mkdir -p "$OUT_DIR"
 
+if [[ -n "$SIDECAR_DIR" ]]; then
+  if [[ -z "$SIDECAR_MANIFEST" ]]; then
+    SIDECAR_MANIFEST="$(dirname "$SIDECAR_DIR")/sidecar_manifest.json"
+  fi
+  "${PY}" scripts/validate_ov6_codec_score_sidecars.py \
+    --manifest-json "$SIDECAR_MANIFEST" \
+    --sidecar-dir "$SIDECAR_DIR" \
+    --input-manifest "$MANIFEST" \
+    --geometry qwen_merged_groups_v1 \
+    --frame-count "$FRAME_COUNT" \
+    --n-items "$N_ITEMS" \
+    --sources novel_coded motion residual
+fi
+
+validate_arm() {
+  local label="$1"
+  shift 1
+  local arm_dir="$OUT_DIR/$label"
+  local -a extra_validate_args=()
+  if [[ -n "$SIDECAR_DIR" && "$label" == codec_* ]]; then
+    extra_validate_args+=(
+      --codec-score-sidecar-dir "$SIDECAR_DIR"
+      --codec-score-sidecar-geometry qwen_merged_groups_v1
+    )
+  fi
+  "${PY}" scripts/validate_track_b_arm_artifact.py \
+    --arm-dir "$arm_dir" \
+    --manifest "$MANIFEST" \
+    --model-path "$MODEL_PATH" \
+    --n-items "$N_ITEMS" \
+    --frame-count "$FRAME_COUNT" \
+    --max-tokens "$MAX_TOKENS" \
+    "${extra_validate_args[@]}" \
+    "$@"
+}
+
 run_arm() {
   local label="$1"
   shift 1
   local arm_dir="$OUT_DIR/$label"
   if [[ -f "$arm_dir/summary.json" || -f "$arm_dir/results.jsonl" ]]; then
-    if ${PY} scripts/validate_track_b_arm_artifact.py \
-      --arm-dir "$arm_dir" \
-      --manifest "$MANIFEST" \
-      --model-path "$MODEL_PATH" \
-      --n-items "$N_ITEMS" \
-      --frame-count "$FRAME_COUNT" \
-      --max-tokens "$MAX_TOKENS" \
-      "$@" >/dev/null; then
+    if validate_arm "$label" "$@" >/dev/null; then
       echo "[ov6-tomato] === arm=$label SKIP (validated existing artifact) ==="
       return 0
     fi
@@ -42,9 +73,13 @@ run_arm() {
     return 1
   fi
   mkdir -p "$arm_dir"
+  EXTRA_RUN_ARGS=()
+  if [[ -n "$SIDECAR_DIR" && "$label" == codec_* ]]; then
+    EXTRA_RUN_ARGS+=(--codec-score-sidecar-dir "$SIDECAR_DIR")
+  fi
   LAST_ARM="$label"
   echo "[ov6-tomato] === arm=$label starting $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
-  ${PY} scripts/run_phase1_51V.py \
+  "${PY}" scripts/run_phase1_51V.py \
     --manifest "$MANIFEST" \
     --n-items "$N_ITEMS" \
     --model-path "$MODEL_PATH" \
@@ -52,13 +87,17 @@ run_arm() {
     --max-tokens "$MAX_TOKENS" \
     --output "$arm_dir/results.jsonl" \
     --summary "$arm_dir/summary.json" \
-    --allow-dirty \
+    "${EXTRA_RUN_ARGS[@]}" \
     "$@" \
     2>&1 | tee "$arm_dir/run.log"
+  validate_arm "$label" "$@"
   echo "[ov6-tomato] === arm=$label done $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
 }
 
 echo "[ov6-tomato] manifest=$MANIFEST keep_rate=$KEEP_RATE layer=$LAYER n_items=$N_ITEMS"
+if [[ -n "$SIDECAR_DIR" ]]; then
+  echo "[ov6-tomato] codec_score_sidecar_dir=$SIDECAR_DIR"
+fi
 
 run_arm dense \
   --vision-tower-keep-rate 1.0
@@ -91,3 +130,5 @@ run_arm codec_residual \
   --vision-tower-keep-rate "$KEEP_RATE" \
   --score-mode codec_grid \
   --codec-score-source residual
+
+"${PY}" scripts/analyze_ov6_tomato_motion.py --root "$OUT_DIR"

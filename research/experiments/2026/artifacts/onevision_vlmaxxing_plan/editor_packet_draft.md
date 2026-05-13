@@ -276,23 +276,27 @@ signals more cheaply, but that is a systems hypothesis until measured.
 ## Remaining Experiments After This Packet
 
 The four preregistered controls have now run; see the follow-up sweep below.
-The remaining useful work is narrower:
+The remaining useful work is narrower and should run in this order:
 
-1. **M5 confirmation, only after a fresh preregistration**
-   Use the M5 for a focused broader-N Gemma or Qwen confirmation only if the
-   question is explicitly power, cross-family transfer, or frame-budget transfer.
-   Do not run a broad exploratory tree.
+1. **M3 sidecar equivalence gate**
+   Build precomputed H.264 score sidecars and compare live-PyAV Track B arms
+   against sidecar-loaded arms on small Qwen and Gemma slices. Acceptance is
+   geometry/frame-budget specific: Qwen 8f, Qwen 16f, and Gemma 8f each require
+   zero choice drift, zero correctness drift, zero kept-group drift, current
+   manifest/commit/projection-version provenance, and sidecar load below one
+   second/item. This tests whether codec extraction can be amortized without
+   changing the scientific result.
 
-2. **Codec extraction systems path**
-   The current PyAV path is the dominant blocker. The next systems experiment is a
-   precomputed sidecar or decoder-integrated metadata path that measures whether
-   H.264 score extraction can be amortized or surfaced cheaply enough for Track B.
+2. **M5 confirmation, only under the fresh preregistration**
+   Use the M5 for focused confirmation questions: Qwen hardware/timing parity,
+   Gemma N=57 cross-family transfer, and Qwen 16-frame boundary transfer. Do not
+   run a broad exploratory tree.
 
-3. **OV-8 live composition**
-   Artifact-level accounting exists, but first-query correctness drift is 12/57 for
-   the Qwen codec_novel_coded kr=0.7/layer=2 cell. A live C-PERSIST composition run
-   needs either a fidelity-clean first-query cell or an explicit preregistered
-   accuracy/speed trade-off.
+3. **OV-8 composition policy**
+   Artifact-level accounting exists, but first-query correctness drift is 12/57
+   for the Qwen codec_novel_coded kr=0.7/layer=2 cell. A live C-PERSIST
+   composition run needs either a fidelity-clean first-query cell or an explicit
+   preregistered accuracy/speed trade-off.
 
 4. **Dense determinism multi-seed**
    Useful but secondary. It tightens the dense instability caveat; it does not

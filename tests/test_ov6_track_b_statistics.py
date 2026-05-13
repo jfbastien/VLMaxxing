@@ -6,6 +6,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from codec_through.codec.score_sidecar import SCORE_SIDECAR_PROJECTION_VERSION, score_config_id
 from scripts.analyze_ov6_qwen_random_multiseed import analyze as analyze_random_multiseed
 from scripts.analyze_ov6_tomato_motion import analyze as analyze_tomato_motion
 from scripts.analyze_ov6_track_b import build_payload
@@ -71,6 +72,43 @@ def _populate_minimal_ov6_tree(root: Path) -> None:
         _write_arm(base / "codec_novel_coded", rows=codec_rows, codec_extract_s=2.0)
         _write_arm(base / "codec_motion", rows=codec_rows, codec_extract_s=2.0)
         _write_arm(base / "codec_residual", rows=codec_rows, codec_extract_s=2.0)
+
+
+def _validator_args(
+    arm_dir: Path,
+    *,
+    keep_rate: float = 0.7,
+    score_mode: str = "magnitude_norm",
+    codec_score_source: str | None = None,
+    sidecar_dir: Path | None = None,
+    sidecar_geometry: str | None = None,
+    allow_dirty_artifact: bool = True,
+) -> SimpleNamespace:
+    manifest = arm_dir.parent / "manifest.toml"
+    if not manifest.exists():
+        manifest.write_text('benchmark = "videomme"\nitem_ids = ["a"]\n')
+    return SimpleNamespace(
+        arm_dir=arm_dir,
+        manifest=str(manifest),
+        model_path="/models/qwen",
+        frame_count=8,
+        max_tokens=32,
+        n_items=1,
+        vision_tower_layer=2,
+        vision_tower_keep_rate=keep_rate,
+        score_mode=score_mode,
+        score_seed=42,
+        codec_score_source=codec_score_source,
+        codec_score_sidecar_dir=str(sidecar_dir) if sidecar_dir is not None else None,
+        codec_score_sidecar_geometry=sidecar_geometry,
+        fusion_mode="weighted",
+        motion_weight=1.0,
+        residual_weight=1.0,
+        no_normalize_fusion_inputs=False,
+        allow_dirty_artifact=allow_dirty_artifact,
+        allow_parse_failures=False,
+        max_parse_failures=0,
+    )
 
 
 def test_ov6_track_b_audit_computes_paired_mcnemar_and_net_e2e(tmp_path: Path) -> None:
@@ -148,11 +186,13 @@ def test_ov6_tomato_motion_audit_reports_boundary_gate(tmp_path: Path) -> None:
 def test_track_b_artifact_validator_rejects_stale_config(tmp_path: Path) -> None:
     arm_dir = tmp_path / "arm"
     _write_arm(arm_dir, rows=[("a", True, 0)])
+    manifest = arm_dir.parent / "manifest.toml"
+    manifest.write_text('benchmark = "videomme"\nitem_ids = ["a"]\n')
     summary_path = arm_dir / "summary.json"
     summary = json.loads(summary_path.read_text())
     summary.update(
         {
-            "manifest": "manifest.toml",
+            "manifest": str(manifest),
             "model_path": "/models/qwen",
             "frame_count": 8,
             "max_tokens": 32,
@@ -171,19 +211,102 @@ def test_track_b_artifact_validator_rejects_stale_config(tmp_path: Path) -> None
     summary_path.write_text(json.dumps(summary) + "\n")
 
     with pytest.raises(ValueError, match="vision_tower_keep_rate mismatch"):
+        validate_track_b_arm(_validator_args(arm_dir, keep_rate=0.5))
+
+
+def test_track_b_artifact_validator_rejects_duplicate_results(tmp_path: Path) -> None:
+    arm_dir = tmp_path / "arm"
+    _write_arm(arm_dir, rows=[("a", True, 0)])
+    manifest = arm_dir.parent / "manifest.toml"
+    manifest.write_text('benchmark = "videomme"\nitem_ids = ["a"]\n')
+    (arm_dir / "results.jsonl").write_text(
+        json.dumps({"item_id": "a", "correct": True, "parse_failure": False})
+        + "\n"
+        + json.dumps({"item_id": "a", "correct": False, "parse_failure": False})
+        + "\n"
+    )
+    summary_path = arm_dir / "summary.json"
+    summary = json.loads(summary_path.read_text())
+    summary.update(
+        {
+            "n_items": 2,
+            "manifest": str(manifest),
+            "model_path": "/models/qwen",
+            "frame_count": 8,
+            "max_tokens": 32,
+            "vision_tower_patched": True,
+            "vision_tower_layer": 2,
+            "vision_tower_keep_rate": 0.7,
+            "score_mode": "magnitude_norm",
+            "score_seed": None,
+            "codec_score_source": None,
+            "generated_at": "2026-05-13T00:00:00Z",
+            "git_commit": "abc",
+            "git_dirty": False,
+            "git_dirty_scope": "test",
+        }
+    )
+    summary_path.write_text(json.dumps(summary) + "\n")
+
+    with pytest.raises(ValueError, match="duplicate item_id"):
+        validate_track_b_arm(_validator_args(arm_dir, score_mode="magnitude_norm"))
+
+
+def test_track_b_artifact_validator_rejects_dirty_sidecar_item(tmp_path: Path) -> None:
+    arm_dir = tmp_path / "arm"
+    sidecar_dir = tmp_path / "sidecars"
+    _write_arm(arm_dir, rows=[("a", True, 0)])
+    manifest = arm_dir.parent / "manifest.toml"
+    manifest.write_text('benchmark = "videomme"\nitem_ids = ["a"]\n')
+    config_id = score_config_id(source="novel_coded", frame_count=8)
+    summary_path = arm_dir / "summary.json"
+    summary = json.loads(summary_path.read_text())
+    summary.update(
+        {
+            "manifest": str(manifest),
+            "model_path": "/models/qwen",
+            "frame_count": 8,
+            "max_tokens": 32,
+            "vision_tower_patched": True,
+            "vision_tower_layer": 2,
+            "vision_tower_keep_rate": 0.7,
+            "score_mode": "codec_grid",
+            "score_seed": None,
+            "codec_score_source": "novel_coded",
+            "codec_score_runtime_source": "sidecar",
+            "codec_score_sidecar_dir": str(sidecar_dir),
+            "codec_score_sidecar_geometry": "qwen_merged_groups_v1",
+            "codec_score_sidecar_config_id": config_id,
+            "codec_score_projection_version": SCORE_SIDECAR_PROJECTION_VERSION,
+            "codec_sidecar_load_mean_s_per_item": 0.001,
+            "codec_sidecar_items": [
+                {
+                    "item_id": "a",
+                    "sidecar_git_dirty": True,
+                    "sidecar_git_commit": "abc",
+                    "sidecar_score_projection_version": SCORE_SIDECAR_PROJECTION_VERSION,
+                    "sidecar_score_config_id": config_id,
+                    "sidecar_score_grid_sha256": "a" * 64,
+                    "sidecar_codec_extract_s": 1.0,
+                }
+            ],
+            "generated_at": "2026-05-13T00:00:00Z",
+            "git_commit": "abc",
+            "git_dirty": False,
+            "git_dirty_scope": "test",
+        }
+    )
+    summary_path.write_text(json.dumps(summary) + "\n")
+
+    with pytest.raises(ValueError, match="dirty sidecar"):
         validate_track_b_arm(
-            SimpleNamespace(
-                arm_dir=arm_dir,
-                manifest="manifest.toml",
-                model_path="/models/qwen",
-                frame_count=8,
-                max_tokens=32,
-                n_items=1,
-                vision_tower_layer=2,
-                vision_tower_keep_rate=0.5,
-                score_mode="magnitude_norm",
-                score_seed=42,
-                codec_score_source=None,
+            _validator_args(
+                arm_dir,
+                score_mode="codec_grid",
+                codec_score_source="novel_coded",
+                sidecar_dir=sidecar_dir,
+                sidecar_geometry="qwen_merged_groups_v1",
+                allow_dirty_artifact=False,
             )
         )
 
