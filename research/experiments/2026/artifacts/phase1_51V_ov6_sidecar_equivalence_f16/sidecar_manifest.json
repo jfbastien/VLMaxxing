@@ -1,0 +1,179 @@
+{
+  "build_elapsed_s": 74.66659175,
+  "build_started_at": "2026-05-14T03:04:52Z",
+  "entries": [
+    {
+      "codec_extract_s": 27.569155625,
+      "codec_score_source": "novel_coded",
+      "geometry": "qwen_merged_groups_v1",
+      "item_id": "videomme:short:037-2",
+      "path": "research/experiments/2026/artifacts/phase1_51V_ov6_sidecar_equivalence_f16/codec_score_sidecars/qwen_merged_groups_v1/novel_coded/e34f08473652af21/videomme__short__037-2.npz",
+      "projection_write_s": 0.072354208,
+      "score_config_id": "e34f08473652af21",
+      "score_grid_sha256": "17faab938928f129e9c9cd895cafd866e4c1839328a74a1cd4d1157873b410c7",
+      "score_projection_version": 1,
+      "score_shape": [
+        6400
+      ]
+    },
+    {
+      "codec_extract_s": 27.569155625,
+      "codec_score_source": "motion",
+      "geometry": "qwen_merged_groups_v1",
+      "item_id": "videomme:short:037-2",
+      "path": "research/experiments/2026/artifacts/phase1_51V_ov6_sidecar_equivalence_f16/codec_score_sidecars/qwen_merged_groups_v1/motion/e4d00cf83c5a872f/videomme__short__037-2.npz",
+      "projection_write_s": 0.06978175,
+      "score_config_id": "e4d00cf83c5a872f",
+      "score_grid_sha256": "5970d755c891b650b9f56540ee0b508a504a1b6acba5ab12bf7328a97a2e63b6",
+      "score_projection_version": 1,
+      "score_shape": [
+        6400
+      ]
+    },
+    {
+      "codec_extract_s": 27.569155625,
+      "codec_score_source": "residual",
+      "geometry": "qwen_merged_groups_v1",
+      "item_id": "videomme:short:037-2",
+      "path": "research/experiments/2026/artifacts/phase1_51V_ov6_sidecar_equivalence_f16/codec_score_sidecars/qwen_merged_groups_v1/residual/bd6eb958cd084687/videomme__short__037-2.npz",
+      "projection_write_s": 0.065290959,
+      "score_config_id": "bd6eb958cd084687",
+      "score_grid_sha256": "e5b053b0f98e22faa1bdabb12169e7b7a2cca339181dee773cb8483631add2d4",
+      "score_projection_version": 1,
+      "score_shape": [
+        6400
+      ]
+    },
+    {
+      "codec_extract_s": 9.019225916,
+      "codec_score_source": "novel_coded",
+      "geometry": "qwen_merged_groups_v1",
+      "item_id": "videomme:short:100-2",
+      "path": "research/experiments/2026/artifacts/phase1_51V_ov6_sidecar_equivalence_f16/codec_score_sidecars/qwen_merged_groups_v1/novel_coded/e34f08473652af21/videomme__short__100-2.npz",
+      "projection_write_s": 0.060106167,
+      "score_config_id": "e34f08473652af21",
+      "score_grid_sha256": "46cda59cf2a4d034a9c675e8d8f408ba1e3a77925928bdaf3b8fd19eacbdcf72",
+      "score_projection_version": 1,
+      "score_shape": [
+        6400
+      ]
+    },
+    {
+      "codec_extract_s": 9.019225916,
+      "codec_score_source": "motion",
+      "geometry": "qwen_merged_groups_v1",
+      "item_id": "videomme:short:100-2",
+      "path": "research/experiments/2026/artifacts/phase1_51V_ov6_sidecar_equivalence_f16/codec_score_sidecars/qwen_merged_groups_v1/motion/e4d00cf83c5a872f/videomme__short__100-2.npz",
+      "projection_write_s": 0.061850417,
+      "score_config_id": "e4d00cf83c5a872f",
+      "score_grid_sha256": "80f0e0e79754e459504c6bee2659a4dad6a1dee9e558e43e1b82c6a40c8207c7",
+      "score_projection_version": 1,
+      "score_shape": [
+        6400
+      ]
+    },
+    {
+      "codec_extract_s": 9.019225916,
+      "codec_score_source": "residual",
+      "geometry": "qwen_merged_groups_v1",
+      "item_id": "videomme:short:100-2",
+      "path": "research/experiments/2026/artifacts/phase1_51V_ov6_sidecar_equivalence_f16/codec_score_sidecars/qwen_merged_groups_v1/residual/bd6eb958cd084687/videomme__short__100-2.npz",
+      "projection_write_s": 0.060780542,
+      "score_config_id": "bd6eb958cd084687",
+      "score_grid_sha256": "c431f8d557ec83b5a392d0d6a1f66f005266f83704b9a1f9fc4b6009ab419ebd",
+      "score_projection_version": 1,
+      "score_shape": [
+        6400
+      ]
+    },
+    {
+      "codec_extract_s": 18.500236042,
+      "codec_score_source": "novel_coded",
+      "geometry": "qwen_merged_groups_v1",
+      "item_id": "videomme:short:116-3",
+      "path": "research/experiments/2026/artifacts/phase1_51V_ov6_sidecar_equivalence_f16/codec_score_sidecars/qwen_merged_groups_v1/novel_coded/e34f08473652af21/videomme__short__116-3.npz",
+      "projection_write_s": 0.062666792,
+      "score_config_id": "e34f08473652af21",
+      "score_grid_sha256": "9ded85306af8e50ba0edcef8739310aed36a1482fa62480386905532073e1c12",
+      "score_projection_version": 1,
+      "score_shape": [
+        6400
+      ]
+    },
+    {
+      "codec_extract_s": 18.500236042,
+      "codec_score_source": "motion",
+      "geometry": "qwen_merged_groups_v1",
+      "item_id": "videomme:short:116-3",
+      "path": "research/experiments/2026/artifacts/phase1_51V_ov6_sidecar_equivalence_f16/codec_score_sidecars/qwen_merged_groups_v1/motion/e4d00cf83c5a872f/videomme__short__116-3.npz",
+      "projection_write_s": 0.062346041,
+      "score_config_id": "e4d00cf83c5a872f",
+      "score_grid_sha256": "a5fd474cbebc4bab502b7f331220760c3906804b4b9d8afb673c0030dd99187d",
+      "score_projection_version": 1,
+      "score_shape": [
+        6400
+      ]
+    },
+    {
+      "codec_extract_s": 18.500236042,
+      "codec_score_source": "residual",
+      "geometry": "qwen_merged_groups_v1",
+      "item_id": "videomme:short:116-3",
+      "path": "research/experiments/2026/artifacts/phase1_51V_ov6_sidecar_equivalence_f16/codec_score_sidecars/qwen_merged_groups_v1/residual/bd6eb958cd084687/videomme__short__116-3.npz",
+      "projection_write_s": 0.061642125,
+      "score_config_id": "bd6eb958cd084687",
+      "score_grid_sha256": "209e8201a2822c0776dd05c2f67cbb9cce1e7e648b9e000415cf6d1e23260c8c",
+      "score_projection_version": 1,
+      "score_shape": [
+        6400
+      ]
+    }
+  ],
+  "frame_count": 16,
+  "fusion_mode": "weighted",
+  "generated_at": "2026-05-14T03:04:55Z",
+  "geometry": "qwen_merged_groups_v1",
+  "geometry_details": {
+    "canvas_size": 560,
+    "sidecar_shape": "flattened Qwen merged groups",
+    "token_block": 28
+  },
+  "git_commit": "a2d23e913a3da6ee6493b6a78f180722ee9f003f",
+  "git_dirty": false,
+  "git_dirty_scope": "worktree before sidecar build, excluding sidecar output paths",
+  "item_extract_entries": [
+    {
+      "codec_extract_s": 27.569155625,
+      "item_id": "videomme:short:037-2"
+    },
+    {
+      "codec_extract_s": 9.019225916,
+      "item_id": "videomme:short:100-2"
+    },
+    {
+      "codec_extract_s": 18.500236042,
+      "item_id": "videomme:short:116-3"
+    }
+  ],
+  "manifest": "research/benchmark_manifests/videomme_dev_v1_short_only.toml",
+  "manifest_item_ids": [
+    "videomme:short:037-2",
+    "videomme:short:100-2",
+    "videomme:short:116-3"
+  ],
+  "motion_weight": 1.0,
+  "n_items": 3,
+  "n_sidecars": 9,
+  "normalize_fusion_inputs": true,
+  "out_dir": "research/experiments/2026/artifacts/phase1_51V_ov6_sidecar_equivalence_f16/codec_score_sidecars",
+  "projection_write_total_s": 0.5768190009999999,
+  "residual_weight": 1.0,
+  "schema": "ov6_codec_score_sidecar_manifest_v1",
+  "score_projection_version": 1,
+  "sources": [
+    "novel_coded",
+    "motion",
+    "residual"
+  ],
+  "unique_item_extract_total_s": 55.088617583
+}
