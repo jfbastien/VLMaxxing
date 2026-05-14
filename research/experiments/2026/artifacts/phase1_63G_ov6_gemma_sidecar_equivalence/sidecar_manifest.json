@@ -1,0 +1,194 @@
+{
+  "build_elapsed_s": 71.608948417,
+  "build_started_at": "2026-05-14T03:34:18Z",
+  "entries": [
+    {
+      "codec_extract_s": 25.536963458,
+      "codec_score_source": "novel_coded",
+      "geometry": "gemma_prepool_patches_v1",
+      "item_id": "videomme:short:037-2",
+      "path": "research/experiments/2026/artifacts/phase1_63G_ov6_gemma_sidecar_equivalence/codec_score_sidecars/gemma_prepool_patches_v1/novel_coded/78800d62e7abde29/videomme__short__037-2.npz",
+      "projection_write_s": 0.037590625,
+      "score_config_id": "78800d62e7abde29",
+      "score_grid_sha256": "71197b002142eb1ff2969dc1d548adfa9fa575514dd7160b3cd80cce1a27fa39",
+      "score_projection_version": 1,
+      "score_shape": [
+        8,
+        2520
+      ]
+    },
+    {
+      "codec_extract_s": 25.536963458,
+      "codec_score_source": "motion",
+      "geometry": "gemma_prepool_patches_v1",
+      "item_id": "videomme:short:037-2",
+      "path": "research/experiments/2026/artifacts/phase1_63G_ov6_gemma_sidecar_equivalence/codec_score_sidecars/gemma_prepool_patches_v1/motion/c5a318152c1495a5/videomme__short__037-2.npz",
+      "projection_write_s": 0.035631416,
+      "score_config_id": "c5a318152c1495a5",
+      "score_grid_sha256": "f8d04aef8cdb884abfb445953883ae7ace61a07adf83fdd6dd527ed07ee2c0e6",
+      "score_projection_version": 1,
+      "score_shape": [
+        8,
+        2520
+      ]
+    },
+    {
+      "codec_extract_s": 25.536963458,
+      "codec_score_source": "residual",
+      "geometry": "gemma_prepool_patches_v1",
+      "item_id": "videomme:short:037-2",
+      "path": "research/experiments/2026/artifacts/phase1_63G_ov6_gemma_sidecar_equivalence/codec_score_sidecars/gemma_prepool_patches_v1/residual/0fa8566127c0a96a/videomme__short__037-2.npz",
+      "projection_write_s": 0.035858958,
+      "score_config_id": "0fa8566127c0a96a",
+      "score_grid_sha256": "12b06a4a50b099f14c0e02a617d438a1c787d2e12bdefdcc6126bdd1427bec80",
+      "score_projection_version": 1,
+      "score_shape": [
+        8,
+        2520
+      ]
+    },
+    {
+      "codec_extract_s": 8.717783125,
+      "codec_score_source": "novel_coded",
+      "geometry": "gemma_prepool_patches_v1",
+      "item_id": "videomme:short:100-2",
+      "path": "research/experiments/2026/artifacts/phase1_63G_ov6_gemma_sidecar_equivalence/codec_score_sidecars/gemma_prepool_patches_v1/novel_coded/78800d62e7abde29/videomme__short__100-2.npz",
+      "projection_write_s": 0.036786958,
+      "score_config_id": "78800d62e7abde29",
+      "score_grid_sha256": "d8b7d8d8c3cd0e4d79ae9f9c54ec63bc461a7eac15d8794ae50e6619e9a7e68a",
+      "score_projection_version": 1,
+      "score_shape": [
+        8,
+        2520
+      ]
+    },
+    {
+      "codec_extract_s": 8.717783125,
+      "codec_score_source": "motion",
+      "geometry": "gemma_prepool_patches_v1",
+      "item_id": "videomme:short:100-2",
+      "path": "research/experiments/2026/artifacts/phase1_63G_ov6_gemma_sidecar_equivalence/codec_score_sidecars/gemma_prepool_patches_v1/motion/c5a318152c1495a5/videomme__short__100-2.npz",
+      "projection_write_s": 0.03629975,
+      "score_config_id": "c5a318152c1495a5",
+      "score_grid_sha256": "d2a81d78a91f773b338cea92b1a64a2ab1c2b73fc9bf9bffea5ac1a1f34b35d1",
+      "score_projection_version": 1,
+      "score_shape": [
+        8,
+        2520
+      ]
+    },
+    {
+      "codec_extract_s": 8.717783125,
+      "codec_score_source": "residual",
+      "geometry": "gemma_prepool_patches_v1",
+      "item_id": "videomme:short:100-2",
+      "path": "research/experiments/2026/artifacts/phase1_63G_ov6_gemma_sidecar_equivalence/codec_score_sidecars/gemma_prepool_patches_v1/residual/0fa8566127c0a96a/videomme__short__100-2.npz",
+      "projection_write_s": 0.036391666,
+      "score_config_id": "0fa8566127c0a96a",
+      "score_grid_sha256": "1d4617eef473dba105f011ed94569e365cbbe13ceb7352592279b1167d7e6259",
+      "score_projection_version": 1,
+      "score_shape": [
+        8,
+        2520
+      ]
+    },
+    {
+      "codec_extract_s": 18.102901125,
+      "codec_score_source": "novel_coded",
+      "geometry": "gemma_prepool_patches_v1",
+      "item_id": "videomme:short:116-3",
+      "path": "research/experiments/2026/artifacts/phase1_63G_ov6_gemma_sidecar_equivalence/codec_score_sidecars/gemma_prepool_patches_v1/novel_coded/78800d62e7abde29/videomme__short__116-3.npz",
+      "projection_write_s": 0.036123,
+      "score_config_id": "78800d62e7abde29",
+      "score_grid_sha256": "f8383812c473be2e9dc3527be3a3d86712eb198b218cf822653f214ec211a773",
+      "score_projection_version": 1,
+      "score_shape": [
+        8,
+        2520
+      ]
+    },
+    {
+      "codec_extract_s": 18.102901125,
+      "codec_score_source": "motion",
+      "geometry": "gemma_prepool_patches_v1",
+      "item_id": "videomme:short:116-3",
+      "path": "research/experiments/2026/artifacts/phase1_63G_ov6_gemma_sidecar_equivalence/codec_score_sidecars/gemma_prepool_patches_v1/motion/c5a318152c1495a5/videomme__short__116-3.npz",
+      "projection_write_s": 0.036233958,
+      "score_config_id": "c5a318152c1495a5",
+      "score_grid_sha256": "211ae299792421831e03f20a7df5dcba726bf6833b68c61c0039a1029fb02a93",
+      "score_projection_version": 1,
+      "score_shape": [
+        8,
+        2520
+      ]
+    },
+    {
+      "codec_extract_s": 18.102901125,
+      "codec_score_source": "residual",
+      "geometry": "gemma_prepool_patches_v1",
+      "item_id": "videomme:short:116-3",
+      "path": "research/experiments/2026/artifacts/phase1_63G_ov6_gemma_sidecar_equivalence/codec_score_sidecars/gemma_prepool_patches_v1/residual/0fa8566127c0a96a/videomme__short__116-3.npz",
+      "projection_write_s": 0.036480834,
+      "score_config_id": "0fa8566127c0a96a",
+      "score_grid_sha256": "a6d75760a74ce5ecc4d73221a786cee6d13f7536a6e4172edab95856e26810a6",
+      "score_projection_version": 1,
+      "score_shape": [
+        8,
+        2520
+      ]
+    }
+  ],
+  "frame_count": 8,
+  "fusion_mode": "weighted",
+  "generated_at": "2026-05-14T03:34:21Z",
+  "geometry": "gemma_prepool_patches_v1",
+  "geometry_details": {
+    "canvas_size": 768,
+    "max_patches": 2520,
+    "padding_policy": "zero-score padded patches; runtime excludes [-1,-1] positions",
+    "patch_grid_shape": [
+      48,
+      48
+    ],
+    "real_patches_per_frame": 2304,
+    "token_block": 16
+  },
+  "git_commit": "0ca76335828900fc9d15f0836aab542f93f95366",
+  "git_dirty": false,
+  "git_dirty_scope": "worktree before sidecar build, excluding sidecar output paths",
+  "item_extract_entries": [
+    {
+      "codec_extract_s": 25.536963458,
+      "item_id": "videomme:short:037-2"
+    },
+    {
+      "codec_extract_s": 8.717783125,
+      "item_id": "videomme:short:100-2"
+    },
+    {
+      "codec_extract_s": 18.102901125,
+      "item_id": "videomme:short:116-3"
+    }
+  ],
+  "manifest": "research/benchmark_manifests/videomme_dev_v1_short_only.toml",
+  "manifest_item_ids": [
+    "videomme:short:037-2",
+    "videomme:short:100-2",
+    "videomme:short:116-3"
+  ],
+  "motion_weight": 1.0,
+  "n_items": 3,
+  "n_sidecars": 9,
+  "normalize_fusion_inputs": true,
+  "out_dir": "research/experiments/2026/artifacts/phase1_63G_ov6_gemma_sidecar_equivalence/codec_score_sidecars",
+  "projection_write_total_s": 0.32739716500000005,
+  "residual_weight": 1.0,
+  "schema": "ov6_codec_score_sidecar_manifest_v1",
+  "score_projection_version": 1,
+  "sources": [
+    "novel_coded",
+    "motion",
+    "residual"
+  ],
+  "unique_item_extract_total_s": 52.357647708
+}
