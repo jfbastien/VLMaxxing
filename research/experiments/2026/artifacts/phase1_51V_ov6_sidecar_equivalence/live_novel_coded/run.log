@@ -1,0 +1,1 @@
+benchmark runs require a clean git tree; commit or stash changes, or rerun with --allow-dirty
