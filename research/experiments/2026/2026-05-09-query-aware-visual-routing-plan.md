@@ -194,8 +194,10 @@ Local preliminary facts, all reproduced here:
   slice, `moving_attribute` stayed at dense accuracy `0.833`, composed accuracy
   `0.333`, and `Delta acc = -0.50` in a `keep_rate=1.0` diagnostic bracket.
   On the disjoint holdout slice, however, `moving_attribute` was clean at the
-  base `keep_rate=0.5`. The failure is item/content-class variance, not proof
-  that the whole bucket is deterministically unrecoverable.
+  base `keep_rate=0.5`, and the later holdout bracket with
+  `moving_attribute=1.0` landed dense `0.500`, composed `0.667`, delta
+  `+0.167` on n=6. The failure is item/content-class variance, not proof that
+  the whole bucket is deterministically unrecoverable.
 
 Important correction from the 2026-05-10 peer review: the dev
 `moving_attribute` `keep_rate=1.0` bracket is **not** a clean full-stack
@@ -219,12 +221,13 @@ the same scorer." It should be "plan the visual evidence from the query."
 
 Round-20 also means some obvious falsification work is partially done. We have
 already run disjoint holdout replication and a dev-slice `moving_attribute`
-full-C-VISION diagnostic bracket, but the bracket is not a clean full-stack
-oracle because prompt admission remained thresholded. The next branch should
-first audit the harness and run an instrumented oracle-K probe, then move to
-matched-budget operator ablations: static-detail floors, endpoint anchors,
-fixed coverage, random coverage, duplication-aware coverage, and one scalar
-query-aware comparator.
+full-C-VISION diagnostic bracket plus a disjoint holdout bracket. Those rows
+are boundary probes, not powered bucket claims: the dev slice failed badly,
+the holdout slice did not, and pooled rescue remains negative. The next branch
+should first audit the harness and run an instrumented oracle-K probe, then
+move to matched-budget operator ablations: static-detail floors, endpoint
+anchors, fixed coverage, random coverage, duplication-aware coverage, and one
+scalar query-aware comparator.
 
 Relevant local source files:
 
@@ -1637,6 +1640,10 @@ Commit `86033d5` (`feat(query-routing): add Q0b and Q1 experiment queue`)
 implemented all Q0b/Q1 infrastructure but is **dormant pending the
 VLMaxxing+RLT closeout**. The closeout readiness audit lives at
 `research/experiments/2026/2026-05-14-vlmaxxing-rlt-closeout-prereg.md`.
+The executable local launch surface is
+`scripts/run_rlt_query_routing_first_branch.sh`; it intentionally runs only
+Q0b/Q1 and stops before QuoTA-style scalar allocation, repair, and cost-model
+calibration.
 
 When this branch is forked off as paper #2, the following work from
 paper #1 closeout transfers for free:
@@ -1671,8 +1678,9 @@ paper #1 closeout transfers for free:
 - **MVBench `kr=0.85` bucket-rescue policy is paper #1 only.** Round-19/20
   established a bucket-conditional RLT result: `object_interaction` is
   recoverable at kr=0.85, dev `moving_attribute` still fails at kr=1.0, holdout
-  `moving_attribute` is clean under rescue, and pooled rescue remains
-  negative on `moving_attribute`. The query-aware operators (`static-floor`,
+  `moving_attribute` is clean under rescue and favorable in the kr=1.0 holdout
+  bracket, and pooled rescue remains negative on `moving_attribute`. The
+  query-aware operators (`static-floor`,
   `endpoint-anchor`, `identity-anchor`, `query-budget`) must earn their own kr
   assignments on Q1 data; do not default to 0.85.
 - **The 1.842× MVBench composition E2E frontier is locked to RLT.**

@@ -42,49 +42,31 @@ matched-budget controls.
 Autonomous local launch, MVBench-first:
 
 ```bash
-.venv/bin/python scripts/run_rlt_followup_queue.py \
-  --run-cvision-rlt \
-  --run-query-routing-q0b \
-  --run-query-routing-q1 \
-  --query-routing-benchmarks mvbench
+scripts/run_rlt_query_routing_first_branch.sh
 ```
 
 Broader local sweep after MVBench survives:
 
 ```bash
-.venv/bin/python scripts/run_rlt_followup_queue.py \
-  --run-cvision-rlt \
-  --run-query-routing-q0b \
-  --run-query-routing-q1 \
-  --query-routing-benchmarks mvbench,tomato,videomme \
-  --max-planned-hours 80
+QUERY_ROUTING_BENCHMARKS=mvbench,tomato,videomme \
+  scripts/run_rlt_query_routing_first_branch.sh --max-planned-hours 80
 ```
 
 Local M3 setup is the same paper setup used for the Round-17 through Round-20
 Gemma experiments: `$HOME/models/gemma-4-e4b-it-4bit` with 8 frames and
 Gemma 4 E4B / mlx-vlm. The local model directory was confirmed on 2026-05-14.
 
-M5 is scale confirmation, not discovery. Use the same paper model/setup if it
-exists on Sam's M5, or pass an explicitly verified equivalent Gemma paper-model
-path after a one-item smoke. Do not assume another user's home directory or
-switch families/models for this paper-closeout run.
+M5 is not the first query-routing discovery machine. The first paper-2 branch
+should run on the same local E4B substrate first, because Q0b/Q1 are
+publish-or-kill diagnostics rather than a scale-confirmation result. If Q0b/Q1
+survive on M3 and a later M5 replication is desired, use the same wrapper with
+`GEMMA_MODEL_PATH` set to Sam's verified local Gemma-family model directory and
+record the exact model id/config in the run note. Do not assume another user's
+home directory and do not switch model families for this paper.
 
-```bash
-.venv/bin/python scripts/run_rlt_followup_queue.py \
-  --gemma-model-path "$HOME/models/gemma-4-e4b-it-4bit" \
-  --mlx-memory-limit-gb 60 \
-  --rss-guard-mb 60000 \
-  --run-cvision-rlt \
-  --run-query-routing-q0b \
-  --run-query-routing-q1 \
-  --query-routing-benchmarks mvbench
-```
-
-Before the M5 command, run a one-item smoke to verify model path, model type,
-encoder grid, schema fields, timing fields, and memory headroom. The queue is
-portable (`$HOME` model paths in summaries), but it does not know Sam's exact
-model directory; if the path differs, set `--gemma-model-path` to Sam's verified
-local directory and record that path in the run note.
+The separate VLMaxxing+RLT M5 scale-confirmation queue is
+`scripts/run_rlt_m5_scale_confirmation.sh`; it intentionally does not pass
+query-routing flags.
 
 ## New infrastructure
 

@@ -132,17 +132,26 @@ Facts:
 - Holdout `moving_attribute` is clean under the rescue policy at `kr=0.85`:
   dense `0.500`, composed `0.500`, delta `0.00` on n=6.
 - Pooled rescue still shows `moving_attribute` delta `-0.25` on n=12.
+- The optional holdout bracket has now been run:
+  `research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_holdout_mvbench_moving_attribute_kr100_analysis.json`.
+  It lands aggregate E2E `1.438x` with accuracy delta `0.000`, and its
+  `moving_attribute` row is favorable: dense `0.500`, composed `0.667`,
+  delta `+0.167` on n=6. The preregistered falsifier (`delta < -0.30`) was not
+  hit. The bucket gate failure is instead `action_localization`, where one item
+  flips at the default `kr=0.5`.
 
-Decision: the right statement is content-class variance with an item-specific
-failure mode, not a universal structural failure. This remains a strong seed
-for query-aware visual routing, but it should not become a deterministic claim
-inside the VLMaxxing + RLT paper.
+Decision: the right statement is that the dev `moving_attribute` failure did
+not replicate on this disjoint holdout slice. Because the decisive subgroup is
+only n=6, do not overclaim "not structural" as a settled population fact. This
+remains a strong seed for query-aware visual routing, but it should not become
+a deterministic claim inside the VLMaxxing + RLT paper.
 
 ## Optional M3 Work
 
-No mandatory M3 experiments remain for the VLMaxxing + RLT closeout. The only
-optional M3 cell worth keeping executable is the holdout version of the
-MVBench moving_attribute bracket, now exposed as:
+No mandatory M3 experiments remain for the VLMaxxing + RLT closeout. The
+holdout version of the MVBench moving_attribute bracket was the only optional
+cell, and it has now run. The executable path remains available for
+reproduction:
 
 ```bash
 .venv/bin/python scripts/run_rlt_followup_queue.py \
@@ -150,17 +159,9 @@ MVBench moving_attribute bracket, now exposed as:
   --run-moving-attribute-holdout-bracket
 ```
 
-Hypothesis: if the dev failure is slice-specific, then the holdout
-`moving_attribute` by-group row remains near delta `0.00` even when
-`moving_attribute=1.0` and `object_interaction=0.85`.
-
-Falsifier: holdout `moving_attribute` delta below `-0.30`. That would strengthen
-the future query-aware paper motivation and require the VLMaxxing + RLT paper
-to state the `moving_attribute` caveat more strongly.
-
-This cell is optional because the n=60 pooled rescue analysis already provides
-the paper-facing aggregate result. Run it only if the editor wants a cleaner
-appendix paragraph about the `moving_attribute` failure boundary.
+Result: falsifier not hit; holdout `moving_attribute` delta `+0.167`.
+Scientific status: appendix-level boundary probe, not a powered bucket-level
+claim.
 
 ## M5 Scope
 
@@ -174,14 +175,7 @@ Recommended M5 command shape:
 
 ```bash
 export GEMMA_MODEL_PATH=/path/to/sams/gemma-4-26b-a4b-it-mlx-model
-.venv/bin/python scripts/run_rlt_followup_queue.py \
-  --gemma-model-path "$GEMMA_MODEL_PATH" \
-  --mlx-memory-limit-gb 60 \
-  --run-cvision-rlt \
-  --run-cvision-expansion \
-  --run-max-min-triangulation \
-  --run-magnitude-valid-head-to-head \
-  --artifact-dir research/experiments/2026/artifacts/rlt_followup_queue_m5_gemma4_26b
+scripts/run_rlt_m5_scale_confirmation.sh
 ```
 
 M5 hypotheses:
@@ -200,18 +194,21 @@ replication. Those are either paper #2 work or already covered on M3.
 
 ## Paper Narrative Recommendation
 
-The paper is strongest if it presents C-CEILING as methodology rather than a
-third equal systems contribution. The systems contributions are:
+The paper is strongest if it presents C-CEILING as a co-primary methodology
+contribution rather than a background detail. The two mechanism contributions
+are:
 
 1. **C-VISION:** real vision-tower work skipped with scatter-back, with RLT as
    a cheap redundancy scorer and measured keep-rate / scorer-cost controls.
 2. **C-PERSIST:** persistent KV reuse for same-video follow-up regimes, with
    explicit drift envelopes.
 
-C-CEILING is the ruler that makes both claims credible. It explains why
-VideoMME, TOMATO, and MVBench have different E2E gains, why direct composition
-does not multiply cleanly, and why holdout replication should be pooled rather
-than cherry-picked.
+C-CEILING is the ruler that makes both mechanism claims credible, and that
+ruler is itself a contribution because the VLM-efficiency literature often
+reports component savings without the denominator discipline needed to predict
+user-facing speed. It explains why VideoMME, TOMATO, and MVBench have different
+E2E gains, why direct composition does not multiply cleanly, and why holdout
+replication should be pooled rather than cherry-picked.
 
 Recommended editor-facing wording:
 
@@ -230,9 +227,8 @@ The query-aware paper should reuse the lessons above but not inherit the
 headline numbers. In particular:
 
 - Treat MVBench `moving_attribute` as a motivation for typed evidence
-  operators, not as a solved failure.
+  operators, not as a solved or universal failure.
 - Reuse Qwen random-keep artifacts only as a historical baseline; Q1 must
   produce its own fixed/random controls under the query-aware operator ledger.
 - Reuse C-CEILING features for H5a cost-model training, but keep query-aware
   conclusions tied to query-aware artifacts.
-
