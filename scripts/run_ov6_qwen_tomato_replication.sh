@@ -80,8 +80,9 @@ run_arm() {
   shift 1
   local arm_dir="$OUT_DIR/$label"
   if [[ -f "$arm_dir/summary.json" || -f "$arm_dir/results.jsonl" ]]; then
-    if validate_arm "$label" "$@" >/dev/null; then
+    if validate_arm "$label" "$@" --allow-dirty-artifact >/dev/null; then
       echo "[ov6-tomato] === arm=$label SKIP (validated existing artifact) ==="
+      commit_path "exp(ov6): tomato arm=$label (resume)" "$arm_dir"
       return 0
     fi
     echo "[ov6-tomato] === arm=$label existing artifact failed validation ===" >&2
