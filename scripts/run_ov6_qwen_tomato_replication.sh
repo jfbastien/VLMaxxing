@@ -102,6 +102,7 @@ run_arm() {
     --max-tokens "$MAX_TOKENS" \
     --output "$arm_dir/results.jsonl" \
     --summary "$arm_dir/summary.json" \
+    --allow-dirty \
     "${EXTRA_RUN_ARGS[@]}" \
     "$@" \
     2>&1 | tee "$arm_dir/run.log"

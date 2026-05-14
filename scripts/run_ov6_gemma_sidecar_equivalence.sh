@@ -115,6 +115,7 @@ run_arm() {
     --rss-guard-mb "$RSS_GUARD_MB" \
     --output "$arm_dir/results.jsonl" \
     --summary "$arm_dir/summary.json" \
+    --allow-dirty \
     "$@" \
     2>&1 | tee "$arm_dir/run.log"
   validate_arm "$label" "$@"
