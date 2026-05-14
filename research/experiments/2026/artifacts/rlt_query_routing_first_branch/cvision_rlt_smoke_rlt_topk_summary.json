@@ -1,0 +1,63 @@
+{
+  "dense_accuracy": 1.0,
+  "dense_parse_failures": 0,
+  "final_rss_mb": 4985.9375,
+  "frame_count": 8,
+  "manifest": "research/benchmark_manifests/videomme_dev_v1.toml",
+  "max_tokens": 32,
+  "mean_decode_ms": 48696.155,
+  "mean_dense_end_to_end_ms": 55489.178917,
+  "mean_dense_generate_ms": 4867.786375,
+  "mean_dense_generation_tokens": 2.0,
+  "mean_dense_generation_tps": 54.569018972877586,
+  "mean_dense_multimodal_prefill_ms": 4816.632625,
+  "mean_dense_prompt_tokens": 1014.0,
+  "mean_dense_prompt_tps": 263.48557636805515,
+  "mean_dense_text_generation_ms": 51.15374999999949,
+  "mean_dense_vision_excluding_scorer_ms": 1881.049167,
+  "mean_dense_vision_ms": 1881.666,
+  "mean_effective_keep_rate": 0.5,
+  "mean_kept_groups": 4096.0,
+  "mean_peak_memory_gb": 6.981404312,
+  "mean_processor_ms": 22.493542,
+  "mean_scorer_keep_mask_ms": 0.616833,
+  "mean_scorer_prepare_ms": 21.078,
+  "mean_scorer_total_ms": 21.694833,
+  "mean_total_groups": 8192.0,
+  "mlx_memory_limit_gb": 12.0,
+  "model_path": "/Users/jfb/models/gemma-4-e4b-it-4bit",
+  "n_frames": 8,
+  "n_items": 1,
+  "rlt_config": {
+    "first_tubelet_mode": "full_grid",
+    "grid_shape": [
+      14,
+      14
+    ],
+    "grid_shape_source": "patch_size",
+    "image_size": [
+      224,
+      224
+    ],
+    "normalize_mode": "imagenet",
+    "ordering": "time_major",
+    "patch_size": 16,
+    "pixel_scale": "uint8",
+    "threshold": 0.1,
+    "tubelet_size": 2,
+    "window_min_keep": 1
+  },
+  "rss_guard_mb": 9000,
+  "schema_version": "phase1_63g_gemma_track_b_v5",
+  "vision_tower_keep_rate": 0.5,
+  "vision_tower_layer": 2,
+  "vision_tower_patched": true,
+  "vision_tower_score_mode": "rlt_topk",
+  "warmup_groups": [
+    "long"
+  ],
+  "warmup_item_ids": [
+    "videomme:long:669-1"
+  ],
+  "warmup_items": 3
+}
