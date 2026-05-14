@@ -9,13 +9,8 @@ from types import ModuleType
 
 import pytest
 
-from tests._mlx_probe import mlx_is_usable
-
-if not mlx_is_usable():
-    pytest.skip(
-        "mlx.core not usable on this host (import or Metal-init fails); see tests/_mlx_probe.py",
-        allow_module_level=True,
-    )
+if sys.platform != "darwin":
+    pytest.skip("MLX tests require macOS/Darwin", allow_module_level=True)
 
 RUNNER_PATH = Path(__file__).resolve().parents[1] / "scripts" / "run_benchmark_track_a.py"
 RUNNER_MODULE_NAME = "_videomme_runner_under_test"

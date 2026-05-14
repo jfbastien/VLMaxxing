@@ -281,11 +281,10 @@ def test_bframe_bidirectional_residual_differs_from_pframe_threshold(
         )
         break
 
-    if not saw_b:
-        pytest.skip(
-            "libx264 did not emit B-frames despite -bf 3; environment-dependent. "
-            "Run with a libx264 build that honors the bf option to exercise this path."
-        )
+    assert saw_b, (
+        "libx264 did not emit B-frames despite -bf 3; the fixture must exercise "
+        "the bidirectional residual path instead of silently skipping it"
+    )
 
 
 def test_iter_frames_is_reentrant(black_clip: Path) -> None:
