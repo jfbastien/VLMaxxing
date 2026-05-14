@@ -341,10 +341,26 @@ run must have a gate and a falsifier; no open-ended sweeps on either machine.
    Useful but secondary. It tightens the dense instability caveat; it does
    not replace Track B or the codec extraction question.
 
+6. **Open: Track A (OV-3) pooled calibration on Gemma** (not wired)
+   Phase 4 established calibration-free refresh oracle on Qwen with Wilson
+   lower 0.91 on codec->dense agreement. The OV-3 runner
+   (`scripts/run_phase1_29_planner_accuracy_probe.py`) is hard-coupled to
+   Qwen 2.5-VL geometry ("Qwen grid count mismatch" check, Qwen-only
+   prefill/reuse plumbing). If the refresh oracle is truly
+   vision-tower-family-agnostic, a Gemma OV-3 confirmation would widen the
+   claim from "Qwen-specific calibration oracle" to "family-agnostic
+   refresh oracle". This is a real implementation lift (Gemma SigLIP has
+   different active-box semantics), not a few-hour wire-up. Recommended
+   only after the M5 OV-6 confirmations land; otherwise it expands
+   surface area without confirmed payoff. The query-aware synergy note
+   already records that the sidecar contract makes this kind of
+   cross-family experiment cheaper if/when it is undertaken.
+
 Verification status of this packet: direct no-UV checks pass at the current
-HEAD (`ruff format --check .`, `ruff check .`, `mypy src tests`, full pytest,
-and artifact integrity). A mypy variance bug in the sidecar test file was fixed
-in this pass.
+HEAD (`ruff format --check .`, `ruff check .`, `mypy src tests`,
+`pytest` 327 passed, and artifact integrity). MLX-using tests now hard-fail
+on Darwin instead of silently skipping (`599e303`); a mypy variance bug in
+the sidecar test file was fixed in `a30aba5`.
 
 ## Follow-up Sweep (Preregistered, 4 Phases)
 
