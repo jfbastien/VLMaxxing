@@ -1,3 +1,5 @@
+# ruff: noqa: E402
+
 from __future__ import annotations
 
 import sys
@@ -8,7 +10,12 @@ import numpy as np
 import pytest
 from PIL import Image
 
-if sys.platform != "darwin":
+
+def _is_darwin() -> bool:
+    return sys.platform == "darwin"
+
+
+if not _is_darwin():
     pytest.skip("MLX tests require macOS/Darwin", allow_module_level=True)
 
 import mlx.core as mx

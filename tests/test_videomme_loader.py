@@ -9,7 +9,12 @@ from types import ModuleType
 
 import pytest
 
-if sys.platform != "darwin":
+
+def _is_darwin() -> bool:
+    return sys.platform == "darwin"
+
+
+if not _is_darwin():
     pytest.skip("MLX tests require macOS/Darwin", allow_module_level=True)
 
 RUNNER_PATH = Path(__file__).resolve().parents[1] / "scripts" / "run_benchmark_track_a.py"

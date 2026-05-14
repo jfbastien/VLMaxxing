@@ -1,3 +1,5 @@
+# ruff: noqa: E402
+
 """CPU tests for the codec_grid score path in qwen_pruned_vision_tower.
 
 These tests cover the parts of the pruner that do not require MLX: the
@@ -15,7 +17,12 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-if sys.platform != "darwin":
+
+def _is_darwin() -> bool:
+    return sys.platform == "darwin"
+
+
+if not _is_darwin():
     pytest.skip("MLX tests require macOS/Darwin", allow_module_level=True)
 
 import mlx.core as mx
