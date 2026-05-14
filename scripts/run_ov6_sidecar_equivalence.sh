@@ -116,6 +116,7 @@ run_arm() {
     --max-tokens "$MAX_TOKENS" \
     --output "$arm_dir/results.jsonl" \
     --summary "$arm_dir/summary.json" \
+    --allow-dirty \
     "$@" \
     2>&1 | tee "$arm_dir/run.log"
   validate_arm "$label" "$@"
