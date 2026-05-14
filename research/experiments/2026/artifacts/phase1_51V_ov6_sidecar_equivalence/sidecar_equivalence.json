@@ -1,0 +1,49 @@
+{
+  "falsification": "any drift, missing runtime-source provenance, or sidecar load >= 1s/item",
+  "gate": "zero choice/correctness/kept-count drift for every source; live runtime source is live_pyav; sidecar runtime source is sidecar; sidecar load < 1s/item and below live extraction time.",
+  "gate_pass": true,
+  "hypothesis": "Precomputed H.264 score sidecars preserve live-PyAV codec-grid behavior while moving extraction cost outside model-run timing.",
+  "pairs": {
+    "motion": {
+      "choice_drift": 0,
+      "correctness_drift": 0,
+      "kept_count_drift": 0,
+      "kept_groups_per_frame_drift": 0,
+      "live_extract_mean_s_per_item": 17.371777319333333,
+      "live_runtime_source": "live_pyav",
+      "n_items": 3,
+      "sidecar_faster_than_live_extract": true,
+      "sidecar_load_mean_s_per_item": 0.0009714583333333333,
+      "sidecar_load_under_1s": true,
+      "sidecar_runtime_source": "sidecar"
+    },
+    "novel_coded": {
+      "choice_drift": 0,
+      "correctness_drift": 0,
+      "kept_count_drift": 0,
+      "kept_groups_per_frame_drift": 0,
+      "live_extract_mean_s_per_item": 16.810178652666668,
+      "live_runtime_source": "live_pyav",
+      "n_items": 3,
+      "sidecar_faster_than_live_extract": true,
+      "sidecar_load_mean_s_per_item": 0.0017377083333333333,
+      "sidecar_load_under_1s": true,
+      "sidecar_runtime_source": "sidecar"
+    },
+    "residual": {
+      "choice_drift": 0,
+      "correctness_drift": 0,
+      "kept_count_drift": 0,
+      "kept_groups_per_frame_drift": 0,
+      "live_extract_mean_s_per_item": 19.544532361333335,
+      "live_runtime_source": "live_pyav",
+      "n_items": 3,
+      "sidecar_faster_than_live_extract": true,
+      "sidecar_load_mean_s_per_item": 0.0015027219999999997,
+      "sidecar_load_under_1s": true,
+      "sidecar_runtime_source": "sidecar"
+    }
+  },
+  "root": "research/experiments/2026/artifacts/phase1_51V_ov6_sidecar_equivalence",
+  "schema": "ov6_sidecar_equivalence_v1"
+}
