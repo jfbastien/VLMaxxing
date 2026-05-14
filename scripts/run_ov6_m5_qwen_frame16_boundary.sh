@@ -29,7 +29,8 @@ mkdir -p "$OUT_DIR"
   --root "$EQUIV_ROOT" \
   --geometry qwen_merged_groups_v1 \
   --frame-count "$FRAME_COUNT" \
-  --sources "${SOURCES[@]}"
+  --sources "${SOURCES[@]}" \
+  --allow-historical-commit
 
 if [[ ! -f "$SIDECAR_MANIFEST" ]]; then
   "${PY}" scripts/build_ov6_codec_score_sidecars.py \

@@ -166,7 +166,10 @@ ROWS = (
             "Follow-up controls: random beats magnitude on 4/4 Qwen seeds at "
             "kr=0.5/layer=2; Gemma N=10 codec_novel_coded smoke is 6/10 vs "
             "magnitude 4/10; TOMATO motion remains low-headroom with codec_novel_coded "
-            "5/30 vs magnitude 4/30."
+            "5/30 vs magnitude 4/30. Sidecar equivalence gates: Qwen 8f, "
+            "Qwen 16f, and Gemma 8f all have zero choice/correctness/kept-count "
+            "drift; H.264 score loading drops from 16.8-23.8s/item live PyAV "
+            "to 0.001-0.005s/item sidecar load."
         ),
         target_to_beat=(
             "promote only as bounded point-estimate evidence: cross-family and "
@@ -181,7 +184,10 @@ ROWS = (
             "onevision_vlmaxxing_plan/ov6_track_b_statistical_audit.json; follow-up "
             "artifacts in phase1_51V_ov6_random_multiseed/, "
             "phase1_63G_ov6_gemma_codec_smoke/, and "
-            "phase1_51V_ov6_tomato_motion_kr070_l2/ with TOMATO statistical_audit.json"
+            "phase1_51V_ov6_tomato_motion_kr070_l2/ with TOMATO statistical_audit.json; "
+            "sidecar gates in phase1_51V_ov6_sidecar_equivalence/, "
+            "phase1_51V_ov6_sidecar_equivalence_f16/, and "
+            "phase1_63G_ov6_gemma_sidecar_equivalence/"
         ),
         planned_gate=(
             "M3 follow-up gates completed; M5 is for broader confirmation only after "

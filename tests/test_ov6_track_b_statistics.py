@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import json
+from argparse import Namespace
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 
+import scripts.validate_ov6_codec_score_sidecars as validate_sidecar_module
 from codec_through.codec.score_sidecar import SCORE_SIDECAR_PROJECTION_VERSION, score_config_id
 from scripts.analyze_ov6_qwen_random_multiseed import analyze as analyze_random_multiseed
 from scripts.analyze_ov6_tomato_motion import analyze as analyze_tomato_motion
@@ -214,6 +216,108 @@ def test_ov6_tomato_motion_audit_reports_boundary_gate(tmp_path: Path) -> None:
     paired = payload["paired_comparisons"]["codec_novel_coded_vs_magnitude_norm"]
     assert paired["candidate_correct_baseline_wrong"] == 2
     assert paired["candidate_wrong_baseline_correct"] == 1
+
+
+def test_ov6_tomato_motion_audit_blocks_promotion_when_dense_is_weak(
+    tmp_path: Path,
+) -> None:
+    rows_dense = [
+        ("a", True, 0),
+        ("b", True, 1),
+        ("c", True, 2),
+        ("d", False, 3),
+        ("e", False, 0),
+        ("f", False, 1),
+        ("g", False, 2),
+        ("h", False, 3),
+        ("i", False, 0),
+    ]
+    rows_sparse_tie = [
+        ("a", True, 0),
+        ("b", True, 1),
+        ("c", True, 2),
+        ("d", False, 3),
+        ("e", False, 0),
+        ("f", False, 1),
+        ("g", False, 2),
+        ("h", False, 3),
+        ("i", False, 0),
+    ]
+    rows_sparse_floor = [
+        ("a", True, 0),
+        ("b", False, 1),
+        ("c", False, 2),
+        ("d", False, 3),
+        ("e", False, 0),
+        ("f", False, 1),
+        ("g", False, 2),
+        ("h", False, 3),
+        ("i", False, 0),
+    ]
+
+    _write_arm(tmp_path / "dense", rows=rows_dense)
+    _write_arm(tmp_path / "magnitude_norm", rows=rows_sparse_tie)
+    _write_arm(tmp_path / "uniform_random", rows=rows_sparse_floor)
+    _write_arm(tmp_path / "codec_novel_coded", rows=rows_sparse_tie, codec_extract_s=1.5)
+    _write_arm(tmp_path / "codec_motion", rows=rows_sparse_floor, codec_extract_s=1.5)
+    _write_arm(tmp_path / "codec_residual", rows=rows_sparse_floor, codec_extract_s=1.5)
+
+    payload = analyze_tomato_motion(tmp_path)
+
+    assert payload["gate_status"]["codec_novel_coded_ge_magnitude_norm"] is True
+    assert payload["gate_status"]["best_sparse_within_one_of_dense"] is True
+    assert payload["gate_status"]["best_sparse_above_previous_floor"] is True
+    assert payload["gate_status"]["dense_is_weak"] is True
+    assert payload["gate_status"]["promotion_gate_pass"] is False
+    assert payload["gate_status"]["falsified"] is True
+
+
+def test_sidecar_commit_validator_accepts_clean_ancestor_when_enabled(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        validate_sidecar_module,
+        "_is_ancestor_commit",
+        lambda ancestor, descendant: ancestor == "old" and descendant == "head",
+    )
+    args = Namespace(allow_dirty=False, allow_historical_commit=True)
+
+    validate_sidecar_module._validate_commit(
+        "old",
+        current_commit="head",
+        field="git_commit",
+        args=args,
+    )
+
+
+def test_sidecar_commit_validator_rejects_stale_commit_without_historical_flag(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(validate_sidecar_module, "_is_ancestor_commit", lambda *_: True)
+    args = Namespace(allow_dirty=False, allow_historical_commit=False)
+
+    with pytest.raises(ValueError, match="git_commit mismatch"):
+        validate_sidecar_module._validate_commit(
+            "old",
+            current_commit="head",
+            field="git_commit",
+            args=args,
+        )
+
+
+def test_sidecar_commit_validator_rejects_non_ancestor_historical_commit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(validate_sidecar_module, "_is_ancestor_commit", lambda *_: False)
+    args = Namespace(allow_dirty=False, allow_historical_commit=True)
+
+    with pytest.raises(ValueError, match="not an ancestor"):
+        validate_sidecar_module._validate_commit(
+            "side",
+            current_commit="head",
+            field="git_commit",
+            args=args,
+        )
 
 
 def test_track_b_artifact_validator_rejects_stale_config(tmp_path: Path) -> None:
