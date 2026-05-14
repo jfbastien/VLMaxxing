@@ -1,10 +1,17 @@
+# ruff: noqa: E402
+
 import sys
 from types import SimpleNamespace
 
 import numpy as np
 import pytest
 
-if sys.platform != "darwin":
+
+def _is_darwin() -> bool:
+    return sys.platform == "darwin"
+
+
+if not _is_darwin():
     pytest.skip("MLX tests require macOS/Darwin", allow_module_level=True)
 
 import mlx.core as mx
