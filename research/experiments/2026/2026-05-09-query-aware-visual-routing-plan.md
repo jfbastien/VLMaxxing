@@ -1630,3 +1630,81 @@ moving_attribute as the first stress test, not as the only target.
 ```
 
 If that lands, the research direction is strong enough for its own paper.
+
+## Synergies With VLMaxxing+RLT Closeout (2026-05-14)
+
+Commit `86033d5` (`feat(query-routing): add Q0b and Q1 experiment queue`)
+implemented all Q0b/Q1 infrastructure but is **dormant pending the
+VLMaxxing+RLT closeout**. The closeout readiness audit lives at
+`research/experiments/2026/2026-05-14-vlmaxxing-rlt-closeout-prereg.md`.
+
+When this branch is forked off as paper #2, the following work from
+paper #1 closeout transfers for free:
+
+- **Q0b/Q1 supervisor flags + analyzer contract.** `--run-query-routing-q0b`
+  and `--run-query-routing-q1` are wired in `scripts/run_rlt_followup_queue.py`.
+  Analyzer hard-fails on missing placeholder/encoder ledgers in
+  `scripts/analyze_gemma_full_composition.py`. The queue enforces
+  Q1-waits-for-Q0b in `scripts/run_rlt_followup_queue.py`.
+- **Operator arithmetic.** `src/codec_through/query_routing.py` (deterministic
+  `static_floor_indices`, `fixed_uniform_mask`, `random_valid_mask_for_positions`,
+  `rlt_static_floor_mask`, `endpoint_anchor_budget`) with comprehensive tests
+  at `tests/test_query_routing_ops.py`.
+- **Encoder/placeholder dual-ledger fields.** Rows now report
+  `gemma_encoder_valid_positions_per_frame`, `gemma_encoder_kept_per_frame`,
+  `dense_placeholder_count`, `pruned_placeholder_count`,
+  `placeholder_prune_bypassed`. Q0b cells also patch C-VISION at
+  `kr=1.0` for true oracle accounting (commit 86033d5 runner extension).
+- **Thermal-stability gates from existing C-VISION holdouts.** Paper #1
+  established paired-arm drift gates and advisory/clean footnotes on the
+  1.51V holdout rows. Adopt the same decode-drift reporting for query-routing
+  operator comparisons, especially when kr sweeps span 0.5 -> 1.0.
+- **Cost-model training rows from existing paper #1 artifacts.** Paper #1
+  already has V-only holdout rows, Qwen multi-seed random-keep rows, RLT
+  composition rows, and dense-anchored C-PERSIST rows. These are useful
+  historical training examples for H5a's linear cost model (per-row features:
+  vision_reduction, scorer_cost_ms, placeholder_reduction; outcome: measured
+  E2E). Treat them as background calibration rows, not as query-aware evidence.
+
+### What paper #2 must NOT inherit from paper #1
+
+- **MVBench `kr=0.85` bucket-rescue policy is paper #1 only.** Round-19/20
+  established a bucket-conditional RLT result: `object_interaction` is
+  recoverable at kr=0.85, dev `moving_attribute` still fails at kr=1.0, holdout
+  `moving_attribute` is clean under rescue, and pooled rescue remains
+  negative on `moving_attribute`. The query-aware operators (`static-floor`,
+  `endpoint-anchor`, `identity-anchor`, `query-budget`) must earn their own kr
+  assignments on Q1 data; do not default to 0.85.
+- **The 1.842× MVBench composition E2E frontier is locked to RLT.**
+  Query-aware paper #2 cannot claim to "inherit" that frontier
+  without re-measuring under its own operator choices. The frontier
+  number is RLT-redundancy-topk specific.
+- **The "bucket rescue" framing is paper-1 only.** Paper #2 reframes
+  failures as "query demands different evidence," not "this bucket
+  needs more K." The kr=1.0 dev failure of `moving_attribute` is the
+  *motivation*, not the *target* — the target is a typed operator
+  that fixes it by changing the evidence type, not the budget.
+
+### Existing paper #1 artifacts paper #2 can reuse as background
+
+These are already measured and should not be re-collected for paper #2 unless
+the implementation substrate changes:
+
+- VideoMME / MVBench / TOMATO V-only holdout paired rows from 1.51V.
+- Qwen multi-seed random-keep VideoMME dev rows from 1.51VC. These are
+  magnitude C-VISION controls, not RLT controls.
+- RLT full-composition dev, holdout, pooled, and rescue rows from Round 20.
+- Dense-anchored C-PERSIST 20-turn rows from 1.55M. These are informative for
+  repair-pass operator framing, but they are not query-aware evidence.
+
+### Paper #2 fork checklist
+
+When the user decides to fork the query-aware branch:
+
+1. Confirm paper #1 has shipped or has a frozen draft.
+2. Re-read this synergy section and the closeout readiness audit.
+3. Pass `--run-query-routing-q0b` and verify the dense-equivalent gate
+   passes on the current substrate.
+4. Carve `design_v1` slices per the cross-validation discipline
+   section (Round-20 dev is burned for paper #2 rule design).
+5. Run Q0b → publish-or-kill before any Q1 operator work.

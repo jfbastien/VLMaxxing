@@ -77,6 +77,7 @@ PHASE_ESTIMATES_HOURS = {
     "full-composition-rlt-rescue-holdout-tomato-n30": [1.0, 2.0],
     "full-composition-rlt-rescue-holdout-mvbench-n30": [1.0, 2.0],
     "full-composition-rlt-mvbench-moving-attribute-kr100-n30": [1.0, 2.0],
+    "full-composition-rlt-holdout-mvbench-moving-attribute-kr100-n30": [1.0, 2.0],
     "full-composition-rlt-combined-videomme-n60-analysis": [0.02, 0.08],
     "full-composition-rlt-combined-tomato-n60-analysis": [0.02, 0.08],
     "full-composition-rlt-combined-mvbench-n60-analysis": [0.02, 0.08],
@@ -1091,6 +1092,16 @@ def main() -> int:
         ),
     )
     parser.add_argument(
+        "--run-moving-attribute-holdout-bracket",
+        action="store_true",
+        help=(
+            "Run the same MVBench moving_attribute kr=1.0 bracket on the disjoint "
+            "holdout manifest. This is an optional standalone diagnostic; interpret "
+            "it against the existing dev bracket and holdout rescue rows before "
+            "claiming whether the dev failure is slice-specific."
+        ),
+    )
+    parser.add_argument(
         "--run-composition-combined-analysis",
         action="store_true",
         help=(
@@ -1175,6 +1186,8 @@ def main() -> int:
         raise SystemExit("--run-composition-rescue-holdout requires --run-cvision-rlt")
     if args.run_moving_attribute_bracket and not args.run_cvision_rlt:
         raise SystemExit("--run-moving-attribute-bracket requires --run-cvision-rlt")
+    if args.run_moving_attribute_holdout_bracket and not args.run_cvision_rlt:
+        raise SystemExit("--run-moving-attribute-holdout-bracket requires --run-cvision-rlt")
     if args.run_composition_combined_analysis and not args.run_cvision_rlt:
         raise SystemExit("--run-composition-combined-analysis requires --run-cvision-rlt")
     if args.run_keep_rate_sweep and not args.run_cvision_rlt:
@@ -1264,6 +1277,8 @@ def main() -> int:
         )
     if args.run_moving_attribute_bracket:
         phases.append("full-composition-rlt-mvbench-moving-attribute-kr100-n30")
+    if args.run_moving_attribute_holdout_bracket:
+        phases.append("full-composition-rlt-holdout-mvbench-moving-attribute-kr100-n30")
     if args.run_composition_combined_analysis:
         phases.extend(
             [
@@ -1555,6 +1570,21 @@ def main() -> int:
         benchmark="mvbench",
         prefill_step_size=args.composition_prefill_step_size,
         label="full_composition_rlt_mvbench_moving_attribute_kr100",
+        group_keep_rates=MVBENCH_MOVING_ATTRIBUTE_BRACKET_KEEP_RATES,
+        group_vision_keep_rates=MVBENCH_MOVING_ATTRIBUTE_BRACKET_KEEP_RATES,
+    )
+    moving_attribute_holdout_bracket_commands = _gemma_full_composition_commands(
+        artifact_dir=args.artifact_dir,
+        manifest=args.mvbench_holdout_manifest,
+        model_path=args.gemma_model_path,
+        frame_count=args.frame_count,
+        n_items=0,
+        expected_items=30,
+        rss_guard_mb=args.rss_guard_mb,
+        mlx_memory_limit_gb=args.mlx_memory_limit_gb,
+        benchmark="mvbench",
+        prefill_step_size=args.composition_prefill_step_size,
+        label="full_composition_rlt_holdout_mvbench_moving_attribute_kr100",
         group_keep_rates=MVBENCH_MOVING_ATTRIBUTE_BRACKET_KEEP_RATES,
         group_vision_keep_rates=MVBENCH_MOVING_ATTRIBUTE_BRACKET_KEEP_RATES,
     )
@@ -1906,6 +1936,17 @@ def main() -> int:
             }
             for c in moving_attribute_bracket_commands
         )
+    if args.run_moving_attribute_holdout_bracket:
+        planned.extend(
+            {
+                "phase": (
+                    "full_composition_rlt_holdout_mvbench_moving_attribute_kr100_"
+                    "if_rlt_videomme_core_passes"
+                ),
+                "command": c,
+            }
+            for c in moving_attribute_holdout_bracket_commands
+        )
     if args.run_composition_combined_analysis:
         for benchmark, command in full_composition_combined_commands.items():
             planned.append(
@@ -2043,6 +2084,18 @@ def main() -> int:
                             )
                         ]
                         if args.run_moving_attribute_bracket
+                        else []
+                    ),
+                    *(
+                        [
+                            (
+                                "Run the disjoint-holdout MVBench moving_attribute "
+                                "kr=1.0 bracket only after RLT VideoMME core gates pass. "
+                                "Compare its by-group moving_attribute row against the "
+                                "dev bracket before claiming structural failure."
+                            )
+                        ]
+                        if args.run_moving_attribute_holdout_bracket
                         else []
                     ),
                     *(
@@ -2488,6 +2541,34 @@ def main() -> int:
             {
                 "decision": "skip",
                 "reason": "moving_attribute_bracket_requires_rlt_videomme_pass",
+            }
+        )
+    if args.run_moving_attribute_holdout_bracket and cvision_videomme_passed:
+        bracket_label = "full_composition_rlt_holdout_mvbench_moving_attribute_kr100"
+        bracket_results = _run_command_group(moving_attribute_holdout_bracket_commands)
+        commands.extend(bracket_results)
+        bracket_analysis = _read_analysis_after_success(
+            results=bracket_results,
+            path=args.artifact_dir / f"{bracket_label}_analysis.json",
+            phase=bracket_label,
+            decisions=decisions,
+        )
+        if bracket_analysis is not None:
+            analyses[bracket_label] = bracket_analysis
+            if not _phase_passed_full_composition(bracket_analysis):
+                decisions.append(
+                    {
+                        "decision": "continue",
+                        "reason": "moving_attribute_holdout_bracket_did_not_earn_gate",
+                        "phase": bracket_label,
+                        "details": bracket_analysis.get("decisions", []),
+                    }
+                )
+    elif args.run_moving_attribute_holdout_bracket and not cvision_videomme_passed:
+        decisions.append(
+            {
+                "decision": "skip",
+                "reason": "moving_attribute_holdout_bracket_requires_rlt_videomme_pass",
             }
         )
     if args.run_composition_combined_analysis and cvision_videomme_passed:
