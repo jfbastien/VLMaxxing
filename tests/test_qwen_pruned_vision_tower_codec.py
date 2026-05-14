@@ -8,19 +8,15 @@ the smoke run; here we only need to make sure the alignment math is correct.
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
 import numpy as np
 import pytest
 
-from tests._mlx_probe import mlx_is_usable
-
-if not mlx_is_usable():
-    pytest.skip(
-        "mlx.core not usable on this host (import or Metal-init fails); see tests/_mlx_probe.py",
-        allow_module_level=True,
-    )
+if sys.platform != "darwin":
+    pytest.skip("MLX tests require macOS/Darwin", allow_module_level=True)
 
 import mlx.core as mx
 
