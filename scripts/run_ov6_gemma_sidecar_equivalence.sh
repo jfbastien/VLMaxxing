@@ -27,6 +27,21 @@ SOURCES=(${OV6GS_SOURCES:-novel_coded motion residual})
 
 mkdir -p "$OUT_DIR"
 
+commit_path() {
+  local message="$1"
+  shift
+  local has_changes="no"
+  for p in "$@"; do
+    if [[ -n "$(git status --porcelain -- "$p")" ]]; then
+      has_changes="yes"
+      git add -- "$p"
+    fi
+  done
+  if [[ "$has_changes" == "yes" ]]; then
+    git commit -m "$message" >/dev/null
+  fi
+}
+
 if [[ ! -f "$SIDECAR_MANIFEST" ]]; then
   echo "[ov6-gemma-sidecar-eq] building sidecars: $SIDECAR_DIR"
   "${PY}" scripts/build_ov6_codec_score_sidecars.py \
@@ -46,7 +61,10 @@ fi
   --geometry gemma_prepool_patches_v1 \
   --frame-count "$FRAME_COUNT" \
   --n-items "$N_ITEMS" \
-  --sources "${SOURCES[@]}"
+  --sources "${SOURCES[@]}" \
+  --allow-dirty
+
+commit_path "exp(ov6): gemma sidecar build for $OUT_DIR" "$OUT_DIR"
 
 validate_arm() {
   local label="$1"
@@ -57,7 +75,10 @@ validate_arm() {
     --max-parse-failures "$MAX_PARSE_FAILURES"
   )
   if [[ "$label" == sidecar_* ]]; then
-    extra_validate_args+=(--codec-score-sidecar-geometry gemma_prepool_patches_v1)
+    extra_validate_args+=(
+      --codec-score-sidecar-geometry gemma_prepool_patches_v1
+      --allow-dirty-artifact
+    )
   fi
   "${PY}" scripts/validate_track_b_arm_artifact.py \
     --arm-dir "$arm_dir" \
@@ -97,6 +118,7 @@ run_arm() {
     "$@" \
     2>&1 | tee "$arm_dir/run.log"
   validate_arm "$label" "$@"
+  commit_path "exp(ov6): gemma-sidecar-eq arm=$label" "$arm_dir"
   echo "[ov6-gemma-sidecar-eq] === arm=$label done $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
 }
 
@@ -116,3 +138,5 @@ for source in "${SOURCES[@]}"; do
 done
 
 "${PY}" scripts/analyze_ov6_sidecar_equivalence.py --root "$OUT_DIR" --sources "${SOURCES[@]}"
+
+commit_path "exp(ov6): gemma-sidecar-eq analysis for $OUT_DIR" "$OUT_DIR"

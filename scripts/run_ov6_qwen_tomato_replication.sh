@@ -24,6 +24,21 @@ KEEP_RATE="${OV6T_KEEP_RATE:-0.70}"
 
 mkdir -p "$OUT_DIR"
 
+commit_path() {
+  local message="$1"
+  shift
+  local has_changes="no"
+  for p in "$@"; do
+    if [[ -n "$(git status --porcelain -- "$p")" ]]; then
+      has_changes="yes"
+      git add -- "$p"
+    fi
+  done
+  if [[ "$has_changes" == "yes" ]]; then
+    git commit -m "$message" >/dev/null
+  fi
+}
+
 if [[ -n "$SIDECAR_DIR" ]]; then
   if [[ -z "$SIDECAR_MANIFEST" ]]; then
     SIDECAR_MANIFEST="$(dirname "$SIDECAR_DIR")/sidecar_manifest.json"
@@ -91,6 +106,7 @@ run_arm() {
     "$@" \
     2>&1 | tee "$arm_dir/run.log"
   validate_arm "$label" "$@"
+  commit_path "exp(ov6): tomato arm=$label" "$arm_dir"
   echo "[ov6-tomato] === arm=$label done $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
 }
 
@@ -132,3 +148,5 @@ run_arm codec_residual \
   --codec-score-source residual
 
 "${PY}" scripts/analyze_ov6_tomato_motion.py --root "$OUT_DIR"
+
+commit_path "exp(ov6): tomato analysis for $OUT_DIR" "$OUT_DIR"
