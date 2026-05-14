@@ -1,6 +1,6 @@
 # 2026-05-13 — OneVision x VLMaxxing M3 Sidecar and M5 Confirmation Prereg
 
-Status: preregistered, not yet run in this note.
+Status: M3 gates run; M5 confirmations not yet run in this note.
 
 Branch: `onevision-vlmaxxing-research`
 
@@ -104,6 +104,12 @@ Interpretation:
   negative/boundary result.
 
 ## M5 Qwen Parity / Timing Confirmation
+
+The M5 sidecar-backed scripts validate the M3 gate artifacts with
+`--allow-historical-commit`: sidecars generated at a clean ancestor commit are
+acceptable, while dirty sidecars and non-ancestor commits still hard-fail. This
+keeps the committed M3 gates reusable after later analysis commits without
+weakening provenance.
 
 Question: does the Qwen kr=0.7/layer=2 codec point-estimate ordering reproduce
 on the M5 with sidecar-separated score runtime?
@@ -242,3 +248,47 @@ OV-8 remains accounting-only unless one of two policies is explicitly chosen:
 
 Current best Qwen sparse cell has material first-query drift, so it is not a
 fidelity-clean C-PERSIST composition result.
+
+## Execution Update: M3 Follow-up Chain
+
+Run status: completed on M3 16GB MacBook Air with MLX unified GPU.
+
+Command:
+
+```bash
+bash scripts/run_m3_followup_chain.sh
+```
+
+Artifacts:
+
+- `research/experiments/2026/artifacts/phase1_51V_ov6_sidecar_equivalence/`
+- `research/experiments/2026/artifacts/phase1_51V_ov6_sidecar_equivalence_f16/`
+- `research/experiments/2026/artifacts/phase1_63G_ov6_gemma_sidecar_equivalence/`
+- `research/experiments/2026/artifacts/phase1_51V_ov6_tomato_motion_kr090_l2_balanced_smoke/`
+
+Sidecar gates:
+
+- Qwen 8f: PASS, zero choice/correctness/kept-count drift across
+  `novel_coded`, `motion`, and `residual`. Live PyAV extraction was
+  16.81-19.54 s/item; sidecar load was 0.00097-0.00174 s/item.
+- Qwen 16f: PASS, zero drift across all three sources. Live extraction was
+  20.15-23.78 s/item; sidecar load was 0.00202-0.00294 s/item.
+- Gemma 8f: PASS, zero drift across all three sources. Live extraction was
+  17.15-18.75 s/item; sidecar load was 0.00199-0.00451 s/item.
+
+Interpretation: the 3-item gates are engineering equivalence gates, not
+accuracy claims. They validate the sidecar contract and unblock sidecar-backed
+M5 confirmation runs.
+
+TOMATO kr=0.9 balanced N=9:
+
+- Dense: 3/9 correct.
+- `magnitude_norm`: 3/9 correct.
+- `codec_novel_coded`: 3/9 correct, 8/9 choice agreement with `magnitude_norm`.
+- `codec_motion`: 2/9 correct.
+- `codec_residual`: 1/9 correct.
+
+Interpretation: `codec_novel_coded` and `magnitude_norm` match the weak dense
+baseline at mild pruning, so kr=0.9 avoids the harsher kr~0.69 collapse on this
+small slice. But dense itself is weak, Wilson intervals are wide, and this does
+not justify a TOMATO M5 promotion in this branch.

@@ -1,7 +1,7 @@
 # OV-6 Qwen TOMATO Motion Statistical Audit
 
-Gate: codec_novel_coded >= magnitude_norm by point estimate, with Wilson intervals and paired tests reported.
-Falsification: magnitude_norm exceeds codec_novel_coded by at least 3 items.
+Gate: Best sparse arm within one item of dense, above the previous sparse-floor band (>0.22 on N=9), and dense not weak; report codec_novel_coded vs magnitude_norm as the planned point-estimate comparison.
+Falsification: dense remains weak, all sparse arms remain at/below the previous sparse floor, or magnitude_norm exceeds codec_novel_coded by at least 3 items.
 
 | arm | accuracy | Wilson 95% CI | vision_ms | e2e_ms | e2e+codec_ms |
 | --- | ---: | --- | ---: | ---: | ---: |
@@ -25,5 +25,6 @@ Falsification: magnitude_norm exceeds codec_novel_coded by at least 3 items.
 | codec_residual_vs_dense | 0 | 2 | 0.5000 | 7/9 = 0.778 |
 
 Point-estimate gate: codec_novel_coded 3 correct vs magnitude_norm 3 correct.
-Falsified: False
-Interpretation: boundary: all sparse arms remain near the chance floor.
+Promotion gate: best sparse 3 correct vs dense 3 correct; above previous floor=True; dense weak=True; pass=False.
+Falsified: True
+Interpretation: boundary: mild pruning matches the weak dense baseline on this slice, but dense itself is low enough that TOMATO should not be promoted to M5.

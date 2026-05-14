@@ -264,21 +264,20 @@ def build_schedule() -> list[ExperimentStep]:
                 "M5 wrapper scripts added with provenance-clean output dirs"
             ),
             eta_m3=(
-                "sidecar equivalence: Qwen 8f, Qwen 16f, and Gemma 8f small-N gates, expected under 1 hour each "
-                "plus sidecar build; TOMATO kr=0.9 balanced smoke is a small diagnostic"
+                "complete for current gates; no further M3 runs without a fresh preregistered question"
             ),
             eta_m5=(
                 "focused confirmation only: Qwen parity 4-8h, Gemma kr=0.5 inversion 4-8h, Gemma N=57 codec "
                 "transfer 4-8h, Qwen 16f boundary 6-10h"
             ),
             compute_lane=(
-                "Qwen and Gemma M3 follow-ups complete; remaining M3 work is geometry-specific sidecar "
-                "equivalence plus balanced TOMATO smoke, then focused M5 confirmation"
+                "M3 sidecar-equivalence gates complete for Qwen 8f, Qwen 16f, and Gemma 8f; TOMATO kr=0.9 "
+                "remains boundary evidence; next step is focused M5 confirmation"
             ),
             uses_local_accelerator=True,
             requires_nvidia=False,
             defer_until=(
-                "run matching M3 sidecar equivalence for each sidecar-backed M5 geometry/frame budget before M5; "
+                "M5 scripts validate matching M3 sidecar equivalence with clean current-or-ancestor commit provenance; "
                 "live OV-8 remains blocked by first-query drift policy"
             ),
             commands=[
@@ -289,10 +288,10 @@ def build_schedule() -> list[ExperimentStep]:
                 "DONE: scripts/run_ov6_qwen_random_multiseed.sh",
                 "DONE: scripts/run_ov6_qwen_tomato_replication.sh",
                 "DONE: scripts/run_ov3_h264_calibration_sensitivity.sh",
-                "NEXT M3: scripts/run_ov6_sidecar_equivalence.sh",
-                "NEXT M3: OV6S_FRAME_COUNT=16 scripts/run_ov6_sidecar_equivalence.sh",
-                "NEXT M3: scripts/run_ov6_gemma_sidecar_equivalence.sh",
-                "NEXT M3: scripts/run_ov6_tomato_kr090_boundary_smoke.sh",
+                "DONE: scripts/run_ov6_sidecar_equivalence.sh",
+                "DONE: OV6S_FRAME_COUNT=16 scripts/run_ov6_sidecar_equivalence.sh",
+                "DONE: scripts/run_ov6_gemma_sidecar_equivalence.sh",
+                "DONE: scripts/run_ov6_tomato_kr090_boundary_smoke.sh",
                 "M5 gated: scripts/run_ov6_m5_qwen_parity.sh",
                 "M5 gated: scripts/run_ov6_m5_gemma_kr05_inversion.sh",
                 "M5 gated: scripts/run_ov6_m5_gemma_n57_confirmation.sh",

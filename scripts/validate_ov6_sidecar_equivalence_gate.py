@@ -74,6 +74,7 @@ def validate(args: argparse.Namespace) -> None:
             n_items=int(sidecar_manifest["n_items"]),
             sources=sources,
             allow_dirty=args.allow_dirty,
+            allow_historical_commit=bool(getattr(args, "allow_historical_commit", False)),
         )
     )
 
@@ -85,6 +86,14 @@ def main() -> None:
     parser.add_argument("--frame-count", type=int, required=True)
     parser.add_argument("--sources", nargs="+", default=None)
     parser.add_argument("--allow-dirty", action="store_true")
+    parser.add_argument(
+        "--allow-historical-commit",
+        action="store_true",
+        help=(
+            "Allow clean sidecar gates generated at ancestor commits. Use this "
+            "for committed M3 gate artifacts validated after later analysis commits."
+        ),
+    )
     args = parser.parse_args()
     validate(args)
     print(f"sidecar-equivalence gate OK: {args.root}")

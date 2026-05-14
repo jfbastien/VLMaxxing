@@ -276,13 +276,14 @@ signals more cheaply, but that is a systems hypothesis until measured.
 ## Remaining Experiments After This Packet
 
 The four preregistered controls have now run; see the follow-up sweep below.
-The remaining useful work is narrower and should run in this order. The
+The M3 sidecar-equivalence gates have also run and passed; see the M3 sidecar
+update below. The remaining useful work is narrower and should run in this order. The
 M3-versus-M5 split is doctrine: M3 is for implementation, extraction-sidecar
 work, analysis, and small N=10 engineering smokes; M5 is for preregistered
 confirmation runs where RAM, thermal stability, and runtime matter. Every new
 run must have a gate and a falsifier; no open-ended sweeps on either machine.
 
-1. **M3 sidecar equivalence gates** (cheap, unblocking)
+1. **M3 sidecar equivalence gates** (completed; unblocking)
    Build precomputed H.264 score sidecars and compare live-PyAV Track B arms
    against sidecar-loaded arms on small Qwen and Gemma slices. Acceptance is
    geometry / frame-budget specific: Qwen 8f, Qwen 16f, and Gemma 8f each
@@ -293,18 +294,23 @@ run must have a gate and a falsifier; no open-ended sweeps on either machine.
    `OV6S_FRAME_COUNT=16 scripts/run_ov6_sidecar_equivalence.sh` (Qwen 16f),
    `scripts/run_ov6_gemma_sidecar_equivalence.sh` (Gemma 8f). Each gate
    produces `sidecar_equivalence.json` and is validated by
-   `scripts/validate_ov6_sidecar_equivalence_gate.py`. The M5 launchers below
-   refuse to run unless the matching gate has `gate_pass: true`.
+   `scripts/validate_ov6_sidecar_equivalence_gate.py`. These gates passed with
+   zero choice/correctness/kept-count drift. The M5 launchers below refuse to run
+   unless the matching gate has `gate_pass: true` and validates as a clean
+   current or ancestor-commit sidecar.
 
 2. **M3 TOMATO kr=0.9 / layer=2 / balanced N=9 boundary diagnostic**
    Disambiguate the Phase-3 collapse with the right direction of intervention:
    `kr=0.9` is a milder prune than the previous kr~0.69 operating point. Use a
    balanced 3/3/3 TOMATO motion slice so the smoke is not just "direction"
-   items. Script: `scripts/run_ov6_tomato_kr090_boundary_smoke.sh`. Gate: best
+   items. Script: `scripts/run_ov6_tomato_kr090_boundary_smoke.sh`. Result: dense,
+   magnitude_norm, and codec_novel_coded all landed at 3/9 correct; codec_motion
+   was 2/9 and codec_residual was 1/9. Gate: best
    sparse arm is within one item of dense and above the prior sparse-floor band
    (>0.22 on N=9). If dense remains weak or all sparse arms stay at floor, do
-   not spend M5 time on TOMATO in this branch. The older kr=0.5 script is only
-   an aggressive-prune negative control.
+   not spend M5 time on TOMATO in this branch. Dense remains weak here, so TOMATO
+   stays a boundary diagnostic rather than an M5 target. The older kr=0.5 script
+   is only an aggressive-prune negative control.
 
 3. **M5 confirmation runs, gated on the M3 equivalence artifacts**
    - `scripts/run_ov6_m5_qwen_parity.sh` -- Qwen kr=0.7 / layer=2 / N=57 with
@@ -361,6 +367,30 @@ HEAD (`ruff format --check .`, `ruff check .`, `mypy src tests`,
 `pytest` 327 passed, and artifact integrity). MLX-using tests now hard-fail
 on Darwin instead of silently skipping (`599e303`); a mypy variance bug in
 the sidecar test file was fixed in `a30aba5`.
+
+## M3 Sidecar Follow-up
+
+The sidecar contract is the systems result from this round. It is small-N by
+design: three items per geometry, three codec sources, live PyAV versus
+precomputed sidecar on the same items. It is not an accuracy claim. It is the
+gate that says M5 can spend time on statistics instead of rediscovering
+projection bugs.
+
+| gate | sources | drift | live PyAV s/item | sidecar load s/item | stage-local ratio |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Qwen 8f | novel / motion / residual | 0 choice, 0 correctness, 0 kept-count | 16.81 - 19.54 | 0.00097 - 0.00174 | 9,674x - 17,882x |
+| Qwen 16f | novel / motion / residual | 0 / 0 / 0 | 20.15 - 23.78 | 0.00202 - 0.00294 | 8,090x - 9,962x |
+| Gemma 8f | novel / motion / residual | 0 / 0 / 0 | 17.15 - 18.75 | 0.00199 - 0.00451 | 3,803x - 8,888x |
+
+The reader-facing number is not "the model got 10,000x faster." The right
+sentence is: the codec-extraction stage went from seconds to milliseconds with
+identical sparse choices across Qwen and Gemma geometries. On the N=57 Qwen
+kr=0.7 cell, replacing the current live extraction with a millisecond sidecar
+would move the codec arm from roughly 52.1s setup-inclusive to roughly 33.3s
+model-side plus sidecar load, about a 1.56x per-query improvement for that
+particular Track B run. The larger payoff is repeated evaluation: query-aware
+and cross-family sweeps stop re-paying 17-24 seconds/item just to recover the
+same H.264 evidence.
 
 ## Follow-up Sweep (Preregistered, 4 Phases)
 
@@ -464,10 +494,13 @@ The four-phase sweep tightens two claims and bounds a third:
    give Wilson-lower 0.91 codec->dense agreement, with ~10.6 - 10.9%
    active-frame reuse. On this VideoMME-short/Qwen/8f slice, deployment does not
    need per-item threshold fitting.
-3. **Motion-heavy benchmarks at frame=8 / kr=0.69 are headroom-limited.**
-   No prune scheme escapes the chance floor; codec scores edge magnitude
-   by one item. The codec advantage does not generalize to TOMATO motion
-   at this operating point.
+3. **Motion-heavy benchmarks at frame=8 remain boundary evidence.**
+   At kr=0.69, no prune scheme escapes the sparse floor; codec scores edge
+   magnitude by one item. A milder kr=0.9 balanced N=9 smoke makes
+   codec_novel_coded and magnitude_norm match the weak dense baseline
+   (3/9 each), so the cliff is keep-rate sensitive, but dense headroom is too
+   low to promote TOMATO to M5 in this branch. The codec advantage does not
+   generalize to TOMATO motion as a paper claim yet.
 
 ## Artifact Pointers
 

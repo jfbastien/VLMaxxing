@@ -133,23 +133,59 @@ def analyze(root: Path) -> dict[str, Any]:
 
     codec_novel_correct = arm_payloads["codec_novel_coded"]["accuracy"]["correct"]
     magnitude_correct = arm_payloads["magnitude_norm"]["accuracy"]["correct"]
+    dense_correct = arm_payloads["dense"]["accuracy"]["correct"]
+    best_sparse_correct = max(
+        arm_payloads[arm]["accuracy"]["correct"] for arm in ARMS if arm != "dense"
+    )
+    n_items = arm_payloads["dense"]["accuracy"]["n"]
+    previous_sparse_floor_rate = 0.22
+    best_sparse_rate = best_sparse_correct / n_items if n_items else 0.0
+    best_sparse_within_one_of_dense = best_sparse_correct >= dense_correct - 1
+    best_sparse_above_floor = best_sparse_rate > previous_sparse_floor_rate
+    dense_is_weak = dense_correct / n_items <= 0.5 if n_items else True
+    promotion_gate = (
+        best_sparse_within_one_of_dense and best_sparse_above_floor and not dense_is_weak
+    )
+    scientific_interpretation = (
+        "boundary: mild pruning matches the weak dense baseline on this slice, "
+        "but dense itself is low enough that TOMATO should not be promoted to M5"
+        if not promotion_gate and dense_is_weak and best_sparse_within_one_of_dense
+        else (
+            "promotion candidate: sparse arm is close to a non-weak dense baseline"
+            if promotion_gate
+            else "boundary: sparse arms do not clear the preregistered TOMATO follow-up gate"
+        )
+    )
     return {
         "phase": "OV-6",
         "question": "Does Qwen Track B codec_novel_coded transfer to TOMATO motion?",
         "root": str(root),
         "gate": (
-            "codec_novel_coded >= magnitude_norm by point estimate, with Wilson "
-            "intervals and paired tests reported."
+            "Best sparse arm within one item of dense, above the previous sparse-floor "
+            "band (>0.22 on N=9), and dense not weak; report codec_novel_coded vs "
+            "magnitude_norm as the planned point-estimate comparison."
         ),
-        "falsification": "magnitude_norm exceeds codec_novel_coded by at least 3 items.",
+        "falsification": (
+            "dense remains weak, all sparse arms remain at/below the previous sparse floor, "
+            "or magnitude_norm exceeds codec_novel_coded by at least 3 items."
+        ),
         "arms": arm_payloads,
         "paired_comparisons": comparisons,
         "gate_status": {
             "codec_novel_coded_ge_magnitude_norm": codec_novel_correct >= magnitude_correct,
             "codec_novel_coded_correct": codec_novel_correct,
             "magnitude_norm_correct": magnitude_correct,
-            "falsified": magnitude_correct - codec_novel_correct >= 3,
-            "interpretation": "boundary: all sparse arms remain near the chance floor",
+            "dense_correct": dense_correct,
+            "best_sparse_correct": best_sparse_correct,
+            "best_sparse_rate": best_sparse_rate,
+            "best_sparse_within_one_of_dense": best_sparse_within_one_of_dense,
+            "best_sparse_above_previous_floor": best_sparse_above_floor,
+            "dense_is_weak": dense_is_weak,
+            "promotion_gate_pass": promotion_gate,
+            "falsified": (magnitude_correct - codec_novel_correct >= 3)
+            or dense_is_weak
+            or not best_sparse_above_floor,
+            "interpretation": scientific_interpretation,
         },
     }
 
@@ -206,6 +242,14 @@ def _markdown(payload: dict[str, Any]) -> str:
                 "Point-estimate gate: "
                 f"codec_novel_coded {status['codec_novel_coded_correct']} correct vs "
                 f"magnitude_norm {status['magnitude_norm_correct']} correct."
+            ),
+            (
+                "Promotion gate: "
+                f"best sparse {status['best_sparse_correct']} correct vs dense "
+                f"{status['dense_correct']} correct; "
+                f"above previous floor={status['best_sparse_above_previous_floor']}; "
+                f"dense weak={status['dense_is_weak']}; "
+                f"pass={status['promotion_gate_pass']}."
             ),
             f"Falsified: {status['falsified']}",
             f"Interpretation: {status['interpretation']}.",

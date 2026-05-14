@@ -121,14 +121,21 @@
       "summary_path": "research/experiments/2026/artifacts/phase1_51V_ov6_tomato_motion_kr090_l2_balanced_smoke/uniform_random/summary.json"
     }
   },
-  "falsification": "magnitude_norm exceeds codec_novel_coded by at least 3 items.",
-  "gate": "codec_novel_coded >= magnitude_norm by point estimate, with Wilson intervals and paired tests reported.",
+  "falsification": "dense remains weak, all sparse arms remain at/below the previous sparse floor, or magnitude_norm exceeds codec_novel_coded by at least 3 items.",
+  "gate": "Best sparse arm within one item of dense, above the previous sparse-floor band (>0.22 on N=9), and dense not weak; report codec_novel_coded vs magnitude_norm as the planned point-estimate comparison.",
   "gate_status": {
+    "best_sparse_above_previous_floor": true,
+    "best_sparse_correct": 3,
+    "best_sparse_rate": 0.3333333333333333,
+    "best_sparse_within_one_of_dense": true,
     "codec_novel_coded_correct": 3,
     "codec_novel_coded_ge_magnitude_norm": true,
-    "falsified": false,
-    "interpretation": "boundary: all sparse arms remain near the chance floor",
-    "magnitude_norm_correct": 3
+    "dense_correct": 3,
+    "dense_is_weak": true,
+    "falsified": true,
+    "interpretation": "boundary: mild pruning matches the weak dense baseline on this slice, but dense itself is low enough that TOMATO should not be promoted to M5",
+    "magnitude_norm_correct": 3,
+    "promotion_gate_pass": false
   },
   "paired_comparisons": {
     "codec_motion_vs_dense": {

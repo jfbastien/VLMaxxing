@@ -63,6 +63,42 @@ def _current_git_commit() -> str | None:
     return proc.stdout.strip()
 
 
+def _is_ancestor_commit(ancestor: str, descendant: str) -> bool:
+    proc = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", ancestor, descendant],
+        cwd=REPO_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    return proc.returncode == 0
+
+
+def _allow_historical_commit(args: argparse.Namespace) -> bool:
+    return bool(getattr(args, "allow_historical_commit", False))
+
+
+def _validate_commit(
+    actual: object,
+    *,
+    current_commit: str | None,
+    field: str,
+    args: argparse.Namespace,
+) -> None:
+    if current_commit is None or bool(args.allow_dirty):
+        return
+    if actual == current_commit:
+        return
+    if _allow_historical_commit(args) and isinstance(actual, str):
+        if _is_ancestor_commit(actual, current_commit):
+            return
+        raise ValueError(
+            f"{field} is not an ancestor of current HEAD: "
+            f"actual={actual!r} current={current_commit!r}"
+        )
+    _assert_equal(actual, current_commit, field)
+
+
 def _manifest_item_ids(path: Path, *, n_items: int | None) -> list[str]:
     payload = tomllib.loads(path.read_text())
     item_ids = [str(item_id) for item_id in payload["item_ids"]]
@@ -116,8 +152,12 @@ def validate(args: argparse.Namespace) -> None:
     _assert_equal(int(manifest.get("n_items", -1)), len(expected_item_ids), "n_items")
     if bool(manifest.get("git_dirty", False)) and not args.allow_dirty:
         raise ValueError("sidecar manifest was generated from a dirty git tree")
-    if current_commit is not None and not args.allow_dirty:
-        _assert_equal(manifest.get("git_commit"), current_commit, "git_commit")
+    _validate_commit(
+        manifest.get("git_commit"),
+        current_commit=current_commit,
+        field="git_commit",
+        args=args,
+    )
 
     entries_raw = manifest.get("entries", [])
     if not isinstance(entries_raw, list):
@@ -188,8 +228,12 @@ def validate(args: argparse.Namespace) -> None:
         _assert_equal(list(score_grid.shape), list(entry.get("score_shape", [])), f"{key} shape")
         if bool(metadata.get("git_dirty", False)) and not args.allow_dirty:
             raise ValueError(f"sidecar {path} was generated from a dirty git tree")
-        if current_commit is not None and not args.allow_dirty:
-            _assert_equal(metadata.get("git_commit"), current_commit, f"{key} git_commit")
+        _validate_commit(
+            metadata.get("git_commit"),
+            current_commit=current_commit,
+            field=f"{key} git_commit",
+            args=args,
+        )
         extract_s = float(metadata.get("codec_extract_s", float("nan")))
         if not math.isfinite(extract_s) or extract_s < 0.0:
             raise ValueError(f"sidecar {path} is missing finite codec_extract_s")
@@ -215,6 +259,15 @@ def main() -> None:
         choices=tuple(source.value for source in CodecScoreSource),
     )
     parser.add_argument("--allow-dirty", action="store_true")
+    parser.add_argument(
+        "--allow-historical-commit",
+        action="store_true",
+        help=(
+            "Allow clean sidecars generated at an ancestor commit. This is for "
+            "committed gate artifacts validated after later analysis commits; "
+            "dirty sidecars are still rejected unless --allow-dirty is also set."
+        ),
+    )
     validate(parser.parse_args())
 
 
