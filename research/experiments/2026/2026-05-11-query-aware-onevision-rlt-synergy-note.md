@@ -65,6 +65,15 @@ fresh design/dev/holdout split.
    score_config_id binding, since that binding is what makes the cached
    decision provenance auditable.
 
+8. **Track A on Gemma is the open cross-family question for the refresh oracle.**
+   Phase 4 Qwen Track A pooled-calibration agreement is Wilson-lower 0.91 to
+   dense. The OV-3 runner is currently Qwen-coupled (hard-coded grid count
+   check, Qwen prefill/reuse plumbing). A future cross-family confirmation
+   on Gemma SigLIP would either generalize the refresh-oracle claim or
+   bound it to Qwen ViT. The query-aware branch should consider this when
+   choosing whether the codec-evidence selector applies across vision-tower
+   families or only within one family.
+
 ## Explicit Non-Goals For This Branch
 
 - No query-aware implementation.
