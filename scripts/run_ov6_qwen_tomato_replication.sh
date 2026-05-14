@@ -71,7 +71,7 @@ validate_arm() {
     --n-items "$N_ITEMS" \
     --frame-count "$FRAME_COUNT" \
     --max-tokens "$MAX_TOKENS" \
-    "${extra_validate_args[@]}" \
+    ${extra_validate_args[@]+"${extra_validate_args[@]}"} \
     "$@"
 }
 
@@ -103,7 +103,7 @@ run_arm() {
     --output "$arm_dir/results.jsonl" \
     --summary "$arm_dir/summary.json" \
     --allow-dirty \
-    "${EXTRA_RUN_ARGS[@]}" \
+    ${EXTRA_RUN_ARGS[@]+"${EXTRA_RUN_ARGS[@]}"} \
     "$@" \
     2>&1 | tee "$arm_dir/run.log"
   validate_arm "$label" "$@"

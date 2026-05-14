@@ -89,7 +89,7 @@ validate_arm() {
     --n-items "$N_ITEMS" \
     --frame-count "$FRAME_COUNT" \
     --max-tokens "$MAX_TOKENS" \
-    "${extra_validate_args[@]}" \
+    ${extra_validate_args[@]+"${extra_validate_args[@]}"} \
     "$@"
 }
 
