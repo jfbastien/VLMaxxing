@@ -594,6 +594,175 @@ def test_query_routing_dry_run_plans_q0b_and_q1_controls(tmp_path: Path) -> None
     )
 
 
+def test_query_routing_q1b_dry_run_plans_endpoint_and_repair_cells(tmp_path: Path) -> None:
+    summary_path = tmp_path / "summary.json"
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_rlt_followup_queue.py",
+            "--run-cvision-rlt",
+            "--run-query-routing-q0b",
+            "--run-query-routing-q1",
+            "--run-query-routing-q1b-followup",
+            "--query-routing-benchmarks",
+            "mvbench",
+            "--dry-run",
+            "--summary",
+            str(summary_path),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(summary_path.read_text(encoding="utf-8"))
+    commands = [item["command"] for item in payload["planned_commands"]]
+    assert any(
+        "--vision-tower-score-mode" in command
+        and command[command.index("--vision-tower-score-mode") + 1] == "rlt_topk_endpoint_anchor"
+        and any(arg.endswith("query_q1b_mvbench_endpoint_anchor_composed.jsonl") for arg in command)
+        for command in commands
+    )
+    assert any(
+        "--vision-tower-score-mode" in command
+        and command[command.index("--vision-tower-score-mode") + 1] == "random_valid"
+        and "--group-vision-keep-rates" in command
+        and command[command.index("--group-vision-keep-rates") + 1] == "action_localization=1"
+        and any(
+            arg.endswith("query_q1b_mvbench_random_seed11_actionloc_dense_composed.jsonl")
+            for arg in command
+        )
+        for command in commands
+    )
+    assert any(
+        "--prune-placeholders" in command
+        and command[command.index("--prune-placeholders") + 1] == "rlt"
+        and "--vision-tower-score-mode" in command
+        and command[command.index("--vision-tower-score-mode") + 1] == "fixed_uniform"
+        and any(
+            arg.endswith("query_q1b_mvbench_fixed_uniform_admission_on_composed.jsonl")
+            for arg in command
+        )
+        for command in commands
+    )
+
+
+def test_query_routing_q1b_requires_q1(tmp_path: Path) -> None:
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_rlt_followup_queue.py",
+            "--run-cvision-rlt",
+            "--run-query-routing-q0b",
+            "--run-query-routing-q1b-followup",
+            "--dry-run",
+            "--summary",
+            str(tmp_path / "summary.json"),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode != 0
+    assert "--run-query-routing-q1b-followup requires" in completed.stderr
+
+
+def test_query_q1b_verdict_compares_against_best_fixed_or_random_control() -> None:
+    def analysis(*, delta: float, target_delta: float, speedup: float = 1.2) -> dict[str, Any]:
+        return {
+            "summary": {
+                "accuracy_delta_composed_minus_dense": delta,
+                "e2e_speedup_dense_over_composed": speedup,
+                "pass_fidelity": delta >= -0.05,
+                "pass_parse_failure_delta": True,
+                "bucket_failures": [],
+                "by_group": {
+                    "moving_attribute": {
+                        "n": 6,
+                        "dense_accuracy": 0.5,
+                        "composed_accuracy": 0.5 + target_delta,
+                    },
+                    "object_interaction": {
+                        "n": 6,
+                        "dense_accuracy": 0.5,
+                        "composed_accuracy": 0.5,
+                    },
+                },
+            }
+        }
+
+    analyses = {
+        "query_q1_mvbench_random_seed11": analysis(delta=-0.10, target_delta=-0.10, speedup=1.20),
+        "query_q1_mvbench_fixed_uniform": analysis(delta=0.00, target_delta=0.00, speedup=1.20),
+        "query_q1b_mvbench_endpoint_anchor": analysis(delta=0.00, target_delta=-0.05),
+        "query_q1b_mvbench_random_seed11_actionloc_dense": analysis(
+            delta=-0.10, target_delta=-0.10
+        ),
+        "query_q1b_mvbench_fixed_uniform_actionloc_dense": analysis(delta=0.00, target_delta=0.00),
+        "query_q1b_mvbench_random_seed11_admission_on": analysis(
+            delta=-0.10, target_delta=-0.10, speedup=1.30
+        ),
+        "query_q1b_mvbench_fixed_uniform_admission_on": analysis(
+            delta=0.00, target_delta=0.00, speedup=1.30
+        ),
+    }
+
+    verdict = queue._query_q1b_followup_verdict(analyses)
+
+    assert verdict["best_base_target_accuracy_delta"] == 0.0
+    assert verdict["endpoint_anchor_competitive"] is False
+    assert verdict["coverage_repair_by_control"] == {
+        "fixed_uniform": True,
+        "random_seed11": True,
+    }
+    assert verdict["admission_preserves_best_control"] is True
+
+
+def test_query_q1b_admission_verdict_requires_e2e_improvement() -> None:
+    def analysis(*, target_delta: float, speedup: float) -> dict[str, Any]:
+        return {
+            "summary": {
+                "accuracy_delta_composed_minus_dense": target_delta,
+                "e2e_speedup_dense_over_composed": speedup,
+                "pass_fidelity": True,
+                "pass_parse_failure_delta": True,
+                "bucket_failures": [],
+                "by_group": {
+                    "moving_attribute": {
+                        "n": 6,
+                        "dense_accuracy": 0.5,
+                        "composed_accuracy": 0.5 + target_delta,
+                    },
+                    "object_interaction": {
+                        "n": 6,
+                        "dense_accuracy": 0.5,
+                        "composed_accuracy": 0.5,
+                    },
+                },
+            }
+        }
+
+    analyses = {
+        "query_q1_mvbench_random_seed11": analysis(target_delta=0.0, speedup=1.25),
+        "query_q1_mvbench_fixed_uniform": analysis(target_delta=0.0, speedup=1.25),
+        "query_q1b_mvbench_endpoint_anchor": analysis(target_delta=0.0, speedup=1.1),
+        "query_q1b_mvbench_random_seed11_actionloc_dense": analysis(target_delta=0.0, speedup=1.2),
+        "query_q1b_mvbench_fixed_uniform_actionloc_dense": analysis(target_delta=0.0, speedup=1.2),
+        "query_q1b_mvbench_random_seed11_admission_on": analysis(target_delta=0.0, speedup=1.25),
+        "query_q1b_mvbench_fixed_uniform_admission_on": analysis(target_delta=0.0, speedup=1.20),
+    }
+
+    verdict = queue._query_q1b_followup_verdict(analyses)
+
+    assert verdict["admission_preserves_by_control"] == {
+        "fixed_uniform": False,
+        "random_seed11": False,
+    }
+    assert verdict["admission_preserves_best_control"] is False
+
+
 def _direct_summary(
     *,
     cell_type: str,

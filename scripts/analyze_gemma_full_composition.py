@@ -24,6 +24,7 @@ QUALITY_EPSILON = 1e-12
 QUERY_CVISION_SCORE_MODES = {
     "rlt_topk",
     "rlt_topk_static_floor",
+    "rlt_topk_endpoint_anchor",
     "fixed_uniform",
     "random_valid",
 }
@@ -96,8 +97,10 @@ def _composed_arm_kind(composed: dict[str, Any]) -> str:
         return "rlt_admission_only"
     if prune_placeholders == "none" and uses_query_cvision:
         return "rlt_cvision_only" if score_mode == "rlt_topk" else f"{score_mode}_cvision_only"
-    if prune_placeholders == "rlt" and score_mode == "rlt_topk":
-        return "rlt_admission_plus_rlt_cvision"
+    if prune_placeholders == "rlt" and score_mode in QUERY_CVISION_SCORE_MODES:
+        if score_mode == "rlt_topk":
+            return "rlt_admission_plus_rlt_cvision"
+        return f"rlt_admission_plus_{score_mode}_cvision"
     raise ValueError(
         "unsupported composed arm contract: "
         f"prune_placeholders={prune_placeholders!r} "
@@ -363,9 +366,7 @@ def _paired_rows(
                 )
         encoder_valid = composed_metadata.get("gemma_encoder_valid_positions_per_frame")
         encoder_kept = composed_metadata.get("gemma_encoder_kept_per_frame")
-        require_encoder = cell_type.endswith("_cvision_only") or cell_type in {
-            "rlt_admission_plus_rlt_cvision",
-        }
+        require_encoder = cell_type.endswith("_cvision_only") or "_cvision" in cell_type
         if require_encoder and (encoder_valid is None or encoder_kept is None):
             raise ValueError(f"{item_id} missing Gemma encoder kept/valid ledger fields")
         vision_reduction = None

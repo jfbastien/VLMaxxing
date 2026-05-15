@@ -43,6 +43,7 @@ MVBENCH_MOVING_ATTRIBUTE_BRACKET_KEEP_RATES: dict[str, float] = {
     "object_interaction": 0.85,
 }
 QUERY_ROUTING_Q1_RANDOM_SEEDS = (11, 23, 37)
+QUERY_ROUTING_Q1B_ACTIONLOC_REPAIR_KEEP_RATES = {"action_localization": 1.0}
 
 PHASE_ESTIMATES_HOURS = {
     "prefill-kernel-microbench": [0.35, 1.35],
@@ -93,6 +94,7 @@ PHASE_ESTIMATES_HOURS = {
     "query-routing-q1-videomme-n30": [4.0, 9.0],
     "query-routing-q1-tomato-n30": [4.0, 8.0],
     "query-routing-q1-mvbench-n30": [4.0, 8.0],
+    "query-routing-q1b-mvbench-n30": [2.5, 5.5],
 }
 
 
@@ -887,6 +889,123 @@ def _query_q1_verdict(analyses: dict[str, Any], benchmarks: list[str]) -> dict[s
     }
 
 
+def _query_q1b_followup_verdict(analyses: dict[str, Any]) -> dict[str, Any]:
+    """Summarize the narrow post-Q1 diagnostic cells without promoting a planner."""
+
+    benchmark = "mvbench"
+
+    def row(label: str) -> dict[str, Any] | None:
+        analysis = analyses.get(label)
+        summary = analysis.get("summary") if isinstance(analysis, dict) else None
+        if not isinstance(summary, dict):
+            return None
+        return {
+            "accuracy_delta": float(summary.get("accuracy_delta_composed_minus_dense", 0.0)),
+            "target_accuracy_delta": _target_accuracy_delta(summary, benchmark),
+            "e2e_speedup": float(summary.get("e2e_speedup_dense_over_composed", 0.0)),
+            "pass_fidelity": bool(summary.get("pass_fidelity")),
+            "pass_parse_failure_delta": bool(summary.get("pass_parse_failure_delta")),
+            "bucket_failures": summary.get("bucket_failures", []),
+        }
+
+    labels = {
+        "q1_random_seed11": "query_q1_mvbench_random_seed11",
+        "q1_fixed_uniform": "query_q1_mvbench_fixed_uniform",
+        "endpoint_anchor": "query_q1b_mvbench_endpoint_anchor",
+        "random_seed11_actionloc_dense": "query_q1b_mvbench_random_seed11_actionloc_dense",
+        "fixed_uniform_actionloc_dense": "query_q1b_mvbench_fixed_uniform_actionloc_dense",
+        "random_seed11_admission_on": "query_q1b_mvbench_random_seed11_admission_on",
+        "fixed_uniform_admission_on": "query_q1b_mvbench_fixed_uniform_admission_on",
+    }
+    rows = {name: row(label) for name, label in labels.items()}
+    missing = [name for name, payload in rows.items() if payload is None]
+    q1_bases = {
+        "random_seed11": rows.get("q1_random_seed11") or {},
+        "fixed_uniform": rows.get("q1_fixed_uniform") or {},
+    }
+    repair_rows = {
+        "random_seed11": rows.get("random_seed11_actionloc_dense") or {},
+        "fixed_uniform": rows.get("fixed_uniform_actionloc_dense") or {},
+    }
+    admission_rows = {
+        "random_seed11": rows.get("random_seed11_admission_on") or {},
+        "fixed_uniform": rows.get("fixed_uniform_admission_on") or {},
+    }
+    best_base_target_delta = max(
+        (
+            float(payload.get("target_accuracy_delta", float("-inf")))
+            for payload in q1_bases.values()
+        ),
+        default=float("-inf"),
+    )
+    best_base_accuracy_delta = max(
+        (float(payload.get("accuracy_delta", float("-inf"))) for payload in q1_bases.values()),
+        default=float("-inf"),
+    )
+    coverage_repair_by_control = {
+        name: (
+            not missing
+            and bool(repair.get("pass_parse_failure_delta"))
+            and float(repair.get("accuracy_delta", -1.0)) >= float(base.get("accuracy_delta", 0.0))
+            and float(repair.get("e2e_speedup", 0.0)) > 1.1
+        )
+        for name, (base, repair) in {
+            key: (q1_bases[key], repair_rows[key]) for key in q1_bases
+        }.items()
+    }
+    admission_preserves_by_control = {
+        name: (
+            not missing
+            and bool(admission.get("pass_parse_failure_delta"))
+            and float(admission.get("target_accuracy_delta", -1.0))
+            >= float(base.get("target_accuracy_delta", 0.0))
+            and float(admission.get("e2e_speedup", 0.0)) > float(base.get("e2e_speedup", 0.0))
+        )
+        for name, (base, admission) in {
+            key: (q1_bases[key], admission_rows[key]) for key in q1_bases
+        }.items()
+    }
+    coverage_repair_has_headroom = (
+        not missing
+        and any(coverage_repair_by_control.values())
+        and max(float(row.get("accuracy_delta", -1.0)) for row in repair_rows.values())
+        >= best_base_accuracy_delta
+    )
+    admission_preserves_best_control = (
+        not missing
+        and any(admission_preserves_by_control.values())
+        and max(float(row.get("target_accuracy_delta", -1.0)) for row in admission_rows.values())
+        >= best_base_target_delta
+        and max(float(row.get("e2e_speedup", 0.0)) for row in admission_rows.values())
+        > max(float(row.get("e2e_speedup", 0.0)) for row in q1_bases.values())
+    )
+    endpoint_anchor_competitive = (
+        not missing
+        and rows["endpoint_anchor"] is not None
+        and bool(rows["endpoint_anchor"].get("pass_parse_failure_delta"))
+        and float(rows["endpoint_anchor"].get("target_accuracy_delta", -1.0))
+        >= best_base_target_delta
+        and float(rows["endpoint_anchor"].get("e2e_speedup", 0.0)) > 1.0
+    )
+    return {
+        "benchmark": benchmark,
+        "missing": missing,
+        "rows": rows,
+        "best_base_target_accuracy_delta": (
+            None if best_base_target_delta == float("-inf") else best_base_target_delta
+        ),
+        "coverage_repair_by_control": coverage_repair_by_control,
+        "coverage_repair_has_headroom": coverage_repair_has_headroom,
+        "admission_preserves_by_control": admission_preserves_by_control,
+        "admission_preserves_best_control": admission_preserves_best_control,
+        "endpoint_anchor_competitive": endpoint_anchor_competitive,
+        "paper_feedback": (
+            "Q1b is diagnostic only. A positive row motivates a fresh held-out "
+            "planner experiment; a negative row keeps query-routing in the appendix."
+        ),
+    }
+
+
 def _paper_feedback(*, analyses: dict[str, Any], decisions: list[dict[str, Any]]) -> dict[str, Any]:
     """Machine-readable editor notes from the autonomous supervisor."""
 
@@ -1143,6 +1262,15 @@ def main() -> int:
         ),
     )
     parser.add_argument(
+        "--run-query-routing-q1b-followup",
+        action="store_true",
+        help=(
+            "Run the narrow Q1b follow-up after Q1: endpoint-anchor, admission-on "
+            "coverage controls, and action_localization dense fallback. This is a "
+            "diagnostic for remaining query-planning headroom, not a planner launch."
+        ),
+    )
+    parser.add_argument(
         "--query-routing-benchmarks",
         default="mvbench",
         help=(
@@ -1198,6 +1326,13 @@ def main() -> int:
         raise SystemExit(
             "--run-query-routing-q1 requires --run-cvision-rlt and --run-query-routing-q0b"
         )
+    if args.run_query_routing_q1b_followup and not (
+        args.run_cvision_rlt and args.run_query_routing_q0b and args.run_query_routing_q1
+    ):
+        raise SystemExit(
+            "--run-query-routing-q1b-followup requires --run-cvision-rlt, "
+            "--run-query-routing-q0b, and --run-query-routing-q1"
+        )
     if args.cooldown_after_microbench_seconds < 0:
         raise SystemExit("--cooldown-after-microbench-seconds must be nonnegative")
     if args.mlx_memory_limit_gb < 0.0:
@@ -1206,6 +1341,8 @@ def main() -> int:
         raise SystemExit("--composition-prefill-step-size must be positive")
     keep_rates = _parse_keep_rates(args.cvision_keep_rates)
     query_routing_benchmarks = _parse_benchmarks(args.query_routing_benchmarks)
+    if args.run_query_routing_q1b_followup and query_routing_benchmarks != ["mvbench"]:
+        raise SystemExit("--run-query-routing-q1b-followup currently supports mvbench only")
     phases: list[str] = []
     if args.run_prefill_diagnostics:
         phases.append("prefill-kernel-microbench")
@@ -1298,6 +1435,8 @@ def main() -> int:
         )
     if args.run_query_routing_q1:
         phases.extend(f"query-routing-q1-{benchmark}-n30" for benchmark in query_routing_benchmarks)
+    if args.run_query_routing_q1b_followup:
+        phases.append("query-routing-q1b-mvbench-n30")
     budget = _budget(phases)
     if budget["high_hours"] > args.max_planned_hours:
         raise SystemExit(
@@ -1819,6 +1958,107 @@ def main() -> int:
                 vision_static_floor_stride=floor_stride,
                 vision_random_seed=random_seed,
             )
+    query_q1b_commands: dict[str, list[list[str]]] = {}
+    if "mvbench" in query_routing_benchmarks:
+        benchmark = "mvbench"
+        manifest = benchmark_manifests[benchmark]
+        expected = benchmark_expected_items[benchmark]
+        dense_source_label = f"query_q1b_dense_{benchmark}"
+        q1b_specs: list[
+            tuple[
+                str,
+                bool,
+                str,
+                float,
+                str,
+                int | None,
+                int | None,
+                dict[str, float] | None,
+            ]
+        ] = [
+            (
+                f"query_q1b_{benchmark}_endpoint_anchor",
+                True,
+                "none",
+                0.5,
+                "rlt_topk_endpoint_anchor",
+                None,
+                None,
+                None,
+            ),
+            (
+                f"query_q1b_{benchmark}_random_seed11_actionloc_dense",
+                False,
+                "none",
+                0.5,
+                "random_valid",
+                None,
+                11,
+                QUERY_ROUTING_Q1B_ACTIONLOC_REPAIR_KEEP_RATES,
+            ),
+            (
+                f"query_q1b_{benchmark}_fixed_uniform_actionloc_dense",
+                False,
+                "none",
+                0.5,
+                "fixed_uniform",
+                None,
+                None,
+                QUERY_ROUTING_Q1B_ACTIONLOC_REPAIR_KEEP_RATES,
+            ),
+            (
+                f"query_q1b_{benchmark}_random_seed11_admission_on",
+                False,
+                "rlt",
+                0.5,
+                "random_valid",
+                None,
+                11,
+                None,
+            ),
+            (
+                f"query_q1b_{benchmark}_fixed_uniform_admission_on",
+                False,
+                "rlt",
+                0.5,
+                "fixed_uniform",
+                None,
+                None,
+                None,
+            ),
+        ]
+        for (
+            label,
+            include_dense,
+            prune_placeholders,
+            vision_keep_rate,
+            score_mode,
+            floor_stride,
+            random_seed,
+            group_vision_keep_rates,
+        ) in q1b_specs:
+            query_q1b_commands[label] = _gemma_full_composition_commands(
+                artifact_dir=args.artifact_dir,
+                manifest=manifest,
+                model_path=args.gemma_model_path,
+                frame_count=args.frame_count,
+                n_items=0,
+                expected_items=expected,
+                rss_guard_mb=args.rss_guard_mb,
+                mlx_memory_limit_gb=args.mlx_memory_limit_gb,
+                benchmark=benchmark,
+                prefill_step_size=args.composition_prefill_step_size,
+                vision_keep_rate=vision_keep_rate,
+                label=label,
+                dense_source_label=dense_source_label,
+                include_dense_command=include_dense,
+                composed_keep_rate=0.5 if prune_placeholders == "rlt" else 1.0,
+                composed_prune_placeholders=prune_placeholders,
+                vision_score_mode=score_mode,
+                vision_static_floor_stride=floor_stride,
+                vision_random_seed=random_seed,
+                group_vision_keep_rates=group_vision_keep_rates,
+            )
     if args.run_prefill_diagnostics:
         planned.append({"phase": "prefill_kernel_microbench", "command": prefill_kernel_command})
         planned.extend({"phase": "prefill_step_1500", "command": c} for c in prefill_1500_commands)
@@ -1998,6 +2238,15 @@ def main() -> int:
                 }
                 for c in phase_commands
             )
+    if args.run_query_routing_q1b_followup:
+        for label, phase_commands in query_q1b_commands.items():
+            planned.extend(
+                {
+                    "phase": f"{label}_after_q1_negative_verdict",
+                    "command": c,
+                }
+                for c in phase_commands
+            )
     if args.dry_run:
         _write_json(
             summary_path,
@@ -2132,6 +2381,18 @@ def main() -> int:
                             )
                         ]
                         if args.run_query_routing_q1
+                        else []
+                    ),
+                    *(
+                        [
+                            (
+                                "Run Q1b only after Q1. This is a narrow negative-result "
+                                "follow-up: endpoint anchors, admission-on coverage "
+                                "controls, and action_localization dense fallback. It "
+                                "does not authorize QuoTA, repair-pass, or full planner work."
+                            )
+                        ]
+                        if args.run_query_routing_q1b_followup
                         else []
                     ),
                 ],
@@ -2754,6 +3015,74 @@ def main() -> int:
             {
                 "decision": "skip",
                 "reason": "query_routing_q1_requires_rlt_videomme_pass",
+            }
+        )
+    if args.run_query_routing_q1b_followup and cvision_videomme_passed:
+        q0b_gate = analyses.get("query_routing_q0b_gate", {})
+        q0b_ok = isinstance(q0b_gate, dict) and bool(q0b_gate.get("proceed_to_q1"))
+        q1_verdict = analyses.get("query_routing_q1_verdict", {})
+        q1_by_benchmark = q1_verdict.get("by_benchmark") if isinstance(q1_verdict, dict) else None
+        q1_complete = (
+            isinstance(q1_by_benchmark, dict)
+            and bool(q1_by_benchmark)
+            and not any(
+                bool(payload.get("missing"))
+                for payload in q1_by_benchmark.values()
+                if isinstance(payload, dict)
+            )
+        )
+        q1_negative = isinstance(q1_verdict, dict) and not bool(
+            q1_verdict.get("proceed_to_q2_scalar_query_baseline")
+        )
+        if not q0b_ok:
+            decisions.append(
+                {
+                    "decision": "skip",
+                    "reason": "query_routing_q1b_requires_q0b_diagnostics",
+                }
+            )
+        elif not q1_complete:
+            decisions.append(
+                {
+                    "decision": "skip",
+                    "reason": "query_routing_q1b_requires_q1_verdict",
+                }
+            )
+        elif not q1_negative:
+            decisions.append(
+                {
+                    "decision": "skip",
+                    "reason": "query_routing_q1b_is_only_for_negative_q1_verdicts",
+                    "details": q1_verdict,
+                }
+            )
+        else:
+            for label, phase_commands in query_q1b_commands.items():
+                q1b_results = _run_command_group(phase_commands)
+                commands.extend(q1b_results)
+                q1b_analysis = _read_analysis_after_success(
+                    results=q1b_results,
+                    path=args.artifact_dir / f"{label}_analysis.json",
+                    phase=label,
+                    decisions=decisions,
+                )
+                if q1b_analysis is not None:
+                    analyses[label] = q1b_analysis
+                    if not _phase_passed_full_composition(q1b_analysis):
+                        decisions.append(
+                            {
+                                "decision": "continue",
+                                "reason": f"{label}_did_not_earn_gate",
+                                "phase": label,
+                                "details": q1b_analysis.get("decisions", []),
+                            }
+                        )
+            analyses["query_routing_q1b_followup_verdict"] = _query_q1b_followup_verdict(analyses)
+    elif args.run_query_routing_q1b_followup and not cvision_videomme_passed:
+        decisions.append(
+            {
+                "decision": "skip",
+                "reason": "query_routing_q1b_requires_rlt_videomme_pass",
             }
         )
 

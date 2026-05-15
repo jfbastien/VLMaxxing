@@ -23,6 +23,17 @@ has deterministic `rlt_topk_static_floor`, `fixed_uniform`, and
 `random_valid` C-VISION modes. These cells can earn only a proceed-to-Q2
 verdict until scalar-query baselines are run.
 
+2026-05-15 Q0b/Q1 result: the first executable branch killed the initial
+typed-operator hypothesis. Dense-equivalence and C-VISION-only oracle checks
+passed, but static-floor and redundancy-top-k did not beat fixed/random
+coverage controls on the MVBench target pool. This narrows the future paper:
+do not build a full query planner unless a cheaper Q1b diagnostic finds
+headroom in endpoint anchors, admission scheduling, or a tiny class-conditional
+dense fallback. If Q1b is also negative, the query-aware story should stay as
+a VLMaxxing appendix and future work should move to scalar query allocation
+(QuoTA-style), trained frame selection (Frame-Voyager style), or active
+evidence seeking rather than hand-built typed C-VISION operators.
+
 2026-05-10 deep-research update: ChatGPT's external literature assessment
 largely validates the direction but narrows the novelty boundary. The surface
 form "query-aware video token/frame selection" is crowded. A standalone paper

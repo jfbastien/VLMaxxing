@@ -99,6 +99,7 @@ from codec_through.pruned_vision_tower import PruneConfig, patch_vision_tower
 from codec_through.query_routing import (
     fixed_uniform_mask_for_positions,
     random_valid_mask_for_positions,
+    rlt_endpoint_anchor_mask_for_positions,
     rlt_static_floor_mask_for_positions,
 )
 from codec_through.rlt_masks import (
@@ -138,12 +139,14 @@ VisionTowerScoreMode = Literal[
     "magnitude",
     "rlt_topk",
     "rlt_topk_static_floor",
+    "rlt_topk_endpoint_anchor",
     "fixed_uniform",
     "random_valid",
 ]
-RLT_VISION_SCORE_MODES = {"rlt_topk", "rlt_topk_static_floor"}
+RLT_VISION_SCORE_MODES = {"rlt_topk", "rlt_topk_static_floor", "rlt_topk_endpoint_anchor"}
 QUERY_ROUTING_VISION_SCORE_MODES = {
     "rlt_topk_static_floor",
+    "rlt_topk_endpoint_anchor",
     "fixed_uniform",
     "random_valid",
 }
@@ -747,7 +750,13 @@ def _process_one_item(
             raise RuntimeError("C-VISION keep_mask_fn did not run inside vision_tower")
         last_mask_np = np.asarray(last_mask, dtype=bool)
         actual_kept_per_frame = [int(row.sum()) for row in last_mask_np]
-        if len(set(actual_kept_per_frame)) != 1:
+        operator_ledger = rlt_vision_holder.get("last_operator_ledger")
+        budget_mode = (
+            operator_ledger.get("operator_budget_mode")
+            if isinstance(operator_ledger, dict)
+            else None
+        )
+        if budget_mode != "video_level" and len(set(actual_kept_per_frame)) != 1:
             raise RuntimeError(
                 f"RLT C-VISION keep-mask must emit uniform per-frame K; got {actual_kept_per_frame}"
             )
@@ -767,14 +776,15 @@ def _process_one_item(
                     else "cvision_only_placeholder_bypass"
                 ),
                 "operator_plan": vision_tower_score_mode,
-                "operator_budget_mode": "per_frame",
+                "operator_budget_mode": budget_mode or "per_frame",
             }
         )
-        operator_ledger = rlt_vision_holder.get("last_operator_ledger")
         if isinstance(operator_ledger, dict):
             mask_metadata.update(operator_ledger)
         if vision_tower_score_mode == "rlt_topk_static_floor":
             mask_metadata["floor_stride"] = vision_static_floor_stride
+        if vision_tower_score_mode == "rlt_topk_endpoint_anchor":
+            mask_metadata["anchor_frames"] = [0, frame_count - 1]
         if vision_tower_score_mode == "random_valid":
             mask_metadata["random_seed"] = vision_random_seed
 
@@ -1426,6 +1436,7 @@ def main() -> int:
             "magnitude",
             "rlt_topk",
             "rlt_topk_static_floor",
+            "rlt_topk_endpoint_anchor",
             "fixed_uniform",
             "random_valid",
         ),
@@ -1434,7 +1445,7 @@ def main() -> int:
             "Sparse vision-tower scoring policy when the vision tower is patched. "
             "'magnitude' preserves the historical C-VISION patch; 'rlt_topk' uses "
             "the same RLT redundancy scores as placeholder admission; the query-routing "
-            "modes add static-floor, fixed, and random controls."
+            "modes add static-floor, endpoint-anchor, fixed, and random controls."
         ),
     )
     parser.add_argument(
@@ -1482,9 +1493,9 @@ def main() -> int:
         raise SystemExit(
             f"--mlx-memory-limit-gb must be nonnegative, got {args.mlx_memory_limit_gb}"
         )
-    if args.group_vision_keep_rates and args.vision_tower_score_mode not in RLT_VISION_SCORE_MODES:
+    if args.group_vision_keep_rates and args.vision_tower_score_mode == "magnitude":
         raise SystemExit(
-            "--group-vision-keep-rates currently requires an RLT-based vision score mode"
+            "--group-vision-keep-rates requires an explicit query-routing vision score mode"
         )
     if args.vision_static_floor_stride <= 0:
         raise SystemExit("--vision-static-floor-stride must be positive")
@@ -1629,6 +1640,13 @@ def main() -> int:
                         positions=pos_np,
                         keep_rate=current_keep_rate,
                         floor_stride=args.vision_static_floor_stride,
+                    )
+                    rlt_vision_holder["last_operator_ledger"] = ledger.as_dict()
+                elif args.vision_tower_score_mode == "rlt_topk_endpoint_anchor":
+                    mask_np, ledger = rlt_endpoint_anchor_mask_for_positions(
+                        rlt_vision_holder["rlt_result"],
+                        positions=pos_np,
+                        keep_rate=current_keep_rate,
                     )
                     rlt_vision_holder["last_operator_ledger"] = ledger.as_dict()
                 else:

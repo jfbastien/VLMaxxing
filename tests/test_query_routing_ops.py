@@ -7,6 +7,7 @@ from codec_through.query_routing import (
     fixed_uniform_mask_for_positions,
     grid_shape_from_valid_positions,
     random_valid_mask_for_positions,
+    rlt_endpoint_anchor_mask_for_positions,
     rlt_static_floor_mask_for_positions,
     static_floor_indices_for_grid,
 )
@@ -120,6 +121,65 @@ def test_endpoint_anchor_accounting_debits_video_level_budget() -> None:
     assert budget["per_remaining_frame_max"] == 342
     assert budget["remaining_budget_per_frame"] == [342, 342, 341, 341, 341, 341]
     assert sum(budget["remaining_budget_per_frame"]) == budget["remaining_budget"]
+
+
+def test_endpoint_anchor_mask_keeps_anchor_frames_dense_and_preserves_total_budget() -> None:
+    positions = _positions(8, frames=8)
+    scores = np.arange(8 * 4 * 4, dtype=np.float32).reshape(8, 4, 4)
+    result = RLTMaskResult(
+        config=RLTMaskConfig(tubelet_size=1, grid_shape=(4, 4)),
+        tubelet_keep_mask=np.ones((8, 4, 4), dtype=bool),
+        frame_keep_mask=np.ones((8, 4, 4), dtype=bool),
+        floor_active_frame_mask=np.zeros((8, 4, 4), dtype=bool),
+        tubelet_scores=scores,
+        tubelet_run_lengths=np.ones((8, 4, 4), dtype=np.int32),
+        frame_run_lengths=np.ones((8, 4, 4), dtype=np.int32),
+        first_tubelet_token_count=16,
+        threshold_active_token_count=16,
+        floor_active_token_count=0,
+    )
+
+    mask, ledger = rlt_endpoint_anchor_mask_for_positions(
+        result,
+        positions=positions,
+        keep_rate=0.5,
+        anchor_frames=(0, -1),
+    )
+
+    assert mask.shape == (8, 64)
+    assert [int(row.sum()) for row in mask] == [64, 1, 1, 1, 1, 60, 64, 64]
+    assert int(mask.sum()) == 256
+    assert ledger.operator_plan == "rlt_topk_endpoint_anchor"
+    assert ledger.operator_budget_mode == "video_level"
+    assert ledger.reserved_positions_per_frame == [64, 1, 1, 1, 1, 1, 1, 64]
+
+
+def test_endpoint_anchor_mask_rejects_zero_token_non_anchor_frames() -> None:
+    positions = _positions(8, frames=4)
+    result = RLTMaskResult(
+        config=RLTMaskConfig(tubelet_size=1, grid_shape=(4, 4)),
+        tubelet_keep_mask=np.ones((4, 4, 4), dtype=bool),
+        frame_keep_mask=np.ones((4, 4, 4), dtype=bool),
+        floor_active_frame_mask=np.zeros((4, 4, 4), dtype=bool),
+        tubelet_scores=np.ones((4, 4, 4), dtype=np.float32),
+        tubelet_run_lengths=np.ones((4, 4, 4), dtype=np.int32),
+        frame_run_lengths=np.ones((4, 4, 4), dtype=np.int32),
+        first_tubelet_token_count=16,
+        threshold_active_token_count=16,
+        floor_active_token_count=0,
+    )
+
+    try:
+        rlt_endpoint_anchor_mask_for_positions(
+            result,
+            positions=positions,
+            keep_rate=0.5,
+            anchor_frames=(0, -1),
+        )
+    except ValueError as exc:
+        assert "fewer than one token" in str(exc)
+    else:
+        raise AssertionError("expected zero-token non-anchor rejection")
 
 
 def test_grid_shape_from_positions_rejects_non_dense_valid_grid() -> None:

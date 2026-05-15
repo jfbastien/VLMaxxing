@@ -1,6 +1,6 @@
 # 2026-05-14 query-routing Q0b/Q1 implementation prereg
 
-Status: **preregistered / implemented, not yet measured**.
+Status: **Q0b/Q1 measured; Q1b follow-up implemented, not yet measured**.
 
 This note records the first executable branch for the query-aware visual
 routing follow-on paper. It intentionally stops at Q0b and Q1. QuoTA-style
@@ -106,3 +106,78 @@ query-budget allocation under total-cost accounting.
 The likely negative outcome is also useful: if fixed/random/higher-K matches
 the typed operator, the query-aware paper should pivot toward budget
 scheduling or stay as a VLMaxxing appendix.
+
+## 2026-05-15 Q0b/Q1 result
+
+Outcome: **Q1 falsified the first typed-operator branch, but not the broader
+planner question.**
+
+Q0b showed the harness is sound:
+
+- Dense-equivalent replay matched dense exactly on 30/30 MVBench dev items
+  (`accuracy_delta=0.000`, choice agreement `1.000`).
+- C-VISION-only replay at `vision_keep_rate=1.0` also matched dense exactly
+  while exercising the patched C-VISION path.
+- Full `kr=1.0` still harmed the same three target items as admission-only,
+  because prompt admission remained active. This points at prompt-admission
+  scheduling / interaction, not a C-VISION oracle failure.
+
+Q1 then ran C-VISION-only operators at matched budget. The controls beat the
+typed operators:
+
+- `fixed_uniform`: `1.283x` E2E, aggregate `Delta acc=-0.033`.
+- `random_valid(seed=11)`: `1.254x` E2E, aggregate `Delta acc=0.000`.
+- Best typed branch (`rlt_topk_static_floor`, stride 4): aggregate
+  `Delta acc=-0.200`, target-pool `Delta acc=-0.333`.
+- RLT redundancy at higher K (`kr=0.7`) improved quality but was still slower
+  and no better than the best fixed/random controls.
+
+The queue correctly set `proceed_to_q2_scalar_query_baseline=false`. That
+falsifies the current static-floor / redundancy-top-k typed operator branch.
+It does **not** falsify query planning in general because Q1 did not test:
+class-conditional policy selection, endpoint anchors, admission-on/off
+scheduling for the coverage controls, global frame-token allocation, scalar
+query allocation, or one-step active repair.
+
+## Q1b follow-up preregistration
+
+Q1b is a narrow post-negative diagnostic. It is not a planner launch and does
+not authorize QuoTA, active repair, or full cost-model work. It asks whether
+the Q1 negative result still leaves measurable headroom for simple planning.
+
+H1b. Endpoint anchoring has headroom.
+
+- Arm: `rlt_topk_endpoint_anchor`, C-VISION-only, `kr=0.5`.
+- Mechanism: keep first and last frames dense, then spend the remaining
+  video-level encoder-position budget by RLT score.
+- Runtime note: unlike Q1's strict per-frame K operators, this uses the
+  variable-K C-VISION wrapper path: rows with different K are run separately
+  through the remaining vision-tower layers and scatter-backed in original
+  order. Total wall-clock is therefore part of the result, not assumed.
+- Accept: target-pool accuracy delta at least the best matched control and
+  E2E speedup > 1.0.
+- Falsify: target-pool delta below `random_valid(seed=11)` or no positive E2E.
+
+H2b. The best coverage control is admission-sensitive.
+
+- Arms: `random_valid(seed=11)` and `fixed_uniform` with prompt admission
+  toggled on (`prune_placeholders=rlt`) at the same C-VISION budget.
+- Accept admission as useful only if it preserves the best control's
+  target-pool delta while improving E2E.
+- Falsify: admission reintroduces the moving_attribute/object_interaction
+  harms seen in Q0b.
+
+H3b. A tiny class-conditional dense fallback can repair the control failure.
+
+- Arms: `random_valid(seed=11)` and `fixed_uniform` C-VISION-only with
+  `group_vision_keep_rates=action_localization=1.0`.
+- Motivation: the best Q1 control's remaining aggregate loss was concentrated
+  in one action_localization flip, not in the original target groups.
+- Accept: aggregate accuracy delta improves or stays flat versus the base
+  control, parse delta stays clean, and E2E remains > `1.10x`.
+- Falsify: dense fallback does not improve quality or collapses speed.
+
+Q1b outputs are diagnostic only. A positive result earns a fresh held-out
+planner experiment; a negative result leaves query routing as a VLMaxxing
+appendix and points future work at learned/scalar query allocation instead of
+hand-built typed operators.

@@ -152,6 +152,19 @@ def _keep_indices(keep_mask: mx.array) -> mx.array:
     return idx
 
 
+def _keep_counts(keep_mask: mx.array) -> list[int]:
+    if keep_mask.ndim != 2:
+        raise ValueError(f"keep_mask must be 2D [B, L], got shape={keep_mask.shape}")
+    row_counts = keep_mask.astype(mx.int32).sum(axis=1)
+    mx.eval(row_counts)
+    counts = [int(row_counts[row].item()) for row in range(int(keep_mask.shape[0]))]
+    if not counts:
+        raise ValueError("keep_mask must contain at least one row")
+    if any(count <= 0 for count in counts):
+        raise ValueError("keep_mask must keep at least one token per row")
+    return counts
+
+
 def make_pruned_encoder_call(
     original_encoder: Any, config: PruneConfig, keep_mask_fn: KeepMaskFn
 ) -> Callable[[mx.array, mx.array, mx.array], mx.array]:
@@ -172,25 +185,46 @@ def make_pruned_encoder_call(
             if i == layer_idx:
                 B, L_full, _ = hidden_states.shape
                 keep = keep_mask_fn(hidden_states, positions)  # [B, L]
-                idx = _keep_indices(keep)  # [B, K]
-                hidden_states = _slice_keep(hidden_states, idx, axis=1)
-                positions = _slice_keep(positions, idx, axis=1)
-                # mask shape: [B, 1, L, L] (or [B, 1, 1, L, L] — varies).
-                # Slice last two axes, preserving leading ones.
-                # For mlx_vlm Gemma4: shape is [B, 1, L, L].
-                if mask is not None and mask.ndim == 4:
-                    mask = _slice_keep(mask, idx, axis=-1)
-                    mask = _slice_keep(mask, idx, axis=-2)
-                # Save indices for scatter-back after remaining layers.
-                _kept_idx_saved = idx  # noqa: F841 (captured via closure below)
-                # Continue remaining layers with compact sequence.
-                # Break out of the enumerate loop so we can do this cleanly.
                 remaining = layers[i + 1 :]
-                for later_layer in remaining:
-                    hidden_states = later_layer(hidden_states, positions, mask)
-                # Scatter back to [B, L_full, D] so pooler geometry is
-                # preserved. Pruned positions become zero.
-                hidden_states = _scatter_back(hidden_states, idx, L_full)
+                counts = _keep_counts(keep)
+                if len(set(counts)) == 1:
+                    idx = _keep_indices(keep)  # [B, K]
+                    hidden_states = _slice_keep(hidden_states, idx, axis=1)
+                    positions = _slice_keep(positions, idx, axis=1)
+                    # mask shape: [B, 1, L, L] (or [B, 1, 1, L, L] — varies).
+                    # Slice last two axes, preserving leading ones.
+                    # For mlx_vlm Gemma4: shape is [B, 1, L, L].
+                    if mask is not None and mask.ndim == 4:
+                        mask = _slice_keep(mask, idx, axis=-1)
+                        mask = _slice_keep(mask, idx, axis=-2)
+                    for later_layer in remaining:
+                        hidden_states = later_layer(hidden_states, positions, mask)
+                    # Scatter back to [B, L_full, D] so pooler geometry is
+                    # preserved. Pruned positions become zero.
+                    hidden_states = _scatter_back(hidden_states, idx, L_full)
+                else:
+                    # Video-level policies can spend non-uniform K across frames
+                    # (for example dense endpoint anchors plus sparse middle
+                    # frames). The Gemma encoder still needs rectangular tensors,
+                    # so run each row through the remaining layers independently
+                    # and concatenate the scatter-backed rows in original order.
+                    outputs: list[mx.array] = []
+                    for batch_idx in range(int(B)):
+                        row_keep = keep[batch_idx : batch_idx + 1]
+                        idx = _keep_indices(row_keep)
+                        row_hidden = hidden_states[batch_idx : batch_idx + 1]
+                        row_positions = positions[batch_idx : batch_idx + 1]
+                        row_hidden = _slice_keep(row_hidden, idx, axis=1)
+                        row_positions = _slice_keep(row_positions, idx, axis=1)
+                        row_mask = mask
+                        if row_mask is not None and row_mask.ndim == 4:
+                            row_mask = row_mask[batch_idx : batch_idx + 1]
+                            row_mask = _slice_keep(row_mask, idx, axis=-1)
+                            row_mask = _slice_keep(row_mask, idx, axis=-2)
+                        for later_layer in remaining:
+                            row_hidden = later_layer(row_hidden, row_positions, row_mask)
+                        outputs.append(_scatter_back(row_hidden, idx, L_full))
+                    hidden_states = mx.concatenate(outputs, axis=0)
                 return hidden_states
         return hidden_states
 

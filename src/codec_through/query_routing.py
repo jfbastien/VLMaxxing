@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -197,6 +197,91 @@ def rlt_static_floor_mask_for_positions(
         complement_size_per_frame=complement_counts,
         operator_overlap_count_per_frame=overlap_counts,
         static_floor_overflow=static_floor_overflow,
+    )
+
+
+def rlt_endpoint_anchor_mask_for_positions(
+    result: RLTMaskResult,
+    *,
+    positions: npt.NDArray[Any],
+    keep_rate: float,
+    anchor_frames: tuple[int, ...] = (0, -1),
+) -> tuple[BoolArray, OperatorLedger]:
+    """Keep endpoint frames dense, then spend the remaining video-level K by RLT score."""
+
+    pos = np.asarray(positions, dtype=np.int64)
+    if pos.ndim != 3 or pos.shape[-1] != 2:
+        raise ValueError(f"positions must be [B,L,2], got {pos.shape}")
+    frame_count = int(pos.shape[0])
+    if frame_count != result.frame_count:
+        raise ValueError(f"position rows {frame_count} must match RLT frames {result.frame_count}")
+    valid_counts = [int(((row[:, 0] >= 0) & (row[:, 1] >= 0)).sum()) for row in pos]
+    if len(set(valid_counts)) != 1:
+        raise ValueError(f"endpoint-anchor requires uniform valid counts, got {valid_counts}")
+    valid_positions_per_frame = valid_counts[0]
+    budget = endpoint_anchor_budget(
+        frame_count=frame_count,
+        valid_positions_per_frame=valid_positions_per_frame,
+        keep_rate=keep_rate,
+        anchor_frames=anchor_frames,
+    )
+    remaining_frames = int(cast(int, budget["remaining_frames"]))
+    remaining_budget = int(cast(int, budget["remaining_budget"]))
+    if remaining_frames > 0 and remaining_budget < remaining_frames:
+        raise ValueError(
+            "endpoint-anchor budget leaves fewer than one token for each "
+            f"non-anchor frame: remaining_budget={remaining_budget} "
+            f"remaining_frames={remaining_frames}"
+        )
+    anchors = {int(frame if frame >= 0 else frame_count + frame) for frame in anchor_frames}
+    total_budget = int(cast(int, budget["total_budget"]))
+    frame_scores = np.repeat(result.tubelet_scores, result.config.tubelet_size, axis=0)
+    frame_scores = frame_scores[: result.frame_count]
+    mask = np.zeros(pos.shape[:2], dtype=bool)
+    reserved: list[int] = []
+    complement: list[int] = []
+    overlap: list[int] = []
+    score_vectors: dict[int, npt.NDArray[np.float32]] = {}
+    min_keep_debit = 0
+    for row_idx, row in enumerate(pos):
+        valid = (row[:, 0] >= 0) & (row[:, 1] >= 0)
+        valid_idx = np.flatnonzero(valid)
+        grid_shape = grid_shape_from_valid_positions(row)
+        if row_idx in anchors:
+            mask[row_idx, valid_idx] = True
+            reserved.append(int(valid_idx.size))
+            complement.append(0)
+            overlap.append(0)
+            continue
+        score_grid = project_float_grid(frame_scores[row_idx], grid_shape)
+        token_scores = np.full((row.shape[0],), -np.inf, dtype=np.float32)
+        token_scores[valid] = score_grid[row[valid, 1], row[valid, 0]]
+        score_vectors[row_idx] = token_scores
+        first = _top_k(token_scores, 1)
+        mask[row_idx, first] = True
+        min_keep_debit += 1
+        reserved.append(1)
+        complement.append(int(valid_idx.size - 1))
+        overlap.append(0)
+    remaining_to_spend = remaining_budget - min_keep_debit
+    candidates: list[tuple[float, int, int]] = []
+    for row_idx, token_scores in score_vectors.items():
+        for token_idx in np.flatnonzero(~mask[row_idx] & np.isfinite(token_scores)):
+            candidates.append((float(token_scores[token_idx]), row_idx, int(token_idx)))
+    candidates.sort(key=lambda item: (-item[0], item[1], item[2]))
+    for _score, selected_row_idx, selected_token_idx in candidates[:remaining_to_spend]:
+        mask[selected_row_idx, selected_token_idx] = True
+    if int(mask.sum()) != total_budget:
+        raise ValueError(
+            f"endpoint-anchor selected {int(mask.sum())} positions but expected {total_budget}"
+        )
+    return mask, OperatorLedger(
+        operator_plan="rlt_topk_endpoint_anchor",
+        operator_budget_mode="video_level",
+        reserved_positions_per_frame=reserved,
+        complement_size_per_frame=complement,
+        operator_overlap_count_per_frame=overlap,
+        static_floor_overflow=False,
     )
 
 
