@@ -240,6 +240,17 @@ move to matched-budget operator ablations: static-detail floors, endpoint
 anchors, fixed coverage, random coverage, duplication-aware coverage, and one
 scalar query-aware comparator.
 
+Update after Q1/Q1b measurement on 2026-05-18: the first typed vision-mask
+branch did not survive. RLT top-k, static-floor, and endpoint-anchor C-VISION
+masks all lost to fixed/random coverage at matched budget. Q1b then showed why
+the random/fixed controls looked good: they had prompt admission off. Turning
+admission on for the same coverage controls recreated the
+`moving_attribute`/`object_interaction` damage. The active hypothesis is now
+narrower and more useful: **coverage-first vision masks, plus an admission
+scheduler that treats prompt deletion as a separate physical operator.** Q1c
+therefore tests only a small admission scheduler before any scalar-query,
+repair-pass, or learned-planner work.
+
 Relevant local source files:
 
 - Current paper framing: `paper/framing.md`
@@ -1703,6 +1714,11 @@ paper #1 closeout transfers for free:
   needs more K." The kr=1.0 dev failure of `moving_attribute` is the
   *motivation*, not the *target* — the target is a typed operator
   that fixes it by changing the evidence type, not the budget.
+- **Q1/Q1b negative rows are paper-2 boundary evidence.** The current typed
+  vision-mask families are negative controls, not things to tune again. Any
+  revival must beat fixed/random coverage with prompt admission disabled by
+  default, or prove that admission scheduling itself adds speed without
+  reintroducing target-bucket damage.
 
 ### Existing paper #1 artifacts paper #2 can reuse as background
 

@@ -101,6 +101,7 @@ def test_schema_hash_includes_max_tokens() -> None:
         keep_rate=0.5,
         group_keep_rates={},
         prune_placeholders="none",
+        group_prune_placeholders={},
         n_warmup=1,
         max_tokens=16,
         vision_tower_layer=1,
@@ -126,6 +127,7 @@ def test_schema_hash_includes_group_keep_rate_overrides() -> None:
         keep_rate=0.5,
         group_keep_rates={},
         prune_placeholders="rlt",
+        group_prune_placeholders={},
         n_warmup=1,
         max_tokens=16,
         vision_tower_layer=1,
@@ -153,12 +155,56 @@ def test_schema_hash_includes_group_keep_rate_overrides() -> None:
     assert base_row["artifact_config_hash"] != adaptive_row["artifact_config_hash"]
 
 
+def test_schema_hash_includes_group_prune_placeholder_overrides() -> None:
+    base = argparse.Namespace(
+        manifest="manifest.toml",
+        model_path="gemma",
+        frame_count=8,
+        anchor_arm="gemma_structural",
+        keep_rate=1.0,
+        group_keep_rates={},
+        prune_placeholders="none",
+        group_prune_placeholders={},
+        n_warmup=1,
+        max_tokens=16,
+        vision_tower_layer=1,
+        vision_tower_keep_rate=0.5,
+        group_vision_keep_rates={},
+        vision_tower_score_mode="random_valid",
+        arm_order="abba",
+        prefill_step_size=1024,
+    )
+    scheduled = argparse.Namespace(
+        **{
+            **vars(base),
+            "group_prune_placeholders": {"fine_grained_action": "rlt"},
+        }
+    )
+
+    base_row = runner._schema_row(base, RLTMaskConfig())
+    scheduled_row = runner._schema_row(scheduled, RLTMaskConfig())
+
+    assert scheduled_row["artifact_payload"]["group_prune_placeholders"] == {
+        "fine_grained_action": "rlt"
+    }
+    assert scheduled_row["artifact_payload"]["rlt_config"] is not None
+    assert base_row["artifact_config_hash"] != scheduled_row["artifact_config_hash"]
+
+
 def test_group_keep_rate_parser_and_resolver() -> None:
     parsed = runner._parse_group_keep_rates("long=0.7,medium=0.85")
 
     assert parsed == {"long": 0.7, "medium": 0.85}
     assert runner._resolve_group_keep_rate(0.5, parsed, "long") == 0.7
     assert runner._resolve_group_keep_rate(0.5, parsed, "short") == 0.5
+
+
+def test_group_prune_placeholder_parser_and_resolver() -> None:
+    parsed = runner._parse_group_prune_placeholders("fine_grained_action=rlt,moving_direction=none")
+
+    assert parsed == {"fine_grained_action": "rlt", "moving_direction": "none"}
+    assert runner._resolve_group_prune_placeholders("none", parsed, "fine_grained_action") == "rlt"
+    assert runner._resolve_group_prune_placeholders("none", parsed, "action_localization") == "none"
 
 
 def test_record_payload_emits_direct_prefill_and_generation_fields() -> None:

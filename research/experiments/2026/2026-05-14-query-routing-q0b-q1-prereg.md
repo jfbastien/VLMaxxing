@@ -1,6 +1,7 @@
 # 2026-05-14 query-routing Q0b/Q1 implementation prereg
 
-Status: **Q0b/Q1 measured; Q1b follow-up implemented, not yet measured**.
+Status: **Q0b/Q1/Q1b measured; Q1c admission-scheduler follow-up implemented,
+not yet measured**.
 
 This note records the first executable branch for the query-aware visual
 routing follow-on paper. It intentionally stops at Q0b and Q1. QuoTA-style
@@ -181,3 +182,79 @@ Q1b outputs are diagnostic only. A positive result earns a fresh held-out
 planner experiment; a negative result leaves query routing as a VLMaxxing
 appendix and points future work at learned/scalar query allocation instead of
 hand-built typed operators.
+
+## 2026-05-18 Q1b result
+
+Outcome: **static vision-mask scoring is closed for this branch; admission
+scheduling remains open.**
+
+Q1b tested the three holes Q1 had left open:
+
+- `rlt_topk_endpoint_anchor`: `1.184x` E2E, aggregate
+  `Delta acc=-0.200`, target-pool `Delta acc=-0.250`. This failed in the same
+  range as the previous typed masks, so endpoint anchoring is not the missing
+  C-VISION scorer.
+- `fixed_uniform + admission`: `1.457x` E2E, aggregate
+  `Delta acc=-0.167`, target-pool `Delta acc=-0.417`. The CI excludes zero
+  on aggregate accuracy loss.
+- `random_valid(seed=11) + admission`: `1.458x` E2E, aggregate
+  `Delta acc=-0.067`, target-pool `Delta acc=-0.250`.
+- `fixed_uniform + actionloc_dense`: `1.197x` E2E, aggregate
+  `Delta acc=0.000`.
+- `random_valid(seed=11) + actionloc_dense`: `1.140x` E2E, aggregate
+  `Delta acc=+0.033`.
+
+Interpretation: Q1's random/fixed controls were not winning because random
+coverage is intrinsically smart. They were winning because prompt admission
+was off. When prompt admission is turned on, the same content-concentrated
+damage returns, especially `moving_attribute`. The next small experiment is
+therefore not another static vision-mask scorer. It is an admission scheduler:
+keep coverage-first C-VISION, disable prompt admission by default, and admit
+only low-risk groups.
+
+## Q1c admission-scheduler preregistration
+
+Q1c is a narrow exploratory dev follow-up. It is still not a QuoTA run, not a
+repair-pass run, and not a full planner. It asks whether the already-measured
+Q1/Q1b rows contain a real policy frontier: can prompt admission be used as a
+scheduled physical operator instead of an always-on pruning step?
+
+The design is coverage-first:
+
+- C-VISION scorer: `random_valid(seed=11)`.
+- C-VISION default keep-rate: `kr=0.5`.
+- Prompt admission default: disabled via global `--prune-placeholders none`.
+- Prompt admission enabled only for preregistered low-risk groups via
+  `group_prune_placeholders=fine_grained_action=rlt,moving_direction=rlt`.
+
+Important implementation detail: RLT prompt admission is thresholded, not
+fixed-K. Therefore `--keep-rate 1.0` is **not** a no-admission setting for
+`prune_placeholders=rlt`; Q1c needs explicit group-level placeholder-pruning
+scheduling.
+
+H1c. Safe admission beats the Q1 random coverage baseline.
+
+- Arm: `query_q1c_mvbench_random_seed11_safe_admission`.
+- Accept: aggregate accuracy delta and target-pool delta are at least as good
+  as Q1 `random_valid(seed=11)`, parse delta remains clean, and E2E is higher
+  than Q1 `random_valid(seed=11)`.
+- Falsify: any accuracy/target regression relative to Q1 random coverage, or
+  no E2E improvement.
+
+H2c. Safe admission composes with the action-localization dense fallback.
+
+- Arm:
+  `query_q1c_mvbench_random_seed11_safe_admission_actionloc_dense`.
+- Difference from H1c: add
+  `group_vision_keep_rates=action_localization=1.0`.
+- Accept: aggregate accuracy delta and target-pool delta are at least as good
+  as Q1b `random_valid(seed=11) + actionloc_dense`, parse delta remains clean,
+  and E2E is higher than that Q1b dense-fallback baseline.
+- Falsify: the dense fallback removes the admission speed gain, or safe
+  admission reintroduces target-bucket damage.
+
+Decision rule: if either arm passes, run exactly one held-out confirmation
+using the winning policy before changing the paper-2 status. If both fail,
+query routing remains an appendix negative result; the next serious revival
+must use a qualitatively different mechanism such as scalar query allocation
+or one-step active repair.

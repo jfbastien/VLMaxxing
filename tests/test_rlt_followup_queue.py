@@ -669,6 +669,82 @@ def test_query_routing_q1b_requires_q1(tmp_path: Path) -> None:
     assert "--run-query-routing-q1b-followup requires" in completed.stderr
 
 
+def test_query_routing_q1c_dry_run_plans_safe_admission_cells(tmp_path: Path) -> None:
+    summary_path = tmp_path / "summary.json"
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_rlt_followup_queue.py",
+            "--run-cvision-rlt",
+            "--run-query-routing-q0b",
+            "--run-query-routing-q1",
+            "--run-query-routing-q1b-followup",
+            "--run-query-routing-q1c-admission-scheduler",
+            "--query-routing-benchmarks",
+            "mvbench",
+            "--dry-run",
+            "--summary",
+            str(summary_path),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(summary_path.read_text(encoding="utf-8"))
+    commands = [item["command"] for item in payload["planned_commands"]]
+    assert any(
+        "--prune-placeholders" in command
+        and command[command.index("--prune-placeholders") + 1] == "none"
+        and "--keep-rate" in command
+        and command[command.index("--keep-rate") + 1] == "1"
+        and "--group-prune-placeholders" in command
+        and command[command.index("--group-prune-placeholders") + 1]
+        == "fine_grained_action=rlt,moving_direction=rlt"
+        and "--vision-tower-score-mode" in command
+        and command[command.index("--vision-tower-score-mode") + 1] == "random_valid"
+        and any(
+            arg.endswith("query_q1c_mvbench_random_seed11_safe_admission_composed.jsonl")
+            for arg in command
+        )
+        for command in commands
+    )
+    assert any(
+        "--group-vision-keep-rates" in command
+        and command[command.index("--group-vision-keep-rates") + 1] == "action_localization=1"
+        and any(
+            arg.endswith(
+                "query_q1c_mvbench_random_seed11_safe_admission_actionloc_dense_composed.jsonl"
+            )
+            for arg in command
+        )
+        for command in commands
+    )
+
+
+def test_query_routing_q1c_requires_q1b(tmp_path: Path) -> None:
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_rlt_followup_queue.py",
+            "--run-cvision-rlt",
+            "--run-query-routing-q0b",
+            "--run-query-routing-q1",
+            "--run-query-routing-q1c-admission-scheduler",
+            "--dry-run",
+            "--summary",
+            str(tmp_path / "summary.json"),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode != 0
+    assert "--run-query-routing-q1c-admission-scheduler requires" in completed.stderr
+
+
 def test_query_q1b_verdict_compares_against_best_fixed_or_random_control() -> None:
     def analysis(*, delta: float, target_delta: float, speedup: float = 1.2) -> dict[str, Any]:
         return {
@@ -761,6 +837,94 @@ def test_query_q1b_admission_verdict_requires_e2e_improvement() -> None:
         "random_seed11": False,
     }
     assert verdict["admission_preserves_best_control"] is False
+
+
+def test_query_q1c_verdict_requires_accuracy_and_speed_gain() -> None:
+    def analysis(*, delta: float, target_delta: float, speedup: float) -> dict[str, Any]:
+        return {
+            "summary": {
+                "accuracy_delta_composed_minus_dense": delta,
+                "e2e_speedup_dense_over_composed": speedup,
+                "pass_fidelity": delta >= -0.05,
+                "pass_parse_failure_delta": True,
+                "bucket_failures": [],
+                "by_group": {
+                    "moving_attribute": {
+                        "n": 6,
+                        "dense_accuracy": 0.5,
+                        "composed_accuracy": 0.5 + target_delta,
+                    },
+                    "object_interaction": {
+                        "n": 6,
+                        "dense_accuracy": 0.5,
+                        "composed_accuracy": 0.5,
+                    },
+                },
+            }
+        }
+
+    analyses = {
+        "query_q1_mvbench_random_seed11": analysis(delta=0.0, target_delta=0.0, speedup=1.25),
+        "query_q1b_mvbench_random_seed11_actionloc_dense": analysis(
+            delta=0.03, target_delta=0.0, speedup=1.14
+        ),
+        "query_q1c_mvbench_random_seed11_safe_admission": analysis(
+            delta=0.03, target_delta=0.0, speedup=1.28
+        ),
+        "query_q1c_mvbench_random_seed11_safe_admission_actionloc_dense": analysis(
+            delta=0.03, target_delta=0.0, speedup=1.18
+        ),
+    }
+
+    verdict = queue._query_q1c_admission_scheduler_verdict(analyses)
+
+    assert verdict["safe_admission_beats_q1_random"]
+    assert verdict["safe_admission_actionloc_dense_beats_q1b_actionloc_dense"]
+    assert verdict["proceed_to_holdout_admission_scheduler"]
+
+
+def test_query_q1c_verdict_rejects_speed_only_regression() -> None:
+    def analysis(*, delta: float, target_delta: float, speedup: float) -> dict[str, Any]:
+        return {
+            "summary": {
+                "accuracy_delta_composed_minus_dense": delta,
+                "e2e_speedup_dense_over_composed": speedup,
+                "pass_fidelity": delta >= -0.05,
+                "pass_parse_failure_delta": True,
+                "bucket_failures": [],
+                "by_group": {
+                    "moving_attribute": {
+                        "n": 6,
+                        "dense_accuracy": 0.5,
+                        "composed_accuracy": 0.5 + target_delta,
+                    },
+                    "object_interaction": {
+                        "n": 6,
+                        "dense_accuracy": 0.5,
+                        "composed_accuracy": 0.5,
+                    },
+                },
+            }
+        }
+
+    analyses = {
+        "query_q1_mvbench_random_seed11": analysis(delta=0.0, target_delta=0.0, speedup=1.25),
+        "query_q1b_mvbench_random_seed11_actionloc_dense": analysis(
+            delta=0.03, target_delta=0.0, speedup=1.14
+        ),
+        "query_q1c_mvbench_random_seed11_safe_admission": analysis(
+            delta=-0.10, target_delta=-0.10, speedup=1.45
+        ),
+        "query_q1c_mvbench_random_seed11_safe_admission_actionloc_dense": analysis(
+            delta=0.03, target_delta=-0.10, speedup=1.45
+        ),
+    }
+
+    verdict = queue._query_q1c_admission_scheduler_verdict(analyses)
+
+    assert not verdict["safe_admission_beats_q1_random"]
+    assert not verdict["safe_admission_actionloc_dense_beats_q1b_actionloc_dense"]
+    assert not verdict["proceed_to_holdout_admission_scheduler"]
 
 
 def _direct_summary(

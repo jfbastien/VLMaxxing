@@ -44,6 +44,11 @@ MVBENCH_MOVING_ATTRIBUTE_BRACKET_KEEP_RATES: dict[str, float] = {
 }
 QUERY_ROUTING_Q1_RANDOM_SEEDS = (11, 23, 37)
 QUERY_ROUTING_Q1B_ACTIONLOC_REPAIR_KEEP_RATES = {"action_localization": 1.0}
+QUERY_ROUTING_Q1C_SAFE_ADMISSION_KEEP_RATES = {
+    "fine_grained_action": 0.5,
+    "moving_direction": 0.5,
+}
+QUERY_ROUTING_Q1C_ACTIONLOC_DENSE_KEEP_RATES = {"action_localization": 1.0}
 
 PHASE_ESTIMATES_HOURS = {
     "prefill-kernel-microbench": [0.35, 1.35],
@@ -95,6 +100,7 @@ PHASE_ESTIMATES_HOURS = {
     "query-routing-q1-tomato-n30": [4.0, 8.0],
     "query-routing-q1-mvbench-n30": [4.0, 8.0],
     "query-routing-q1b-mvbench-n30": [2.5, 5.5],
+    "query-routing-q1c-mvbench-n30": [1.0, 2.5],
 }
 
 
@@ -457,6 +463,7 @@ def _gemma_full_composition_commands(
     vision_score_mode: str = "rlt_topk",
     vision_static_floor_stride: int | None = None,
     vision_random_seed: int | None = None,
+    group_prune_placeholders: dict[str, str] | None = None,
     group_keep_rates: dict[str, float] | None = None,
     group_vision_keep_rates: dict[str, float] | None = None,
 ) -> list[list[str]]:
@@ -535,6 +542,15 @@ def _gemma_full_composition_commands(
         composed.extend(["--n-items", str(n_items)])
     if group_keep_rates:
         composed.extend(["--group-keep-rates", _format_group_keep_rates(group_keep_rates)])
+    if group_prune_placeholders:
+        composed.extend(
+            [
+                "--group-prune-placeholders",
+                ",".join(
+                    f"{group}={mode}" for group, mode in sorted(group_prune_placeholders.items())
+                ),
+            ]
+        )
     if group_vision_keep_rates:
         composed.extend(
             ["--group-vision-keep-rates", _format_group_keep_rates(group_vision_keep_rates)]
@@ -1006,6 +1022,70 @@ def _query_q1b_followup_verdict(analyses: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _query_q1c_admission_scheduler_verdict(analyses: dict[str, Any]) -> dict[str, Any]:
+    """Summarize exploratory admission-scheduler rows against Q1/Q1b controls."""
+
+    benchmark = "mvbench"
+
+    def row(label: str) -> dict[str, Any] | None:
+        analysis = analyses.get(label)
+        summary = analysis.get("summary") if isinstance(analysis, dict) else None
+        if not isinstance(summary, dict):
+            return None
+        return {
+            "accuracy_delta": float(summary.get("accuracy_delta_composed_minus_dense", 0.0)),
+            "target_accuracy_delta": _target_accuracy_delta(summary, benchmark),
+            "e2e_speedup": float(summary.get("e2e_speedup_dense_over_composed", 0.0)),
+            "pass_fidelity": bool(summary.get("pass_fidelity")),
+            "pass_parse_failure_delta": bool(summary.get("pass_parse_failure_delta")),
+            "bucket_failures": summary.get("bucket_failures", []),
+        }
+
+    labels = {
+        "q1_random_seed11": "query_q1_mvbench_random_seed11",
+        "q1b_random_seed11_actionloc_dense": "query_q1b_mvbench_random_seed11_actionloc_dense",
+        "q1c_random_seed11_safe_admission": "query_q1c_mvbench_random_seed11_safe_admission",
+        "q1c_random_seed11_safe_admission_actionloc_dense": (
+            "query_q1c_mvbench_random_seed11_safe_admission_actionloc_dense"
+        ),
+    }
+    rows = {name: row(label) for name, label in labels.items()}
+    missing = [name for name, payload in rows.items() if payload is None]
+    base = rows.get("q1_random_seed11") or {}
+    actionloc_base = rows.get("q1b_random_seed11_actionloc_dense") or {}
+    safe = rows.get("q1c_random_seed11_safe_admission") or {}
+    safe_actionloc = rows.get("q1c_random_seed11_safe_admission_actionloc_dense") or {}
+
+    def improves(candidate: dict[str, Any], baseline: dict[str, Any]) -> bool:
+        return (
+            not missing
+            and bool(candidate.get("pass_fidelity"))
+            and bool(candidate.get("pass_parse_failure_delta"))
+            and float(candidate.get("accuracy_delta", -1.0))
+            >= float(baseline.get("accuracy_delta", 0.0))
+            and float(candidate.get("target_accuracy_delta", -1.0))
+            >= float(baseline.get("target_accuracy_delta", 0.0))
+            and float(candidate.get("e2e_speedup", 0.0)) > float(baseline.get("e2e_speedup", 0.0))
+        )
+
+    return {
+        "benchmark": benchmark,
+        "missing": missing,
+        "rows": rows,
+        "safe_admission_beats_q1_random": improves(safe, base),
+        "safe_admission_actionloc_dense_beats_q1b_actionloc_dense": improves(
+            safe_actionloc, actionloc_base
+        ),
+        "proceed_to_holdout_admission_scheduler": improves(safe, base)
+        or improves(safe_actionloc, actionloc_base),
+        "paper_feedback": (
+            "Q1c is still exploratory dev evidence. A positive row authorizes a "
+            "single held-out admission-scheduler confirmation, not a standalone "
+            "planner claim."
+        ),
+    }
+
+
 def _paper_feedback(*, analyses: dict[str, Any], decisions: list[dict[str, Any]]) -> dict[str, Any]:
     """Machine-readable editor notes from the autonomous supervisor."""
 
@@ -1015,6 +1095,10 @@ def _paper_feedback(*, analyses: dict[str, Any], decisions: list[dict[str, Any]]
     q1_verdict = analyses.get("query_routing_q1_verdict")
     q1_ready = isinstance(q1_verdict, dict) and bool(
         q1_verdict.get("proceed_to_q2_scalar_query_baseline")
+    )
+    q1c_verdict = analyses.get("query_routing_q1c_admission_scheduler_verdict")
+    q1c_ready = isinstance(q1c_verdict, dict) and bool(
+        q1c_verdict.get("proceed_to_holdout_admission_scheduler")
     )
     failed_reasons = sorted(
         {
@@ -1053,6 +1137,11 @@ def _paper_feedback(*, analyses: dict[str, Any], decisions: list[dict[str, Any]]
                 "Q1 outputs cannot justify proceed-to-Q2 unless the aggregate "
                 "matched-budget verdict beats fixed/random/redundancy controls."
             )
+    if q1c_ready:
+        allowed_claims.append(
+            "Q1c admission-scheduler rows beat their preregistered dev control; "
+            "run one held-out confirmation before claiming a planner win."
+        )
     return {
         "allowed_claims": allowed_claims,
         "disallowed_claims": disallowed_claims,
@@ -1271,6 +1360,15 @@ def main() -> int:
         ),
     )
     parser.add_argument(
+        "--run-query-routing-q1c-admission-scheduler",
+        action="store_true",
+        help=(
+            "Run the narrow Q1c admission-scheduler follow-up after Q1b. This "
+            "keeps C-VISION coverage-first, disables prompt admission by "
+            "default, and admits only preregistered low-risk groups."
+        ),
+    )
+    parser.add_argument(
         "--query-routing-benchmarks",
         default="mvbench",
         help=(
@@ -1333,6 +1431,17 @@ def main() -> int:
             "--run-query-routing-q1b-followup requires --run-cvision-rlt, "
             "--run-query-routing-q0b, and --run-query-routing-q1"
         )
+    if args.run_query_routing_q1c_admission_scheduler and not (
+        args.run_cvision_rlt
+        and args.run_query_routing_q0b
+        and args.run_query_routing_q1
+        and args.run_query_routing_q1b_followup
+    ):
+        raise SystemExit(
+            "--run-query-routing-q1c-admission-scheduler requires --run-cvision-rlt, "
+            "--run-query-routing-q0b, --run-query-routing-q1, and "
+            "--run-query-routing-q1b-followup"
+        )
     if args.cooldown_after_microbench_seconds < 0:
         raise SystemExit("--cooldown-after-microbench-seconds must be nonnegative")
     if args.mlx_memory_limit_gb < 0.0:
@@ -1343,6 +1452,10 @@ def main() -> int:
     query_routing_benchmarks = _parse_benchmarks(args.query_routing_benchmarks)
     if args.run_query_routing_q1b_followup and query_routing_benchmarks != ["mvbench"]:
         raise SystemExit("--run-query-routing-q1b-followup currently supports mvbench only")
+    if args.run_query_routing_q1c_admission_scheduler and query_routing_benchmarks != ["mvbench"]:
+        raise SystemExit(
+            "--run-query-routing-q1c-admission-scheduler currently supports mvbench only"
+        )
     phases: list[str] = []
     if args.run_prefill_diagnostics:
         phases.append("prefill-kernel-microbench")
@@ -1437,6 +1550,8 @@ def main() -> int:
         phases.extend(f"query-routing-q1-{benchmark}-n30" for benchmark in query_routing_benchmarks)
     if args.run_query_routing_q1b_followup:
         phases.append("query-routing-q1b-mvbench-n30")
+    if args.run_query_routing_q1c_admission_scheduler:
+        phases.append("query-routing-q1c-mvbench-n30")
     budget = _budget(phases)
     if budget["high_hours"] > args.max_planned_hours:
         raise SystemExit(
@@ -1959,6 +2074,7 @@ def main() -> int:
                 vision_random_seed=random_seed,
             )
     query_q1b_commands: dict[str, list[list[str]]] = {}
+    query_q1c_commands: dict[str, list[list[str]]] = {}
     if "mvbench" in query_routing_benchmarks:
         benchmark = "mvbench"
         manifest = benchmark_manifests[benchmark]
@@ -2057,6 +2173,46 @@ def main() -> int:
                 vision_score_mode=score_mode,
                 vision_static_floor_stride=floor_stride,
                 vision_random_seed=random_seed,
+                group_vision_keep_rates=group_vision_keep_rates,
+            )
+        q1c_specs: list[
+            tuple[
+                str,
+                dict[str, float] | None,
+            ]
+        ] = [
+            (
+                f"query_q1c_{benchmark}_random_seed11_safe_admission",
+                None,
+            ),
+            (
+                f"query_q1c_{benchmark}_random_seed11_safe_admission_actionloc_dense",
+                QUERY_ROUTING_Q1C_ACTIONLOC_DENSE_KEEP_RATES,
+            ),
+        ]
+        for label, group_vision_keep_rates in q1c_specs:
+            query_q1c_commands[label] = _gemma_full_composition_commands(
+                artifact_dir=args.artifact_dir,
+                manifest=manifest,
+                model_path=args.gemma_model_path,
+                frame_count=args.frame_count,
+                n_items=0,
+                expected_items=expected,
+                rss_guard_mb=args.rss_guard_mb,
+                mlx_memory_limit_gb=args.mlx_memory_limit_gb,
+                benchmark=benchmark,
+                prefill_step_size=args.composition_prefill_step_size,
+                vision_keep_rate=0.5,
+                label=label,
+                dense_source_label=dense_source_label,
+                include_dense_command=False,
+                composed_keep_rate=1.0,
+                composed_prune_placeholders="none",
+                vision_score_mode="random_valid",
+                vision_random_seed=11,
+                group_prune_placeholders={
+                    group: "rlt" for group in QUERY_ROUTING_Q1C_SAFE_ADMISSION_KEEP_RATES
+                },
                 group_vision_keep_rates=group_vision_keep_rates,
             )
     if args.run_prefill_diagnostics:
@@ -2247,6 +2403,15 @@ def main() -> int:
                 }
                 for c in phase_commands
             )
+    if args.run_query_routing_q1c_admission_scheduler:
+        for label, phase_commands in query_q1c_commands.items():
+            planned.extend(
+                {
+                    "phase": f"{label}_after_q1b_admission_damage",
+                    "command": c,
+                }
+                for c in phase_commands
+            )
     if args.dry_run:
         _write_json(
             summary_path,
@@ -2393,6 +2558,19 @@ def main() -> int:
                             )
                         ]
                         if args.run_query_routing_q1b_followup
+                        else []
+                    ),
+                    *(
+                        [
+                            (
+                                "Run Q1c only after Q1b. This is a narrow admission-scheduler "
+                                "diagnostic: coverage-first random C-VISION, prompt admission "
+                                "off by default, and admission enabled only for preregistered "
+                                "low-risk groups. A positive row authorizes holdout confirmation, "
+                                "not a standalone planner claim."
+                            )
+                        ]
+                        if args.run_query_routing_q1c_admission_scheduler
                         else []
                     ),
                 ],
@@ -3083,6 +3261,85 @@ def main() -> int:
             {
                 "decision": "skip",
                 "reason": "query_routing_q1b_requires_rlt_videomme_pass",
+            }
+        )
+    if args.run_query_routing_q1c_admission_scheduler and cvision_videomme_passed:
+        q0b_gate = analyses.get("query_routing_q0b_gate", {})
+        q0b_ok = isinstance(q0b_gate, dict) and bool(q0b_gate.get("proceed_to_q1"))
+        q1_verdict = analyses.get("query_routing_q1_verdict", {})
+        q1_by_benchmark = q1_verdict.get("by_benchmark") if isinstance(q1_verdict, dict) else None
+        q1_complete = (
+            isinstance(q1_by_benchmark, dict)
+            and bool(q1_by_benchmark)
+            and not any(
+                bool(payload.get("missing"))
+                for payload in q1_by_benchmark.values()
+                if isinstance(payload, dict)
+            )
+        )
+        q1b_verdict = analyses.get("query_routing_q1b_followup_verdict", {})
+        q1b_complete = (
+            isinstance(q1b_verdict, dict)
+            and bool(q1b_verdict)
+            and not bool(q1b_verdict.get("missing"))
+        )
+        if not q0b_ok:
+            decisions.append(
+                {
+                    "decision": "skip",
+                    "reason": "query_routing_q1c_requires_q0b_diagnostics",
+                }
+            )
+        elif not q1_complete:
+            decisions.append(
+                {
+                    "decision": "skip",
+                    "reason": "query_routing_q1c_requires_q1_verdict",
+                }
+            )
+        elif not q1b_complete:
+            decisions.append(
+                {
+                    "decision": "skip",
+                    "reason": "query_routing_q1c_requires_q1b_verdict",
+                }
+            )
+        else:
+            for label, phase_commands in query_q1c_commands.items():
+                q1c_results = _run_command_group(phase_commands)
+                commands.extend(q1c_results)
+                q1c_analysis = _read_analysis_after_success(
+                    results=q1c_results,
+                    path=args.artifact_dir / f"{label}_analysis.json",
+                    phase=label,
+                    decisions=decisions,
+                )
+                if q1c_analysis is not None:
+                    analyses[label] = q1c_analysis
+                    if not _phase_passed_full_composition(q1c_analysis):
+                        decisions.append(
+                            {
+                                "decision": "continue",
+                                "reason": f"{label}_did_not_earn_gate",
+                                "phase": label,
+                                "details": q1c_analysis.get("decisions", []),
+                            }
+                        )
+            q1c_verdict = _query_q1c_admission_scheduler_verdict(analyses)
+            analyses["query_routing_q1c_admission_scheduler_verdict"] = q1c_verdict
+            if not q1c_verdict["proceed_to_holdout_admission_scheduler"]:
+                decisions.append(
+                    {
+                        "decision": "continue",
+                        "reason": "query_routing_q1c_admission_scheduler_not_yet_a_winner",
+                        "details": q1c_verdict,
+                    }
+                )
+    elif args.run_query_routing_q1c_admission_scheduler and not cvision_videomme_passed:
+        decisions.append(
+            {
+                "decision": "skip",
+                "reason": "query_routing_q1c_requires_rlt_videomme_pass",
             }
         )
 

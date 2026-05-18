@@ -33,6 +33,7 @@ COMBINED_POLICY_INVARIANT_KEYS = (
     "arm_order",
     "frame_count",
     "group_keep_rates",
+    "group_prune_placeholders",
     "group_vision_tower_keep_rates",
     "keep_rate",
     "max_tokens",
@@ -87,10 +88,18 @@ def _artifact_payload(schema: dict[str, Any]) -> dict[str, Any]:
 
 def _composed_arm_kind(composed: dict[str, Any]) -> str:
     prune_placeholders = composed.get("prune_placeholders")
+    group_prune_placeholders = composed.get("group_prune_placeholders") or {}
+    uses_scheduled_rlt_admission = (
+        isinstance(group_prune_placeholders, dict) and "rlt" in group_prune_placeholders.values()
+    )
     vision_keep_rate = _safe_float(composed.get("vision_tower_keep_rate"), 1.0)
     score_mode = composed.get("vision_tower_score_mode")
     uses_query_cvision = score_mode in QUERY_CVISION_SCORE_MODES
 
+    if prune_placeholders == "none" and uses_scheduled_rlt_admission and not uses_query_cvision:
+        return "scheduled_rlt_admission_only"
+    if prune_placeholders == "none" and uses_scheduled_rlt_admission and uses_query_cvision:
+        return f"scheduled_rlt_admission_plus_{score_mode}_cvision"
     if prune_placeholders == "none" and not uses_query_cvision:
         return "dense_equivalent"
     if prune_placeholders == "rlt" and not uses_query_cvision:
@@ -132,7 +141,11 @@ def _combined_policy_signature(
     def subset(payload: dict[str, Any]) -> dict[str, Any]:
         values: dict[str, Any] = {}
         for key in COMBINED_POLICY_INVARIANT_KEYS:
-            if key in {"group_keep_rates", "group_vision_tower_keep_rates"}:
+            if key in {
+                "group_keep_rates",
+                "group_prune_placeholders",
+                "group_vision_tower_keep_rates",
+            }:
                 value = payload.get(key)
                 if value is None:
                     value = {}
@@ -140,7 +153,15 @@ def _combined_policy_signature(
                 continue
             else:
                 value = payload.get(key)
-            if key in {"group_keep_rates", "group_vision_tower_keep_rates"} and value is None:
+            if (
+                key
+                in {
+                    "group_keep_rates",
+                    "group_prune_placeholders",
+                    "group_vision_tower_keep_rates",
+                }
+                and value is None
+            ):
                 value = {}
             values[key] = value
         return values

@@ -13,6 +13,7 @@ def _schema(
     vision_keep_rate: float,
     frame_count: int = 8,
     vision_score_mode: str | None = None,
+    group_prune_placeholders: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     if vision_score_mode is None:
         vision_score_mode = "rlt_topk" if vision_keep_rate < 1.0 else "magnitude"
@@ -24,6 +25,7 @@ def _schema(
             "frame_count": frame_count,
             "prefill_step_size": 1024,
             "prune_placeholders": prune_placeholders,
+            "group_prune_placeholders": group_prune_placeholders or {},
             "vision_tower_keep_rate": vision_keep_rate,
             "vision_tower_score_mode": vision_score_mode,
         },
@@ -130,6 +132,72 @@ def test_full_composition_analyzer_pairs_dense_reference_against_composed(tmp_pa
     assert len(paired_rows) == 5
     assert paired_rows[0]["placeholder_reduction"] > 0.0
     assert paired_rows[0]["vision_reduction"] == 0.5
+
+
+def test_full_composition_analyzer_accepts_scheduled_admission_with_cvision(
+    tmp_path: Path,
+) -> None:
+    dense = tmp_path / "dense.jsonl"
+    composed = tmp_path / "composed.jsonl"
+    output = tmp_path / "analysis.json"
+    paired = tmp_path / "paired.jsonl"
+    dense_items = [
+        _row(f"item-{idx}", group="short", dense_correct=True, pruned_correct=True)
+        for idx in range(5)
+    ]
+    composed_items = [
+        _row(f"item-{idx}", group="short", dense_correct=True, pruned_correct=True)
+        for idx in range(5)
+    ]
+    for idx, item in enumerate(composed_items):
+        item["metadata"]["vision_tower_score_mode"] = "random_valid"
+        if idx % 2:
+            item["metadata"]["pruned_placeholder_count"] = 2048
+            item["metadata"]["placeholder_prune_bypassed"] = True
+        else:
+            item["metadata"]["pruned_placeholder_count"] = 1240
+            item["metadata"]["placeholder_prune_bypassed"] = False
+    _write_jsonl(dense, [_schema(prune_placeholders="none", vision_keep_rate=1.0), *dense_items])
+    _write_jsonl(
+        composed,
+        [
+            _schema(
+                prune_placeholders="none",
+                vision_keep_rate=0.5,
+                vision_score_mode="random_valid",
+                group_prune_placeholders={"short": "rlt"},
+            ),
+            *composed_items,
+        ],
+    )
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/analyze_gemma_full_composition.py",
+            "--dense-jsonl",
+            str(dense),
+            "--composed-jsonl",
+            str(composed),
+            "--output",
+            str(output),
+            "--paired-items",
+            str(paired),
+            "--expected-items",
+            "5",
+            "--n-bootstrap",
+            "50",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    analysis = json.loads(output.read_text())
+    assert analysis["cell_type"] == "scheduled_rlt_admission_plus_random_valid_cvision"
+    paired_rows = [json.loads(line) for line in paired.read_text().strip().splitlines()]
+    assert {row["placeholder_prune_bypassed"] for row in paired_rows} == {False, True}
 
 
 def test_full_composition_analyzer_combines_disjoint_sources(tmp_path: Path) -> None:

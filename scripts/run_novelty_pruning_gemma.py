@@ -419,8 +419,49 @@ def _parse_group_keep_rates(raw: str) -> dict[str, float]:
     return parsed
 
 
+def _parse_group_prune_placeholders(raw: str) -> dict[str, PlaceholderPruneMode]:
+    """Parse ``group=mode`` placeholder-pruning overrides."""
+    if not raw.strip():
+        return {}
+    parsed: dict[str, PlaceholderPruneMode] = {}
+    valid_modes = {"anchor", "structural", "rlt", "none"}
+    for part in raw.replace(",", " ").split():
+        if "=" not in part:
+            raise argparse.ArgumentTypeError(
+                f"group prune-placeholder entries must be group=mode, got {part!r}"
+            )
+        group, value = part.split("=", 1)
+        group = group.strip()
+        mode = value.strip()
+        if not group:
+            raise argparse.ArgumentTypeError(
+                f"group prune-placeholder entry has empty group: {part!r}"
+            )
+        if mode not in valid_modes:
+            raise argparse.ArgumentTypeError(
+                f"group prune-placeholder mode for {group!r} must be one of "
+                f"{sorted(valid_modes)}, got {mode!r}"
+            )
+        parsed[group] = cast(PlaceholderPruneMode, mode)
+    return parsed
+
+
 def _resolve_group_keep_rate(default: float, overrides: dict[str, float], group: str) -> float:
     return float(overrides.get(group, default))
+
+
+def _resolve_group_prune_placeholders(
+    default: PlaceholderPruneMode, overrides: dict[str, PlaceholderPruneMode], group: str
+) -> PlaceholderPruneMode:
+    return overrides.get(group, default)
+
+
+def _uses_rlt_config(args: argparse.Namespace) -> bool:
+    return (
+        args.prune_placeholders == "rlt"
+        or "rlt" in args.group_prune_placeholders.values()
+        or getattr(args, "vision_tower_score_mode", "magnitude") in RLT_VISION_SCORE_MODES
+    )
 
 
 def _schema_row(args: argparse.Namespace, rlt_config: RLTMaskConfig) -> dict[str, Any]:
@@ -434,12 +475,7 @@ def _schema_row(args: argparse.Namespace, rlt_config: RLTMaskConfig) -> dict[str
         "max_tokens": args.max_tokens,
         "prefill_step_size": getattr(args, "prefill_step_size", 2048),
         "prune_placeholders": args.prune_placeholders,
-        "rlt_config": (
-            rlt_config.as_dict()
-            if args.prune_placeholders == "rlt"
-            or getattr(args, "vision_tower_score_mode", "magnitude") in RLT_VISION_SCORE_MODES
-            else None
-        ),
+        "rlt_config": rlt_config.as_dict() if _uses_rlt_config(args) else None,
         "n_warmup": args.n_warmup,
         "arm_order": getattr(args, "arm_order", "dense_first"),
         "vision_tower_layer": args.vision_tower_layer,
@@ -449,6 +485,8 @@ def _schema_row(args: argparse.Namespace, rlt_config: RLTMaskConfig) -> dict[str
         "vision_static_floor_stride": getattr(args, "vision_static_floor_stride", None),
         "vision_random_seed": getattr(args, "vision_random_seed", None),
     }
+    if args.group_prune_placeholders:
+        payload["group_prune_placeholders"] = args.group_prune_placeholders
     return {
         "kind": "schema",
         "schema_version": SCHEMA_VERSION,
@@ -1472,6 +1510,17 @@ def main() -> int:
         ),
     )
     parser.add_argument(
+        "--group-prune-placeholders",
+        type=_parse_group_prune_placeholders,
+        default={},
+        metavar="GROUP=MODE[,GROUP=MODE...]",
+        help=(
+            "Override --prune-placeholders for selected manifest groups. Used "
+            "for admission-scheduling diagnostics where prompt admission is "
+            "disabled by default and enabled only for preregistered groups."
+        ),
+    )
+    parser.add_argument(
         "--group-vision-keep-rates",
         type=_parse_group_keep_rates,
         default={},
@@ -1564,12 +1613,8 @@ def main() -> int:
             "keep_rate": args.keep_rate,
             "group_keep_rates": args.group_keep_rates,
             "prune_placeholders": args.prune_placeholders,
-            "rlt_config": (
-                rlt_config.as_dict()
-                if args.prune_placeholders == "rlt"
-                or args.vision_tower_score_mode in RLT_VISION_SCORE_MODES
-                else None
-            ),
+            "group_prune_placeholders": args.group_prune_placeholders,
+            "rlt_config": rlt_config.as_dict() if _uses_rlt_config(args) else None,
             "frame_count": args.frame_count,
             "max_tokens": args.max_tokens,
             "prefill_step_size": args.prefill_step_size,
@@ -1749,6 +1794,11 @@ def main() -> int:
             item_keep_rate = _resolve_group_keep_rate(
                 args.keep_rate, args.group_keep_rates, item_group
             )
+            item_prune_placeholders = _resolve_group_prune_placeholders(
+                cast(PlaceholderPruneMode, args.prune_placeholders),
+                args.group_prune_placeholders,
+                item_group,
+            )
             item_vision_keep_rate = _resolve_group_keep_rate(
                 args.vision_tower_keep_rate, args.group_vision_keep_rates, item_group
             )
@@ -1760,7 +1810,7 @@ def main() -> int:
                     item,
                     anchor_arm=cast(AnchorArm, args.anchor_arm),
                     keep_rate=item_keep_rate,
-                    prune_placeholders=cast(PlaceholderPruneMode, args.prune_placeholders),
+                    prune_placeholders=item_prune_placeholders,
                     rlt_config=rlt_config,
                     frame_count=args.frame_count,
                     max_tokens=args.max_tokens,
@@ -1811,12 +1861,8 @@ def main() -> int:
         "keep_rate": args.keep_rate,
         "group_keep_rates": args.group_keep_rates,
         "prune_placeholders": args.prune_placeholders,
-        "rlt_config": (
-            rlt_config.as_dict()
-            if args.prune_placeholders == "rlt"
-            or args.vision_tower_score_mode in RLT_VISION_SCORE_MODES
-            else None
-        ),
+        "group_prune_placeholders": args.group_prune_placeholders,
+        "rlt_config": rlt_config.as_dict() if _uses_rlt_config(args) else None,
         "frame_count": args.frame_count,
         "max_tokens": args.max_tokens,
         "prefill_step_size": args.prefill_step_size,
