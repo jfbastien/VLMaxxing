@@ -1663,7 +1663,10 @@ The first executable branch changed the research boundary:
   query-conditional routing designs. Our remaining opportunity is a robust
   physical evidence optimizer: coverage-first by default, prompt admission as
   a scheduled risky operator, codec/query signals as selectivity estimates,
-  and active repair only when a cheap first pass is uncertain.
+  and active repair only when a cheap first pass is uncertain. Confidence
+  cascades are not novel by themselves; the testable local gap is a
+  within-model, pruned-to-dense repair policy under paired fidelity gates and
+  full measured E2E cost.
 
 Near-term experiment order after Q1c:
 
@@ -1673,12 +1676,16 @@ Near-term experiment order after Q1c:
 2. CPU-only codec-motion probe. This measures whether H.264 motion/residual
    metadata separates admission-sensitive content before any model-facing
    codec router is built.
-3. If Q1c or codec-motion is positive, design a fresh held-out admission
+3. Active-repair confidence probe. Re-run the Q1b admission-on cells with
+   first generated-token margins recorded, then simulate thresholded dense
+   retry from paired rows. This is a signal test, not a deployed repair
+   operator.
+4. If Q1c, codec-motion, or active-repair confidence is positive, design a
+   fresh held-out admission
    scheduler. Do not tune on the Q1/Q1b dev artifacts and call it a paper
    result.
-4. If simple scheduling fails, the next credible revival is scalar
-   query-budget allocation or one-step active repair, not more hand-built
-   static operators.
+5. If simple scheduling and confidence repair fail, the next credible revival
+   is scalar query-budget allocation, not more hand-built static operators.
 
 ## Near-Term Recommendation
 

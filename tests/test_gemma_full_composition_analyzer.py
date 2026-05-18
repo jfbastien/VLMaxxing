@@ -45,6 +45,14 @@ def _row(item_id: str, *, group: str, dense_correct: bool, pruned_correct: bool)
         "pruned_parse_failure": False,
         "dense_choice": 1 if dense_correct else 0,
         "pruned_choice": 1 if pruned_correct else 0,
+        "dense_first_generated_top2_margin": 1.5,
+        "pruned_first_generated_top2_margin": 0.25,
+        "dense_first_generated_selected_margin": 1.4,
+        "pruned_first_generated_selected_margin": 0.2,
+        "dense_first_generated_confidence_capture_ms": 1.0,
+        "pruned_first_generated_confidence_capture_ms": 2.0,
+        "dense_first_generated_candidate_top2_margin": 1.1,
+        "pruned_first_generated_candidate_top2_margin": 0.15,
         "dense_prompt_tokens": 2200,
         "pruned_prompt_tokens": 1400,
         "dense_timing_ms": {
@@ -132,6 +140,12 @@ def test_full_composition_analyzer_pairs_dense_reference_against_composed(tmp_pa
     assert len(paired_rows) == 5
     assert paired_rows[0]["placeholder_reduction"] > 0.0
     assert paired_rows[0]["vision_reduction"] == 0.5
+    assert paired_rows[0]["dense_first_generated_top2_margin"] == 1.5
+    assert paired_rows[0]["composed_first_generated_top2_margin"] == 0.25
+    assert paired_rows[0]["dense_first_generated_confidence_capture_ms"] == 1.0
+    assert paired_rows[0]["composed_first_generated_confidence_capture_ms"] == 2.0
+    assert paired_rows[0]["dense_first_generated_candidate_top2_margin"] == 1.1
+    assert paired_rows[0]["composed_first_generated_candidate_top2_margin"] == 0.15
 
 
 def test_full_composition_analyzer_accepts_scheduled_admission_with_cvision(

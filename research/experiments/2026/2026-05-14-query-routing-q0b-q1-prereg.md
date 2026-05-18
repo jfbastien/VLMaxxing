@@ -1,8 +1,8 @@
 # 2026-05-14 query-routing Q0b/Q1 implementation prereg
 
 Status: **Q0b/Q1/Q1b measured; Q1c admission-scheduler follow-up implemented,
-not yet measured; hosted-dev breadth sweep and codec-motion smoke scaffolding
-implemented, not yet measured**.
+not yet measured; hosted-dev breadth sweep, codec-motion scan, and
+active-repair confidence-probe scaffolding implemented, not yet measured**.
 
 This note records the first executable branch for the query-aware visual
 routing follow-on paper. It intentionally stops at Q0b and Q1. QuoTA-style
@@ -275,7 +275,9 @@ External review and local artifact audits sharpened the mechanism story:
   failure. RLT threshold admission retains the first tubelet by construction.
   The better working hypothesis is motion-role disambiguation: queries asking
   which visible object is moving or stationary are brittle when prompt visual
-  placeholders are removed.
+  placeholders are removed. A 2026-05-19 lexical smoke found this signal is
+  present but weak at small N, so it is a hypothesis generator, not a
+  scheduler.
 - Codec metadata is a plausible runtime selectivity signal for admission
   scheduling. It is content-conditional rather than query-conditional, so it
   belongs after Q1c and a breadth sweep, not inside the current Q1c lane.
@@ -346,11 +348,98 @@ up to the requested window. This is only a smoke, but it validates the probe,
 keeps H5c alive, and flags seeking/indexing as an engineering item before any
 large codec scan.
 
+2026-05-19 validation note: a later Claude summary reported N=30 per-item
+correlations between H.264 motion/residual metrics and admission damage, and
+concluded codec-conditioned admission scheduling was dead. Local artifact audit
+did **not** find a committed N=30 codec-correlation artifact; the only observed
+codec artifact in this branch is the small smoke described above. Therefore
+H5c remains **unmeasured at full N**, not falsified. Before implementing a
+codec-conditioned VLM router, run the full CPU-only scan and join per-item
+codec metrics to Q1b/Q1c paired rows by item id.
+
+### H6 active-repair confidence-probe preregistration
+
+Active repair is a different mechanism from static query planning. It does
+not try to predict unsafe admission before seeing the answer. It asks whether
+the cheap first pass exposes enough uncertainty to decide when to retry with
+the dense/no-admission path.
+
+Implemented launch surface:
+
+```bash
+scripts/run_rlt_query_routing_active_repair_probe.sh
+```
+
+This wrapper re-runs the Q1b admission-on cells with first generated-token
+confidence capture enabled, then runs
+`scripts/analyze_gemma_active_repair_confidence.py` separately for the
+`random_seed11 + admission_on` and `fixed_uniform + admission_on` paired rows.
+It does **not** pool those policy arms and does **not** implement an in-run
+repair policy. It simulates thresholded retry from paired dense/composed
+artifacts and charges each retry as:
+
+```text
+active_item_ms = composed_pass_ms + dense_retry_ms
+```
+
+The analyzer records and accounts for confidence-capture overhead. The
+composed pass keeps its confidence overhead because the gate needs that signal;
+the dense retry subtracts dense-side confidence-capture overhead because a
+live dense retry would not compute another gate. If the capture-overhead fields
+are missing or non-finite, the analyzer fails rather than silently using
+polluted timings.
+
+The default wrapper uses a fresh artifact directory and therefore plans the
+full RLT/Q0b/Q1/Q1b dependency chain. A dry-run on 2026-05-19 planned roughly
+12.6-25.3 hours. Operators may set `ARTIFACT_DIR` to an existing compatible
+artifact directory to reuse completed non-logprob dependencies, but the
+logprob-capture schema intentionally forces fresh Gemma admission rows.
+
+Primary signal:
+
+- Margin field: `composed_first_generated_candidate_top2_margin` by default.
+  Full-vocabulary top-2 margin is logged as a secondary diagnostic, but it can
+  be dominated by formatting/punctuation tokens and is not the default gate.
+- The wrapper rejects dense-side margin fields. Repair gating can only use
+  composed-side first-pass confidence.
+- Alternative fields may be explored only if preregistered before a long run
+  (for example selected-vs-best-alternative margin).
+- Repair action: retry when margin is at or below threshold.
+
+H6a. The cheap pass knows when it was harmed.
+
+- Accept signal: harmed items have lower composed margins than
+  preserved-correct items with `risk_auc_harmed_lower_margin >= 0.70`.
+- Falsify: `risk_auc_harmed_lower_margin <= 0.60`, no harmed items, no
+  preserved-correct items, or missing/non-finite margin fields.
+- Inconclusive: AUC in `(0.60, 0.70)` or small harmed count that makes the
+  threshold frontier unstable.
+
+H6b. A one-step retry frontier is viable under full cost accounting.
+
+- Accept exploratory frontier: at least one threshold achieves
+  `accuracy_delta_vs_dense >= -0.05`, `speedup_dense_over_active > 1.0`,
+  and retries at least one harmed row.
+- Falsify: no threshold satisfies both fidelity and speed after charging the
+  composed pass plus dense retry.
+- Important anti-claim: a positive H6b result is a **retrospective paired-row
+  simulation**, not a deployed repair operator. A live repair run needs
+  explicit `repair_triggered`, `repair_reason`, `repaired_correct`, and
+  `repaired_end_to_end_ms` fields before paper claims.
+
+Novelty boundary:
+
+- Confidence cascades and uncertainty-guided multimodal systems exist (for
+  example GATEKEEPER-style routing and ViMaR-style refinement). The narrower
+  claim here is within one frozen VLM runtime: run the same model cheaply
+  first, then retry only uncertain rows with the dense/no-admission physical
+  operator, with paired fidelity gates and full E2E cost accounting.
+
 ### Not Yet Implemented
 
 - QuoTA/QTSplus-style scalar query allocation.
 - VideoRouter-style coverage-versus-detail policy.
-- One-step active repair / confidence-gated rerun.
+- Live one-step active repair / confidence-gated rerun.
 - Model-facing codec-grid pruning or sidecar-backed C-VISION.
 
 Those require new preregistered branches after Q1c and hosted-dev evidence.

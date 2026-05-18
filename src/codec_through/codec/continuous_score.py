@@ -121,6 +121,21 @@ def project_macroblock_scores_to_token_grid(
     if active_width <= 0 or active_height <= 0:
         raise ValueError("active_box must have positive area")
 
+    expected_height = macroblock_scores.shape[0] * macroblock_size
+    expected_width = macroblock_scores.shape[1] * macroblock_size
+    if expected_height < frame_height or expected_height - frame_height >= macroblock_size:
+        raise ValueError(
+            "macroblock_scores height is inconsistent with frame_height: "
+            f"{macroblock_scores.shape[0]} rows at macroblock_size={macroblock_size} "
+            f"cover {expected_height}px for frame_height={frame_height}"
+        )
+    if expected_width < frame_width or expected_width - frame_width >= macroblock_size:
+        raise ValueError(
+            "macroblock_scores width is inconsistent with frame_width: "
+            f"{macroblock_scores.shape[1]} cols at macroblock_size={macroblock_size} "
+            f"cover {expected_width}px for frame_width={frame_width}"
+        )
+
     expanded = np.repeat(
         np.repeat(macroblock_scores.astype(np.float32), macroblock_size, axis=0),
         macroblock_size,
@@ -137,8 +152,11 @@ def project_macroblock_scores_to_token_grid(
         (active_width, active_height),
         Image.Resampling.BICUBIC,
     )
+    min_score = float(np.nanmin(macroblock_scores))
+    max_score = float(np.nanmax(macroblock_scores))
+    projected = np.asarray(resized, dtype=np.float32)
     canvas = np.zeros((canvas_size, canvas_size), dtype=np.float32)
-    canvas[top:bottom, left:right] = np.asarray(resized, dtype=np.float32)
+    canvas[top:bottom, left:right] = np.clip(projected, min_score, max_score)
     return mean_pool_blocks(canvas, block_size=token_block)
 
 

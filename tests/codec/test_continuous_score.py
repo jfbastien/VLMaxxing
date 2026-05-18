@@ -48,6 +48,38 @@ def test_project_macroblock_scores_to_token_grid_respects_padding() -> None:
     assert np.allclose(projected, expected)
 
 
+def test_project_macroblock_scores_rejects_bad_geometry() -> None:
+    try:
+        project_macroblock_scores_to_token_grid(
+            np.array([[1.0]], dtype=np.float32),
+            macroblock_size=16,
+            frame_width=33,
+            frame_height=16,
+            canvas_size=64,
+            active_box=(0, 0, 64, 64),
+            token_block=16,
+        )
+    except ValueError as exc:
+        assert "width is inconsistent" in str(exc)
+    else:
+        raise AssertionError("undersized macroblock score plane should fail")
+
+
+def test_project_macroblock_scores_clips_interpolation_overshoot() -> None:
+    projected = project_macroblock_scores_to_token_grid(
+        np.array([[0.0, 10.0], [10.0, 0.0]], dtype=np.float32),
+        macroblock_size=16,
+        frame_width=32,
+        frame_height=32,
+        canvas_size=64,
+        active_box=(0, 0, 64, 64),
+        token_block=8,
+    )
+
+    assert float(np.min(projected)) >= 0.0
+    assert float(np.max(projected)) <= 10.0
+
+
 def test_calibrate_score_thresholds_and_classify_score_grid() -> None:
     thresholds = calibrate_score_thresholds(
         np.array([0.0, 0.1, 0.2, 0.7, 0.8, 0.9], dtype=np.float32),

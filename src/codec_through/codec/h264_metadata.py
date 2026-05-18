@@ -146,13 +146,11 @@ class H264MetadataExtractor:
             self.codec_name = s.codec_context.name
 
         if self.codec_name not in ("h264", "hevc"):
-            import warnings
-
-            warnings.warn(
-                f"H264MetadataExtractor: codec '{self.codec_name}' is not H.264/HEVC. "
-                "PyAV does not expose MV side-data for AV1/VP9 — all MBs will be "
-                "reported intra (NOVEL). Re-encode with -c:v libx264 for metadata.",
-                stacklevel=2,
+            raise ValueError(
+                f"H264MetadataExtractor requires H.264/HEVC metadata, got codec "
+                f"{self.codec_name!r}. PyAV does not expose compatible motion-vector "
+                "side data for this codec; re-encode with -c:v libx264 before using "
+                "codec routing probes."
             )
 
         self.mb_size = 16

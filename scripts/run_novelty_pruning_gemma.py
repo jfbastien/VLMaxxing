@@ -127,6 +127,7 @@ DEFAULT_MODEL_PATH = Path.home() / "models" / "gemma-4-e4b-it-4bit"
 GEMMA_IMAGE_SIZE = 512
 GEMMA_GRID_SHAPE = (16, 16)  # 256 soft tokens per image, runtime-verified.
 SCHEMA_VERSION = "phase1_51r_gemma_admission_v4"
+LOGPROB_CAPTURE_VERSION = "first_generated_token_v1"
 # Anchor arms that actually need per-token vision features. Others skip the
 # (1, F*280, hidden) host-float32 mirror, which saved ~1–2 GB per item on the
 # 2026-04-18 OOM repro without changing any science.
@@ -268,6 +269,32 @@ class ItemResult:
     pruned_prompt_tps: float = 0.0
     dense_generation_tps: float = 0.0
     pruned_generation_tps: float = 0.0
+    dense_first_generated_token_id: int | None = None
+    pruned_first_generated_token_id: int | None = None
+    dense_first_generated_token_text: str | None = None
+    pruned_first_generated_token_text: str | None = None
+    dense_first_generated_selected_logprob: float | None = None
+    pruned_first_generated_selected_logprob: float | None = None
+    dense_first_generated_top_logprob: float | None = None
+    pruned_first_generated_top_logprob: float | None = None
+    dense_first_generated_second_logprob: float | None = None
+    pruned_first_generated_second_logprob: float | None = None
+    dense_first_generated_top2_margin: float | None = None
+    pruned_first_generated_top2_margin: float | None = None
+    dense_first_generated_selected_margin: float | None = None
+    pruned_first_generated_selected_margin: float | None = None
+    dense_first_generated_confidence_capture_ms: float | None = None
+    pruned_first_generated_confidence_capture_ms: float | None = None
+    dense_first_generated_candidate_top_letter: str | None = None
+    pruned_first_generated_candidate_top_letter: str | None = None
+    dense_first_generated_candidate_second_letter: str | None = None
+    pruned_first_generated_candidate_second_letter: str | None = None
+    dense_first_generated_candidate_top_logprob: float | None = None
+    pruned_first_generated_candidate_top_logprob: float | None = None
+    dense_first_generated_candidate_second_logprob: float | None = None
+    pruned_first_generated_candidate_second_logprob: float | None = None
+    dense_first_generated_candidate_top2_margin: float | None = None
+    pruned_first_generated_candidate_top2_margin: float | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
 
 
@@ -391,6 +418,11 @@ def _mean(values: list[float]) -> float:
     return sum(values) / len(values) if values else 0.0
 
 
+def _mean_present(values: list[float | None]) -> float | None:
+    present = [float(value) for value in values if value is not None]
+    return _mean(present) if present else None
+
+
 def _parse_group_keep_rates(raw: str) -> dict[str, float]:
     """Parse ``group=rate`` overrides used for bucket-specific rescue cells."""
     if not raw.strip():
@@ -469,6 +501,7 @@ def _schema_row(args: argparse.Namespace, rlt_config: RLTMaskConfig) -> dict[str
         "manifest": str(args.manifest),
         "model_path": str(args.model_path),
         "frame_count": args.frame_count,
+        "logprob_capture_version": LOGPROB_CAPTURE_VERSION,
         "anchor_arm": args.anchor_arm,
         "keep_rate": args.keep_rate,
         "group_keep_rates": args.group_keep_rates,
@@ -511,6 +544,110 @@ class GenerateStats:
     generation_tokens: int
     prompt_tps: float
     generation_tps: float
+    first_generated_token_id: int | None = None
+    first_generated_token_text: str | None = None
+    first_generated_selected_logprob: float | None = None
+    first_generated_top_logprob: float | None = None
+    first_generated_second_logprob: float | None = None
+    first_generated_top2_margin: float | None = None
+    first_generated_selected_margin: float | None = None
+    first_generated_confidence_capture_ms: float | None = None
+    first_generated_candidate_top_letter: str | None = None
+    first_generated_candidate_second_letter: str | None = None
+    first_generated_candidate_top_logprob: float | None = None
+    first_generated_candidate_second_logprob: float | None = None
+    first_generated_candidate_top2_margin: float | None = None
+
+
+def _decode_single_token(tokenizer: Any, token_id: int) -> str | None:
+    try:
+        return str(tokenizer.decode([token_id]))
+    except Exception:  # noqa: BLE001 - diagnostic field, not a run gate
+        return None
+
+
+def _token_ids_for_letter(tokenizer: Any, letter: str) -> list[int]:
+    token_ids: list[int] = []
+    for text in (letter, f" {letter}"):
+        encoded = tokenizer.encode(text, add_special_tokens=False)
+        if len(encoded) == 1:
+            token_id = int(encoded[0])
+            if token_id not in token_ids:
+                token_ids.append(token_id)
+    if not token_ids:
+        raise ValueError(f"no single-token encoding for answer letter {letter!r}")
+    return token_ids
+
+
+def _candidate_letter_confidence(
+    *,
+    values: np.ndarray,
+    tokenizer: Any,
+    n_candidates: int,
+) -> dict[str, Any]:
+    if n_candidates < 2:
+        return {}
+    scores: dict[str, float] = {}
+    for index in range(n_candidates):
+        letter = chr(ord("A") + index)
+        token_ids = _token_ids_for_letter(tokenizer, letter)
+        invalid = [token_id for token_id in token_ids if token_id < 0 or token_id >= values.size]
+        if invalid:
+            raise ValueError(
+                f"answer letter {letter!r} token ids {invalid} outside logprob vector size "
+                f"{values.size}"
+            )
+        scores[letter] = max(float(values[token_id]) for token_id in token_ids)
+    ranked = sorted(scores.items(), key=lambda item: item[1], reverse=True)
+    return {
+        "first_generated_candidate_top_letter": ranked[0][0],
+        "first_generated_candidate_second_letter": ranked[1][0],
+        "first_generated_candidate_top_logprob": ranked[0][1],
+        "first_generated_candidate_second_logprob": ranked[1][1],
+        "first_generated_candidate_top2_margin": ranked[0][1] - ranked[1][1],
+    }
+
+
+def _first_generated_token_confidence(
+    *,
+    token_id: int | None,
+    logprobs: Any,
+    tokenizer: Any,
+    n_candidates: int,
+) -> dict[str, Any]:
+    if token_id is None or logprobs is None:
+        return {}
+    mx.eval(logprobs)
+    values = np.asarray(logprobs, dtype=np.float64).reshape(-1)
+    if values.size < 2:
+        raise ValueError(f"expected at least two logprobs, got {values.size}")
+    if token_id < 0 or token_id >= values.size:
+        raise ValueError(f"generated token id {token_id} outside logprob vector size {values.size}")
+    if not np.isfinite(values).all():
+        raise ValueError("generation logprobs must be finite")
+
+    top_two = np.partition(values, -2)[-2:]
+    top_logprob = float(np.max(top_two))
+    second_logprob = float(np.min(top_two))
+    selected_logprob = float(values[token_id])
+    best_alternative = float(np.max(np.delete(values, token_id)))
+    payload = {
+        "first_generated_token_id": int(token_id),
+        "first_generated_token_text": _decode_single_token(tokenizer, int(token_id)),
+        "first_generated_selected_logprob": selected_logprob,
+        "first_generated_top_logprob": top_logprob,
+        "first_generated_second_logprob": second_logprob,
+        "first_generated_top2_margin": top_logprob - second_logprob,
+        "first_generated_selected_margin": selected_logprob - best_alternative,
+    }
+    payload.update(
+        _candidate_letter_confidence(
+            values=values,
+            tokenizer=tokenizer,
+            n_candidates=n_candidates,
+        )
+    )
+    return payload
 
 
 def _stage_ms_from_tps(*, tokens: int, tokens_per_second: float, stage: str) -> float:
@@ -533,6 +670,7 @@ def _run_generate(
     extra: dict[str, mx.array],
     cached_image_features: mx.array | None,
     max_tokens: int,
+    n_candidates: int,
     prefill_step_size: int,
 ) -> GenerateStats:
     """Invoke mlx-vlm streaming generation with direct first-yield timing."""
@@ -547,6 +685,7 @@ def _run_generate(
     text = ""
     first_yield_ns: int | None = None
     last_response: Any | None = None
+    first_token_confidence: dict[str, Any] = {}
     for response in stream_generate(
         model,
         processor,
@@ -561,6 +700,17 @@ def _run_generate(
     ):
         if first_yield_ns is None:
             first_yield_ns = time.perf_counter_ns()
+        if not first_token_confidence and getattr(response, "logprobs", None) is not None:
+            confidence_t0 = time.perf_counter_ns()
+            first_token_confidence = _first_generated_token_confidence(
+                token_id=getattr(response, "token", None),
+                logprobs=getattr(response, "logprobs", None),
+                tokenizer=tokenizer,
+                n_candidates=n_candidates,
+            )
+            first_token_confidence["first_generated_confidence_capture_ms"] = (
+                time.perf_counter_ns() - confidence_t0
+            ) / 1_000_000
         text += str(response.text)
         last_response = response
     elapsed_ms = (time.perf_counter_ns() - t0) / 1_000_000
@@ -575,6 +725,7 @@ def _run_generate(
             generation_tokens=0,
             prompt_tps=0.0,
             generation_tps=0.0,
+            **first_token_confidence,
         )
     multimodal_prefill_ms = (first_yield_ns - t0) / 1_000_000
     return GenerateStats(
@@ -587,6 +738,7 @@ def _run_generate(
         generation_tokens=int(getattr(last_response, "generation_tokens", 0)),
         prompt_tps=float(getattr(last_response, "prompt_tps", 0.0)),
         generation_tps=float(getattr(last_response, "generation_tps", 0.0)),
+        **first_token_confidence,
     )
 
 
@@ -902,6 +1054,7 @@ def _process_one_item(
             extra=extra,
             cached_image_features=vision_features,
             max_tokens=max_tokens,
+            n_candidates=len(item.candidates),
             prefill_step_size=prefill_step_size,
         )
 
@@ -915,6 +1068,7 @@ def _process_one_item(
             extra=extra,
             cached_image_features=gathered_features,
             max_tokens=max_tokens,
+            n_candidates=len(item.candidates),
             prefill_step_size=prefill_step_size,
         )
 
@@ -1042,6 +1196,56 @@ def _process_one_item(
         pruned_prompt_tps=pruned_stats.prompt_tps,
         dense_generation_tps=dense_stats.generation_tps,
         pruned_generation_tps=pruned_stats.generation_tps,
+        dense_first_generated_token_id=dense_stats.first_generated_token_id,
+        pruned_first_generated_token_id=pruned_stats.first_generated_token_id,
+        dense_first_generated_token_text=dense_stats.first_generated_token_text,
+        pruned_first_generated_token_text=pruned_stats.first_generated_token_text,
+        dense_first_generated_selected_logprob=dense_stats.first_generated_selected_logprob,
+        pruned_first_generated_selected_logprob=pruned_stats.first_generated_selected_logprob,
+        dense_first_generated_top_logprob=dense_stats.first_generated_top_logprob,
+        pruned_first_generated_top_logprob=pruned_stats.first_generated_top_logprob,
+        dense_first_generated_second_logprob=dense_stats.first_generated_second_logprob,
+        pruned_first_generated_second_logprob=pruned_stats.first_generated_second_logprob,
+        dense_first_generated_top2_margin=dense_stats.first_generated_top2_margin,
+        pruned_first_generated_top2_margin=pruned_stats.first_generated_top2_margin,
+        dense_first_generated_selected_margin=dense_stats.first_generated_selected_margin,
+        pruned_first_generated_selected_margin=pruned_stats.first_generated_selected_margin,
+        dense_first_generated_confidence_capture_ms=(
+            dense_stats.first_generated_confidence_capture_ms
+        ),
+        pruned_first_generated_confidence_capture_ms=(
+            pruned_stats.first_generated_confidence_capture_ms
+        ),
+        dense_first_generated_candidate_top_letter=(
+            dense_stats.first_generated_candidate_top_letter
+        ),
+        pruned_first_generated_candidate_top_letter=(
+            pruned_stats.first_generated_candidate_top_letter
+        ),
+        dense_first_generated_candidate_second_letter=(
+            dense_stats.first_generated_candidate_second_letter
+        ),
+        pruned_first_generated_candidate_second_letter=(
+            pruned_stats.first_generated_candidate_second_letter
+        ),
+        dense_first_generated_candidate_top_logprob=(
+            dense_stats.first_generated_candidate_top_logprob
+        ),
+        pruned_first_generated_candidate_top_logprob=(
+            pruned_stats.first_generated_candidate_top_logprob
+        ),
+        dense_first_generated_candidate_second_logprob=(
+            dense_stats.first_generated_candidate_second_logprob
+        ),
+        pruned_first_generated_candidate_second_logprob=(
+            pruned_stats.first_generated_candidate_second_logprob
+        ),
+        dense_first_generated_candidate_top2_margin=(
+            dense_stats.first_generated_candidate_top2_margin
+        ),
+        pruned_first_generated_candidate_top2_margin=(
+            pruned_stats.first_generated_candidate_top2_margin
+        ),
         metadata=mask_metadata,
     )
 
@@ -1127,6 +1331,30 @@ def _summarize(records: list[ItemResult]) -> dict[str, Any]:
         ),
         "mean_dense_generation_tps": float(np.mean([r.dense_generation_tps for r in records])),
         "mean_pruned_generation_tps": float(np.mean([r.pruned_generation_tps for r in records])),
+        "mean_dense_first_generated_top2_margin": _mean_present(
+            [r.dense_first_generated_top2_margin for r in records]
+        ),
+        "mean_pruned_first_generated_top2_margin": _mean_present(
+            [r.pruned_first_generated_top2_margin for r in records]
+        ),
+        "mean_dense_first_generated_selected_margin": _mean_present(
+            [r.dense_first_generated_selected_margin for r in records]
+        ),
+        "mean_pruned_first_generated_selected_margin": _mean_present(
+            [r.pruned_first_generated_selected_margin for r in records]
+        ),
+        "mean_dense_first_generated_confidence_capture_ms": _mean_present(
+            [r.dense_first_generated_confidence_capture_ms for r in records]
+        ),
+        "mean_pruned_first_generated_confidence_capture_ms": _mean_present(
+            [r.pruned_first_generated_confidence_capture_ms for r in records]
+        ),
+        "mean_dense_first_generated_candidate_top2_margin": _mean_present(
+            [r.dense_first_generated_candidate_top2_margin for r in records]
+        ),
+        "mean_pruned_first_generated_candidate_top2_margin": _mean_present(
+            [r.pruned_first_generated_candidate_top2_margin for r in records]
+        ),
         # Per-token generation speedup, corrected for differential token count.
         # Total generate wall-clock / total tokens generated, dense vs pruned.
         # This is the "pure prefill-attention" effect — the raw generate_speedup
@@ -1211,6 +1439,56 @@ def _record_payload(record: ItemResult) -> dict[str, Any]:
         "pruned_prompt_tps": record.pruned_prompt_tps,
         "dense_generation_tps": record.dense_generation_tps,
         "pruned_generation_tps": record.pruned_generation_tps,
+        "dense_first_generated_token_id": record.dense_first_generated_token_id,
+        "pruned_first_generated_token_id": record.pruned_first_generated_token_id,
+        "dense_first_generated_token_text": record.dense_first_generated_token_text,
+        "pruned_first_generated_token_text": record.pruned_first_generated_token_text,
+        "dense_first_generated_selected_logprob": record.dense_first_generated_selected_logprob,
+        "pruned_first_generated_selected_logprob": record.pruned_first_generated_selected_logprob,
+        "dense_first_generated_top_logprob": record.dense_first_generated_top_logprob,
+        "pruned_first_generated_top_logprob": record.pruned_first_generated_top_logprob,
+        "dense_first_generated_second_logprob": record.dense_first_generated_second_logprob,
+        "pruned_first_generated_second_logprob": record.pruned_first_generated_second_logprob,
+        "dense_first_generated_top2_margin": record.dense_first_generated_top2_margin,
+        "pruned_first_generated_top2_margin": record.pruned_first_generated_top2_margin,
+        "dense_first_generated_selected_margin": record.dense_first_generated_selected_margin,
+        "pruned_first_generated_selected_margin": record.pruned_first_generated_selected_margin,
+        "dense_first_generated_confidence_capture_ms": (
+            record.dense_first_generated_confidence_capture_ms
+        ),
+        "pruned_first_generated_confidence_capture_ms": (
+            record.pruned_first_generated_confidence_capture_ms
+        ),
+        "dense_first_generated_candidate_top_letter": (
+            record.dense_first_generated_candidate_top_letter
+        ),
+        "pruned_first_generated_candidate_top_letter": (
+            record.pruned_first_generated_candidate_top_letter
+        ),
+        "dense_first_generated_candidate_second_letter": (
+            record.dense_first_generated_candidate_second_letter
+        ),
+        "pruned_first_generated_candidate_second_letter": (
+            record.pruned_first_generated_candidate_second_letter
+        ),
+        "dense_first_generated_candidate_top_logprob": (
+            record.dense_first_generated_candidate_top_logprob
+        ),
+        "pruned_first_generated_candidate_top_logprob": (
+            record.pruned_first_generated_candidate_top_logprob
+        ),
+        "dense_first_generated_candidate_second_logprob": (
+            record.dense_first_generated_candidate_second_logprob
+        ),
+        "pruned_first_generated_candidate_second_logprob": (
+            record.pruned_first_generated_candidate_second_logprob
+        ),
+        "dense_first_generated_candidate_top2_margin": (
+            record.dense_first_generated_candidate_top2_margin
+        ),
+        "pruned_first_generated_candidate_top2_margin": (
+            record.pruned_first_generated_candidate_top2_margin
+        ),
         "metadata": record.metadata,
     }
 
@@ -1351,6 +1629,42 @@ def _summarize_payload_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
         ),
         "mean_pruned_generation_tps": float(
             np.mean([float(row.get("pruned_generation_tps", 0.0)) for row in rows])
+        ),
+        "mean_dense_first_generated_top2_margin": _mean_present(
+            [cast(float | None, row.get("dense_first_generated_top2_margin")) for row in rows]
+        ),
+        "mean_pruned_first_generated_top2_margin": _mean_present(
+            [cast(float | None, row.get("pruned_first_generated_top2_margin")) for row in rows]
+        ),
+        "mean_dense_first_generated_selected_margin": _mean_present(
+            [cast(float | None, row.get("dense_first_generated_selected_margin")) for row in rows]
+        ),
+        "mean_pruned_first_generated_selected_margin": _mean_present(
+            [cast(float | None, row.get("pruned_first_generated_selected_margin")) for row in rows]
+        ),
+        "mean_dense_first_generated_confidence_capture_ms": _mean_present(
+            [
+                cast(float | None, row.get("dense_first_generated_confidence_capture_ms"))
+                for row in rows
+            ]
+        ),
+        "mean_pruned_first_generated_confidence_capture_ms": _mean_present(
+            [
+                cast(float | None, row.get("pruned_first_generated_confidence_capture_ms"))
+                for row in rows
+            ]
+        ),
+        "mean_dense_first_generated_candidate_top2_margin": _mean_present(
+            [
+                cast(float | None, row.get("dense_first_generated_candidate_top2_margin"))
+                for row in rows
+            ]
+        ),
+        "mean_pruned_first_generated_candidate_top2_margin": _mean_present(
+            [
+                cast(float | None, row.get("pruned_first_generated_candidate_top2_margin"))
+                for row in rows
+            ]
         ),
         "per_token_generate_speedup_mean": (
             (dense_ms / dense_tok) / (pruned_ms / pruned_tok)

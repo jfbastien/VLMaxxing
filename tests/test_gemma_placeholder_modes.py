@@ -114,8 +114,37 @@ def test_schema_hash_includes_max_tokens() -> None:
     longer_row = runner._schema_row(longer, RLTMaskConfig())
 
     assert base_row["artifact_payload"]["max_tokens"] == 16
+    assert base_row["artifact_payload"]["logprob_capture_version"] == runner.LOGPROB_CAPTURE_VERSION
     assert longer_row["artifact_payload"]["max_tokens"] == 32
     assert base_row["artifact_config_hash"] != longer_row["artifact_config_hash"]
+
+
+def test_first_generated_token_confidence_computes_selected_and_top2_margins() -> None:
+    class Tokenizer:
+        def decode(self, token_ids: list[int]) -> str:
+            return f"tok-{token_ids[0]}"
+
+        def encode(self, text: str, *, add_special_tokens: bool) -> list[int]:
+            del add_special_tokens
+            return {"A": [0], " A": [1], "B": [2], " B": [3]}[text]
+
+    confidence = runner._first_generated_token_confidence(
+        token_id=2,
+        logprobs=mx.array([-3.0, -1.0, -0.2, -2.0], dtype=mx.float32),
+        tokenizer=Tokenizer(),
+        n_candidates=2,
+    )
+
+    assert confidence["first_generated_token_id"] == 2
+    assert confidence["first_generated_token_text"] == "tok-2"
+    assert confidence["first_generated_selected_logprob"] == pytest.approx(-0.2)
+    assert confidence["first_generated_top_logprob"] == pytest.approx(-0.2)
+    assert confidence["first_generated_second_logprob"] == pytest.approx(-1.0)
+    assert confidence["first_generated_top2_margin"] == pytest.approx(0.8)
+    assert confidence["first_generated_selected_margin"] == pytest.approx(0.8)
+    assert confidence["first_generated_candidate_top_letter"] == "B"
+    assert confidence["first_generated_candidate_second_letter"] == "A"
+    assert confidence["first_generated_candidate_top2_margin"] == pytest.approx(0.8)
 
 
 def test_schema_hash_includes_group_keep_rate_overrides() -> None:
@@ -260,6 +289,32 @@ def test_record_payload_emits_direct_prefill_and_generation_fields() -> None:
         pruned_prompt_tps=25.0,
         dense_generation_tps=1.0,
         pruned_generation_tps=1.0,
+        dense_first_generated_token_id=10,
+        pruned_first_generated_token_id=11,
+        dense_first_generated_token_text="A",
+        pruned_first_generated_token_text="B",
+        dense_first_generated_selected_logprob=-0.1,
+        pruned_first_generated_selected_logprob=-0.3,
+        dense_first_generated_top_logprob=-0.1,
+        pruned_first_generated_top_logprob=-0.3,
+        dense_first_generated_second_logprob=-1.0,
+        pruned_first_generated_second_logprob=-0.9,
+        dense_first_generated_top2_margin=0.9,
+        pruned_first_generated_top2_margin=0.6,
+        dense_first_generated_selected_margin=0.9,
+        pruned_first_generated_selected_margin=0.6,
+        dense_first_generated_confidence_capture_ms=1.0,
+        pruned_first_generated_confidence_capture_ms=2.0,
+        dense_first_generated_candidate_top_letter="A",
+        pruned_first_generated_candidate_top_letter="B",
+        dense_first_generated_candidate_second_letter="B",
+        pruned_first_generated_candidate_second_letter="A",
+        dense_first_generated_candidate_top_logprob=-0.1,
+        pruned_first_generated_candidate_top_logprob=-0.3,
+        dense_first_generated_candidate_second_logprob=-1.0,
+        pruned_first_generated_candidate_second_logprob=-0.9,
+        dense_first_generated_candidate_top2_margin=0.9,
+        pruned_first_generated_candidate_top2_margin=0.6,
         metadata={},
     )
 
@@ -269,6 +324,12 @@ def test_record_payload_emits_direct_prefill_and_generation_fields() -> None:
     assert payload["dense_timing_ms"]["text_generation_ms"] == 5.0
     assert payload["pruned_timing_ms"]["multimodal_prefill_ms"] == 2.0
     assert payload["pruned_timing_ms"]["text_generation_ms"] == 4.0
+    assert payload["dense_first_generated_top2_margin"] == 0.9
+    assert payload["pruned_first_generated_top2_margin"] == 0.6
+    assert payload["dense_first_generated_confidence_capture_ms"] == 1.0
+    assert payload["pruned_first_generated_confidence_capture_ms"] == 2.0
+    assert payload["dense_first_generated_candidate_top_letter"] == "A"
+    assert payload["pruned_first_generated_candidate_top2_margin"] == 0.6
 
 
 def test_resume_loader_reads_schema_and_item_rows(tmp_path: Path) -> None:

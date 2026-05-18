@@ -252,6 +252,23 @@ def _count_by_key(rows: list[dict[str, Any]], key: str) -> dict[str, int]:
     return dict(sorted(counts.items()))
 
 
+_FIRST_GENERATED_CONFIDENCE_FIELDS = (
+    "first_generated_token_id",
+    "first_generated_token_text",
+    "first_generated_selected_logprob",
+    "first_generated_top_logprob",
+    "first_generated_second_logprob",
+    "first_generated_top2_margin",
+    "first_generated_selected_margin",
+    "first_generated_confidence_capture_ms",
+    "first_generated_candidate_top_letter",
+    "first_generated_candidate_second_letter",
+    "first_generated_candidate_top_logprob",
+    "first_generated_candidate_second_logprob",
+    "first_generated_candidate_top2_margin",
+)
+
+
 def _choice_agreement(rows: list[dict[str, Any]]) -> float:
     if not rows:
         return 0.0
@@ -420,42 +437,44 @@ def _paired_rows(
             parse_transition = "parse_recovered"
         else:
             parse_transition = "parse_harmed"
-        rows.append(
-            {
-                "paired_row_key": item_id,
-                "cell_type": cell_type,
-                "item_id": item_id,
-                "benchmark": dense.get("benchmark"),
-                "group": dense.get("group"),
-                "answer_index": dense.get("answer_index"),
-                "dense_correct": dense_correct,
-                "composed_correct": composed_correct,
-                "correctness_transition": correctness_transition,
-                "dense_parse_failure": dense_parse_failure,
-                "composed_parse_failure": composed_parse_failure,
-                "parse_transition": parse_transition,
-                "dense_choice": dense.get("dense_choice"),
-                "composed_choice": composed.get("pruned_choice"),
-                "choice_changed": dense.get("dense_choice") != composed.get("pruned_choice"),
-                "dense_end_to_end_ms": _timing(dense, "dense", "end_to_end"),
-                "composed_end_to_end_ms": _timing(composed, "pruned", "end_to_end"),
-                "dense_vision_ms": _timing(dense, "dense", "vision"),
-                "composed_vision_ms": _timing(composed, "pruned", "vision"),
-                "dense_prefill_ms": _timing(dense, "dense", "multimodal_prefill_ms"),
-                "composed_prefill_ms": _timing(composed, "pruned", "multimodal_prefill_ms"),
-                "dense_prompt_tokens": dense.get("dense_prompt_tokens"),
-                "composed_prompt_tokens": composed.get("pruned_prompt_tokens"),
-                "dense_metadata": dense_metadata,
-                "composed_metadata": composed_metadata,
-                "dense_placeholder_count": placeholder_total_i,
-                "composed_placeholder_count": placeholder_kept_i,
-                "placeholder_prune_bypassed": bool(placeholder_bypassed),
-                "placeholder_reduction": 1.0 - (placeholder_kept_i / placeholder_total_i),
-                "gemma_encoder_valid_positions_per_frame": encoder_valid,
-                "gemma_encoder_kept_per_frame": encoder_kept,
-                "vision_reduction": vision_reduction,
-            }
-        )
+        paired = {
+            "paired_row_key": item_id,
+            "cell_type": cell_type,
+            "item_id": item_id,
+            "benchmark": dense.get("benchmark"),
+            "group": dense.get("group"),
+            "answer_index": dense.get("answer_index"),
+            "dense_correct": dense_correct,
+            "composed_correct": composed_correct,
+            "correctness_transition": correctness_transition,
+            "dense_parse_failure": dense_parse_failure,
+            "composed_parse_failure": composed_parse_failure,
+            "parse_transition": parse_transition,
+            "dense_choice": dense.get("dense_choice"),
+            "composed_choice": composed.get("pruned_choice"),
+            "choice_changed": dense.get("dense_choice") != composed.get("pruned_choice"),
+            "dense_end_to_end_ms": _timing(dense, "dense", "end_to_end"),
+            "composed_end_to_end_ms": _timing(composed, "pruned", "end_to_end"),
+            "dense_vision_ms": _timing(dense, "dense", "vision"),
+            "composed_vision_ms": _timing(composed, "pruned", "vision"),
+            "dense_prefill_ms": _timing(dense, "dense", "multimodal_prefill_ms"),
+            "composed_prefill_ms": _timing(composed, "pruned", "multimodal_prefill_ms"),
+            "dense_prompt_tokens": dense.get("dense_prompt_tokens"),
+            "composed_prompt_tokens": composed.get("pruned_prompt_tokens"),
+            "dense_metadata": dense_metadata,
+            "composed_metadata": composed_metadata,
+            "dense_placeholder_count": placeholder_total_i,
+            "composed_placeholder_count": placeholder_kept_i,
+            "placeholder_prune_bypassed": bool(placeholder_bypassed),
+            "placeholder_reduction": 1.0 - (placeholder_kept_i / placeholder_total_i),
+            "gemma_encoder_valid_positions_per_frame": encoder_valid,
+            "gemma_encoder_kept_per_frame": encoder_kept,
+            "vision_reduction": vision_reduction,
+        }
+        for field in _FIRST_GENERATED_CONFIDENCE_FIELDS:
+            paired[f"dense_{field}"] = dense.get(f"dense_{field}")
+            paired[f"composed_{field}"] = composed.get(f"pruned_{field}")
+        rows.append(paired)
     return rows
 
 

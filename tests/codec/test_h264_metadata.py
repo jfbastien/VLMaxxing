@@ -22,6 +22,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from pathlib import Path
+from types import SimpleNamespace
 
 import av
 import numpy as np
@@ -146,6 +147,30 @@ def bframes_clip(tmp_path: Path) -> Iterator[Path]:
 # ────────────────────────────────────────────────────────────────────
 # Tests
 # ────────────────────────────────────────────────────────────────────
+
+
+def test_extractor_rejects_codecs_without_motion_vector_side_data(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    class FakeContainer:
+        streams = SimpleNamespace(
+            video=[
+                SimpleNamespace(
+                    codec_context=SimpleNamespace(width=64, height=64, name="vp9"),
+                )
+            ]
+        )
+
+        def __enter__(self) -> FakeContainer:
+            return self
+
+        def __exit__(self, *_args: object) -> None:
+            return None
+
+    monkeypatch.setattr(av, "open", lambda _path: FakeContainer())
+
+    with pytest.raises(ValueError, match="requires H.264/HEVC metadata"):
+        H264MetadataExtractor(str(tmp_path / "clip.webm"))
 
 
 def test_black_clip_has_no_motion_signal(black_clip: Path) -> None:
