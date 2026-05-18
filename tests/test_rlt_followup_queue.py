@@ -40,6 +40,18 @@ def test_portable_command_rewrites_repo_and_home_paths() -> None:
     ]
 
 
+def test_expected_items_for_manifest_uses_full_manifest_or_run_limit(tmp_path: Path) -> None:
+    manifest = tmp_path / "manifest.toml"
+    manifest.write_text(
+        'benchmark = "mvbench"\nitem_ids = ["a", "b", "c", "d"]\n',
+        encoding="utf-8",
+    )
+
+    assert queue._expected_items_for_manifest(manifest, n_items=0) == 4
+    assert queue._expected_items_for_manifest(manifest, n_items=2) == 2
+    assert queue._expected_items_for_manifest(manifest, n_items=8) == 4
+
+
 def test_phase_passed_cvision_requires_sparse_induced_parse_gate_only() -> None:
     base: dict[str, Any] = {
         "pass_complete_pairing": True,
@@ -591,6 +603,50 @@ def test_query_routing_dry_run_plans_q0b_and_q1_controls(tmp_path: Path) -> None
         and command[command.index("--vision-tower-score-mode") + 1] == "random_valid"
         and "--vision-random-seed" in command
         for command in commands
+    )
+
+
+def test_query_routing_hosted_manifest_uses_manifest_item_count(tmp_path: Path) -> None:
+    manifest = tmp_path / "mvbench_hosted.toml"
+    manifest.write_text(
+        'benchmark = "mvbench"\n'
+        "item_ids = [\n"
+        + "".join(f'  "mvbench:action_antonym:{idx}",\n' for idx in range(4))
+        + "]\n",
+        encoding="utf-8",
+    )
+    summary_path = tmp_path / "summary.json"
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_rlt_followup_queue.py",
+            "--run-cvision-rlt",
+            "--run-query-routing-q0b",
+            "--run-query-routing-q1",
+            "--query-routing-benchmarks",
+            "mvbench",
+            "--mvbench-manifest",
+            str(manifest),
+            "--dry-run",
+            "--summary",
+            str(summary_path),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(summary_path.read_text(encoding="utf-8"))
+    analyze_commands = [
+        item["command"]
+        for item in payload["planned_commands"]
+        if item["command"][1] == "scripts/analyze_gemma_full_composition.py"
+        and any("query_q1_mvbench" in arg for arg in item["command"])
+    ]
+    assert analyze_commands
+    assert all(
+        command[command.index("--expected-items") + 1] == "4" for command in analyze_commands
     )
 
 

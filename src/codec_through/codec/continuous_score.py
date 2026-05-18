@@ -3,12 +3,33 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import StrEnum
+from typing import Literal
 
 import numpy as np
 import numpy.typing as npt
 from PIL import Image
 
 from codec_through.temporal import BlockClass
+
+FuseMode = Literal["weighted", "sum", "max", "geomean"]
+
+
+class CodecScoreSource(StrEnum):
+    """Codec-derived score planes available to planner probes."""
+
+    NOVEL_CODED = "novel_coded"
+    MOTION = "motion"
+    RESIDUAL = "residual"
+    FUSED = "fused"
+
+
+CODEC_SCORE_UNITS: dict[CodecScoreSource, str] = {
+    CodecScoreSource.NOVEL_CODED: "fraction_intra_or_coded_block_flag",
+    CodecScoreSource.MOTION: "macroblock_motion_vector_magnitude_pixels",
+    CodecScoreSource.RESIDUAL: "repo_local_reconstructed_y_residual_proxy",
+    CodecScoreSource.FUSED: "motion_residual_fused_score",
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -121,6 +142,182 @@ def project_macroblock_scores_to_token_grid(
     return mean_pool_blocks(canvas, block_size=token_block)
 
 
+def percentile_normalize(
+    values: npt.ArrayLike,
+    *,
+    percentile: float = 95.0,
+    clip: bool = True,
+) -> npt.NDArray[np.float32]:
+    """Normalize a finite non-negative score array by a robust percentile."""
+
+    array = np.asarray(values, dtype=np.float32)
+    _validate_score_array(array, name="values")
+    if not (0.0 < percentile <= 100.0):
+        raise ValueError("percentile must lie in (0, 100]")
+
+    scale = float(np.percentile(array, percentile))
+    if scale <= 0.0:
+        return np.zeros_like(array, dtype=np.float32)
+    normalized = np.asarray(array / np.float32(scale), dtype=np.float32)
+    if clip:
+        normalized = np.asarray(np.clip(normalized, 0.0, 1.0), dtype=np.float32)
+    return normalized
+
+
+def fuse_motion_residual(
+    motion_scores: npt.ArrayLike,
+    residual_scores: npt.ArrayLike,
+    *,
+    mode: FuseMode = "weighted",
+    motion_weight: float = 1.0,
+    residual_weight: float = 1.0,
+    normalize_inputs: bool = True,
+) -> npt.NDArray[np.float32]:
+    """Fuse motion-vector and residual-energy score planes."""
+
+    motion = np.asarray(motion_scores, dtype=np.float32)
+    residual = np.asarray(residual_scores, dtype=np.float32)
+    _validate_score_array(motion, name="motion_scores")
+    _validate_score_array(residual, name="residual_scores")
+    if motion.shape != residual.shape:
+        raise ValueError(
+            "motion_scores and residual_scores must have the same shape, "
+            f"got {motion.shape} and {residual.shape}"
+        )
+    if motion_weight < 0.0 or residual_weight < 0.0:
+        raise ValueError("motion_weight and residual_weight must be non-negative")
+    if motion_weight == 0.0 and residual_weight == 0.0:
+        raise ValueError("at least one fusion weight must be positive")
+    if mode == "geomean" and (motion_weight == 0.0 or residual_weight == 0.0):
+        raise ValueError("geomean fusion requires both weights to be positive")
+
+    if normalize_inputs:
+        motion = percentile_normalize(motion)
+        residual = percentile_normalize(residual)
+
+    weighted_motion = np.asarray(motion * np.float32(motion_weight), dtype=np.float32)
+    weighted_residual = np.asarray(residual * np.float32(residual_weight), dtype=np.float32)
+    if mode in {"weighted", "sum"}:
+        fused = weighted_motion + weighted_residual
+        if mode == "weighted":
+            fused = fused / np.float32(motion_weight + residual_weight)
+    elif mode == "max":
+        fused = np.maximum(weighted_motion, weighted_residual)
+    elif mode == "geomean":
+        fused = np.sqrt(weighted_motion * weighted_residual, dtype=np.float32)
+    else:
+        raise ValueError(f"unsupported fusion mode: {mode}")
+    return np.asarray(fused, dtype=np.float32)
+
+
+def macroblock_motion_magnitude(macroblocks: np.ndarray) -> npt.NDArray[np.float32]:
+    """Return the larger available forward/backward MV magnitude per macroblock."""
+
+    _validate_macroblock_fields(macroblocks, required=("mv_magnitude", "mv_magnitude_back"))
+    forward = np.asarray(macroblocks["mv_magnitude"], dtype=np.float32)
+    backward = np.asarray(macroblocks["mv_magnitude_back"], dtype=np.float32)
+    forward = np.nan_to_num(forward, nan=0.0, posinf=0.0, neginf=0.0)
+    backward = np.nan_to_num(backward, nan=0.0, posinf=0.0, neginf=0.0)
+    return np.maximum(forward, backward).astype(np.float32)
+
+
+def macroblock_residual_energy(macroblocks: np.ndarray) -> npt.NDArray[np.float32]:
+    """Return the repo-local residual-energy proxy per macroblock."""
+
+    _validate_macroblock_fields(macroblocks, required=("residual_energy",))
+    return np.asarray(macroblocks["residual_energy"], dtype=np.float32)
+
+
+def macroblock_score_plane(
+    macroblocks: np.ndarray,
+    *,
+    source: CodecScoreSource | str,
+    mode: FuseMode = "weighted",
+    motion_weight: float = 1.0,
+    residual_weight: float = 1.0,
+    normalize_inputs: bool = True,
+) -> npt.NDArray[np.float32]:
+    """Build a continuous score plane from H264MetadataExtractor macroblocks."""
+
+    score_source = CodecScoreSource(source)
+    if score_source is CodecScoreSource.NOVEL_CODED:
+        _validate_macroblock_fields(macroblocks, required=("intra_flag", "cbf"))
+        return np.asarray(macroblocks["intra_flag"] | macroblocks["cbf"], dtype=np.float32)
+    motion = macroblock_motion_magnitude(macroblocks)
+    if score_source is CodecScoreSource.MOTION:
+        return motion
+    residual = macroblock_residual_energy(macroblocks)
+    if score_source is CodecScoreSource.RESIDUAL:
+        return residual
+    if score_source is CodecScoreSource.FUSED:
+        return fuse_motion_residual(
+            motion,
+            residual,
+            mode=mode,
+            motion_weight=motion_weight,
+            residual_weight=residual_weight,
+            normalize_inputs=normalize_inputs,
+        )
+    raise ValueError(f"unsupported codec score source: {source}")
+
+
+def project_macroblock_metadata_to_token_grid(
+    macroblocks: np.ndarray,
+    *,
+    source: CodecScoreSource | str,
+    macroblock_size: int,
+    frame_width: int,
+    frame_height: int,
+    canvas_size: int,
+    active_box: tuple[int, int, int, int],
+    token_block: int,
+    mode: FuseMode = "weighted",
+    motion_weight: float = 1.0,
+    residual_weight: float = 1.0,
+    normalize_inputs: bool = True,
+) -> npt.NDArray[np.float32]:
+    """Build and project a macroblock score plane into the model token grid."""
+
+    score_plane = macroblock_score_plane(
+        macroblocks,
+        source=source,
+        mode=mode,
+        motion_weight=motion_weight,
+        residual_weight=residual_weight,
+        normalize_inputs=normalize_inputs,
+    )
+    return project_macroblock_scores_to_token_grid(
+        score_plane,
+        macroblock_size=macroblock_size,
+        frame_width=frame_width,
+        frame_height=frame_height,
+        canvas_size=canvas_size,
+        active_box=active_box,
+        token_block=token_block,
+    )
+
+
+def codec_score_units(
+    source: CodecScoreSource | str,
+    *,
+    fusion_mode: FuseMode = "weighted",
+    motion_weight: float = 1.0,
+    residual_weight: float = 1.0,
+    normalize_inputs: bool = True,
+) -> str:
+    """Return the physical/proxy units for a codec score source."""
+
+    score_source = CodecScoreSource(source)
+    if score_source is not CodecScoreSource.FUSED:
+        return CODEC_SCORE_UNITS[score_source]
+    normalization = "percentile_normalized_inputs" if normalize_inputs else "raw_inputs"
+    return (
+        f"{CODEC_SCORE_UNITS[score_source]}:"
+        f"mode={fusion_mode},motion_weight={motion_weight},"
+        f"residual_weight={residual_weight},{normalization}"
+    )
+
+
 def calibrate_score_thresholds(
     scores: npt.NDArray[np.float32],
     *,
@@ -182,3 +379,22 @@ def class_share_vector(
     if total <= 0:
         raise ValueError("classification grids contained no blocks")
     return counts.astype(np.float64) / float(total)
+
+
+def _validate_score_array(array: np.ndarray, *, name: str) -> None:
+    if array.size == 0:
+        raise ValueError(f"{name} must not be empty")
+    if not np.all(np.isfinite(array)):
+        raise ValueError(f"{name} must contain only finite values")
+    if np.any(array < 0.0):
+        raise ValueError(f"{name} must be non-negative")
+
+
+def _validate_macroblock_fields(macroblocks: np.ndarray, *, required: tuple[str, ...]) -> None:
+    if macroblocks.ndim != 2:
+        raise ValueError("macroblocks must be a 2D structured array")
+    if macroblocks.dtype.fields is None:
+        raise ValueError("macroblocks must be a structured array")
+    missing = [field for field in required if field not in macroblocks.dtype.fields]
+    if missing:
+        raise ValueError(f"macroblocks missing required fields: {missing}")

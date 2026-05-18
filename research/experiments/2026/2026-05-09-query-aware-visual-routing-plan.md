@@ -1641,20 +1641,60 @@ decision.
 7. What minimal result would justify a standalone paper instead of a
    VLMaxxing appendix?
 
+## 2026-05-19 Design-Space Revision
+
+The first executable branch changed the research boundary:
+
+- Q1 falsified static typed vision-mask scoring on the MVBench motion slice.
+  RLT-topk, static-floor, and endpoint-anchor did not beat fixed/random
+  coverage controls.
+- Q1b showed the controls won because prompt admission was disabled. Turning
+  admission on improved speed but reintroduced content-specific damage. The
+  next live mechanism is therefore admission scheduling, not a fourth static
+  mask scorer.
+- Artifact audit narrowed the failure mechanism: the `moving_attribute` harm
+  is not explained by missing first-frame/temporal-anchor evidence because RLT
+  threshold admission keeps the first tubelet. The better hypothesis is
+  motion-role disambiguation: prompt admission removes context needed to decide
+  which visible object is moving or stationary.
+- Recent related work increases novelty pressure. CodecSight/CoStream and
+  CoPE-VideoLM establish codec primitives as VLM efficiency signals; QTSplus,
+  VideoRouter, QuoTA, Frame-Voyager, Static-or-Dynamic, and AVP cover major
+  query-conditional routing designs. Our remaining opportunity is a robust
+  physical evidence optimizer: coverage-first by default, prompt admission as
+  a scheduled risky operator, codec/query signals as selectivity estimates,
+  and active repair only when a cheap first pass is uncertain.
+
+Near-term experiment order after Q1c:
+
+1. Hosted-dev breadth sweep on `mvbench_hosted_dev_v1.toml` using Q0b/Q1 only.
+   This asks whether the static-mask negative verdict generalizes across 18
+   buckets. It is a breadth diagnostic, not per-bucket proof.
+2. CPU-only codec-motion probe. This measures whether H.264 motion/residual
+   metadata separates admission-sensitive content before any model-facing
+   codec router is built.
+3. If Q1c or codec-motion is positive, design a fresh held-out admission
+   scheduler. Do not tune on the Q1/Q1b dev artifacts and call it a paper
+   result.
+4. If simple scheduling fails, the next credible revival is scalar
+   query-budget allocation or one-step active repair, not more hand-built
+   static operators.
+
 ## Near-Term Recommendation
 
-The current RLT/VLMaxxing branch has already run disjoint holdout replication.
-Before forking implementation, finish any desired M5 scorer-transfer scale
-check. Then fork a query-aware branch with a narrow first target:
+The current RLT/VLMaxxing branch has already run disjoint holdout replication
+and the first query-routing branch has produced negative static-mask evidence.
+Before claiming a standalone paper, finish Q1c and the hosted-dev breadth
+sweep. Then fork any query-aware implementation with a narrower target:
 
 ```text
-Recover static/detail-sensitive failures under pooled composition by adding
-query-conditioned static detail to RLT C-VISION, while preserving most of the
-RLT speedup and beating fixed/random coverage controls. Use MVBench
-moving_attribute as the first stress test, not as the only target.
+Recover admission-sensitive failures by scheduling prompt admission as a
+physical operator under query/content selectivity estimates, while preserving
+coverage-first C-VISION and beating fixed/random coverage controls.
 ```
 
-If that lands, the research direction is strong enough for its own paper.
+If that lands on held-out data against scalar-query and random/fixed controls,
+the research direction is strong enough for its own paper.
 
 ## Synergies With VLMaxxing+RLT Closeout (2026-05-14)
 

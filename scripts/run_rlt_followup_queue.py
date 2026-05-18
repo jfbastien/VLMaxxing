@@ -8,6 +8,7 @@ import json
 import subprocess
 import sys
 import time
+import tomllib
 from pathlib import Path
 from typing import Any, cast
 
@@ -131,6 +132,28 @@ def _portable_planned(planned: list[dict[str, Any]]) -> list[dict[str, Any]]:
         }
         for item in planned
     ]
+
+
+def _manifest_item_count(path: Path) -> int:
+    payload = tomllib.loads(path.read_text(encoding="utf-8"))
+    item_ids = payload.get("item_ids")
+    if isinstance(item_ids, list):
+        if not all(isinstance(item_id, str) for item_id in item_ids):
+            raise ValueError(f"{path} has non-string item_ids")
+        return len(item_ids)
+    items = payload.get("items")
+    if isinstance(items, list):
+        return len(items)
+    raise ValueError(f"{path} is missing item_ids/items")
+
+
+def _expected_items_for_manifest(path: Path, *, n_items: int) -> int:
+    manifest_count = _manifest_item_count(path)
+    if manifest_count <= 0:
+        raise ValueError(f"{path} has no benchmark items")
+    if n_items <= 0:
+        return manifest_count
+    return min(n_items, manifest_count)
 
 
 def _run(command: list[str], *, allow_failure: bool = False) -> dict[str, Any]:
@@ -1625,6 +1648,23 @@ def main() -> int:
         expected_items=args.cvision_n_items,
         score_mode="max_min_diversity",
     )
+    benchmark_manifests = {
+        "videomme": args.videomme_manifest,
+        "tomato": args.tomato_manifest,
+        "mvbench": args.mvbench_manifest,
+    }
+    benchmark_run_n_items = {
+        "videomme": args.cvision_n_items,
+        "tomato": 0,
+        "mvbench": 0,
+    }
+    benchmark_expected_items = {
+        benchmark: _expected_items_for_manifest(
+            manifest,
+            n_items=benchmark_run_n_items[benchmark],
+        )
+        for benchmark, manifest in benchmark_manifests.items()
+    }
     expansion_commands = {
         "tomato": _cvision_commands(
             artifact_dir=args.artifact_dir,
@@ -1635,7 +1675,7 @@ def main() -> int:
             rss_guard_mb=args.rss_guard_mb,
             mlx_memory_limit_gb=args.mlx_memory_limit_gb,
             label="cvision_rlt_tomato",
-            expected_items=30,
+            expected_items=benchmark_expected_items["tomato"],
             score_mode="rlt_topk",
         ),
         "mvbench": _cvision_commands(
@@ -1647,7 +1687,7 @@ def main() -> int:
             rss_guard_mb=args.rss_guard_mb,
             mlx_memory_limit_gb=args.mlx_memory_limit_gb,
             label="cvision_rlt_mvbench",
-            expected_items=30,
+            expected_items=benchmark_expected_items["mvbench"],
             score_mode="rlt_topk",
         ),
     }
@@ -1661,7 +1701,7 @@ def main() -> int:
             rss_guard_mb=args.rss_guard_mb,
             mlx_memory_limit_gb=args.mlx_memory_limit_gb,
             label="cvision_maxmin_tomato",
-            expected_items=30,
+            expected_items=benchmark_expected_items["tomato"],
             score_mode="max_min_diversity",
         ),
         "mvbench": _cvision_commands(
@@ -1673,19 +1713,9 @@ def main() -> int:
             rss_guard_mb=args.rss_guard_mb,
             mlx_memory_limit_gb=args.mlx_memory_limit_gb,
             label="cvision_maxmin_mvbench",
-            expected_items=30,
+            expected_items=benchmark_expected_items["mvbench"],
             score_mode="max_min_diversity",
         ),
-    }
-    benchmark_manifests = {
-        "videomme": args.videomme_manifest,
-        "tomato": args.tomato_manifest,
-        "mvbench": args.mvbench_manifest,
-    }
-    benchmark_expected_items = {
-        "videomme": args.cvision_n_items,
-        "tomato": 30,
-        "mvbench": 30,
     }
     magnitude_commands = {
         benchmark: _cvision_commands(
@@ -1774,9 +1804,8 @@ def main() -> int:
         "mvbench": args.mvbench_holdout_manifest,
     }
     holdout_expected_items = {
-        "videomme": 30,
-        "tomato": 30,
-        "mvbench": 30,
+        benchmark: _expected_items_for_manifest(manifest, n_items=0)
+        for benchmark, manifest in holdout_manifests.items()
     }
     full_composition_holdout_commands = {
         benchmark: _gemma_full_composition_commands(
@@ -1818,7 +1847,7 @@ def main() -> int:
         model_path=args.gemma_model_path,
         frame_count=args.frame_count,
         n_items=0,
-        expected_items=30,
+        expected_items=benchmark_expected_items["mvbench"],
         rss_guard_mb=args.rss_guard_mb,
         mlx_memory_limit_gb=args.mlx_memory_limit_gb,
         benchmark="mvbench",
@@ -1833,7 +1862,7 @@ def main() -> int:
         model_path=args.gemma_model_path,
         frame_count=args.frame_count,
         n_items=0,
-        expected_items=30,
+        expected_items=holdout_expected_items["mvbench"],
         rss_guard_mb=args.rss_guard_mb,
         mlx_memory_limit_gb=args.mlx_memory_limit_gb,
         benchmark="mvbench",

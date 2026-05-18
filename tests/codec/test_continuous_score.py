@@ -3,9 +3,14 @@ from __future__ import annotations
 import numpy as np
 
 from codec_through.codec.continuous_score import (
+    CodecScoreSource,
     calibrate_score_thresholds,
     class_share_vector,
     classify_score_grid,
+    codec_score_units,
+    fuse_motion_residual,
+    macroblock_motion_magnitude,
+    macroblock_score_plane,
     project_macroblock_scores_to_token_grid,
     sparse_pair_spans,
     sparse_sample_indices,
@@ -67,3 +72,73 @@ def test_class_share_vector_aggregates_multiple_pair_grids() -> None:
         ]
     )
     assert np.allclose(shares, np.array([0.25, 0.25, 0.5], dtype=np.float64))
+
+
+def test_macroblock_score_plane_exposes_motion_residual_and_fused_sources() -> None:
+    macroblocks = np.zeros(
+        (1, 2),
+        dtype=[
+            ("mv_magnitude", np.float32),
+            ("mv_magnitude_back", np.float32),
+            ("residual_energy", np.float32),
+            ("intra_flag", np.bool_),
+            ("cbf", np.bool_),
+        ],
+    )
+    macroblocks["mv_magnitude"] = np.array([[1.0, 3.0]], dtype=np.float32)
+    macroblocks["mv_magnitude_back"] = np.array([[4.0, 2.0]], dtype=np.float32)
+    macroblocks["residual_energy"] = np.array([[0.0, 8.0]], dtype=np.float32)
+    macroblocks["cbf"] = np.array([[False, True]])
+
+    assert np.allclose(
+        macroblock_motion_magnitude(macroblocks),
+        np.array([[4.0, 3.0]], dtype=np.float32),
+    )
+    assert np.allclose(
+        macroblock_score_plane(macroblocks, source=CodecScoreSource.MOTION),
+        np.array([[4.0, 3.0]], dtype=np.float32),
+    )
+    assert np.allclose(
+        macroblock_score_plane(macroblocks, source=CodecScoreSource.RESIDUAL),
+        np.array([[0.0, 8.0]], dtype=np.float32),
+    )
+    assert np.allclose(
+        macroblock_score_plane(macroblocks, source=CodecScoreSource.NOVEL_CODED),
+        np.array([[0.0, 1.0]], dtype=np.float32),
+    )
+
+    fused = macroblock_score_plane(macroblocks, source=CodecScoreSource.FUSED)
+
+    assert fused.shape == (1, 2)
+    assert float(fused[0, 1]) > float(fused[0, 0])
+    assert "motion_residual_fused_score" in codec_score_units(CodecScoreSource.FUSED)
+
+
+def test_fuse_motion_residual_rejects_invalid_arrays() -> None:
+    try:
+        fuse_motion_residual(np.array([1.0], dtype=np.float32), np.array([-1.0], dtype=np.float32))
+    except ValueError as exc:
+        assert "non-negative" in str(exc)
+    else:
+        raise AssertionError("negative residual score should fail")
+
+    single_source = fuse_motion_residual(
+        np.array([1.0, 2.0], dtype=np.float32),
+        np.array([3.0, 4.0], dtype=np.float32),
+        residual_weight=0.0,
+        mode="weighted",
+        normalize_inputs=False,
+    )
+    assert np.allclose(single_source, np.array([1.0, 2.0], dtype=np.float32))
+
+    try:
+        fuse_motion_residual(
+            np.array([1.0], dtype=np.float32),
+            np.array([1.0], dtype=np.float32),
+            residual_weight=0.0,
+            mode="geomean",
+        )
+    except ValueError as exc:
+        assert "geomean fusion requires both weights" in str(exc)
+    else:
+        raise AssertionError("single-source geomean fusion should fail")

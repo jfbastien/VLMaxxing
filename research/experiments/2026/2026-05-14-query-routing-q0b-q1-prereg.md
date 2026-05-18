@@ -1,7 +1,8 @@
 # 2026-05-14 query-routing Q0b/Q1 implementation prereg
 
 Status: **Q0b/Q1/Q1b measured; Q1c admission-scheduler follow-up implemented,
-not yet measured**.
+not yet measured; hosted-dev breadth sweep and codec-motion smoke scaffolding
+implemented, not yet measured**.
 
 This note records the first executable branch for the query-aware visual
 routing follow-on paper. It intentionally stops at Q0b and Q1. QuoTA-style
@@ -258,3 +259,98 @@ using the winning policy before changing the paper-2 status. If both fail,
 query routing remains an appendix negative result; the next serious revival
 must use a qualitatively different mechanism such as scalar query allocation
 or one-step active repair.
+
+## 2026-05-19 design-space update
+
+External review and local artifact audits sharpened the mechanism story:
+
+- The Q1/Q1b static-mask result is now aligned with recent token-pruning
+  critiques: strong fixed/random controls are mandatory, and static
+  structured scores often collapse toward random.
+- The Q1b prompt-admission harm is real, but the harmed item sets are not
+  globally disjoint from typed-mask harms. The sharper claim is mechanism
+  specificity: admission adds new `moving_attribute` harms that the
+  admission-off random coverage row avoided.
+- The `moving_attribute` failure is not a simple first-frame/temporal-anchor
+  failure. RLT threshold admission retains the first tubelet by construction.
+  The better working hypothesis is motion-role disambiguation: queries asking
+  which visible object is moving or stationary are brittle when prompt visual
+  placeholders are removed.
+- Codec metadata is a plausible runtime selectivity signal for admission
+  scheduling. It is content-conditional rather than query-conditional, so it
+  belongs after Q1c and a breadth sweep, not inside the current Q1c lane.
+
+### Hosted-dev breadth sweep preregistration
+
+The five-bucket MVBench motion slice is too narrow for a general static-mask
+verdict. The repo already contains
+`research/benchmark_manifests/mvbench_hosted_dev_v1.toml`, a 54-item hosted
+slice with 18 buckets and 3 items per bucket. The hosted sweep reuses Q0b/Q1
+only:
+
+```bash
+scripts/run_rlt_query_routing_hosted_sweep.sh
+```
+
+Implementation guard: expected item counts are derived from the manifest for
+MVBench/TOMATO full-manifest runs. VideoMME remains special-cased through
+`--cvision-n-items` because its default combined manifest intentionally
+contains 60 items while many cells run 30.
+
+Hypothesis H4c. The static-mask negative result generalizes beyond the five
+motion buckets.
+
+- Accept negative verdict: no typed Q1 operator beats fixed/random controls on
+  aggregate accuracy at positive E2E on the hosted slice.
+- Revive condition: a typed operator wins aggregate quality over controls
+  without parse regression and with E2E > 1.0, or a coherent bucket family
+  shows typed wins that motivate a query/content-conditional router.
+- Interpretation caveat: 18 buckets x 3 items improves breadth, not per-bucket
+  power. Bucket rows are descriptive only unless followed by a larger slice.
+
+### Codec-motion smoke preregistration
+
+The codec-motion probe is CPU-only and does not run a VLM:
+
+```bash
+./.venv/bin/python scripts/analyze_mvbench_codec_motion.py \
+  --manifest research/benchmark_manifests/mvbench_motion_dev_v2.toml \
+  --max-items-per-group 5 \
+  --max-frames 20 \
+  --output /tmp/mvbench_codec_motion.json
+```
+
+Hypothesis H5c. H.264 motion/residual metadata is a cheap selectivity signal
+for admission scheduling.
+
+- Accept as a signal, not a model claim: bucket means separate the admission-
+  sensitive buckets from admission-safe buckets by a large margin, and
+  extraction cost is small enough to justify a sidecar/runtime scheduler.
+- Falsify: motion/residual means do not separate buckets, are dominated by
+  codec artifacts such as GOP/I-frame layout, or extraction cost is too high
+  without sidecars.
+- Next if positive: implement codec-conditioned admission scheduling as a
+  separate branch with random/fixed and Q1c as controls. This must be framed
+  against CodecSight/CoStream and CoPE-VideoLM: codec-guided VLM pruning now
+  exists, so novelty is conditional admission planning and robust physical
+  operator selection, not "first codec signal."
+
+2026-05-19 bounded smoke: `--max-items-per-group 1 --max-frames 4` ran
+CPU-only and wrote `/private/tmp/codec_motion_smoke.json`. It reported
+`n_items=5`, honored item-level `start`/`end` windows, and showed the expected
+ordering: moving_direction 0.000 and moving_attribute 0.015 mean motion
+magnitude versus action/object/fine-grained buckets at 0.051-0.728. Per-frame
+extraction was roughly 2-4 ms on short/no-window examples and 52 ms on one
+segment-windowed object_interaction example because the current probe decodes
+up to the requested window. This is only a smoke, but it validates the probe,
+keeps H5c alive, and flags seeking/indexing as an engineering item before any
+large codec scan.
+
+### Not Yet Implemented
+
+- QuoTA/QTSplus-style scalar query allocation.
+- VideoRouter-style coverage-versus-detail policy.
+- One-step active repair / confidence-gated rerun.
+- Model-facing codec-grid pruning or sidecar-backed C-VISION.
+
+Those require new preregistered branches after Q1c and hosted-dev evidence.
