@@ -49,6 +49,12 @@ QUERY_ROUTING_Q1C_SAFE_ADMISSION_KEEP_RATES = {
     "fine_grained_action": 0.5,
     "moving_direction": 0.5,
 }
+QUERY_ROUTING_Q1C_MOVING_ATTRIBUTE_SAFE_ADMISSION_GROUPS = {
+    "action_localization",
+    "fine_grained_action",
+    "moving_direction",
+    "object_interaction",
+}
 QUERY_ROUTING_Q1C_ACTIONLOC_DENSE_KEEP_RATES = {"action_localization": 1.0}
 
 PHASE_ESTIMATES_HOURS = {
@@ -101,7 +107,7 @@ PHASE_ESTIMATES_HOURS = {
     "query-routing-q1-tomato-n30": [4.0, 8.0],
     "query-routing-q1-mvbench-n30": [4.0, 8.0],
     "query-routing-q1b-mvbench-n30": [2.5, 5.5],
-    "query-routing-q1c-mvbench-n30": [1.0, 2.5],
+    "query-routing-q1c-mvbench-n30": [2.0, 5.0],
 }
 
 
@@ -1070,7 +1076,13 @@ def _query_q1c_admission_scheduler_verdict(analyses: dict[str, Any]) -> dict[str
     labels = {
         "q1_random_seed11": "query_q1_mvbench_random_seed11",
         "q1b_random_seed11_actionloc_dense": "query_q1b_mvbench_random_seed11_actionloc_dense",
+        "q1c_random_seed11_no_admission_baseline": (
+            "query_q1c_mvbench_random_seed11_no_admission_baseline"
+        ),
         "q1c_random_seed11_safe_admission": "query_q1c_mvbench_random_seed11_safe_admission",
+        "q1c_random_seed11_moving_attribute_safe_admission": (
+            "query_q1c_mvbench_random_seed11_moving_attribute_safe_admission"
+        ),
         "q1c_random_seed11_safe_admission_actionloc_dense": (
             "query_q1c_mvbench_random_seed11_safe_admission_actionloc_dense"
         ),
@@ -1079,7 +1091,9 @@ def _query_q1c_admission_scheduler_verdict(analyses: dict[str, Any]) -> dict[str
     missing = [name for name, payload in rows.items() if payload is None]
     base = rows.get("q1_random_seed11") or {}
     actionloc_base = rows.get("q1b_random_seed11_actionloc_dense") or {}
+    q1c_baseline = rows.get("q1c_random_seed11_no_admission_baseline") or base
     safe = rows.get("q1c_random_seed11_safe_admission") or {}
+    moving_attribute_safe = rows.get("q1c_random_seed11_moving_attribute_safe_admission") or {}
     safe_actionloc = rows.get("q1c_random_seed11_safe_admission_actionloc_dense") or {}
 
     def improves(candidate: dict[str, Any], baseline: dict[str, Any]) -> bool:
@@ -1098,11 +1112,22 @@ def _query_q1c_admission_scheduler_verdict(analyses: dict[str, Any]) -> dict[str
         "benchmark": benchmark,
         "missing": missing,
         "rows": rows,
+        "baseline_for_q1c_admission": (
+            "query_q1c_mvbench_random_seed11_no_admission_baseline"
+            if rows.get("q1c_random_seed11_no_admission_baseline")
+            else "query_q1_mvbench_random_seed11"
+        ),
         "safe_admission_beats_q1_random": improves(safe, base),
+        "safe_admission_beats_q1c_baseline": improves(safe, q1c_baseline),
+        "moving_attribute_safe_admission_beats_q1_random": improves(moving_attribute_safe, base),
+        "moving_attribute_safe_admission_beats_q1c_baseline": improves(
+            moving_attribute_safe, q1c_baseline
+        ),
         "safe_admission_actionloc_dense_beats_q1b_actionloc_dense": improves(
             safe_actionloc, actionloc_base
         ),
-        "proceed_to_holdout_admission_scheduler": improves(safe, base)
+        "proceed_to_holdout_admission_scheduler": improves(safe, q1c_baseline)
+        or improves(moving_attribute_safe, q1c_baseline)
         or improves(safe_actionloc, actionloc_base),
         "paper_feedback": (
             "Q1c is still exploratory dev evidence. A positive row authorizes a "
@@ -2210,19 +2235,32 @@ def main() -> int:
         q1c_specs: list[
             tuple[
                 str,
+                set[str],
                 dict[str, float] | None,
             ]
         ] = [
             (
+                f"query_q1c_{benchmark}_random_seed11_no_admission_baseline",
+                set(),
+                None,
+            ),
+            (
                 f"query_q1c_{benchmark}_random_seed11_safe_admission",
+                set(QUERY_ROUTING_Q1C_SAFE_ADMISSION_KEEP_RATES),
+                None,
+            ),
+            (
+                f"query_q1c_{benchmark}_random_seed11_moving_attribute_safe_admission",
+                QUERY_ROUTING_Q1C_MOVING_ATTRIBUTE_SAFE_ADMISSION_GROUPS,
                 None,
             ),
             (
                 f"query_q1c_{benchmark}_random_seed11_safe_admission_actionloc_dense",
+                set(QUERY_ROUTING_Q1C_SAFE_ADMISSION_KEEP_RATES),
                 QUERY_ROUTING_Q1C_ACTIONLOC_DENSE_KEEP_RATES,
             ),
         ]
-        for label, group_vision_keep_rates in q1c_specs:
+        for label, admission_groups, group_vision_keep_rates in q1c_specs:
             query_q1c_commands[label] = _gemma_full_composition_commands(
                 artifact_dir=args.artifact_dir,
                 manifest=manifest,
@@ -2242,9 +2280,7 @@ def main() -> int:
                 composed_prune_placeholders="none",
                 vision_score_mode="random_valid",
                 vision_random_seed=11,
-                group_prune_placeholders={
-                    group: "rlt" for group in QUERY_ROUTING_Q1C_SAFE_ADMISSION_KEEP_RATES
-                },
+                group_prune_placeholders={group: "rlt" for group in admission_groups},
                 group_vision_keep_rates=group_vision_keep_rates,
             )
     if args.run_prefill_diagnostics:

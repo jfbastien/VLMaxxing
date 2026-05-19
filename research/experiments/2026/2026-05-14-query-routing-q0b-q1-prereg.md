@@ -657,9 +657,15 @@ Anti-claims:
   exact agreement) or always-fast random admission (`1.207x`, `-0.0667`
   accuracy delta).
 
-Next if promoted: run a live class-conditional admission cell with a same-run
-no-admission baseline, then replicate on holdout or hosted-dev before using it
-as more than a query-routing appendix result.
+Implementation follow-up: Q1c now includes
+`query_q1c_mvbench_random_seed11_moving_attribute_safe_admission`, which uses
+global no-admission with prompt admission enabled for
+`action_localization`, `fine_grained_action`, `moving_direction`, and
+`object_interaction`, leaving `moving_attribute` on the safe arm. Q1c also
+plans `query_q1c_mvbench_random_seed11_no_admission_baseline` so the verdict
+compares class-conditional admission to a Q1c-local same-run no-admission
+baseline instead of stale Q1 timing. Replicate on holdout or hosted-dev before
+using it as more than a query-routing appendix result.
 
 ### H8 Multi-Shot Consistency Gate, Timing Check Only
 
@@ -691,8 +697,8 @@ Preregistered gate before implementation:
 - QuoTA/QTSplus-style scalar query allocation.
 - VideoRouter-style coverage-versus-detail policy.
 - Live one-step active repair / confidence-gated rerun.
-- Live class-conditional admission scheduling beyond the offline
-  `moving_attribute` simulation.
+- Holdout or hosted-dev validation of the live
+  `moving_attribute`-safe class-conditional admission cell.
 - Model-facing codec-grid pruning or sidecar-backed C-VISION.
 - Multi-shot consistency as an efficiency gate; current status is timing-model
   only, not experiment-ready.

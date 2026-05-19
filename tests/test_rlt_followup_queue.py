@@ -772,11 +772,38 @@ def test_query_routing_q1c_dry_run_plans_safe_admission_cells(tmp_path: Path) ->
         for command in commands
     )
     assert any(
+        "--prune-placeholders" in command
+        and command[command.index("--prune-placeholders") + 1] == "none"
+        and "--group-prune-placeholders" not in command
+        and any(
+            arg.endswith("query_q1c_mvbench_random_seed11_no_admission_baseline_composed.jsonl")
+            for arg in command
+        )
+        for command in commands
+    )
+    assert any(
         "--group-vision-keep-rates" in command
         and command[command.index("--group-vision-keep-rates") + 1] == "action_localization=1"
         and any(
             arg.endswith(
                 "query_q1c_mvbench_random_seed11_safe_admission_actionloc_dense_composed.jsonl"
+            )
+            for arg in command
+        )
+        for command in commands
+    )
+    assert any(
+        "--prune-placeholders" in command
+        and command[command.index("--prune-placeholders") + 1] == "none"
+        and "--group-prune-placeholders" in command
+        and command[command.index("--group-prune-placeholders") + 1]
+        == (
+            "action_localization=rlt,fine_grained_action=rlt,"
+            "moving_direction=rlt,object_interaction=rlt"
+        )
+        and any(
+            arg.endswith(
+                "query_q1c_mvbench_random_seed11_moving_attribute_safe_admission_composed.jsonl"
             )
             for arg in command
         )
@@ -929,7 +956,13 @@ def test_query_q1c_verdict_requires_accuracy_and_speed_gain() -> None:
         "query_q1b_mvbench_random_seed11_actionloc_dense": analysis(
             delta=0.03, target_delta=0.0, speedup=1.14
         ),
+        "query_q1c_mvbench_random_seed11_no_admission_baseline": analysis(
+            delta=0.0, target_delta=0.0, speedup=1.01
+        ),
         "query_q1c_mvbench_random_seed11_safe_admission": analysis(
+            delta=0.03, target_delta=0.0, speedup=1.28
+        ),
+        "query_q1c_mvbench_random_seed11_moving_attribute_safe_admission": analysis(
             delta=0.03, target_delta=0.0, speedup=1.28
         ),
         "query_q1c_mvbench_random_seed11_safe_admission_actionloc_dense": analysis(
@@ -939,7 +972,14 @@ def test_query_q1c_verdict_requires_accuracy_and_speed_gain() -> None:
 
     verdict = queue._query_q1c_admission_scheduler_verdict(analyses)
 
+    assert (
+        verdict["baseline_for_q1c_admission"]
+        == "query_q1c_mvbench_random_seed11_no_admission_baseline"
+    )
     assert verdict["safe_admission_beats_q1_random"]
+    assert verdict["safe_admission_beats_q1c_baseline"]
+    assert verdict["moving_attribute_safe_admission_beats_q1_random"]
+    assert verdict["moving_attribute_safe_admission_beats_q1c_baseline"]
     assert verdict["safe_admission_actionloc_dense_beats_q1b_actionloc_dense"]
     assert verdict["proceed_to_holdout_admission_scheduler"]
 
@@ -973,7 +1013,13 @@ def test_query_q1c_verdict_rejects_speed_only_regression() -> None:
         "query_q1b_mvbench_random_seed11_actionloc_dense": analysis(
             delta=0.03, target_delta=0.0, speedup=1.14
         ),
+        "query_q1c_mvbench_random_seed11_no_admission_baseline": analysis(
+            delta=0.0, target_delta=0.0, speedup=1.01
+        ),
         "query_q1c_mvbench_random_seed11_safe_admission": analysis(
+            delta=-0.10, target_delta=-0.10, speedup=1.45
+        ),
+        "query_q1c_mvbench_random_seed11_moving_attribute_safe_admission": analysis(
             delta=-0.10, target_delta=-0.10, speedup=1.45
         ),
         "query_q1c_mvbench_random_seed11_safe_admission_actionloc_dense": analysis(
@@ -984,6 +1030,9 @@ def test_query_q1c_verdict_rejects_speed_only_regression() -> None:
     verdict = queue._query_q1c_admission_scheduler_verdict(analyses)
 
     assert not verdict["safe_admission_beats_q1_random"]
+    assert not verdict["safe_admission_beats_q1c_baseline"]
+    assert not verdict["moving_attribute_safe_admission_beats_q1_random"]
+    assert not verdict["moving_attribute_safe_admission_beats_q1c_baseline"]
     assert not verdict["safe_admission_actionloc_dense_beats_q1b_actionloc_dense"]
     assert not verdict["proceed_to_holdout_admission_scheduler"]
 
