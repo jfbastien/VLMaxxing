@@ -395,6 +395,21 @@ full RLT/Q0b/Q1/Q1b dependency chain. A dry-run on 2026-05-19 planned roughly
 artifact directory to reuse completed non-logprob dependencies, but the
 logprob-capture schema intentionally forces fresh Gemma admission rows.
 
+For the immediate publish-or-kill signal, use the targeted launcher instead:
+
+```bash
+scripts/run_rlt_query_routing_active_repair_targeted.sh
+```
+
+This script intentionally bypasses the broad queue dependency chain and runs
+only seven commands: shared dense/no-admission baseline, random-valid
+admission-on composed arm, random-valid paired analyzer, fixed-uniform
+admission-on composed arm, fixed-uniform paired analyzer, and the two
+confidence-frontier analyzers. It writes to
+`research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted`
+by default. This is the launch path to use before spending 12-25 hours on the
+full wrapper.
+
 Primary signal:
 
 - Margin field: `composed_first_generated_candidate_top2_margin` by default.
@@ -435,11 +450,66 @@ Novelty boundary:
   first, then retry only uncertain rows with the dense/no-admission physical
   operator, with paired fidelity gates and full E2E cost accounting.
 
+### 2026-05-19 Pareto Audit And Editor Notes
+
+Artifact audit over the Q0b/Q1/Q1b cells shows two positive points and one
+upper-bound routing point that should guide the paper-facing language:
+
+- `query_q0b_cvision_only_mvbench_kr100`: `1.177x` E2E, `Delta acc=0.000`,
+  choice agreement `1.000`, and the only full bucket-quality-and-E2E gate pass
+  among the query-routing cells. Anti-claim: this is **not** a token-pruning
+  win. It has `vision_reduction=0.0`, `placeholder_reduction=0.0`, and keeps
+  all valid encoder positions. It is a dense-equivalent C-VISION execution-path
+  systems observation.
+- `query_q1_mvbench_random_seed11`: `1.254x` E2E, `Delta acc=0.000`, fidelity
+  pass, but choice agreement is only `0.733` and the bucket gate fails from one
+  action-localization loss at `n=6`. Treat this as a strong Pareto/exploratory
+  point, not an exact-fidelity headline.
+- Oracle bucket routing over already-run fidelity-pass cells can reach about
+  `1.287x` E2E and `Delta acc=+0.033` by choosing the fastest nonnegative
+  policy per MVBench bucket. Anti-claim: MVBench category labels are benchmark
+  metadata. This is an upper bound on what a real router could exploit, not a
+  deployable policy.
+
+Paper-editor note, not paper text: the honest story is now "static typed
+vision-mask scoring failed; robust/dumb coverage and dense-equivalent
+C-VISION paths form the empirical Pareto frontier; active repair tests whether
+the model's own cheap-pass confidence can turn that frontier into an adaptive
+runtime policy." Do not bury the negative result. It is what justifies moving
+from static physical-operator selection to adaptive execution.
+
+### H7 Multi-Shot Consistency Gate, Timing Check Only
+
+Multi-shot consistency is a plausible future variant: run two cheap admission
+passes with different random masks, accept if they agree, and retry dense if
+they disagree. The literature gap is attractive, but the first-order timing
+model is unfavorable under full E2E accounting:
+
+```text
+two cheap passes at 1.45x each cost about 2 / 1.45 = 1.38 dense units
+before any fallback retry.
+```
+
+Therefore H7 is **not** ready for implementation as a VLM experiment. Before
+any code branch, it needs either (a) measured work reuse that makes the second
+cheap pass much cheaper than the first, or (b) a different design where the
+second pass is a nearly-free verifier rather than another full VLM call.
+
+Preregistered gate before implementation:
+
+- Accept for implementation only if a CPU/timing model or measured n=1 smoke
+  shows expected E2E speedup `>1.0` after charging both cheap passes and the
+  predicted dense fallback rate.
+- Falsify as an E2E speedup path if the second cheap pass is another full
+  Gemma call with no reusable vision/prefill work.
+
 ### Not Yet Implemented
 
 - QuoTA/QTSplus-style scalar query allocation.
 - VideoRouter-style coverage-versus-detail policy.
 - Live one-step active repair / confidence-gated rerun.
 - Model-facing codec-grid pruning or sidecar-backed C-VISION.
+- Multi-shot consistency as an efficiency gate; current status is timing-model
+  only, not experiment-ready.
 
 Those require new preregistered branches after Q1c and hosted-dev evidence.

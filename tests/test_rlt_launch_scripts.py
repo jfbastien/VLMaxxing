@@ -102,6 +102,31 @@ def test_query_routing_active_repair_probe_script_is_narrow_and_portable() -> No
     assert "Refusing out-of-scope queue override" in payload
 
 
+def test_query_routing_active_repair_targeted_script_is_narrow_and_portable() -> None:
+    script = Path("scripts/run_rlt_query_routing_active_repair_targeted.sh")
+    payload = script.read_text(encoding="utf-8")
+
+    assert "/Users/" not in payload
+    assert 'cd "$(dirname "$0")/.."' in payload
+    assert 'PY="${PYTHON:-./.venv/bin/python}"' in payload
+    assert "${GEMMA_MODEL_PATH:-$HOME/models/gemma-4-e4b-it-4bit}" in payload
+    assert "${MVBENCH_MANIFEST:-research/benchmark_manifests/mvbench_motion_dev_v2.toml}" in (
+        payload
+    )
+    assert "--run-cvision-rlt" not in payload
+    assert "--run-query-routing-q0b" not in payload
+    assert "--run-query-routing-q1" not in payload
+    assert "--run-query-routing-q1b-followup" not in payload
+    assert "--vision-tower-score-mode random_valid" in payload
+    assert "--vision-random-seed 11" in payload
+    assert "--vision-tower-score-mode fixed_uniform" in payload
+    assert "query_q1b_dense_mvbench_dense.jsonl" in payload
+    assert "query_q1b_mvbench_random_seed11_admission_on_active_repair_confidence.json" in payload
+    assert "query_q1b_mvbench_fixed_uniform_admission_on_active_repair_confidence.json" in payload
+    assert "composed_first_generated_candidate_top2_margin" in payload
+    assert "Refusing out-of-scope queue override" in payload
+
+
 def test_m5_scale_confirmation_script_requires_operator_model_path() -> None:
     script = Path("scripts/run_rlt_m5_scale_confirmation.sh")
     payload = script.read_text(encoding="utf-8")
@@ -233,6 +258,45 @@ def test_query_routing_active_repair_probe_rejects_dense_margin_override() -> No
     completed = subprocess.run(
         [
             "scripts/run_rlt_query_routing_active_repair_probe.sh",
+            "--dry-run",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert completed.returncode == 2
+    assert "Refusing margin field outside composed" in completed.stderr
+
+
+def test_query_routing_active_repair_targeted_rejects_extra_phase_flags() -> None:
+    for forbidden in (
+        "--run-cvision-rlt",
+        "--run-query-routing-q0b",
+        "--mvbench-manifest",
+        "--composition-prefill-step-size=1",
+    ):
+        completed = subprocess.run(
+            [
+                "scripts/run_rlt_query_routing_active_repair_targeted.sh",
+                forbidden,
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+
+        assert completed.returncode == 2
+        assert "Refusing out-of-scope queue override" in completed.stderr
+
+
+def test_query_routing_active_repair_targeted_rejects_dense_margin_override() -> None:
+    env = dict(os.environ)
+    env["MARGIN_FIELD"] = "dense_first_generated_candidate_top2_margin"
+    completed = subprocess.run(
+        [
+            "scripts/run_rlt_query_routing_active_repair_targeted.sh",
             "--dry-run",
         ],
         check=False,
