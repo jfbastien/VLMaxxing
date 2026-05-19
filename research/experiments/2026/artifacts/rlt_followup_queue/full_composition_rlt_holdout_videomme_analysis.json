@@ -1,5 +1,5 @@
 {
-  "cell_type": "direct_dense_vs_rlt_cvision_plus_admission",
+  "cell_type": "rlt_admission_plus_rlt_cvision",
   "composed_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_holdout_videomme_composed.jsonl",
   "decisions": [
     {
@@ -9,16 +9,18 @@
         "pass_e2e_positive",
         "pass_bucket_quality_and_e2e"
       ],
-      "reason": "full_composition_gate_failed"
+      "reason": "direct_pair_gate_failed"
     }
   ],
   "dense_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_holdout_videomme_dense.jsonl",
+  "dense_source": "reference-jsonl",
   "expected_items": 30,
-  "schema_version": "gemma_full_composition_analysis_v1",
+  "schema_version": "gemma_full_composition_analysis_v2",
   "source_pairs": [
     {
       "composed_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_holdout_videomme_composed.jsonl",
       "dense_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_holdout_videomme_dense.jsonl",
+      "dense_source": "reference-jsonl",
       "n_items": 30
     }
   ],
@@ -37,44 +39,82 @@
     "by_group": {
       "long": {
         "accuracy_delta_composed_minus_dense": -0.19999999999999996,
+        "choice_agreement": 0.7,
         "composed_accuracy": 0.5,
         "dense_accuracy": 0.7,
         "e2e_gate_pass": false,
         "e2e_speedup_dense_over_composed": 0.9970765254290773,
+        "failure_taxonomy": {
+          "harmed": 2,
+          "preserved_correct": 5,
+          "unchanged_wrong": 3
+        },
         "gate_evaluated": true,
         "n": 10,
+        "parse_taxonomy": {
+          "parse_same": 10
+        },
         "quality_gate_pass": false
       },
       "medium": {
         "accuracy_delta_composed_minus_dense": -0.10000000000000003,
+        "choice_agreement": 0.8,
         "composed_accuracy": 0.3,
         "dense_accuracy": 0.4,
         "e2e_gate_pass": false,
         "e2e_speedup_dense_over_composed": 0.9405554858120538,
+        "failure_taxonomy": {
+          "harmed": 1,
+          "preserved_correct": 3,
+          "unchanged_wrong": 6
+        },
         "gate_evaluated": true,
         "n": 10,
+        "parse_taxonomy": {
+          "parse_recovered": 1,
+          "parse_same": 9
+        },
         "quality_gate_pass": false
       },
       "short": {
         "accuracy_delta_composed_minus_dense": 0.0,
+        "choice_agreement": 0.7,
         "composed_accuracy": 0.4,
         "dense_accuracy": 0.4,
         "e2e_gate_pass": false,
         "e2e_speedup_dense_over_composed": 0.9647127297313088,
+        "failure_taxonomy": {
+          "harmed": 1,
+          "preserved_correct": 3,
+          "recovered": 1,
+          "unchanged_wrong": 5
+        },
         "gate_evaluated": true,
         "n": 10,
+        "parse_taxonomy": {
+          "parse_same": 10
+        },
         "quality_gate_pass": true
       }
     },
+    "cell_type": "rlt_admission_plus_rlt_cvision",
+    "choice_agreement": 0.7333333333333333,
+    "choice_changed_count": 8,
     "composed_accuracy": 0.4,
     "composed_total_e2e_ms": 1874797.3863300001,
     "dense_accuracy": 0.5,
     "dense_total_e2e_ms": 1844794.2384569999,
     "e2e_speedup_ci95": [
-      0.9643664096288286,
-      1.002016284706015
+      0.9641077971782114,
+      1.0027144260313174
     ],
     "e2e_speedup_dense_over_composed": 0.9839965917961232,
+    "failure_taxonomy": {
+      "harmed": 4,
+      "preserved_correct": 11,
+      "recovered": 1,
+      "unchanged_wrong": 14
+    },
     "mean_composed_end_to_end_ms": 62493.246211000005,
     "mean_composed_prefill_ms": 4146.590283333333,
     "mean_composed_vision_ms": 3445.3464708,
@@ -83,8 +123,13 @@
     "mean_dense_vision_ms": 4666.2646736,
     "n_items": 30,
     "parse_failure_delta_composed_minus_dense": -1,
+    "parse_taxonomy": {
+      "parse_recovered": 1,
+      "parse_same": 29
+    },
     "pass_bucket_quality_and_e2e": false,
     "pass_complete_pairing": true,
+    "pass_dense_equivalence": null,
     "pass_e2e_positive": false,
     "pass_fidelity": false,
     "pass_parse_failure_delta": true

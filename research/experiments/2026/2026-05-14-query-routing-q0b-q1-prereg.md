@@ -926,6 +926,88 @@ Revised next-experiment gate:
   VideoMME short N=20. Speculative admission can be added as a secondary row
   only after the cache-reuse smoke passes.
 
+### H7e CPU Tail-Inflation Residual Audit
+
+Claude's Round-6 review proposed that the remaining cost-model residual is
+explained by damage-induced "decode inflation." The first half is partly
+validated; the second half needed correction. Existing paired artifacts show
+that admission-harmed rows are slower than preserved-correct rows, and the
+per-branch measurable extra cost is in the language-generation tail. The
+active-repair artifacts do **not** independently test branch-specific video
+decode inflation because video decode is a shared charged stage in those
+same-run rows.
+
+Implementation updates:
+
+- `scripts/analyze_gemma_full_composition.py` now emits paired
+  `*_video_decode_ms`, `*_text_generation_ms`, and `*_generation_tokens` fields
+  whenever the source rows expose them.
+- `scripts/analyze_gemma_paired_cost_model.py` now emits a `tail_audit` object
+  and transition-level stage summaries. The audit hard-fails on impossible
+  stage sums and reports video-decode totals separately from text-generation
+  totals so the two cannot be conflated.
+- `scripts/fit_gemma_cost_model.py` now includes an exploratory residual audit:
+  harm rate versus prefill+vision residual correlation, plus a harm-rate
+  augmented OLS model with LOOCV RMSE. This is diagnostic only, not a
+  preregistered predictor.
+
+Active-repair admission-on tail audit:
+
+| arm | harmed / preserved-correct | harmed E2E ratio | harmed tail ratio | harmed text-generation ratio | harmed generation-token ratio | video-decode inflation |
+|---|---:|---:|---:|---:|---:|---:|
+| random_seed11 admission-on | 4 / 16 | `1.070x` | `1.168x` | `1.827x` | `1.960x` | `1.000x` |
+| fixed_uniform admission-on | 5 / 14 | `1.068x` | `1.685x` | `3.202x` | `2.582x` | `1.000x` |
+
+This confirms the item-level timing observation: harmed admission rows take
+about `7%` longer E2E than preserved-correct rows in both active-repair arms.
+The supported mechanism is generated-token and confidence-adjusted
+text-generation inflation. The `1.000x` video-decode ratio is kept in the
+artifact for cost accounting, but it is timing provenance, not an independent
+falsifier of branch-specific video-decode effects.
+
+Cross-artifact residual audit:
+
+- Prefill+vision ceiling remains the primary model: `R^2=0.971`, mean absolute
+  relative error `0.033`.
+- Harm rate correlates with prefill+vision relative residual at `r=-0.842`
+  across the six available cost-model rows.
+- A post-hoc harm-augmented OLS fit improves in-sample `R^2` to `0.991` and
+  LOOCV RMSE from `0.066` to `0.048`, but this is **exploratory**: `n=6`, the
+  term was introduced after inspecting residuals, and one MVBench dev
+  moving-attribute row still lacks tail fields because its paired artifact
+  could not be regenerated without missing Gemma encoder ledgers.
+- Adding text-generation to the stage ceiling explains some large residuals:
+  TOMATO holdout improves from `-7.8%` to `-2.6%`, and MVBench holdout
+  composition improves from `+4.6%` to `+0.5%`. It does not fix every row
+  (VideoMME remains roughly `-3.9%`), so the tail term is a residual diagnostic,
+  not a complete model.
+
+Interpretation:
+
+- Agree with Claude's stronger cost-model framing: the contribution should be
+  stage-cost accounting plus admission-quality boundaries, not a regex-router
+  headline.
+- Disagree with promoting `harm_rate x decode_inflation` as a confirmed
+  predictive model. The validated claim is narrower: admission harm is coupled
+  to language-generation tail inflation in the active-repair artifacts, while
+  branch-specific video-decode effects are not measured by these same-run
+  rows. Harm rate is a plausible residual feature to preregister for the next
+  cross-benchmark run.
+- Speculative admission may benefit from aborting before long failed
+  generations, but parse failure is a final-output signal in the current
+  artifacts and has poor transfer recall. A live first-token/non-letter abort
+  smoke remains a systems check, not the next headline experiment.
+
+Updated next-experiment instrumentation:
+
+- The cross-benchmark admission-only run should keep the same substantive
+  design from H7c/H7d, but every paired row must preserve video decode,
+  text-generation time, generated-token counts, and timing provenance for
+  shared-versus-branch-specific stages.
+- Primary success remains fidelity plus stage-cost prediction. Secondary
+  analysis: preregister whether harmed rows show text-generation/tail inflation
+  and whether a harm-rate residual term improves held-out prediction.
+
 ### H8 Multi-Shot Consistency Gate, Timing Check Only
 
 Multi-shot consistency is a plausible future variant: run two cheap admission

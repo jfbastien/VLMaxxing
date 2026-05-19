@@ -11,12 +11,14 @@
     }
   ],
   "dense_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_holdout_mvbench_moving_attribute_kr100_dense.jsonl",
+  "dense_source": "reference-jsonl",
   "expected_items": 30,
   "schema_version": "gemma_full_composition_analysis_v2",
   "source_pairs": [
     {
       "composed_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_holdout_mvbench_moving_attribute_kr100_composed.jsonl",
       "dense_jsonl": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_holdout_mvbench_moving_attribute_kr100_dense.jsonl",
+      "dense_source": "reference-jsonl",
       "n_items": 30
     }
   ],
@@ -136,8 +138,8 @@
     "dense_accuracy": 0.4666666666666667,
     "dense_total_e2e_ms": 477384.648998,
     "e2e_speedup_ci95": [
-      1.3684487466985071,
-      1.5062141094383348
+      1.3684256739325684,
+      1.5125946312572056
     ],
     "e2e_speedup_dense_over_composed": 1.4378364998974846,
     "failure_taxonomy": {

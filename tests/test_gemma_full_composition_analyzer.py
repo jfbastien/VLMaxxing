@@ -56,15 +56,21 @@ def _row(item_id: str, *, group: str, dense_correct: bool, pruned_correct: bool)
         "dense_prompt_tokens": 2200,
         "pruned_prompt_tokens": 1400,
         "dense_timing_ms": {
+            "decode": 50.0,
             "end_to_end": 1000.0,
+            "text_generation_ms": 100.0,
             "vision": 300.0,
             "multimodal_prefill_ms": 400.0,
         },
         "pruned_timing_ms": {
+            "decode": 50.0,
             "end_to_end": 800.0,
+            "text_generation_ms": 80.0,
             "vision": 120.0,
             "multimodal_prefill_ms": 250.0,
         },
+        "dense_generation_tokens": 10,
+        "pruned_generation_tokens": 8,
         "metadata": {
             "prune_placeholders": "rlt",
             "vision_tower_keep_rate": 0.5,
@@ -147,6 +153,59 @@ def test_full_composition_analyzer_pairs_dense_reference_against_composed(tmp_pa
     assert paired_rows[0]["composed_first_generated_confidence_capture_ms"] == 2.0
     assert paired_rows[0]["dense_first_generated_candidate_top2_margin"] == 1.1
     assert paired_rows[0]["composed_first_generated_candidate_top2_margin"] == 0.15
+    assert paired_rows[0]["dense_video_decode_ms"] == 50.0
+    assert paired_rows[0]["composed_video_decode_ms"] == 50.0
+    assert paired_rows[0]["dense_text_generation_ms"] == 100.0
+    assert paired_rows[0]["composed_text_generation_ms"] == 80.0
+    assert paired_rows[0]["dense_generation_tokens"] == 10
+    assert paired_rows[0]["composed_generation_tokens"] == 8
+
+
+def test_full_composition_analyzer_keeps_tail_fields_optional(tmp_path: Path) -> None:
+    dense = tmp_path / "dense.jsonl"
+    composed = tmp_path / "composed.jsonl"
+    output = tmp_path / "analysis.json"
+    paired = tmp_path / "paired.jsonl"
+    item = _row("item-0", group="short", dense_correct=True, pruned_correct=True)
+    item["dense_timing_ms"].pop("decode")
+    item["dense_timing_ms"].pop("text_generation_ms")
+    item["pruned_timing_ms"].pop("decode")
+    item["pruned_timing_ms"].pop("text_generation_ms")
+    item.pop("dense_generation_tokens")
+    item.pop("pruned_generation_tokens")
+    _write_jsonl(dense, [_schema(prune_placeholders="none", vision_keep_rate=1.0), item])
+    _write_jsonl(composed, [_schema(prune_placeholders="rlt", vision_keep_rate=0.5), item])
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/analyze_gemma_full_composition.py",
+            "--dense-jsonl",
+            str(dense),
+            "--composed-jsonl",
+            str(composed),
+            "--output",
+            str(output),
+            "--paired-items",
+            str(paired),
+            "--expected-items",
+            "1",
+            "--n-bootstrap",
+            "10",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    paired_row = json.loads(paired.read_text(encoding="utf-8").strip())
+    assert paired_row["dense_video_decode_ms"] is None
+    assert paired_row["composed_video_decode_ms"] is None
+    assert paired_row["dense_text_generation_ms"] is None
+    assert paired_row["composed_text_generation_ms"] is None
+    assert paired_row["dense_generation_tokens"] is None
+    assert paired_row["composed_generation_tokens"] is None
 
 
 def test_full_composition_analyzer_can_use_composed_same_run_dense_timing(

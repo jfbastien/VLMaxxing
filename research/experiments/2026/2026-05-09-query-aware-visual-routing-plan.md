@@ -1725,6 +1725,16 @@ What is established locally:
   composition rows need a prefill+vision ceiling. Across the current six-row
   table, prefill+vision ceiling tracks observed E2E far better than
   prefill-only ceiling (`R^2=0.971` versus `0.489`).
+- A follow-up residual audit found a real but narrower coupling between
+  admission harm and runtime: harmed rows in the active-repair artifacts are
+  about `7%` slower than preserved-correct rows because they emit longer
+  language-generation tails (`1.96x`/`2.58x` generated tokens and
+  `1.83x`/`3.20x` confidence-adjusted text-generation time). Video decode is a
+  shared charged stage in those same-run artifacts, so it should not be used
+  as independent evidence for or against branch-specific decode inflation.
+  Harm rate correlates with residual error in the current six-row table, but
+  that term is post-hoc and remains exploratory until the next same-run
+  cross-benchmark validation.
 
 Next live experiment, if we continue:
 
@@ -1735,6 +1745,10 @@ Cross-benchmark admission-only cost-accounting run:
   - VideoMME short N=20
   - same-run dense / admission-off / admission-on rows
   - preregistered stage-cost analysis and separate fidelity gates
+  - preserve video-decode time, text-generation time, and generated-token
+    counts in paired rows
+  - preregister tail-inflation/residual analysis as secondary, not as a fitted
+    headline model
 ```
 
 Speculative admission can be included only after a bounded MLX smoke proves the

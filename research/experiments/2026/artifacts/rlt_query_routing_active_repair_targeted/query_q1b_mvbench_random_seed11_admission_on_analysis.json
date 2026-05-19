@@ -138,8 +138,8 @@
     "dense_accuracy": 0.6666666666666666,
     "dense_total_e2e_ms": 370505.233541,
     "e2e_speedup_ci95": [
-      1.155841627771782,
-      1.2586570274253177
+      1.15805464050902,
+      1.2620133895265135
     ],
     "e2e_speedup_dense_over_composed": 1.2072852252331805,
     "failure_taxonomy": {

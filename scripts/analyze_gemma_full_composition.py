@@ -193,6 +193,14 @@ def _timing(row: dict[str, Any], branch: str, key: str) -> float:
     return float(value)
 
 
+def _optional_timing(row: dict[str, Any], branch: str, key: str) -> float | None:
+    timings = row.get(f"{branch}_timing_ms")
+    if not isinstance(timings, dict):
+        return None
+    value = timings.get(key)
+    return None if value is None else float(value)
+
+
 def _mean(values: list[float]) -> float:
     return sum(values) / len(values) if values else 0.0
 
@@ -476,12 +484,26 @@ def _paired_rows(
             "choice_changed": dense.get("dense_choice") != composed.get("pruned_choice"),
             "dense_end_to_end_ms": _timing(dense, "dense", "end_to_end"),
             "composed_end_to_end_ms": _timing(composed, "pruned", "end_to_end"),
+            "dense_video_decode_ms": _optional_timing(dense, "dense", "decode"),
+            "composed_video_decode_ms": _optional_timing(composed, "pruned", "decode"),
             "dense_vision_ms": _timing(dense, "dense", "vision"),
             "composed_vision_ms": _timing(composed, "pruned", "vision"),
             "dense_prefill_ms": _timing(dense, "dense", "multimodal_prefill_ms"),
             "composed_prefill_ms": _timing(composed, "pruned", "multimodal_prefill_ms"),
+            "dense_text_generation_ms": _optional_timing(
+                dense,
+                "dense",
+                "text_generation_ms",
+            ),
+            "composed_text_generation_ms": _optional_timing(
+                composed,
+                "pruned",
+                "text_generation_ms",
+            ),
             "dense_prompt_tokens": dense.get("dense_prompt_tokens"),
             "composed_prompt_tokens": composed.get("pruned_prompt_tokens"),
+            "dense_generation_tokens": dense.get("dense_generation_tokens"),
+            "composed_generation_tokens": composed.get("pruned_generation_tokens"),
             "dense_metadata": dense_metadata,
             "dense_metadata_source": (
                 "schema_override" if dense_metadata_override is not None else "dense_jsonl_row"

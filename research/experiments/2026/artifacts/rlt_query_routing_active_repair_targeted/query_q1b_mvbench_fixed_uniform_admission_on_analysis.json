@@ -25,7 +25,7 @@
   ],
   "summary": {
     "accuracy_delta_ci95": [
-      -0.2666666666666667,
+      -0.29999999999999993,
       0.033333333333333326
     ],
     "accuracy_delta_composed_minus_dense": -0.1333333333333333,
@@ -141,8 +141,8 @@
     "dense_accuracy": 0.6333333333333333,
     "dense_total_e2e_ms": 378214.133962,
     "e2e_speedup_ci95": [
-      1.1369049065788563,
-      1.2367175064677531
+      1.135556870214856,
+      1.2402172303284844
     ],
     "e2e_speedup_dense_over_composed": 1.1868552506051036,
     "failure_taxonomy": {
