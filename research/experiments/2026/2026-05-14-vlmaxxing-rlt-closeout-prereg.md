@@ -174,6 +174,13 @@ Result: falsifier not hit; holdout `moving_attribute` delta `+0.167`.
 Scientific status: appendix-level boundary probe, not a powered bucket-level
 claim.
 
+2026-05-20 addendum: a bounded reviewer-response M3 cost-accounting follow-up
+is preregistered separately at
+`research/experiments/2026/2026-05-20-rlt-m3-cost-accounting-followup-prereg.md`.
+Its default core tier runs only the VideoMME-short admission keep-rate bracket
+around the existing clean `kr=0.5` row. Treat it as cost-model/Pareto evidence,
+not as query-aware routing or a new VLMaxxing/RLT headline.
+
 ## M5 Scope
 
 M5 is scale confirmation, not discovery. Use the same Gemma-family paper target

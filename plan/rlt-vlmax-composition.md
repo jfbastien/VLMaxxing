@@ -12,6 +12,10 @@
 - [x] Close the 2026-05-19/20 cross-benchmark cost-accounting run: validate
   Claude's claims against artifacts, update the decision log / registry /
   closeout notes, and make the M5/query-aware boundaries explicit.
+- [x] Add a bounded M3 cost-accounting follow-up launcher and preregistration:
+  default to VideoMME-short admission keep-rate bracketing, keep broader
+  MVBench/composition cells behind an explicit extended tier, and keep
+  query-aware routing out of this branch.
 - [ ] Implement a small, audited RLT mask module in `src/codec_through/`
   without installing, importing, executing, or vendoring RLT's training stack
   or third-party dependencies.

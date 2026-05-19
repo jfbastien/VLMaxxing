@@ -129,11 +129,16 @@ Avoid:
 
 No more broad M3 query-aware implementation on this branch. The current M3
 science supports closeout. Optional M3-only follow-ups are reviewer-response
-work, not blockers:
+work, not blockers. The bounded executable plan is now preregistered in
+`research/experiments/2026/2026-05-20-rlt-m3-cost-accounting-followup-prereg.md`
+and implemented by `scripts/run_rlt_m3_cost_accounting_followup.sh`.
 
 1. Multi-keep-rate admission sweep on the cheapest clean slice if we need a
-   Pareto curve. Hypothesis: lower keep-rate increases prefill speed but causes
-   answer churn; falsifier: speed does not follow placeholder reduction.
+   Pareto curve. The default M3 follow-up brackets VideoMME-short at `kr=0.3`
+   and `kr=0.7` around the existing clean `kr=0.5` row. Hypothesis: lower
+   keep-rate increases prefill speed but causes answer churn; falsifier: speed
+   does not follow placeholder reduction or misses the stage-cost prediction by
+   more than `8%` absolute relative error.
 2. A one-item speculative-admission cache-reuse smoke if we later build the
    rollback path. Hypothesis: fallback can reuse vision features and charge no
    second vision stage; falsifier: timing ledger shows a second vision charge

@@ -52,6 +52,16 @@ Entries are ordered by phase_id (chronological within each 1.x range).
   paper_relevance: methodology / closeout
   prereg_outcome: Accepted with caveat
 
+- phase_id: RLT-M3-cost-accounting-followup
+  status: proposed / launcher implemented
+  authoritative_note: research/experiments/2026/2026-05-20-rlt-m3-cost-accounting-followup-prereg.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/rlt_m3_cost_accounting_followup/
+  current_best_policy: "planned VideoMME-short admission keep-rate bracket around the existing clean kr=0.5 row; extended tier is reviewer-response only"
+  supersedes: []
+  paper_relevance: reviewer-response / methodology
+  prereg_outcome:
+
 - phase_id: RLT-M5-scale-confirmation
   status: proposed / dry-run summary only
   authoritative_note: research/experiments/2026/2026-05-14-vlmaxxing-rlt-closeout-prereg.md

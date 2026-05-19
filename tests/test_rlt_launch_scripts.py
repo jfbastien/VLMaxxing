@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 from pathlib import Path
@@ -168,6 +169,31 @@ def test_m5_scale_confirmation_script_requires_operator_model_path() -> None:
     assert "--run-magnitude-valid-head-to-head" in payload
     assert "--run-query-routing-q0b" not in payload
     assert "--run-query-routing-q1" not in payload
+    assert "Refusing out-of-scope queue override" in payload
+
+
+def test_m3_cost_accounting_followup_script_is_narrow_and_portable() -> None:
+    script = Path("scripts/run_rlt_m3_cost_accounting_followup.sh")
+    payload = script.read_text(encoding="utf-8")
+
+    assert "/Users/" not in payload
+    assert 'cd "$(dirname "$0")/.."' in payload
+    assert 'PY="${PYTHON:-./.venv/bin/python}"' in payload
+    assert "${GEMMA_MODEL_PATH:-$HOME/models/gemma-4-e4b-it-4bit}" in payload
+    assert 'MLX_MEMORY_LIMIT_GB="${MLX_MEMORY_LIMIT_GB:-12}"' in payload
+    assert 'RSS_GUARD_MB="${RSS_GUARD_MB:-9000}"' in payload
+    assert 'N_ITEMS="${N_ITEMS:-0}"' in payload
+    assert 'M3_FOLLOWUP_TIER="${M3_FOLLOWUP_TIER:-core}"' in payload
+    assert "run_rlt_m3_cost_accounting_followup.py" in payload
+    assert "--tier" in payload
+    assert "--run-query-routing-q0b" not in payload
+    assert "--run-query-routing-q1" not in payload
+    assert "--run-query-routing-q1b-followup" not in payload
+    assert "--run-query-routing-q1c-admission-scheduler" not in payload
+    assert "--run-composition-direct" not in payload
+    assert "--run-composition-rescue" not in payload
+    assert "--run-cvision-expansion" not in payload
+    assert "--run-max-min-triangulation" not in payload
     assert "Refusing out-of-scope queue override" in payload
 
 
@@ -469,3 +495,134 @@ def test_m5_scale_confirmation_rejects_query_routing_phase_flags() -> None:
 
         assert completed.returncode == 2
         assert "Refusing out-of-scope queue override" in completed.stderr
+
+
+def test_m3_cost_accounting_followup_rejects_extra_phase_flags() -> None:
+    for forbidden in (
+        "--run-query-routing-q0b",
+        "--run-composition-direct",
+        "--run-cvision-expansion",
+        "--gemma-model-path=/tmp/other-model",
+        "--frame-count=32",
+    ):
+        completed = subprocess.run(
+            [
+                "scripts/run_rlt_m3_cost_accounting_followup.sh",
+                forbidden,
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+
+        assert completed.returncode == 2
+        assert "Refusing out-of-scope queue override" in completed.stderr
+
+
+def test_m3_cost_accounting_followup_rejects_bad_tier() -> None:
+    env = dict(os.environ)
+    env["M3_FOLLOWUP_TIER"] = "query-aware"
+    completed = subprocess.run(
+        [
+            "scripts/run_rlt_m3_cost_accounting_followup.sh",
+            "--dry-run",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert completed.returncode == 2
+    assert "Refusing unknown M3_FOLLOWUP_TIER" in completed.stderr
+
+
+def test_m3_cost_accounting_followup_dry_run_is_core_and_nonmutating(
+    tmp_path: Path,
+) -> None:
+    artifact_dir = tmp_path / "m3_followup"
+    env = dict(os.environ)
+    env["ARTIFACT_DIR"] = str(artifact_dir)
+    env["N_ITEMS"] = "1"
+    completed = subprocess.run(
+        [
+            "scripts/run_rlt_m3_cost_accounting_followup.sh",
+            "--dry-run",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert not artifact_dir.exists()
+    assert '"planned_count": 11' in completed.stdout
+
+
+def test_m3_cost_accounting_followup_core_summary(tmp_path: Path) -> None:
+    artifact_dir = tmp_path / "m3_followup"
+    summary = tmp_path / "summary.json"
+    env = dict(os.environ)
+    env["ARTIFACT_DIR"] = str(artifact_dir)
+    env["N_ITEMS"] = "1"
+    completed = subprocess.run(
+        [
+            "scripts/run_rlt_m3_cost_accounting_followup.sh",
+            "--dry-run",
+            "--summary",
+            str(summary),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(summary.read_text(encoding="utf-8"))
+    assert payload["tier"] == "core"
+    assert payload["planned_count"] == 11
+    assert len(payload["cost_model_rows"]) == 14
+    planned_phases = [step["phase"] for step in payload["planned"]]
+    planned_commands = "\n".join(" ".join(step["command"]) for step in payload["planned"])
+    assert "--n-items 1" in planned_commands
+    assert "--expected-items 1" in planned_commands
+    assert "--bucket-min-n 1" in planned_commands
+    assert "videomme_short_random_cvision_admission_kr030" in planned_commands
+    assert "videomme_short_random_cvision_admission_kr070" in planned_commands
+    assert "fit_cost_model_n14" in planned_phases
+    assert "mvbench_hosted_random_cvision_admission" not in planned_commands
+    assert "tomato_motion_dev_rlt_composition" not in planned_commands
+
+
+def test_m3_cost_accounting_followup_extended_summary(tmp_path: Path) -> None:
+    artifact_dir = tmp_path / "m3_followup"
+    summary = tmp_path / "summary.json"
+    env = dict(os.environ)
+    env["ARTIFACT_DIR"] = str(artifact_dir)
+    env["M3_FOLLOWUP_TIER"] = "extended"
+    env["N_ITEMS"] = "1"
+    completed = subprocess.run(
+        [
+            "scripts/run_rlt_m3_cost_accounting_followup.sh",
+            "--dry-run",
+            "--summary",
+            str(summary),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert summary.exists()
+    payload = json.loads(summary.read_text(encoding="utf-8"))
+    assert payload["tier"] == "extended"
+    assert payload["planned_count"] == 28
+    assert len(payload["cost_model_rows"]) == 19
+    planned_commands = "\n".join(" ".join(step["command"]) for step in payload["planned"])
+    assert "mvbench_hosted_random_cvision_admission_kr030" in planned_commands
+    assert "tomato_motion_dev_rlt_composition_kr050" in planned_commands
+    assert "videomme_short_rlt_composition_kr050" in planned_commands
