@@ -1,0 +1,658 @@
+{
+  "analysis_role": "exploratory_offline_text_policy_simulation",
+  "by_group": {
+    "action_localization": {
+      "accuracy_delta_policy_minus_dense": 0.0,
+      "choice_agreement": 0.8333333333333334,
+      "choice_changed_count": 1,
+      "dense_accuracy": 0.6666666666666666,
+      "dense_total_ms": 70211.261582,
+      "e2e_speedup_dense_over_policy": 1.172356639101119,
+      "failure_taxonomy": {
+        "harmed": 0,
+        "preserved_correct": 4,
+        "recovered": 0,
+        "unchanged_wrong": 2
+      },
+      "n": 6,
+      "policy_accuracy": 0.6666666666666666,
+      "policy_total_ms": 59888.995584000004,
+      "source_counts": {
+        "fast": 6
+      }
+    },
+    "fine_grained_action": {
+      "accuracy_delta_policy_minus_dense": 0.0,
+      "choice_agreement": 0.8333333333333334,
+      "choice_changed_count": 1,
+      "dense_accuracy": 0.6666666666666666,
+      "dense_total_ms": 70613.360542,
+      "e2e_speedup_dense_over_policy": 1.155078555430406,
+      "failure_taxonomy": {
+        "harmed": 0,
+        "preserved_correct": 4,
+        "recovered": 0,
+        "unchanged_wrong": 2
+      },
+      "n": 6,
+      "policy_accuracy": 0.6666666666666666,
+      "policy_total_ms": 61132.950837000004,
+      "source_counts": {
+        "fast": 6
+      }
+    },
+    "moving_attribute": {
+      "accuracy_delta_policy_minus_dense": 0.0,
+      "choice_agreement": 1.0,
+      "choice_changed_count": 0,
+      "dense_accuracy": 0.8333333333333334,
+      "dense_total_ms": 70520.170416,
+      "e2e_speedup_dense_over_policy": 1.03828348217087,
+      "failure_taxonomy": {
+        "harmed": 0,
+        "preserved_correct": 5,
+        "recovered": 0,
+        "unchanged_wrong": 1
+      },
+      "n": 6,
+      "policy_accuracy": 0.8333333333333334,
+      "policy_total_ms": 67919.957918,
+      "source_counts": {
+        "fast": 1,
+        "safe": 5
+      }
+    },
+    "moving_direction": {
+      "accuracy_delta_policy_minus_dense": 0.16666666666666666,
+      "choice_agreement": 0.5,
+      "choice_changed_count": 3,
+      "dense_accuracy": 0.5,
+      "dense_total_ms": 74712.72025200001,
+      "e2e_speedup_dense_over_policy": 1.2345839630087783,
+      "failure_taxonomy": {
+        "harmed": 0,
+        "preserved_correct": 3,
+        "recovered": 1,
+        "unchanged_wrong": 2
+      },
+      "n": 6,
+      "policy_accuracy": 0.6666666666666666,
+      "policy_total_ms": 60516.516081999995,
+      "source_counts": {
+        "fast": 6
+      }
+    },
+    "object_interaction": {
+      "accuracy_delta_policy_minus_dense": 0.0,
+      "choice_agreement": 0.6666666666666667,
+      "choice_changed_count": 2,
+      "dense_accuracy": 0.6666666666666666,
+      "dense_total_ms": 71342.301455,
+      "e2e_speedup_dense_over_policy": 1.1517826838035827,
+      "failure_taxonomy": {
+        "harmed": 1,
+        "preserved_correct": 3,
+        "recovered": 1,
+        "unchanged_wrong": 1
+      },
+      "n": 6,
+      "policy_accuracy": 0.6666666666666666,
+      "policy_total_ms": 61940.765787,
+      "source_counts": {
+        "fast": 6
+      }
+    }
+  },
+  "dense_reference_source": "safe_paired_items",
+  "fast_source_path": "research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted/query_q1b_mvbench_random_seed11_admission_on_paired.jsonl",
+  "items": [
+    {
+      "correctness_transition": "preserved_correct",
+      "dense_choice": 2,
+      "dense_correct": true,
+      "dense_ms": 11916.978457000001,
+      "group": "action_localization",
+      "item_id": "mvbench:action_localization:0",
+      "matched_safe_regex": false,
+      "matched_text": null,
+      "policy_choice": 2,
+      "policy_correct": true,
+      "policy_ms": 9209.731666000001,
+      "question": "During which part of the video does the action 'person sitting on a couch' occur?",
+      "source": "fast"
+    },
+    {
+      "correctness_transition": "unchanged_wrong",
+      "dense_choice": 3,
+      "dense_correct": false,
+      "dense_ms": 10937.985,
+      "group": "action_localization",
+      "item_id": "mvbench:action_localization:1",
+      "matched_safe_regex": false,
+      "matched_text": null,
+      "policy_choice": 1,
+      "policy_correct": false,
+      "policy_ms": 10283.194126,
+      "question": "Can you identify when the action 'person still smiling' happens in the video?",
+      "source": "fast"
+    },
+    {
+      "correctness_transition": "preserved_correct",
+      "dense_choice": 1,
+      "dense_correct": true,
+      "dense_ms": 10218.2185,
+      "group": "action_localization",
+      "item_id": "mvbench:action_localization:2",
+      "matched_safe_regex": false,
+      "matched_text": null,
+      "policy_choice": 1,
+      "policy_correct": true,
+      "policy_ms": 8798.604834,
+      "question": "In the given video, when does the action 'a person is tidying up the cabinet' take place?",
+      "source": "fast"
+    },
+    {
+      "correctness_transition": "unchanged_wrong",
+      "dense_choice": 1,
+      "dense_correct": false,
+      "dense_ms": 13111.089750000001,
+      "group": "action_localization",
+      "item_id": "mvbench:action_localization:3",
+      "matched_safe_regex": false,
+      "matched_text": null,
+      "policy_choice": 1,
+      "policy_correct": false,
+      "policy_ms": 10716.793916,
+      "question": "At what moment in the video does the action 'the person takes a lollipop from a box' occur?",
+      "source": "fast"
+    },
+    {
+      "correctness_transition": "preserved_correct",
+      "dense_choice": 1,
+      "dense_correct": true,
+      "dense_ms": 13413.596957999998,
+      "group": "action_localization",
+      "item_id": "mvbench:action_localization:5",
+      "matched_safe_regex": false,
+      "matched_text": null,
+      "policy_choice": 1,
+      "policy_correct": true,
+      "policy_ms": 11231.752667,
+      "question": "At what moment in the video does the action 'the person is also watching television' occur?",
+      "source": "fast"
+    },
+    {
+      "correctness_transition": "preserved_correct",
+      "dense_choice": 3,
+      "dense_correct": true,
+      "dense_ms": 10613.392917,
+      "group": "action_localization",
+      "item_id": "mvbench:action_localization:6",
+      "matched_safe_regex": false,
+      "matched_text": null,
+      "policy_choice": 3,
+      "policy_correct": true,
+      "policy_ms": 9648.918375,
+      "question": "When in the video sequence do we observe the action 'person reads a book'?",
+      "source": "fast"
+    },
+    {
+      "correctness_transition": "preserved_correct",
+      "dense_choice": 0,
+      "dense_correct": true,
+      "dense_ms": 11539.562916,
+      "group": "fine_grained_action",
+      "item_id": "mvbench:fine_grained_action:0",
+      "matched_safe_regex": false,
+      "matched_text": null,
+      "policy_choice": 0,
+      "policy_correct": true,
+      "policy_ms": 11159.758709,
+      "question": "What is the action performed by the person in the video?",
+      "source": "fast"
+    },
+    {
+      "correctness_transition": "unchanged_wrong",
+      "dense_choice": 1,
+      "dense_correct": false,
+      "dense_ms": 10957.318501,
+      "group": "fine_grained_action",
+      "item_id": "mvbench:fine_grained_action:1",
+      "matched_safe_regex": false,
+      "matched_text": null,
+      "policy_choice": 1,
+      "policy_correct": false,
+      "policy_ms": 9095.719543,
+      "question": "What is the action performed by the person in the video?",
+      "source": "fast"
+    },
+    {
+      "correctness_transition": "unchanged_wrong",
+      "dense_choice": 1,
+      "dense_correct": false,
+      "dense_ms": 11765.426249999999,
+      "group": "fine_grained_action",
+      "item_id": "mvbench:fine_grained_action:2",
+      "matched_safe_regex": false,
+      "matched_text": null,
+      "policy_choice": 0,
+      "policy_correct": false,
+      "policy_ms": 10671.039084,
+      "question": "Which one of these descriptions correctly matches the actions in the video?",
+      "source": "fast"
+    },
+    {
+      "correctness_transition": "preserved_correct",
+      "dense_choice": 0,
+      "dense_correct": true,
+      "dense_ms": 12803.747581999998,
+      "group": "fine_grained_action",
+      "item_id": "mvbench:fine_grained_action:3",
+      "matched_safe_regex": false,
+      "matched_text": null,
+      "policy_choice": 0,
+      "policy_correct": true,
+      "policy_ms": 12664.860374,
+      "question": "What activity does the video depict?",
+      "source": "fast"
+    },
+    {
+      "correctness_transition": "preserved_correct",
+      "dense_choice": 0,
+      "dense_correct": true,
+      "dense_ms": 12550.375334,
+      "group": "fine_grained_action",
+      "item_id": "mvbench:fine_grained_action:4",
+      "matched_safe_regex": false,
+      "matched_text": null,
+      "policy_choice": 0,
+      "policy_correct": true,
+      "policy_ms": 9012.171501,
+      "question": "Which one of these descriptions correctly matches the actions in the video?",
+      "source": "fast"
+    },
+    {
+      "correctness_transition": "preserved_correct",
+      "dense_choice": 2,
+      "dense_correct": true,
+      "dense_ms": 10996.929959,
+      "group": "fine_grained_action",
+      "item_id": "mvbench:fine_grained_action:5",
+      "matched_safe_regex": false,
+      "matched_text": null,
+      "policy_choice": 2,
+      "policy_correct": true,
+      "policy_ms": 8529.401626,
+      "question": "What activity does the video depict?",
+      "source": "fast"
+    },
+    {
+      "correctness_transition": "preserved_correct",
+      "dense_choice": 0,
+      "dense_correct": true,
+      "dense_ms": 11138.1785,
+      "group": "moving_attribute",
+      "item_id": "mvbench:moving_attribute:0",
+      "matched_safe_regex": true,
+      "matched_text": "What color ",
+      "policy_choice": 0,
+      "policy_correct": true,
+      "policy_ms": 11048.723666000002,
+      "question": "What color is the object that is stationary?",
+      "source": "safe"
+    },
+    {
+      "correctness_transition": "preserved_correct",
+      "dense_choice": 1,
+      "dense_correct": true,
+      "dense_ms": 11320.593917,
+      "group": "moving_attribute",
+      "item_id": "mvbench:moving_attribute:1",
+      "matched_safe_regex": true,
+      "matched_text": "What shape ",
+      "policy_choice": 1,
+      "policy_correct": true,
+      "policy_ms": 11321.131709,
+      "question": "What shape is the moving object when the video begins?",
+      "source": "safe"
+    },
+    {
+      "correctness_transition": "preserved_correct",
+      "dense_choice": 1,
+      "dense_correct": true,
+      "dense_ms": 11680.513791,
+      "group": "moving_attribute",
+      "item_id": "mvbench:moving_attribute:2",
+      "matched_safe_regex": true,
+      "matched_text": "What color ",
+      "policy_choice": 1,
+      "policy_correct": true,
+      "policy_ms": 11494.090585,
+      "question": "What color is the stationary rubber sphere when the video ends?",
+      "source": "safe"
+    },
+    {
+      "correctness_transition": "preserved_correct",
+      "dense_choice": 1,
+      "dense_correct": true,
+      "dense_ms": 12008.322875,
+      "group": "moving_attribute",
+      "item_id": "mvbench:moving_attribute:3",
+      "matched_safe_regex": true,
+      "matched_text": "What material ",
+      "policy_choice": 1,
+      "policy_correct": true,
+      "policy_ms": 13880.779792000001,
+      "question": "What material is the yellow object that is moving when the video begins?",
+      "source": "safe"
+    },
+    {
+      "correctness_transition": "unchanged_wrong",
+      "dense_choice": 1,
+      "dense_correct": false,
+      "dense_ms": 13895.617499999998,
+      "group": "moving_attribute",
+      "item_id": "mvbench:moving_attribute:4",
+      "matched_safe_regex": false,
+      "matched_text": null,
+      "policy_choice": 1,
+      "policy_correct": false,
+      "policy_ms": 9851.793790999998,
+      "question": "What is the material of the cube that is moving when the video ends?",
+      "source": "fast"
+    },
+    {
+      "correctness_transition": "preserved_correct",
+      "dense_choice": 1,
+      "dense_correct": true,
+      "dense_ms": 10476.943833000001,
+      "group": "moving_attribute",
+      "item_id": "mvbench:moving_attribute:5",
+      "matched_safe_regex": true,
+      "matched_text": "What shape ",
+      "policy_choice": 1,
+      "policy_correct": true,
+      "policy_ms": 10323.438375000002,
+      "question": "What shape is the moving rubber object?",
+      "source": "safe"
+    },
+    {
+      "correctness_transition": "preserved_correct",
+      "dense_choice": 0,
+      "dense_correct": true,
+      "dense_ms": 12412.575126,
+      "group": "moving_direction",
+      "item_id": "mvbench:moving_direction:0",
+      "matched_safe_regex": false,
+      "matched_text": null,
+      "policy_choice": 0,
+      "policy_correct": true,
+      "policy_ms": 8828.946166,
+      "question": "What direction is the cyan sphere moving in within the video?",
+      "source": "fast"
+    },
+    {
+      "correctness_transition": "unchanged_wrong",
+      "dense_choice": 0,
+      "dense_correct": false,
+      "dense_ms": 12521.67325,
+      "group": "moving_direction",
+      "item_id": "mvbench:moving_direction:1",
+      "matched_safe_regex": false,
+      "matched_text": null,
+      "policy_choice": 2,
+      "policy_correct": false,
+      "policy_ms": 8742.101083,
+      "question": "What direction is the gray cylinder moving in within the video?",
+      "source": "fast"
+    },
+    {
+      "correctness_transition": "unchanged_wrong",
+      "dense_choice": 1,
+      "dense_correct": false,
+      "dense_ms": 12736.696459,
+      "group": "moving_direction",
+      "item_id": "mvbench:moving_direction:2",
+      "matched_safe_regex": false,
+      "matched_text": null,
+      "policy_choice": 2,
+      "policy_correct": false,
+      "policy_ms": 9528.297417,
+      "question": "What direction is the brown cylinder moving in within the video?",
+      "source": "fast"
+    },
+    {
+      "correctness_transition": "preserved_correct",
+      "dense_choice": 1,
+      "dense_correct": true,
+      "dense_ms": 12877.039791,
+      "group": "moving_direction",
+      "item_id": "mvbench:moving_direction:3",
+      "matched_safe_regex": false,
+      "matched_text": null,
+      "policy_choice": 1,
+      "policy_correct": true,
+      "policy_ms": 10669.050292,
+      "question": "In which direction does the blue cube move in the video?",
+      "source": "fast"
+    },
+    {
+      "correctness_transition": "recovered",
+      "dense_choice": 1,
+      "dense_correct": false,
+      "dense_ms": 12923.589168000002,
+      "group": "moving_direction",
+      "item_id": "mvbench:moving_direction:4",
+      "matched_safe_regex": false,
+      "matched_text": null,
+      "policy_choice": 0,
+      "policy_correct": true,
+      "policy_ms": 10893.242957999999,
+      "question": "What direction is the red sphere moving in within the video?",
+      "source": "fast"
+    },
+    {
+      "correctness_transition": "preserved_correct",
+      "dense_choice": 1,
+      "dense_correct": true,
+      "dense_ms": 11241.146458000001,
+      "group": "moving_direction",
+      "item_id": "mvbench:moving_direction:5",
+      "matched_safe_regex": false,
+      "matched_text": null,
+      "policy_choice": 1,
+      "policy_correct": true,
+      "policy_ms": 11854.878166,
+      "question": "Can you identify the direction of the gray sphere's movement in the video?",
+      "source": "fast"
+    },
+    {
+      "correctness_transition": "unchanged_wrong",
+      "dense_choice": 1,
+      "dense_correct": false,
+      "dense_ms": 11766.181002,
+      "group": "object_interaction",
+      "item_id": "mvbench:object_interaction:0",
+      "matched_safe_regex": false,
+      "matched_text": null,
+      "policy_choice": 1,
+      "policy_correct": false,
+      "policy_ms": 10255.248164999999,
+      "question": "Which object was taken by the person?",
+      "source": "fast"
+    },
+    {
+      "correctness_transition": "recovered",
+      "dense_choice": 1,
+      "dense_correct": false,
+      "dense_ms": 11131.022249,
+      "group": "object_interaction",
+      "item_id": "mvbench:object_interaction:1",
+      "matched_safe_regex": false,
+      "matched_text": null,
+      "policy_choice": 2,
+      "policy_correct": true,
+      "policy_ms": 9931.779417,
+      "question": "Which object was tidied up by the person?",
+      "source": "fast"
+    },
+    {
+      "correctness_transition": "harmed",
+      "dense_choice": 2,
+      "dense_correct": true,
+      "dense_ms": 11845.455374,
+      "group": "object_interaction",
+      "item_id": "mvbench:object_interaction:2",
+      "matched_safe_regex": false,
+      "matched_text": null,
+      "policy_choice": 1,
+      "policy_correct": false,
+      "policy_ms": 11261.482165,
+      "question": "Which object was thrown by the person?",
+      "source": "fast"
+    },
+    {
+      "correctness_transition": "preserved_correct",
+      "dense_choice": 1,
+      "dense_correct": true,
+      "dense_ms": 11720.565207,
+      "group": "object_interaction",
+      "item_id": "mvbench:object_interaction:3",
+      "matched_safe_regex": false,
+      "matched_text": null,
+      "policy_choice": 1,
+      "policy_correct": true,
+      "policy_ms": 9730.408375,
+      "question": "Which object was opened by the person?",
+      "source": "fast"
+    },
+    {
+      "correctness_transition": "preserved_correct",
+      "dense_choice": 0,
+      "dense_correct": true,
+      "dense_ms": 13460.62829,
+      "group": "object_interaction",
+      "item_id": "mvbench:object_interaction:4",
+      "matched_safe_regex": false,
+      "matched_text": null,
+      "policy_choice": 0,
+      "policy_correct": true,
+      "policy_ms": 11478.468749,
+      "question": "Which object was lied on by the person?",
+      "source": "fast"
+    },
+    {
+      "correctness_transition": "preserved_correct",
+      "dense_choice": 2,
+      "dense_correct": true,
+      "dense_ms": 11418.449333,
+      "group": "object_interaction",
+      "item_id": "mvbench:object_interaction:5",
+      "matched_safe_regex": false,
+      "matched_text": null,
+      "policy_choice": 2,
+      "policy_correct": true,
+      "policy_ms": 9283.378916,
+      "question": "Which object was put down by the person?",
+      "source": "fast"
+    }
+  ],
+  "manifest_path": "research/benchmark_manifests/mvbench_motion_dev_v2.toml",
+  "pairing_audit": {
+    "dense_label_mismatch_count": 0,
+    "dense_label_mismatches": [],
+    "observed_groups": [
+      "action_localization",
+      "fine_grained_action",
+      "moving_attribute",
+      "moving_direction",
+      "object_interaction"
+    ]
+  },
+  "policy_label": "text_literal_attribute_safe_random_admission_on",
+  "question_source": "mvbench_raw_question_json",
+  "route_summary_by_group": {
+    "action_localization": {
+      "fast": 6
+    },
+    "fine_grained_action": {
+      "fast": 6
+    },
+    "moving_attribute": {
+      "fast": 1,
+      "safe": 5
+    },
+    "moving_direction": {
+      "fast": 6
+    },
+    "object_interaction": {
+      "fast": 6
+    }
+  },
+  "safe_question_regex": "\\bwhat\\s+(?:color|shape|material)\\s+",
+  "safe_source_path": "research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted/query_q1_mvbench_random_seed11_no_admission_paired.jsonl",
+  "schema": "gemma_text_routed_admission_v1",
+  "source_baselines": {
+    "fast_all_items": {
+      "accuracy_delta_policy_minus_dense": -0.06666666666666667,
+      "choice_agreement": 0.6666666666666667,
+      "choice_changed_count": 10,
+      "dense_accuracy": 0.6666666666666666,
+      "dense_total_ms": 369842.03295599995,
+      "e2e_speedup_dense_over_policy": 1.2074765580331912,
+      "failure_taxonomy": {
+        "harmed": 4,
+        "preserved_correct": 16,
+        "recovered": 2,
+        "unchanged_wrong": 8
+      },
+      "n": 30,
+      "policy_accuracy": 0.6,
+      "policy_total_ms": 306293.34416100004,
+      "source_counts": {
+        "all": 30
+      }
+    },
+    "safe_all_items": {
+      "accuracy_delta_policy_minus_dense": 0.0,
+      "choice_agreement": 1.0,
+      "choice_changed_count": 0,
+      "dense_accuracy": 0.6666666666666666,
+      "dense_total_ms": 357399.814247,
+      "e2e_speedup_dense_over_policy": 1.005400130138858,
+      "failure_taxonomy": {
+        "harmed": 0,
+        "preserved_correct": 20,
+        "recovered": 0,
+        "unchanged_wrong": 10
+      },
+      "n": 30,
+      "policy_accuracy": 0.6666666666666666,
+      "policy_total_ms": 355480.17503999994,
+      "source_counts": {
+        "all": 30
+      }
+    }
+  },
+  "summary": {
+    "accuracy_delta_policy_minus_dense": 0.03333333333333333,
+    "choice_agreement": 0.7666666666666666,
+    "choice_changed_count": 7,
+    "dense_accuracy": 0.6666666666666666,
+    "dense_total_ms": 357399.814247,
+    "e2e_speedup_dense_over_policy": 1.1477223771814025,
+    "failure_taxonomy": {
+      "harmed": 1,
+      "preserved_correct": 19,
+      "recovered": 2,
+      "unchanged_wrong": 8
+    },
+    "n": 30,
+    "policy_accuracy": 0.7,
+    "policy_total_ms": 311399.186208,
+    "source_counts": {
+      "fast": 25,
+      "safe": 5
+    }
+  }
+}

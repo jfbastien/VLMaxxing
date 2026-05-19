@@ -99,6 +99,7 @@ def test_query_routing_active_repair_probe_script_is_narrow_and_portable() -> No
     assert "query_q1b_mvbench_random_seed11_admission_on_active_repair_confidence.json" in payload
     assert "query_q1b_mvbench_fixed_uniform_admission_on_active_repair_confidence.json" in payload
     assert "query_q1b_mvbench_admission_on_pooled_active_repair_confidence.json" in payload
+    assert 'MARGIN_FIELD="${MARGIN_FIELD:-composed_first_generated_top2_margin}"' in payload
     assert "composed_first_generated_candidate_top2_margin" in payload
     assert 'MIN_SPEEDUP="${MIN_SPEEDUP:-1.254}"' in payload
     assert 'MAX_RETRY_RATE="${MAX_RETRY_RATE:-0.50}"' in payload
@@ -140,6 +141,7 @@ def test_query_routing_active_repair_targeted_script_is_narrow_and_portable() ->
     assert "query_q1b_mvbench_fixed_uniform_admission_on_active_repair_confidence.json" in payload
     assert "query_q1b_mvbench_admission_on_pooled_active_repair_confidence.json" in payload
     assert "query_q1_mvbench_random_seed11_no_admission_paired.jsonl" in payload
+    assert 'MARGIN_FIELD="${MARGIN_FIELD:-composed_first_generated_top2_margin}"' in payload
     assert "composed_first_generated_candidate_top2_margin" in payload
     assert 'MIN_SPEEDUP="${MIN_SPEEDUP:-1.0}"' in payload
     assert 'MAX_RETRY_RATE="${MAX_RETRY_RATE:-0.50}"' in payload
@@ -292,6 +294,29 @@ def test_query_routing_active_repair_probe_rejects_dense_margin_override() -> No
     assert "Refusing margin field outside composed" in completed.stderr
 
 
+def test_query_routing_active_repair_probe_accepts_candidate_margin_override(
+    tmp_path: Path,
+) -> None:
+    env = dict(os.environ)
+    env["MARGIN_FIELD"] = "composed_first_generated_candidate_top2_margin"
+    env["ARTIFACT_DIR"] = str(tmp_path / "probe")
+    completed = subprocess.run(
+        [
+            "scripts/run_rlt_query_routing_active_repair_probe.sh",
+            "--dry-run",
+            "--max-planned-hours",
+            "999",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert "--margin-field composed_first_generated_candidate_top2_margin" in completed.stdout
+
+
 def test_query_routing_active_repair_targeted_rejects_extra_phase_flags() -> None:
     for forbidden in (
         "--run-cvision-rlt",
@@ -329,6 +354,25 @@ def test_query_routing_active_repair_targeted_rejects_dense_margin_override() ->
 
     assert completed.returncode == 2
     assert "Refusing margin field outside composed" in completed.stderr
+
+
+def test_query_routing_active_repair_targeted_accepts_candidate_margin_override() -> None:
+    env = dict(os.environ)
+    env["MARGIN_FIELD"] = "composed_first_generated_candidate_top2_margin"
+    env["N_ITEMS"] = "1"
+    completed = subprocess.run(
+        [
+            "scripts/run_rlt_query_routing_active_repair_targeted.sh",
+            "--dry-run",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert "--margin-field composed_first_generated_candidate_top2_margin" in completed.stdout
 
 
 def test_query_routing_active_repair_targeted_rejects_bad_n_items() -> None:

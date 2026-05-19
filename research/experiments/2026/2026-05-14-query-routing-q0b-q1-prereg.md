@@ -444,9 +444,13 @@ smoke artifact directory for paper tables.
 
 Primary signal:
 
-- Margin field: `composed_first_generated_candidate_top2_margin` by default.
-  Full-vocabulary top-2 margin is logged as a secondary diagnostic, but it can
-  be dominated by formatting/punctuation tokens and is not the default gate.
+- Margin field: `composed_first_generated_top2_margin` by default for future
+  analyzer runs. The initial targeted H6 report used
+  `composed_first_generated_candidate_top2_margin`; a CPU-only reanalysis
+  below showed that full-vocabulary margin is the better diagnostic for this
+  artifact because several admission failures start with non-answer-format
+  tokens rather than low A/B/C/D separation. Candidate-letter margin remains
+  available through `--margin-field` for answer-choice-specific audits.
 - The wrapper rejects dense-side margin fields. Repair gating can only use
   composed-side first-pass confidence.
 - Alternative fields may be explored only if preregistered before a long run
@@ -609,6 +613,31 @@ not static vision-mask scoring, is the live physical operator: it buys about
 `1.19-1.21x` E2E on this slice and breaks a small, partly reproducible item
 set.
 
+2026-05-19 CPU-only H6 margin reanalysis: rerunning the confidence analyzer
+on the same paired rows with `composed_first_generated_top2_margin` produces:
+
+- `random_valid(seed=11)+admission_on`: AUC `0.758`, lower 95% CI `0.488`,
+  `viable_threshold_count=0`.
+- `fixed_uniform+admission_on`: AUC `0.900`, lower 95% CI `0.706`,
+  `viable_threshold_count=0`.
+- supportive pooled: AUC `0.831`, lower 95% CI `0.645`,
+  `viable_threshold_count=0`.
+
+Artifacts:
+
+- `query_q1b_mvbench_random_seed11_admission_on_active_repair_confidence_vocab_margin.json`
+- `query_q1b_mvbench_fixed_uniform_admission_on_active_repair_confidence_vocab_margin.json`
+- `query_q1b_mvbench_admission_on_pooled_active_repair_confidence_vocab_margin.json`
+
+Interpretation: the full-vocabulary margin claim is real, especially for the
+fixed-uniform arm, but it does not rescue one-step active repair. The full
+threshold sweep still has no viable point because each repaired item pays both
+the cheap admission-on pass and the dense/no-admission retry. In the fixed arm,
+the threshold catching all five harmed rows retries 43.3% of items and lands at
+`0.786x` dense-normalized E2E, slower than dense and slower than the same-run
+no-admission baseline. Therefore active repair is a diagnostic signal and a
+larger-N research lead, not the next deployment mechanism.
+
 ### H7 Offline Class-Conditional Admission Simulation
 
 The active-repair run leaves a simpler planner hypothesis: do not try to
@@ -666,6 +695,65 @@ plans `query_q1c_mvbench_random_seed11_no_admission_baseline` so the verdict
 compares class-conditional admission to a Q1c-local same-run no-admission
 baseline instead of stale Q1 timing. Replicate on holdout or hosted-dev before
 using it as more than a query-routing appendix result.
+
+### H7b Offline Text-Only Admission Simulation
+
+Follow-up review suggested that the bucket policy might be approximated from
+question text without using MVBench metadata. A new CPU-only analyzer,
+`scripts/analyze_gemma_text_routed_admission.py`, routes rows whose raw MVBench
+question matches an attribute-lookup regex to the safe no-admission paired
+rows and routes all other rows to the fast admission-on paired rows. It uses
+the same fixed safe/no-admission dense denominator as the group-policy
+simulator and hard-fails item-set, intrinsic-field, dense-label-drift,
+manifest, and degenerate-routing errors by default.
+
+Primary text policy:
+
+```bash
+./.venv/bin/python scripts/analyze_gemma_text_routed_admission.py \
+  --safe-paired-items research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted/query_q1_mvbench_random_seed11_no_admission_paired.jsonl \
+  --fast-paired-items research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted/query_q1b_mvbench_random_seed11_admission_on_paired.jsonl \
+  --manifest research/benchmark_manifests/mvbench_motion_dev_v2.toml \
+  --policy-label text_attribute_safe_random_admission_on \
+  --output research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted/query_q1b_mvbench_text_keyword_safe_random_admission_policy.json
+```
+
+Result:
+
+- Default regex:
+  `\bwhat\s+(?:(?:color|shape|material)\b|is\s+the\s+(?:color|shape|material)\b)`.
+- Route summary: all six `moving_attribute` rows route safe; the other 24
+  rows route fast.
+- Aggregate against the fixed safe/no-admission dense denominator:
+  `accuracy_delta=+0.0333`, `choice_agreement=0.767`, `E2E=1.141x`.
+
+Literal-regex variant:
+
+- Regex `\bwhat\s+(?:color|shape|material)\s+` misses
+  `mvbench:moving_attribute:4` ("What is the material..."), so it routes five
+  `moving_attribute` rows safe and one fast.
+- Artifact:
+  `query_q1b_mvbench_text_literal_keyword_safe_random_admission_policy.json`.
+- Aggregate: `accuracy_delta=+0.0333`, `choice_agreement=0.767`,
+  `E2E=1.148x`.
+
+Interpretation and anti-claims:
+
+- This is the first deployable-looking query-routing signal in this branch:
+  the route uses question text, not benchmark bucket labels or a second model
+  pass.
+- It is still not a paper headline at n=30. MVBench's motion templates are
+  visibly lexical, so this is a candidate planner baseline and next-run
+  hypothesis, not evidence of broad natural-language generalization.
+- Do not cite `1.188x` for this fixed-denominator text policy. That number can
+  be reproduced only by using an admission-on dense denominator or by reading a
+  pooled active-repair no-retry baseline, both of which violate the denominator
+  discipline adopted after the Q0b timing artifact.
+- The next live validation should be a hosted-dev or holdout run that generates
+  same-run no-admission and admission-on paired rows, then applies this
+  text-only policy offline with the same fixed-denominator analyzer. A learned
+  or conformal text router is only justified after collecting enough paired
+  labels for calibration.
 
 ### H8 Multi-Shot Consistency Gate, Timing Check Only
 

@@ -13,8 +13,10 @@ This script does not run a model. It is a preregistration/probe tool for the
 active-repair branch: it tests whether a recorded confidence signal separates
 items harmed by pruning/admission from items preserved by the cheap pass, and
 what speed/accuracy frontier a one-step retry policy would have achieved. The
-default margin is candidate-letter top-2 margin, not full-vocabulary top-2,
-because the latter can be dominated by output-format tokens.
+default margin is full-vocabulary top-2 margin because admission failures in
+the Gemma query-routing artifacts often show up as non-answer-format first
+tokens. Candidate-letter top-2 margin remains available through
+``--margin-field`` for answer-choice-specific audits.
 """
 
 from __future__ import annotations
@@ -28,7 +30,15 @@ from typing import Any
 
 import numpy as np
 
-SCHEMA_VERSION = "gemma_active_repair_confidence_v3"
+SCHEMA_VERSION = "gemma_active_repair_confidence_v4"
+DEFAULT_MARGIN_FIELD = "composed_first_generated_top2_margin"
+ALLOWED_MARGIN_FIELDS = frozenset(
+    {
+        "composed_first_generated_top2_margin",
+        "composed_first_generated_selected_margin",
+        "composed_first_generated_candidate_top2_margin",
+    }
+)
 QUALITY_EPSILON = 1e-12
 ITEM_INTRINSIC_FIELDS = (
     "benchmark",
@@ -568,6 +578,11 @@ def analyze(
     baseline_rows: list[dict[str, Any]] | None = None,
     baseline_accuracy_margin: float = 0.02,
 ) -> dict[str, Any]:
+    if margin_field not in ALLOWED_MARGIN_FIELDS:
+        raise ValueError(
+            f"unsupported --margin-field {margin_field!r}; "
+            f"allowed={sorted(ALLOWED_MARGIN_FIELDS)!r}"
+        )
     baseline_reference_audit = _validate_baseline_matches_rows(rows, baseline_rows)
     margins = [_required_float(row, margin_field) for row in rows]
     harm_labels = [1.0 if row.get("correctness_transition") == "harmed" else 0.0 for row in rows]
@@ -712,10 +727,13 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument(
         "--margin-field",
-        default="composed_first_generated_candidate_top2_margin",
+        default=DEFAULT_MARGIN_FIELD,
         help=(
-            "Paired-row margin used for retry gating. Candidate-letter margin is the "
-            "default because full-vocab top-2 can be dominated by format tokens."
+            "Paired-row margin used for retry gating. Defaults to full-vocabulary "
+            "first-token top-2 margin so answer-format failures such as explanatory "
+            "or channel tokens are visible. Use "
+            "composed_first_generated_candidate_top2_margin to audit only A/B/C/D "
+            "choice separation."
         ),
     )
     parser.add_argument("--quality-delta-floor", type=float, default=-0.02)

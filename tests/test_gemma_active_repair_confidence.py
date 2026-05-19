@@ -30,6 +30,7 @@ def _row(
         "composed_end_to_end_ms": 50.0,
         "dense_first_generated_confidence_capture_ms": 5.0,
         "composed_first_generated_confidence_capture_ms": 2.0,
+        "composed_first_generated_top2_margin": margin,
         "composed_first_generated_candidate_top2_margin": margin,
     }
 
@@ -151,7 +152,123 @@ def test_active_repair_confidence_requires_margin(tmp_path: Path) -> None:
     )
 
     assert completed.returncode != 0
-    assert "missing composed_first_generated_candidate_top2_margin" in completed.stderr
+    assert "missing composed_first_generated_top2_margin" in completed.stderr
+
+
+def test_active_repair_confidence_can_use_candidate_margin_field(tmp_path: Path) -> None:
+    paired = tmp_path / "paired.jsonl"
+    output = tmp_path / "analysis.json"
+    row = _row(
+        "harmed-low",
+        transition="harmed",
+        dense_correct=True,
+        composed_correct=False,
+        margin=0.1,
+    )
+    row.pop("composed_first_generated_top2_margin")
+    _write_jsonl(paired, [row])
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/analyze_gemma_active_repair_confidence.py",
+            "--paired-items",
+            str(paired),
+            "--output",
+            str(output),
+            "--margin-field",
+            "composed_first_generated_candidate_top2_margin",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(output.read_text())
+    assert payload["margin_field"] == "composed_first_generated_candidate_top2_margin"
+
+
+def test_active_repair_confidence_default_uses_vocab_margin(tmp_path: Path) -> None:
+    paired = tmp_path / "paired.jsonl"
+    output = tmp_path / "analysis.json"
+    harmed = _row(
+        "harmed-low-vocab-high-candidate",
+        transition="harmed",
+        dense_correct=True,
+        composed_correct=False,
+        margin=9.0,
+    )
+    harmed["composed_first_generated_top2_margin"] = 0.1
+    safe = _row(
+        "safe-high-vocab-low-candidate",
+        transition="preserved_correct",
+        dense_correct=True,
+        composed_correct=True,
+        margin=0.1,
+    )
+    safe["composed_first_generated_top2_margin"] = 9.0
+    _write_jsonl(paired, [harmed, safe])
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/analyze_gemma_active_repair_confidence.py",
+            "--paired-items",
+            str(paired),
+            "--output",
+            str(output),
+            "--min-harmed-retried",
+            "1",
+            "--min-auc-lower-ci",
+            "0.5",
+            "--min-auc-class-count",
+            "1",
+            "--n-bootstrap",
+            "20",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(output.read_text())
+    assert payload["margin_field"] == "composed_first_generated_top2_margin"
+    assert payload["risk_auc_harmed_lower_margin"] == 1.0
+
+
+def test_active_repair_confidence_rejects_dense_margin_field(tmp_path: Path) -> None:
+    paired = tmp_path / "paired.jsonl"
+    output = tmp_path / "analysis.json"
+    row = _row(
+        "harmed-low",
+        transition="harmed",
+        dense_correct=True,
+        composed_correct=False,
+        margin=0.1,
+    )
+    row["dense_first_generated_top2_margin"] = 0.1
+    _write_jsonl(paired, [row])
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/analyze_gemma_active_repair_confidence.py",
+            "--paired-items",
+            str(paired),
+            "--output",
+            str(output),
+            "--margin-field",
+            "dense_first_generated_top2_margin",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode != 0
+    assert "unsupported --margin-field" in completed.stderr
 
 
 def test_active_repair_confidence_rejects_nonfinite_timing(tmp_path: Path) -> None:
