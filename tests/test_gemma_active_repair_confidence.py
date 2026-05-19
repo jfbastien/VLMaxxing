@@ -16,6 +16,7 @@ def _row(
 ) -> dict[str, object]:
     return {
         "item_id": item_id,
+        "cell_type": "test_cell",
         "correctness_transition": transition,
         "dense_correct": dense_correct,
         "composed_correct": composed_correct,
@@ -82,6 +83,8 @@ def test_active_repair_confidence_sweeps_thresholds(tmp_path: Path) -> None:
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(output.read_text())
     assert payload["n_items"] == 3
+    assert payload["cell_types"] == ["test_cell"]
+    assert payload["source_paths"] == [str(paired)]
     assert payload["harmed_count"] == 1
     assert payload["risk_auc_harmed_lower_margin"] == 1.0
     assert payload["viable_threshold_count"] >= 1
@@ -160,6 +163,121 @@ def test_active_repair_confidence_rejects_nonfinite_timing(tmp_path: Path) -> No
 
     assert completed.returncode != 0
     assert "non-finite dense_end_to_end_ms" in completed.stderr
+
+
+def test_active_repair_confidence_rejects_duplicate_item_ids(tmp_path: Path) -> None:
+    paired = tmp_path / "paired.jsonl"
+    output = tmp_path / "analysis.json"
+    _write_jsonl(
+        paired,
+        [
+            _row(
+                "dupe",
+                transition="harmed",
+                dense_correct=True,
+                composed_correct=False,
+                margin=0.1,
+            ),
+            _row(
+                "dupe",
+                transition="preserved_correct",
+                dense_correct=True,
+                composed_correct=True,
+                margin=2.0,
+            ),
+        ],
+    )
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/analyze_gemma_active_repair_confidence.py",
+            "--paired-items",
+            str(paired),
+            "--output",
+            str(output),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode != 0
+    assert "duplicate item_id 'dupe'" in completed.stderr
+
+
+def test_active_repair_confidence_rejects_mixed_cell_types(tmp_path: Path) -> None:
+    paired = tmp_path / "paired.jsonl"
+    output = tmp_path / "analysis.json"
+    first = _row(
+        "first",
+        transition="harmed",
+        dense_correct=True,
+        composed_correct=False,
+        margin=0.1,
+    )
+    second = _row(
+        "second",
+        transition="preserved_correct",
+        dense_correct=True,
+        composed_correct=True,
+        margin=2.0,
+    )
+    second["cell_type"] = "other_cell"
+    _write_jsonl(paired, [first, second])
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/analyze_gemma_active_repair_confidence.py",
+            "--paired-items",
+            str(paired),
+            "--output",
+            str(output),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode != 0
+    assert "paired rows must have one cell_type" in completed.stderr
+
+
+def test_active_repair_confidence_rejects_nonfinite_thresholds(tmp_path: Path) -> None:
+    paired = tmp_path / "paired.jsonl"
+    output = tmp_path / "analysis.json"
+    _write_jsonl(
+        paired,
+        [
+            _row(
+                "harmed-low",
+                transition="harmed",
+                dense_correct=True,
+                composed_correct=False,
+                margin=0.1,
+            )
+        ],
+    )
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/analyze_gemma_active_repair_confidence.py",
+            "--paired-items",
+            str(paired),
+            "--output",
+            str(output),
+            "--quality-delta-floor",
+            "nan",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode != 0
+    assert "--quality-delta-floor must be finite" in completed.stderr
 
 
 def test_active_repair_confidence_does_not_count_no_retry_as_viable(tmp_path: Path) -> None:

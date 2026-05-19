@@ -1,0 +1,82 @@
+{
+  "best_viable_by_speedup": null,
+  "cell_types": [
+    "rlt_admission_plus_fixed_uniform_cvision"
+  ],
+  "composed_accuracy": 1.0,
+  "dense_accuracy": 1.0,
+  "harmed_count": 0,
+  "harmed_margin_mean": null,
+  "harmed_margin_median": null,
+  "margin_field": "composed_first_generated_candidate_top2_margin",
+  "min_speedup": 1.0,
+  "n_items": 1,
+  "pearson_margin_vs_harmed": null,
+  "preserved_correct_count": 1,
+  "preserved_correct_margin_mean": 10.0625,
+  "preserved_correct_margin_median": 10.0625,
+  "quality_delta_floor": -0.05,
+  "risk_auc_harmed_lower_margin": null,
+  "schema_version": "gemma_active_repair_confidence_v1",
+  "source_paths": [
+    "research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted_smoke/query_q1b_mvbench_fixed_uniform_admission_on_paired.jsonl"
+  ],
+  "thresholds": [
+    {
+      "accuracy_delta_vs_dense": 0.0,
+      "active_accuracy": 1.0,
+      "active_total_ms": 6198.373793,
+      "composed_confidence_capture_ms_charged": 16.215125,
+      "composed_total_ms": 6198.373793,
+      "dense_confidence_capture_ms_subtracted": 23.122833,
+      "dense_total_ms": 11880.433208,
+      "harmed_retried": 0,
+      "preserved_correct_retried": 0,
+      "recovered_retried": 0,
+      "retry_count": 0,
+      "retry_rate": 0.0,
+      "speedup_composed_over_active": 1.0,
+      "speedup_dense_over_active": 1.9167016389713238,
+      "threshold": 10.062499999,
+      "unchanged_wrong_retried": 0
+    },
+    {
+      "accuracy_delta_vs_dense": 0.0,
+      "active_accuracy": 1.0,
+      "active_total_ms": 18078.807001,
+      "composed_confidence_capture_ms_charged": 16.215125,
+      "composed_total_ms": 6198.373793,
+      "dense_confidence_capture_ms_subtracted": 23.122833,
+      "dense_total_ms": 11880.433208,
+      "harmed_retried": 0,
+      "preserved_correct_retried": 1,
+      "recovered_retried": 0,
+      "retry_count": 1,
+      "retry_rate": 1.0,
+      "speedup_composed_over_active": 0.3428530318763371,
+      "speedup_dense_over_active": 0.6571469681236628,
+      "threshold": 10.0625,
+      "unchanged_wrong_retried": 0
+    },
+    {
+      "accuracy_delta_vs_dense": 0.0,
+      "active_accuracy": 1.0,
+      "active_total_ms": 18078.807001,
+      "composed_confidence_capture_ms_charged": 16.215125,
+      "composed_total_ms": 6198.373793,
+      "dense_confidence_capture_ms_subtracted": 23.122833,
+      "dense_total_ms": 11880.433208,
+      "harmed_retried": 0,
+      "preserved_correct_retried": 1,
+      "recovered_retried": 0,
+      "retry_count": 1,
+      "retry_rate": 1.0,
+      "speedup_composed_over_active": 0.3428530318763371,
+      "speedup_dense_over_active": 0.6571469681236628,
+      "threshold": 10.062500001,
+      "unchanged_wrong_retried": 0
+    }
+  ],
+  "timing_policy": "charge composed confidence capture because the gate needs it; subtract dense confidence capture because dense retry would not rescore confidence",
+  "viable_threshold_count": 0
+}

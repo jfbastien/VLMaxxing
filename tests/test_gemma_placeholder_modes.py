@@ -147,6 +147,27 @@ def test_first_generated_token_confidence_computes_selected_and_top2_margins() -
     assert confidence["first_generated_candidate_top2_margin"] == pytest.approx(0.8)
 
 
+def test_first_generated_token_confidence_accepts_bfloat16_logprobs() -> None:
+    class Tokenizer:
+        def decode(self, token_ids: list[int]) -> str:
+            return f"tok-{token_ids[0]}"
+
+        def encode(self, text: str, *, add_special_tokens: bool) -> list[int]:
+            del add_special_tokens
+            return {"A": [0], " A": [1], "B": [2], " B": [3]}[text]
+
+    confidence = runner._first_generated_token_confidence(
+        token_id=2,
+        logprobs=mx.array([-3.0, -1.0, -0.25, -2.0], dtype=mx.bfloat16),
+        tokenizer=Tokenizer(),
+        n_candidates=2,
+    )
+
+    assert confidence["first_generated_token_id"] == 2
+    assert confidence["first_generated_selected_logprob"] == pytest.approx(-0.25)
+    assert confidence["first_generated_candidate_top_letter"] == "B"
+
+
 def test_schema_hash_includes_group_keep_rate_overrides() -> None:
     base = argparse.Namespace(
         manifest="manifest.toml",

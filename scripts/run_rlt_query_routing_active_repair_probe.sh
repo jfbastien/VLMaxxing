@@ -54,20 +54,36 @@ done
   --query-routing-benchmarks "$QUERY_ROUTING_BENCHMARKS" \
   "$@"
 
-if [[ "$DRY_RUN" == "1" ]]; then
-  exit 0
-fi
+run_repair_analyzer() {
+  local paired_items="$1"
+  local output="$2"
+  if [[ "$DRY_RUN" == "1" ]]; then
+    printf '[dry-run]'
+    printf ' %q' "$PY" scripts/analyze_gemma_active_repair_confidence.py \
+      --paired-items "$paired_items" \
+      --output "$output" \
+      --margin-field "$MARGIN_FIELD" \
+      --quality-delta-floor "$QUALITY_DELTA_FLOOR" \
+      --min-speedup "$MIN_SPEEDUP"
+    printf '\n'
+    return 0
+  fi
+  if [[ ! -s "$paired_items" ]]; then
+    echo "Expected paired artifact missing after queue run: $paired_items" >&2
+    exit 2
+  fi
+  "$PY" scripts/analyze_gemma_active_repair_confidence.py \
+    --paired-items "$paired_items" \
+    --output "$output" \
+    --margin-field "$MARGIN_FIELD" \
+    --quality-delta-floor "$QUALITY_DELTA_FLOOR" \
+    --min-speedup "$MIN_SPEEDUP"
+}
 
-"$PY" scripts/analyze_gemma_active_repair_confidence.py \
-  --paired-items "$ARTIFACT_DIR/query_q1b_mvbench_random_seed11_admission_on_paired.jsonl" \
-  --output "$ARTIFACT_DIR/query_q1b_mvbench_random_seed11_admission_on_active_repair_confidence.json" \
-  --margin-field "$MARGIN_FIELD" \
-  --quality-delta-floor "$QUALITY_DELTA_FLOOR" \
-  --min-speedup "$MIN_SPEEDUP"
+run_repair_analyzer \
+  "$ARTIFACT_DIR/query_q1b_mvbench_random_seed11_admission_on_paired.jsonl" \
+  "$ARTIFACT_DIR/query_q1b_mvbench_random_seed11_admission_on_active_repair_confidence.json"
 
-"$PY" scripts/analyze_gemma_active_repair_confidence.py \
-  --paired-items "$ARTIFACT_DIR/query_q1b_mvbench_fixed_uniform_admission_on_paired.jsonl" \
-  --output "$ARTIFACT_DIR/query_q1b_mvbench_fixed_uniform_admission_on_active_repair_confidence.json" \
-  --margin-field "$MARGIN_FIELD" \
-  --quality-delta-floor "$QUALITY_DELTA_FLOOR" \
-  --min-speedup "$MIN_SPEEDUP"
+run_repair_analyzer \
+  "$ARTIFACT_DIR/query_q1b_mvbench_fixed_uniform_admission_on_paired.jsonl" \
+  "$ARTIFACT_DIR/query_q1b_mvbench_fixed_uniform_admission_on_active_repair_confidence.json"

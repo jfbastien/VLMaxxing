@@ -608,6 +608,19 @@ def _candidate_letter_confidence(
     }
 
 
+def _logprob_values(logprobs: Any) -> np.ndarray:
+    source = logprobs
+    if (
+        not isinstance(logprobs, np.ndarray)
+        and hasattr(logprobs, "astype")
+        and hasattr(logprobs, "dtype")
+    ):
+        source = logprobs.astype(mx.float32)
+        mx.eval(source)
+    values = np.asarray(source).reshape(-1)
+    return values.astype(np.float64, copy=False)
+
+
 def _first_generated_token_confidence(
     *,
     token_id: int | None,
@@ -617,8 +630,7 @@ def _first_generated_token_confidence(
 ) -> dict[str, Any]:
     if token_id is None or logprobs is None:
         return {}
-    mx.eval(logprobs)
-    values = np.asarray(logprobs, dtype=np.float64).reshape(-1)
+    values = _logprob_values(logprobs)
     if values.size < 2:
         raise ValueError(f"expected at least two logprobs, got {values.size}")
     if token_id < 0 or token_id >= values.size:
@@ -686,21 +698,23 @@ def _run_generate(
     first_yield_ns: int | None = None
     last_response: Any | None = None
     first_token_confidence: dict[str, Any] = {}
-    for response in stream_generate(
-        model,
-        processor,
-        "",
-        input_ids=input_ids,
-        pixel_values=pixel_values,
-        mask=mask,
-        max_tokens=max_tokens,
-        prefill_step_size=prefill_step_size,
-        temperature=0.0,
-        **kwargs,
+    for response_index, response in enumerate(
+        stream_generate(
+            model,
+            processor,
+            "",
+            input_ids=input_ids,
+            pixel_values=pixel_values,
+            mask=mask,
+            max_tokens=max_tokens,
+            prefill_step_size=prefill_step_size,
+            temperature=0.0,
+            **kwargs,
+        )
     ):
         if first_yield_ns is None:
             first_yield_ns = time.perf_counter_ns()
-        if not first_token_confidence and getattr(response, "logprobs", None) is not None:
+        if response_index == 0 and getattr(response, "logprobs", None) is not None:
             confidence_t0 = time.perf_counter_ns()
             first_token_confidence = _first_generated_token_confidence(
                 token_id=getattr(response, "token", None),

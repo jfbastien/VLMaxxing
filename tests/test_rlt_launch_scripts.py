@@ -99,6 +99,8 @@ def test_query_routing_active_repair_probe_script_is_narrow_and_portable() -> No
     assert "query_q1b_mvbench_random_seed11_admission_on_active_repair_confidence.json" in payload
     assert "query_q1b_mvbench_fixed_uniform_admission_on_active_repair_confidence.json" in payload
     assert "composed_first_generated_candidate_top2_margin" in payload
+    assert "run_repair_analyzer" in payload
+    assert "Expected paired artifact missing after queue run" in payload
     assert "Refusing out-of-scope queue override" in payload
 
 
@@ -113,6 +115,13 @@ def test_query_routing_active_repair_targeted_script_is_narrow_and_portable() ->
     assert "${MVBENCH_MANIFEST:-research/benchmark_manifests/mvbench_motion_dev_v2.toml}" in (
         payload
     )
+    assert 'N_ITEMS="${N_ITEMS:-0}"' in payload
+    assert "EXPECTED_ITEMS=30" in payload
+    assert "BUCKET_MIN_N=1" in payload
+    assert "N_BOOTSTRAP=50" in payload
+    assert "rlt_query_routing_active_repair_targeted_smoke" in payload
+    assert "base_args+=(--n-items" in payload
+    assert 'if [[ "$DRY_RUN" != "1" ]]' in payload
     assert "--run-cvision-rlt" not in payload
     assert "--run-query-routing-q0b" not in payload
     assert "--run-query-routing-q1" not in payload
@@ -307,6 +316,67 @@ def test_query_routing_active_repair_targeted_rejects_dense_margin_override() ->
 
     assert completed.returncode == 2
     assert "Refusing margin field outside composed" in completed.stderr
+
+
+def test_query_routing_active_repair_targeted_rejects_bad_n_items() -> None:
+    env = dict(os.environ)
+    env["N_ITEMS"] = "not-an-int"
+    completed = subprocess.run(
+        [
+            "scripts/run_rlt_query_routing_active_repair_targeted.sh",
+            "--dry-run",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert completed.returncode == 2
+    assert "Refusing non-integer N_ITEMS" in completed.stderr
+
+
+def test_query_routing_active_repair_targeted_smoke_knobs_rewrite_expected_items() -> None:
+    env = dict(os.environ)
+    env["N_ITEMS"] = "1"
+    completed = subprocess.run(
+        [
+            "scripts/run_rlt_query_routing_active_repair_targeted.sh",
+            "--dry-run",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert completed.returncode == 0
+    assert "--n-items 1" in completed.stdout
+    assert "--expected-items 1" in completed.stdout
+    assert "--bucket-min-n 1" in completed.stdout
+    assert "--n-bootstrap 50" in completed.stdout
+    assert "rlt_query_routing_active_repair_targeted_smoke" in completed.stdout
+
+
+def test_query_routing_active_repair_targeted_dry_run_does_not_make_artifact_dir(
+    tmp_path: Path,
+) -> None:
+    artifact_dir = tmp_path / "targeted"
+    env = dict(os.environ)
+    env["ARTIFACT_DIR"] = str(artifact_dir)
+    completed = subprocess.run(
+        [
+            "scripts/run_rlt_query_routing_active_repair_targeted.sh",
+            "--dry-run",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert completed.returncode == 0
+    assert not artifact_dir.exists()
 
 
 def test_m5_scale_confirmation_rejects_query_routing_phase_flags() -> None:

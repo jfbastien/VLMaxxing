@@ -16,15 +16,12 @@ cd "$(dirname "$0")/.."
 
 PY="${PYTHON:-./.venv/bin/python}"
 MODEL_PATH="${GEMMA_MODEL_PATH:-$HOME/models/gemma-4-e4b-it-4bit}"
-ARTIFACT_DIR="${ARTIFACT_DIR:-research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted}"
 MVBENCH_MANIFEST="${MVBENCH_MANIFEST:-research/benchmark_manifests/mvbench_motion_dev_v2.toml}"
 FRAME_COUNT="${FRAME_COUNT:-8}"
 PREFILL_STEP_SIZE="${PREFILL_STEP_SIZE:-1024}"
 MLX_MEMORY_LIMIT_GB="${MLX_MEMORY_LIMIT_GB:-12}"
 RSS_GUARD_MB="${RSS_GUARD_MB:-9000}"
-EXPECTED_ITEMS="${EXPECTED_ITEMS:-30}"
-BUCKET_MIN_N="${BUCKET_MIN_N:-5}"
-N_BOOTSTRAP="${N_BOOTSTRAP:-500}"
+N_ITEMS="${N_ITEMS:-0}"
 MARGIN_FIELD="${MARGIN_FIELD:-composed_first_generated_candidate_top2_margin}"
 QUALITY_DELTA_FLOOR="${QUALITY_DELTA_FLOOR:--0.05}"
 MIN_SPEEDUP="${MIN_SPEEDUP:-1.0}"
@@ -52,7 +49,45 @@ for arg in "$@"; do
   esac
 done
 
-mkdir -p "$ARTIFACT_DIR"
+case "$N_ITEMS" in
+  ''|*[!0-9]*)
+    echo "Refusing non-integer N_ITEMS: $N_ITEMS" >&2
+    exit 2
+    ;;
+esac
+
+if [[ -z "${EXPECTED_ITEMS+x}" ]]; then
+  if [[ "$N_ITEMS" == "0" ]]; then
+    EXPECTED_ITEMS=30
+  else
+    EXPECTED_ITEMS="$N_ITEMS"
+  fi
+fi
+if [[ -z "${BUCKET_MIN_N+x}" ]]; then
+  if [[ "$N_ITEMS" == "0" ]]; then
+    BUCKET_MIN_N=5
+  else
+    BUCKET_MIN_N=1
+  fi
+fi
+if [[ -z "${N_BOOTSTRAP+x}" ]]; then
+  if [[ "$N_ITEMS" == "0" ]]; then
+    N_BOOTSTRAP=500
+  else
+    N_BOOTSTRAP=50
+  fi
+fi
+if [[ -z "${ARTIFACT_DIR+x}" ]]; then
+  if [[ "$N_ITEMS" == "0" ]]; then
+    ARTIFACT_DIR="research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted"
+  else
+    ARTIFACT_DIR="research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted_smoke"
+  fi
+fi
+
+if [[ "$DRY_RUN" != "1" ]]; then
+  mkdir -p "$ARTIFACT_DIR"
+fi
 
 DENSE_JSONL="$ARTIFACT_DIR/query_q1b_dense_mvbench_dense.jsonl"
 DENSE_SUMMARY="$ARTIFACT_DIR/query_q1b_dense_mvbench_dense_summary.json"
@@ -90,6 +125,10 @@ base_args=(
   --arm-order abba
   --resume
 )
+
+if [[ "$N_ITEMS" != "0" ]]; then
+  base_args+=(--n-items "$N_ITEMS")
+fi
 
 run_or_print "${base_args[@]}" \
   --keep-rate 1.0 \

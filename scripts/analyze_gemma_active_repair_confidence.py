@@ -33,6 +33,8 @@ SCHEMA_VERSION = "gemma_active_repair_confidence_v1"
 
 def _read_paired_rows(paths: Iterable[Path]) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
+    seen_item_ids: dict[str, str] = {}
+    cell_types: set[str] = set()
     for path in paths:
         with path.open("r", encoding="utf-8") as handle:
             for lineno, line in enumerate(handle, start=1):
@@ -41,11 +43,29 @@ def _read_paired_rows(paths: Iterable[Path]) -> list[dict[str, Any]]:
                 row = json.loads(line)
                 if not isinstance(row, dict):
                     raise ValueError(f"{path}:{lineno} is not a JSON object")
+                item_id = row.get("item_id")
+                if not isinstance(item_id, str) or not item_id:
+                    raise ValueError(f"{path}:{lineno} missing string item_id")
+                source = f"{path}:{lineno}"
+                previous_source = seen_item_ids.get(item_id)
+                if previous_source is not None:
+                    raise ValueError(
+                        f"duplicate item_id {item_id!r} in {source}; already seen at "
+                        f"{previous_source}"
+                    )
+                seen_item_ids[item_id] = source
+                cell_type = row.get("cell_type")
+                if cell_type is not None:
+                    if not isinstance(cell_type, str) or not cell_type:
+                        raise ValueError(f"{path}:{lineno} has non-string cell_type")
+                    cell_types.add(cell_type)
                 row["_source_path"] = str(path)
                 row["_source_lineno"] = lineno
                 rows.append(row)
     if not rows:
         raise ValueError("no paired rows loaded")
+    if len(cell_types) > 1:
+        raise ValueError(f"paired rows must have one cell_type, got {sorted(cell_types)}")
     return rows
 
 
@@ -233,6 +253,10 @@ def analyze(
             "confidence capture because dense retry would not rescore confidence"
         ),
         "n_items": len(rows),
+        "source_paths": sorted({str(row["_source_path"]) for row in rows}),
+        "cell_types": sorted(
+            {str(row["cell_type"]) for row in rows if row.get("cell_type") is not None}
+        ),
         "dense_accuracy": _accuracy(rows, "dense_correct"),
         "composed_accuracy": _accuracy(rows, "composed_correct"),
         "harmed_count": len(harmed),
@@ -270,15 +294,24 @@ def main() -> int:
     parser.add_argument("--quality-delta-floor", type=float, default=-0.05)
     parser.add_argument("--min-speedup", type=float, default=1.0)
     args = parser.parse_args()
+    quality_delta_floor = float(args.quality_delta_floor)
+    min_speedup = float(args.min_speedup)
+    if not math.isfinite(quality_delta_floor):
+        raise ValueError("--quality-delta-floor must be finite")
+    if not math.isfinite(min_speedup):
+        raise ValueError("--min-speedup must be finite")
 
     payload = analyze(
         _read_paired_rows(args.paired_items),
         margin_field=str(args.margin_field),
-        quality_delta_floor=float(args.quality_delta_floor),
-        min_speedup=float(args.min_speedup),
+        quality_delta_floor=quality_delta_floor,
+        min_speedup=min_speedup,
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    args.output.write_text(
+        json.dumps(payload, allow_nan=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     return 0
 
 

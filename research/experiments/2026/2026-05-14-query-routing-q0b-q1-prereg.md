@@ -357,6 +357,15 @@ H5c remains **unmeasured at full N**, not falsified. Before implementing a
 codec-conditioned VLM router, run the full CPU-only scan and join per-item
 codec metrics to Q1b/Q1c paired rows by item id.
 
+2026-05-19 follow-up CPU smoke: `--max-items-per-group 2 --max-frames 8`
+wrote `/private/tmp/mvbench_codec_motion_2x8.json` with `n_items=10`.
+Item ids matched the MVBench manifest form needed for later joins. Bucket
+means still separate the low-motion synthetic buckets from action/object
+clips: moving_direction `0.0208`, moving_attribute `0.0733`, action_localization
+`0.7353`, object_interaction `0.8387`, fine_grained_action `3.2538` mean motion
+magnitude. This keeps codec features alive as a cheap descriptive side signal,
+but it still does not establish per-item prediction of admission damage.
+
 ### H6 active-repair confidence-probe preregistration
 
 Active repair is a different mechanism from static query planning. It does
@@ -410,6 +419,18 @@ confidence-frontier analyzers. It writes to
 by default. This is the launch path to use before spending 12-25 hours on the
 full wrapper.
 
+Smoke path:
+
+```bash
+N_ITEMS=1 scripts/run_rlt_query_routing_active_repair_targeted.sh
+```
+
+With `N_ITEMS>0`, the launcher writes to
+`research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted_smoke`,
+sets `--n-items`, lowers `--expected-items` to the smoke count, sets
+`--bucket-min-n 1`, and uses `--n-bootstrap 50`. Do not reuse the smoke
+artifact directory for paper tables.
+
 Primary signal:
 
 - Margin field: `composed_first_generated_candidate_top2_margin` by default.
@@ -445,14 +466,41 @@ H6b. A one-step retry frontier is viable under full cost accounting.
 Novelty boundary:
 
 - Confidence cascades and uncertainty-guided multimodal systems exist (for
-  example GATEKEEPER-style routing and ViMaR-style refinement). The narrower
+  example FrugalGPT/RouteLLM-style cascades and confidence-token routing).
+  Query-aware visual allocation also exists: Q-Frame, QuoTA, SparseVILA,
+  Q-Zoom, FastVID, SpecVLM, and SToP are relevant comparators. The narrower
   claim here is within one frozen VLM runtime: run the same model cheaply
   first, then retry only uncertain rows with the dense/no-admission physical
   operator, with paired fidelity gates and full E2E cost accounting.
+- Do not call this "self-correction". A retry earns its claim only by buying
+  additional visual evidence or recomputation. Blind self-revision is a
+  different literature.
+- First-token margin is a routing feature, not yet a calibrated confidence
+  mechanism. Confidence-token work reports that raw token probabilities can be
+  weaker than learned confidence signals; H6 tests whether the cheap signal is
+  sufficient in this narrow physical-operator setting.
+
+Prior-art anchors checked for this branch:
+
+- Q-Frame, arXiv:2506.22139: training-free query-aware frame selection and
+  multi-resolution adaptation.
+- QuoTA, arXiv:2503.08689: query-oriented frame/token assignment via CoT query
+  decomposition.
+- SparseVILA, arXiv:2510.17777: decouples visual sparsity across prefill and
+  decoding, including query-aware retrieval.
+- Q-Zoom, arXiv:2604.06912: query-aware coarse-to-fine adaptive perception
+  with trained modules.
+- FastVID, arXiv:2503.11187: dynamic density pruning for Video LLMs.
+- SpecVLM, arXiv:2508.16201: speculative decoding with video-token pruning.
+- SToP, arXiv:2604.20937: MCQA can hide fine-grained pruning failures; sink
+  tokens matter for grounded video understanding.
+- Learning to Route LLMs with Confidence Tokens, arXiv:2410.13284: confidence
+  routing exists and raw token probabilities are not the strongest known
+  confidence mechanism.
 
 ### 2026-05-19 Pareto Audit And Editor Notes
 
-Artifact audit over the Q0b/Q1/Q1b cells shows two positive points and one
+Artifact audit over the Q0b/Q1/Q1b cells shows useful positive points and one
 upper-bound routing point that should guide the paper-facing language:
 
 - `query_q0b_cvision_only_mvbench_kr100`: `1.177x` E2E, `Delta acc=0.000`,
@@ -460,11 +508,16 @@ upper-bound routing point that should guide the paper-facing language:
   among the query-routing cells. Anti-claim: this is **not** a token-pruning
   win. It has `vision_reduction=0.0`, `placeholder_reduction=0.0`, and keeps
   all valid encoder positions. It is a dense-equivalent C-VISION execution-path
-  systems observation.
+  systems observation. It is not an aggregate speed/accuracy Pareto point,
+  because `random_seed11` has equal net accuracy delta and higher speed; it is
+  an exact-choice systems point.
 - `query_q1_mvbench_random_seed11`: `1.254x` E2E, `Delta acc=0.000`, fidelity
   pass, but choice agreement is only `0.733` and the bucket gate fails from one
   action-localization loss at `n=6`. Treat this as a strong Pareto/exploratory
   point, not an exact-fidelity headline.
+- `query_q1b_mvbench_random_seed11_actionloc_dense`: `1.140x` E2E,
+  `Delta acc=+0.033`, fidelity pass, and no action-localization bucket harm.
+  This is the accuracy-side positive point, not the speed headline.
 - Oracle bucket routing over already-run fidelity-pass cells can reach about
   `1.287x` E2E and `Delta acc=+0.033` by choosing the fastest nonnegative
   policy per MVBench bucket. Anti-claim: MVBench category labels are benchmark
@@ -473,10 +526,20 @@ upper-bound routing point that should guide the paper-facing language:
 
 Paper-editor note, not paper text: the honest story is now "static typed
 vision-mask scoring failed; robust/dumb coverage and dense-equivalent
-C-VISION paths form the empirical Pareto frontier; active repair tests whether
-the model's own cheap-pass confidence can turn that frontier into an adaptive
+C-VISION paths are the positive controls; active repair tests whether the
+model's own cheap-pass confidence can turn the speed frontier into an adaptive
 runtime policy." Do not bury the negative result. It is what justifies moving
 from static physical-operator selection to adaptive execution.
+
+2026-05-19 MLX smoke result: `N_ITEMS=1
+scripts/run_rlt_query_routing_active_repair_targeted.sh` completed after a
+logprob conversion bug was fixed. Dense, `random_valid(seed=11)+admission_on`,
+and `fixed_uniform+admission_on` each produced one paired row for
+`mvbench:action_localization:0`; both confidence-frontier analyzers completed.
+The smoke rows contain finite candidate-letter margins (`10.0625` composed for
+both cheap arms) and finite confidence-capture timings. The smoke has
+`harmed_count=0`, so it validates schema/logging/analyzer plumbing only; it
+does not test H6a/H6b.
 
 ### H7 Multi-Shot Consistency Gate, Timing Check Only
 
