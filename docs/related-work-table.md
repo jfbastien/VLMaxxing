@@ -67,7 +67,12 @@ is cited through the project repository.
 These rows are primarily for the follow-on query-aware visual-routing paper,
 not for the current VLMaxxing/RLT update. They define the novelty boundary:
 query-aware selection already exists; our future contribution must be
-operator-level visual evidence planning with full cost accounting.
+operator-level visual evidence planning with full cost accounting. Do not claim
+that query-aware admission or token routing is new. The defensible angle is that
+token-reduction and FLOP ratios are insufficient: only tokens admitted into the
+expensive path can reduce that path's measured cost, and E2E speedup is bounded
+by the affected-stage share, selection overhead, decode share, and kernel
+compatibility.
 
 | method | train | stage | signal | family | headline_metric | portability_blocker | verified | url |
 |---|---|---|---|---|---|---|---|---|

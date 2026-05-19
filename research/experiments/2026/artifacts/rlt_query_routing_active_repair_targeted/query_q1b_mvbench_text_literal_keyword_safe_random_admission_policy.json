@@ -1,11 +1,31 @@
 {
   "analysis_role": "exploratory_offline_text_policy_simulation",
+  "bootstrap_ci": {
+    "accuracy_delta_policy_minus_dense_ci95": [
+      -0.06666666666666667,
+      0.13333333333333333
+    ],
+    "bootstrap_unit": "item",
+    "e2e_speedup_dense_over_policy_ci95": [
+      1.097845377548589,
+      1.2006379507356801
+    ],
+    "enabled": true,
+    "n_bootstrap": 5000,
+    "prefill_speedup_dense_over_policy_ci95": [
+      1.2236917862544892,
+      1.3949396793331892
+    ],
+    "seed": 20260519
+  },
   "by_group": {
     "action_localization": {
       "accuracy_delta_policy_minus_dense": 0.0,
       "choice_agreement": 0.8333333333333334,
       "choice_changed_count": 1,
       "dense_accuracy": 0.6666666666666666,
+      "dense_prefill_share_of_e2e": 0.5909951650211895,
+      "dense_prefill_total_ms": 41494.516125,
       "dense_total_ms": 70211.261582,
       "e2e_speedup_dense_over_policy": 1.172356639101119,
       "failure_taxonomy": {
@@ -16,7 +36,10 @@
       },
       "n": 6,
       "policy_accuracy": 0.6666666666666666,
+      "policy_prefill_share_of_e2e": 0.466271112275263,
+      "policy_prefill_total_ms": 27924.508583999996,
       "policy_total_ms": 59888.995584000004,
+      "prefill_speedup_dense_over_policy": 1.4859533158902307,
       "source_counts": {
         "fast": 6
       }
@@ -26,6 +49,8 @@
       "choice_agreement": 0.8333333333333334,
       "choice_changed_count": 1,
       "dense_accuracy": 0.6666666666666666,
+      "dense_prefill_share_of_e2e": 0.56850067550776,
+      "dense_prefill_total_ms": 40143.743168,
       "dense_total_ms": 70613.360542,
       "e2e_speedup_dense_over_policy": 1.155078555430406,
       "failure_taxonomy": {
@@ -36,7 +61,10 @@
       },
       "n": 6,
       "policy_accuracy": 0.6666666666666666,
+      "policy_prefill_share_of_e2e": 0.4893428592505355,
+      "policy_prefill_total_ms": 29914.972956999998,
       "policy_total_ms": 61132.950837000004,
+      "prefill_speedup_dense_over_policy": 1.3419281115748596,
       "source_counts": {
         "fast": 6
       }
@@ -46,6 +74,8 @@
       "choice_agreement": 1.0,
       "choice_changed_count": 0,
       "dense_accuracy": 0.8333333333333334,
+      "dense_prefill_share_of_e2e": 0.6017202531089244,
+      "dense_prefill_total_ms": 42433.414791999996,
       "dense_total_ms": 70520.170416,
       "e2e_speedup_dense_over_policy": 1.03828348217087,
       "failure_taxonomy": {
@@ -56,7 +86,10 @@
       },
       "n": 6,
       "policy_accuracy": 0.8333333333333334,
+      "policy_prefill_share_of_e2e": 0.5818464373860686,
+      "policy_prefill_total_ms": 39518.985542,
       "policy_total_ms": 67919.957918,
+      "prefill_speedup_dense_over_policy": 1.073747572464951,
       "source_counts": {
         "fast": 1,
         "safe": 5
@@ -67,6 +100,8 @@
       "choice_agreement": 0.5,
       "choice_changed_count": 3,
       "dense_accuracy": 0.5,
+      "dense_prefill_share_of_e2e": 0.560453069219884,
+      "dense_prefill_total_ms": 41872.973374999994,
       "dense_total_ms": 74712.72025200001,
       "e2e_speedup_dense_over_policy": 1.2345839630087783,
       "failure_taxonomy": {
@@ -77,7 +112,10 @@
       },
       "n": 6,
       "policy_accuracy": 0.6666666666666666,
+      "policy_prefill_share_of_e2e": 0.4997366207932658,
+      "policy_prefill_total_ms": 30242.319249000004,
       "policy_total_ms": 60516.516081999995,
+      "prefill_speedup_dense_over_policy": 1.3845820828170965,
       "source_counts": {
         "fast": 6
       }
@@ -87,6 +125,8 @@
       "choice_agreement": 0.6666666666666667,
       "choice_changed_count": 2,
       "dense_accuracy": 0.6666666666666666,
+      "dense_prefill_share_of_e2e": 0.5752035841440323,
+      "dense_prefill_total_ms": 41036.347498,
       "dense_total_ms": 71342.301455,
       "e2e_speedup_dense_over_policy": 1.1517826838035827,
       "failure_taxonomy": {
@@ -97,7 +137,10 @@
       },
       "n": 6,
       "policy_accuracy": 0.6666666666666666,
+      "policy_prefill_share_of_e2e": 0.49552618917478486,
+      "policy_prefill_total_ms": 30693.271625,
       "policy_total_ms": 61940.765787,
+      "prefill_speedup_dense_over_policy": 1.3369818636269277,
       "source_counts": {
         "fast": 6
       }
@@ -111,6 +154,7 @@
       "dense_choice": 2,
       "dense_correct": true,
       "dense_ms": 11916.978457000001,
+      "dense_prefill_ms": 7589.444708,
       "group": "action_localization",
       "item_id": "mvbench:action_localization:0",
       "matched_safe_regex": false,
@@ -118,6 +162,7 @@
       "policy_choice": 2,
       "policy_correct": true,
       "policy_ms": 9209.731666000001,
+      "policy_prefill_ms": 4728.928625,
       "question": "During which part of the video does the action 'person sitting on a couch' occur?",
       "source": "fast"
     },
@@ -126,6 +171,7 @@
       "dense_choice": 3,
       "dense_correct": false,
       "dense_ms": 10937.985,
+      "dense_prefill_ms": 6374.893792,
       "group": "action_localization",
       "item_id": "mvbench:action_localization:1",
       "matched_safe_regex": false,
@@ -133,6 +179,7 @@
       "policy_choice": 1,
       "policy_correct": false,
       "policy_ms": 10283.194126,
+      "policy_prefill_ms": 4165.021625,
       "question": "Can you identify when the action 'person still smiling' happens in the video?",
       "source": "fast"
     },
@@ -141,6 +188,7 @@
       "dense_choice": 1,
       "dense_correct": true,
       "dense_ms": 10218.2185,
+      "dense_prefill_ms": 6515.584791,
       "group": "action_localization",
       "item_id": "mvbench:action_localization:2",
       "matched_safe_regex": false,
@@ -148,6 +196,7 @@
       "policy_choice": 1,
       "policy_correct": true,
       "policy_ms": 8798.604834,
+      "policy_prefill_ms": 4500.339167,
       "question": "In the given video, when does the action 'a person is tidying up the cabinet' take place?",
       "source": "fast"
     },
@@ -156,6 +205,7 @@
       "dense_choice": 1,
       "dense_correct": false,
       "dense_ms": 13111.089750000001,
+      "dense_prefill_ms": 7528.849417,
       "group": "action_localization",
       "item_id": "mvbench:action_localization:3",
       "matched_safe_regex": false,
@@ -163,6 +213,7 @@
       "policy_choice": 1,
       "policy_correct": false,
       "policy_ms": 10716.793916,
+      "policy_prefill_ms": 4697.074875,
       "question": "At what moment in the video does the action 'the person takes a lollipop from a box' occur?",
       "source": "fast"
     },
@@ -171,6 +222,7 @@
       "dense_choice": 1,
       "dense_correct": true,
       "dense_ms": 13413.596957999998,
+      "dense_prefill_ms": 7131.983125,
       "group": "action_localization",
       "item_id": "mvbench:action_localization:5",
       "matched_safe_regex": false,
@@ -178,6 +230,7 @@
       "policy_choice": 1,
       "policy_correct": true,
       "policy_ms": 11231.752667,
+      "policy_prefill_ms": 4530.54775,
       "question": "At what moment in the video does the action 'the person is also watching television' occur?",
       "source": "fast"
     },
@@ -186,6 +239,7 @@
       "dense_choice": 3,
       "dense_correct": true,
       "dense_ms": 10613.392917,
+      "dense_prefill_ms": 6353.760292,
       "group": "action_localization",
       "item_id": "mvbench:action_localization:6",
       "matched_safe_regex": false,
@@ -193,6 +247,7 @@
       "policy_choice": 3,
       "policy_correct": true,
       "policy_ms": 9648.918375,
+      "policy_prefill_ms": 5302.596542,
       "question": "When in the video sequence do we observe the action 'person reads a book'?",
       "source": "fast"
     },
@@ -201,6 +256,7 @@
       "dense_choice": 0,
       "dense_correct": true,
       "dense_ms": 11539.562916,
+      "dense_prefill_ms": 6454.867708,
       "group": "fine_grained_action",
       "item_id": "mvbench:fine_grained_action:0",
       "matched_safe_regex": false,
@@ -208,6 +264,7 @@
       "policy_choice": 0,
       "policy_correct": true,
       "policy_ms": 11159.758709,
+      "policy_prefill_ms": 6064.953,
       "question": "What is the action performed by the person in the video?",
       "source": "fast"
     },
@@ -216,6 +273,7 @@
       "dense_choice": 1,
       "dense_correct": false,
       "dense_ms": 10957.318501,
+      "dense_prefill_ms": 6323.588542,
       "group": "fine_grained_action",
       "item_id": "mvbench:fine_grained_action:1",
       "matched_safe_regex": false,
@@ -223,6 +281,7 @@
       "policy_choice": 1,
       "policy_correct": false,
       "policy_ms": 9095.719543,
+      "policy_prefill_ms": 4271.32875,
       "question": "What is the action performed by the person in the video?",
       "source": "fast"
     },
@@ -231,6 +290,7 @@
       "dense_choice": 1,
       "dense_correct": false,
       "dense_ms": 11765.426249999999,
+      "dense_prefill_ms": 6655.94725,
       "group": "fine_grained_action",
       "item_id": "mvbench:fine_grained_action:2",
       "matched_safe_regex": false,
@@ -238,6 +298,7 @@
       "policy_choice": 0,
       "policy_correct": false,
       "policy_ms": 10671.039084,
+      "policy_prefill_ms": 5510.568708,
       "question": "Which one of these descriptions correctly matches the actions in the video?",
       "source": "fast"
     },
@@ -246,6 +307,7 @@
       "dense_choice": 0,
       "dense_correct": true,
       "dense_ms": 12803.747581999998,
+      "dense_prefill_ms": 7271.459209,
       "group": "fine_grained_action",
       "item_id": "mvbench:fine_grained_action:3",
       "matched_safe_regex": false,
@@ -253,6 +315,7 @@
       "policy_choice": 0,
       "policy_correct": true,
       "policy_ms": 12664.860374,
+      "policy_prefill_ms": 5516.595041,
       "question": "What activity does the video depict?",
       "source": "fast"
     },
@@ -261,6 +324,7 @@
       "dense_choice": 0,
       "dense_correct": true,
       "dense_ms": 12550.375334,
+      "dense_prefill_ms": 6997.576834,
       "group": "fine_grained_action",
       "item_id": "mvbench:fine_grained_action:4",
       "matched_safe_regex": false,
@@ -268,6 +332,7 @@
       "policy_choice": 0,
       "policy_correct": true,
       "policy_ms": 9012.171501,
+      "policy_prefill_ms": 4187.150958,
       "question": "Which one of these descriptions correctly matches the actions in the video?",
       "source": "fast"
     },
@@ -276,6 +341,7 @@
       "dense_choice": 2,
       "dense_correct": true,
       "dense_ms": 10996.929959,
+      "dense_prefill_ms": 6440.303625,
       "group": "fine_grained_action",
       "item_id": "mvbench:fine_grained_action:5",
       "matched_safe_regex": false,
@@ -283,6 +349,7 @@
       "policy_choice": 2,
       "policy_correct": true,
       "policy_ms": 8529.401626,
+      "policy_prefill_ms": 4364.3765,
       "question": "What activity does the video depict?",
       "source": "fast"
     },
@@ -291,6 +358,7 @@
       "dense_choice": 0,
       "dense_correct": true,
       "dense_ms": 11138.1785,
+      "dense_prefill_ms": 6822.851042,
       "group": "moving_attribute",
       "item_id": "mvbench:moving_attribute:0",
       "matched_safe_regex": true,
@@ -298,6 +366,7 @@
       "policy_choice": 0,
       "policy_correct": true,
       "policy_ms": 11048.723666000002,
+      "policy_prefill_ms": 6734.009,
       "question": "What color is the object that is stationary?",
       "source": "safe"
     },
@@ -306,6 +375,7 @@
       "dense_choice": 1,
       "dense_correct": true,
       "dense_ms": 11320.593917,
+      "dense_prefill_ms": 6879.398792,
       "group": "moving_attribute",
       "item_id": "mvbench:moving_attribute:1",
       "matched_safe_regex": true,
@@ -313,6 +383,7 @@
       "policy_choice": 1,
       "policy_correct": true,
       "policy_ms": 11321.131709,
+      "policy_prefill_ms": 6880.36425,
       "question": "What shape is the moving object when the video begins?",
       "source": "safe"
     },
@@ -321,6 +392,7 @@
       "dense_choice": 1,
       "dense_correct": true,
       "dense_ms": 11680.513791,
+      "dense_prefill_ms": 7068.218375,
       "group": "moving_attribute",
       "item_id": "mvbench:moving_attribute:2",
       "matched_safe_regex": true,
@@ -328,6 +400,7 @@
       "policy_choice": 1,
       "policy_correct": true,
       "policy_ms": 11494.090585,
+      "policy_prefill_ms": 6880.495458,
       "question": "What color is the stationary rubber sphere when the video ends?",
       "source": "safe"
     },
@@ -336,6 +409,7 @@
       "dense_choice": 1,
       "dense_correct": true,
       "dense_ms": 12008.322875,
+      "dense_prefill_ms": 6823.400708,
       "group": "moving_attribute",
       "item_id": "mvbench:moving_attribute:3",
       "matched_safe_regex": true,
@@ -343,6 +417,7 @@
       "policy_choice": 1,
       "policy_correct": true,
       "policy_ms": 13880.779792000001,
+      "policy_prefill_ms": 7919.053792,
       "question": "What material is the yellow object that is moving when the video begins?",
       "source": "safe"
     },
@@ -351,6 +426,7 @@
       "dense_choice": 1,
       "dense_correct": false,
       "dense_ms": 13895.617499999998,
+      "dense_prefill_ms": 8523.17275,
       "group": "moving_attribute",
       "item_id": "mvbench:moving_attribute:4",
       "matched_safe_regex": false,
@@ -358,6 +434,7 @@
       "policy_choice": 1,
       "policy_correct": false,
       "policy_ms": 9851.793790999998,
+      "policy_prefill_ms": 4941.601,
       "question": "What is the material of the cube that is moving when the video ends?",
       "source": "fast"
     },
@@ -366,6 +443,7 @@
       "dense_choice": 1,
       "dense_correct": true,
       "dense_ms": 10476.943833000001,
+      "dense_prefill_ms": 6316.373125,
       "group": "moving_attribute",
       "item_id": "mvbench:moving_attribute:5",
       "matched_safe_regex": true,
@@ -373,6 +451,7 @@
       "policy_choice": 1,
       "policy_correct": true,
       "policy_ms": 10323.438375000002,
+      "policy_prefill_ms": 6163.462042,
       "question": "What shape is the moving rubber object?",
       "source": "safe"
     },
@@ -381,6 +460,7 @@
       "dense_choice": 0,
       "dense_correct": true,
       "dense_ms": 12412.575126,
+      "dense_prefill_ms": 6842.704459,
       "group": "moving_direction",
       "item_id": "mvbench:moving_direction:0",
       "matched_safe_regex": false,
@@ -388,6 +468,7 @@
       "policy_choice": 0,
       "policy_correct": true,
       "policy_ms": 8828.946166,
+      "policy_prefill_ms": 4655.050666,
       "question": "What direction is the cyan sphere moving in within the video?",
       "source": "fast"
     },
@@ -396,6 +477,7 @@
       "dense_choice": 0,
       "dense_correct": false,
       "dense_ms": 12521.67325,
+      "dense_prefill_ms": 7028.602041,
       "group": "moving_direction",
       "item_id": "mvbench:moving_direction:1",
       "matched_safe_regex": false,
@@ -403,6 +485,7 @@
       "policy_choice": 2,
       "policy_correct": false,
       "policy_ms": 8742.101083,
+      "policy_prefill_ms": 4587.244666,
       "question": "What direction is the gray cylinder moving in within the video?",
       "source": "fast"
     },
@@ -411,6 +494,7 @@
       "dense_choice": 1,
       "dense_correct": false,
       "dense_ms": 12736.696459,
+      "dense_prefill_ms": 7096.867709,
       "group": "moving_direction",
       "item_id": "mvbench:moving_direction:2",
       "matched_safe_regex": false,
@@ -418,6 +502,7 @@
       "policy_choice": 2,
       "policy_correct": false,
       "policy_ms": 9528.297417,
+      "policy_prefill_ms": 5068.362917,
       "question": "What direction is the brown cylinder moving in within the video?",
       "source": "fast"
     },
@@ -426,6 +511,7 @@
       "dense_choice": 1,
       "dense_correct": true,
       "dense_ms": 12877.039791,
+      "dense_prefill_ms": 7180.316958,
       "group": "moving_direction",
       "item_id": "mvbench:moving_direction:3",
       "matched_safe_regex": false,
@@ -433,6 +519,7 @@
       "policy_choice": 1,
       "policy_correct": true,
       "policy_ms": 10669.050292,
+      "policy_prefill_ms": 5011.668792,
       "question": "In which direction does the blue cube move in the video?",
       "source": "fast"
     },
@@ -441,6 +528,7 @@
       "dense_choice": 1,
       "dense_correct": false,
       "dense_ms": 12923.589168000002,
+      "dense_prefill_ms": 7034.234083,
       "group": "moving_direction",
       "item_id": "mvbench:moving_direction:4",
       "matched_safe_regex": false,
@@ -448,6 +536,7 @@
       "policy_choice": 0,
       "policy_correct": true,
       "policy_ms": 10893.242957999999,
+      "policy_prefill_ms": 5465.905042,
       "question": "What direction is the red sphere moving in within the video?",
       "source": "fast"
     },
@@ -456,6 +545,7 @@
       "dense_choice": 1,
       "dense_correct": true,
       "dense_ms": 11241.146458000001,
+      "dense_prefill_ms": 6690.248125,
       "group": "moving_direction",
       "item_id": "mvbench:moving_direction:5",
       "matched_safe_regex": false,
@@ -463,6 +553,7 @@
       "policy_choice": 1,
       "policy_correct": true,
       "policy_ms": 11854.878166,
+      "policy_prefill_ms": 5454.087166,
       "question": "Can you identify the direction of the gray sphere's movement in the video?",
       "source": "fast"
     },
@@ -471,6 +562,7 @@
       "dense_choice": 1,
       "dense_correct": false,
       "dense_ms": 11766.181002,
+      "dense_prefill_ms": 6670.574125,
       "group": "object_interaction",
       "item_id": "mvbench:object_interaction:0",
       "matched_safe_regex": false,
@@ -478,6 +570,7 @@
       "policy_choice": 1,
       "policy_correct": false,
       "policy_ms": 10255.248164999999,
+      "policy_prefill_ms": 4987.690875,
       "question": "Which object was taken by the person?",
       "source": "fast"
     },
@@ -486,6 +579,7 @@
       "dense_choice": 1,
       "dense_correct": false,
       "dense_ms": 11131.022249,
+      "dense_prefill_ms": 6230.296541,
       "group": "object_interaction",
       "item_id": "mvbench:object_interaction:1",
       "matched_safe_regex": false,
@@ -493,6 +587,7 @@
       "policy_choice": 2,
       "policy_correct": true,
       "policy_ms": 9931.779417,
+      "policy_prefill_ms": 4661.744958,
       "question": "Which object was tidied up by the person?",
       "source": "fast"
     },
@@ -501,6 +596,7 @@
       "dense_choice": 2,
       "dense_correct": true,
       "dense_ms": 11845.455374,
+      "dense_prefill_ms": 7573.675958,
       "group": "object_interaction",
       "item_id": "mvbench:object_interaction:2",
       "matched_safe_regex": false,
@@ -508,6 +604,7 @@
       "policy_choice": 1,
       "policy_correct": false,
       "policy_ms": 11261.482165,
+      "policy_prefill_ms": 5866.7125,
       "question": "Which object was thrown by the person?",
       "source": "fast"
     },
@@ -516,6 +613,7 @@
       "dense_choice": 1,
       "dense_correct": true,
       "dense_ms": 11720.565207,
+      "dense_prefill_ms": 6858.359541,
       "group": "object_interaction",
       "item_id": "mvbench:object_interaction:3",
       "matched_safe_regex": false,
@@ -523,6 +621,7 @@
       "policy_choice": 1,
       "policy_correct": true,
       "policy_ms": 9730.408375,
+      "policy_prefill_ms": 4757.19325,
       "question": "Which object was opened by the person?",
       "source": "fast"
     },
@@ -531,6 +630,7 @@
       "dense_choice": 0,
       "dense_correct": true,
       "dense_ms": 13460.62829,
+      "dense_prefill_ms": 7086.856792,
       "group": "object_interaction",
       "item_id": "mvbench:object_interaction:4",
       "matched_safe_regex": false,
@@ -538,6 +638,7 @@
       "policy_choice": 0,
       "policy_correct": true,
       "policy_ms": 11478.468749,
+      "policy_prefill_ms": 6052.63075,
       "question": "Which object was lied on by the person?",
       "source": "fast"
     },
@@ -546,6 +647,7 @@
       "dense_choice": 2,
       "dense_correct": true,
       "dense_ms": 11418.449333,
+      "dense_prefill_ms": 6616.584541,
       "group": "object_interaction",
       "item_id": "mvbench:object_interaction:5",
       "matched_safe_regex": false,
@@ -553,6 +655,7 @@
       "policy_choice": 2,
       "policy_correct": true,
       "policy_ms": 9283.378916,
+      "policy_prefill_ms": 4367.299292,
       "question": "Which object was put down by the person?",
       "source": "fast"
     }
@@ -570,7 +673,7 @@
     ]
   },
   "policy_label": "text_literal_attribute_safe_random_admission_on",
-  "question_source": "mvbench_raw_question_json",
+  "question_source": "benchmark_raw_question_text",
   "route_summary_by_group": {
     "action_localization": {
       "fast": 6
@@ -591,13 +694,15 @@
   },
   "safe_question_regex": "\\bwhat\\s+(?:color|shape|material)\\s+",
   "safe_source_path": "research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted/query_q1_mvbench_random_seed11_no_admission_paired.jsonl",
-  "schema": "gemma_text_routed_admission_v1",
+  "schema": "gemma_text_routed_admission_v2",
   "source_baselines": {
     "fast_all_items": {
       "accuracy_delta_policy_minus_dense": -0.06666666666666667,
       "choice_agreement": 0.6666666666666667,
       "choice_changed_count": 10,
       "dense_accuracy": 0.6666666666666666,
+      "dense_prefill_share_of_e2e": 0.5790492612489998,
+      "dense_prefill_total_ms": 214156.755962,
       "dense_total_ms": 369842.03295599995,
       "e2e_speedup_dense_over_policy": 1.2074765580331912,
       "failure_taxonomy": {
@@ -608,7 +713,10 @@
       },
       "n": 30,
       "policy_accuracy": 0.6,
+      "policy_prefill_share_of_e2e": 0.48908273126972573,
+      "policy_prefill_total_ms": 149802.785332,
       "policy_total_ms": 306293.34416100004,
+      "prefill_speedup_dense_over_policy": 1.4295912822139836,
       "source_counts": {
         "all": 30
       }
@@ -618,6 +726,8 @@
       "choice_agreement": 1.0,
       "choice_changed_count": 0,
       "dense_accuracy": 0.6666666666666666,
+      "dense_prefill_share_of_e2e": 0.5791301134111807,
+      "dense_prefill_total_ms": 206980.99495800002,
       "dense_total_ms": 357399.814247,
       "e2e_speedup_dense_over_policy": 1.005400130138858,
       "failure_taxonomy": {
@@ -628,7 +738,10 @@
       },
       "n": 30,
       "policy_accuracy": 0.6666666666666666,
+      "policy_prefill_share_of_e2e": 0.5729910300710311,
+      "policy_prefill_total_ms": 203686.95166600004,
       "policy_total_ms": 355480.17503999994,
+      "prefill_speedup_dense_over_policy": 1.0161720879273675,
       "source_counts": {
         "all": 30
       }
@@ -639,6 +752,8 @@
     "choice_agreement": 0.7666666666666666,
     "choice_changed_count": 7,
     "dense_accuracy": 0.6666666666666666,
+    "dense_prefill_share_of_e2e": 0.5791301134111807,
+    "dense_prefill_total_ms": 206980.99495800002,
     "dense_total_ms": 357399.814247,
     "e2e_speedup_dense_over_policy": 1.1477223771814025,
     "failure_taxonomy": {
@@ -649,7 +764,10 @@
     },
     "n": 30,
     "policy_accuracy": 0.7,
+    "policy_prefill_share_of_e2e": 0.508331636587088,
+    "policy_prefill_total_ms": 158294.057957,
     "policy_total_ms": 311399.186208,
+    "prefill_speedup_dense_over_policy": 1.3075727391752483,
     "source_counts": {
       "fast": 25,
       "safe": 5

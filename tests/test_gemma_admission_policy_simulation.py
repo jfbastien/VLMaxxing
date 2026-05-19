@@ -16,6 +16,8 @@ def _row(
     composed_choice: int | None = 0,
     dense_ms: float = 100.0,
     composed_ms: float = 50.0,
+    dense_prefill_ms: float = 40.0,
+    composed_prefill_ms: float = 20.0,
 ) -> dict[str, object]:
     return {
         "item_id": item_id,
@@ -27,10 +29,12 @@ def _row(
         "dense_correct": dense_correct,
         "dense_parse_failure": dense_choice is None,
         "dense_end_to_end_ms": dense_ms,
+        "dense_prefill_ms": dense_prefill_ms,
         "composed_choice": composed_choice,
         "composed_correct": composed_correct,
         "composed_parse_failure": composed_choice is None,
         "composed_end_to_end_ms": composed_ms,
+        "composed_prefill_ms": composed_prefill_ms,
     }
 
 
@@ -93,6 +97,8 @@ def test_admission_policy_simulates_group_fallback(tmp_path: Path) -> None:
             str(fast),
             "--fallback-group",
             "moving_attribute",
+            "--n-bootstrap",
+            "20",
             "--output",
             str(output),
         ],
@@ -103,13 +109,25 @@ def test_admission_policy_simulates_group_fallback(tmp_path: Path) -> None:
 
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(output.read_text(encoding="utf-8"))
-    assert payload["schema"] == "gemma_admission_policy_simulation_v1"
+    assert payload["schema"] == "gemma_admission_policy_simulation_v2"
     assert payload["dense_reference_source"] == "safe_paired_items"
     assert payload["summary"]["n"] == 2
     assert payload["summary"]["source_counts"] == {"fast": 1, "safe": 1}
     assert payload["summary"]["accuracy_delta_policy_minus_dense"] == 0.0
     assert payload["summary"]["failure_taxonomy"]["harmed"] == 0
     assert payload["summary"]["e2e_speedup_dense_over_policy"] == 200.0 / 140.0
+    assert payload["summary"]["dense_prefill_total_ms"] == 80.0
+    assert payload["summary"]["policy_prefill_total_ms"] == 40.0
+    assert payload["summary"]["prefill_speedup_dense_over_policy"] == 2.0
+    assert payload["summary"]["dense_prefill_share_of_e2e"] == 0.4
+    assert payload["summary"]["policy_prefill_share_of_e2e"] == 40.0 / 140.0
+    assert payload["bootstrap_ci"]["bootstrap_unit"] == "item"
+    assert payload["bootstrap_ci"]["n_bootstrap"] == 20
+    assert (
+        payload["bootstrap_ci"]["accuracy_delta_policy_minus_dense_ci95"][0]
+        <= payload["summary"]["accuracy_delta_policy_minus_dense"]
+        <= payload["bootstrap_ci"]["accuracy_delta_policy_minus_dense_ci95"][1]
+    )
     assert payload["source_baselines"]["fast_all_items"]["dense_total_ms"] == 400.0
     assert payload["source_baselines"]["fast_all_items"]["failure_taxonomy"]["harmed"] == 1
     assert payload["by_group"]["moving_attribute"]["source_counts"] == {"safe": 1}
@@ -303,6 +321,8 @@ def test_admission_policy_can_record_explicit_dense_label_drift(
             "--fallback-group",
             "moving_attribute",
             "--allow-dense-label-drift",
+            "--n-bootstrap",
+            "20",
             "--output",
             str(output),
         ],
@@ -357,6 +377,8 @@ def test_admission_policy_subtracts_confidence_capture_overhead(
             str(fast),
             "--fallback-group",
             "moving_attribute",
+            "--n-bootstrap",
+            "20",
             "--output",
             str(output),
         ],
@@ -369,6 +391,128 @@ def test_admission_policy_subtracts_confidence_capture_overhead(
     payload = json.loads(output.read_text(encoding="utf-8"))
     assert payload["summary"]["dense_total_ms"] == 100.0
     assert payload["summary"]["policy_total_ms"] == 70.0
+
+
+def test_admission_policy_rejects_missing_or_invalid_prefill_timing(tmp_path: Path) -> None:
+    safe = tmp_path / "safe.jsonl"
+    fast = tmp_path / "fast.jsonl"
+    output = tmp_path / "policy.json"
+    safe_row = _row(
+        "missing",
+        group="moving_attribute",
+        dense_correct=True,
+        composed_correct=True,
+    )
+    del safe_row["dense_prefill_ms"]
+    _write_jsonl(safe, [safe_row])
+    _write_jsonl(
+        fast,
+        [
+            _row(
+                "missing",
+                group="moving_attribute",
+                dense_correct=True,
+                composed_correct=True,
+            )
+        ],
+    )
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/analyze_gemma_admission_policy_simulation.py",
+            "--safe-paired-items",
+            str(safe),
+            "--fast-paired-items",
+            str(fast),
+            "--fallback-group",
+            "moving_attribute",
+            "--output",
+            str(output),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode != 0
+    assert "missing dense_prefill_ms" in completed.stderr
+
+    safe_row = _row(
+        "zero",
+        group="moving_attribute",
+        dense_correct=True,
+        composed_correct=True,
+        dense_prefill_ms=0.0,
+    )
+    fast_row = _row(
+        "zero",
+        group="moving_attribute",
+        dense_correct=True,
+        composed_correct=True,
+    )
+    _write_jsonl(safe, [safe_row])
+    _write_jsonl(fast, [fast_row])
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/analyze_gemma_admission_policy_simulation.py",
+            "--safe-paired-items",
+            str(safe),
+            "--fast-paired-items",
+            str(fast),
+            "--fallback-group",
+            "moving_attribute",
+            "--output",
+            str(output),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode != 0
+    assert "dense_prefill_ms must be positive" in completed.stderr
+
+
+def test_admission_policy_rejects_disabled_bootstrap(tmp_path: Path) -> None:
+    safe = tmp_path / "safe.jsonl"
+    fast = tmp_path / "fast.jsonl"
+    output = tmp_path / "policy.json"
+    rows = [
+        _row(
+            "same",
+            group="moving_attribute",
+            dense_correct=True,
+            composed_correct=True,
+        )
+    ]
+    _write_jsonl(safe, rows)
+    _write_jsonl(fast, rows)
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/analyze_gemma_admission_policy_simulation.py",
+            "--safe-paired-items",
+            str(safe),
+            "--fast-paired-items",
+            str(fast),
+            "--fallback-group",
+            "moving_attribute",
+            "--n-bootstrap",
+            "0",
+            "--output",
+            str(output),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode != 0
+    assert "n_bootstrap must be >= 1" in completed.stderr
 
 
 def test_admission_policy_rejects_invalid_confidence_capture_timing(

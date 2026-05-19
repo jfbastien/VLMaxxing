@@ -1,0 +1,345 @@
+{
+  "analysis_role": "single_artifact_text_rule_transfer_screen",
+  "items": [
+    {
+      "benchmark": "mvbench",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "action_localization",
+      "item_id": "mvbench:action_localization:104",
+      "matched_safe_regex": false,
+      "question": "When in the video sequence do we observe the action 'a person runs laughing through the hall with a pillow'?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "action_localization",
+      "item_id": "mvbench:action_localization:172",
+      "matched_safe_regex": false,
+      "question": "During which part of the video does the action 'the person is holding a laptop' occur?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "action_localization",
+      "item_id": "mvbench:action_localization:4",
+      "matched_safe_regex": false,
+      "question": "When in the video sequence do we observe the action 'person fixes their hair in a mirror'?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": true,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "action_localization",
+      "item_id": "mvbench:action_localization:7",
+      "matched_safe_regex": false,
+      "question": "Can you identify when the action 'person sits in a chair' happens in the video?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": false,
+      "correctness_transition": "harmed",
+      "dense_correct": true,
+      "group": "action_localization",
+      "item_id": "mvbench:action_localization:8",
+      "matched_safe_regex": false,
+      "question": "At what moment in the video does the action 'the person picked up a phone to play with it' occur?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": true,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "action_localization",
+      "item_id": "mvbench:action_localization:9",
+      "matched_safe_regex": false,
+      "question": "In the given video, when does the action 'person looks out the window' take place?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "fine_grained_action",
+      "item_id": "mvbench:fine_grained_action:26",
+      "matched_safe_regex": false,
+      "question": "What is the action performed by the person in the video?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": true,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "fine_grained_action",
+      "item_id": "mvbench:fine_grained_action:33",
+      "matched_safe_regex": false,
+      "question": "What is the action performed by the person in the video?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "fine_grained_action",
+      "item_id": "mvbench:fine_grained_action:6",
+      "matched_safe_regex": false,
+      "question": "Which one of these descriptions correctly matches the actions in the video?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "fine_grained_action",
+      "item_id": "mvbench:fine_grained_action:7",
+      "matched_safe_regex": false,
+      "question": "Which one of these descriptions correctly matches the actions in the video?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "fine_grained_action",
+      "item_id": "mvbench:fine_grained_action:75",
+      "matched_safe_regex": false,
+      "question": "What is the action performed by the person in the video?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": true,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "fine_grained_action",
+      "item_id": "mvbench:fine_grained_action:8",
+      "matched_safe_regex": false,
+      "question": "What is the action performed by the person in the video?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "moving_attribute",
+      "item_id": "mvbench:moving_attribute:136",
+      "matched_safe_regex": true,
+      "question": "What shape is the object that is stationary when the video ends?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "moving_attribute",
+      "item_id": "mvbench:moving_attribute:42",
+      "matched_safe_regex": true,
+      "question": "What color is the last object that enters the scene?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": true,
+      "correctness_transition": "recovered",
+      "dense_correct": false,
+      "group": "moving_attribute",
+      "item_id": "mvbench:moving_attribute:51",
+      "matched_safe_regex": true,
+      "question": "What is the color of the last object that enters the scene?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": true,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "moving_attribute",
+      "item_id": "mvbench:moving_attribute:6",
+      "matched_safe_regex": true,
+      "question": "What material is the cylinder that is moving when the video ends?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": true,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "moving_attribute",
+      "item_id": "mvbench:moving_attribute:7",
+      "matched_safe_regex": true,
+      "question": "What is the shape of the last object that enters the scene?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": true,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "moving_attribute",
+      "item_id": "mvbench:moving_attribute:8",
+      "matched_safe_regex": true,
+      "question": "What is the shape of the stationary blue object when the video begins?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "moving_direction",
+      "item_id": "mvbench:moving_direction:125",
+      "matched_safe_regex": false,
+      "question": "What direction is the brown sphere moving in within the video?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": true,
+      "correctness_transition": "recovered",
+      "dense_correct": false,
+      "group": "moving_direction",
+      "item_id": "mvbench:moving_direction:32",
+      "matched_safe_regex": false,
+      "question": "What direction is the gray sphere moving in within the video?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": false,
+      "correctness_transition": "harmed",
+      "dense_correct": true,
+      "group": "moving_direction",
+      "item_id": "mvbench:moving_direction:37",
+      "matched_safe_regex": false,
+      "question": "What direction is the purple cube moving in within the video?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": true,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "moving_direction",
+      "item_id": "mvbench:moving_direction:6",
+      "matched_safe_regex": false,
+      "question": "What direction is the cyan sphere moving in within the video?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "moving_direction",
+      "item_id": "mvbench:moving_direction:7",
+      "matched_safe_regex": false,
+      "question": "Can you identify the direction of the brown sphere's movement in the video?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": true,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "moving_direction",
+      "item_id": "mvbench:moving_direction:8",
+      "matched_safe_regex": false,
+      "question": "Can you identify the direction of the red sphere's movement in the video?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "object_interaction",
+      "item_id": "mvbench:object_interaction:46",
+      "matched_safe_regex": false,
+      "question": "Which object was put down by the person?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": true,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "object_interaction",
+      "item_id": "mvbench:object_interaction:6",
+      "matched_safe_regex": false,
+      "question": "Which object was put down by the person?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": true,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "object_interaction",
+      "item_id": "mvbench:object_interaction:7",
+      "matched_safe_regex": false,
+      "question": "Which object was sat on by the person?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": true,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "object_interaction",
+      "item_id": "mvbench:object_interaction:75",
+      "matched_safe_regex": false,
+      "question": "Which object was sat on by the person?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "object_interaction",
+      "item_id": "mvbench:object_interaction:8",
+      "matched_safe_regex": false,
+      "question": "Which object was closed by the person?"
+    },
+    {
+      "benchmark": "mvbench",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "object_interaction",
+      "item_id": "mvbench:object_interaction:96",
+      "matched_safe_regex": false,
+      "question": "Which object was put down by the person?"
+    }
+  ],
+  "manifest_path": "research/benchmark_manifests/mvbench_motion_holdout_v2.toml",
+  "policy_label": "text_attribute_regex_mvbench_holdout_mvattr_kr100_transfer",
+  "question_source": "benchmark_raw_question_text",
+  "safe_question_regex": "\\bwhat\\s+(?:(?:color|shape|material)\\b|is\\s+the\\s+(?:color|shape|material)\\b)",
+  "schema": "gemma_text_route_transfer_v1",
+  "source_path": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_holdout_mvbench_moving_attribute_kr100_paired.jsonl",
+  "summary": {
+    "harm_coverage_by_group": {
+      "action_localization": {
+        "unmatched_fast": 1
+      },
+      "moving_direction": {
+        "unmatched_fast": 1
+      }
+    },
+    "harmed_count": 2,
+    "harmed_matched_count": 0,
+    "harmed_recall": 0.0,
+    "matched_count": 6,
+    "matched_precision_for_harm": 0.0,
+    "matched_rate": 0.2,
+    "n": 30,
+    "route_summary_by_group": {
+      "action_localization": {
+        "unmatched_fast": 6
+      },
+      "fine_grained_action": {
+        "unmatched_fast": 6
+      },
+      "moving_attribute": {
+        "matched_safe_regex": 6
+      },
+      "moving_direction": {
+        "unmatched_fast": 6
+      },
+      "object_interaction": {
+        "unmatched_fast": 6
+      }
+    }
+  }
+}

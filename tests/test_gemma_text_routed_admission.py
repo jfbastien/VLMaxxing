@@ -16,6 +16,8 @@ def _row(
     composed_choice: int | None = 0,
     dense_ms: float = 100.0,
     composed_ms: float = 50.0,
+    dense_prefill_ms: float = 40.0,
+    composed_prefill_ms: float = 20.0,
 ) -> dict[str, object]:
     return {
         "item_id": item_id,
@@ -30,6 +32,8 @@ def _row(
         "composed_parse_failure": composed_choice is None,
         "dense_end_to_end_ms": dense_ms,
         "composed_end_to_end_ms": composed_ms,
+        "dense_prefill_ms": dense_prefill_ms,
+        "composed_prefill_ms": composed_prefill_ms,
         "dense_first_generated_confidence_capture_ms": 5.0,
         "composed_first_generated_confidence_capture_ms": 2.0,
     }
@@ -138,6 +142,8 @@ def test_text_routed_admission_uses_raw_question_regex_and_fixed_dense_denominat
             str(manifest),
             "--mvbench-json-dir",
             str(mvbench_json),
+            "--n-bootstrap",
+            "20",
             "--output",
             str(output),
         ],
@@ -148,6 +154,7 @@ def test_text_routed_admission_uses_raw_question_regex_and_fixed_dense_denominat
 
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(output.read_text())
+    assert payload["schema"] == "gemma_text_routed_admission_v2"
     assert payload["safe_question_regex"] == (
         r"\bwhat\s+(?:(?:color|shape|material)\b|is\s+the\s+(?:color|shape|material)\b)"
     )
@@ -160,6 +167,15 @@ def test_text_routed_admission_uses_raw_question_regex_and_fixed_dense_denominat
     assert payload["summary"]["dense_total_ms"] == 290.0
     assert payload["summary"]["policy_total_ms"] == 146.0
     assert payload["summary"]["e2e_speedup_dense_over_policy"] == 290.0 / 146.0
+    assert payload["summary"]["dense_prefill_total_ms"] == 80.0
+    assert payload["summary"]["policy_prefill_total_ms"] == 40.0
+    assert payload["summary"]["prefill_speedup_dense_over_policy"] == 2.0
+    assert payload["bootstrap_ci"]["n_bootstrap"] == 20
+    assert (
+        payload["bootstrap_ci"]["e2e_speedup_dense_over_policy_ci95"][0]
+        <= payload["summary"]["e2e_speedup_dense_over_policy"]
+        <= payload["bootstrap_ci"]["e2e_speedup_dense_over_policy_ci95"][1]
+    )
     assert payload["items"][0]["question"] == "What color is the object?"
 
 

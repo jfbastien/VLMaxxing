@@ -1,0 +1,342 @@
+{
+  "analysis_role": "single_artifact_text_rule_transfer_screen",
+  "items": [
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "correctness_transition": "harmed",
+      "dense_correct": true,
+      "group": "long",
+      "item_id": "videomme:long:650-3",
+      "matched_safe_regex": false,
+      "question": "After the first successful moon landing, what challenge did NASA's Apollo Program face?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "long",
+      "item_id": "videomme:long:709-1",
+      "matched_safe_regex": false,
+      "question": "In which episode do Penny and Leonard get married in this video?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": true,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "long",
+      "item_id": "videomme:long:751-2",
+      "matched_safe_regex": false,
+      "question": "How many timeout substitutions were there during the game in the video?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": true,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "long",
+      "item_id": "videomme:long:782-1",
+      "matched_safe_regex": false,
+      "question": "What is the video primarily about?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": true,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "long",
+      "item_id": "videomme:long:783-2",
+      "matched_safe_regex": false,
+      "question": "According to the video, what grave actions does the king unknowingly commit?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "long",
+      "item_id": "videomme:long:840-1",
+      "matched_safe_regex": false,
+      "question": "Which food did the team that chose bananas also select from the following options?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "long",
+      "item_id": "videomme:long:846-1",
+      "matched_safe_regex": false,
+      "question": "What is the woman's outfit today in the video?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": true,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "long",
+      "item_id": "videomme:long:847-2",
+      "matched_safe_regex": false,
+      "question": "Where might this walkout take place?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": true,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "long",
+      "item_id": "videomme:long:851-3",
+      "matched_safe_regex": false,
+      "question": "In the video, where will the lamp be hung in the package that the heroine takes home from the gym?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "correctness_transition": "harmed",
+      "dense_correct": true,
+      "group": "long",
+      "item_id": "videomme:long:885-1",
+      "matched_safe_regex": false,
+      "question": "What happened in the first game of the second round of 16 in the video?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": true,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "medium",
+      "item_id": "videomme:medium:342-2",
+      "matched_safe_regex": false,
+      "question": "Which detail in the video indicates that the astronaut is currently outside the International Space Station (ISS)?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "medium",
+      "item_id": "videomme:medium:350-2",
+      "matched_safe_regex": false,
+      "question": "How does the diameter of the black hole S5 0014+81 compare to other distances in space?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "medium",
+      "item_id": "videomme:medium:377-2",
+      "matched_safe_regex": false,
+      "question": "What is the recommended brand of the shoe cleaner in this video?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "medium",
+      "item_id": "videomme:medium:415-3",
+      "matched_safe_regex": false,
+      "question": "Why does the mother brown bear in the video make her cubs run to higher ground?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "medium",
+      "item_id": "videomme:medium:441-1",
+      "matched_safe_regex": false,
+      "question": "Who hit the third ball in the video?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "correctness_transition": "harmed",
+      "dense_correct": true,
+      "group": "medium",
+      "item_id": "videomme:medium:449-2",
+      "matched_safe_regex": false,
+      "question": "How many games are played in the video?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": true,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "medium",
+      "item_id": "videomme:medium:513-1",
+      "matched_safe_regex": false,
+      "question": "What is this video mainly about?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": true,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "medium",
+      "item_id": "videomme:medium:516-2",
+      "matched_safe_regex": false,
+      "question": "What is the final movement of the performance?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "medium",
+      "item_id": "videomme:medium:562-1",
+      "matched_safe_regex": false,
+      "question": "What is the direction of the person in the video relative to the camera when sliding with the rope?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "medium",
+      "item_id": "videomme:medium:569-1",
+      "matched_safe_regex": false,
+      "question": "When does the construction of the highway start, as described by the man in his first viewpoint at the beginning of the video?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:062-3",
+      "matched_safe_regex": false,
+      "question": "What information is shown in the video regarding Portugal's GDP?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:066-3",
+      "matched_safe_regex": false,
+      "question": "What is the object that appears after the red door opens in the video?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:070-3",
+      "matched_safe_regex": false,
+      "question": "Which statement accurately describes the job of the man shown in the center of the video who is wearing a black suit?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": true,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:074-3",
+      "matched_safe_regex": false,
+      "question": "What is the primary focus of this video?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": true,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:126-1",
+      "matched_safe_regex": false,
+      "question": "What is the atmosphere portrayed in the video like?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": true,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:126-2",
+      "matched_safe_regex": false,
+      "question": "What is the reason for entering cold water in the video during the winter season?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "correctness_transition": "harmed",
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:136-3",
+      "matched_safe_regex": false,
+      "question": "Where is the player finally dead?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:267-2",
+      "matched_safe_regex": false,
+      "question": "How many people have their backs to the camera in the sunset scene?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:280-3",
+      "matched_safe_regex": false,
+      "question": "Which color of fish is absent from the video?"
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": true,
+      "correctness_transition": "recovered",
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:293-1",
+      "matched_safe_regex": false,
+      "question": "Which player scored the final goal of the match in the video?"
+    }
+  ],
+  "manifest_path": "research/benchmark_manifests/videomme_holdout_v1.toml",
+  "policy_label": "text_attribute_regex_videomme_holdout_transfer",
+  "question_source": "benchmark_raw_question_text",
+  "safe_question_regex": "\\bwhat\\s+(?:(?:color|shape|material)\\b|is\\s+the\\s+(?:color|shape|material)\\b)",
+  "schema": "gemma_text_route_transfer_v1",
+  "source_path": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_holdout_videomme_paired.jsonl",
+  "summary": {
+    "harm_coverage_by_group": {
+      "long": {
+        "unmatched_fast": 2
+      },
+      "medium": {
+        "unmatched_fast": 1
+      },
+      "short": {
+        "unmatched_fast": 1
+      }
+    },
+    "harmed_count": 4,
+    "harmed_matched_count": 0,
+    "harmed_recall": 0.0,
+    "matched_count": 0,
+    "matched_precision_for_harm": null,
+    "matched_rate": 0.0,
+    "n": 30,
+    "route_summary_by_group": {
+      "long": {
+        "unmatched_fast": 10
+      },
+      "medium": {
+        "unmatched_fast": 10
+      },
+      "short": {
+        "unmatched_fast": 10
+      }
+    }
+  }
+}

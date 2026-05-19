@@ -2,8 +2,9 @@
 
 Status: **Q0b/Q1/Q1b measured; Q1c admission-scheduler follow-up implemented,
 not yet measured; active-repair confidence probe measured and underpowered;
-offline class-conditional admission simulation added; hosted-dev breadth sweep
-and broader codec-motion follow-up not yet measured**.
+offline class-conditional/text admission simulations measured; CPU cost-model
+and transfer audits added; hosted-dev breadth sweep and broader codec-motion
+follow-up not yet measured**.
 
 This note records the first executable branch for the query-aware visual
 routing follow-on paper. It intentionally stops at Q0b and Q1. QuoTA-style
@@ -754,6 +755,81 @@ Interpretation and anti-claims:
   text-only policy offline with the same fixed-denominator analyzer. A learned
   or conformal text router is only justified after collecting enough paired
   labels for calibration.
+
+### H7c CPU Cost-Model and Text-Transfer Audit
+
+Follow-up review shifted the strongest paper-facing thread away from "the
+regex router is a headline" and toward a cost-model claim: prompt admission
+touches the LLM prefill path, so E2E speedup should be bounded by prefill share,
+vision share, decode/other share, and selection/kernel overhead. This is a
+CPU-only artifact audit, not a new MLX run.
+
+Implementation updates:
+
+- `scripts/analyze_gemma_admission_policy_simulation.py` and
+  `scripts/analyze_gemma_text_routed_admission.py` now emit schema v2 with
+  prefill totals, prefill speedup, prefill/E2E shares, and paired item-bootstrap
+  CIs for `accuracy_delta`, E2E speedup, and prefill speedup.
+- `scripts/analyze_gemma_paired_cost_model.py` summarizes any paired Gemma
+  artifact as a stage-cost row: E2E, prefill, vision, other, stage shares,
+  prefill-only ceiling, prefill+vision ceiling, accuracy delta, harmed count,
+  and paired item-bootstrap CIs.
+- `scripts/analyze_gemma_text_route_transfer.py` checks whether a preregistered
+  question-text rule covers harmed rows in a single paired artifact. This is a
+  transfer screen only; it does not simulate a mixed policy unless matching
+  safe and fast paired rows exist.
+
+Updated H7/H7b artifacts:
+
+- Bucket-oracle and robust text regex both remain `1.141x` E2E,
+  `Delta acc=+0.0333`, but the new bootstrap CI is wide:
+  `Delta acc CI=[-0.0667,+0.1333]`, E2E CI `[1.095,1.191]`, prefill speedup
+  `1.297x` with CI `[1.216,1.379]`.
+- Literal regex remains `1.148x` E2E, `Delta acc=+0.0333`, with E2E CI
+  `[1.098,1.201]` and prefill speedup `1.308x` with CI `[1.224,1.395]`.
+
+Cost-model audit table (all ratio-of-sums, paired bootstrap CIs in artifacts):
+
+| artifact | n | E2E | prefill | dense prefill share | Delta acc | harmed |
+|---|---:|---:|---:|---:|---:|---:|
+| MVBench dev_v2 random admission-on | 30 | `1.207x` | `1.430x` | `0.579` | `-0.0667` | 4 |
+| MVBench holdout full composition | 30 | `1.779x` | `1.594x` | `0.440` | `-0.0667` | 3 |
+| MVBench dev moving_attribute kr100 composition | 30 | `1.477x` | `1.392x` | `0.451` | `-0.0667` | 4 |
+| MVBench holdout moving_attribute kr100 composition | 30 | `1.438x` | `1.496x` | `0.446` | `+0.0000` | 2 |
+| TOMATO holdout full composition | 30 | `1.190x` | `1.232x` | `0.392` | `-0.1333` | 7 |
+| VideoMME holdout full composition | 30 | `0.984x` | `1.063x` | `0.072` | `-0.1000` | 4 |
+
+The MVBench dev_v2 random-admission row is the cleanest admission-only ceiling
+check: observed E2E `1.207x` versus prefill-only ceiling `1.211x`, with
+vision speedup `1.000x`. The broader cross-benchmark rows are **not** quality
+wins; most are full composition rows with fidelity failures. They are useful
+as timing-mechanism evidence and as a warning that E2E speed depends on which
+pipeline stage a policy actually changes.
+
+Text-rule transfer screen:
+
+| artifact | matched rows | harmed rows | harmed recall |
+|---|---:|---:|---:|
+| MVBench holdout full composition | 6/30 | 3 | `0.000` |
+| MVBench dev moving_attribute kr100 composition | 6/30 | 4 | `0.750` |
+| MVBench holdout moving_attribute kr100 composition | 6/30 | 2 | `0.000` |
+| TOMATO holdout full composition | 3/30 | 7 | `0.000` |
+| VideoMME holdout full composition | 0/30 | 4 | `0.000` |
+
+Interpretation:
+
+- Agree with the revised peer-review framing: the text regex is a useful
+  deployment knob on one MVBench dev slice, not the paper's main contribution.
+  It fails to transfer as a harm detector on the available holdout/TOMATO/
+  VideoMME artifacts.
+- The stronger research direction is cost-accounted admission scheduling:
+  measure which stage is changed, then predict E2E from the affected-stage
+  share. This complements query-aware routing papers; it does not claim
+  query-aware admission is novel.
+- The next live experiment should be cross-benchmark admission-only, not a
+  larger MVBench-only regex test: same-run dense/no-admission/admission-on rows
+  on MVBench hosted-dev, TOMATO N=30, and VideoMME short N=20, with this
+  cost-model auditor as the preregistered analysis.
 
 ### H8 Multi-Shot Consistency Gate, Timing Check Only
 

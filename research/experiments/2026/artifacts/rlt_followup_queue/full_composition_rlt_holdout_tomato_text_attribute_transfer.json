@@ -1,0 +1,343 @@
+{
+  "analysis_role": "single_artifact_text_rule_transfer_screen",
+  "items": [
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "direction",
+      "item_id": "tomato:direction:0224-05",
+      "matched_safe_regex": false,
+      "question": "What was the direction of the person's hand movement?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "direction",
+      "item_id": "tomato:direction:0225-04",
+      "matched_safe_regex": false,
+      "question": "What was the direction of the person's hand movement?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "direction",
+      "item_id": "tomato:direction:0225-07",
+      "matched_safe_regex": false,
+      "question": "What was the direction of the person's hand movement?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "direction",
+      "item_id": "tomato:direction:0226-03",
+      "matched_safe_regex": false,
+      "question": "What was the direction of the person's hand movement?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "correctness_transition": "harmed",
+      "dense_correct": true,
+      "group": "direction",
+      "item_id": "tomato:direction:0226-05",
+      "matched_safe_regex": false,
+      "question": "What was the direction of the person's hand movement?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "direction",
+      "item_id": "tomato:direction:0227-04",
+      "matched_safe_regex": false,
+      "question": "What was the direction of the person's hand movement?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "direction",
+      "item_id": "tomato:direction:0228-04",
+      "matched_safe_regex": false,
+      "question": "What was the direction of the person's hand movement?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "direction",
+      "item_id": "tomato:direction:0271-00",
+      "matched_safe_regex": false,
+      "question": "In what direction did the athlete move?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "direction",
+      "item_id": "tomato:direction:0560-01",
+      "matched_safe_regex": false,
+      "question": "Which direction did the hand travel?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "direction",
+      "item_id": "tomato:direction:0573-00",
+      "matched_safe_regex": false,
+      "question": "What directional pattern did the hand's motion follow?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "rotation",
+      "item_id": "tomato:rotation:0230-14",
+      "matched_safe_regex": false,
+      "question": "Which direction(s) does the person's hand rotate in?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "correctness_transition": "harmed",
+      "dense_correct": true,
+      "group": "rotation",
+      "item_id": "tomato:rotation:0298-00",
+      "matched_safe_regex": false,
+      "question": "In what direction(s) does the pendulum rotate?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "rotation",
+      "item_id": "tomato:rotation:0362-01",
+      "matched_safe_regex": false,
+      "question": "What is the figure's direction(s) of rotation?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "rotation",
+      "item_id": "tomato:rotation:0622-00",
+      "matched_safe_regex": false,
+      "question": "Which direction(s) does the charger rotate in?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "rotation",
+      "item_id": "tomato:rotation:0622-01",
+      "matched_safe_regex": false,
+      "question": "Which direction(s) does the charger rotate in?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "correctness_transition": "harmed",
+      "dense_correct": true,
+      "group": "rotation",
+      "item_id": "tomato:rotation:0623-00",
+      "matched_safe_regex": false,
+      "question": "Which direction(s) does the charger rotate in?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": true,
+      "correctness_transition": "recovered",
+      "dense_correct": false,
+      "group": "rotation",
+      "item_id": "tomato:rotation:0653-00",
+      "matched_safe_regex": false,
+      "question": "Which direction(s) does the person's hand rotate in?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "correctness_transition": "harmed",
+      "dense_correct": true,
+      "group": "rotation",
+      "item_id": "tomato:rotation:0654-00",
+      "matched_safe_regex": false,
+      "question": "Which direction(s) does the person's hand rotate in?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "rotation",
+      "item_id": "tomato:rotation:0700-00",
+      "matched_safe_regex": false,
+      "question": "In which direction(s) does the person's hand rotate?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "correctness_transition": "harmed",
+      "dense_correct": true,
+      "group": "rotation",
+      "item_id": "tomato:rotation:0700-01",
+      "matched_safe_regex": false,
+      "question": "In which direction(s) does the person's hand rotate?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "shape_trend",
+      "item_id": "tomato:shape_trend:0212-02",
+      "matched_safe_regex": false,
+      "question": "Which shape was formed by the person's hand as they moved it through the air?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": true,
+      "correctness_transition": "recovered",
+      "dense_correct": false,
+      "group": "shape_trend",
+      "item_id": "tomato:shape_trend:0212-05",
+      "matched_safe_regex": true,
+      "question": "What is the shape of the object that the person drew in the air?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "shape_trend",
+      "item_id": "tomato:shape_trend:0213-05",
+      "matched_safe_regex": true,
+      "question": "What is the shape of the object that the person drew in the air?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "correctness_transition": "harmed",
+      "dense_correct": true,
+      "group": "shape_trend",
+      "item_id": "tomato:shape_trend:0214-05",
+      "matched_safe_regex": false,
+      "question": "What geometric shape did the person trace in the air with their hand?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "correctness_transition": "harmed",
+      "dense_correct": true,
+      "group": "shape_trend",
+      "item_id": "tomato:shape_trend:0405-02",
+      "matched_safe_regex": false,
+      "question": "What is the trend of the person's hand movement?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": true,
+      "correctness_transition": "recovered",
+      "dense_correct": false,
+      "group": "shape_trend",
+      "item_id": "tomato:shape_trend:0406-02",
+      "matched_safe_regex": false,
+      "question": "What is the trend of the person's hand movement?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "shape_trend",
+      "item_id": "tomato:shape_trend:0408-02",
+      "matched_safe_regex": false,
+      "question": "What was the overall direction of the hand's movement?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "shape_trend",
+      "item_id": "tomato:shape_trend:0618-02",
+      "matched_safe_regex": false,
+      "question": "What geometric shape did the person trace in the air with their hand?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "shape_trend",
+      "item_id": "tomato:shape_trend:0620-00",
+      "matched_safe_regex": false,
+      "question": "Which figure did the individual outline in space using their hand movements?"
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": true,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "shape_trend",
+      "item_id": "tomato:shape_trend:0714-01",
+      "matched_safe_regex": true,
+      "question": "What shape did the hand draw?"
+    }
+  ],
+  "manifest_path": "research/benchmark_manifests/tomato_motion_holdout_v2.toml",
+  "policy_label": "text_attribute_regex_tomato_holdout_transfer",
+  "question_source": "benchmark_raw_question_text",
+  "safe_question_regex": "\\bwhat\\s+(?:(?:color|shape|material)\\b|is\\s+the\\s+(?:color|shape|material)\\b)",
+  "schema": "gemma_text_route_transfer_v1",
+  "source_path": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_holdout_tomato_paired.jsonl",
+  "summary": {
+    "harm_coverage_by_group": {
+      "direction": {
+        "unmatched_fast": 1
+      },
+      "rotation": {
+        "unmatched_fast": 4
+      },
+      "shape_trend": {
+        "unmatched_fast": 2
+      }
+    },
+    "harmed_count": 7,
+    "harmed_matched_count": 0,
+    "harmed_recall": 0.0,
+    "matched_count": 3,
+    "matched_precision_for_harm": 0.0,
+    "matched_rate": 0.1,
+    "n": 30,
+    "route_summary_by_group": {
+      "direction": {
+        "unmatched_fast": 10
+      },
+      "rotation": {
+        "unmatched_fast": 10
+      },
+      "shape_trend": {
+        "matched_safe_regex": 3,
+        "unmatched_fast": 7
+      }
+    }
+  }
+}

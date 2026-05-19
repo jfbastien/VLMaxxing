@@ -27,6 +27,9 @@ if str(REPO_ROOT) not in sys.path:
 from scripts.analyze_gemma_admission_policy_simulation import (  # noqa: E402
     _adjusted_composed_ms,
     _adjusted_dense_ms,
+    _bootstrap_policy_ci,
+    _composed_prefill_ms,
+    _dense_prefill_ms,
     _empty_group_summary,
     _finalize_summary,
     _index_rows,
@@ -40,6 +43,8 @@ DEFAULT_SAFE_QUESTION_REGEX = (
     r"\bwhat\s+(?:(?:color|shape|material)\b|is\s+the\s+(?:color|shape|material)\b)"
 )
 MVBENCH_JSON_DIR = Path("data/benchmarks/mvbench/hf/json")
+TOMATO_DATA_DIR = Path("data/benchmarks/tomato/hf/data")
+VIDEOMME_PARQUET_DIR = Path("data/benchmarks/videomme/hf")
 
 
 def _load_manifest_item_ids(path: Path) -> list[str]:
@@ -92,6 +97,113 @@ def _load_mvbench_questions(item_ids: list[str], *, json_dir: Path) -> dict[str,
     return questions
 
 
+def _parse_tomato_item_id(item_id: str) -> tuple[str, str]:
+    parts = item_id.split(":", maxsplit=2)
+    if len(parts) != 3 or parts[0] != "tomato" or not parts[1] or not parts[2]:
+        raise ValueError(f"invalid TOMATO item id: {item_id!r}")
+    return parts[1], parts[2]
+
+
+def _load_tomato_questions(item_ids: list[str], *, data_dir: Path) -> dict[str, str]:
+    import pyarrow.parquet as pq
+
+    requested_by_split: dict[str, set[str]] = defaultdict(set)
+    for item_id in item_ids:
+        split, key = _parse_tomato_item_id(item_id)
+        requested_by_split[split].add(key)
+
+    questions: dict[str, str] = {}
+    for split, requested_keys in sorted(requested_by_split.items()):
+        candidates = sorted(data_dir.glob(f"{split}-*.parquet"))
+        if len(candidates) != 1:
+            raise FileNotFoundError(
+                f"expected exactly one TOMATO parquet for split {split!r} under {data_dir}, "
+                f"found {len(candidates)}"
+            )
+        table = pq.read_table(candidates[0], columns=["key", "question"])
+        rows = table.to_pylist()
+        seen: set[str] = set()
+        for row in rows:
+            key = str(row["key"])
+            if key not in requested_keys:
+                continue
+            question = row.get("question")
+            if not isinstance(question, str) or not question:
+                raise ValueError(f"tomato:{split}:{key}: missing raw question text")
+            questions[f"tomato:{split}:{key}"] = question
+            seen.add(key)
+        missing = sorted(requested_keys - seen)
+        if missing:
+            raise KeyError(f"missing TOMATO examples for split {split!r}: {missing}")
+    return questions
+
+
+def _parse_videomme_item_id(item_id: str) -> tuple[str, str]:
+    parts = item_id.split(":", maxsplit=2)
+    if len(parts) != 3 or parts[0] != "videomme" or not parts[1] or not parts[2]:
+        raise ValueError(f"invalid VideoMME item id: {item_id!r}")
+    return parts[1], parts[2]
+
+
+def _videomme_parquet_path(parquet_dir: Path) -> Path:
+    candidates = sorted(parquet_dir.rglob("*.parquet"))
+    if len(candidates) != 1:
+        raise FileNotFoundError(
+            f"expected exactly one VideoMME parquet under {parquet_dir}, found {len(candidates)}"
+        )
+    return candidates[0]
+
+
+def _load_videomme_questions(item_ids: list[str], *, parquet_dir: Path) -> dict[str, str]:
+    import pyarrow.parquet as pq
+
+    parsed = [_parse_videomme_item_id(item_id) for item_id in item_ids]
+    requested_ids = {question_id for _, question_id in parsed}
+    table = pq.read_table(_videomme_parquet_path(parquet_dir), columns=["question_id", "question"])
+    rows_by_id: dict[str, str] = {}
+    for row in table.to_pylist():
+        question_id = str(row["question_id"])
+        if question_id not in requested_ids:
+            continue
+        question = row.get("question")
+        if not isinstance(question, str) or not question:
+            raise ValueError(f"videomme:*:{question_id}: missing raw question text")
+        rows_by_id[question_id] = question
+    missing = sorted(requested_ids - set(rows_by_id))
+    if missing:
+        raise KeyError(f"missing VideoMME questions: {missing}")
+    return {
+        f"videomme:{duration}:{question_id}": rows_by_id[question_id]
+        for duration, question_id in parsed
+    }
+
+
+def _load_questions(
+    item_ids: list[str],
+    *,
+    mvbench_json_dir: Path,
+    tomato_data_dir: Path,
+    videomme_parquet_dir: Path,
+) -> dict[str, str]:
+    by_benchmark: dict[str, list[str]] = defaultdict(list)
+    for item_id in item_ids:
+        benchmark = item_id.split(":", maxsplit=1)[0]
+        by_benchmark[benchmark].append(item_id)
+    questions: dict[str, str] = {}
+    for benchmark, benchmark_item_ids in sorted(by_benchmark.items()):
+        if benchmark == "mvbench":
+            questions.update(_load_mvbench_questions(benchmark_item_ids, json_dir=mvbench_json_dir))
+        elif benchmark == "tomato":
+            questions.update(_load_tomato_questions(benchmark_item_ids, data_dir=tomato_data_dir))
+        elif benchmark == "videomme":
+            questions.update(
+                _load_videomme_questions(benchmark_item_ids, parquet_dir=videomme_parquet_dir)
+            )
+        else:
+            raise ValueError(f"unsupported benchmark in item ids: {benchmark!r}")
+    return questions
+
+
 def _compile_regex(pattern: str) -> re.Pattern[str]:
     try:
         return re.compile(pattern, re.IGNORECASE)
@@ -131,6 +243,8 @@ def _simulate_text_policy(
         transition = _transition(dense_correct, policy_correct)
         dense_ms = _adjusted_dense_ms(safe)
         policy_ms = _adjusted_composed_ms(chosen)
+        dense_prefill_ms = _dense_prefill_ms(safe)
+        policy_prefill_ms = _composed_prefill_ms(chosen)
         if dense_ms <= 0.0 or policy_ms <= 0.0:
             raise ValueError(f"{key}: adjusted timing must be positive")
 
@@ -142,6 +256,8 @@ def _simulate_text_policy(
             summary["choice_changed_count"] += int(dense_choice != policy_choice)
             summary["dense_total_ms"] += dense_ms
             summary["policy_total_ms"] += policy_ms
+            summary["dense_prefill_total_ms"] += dense_prefill_ms
+            summary["policy_prefill_total_ms"] += policy_prefill_ms
             summary["source_counts"][source] += 1
             summary["failure_taxonomy"][transition] += 1
 
@@ -160,6 +276,8 @@ def _simulate_text_policy(
                 "correctness_transition": transition,
                 "dense_ms": dense_ms,
                 "policy_ms": policy_ms,
+                "dense_prefill_ms": dense_prefill_ms,
+                "policy_prefill_ms": policy_prefill_ms,
             }
         )
 
@@ -196,6 +314,8 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--policy-label", default="text_regex_safe_fallback")
     parser.add_argument("--mvbench-json-dir", type=Path, default=MVBENCH_JSON_DIR)
+    parser.add_argument("--tomato-data-dir", type=Path, default=TOMATO_DATA_DIR)
+    parser.add_argument("--videomme-parquet-dir", type=Path, default=VIDEOMME_PARQUET_DIR)
     parser.add_argument(
         "--allow-dense-label-drift",
         action="store_true",
@@ -204,13 +324,25 @@ def _build_parser() -> argparse.ArgumentParser:
             "because mixed-policy accuracy otherwise has an ambiguous reference."
         ),
     )
+    parser.add_argument(
+        "--n-bootstrap",
+        type=int,
+        default=2000,
+        help="Paired item bootstrap resamples for accuracy and speed CIs.",
+    )
+    parser.add_argument("--bootstrap-seed", type=int, default=20260519)
     return parser
 
 
 def main() -> int:
     args = _build_parser().parse_args()
     item_ids = _load_manifest_item_ids(args.manifest)
-    questions = _load_mvbench_questions(item_ids, json_dir=args.mvbench_json_dir)
+    questions = _load_questions(
+        item_ids,
+        mvbench_json_dir=args.mvbench_json_dir,
+        tomato_data_dir=args.tomato_data_dir,
+        videomme_parquet_dir=args.videomme_parquet_dir,
+    )
     safe_regex = _compile_regex(str(args.safe_question_regex))
     safe_rows = _index_rows(
         _read_jsonl(args.safe_paired_items),
@@ -242,7 +374,7 @@ def main() -> int:
         safe_regex=safe_regex,
     )
     payload = {
-        "schema": "gemma_text_routed_admission_v1",
+        "schema": "gemma_text_routed_admission_v2",
         "analysis_role": "exploratory_offline_text_policy_simulation",
         "dense_reference_source": "safe_paired_items",
         "policy_label": args.policy_label,
@@ -250,10 +382,15 @@ def main() -> int:
         "safe_source_path": str(args.safe_paired_items),
         "fast_source_path": str(args.fast_paired_items),
         "manifest_path": str(args.manifest),
-        "question_source": "mvbench_raw_question_json",
+        "question_source": "benchmark_raw_question_text",
         "pairing_audit": audit,
         "route_summary_by_group": route_summary,
         "summary": summary,
+        "bootstrap_ci": _bootstrap_policy_ci(
+            item_rows,
+            n_bootstrap=args.n_bootstrap,
+            seed=args.bootstrap_seed,
+        ),
         "by_group": by_group,
         "source_baselines": {
             "safe_all_items": _source_summary(safe_rows),
