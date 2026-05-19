@@ -508,7 +508,8 @@ def _validate_baseline_matches_rows(
             f"extra_in_baseline={extra_in_baseline[:5]!r}"
         )
     intrinsic_mismatches = [
-        key for key in sorted(active_keys)
+        key
+        for key in sorted(active_keys)
         if _intrinsic_signature(active_by_key[key]) != _intrinsic_signature(baseline_by_key[key])
     ]
     if intrinsic_mismatches:
@@ -533,8 +534,7 @@ def _validate_baseline_matches_rows(
         "dense_label_mismatches": dense_label_mismatches,
         "dense_label_mismatch_count": len(dense_label_mismatches),
         "dense_label_correctness_flips": sum(
-            1 for m in dense_label_mismatches
-            if "dense_correct" in m["diff"]
+            1 for m in dense_label_mismatches if "dense_correct" in m["diff"]
         ),
     }
 

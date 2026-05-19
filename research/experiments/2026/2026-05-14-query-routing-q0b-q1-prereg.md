@@ -1,8 +1,9 @@
 # 2026-05-14 query-routing Q0b/Q1 implementation prereg
 
 Status: **Q0b/Q1/Q1b measured; Q1c admission-scheduler follow-up implemented,
-not yet measured; hosted-dev breadth sweep, codec-motion scan, and
-active-repair confidence-probe scaffolding implemented, not yet measured**.
+not yet measured; active-repair confidence probe measured and underpowered;
+offline class-conditional admission simulation added; hosted-dev breadth sweep
+and broader codec-motion follow-up not yet measured**.
 
 This note records the first executable branch for the query-aware visual
 routing follow-on paper. It intentionally stops at Q0b and Q1. QuoTA-style
@@ -578,7 +579,89 @@ arms) and finite confidence-capture timings. The pooled smoke has
 `pooled_status.analysis_role=supportive_pooled`, so it validates
 schema/logging/analyzer plumbing only; it does not test H6a/H6b.
 
-### H7 Multi-Shot Consistency Gate, Timing Check Only
+2026-05-19 targeted H6 run result: the experiment ran on
+`mvbench_motion_dev_v2` n=30 with same-run ABBA timing and same-run
+`random_valid(seed=11)` admission-off baseline.
+
+- Admission-off baseline:
+  `accuracy_delta=0.000`, `choice_agreement=1.000`, `E2E=1.0056x`.
+  It is output-identical to dense but not meaningfully faster.
+- `random_valid(seed=11)+admission_on`:
+  `accuracy_delta=-0.0667`, 95% CI `[-0.2333, +0.1000]`,
+  `choice_agreement=0.667`, `E2E=1.207x`.
+- `fixed_uniform+admission_on`:
+  `accuracy_delta=-0.1333`, 95% CI `[-0.2667, +0.0333]`,
+  `choice_agreement=0.700`, `E2E=1.187x`.
+- First-token candidate-letter margin is directionally associated with harm
+  but fails the preregistered confidence gate:
+  random arm AUC `0.727` with lower 95% CI `0.389`, fixed arm AUC `0.771`
+  with lower 95% CI `0.521`, supportive pooled AUC `0.767` with lower 95%
+  CI `0.536`. All three produce `viable_threshold_count=0`.
+- The common harmed core is `mvbench:moving_attribute:{1,2,5}` across both
+  admission-on arms. The stronger claim "all harm is moving_attribute" is
+  false: random also harms `object_interaction:2`; fixed also harms
+  `moving_direction:4` and `object_interaction:5`.
+
+Interpretation: H6 is not a win. First-token margin remains a
+hypothesis-generating signal for larger N, but the current run does not justify
+a live repair operator. The more actionable result is that prompt admission,
+not static vision-mask scoring, is the live physical operator: it buys about
+`1.19-1.21x` E2E on this slice and breaks a small, partly reproducible item
+set.
+
+### H7 Offline Class-Conditional Admission Simulation
+
+The active-repair run leaves a simpler planner hypothesis: do not try to
+predict harm after the cheap pass; use query/content class to decide where
+prompt admission is safe. The first CPU-only simulation is intentionally
+retrospective and benchmark-metadata-based.
+
+Command:
+
+```bash
+./.venv/bin/python scripts/analyze_gemma_admission_policy_simulation.py \
+  --safe-paired-items research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted/query_q1_mvbench_random_seed11_no_admission_paired.jsonl \
+  --fast-paired-items research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted/query_q1b_mvbench_random_seed11_admission_on_paired.jsonl \
+  --fallback-group moving_attribute \
+  --policy-label moving_attribute_safe_random_admission_on \
+  --output research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted/query_q1b_mvbench_random_seed11_moving_attribute_safe_policy.json
+```
+
+Result:
+
+- Pairing audit: `dense_label_mismatch_count=0` between the no-admission safe
+  rows and random admission-on fast rows.
+- Policy: route `moving_attribute` to no-admission; route the other four
+  buckets to `random_valid(seed=11)+admission_on`.
+- Aggregate against the fixed safe/no-admission dense denominator:
+  `accuracy_delta=+0.0333`, `choice_agreement=0.767`, `E2E=1.141x`, with
+  `24/30` items using the fast arm and `6/30` using the safe arm.
+- `moving_attribute` is recovered to `accuracy_delta=0.000`,
+  `choice_agreement=1.000`; one `object_interaction` harmed row remains and
+  one `object_interaction` row recovers, for net zero in that bucket.
+- The same simulation against `fixed_uniform+admission_on` hard-fails by
+  default because the fixed arm's dense ABBA labels drift from the baseline
+  on seven items; do not use it for a primary mixed-policy estimate without a
+  shared-reference rerun.
+
+Anti-claims:
+
+- This is not a deployed query planner. It uses MVBench bucket metadata and
+  already-completed paired rows.
+- This is not accuracy-clean in the strict choice-identity sense: seven
+  choices still change, although the aggregate accuracy estimate improves by
+  one item.
+- It does show a concrete "there" worth testing: class-conditional prompt
+  admission can convert the admission-on speed lever into a better
+  speed/accuracy point than either always-safe no-admission (`1.005x`,
+  exact agreement) or always-fast random admission (`1.207x`, `-0.0667`
+  accuracy delta).
+
+Next if promoted: run a live class-conditional admission cell with a same-run
+no-admission baseline, then replicate on holdout or hosted-dev before using it
+as more than a query-routing appendix result.
+
+### H8 Multi-Shot Consistency Gate, Timing Check Only
 
 Multi-shot consistency is a plausible future variant: run two cheap admission
 passes with different random masks, accept if they agree, and retry dense if
@@ -608,6 +691,8 @@ Preregistered gate before implementation:
 - QuoTA/QTSplus-style scalar query allocation.
 - VideoRouter-style coverage-versus-detail policy.
 - Live one-step active repair / confidence-gated rerun.
+- Live class-conditional admission scheduling beyond the offline
+  `moving_attribute` simulation.
 - Model-facing codec-grid pruning or sidecar-backed C-VISION.
 - Multi-shot consistency as an efficiency gate; current status is timing-model
   only, not experiment-ready.
