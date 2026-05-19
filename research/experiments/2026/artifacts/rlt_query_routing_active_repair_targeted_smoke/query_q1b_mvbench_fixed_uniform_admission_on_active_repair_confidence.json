@@ -2,8 +2,10 @@
   "auc_gate_passed": false,
   "baseline_accuracy_margin": 0.02,
   "baseline_no_retry": {
+    "accuracy_delta_vs_baseline": 0.0,
     "accuracy_delta_vs_dense": 0.0,
     "active_accuracy": 1.0,
+    "active_speedup_vs_baseline": 0.9209454292251892,
     "active_total_ms": 6198.373793,
     "composed_confidence_capture_ms_charged": 16.215125,
     "composed_total_ms": 6198.373793,
@@ -21,8 +23,10 @@
     "unchanged_wrong_retried": 0
   },
   "baseline_retry_all": {
+    "accuracy_delta_vs_baseline": 0.0,
     "accuracy_delta_vs_dense": 0.0,
     "active_accuracy": 1.0,
+    "active_speedup_vs_baseline": 0.4010940753812049,
     "active_total_ms": 14231.982877999999,
     "composed_confidence_capture_ms_charged": 16.215125,
     "composed_total_ms": 6198.373793,
@@ -43,7 +47,27 @@
   "cell_types": [
     "rlt_admission_plus_fixed_uniform_cvision"
   ],
-  "comparison_baseline": null,
+  "comparison_baseline": {
+    "accuracy_delta_vs_dense": 0.0,
+    "baseline_accuracy": 1.0,
+    "baseline_confidence_capture_ms_subtracted": 17.06875,
+    "baseline_total_ms": 7575.816332999999,
+    "baseline_total_raw_ms": 7592.885082999999,
+    "cell_types": [
+      "random_valid_cvision_only"
+    ],
+    "dense_accuracy": 1.0,
+    "dense_confidence_capture_ms_subtracted": 19.723834,
+    "dense_total_ms": 10661.749456999998,
+    "dense_total_raw_ms": 10681.473290999998,
+    "label": "external_no_retry_baseline",
+    "n_items": 1,
+    "source_paths": [
+      "research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted_smoke/query_q1_mvbench_random_seed11_no_admission_paired.jsonl"
+    ],
+    "speedup_dense_over_baseline": 1.4073400130567817,
+    "timing_policy": "external no-retry baseline uses paired dense/composed end_to_end_ms and subtracts dense/composed confidence-capture time when present because a no-retry baseline would not compute a repair gate"
+  },
   "composed_accuracy": 1.0,
   "dense_accuracy": 1.0,
   "harmed_count": 0,
@@ -53,7 +77,7 @@
   "max_retry_rate": 0.5,
   "min_auc_lower_ci": 0.65,
   "min_harmed_retried": 2,
-  "min_speedup": 1.254,
+  "min_speedup": 1.0,
   "n_items": 1,
   "pearson_margin_vs_harmed": null,
   "per_cell_type_auc": [
@@ -66,6 +90,15 @@
       "unique_item_count": 1
     }
   ],
+  "pooled_status": {
+    "analysis_role": "per_arm_primary",
+    "cell_type_count": 1,
+    "group_count": 1,
+    "row_count": 1,
+    "supportive_only": false,
+    "unique_item_count": 1,
+    "warnings": []
+  },
   "preserved_correct_count": 1,
   "preserved_correct_margin_mean": 10.0625,
   "preserved_correct_margin_median": 10.0625,
@@ -87,8 +120,10 @@
   ],
   "thresholds": [
     {
+      "accuracy_delta_vs_baseline": 0.0,
       "accuracy_delta_vs_dense": 0.0,
       "active_accuracy": 1.0,
+      "active_speedup_vs_baseline": 0.4010940753812049,
       "active_total_ms": 14231.982877999999,
       "composed_confidence_capture_ms_charged": 16.215125,
       "composed_total_ms": 6198.373793,

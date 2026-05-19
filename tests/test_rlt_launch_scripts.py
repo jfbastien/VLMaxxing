@@ -138,8 +138,9 @@ def test_query_routing_active_repair_targeted_script_is_narrow_and_portable() ->
     assert "query_q1b_mvbench_random_seed11_admission_on_active_repair_confidence.json" in payload
     assert "query_q1b_mvbench_fixed_uniform_admission_on_active_repair_confidence.json" in payload
     assert "query_q1b_mvbench_admission_on_pooled_active_repair_confidence.json" in payload
+    assert "query_q1_mvbench_random_seed11_no_admission_paired.jsonl" in payload
     assert "composed_first_generated_candidate_top2_margin" in payload
-    assert 'MIN_SPEEDUP="${MIN_SPEEDUP:-1.254}"' in payload
+    assert 'MIN_SPEEDUP="${MIN_SPEEDUP:-1.0}"' in payload
     assert 'MAX_RETRY_RATE="${MAX_RETRY_RATE:-0.50}"' in payload
     assert 'MIN_AUC_LOWER_CI="${MIN_AUC_LOWER_CI:-0.65}"' in payload
     assert 'BASELINE_REPAIR_PAIRED="${BASELINE_REPAIR_PAIRED:-}"' in payload
@@ -366,9 +367,15 @@ def test_query_routing_active_repair_targeted_smoke_knobs_rewrite_expected_items
     assert "--bucket-min-n 1" in completed.stdout
     assert "--n-bootstrap 50" in completed.stdout
     assert "--n-bootstrap 100" in completed.stdout
-    assert "--min-speedup 1.254" in completed.stdout
+    assert "--min-speedup 1.0" in completed.stdout
     assert "--max-retry-rate 0.50" in completed.stdout
     assert "--min-auc-lower-ci 0.65" in completed.stdout
+    assert "--baseline-paired-items" in completed.stdout
+    assert "query_q1_mvbench_random_seed11_no_admission_paired.jsonl" in completed.stdout
+    assert "--keep-rate 1.0 --prune-placeholders none" in completed.stdout
+    assert "--vision-tower-keep-rate 0.5 --vision-tower-score-mode random_valid" in (
+        completed.stdout
+    )
     assert "rlt_query_routing_active_repair_targeted_smoke" in completed.stdout
 
 

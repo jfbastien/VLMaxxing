@@ -30,6 +30,14 @@ import numpy as np
 
 SCHEMA_VERSION = "gemma_active_repair_confidence_v2"
 QUALITY_EPSILON = 1e-12
+REFERENCE_FIELDS = (
+    "benchmark",
+    "group",
+    "answer_index",
+    "dense_choice",
+    "dense_correct",
+    "dense_parse_failure",
+)
 
 
 def _read_paired_rows(paths: Iterable[Path]) -> list[dict[str, Any]]:
@@ -229,6 +237,44 @@ def _per_cell_type_auc(rows: list[dict[str, Any]], margin_field: str) -> list[di
     return summaries
 
 
+def _pooled_status(
+    rows: list[dict[str, Any]],
+    *,
+    per_cell_type_auc: list[dict[str, Any]],
+) -> dict[str, Any]:
+    cell_types = sorted({str(row["cell_type"]) for row in rows if row.get("cell_type") is not None})
+    group_count = len(per_cell_type_auc)
+    unique_item_count = len({str(row["item_id"]) for row in rows})
+    warnings: list[str] = []
+    role = "per_arm_primary"
+    if group_count > 1:
+        role = "supportive_pooled"
+        warnings.append("pooled_supportive_only_multiple_sources")
+    if unique_item_count < len(rows):
+        warnings.append("pooled_reuses_item_ids")
+    if group_count > 1 and any(
+        int(summary["harmed_count"]) == 0 or int(summary["preserved_correct_count"]) == 0
+        for summary in per_cell_type_auc
+    ):
+        warnings.append("per_arm_underpowered_or_missing_class")
+    auc_points = [
+        float(summary["risk_auc_harmed_lower_margin"])
+        for summary in per_cell_type_auc
+        if summary["risk_auc_harmed_lower_margin"] is not None
+    ]
+    if auc_points and min(auc_points) < 0.5 < max(auc_points):
+        warnings.append("per_arm_auc_direction_conflict")
+    return {
+        "analysis_role": role,
+        "supportive_only": role == "supportive_pooled",
+        "warnings": warnings,
+        "cell_type_count": len(cell_types),
+        "group_count": group_count,
+        "unique_item_count": unique_item_count,
+        "row_count": len(rows),
+    }
+
+
 def _accuracy(rows: list[dict[str, Any]], field: str) -> float:
     return sum(bool(row[field]) for row in rows) / len(rows)
 
@@ -319,8 +365,32 @@ def _simulate_threshold(
 
 
 def _baseline_summary(rows: list[dict[str, Any]], *, label: str) -> dict[str, Any]:
-    dense_total_ms = sum(_required_positive_float(row, "dense_end_to_end_ms") for row in rows)
-    baseline_total_ms = sum(_required_positive_float(row, "composed_end_to_end_ms") for row in rows)
+    dense_confidence_capture_ms = sum(
+        (
+            _required_nonnegative_float(row, "dense_first_generated_confidence_capture_ms")
+            if row.get("dense_first_generated_confidence_capture_ms") is not None
+            else 0.0
+        )
+        for row in rows
+    )
+    dense_total_raw_ms = sum(_required_positive_float(row, "dense_end_to_end_ms") for row in rows)
+    dense_total_ms = dense_total_raw_ms - dense_confidence_capture_ms
+    if dense_total_ms <= 0.0:
+        raise ValueError("external baseline has nonpositive confidence-adjusted dense time")
+    baseline_confidence_capture_ms = sum(
+        (
+            _required_nonnegative_float(row, "composed_first_generated_confidence_capture_ms")
+            if row.get("composed_first_generated_confidence_capture_ms") is not None
+            else 0.0
+        )
+        for row in rows
+    )
+    baseline_total_raw_ms = sum(
+        _required_positive_float(row, "composed_end_to_end_ms") for row in rows
+    )
+    baseline_total_ms = baseline_total_raw_ms - baseline_confidence_capture_ms
+    if baseline_total_ms <= 0.0:
+        raise ValueError("external baseline has nonpositive confidence-adjusted total time")
     dense_accuracy = _accuracy(rows, "dense_correct")
     baseline_accuracy = _accuracy(rows, "composed_correct")
     return {
@@ -332,17 +402,96 @@ def _baseline_summary(rows: list[dict[str, Any]], *, label: str) -> dict[str, An
         ),
         "timing_policy": (
             "external no-retry baseline uses paired dense/composed end_to_end_ms "
-            "directly; confidence fields are not required"
+            "and subtracts dense/composed confidence-capture time when present "
+            "because a no-retry baseline would not compute a repair gate"
         ),
         "dense_accuracy": dense_accuracy,
         "baseline_accuracy": baseline_accuracy,
         "accuracy_delta_vs_dense": baseline_accuracy - dense_accuracy,
-        "speedup_dense_over_baseline": dense_total_ms / baseline_total_ms
-        if baseline_total_ms > 0.0
-        else 0.0,
+        "speedup_dense_over_baseline": dense_total_ms / baseline_total_ms,
         "baseline_total_ms": baseline_total_ms,
+        "baseline_total_raw_ms": baseline_total_raw_ms,
+        "baseline_confidence_capture_ms_subtracted": baseline_confidence_capture_ms,
+        "dense_total_raw_ms": dense_total_raw_ms,
+        "dense_confidence_capture_ms_subtracted": dense_confidence_capture_ms,
         "dense_total_ms": dense_total_ms,
     }
+
+
+def _paired_item_keys(rows: list[dict[str, Any]]) -> set[str]:
+    keys: set[str] = set()
+    for row in rows:
+        key = row.get("paired_row_key", row.get("item_id"))
+        if not isinstance(key, str) or not key:
+            raise ValueError(
+                f"{row.get('_source_path')}:{row.get('_source_lineno')} "
+                "missing string paired_row_key/item_id"
+            )
+        keys.add(key)
+    return keys
+
+
+def _reference_signature(row: dict[str, Any]) -> tuple[Any, ...]:
+    values: list[Any] = []
+    for field in REFERENCE_FIELDS:
+        if field not in row:
+            raise ValueError(
+                f"{row.get('_source_path')}:{row.get('_source_lineno')} "
+                f"{row.get('item_id')} missing reference field {field}"
+            )
+        values.append(row[field])
+    return tuple(values)
+
+
+def _reference_signatures_by_key(
+    rows: list[dict[str, Any]], *, allow_duplicates: bool
+) -> dict[str, tuple[Any, ...]]:
+    signatures: dict[str, tuple[Any, ...]] = {}
+    for row in rows:
+        key = row.get("paired_row_key", row.get("item_id"))
+        if not isinstance(key, str) or not key:
+            raise ValueError(
+                f"{row.get('_source_path')}:{row.get('_source_lineno')} "
+                "missing string paired_row_key/item_id"
+            )
+        signature = _reference_signature(row)
+        previous = signatures.get(key)
+        if previous is not None:
+            if not allow_duplicates:
+                raise ValueError(f"baseline-paired-items has duplicate item key {key!r}")
+            if previous != signature:
+                raise ValueError(
+                    f"active paired rows disagree on reference fields for item key {key!r}"
+                )
+        signatures[key] = signature
+    return signatures
+
+
+def _validate_baseline_matches_rows(
+    rows: list[dict[str, Any]], baseline_rows: list[dict[str, Any]] | None
+) -> None:
+    if baseline_rows is None:
+        return
+    active_signatures = _reference_signatures_by_key(rows, allow_duplicates=True)
+    baseline_signatures = _reference_signatures_by_key(baseline_rows, allow_duplicates=False)
+    active_keys = set(active_signatures)
+    baseline_keys = set(baseline_signatures)
+    missing_from_baseline = sorted(active_keys - baseline_keys)
+    extra_in_baseline = sorted(baseline_keys - active_keys)
+    if missing_from_baseline or extra_in_baseline:
+        raise ValueError(
+            "baseline-paired-items item set does not match active paired rows: "
+            f"missing_from_baseline={missing_from_baseline[:5]!r}, "
+            f"extra_in_baseline={extra_in_baseline[:5]!r}"
+        )
+    reference_mismatches = [
+        key for key in sorted(active_keys) if active_signatures[key] != baseline_signatures[key]
+    ]
+    if reference_mismatches:
+        raise ValueError(
+            "baseline-paired-items reference fields do not match active paired rows: "
+            f"mismatched_item_keys={reference_mismatches[:5]!r}"
+        )
 
 
 def _attach_baseline_comparison(
@@ -373,6 +522,7 @@ def analyze(
     baseline_rows: list[dict[str, Any]] | None = None,
     baseline_accuracy_margin: float = 0.02,
 ) -> dict[str, Any]:
+    _validate_baseline_matches_rows(rows, baseline_rows)
     margins = [_required_float(row, margin_field) for row in rows]
     harm_labels = [1.0 if row.get("correctness_transition") == "harmed" else 0.0 for row in rows]
     harmed = [
@@ -441,6 +591,7 @@ def analyze(
             or row["active_speedup_vs_baseline"] + QUALITY_EPSILON >= 1.0
         )
     ]
+    per_cell_type_auc = _per_cell_type_auc(rows, margin_field)
     return {
         "schema_version": SCHEMA_VERSION,
         "margin_field": margin_field,
@@ -464,7 +615,8 @@ def analyze(
         "pearson_margin_vs_harmed": _pearson(margins, harm_labels),
         "risk_auc_harmed_lower_margin": _risk_auc_harmed_lower(harmed, preserved),
         "risk_auc_harmed_lower_margin_ci95": auc_ci,
-        "per_cell_type_auc": _per_cell_type_auc(rows, margin_field),
+        "per_cell_type_auc": per_cell_type_auc,
+        "pooled_status": _pooled_status(rows, per_cell_type_auc=per_cell_type_auc),
         "min_auc_lower_ci": min_auc_lower_ci,
         "auc_gate_passed": auc_gate_passed,
         "quality_delta_floor": quality_delta_floor,

@@ -1,0 +1,82 @@
+{
+  "cell_type": "random_valid_cvision_only",
+  "composed_jsonl": "research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted_smoke/query_q1_mvbench_random_seed11_no_admission_composed.jsonl",
+  "decisions": [
+    {
+      "decision": "continue",
+      "reason": "direct_pair_gate_passed"
+    }
+  ],
+  "dense_jsonl": "research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted_smoke/query_q1b_dense_mvbench_dense.jsonl",
+  "dense_source": "composed-jsonl-same-run",
+  "expected_items": 1,
+  "schema_version": "gemma_full_composition_analysis_v2",
+  "source_pairs": [
+    {
+      "composed_jsonl": "research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted_smoke/query_q1_mvbench_random_seed11_no_admission_composed.jsonl",
+      "dense_jsonl": "research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted_smoke/query_q1b_dense_mvbench_dense.jsonl",
+      "dense_source": "composed-jsonl-same-run",
+      "n_items": 1
+    }
+  ],
+  "summary": {
+    "accuracy_delta_ci95": [
+      0.0,
+      0.0
+    ],
+    "accuracy_delta_composed_minus_dense": 0.0,
+    "bucket_failures": [],
+    "bucket_underpowered": [],
+    "by_group": {
+      "action_localization": {
+        "accuracy_delta_composed_minus_dense": 0.0,
+        "choice_agreement": 1.0,
+        "composed_accuracy": 1.0,
+        "dense_accuracy": 1.0,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.4067739962132653,
+        "failure_taxonomy": {
+          "preserved_correct": 1
+        },
+        "gate_evaluated": true,
+        "n": 1,
+        "parse_taxonomy": {
+          "parse_same": 1
+        },
+        "quality_gate_pass": true
+      }
+    },
+    "cell_type": "random_valid_cvision_only",
+    "choice_agreement": 1.0,
+    "choice_changed_count": 0,
+    "composed_accuracy": 1.0,
+    "composed_total_e2e_ms": 7592.885082999999,
+    "dense_accuracy": 1.0,
+    "dense_total_e2e_ms": 10681.473290999998,
+    "e2e_speedup_ci95": [
+      1.4067739962132653,
+      1.4067739962132653
+    ],
+    "e2e_speedup_dense_over_composed": 1.4067739962132653,
+    "failure_taxonomy": {
+      "preserved_correct": 1
+    },
+    "mean_composed_end_to_end_ms": 7592.885082999999,
+    "mean_composed_prefill_ms": 4221.82175,
+    "mean_composed_vision_ms": 2984.278,
+    "mean_dense_end_to_end_ms": 10681.473290999998,
+    "mean_dense_prefill_ms": 7307.241,
+    "mean_dense_vision_ms": 2984.278,
+    "n_items": 1,
+    "parse_failure_delta_composed_minus_dense": 0,
+    "parse_taxonomy": {
+      "parse_same": 1
+    },
+    "pass_bucket_quality_and_e2e": true,
+    "pass_complete_pairing": true,
+    "pass_dense_equivalence": null,
+    "pass_e2e_positive": true,
+    "pass_fidelity": true,
+    "pass_parse_failure_delta": true
+  }
+}

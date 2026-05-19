@@ -3,14 +3,16 @@ set -euo pipefail
 
 # Run only the active-repair confidence probe cells:
 #   1. shared dense/no-admission baseline;
-#   2. random_valid(seed=11) + admission-on cheap pass;
-#   3. fixed_uniform + admission-on cheap pass;
-#   4. paired analyzers for both cheap-pass arms;
-#   5. confidence-frontier analyzers for both paired artifacts.
+#   2. random_valid(seed=11) + admission-off same-run baseline;
+#   3. random_valid(seed=11) + admission-on cheap pass;
+#   4. fixed_uniform + admission-on cheap pass;
+#   5. paired analyzers for all three non-dense arms;
+#   6. confidence-frontier analyzers for both admission-on arms and their pool.
 #
 # This intentionally avoids the broad Q0b/Q1/Q1b dependency chain. Use it when
 # those prerequisites are already understood and the next question is narrowly:
-# does first-pass confidence identify rows that should retry with dense?
+# does first-pass confidence identify rows that should retry with dense, while
+# beating a same-run random_valid(seed=11) admission-off baseline?
 
 cd "$(dirname "$0")/.."
 
@@ -24,7 +26,7 @@ RSS_GUARD_MB="${RSS_GUARD_MB:-9000}"
 N_ITEMS="${N_ITEMS:-0}"
 MARGIN_FIELD="${MARGIN_FIELD:-composed_first_generated_candidate_top2_margin}"
 QUALITY_DELTA_FLOOR="${QUALITY_DELTA_FLOOR:--0.02}"
-MIN_SPEEDUP="${MIN_SPEEDUP:-1.254}"
+MIN_SPEEDUP="${MIN_SPEEDUP:-1.0}"
 MAX_RETRY_RATE="${MAX_RETRY_RATE:-0.50}"
 MIN_HARMED_RETRIED="${MIN_HARMED_RETRIED:-2}"
 MIN_AUC_LOWER_CI="${MIN_AUC_LOWER_CI:-0.65}"
@@ -107,6 +109,10 @@ RANDOM_SUMMARY="$ARTIFACT_DIR/query_q1b_mvbench_random_seed11_admission_on_compo
 RANDOM_ANALYSIS="$ARTIFACT_DIR/query_q1b_mvbench_random_seed11_admission_on_analysis.json"
 RANDOM_PAIRED="$ARTIFACT_DIR/query_q1b_mvbench_random_seed11_admission_on_paired.jsonl"
 RANDOM_REPAIR="$ARTIFACT_DIR/query_q1b_mvbench_random_seed11_admission_on_active_repair_confidence.json"
+BASELINE_JSONL="$ARTIFACT_DIR/query_q1_mvbench_random_seed11_no_admission_composed.jsonl"
+BASELINE_SUMMARY="$ARTIFACT_DIR/query_q1_mvbench_random_seed11_no_admission_composed_summary.json"
+BASELINE_ANALYSIS="$ARTIFACT_DIR/query_q1_mvbench_random_seed11_no_admission_analysis.json"
+BASELINE_PAIRED="$ARTIFACT_DIR/query_q1_mvbench_random_seed11_no_admission_paired.jsonl"
 FIXED_JSONL="$ARTIFACT_DIR/query_q1b_mvbench_fixed_uniform_admission_on_composed.jsonl"
 FIXED_SUMMARY="$ARTIFACT_DIR/query_q1b_mvbench_fixed_uniform_admission_on_composed_summary.json"
 FIXED_ANALYSIS="$ARTIFACT_DIR/query_q1b_mvbench_fixed_uniform_admission_on_analysis.json"
@@ -151,9 +157,10 @@ repair_common_args=(
   --min-auc-lower-ci "$MIN_AUC_LOWER_CI"
   --n-bootstrap "$ACTIVE_REPAIR_N_BOOTSTRAP"
 )
-if [[ -n "$BASELINE_REPAIR_PAIRED" ]]; then
-  repair_common_args+=(--baseline-paired-items "$BASELINE_REPAIR_PAIRED")
+if [[ -z "$BASELINE_REPAIR_PAIRED" ]]; then
+  BASELINE_REPAIR_PAIRED="$BASELINE_PAIRED"
 fi
+repair_common_args+=(--baseline-paired-items "$BASELINE_REPAIR_PAIRED")
 
 run_or_print "${base_args[@]}" \
   --keep-rate 1.0 \
@@ -161,6 +168,25 @@ run_or_print "${base_args[@]}" \
   --vision-tower-keep-rate 1.0 \
   --output "$DENSE_JSONL" \
   --summary "$DENSE_SUMMARY"
+
+run_or_print "${base_args[@]}" \
+  --keep-rate 1.0 \
+  --prune-placeholders none \
+  --vision-tower-keep-rate 0.5 \
+  --vision-tower-score-mode random_valid \
+  --vision-random-seed 11 \
+  --output "$BASELINE_JSONL" \
+  --summary "$BASELINE_SUMMARY"
+
+run_or_print "$PY" scripts/analyze_gemma_full_composition.py \
+  --dense-jsonl "$DENSE_JSONL" \
+  --composed-jsonl "$BASELINE_JSONL" \
+  --dense-source composed-jsonl-same-run \
+  --output "$BASELINE_ANALYSIS" \
+  --paired-items "$BASELINE_PAIRED" \
+  --expected-items "$EXPECTED_ITEMS" \
+  --bucket-min-n "$BUCKET_MIN_N" \
+  --n-bootstrap "$N_BOOTSTRAP"
 
 run_or_print "${base_args[@]}" \
   --keep-rate 0.5 \

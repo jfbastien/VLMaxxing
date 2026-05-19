@@ -413,7 +413,10 @@ scripts/run_rlt_query_routing_active_repair_targeted.sh
 ```
 
 This script intentionally bypasses the broad queue dependency chain and runs
-only eight commands: shared dense/no-admission baseline, random-valid
+ten commands: shared dense/no-admission baseline, exact-Q1 random-valid
+admission-off same-run baseline (`keep_rate=1.0`, `prune_placeholders=none`,
+`vision_tower_keep_rate=0.5`, `vision_tower_score_mode=random_valid`,
+`vision_random_seed=11`), random-valid baseline paired analyzer, random-valid
 admission-on composed arm, random-valid paired analyzer, fixed-uniform
 admission-on composed arm, fixed-uniform paired analyzer, two per-arm
 confidence-frontier analyzers, and one pooled confidence-frontier analyzer. It writes to
@@ -463,11 +466,16 @@ H6a. The cheap pass knows when it was harmed.
 H6b. A one-step retry frontier is viable under full cost accounting.
 
 - Accept exploratory frontier: at least one threshold achieves
-  `accuracy_delta_vs_dense >= -0.02`, `speedup_dense_over_active >= 1.254`,
-  `retry_rate <= 0.50`, and `harmed_retried >= 2`. If
-  `BASELINE_REPAIR_PAIRED` is provided, the threshold must also match that
-  no-retry baseline's accuracy delta within `0.02` and beat its
-  dense-normalized speedup.
+  `accuracy_delta_vs_dense >= -0.02`, `speedup_dense_over_active >= 1.0`,
+  `retry_rate <= 0.50`, and `harmed_retried >= 2`. The targeted launcher now
+  provides `BASELINE_REPAIR_PAIRED` by default from a same-run
+  `random_valid(seed=11)` admission-off baseline, so viable thresholds must
+  also match that no-retry baseline's accuracy delta within `0.02` and beat
+  its dense-normalized speedup. If the baseline rows include confidence-capture
+  fields, the analyzer subtracts them from both the dense and composed
+  denominators because an admission-off no-retry baseline would not compute a
+  repair gate. The broad wrapper, which does not generate a same-run baseline,
+  keeps the conservative `1.254x` standalone floor.
 - Falsify: no threshold satisfies both fidelity and speed after charging the
   composed pass plus dense retry.
 - Important anti-claim: a positive H6b result is a **retrospective paired-row
@@ -550,14 +558,16 @@ from static physical-operator selection to adaptive execution.
 scripts/run_rlt_query_routing_active_repair_targeted.sh` completed after a
 logprob conversion bug was fixed, then completed again after the same-run
 dense-source and active-repair v2 analyzer fixes. Dense,
-`random_valid(seed=11)+admission_on`, and `fixed_uniform+admission_on` each
-produced one paired row for `mvbench:action_localization:0`; the two per-arm
-confidence-frontier analyzers and pooled analyzer completed. The smoke rows
+`random_valid(seed=11)+admission_off`, `random_valid(seed=11)+admission_on`,
+and `fixed_uniform+admission_on` each produced one paired row for
+`mvbench:action_localization:0`; the baseline analyzer, two per-arm
+confidence-frontier analyzers, and pooled analyzer completed. The smoke rows
 contain finite candidate-letter margins (`10.0625` composed for both cheap
 arms) and finite confidence-capture timings. The pooled smoke has
 `schema_version=gemma_active_repair_confidence_v2`, `harmed_count=0`,
-`auc_gate_passed=false`, and named no-retry/retry-all baselines, so it
-validates schema/logging/analyzer plumbing only; it does not test H6a/H6b.
+`auc_gate_passed=false`, named no-retry/retry-all baselines, and
+`pooled_status.analysis_role=supportive_pooled`, so it validates
+schema/logging/analyzer plumbing only; it does not test H6a/H6b.
 
 ### H7 Multi-Shot Consistency Gate, Timing Check Only
 
