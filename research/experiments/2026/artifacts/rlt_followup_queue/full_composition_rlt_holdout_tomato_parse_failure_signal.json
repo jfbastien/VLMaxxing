@@ -1,0 +1,401 @@
+{
+  "analysis_role": "single_artifact_abort_signal_transfer_screen",
+  "items": [
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "direction",
+      "item_id": "tomato:direction:0224-05",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "direction",
+      "item_id": "tomato:direction:0225-04",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "direction",
+      "item_id": "tomato:direction:0225-07",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "direction",
+      "item_id": "tomato:direction:0226-03",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "harmed",
+      "dense_correct": true,
+      "group": "direction",
+      "item_id": "tomato:direction:0226-05",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "direction",
+      "item_id": "tomato:direction:0227-04",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "direction",
+      "item_id": "tomato:direction:0228-04",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "direction",
+      "item_id": "tomato:direction:0271-00",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "direction",
+      "item_id": "tomato:direction:0560-01",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "direction",
+      "item_id": "tomato:direction:0573-00",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "rotation",
+      "item_id": "tomato:rotation:0230-14",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "harmed",
+      "dense_correct": true,
+      "group": "rotation",
+      "item_id": "tomato:rotation:0298-00",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "rotation",
+      "item_id": "tomato:rotation:0362-01",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "rotation",
+      "item_id": "tomato:rotation:0622-00",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "rotation",
+      "item_id": "tomato:rotation:0622-01",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "harmed",
+      "dense_correct": true,
+      "group": "rotation",
+      "item_id": "tomato:rotation:0623-00",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": true,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "recovered",
+      "dense_correct": false,
+      "group": "rotation",
+      "item_id": "tomato:rotation:0653-00",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "harmed",
+      "dense_correct": true,
+      "group": "rotation",
+      "item_id": "tomato:rotation:0654-00",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "rotation",
+      "item_id": "tomato:rotation:0700-00",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "harmed",
+      "dense_correct": true,
+      "group": "rotation",
+      "item_id": "tomato:rotation:0700-01",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "shape_trend",
+      "item_id": "tomato:shape_trend:0212-02",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": true,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "recovered",
+      "dense_correct": false,
+      "group": "shape_trend",
+      "item_id": "tomato:shape_trend:0212-05",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "shape_trend",
+      "item_id": "tomato:shape_trend:0213-05",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "harmed",
+      "dense_correct": true,
+      "group": "shape_trend",
+      "item_id": "tomato:shape_trend:0214-05",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "harmed",
+      "dense_correct": true,
+      "group": "shape_trend",
+      "item_id": "tomato:shape_trend:0405-02",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": true,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "recovered",
+      "dense_correct": false,
+      "group": "shape_trend",
+      "item_id": "tomato:shape_trend:0406-02",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "shape_trend",
+      "item_id": "tomato:shape_trend:0408-02",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "shape_trend",
+      "item_id": "tomato:shape_trend:0618-02",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "shape_trend",
+      "item_id": "tomato:shape_trend:0620-00",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "tomato",
+      "composed_correct": true,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "shape_trend",
+      "item_id": "tomato:shape_trend:0714-01",
+      "signal_fired": false
+    }
+  ],
+  "margin_threshold": 0.5,
+  "policy_label": "tomato_holdout_parse_failure_signal",
+  "schema": "gemma_abort_signal_transfer_v1",
+  "signal_rule": "parse_failure",
+  "source_path": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_holdout_tomato_paired.jsonl",
+  "summary": {
+    "harm_coverage_by_group": {
+      "direction": {
+        "signal_clear": 1
+      },
+      "rotation": {
+        "signal_clear": 4
+      },
+      "shape_trend": {
+        "signal_clear": 2
+      }
+    },
+    "harmed_count": 7,
+    "harmed_recall": 0.0,
+    "harmed_signaled_count": 0,
+    "n": 30,
+    "signal_count": 0,
+    "signal_precision_for_harm": null,
+    "signal_rate": 0.0,
+    "signal_summary_by_group": {
+      "direction": {
+        "signal_clear": 10
+      },
+      "rotation": {
+        "signal_clear": 10
+      },
+      "shape_trend": {
+        "signal_clear": 10
+      }
+    }
+  }
+}

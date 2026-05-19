@@ -1,0 +1,402 @@
+{
+  "analysis_role": "single_artifact_abort_signal_transfer_screen",
+  "items": [
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "harmed",
+      "dense_correct": true,
+      "group": "long",
+      "item_id": "videomme:long:650-3",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "long",
+      "item_id": "videomme:long:709-1",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": true,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "long",
+      "item_id": "videomme:long:751-2",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": true,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "long",
+      "item_id": "videomme:long:782-1",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": true,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "long",
+      "item_id": "videomme:long:783-2",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "long",
+      "item_id": "videomme:long:840-1",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "long",
+      "item_id": "videomme:long:846-1",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": true,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "long",
+      "item_id": "videomme:long:847-2",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": true,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "long",
+      "item_id": "videomme:long:851-3",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "harmed",
+      "dense_correct": true,
+      "group": "long",
+      "item_id": "videomme:long:885-1",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": true,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "medium",
+      "item_id": "videomme:medium:342-2",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "medium",
+      "item_id": "videomme:medium:350-2",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "medium",
+      "item_id": "videomme:medium:377-2",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": true,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "medium",
+      "item_id": "videomme:medium:415-3",
+      "signal_fired": true
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "medium",
+      "item_id": "videomme:medium:441-1",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "harmed",
+      "dense_correct": true,
+      "group": "medium",
+      "item_id": "videomme:medium:449-2",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": true,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "medium",
+      "item_id": "videomme:medium:513-1",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": true,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "medium",
+      "item_id": "videomme:medium:516-2",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "medium",
+      "item_id": "videomme:medium:562-1",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "medium",
+      "item_id": "videomme:medium:569-1",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:062-3",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:066-3",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:070-3",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": true,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:074-3",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": true,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:126-1",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": true,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "preserved_correct",
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:126-2",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "harmed",
+      "dense_correct": true,
+      "group": "short",
+      "item_id": "videomme:short:136-3",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:267-2",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": false,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "unchanged_wrong",
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:280-3",
+      "signal_fired": false
+    },
+    {
+      "benchmark": "videomme",
+      "composed_correct": true,
+      "composed_first_generated_token_text": null,
+      "composed_first_generated_top2_margin": null,
+      "composed_parse_failure": false,
+      "correctness_transition": "recovered",
+      "dense_correct": false,
+      "group": "short",
+      "item_id": "videomme:short:293-1",
+      "signal_fired": false
+    }
+  ],
+  "margin_threshold": 0.5,
+  "policy_label": "videomme_holdout_parse_failure_signal",
+  "schema": "gemma_abort_signal_transfer_v1",
+  "signal_rule": "parse_failure",
+  "source_path": "research/experiments/2026/artifacts/rlt_followup_queue/full_composition_rlt_holdout_videomme_paired.jsonl",
+  "summary": {
+    "harm_coverage_by_group": {
+      "long": {
+        "signal_clear": 2
+      },
+      "medium": {
+        "signal_clear": 1
+      },
+      "short": {
+        "signal_clear": 1
+      }
+    },
+    "harmed_count": 4,
+    "harmed_recall": 0.0,
+    "harmed_signaled_count": 0,
+    "n": 30,
+    "signal_count": 1,
+    "signal_precision_for_harm": 0.0,
+    "signal_rate": 0.03333333333333333,
+    "signal_summary_by_group": {
+      "long": {
+        "signal_clear": 10
+      },
+      "medium": {
+        "signal_clear": 9,
+        "signal_fired": 1
+      },
+      "short": {
+        "signal_clear": 10
+      }
+    }
+  }
+}

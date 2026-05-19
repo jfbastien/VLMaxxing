@@ -831,6 +831,101 @@ Interpretation:
   on MVBench hosted-dev, TOMATO N=30, and VideoMME short N=20, with this
   cost-model auditor as the preregistered analysis.
 
+### H7d CPU Speculative-Admission Audit
+
+Claude proposed a new candidate mechanism after the H7c audit: run the
+admission-on path until the first generated token, abort on a format signal
+such as `composed_parse_failure`, then rerun the no-admission LM prefill while
+reusing encoder features. This is a plausible physical-operator policy, but it
+must be treated as an offline simulation until the live cache path exists.
+
+Implementation updates:
+
+- `scripts/analyze_gemma_speculative_admission.py` simulates the policy from
+  paired safe/no-admission and fast/admission-on rows. It reports both
+  `with_vision_cache` and `without_vision_cache` cost assumptions. Aborted rows
+  pay according to when the signal is observable: first-token signals
+  (`non_letter`, first-token margin) pay fast vision plus fast admission
+  prefill before rollback; final-output parse failure pays the full fast row
+  before rollback. Rollback then pays the safe no-admission prefill and
+  decode/parse tail, plus safe vision only in the no-cache assumption. This
+  avoids the earlier double-pass active-repair accounting bug and the
+  parse-failure-as-first-token oracle-cost bug.
+- `scripts/analyze_gemma_abort_signal_transfer.py` audits whether an intrinsic
+  abort signal covers harmed rows in a single paired artifact. This is only a
+  transfer screen; it does not simulate a safe fallback.
+- `scripts/fit_gemma_cost_model.py` fits observed E2E speedup against
+  prefill-only and prefill+vision ceilings across the existing cost-model
+  artifacts.
+
+Speculative-admission simulation on H7 active-repair rows:
+
+| fast arm / abort rule | cache E2E | no-cache E2E | Delta acc | abort rate | harmed recall |
+|---|---:|---:|---:|---:|---:|
+| random_seed11 / parse_failure | `1.139x` | `1.125x` | `-0.0333` | `0.033` | `0.25` |
+| random_seed11 / non_letter | `0.900x` | `0.794x` | `+0.0000` | `0.467` | `0.75` |
+| random_seed11 / parse_failure_or_margin_lt_0.5 | `0.936x` | `0.841x` | `-0.0667` | `0.367` | `0.50` |
+| fixed_uniform / parse_failure | `1.026x` | `0.983x` | `-0.0667` exploratory | `0.133` | `0.50` |
+| fixed_uniform / non_letter | `0.903x` | `0.804x` | `-0.0333` exploratory | `0.433` | `0.833` |
+| fixed_uniform / parse_failure_or_margin_lt_0.5 | `0.896x` | `0.805x` | `-0.0333` exploratory | `0.400` | `0.833` |
+
+The fixed-uniform rows use the random no-admission artifact as the safe arm and
+were run with `--allow-dense-label-drift`; their pairing audit reports seven
+dense-label mismatches. Treat fixed-arm Delta acc as exploratory only. The
+random arm has a stable dense reference and is the primary accuracy readout.
+
+Interpretation: parse-failure gating is cheaper than double-pass active
+repair, but it is not yet the "1.20x near-lossless" result. On the random arm
+it improves accuracy loss from `-0.0667` to `-0.0333`, but catches only one of
+four harmed rows. The fixed arm is useful for signal/timing texture but not for
+a clean accuracy claim because its dense reference drifts relative to the safe
+arm. Non-letter and margin gates catch more harmed rows, but their abort rates
+are high enough to erase E2E speedup.
+
+Parse-failure transfer screen:
+
+| artifact | signal rate | harmed rows | harmed recall |
+|---|---:|---:|---:|
+| MVBench holdout full composition | `0.033` | 3 | `0.000` |
+| MVBench dev moving_attribute kr100 composition | `0.067` | 4 | `0.250` |
+| MVBench holdout moving_attribute kr100 composition | `0.033` | 2 | `0.000` |
+| TOMATO holdout full composition | `0.000` | 7 | `0.000` |
+| VideoMME holdout full composition | `0.033` | 4 | `0.000` |
+
+This falsifies the strongest version of the parse-failure story on existing
+artifacts. Parse failure is a low-cost guardrail for visible format collapse,
+not a robust harm detector. A live speculative-admission implementation is
+still worth a small smoke only if the goal is systems validation of the
+vision-cache rollback path, not because the existing data predicts a clean
+quality/speed win.
+
+Cost-model fit:
+
+- Across six existing cost-model artifacts, prefill-only ceiling has
+  `R^2=0.489` against observed E2E and mean absolute relative error `0.188`.
+- Prefill+vision ceiling has `R^2=0.971` and mean absolute relative error
+  `0.033`.
+
+Interpretation: the timing story is stronger when it is stated as a stage-cost
+model, not as "admission alone explains everything." Admission-only MVBench
+dev is essentially at its prefill-only ceiling. Full-composition rows require
+charging both the prefill and vision stages; otherwise the model underpredicts
+MVBench composition speedups and overstates what admission-only scheduling can
+deliver.
+
+Revised next-experiment gate:
+
+- Do **not** launch a full speculative-admission validation as the next
+  headline experiment. The parse-failure signal does not transfer on existing
+  artifacts.
+- If implemented, run only an `N_ITEMS=1` or similarly bounded MLX smoke first
+  to verify that encoder features can actually be reused across admission-on
+  and no-admission prefill without changing outputs or corrupting timing.
+- The next substantive live run remains cross-benchmark, same-run,
+  admission-only cost accounting: MVBench hosted-dev, TOMATO N=30, and
+  VideoMME short N=20. Speculative admission can be added as a secondary row
+  only after the cache-reuse smoke passes.
+
 ### H8 Multi-Shot Consistency Gate, Timing Check Only
 
 Multi-shot consistency is a plausible future variant: run two cheap admission

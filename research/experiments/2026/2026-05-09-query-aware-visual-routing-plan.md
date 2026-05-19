@@ -1703,6 +1703,46 @@ coverage-first C-VISION and beating fixed/random coverage controls.
 If that lands on held-out data against scalar-query and random/fixed controls,
 the research direction is strong enough for its own paper.
 
+## 2026-05-19 Reframe After H7c/H7d
+
+The query-routing thread should now be framed as **cost-accounted admission
+scheduling**, not generic query-aware visual-token scoring.
+
+What is established locally:
+
+- Static typed vision-mask operators remain negative controls. Do not spend
+  more GPU time on new RLT-topk/static-floor/endpoint-anchor variants unless a
+  new mechanism changes the admission side.
+- Text-rule routing is a fragile deployment knob. The MVBench-dev attribute
+  regex works on one slice but has `0` harmed-row recall on the available
+  MVBench holdout, TOMATO, and VideoMME transfer screens.
+- Parse-failure speculative admission is also a guardrail, not a landed
+  scheduler. Offline simulation catches visible format collapse cheaply, but
+  harmed-row recall is too low on existing artifacts to justify making it the
+  next headline GPU run.
+- The strongest reusable result is the stage-cost model. Admission-only
+  MVBench dev is almost exactly at its prefill-only E2E ceiling; full
+  composition rows need a prefill+vision ceiling. Across the current six-row
+  table, prefill+vision ceiling tracks observed E2E far better than
+  prefill-only ceiling (`R^2=0.971` versus `0.489`).
+
+Next live experiment, if we continue:
+
+```text
+Cross-benchmark admission-only cost-accounting run:
+  - MVBench hosted-dev
+  - TOMATO N=30
+  - VideoMME short N=20
+  - same-run dense / admission-off / admission-on rows
+  - preregistered stage-cost analysis and separate fidelity gates
+```
+
+Speculative admission can be included only after a bounded MLX smoke proves the
+live implementation can reuse encoder features for rollback. The smoke is a
+systems check, not a quality claim. Success should require: identical dense
+fallback output to no-admission on the smoke item, no second vision-stage charge
+in the timing ledger, and no silent fallback if the cache contract is violated.
+
 ## Synergies With VLMaxxing+RLT Closeout (2026-05-14)
 
 Commit `86033d5` (`feat(query-routing): add Q0b and Q1 experiment queue`)
