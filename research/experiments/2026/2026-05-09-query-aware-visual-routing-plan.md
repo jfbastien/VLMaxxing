@@ -1757,6 +1757,33 @@ systems check, not a quality claim. Success should require: identical dense
 fallback output to no-admission on the smoke item, no second vision-stage charge
 in the timing ledger, and no silent fallback if the cache contract is violated.
 
+## 2026-05-20 Cost-Accounting Closeout Boundary
+
+The cross-benchmark admission-only run landed in
+`research/experiments/2026/artifacts/rlt_query_routing_cost_accounting/cost_model_fit_n11.json`.
+It changes what the future query-aware branch should inherit:
+
+- Inherit the **stage-cost ledger**: dense stage shares, prefill reduction,
+  vision reduction, scorer cost, text-generation tail fields, and parsed-answer
+  fidelity gates.
+- Inherit the **control discipline**: every query-aware arm needs same-run
+  dense, no-admission, admission-only, fixed coverage, and random coverage
+  controls before a routing claim is interpretable.
+- Do not inherit paper-1 headline numbers. The `1.188x` MVBench hosted
+  admission row is an aggregate cost-accounting row with bucket churn; it is
+  not evidence that a query-aware scheduler has landed.
+- Do not spend this branch on more static typed vision-mask variants. Q1/Q1b
+  already made those negative controls.
+- Treat the current text regex and parse-failure rollback as scoping results:
+  they are useful examples of fragile deployment knobs, not mechanisms to tune
+  on this branch.
+
+When the query-aware branch is forked, its first result should be a held-out
+admission-scheduling policy that beats fixed/random/no-admission controls under
+the H5a cost model. If it cannot do that, keep query-aware routing as future
+work and leave the VLMaxxing/RLT paper centered on C-CEILING, C-VISION, and
+C-PERSIST.
+
 ## Synergies With VLMaxxing+RLT Closeout (2026-05-14)
 
 Commit `86033d5` (`feat(query-routing): add Q0b and Q1 experiment queue`)

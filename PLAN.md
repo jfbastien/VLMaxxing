@@ -1,6 +1,6 @@
 # Current Plan
 
-Last updated: 2026-05-01.
+Last updated: 2026-05-20.
 
 This file is the active roadmap only. Historical phase detail lives in dated
 experiment notes and [research/experiments/registry.md](research/experiments/registry.md).
@@ -16,6 +16,10 @@ notes.
   setup-inclusive tables now expose the serving economics by session length.
 - **C-VISION** has bounded measured sparse-vision evidence. Do not describe it
   as a broad sparse backend or sparse LM prefill result.
+- **RLT/Gemma cost accounting** now reinforces C-CEILING: the prefill+vision
+  stage model fits 11 Gemma cells at `R^2=0.972` and `2.36%` mean absolute
+  relative error. Treat admission-only rows as cost-accounting controls, not
+  as a query-aware implementation result.
 - **Candidate C-STREAM** has a checked mixed/boundary bundle. It is
   paper-facing as a candidate scale-out regime, not as a fourth headline:
   default cache reuse is unsafe, topology-aware correctness can be restored
@@ -31,8 +35,12 @@ notes.
      registry/status docs from the artifacts
    - scale-out bundle: import only checked artifact bundles, not sibling
      markdown, personal handoff prompts, or screenshots
+   - close the RLT/VLMaxxing documentation around the 2026-05-20
+     cost-accounting result, then keep M5 as scale confirmation only
    - natural-dialogue C-PERSIST and one adjacent-method comparison are the
      highest-value main-track science gaps after the current integration pass
+   - defer query-aware implementation until a separate branch can inherit the
+     stage-cost ledger and run fresh held-out fixed/random/admission controls
 
 2. **Freeze artifact provenance.**
    - every paper table/figure cell needs a source artifact path or a visible

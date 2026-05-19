@@ -15,6 +15,17 @@ The query-aware visual-routing substrate landed in commit `86033d5`
 separate paper. Do not pass `--run-query-routing-q0b` or
 `--run-query-routing-q1` during VLMaxxing + RLT closeout.
 
+2026-05-20 update: the later cross-benchmark admission-only cost-accounting
+run is now recorded in
+`research/experiments/2026/2026-05-20-vlmaxxing-rlt-cost-accounting-closeout.md`
+with source artifact
+`research/experiments/2026/artifacts/rlt_query_routing_cost_accounting/cost_model_fit_n11.json`.
+It strengthens C-CEILING/stage-cost accounting and helps explain why
+admission-only rows move E2E when prefill owns enough of the bill. It does
+**not** turn admission-only query routing into a VLMaxxing+RLT closeout
+headline. For this branch, admission-only rows are cost-accounting controls;
+full-composition and C-VISION rows remain the RLT/VLMaxxing evidence.
+
 ## Validated Closeout State
 
 ### C-VISION holdout replication is already closed
@@ -170,6 +181,12 @@ Sam has been using: prior M5 artifacts identify it as
 `google/gemma-4-26B-A4B-it` on an M5 Max with 128 GB unified memory. Do not
 hard-code a user-specific path; require `GEMMA_MODEL_PATH` from the operator
 environment and run the n=1 smoke before any n=30 cell.
+
+M5 should stay scoped to C-VISION scorer transfer and C-CEILING scale behavior.
+The wrapper intentionally excludes direct composition, rescue, admission-only,
+query-routing, and moving-attribute bracket cells. If an M5 composition run is
+needed later, add a separate preregistered wrapper with explicit composition
+flags rather than widening this closeout launcher.
 
 Recommended M5 command shape:
 

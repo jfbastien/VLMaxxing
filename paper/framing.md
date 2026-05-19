@@ -26,9 +26,9 @@ It is NOT the place for raw experimental detail. Evidence lives in:
 - [research/falsified-hypotheses.md](../research/falsified-hypotheses.md) —
   what the evidence has ruled out
 
-Last material update: 2026-05-09 (RLT/VLMaxxing holdout + pooled n=60
-replication landed; RLT is a strong C-VISION scorer, while full composition
-remains bucket-conditional rather than a clean headline).
+Last material update: 2026-05-20 (cross-benchmark Gemma cost accounting landed;
+RLT/VLMaxxing should now be framed through stage shares rather than token count
+or query-aware routing).
 
 ## Current Manuscript Position (2026-05-03)
 
@@ -171,6 +171,26 @@ duration-conditional partial reproduction + 1.55D frontier-partial):
    do not multiply the components." The residual bucket failures are valuable
    future-work signals for query-aware/static-detail routing, not a reason to
    tune another global RLT keep-rate on this branch.
+
+   **Cost-accounting closeout update (2026-05-20):** the follow-on Gemma
+   admission-only run validates the same denominator discipline from a
+   different angle. Removing image placeholders before LM prefill gives
+   measured E2E speedups when prefill owns enough of the dense bill, but the
+   paper claim is the accounting, not a new query-aware router. Across `11`
+   Gemma cost-model cells, the prefill+vision stage model reaches `R^2=0.972`
+   and `2.36%` mean absolute relative error over observed `0.984x-1.779x`
+   E2E. The cleanest new row is VideoMME-short random admission (`20/20`
+   parsed-choice agreement, `1.098x` E2E), but it is not raw-output identity
+   (`14/20` raw generations differ). MVBench hosted-dev and TOMATO validate
+   timing while showing answer churn and/or bucket failures. The no-admission
+   random-valid vision controls are raw-output identical on the new MVBench,
+   TOMATO, and VideoMME-short rows, but their E2E gains are only
+   `1.005x-1.025x`; that is the denominator warning, not a universal claim
+   about random pruning. The editor-facing wording should be simple: **we sped
+   up the language-model prefill by feeding it fewer image placeholders, and
+   the end-to-end gain is predictable from how much of the dense request was
+   prefill or vision work.** Query-aware admission scheduling belongs to a later
+   branch.
 
 These three claims align on a common analytical frame: **share ×
 reduction → `1/(1 − share × reduction)` ceiling**, with

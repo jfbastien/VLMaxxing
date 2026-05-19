@@ -1,6 +1,6 @@
 # Experiment Registry (Machine-Readable)
 
-Last updated: 2026-05-02
+Last updated: 2026-05-20
 
 This is the primary source of per-phase experiment state. It is the phase
 ledger, not the paper claim ledger. Use `paper/claim-matrix.md` for
@@ -39,6 +39,40 @@ Entries are ordered by phase_id (chronological within each 1.x range).
 ### Recent phase-2 additions (2026-04-29 to 2026-04-30)
 
 ```yaml
+- phase_id: RLT-cost-accounting-2026-05-20
+  status: completed
+  authoritative_note: research/experiments/2026/2026-05-20-vlmaxxing-rlt-cost-accounting-closeout.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/rlt_query_routing_cost_accounting/cost_model_fit_n11.json
+    - research/experiments/2026/artifacts/rlt_query_routing_cost_accounting/mvbench_hosted_dev/
+    - research/experiments/2026/artifacts/rlt_query_routing_cost_accounting/tomato_motion_dev/
+    - research/experiments/2026/artifacts/rlt_query_routing_cost_accounting/videomme_short/
+  current_best_policy: "stage-cost accounting, not a query-aware routing policy; VideoMME-short random admission is the clean parsed-choice row at 1.098x E2E"
+  supersedes: []
+  paper_relevance: methodology / closeout
+  prereg_outcome: Accepted with caveat
+
+- phase_id: RLT-M5-scale-confirmation
+  status: proposed / dry-run summary only
+  authoritative_note: research/experiments/2026/2026-05-14-vlmaxxing-rlt-closeout-prereg.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/rlt_followup_queue_m5_gemma4_26b/queue_summary.json
+  current_best_policy: "planned Gemma-family 26B C-VISION scorer-cost and C-CEILING scale confirmation; no executed M5 result yet"
+  supersedes: []
+  paper_relevance: scale-confirmation plan
+  prereg_outcome:
+
+- phase_id: query-routing-first-branch
+  status: completed / deferred for future branch
+  authoritative_note: research/experiments/2026/2026-05-14-query-routing-q0b-q1-prereg.md
+  authoritative_artifacts:
+    - research/experiments/2026/artifacts/rlt_query_routing_first_branch/queue_summary.json
+    - research/experiments/2026/artifacts/rlt_query_routing_cost_accounting/cost_model_fit_n11.json
+  current_best_policy: "static typed vision-mask routing rejected; cost-accounted admission scheduling retained as future branch target"
+  supersedes: []
+  paper_relevance: diagnostic negative / future-work seed
+  prereg_outcome: Rejected for current-branch implementation
+
 - phase_id: 1.55L
   status: completed
   authoritative_note: research/experiments/2026/2026-04-30-phase-1_55L-many-turn-cpersist-findings.md

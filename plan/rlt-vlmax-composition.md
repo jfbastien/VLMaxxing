@@ -9,6 +9,9 @@
   composition experiments.
 - [x] Validate scientist peer feedback against the repo and hard-fail Gemma
   sparse-wrapper variable-`K` masks before any adaptive RLT mask can reach it.
+- [x] Close the 2026-05-19/20 cross-benchmark cost-accounting run: validate
+  Claude's claims against artifacts, update the decision log / registry /
+  closeout notes, and make the M5/query-aware boundaries explicit.
 - [ ] Implement a small, audited RLT mask module in `src/codec_through/`
   without installing, importing, executing, or vendoring RLT's training stack
   or third-party dependencies.

@@ -3,8 +3,10 @@ set -euo pipefail
 
 # Launch the Gemma-family M5 scale-confirmation queue. This is not a discovery
 # queue: it tests scorer transfer and C-CEILING scale behavior using the same
-# paper setup Sam has been running. The operator must provide the exact model
-# path on that machine.
+# paper setup Sam has been running. It intentionally excludes direct
+# composition, rescue, query-routing, admission-only, and moving-attribute
+# bracket cells; add a separate preregistered wrapper if those are needed.
+# The operator must provide the exact model path on that machine.
 
 cd "$(dirname "$0")/.."
 

@@ -1,10 +1,10 @@
 # 2026-05-14 query-routing Q0b/Q1 implementation prereg
 
-Status: **Q0b/Q1/Q1b measured; Q1c admission-scheduler follow-up implemented,
-not yet measured; active-repair confidence probe measured and underpowered;
-offline class-conditional/text admission simulations measured; CPU cost-model
-and transfer audits added; hosted-dev breadth sweep and broader codec-motion
-follow-up not yet measured**.
+Status: **Q0b/Q1/Q1b measured; static typed vision-mask routing rejected on
+this branch; active-repair confidence probe measured and underpowered; offline
+class-conditional/text admission simulations measured but not transferable;
+cross-benchmark admission-only cost-accounting run measured; query-aware
+implementation held for a later branch**.
 
 This note records the first executable branch for the query-aware visual
 routing follow-on paper. It intentionally stops at Q0b and Q1. QuoTA-style
@@ -103,7 +103,7 @@ query-routing flags.
 The likely positive outcome is not yet a standalone paper claim. The expected
 best case is: Q0b proves the harness, static-floor or higher-K improves
 MVBench attribute/interaction failures more than fixed/random, and the queue
-earns a narrow "proceed to scalar-query baseline" verdict. The WOW only
+earns a narrow "proceed to scalar-query baseline" verdict. The publishable claim
 becomes paper-grade after Q2b shows typed evidence operators beat scalar
 query-budget allocation under total-cost accounting.
 
@@ -1007,6 +1007,66 @@ Updated next-experiment instrumentation:
 - Primary success remains fidelity plus stage-cost prediction. Secondary
   analysis: preregister whether harmed rows show text-generation/tail inflation
   and whether a harm-rate residual term improves held-out prediction.
+
+### H7f Cross-Benchmark Admission-Only Cost-Accounting Result
+
+Execution landed in commit `8685f7c` with source artifact
+`research/experiments/2026/artifacts/rlt_query_routing_cost_accounting/cost_model_fit_n11.json`.
+This was the planned H7c/H7e validation run:
+
+- MVBench hosted-dev (`n=54`)
+- TOMATO motion-dev (`n=30`)
+- VideoMME-short (`n=20`)
+- same-run dense / no-admission / admission-on arms
+- random-valid and fixed-uniform C-VISION controls
+
+Primary timing result:
+
+- Prefill-only ceiling is not sufficient across the mixed table:
+  `R^2=0.348`, mean absolute relative error `8.85%`, max `48.70%`.
+- Prefill+vision ceiling is strong: `R^2=0.972`, mean absolute relative error
+  `2.36%`, max `7.85%`, across `11` Gemma cells spanning observed E2E
+  `0.984x` to `1.779x`.
+- The six new admission-only rows all land within `2.2%` relative error.
+
+New admission-only rows:
+
+| cell | n | E2E | accuracy delta | choice agreement | interpretation |
+|---|---:|---:|---:|---:|---|
+| MVBench hosted random admission | 54 | `1.188x` | `+0.019` | `0.630` | aggregate pass, bucket churn |
+| MVBench hosted fixed admission | 54 | `1.157x` | `-0.037` | `0.704` | aggregate pass, bucket churn |
+| TOMATO motion-dev random admission | 30 | `1.077x` | `+0.000` | `0.367` | aggregate pass, high answer churn |
+| TOMATO motion-dev fixed admission | 30 | `1.053x` | `+0.067` | not headline | small-n positive point estimate |
+| VideoMME-short random admission | 20 | `1.098x` | `+0.000` | `1.000` | clean parsed-choice row |
+| VideoMME-short fixed admission | 20 | `1.117x` | `+0.100` | `0.700` | small-n positive point estimate |
+
+Residual audit update:
+
+- The H7e six-row harm residual was useful, but the `n=11` table weakens it:
+  harm-rate/residual correlation is now `r=-0.548`, not the earlier
+  `r=-0.842`.
+- Harm-augmented OLS remains exploratory: in-sample `R^2=0.985`; LOOCV RMSE
+  improves from `0.0559` to `0.0478`. Do not present this as a predictive
+  paper claim until it survives a preregistered held-out table.
+
+Interpretation:
+
+- The query-routing branch should stop here. The scientific result is
+  stage-cost accounting for admission/composition, not a query-aware routing
+  win.
+- Random-valid C-VISION with prompt admission disabled is the clean denominator
+  control: raw generated text matches dense on MVBench hosted-dev (`54/54`),
+  TOMATO motion-dev (`30/30`), and VideoMME-short (`20/20`), while E2E gains
+  stay small (`1.025x`, `1.012x`, `1.005x`).
+- VideoMME-short random admission is a strong quality-clean control, but it is
+  parsed-choice identical, not raw-output identical: `14/20` rows have
+  different generation text.
+- MVBench hosted-dev and TOMATO motion-dev validate the timing model but are
+  not "free speedup" headlines because answer churn and/or bucket failures
+  remain visible.
+- Future query-aware work must start from a new branch with its own
+  fixed/random/no-admission/admission-only controls and held-out cost-model
+  validation.
 
 ### H8 Multi-Shot Consistency Gate, Timing Check Only
 
