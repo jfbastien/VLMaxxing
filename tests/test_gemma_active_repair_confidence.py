@@ -84,6 +84,8 @@ def test_active_repair_confidence_sweeps_thresholds(tmp_path: Path) -> None:
             "1",
             "--min-auc-lower-ci",
             "0.5",
+            "--min-auc-class-count",
+            "1",
             "--n-bootstrap",
             "20",
         ],
@@ -101,6 +103,7 @@ def test_active_repair_confidence_sweeps_thresholds(tmp_path: Path) -> None:
     assert payload["risk_auc_harmed_lower_margin"] == 1.0
     assert payload["risk_auc_harmed_lower_margin_ci95"]["bootstrap_unit"] == "item_id_cluster"
     assert payload["risk_auc_harmed_lower_margin_ci95"]["n_bootstrap"] == 20
+    assert payload["auc_class_count_gate_passed"]
     assert payload["pooled_status"]["analysis_role"] == "per_arm_primary"
     assert payload["baseline_no_retry"]["policy_label"] == "no_retry_composed_only"
     assert payload["baseline_retry_all"]["policy_label"] == "retry_all_dense"
@@ -258,6 +261,8 @@ def test_active_repair_confidence_allows_same_items_across_cell_types(tmp_path: 
             "1",
             "--min-auc-lower-ci",
             "0.5",
+            "--min-auc-class-count",
+            "1",
             "--n-bootstrap",
             "20",
         ],
@@ -319,6 +324,8 @@ def test_active_repair_confidence_marks_multi_source_without_cell_type_as_suppor
             "1",
             "--min-auc-lower-ci",
             "0.5",
+            "--min-auc-class-count",
+            "1",
             "--n-bootstrap",
             "20",
         ],
@@ -498,6 +505,8 @@ def test_active_repair_confidence_applies_retry_cap_and_external_baseline(
             "1",
             "--min-auc-lower-ci",
             "0.5",
+            "--min-auc-class-count",
+            "1",
             "--n-bootstrap",
             "20",
         ],
@@ -514,6 +523,185 @@ def test_active_repair_confidence_applies_retry_cap_and_external_baseline(
     best = payload["best_viable_by_speedup"]
     assert best["retry_rate"] <= 0.5
     assert best["active_speedup_vs_baseline"] >= 1.0
+
+
+def test_active_repair_confidence_blocks_underpowered_single_arm_viability(
+    tmp_path: Path,
+) -> None:
+    paired = tmp_path / "paired.jsonl"
+    output = tmp_path / "analysis.json"
+    _write_jsonl(
+        paired,
+        [
+            _row(
+                "harmed-a",
+                transition="harmed",
+                dense_correct=True,
+                composed_correct=False,
+                margin=0.1,
+            ),
+            _row(
+                "harmed-b",
+                transition="harmed",
+                dense_correct=True,
+                composed_correct=False,
+                margin=0.2,
+            ),
+            _row(
+                "safe-a",
+                transition="preserved_correct",
+                dense_correct=True,
+                composed_correct=True,
+                margin=2.0,
+            ),
+            _row(
+                "safe-b",
+                transition="preserved_correct",
+                dense_correct=True,
+                composed_correct=True,
+                margin=3.0,
+            ),
+            _row(
+                "safe-c",
+                transition="preserved_correct",
+                dense_correct=True,
+                composed_correct=True,
+                margin=4.0,
+            ),
+        ],
+    )
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/analyze_gemma_active_repair_confidence.py",
+            "--paired-items",
+            str(paired),
+            "--output",
+            str(output),
+            "--quality-delta-floor",
+            "-0.01",
+            "--min-speedup",
+            "1.0",
+            "--max-retry-rate",
+            "0.50",
+            "--min-harmed-retried",
+            "2",
+            "--min-auc-lower-ci",
+            "0.5",
+            "--min-auc-class-count",
+            "3",
+            "--n-bootstrap",
+            "20",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(output.read_text())
+    assert payload["risk_auc_harmed_lower_margin"] == 1.0
+    assert payload["risk_auc_harmed_lower_margin_ci95"]["lower_95"] == 1.0
+    assert not payload["auc_class_count_gate_passed"]
+    assert not payload["auc_gate_passed"]
+    assert payload["viable_threshold_count"] == 0
+    assert "single_arm_underpowered" in payload["pooled_status"]["warnings"]
+    assert "auc_class_count_underpowered" in payload["pooled_status"]["warnings"]
+
+
+def test_active_repair_confidence_blocks_underpowered_pooled_arm_viability(
+    tmp_path: Path,
+) -> None:
+    first = tmp_path / "first.jsonl"
+    second = tmp_path / "second.jsonl"
+    output = tmp_path / "analysis.json"
+
+    def arm_rows(prefix: str, cell_type: str) -> list[dict[str, object]]:
+        rows = [
+            _row(
+                f"{prefix}-harmed-a",
+                transition="harmed",
+                dense_correct=True,
+                composed_correct=False,
+                margin=0.1,
+            ),
+            _row(
+                f"{prefix}-harmed-b",
+                transition="harmed",
+                dense_correct=True,
+                composed_correct=False,
+                margin=0.2,
+            ),
+            _row(
+                f"{prefix}-safe-a",
+                transition="preserved_correct",
+                dense_correct=True,
+                composed_correct=True,
+                margin=2.0,
+            ),
+            _row(
+                f"{prefix}-safe-b",
+                transition="preserved_correct",
+                dense_correct=True,
+                composed_correct=True,
+                margin=3.0,
+            ),
+            _row(
+                f"{prefix}-safe-c",
+                transition="preserved_correct",
+                dense_correct=True,
+                composed_correct=True,
+                margin=4.0,
+            ),
+        ]
+        for row in rows:
+            row["cell_type"] = cell_type
+        return rows
+
+    _write_jsonl(first, arm_rows("first", "first_cell"))
+    _write_jsonl(second, arm_rows("second", "second_cell"))
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/analyze_gemma_active_repair_confidence.py",
+            "--paired-items",
+            str(first),
+            "--paired-items",
+            str(second),
+            "--output",
+            str(output),
+            "--quality-delta-floor",
+            "-0.01",
+            "--min-speedup",
+            "1.0",
+            "--max-retry-rate",
+            "0.50",
+            "--min-harmed-retried",
+            "2",
+            "--min-auc-lower-ci",
+            "0.5",
+            "--min-auc-class-count",
+            "3",
+            "--n-bootstrap",
+            "20",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(output.read_text())
+    assert payload["harmed_count"] == 4
+    assert payload["preserved_correct_count"] == 6
+    assert payload["pooled_class_count_gate_passed"]
+    assert not payload["per_group_class_count_gate_passed"]
+    assert not payload["auc_class_count_gate_passed"]
+    assert not payload["auc_gate_passed"]
+    assert payload["viable_threshold_count"] == 0
+    assert "per_arm_underpowered_or_missing_class" in payload["pooled_status"]["warnings"]
 
 
 def test_active_repair_confidence_rejects_mismatched_external_baseline(
@@ -677,6 +865,8 @@ def test_active_repair_confidence_subtracts_optional_baseline_confidence_capture
             "1",
             "--min-auc-lower-ci",
             "0.5",
+            "--min-auc-class-count",
+            "1",
             "--n-bootstrap",
             "20",
         ],

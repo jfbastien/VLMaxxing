@@ -1,4 +1,5 @@
 {
+  "auc_class_count_gate_passed": false,
   "auc_gate_passed": false,
   "baseline_accuracy_margin": 0.02,
   "baseline_no_retry": {
@@ -75,6 +76,7 @@
   "harmed_margin_median": null,
   "margin_field": "composed_first_generated_candidate_top2_margin",
   "max_retry_rate": 0.5,
+  "min_auc_class_count": 3,
   "min_auc_lower_ci": 0.65,
   "min_harmed_retried": 2,
   "min_speedup": 1.0,
@@ -90,6 +92,8 @@
       "unique_item_count": 1
     }
   ],
+  "per_group_class_count_gate_passed": false,
+  "pooled_class_count_gate_passed": false,
   "pooled_status": {
     "analysis_role": "per_arm_primary",
     "cell_type_count": 1,
@@ -97,7 +101,10 @@
     "row_count": 1,
     "supportive_only": false,
     "unique_item_count": 1,
-    "warnings": []
+    "warnings": [
+      "auc_class_count_underpowered",
+      "single_arm_underpowered"
+    ]
   },
   "preserved_correct_count": 1,
   "preserved_correct_margin_mean": 10.0625,
@@ -114,7 +121,7 @@
     "unique_item_count": 1,
     "upper_95": null
   },
-  "schema_version": "gemma_active_repair_confidence_v2",
+  "schema_version": "gemma_active_repair_confidence_v3",
   "source_paths": [
     "research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted_smoke/query_q1b_mvbench_fixed_uniform_admission_on_paired.jsonl"
   ],

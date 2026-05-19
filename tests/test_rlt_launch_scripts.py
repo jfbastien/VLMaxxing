@@ -103,6 +103,7 @@ def test_query_routing_active_repair_probe_script_is_narrow_and_portable() -> No
     assert 'MIN_SPEEDUP="${MIN_SPEEDUP:-1.254}"' in payload
     assert 'MAX_RETRY_RATE="${MAX_RETRY_RATE:-0.50}"' in payload
     assert 'MIN_AUC_LOWER_CI="${MIN_AUC_LOWER_CI:-0.65}"' in payload
+    assert 'MIN_AUC_CLASS_COUNT="${MIN_AUC_CLASS_COUNT:-3}"' in payload
     assert 'BASELINE_REPAIR_PAIRED="${BASELINE_REPAIR_PAIRED:-}"' in payload
     assert "run_repair_analyzer" in payload
     assert "Expected paired artifact missing after queue run" in payload
@@ -143,6 +144,7 @@ def test_query_routing_active_repair_targeted_script_is_narrow_and_portable() ->
     assert 'MIN_SPEEDUP="${MIN_SPEEDUP:-1.0}"' in payload
     assert 'MAX_RETRY_RATE="${MAX_RETRY_RATE:-0.50}"' in payload
     assert 'MIN_AUC_LOWER_CI="${MIN_AUC_LOWER_CI:-0.65}"' in payload
+    assert 'MIN_AUC_CLASS_COUNT="${MIN_AUC_CLASS_COUNT:-3}"' in payload
     assert 'BASELINE_REPAIR_PAIRED="${BASELINE_REPAIR_PAIRED:-}"' in payload
     assert "Refusing out-of-scope queue override" in payload
 
@@ -370,6 +372,7 @@ def test_query_routing_active_repair_targeted_smoke_knobs_rewrite_expected_items
     assert "--min-speedup 1.0" in completed.stdout
     assert "--max-retry-rate 0.50" in completed.stdout
     assert "--min-auc-lower-ci 0.65" in completed.stdout
+    assert "--min-auc-class-count 3" in completed.stdout
     assert "--baseline-paired-items" in completed.stdout
     assert "query_q1_mvbench_random_seed11_no_admission_paired.jsonl" in completed.stdout
     assert "--keep-rate 1.0 --prune-placeholders none" in completed.stdout

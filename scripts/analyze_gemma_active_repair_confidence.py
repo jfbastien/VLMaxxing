@@ -28,7 +28,7 @@ from typing import Any
 
 import numpy as np
 
-SCHEMA_VERSION = "gemma_active_repair_confidence_v2"
+SCHEMA_VERSION = "gemma_active_repair_confidence_v3"
 QUALITY_EPSILON = 1e-12
 REFERENCE_FIELDS = (
     "benchmark",
@@ -241,6 +241,8 @@ def _pooled_status(
     rows: list[dict[str, Any]],
     *,
     per_cell_type_auc: list[dict[str, Any]],
+    min_auc_class_count: int,
+    auc_ci: dict[str, Any],
 ) -> dict[str, Any]:
     cell_types = sorted({str(row["cell_type"]) for row in rows if row.get("cell_type") is not None})
     group_count = len(per_cell_type_auc)
@@ -252,11 +254,18 @@ def _pooled_status(
         warnings.append("pooled_supportive_only_multiple_sources")
     if unique_item_count < len(rows):
         warnings.append("pooled_reuses_item_ids")
-    if group_count > 1 and any(
-        int(summary["harmed_count"]) == 0 or int(summary["preserved_correct_count"]) == 0
+    underpowered_groups = [
+        summary
         for summary in per_cell_type_auc
-    ):
-        warnings.append("per_arm_underpowered_or_missing_class")
+        if int(summary["harmed_count"]) < min_auc_class_count
+        or int(summary["preserved_correct_count"]) < min_auc_class_count
+    ]
+    if underpowered_groups:
+        warnings.append("auc_class_count_underpowered")
+        if group_count == 1:
+            warnings.append("single_arm_underpowered")
+        else:
+            warnings.append("per_arm_underpowered_or_missing_class")
     auc_points = [
         float(summary["risk_auc_harmed_lower_margin"])
         for summary in per_cell_type_auc
@@ -264,6 +273,12 @@ def _pooled_status(
     ]
     if auc_points and min(auc_points) < 0.5 < max(auc_points):
         warnings.append("per_arm_auc_direction_conflict")
+    if (
+        auc_ci["lower_95"] is not None
+        and auc_ci["upper_95"] is not None
+        and float(auc_ci["lower_95"]) == float(auc_ci["upper_95"])
+    ):
+        warnings.append("auc_ci_collapsed")
     return {
         "analysis_role": role,
         "supportive_only": role == "supportive_pooled",
@@ -418,19 +433,6 @@ def _baseline_summary(rows: list[dict[str, Any]], *, label: str) -> dict[str, An
     }
 
 
-def _paired_item_keys(rows: list[dict[str, Any]]) -> set[str]:
-    keys: set[str] = set()
-    for row in rows:
-        key = row.get("paired_row_key", row.get("item_id"))
-        if not isinstance(key, str) or not key:
-            raise ValueError(
-                f"{row.get('_source_path')}:{row.get('_source_lineno')} "
-                "missing string paired_row_key/item_id"
-            )
-        keys.add(key)
-    return keys
-
-
 def _reference_signature(row: dict[str, Any]) -> tuple[Any, ...]:
     values: list[Any] = []
     for field in REFERENCE_FIELDS:
@@ -517,6 +519,7 @@ def analyze(
     max_retry_rate: float,
     min_harmed_retried: int,
     min_auc_lower_ci: float,
+    min_auc_class_count: int,
     n_bootstrap: int,
     bootstrap_seed: int,
     baseline_rows: list[dict[str, Any]] | None = None,
@@ -570,9 +573,23 @@ def analyze(
         n_bootstrap=n_bootstrap,
         seed=bootstrap_seed,
     )
+    per_cell_type_auc = _per_cell_type_auc(rows, margin_field)
     auc_lower = auc_ci["lower_95"]
+    pooled_class_count_gate_passed = (
+        len(harmed) >= min_auc_class_count and len(preserved) >= min_auc_class_count
+    )
+    per_group_class_count_gate_passed = all(
+        int(summary["harmed_count"]) >= min_auc_class_count
+        and int(summary["preserved_correct_count"]) >= min_auc_class_count
+        for summary in per_cell_type_auc
+    )
+    auc_class_count_gate_passed = (
+        pooled_class_count_gate_passed and per_group_class_count_gate_passed
+    )
     auc_gate_passed = (
-        auc_lower is not None and float(auc_lower) + QUALITY_EPSILON >= min_auc_lower_ci
+        auc_class_count_gate_passed
+        and auc_lower is not None
+        and float(auc_lower) + QUALITY_EPSILON >= min_auc_lower_ci
     )
     viable = [
         row
@@ -591,7 +608,6 @@ def analyze(
             or row["active_speedup_vs_baseline"] + QUALITY_EPSILON >= 1.0
         )
     ]
-    per_cell_type_auc = _per_cell_type_auc(rows, margin_field)
     return {
         "schema_version": SCHEMA_VERSION,
         "margin_field": margin_field,
@@ -616,8 +632,17 @@ def analyze(
         "risk_auc_harmed_lower_margin": _risk_auc_harmed_lower(harmed, preserved),
         "risk_auc_harmed_lower_margin_ci95": auc_ci,
         "per_cell_type_auc": per_cell_type_auc,
-        "pooled_status": _pooled_status(rows, per_cell_type_auc=per_cell_type_auc),
+        "pooled_status": _pooled_status(
+            rows,
+            per_cell_type_auc=per_cell_type_auc,
+            min_auc_class_count=min_auc_class_count,
+            auc_ci=auc_ci,
+        ),
         "min_auc_lower_ci": min_auc_lower_ci,
+        "min_auc_class_count": min_auc_class_count,
+        "pooled_class_count_gate_passed": pooled_class_count_gate_passed,
+        "per_group_class_count_gate_passed": per_group_class_count_gate_passed,
+        "auc_class_count_gate_passed": auc_class_count_gate_passed,
         "auc_gate_passed": auc_gate_passed,
         "quality_delta_floor": quality_delta_floor,
         "min_speedup": min_speedup,
@@ -654,6 +679,7 @@ def main() -> int:
     parser.add_argument("--max-retry-rate", type=float, default=0.50)
     parser.add_argument("--min-harmed-retried", type=int, default=2)
     parser.add_argument("--min-auc-lower-ci", type=float, default=0.65)
+    parser.add_argument("--min-auc-class-count", type=int, default=3)
     parser.add_argument("--n-bootstrap", type=int, default=2000)
     parser.add_argument("--bootstrap-seed", type=int, default=20260519)
     parser.add_argument(
@@ -681,6 +707,8 @@ def main() -> int:
         raise ValueError("--max-retry-rate must be finite and in [0, 1]")
     if args.min_harmed_retried < 1:
         raise ValueError("--min-harmed-retried must be at least 1")
+    if args.min_auc_class_count < 1:
+        raise ValueError("--min-auc-class-count must be at least 1")
     if not math.isfinite(min_auc_lower_ci) or min_auc_lower_ci < 0.0 or min_auc_lower_ci > 1.0:
         raise ValueError("--min-auc-lower-ci must be finite and in [0, 1]")
     if args.n_bootstrap < 1:
@@ -697,6 +725,7 @@ def main() -> int:
         max_retry_rate=max_retry_rate,
         min_harmed_retried=int(args.min_harmed_retried),
         min_auc_lower_ci=min_auc_lower_ci,
+        min_auc_class_count=int(args.min_auc_class_count),
         n_bootstrap=int(args.n_bootstrap),
         bootstrap_seed=int(args.bootstrap_seed),
         baseline_rows=(

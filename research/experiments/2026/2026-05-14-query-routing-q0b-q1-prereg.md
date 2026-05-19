@@ -419,10 +419,14 @@ admission-off same-run baseline (`keep_rate=1.0`, `prune_placeholders=none`,
 `vision_random_seed=11`), random-valid baseline paired analyzer, random-valid
 admission-on composed arm, random-valid paired analyzer, fixed-uniform
 admission-on composed arm, fixed-uniform paired analyzer, two per-arm
-confidence-frontier analyzers, and one pooled confidence-frontier analyzer. It writes to
+confidence-frontier analyzers, and one pooled confidence-frontier analyzer. It
+writes to
 `research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted`
 by default. This is the launch path to use before spending 12-25 hours on the
-full wrapper.
+full wrapper. The extra same-run baseline adds roughly one admission-off
+composed pass plus one CPU analysis step relative to the earlier eight-command
+version; this is intentional because it removes the stale `1.254x` comparison
+from the targeted verdict.
 
 Smoke path:
 
@@ -455,7 +459,11 @@ H6a. The cheap pass knows when it was harmed.
   lower 95% CI `>=0.65`, and matching direction across the random-valid and
   fixed-uniform admission-on arms. The pooled analysis uses an item-cluster
   bootstrap and is supportive, not independent `n=60` evidence, because both
-  arms reuse the same 30 MVBench items.
+  arms reuse the same 30 MVBench items. The analyzer has a stricter mechanical
+  gate of at least three harmed rows and three preserved-correct rows before
+  AUC can pass at all, both in aggregate and within every pooled source arm;
+  lower event counts are reported as underpowered and cannot produce a viable
+  threshold.
 - Falsify: AUC lower 95% CI `<0.60`, no harmed items, no preserved-correct
   items, missing/non-finite margin fields, or disagreement in per-arm
   direction that makes the pooled number uninterpretable.
@@ -467,7 +475,8 @@ H6b. A one-step retry frontier is viable under full cost accounting.
 
 - Accept exploratory frontier: at least one threshold achieves
   `accuracy_delta_vs_dense >= -0.02`, `speedup_dense_over_active >= 1.0`,
-  `retry_rate <= 0.50`, and `harmed_retried >= 2`. The targeted launcher now
+  `retry_rate <= 0.50`, `harmed_retried >= 2`, and the AUC class-count gate.
+  The targeted launcher now
   provides `BASELINE_REPAIR_PAIRED` by default from a same-run
   `random_valid(seed=11)` admission-off baseline, so viable thresholds must
   also match that no-retry baseline's accuracy delta within `0.02` and beat
@@ -564,7 +573,7 @@ and `fixed_uniform+admission_on` each produced one paired row for
 confidence-frontier analyzers, and pooled analyzer completed. The smoke rows
 contain finite candidate-letter margins (`10.0625` composed for both cheap
 arms) and finite confidence-capture timings. The pooled smoke has
-`schema_version=gemma_active_repair_confidence_v2`, `harmed_count=0`,
+`schema_version=gemma_active_repair_confidence_v3`, `harmed_count=0`,
 `auc_gate_passed=false`, named no-retry/retry-all baselines, and
 `pooled_status.analysis_role=supportive_pooled`, so it validates
 schema/logging/analyzer plumbing only; it does not test H6a/H6b.
