@@ -30,14 +30,17 @@ import numpy as np
 
 SCHEMA_VERSION = "gemma_active_repair_confidence_v3"
 QUALITY_EPSILON = 1e-12
-REFERENCE_FIELDS = (
+ITEM_INTRINSIC_FIELDS = (
     "benchmark",
     "group",
     "answer_index",
+)
+DENSE_LABEL_FIELDS = (
     "dense_choice",
     "dense_correct",
     "dense_parse_failure",
 )
+REFERENCE_FIELDS = ITEM_INTRINSIC_FIELDS + DENSE_LABEL_FIELDS
 
 
 def _read_paired_rows(paths: Iterable[Path]) -> list[dict[str, Any]]:
@@ -469,15 +472,33 @@ def _reference_signatures_by_key(
     return signatures
 
 
+def _intrinsic_signature(row: dict[str, Any]) -> tuple[Any, ...]:
+    return tuple(row.get(f) for f in ITEM_INTRINSIC_FIELDS)
+
+
+def _dense_label_signature(row: dict[str, Any]) -> tuple[Any, ...]:
+    return tuple(row.get(f) for f in DENSE_LABEL_FIELDS)
+
+
 def _validate_baseline_matches_rows(
     rows: list[dict[str, Any]], baseline_rows: list[dict[str, Any]] | None
-) -> None:
+) -> dict[str, Any]:
     if baseline_rows is None:
-        return
-    active_signatures = _reference_signatures_by_key(rows, allow_duplicates=True)
-    baseline_signatures = _reference_signatures_by_key(baseline_rows, allow_duplicates=False)
-    active_keys = set(active_signatures)
-    baseline_keys = set(baseline_signatures)
+        return {}
+    active_by_key: dict[str, dict[str, Any]] = {}
+    for r in rows:
+        key = r.get("paired_row_key", r.get("item_id"))
+        if isinstance(key, str) and key:
+            active_by_key.setdefault(key, r)
+    baseline_by_key: dict[str, dict[str, Any]] = {}
+    for r in baseline_rows:
+        key = r.get("paired_row_key", r.get("item_id"))
+        if isinstance(key, str) and key:
+            if key in baseline_by_key:
+                raise ValueError(f"baseline-paired-items has duplicate item key {key!r}")
+            baseline_by_key[key] = r
+    active_keys = set(active_by_key)
+    baseline_keys = set(baseline_by_key)
     missing_from_baseline = sorted(active_keys - baseline_keys)
     extra_in_baseline = sorted(baseline_keys - active_keys)
     if missing_from_baseline or extra_in_baseline:
@@ -486,14 +507,36 @@ def _validate_baseline_matches_rows(
             f"missing_from_baseline={missing_from_baseline[:5]!r}, "
             f"extra_in_baseline={extra_in_baseline[:5]!r}"
         )
-    reference_mismatches = [
-        key for key in sorted(active_keys) if active_signatures[key] != baseline_signatures[key]
+    intrinsic_mismatches = [
+        key for key in sorted(active_keys)
+        if _intrinsic_signature(active_by_key[key]) != _intrinsic_signature(baseline_by_key[key])
     ]
-    if reference_mismatches:
+    if intrinsic_mismatches:
         raise ValueError(
-            "baseline-paired-items reference fields do not match active paired rows: "
-            f"mismatched_item_keys={reference_mismatches[:5]!r}"
+            "baseline-paired-items item-intrinsic fields do not match active paired rows: "
+            f"mismatched_item_keys={intrinsic_mismatches[:5]!r}"
         )
+    dense_label_mismatches = []
+    for key in sorted(active_keys):
+        a_sig = _dense_label_signature(active_by_key[key])
+        b_sig = _dense_label_signature(baseline_by_key[key])
+        if a_sig != b_sig:
+            diff = {
+                f: {"active": active_by_key[key].get(f), "baseline": baseline_by_key[key].get(f)}
+                for f in DENSE_LABEL_FIELDS
+                if active_by_key[key].get(f) != baseline_by_key[key].get(f)
+            }
+            dense_label_mismatches.append({"item_key": key, "diff": diff})
+    return {
+        "n_active": len(active_keys),
+        "n_baseline": len(baseline_keys),
+        "dense_label_mismatches": dense_label_mismatches,
+        "dense_label_mismatch_count": len(dense_label_mismatches),
+        "dense_label_correctness_flips": sum(
+            1 for m in dense_label_mismatches
+            if "dense_correct" in m["diff"]
+        ),
+    }
 
 
 def _attach_baseline_comparison(
@@ -525,7 +568,7 @@ def analyze(
     baseline_rows: list[dict[str, Any]] | None = None,
     baseline_accuracy_margin: float = 0.02,
 ) -> dict[str, Any]:
-    _validate_baseline_matches_rows(rows, baseline_rows)
+    baseline_reference_audit = _validate_baseline_matches_rows(rows, baseline_rows)
     margins = [_required_float(row, margin_field) for row in rows]
     harm_labels = [1.0 if row.get("correctness_transition") == "harmed" else 0.0 for row in rows]
     harmed = [
@@ -650,6 +693,7 @@ def analyze(
         "min_harmed_retried": min_harmed_retried,
         "baseline_accuracy_margin": baseline_accuracy_margin,
         "comparison_baseline": comparison_baseline,
+        "baseline_reference_audit": baseline_reference_audit,
         "viable_threshold_count": len(viable),
         "best_viable_by_speedup": max(
             viable,

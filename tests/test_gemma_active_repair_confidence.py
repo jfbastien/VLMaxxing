@@ -800,8 +800,9 @@ def test_active_repair_confidence_rejects_reference_mismatched_external_baseline
     )
 
     assert completed.returncode != 0
-    assert "baseline-paired-items reference fields do not match active paired rows" in (
-        completed.stderr
+    assert (
+        "baseline-paired-items item-intrinsic fields do not match active paired rows"
+        in completed.stderr
     )
 
 
