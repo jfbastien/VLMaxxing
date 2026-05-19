@@ -66,6 +66,7 @@ def _row(item_id: str, *, group: str, dense_correct: bool, pruned_correct: bool)
             "multimodal_prefill_ms": 250.0,
         },
         "metadata": {
+            "prune_placeholders": "rlt",
             "vision_tower_keep_rate": 0.5,
             "vision_tower_score_mode": "rlt_topk",
             "dense_placeholder_count": 2048,
@@ -146,6 +147,68 @@ def test_full_composition_analyzer_pairs_dense_reference_against_composed(tmp_pa
     assert paired_rows[0]["composed_first_generated_confidence_capture_ms"] == 2.0
     assert paired_rows[0]["dense_first_generated_candidate_top2_margin"] == 1.1
     assert paired_rows[0]["composed_first_generated_candidate_top2_margin"] == 0.15
+
+
+def test_full_composition_analyzer_can_use_composed_same_run_dense_timing(
+    tmp_path: Path,
+) -> None:
+    dense = tmp_path / "dense.jsonl"
+    composed = tmp_path / "composed.jsonl"
+    output = tmp_path / "analysis.json"
+    paired = tmp_path / "paired.jsonl"
+    dense_items = [
+        _row(f"item-{idx}", group="short", dense_correct=True, pruned_correct=True)
+        for idx in range(5)
+    ]
+    composed_items = [
+        _row(f"item-{idx}", group="short", dense_correct=True, pruned_correct=True)
+        for idx in range(5)
+    ]
+    for item in dense_items:
+        item["dense_timing_ms"]["end_to_end"] = 2000.0
+    for item in composed_items:
+        item["dense_timing_ms"]["end_to_end"] = 1000.0
+        item["pruned_timing_ms"]["end_to_end"] = 500.0
+    _write_jsonl(dense, [_schema(prune_placeholders="none", vision_keep_rate=1.0), *dense_items])
+    _write_jsonl(
+        composed,
+        [_schema(prune_placeholders="rlt", vision_keep_rate=0.5), *composed_items],
+    )
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/analyze_gemma_full_composition.py",
+            "--dense-jsonl",
+            str(dense),
+            "--composed-jsonl",
+            str(composed),
+            "--dense-source",
+            "composed-jsonl-same-run",
+            "--output",
+            str(output),
+            "--paired-items",
+            str(paired),
+            "--expected-items",
+            "5",
+            "--n-bootstrap",
+            "50",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    analysis = json.loads(output.read_text())
+    assert analysis["dense_source"] == "composed-jsonl-same-run"
+    assert analysis["summary"]["e2e_speedup_dense_over_composed"] == 2.0
+    paired_rows = [json.loads(line) for line in paired.read_text().strip().splitlines()]
+    assert paired_rows[0]["dense_end_to_end_ms"] == 1000.0
+    assert paired_rows[0]["dense_metadata_source"] == "schema_override"
+    assert paired_rows[0]["dense_metadata"]["metadata_source"] == "dense_reference_schema"
+    assert paired_rows[0]["dense_metadata"]["prune_placeholders"] == "none"
+    assert paired_rows[0]["composed_metadata"]["prune_placeholders"] == "rlt"
 
 
 def test_full_composition_analyzer_accepts_scheduled_admission_with_cvision(
@@ -268,10 +331,16 @@ def test_full_composition_analyzer_combines_disjoint_sources(tmp_path: Path) -> 
     analysis = json.loads(output.read_text())
     assert analysis["summary"]["n_items"] == 10
     assert analysis["source_pairs"] == [
-        {"dense_jsonl": str(dense_dev), "composed_jsonl": str(composed_dev), "n_items": 5},
+        {
+            "dense_jsonl": str(dense_dev),
+            "composed_jsonl": str(composed_dev),
+            "dense_source": "reference-jsonl",
+            "n_items": 5,
+        },
         {
             "dense_jsonl": str(dense_holdout),
             "composed_jsonl": str(composed_holdout),
+            "dense_source": "reference-jsonl",
             "n_items": 5,
         },
     ]

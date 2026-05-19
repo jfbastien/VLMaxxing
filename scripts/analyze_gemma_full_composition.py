@@ -358,12 +358,29 @@ def _summarize(
     }
 
 
+def _dense_metadata_from_schema(dense_schema: dict[str, Any]) -> dict[str, Any]:
+    payload = _artifact_payload(dense_schema)
+    keys = (
+        "prune_placeholders",
+        "group_prune_placeholders",
+        "vision_tower_keep_rate",
+        "vision_tower_score_mode",
+        "frame_count",
+        "prefill_step_size",
+    )
+    return {
+        "metadata_source": "dense_reference_schema",
+        **{key: payload.get(key) for key in keys if key in payload},
+    }
+
+
 def _paired_rows(
     dense_rows: list[dict[str, Any]],
     composed_rows: list[dict[str, Any]],
     *,
     expected_items: int | None,
     cell_type: str,
+    dense_metadata_override: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     dense_by_item = _rows_by_item(dense_rows)
     composed_by_item = _rows_by_item(composed_rows)
@@ -379,7 +396,11 @@ def _paired_rows(
         composed = composed_by_item[item_id]
         if dense.get("answer_index") != composed.get("answer_index"):
             raise ValueError(f"answer mismatch for {item_id}")
-        dense_metadata = dense.get("metadata", {})
+        dense_metadata = (
+            dict(dense_metadata_override)
+            if dense_metadata_override is not None
+            else dense.get("metadata", {})
+        )
         composed_metadata = composed.get("metadata", {})
         if not isinstance(dense_metadata, dict):
             dense_metadata = {}
@@ -462,7 +483,11 @@ def _paired_rows(
             "dense_prompt_tokens": dense.get("dense_prompt_tokens"),
             "composed_prompt_tokens": composed.get("pruned_prompt_tokens"),
             "dense_metadata": dense_metadata,
+            "dense_metadata_source": (
+                "schema_override" if dense_metadata_override is not None else "dense_jsonl_row"
+            ),
             "composed_metadata": composed_metadata,
+            "composed_metadata_source": "composed_jsonl_row",
             "dense_placeholder_count": placeholder_total_i,
             "composed_placeholder_count": placeholder_kept_i,
             "placeholder_prune_bypassed": bool(placeholder_bypassed),
@@ -482,6 +507,17 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dense-jsonl", type=Path, required=True, action="append")
     parser.add_argument("--composed-jsonl", type=Path, required=True, action="append")
+    parser.add_argument(
+        "--dense-source",
+        choices=("reference-jsonl", "composed-jsonl-same-run"),
+        default="reference-jsonl",
+        help=(
+            "Use reference-jsonl for historical cross-run pairing, or "
+            "composed-jsonl-same-run to use the ABBA dense branch recorded in "
+            "each composed artifact. New timing-sensitive experiments should "
+            "use composed-jsonl-same-run."
+        ),
+    )
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--paired-items", type=Path, required=True)
     parser.add_argument("--expected-items", type=int, required=True)
@@ -510,16 +546,26 @@ def main() -> int:
             policy_signature = source_signature
         elif source_signature != policy_signature:
             raise ValueError("combined analysis source pairs disagree on policy/config invariants")
+        dense_pair_rows = (
+            composed_rows if args.dense_source == "composed-jsonl-same-run" else dense_rows
+        )
+        dense_metadata_override = (
+            _dense_metadata_from_schema(dense_schema)
+            if args.dense_source == "composed-jsonl-same-run"
+            else None
+        )
         source_paired = _paired_rows(
-            dense_rows,
+            dense_pair_rows,
             composed_rows,
             expected_items=None,
             cell_type=cell_type,
+            dense_metadata_override=dense_metadata_override,
         )
         source_pairs.append(
             {
                 "dense_jsonl": str(dense_path),
                 "composed_jsonl": str(composed_path),
+                "dense_source": args.dense_source,
                 "n_items": len(source_paired),
             }
         )
@@ -586,6 +632,7 @@ def main() -> int:
             str(composed_paths[0]) if len(composed_paths) == 1 else [str(p) for p in composed_paths]
         ),
         "source_pairs": source_pairs,
+        "dense_source": args.dense_source,
         "expected_items": args.expected_items,
         "cell_type": summary["cell_type"],
         "summary": summary,

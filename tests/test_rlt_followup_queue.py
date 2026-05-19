@@ -447,6 +447,7 @@ def test_full_composition_commands_build_dense_reference_and_composed_arm(tmp_pa
     assert composed[composed.index("--vision-tower-score-mode") + 1] == "rlt_topk"
     assert composed[composed.index("--prefill-step-size") + 1] == "1024"
     assert "scripts/analyze_gemma_full_composition.py" in analyze
+    assert analyze[analyze.index("--dense-source") + 1] == "composed-jsonl-same-run"
     assert str(tmp_path / "full_composition_rlt_videomme_analysis.json") in analyze
 
 
@@ -647,6 +648,10 @@ def test_query_routing_hosted_manifest_uses_manifest_item_count(tmp_path: Path) 
     assert analyze_commands
     assert all(
         command[command.index("--expected-items") + 1] == "4" for command in analyze_commands
+    )
+    assert all(
+        command[command.index("--dense-source") + 1] == "composed-jsonl-same-run"
+        for command in analyze_commands
     )
 
 

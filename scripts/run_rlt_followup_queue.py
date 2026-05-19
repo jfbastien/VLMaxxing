@@ -585,6 +585,8 @@ def _gemma_full_composition_commands(
         str(dense_jsonl),
         "--composed-jsonl",
         str(composed_jsonl),
+        "--dense-source",
+        "composed-jsonl-same-run",
         "--output",
         str(analysis_path),
         "--paired-items",
@@ -620,6 +622,7 @@ def _gemma_full_composition_combined_analysis_command(
         command.extend(["--dense-jsonl", str(dense_jsonl)])
     for composed_jsonl in composed_jsonls:
         command.extend(["--composed-jsonl", str(composed_jsonl)])
+    command.extend(["--dense-source", "composed-jsonl-same-run"])
     command.extend(
         [
             "--output",

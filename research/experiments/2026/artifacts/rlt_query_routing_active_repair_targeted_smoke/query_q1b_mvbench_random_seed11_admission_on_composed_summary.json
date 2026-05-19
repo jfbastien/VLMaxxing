@@ -54,14 +54,14 @@
   "model_path": "/Users/jfb/models/gemma-4-e4b-it-4bit",
   "n_items": 1,
   "n_warmup": 1,
-  "new_rows": 1,
+  "new_rows": 0,
   "per_token_generate_speedup_mean": 1.7141061558764086,
   "prefill_step_size": 1024,
   "prune_placeholders": "rlt",
   "pruned_accuracy": 1.0,
   "pruned_parse_failures": 0,
   "resume": true,
-  "resumed_existing_rows": 0,
+  "resumed_existing_rows": 1,
   "rlt_config": {
     "first_tubelet_mode": "full_grid",
     "grid_shape": [

@@ -74,6 +74,12 @@ def test_active_repair_confidence_sweeps_thresholds(tmp_path: Path) -> None:
             "-0.01",
             "--min-speedup",
             "1.0",
+            "--min-harmed-retried",
+            "1",
+            "--min-auc-lower-ci",
+            "0.5",
+            "--n-bootstrap",
+            "20",
         ],
         check=False,
         capture_output=True,
@@ -87,6 +93,10 @@ def test_active_repair_confidence_sweeps_thresholds(tmp_path: Path) -> None:
     assert payload["source_paths"] == [str(paired)]
     assert payload["harmed_count"] == 1
     assert payload["risk_auc_harmed_lower_margin"] == 1.0
+    assert payload["risk_auc_harmed_lower_margin_ci95"]["bootstrap_unit"] == "item_id_cluster"
+    assert payload["risk_auc_harmed_lower_margin_ci95"]["n_bootstrap"] == 20
+    assert payload["baseline_no_retry"]["policy_label"] == "no_retry_composed_only"
+    assert payload["baseline_retry_all"]["policy_label"] == "retry_all_dense"
     assert payload["viable_threshold_count"] >= 1
     best = payload["best_viable_by_speedup"]
     assert best["harmed_retried"] == 1
@@ -187,7 +197,6 @@ def test_active_repair_confidence_rejects_duplicate_item_ids(tmp_path: Path) -> 
             ),
         ],
     )
-
     completed = subprocess.run(
         [
             sys.executable,
@@ -203,45 +212,61 @@ def test_active_repair_confidence_rejects_duplicate_item_ids(tmp_path: Path) -> 
     )
 
     assert completed.returncode != 0
-    assert "duplicate item_id 'dupe'" in completed.stderr
+    assert "duplicate row key ('test_cell', 'dupe')" in completed.stderr
 
 
-def test_active_repair_confidence_rejects_mixed_cell_types(tmp_path: Path) -> None:
-    paired = tmp_path / "paired.jsonl"
+def test_active_repair_confidence_allows_same_items_across_cell_types(tmp_path: Path) -> None:
+    first_path = tmp_path / "first.jsonl"
+    second_path = tmp_path / "second.jsonl"
     output = tmp_path / "analysis.json"
     first = _row(
-        "first",
+        "same-item",
         transition="harmed",
         dense_correct=True,
         composed_correct=False,
         margin=0.1,
     )
     second = _row(
-        "second",
+        "same-item",
         transition="preserved_correct",
         dense_correct=True,
         composed_correct=True,
         margin=2.0,
     )
     second["cell_type"] = "other_cell"
-    _write_jsonl(paired, [first, second])
+    _write_jsonl(first_path, [first])
+    _write_jsonl(second_path, [second])
 
     completed = subprocess.run(
         [
             sys.executable,
             "scripts/analyze_gemma_active_repair_confidence.py",
             "--paired-items",
-            str(paired),
+            str(first_path),
+            "--paired-items",
+            str(second_path),
             "--output",
             str(output),
+            "--min-harmed-retried",
+            "1",
+            "--min-auc-lower-ci",
+            "0.5",
+            "--n-bootstrap",
+            "20",
         ],
         check=False,
         capture_output=True,
         text=True,
     )
 
-    assert completed.returncode != 0
-    assert "paired rows must have one cell_type" in completed.stderr
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(output.read_text())
+    assert payload["n_items"] == 2
+    assert payload["risk_auc_harmed_lower_margin_ci95"]["unique_item_count"] == 1
+    assert {row["cell_type"] for row in payload["per_cell_type_auc"]} == {
+        "other_cell",
+        "test_cell",
+    }
 
 
 def test_active_repair_confidence_rejects_nonfinite_thresholds(tmp_path: Path) -> None:
@@ -315,6 +340,12 @@ def test_active_repair_confidence_does_not_count_no_retry_as_viable(tmp_path: Pa
             "-0.01",
             "--min-speedup",
             "1.0",
+            "--min-harmed-retried",
+            "1",
+            "--min-auc-lower-ci",
+            "0.5",
+            "--n-bootstrap",
+            "20",
         ],
         check=False,
         capture_output=True,
@@ -326,3 +357,92 @@ def test_active_repair_confidence_does_not_count_no_retry_as_viable(tmp_path: Pa
     assert payload["harmed_count"] == 0
     assert payload["viable_threshold_count"] == 0
     assert payload["best_viable_by_speedup"] is None
+
+
+def test_active_repair_confidence_applies_retry_cap_and_external_baseline(
+    tmp_path: Path,
+) -> None:
+    paired = tmp_path / "paired.jsonl"
+    baseline = tmp_path / "baseline.jsonl"
+    output = tmp_path / "analysis.json"
+    _write_jsonl(
+        paired,
+        [
+            _row(
+                "harmed-low",
+                transition="harmed",
+                dense_correct=True,
+                composed_correct=False,
+                margin=0.1,
+            ),
+            _row(
+                "safe-high",
+                transition="preserved_correct",
+                dense_correct=True,
+                composed_correct=True,
+                margin=2.0,
+            ),
+        ],
+    )
+    paired_rows = [json.loads(line) for line in paired.read_text(encoding="utf-8").splitlines()]
+    for row in paired_rows:
+        row["dense_end_to_end_ms"] = 200.0
+    _write_jsonl(paired, paired_rows)
+    baseline_rows = [
+        _row(
+            "base-a",
+            transition="preserved_correct",
+            dense_correct=True,
+            composed_correct=True,
+            margin=3.0,
+        ),
+        _row(
+            "base-b",
+            transition="preserved_correct",
+            dense_correct=True,
+            composed_correct=True,
+            margin=4.0,
+        ),
+    ]
+    for row in baseline_rows:
+        row["composed_end_to_end_ms"] = 90.0
+        for field in list(row):
+            if "confidence" in field or "margin" in field:
+                del row[field]
+    _write_jsonl(baseline, baseline_rows)
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/analyze_gemma_active_repair_confidence.py",
+            "--paired-items",
+            str(paired),
+            "--baseline-paired-items",
+            str(baseline),
+            "--output",
+            str(output),
+            "--quality-delta-floor",
+            "-0.01",
+            "--min-speedup",
+            "1.0",
+            "--max-retry-rate",
+            "0.50",
+            "--min-harmed-retried",
+            "1",
+            "--min-auc-lower-ci",
+            "0.5",
+            "--n-bootstrap",
+            "20",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(output.read_text())
+    assert payload["comparison_baseline"]["speedup_dense_over_baseline"] > 1.0
+    assert payload["viable_threshold_count"] >= 1
+    best = payload["best_viable_by_speedup"]
+    assert best["retry_rate"] <= 0.5
+    assert best["active_speedup_vs_baseline"] >= 1.0

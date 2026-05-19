@@ -8,12 +8,14 @@
     }
   ],
   "dense_jsonl": "research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted_smoke/query_q1b_dense_mvbench_dense.jsonl",
+  "dense_source": "composed-jsonl-same-run",
   "expected_items": 1,
   "schema_version": "gemma_full_composition_analysis_v2",
   "source_pairs": [
     {
       "composed_jsonl": "research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted_smoke/query_q1b_mvbench_random_seed11_admission_on_composed.jsonl",
       "dense_jsonl": "research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted_smoke/query_q1b_dense_mvbench_dense.jsonl",
+      "dense_source": "composed-jsonl-same-run",
       "n_items": 1
     }
   ],
@@ -32,7 +34,7 @@
         "composed_accuracy": 1.0,
         "dense_accuracy": 1.0,
         "e2e_gate_pass": true,
-        "e2e_speedup_dense_over_composed": 1.9140281063237208,
+        "e2e_speedup_dense_over_composed": 1.3420615906797935,
         "failure_taxonomy": {
           "preserved_correct": 1
         },
@@ -50,21 +52,21 @@
     "composed_accuracy": 1.0,
     "composed_total_e2e_ms": 6219.112458,
     "dense_accuracy": 1.0,
-    "dense_total_e2e_ms": 11903.556041,
+    "dense_total_e2e_ms": 8346.431958,
     "e2e_speedup_ci95": [
-      1.9140281063237208,
-      1.9140281063237208
+      1.3420615906797935,
+      1.3420615906797935
     ],
-    "e2e_speedup_dense_over_composed": 1.9140281063237208,
+    "e2e_speedup_dense_over_composed": 1.3420615906797935,
     "failure_taxonomy": {
       "preserved_correct": 1
     },
     "mean_composed_end_to_end_ms": 6219.112458,
     "mean_composed_prefill_ms": 2971.157583,
     "mean_composed_vision_ms": 2817.856666,
-    "mean_dense_end_to_end_ms": 11903.556041,
-    "mean_dense_prefill_ms": 6514.268125,
-    "mean_dense_vision_ms": 4995.194416,
+    "mean_dense_end_to_end_ms": 8346.431958,
+    "mean_dense_prefill_ms": 5128.049833,
+    "mean_dense_vision_ms": 2817.856666,
     "n_items": 1,
     "parse_failure_delta_composed_minus_dense": 0,
     "parse_taxonomy": {

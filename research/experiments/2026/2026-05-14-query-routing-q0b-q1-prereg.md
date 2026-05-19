@@ -382,9 +382,11 @@ scripts/run_rlt_query_routing_active_repair_probe.sh
 This wrapper re-runs the Q1b admission-on cells with first generated-token
 confidence capture enabled, then runs
 `scripts/analyze_gemma_active_repair_confidence.py` separately for the
-`random_seed11 + admission_on` and `fixed_uniform + admission_on` paired rows.
-It does **not** pool those policy arms and does **not** implement an in-run
-repair policy. It simulates thresholded retry from paired dense/composed
+`random_seed11 + admission_on`, `fixed_uniform + admission_on`, and pooled
+admission-on paired rows. The pooled row is supportive only unless the
+per-arm directions agree, because both arms reuse the same MVBench items. It
+does **not** implement an in-run repair policy. It simulates thresholded retry
+from paired dense/composed
 artifacts and charges each retry as:
 
 ```text
@@ -411,10 +413,10 @@ scripts/run_rlt_query_routing_active_repair_targeted.sh
 ```
 
 This script intentionally bypasses the broad queue dependency chain and runs
-only seven commands: shared dense/no-admission baseline, random-valid
+only eight commands: shared dense/no-admission baseline, random-valid
 admission-on composed arm, random-valid paired analyzer, fixed-uniform
-admission-on composed arm, fixed-uniform paired analyzer, and the two
-confidence-frontier analyzers. It writes to
+admission-on composed arm, fixed-uniform paired analyzer, two per-arm
+confidence-frontier analyzers, and one pooled confidence-frontier analyzer. It writes to
 `research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted`
 by default. This is the launch path to use before spending 12-25 hours on the
 full wrapper.
@@ -428,8 +430,9 @@ N_ITEMS=1 scripts/run_rlt_query_routing_active_repair_targeted.sh
 With `N_ITEMS>0`, the launcher writes to
 `research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted_smoke`,
 sets `--n-items`, lowers `--expected-items` to the smoke count, sets
-`--bucket-min-n 1`, and uses `--n-bootstrap 50`. Do not reuse the smoke
-artifact directory for paper tables.
+`--bucket-min-n 1`, uses `--n-bootstrap 50` for the paired analyzer, and uses
+`ACTIVE_REPAIR_N_BOOTSTRAP=100` for the confidence analyzer. Do not reuse the
+smoke artifact directory for paper tables.
 
 Primary signal:
 
@@ -444,18 +447,27 @@ Primary signal:
 
 H6a. The cheap pass knows when it was harmed.
 
-- Accept signal: harmed items have lower composed margins than
-  preserved-correct items with `risk_auc_harmed_lower_margin >= 0.70`.
-- Falsify: `risk_auc_harmed_lower_margin <= 0.60`, no harmed items, no
-  preserved-correct items, or missing/non-finite margin fields.
-- Inconclusive: AUC in `(0.60, 0.70)` or small harmed count that makes the
-  threshold frontier unstable.
+- Accept exploratory signal: per-arm `harmed_count >= 5`,
+  `preserved_correct_count >= 10`, AUC point `>=0.70`, item-cluster bootstrap
+  lower 95% CI `>=0.65`, and matching direction across the random-valid and
+  fixed-uniform admission-on arms. The pooled analysis uses an item-cluster
+  bootstrap and is supportive, not independent `n=60` evidence, because both
+  arms reuse the same 30 MVBench items.
+- Falsify: AUC lower 95% CI `<0.60`, no harmed items, no preserved-correct
+  items, missing/non-finite margin fields, or disagreement in per-arm
+  direction that makes the pooled number uninterpretable.
+- Inconclusive: AUC point in `(0.60, 0.70)`, AUC point high but lower CI
+  `<0.65`, harmed count below five per arm, pooled pass with one arm failing,
+  or a threshold frontier that changes when a single harmed item is removed.
 
 H6b. A one-step retry frontier is viable under full cost accounting.
 
 - Accept exploratory frontier: at least one threshold achieves
-  `accuracy_delta_vs_dense >= -0.05`, `speedup_dense_over_active > 1.0`,
-  and retries at least one harmed row.
+  `accuracy_delta_vs_dense >= -0.02`, `speedup_dense_over_active >= 1.254`,
+  `retry_rate <= 0.50`, and `harmed_retried >= 2`. If
+  `BASELINE_REPAIR_PAIRED` is provided, the threshold must also match that
+  no-retry baseline's accuracy delta within `0.02` and beat its
+  dense-normalized speedup.
 - Falsify: no threshold satisfies both fidelity and speed after charging the
   composed pass plus dense retry.
 - Important anti-claim: a positive H6b result is a **retrospective paired-row
@@ -501,16 +513,19 @@ Prior-art anchors checked for this branch:
 ### 2026-05-19 Pareto Audit And Editor Notes
 
 Artifact audit over the Q0b/Q1/Q1b cells shows useful positive points and one
-upper-bound routing point that should guide the paper-facing language:
+retracted timing artifact that should guide the paper-facing language:
 
-- `query_q0b_cvision_only_mvbench_kr100`: `1.177x` E2E, `Delta acc=0.000`,
-  choice agreement `1.000`, and the only full bucket-quality-and-E2E gate pass
-  among the query-routing cells. Anti-claim: this is **not** a token-pruning
-  win. It has `vision_reduction=0.0`, `placeholder_reduction=0.0`, and keeps
-  all valid encoder positions. It is a dense-equivalent C-VISION execution-path
-  systems observation. It is not an aggregate speed/accuracy Pareto point,
-  because `random_seed11` has equal net accuracy delta and higher speed; it is
-  an exact-choice systems point.
+- `query_q0b_cvision_only_mvbench_kr100`: retract the prior `1.177x` E2E
+  language. Re-audit showed the analysis paired a May 15 composed file against
+  an older May 14 dense reference, baking machine-state drift into the
+  dense/composed ratio. Mechanistically this cell has `vision_reduction=0.0`,
+  `placeholder_reduction=0.0`, keeps all valid encoder positions, and therefore
+  saves no work. It remains useful only as an exact-choice / dense-equivalence
+  systems check, not as a speedup claim. The analyzer now supports
+  `--dense-source composed-jsonl-same-run`, and query-routing launchers use
+  that mode for future timing-sensitive analyses. Historical Q0b/Q1/Q1b
+  analysis JSONs produced before this fix should not be used for speedup
+  claims without reanalysis.
 - `query_q1_mvbench_random_seed11`: `1.254x` E2E, `Delta acc=0.000`, fidelity
   pass, but choice agreement is only `0.733` and the bucket gate fails from one
   action-localization loss at `n=6`. Treat this as a strong Pareto/exploratory
@@ -533,13 +548,16 @@ from static physical-operator selection to adaptive execution.
 
 2026-05-19 MLX smoke result: `N_ITEMS=1
 scripts/run_rlt_query_routing_active_repair_targeted.sh` completed after a
-logprob conversion bug was fixed. Dense, `random_valid(seed=11)+admission_on`,
-and `fixed_uniform+admission_on` each produced one paired row for
-`mvbench:action_localization:0`; both confidence-frontier analyzers completed.
-The smoke rows contain finite candidate-letter margins (`10.0625` composed for
-both cheap arms) and finite confidence-capture timings. The smoke has
-`harmed_count=0`, so it validates schema/logging/analyzer plumbing only; it
-does not test H6a/H6b.
+logprob conversion bug was fixed, then completed again after the same-run
+dense-source and active-repair v2 analyzer fixes. Dense,
+`random_valid(seed=11)+admission_on`, and `fixed_uniform+admission_on` each
+produced one paired row for `mvbench:action_localization:0`; the two per-arm
+confidence-frontier analyzers and pooled analyzer completed. The smoke rows
+contain finite candidate-letter margins (`10.0625` composed for both cheap
+arms) and finite confidence-capture timings. The pooled smoke has
+`schema_version=gemma_active_repair_confidence_v2`, `harmed_count=0`,
+`auc_gate_passed=false`, and named no-retry/retry-all baselines, so it
+validates schema/logging/analyzer plumbing only; it does not test H6a/H6b.
 
 ### H7 Multi-Shot Consistency Gate, Timing Check Only
 

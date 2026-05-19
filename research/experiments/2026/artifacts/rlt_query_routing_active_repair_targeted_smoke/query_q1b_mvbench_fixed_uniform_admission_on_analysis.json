@@ -8,12 +8,14 @@
     }
   ],
   "dense_jsonl": "research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted_smoke/query_q1b_dense_mvbench_dense.jsonl",
+  "dense_source": "composed-jsonl-same-run",
   "expected_items": 1,
   "schema_version": "gemma_full_composition_analysis_v2",
   "source_pairs": [
     {
       "composed_jsonl": "research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted_smoke/query_q1b_mvbench_fixed_uniform_admission_on_composed.jsonl",
       "dense_jsonl": "research/experiments/2026/artifacts/rlt_query_routing_active_repair_targeted_smoke/query_q1b_dense_mvbench_dense.jsonl",
+      "dense_source": "composed-jsonl-same-run",
       "n_items": 1
     }
   ],
@@ -32,7 +34,7 @@
         "composed_accuracy": 1.0,
         "dense_accuracy": 1.0,
         "e2e_gate_pass": true,
-        "e2e_speedup_dense_over_composed": 1.9204321066346508,
+        "e2e_speedup_dense_over_composed": 1.2992065506108144,
         "failure_taxonomy": {
           "preserved_correct": 1
         },
@@ -50,21 +52,21 @@
     "composed_accuracy": 1.0,
     "composed_total_e2e_ms": 6198.373793,
     "dense_accuracy": 1.0,
-    "dense_total_e2e_ms": 11903.556041,
+    "dense_total_e2e_ms": 8052.9678349999995,
     "e2e_speedup_ci95": [
-      1.9204321066346508,
-      1.9204321066346508
+      1.2992065506108144,
+      1.2992065506108144
     ],
-    "e2e_speedup_dense_over_composed": 1.9204321066346508,
+    "e2e_speedup_dense_over_composed": 1.2992065506108144,
     "failure_taxonomy": {
       "preserved_correct": 1
     },
     "mean_composed_end_to_end_ms": 6198.373793,
     "mean_composed_prefill_ms": 3021.659042,
     "mean_composed_vision_ms": 2776.657917,
-    "mean_dense_end_to_end_ms": 11903.556041,
-    "mean_dense_prefill_ms": 6514.268125,
-    "mean_dense_vision_ms": 4995.194416,
+    "mean_dense_end_to_end_ms": 8052.9678349999995,
+    "mean_dense_prefill_ms": 4909.930125,
+    "mean_dense_vision_ms": 2776.657917,
     "n_items": 1,
     "parse_failure_delta_composed_minus_dense": 0,
     "parse_taxonomy": {
