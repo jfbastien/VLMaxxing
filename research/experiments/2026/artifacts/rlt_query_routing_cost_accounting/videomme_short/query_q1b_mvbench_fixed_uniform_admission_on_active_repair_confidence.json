@@ -1,0 +1,470 @@
+{
+  "auc_class_count_gate_passed": false,
+  "auc_gate_passed": false,
+  "baseline_accuracy_margin": 0.02,
+  "baseline_no_retry": {
+    "accuracy_delta_vs_baseline": 0.09999999999999998,
+    "accuracy_delta_vs_dense": 0.09999999999999998,
+    "active_accuracy": 0.5,
+    "active_speedup_vs_baseline": 1.1101630848642632,
+    "active_total_ms": 313312.19229,
+    "composed_confidence_capture_ms_charged": 386.683667,
+    "composed_total_ms": 313312.19229,
+    "dense_confidence_capture_ms_subtracted": 428.89291699999995,
+    "dense_total_ms": 349468.13183299993,
+    "harmed_retried": 0,
+    "policy_label": "no_retry_composed_only",
+    "preserved_correct_retried": 0,
+    "recovered_retried": 0,
+    "retry_count": 0,
+    "retry_rate": 0.0,
+    "speedup_composed_over_active": 1.0,
+    "speedup_dense_over_active": 1.115399082553207,
+    "threshold": null,
+    "unchanged_wrong_retried": 0
+  },
+  "baseline_reference_audit": {
+    "dense_label_correctness_flips": 2,
+    "dense_label_mismatch_count": 5,
+    "dense_label_mismatches": [
+      {
+        "diff": {
+          "dense_choice": {
+            "active": null,
+            "baseline": 0
+          },
+          "dense_parse_failure": {
+            "active": true,
+            "baseline": false
+          }
+        },
+        "item_key": "videomme:short:062-3"
+      },
+      {
+        "diff": {
+          "dense_choice": {
+            "active": 0,
+            "baseline": 1
+          }
+        },
+        "item_key": "videomme:short:066-3"
+      },
+      {
+        "diff": {
+          "dense_choice": {
+            "active": 1,
+            "baseline": 3
+          },
+          "dense_correct": {
+            "active": true,
+            "baseline": false
+          }
+        },
+        "item_key": "videomme:short:100-2"
+      },
+      {
+        "diff": {
+          "dense_choice": {
+            "active": 1,
+            "baseline": 3
+          },
+          "dense_correct": {
+            "active": false,
+            "baseline": true
+          }
+        },
+        "item_key": "videomme:short:126-1"
+      },
+      {
+        "diff": {
+          "dense_choice": {
+            "active": 1,
+            "baseline": 0
+          }
+        },
+        "item_key": "videomme:short:267-2"
+      }
+    ],
+    "n_active": 20,
+    "n_baseline": 20
+  },
+  "baseline_retry_all": {
+    "accuracy_delta_vs_baseline": 0.0,
+    "accuracy_delta_vs_dense": 0.0,
+    "active_accuracy": 0.4,
+    "active_speedup_vs_baseline": 0.5248007782646563,
+    "active_total_ms": 662780.3241230001,
+    "composed_confidence_capture_ms_charged": 386.683667,
+    "composed_total_ms": 313312.19229,
+    "dense_confidence_capture_ms_subtracted": 428.89291699999995,
+    "dense_total_ms": 349468.13183299993,
+    "harmed_retried": 0,
+    "policy_label": "retry_all_dense",
+    "preserved_correct_retried": 8,
+    "recovered_retried": 2,
+    "retry_count": 20,
+    "retry_rate": 1.0,
+    "speedup_composed_over_active": 0.47272403975567456,
+    "speedup_dense_over_active": 0.5272759602443251,
+    "threshold": null,
+    "unchanged_wrong_retried": 10
+  },
+  "best_viable_by_speedup": null,
+  "cell_types": [
+    "rlt_admission_plus_fixed_uniform_cvision"
+  ],
+  "comparison_baseline": {
+    "accuracy_delta_vs_dense": 0.0,
+    "baseline_accuracy": 0.4,
+    "baseline_confidence_capture_ms_subtracted": 378.628917,
+    "baseline_total_ms": 339860.28304199997,
+    "baseline_total_raw_ms": 340238.911959,
+    "cell_types": [
+      "random_valid_cvision_only"
+    ],
+    "dense_accuracy": 0.4,
+    "dense_confidence_capture_ms_subtracted": 384.323372,
+    "dense_total_ms": 341463.207586,
+    "dense_total_raw_ms": 341847.530958,
+    "label": "external_no_retry_baseline",
+    "n_items": 20,
+    "source_paths": [
+      "research/experiments/2026/artifacts/rlt_query_routing_cost_accounting/videomme_short/query_q1_mvbench_random_seed11_no_admission_paired.jsonl"
+    ],
+    "speedup_dense_over_baseline": 1.0047164220827824,
+    "timing_policy": "external no-retry baseline uses paired dense/composed end_to_end_ms and subtracts dense/composed confidence-capture time when present because a no-retry baseline would not compute a repair gate"
+  },
+  "composed_accuracy": 0.5,
+  "dense_accuracy": 0.4,
+  "harmed_count": 0,
+  "harmed_margin_mean": null,
+  "harmed_margin_median": null,
+  "margin_field": "composed_first_generated_top2_margin",
+  "max_retry_rate": 0.5,
+  "min_auc_class_count": 3,
+  "min_auc_lower_ci": 0.65,
+  "min_harmed_retried": 2,
+  "min_speedup": 1.0,
+  "n_items": 20,
+  "pearson_margin_vs_harmed": null,
+  "per_cell_type_auc": [
+    {
+      "cell_type": "rlt_admission_plus_fixed_uniform_cvision",
+      "harmed_count": 0,
+      "n_items": 20,
+      "preserved_correct_count": 8,
+      "risk_auc_harmed_lower_margin": null,
+      "unique_item_count": 20
+    }
+  ],
+  "per_group_class_count_gate_passed": false,
+  "pooled_class_count_gate_passed": false,
+  "pooled_status": {
+    "analysis_role": "per_arm_primary",
+    "cell_type_count": 1,
+    "group_count": 1,
+    "row_count": 20,
+    "supportive_only": false,
+    "unique_item_count": 20,
+    "warnings": [
+      "auc_class_count_underpowered",
+      "single_arm_underpowered"
+    ]
+  },
+  "preserved_correct_count": 8,
+  "preserved_correct_margin_mean": 1.375,
+  "preserved_correct_margin_median": 1.375,
+  "quality_delta_floor": -0.02,
+  "risk_auc_harmed_lower_margin": null,
+  "risk_auc_harmed_lower_margin_ci95": {
+    "bootstrap_unit": "item_id_cluster",
+    "lower_95": null,
+    "n_bootstrap": 0,
+    "n_bootstrap_requested": 2000,
+    "point": null,
+    "seed": 20260519,
+    "unique_item_count": 20,
+    "upper_95": null
+  },
+  "schema_version": "gemma_active_repair_confidence_v4",
+  "source_paths": [
+    "research/experiments/2026/artifacts/rlt_query_routing_cost_accounting/videomme_short/query_q1b_mvbench_fixed_uniform_admission_on_paired.jsonl"
+  ],
+  "thresholds": [
+    {
+      "accuracy_delta_vs_baseline": 0.09999999999999998,
+      "accuracy_delta_vs_dense": 0.09999999999999998,
+      "active_accuracy": 0.5,
+      "active_speedup_vs_baseline": 0.9956287928182777,
+      "active_total_ms": 349354.73183099995,
+      "composed_confidence_capture_ms_charged": 386.683667,
+      "composed_total_ms": 313312.19229,
+      "dense_confidence_capture_ms_subtracted": 428.89291699999995,
+      "dense_total_ms": 349468.13183299993,
+      "harmed_retried": 0,
+      "policy_label": null,
+      "preserved_correct_retried": 1,
+      "recovered_retried": 0,
+      "retry_count": 2,
+      "retry_rate": 0.1,
+      "speedup_composed_over_active": 0.8968311110254676,
+      "speedup_dense_over_active": 1.0003245984429798,
+      "threshold": 0.0,
+      "unchanged_wrong_retried": 1
+    },
+    {
+      "accuracy_delta_vs_baseline": 0.09999999999999998,
+      "accuracy_delta_vs_dense": 0.09999999999999998,
+      "active_accuracy": 0.5,
+      "active_speedup_vs_baseline": 0.9369854658211799,
+      "active_total_ms": 371219.877582,
+      "composed_confidence_capture_ms_charged": 386.683667,
+      "composed_total_ms": 313312.19229,
+      "dense_confidence_capture_ms_subtracted": 428.89291699999995,
+      "dense_total_ms": 349468.13183299993,
+      "harmed_retried": 0,
+      "policy_label": null,
+      "preserved_correct_retried": 1,
+      "recovered_retried": 0,
+      "retry_count": 3,
+      "retry_rate": 0.15,
+      "speedup_composed_over_active": 0.8440070459879708,
+      "speedup_dense_over_active": 0.9414046847634251,
+      "threshold": 0.125,
+      "unchanged_wrong_retried": 2
+    },
+    {
+      "accuracy_delta_vs_baseline": 0.09999999999999998,
+      "accuracy_delta_vs_dense": 0.09999999999999998,
+      "active_accuracy": 0.5,
+      "active_speedup_vs_baseline": 0.8916102999699909,
+      "active_total_ms": 390111.722498,
+      "composed_confidence_capture_ms_charged": 386.683667,
+      "composed_total_ms": 313312.19229,
+      "dense_confidence_capture_ms_subtracted": 428.89291699999995,
+      "dense_total_ms": 349468.13183299993,
+      "harmed_retried": 0,
+      "policy_label": null,
+      "preserved_correct_retried": 1,
+      "recovered_retried": 0,
+      "retry_count": 4,
+      "retry_rate": 0.2,
+      "speedup_composed_over_active": 0.8031345233200631,
+      "speedup_dense_over_active": 0.8958155104780056,
+      "threshold": 0.25,
+      "unchanged_wrong_retried": 3
+    },
+    {
+      "accuracy_delta_vs_baseline": 0.04999999999999999,
+      "accuracy_delta_vs_dense": 0.04999999999999999,
+      "active_accuracy": 0.45,
+      "active_speedup_vs_baseline": 0.7915502243478825,
+      "active_total_ms": 439425.849705,
+      "composed_confidence_capture_ms_charged": 386.683667,
+      "composed_total_ms": 313312.19229,
+      "dense_confidence_capture_ms_subtracted": 428.89291699999995,
+      "dense_total_ms": 349468.13183299993,
+      "harmed_retried": 0,
+      "policy_label": null,
+      "preserved_correct_retried": 2,
+      "recovered_retried": 1,
+      "retry_count": 7,
+      "retry_rate": 0.35,
+      "speedup_composed_over_active": 0.7130035533875306,
+      "speedup_dense_over_active": 0.7952835093056282,
+      "threshold": 0.375,
+      "unchanged_wrong_retried": 4
+    },
+    {
+      "accuracy_delta_vs_baseline": 0.04999999999999999,
+      "accuracy_delta_vs_dense": 0.04999999999999999,
+      "active_accuracy": 0.45,
+      "active_speedup_vs_baseline": 0.7570725165906552,
+      "active_total_ms": 459437.665872,
+      "composed_confidence_capture_ms_charged": 386.683667,
+      "composed_total_ms": 313312.19229,
+      "dense_confidence_capture_ms_subtracted": 428.89291699999995,
+      "dense_total_ms": 349468.13183299993,
+      "harmed_retried": 0,
+      "policy_label": null,
+      "preserved_correct_retried": 2,
+      "recovered_retried": 1,
+      "retry_count": 8,
+      "retry_rate": 0.4,
+      "speedup_composed_over_active": 0.681947118322008,
+      "speedup_dense_over_active": 0.7606431901261711,
+      "threshold": 0.625,
+      "unchanged_wrong_retried": 5
+    },
+    {
+      "accuracy_delta_vs_baseline": 0.0,
+      "accuracy_delta_vs_dense": 0.0,
+      "active_accuracy": 0.4,
+      "active_speedup_vs_baseline": 0.7357829929989858,
+      "active_total_ms": 472731.271622,
+      "composed_confidence_capture_ms_charged": 386.683667,
+      "composed_total_ms": 313312.19229,
+      "dense_confidence_capture_ms_subtracted": 428.89291699999995,
+      "dense_total_ms": 349468.13183299993,
+      "harmed_retried": 0,
+      "policy_label": null,
+      "preserved_correct_retried": 2,
+      "recovered_retried": 2,
+      "retry_count": 9,
+      "retry_rate": 0.45,
+      "speedup_composed_over_active": 0.6627701848768894,
+      "speedup_dense_over_active": 0.7392532561553019,
+      "threshold": 0.875,
+      "unchanged_wrong_retried": 5
+    },
+    {
+      "accuracy_delta_vs_baseline": 0.0,
+      "accuracy_delta_vs_dense": 0.0,
+      "active_accuracy": 0.4,
+      "active_speedup_vs_baseline": 0.6583195829405186,
+      "active_total_ms": 528356.8025800001,
+      "composed_confidence_capture_ms_charged": 386.683667,
+      "composed_total_ms": 313312.19229,
+      "dense_confidence_capture_ms_subtracted": 428.89291699999995,
+      "dense_total_ms": 349468.13183299993,
+      "harmed_retried": 0,
+      "policy_label": null,
+      "preserved_correct_retried": 3,
+      "recovered_retried": 2,
+      "retry_count": 12,
+      "retry_rate": 0.6,
+      "speedup_composed_over_active": 0.5929935807773771,
+      "speedup_dense_over_active": 0.6614244959590274,
+      "threshold": 1.25,
+      "unchanged_wrong_retried": 7
+    },
+    {
+      "accuracy_delta_vs_baseline": 0.0,
+      "accuracy_delta_vs_dense": 0.0,
+      "active_accuracy": 0.4,
+      "active_speedup_vs_baseline": 0.6156797676725958,
+      "active_total_ms": 564948.936414,
+      "composed_confidence_capture_ms_charged": 386.683667,
+      "composed_total_ms": 313312.19229,
+      "dense_confidence_capture_ms_subtracted": 428.89291699999995,
+      "dense_total_ms": 349468.13183299993,
+      "harmed_retried": 0,
+      "policy_label": null,
+      "preserved_correct_retried": 5,
+      "recovered_retried": 2,
+      "retry_count": 14,
+      "retry_rate": 0.7,
+      "speedup_composed_over_active": 0.5545849759072771,
+      "speedup_dense_over_active": 0.6185835733247692,
+      "threshold": 1.375,
+      "unchanged_wrong_retried": 7
+    },
+    {
+      "accuracy_delta_vs_baseline": 0.0,
+      "accuracy_delta_vs_dense": 0.0,
+      "active_accuracy": 0.4,
+      "active_speedup_vs_baseline": 0.5833855738350701,
+      "active_total_ms": 596222.5422060001,
+      "composed_confidence_capture_ms_charged": 386.683667,
+      "composed_total_ms": 313312.19229,
+      "dense_confidence_capture_ms_subtracted": 428.89291699999995,
+      "dense_total_ms": 349468.13183299993,
+      "harmed_retried": 0,
+      "policy_label": null,
+      "preserved_correct_retried": 6,
+      "recovered_retried": 2,
+      "retry_count": 16,
+      "retry_rate": 0.8,
+      "speedup_composed_over_active": 0.5254953815244172,
+      "speedup_dense_over_active": 0.5861370664382825,
+      "threshold": 1.5,
+      "unchanged_wrong_retried": 8
+    },
+    {
+      "accuracy_delta_vs_baseline": 0.0,
+      "accuracy_delta_vs_dense": 0.0,
+      "active_accuracy": 0.4,
+      "active_speedup_vs_baseline": 0.5667426649070889,
+      "active_total_ms": 613731.1542890001,
+      "composed_confidence_capture_ms_charged": 386.683667,
+      "composed_total_ms": 313312.19229,
+      "dense_confidence_capture_ms_subtracted": 428.89291699999995,
+      "dense_total_ms": 349468.13183299993,
+      "harmed_retried": 0,
+      "policy_label": null,
+      "preserved_correct_retried": 6,
+      "recovered_retried": 2,
+      "retry_count": 17,
+      "retry_rate": 0.85,
+      "speedup_composed_over_active": 0.5105039724648951,
+      "speedup_dense_over_active": 0.5694156625271116,
+      "threshold": 1.625,
+      "unchanged_wrong_retried": 9
+    },
+    {
+      "accuracy_delta_vs_baseline": 0.0,
+      "accuracy_delta_vs_dense": 0.0,
+      "active_accuracy": 0.4,
+      "active_speedup_vs_baseline": 0.5498473367722096,
+      "active_total_ms": 632589.4601220001,
+      "composed_confidence_capture_ms_charged": 386.683667,
+      "composed_total_ms": 313312.19229,
+      "dense_confidence_capture_ms_subtracted": 428.89291699999995,
+      "dense_total_ms": 349468.13183299993,
+      "harmed_retried": 0,
+      "policy_label": null,
+      "preserved_correct_retried": 7,
+      "recovered_retried": 2,
+      "retry_count": 18,
+      "retry_rate": 0.9,
+      "speedup_composed_over_active": 0.4952851921206135,
+      "speedup_dense_over_active": 0.5524406488935212,
+      "threshold": 1.75,
+      "unchanged_wrong_retried": 9
+    },
+    {
+      "accuracy_delta_vs_baseline": 0.0,
+      "accuracy_delta_vs_dense": 0.0,
+      "active_accuracy": 0.4,
+      "active_speedup_vs_baseline": 0.5362289856256137,
+      "active_total_ms": 648655.0321640001,
+      "composed_confidence_capture_ms_charged": 386.683667,
+      "composed_total_ms": 313312.19229,
+      "dense_confidence_capture_ms_subtracted": 428.89291699999995,
+      "dense_total_ms": 349468.13183299993,
+      "harmed_retried": 0,
+      "policy_label": null,
+      "preserved_correct_retried": 7,
+      "recovered_retried": 2,
+      "retry_count": 19,
+      "retry_rate": 0.95,
+      "speedup_composed_over_active": 0.48301820960942604,
+      "speedup_dense_over_active": 0.5387580678548464,
+      "threshold": 3.0,
+      "unchanged_wrong_retried": 10
+    },
+    {
+      "accuracy_delta_vs_baseline": 0.0,
+      "accuracy_delta_vs_dense": 0.0,
+      "active_accuracy": 0.4,
+      "active_speedup_vs_baseline": 0.5248007782646563,
+      "active_total_ms": 662780.3241230001,
+      "composed_confidence_capture_ms_charged": 386.683667,
+      "composed_total_ms": 313312.19229,
+      "dense_confidence_capture_ms_subtracted": 428.89291699999995,
+      "dense_total_ms": 349468.13183299993,
+      "harmed_retried": 0,
+      "policy_label": null,
+      "preserved_correct_retried": 8,
+      "recovered_retried": 2,
+      "retry_count": 20,
+      "retry_rate": 1.0,
+      "speedup_composed_over_active": 0.47272403975567456,
+      "speedup_dense_over_active": 0.5272759602443251,
+      "threshold": 3.375,
+      "unchanged_wrong_retried": 10
+    }
+  ],
+  "timing_policy": "charge composed confidence capture because the gate needs it; subtract dense confidence capture because dense retry would not rescore confidence",
+  "viable_threshold_count": 0
+}

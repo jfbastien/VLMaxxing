@@ -1,0 +1,406 @@
+{
+  "cell_type": "rlt_admission_plus_random_valid_cvision",
+  "composed_jsonl": "research/experiments/2026/artifacts/rlt_query_routing_cost_accounting/mvbench_hosted_dev/query_q1b_mvbench_random_seed11_admission_on_composed.jsonl",
+  "decisions": [
+    {
+      "decision": "stop",
+      "failed": [
+        "pass_bucket_quality_and_e2e"
+      ],
+      "reason": "direct_pair_gate_failed"
+    }
+  ],
+  "dense_jsonl": "research/experiments/2026/artifacts/rlt_query_routing_cost_accounting/mvbench_hosted_dev/query_q1b_dense_mvbench_dense.jsonl",
+  "dense_source": "composed-jsonl-same-run",
+  "expected_items": 54,
+  "schema_version": "gemma_full_composition_analysis_v2",
+  "source_pairs": [
+    {
+      "composed_jsonl": "research/experiments/2026/artifacts/rlt_query_routing_cost_accounting/mvbench_hosted_dev/query_q1b_mvbench_random_seed11_admission_on_composed.jsonl",
+      "dense_jsonl": "research/experiments/2026/artifacts/rlt_query_routing_cost_accounting/mvbench_hosted_dev/query_q1b_dense_mvbench_dense.jsonl",
+      "dense_source": "composed-jsonl-same-run",
+      "n_items": 54
+    }
+  ],
+  "summary": {
+    "accuracy_delta_ci95": [
+      -0.1111111111111111,
+      0.14814814814814814
+    ],
+    "accuracy_delta_composed_minus_dense": 0.018518518518518545,
+    "bucket_failures": [
+      "action_sequence",
+      "moving_attribute",
+      "moving_count",
+      "object_shuffle"
+    ],
+    "bucket_underpowered": [],
+    "by_group": {
+      "action_antonym": {
+        "accuracy_delta_composed_minus_dense": 0.3333333333333333,
+        "choice_agreement": 0.6666666666666666,
+        "composed_accuracy": 0.6666666666666666,
+        "dense_accuracy": 0.3333333333333333,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.341664829529864,
+        "failure_taxonomy": {
+          "preserved_correct": 1,
+          "recovered": 1,
+          "unchanged_wrong": 1
+        },
+        "gate_evaluated": true,
+        "n": 3,
+        "parse_taxonomy": {
+          "parse_same": 3
+        },
+        "quality_gate_pass": true
+      },
+      "action_count": {
+        "accuracy_delta_composed_minus_dense": 0.3333333333333333,
+        "choice_agreement": 0.6666666666666666,
+        "composed_accuracy": 0.3333333333333333,
+        "dense_accuracy": 0.0,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.1531407476249602,
+        "failure_taxonomy": {
+          "recovered": 1,
+          "unchanged_wrong": 2
+        },
+        "gate_evaluated": true,
+        "n": 3,
+        "parse_taxonomy": {
+          "parse_same": 3
+        },
+        "quality_gate_pass": true
+      },
+      "action_localization": {
+        "accuracy_delta_composed_minus_dense": 0.0,
+        "choice_agreement": 0.6666666666666666,
+        "composed_accuracy": 0.6666666666666666,
+        "dense_accuracy": 0.6666666666666666,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.1849445764181825,
+        "failure_taxonomy": {
+          "preserved_correct": 2,
+          "unchanged_wrong": 1
+        },
+        "gate_evaluated": true,
+        "n": 3,
+        "parse_taxonomy": {
+          "parse_same": 3
+        },
+        "quality_gate_pass": true
+      },
+      "action_prediction": {
+        "accuracy_delta_composed_minus_dense": 0.0,
+        "choice_agreement": 0.6666666666666666,
+        "composed_accuracy": 0.3333333333333333,
+        "dense_accuracy": 0.3333333333333333,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.1773707020454534,
+        "failure_taxonomy": {
+          "preserved_correct": 1,
+          "unchanged_wrong": 2
+        },
+        "gate_evaluated": true,
+        "n": 3,
+        "parse_taxonomy": {
+          "parse_harmed": 1,
+          "parse_same": 2
+        },
+        "quality_gate_pass": true
+      },
+      "action_sequence": {
+        "accuracy_delta_composed_minus_dense": -0.3333333333333333,
+        "choice_agreement": 0.6666666666666666,
+        "composed_accuracy": 0.0,
+        "dense_accuracy": 0.3333333333333333,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.1842998025283458,
+        "failure_taxonomy": {
+          "harmed": 1,
+          "unchanged_wrong": 2
+        },
+        "gate_evaluated": true,
+        "n": 3,
+        "parse_taxonomy": {
+          "parse_same": 3
+        },
+        "quality_gate_pass": false
+      },
+      "character_order": {
+        "accuracy_delta_composed_minus_dense": 0.3333333333333333,
+        "choice_agreement": 0.6666666666666666,
+        "composed_accuracy": 0.6666666666666666,
+        "dense_accuracy": 0.3333333333333333,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.1667373595241795,
+        "failure_taxonomy": {
+          "preserved_correct": 1,
+          "recovered": 1,
+          "unchanged_wrong": 1
+        },
+        "gate_evaluated": true,
+        "n": 3,
+        "parse_taxonomy": {
+          "parse_same": 3
+        },
+        "quality_gate_pass": true
+      },
+      "counterfactual_inference": {
+        "accuracy_delta_composed_minus_dense": 0.3333333333333333,
+        "choice_agreement": 0.6666666666666666,
+        "composed_accuracy": 0.3333333333333333,
+        "dense_accuracy": 0.0,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.1762938554247737,
+        "failure_taxonomy": {
+          "recovered": 1,
+          "unchanged_wrong": 2
+        },
+        "gate_evaluated": true,
+        "n": 3,
+        "parse_taxonomy": {
+          "parse_same": 3
+        },
+        "quality_gate_pass": true
+      },
+      "egocentric_navigation": {
+        "accuracy_delta_composed_minus_dense": 0.0,
+        "choice_agreement": 1.0,
+        "composed_accuracy": 0.0,
+        "dense_accuracy": 0.0,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.0055440917626888,
+        "failure_taxonomy": {
+          "unchanged_wrong": 3
+        },
+        "gate_evaluated": true,
+        "n": 3,
+        "parse_taxonomy": {
+          "parse_same": 3
+        },
+        "quality_gate_pass": true
+      },
+      "fine_grained_action": {
+        "accuracy_delta_composed_minus_dense": 0.0,
+        "choice_agreement": 0.6666666666666666,
+        "composed_accuracy": 0.3333333333333333,
+        "dense_accuracy": 0.3333333333333333,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.1726952966412523,
+        "failure_taxonomy": {
+          "preserved_correct": 1,
+          "unchanged_wrong": 2
+        },
+        "gate_evaluated": true,
+        "n": 3,
+        "parse_taxonomy": {
+          "parse_same": 3
+        },
+        "quality_gate_pass": true
+      },
+      "moving_attribute": {
+        "accuracy_delta_composed_minus_dense": -0.6666666666666667,
+        "choice_agreement": 0.3333333333333333,
+        "composed_accuracy": 0.3333333333333333,
+        "dense_accuracy": 1.0,
+        "e2e_gate_pass": false,
+        "e2e_speedup_dense_over_composed": 0.9881989896603836,
+        "failure_taxonomy": {
+          "harmed": 2,
+          "preserved_correct": 1
+        },
+        "gate_evaluated": true,
+        "n": 3,
+        "parse_taxonomy": {
+          "parse_harmed": 1,
+          "parse_same": 2
+        },
+        "quality_gate_pass": false
+      },
+      "moving_count": {
+        "accuracy_delta_composed_minus_dense": -0.3333333333333333,
+        "choice_agreement": 0.3333333333333333,
+        "composed_accuracy": 0.0,
+        "dense_accuracy": 0.3333333333333333,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.2486050536833693,
+        "failure_taxonomy": {
+          "harmed": 1,
+          "unchanged_wrong": 2
+        },
+        "gate_evaluated": true,
+        "n": 3,
+        "parse_taxonomy": {
+          "parse_same": 3
+        },
+        "quality_gate_pass": false
+      },
+      "moving_direction": {
+        "accuracy_delta_composed_minus_dense": 0.0,
+        "choice_agreement": 0.3333333333333333,
+        "composed_accuracy": 0.3333333333333333,
+        "dense_accuracy": 0.3333333333333333,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.4920363747623078,
+        "failure_taxonomy": {
+          "preserved_correct": 1,
+          "unchanged_wrong": 2
+        },
+        "gate_evaluated": true,
+        "n": 3,
+        "parse_taxonomy": {
+          "parse_same": 3
+        },
+        "quality_gate_pass": true
+      },
+      "object_existence": {
+        "accuracy_delta_composed_minus_dense": 0.3333333333333333,
+        "choice_agreement": 0.6666666666666666,
+        "composed_accuracy": 0.3333333333333333,
+        "dense_accuracy": 0.0,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.2592962005777588,
+        "failure_taxonomy": {
+          "recovered": 1,
+          "unchanged_wrong": 2
+        },
+        "gate_evaluated": true,
+        "n": 3,
+        "parse_taxonomy": {
+          "parse_same": 3
+        },
+        "quality_gate_pass": true
+      },
+      "object_interaction": {
+        "accuracy_delta_composed_minus_dense": 0.0,
+        "choice_agreement": 0.3333333333333333,
+        "composed_accuracy": 0.3333333333333333,
+        "dense_accuracy": 0.3333333333333333,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.1678627427694113,
+        "failure_taxonomy": {
+          "harmed": 1,
+          "recovered": 1,
+          "unchanged_wrong": 1
+        },
+        "gate_evaluated": true,
+        "n": 3,
+        "parse_taxonomy": {
+          "parse_same": 3
+        },
+        "quality_gate_pass": true
+      },
+      "object_shuffle": {
+        "accuracy_delta_composed_minus_dense": -0.3333333333333333,
+        "choice_agreement": 0.6666666666666666,
+        "composed_accuracy": 0.3333333333333333,
+        "dense_accuracy": 0.6666666666666666,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.0775323203734024,
+        "failure_taxonomy": {
+          "harmed": 1,
+          "preserved_correct": 1,
+          "unchanged_wrong": 1
+        },
+        "gate_evaluated": true,
+        "n": 3,
+        "parse_taxonomy": {
+          "parse_same": 3
+        },
+        "quality_gate_pass": false
+      },
+      "scene_transition": {
+        "accuracy_delta_composed_minus_dense": 0.3333333333333333,
+        "choice_agreement": 0.3333333333333333,
+        "composed_accuracy": 0.6666666666666666,
+        "dense_accuracy": 0.3333333333333333,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.2662376321282134,
+        "failure_taxonomy": {
+          "preserved_correct": 1,
+          "recovered": 1,
+          "unchanged_wrong": 1
+        },
+        "gate_evaluated": true,
+        "n": 3,
+        "parse_taxonomy": {
+          "parse_same": 3
+        },
+        "quality_gate_pass": true
+      },
+      "state_change": {
+        "accuracy_delta_composed_minus_dense": 0.0,
+        "choice_agreement": 1.0,
+        "composed_accuracy": 0.0,
+        "dense_accuracy": 0.0,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.2503408056300287,
+        "failure_taxonomy": {
+          "unchanged_wrong": 3
+        },
+        "gate_evaluated": true,
+        "n": 3,
+        "parse_taxonomy": {
+          "parse_same": 3
+        },
+        "quality_gate_pass": true
+      },
+      "unexpected_action": {
+        "accuracy_delta_composed_minus_dense": 0.0,
+        "choice_agreement": 1.0,
+        "composed_accuracy": 0.6666666666666666,
+        "dense_accuracy": 0.6666666666666666,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.222334505039292,
+        "failure_taxonomy": {
+          "preserved_correct": 2,
+          "unchanged_wrong": 1
+        },
+        "gate_evaluated": true,
+        "n": 3,
+        "parse_taxonomy": {
+          "parse_same": 3
+        },
+        "quality_gate_pass": true
+      }
+    },
+    "cell_type": "rlt_admission_plus_random_valid_cvision",
+    "choice_agreement": 0.6296296296296297,
+    "choice_changed_count": 20,
+    "composed_accuracy": 0.35185185185185186,
+    "composed_total_e2e_ms": 832105.447833,
+    "dense_accuracy": 0.3333333333333333,
+    "dense_total_e2e_ms": 988457.687581,
+    "e2e_speedup_ci95": [
+      1.1467220118828363,
+      1.2245096899138428
+    ],
+    "e2e_speedup_dense_over_composed": 1.1878995506581267,
+    "failure_taxonomy": {
+      "harmed": 6,
+      "preserved_correct": 12,
+      "recovered": 7,
+      "unchanged_wrong": 29
+    },
+    "mean_composed_end_to_end_ms": 15409.360145055556,
+    "mean_composed_prefill_ms": 6417.27782562963,
+    "mean_composed_vision_ms": 5404.438297814814,
+    "mean_dense_end_to_end_ms": 18304.77199224074,
+    "mean_dense_prefill_ms": 9243.480502296296,
+    "mean_dense_vision_ms": 5404.438297814814,
+    "n_items": 54,
+    "parse_failure_delta_composed_minus_dense": 2,
+    "parse_taxonomy": {
+      "parse_harmed": 2,
+      "parse_same": 52
+    },
+    "pass_bucket_quality_and_e2e": false,
+    "pass_complete_pairing": true,
+    "pass_dense_equivalence": null,
+    "pass_e2e_positive": true,
+    "pass_fidelity": true,
+    "pass_parse_failure_delta": true
+  }
+}

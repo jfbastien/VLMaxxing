@@ -1,0 +1,131 @@
+{
+  "cell_type": "rlt_admission_plus_fixed_uniform_cvision",
+  "composed_jsonl": "research/experiments/2026/artifacts/rlt_query_routing_cost_accounting/tomato_motion_dev/query_q1b_mvbench_fixed_uniform_admission_on_composed.jsonl",
+  "decisions": [
+    {
+      "decision": "stop",
+      "failed": [
+        "pass_bucket_quality_and_e2e"
+      ],
+      "reason": "direct_pair_gate_failed"
+    }
+  ],
+  "dense_jsonl": "research/experiments/2026/artifacts/rlt_query_routing_cost_accounting/tomato_motion_dev/query_q1b_dense_mvbench_dense.jsonl",
+  "dense_source": "composed-jsonl-same-run",
+  "expected_items": 30,
+  "schema_version": "gemma_full_composition_analysis_v2",
+  "source_pairs": [
+    {
+      "composed_jsonl": "research/experiments/2026/artifacts/rlt_query_routing_cost_accounting/tomato_motion_dev/query_q1b_mvbench_fixed_uniform_admission_on_composed.jsonl",
+      "dense_jsonl": "research/experiments/2026/artifacts/rlt_query_routing_cost_accounting/tomato_motion_dev/query_q1b_dense_mvbench_dense.jsonl",
+      "dense_source": "composed-jsonl-same-run",
+      "n_items": 30
+    }
+  ],
+  "summary": {
+    "accuracy_delta_ci95": [
+      -0.13333333333333333,
+      0.23333333333333334
+    ],
+    "accuracy_delta_composed_minus_dense": 0.06666666666666668,
+    "bucket_failures": [
+      "direction"
+    ],
+    "bucket_underpowered": [],
+    "by_group": {
+      "direction": {
+        "accuracy_delta_composed_minus_dense": -0.2,
+        "choice_agreement": 0.2,
+        "composed_accuracy": 0.0,
+        "dense_accuracy": 0.2,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.0706869263748622,
+        "failure_taxonomy": {
+          "harmed": 2,
+          "unchanged_wrong": 8
+        },
+        "gate_evaluated": true,
+        "n": 10,
+        "parse_taxonomy": {
+          "parse_same": 10
+        },
+        "quality_gate_pass": false
+      },
+      "rotation": {
+        "accuracy_delta_composed_minus_dense": 0.1,
+        "choice_agreement": 0.1,
+        "composed_accuracy": 0.2,
+        "dense_accuracy": 0.1,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.052381580326305,
+        "failure_taxonomy": {
+          "harmed": 1,
+          "recovered": 2,
+          "unchanged_wrong": 7
+        },
+        "gate_evaluated": true,
+        "n": 10,
+        "parse_taxonomy": {
+          "parse_same": 10
+        },
+        "quality_gate_pass": true
+      },
+      "shape_trend": {
+        "accuracy_delta_composed_minus_dense": 0.30000000000000004,
+        "choice_agreement": 0.3,
+        "composed_accuracy": 0.4,
+        "dense_accuracy": 0.1,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.0365381094766797,
+        "failure_taxonomy": {
+          "preserved_correct": 1,
+          "recovered": 3,
+          "unchanged_wrong": 6
+        },
+        "gate_evaluated": true,
+        "n": 10,
+        "parse_taxonomy": {
+          "parse_recovered": 2,
+          "parse_same": 8
+        },
+        "quality_gate_pass": true
+      }
+    },
+    "cell_type": "rlt_admission_plus_fixed_uniform_cvision",
+    "choice_agreement": 0.2,
+    "choice_changed_count": 24,
+    "composed_accuracy": 0.2,
+    "composed_total_e2e_ms": 409533.61161900003,
+    "dense_accuracy": 0.13333333333333333,
+    "dense_total_e2e_ms": 431153.558369,
+    "e2e_speedup_ci95": [
+      1.028103482639694,
+      1.083355433374105
+    ],
+    "e2e_speedup_dense_over_composed": 1.052791629640679,
+    "failure_taxonomy": {
+      "harmed": 3,
+      "preserved_correct": 1,
+      "recovered": 5,
+      "unchanged_wrong": 21
+    },
+    "mean_composed_end_to_end_ms": 13651.120387300001,
+    "mean_composed_prefill_ms": 6077.637872266667,
+    "mean_composed_vision_ms": 3359.3566514,
+    "mean_dense_end_to_end_ms": 14371.785278966667,
+    "mean_dense_prefill_ms": 7096.3038153,
+    "mean_dense_vision_ms": 3359.3566514,
+    "n_items": 30,
+    "parse_failure_delta_composed_minus_dense": -2,
+    "parse_taxonomy": {
+      "parse_recovered": 2,
+      "parse_same": 28
+    },
+    "pass_bucket_quality_and_e2e": false,
+    "pass_complete_pairing": true,
+    "pass_dense_equivalence": null,
+    "pass_e2e_positive": true,
+    "pass_fidelity": true,
+    "pass_parse_failure_delta": true
+  }
+}
