@@ -1,0 +1,125 @@
+{
+  "cell_type": "rlt_admission_plus_rlt_cvision",
+  "composed_jsonl": "research/experiments/2026/artifacts/rlt_m3_cost_accounting_followup/tomato_motion_dev/tomato_motion_dev_rlt_composition_kr050.jsonl",
+  "decisions": [
+    {
+      "decision": "continue",
+      "reason": "direct_pair_gate_passed"
+    }
+  ],
+  "dense_jsonl": "research/experiments/2026/artifacts/rlt_m3_cost_accounting_followup/tomato_motion_dev/dense_reference.jsonl",
+  "dense_source": "composed-jsonl-same-run",
+  "expected_items": 30,
+  "schema_version": "gemma_full_composition_analysis_v2",
+  "source_pairs": [
+    {
+      "composed_jsonl": "research/experiments/2026/artifacts/rlt_m3_cost_accounting_followup/tomato_motion_dev/tomato_motion_dev_rlt_composition_kr050.jsonl",
+      "dense_jsonl": "research/experiments/2026/artifacts/rlt_m3_cost_accounting_followup/tomato_motion_dev/dense_reference.jsonl",
+      "dense_source": "composed-jsonl-same-run",
+      "n_items": 30
+    }
+  ],
+  "summary": {
+    "accuracy_delta_ci95": [
+      -0.06666666666666667,
+      0.2
+    ],
+    "accuracy_delta_composed_minus_dense": 0.06666666666666667,
+    "bucket_failures": [],
+    "bucket_underpowered": [],
+    "by_group": {
+      "direction": {
+        "accuracy_delta_composed_minus_dense": 0.0,
+        "choice_agreement": 0.5,
+        "composed_accuracy": 0.1,
+        "dense_accuracy": 0.1,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.085345689921108,
+        "failure_taxonomy": {
+          "preserved_correct": 1,
+          "unchanged_wrong": 9
+        },
+        "gate_evaluated": true,
+        "n": 10,
+        "parse_taxonomy": {
+          "parse_same": 10
+        },
+        "quality_gate_pass": true
+      },
+      "rotation": {
+        "accuracy_delta_composed_minus_dense": 0.0,
+        "choice_agreement": 0.7,
+        "composed_accuracy": 0.1,
+        "dense_accuracy": 0.1,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.1139691426450034,
+        "failure_taxonomy": {
+          "harmed": 1,
+          "recovered": 1,
+          "unchanged_wrong": 8
+        },
+        "gate_evaluated": true,
+        "n": 10,
+        "parse_taxonomy": {
+          "parse_same": 10
+        },
+        "quality_gate_pass": true
+      },
+      "shape_trend": {
+        "accuracy_delta_composed_minus_dense": 0.2,
+        "choice_agreement": 0.4,
+        "composed_accuracy": 0.2,
+        "dense_accuracy": 0.0,
+        "e2e_gate_pass": true,
+        "e2e_speedup_dense_over_composed": 1.0086199075500049,
+        "failure_taxonomy": {
+          "recovered": 2,
+          "unchanged_wrong": 8
+        },
+        "gate_evaluated": true,
+        "n": 10,
+        "parse_taxonomy": {
+          "parse_harmed": 1,
+          "parse_same": 9
+        },
+        "quality_gate_pass": true
+      }
+    },
+    "cell_type": "rlt_admission_plus_rlt_cvision",
+    "choice_agreement": 0.5333333333333333,
+    "choice_changed_count": 14,
+    "composed_accuracy": 0.13333333333333333,
+    "composed_total_e2e_ms": 372442.810303,
+    "dense_accuracy": 0.06666666666666667,
+    "dense_total_e2e_ms": 396644.70941999997,
+    "e2e_speedup_ci95": [
+      1.0328836724009864,
+      1.0988096589047796
+    ],
+    "e2e_speedup_dense_over_composed": 1.0649815178263493,
+    "failure_taxonomy": {
+      "harmed": 1,
+      "preserved_correct": 1,
+      "recovered": 3,
+      "unchanged_wrong": 25
+    },
+    "mean_composed_end_to_end_ms": 12414.760343433332,
+    "mean_composed_prefill_ms": 5418.120104133334,
+    "mean_composed_vision_ms": 3060.7463402,
+    "mean_dense_end_to_end_ms": 13221.490313999999,
+    "mean_dense_prefill_ms": 6689.9967653,
+    "mean_dense_vision_ms": 3060.7463402,
+    "n_items": 30,
+    "parse_failure_delta_composed_minus_dense": 1,
+    "parse_taxonomy": {
+      "parse_harmed": 1,
+      "parse_same": 29
+    },
+    "pass_bucket_quality_and_e2e": true,
+    "pass_complete_pairing": true,
+    "pass_dense_equivalence": null,
+    "pass_e2e_positive": true,
+    "pass_fidelity": true,
+    "pass_parse_failure_delta": true
+  }
+}
