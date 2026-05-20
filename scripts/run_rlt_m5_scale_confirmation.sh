@@ -3,10 +3,12 @@ set -euo pipefail
 
 # Launch the Gemma-family M5 scale-confirmation queue. This is not a discovery
 # queue: it tests scorer transfer and C-CEILING scale behavior using the same
-# paper setup Sam has been running. It intentionally excludes direct
-# composition, rescue, query-routing, admission-only, and moving-attribute
-# bracket cells; add a separate preregistered wrapper if those are needed.
-# The operator must provide the exact model path on that machine.
+# paper setup Sam has been running. The default tier is deliberately small:
+# n=1 smoke plus VideoMME n=30 RLT C-VISION. Broader scorer/benchmark expansion
+# requires an explicit M5_CONFIRMATION_TIER. Query-routing, admission-only,
+# direct composition, rescue, and moving-attribute bracket cells stay out of
+# this wrapper; add a separate preregistered wrapper if those are needed. The
+# operator must provide the exact model path on that machine.
 
 cd "$(dirname "$0")/.."
 
@@ -17,6 +19,29 @@ ARTIFACT_DIR="${ARTIFACT_DIR:-research/experiments/2026/artifacts/rlt_followup_q
 MLX_MEMORY_LIMIT_GB="${MLX_MEMORY_LIMIT_GB:-60}"
 RSS_GUARD_MB="${RSS_GUARD_MB:-60000}"
 FRAME_COUNT="${FRAME_COUNT:-8}"
+M5_CONFIRMATION_TIER="${M5_CONFIRMATION_TIER:-core}"
+
+case "$M5_CONFIRMATION_TIER" in
+  core)
+    QUEUE_FLAGS=(--run-cvision-rlt)
+    ;;
+  scorer)
+    QUEUE_FLAGS=(--run-cvision-rlt --run-max-min-triangulation)
+    ;;
+  full)
+    QUEUE_FLAGS=(
+      --run-cvision-rlt
+      --run-cvision-expansion
+      --run-max-min-triangulation
+      --run-magnitude-valid-head-to-head
+    )
+    ;;
+  *)
+    echo "Refusing unknown M5_CONFIRMATION_TIER: $M5_CONFIRMATION_TIER" >&2
+    echo "Use core, scorer, or full." >&2
+    exit 2
+    ;;
+esac
 
 for arg in "$@"; do
   case "$arg" in
@@ -36,8 +61,5 @@ exec "$PY" scripts/run_rlt_followup_queue.py \
   --mlx-memory-limit-gb "$MLX_MEMORY_LIMIT_GB" \
   --rss-guard-mb "$RSS_GUARD_MB" \
   --frame-count "$FRAME_COUNT" \
-  --run-cvision-rlt \
-  --run-cvision-expansion \
-  --run-max-min-triangulation \
-  --run-magnitude-valid-head-to-head \
+  "${QUEUE_FLAGS[@]}" \
   "$@"

@@ -53,21 +53,22 @@ Entries are ordered by phase_id (chronological within each 1.x range).
   prereg_outcome: Accepted with caveat
 
 - phase_id: RLT-M3-cost-accounting-followup
-  status: proposed / launcher implemented
+  status: completed
   authoritative_note: research/experiments/2026/2026-05-20-rlt-m3-cost-accounting-followup-prereg.md
   authoritative_artifacts:
     - research/experiments/2026/artifacts/rlt_m3_cost_accounting_followup/
-  current_best_policy: "planned VideoMME-short admission keep-rate bracket around the existing clean kr=0.5 row; extended tier is reviewer-response only"
+    - research/experiments/2026/artifacts/rlt_m3_cost_accounting_followup/cost_model_fit_n19.json
+  current_best_policy: "stage-cost fit accepted at n=19; VideoMME-short kr=0.3/0.7 are parsed-choice clean timing rows; MVBench/TOMATO extensions are timing/boundary evidence"
   supersedes: []
   paper_relevance: reviewer-response / methodology
-  prereg_outcome:
+  prereg_outcome: Accepted with caveat
 
 - phase_id: RLT-M5-scale-confirmation
-  status: proposed / dry-run summary only
+  status: proposed / tiered wrapper only
   authoritative_note: research/experiments/2026/2026-05-14-vlmaxxing-rlt-closeout-prereg.md
   authoritative_artifacts:
     - research/experiments/2026/artifacts/rlt_followup_queue_m5_gemma4_26b/queue_summary.json
-  current_best_policy: "planned Gemma-family 26B C-VISION scorer-cost and C-CEILING scale confirmation; no executed M5 result yet"
+  current_best_policy: "planned Gemma-family 26B scale confirmation; default core tier is n=1 smoke plus VideoMME n=30 RLT C-VISION, with scorer/full expansion requiring explicit opt-in; no executed M5 result yet"
   supersedes: []
   paper_relevance: scale-confirmation plan
   prereg_outcome:

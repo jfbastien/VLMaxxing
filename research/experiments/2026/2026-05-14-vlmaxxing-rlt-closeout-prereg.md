@@ -19,7 +19,7 @@ separate paper. Do not pass `--run-query-routing-q0b` or
 run is now recorded in
 `research/experiments/2026/2026-05-20-vlmaxxing-rlt-cost-accounting-closeout.md`
 with source artifact
-`research/experiments/2026/artifacts/rlt_query_routing_cost_accounting/cost_model_fit_n11.json`.
+`research/experiments/2026/artifacts/rlt_m3_cost_accounting_followup/cost_model_fit_n19.json`.
 It strengthens C-CEILING/stage-cost accounting and helps explain why
 admission-only rows move E2E when prefill owns enough of the bill. It does
 **not** turn admission-only query routing into a VLMaxxing+RLT closeout
@@ -175,11 +175,12 @@ Scientific status: appendix-level boundary probe, not a powered bucket-level
 claim.
 
 2026-05-20 addendum: a bounded reviewer-response M3 cost-accounting follow-up
-is preregistered separately at
+is preregistered and executed separately at
 `research/experiments/2026/2026-05-20-rlt-m3-cost-accounting-followup-prereg.md`.
-Its default core tier runs only the VideoMME-short admission keep-rate bracket
-around the existing clean `kr=0.5` row. Treat it as cost-model/Pareto evidence,
-not as query-aware routing or a new VLMaxxing/RLT headline.
+The executed extended tier accepts the `n=19` stage-cost model (`R²=0.97097`,
+MARE `1.72%`) and shows VideoMME-short `kr=0.3/0.7` are parsed-choice clean.
+Treat it as cost-model/Pareto evidence, not as query-aware routing or a new
+VLMaxxing/RLT headline.
 
 ## M5 Scope
 
@@ -190,16 +191,27 @@ hard-code a user-specific path; require `GEMMA_MODEL_PATH` from the operator
 environment and run the n=1 smoke before any n=30 cell.
 
 M5 should stay scoped to C-VISION scorer transfer and C-CEILING scale behavior.
-The wrapper intentionally excludes direct composition, rescue, admission-only,
-query-routing, and moving-attribute bracket cells. If an M5 composition run is
-needed later, add a separate preregistered wrapper with explicit composition
-flags rather than widening this closeout launcher.
+After the M3 `n=19` cost-model follow-up, the default M5 wrapper is core-only:
+n=1 smoke plus VideoMME n=30 RLT C-VISION. Optional scorer or full expansion
+tiers require explicit `M5_CONFIRMATION_TIER=scorer` or
+`M5_CONFIRMATION_TIER=full`. The wrapper intentionally excludes direct
+composition, rescue, admission-only, query-routing, and moving-attribute
+bracket cells. If an M5 composition or admission-control run is needed later,
+add a separate preregistered wrapper with explicit flags rather than widening
+this closeout launcher.
 
 Recommended M5 command shape:
 
 ```bash
 export GEMMA_MODEL_PATH=/path/to/sams/gemma-4-26b-a4b-it-mlx-model
 scripts/run_rlt_m5_scale_confirmation.sh
+```
+
+Optional tiers:
+
+```bash
+M5_CONFIRMATION_TIER=scorer scripts/run_rlt_m5_scale_confirmation.sh
+M5_CONFIRMATION_TIER=full scripts/run_rlt_m5_scale_confirmation.sh
 ```
 
 M5 hypotheses:
@@ -215,6 +227,11 @@ M5 hypotheses:
 
 M5 should not run query-routing Q0b/Q1, moving-attribute bracket, or holdout
 replication. Those are either paper #2 work or already covered on M3.
+
+Acceptance gate update from the M3 follow-up: use `<= 8%` absolute relative
+error against the stage-cost ceiling as the M5 scale-confirmation band. The
+current M3 table's max error is `7.85%`; a tighter row can still be labeled
+"green," but `>8%` is the preregistered falsifier for the scale check.
 
 ## Paper Narrative Recommendation
 

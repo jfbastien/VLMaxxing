@@ -93,6 +93,16 @@ contributions (all landed before Codex round-26 2026-04-21):
   `kr_V=0.85` but with only 13.6% vision-time reduction, 1.032× E2E, and no paired
   answer-identity preservation.
 
+- **2026-05-20 Gemma cost-accounting update.** A separate admission/control
+  audit now validates the same denominator discipline at `n=19` cost-model
+  rows: prefill+vision stage accounting reaches `R^2=0.97097`, mean absolute
+  relative error `1.72%`, and max absolute relative error `7.85%` over observed
+  `0.984x-1.779x` E2E. This is a methodology/readiness upgrade, not a new
+  headline router. The cleanest new rows are VideoMME-short admission
+  `kr=0.3/0.7`, both `20/20` parsed-choice clean at `1.133x/1.121x`; MVBench
+  and TOMATO extensions remain timing/boundary evidence because choice churn
+  and bucket caveats remain visible.
+
 - **First-pass measured gains (Gemma / C-VISION).** This is the main
   reviewer-facing result today: measured end-to-end speedups on VideoMME,
   MVBench, and TOMATO, with clean versus advisory status stated explicitly.

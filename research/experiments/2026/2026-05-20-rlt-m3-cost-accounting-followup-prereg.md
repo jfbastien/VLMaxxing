@@ -2,7 +2,7 @@
 
 ## Status
 
-Preregistered launcher; not yet executed as a full MLX run in this note.
+Executed extended tier in commit `352170d`.
 
 Executable:
 
@@ -15,6 +15,62 @@ Default artifact root:
 ```text
 research/experiments/2026/artifacts/rlt_m3_cost_accounting_followup/
 ```
+
+Primary result artifact:
+
+```text
+research/experiments/2026/artifacts/rlt_m3_cost_accounting_followup/cost_model_fit_n19.json
+```
+
+## Execution Result
+
+The extended queue completed all `28` planned commands (`queue_summary.json`:
+`completed=true`, `tier=extended`). It adds eight rows to the previous
+`n=11` Gemma cost-accounting table and refits the prefill+vision stage model at
+`n=19`.
+
+### Preregistered Verdicts
+
+- **Stage-cost calibration accepted.** The prefill+vision ceiling keeps
+  `R^2=0.97097`, mean absolute relative error `1.72%`, and max absolute
+  relative error `7.85%` across rows spanning observed `0.984x-1.779x` E2E.
+  The weaker prefill-only fit (`R^2=0.333`, MARE `5.48%`) confirms that the
+  model needs the stage decomposition rather than token count alone.
+- **VideoMME-short keep-rate bracket accepted for timing and parsed-choice
+  fidelity, inconclusive for quality tradeoff.** `kr=0.3` lands `1.133x`
+  E2E; `kr=0.7` lands `1.121x`; both are `20/20` parsed-choice identical to
+  dense with `0.000` accuracy delta and zero parse-failure delta. The expected
+  "lower keep-rate causes churn" pattern did not appear at `n=20`, so this is
+  not a resolved quality Pareto curve.
+- **MVBench hosted extension is timing evidence only.** `kr=0.3` and `kr=0.7`
+  both preserve aggregate accuracy point estimate at `+0.019`, but choice
+  agreement is only `0.630`, parse-failure delta is `+2`, and four buckets fail
+  the bucket-quality gate.
+- **Composition extension is boundary evidence only.** VideoMME-short
+  composition reaches `1.145x` with `0.75` choice agreement and `-0.050`
+  accuracy delta; TOMATO composition reaches `1.065x` with `0.533` choice
+  agreement and `+0.067` accuracy delta. Both support the cost model; neither
+  is a raw-output-identity row.
+
+### Row Summary
+
+| row | n | E2E | predicted | relative error | accuracy delta | choice agreement | interpretation |
+|---|---:|---:|---:|---:|---:|---:|---|
+| VideoMME-short no admission | 20 | `1.009x` | `1.010x` | `-0.1%` | `0.000` | `1.000` | denominator control |
+| VideoMME-short admission `kr=0.7` | 20 | `1.121x` | `1.129x` | `-0.8%` | `0.000` | `1.000` | parsed-choice clean |
+| VideoMME-short admission `kr=0.3` | 20 | `1.133x` | `1.140x` | `-0.6%` | `0.000` | `1.000` | parsed-choice clean |
+| VideoMME-short composition `kr=0.5` | 20 | `1.145x` | `1.139x` | `+0.5%` | `-0.050` | `0.750` | timing/boundary |
+| MVBench hosted no admission | 54 | `1.030x` | `1.030x` | `-0.0%` | `0.000` | `1.000` | raw-output control |
+| MVBench hosted admission `kr=0.7` | 54 | `1.198x` | `1.205x` | `-0.6%` | `+0.019` | `0.630` | timing only |
+| MVBench hosted admission `kr=0.3` | 54 | `1.207x` | `1.210x` | `-0.3%` | `+0.019` | `0.630` | timing only |
+| TOMATO composition `kr=0.5` | 30 | `1.065x` | `1.107x` | `-3.8%` | `+0.067` | `0.533` | timing/boundary |
+
+### Interpretation Update
+
+No more M3 MLX is needed for this closeout. The useful next local step is
+documentation and paper framing: describe the result as stage-cost accounting
+with explicit paired-fidelity gates, not as query-aware routing or universal
+random-pruning superiority.
 
 ## Motivation
 

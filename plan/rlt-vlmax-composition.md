@@ -16,6 +16,11 @@
   default to VideoMME-short admission keep-rate bracketing, keep broader
   MVBench/composition cells behind an explicit extended tier, and keep
   query-aware routing out of this branch.
+- [x] Validate the executed M3 extended follow-up at `n=19`: accept the
+  stage-cost model, mark VideoMME-short `kr=0.3/0.7` as parsed-choice clean,
+  and classify MVBench/TOMATO extensions as timing or boundary evidence.
+- [x] Narrow the M5 scale-confirmation wrapper to a core default, with scorer
+  and full expansion available only through explicit opt-in tiers.
 - [ ] Implement a small, audited RLT mask module in `src/codec_through/`
   without installing, importing, executing, or vendoring RLT's training stack
   or third-party dependencies.

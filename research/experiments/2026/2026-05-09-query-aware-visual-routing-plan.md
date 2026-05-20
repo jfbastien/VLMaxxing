@@ -1761,7 +1761,10 @@ in the timing ledger, and no silent fallback if the cache contract is violated.
 
 The cross-benchmark admission-only run landed in
 `research/experiments/2026/artifacts/rlt_query_routing_cost_accounting/cost_model_fit_n11.json`.
-It changes what the future query-aware branch should inherit:
+The subsequent M3 follow-up extended the same fit to
+`research/experiments/2026/artifacts/rlt_m3_cost_accounting_followup/cost_model_fit_n19.json`
+with `R^2=0.97097` and `1.72%` mean absolute relative error. It changes what
+the future query-aware branch should inherit:
 
 - Inherit the **stage-cost ledger**: dense stage shares, prefill reduction,
   vision reduction, scorer cost, text-generation tail fields, and parsed-answer
@@ -1777,6 +1780,15 @@ It changes what the future query-aware branch should inherit:
 - Treat the current text regex and parse-failure rollback as scoping results:
   they are useful examples of fragile deployment knobs, not mechanisms to tune
   on this branch.
+- Treat the VideoMME-short `kr=0.3/0.7` result as a useful future synergy:
+  the placeholder-admission lever has at least one parsed-choice-clean slice,
+  so a later query-aware branch should ask whether text/video features can
+  identify slices with the same clean behavior. It must preregister those
+  features before touching held-out data.
+- Treat MVBench-hosted `kr=0.3/0.7` and TOMATO/VideoMME composition as warning
+  examples: aggregate accuracy can look fine while answer churn and bucket
+  failures remain large. Future query-aware work must optimize paired
+  transitions and bucket gates, not only aggregate accuracy.
 
 When the query-aware branch is forked, its first result should be a held-out
 admission-scheduling policy that beats fixed/random/no-admission controls under

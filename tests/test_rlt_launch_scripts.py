@@ -164,9 +164,12 @@ def test_m5_scale_confirmation_script_requires_operator_model_path() -> None:
     assert "--mlx-memory-limit-gb" in payload
     assert "--rss-guard-mb" in payload
     assert "--run-cvision-rlt" in payload
+    assert 'M5_CONFIRMATION_TIER="${M5_CONFIRMATION_TIER:-core}"' in payload
+    assert "QUEUE_FLAGS=(--run-cvision-rlt)" in payload
+    assert "QUEUE_FLAGS=(--run-cvision-rlt --run-max-min-triangulation)" in payload
     assert "--run-cvision-expansion" in payload
-    assert "--run-max-min-triangulation" in payload
     assert "--run-magnitude-valid-head-to-head" in payload
+    assert "Refusing unknown M5_CONFIRMATION_TIER" in payload
     assert "--run-query-routing-q0b" not in payload
     assert "--run-query-routing-q1" not in payload
     assert "Refusing out-of-scope queue override" in payload
@@ -495,6 +498,90 @@ def test_m5_scale_confirmation_rejects_query_routing_phase_flags() -> None:
 
         assert completed.returncode == 2
         assert "Refusing out-of-scope queue override" in completed.stderr
+
+
+def test_m5_scale_confirmation_tiers_are_explicit(tmp_path: Path) -> None:
+    env = dict(os.environ)
+    env["GEMMA_MODEL_PATH"] = "/private/tmp/fake-gemma-26b-model"
+    env["ARTIFACT_DIR"] = str(tmp_path / "m5_core")
+
+    core = subprocess.run(
+        [
+            "scripts/run_rlt_m5_scale_confirmation.sh",
+            "--dry-run",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert core.returncode == 0
+    core_summary = json.loads((tmp_path / "m5_core" / "queue_summary.json").read_text())
+    core_phases = {entry["phase"] for entry in core_summary["planned_commands"]}
+    assert core_phases == {"cvision_rlt_smoke", "cvision_rlt_videomme_if_smoke_passes"}
+
+    scorer_env = dict(env)
+    scorer_env["M5_CONFIRMATION_TIER"] = "scorer"
+    scorer_env["ARTIFACT_DIR"] = str(tmp_path / "m5_scorer")
+    scorer = subprocess.run(
+        [
+            "scripts/run_rlt_m5_scale_confirmation.sh",
+            "--dry-run",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=scorer_env,
+    )
+    assert scorer.returncode == 0
+    scorer_summary = json.loads((tmp_path / "m5_scorer" / "queue_summary.json").read_text())
+    scorer_phases = {entry["phase"] for entry in scorer_summary["planned_commands"]}
+    assert scorer_phases == {
+        "cvision_rlt_smoke",
+        "cvision_rlt_videomme_if_smoke_passes",
+        "cvision_maxmin_videomme_if_rlt_videomme_passes",
+    }
+
+    full_env = dict(env)
+    full_env["M5_CONFIRMATION_TIER"] = "full"
+    full_env["ARTIFACT_DIR"] = str(tmp_path / "m5_full")
+    full = subprocess.run(
+        [
+            "scripts/run_rlt_m5_scale_confirmation.sh",
+            "--dry-run",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=full_env,
+    )
+    assert full.returncode == 0
+    full_summary = json.loads((tmp_path / "m5_full" / "queue_summary.json").read_text())
+    full_phases = {entry["phase"] for entry in full_summary["planned_commands"]}
+    assert "cvision_rlt_smoke" in full_phases
+    assert "cvision_rlt_videomme_if_smoke_passes" in full_phases
+    assert "cvision_rlt_tomato_if_videomme_passes" in full_phases
+    assert "cvision_maxmin_videomme_if_rlt_videomme_passes" in full_phases
+    assert "cvision_magnitude_valid_videomme_if_rlt_videomme_core_passes" in full_phases
+
+
+def test_m5_scale_confirmation_rejects_bad_tier() -> None:
+    env = dict(os.environ)
+    env["GEMMA_MODEL_PATH"] = "/private/tmp/fake-gemma-26b-model"
+    env["M5_CONFIRMATION_TIER"] = "query-aware"
+    completed = subprocess.run(
+        [
+            "scripts/run_rlt_m5_scale_confirmation.sh",
+            "--dry-run",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+    assert completed.returncode == 2
+    assert "Refusing unknown M5_CONFIRMATION_TIER" in completed.stderr
 
 
 def test_m3_cost_accounting_followup_rejects_extra_phase_flags() -> None:
