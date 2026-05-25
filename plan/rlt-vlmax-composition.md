@@ -21,24 +21,24 @@
   and classify MVBench/TOMATO extensions as timing or boundary evidence.
 - [x] Narrow the M5 scale-confirmation wrapper to a core default, with scorer
   and full expansion available only through explicit opt-in tiers.
-- [x] Land a paper-editing plan that pivots the manuscript toward
-  stage-cost accounting plus RLT-as-cheap-C-VISION, while keeping query-aware
-  routing as boundary/future-work evidence.
-- [ ] Resolve the untracked
-  `research/experiments/2026/artifacts/rlt_query_routing_hosted_sweep/`
-  scratch directory before any clean-tree paper-bundle gate: either delete it
-  with explicit approval, or validate/adopt it in a future query-aware branch.
-- [ ] Execute the first manuscript integration slice from
-  `paper/vlmaxxing-rlt-stage-cost-edit-plan.md`: first add the
-  `sync_sources.py` generator, generated snapshot/table, and any paper build
-  manifest entries needed for `rlt_cost_accounting`; then wire the table into
-  the manuscript. Do not remove the existing hand-written C-CEILING residual
+- [x] Land and harden a paper-editing plan that pivots the manuscript toward
+  stage-cost accounting plus RLT-as-cheap-C-VISION, adds the missing RLT
+  reference, and keeps query-aware routing as boundary/future-work evidence.
+- [ ] Execute the manuscript integration from
+  `paper/vlmaxxing-rlt-stage-cost-edit-plan.md` in two reviewable slices:
+  first add the `sync_sources.py` generator, generated snapshot/table, and any
+  paper build manifest entries needed for `rlt_cost_accounting`; then rewrite
+  the abstract, introduction, method framing, setup labels, and first results
+  ordering around stage accounting. The generator-only slice is not a complete
+  paper update. Do not remove the existing hand-written C-CEILING residual
   table until its rows have a machine-readable generated replacement or are
   deliberately moved to an appendix/source-traceability table. The new RLT
-  table must use the MVBench-hosted `kr=0.7` timing/boundary row as the
+  table must use the MVBench-hosted `kr=0.7` timing-only row as the
   selective MVBench row, frame TOMATO composition as
-  "aggregate positive with choice-churn caveat" where applicable, add source
-  traceability, and keep the main manuscript length flat.
+  "aggregate positive with choice-churn caveat" only as a required table note
+  sourced to the M3 cost-accounting row's `accuracy_delta_composed_minus_dense`
+  plus the row source artifact's `summary.choice_agreement`, add source
+  traceability, and keep the main manuscript length flat or shorter.
 - [ ] Implement a small, audited RLT mask module in `src/codec_through/`
   without installing, importing, executing, or vendoring RLT's training stack
   or third-party dependencies.
@@ -78,6 +78,14 @@
   token counts.
 - [ ] Run smoke tests, unit tests, repo checks, plan/diff review, and commit
   each logical chunk.
+
+## Open Cleanup Gate Before Paper Bundle
+
+- `research/experiments/2026/artifacts/rlt_query_routing_hosted_sweep/` remains
+  untracked scratch from the query-aware thread. It is deliberately out of
+  scope for the VLMaxxing + RLT plan-hardening commit. Before any clean-tree
+  paper-bundle gate, either delete it with explicit approval or validate/adopt
+  it in a future query-aware branch.
 
 ## Constraints
 
@@ -144,18 +152,21 @@
   whole-frame repair scheduling is the conservative fallback. A partial
   image-token cache path is a separate systems project.
 
-## Verification
+## Verification Order
 
-- `ai-review team --stage plan`
-- sub-agent plan review focused on science, denominator accounting, and
-  implementation risk
-- `ai-workflow run-checks`
-- `make paper-sync`
-- `make paper-build`
-- post-commit clean-tree verification: `make paper-bundle`
-- after the new `\input{}` is wired: `uv run pytest tests/test_arxiv_bundle_manifest.py`
-- `uv run --group vlm pytest tests/test_pruned_vision_tower.py`
-- `uv run pytest tests/test_qwen_vision_pruning.py tests/test_novelty_pruning.py tests/test_qwen_selective_reprefill.py`
-- new RLT mask unit tests after implementation
-- smoke run with `--n-items 1` before any long autonomous experiment
-- paired analyzer output for every Track B cell before interpreting results
+1. `ai-review team --stage plan`
+2. sub-agent plan review focused on science, denominator accounting, and
+   implementation risk
+3. `ai-workflow run-checks`
+4. `make paper-sync`
+5. `make paper-build`
+6. Before any clean-tree bundle gate, resolve the untracked
+   `research/experiments/2026/artifacts/rlt_query_routing_hosted_sweep/`
+   scratch directory under the cleanup gate above.
+7. post-commit clean-tree verification: `make paper-bundle`
+8. after the new `\input{}` is wired: `uv run pytest tests/test_arxiv_bundle_manifest.py`
+9. `uv run --group vlm pytest tests/test_pruned_vision_tower.py`
+10. `uv run pytest tests/test_qwen_vision_pruning.py tests/test_novelty_pruning.py tests/test_qwen_selective_reprefill.py`
+11. new RLT mask unit tests after implementation
+12. smoke run with `--n-items 1` before any long autonomous experiment
+13. paired analyzer output for every Track B cell before interpreting results

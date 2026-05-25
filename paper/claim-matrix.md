@@ -152,9 +152,12 @@ anti-recomputation evidence across distinct reuse regimes.** Method work
 serves that science goal and is welcome in an appendix; it is not a separate
 methods paper. Both lanes must contribute evidence.
 
-**Qwen routing regime (TOMATO + MVBench).**
+**Qwen routing diagnostics (TOMATO + MVBench).**
 - Claims 1, 2, 3, 4, 5, 6, 8, 9, 12 primarily exercise Qwen 2.5-VL.
-- Role in the paper: validates the routing / bounded-staleness mechanism and the "pixel-diff proxy" story. Natural home for the method appendix.
+- Role in the paper: boundary and diagnostic evidence for the "pixel-diff
+  proxy" and bounded-staleness story. It does not validate query-aware routing
+  as a solved mechanism for this manuscript; keep it in an appendix or boundary
+  subsection unless a later branch earns held-out routing evidence.
 - Currently earned for the manuscript surface: 6 and 8. Local diagnostics complete but not
   manuscript claim evidence until raw outputs are checked in: 1, 2, 9. Partial: 3
   (sticky4 only — supplementary rerun-required; halo-veto retired 2026-04-17 as

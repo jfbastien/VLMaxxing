@@ -26,46 +26,49 @@ It is NOT the place for raw experimental detail. Evidence lives in:
 - [research/falsified-hypotheses.md](../research/falsified-hypotheses.md) —
   what the evidence has ruled out
 
-Last material update: 2026-05-20 (Gemma cost accounting now validated at
-`n=19`; RLT/VLMaxxing should be framed through measured stage shares and
-paired-fidelity gates rather than token count or query-aware routing).
+Last material update: 2026-05-25 (Gemma/RLT cost accounting now validated at
+`n=19`; RLT/VLMaxxing should be framed through measured stage shares,
+selector-cost accounting, and paired-fidelity gates rather than token count,
+composition multiplication, or query-aware routing).
 
-## Current Manuscript Position (2026-05-03)
+## Current Manuscript Position (stage-cost/RLT update, 2026-05-25)
 
-The manuscript should be centered on one anti-recomputation story: where a
-frozen video VLM must buy fresh visual evidence over time, and where cached
-state remains inside the appropriate quality--compute frontier. That story has
-three explicit local regimes, plus one scale-out streaming lane:
+The manuscript should be centered on one anti-recomputation story: a video VLM
+only speeds up when a method shortens a runtime stage that owns enough of the
+dense request, and the speed is useful only if paired answers survive the right
+fidelity gate. That story has two main local regimes, one supporting frontier,
+one boundary lane, and one candidate scale-out lane:
 
-- **First-pass vision pruning** (C-VISION) for measured first-query gains on
-  fresh videos.
+- **First-pass stage-cost accounting** (C-CEILING + C-VISION/RLT) for measured
+  fresh-video gains from vision and prefill-stage reductions.
 - **Persistent follow-up reuse** (C-PERSIST) for the much larger after-ingest
-  follow-up-query wins.
-- **Routing-frontier experiments** for mechanism and boundary evidence.
+  same-video follow-up-query wins.
+- **Composition frontier evidence** for showing why measured stacking is a
+  speed/quality frontier, not a fourth contribution and not a multiplier.
+- **Routing-frontier diagnostics** for mechanism/boundary evidence only.
 - **Scale-out streaming state reuse** for the 26B native-rate deployment lane
   once artifact-compatible protocols and matched baselines are available.
 
-Those regimes matter for different reasons. C-VISION shows that frozen
-first-pass pruning already buys real wall-clock savings, but only in proportion
-to the vision share that the dense path actually owns. C-PERSIST is where the
-largest local multipliers live, because once a video has already been ingested,
-the next question can reuse the expensive prefix instead of rebuilding it.
-Routing is the cleanest evidence for why any of this works: novelty
-magnitude alone is not enough, temporal placement of fresh compute matters, and
-semantic-substitution claims must stay separate from sparse-path speedup
-claims.
+Those regimes matter for different reasons. C-CEILING is the explanation:
+measure the dense runtime bill, shorten the stages the method actually touches,
+charge scorer/planner cost, and predict the E2E effect. C-VISION/RLT is the
+fresh-video mechanism: RLT is a cheap visual-redundancy scorer that reaches the
+speed class of expensive diversity scoring on the measured Gemma rows.
+C-PERSIST is where the largest local multipliers live, because once a video has
+already been ingested the next question can reuse the expensive prefix instead
+of rebuilding it. Routing explains boundaries and future work; it is not a
+current paper headline.
 
 When this file disagrees with [`paper/priority.md`](priority.md) on what the
 paper should lead with, prefer `priority.md`.
 
 ## Candidate Paper Slot
 
-> A training-free anti-recomputation paper for video VLMs that shows
-> three linked facts: first-pass gains are bounded by the share of
-> runtime that vision actually owns, same-video follow-up can collapse
-> to sub-second latency once the expensive prefix has been paid, and
-> temporal placement of fresh compute matters more than novelty
-> magnitude alone.
+> A training-free, stage-cost-accounted anti-recomputation paper for video VLMs
+> that shows three linked facts: first-pass gains are predictable from the
+> runtime stages actually shortened, RLT is a cheap way to target visual
+> redundancy inside that accounting frame, and same-video follow-up can collapse
+> to sub-second latency once the expensive prefix has been paid.
 
 The semantic codec-native bridge has now landed locally, but the fully
 harmonized scale-out systems bridge has not. Keep the wording precise:
@@ -73,24 +76,32 @@ sparse-sampled QA is still pixel-diff by design, native-rate streaming is
 codec-metadata by design, and any ``codec-guided'' wording should stay attached
 to the protocol it actually describes.
 
-The paper-grade story is training-free anti-recomputation with measured
-first-pass Gemma/Qwen gains, large after-ingest Qwen follow-up wins, and routing
-evidence that explains the mechanism boundary.
+The paper-grade story is stage-cost-accounted, training-free
+anti-recomputation: measure the runtime bill, shorten the stage that owns it,
+charge the selector, and verify paired answers. RLT strengthens the fresh-video
+side as a cheap C-VISION scorer, while C-PERSIST remains the separate
+after-ingest follow-up regime. Query-aware routing stays mechanism-boundary
+evidence until a future branch earns held-out wins.
 For the per-claim breakdown, see
 [`paper/claim-matrix.md`](claim-matrix.md) and
 [docs/literature-map-2026-04-16.md § Current evidence level (2026-04-16)](../docs/literature-map-2026-04-16.md).
 
-## Three Major Contributions (2026-05-03 status)
+## Three Major Contributions (stage-cost/RLT update, 2026-05-25)
 
-Per Codex rounds 25–26 (2026-04-21), the paper spine is these three
-first-class contributions — ordered ahead of the Qwen routing lane,
-which is reframed as the mechanism-validation backbone + null ledger
+The paper spine remains these three first-class contributions. Manuscript order
+should be C-CEILING / stage-cost accounting, C-VISION /
+RLT-as-cheap-C-VISION, then C-PERSIST; the numbered list below keeps historical
+claim IDs rather than final manuscript order. Composition is a supporting
+speed/quality frontier under C-CEILING and C-VISION, not a fourth contribution.
+These contributions stay ordered ahead of the Qwen routing lane, which is
+reframed as the mechanism-validation backbone + null ledger
 (claims 6 and 8 release-surface earned; claims 1/2/9 diagnostic/local-only
 until raw artifacts are materialized; halo-veto 1.37B retired + 1.51R VideoMME
 duration-conditional partial reproduction + 1.55D frontier-partial):
 
-1. **C-CEILING (claim 13): Arithmetic ceiling model for token-pruning
-   wall-clock speedup.** Predicts E2E speedup within ≤5.2% across 7
+1. **C-CEILING / stage-cost accounting (claim 13 plus the 2026-05-20
+   RLT/Gemma extension): arithmetic ceiling model for pruning wall-clock
+   speedup.** Predicts E2E speedup within ≤5.2% across 7
    LLM-side/token-pruning regime dimensions on Gemma 4-E4B-4bit
    (8/32 frame counts × duration bucket × LLM-side keep-rate × anchor arm).
    Formula: `e2e ≤ 1/(fixed_frac + (1 − fixed_frac)/s)`. Standalone
@@ -98,7 +109,10 @@ duration-conditional partial reproduction + 1.55D frontier-partial):
    further extended by 1.51V to a vision-axis analog
    `1/(1 − V_share × V_red)`. The current manuscript's 17-regime
    C-VISION scatter-back figure is the rendered accounting view and includes
-   advisory/boundary cells.
+   advisory/boundary cells. The RLT/Gemma cost-accounting follow-up extends
+   this from a vision/generation share law to a prefill+vision stage model over
+   19 Gemma cells (`R^2=0.97097`, `1.72%` MARE), which is the front-door result
+   for the VLMaxxing + RLT manuscript update.
 
 2. **C-PERSIST (claim 14): Persistent follow-up reuse with paired-drift
    tested deployment envelope.** All persistent-KV claims in this paper
@@ -128,7 +142,7 @@ duration-conditional partial reproduction + 1.55D frontier-partial):
    provides paper-grade practitioner guidance; paired-fidelity boundary result
    in its own right.
 
-3. **C-VISION (claim 15): Vision-tower pruning transfers at `L=2`
+3. **C-VISION / RLT-as-cheap-C-VISION (claim 15): Vision-tower pruning transfers at `L=2`
    `kr_V=0.50` across Gemma 4-E4B-4bit and Qwen2.5-VL-7B-Instruct-4bit, with
    first-pass gains governed by the scatter-back ceiling
    `1/(1 − V_share × V_red)`.**
@@ -375,7 +389,12 @@ without the paired sparse-benchmark comparison. These are appendix-bound
 and do not contribute to the headline — the paper does not present a
 case-study multiplier as evidence for a scale-out claim.
 
-## Current Narrow Claim Boundary
+## Historical Narrow Claim Boundary (superseded)
+
+This section is retained as historical context for the pre-RLT temporal-axis
+thread. For current manuscript edits, use the stage-cost/RLT position above:
+C-CEILING / stage-cost accounting, C-VISION / RLT-as-cheap-C-VISION,
+C-PERSIST, and query-aware routing as boundary evidence.
 
 We claim, with current evidence:
 
@@ -633,7 +652,10 @@ temporal-reasoning benchmarks × MLX-local × bounded real measured skipped
 vision work. Broad sparse backends and sparse LM prefill remain future systems
 work.
 
-## Likely Contribution Stack
+## Historical Likely Contribution Stack (superseded)
+
+This near-term paper path predates the 2026-05-20 Gemma/RLT cost-accounting
+closeout. It should not be used as current manuscript routing guidance.
 
 Near-term paper path:
 

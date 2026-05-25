@@ -5,31 +5,41 @@ It exists so future paper edits do not re-litigate the same framing choices.
 
 ## The Spine
 
-The paper is about **training-free anti-recomputation for video VLMs**.
+The VLMaxxing + RLT manuscript edit is about **stage-cost-accounted
+anti-recomputation for video VLMs**.
 
-The central variable is not "how many frames can we drop?" It is:
+The central variable is not "how many frames or tokens can we drop?" It is:
 
-> Where must the runtime buy fresh visual evidence over time, and where is
-> cached state enough for the relevant quality--compute frontier?
+> Which runtime stage did the method shorten, how much of the dense request did
+> that stage own, what did the selector cost, and did the paired answer survive?
 
-Everything should hang off that.
+RLT now has a specific role in that spine: it is a cheap visual-redundancy
+scorer and composition primitive, not a magic token-count result. C-PERSIST
+remains the large after-ingest follow-up regime, but manuscript edits should
+first establish the runtime bill that makes all regimes interpretable.
 
 ## Claim Order
 
 Order the story by reader impact, while keeping denominators visible:
 
-1. **C-CEILING / stage-share accounting** is the paper's explanatory spine.
+1. **C-CEILING / stage-cost accounting** is the paper's explanatory spine.
    Lead paper edits with the runtime bill: which stage was shortened, how much
-   dense wall-clock that stage owned, and whether paired answers survived.
+   dense wall-clock that stage owned, what the selector cost, and whether
+   paired answers survived. For the VLMaxxing + RLT update, the n=19
+   prefill+vision cost model is the front-door evidence for this claim.
 2. **RLT-as-C-VISION / first-pass vision evidence selection** is the cleanest
    RLT mechanism result. Frame it as cheap visual evidence scoring that reaches
    the speed class of expensive scorers, not as a universal scorer dominance
    claim.
 3. **Composition** is a speed/quality frontier. Put aggressive rows and rescue
-   rows side by side; never describe the high-speed frontier as lossless.
+   rows side by side; never describe the high-speed frontier as lossless. Treat
+   it as supporting/boundary evidence under stage-cost accounting and RLT, not
+   as a new fourth contribution unless the source-of-truth claim files are
+   explicitly updated.
 4. **C-PERSIST / after-ingest follow-up reuse** is the big-number regime.
    Use it after the stage-accounting frame is established, and say
-   "after-ingest" and "same-video follow-up" near every large multiplier.
+   "after-ingest" and "same-video follow-up" near every large multiplier so it
+   cannot be mistaken for a first-pass RLT or admission result.
 5. **Qwen routing** explains temporal placement and failure boundaries. It is
    mechanism evidence under a dense backend. The 1.63E Qwen sparse-ViT 8f
    point is a measured sparse-execution boundary result: real skipped vision

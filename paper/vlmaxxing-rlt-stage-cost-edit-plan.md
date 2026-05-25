@@ -44,7 +44,7 @@ Generators and table authors must read these exact paths/keys, not rounded
 values transcribed from prose. All paths are under
 `research/experiments/2026/artifacts/`.
 
-Stage-cost model (first-pass table, Result 1):
+Stage-cost model (evidence-plumbing slice, Result 1):
 
 - `rlt_m3_cost_accounting_followup/cost_model_fit_n19.json`
   - `n_artifacts` = 19
@@ -82,12 +82,23 @@ Composition frontier (Result 3 / Table 3), pooled dev+holdout n=60:
   - E2E: `summary.e2e_speedup_dense_over_composed` = 1.0289 / 1.2329 / 1.8419
   - Delta accuracy: `summary.accuracy_delta_composed_minus_dense` = -0.0667 / -0.0667 / -0.1167
   - CI: `summary.accuracy_delta_ci95`; MVBench CI [-0.2167, -0.0167] EXCLUDES 0
-  - `summary.pass_fidelity` = false for MVBench aggressive
+  - `summary.pass_fidelity` = false / false / false. All aggressive rows
+    must be shown as fidelity-gate failures, not only MVBench.
+  - `summary.pass_bucket_quality_and_e2e` = false / false / false, with
+    bucket failures: VideoMME `long`, `medium`; TOMATO `direction`,
+    `rotation`; MVBench `action_localization`, `moving_attribute`,
+    `object_interaction`.
 - Rescue: `rlt_followup_queue/full_composition_rlt_rescue_combined_{videomme,tomato,mvbench}_analysis.json`
   - E2E: `summary.e2e_speedup_dense_over_composed` = 1.0784 / 1.2374 / 1.4328
   - Delta accuracy: `summary.accuracy_delta_composed_minus_dense` = -0.0500 / -0.0833 / -0.0500
   - CI: `summary.accuracy_delta_ci95`; all three CROSS 0
-  - `summary.pass_fidelity` = true for MVBench rescue
+  - `summary.pass_fidelity` = true / false / true. TOMATO rescue is NOT a
+    fidelity-passing row despite its CI crossing 0; it has
+    `summary.pass_bucket_quality_and_e2e=false` with bucket failures
+    `direction` and `rotation`.
+  - `summary.pass_bucket_quality_and_e2e` = false / false / false, with
+    bucket failures: VideoMME `long`, `medium`; TOMATO `direction`,
+    `rotation`; MVBench `action_localization`, `moving_attribute`.
 
 Denominator-collision warning: the pooled-n=60 composition rows above are a
 DIFFERENT experiment from the `m3_*_compose` rows in `cost_model_fit_n19.json`
@@ -98,7 +109,17 @@ Both are correct for their own slice. The manuscript must never place these two
 TOMATO composition numbers in the same table or paragraph without naming the
 distinct slice and n; otherwise a reviewer sees a contradiction. Prefer the
 pooled n=60 rows for the composition-frontier table and the M3 rows only for
-the stage-cost-model fit table.
+the stage-cost-model fit table. The cost-accounting generator must hard-fail if
+the `m3_tomato_compose` selected row's `source_paths` list does not exactly
+match the expected M3 cost-accounting artifact path in the source-path map
+below, because that is the guard against silently pulling the pooled
+sign-disagreeing TOMATO row into the M3 table.
+If both Table 1 and Table 3 appear in the same results section, add explicit
+cross-section disambiguation prose: Table 1 uses same-run M3 cost-accounting
+cells (`m3_tomato_compose`, n=30, timing/boundary evidence), while Table 3 uses
+pooled dev+holdout composition-frontier cells (n=60, rescue TOMATO remains a
+fidelity-gate failure). The table captions must carry those slice labels; do
+not rely on the surrounding paragraph alone.
 
 ## Validated Editorial Claims
 
@@ -111,7 +132,7 @@ the stage-cost-model fit table.
 | Query-aware routing is solved. | Reject. | Boundary evidence. Static typed routing and active repair did not clear gates; text routing is post-hoc and does not transfer. | Compress routing into a boundary/future-work subsection or appendix. |
 | "Random vision pruning is exact-output equivalent" as a broad claim. | Weaken. | Narrow reproduced-here evidence only. It applies to specific random-valid/no-admission controls and must name whether identity is raw text or parsed choice. | Use narrow wording: "On the audited Gemma controls, random vision masking changed little or nothing while buying little E2E speed." Do not generalize to all models/workloads. |
 | VideoMME-short admission rows are clean fidelity wins. | Valid only as parsed-choice fidelity. | Reproduced here. Parsed choices are 20/20 identical for selected keep-rate rows; raw text identity is not established for all rows. | State "parsed-choice identical", not "byte-identical" or "lossless". |
-| MVBench hosted and TOMATO admission rows are clean quality wins. | Weaken. | Timing/boundary evidence. Aggregate accuracy may pass, but choice churn and bucket caveats remain. | Use them for cost-model validation and boundary evidence, not as headline fidelity rows. |
+| MVBench hosted and TOMATO admission/composition rows are clean quality wins. | Weaken. | MVBench hosted admission is timing-only evidence; TOMATO composition is timing/boundary evidence. Aggregate accuracy may pass, but choice churn and bucket caveats remain. | Use them for cost-model validation and boundary evidence, not as headline fidelity rows. |
 | M5 should be broad discovery. | Reject. | Hypothesis / future confirmation. Current scoped wrapper is for scale confirmation. | Keep M5 as optional scale confirmation: n=1 smoke, VideoMME n=30 RLT C-VISION, optional scorer tier. |
 
 Precision rule: use `R^2 = 0.97097` in source/provenance tables and `R^2 ~= 0.971`
@@ -141,7 +162,34 @@ prose. Introduce the plain operation first, then name it.
 
 ## Manuscript Restructure
 
-### First manuscript pass: integrate without growing the paper
+### Editorial staging: plumbing first, manuscript integration second
+
+This plan is staged only to keep reviews tractable. The evidence-plumbing slice
+below is NOT the finished paper edit. It is acceptable as a preparatory commit
+only if the next manuscript slice immediately rewrites the abstract,
+introduction, method framing, setup labels, and first results ordering around
+stage accounting. Stopping after the generated table would fail the user's
+"as if run from the start" requirement.
+
+Acceptance criteria for the actual manuscript integration:
+
+1. The abstract opens on the runtime-bill problem and the n=19 stage-cost
+   result, not on experiment history or C-PERSIST alone.
+2. The introduction asks "which stage got shorter?" before introducing project
+   names.
+3. The method defines the runtime stages and cost equation before RLT,
+   admission, composition, or C-PERSIST.
+4. The first results figure/table is predicted-vs-observed E2E speedup or its
+   compact table form.
+5. Query-aware routing appears only as boundary/future-work evidence, not as a
+   third main regime.
+6. The edit is length-neutral or shorter under the size-control gate below.
+
+If a future editor wants a single larger commit instead of staged commits, merge
+the evidence-plumbing slice and the manuscript-integration slice. Do not merge
+only the plumbing slice and call the paper updated.
+
+### Evidence-plumbing slice: integrate without growing the paper
 
 The first edit should be a narrow, source-backed manuscript pass rather than a
 large rewrite. The minimum strong integration is:
@@ -166,16 +214,22 @@ large rewrite. The minimum strong integration is:
      `m3_videomme_no_adm`, `m3_videomme_kr07`, `m3_videomme_kr03`,
      `m3_videomme_compose`, `m3_mvbench_kr07`, and `m3_tomato_compose`.
    - Fidelity labels do not come from `fidelity_verdict` in the artifact
-     because that field is `None` for these rows. The generator must attach a
+     because that field is absent for these rows. The generator must attach a
      small curated evidence-class mapping sourced from the May 20 closeout:
      `m3_videomme_no_adm` = `denominator control`; `m3_videomme_kr07` and
      `m3_videomme_kr03` = `parsed-choice clean`; `m3_videomme_compose` =
-     `composition frontier / choice churn`; `m3_mvbench_kr07` =
-     `timing/boundary`; `m3_tomato_compose` =
-     `timing/boundary, aggregate positive with choice-churn caveat`.
-   - For `m3_tomato_compose`, show the observed positive aggregate accuracy
-     delta as "aggregate positive, choice-churn caveat" rather than implying
-     composition always trades accuracy for speed.
+     `timing/boundary`; `m3_mvbench_kr07` = `timing only`;
+     `m3_tomato_compose` = `timing/boundary`.
+     Any "composition choice churn" or "aggregate positive" phrasing belongs in
+     a table note derived from artifact fields, not in the source-backed
+     `evidence_status` label.
+   - Because `m3_tomato_compose` is one of the selected rows, the table must
+     include a note showing the observed positive aggregate accuracy delta with
+     a choice-churn caveat. Source the note to
+     `accuracy_delta_composed_minus_dense` from the top-level row and
+     `summary.choice_agreement` from that row's `source_paths[0]` artifact. Do not
+     put this note in `evidence_status`, and do not imply composition always
+     improves quality.
 3. Add the generated RLT cost-accounting table near the current C-CEILING
    residual table with one short paragraph.
 4. Preserve the existing C-CEILING numeric residual evidence. Do not remove the
@@ -184,15 +238,16 @@ large rewrite. The minimum strong integration is:
    source, an appendix table, or an explicit source-traceability table. The n=19
    RLT table extends C-CEILING; it does not replace the prior Qwen/Gemma
    C-CEILING rows by itself.
-   Second-pass retirement path: extract the old residual rows into a generated
-   `c_ceiling_residuals` source/table or keep the manual table permanently. No
-   commit should delete it without one of those homes.
+   Second-pass retirement path for this paper update: keep the manual table
+   permanently unless a later dedicated refactor extracts the old residual rows
+   into a generated `c_ceiling_residuals` source/table. No commit should delete
+   it without that replacement home.
 5. Do not add a new intro regime row, a new experimental lane, or a headline
    table row in the first pass. This evidence strengthens C-CEILING; it is not a
    fourth regime.
 6. Add source traceability for the new generated table in
    `paper/arxiv/sections/appendix_a_source_traceability.tex`.
-7. Re-check `paper/AGENTS.md`, `paper/README.md`, and
+7. Re-check `paper/AGENTS.md`, `paper/README.md`, `paper/framing.md`, and
    `paper/narrative-rules.md` after the manuscript slice lands so the paper
    routers still point at the stage-cost/RLT spine.
 
@@ -242,10 +297,11 @@ Edit:
 1. Replace the opening problem with:
    - "Pruning fewer tokens is not the same as speeding up a VLM."
    - "The relevant question is which runtime stage the method shortens."
-2. Introduce the three physical regimes as a table, not a long taxonomy:
+2. Introduce the two physical regimes plus boundary diagnostics as a table, not
+   a long taxonomy:
    - First-pass vision/prefill pruning.
    - Same-video follow-up reuse.
-   - Query/routing diagnostics.
+   - Boundary diagnostics and future forks, including query-aware routing.
 3. Move the largest C-PERSIST number out of the opening hook and into the
    regime table or results preview. It remains important, but it is not the
    first-pass RLT story.
@@ -380,6 +436,8 @@ Edit to this order:
    - Active repair had directional margin signal but no viable threshold after
      retry cost.
    - Text routing is post-hoc and template-leaky.
+   - This subsection must not appear in the contribution list or operator
+     table; it is a boundary that protects the main claim.
 
 Remove or move:
 
@@ -404,7 +462,7 @@ Edit:
 2. Add RLT original work as the source of the run-length-tokenization idea, then
    state our different use: a cheap scorer/admission prior inside a frozen VLM
    runtime.
-3. Group FastV, SparseVLM, QuoTA, QTSplus, Q-Frame, Static-or-Dynamic,
+3. Group FastV, SparseVLM, QuoTA, QTSplus, Q-Frame, Static or Dynamic,
    VideoRouter, CodecSight, and CoPE-VideoLM by the stage or evidence operator
    they touch.
 4. Add one database analogy paragraph only if it earns space:
@@ -421,24 +479,45 @@ Remove or shorten:
 Justification: reviewers should see that the field is crowded, and that this
 paper's contribution is the accounting denominator plus measured controls.
 
-#### Reference accuracy (verified 2026-05-25)
+#### Reference accuracy and bibliography gate (verified 2026-05-25)
 
-All cited works below are real (none hallucinated) and most already have
-`\bibitem` entries in `90_references.tex`. The following corrections MUST be
-applied before any related-work prose ships, because the current
-characterizations contain errors a reviewer will catch:
+All cited works below are real (none hallucinated), but local bibliography
+coverage is incomplete. Before any related-work rewrite ships, add the missing
+`\bibitem` entries or remove the corresponding prose cite. This is a hard gate:
+an accurate plan with missing references still produces an unreviewable
+manuscript.
+
+Required bibliography status:
+
+| Work | Primary source | `90_references.tex` status | Manuscript rule |
+| --- | --- | --- | --- |
+| RLT | `2411.05222`, NeurIPS 2024 Spotlight | Present as `\bibitem{rlt}` after this plan hardening. | Required. This is the source of the run-length idea. |
+| QuoTA | `2503.08689`, AAAI 2026 | Missing. | Add only if cited; do not use the unverified 50%->1.08x ratio without a source table. |
+| QTSplus | `2511.11910` | Missing. | Add if citing the 89% compression / 28% latency result. |
+| Q-Frame | `2506.22139`, ICCV 2025 | Missing. | Add if the query-aware boundary paragraph cites it. |
+| Static or Dynamic | `2504.21403`, EMNLP 2025 main | Missing. | Use this exact name; add if cited. |
+| VideoRouter | `2605.05848` | Missing. | Add if cited as trained query-adaptive routing prior. |
+| Token-pruning critique | `2502.11501`, Findings ACL 2025 | Missing. | Add if using the random/fixed-baseline discipline claim. |
+| System R | Selinger et al., SIGMOD 1979 | Missing. | Add only if the database analogy earns space. |
+| Eddies | Avnur and Hellerstein, SIGMOD 2000 | Missing. | Add only if adaptive query-routing analogy earns space. |
+| PARQO | `2406.01526`, VLDB 2024 | Missing. | Add only if robust-plan analogy earns space. |
+| CodecSight | `2604.06036` | Present. | Scope as streaming inference. |
+| CoPE-VideoLM | `2602.13191` | Present. | Scope as codec primitives, not positional encoding. |
+
+The following corrections MUST be applied before any related-work prose ships,
+because the current characterizations contain errors a reviewer will catch:
 
 - RLT (`2411.05222`, NeurIPS 2024 Spotlight): full title is "Don't Look Twice:
-  Faster Video Transformers with Run-Length Tokenization". This work is NOT yet
-  in `90_references.tex` (verified 2026-05-25); a new `\bibitem{rlt}` must be
-  ADDED with the full title before related-work prose can cite it. Since RLT is
-  the source of the run-length idea this paper builds on, its absence is a
-  blocking gap, not a polish item. It operates training-free OR with fine-tuning;
-  do not call it simply "training-free".
-- CoPE-VideoLM (`2602.13191`): CoPE here means Codec-Primitive Encoding, NOT
-  positional encoding. It replaces dense RGB-frame encoding with motion-vector
-  and residual tokens from P-frames. Any "position-encoding" phrasing is FALSE
-  and must be removed.
+  Faster Video Transformers with Run-Length Tokenization". `\bibitem{rlt}` is
+  now present in `90_references.tex` (verified 2026-05-25). Since RLT is the
+  source of the run-length idea this paper builds on, keep the citation in any
+  RLT-related prose. It operates training-free OR with fine-tuning; do not call
+  it simply "training-free".
+- CoPE-VideoLM (`2602.13191`): do not confuse this paper with unrelated
+  positional-encoding CoPE work. This paper uses video codec primitives,
+  specifically motion vectors and residuals, and aligns codec-derived tokens to
+  image-encoder embeddings. Any "position-encoding" phrasing is FALSE and must
+  be removed.
 - CodecSight (`2604.06036`): it is a streaming-VLM inference system using codec
   metadata for patch pruning and selective KV-cache refresh, not a general
   "video understanding" system. Frame it as streaming-inference-efficiency.
@@ -448,12 +527,13 @@ characterizations contain errors a reviewer will catch:
   numbers; either confirm it from the source or drop that specific ratio. The
   QTSplus "89%->28%" pairing (`2511.11910`) is confirmed against the source.
 - PARQO (`2406.01526`, VLDB 2024): full name "Penalty-Aware Robust Plan
-  Selection in Query Optimization"; the novelty is a user-definable penalty
-  metric, not generic "uncertain selectivity". Only cite if the database analogy
-  earns its single paragraph.
+  Selection in Query Optimization"; uncertain selectivity is the setting, while
+  user-definable penalty metrics and sensitivity-aware robust plan selection are
+  the distinctive mechanism. Only cite if the database analogy earns its single
+  paragraph.
 - Confirmed accurate as characterized: FastV (`2403.06764`, ECCV 2024),
   SparseVLM (`2410.04417`, ICLR 2025), Q-Frame (`2506.22139`, ICCV 2025),
-  Static-or-Dynamic (`2504.21403`, EMNLP 2025 main), VideoRouter (`2605.05848`),
+  Static or Dynamic (`2504.21403`, EMNLP 2025 main), VideoRouter (`2605.05848`),
   the token-pruning critique "Are We Solving the Right Problem?"
   (`2502.11501`, Findings of ACL 2025), System R (Selinger et al., SIGMOD 1979),
   Eddies (Avnur & Hellerstein, SIGMOD 2000).
@@ -505,8 +585,9 @@ Edit:
 
 1. Add a short limitation that VideoMME-short admission rows are parsed-choice
    clean, not raw-output identical unless raw text was explicitly audited.
-2. State that MVBench/TOMATO admission rows are timing and cost-model evidence
-   with choice churn/bucket caveats, not clean quality-frontier rows.
+2. State that MVBench hosted admission rows are timing-only cost-model evidence
+   and TOMATO composition rows are timing/boundary evidence with choice-churn or
+   bucket caveats, not clean quality-frontier rows.
 3. State that random-valid no-admission rows are denominator controls, not a
    broad claim that random pruning is always behaviorally identical.
 
@@ -542,8 +623,11 @@ Data:
 - Color: physical operator class (`C-VISION/RLT`, `admission/prefill`,
   `composition`, `control`).
 - Shape or outline: evidence class (`clean`, `timing`, `frontier`, `boundary`).
-- Direct labels for outliers: TOMATO composition, VideoMME-long, MVBench
-  composition.
+- Direct labels for outliers by exact row label plus human-readable display:
+  `m3_tomato_compose` (`TOMATO composition, same-run M3`),
+  `videomme_holdout_long` (`VideoMME-long composition`), and
+  `mvbench_holdout` (`MVBench holdout composition`). Do not label a point
+  only as "MVBench composition"; that phrase collides with multiple artifacts.
 
 Caption must include:
 
@@ -602,8 +686,12 @@ Columns:
 - E2E speedup with CI (`all.actual_e2e_speedup_dense_over_sparse[_ci95]`).
 - Delta accuracy with CI (`all.accuracy_delta_sparse_minus_dense[_ci95]`); note
   all three Δacc CIs cross zero, so state "no decisive accuracy change at n=30".
-- Vision reduction.
+- Vision reduction from `all.vision_reduction`; do not substitute
+  `all.vision_reduction_excluding_scorer` unless the caption explicitly says
+  scorer overhead is excluded. The key choice must be deliberate even when the
+  fields are numerically close.
 - RLT scorer time (`all.mean_sparse_scorer_total_ms`).
+- Max-min E2E speedup and delta accuracy from the same `all.*` keys.
 - Expensive scorer time (max-min `all.mean_sparse_scorer_total_ms`).
 - Interpretation.
 
@@ -617,6 +705,8 @@ Do not say RLT dominates every scorer, and do not imply RLT is the cheapest
 possible scorer: the magnitude scorer is effectively free (precomputed). The
 honest claim is that RLT matches the expensive learned scorer's speed class at a
 fraction of its cost, which is the comparator that actually competes on quality.
+If the table omits max-min E2E and delta accuracy, weaken the caption to a pure
+scorer-cost comparison and remove "speed class" from the table-level claim.
 
 ### Table 3: Composition frontier
 
@@ -639,18 +729,29 @@ Columns:
 
 - E2E speedup (`summary.e2e_speedup_dense_over_composed`).
 - Delta accuracy with CI (`summary.accuracy_delta_composed_minus_dense[_ci95]`).
-- Fidelity verdict (`summary.pass_fidelity`: false for aggressive MVBench, true
-  for rescue MVBench).
+- Fidelity verdict (`summary.pass_fidelity`) for every row. The table generator
+  must display or snapshot-check the actual artifact verdicts: aggressive
+  VideoMME/TOMATO/MVBench are all false; rescue VideoMME/MVBench are true;
+  rescue TOMATO is false.
+- Bucket verdict fields when present in the artifact:
+  `summary.pass_bucket_quality_and_e2e` and `summary.bucket_failures`.
+  All six composition rows have `pass_bucket_quality_and_e2e=false`; the
+  manuscript table or caption must name the failing buckets instead of
+  implying that aggregate fidelity passing is the full verdict.
 - Caveat.
 
 Required wording:
 
 - "Speed frontier" for aggressive MVBench 1.84x.
 - "Paper-safer operating point" for rescue MVBench 1.43x.
-- Explicit bucket caveats for rescue.
+- Explicit bucket caveats for rescue. Do not describe any rescue row as
+  globally fidelity-passing; VideoMME and MVBench pass the aggregate fidelity
+  gate but still fail bucket gates. TOMATO rescue is stricter still: it is a
+  speed-positive boundary row with both aggregate fidelity failure and
+  direction/rotation bucket failures.
 - If the M3 TOMATO composition row is included in this or the cost-accounting
   table, describe its positive aggregate delta as small-sample aggregate
-  positive with answer-churn caveat, not as proof that composition improves
+  positive with choice-churn caveat, not as proof that composition improves
   quality.
 
 ### Box or small figure: H3B substrate cliff
@@ -668,6 +769,25 @@ curve.
 ## Size-Control Plan
 
 The edit should be same length or shorter. Target net change: -5% to 0% words.
+
+This is a gate, not a preference. Before editing manuscript sections, record a
+baseline word count for `paper/arxiv/sections/*.tex` (excluding generated
+tables, bibliography, and build metadata). After the manuscript-integration
+slice, rerun the same count. The slice fails review if the total increases
+unless the commit message explicitly identifies the removed figure/table budget
+that lands in the following commit. Evidence-plumbing commits may add generated
+files, but they must not be described as the finished manuscript edit.
+
+Cut budget to take before or with additions:
+
+1. Compress Qwen/query-routing result prose into one boundary subsection before
+   adding the RLT scorer and composition prose.
+2. Move repeated roadmap/future-work bullets out of the discussion before
+   adding M5/query-aware future-work language.
+3. Replace repeated C-term explanatory paragraphs with the operator/stage table
+   before adding new operator prose.
+4. Collapse related-work one-method-per-paragraph novelty claims into grouped
+   accounting paragraphs before adding the new RLT/query-adaptive citations.
 
 Additions:
 
@@ -710,6 +830,12 @@ Modify:
 
 - Promote "stage-cost accounting + RLT-as-cheap-C-VISION" to the active paper
   spine.
+- Update the "Three Major Contributions" section heading and contribution names
+  so the manuscript order is C-CEILING / stage-cost accounting, C-VISION /
+  RLT-as-cheap-C-VISION, then C-PERSIST. If the local claim-ID list keeps
+  C-PERSIST before C-VISION for historical continuity, it must explicitly say
+  that list order is not the manuscript contribution order. Do not add
+  composition as a fourth contribution.
 - Keep C-PERSIST as a separate high-gain regime.
 - Add anti-claims:
   - RLT does not dominate every scorer.
@@ -726,7 +852,7 @@ Modify:
 - Add or update rows for:
   - n=19 prefill+vision stage-cost model,
   - RLT-as-C-VISION scorer-cost result,
-  - aggressive vs rescue composition,
+  - aggressive vs rescue composition as boundary/frontier evidence,
   - H3B substrate cliff,
   - query-routing boundary result.
 - Label each as reproduced here, diagnostic, advisory, or hypothesis.
@@ -778,12 +904,16 @@ Modify:
 
 - Open with token count vs runtime bill.
 - Add a compact operator/regime table or prose equivalent.
-- Update contributions to:
+- Update contributions to exactly these three paper claims:
   1. stage-cost accounting,
   2. RLT cheap C-VISION,
-  3. composition frontier,
-  4. same-video C-PERSIST regime,
-  5. boundary evidence against over-smart routing.
+  3. same-video C-PERSIST regime.
+- Add composition frontier as a supporting result under the stage-cost/RLT
+  claim, not as a fourth contribution. The aggressive and rescue rows teach
+  the speed/quality frontier and denominator discipline; they do not overturn
+  the source-of-truth contribution count.
+- Add a separate boundary paragraph after the contribution list for
+  query-aware/routing failures. Do not count it as a contribution.
 - Replace the current C-CEILING contribution sentence with one that includes
   both the earlier Qwen composition audit and the n=19 Gemma/RLT prefill+vision
   audit.
@@ -849,7 +979,8 @@ Modify:
 - Add the n=19 cost-model figure and text as the first result in this section,
   or split into a new `07_results_stage_cost.tex`.
 - Add RLT scorer-cost result.
-- Add composition frontier result.
+- Add composition frontier result as supporting/boundary evidence under the
+  stage-cost/RLT claim, not as a new contribution.
 - Keep architecture-specific limits visible.
 - First-pass implementation: add
   `\input{generated/tables/rlt_cost_accounting.tex}` near the current manual
@@ -879,7 +1010,8 @@ Cut:
 Modify:
 
 - Add the parsed-choice/raw-output limitation for VideoMME-short.
-- Add the timing/boundary limitation for MVBench and TOMATO admission rows.
+- Add the timing-only limitation for MVBench hosted admission rows and the
+  timing/boundary limitation for TOMATO composition rows.
 - Add the denominator-control limitation for random-valid no-admission rows.
 
 ### `paper/arxiv/sections/10_conclusion.tex`
@@ -943,20 +1075,57 @@ Generator details:
 - Select rows by exact membership in `rows[*].label` using:
   `m3_videomme_no_adm`, `m3_videomme_kr07`, `m3_videomme_kr03`,
   `m3_videomme_compose`, `m3_mvbench_kr07`, and `m3_tomato_compose`.
+- Read each selected artifact row's `source_path`, assert it matches the exact
+  map below, and emit it in the generated snapshot as a single-item
+  `source_paths` list so the existing validators see it:
+  - `m3_videomme_no_adm`:
+    `research/experiments/2026/artifacts/rlt_m3_cost_accounting_followup/videomme_short/videomme_short_random_cvision_no_admission_cost_model.json`
+  - `m3_videomme_kr07`:
+    `research/experiments/2026/artifacts/rlt_m3_cost_accounting_followup/videomme_short/videomme_short_random_cvision_admission_kr070_cost_model.json`
+  - `m3_videomme_kr03`:
+    `research/experiments/2026/artifacts/rlt_m3_cost_accounting_followup/videomme_short/videomme_short_random_cvision_admission_kr030_cost_model.json`
+  - `m3_videomme_compose`:
+    `research/experiments/2026/artifacts/rlt_m3_cost_accounting_followup/videomme_short/videomme_short_rlt_composition_kr050_cost_model.json`
+  - `m3_mvbench_kr07`:
+    `research/experiments/2026/artifacts/rlt_m3_cost_accounting_followup/mvbench_hosted/mvbench_hosted_random_cvision_admission_kr070_cost_model.json`
+  - `m3_tomato_compose`:
+    `research/experiments/2026/artifacts/rlt_m3_cost_accounting_followup/tomato_motion_dev/tomato_motion_dev_rlt_composition_kr050_cost_model.json`
 - Snapshot schema:
-  - `source_artifact`: path to `cost_model_fit_n19.json`.
-  - `source_notes`: list containing the May 20 closeout note path.
+  - `source_paths`: list containing `cost_model_fit_n19.json`, the May 20
+    closeout note path, and every selected row source artifact. Use this
+    validated key instead of inventing `source_artifact`, `source_notes`, or
+    row-level `source_path` fields.
+  - `summary_source`: string naming the May 20 closeout note as the source for
+    curated fidelity/evidence labels. `summary_source` is part of the existing
+    source-key validator vocabulary.
   - `summary`: object with `n_artifacts`, `r2`, `mean_abs_relative_error`,
     and `max_abs_relative_error`.
   - `rows`: list of selected row objects after applying the exact-label filter.
     Each selected row should include `label`, `display_name`, `n`,
-    `observed_e2e_speedup`, `prefill_plus_vision_ceiling_speedup`,
+    `source_paths`, `observed_e2e_speedup`,
+    `prefill_plus_vision_ceiling_speedup`,
     `prefill_plus_vision_relative_error`,
-    `accuracy_delta_composed_minus_dense`, and `evidence_status`.
+    `accuracy_delta_composed_minus_dense`, `prefill_share`, `vision_share`,
+    `prefill_speedup`, `vision_speedup`, `choice_agreement`, and
+    `evidence_status`.
+    For composition rows, `choice_agreement` must be read from
+    `summary.choice_agreement` in the row's `source_paths[0]` artifact, not
+    from the top-level `cost_model_fit_n19.json` row where that field may be
+    null.
     `display_name` and `evidence_status` are derived from the curated mappings
     in this plan; they are not read from the artifact.
-  - `evidence_status_source`: string naming the May 20 closeout note as the
-    source for curated fidelity/evidence labels.
+  - Hard-fail if any selected row is missing `source_paths`, stage-share inputs,
+    stage-speedup inputs, observed speedup, predicted speedup, relative error,
+    or accuracy delta. Hard-fail if either selected composition row
+    (`m3_videomme_compose`, `m3_tomato_compose`) is missing `choice_agreement`
+    from `summary.choice_agreement` in its `source_paths[0]` artifact. Verified
+    source-path values are `0.750` for `m3_videomme_compose` and `0.533` for
+    `m3_tomato_compose`. Do not silently fill `None`.
+  - Hard-fail if a selected row's `source_paths` value is not a single-item
+    list matching the exact source-path map above.
+  - Assert `fidelity_verdict` is absent from the selected cost-model rows so the
+    generator cannot accidentally treat curated evidence labels as artifact
+    fields.
 - Table columns:
   - Workload / setting, derived from the curated row-label mapping:
     `m3_videomme_no_adm` = `VideoMME-short control`; `m3_videomme_kr07` =
@@ -965,13 +1134,38 @@ Generator details:
     `VideoMME-short composition kr=0.5`; `m3_mvbench_kr07` =
     `MVBench-hosted admission kr=0.7`; `m3_tomato_compose` =
     `TOMATO composition`.
-  - `n` from `rows[*].n`.
+  - `Items in selected cell` from `rows[*].n`. The table caption must say the
+    model fit spans 19 cells, while this column reports per-row item count.
   - Observed E2E from `rows[*].observed_e2e_speedup`.
   - Predicted E2E from `rows[*].prefill_plus_vision_ceiling_speedup`.
   - Relative error from `rows[*].prefill_plus_vision_relative_error`.
   - Delta accuracy from `rows[*].accuracy_delta_composed_minus_dense`.
   - Fidelity / evidence status from the curated evidence-class mapping above,
     not from artifact `fidelity_verdict`.
+  - Source traceability: each table row must carry the selected row's
+    `source_paths` into the generated snapshot, and the appendix source table
+    must cite the snapshot plus `cost_model_fit_n19.json`.
+
+Column-to-artifact-key map:
+
+| Table column | Artifact key or curated source |
+| --- | --- |
+| Workload / setting | curated `display_name` mapping in this plan |
+| Items in selected cell | `rows[*].n` |
+| Observed E2E | `rows[*].observed_e2e_speedup` |
+| Predicted E2E | `rows[*].prefill_plus_vision_ceiling_speedup` |
+| Relative error | `rows[*].prefill_plus_vision_relative_error` |
+| Delta accuracy | `rows[*].accuracy_delta_composed_minus_dense` |
+| Fidelity / evidence status | curated mapping sourced to the May 20 closeout |
+| Source paths | `rows[*].source_paths` |
+
+Required table-note map for selected caveat rows:
+
+| Row | Required note source |
+| --- | --- |
+| `m3_videomme_compose` | Top-level row `accuracy_delta_composed_minus_dense` plus `summary.choice_agreement=0.750` from the row's `source_paths[0]` artifact for the composition choice-churn caveat; evidence status remains `timing/boundary`. |
+| `m3_tomato_compose` | Top-level row `accuracy_delta_composed_minus_dense` plus `summary.choice_agreement` from the row's `source_paths[0]` artifact for the aggregate-positive/choice-churn caveat; evidence status remains `timing/boundary`. |
+| `m3_mvbench_kr07` | Top-level row `accuracy_delta_composed_minus_dense=+0.019` may be reported only as aggregate delta next to a `timing only` evidence status; do not interpret it as a quality win because paired choice agreement is not clean. |
 
 ## M3 And M5 Experiment Policy
 
@@ -1027,17 +1221,22 @@ Before committing the actual manuscript rewrite:
    - `make paper-build`.
 3. Run paper lint/doctor if available:
    - `make paper-doctor`.
-4. Bundle the manuscript and validate manifest coverage:
+4. Resolve unrelated experiment leftovers before any clean-tree bundle gate:
+   - handle the untracked
+     `research/experiments/2026/artifacts/rlt_query_routing_hosted_sweep/`
+     scratch directory under the cleanup gate in
+     `plan/rlt-vlmax-composition.md`.
+5. Bundle the manuscript and validate manifest coverage:
    - `make paper-arxiv-check-dirty` before attempting any clean-tree bundle.
    - `make paper-bundle` is a post-commit clean-tree check.
    - Run `uv run pytest tests/test_arxiv_bundle_manifest.py` only after the new
      generated-table `\input{}` has been wired, so the test can actually detect
      missing `ARXIV_TABLE_FILES` coverage.
-5. Check generated figure/table provenance:
+6. Check generated figure/table provenance:
    - every headline number maps to an artifact or claim-matrix row.
-6. Run repo review:
+7. Run repo review:
    - `ai-review team --stage diff --profile thorough`.
-7. Confirm the staged diff does not include unrelated experiment leftovers.
+8. Confirm the staged diff does not include unrelated experiment leftovers.
 
 For this plan commit, verify:
 

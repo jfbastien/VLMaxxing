@@ -1,4 +1,4 @@
-# Publishability Status — 2026-05-03
+# Publishability Status — 2026-05-25
 
 One-file answer to "what can we actually claim, in what venue, with what
 numbers, today." Kept in sync with [claim-matrix.md](claim-matrix.md) but
@@ -11,25 +11,24 @@ runtime inventories lower in this file are retained for provenance, but the
 current narrative interpretation should come from `priority.md` and the claim
 matrix.
 
-## Current Manuscript Position (2026-05-03)
+## Current Manuscript Position (stage-cost/RLT update, 2026-05-25)
 
-The manuscript should lead with three linked claims, not with a Qwen-only routing
-note:
+The manuscript should lead with stage-cost-accounted anti-recomputation, not
+with a Qwen-only routing note or a token-count story:
 
-- **C-PERSIST**: persistent-KV reuse already delivers the largest local
-  deployment numbers in the repo on same-video follow-up queries, and
-  adaptive selective re-prefill now repairs the 20f/32f basin across the broad
-  tested Qwen tranche: n=93, 0 observed paired drift, 15.28×--35.97× all-query
-  speedup, and 14.90×--35.92× same-class follow-up speedup.
-- **C-CEILING / C-VISION**: C-CEILING is the denominator discipline. Gemma
-  vision-tower pruning has paper-grade first-pass speedup evidence on clean
-  and advisory holdout cells, and measured sparse vision has a bounded
-  timed-execution envelope: Gemma 32f short is clean at 1.316× with 0/20 paired
-  drift, while Qwen recovers to within aggregate-accuracy/format gates only at
-  a conservative low-gain keep rate.
-- **Qwen routing**: mechanism and boundary evidence showing why placement of
-  fresh computation matters; novelty-ranked diagnostics stay local-only until
-  their raw outputs are materialized as checked artifacts.
+- **C-CEILING / stage-cost accounting**: this is now the front-door claim. The
+  Gemma/RLT prefill+vision audit fits 19 cost-model cells at `R^2=0.97097`,
+  `1.72%` mean absolute relative error, and `7.85%` max relative error.
+- **C-VISION / RLT-as-cheap-C-VISION**: RLT reaches the speed class of expensive
+  max-min diversity scoring while moving scorer cost from seconds to tens of
+  milliseconds on the measured Gemma rows. This is a scorer-cost result, not a
+  universal dominance claim.
+- **C-PERSIST**: persistent-KV reuse still delivers the largest local deployment
+  numbers, but every multiplier is an after-ingest same-video follow-up number,
+  not a fresh-video pruning result.
+- **Qwen routing**: mechanism and boundary evidence only. It explains failure
+  modes and future-query-aware requirements; it is not a current paper
+  contribution.
 
 Candidate C-STREAM is not decorative support, but it is not a main manuscript
 claim
@@ -100,8 +99,8 @@ contributions (all landed before Codex round-26 2026-04-21):
   `0.984x-1.779x` E2E. This is a methodology/readiness upgrade, not a new
   headline router. The cleanest new rows are VideoMME-short admission
   `kr=0.3/0.7`, both `20/20` parsed-choice clean at `1.133x/1.121x`; MVBench
-  and TOMATO extensions remain timing/boundary evidence because choice churn
-  and bucket caveats remain visible.
+  hosted-dev remains timing-only evidence, while TOMATO composition remains
+  timing/boundary evidence with artifact-sourced choice-churn caveats.
 
 - **First-pass measured gains (Gemma / C-VISION).** This is the main
   reviewer-facing result today: measured end-to-end speedups on VideoMME,
@@ -146,10 +145,10 @@ See `paper/framing.md`, `paper/priority.md`, and the canonical LaTeX sources
 under `paper/arxiv/sections/` for the authoritative narrative. The Markdown
 LaTeX section files are the canonical manuscript sources.
 
-> **Training-free anti-recomputation for video VLMs: measured first-pass
-> speedups on Gemma, sub-second same-video follow-up queries on Qwen, and
-> routing diagnostics suggesting that fresh-compute placement is not captured
-> by novelty magnitude alone.**
+> **Stage-cost-accounted anti-recomputation for video VLMs: predictable
+> first-pass speedups from the stages actually shortened, cheap RLT visual
+> redundancy scoring, sub-second same-video follow-up queries on Qwen, and
+> routing diagnostics kept as boundary evidence.**
 
 **Concrete headline cells today:**
 
