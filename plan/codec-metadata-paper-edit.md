@@ -8,7 +8,8 @@ present compressed-video metadata as:
 
 1. a refresh signal for cached visual evidence that is answer-preserving at a
    tested low-reuse point but no better than a trivial pixel proxy
-   (in-sample, and tied with pixel out-of-sample),
+   (in-sample, and tied with pixel on the disjoint-item
+   per-item/pixel-calibrated holdout),
 2. a bounded sparse-token ranking prior at specific operating points, and
 3. a systems interface that becomes practical when codec evidence is sidecarized.
 
@@ -41,8 +42,10 @@ consequential.
    omits the pixel baseline is selective reporting and will read as
    cherry-picking. The honest contribution is not "codec beats alternatives";
    it is "codec is an answer-preserving refresh trigger at this low-reuse
-   operating point, matches a trivial pixel proxy, works without per-item
-   calibration, and becomes operationally cheap only when sidecarized."
+   operating point, matches a trivial pixel proxy, uses corpus-pooled rather
+   than per-item thresholds in the N=57 run, and becomes operationally cheap
+   only when sidecarized." Finding 5 below is load-bearing: the N=57
+   corpus-pooled thresholds are still fitted in-sample and pixel-matched.
 
 2. **The refresh result is not "the strongest/cleanest" result; it is a
    modest, high-precision/low-recall efficiency point.** `codec_reuse_ratio_mean_active`
@@ -53,13 +56,13 @@ consequential.
    agreement is *coupled* to the low reuse: if you only skip 10% of refreshes,
    the answers necessarily barely move. Agreement must never be presented as a
    standalone strength without the reuse budget and the pixel baseline beside
-   it. The genuine "wow" results are the sidecar systems win and the clean
+   it. The genuine reader payoff is the sidecar systems win and the clean
    negative bound (codec does not beat pixel for refresh; see finding 5), not
    the refresh agreement number or a "calibration-free" framing.
 
 3. **OneVision-style fusion does not transfer; report the `fused` source.** The
-   pooled dir contains a fourth source, `fused` (motion+residual), which the
-   plan currently drops. It underperforms: `fused` codec accuracy 0.667 (=
+   pooled dir contains a fourth source, `fused` (motion+residual), which an
+   earlier draft of this plan dropped. It underperforms: `fused` codec accuracy 0.667 (=
    dense, below the 0.684 single sources) and agreement 0.965. Reporting only
    the three best-looking sources while silently dropping the worse fused source
    is selective. Either report `fused` or justify its exclusion in the snapshot
@@ -73,7 +76,7 @@ consequential.
    say so; do not imply a curve.
 
 5. **The refresh result is NOT "calibration-free", it is in-sample and
-   pixel-matched, and the only out-of-sample evidence shows codec = pixel
+   pixel-matched, and the disjoint-item check still shows codec = pixel
    exactly.** Three coupled facts from
    `scripts/run_phase1_29_planner_accuracy_probe.py`:
    (a) **In-sample.** The pooled thresholds are fit on `pooled_scores`
@@ -90,15 +93,20 @@ consequential.
    which is exactly why codec reuse (0.106) ~= pixel reuse (0.108). The ~10.6%
    is inherited from pixel, not an independently discovered codec operating
    point. This is a fair matched-budget comparison, but the paper must say so.
-   (c) **Out-of-sample parity.** The disjoint short holdout
+   (c) **Disjoint-item parity, not frozen-threshold transfer.** The disjoint short holdout
    (`phase1_29_onevision_holdout_disjoint`, manifest
-   `videomme_holdout_v1_short_only.toml`, n=10, per-item) reports
+   `videomme_holdout_v1_short_only.toml`, n=10, `calibration_mode=per-item`,
+   `calibration_source=live-pixel`) reports
    `codec_pixel_agreement = 1.000` and `codec_minus_pixel_accuracy = +0.000`
-   for all four sources (codec 0.70 = pixel 0.70, agreement 0.90 = 0.90). Codec
-   and pixel make identical answer choices out-of-sample. There is therefore
-   **no out-of-sample evidence that codec beats pixel as a refresh signal.**
-   The honest framing of the whole refresh story is a parity/negative result:
-   codec metadata does not beat a trivial pixel-difference proxy for
+   for all four sources (codec accuracy 0.70 = pixel accuracy 0.70;
+   codec-to-dense agreement 0.90, pixel-to-dense agreement 0.90). Codec
+   and pixel make identical answer choices on this disjoint-item manifest.
+   Because this run still fits thresholds per holdout item from live pixel
+   classifications, it is **not** a clean out-of-sample threshold-transfer test.
+   It is still enough to block a positive generalization claim: there is no
+   disjoint-item evidence that codec beats pixel as a refresh signal. The honest
+   framing of the whole refresh story is a parity/negative result: codec
+   metadata does not beat a trivial pixel-difference proxy for
    frozen-VLM refresh planning; the durable wins are the sidecar systems result
    and the negative-result bound itself, not a codec refresh advantage.
 
@@ -120,10 +128,10 @@ canonical dense baseline; do not call it benign without item-level evidence.
     findings.
   - Run `git diff --check`.
   - Commit the reviewed plan before starting the manuscript implementation.
-    Prerequisite paper-bundle hardening may land in the same commit only when it
-    directly enforces a plan gate; the allowed prerequisite hardening here is
-    the audit bundle hard-fail, `research/decision-log.md` audit inclusion, and
-    manifest tests.
+    The prerequisite paper-bundle hardening already landed separately: audit
+    bundle hard-fail, `research/decision-log.md` audit inclusion, and manifest
+    tests. Do not restage that work unless a later manuscript edit touches the
+    bundle contract.
   - Justification: this checklist is intentionally detailed; the manuscript edit
     should start from a reviewed plan, not rediscover these paper-review
     constraints mid-edit.
@@ -158,6 +166,11 @@ canonical dense baseline; do not call it benign without item-level evidence.
     `environment.git_dirty: true`; the paper edit must either use a clean rerun
     with `git_dirty: false` or explicitly label the pooled-threshold result as
     dirty-tree/advisory/pending-clean-rerun everywhere it appears.
+    Promotion deadline: by the manuscript-edit commit that introduces the
+    codec tables into main paper prose, dirty-tree rows must either be replaced
+    by clean reruns or remain explicitly advisory in table notes, status docs,
+    and the claim matrix. Dirty rows cannot be promoted to reproduced,
+    submission-ready evidence.
   - Trace every reported reuse value to `codec_reuse_ratio_mean_active`. This
     metric is active-region reuse, i.e. the fraction whose refresh is skipped,
     not the active refreshed fraction. If the paper needs active refreshed
@@ -172,12 +185,15 @@ canonical dense baseline; do not call it benign without item-level evidence.
     N=57 slice the simple single-source codec rows beat pixel by +2/57
     (0.684 vs 0.649) at essentially equal reuse (0.106 vs 0.108), while `fused`
     is +1/57; neither gap is significant. A refresh table without the pixel row
-    is selective reporting.
+    is selective reporting. The snapshot generator must hard-fail if any
+    refresh source summary lacks the pixel fields required for the row.
   - Mandatory `fused` source: the pooled dir has four sources
     (`novel_coded`, `motion`, `residual`, `fused`), not three. `fused`
     underperforms (accuracy 0.667, agreement 0.965). Report it or justify its
     exclusion in the snapshot and a footnote; do not silently drop the worst
-    source.
+    source. The snapshot generator must hard-fail if the pooled refresh artifact
+    set contains only the three favorable single-source rows and omits `fused`
+    without an explicit exclusion reason.
   - Mandatory in-sample disclosure: the N=57 pooled summaries have
     `calibration_mode=pooled` and `calibration_source=live-pixel`. The pooled
     thresholds are fit on the same 57 evaluated items and the reuse target is
@@ -188,14 +204,35 @@ canonical dense baseline; do not call it benign without item-level evidence.
     construction. Do not call the result "calibration-free"; say "no per-item
     threshold fitting (corpus-pooled), evaluated in-sample, reuse matched to the
     pixel baseline".
-  - Mandatory out-of-sample row: the disjoint holdout
+  - Mandatory disjoint-item sanity row: the disjoint holdout
     `research/experiments/2026/artifacts/phase1_29_onevision_holdout_disjoint/comparison.json`
-    (manifest `videomme_holdout_v1_short_only.toml`, n=10, per-item) reports
+    (manifest `videomme_holdout_v1_short_only.toml`, n=10, per-item,
+    live-pixel calibrated) reports
     `codec_minus_pixel_accuracy=0.0` and `codec_pixel_agreement=1.0` for all
-    four sources. Pull it into the snapshot and report it: there is no
-    out-of-sample evidence that codec beats pixel for refresh. A refresh
-    subsection that shows only the in-sample N=57 numbers and hides the holdout
-    parity is selective reporting.
+    four sources, with codec-to-dense agreement 0.90 and pixel-to-dense
+    agreement 0.90. Pull metrics from `comparison.json`, but pull and verify
+    `calibration_mode` and `calibration_source` from the four per-source
+    summaries under
+    `phase1_29_onevision_holdout_disjoint/{novel_coded,motion,residual,fused}/summary.json`;
+    the snapshot generator must hard-fail if those per-source provenance fields
+    are absent or do not equal `per-item` / `live-pixel`. Also record
+    `environment.git_dirty` and `environment.git_sha` from each per-source
+    holdout summary. The current four holdout summaries are dirty and span
+    multiple SHAs (`novel_coded` and `motion` share `0de4886...`; `residual`
+    uses `637b7d5...`; `fused` uses `2682249...`), so the generated
+    snapshot must store per-source provenance in `source_git_commits` and
+    `source_git_dirty` maps keyed by score source. The snapshot must always
+    include a row-level `git_commit` field: set it to the common SHA when all
+    source SHAs are identical, set it to `mixed` when source SHAs differ, and
+    set it to `null` only when all source SHAs are absent (which is itself a
+    hard-fail condition for the current holdout row).
+    The generator must hard-fail if any per-source holdout summary is missing
+    `environment.git_sha` or `environment.git_dirty`. If any source has
+    `environment.git_dirty=true`, apply the same dirty-tree/advisory label to
+    the holdout row in the generated snapshot.
+    Report it as no disjoint-item evidence that codec beats pixel for refresh.
+    Because the run still calibrates thresholds per holdout item from live
+    pixel classifications, it is not a frozen-threshold transfer test.
   - Justification: denominator and provenance errors are fatal for this paper.
     The result can be important only if the reader can tell exactly what was
     measured and from what repository state, and only if the trivial baseline that
@@ -280,7 +317,8 @@ canonical dense baseline; do not call it benign without item-level evidence.
     must be visible in the table/footnote. Label the pooled-threshold number
     advisory until a clean rerun lands.
   - Do not imply codec beats the trivial baseline in the abstract: a pixel proxy
-    matches it within 2 items in-sample and ties it exactly out-of-sample. If
+    matches it within 2 items in-sample and ties it exactly in the disjoint-item
+    per-item/pixel-calibrated holdout. If
     abstract space is tight, the only honest codec mention is the sidecar
     systems result, not the refresh agreement number; the refresh finding is a
     parity/negative bound and does not belong in the abstract as a positive
@@ -405,12 +443,18 @@ canonical dense baseline; do not call it benign without item-level evidence.
     concrete systems path, not just decorate the new result.
 
 - [ ] Extend the paper generator after locking the table/figure design above.
-  - Files: `paper/arxiv/scripts/sync_sources.py`, or a new checked-in generator
-    called from `paper-sync`, plus `paper/arxiv/scripts/build.py`.
   - Completed prerequisite before manuscript editing: audit-bundle hard-fail,
     `research/decision-log.md` audit inclusion, and bundle-manifest tests. The
     codec snapshot builders, table emitters, and manuscript edits remain
     pending.
+    Evidence: the prerequisite bundle hardening is intentionally allowed before
+    manuscript editing so the later manuscript edit can rely on the
+    audit-bundle gate.
+    Decision: bundle hardening and manifest tests may be completed before the
+    manuscript generator work; codec snapshot builders, table emitters, and
+    manuscript edits remain pending implementation work.
+  - Files: `paper/arxiv/scripts/sync_sources.py`, or a new checked-in generator
+    called from `paper-sync`, plus `paper/arxiv/scripts/build.py`.
   - The generator should encode the table/figure design above; it should not
     invent table scope, figure panels, or bundle membership while being written.
   - Add codec-metadata snapshot builders that read the source artifacts named
@@ -456,26 +500,23 @@ canonical dense baseline; do not call it benign without item-level evidence.
   - Register every new generated table in `build.py` `ARXIV_TABLE_FILES` and
     every new generated figure in `build.py` `ARXIV_FIGURE_FILES`, or document
     explicitly why a generated artifact is audit-only and excluded from the
-    upload bundle. Add `research/decision-log.md` to `AUDIT_EXTRA_FILES`
-    because the manuscript will rely on that ledger for codec-metadata claim
-    state.
-  - Change `build.py` audit-bundle behavior to hard-fail if any
-    `AUDIT_EXTRA_FILES` entry is missing. Keep the explicit post-build audit
-    that confirms `repo/research/decision-log.md` is present as a second check,
-    not as a substitute for the hard fail.
-    Evidence: the prerequisite bundle hardening is intentionally allowed before
-    manuscript editing so the later manuscript edit can rely on the
-    audit-bundle gate.
-    Decision: bundle hardening and manifest tests may be completed before the
-    manuscript generator work; codec snapshot builders, table emitters, and
-    manuscript edits remain pending implementation work.
-  - Update or add tests for the build-bundle contract, preferably in
-    `tests/test_arxiv_bundle_manifest.py`: missing `AUDIT_EXTRA_FILES` entries
-    must fail, `research/decision-log.md` must be included in
-    `AUDIT_EXTRA_FILES`, and manuscript-referenced codec tables/figures must be
-    represented in the arXiv upload allowlists. If hand-authored figures are
-    referenced outside `generated/figures/`, extend the existing figure
-    discovery regex/test coverage before accepting that layout.
+    upload bundle. Registration in `build.py` must land before, or in the same
+    change as, the bundle-manifest test extensions that assert those assets are
+    included. Preserve the completed `research/decision-log.md`
+    `AUDIT_EXTRA_FILES` inclusion because the manuscript will rely on that
+    ledger for codec-metadata claim state.
+  - Preserve the completed audit-bundle hard-fail behavior: missing
+    `AUDIT_EXTRA_FILES` entries must fail, and the explicit post-build audit
+    confirming `repo/research/decision-log.md` is present remains a second
+    check, not a substitute for the hard fail.
+  - Preserve and extend the existing build-bundle contract tests in
+    `tests/test_arxiv_bundle_manifest.py` when codec assets are added:
+    missing `AUDIT_EXTRA_FILES` entries must fail, `research/decision-log.md`
+    must remain included in `AUDIT_EXTRA_FILES`, and manuscript-referenced
+    codec tables/figures must be represented in the arXiv upload allowlists. If
+    hand-authored figures are referenced outside `generated/figures/`, extend
+    the existing figure discovery regex/test coverage before accepting that
+    layout.
   - Validate by running `make paper-sync` and confirming the generated files
     reproduce from a clean checkout without manual edits.
   - Justification: the paper workspace treats generated JSON snapshots as the
@@ -528,11 +569,24 @@ canonical dense baseline; do not call it benign without item-level evidence.
     and 0 pixel fixes; report it as finite paired evidence, not as a
     significance claim. If the generator reports a McNemar p-value, it must
     compute the value from item rows rather than hard-coding it.
-  - Add the out-of-sample holdout row/note from
+  - Add the disjoint-item holdout row/note from
     `phase1_29_onevision_holdout_disjoint/comparison.json`: codec = pixel
     exactly (codec-minus-pixel +0.000, codec-pixel agreement 1.000, n=10) on the
-    disjoint holdout manifest. This is the generalization check and it shows no
-    codec advantage.
+    disjoint holdout manifest. Include `dense_accuracy=0.80` (n=10), codec
+    accuracy 0.70, pixel accuracy 0.70, codec-to-dense agreement 0.90, and
+    pixel-to-dense agreement 0.90 so the row remains comparable to the main N=57
+    refresh table. Also include the holdout active reuse-skipped denominators:
+    codec `codec_reuse_ratio_mean_active` spans 0.0726--0.0764 across sources,
+    while pixel `pixel_reuse_ratio_mean_active` is 0.0801. These metrics are
+    already in `comparison.json`; the per-source summaries are still required
+    for calibration and environment provenance. This is a sanity check on
+    a disjoint item set, not a
+    frozen-threshold transfer test, because the run remains per-item and
+    live-pixel calibrated. It shows no codec advantage.
+    Pair `comparison.json` with the four per-source holdout `summary.json`
+    files so the generated snapshot can record and verify
+    `calibration_mode=per-item` and `calibration_source=live-pixel` from
+    artifact data, not prose.
   - State the key claim precisely and honestly as a parity result: with
     corpus-pooled thresholds (no per-item fitting, but evaluated in-sample and
     with the reuse budget matched to the pixel baseline), codec metadata is an
@@ -541,10 +595,11 @@ canonical dense baseline; do not call it benign without item-level evidence.
     skipping refresh on only ~10--11% of active frame pairs (the `fused` row is
     55/57 and must remain visible). A trivial pixel-difference proxy does nearly
     as well in-sample (54/57, +2 items behind codec, not significant) and ties
-    codec exactly out-of-sample, so there is no demonstrated codec-over-pixel
-    refresh advantage. The durable value is the negative bound itself plus
-    sidecarizability, not a codec win and not a "calibration-free" property. It
-    is refresh planning, not sparse execution or session reuse.
+    codec exactly in the disjoint-item per-item/pixel-calibrated holdout, so
+    there is no demonstrated codec-over-pixel refresh advantage. The durable
+    value is the negative bound itself plus sidecarizability, not a codec win
+    and not a "calibration-free" property. It is refresh planning, not sparse
+    execution or session reuse.
   - Do not call this the strongest or cleanest result. The agreement number is
     coupled to the small reuse budget (skipping ~10% of refreshes necessarily
     preserves almost all answers), so it cannot carry a standalone efficiency
@@ -557,7 +612,7 @@ canonical dense baseline; do not call it benign without item-level evidence.
     per-item calibration or n=10/n=20 results if it no longer earns space.
   - Justification: this is a legitimate sidecarizable refresh result and a clean
     negative bound (codec ties pixel) that belongs in the main results, framed as
-    an observed answer-preserving signal with no out-of-sample advantage over
+    an observed answer-preserving signal with no disjoint-item advantage over
     pixel, rather than a headline win. Overstating it (omitting the pixel
     baseline, dropping fused, hiding the in-sample/pixel-matched calibration or
     the holdout parity, or quoting agreement without the reuse budget) would
@@ -660,7 +715,8 @@ canonical dense baseline; do not call it benign without item-level evidence.
     for refresh planning codec metadata does not beat a trivial pixel-difference
     proxy -- it is answer-preserving at a tested low-reuse point but only +2/57
     in-sample (with pooled thresholds fit in-sample and reuse matched to pixel)
-    and tied with pixel out-of-sample, and OneVision-style fusion underperformed;
+    and tied with pixel on the disjoint-item per-item/pixel-calibrated holdout,
+    and OneVision-style fusion underperformed;
     sparse ranking transfers only at bounded operating points; and session
     composition remains blocked by first-query drift. The one thing that clearly
     transfers is operational: codec evidence is sidecarizable with zero drift.
@@ -715,6 +771,81 @@ canonical dense baseline; do not call it benign without item-level evidence.
   - Justification: paper editing can proceed now, and the planned insert points
     avoid a rewrite when M5 results arrive.
 
+## Optional: Clean Held-Out Threshold-Transfer Experiment
+
+This is not a manuscript-edit prerequisite.
+
+  - Current code path caveat: `--calibration-source artifact` does **not** make
+    `run_phase1_29_planner_accuracy_probe.py` a frozen-threshold transfer
+    evaluator. In pooled mode the script still computes thresholds from the
+    evaluated items' codec score distribution; in per-item mode it still fits
+    each evaluated item. The artifact source only supplies target class-share
+    counts. Do not use it to claim calibration/evaluation separation.
+  - If the paper needs a stronger refresh statement, implement and preregister a
+    new runner mode that freezes both (a) score thresholds and (b) reuse target
+    policy from a calibration split, then evaluates exactly once on a disjoint
+    evaluation manifest without reading live pixel classifications for threshold
+    choice.
+  - Before running any evaluation split, commit the concrete gate values
+    (`N>=57`, absolute reuse-skipped tolerance 0.01, 95% two-sided Wilson lower
+    floor 0.80) in a dated preregistration note under
+    `research/experiments/2026/` and add or update the corresponding row in
+    `research/experiments/registry.md`. This plan is mutable and is not a
+    substitute for that preregistration note; the dated experiment note is the
+    authoritative gate record once the experiment is launched. Here and below,
+    `N>=57` refers to the evaluation split item count, not the calibration split
+    or the total. The current 57-item VideoMME-short slice cannot meet this gate
+    after a calibration / evaluation split without collecting or materializing
+    additional items.
+  - Hypothesis: if H.264 metadata transfers as a refresh signal beyond
+    pixel-matched in-sample calibration, frozen codec thresholds learned on the
+    calibration split should preserve dense agreement on the disjoint split at
+    a reuse budget comparable to the pixel proxy.
+  - Primary metrics: codec-to-dense agreement, pixel-to-dense agreement,
+    codec-minus-pixel accuracy, codec-pixel agreement, active reuse skipped
+    (`codec_reuse_ratio_mean_active` and
+    `pixel_reuse_ratio_mean_active` in the current artifact schema), and paired
+    codec-vs-pixel fixes/breaks, all reported with N and Wilson or exact
+    paired-test context.
+  - Gate for promotion: use N>=57 for any promoted threshold-transfer claim.
+    Codec must not lose to pixel by more than one item while matching the pixel
+    proxy's active reuse-skipped budget within an absolute 0.01 tolerance, and
+    the 95% two-sided Wilson lower bound for codec-to-dense agreement must be
+    >=0.80. The 0.80 floor is an intentionally generous screening floor for an
+    optional future experiment, not a claim that frozen-threshold transfer
+    reproduces the in-sample 56/57 agreement. Store codec reuse skipped
+    (`codec_reuse_ratio_mean_active`), pixel reuse skipped
+    (`pixel_reuse_ratio_mean_active`), signed reuse delta
+    (`codec_reuse_ratio_mean_active - pixel_reuse_ratio_mean_active`), and the
+    allowed tolerance in the generated snapshot. This gate would support "codec
+    matches pixel under frozen threshold transfer"; it still would not support
+    "codec beats pixel" unless paired fixes dominate breaks with enough N.
+  - Falsifier: codec loses to pixel by at least two items, agreement falls below
+    the 95% two-sided Wilson 0.80 lower-bound floor stated in the gate above, or
+    the run needs live pixel classifications on the evaluation split to choose
+    thresholds. Preserve any such result as a boundary, not a failed
+    implementation.
+  - Partial-pass outcomes: if signed reuse delta is < -0.01 and the accuracy and
+    Wilson gates pass, report the result as bounded-efficiency
+    threshold-transfer evidence at a more conservative lower-skip operating
+    point, with reuse delta, accuracy margin, 95% Wilson-floor status, and an
+    explicit note that matched-efficiency transfer is not supported. If signed
+    reuse delta is > +0.01 and the quality gates pass, record it as an unmatched
+    higher-skip/aggressive operating point and require a matched-reuse rerun
+    before using it for a matched-efficiency claim. Do not list either
+    partial-pass case in the decision log as a falsification or as
+    matched-efficiency transfer. For the negative-delta case, add a decision-log
+    entry labeled "bounded-efficiency threshold-transfer evidence at a more
+    conservative lower-skip operating point", recording reuse delta, accuracy
+    margin, 95% Wilson-floor status, and the note that matched-efficiency
+    transfer is not supported. For the positive-delta case, record the result as an
+    unmatched higher-skip/aggressive operating point and note the required
+    matched-reuse rerun condition.
+  - Justification: the current paper can report the negative/parity bound
+    honestly. A real threshold-transfer experiment is useful only if we want to
+    upgrade or further bound that result; it is not necessary to start
+    manuscript editing.
+
 - [ ] Preserve an internal-to-paper terminology mapping.
   - Primary location: `paper/terminology.md`. Cross-link from
     `paper/framing.md` or `paper/claim-matrix.md` only when the claim status
@@ -750,13 +881,14 @@ canonical dense baseline; do not call it benign without item-level evidence.
     TeX tooling is unavailable, record that blocker explicitly, do not call
     packaging fully verified, and at least list the tarball contents to verify
     every codec table and figure named in the manuscript is present.
-  - Run `make paper-audit-bundle` from a clean tree after adding
-    `research/decision-log.md` to `AUDIT_EXTRA_FILES`.
+  - Run `make paper-audit-bundle` from a clean tree after codec table/figure
+    registration changes, preserving the existing `research/decision-log.md`
+    `AUDIT_EXTRA_FILES` entry.
   - Inspect the arXiv tarball contents and confirm every codec table/figure
     named in the manuscript and every codec generated asset registered in
     `ARXIV_TABLE_FILES` / `ARXIV_FIGURE_FILES` is present in the upload bundle.
     Also confirm `repo/research/decision-log.md` appears in the audit bundle
-    after adding `research/decision-log.md` to `AUDIT_EXTRA_FILES`.
+    through the existing `research/decision-log.md` `AUDIT_EXTRA_FILES` entry.
   - Confirm generated-table diffs are reproducible from the tracked JSON
     snapshots and canonical artifacts.
   - Run a vocabulary audit over `paper/arxiv/sections/*.tex` and paper-facing
@@ -766,17 +898,14 @@ canonical dense baseline; do not call it benign without item-level evidence.
     upper-bound language, or repo-facing terminology notes. `calibration-free`
     and `calibration-robust` must not describe the refresh result anywhere in
     paper-facing prose.
-    `safe` has a narrow carve-out for established non-codec terms that already
-    describe a concrete invariant (for example topology-safe cache reuse,
+    `safe` is allowed only for existing non-codec terms that name a concrete
+    invariant or file identifier, such as topology-safe cache reuse,
     deadline-safe perception, denominator-safe paired rows, unsafe default cache
-    paths, "safe to say" status headings, `c_persist_safe_budget` filenames, and
-    the `paper-sync` "safe first step" setup wording). It also has a narrow
-    carve-out for already-scoped cache-system phrases such as
-    correctness-safe fallback, safe path, or statements that a specific
-    `PromptCacheState` wrapper is safe only under tested conditions, and
-    data-ingestion phrases such as iterating to the only safe frame count. It
-    must not be used to summarize codec refresh, sparse ranking, sidecar timing,
-    or experiment fidelity.
+    paths, an explicitly scoped cache-system safe path, `c_persist_safe_budget`,
+    a named `PromptCacheState` condition, paper-status headings that use
+    "safe to say" as a claim-readiness meta-label, or the `paper-sync` "safe
+    first step" setup wording. It must not be used to summarize codec refresh,
+    sparse ranking, sidecar timing, or experiment fidelity.
   - Confirm every manuscript cell or table note that draws from a dirty-tree
     artifact carries the advisory/pending-clean-rerun label.
   - Confirm the refresh table includes the pixel baseline row and the `fused`
@@ -786,7 +915,8 @@ canonical dense baseline; do not call it benign without item-level evidence.
   - Confirm the refresh subsection discloses in-sample pooled calibration and
     the pixel-matched reuse target, and reports the disjoint-holdout parity
     (codec = pixel); confirm no sentence labels the refresh result
-    "calibration-free" or implies an out-of-sample codec advantage.
+    "calibration-free" or implies a codec advantage on the disjoint-item
+    holdout.
   - Confirm the refresh/pruning dense-baseline mismatch is either resolved by a
     single canonical rerun or explicitly footnoted with both source artifact
     paths and run-specific dense values (38/57 versus 39/57).
@@ -814,6 +944,11 @@ canonical dense baseline; do not call it benign without item-level evidence.
   thresholds are fit in-sample and the reuse budget is matched to the pixel
   baseline. Say "no per-item threshold fitting; in-sample corpus-pooled;
   pixel-matched reuse".
+- Do not describe the disjoint holdout
+  (`phase1_29_onevision_holdout_disjoint`) as a frozen-threshold transfer test
+  or as clean out-of-sample evidence. It still calibrates thresholds per holdout
+  item from live pixel classifications, so call it a disjoint-item sanity check
+  showing no codec advantage.
 - Do not report the in-sample N=57 refresh numbers without the disjoint-holdout
   parity (codec = pixel) beside them.
 - Do not call the pooled refresh trigger "safe" in paper-facing prose; say
@@ -825,8 +960,8 @@ canonical dense baseline; do not call it benign without item-level evidence.
   quote its 0.982 agreement without the ~10% reuse budget beside it.
 - Do not cite OneVision specifics absent from the source ("128 A800 GPUs",
   "13B/4B sample stages").
-- Do not promote dirty-tree pooled-calibration artifacts as clean paper-grade
-  evidence. Rerun clean or label them advisory.
+- Do not promote dirty-tree pooled-calibration or disjoint-holdout artifacts as
+  clean paper-grade evidence. Rerun clean or label them advisory.
 - Do not treat n=3 sidecar equivalence gates as broad timing
   characterization. They validate drift-free equivalence on smoke slices and
   provide pilot extraction-path timings.
@@ -855,7 +990,7 @@ canonical dense baseline; do not call it benign without item-level evidence.
   estimate 35/57 versus 31/57 but McNemar p=0.2188; (3) sidecar extraction
   equivalence with zero drift and seconds-to-milliseconds extraction-path
   speedup (n=3 per-source smoke gates, ~3,800--17,900x on the extraction path
-  only). The durable "wow" is the sidecar systems result plus the clean negative
+  only). The durable reader payoff is the sidecar systems result plus the clean negative
   bound (codec does not beat pixel for refresh); the refresh agreement number is
   not a win on its own, because it is coupled to the small reuse budget, matched
   to pixel by construction, and evaluated in-sample.
@@ -878,6 +1013,18 @@ canonical dense baseline; do not call it benign without item-level evidence.
 - Future manuscript implementation verifies refresh paired stats from
   `summary_json["items"][]` rows, not aggregate rates, and hard-fails if item
   rows or required keys are missing.
+- Future manuscript implementation verifies disjoint-holdout calibration
+  provenance from the four per-source holdout `summary.json` files and
+  hard-fails if `calibration_mode != per-item` or
+  `calibration_source != live-pixel` for the holdout sanity row. The snapshot
+  also records per-source holdout `environment.git_dirty` and
+  `environment.git_sha` in `source_git_dirty` and `source_git_commits` maps.
+  The snapshot must always include row-level `git_commit`: set it to the common
+  SHA if all four source SHAs match, set it to `mixed` if source SHAs differ,
+  and set it to `null` only when all source SHAs are absent, which is a
+  hard-fail condition for the current holdout row. It hard-fails if any holdout
+  summary is missing either environment field, and labels the row advisory if
+  any source is dirty.
 - Future manuscript implementation verifies the paper-science gates from this
   plan: dirty-tree pooled-refresh artifacts are either rerun clean or labeled
   advisory; the refresh table contains the pixel baseline and `fused` source;
