@@ -19,6 +19,63 @@ reader-facing bridge to OneVision-Encoder in related work, then integrate the
 method and evidence into the existing first-query and temporal-reuse sections.
 This makes the paper stronger without making it feel like a patch note.
 
+## Peer-review findings (added 2026-05-25)
+
+A peer-review pass verified every number in this plan against the source
+JSON and surfaced four science-altering corrections that the plan must
+enforce. They are folded into the checklist items below; this block records
+the reasoning so it is not lost.
+
+1. **The pooled refresh result does not beat the trivial pixel baseline.**
+   The same probe that produced the codec rows also recorded a pixel-domain
+   baseline. On the N=57 VideoMME-short Qwen 8f slice, pooled thresholds give
+   codec accuracy 0.684 (39/57) and codec-to-dense agreement 0.982 (56/57),
+   versus pixel accuracy 0.649 (37/57) and pixel-to-dense agreement 0.947
+   (54/57). Codec beats pixel by +2 items out of 57 (`codec_minus_pixel_accuracy`
+   = 0.0351), which is not significant at N=57. Any refresh table or claim that
+   omits the pixel baseline is selective reporting and will read as
+   cherry-picking. The honest contribution is not "codec beats alternatives";
+   it is "codec is a *safe and cheap* refresh trigger that matches a trivial
+   pixel proxy, works without per-item calibration, and is sidecarizable."
+
+2. **The refresh result is not "the strongest/cleanest" result; it is a
+   modest, high-precision/low-recall efficiency point.** `codec_reuse_ratio_mean_active`
+   = 0.106 means the planner safely skips refresh on only ~10.6% of active
+   frame pairs (and pixel skips ~10.8% — slightly more). Via the project's own
+   `effective_fresh_frames ~= 1 + (N-1)(1 - reuse)` accounting, that is roughly
+   a 10% vision-recompute saving at N=8, not a headline speedup. The 0.982
+   agreement is *coupled* to the low reuse: if you only skip 10% of refreshes,
+   the answers necessarily barely move. Agreement must never be presented as a
+   standalone strength without the reuse budget and the pixel baseline beside
+   it. The genuine "wow" results are the sidecar systems win and the
+   calibration-free thresholding property, not the refresh agreement number.
+
+3. **OneVision-style fusion does not transfer; report the `fused` source.** The
+   pooled dir contains a fourth source, `fused` (motion+residual), which the
+   plan currently drops. It underperforms: `fused` codec accuracy 0.667 (=
+   dense, below the 0.684 single sources) and agreement 0.965. Reporting only
+   the three best-looking sources while silently dropping the worse fused source
+   is selective. Either report `fused` or justify its exclusion in the snapshot
+   and a footnote. Its underperformance is positive evidence for the plan's
+   existing "fusion is not privileged" claim and against naive OneVision-style
+   fusion transferring to frozen inference.
+
+4. **The refresh efficiency frontier is uncharacterized.** There is no N=57
+   pooled threshold sweep, only a single operating point. A single low-reuse
+   point cannot establish a useful agreement-vs-reuse frontier. Limitations must
+   say so; do not imply a curve.
+
+Provenance facts confirmed in this pass: all pooled summaries carry
+`environment.git_dirty: true`; the OneVision-Encoder citation is real
+(arXiv 2602.08683, EvolvingLMMs-Lab; 3.1--25% signal-rich regions, shared 3D
+RoPE, cluster-discrimination objective over 1M+ concepts, +4.1% avg over
+Qwen3-ViT all verified against the source). The "128 A800 GPUs" and "13B/4B
+sample stages" figures from the upstream chat review are NOT on the source and
+must not be cited unless found in the paper body. The dense-baseline mismatch
+(0.667 vs 0.684) is a two-script artifact: the refresh probe
+(`run_phase1_29_planner_accuracy_probe.py`) computes its own dense path
+(38/57) distinct from the `run_phase1_51V.py` pruning runner's dense (39/57).
+
 - [ ] Perform a claim audit and paper-facing vocabulary cleanup.
   - Files: `paper/arxiv/sections/*.tex`, `paper/framing.md`,
     `paper/claim-matrix.md`, `paper/priority.md`,
@@ -49,9 +106,25 @@ This makes the paper stronger without making it feel like a patch note.
     metric is active-region reuse, i.e. the fraction whose refresh is skipped,
     not the active refreshed fraction. If the paper needs active refreshed
     fraction, derive and label `1 - codec_reuse_ratio_mean_active` explicitly.
+    At this operating point reuse is ~0.106, so the planner skips refresh on
+    only ~10% of active frame pairs; never phrase this as "uses only 10% of
+    evidence".
+  - Mandatory pixel baseline: every refresh summary also carries
+    `pixel_accuracy`, `pixel_dense_agreement`, and `pixel_reuse_ratio_mean_active`,
+    plus `codec_minus_pixel_accuracy` and `codec_pixel_agreement`. Pull these
+    into the snapshot and show pixel beside codec in any refresh table. On the
+    N=57 slice codec beats pixel by +2/57 (0.684 vs 0.649) at essentially equal
+    reuse (0.106 vs 0.108); that gap is not significant. A refresh table without
+    the pixel row is selective reporting.
+  - Mandatory `fused` source: the pooled dir has four sources
+    (`novel_coded`, `motion`, `residual`, `fused`), not three. `fused`
+    underperforms (accuracy 0.667, agreement 0.965). Report it or justify its
+    exclusion in the snapshot and a footnote; do not silently drop the worst
+    source.
   - Justification: denominator and provenance errors are fatal for this paper.
     The result can be important only if the reader can tell exactly what was
-    measured and from what repository state.
+    measured and from what repository state, and only if the cheap baseline that
+    the same artifact already measured is shown next to it.
 
 - [ ] Audit dense-baseline consistency across codec result families.
   - Source artifacts:
@@ -59,12 +132,14 @@ This makes the paper stronger without making it feel like a patch note.
     `research/experiments/2026/artifacts/phase1_29_onevision_n57_pooled_calibration/`
     and sparse-pruning summaries under
     `research/experiments/2026/artifacts/phase1_51V_ov6_n57*/`.
-  - The pooled-refresh table currently implies dense accuracy 38/57 = 0.667,
-    while the sparse-pruning dense arm reports 39/57 = 0.684 on the N=57
-    VideoMME-short Qwen 8f slice. Before manuscript promotion, either identify
-    the protocol/provenance difference and footnote the two run-specific dense
-    baselines, or rerun/derive a single canonical dense baseline for both
-    tables. Do not silently harmonize by hand.
+  - The pooled-refresh table implies dense accuracy 38/57 = 0.667, while the
+    sparse-pruning dense arm reports 39/57 = 0.684 on the N=57 VideoMME-short
+    Qwen 8f slice. The cause is identified: the two figures come from different
+    scripts (`run_phase1_29_planner_accuracy_probe.py` dense path = 38/57 vs the
+    `run_phase1_51V.py` pruning runner dense = 39/57), a one-item difference.
+    Footnote both run-specific dense baselines with their script/run IDs, or
+    rerun/derive a single canonical dense baseline for both tables. Do not
+    silently harmonize by hand.
   - The generated snapshots must carry run IDs, manifest IDs, dense-answer
     hashes if available, and the source artifact path for each dense baseline.
   - Justification: adjacent tables with different dense baselines will look
@@ -116,9 +191,17 @@ This makes the paper stronger without making it feel like a patch note.
   - File: `paper/arxiv/sections/01_abstract.tex`.
   - Replace the current fresh-video pruning sentence with a two-clause sentence
     that includes both existing measured sparse-vision pruning and the new
-    codec-metadata result: pooled H.264 refresh preserves dense answers on
-    56/57 VideoMME-short items while reusing roughly 10--11% of active visual
-    evidence, or else label the number advisory until a clean rerun lands.
+    codec-metadata result. Phrase the refresh clause as: pooled
+    (calibration-free) H.264 thresholds preserve dense answers on 56/57
+    VideoMME-short items while skipping refresh on only ~10--11% of active frame
+    pairs. Do NOT write "reusing 10--11% of visual evidence" (a reader will
+    misread it as using only 10%). Label the number advisory until a clean
+    rerun lands.
+  - Do not imply codec beats the cheap baseline in the abstract: a pixel proxy
+    matches it within 2 items. If abstract space is tight, the strongest
+    honest codec mention is the sidecar systems result plus the
+    calibration-free property, not the refresh agreement number. Prefer leading
+    the codec mention with sidecars.
   - Replace or compress the final VLM-native media paragraph so it mentions
     codec sidecars as the concrete bridge: H.264 evidence is expensive through a
     separate PyAV pass but millisecond-scale when precomputed as sidecars.
@@ -146,12 +229,23 @@ This makes the paper stronger without making it feel like a patch note.
 - [ ] Add OneVision-Encoder to related work as a contrast, not a reproduction.
   - Files: `paper/arxiv/sections/03_related_work.tex`,
     `paper/arxiv/sections/90_references.tex`.
-  - Add a short paragraph after the trained codec-native approaches paragraph:
-    OneVision-Encoder trains a codec-aligned encoder with sparse codec
-    patchification, irregular layouts, 3D RoPE, and large-scale objectives;
-    VLMaxxing instead uses H.264 metadata as an external routing signal for
-    frozen VLM inference.
-  - Cite the arXiv primary source for OneVision-Encoder.
+  - Add a short paragraph after the trained codec-native approaches paragraph
+    (it slots next to CoPE-VideoLM / CoViAR / Deja Vu):
+    OneVision-Encoder trains a codec-aligned encoder that focuses on the
+    signal-rich 3.1--25% of regions, uses a shared 3D RoPE for irregular
+    spatial/temporal layouts, and trains a cluster-discrimination objective over
+    1M+ semantic concepts; VLMaxxing instead uses H.264 metadata as an external
+    routing signal for frozen VLM inference without retraining.
+  - Citation is verified real: arXiv 2602.08683, EvolvingLMMs-Lab,
+    "OneVision-Encoder: Codec-Aligned Sparsity as a Foundational Principle for
+    Multimodal Intelligence" (code: github.com/EvolvingLMMs-Lab/OneVision-Encoder).
+    Add a new `\bibitem{onevision}` in `90_references.tex` with the real authors
+    and arXiv id. Only the source-confirmed specifics above (3.1--25% regions,
+    3D RoPE, cluster discrimination over 1M+ concepts, +4.1% avg over Qwen3-ViT,
+    fewer visual tokens) may be stated. Do NOT cite "128 A800 GPUs" or "13B/4B
+    sample stages" from the upstream chat review; those are not in the source.
+    If any GPU/sample-count figure is wanted, confirm it in the paper body
+    first.
   - Preserve the distinction from CodecSight, CoPE-VideoLM, and CoViAR:
     those motivate codec-aware representations; our paper measures which
     codec signals are useful without retraining or decoder integration.
@@ -185,6 +279,12 @@ This makes the paper stronger without making it feel like a patch note.
     in this plan and write tracked `paper/arxiv/generated/data/*.json`
     snapshots with source paths, git provenance, artifact dirtiness, table cell
     inputs, confidence intervals, paired-test inputs, and sample sizes.
+  - For the refresh snapshot, the cell inputs must include all four codec
+    sources (`novel_coded`, `motion`, `residual`, `fused`) and the pixel
+    baseline fields (`pixel_accuracy`, `pixel_dense_agreement`,
+    `pixel_reuse_ratio_mean_active`, `codec_minus_pixel_accuracy`,
+    `codec_pixel_agreement`). Do not let the generator silently select only the
+    favorable sources.
   - Add table/figure emitters that consume those snapshots and write the
     generated `.tex`/figure files. Do not hand-edit generated tables.
   - Validate by running `make paper-sync` and confirming the generated files
@@ -204,8 +304,9 @@ This makes the paper stronger without making it feel like a patch note.
     sparse-pruning discussion without warning. Section 7 carries the systems
     order; Section 6 can then explain the routing mechanism.
 
-- [ ] Integrate the pooled H.264 refresh result into Qwen results as the
-      strongest codec evidence.
+- [ ] Integrate the pooled H.264 refresh result into Qwen results as a
+      calibration-free, sidecarizable refresh signal (NOT as the strongest
+      headline win).
   - Files: compact summary in
     `paper/arxiv/sections/07_results_cross_architecture.tex`, mechanism detail
     in `paper/arxiv/sections/06_results_qwen_routing.tex`.
@@ -219,20 +320,36 @@ This makes the paper stronger without making it feel like a patch note.
   - Add or update a Section 6 subsection after the routing frontier setup and
     before broad mechanism interpretation: "Compressed-video metadata as a
     refresh signal".
-  - Include a small table with rows for `novel_coded`, `motion`, and
-    `residual`: codec accuracy 0.684, dense accuracy 0.667, codec-to-dense
-    agreement 0.982, active reuse roughly 10.6--10.8% from
-    `codec_reuse_ratio_mean_active`, and Wilson lower bound 0.91 for agreement.
-  - State the key claim as "56/57 dense-answer agreement with pooled thresholds"
-    and explicitly say this skips refresh for about 10--11% of active regions;
-    it is refresh planning, not sparse execution or session reuse.
+  - Include a small table with rows for `novel_coded`, `motion`, `residual`,
+    and `fused`, plus a `pixel` baseline row: codec accuracy 0.684 (0.667 for
+    fused), dense accuracy 0.667, pixel accuracy 0.649, codec-to-dense agreement
+    0.982 (0.965 fused), pixel-to-dense agreement 0.947, active reuse roughly
+    10.6--10.9% from `codec_reuse_ratio_mean_active` (pixel 10.8%), and Wilson
+    lower bound 0.91 for codec agreement. The table must let the reader see that
+    codec, pixel, and dense accuracies are all within ~2 items of each other.
+  - State the key claim precisely: with pooled (calibration-free) thresholds,
+    codec metadata is a *safe* refresh trigger that preserves dense answers on
+    56/57 items while skipping refresh on only ~10--11% of active frame pairs.
+    Explicitly add that a trivial pixel-difference proxy does nearly as well
+    (54/57, +2 items behind codec, not significant) at the same reuse, so the
+    codec-specific accuracy advantage is bounded; the durable value is that the
+    signal is cheap, calibration-free, and sidecarizable. It is refresh
+    planning, not sparse execution or session reuse.
+  - Do not call this the strongest or cleanest result. The agreement number is
+    coupled to the small reuse budget (skipping ~10% of refreshes necessarily
+    preserves almost all answers), so it cannot carry a standalone efficiency
+    claim. Report agreement, reuse budget, and pixel baseline together or not
+    at all.
   - If a clean rerun is not available when the manuscript edit lands, put the
     dirty-tree caveat in the table note and status docs instead of presenting
     the pooled result as final paper-grade evidence.
   - Remove stale or weaker codec-planner phrasing that only reports older
     per-item calibration or n=10/n=20 results if it no longer earns space.
-  - Justification: this is the cleanest scientific result and should be in the
-    main results, not hidden in an editor packet.
+  - Justification: this is a legitimate calibration-free, sidecarizable refresh
+    result that belongs in the main results, but framed as a safe-and-cheap
+    signal rather than a headline win. Overstating it (omitting the pixel
+    baseline, dropping fused, or quoting agreement without the reuse budget)
+    would invite the exact denominator critique this plan exists to prevent.
 
 - [ ] Replace the stale Qwen random-keep sanity paragraph with the new
       sparse-pruning evidence.
@@ -320,9 +437,12 @@ This makes the paper stronger without making it feel like a patch note.
   - Rewrite "Codec Signals Are Requirements Probes" so it says:
     OneVision-Encoder validates codec structure as a trainable representation
     prior; our frozen-backend results show what transfers without retraining:
-    refresh planning transfers cleanly, sparse ranking transfers only at
-    bounded operating points, and session composition remains blocked by
-    first-query drift.
+    codec metadata is a safe, calibration-free, cheap-to-sidecar refresh trigger
+    (but not measurably better than a pixel proxy at our operating point and not
+    via OneVision-style fusion, which underperformed), sparse ranking transfers
+    only at bounded operating points, and session composition remains blocked by
+    first-query drift. The transfer is "codec metadata as a cheap physical-change
+    signal," not "OneVision's fusion recipe."
   - Replace "oracle" language with "signals" or "priors".
   - Add one systems sentence: sidecars are not the final decoder-integrated
     interface, but they passed zero-drift smoke gates across two vision
@@ -333,8 +453,14 @@ This makes the paper stronger without making it feel like a patch note.
 - [ ] Tighten limitations and anti-claims.
   - File: `paper/arxiv/sections/09_limitations_reproducibility.tex`.
   - Replace the older codec-native bridge paragraph with current boundaries:
-    Qwen refresh result is strong but Qwen-only; sparse ranking has favorable
-    point estimates but inconclusive paired tests; Gemma accuracy evidence is
+    the Qwen refresh result is Qwen-only and, at its single operating point,
+    codec gives only a +2/57 (non-significant) edge over a pixel-difference
+    proxy at ~10% reuse, so it is a safe/cheap refresh trigger rather than a
+    demonstrated codec-over-pixel win; the refresh agreement-vs-reuse frontier
+    is uncharacterized (no N=57 pooled threshold sweep), so no efficiency-frontier
+    claim is made; OneVision-style fused motion+residual scoring did not help
+    (fused underperformed single sources); sparse ranking has favorable point
+    estimates but inconclusive paired tests; Gemma accuracy evidence is
     smoke-level until M5; TOMATO dense baseline is too weak to promote; live
     PyAV extraction is not a deployable per-query path; session reuse
     composition is blocked by 12/57 first-query drift.
@@ -366,8 +492,11 @@ This makes the paper stronger without making it feel like a patch note.
     A. H.264 bitstream to score sidecar to two consumers: refresh planning and
        sparse pruning.
     B. Agreement at the pooled threshold versus active reuse ratio, one point
-       per score source. Do not imply a threshold-sweep curve unless a
-       threshold-sweep artifact is added.
+       per score source AND the pixel baseline point. Do not imply a
+       threshold-sweep curve: this is a single operating point per source, so
+       plot discrete points and annotate that the agreement-vs-reuse frontier is
+       uncharacterized. The pixel point sitting next to the codec points is the
+       honest visual: codec and pixel land in nearly the same place.
     C. Log-scale codec-evidence extraction time: live PyAV seconds versus
        sidecar milliseconds, with the n=3 pilot scale and denominator note.
   - Appendix figure candidate: real-video contact sheet / score overlay /
@@ -429,6 +558,12 @@ This makes the paper stronger without making it feel like a patch note.
     explicit upper-bound language, or repo-facing terminology notes.
   - Confirm every manuscript cell or table note that draws from a dirty-tree
     artifact carries the advisory/pending-clean-rerun label.
+  - Confirm the refresh table includes the pixel baseline row and the `fused`
+    source (or a footnoted justification for excluding fused), and that no
+    manuscript sentence calls the refresh result the "strongest"/"cleanest"
+    result or quotes its agreement without the reuse budget and pixel baseline.
+  - Confirm the OneVision bibitem cites only source-confirmed specifics (no
+    "128 A800", no "13B/4B samples" unless verified in the paper body).
   - Commit only the reviewed plan in this round.
   - Justification: the user asked for a full plan that Claude can review before
     we edit the manuscript.
@@ -443,6 +578,14 @@ This makes the paper stronger without making it feel like a patch note.
 - Do not claim statistically significant codec sparse-pruning superiority.
 - Do not claim broad end-to-end VLM speedup from sidecars.
 - Do not promote TOMATO motion gains from the current smoke.
+- Do not present the pooled refresh result as a codec-over-pixel accuracy win;
+  codec beats the pixel proxy by only +2/57 (non-significant) at equal reuse.
+- Do not show a refresh table or figure without the pixel baseline, and do not
+  silently drop the `fused` source.
+- Do not call the refresh result the "strongest"/"cleanest" result, and do not
+  quote its 0.982 agreement without the ~10% reuse budget beside it.
+- Do not cite OneVision specifics absent from the source ("128 A800 GPUs",
+  "13B/4B sample stages").
 - Do not promote dirty-tree pooled-calibration artifacts as clean paper-grade
   evidence. Rerun clean or label them advisory.
 - Do not treat n=3 sidecar equivalence gates as broad timing
@@ -462,11 +605,17 @@ This makes the paper stronger without making it feel like a patch note.
   anti-recomputation with separate first-query, follow-up, and ceiling
   denominators. The manuscript edit should preserve that distinction.
 - Evidence: current branch artifacts support three paper-useful claims:
-  pooled H.264 refresh agreement 56/57 while reusing roughly 10--11% of active
-  regions, with a dirty-tree caveat until rerun clean; Qwen sparse-pruning
+  pooled H.264 refresh preserves dense answers 56/57 while skipping refresh on
+  only ~10--11% of active frame pairs (codec accuracy 0.684 vs pixel proxy
+  0.649, a non-significant +2/57 edge at equal reuse; fused source underperforms
+  at 0.667), with a dirty-tree caveat until rerun clean; Qwen sparse-pruning
   favorable point estimate 35/57 versus 31/57 but McNemar p=0.2188; sidecar
   extraction equivalence with zero drift and seconds-to-milliseconds
-  extraction-path speedup.
+  extraction-path speedup (n=3 per-source smoke gates, ~3,800--17,900x on the
+  extraction path only). The sidecar systems result and the calibration-free
+  thresholding property are the durable "wow"; the refresh agreement number is
+  not, because it is coupled to the small reuse budget and matched by a trivial
+  pixel baseline.
 - Open: M5 confirmations should update the table cells and scope language when
   they land, but they are not prerequisites for starting the edit.
 
