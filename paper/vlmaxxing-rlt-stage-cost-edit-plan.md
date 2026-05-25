@@ -37,6 +37,69 @@ Use only the current artifact-backed evidence:
 The raw chat/review discussions are not source material for the paper. They are
 useful only as prompts to verify claims against the files above.
 
+#### Exact artifact paths and key paths (verified 2026-05-25)
+
+Every headline number below was read directly from the committed artifacts.
+Generators and table authors must read these exact paths/keys, not rounded
+values transcribed from prose. All paths are under
+`research/experiments/2026/artifacts/`.
+
+Stage-cost model (first-pass table, Result 1):
+
+- `rlt_m3_cost_accounting_followup/cost_model_fit_n19.json`
+  - `n_artifacts` = 19
+  - `models.observed_e2e_vs_prefill_plus_vision_ceiling.r2` = 0.9709678 (prose `~= 0.971`)
+  - `error_summaries.prefill_plus_vision_ceiling.mean_abs_relative_error` = 0.017225 (1.72% MARE)
+  - `error_summaries.prefill_plus_vision_ceiling.max_abs_relative_error` = 0.078469 (7.85% max rel)
+  - Do NOT use `models.observed_e2e_vs_prefill_plus_vision_ceiling.max_abs_error` = 0.0963; that is absolute speedup-space error, not relative.
+  - The six selected rows live under the top-level `rows` list keyed by `label`; all six labels confirmed present.
+
+RLT-as-C-VISION scorer rows (Result 2 / Table 2), keep-rate 0.5, n=30 each:
+
+- `rlt_followup_queue/cvision_rlt_videomme_analysis.json`,
+  `cvision_rlt_tomato_analysis.json`, `cvision_rlt_mvbench_analysis.json`
+  - E2E speedup: `all.actual_e2e_speedup_dense_over_sparse`
+    = 1.0581 / 1.3153 / 1.4018 (VideoMME / TOMATO / MVBench)
+  - CI: `all.actual_e2e_speedup_dense_over_sparse_ci95`
+  - Delta accuracy: `all.accuracy_delta_sparse_minus_dense` = +0.0333 / -0.0333 / +0.0333
+    (all three CIs in `..._ci95` cross zero)
+  - RLT scorer cost: `all.mean_sparse_scorer_total_ms` = 19.18 / 20.83 / 36.32 ms/item
+- Expensive comparator (max-min diversity scorer):
+  `cvision_maxmin_videomme_analysis.json`, `cvision_maxmin_tomato_analysis.json`,
+  `cvision_maxmin_mvbench_analysis.json`
+  - `all.mean_sparse_scorer_total_ms` = 2334.06 / 2379.89 / 2942.94 ms/item
+  - Derived RLT cost advantage: 122x / 114x / 81x cheaper.
+- Cheap-scorer honesty check (do not omit): the `magnitude` scorer
+  (`cvision_magnitude_videomme_analysis.json`) reports
+  `all.mean_sparse_scorer_total_ms` = 0.0 (precomputed, not charged in the loop),
+  and `magnitude_valid` reports ~1100 ms. RLT is therefore NOT the cheapest
+  scorer; it is ~80-120x cheaper than the expensive learned-diversity scorer.
+  Claim only that; do not claim RLT is universally cheapest.
+
+Composition frontier (Result 3 / Table 3), pooled dev+holdout n=60:
+
+- Aggressive (direct): `rlt_followup_queue/full_composition_rlt_combined_{videomme,tomato,mvbench}_analysis.json`
+  - E2E: `summary.e2e_speedup_dense_over_composed` = 1.0289 / 1.2329 / 1.8419
+  - Delta accuracy: `summary.accuracy_delta_composed_minus_dense` = -0.0667 / -0.0667 / -0.1167
+  - CI: `summary.accuracy_delta_ci95`; MVBench CI [-0.2167, -0.0167] EXCLUDES 0
+  - `summary.pass_fidelity` = false for MVBench aggressive
+- Rescue: `rlt_followup_queue/full_composition_rlt_rescue_combined_{videomme,tomato,mvbench}_analysis.json`
+  - E2E: `summary.e2e_speedup_dense_over_composed` = 1.0784 / 1.2374 / 1.4328
+  - Delta accuracy: `summary.accuracy_delta_composed_minus_dense` = -0.0500 / -0.0833 / -0.0500
+  - CI: `summary.accuracy_delta_ci95`; all three CROSS 0
+  - `summary.pass_fidelity` = true for MVBench rescue
+
+Denominator-collision warning: the pooled-n=60 composition rows above are a
+DIFFERENT experiment from the `m3_*_compose` rows in `cost_model_fit_n19.json`
+(n=20-30, same-run M3 cost-accounting). They will disagree in sign for TOMATO:
+`m3_tomato_compose` shows Δacc = +0.067 (small-sample, choice-churn caveat),
+while pooled `full_composition_rlt_rescue_combined_tomato` shows Δacc = -0.083.
+Both are correct for their own slice. The manuscript must never place these two
+TOMATO composition numbers in the same table or paragraph without naming the
+distinct slice and n; otherwise a reviewer sees a contradiction. Prefer the
+pooled n=60 rows for the composition-frontier table and the M3 rows only for
+the stage-cost-model fit table.
+
 ## Validated Editorial Claims
 
 | Claim | Verdict | Evidence class | Manuscript action |
@@ -358,6 +421,47 @@ Remove or shorten:
 Justification: reviewers should see that the field is crowded, and that this
 paper's contribution is the accounting denominator plus measured controls.
 
+#### Reference accuracy (verified 2026-05-25)
+
+All cited works below are real (none hallucinated) and most already have
+`\bibitem` entries in `90_references.tex`. The following corrections MUST be
+applied before any related-work prose ships, because the current
+characterizations contain errors a reviewer will catch:
+
+- RLT (`2411.05222`, NeurIPS 2024 Spotlight): full title is "Don't Look Twice:
+  Faster Video Transformers with Run-Length Tokenization". This work is NOT yet
+  in `90_references.tex` (verified 2026-05-25); a new `\bibitem{rlt}` must be
+  ADDED with the full title before related-work prose can cite it. Since RLT is
+  the source of the run-length idea this paper builds on, its absence is a
+  blocking gap, not a polish item. It operates training-free OR with fine-tuning;
+  do not call it simply "training-free".
+- CoPE-VideoLM (`2602.13191`): CoPE here means Codec-Primitive Encoding, NOT
+  positional encoding. It replaces dense RGB-frame encoding with motion-vector
+  and residual tokens from P-frames. Any "position-encoding" phrasing is FALSE
+  and must be removed.
+- CodecSight (`2604.06036`): it is a streaming-VLM inference system using codec
+  metadata for patch pruning and selective KV-cache refresh, not a general
+  "video understanding" system. Frame it as streaming-inference-efficiency.
+- QuoTA (`2503.08689`, AAAI 2026): query-oriented token assignment via CoT query
+  decomposition. The "50%->1.08x" external-validation pairing used in the
+  cost-model section is UNVERIFIED against the QuoTA paper's own reported
+  numbers; either confirm it from the source or drop that specific ratio. The
+  QTSplus "89%->28%" pairing (`2511.11910`) is confirmed against the source.
+- PARQO (`2406.01526`, VLDB 2024): full name "Penalty-Aware Robust Plan
+  Selection in Query Optimization"; the novelty is a user-definable penalty
+  metric, not generic "uncertain selectivity". Only cite if the database analogy
+  earns its single paragraph.
+- Confirmed accurate as characterized: FastV (`2403.06764`, ECCV 2024),
+  SparseVLM (`2410.04417`, ICLR 2025), Q-Frame (`2506.22139`, ICCV 2025),
+  Static-or-Dynamic (`2504.21403`, EMNLP 2025 main), VideoRouter (`2605.05848`),
+  the token-pruning critique "Are We Solving the Right Problem?"
+  (`2502.11501`, Findings of ACL 2025), System R (Selinger et al., SIGMOD 1979),
+  Eddies (Avnur & Hellerstein, SIGMOD 2000).
+- The token-pruning critique's strongest verified claim is that many pruning
+  methods underperform random selection; cite it specifically for the
+  random/fixed-baseline discipline, which directly supports our negative-control
+  framing.
+
 ### Discussion and Future Work: cut broad ambition, keep decision rules
 
 Current issue: the discussion can drift into VLM-native media and query-planning
@@ -481,45 +585,62 @@ This table should appear near the method or at the start of results.
 
 Job: show the practical RLT win.
 
+Data source (verified): `rlt_followup_queue/cvision_rlt_{videomme,tomato,mvbench}_analysis.json`
+for RLT rows and `cvision_maxmin_{...}_analysis.json` for the comparator, using
+the exact keys listed in the Evidence Basis section. All rows are kr=0.5, n=30.
+
 Rows:
 
-- VideoMME RLT C-VISION.
-- TOMATO RLT C-VISION.
-- MVBench RLT C-VISION.
-- A required scorer-cost comparator column for max-min where the artifact
-  provides it.
+- VideoMME RLT C-VISION (1.058x, Δacc +0.033, scorer 19.2 ms).
+- TOMATO RLT C-VISION (1.315x, Δacc -0.033, scorer 20.8 ms).
+- MVBench RLT C-VISION (1.402x, Δacc +0.033, scorer 36.3 ms).
+- A required scorer-cost comparator column for max-min (2334 / 2380 / 2943 ms).
 
 Columns:
 
 - Benchmark.
-- E2E speedup with CI if available.
-- Delta accuracy with CI/evidence status.
+- E2E speedup with CI (`all.actual_e2e_speedup_dense_over_sparse[_ci95]`).
+- Delta accuracy with CI (`all.accuracy_delta_sparse_minus_dense[_ci95]`); note
+  all three Δacc CIs cross zero, so state "no decisive accuracy change at n=30".
 - Vision reduction.
-- RLT scorer time.
-- Expensive scorer time.
+- RLT scorer time (`all.mean_sparse_scorer_total_ms`).
+- Expensive scorer time (max-min `all.mean_sparse_scorer_total_ms`).
 - Interpretation.
 
 Caption wording:
 
-> RLT reaches the speed class of expensive diversity scoring while moving scorer
-> cost from seconds to tens of milliseconds.
+> RLT reaches the speed class of expensive learned-diversity scoring (max-min)
+> while moving scorer cost from seconds to tens of milliseconds (~80-120x
+> cheaper across the three benchmarks).
 
-Do not say RLT dominates every scorer.
+Do not say RLT dominates every scorer, and do not imply RLT is the cheapest
+possible scorer: the magnitude scorer is effectively free (precomputed). The
+honest claim is that RLT matches the expensive learned scorer's speed class at a
+fraction of its cost, which is the comparator that actually competes on quality.
 
 ### Table 3: Composition frontier
 
 Job: make the speed/quality tradeoff honest.
 
+Data source (verified): `rlt_followup_queue/full_composition_rlt_combined_*`
+(aggressive) and `full_composition_rlt_rescue_combined_*` (rescue), pooled
+dev+holdout n=60, using `summary.*` keys from the Evidence Basis section. Use
+these pooled n=60 rows, NOT the M3 `*_compose` rows from the cost-model fit
+(see the denominator-collision warning).
+
 Rows:
 
-- Aggressive VideoMME, TOMATO, MVBench.
-- Rescue VideoMME, TOMATO, MVBench.
+- Aggressive VideoMME (1.029x, -0.067), TOMATO (1.233x, -0.067),
+  MVBench (1.842x, -0.117, CI excludes 0).
+- Rescue VideoMME (1.078x, -0.050), TOMATO (1.237x, -0.083),
+  MVBench (1.433x, -0.050, CI crosses 0).
 
 Columns:
 
-- E2E speedup.
-- Delta accuracy.
-- Fidelity verdict.
+- E2E speedup (`summary.e2e_speedup_dense_over_composed`).
+- Delta accuracy with CI (`summary.accuracy_delta_composed_minus_dense[_ci95]`).
+- Fidelity verdict (`summary.pass_fidelity`: false for aggressive MVBench, true
+  for rescue MVBench).
 - Caveat.
 
 Required wording:
