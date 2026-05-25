@@ -4,6 +4,8 @@ import re
 from pathlib import Path
 from types import ModuleType
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 BUILD_SCRIPT = REPO_ROOT / "paper" / "arxiv" / "scripts" / "build.py"
 
@@ -35,9 +37,7 @@ def test_arxiv_upload_manifest_covers_tex_inputs() -> None:
     for path in _tex_sources():
         text = path.read_text()
         table_inputs.update(re.findall(r"\\input\{(generated/tables/[^}]+\.tex)\}", text))
-        for match in re.findall(
-            r"\\includegraphics(?:\[[^]]*])?\{(generated/figures/[^}]+)\}", text
-        ):
+        for match in re.findall(r"\\includegraphics(?:\[[^]]*])?\{([^}]+)\}", text):
             if match.endswith(".png"):
                 continue
             figure_inputs.add(match if match.endswith(".pdf") else f"{match}.pdf")
@@ -56,6 +56,25 @@ def test_arxiv_upload_manifest_excludes_audit_only_files() -> None:
     assert all(not path.startswith("generated/data/") for path in manifest)
     assert all(not path.endswith((".json", ".png", ".svg", ".zip")) for path in manifest)
     assert all(not path.startswith(("build/", "dist/")) for path in manifest)
+
+
+def test_audit_bundle_requires_declared_repo_files(tmp_path, monkeypatch) -> None:
+    build = _load_build_script()
+    manuscript_root = tmp_path / "repo" / "paper" / "arxiv"
+    manuscript_root.mkdir(parents=True)
+    monkeypatch.setattr(build, "MANUSCRIPT_ROOT", manuscript_root)
+    monkeypatch.setattr(build, "DIST_DIR", manuscript_root / "dist")
+    monkeypatch.setattr(build, "AUDIT_EXTRA_FILES", ("missing.md",))
+
+    with pytest.raises(SystemExit, match="Required audit bundle file is missing"):
+        build._audit_bundle()
+    assert not (build.DIST_DIR / build.AUDIT_BUNDLE_NAME).exists()
+
+
+def test_audit_bundle_includes_decision_log() -> None:
+    build = _load_build_script()
+
+    assert "research/decision-log.md" in build.AUDIT_EXTRA_FILES
 
 
 def test_arxiv_control_readme_selects_xelatex_texlive_2025() -> None:
