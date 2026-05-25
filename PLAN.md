@@ -1,6 +1,6 @@
 # Current Plan
 
-Last updated: 2026-05-20.
+Last updated: 2026-05-25.
 
 This file is the active roadmap only. Historical phase detail lives in dated
 experiment notes and [research/experiments/registry.md](research/experiments/registry.md).
@@ -17,7 +17,7 @@ notes.
 - **C-VISION** has bounded measured sparse-vision evidence. Do not describe it
   as a broad sparse backend or sparse LM prefill result.
 - **RLT/Gemma cost accounting** now reinforces C-CEILING: the prefill+vision
-  stage model fits 11 Gemma cells at `R^2=0.972` and `2.36%` mean absolute
+  stage model fits 19 Gemma cells at `R^2=0.97097` and `1.72%` mean absolute
   relative error. Treat admission-only rows as cost-accounting controls, not
   as a query-aware implementation result.
 - **Candidate C-STREAM** has a checked mixed/boundary bundle. It is

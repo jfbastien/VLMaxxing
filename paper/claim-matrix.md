@@ -1,6 +1,6 @@
 # Paper Claim Matrix
 
-Last updated: 2026-05-03
+Last updated: 2026-05-25
 
 This is the single-file answer to "what must be true before we can
 make each claim in the paper?" Per codex 2026-04-16 review: keep
@@ -9,12 +9,14 @@ research program.
 
 ## Paper thesis
 
-> Training-free anti-recomputation can improve video-VLM efficiency in
-> three distinct regimes: first-pass visual processing, after-ingest
-> follow-up queries on the same video, and benchmarked routing under a
-> frozen dense backend. The paper's job is to keep those regimes
-> separate, quantify them honestly, and explain where fresh visual evidence
-> must be placed over time to stay on the relevant quality-compute frontier.
+> Token count is not a speedup claim. Training-free anti-recomputation improves
+> video-VLM efficiency only when it shortens a runtime stage that owns enough of
+> the end-to-end bill, and only when paired answer checks preserve the task.
+
+For the VLMaxxing + RLT update, the manuscript should foreground stage-cost
+accounting plus RLT-as-cheap-C-VISION. C-PERSIST remains the large after-ingest
+follow-up regime, but query-aware routing stays boundary/future-work evidence
+until a separate branch earns held-out fixed/random/admission controls.
 
 The paper may discuss VLM-native media, machine-oriented sidecars, sensor-
 fusion world-state codecs, and hardware-aware active tiles only as future

@@ -6,6 +6,7 @@ This directory now has two distinct roles:
 - Research-facing paper planning and claim-boundary docs stay at the top level:
   - [`paper/AGENTS.md`](AGENTS.md)
   - [`paper/priority.md`](priority.md)
+  - [`paper/vlmaxxing-rlt-stage-cost-edit-plan.md`](vlmaxxing-rlt-stage-cost-edit-plan.md)
   - [`paper/framing.md`](framing.md)
   - [`paper/claim-matrix.md`](claim-matrix.md)
   - [`paper/publishability-status.md`](publishability-status.md)
@@ -20,10 +21,16 @@ For paper work, use [`paper/AGENTS.md`](AGENTS.md) as the paper-local router.
 Its source-of-truth order is stricter than the repo root because the manuscript
 has already outgrown the older single-note framing.
 
+For the VLMaxxing + RLT update, use
+[`vlmaxxing-rlt-stage-cost-edit-plan.md`](vlmaxxing-rlt-stage-cost-edit-plan.md)
+as the active integration plan: foreground stage-cost accounting plus
+RLT-as-cheap-C-VISION, keep query-aware routing as boundary/future work, and
+avoid treating token count as a speedup claim.
+
 Use `terminology.md` and `narrative-rules.md` when editing prose. They capture
-the current wording contract: front-load the exciting after-ingest numbers, keep
-denominators visible, distinguish local mechanism evidence from the scale-out
-streaming lane, and avoid turning internal agent labels into paper jargon.
+the wording contract: keep denominators visible, distinguish local mechanism
+evidence from the scale-out streaming lane, and avoid turning internal agent
+labels into paper jargon.
 
 Use these commands from the repo root:
 

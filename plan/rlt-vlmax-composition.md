@@ -21,6 +21,24 @@
   and classify MVBench/TOMATO extensions as timing or boundary evidence.
 - [x] Narrow the M5 scale-confirmation wrapper to a core default, with scorer
   and full expansion available only through explicit opt-in tiers.
+- [x] Land a paper-editing plan that pivots the manuscript toward
+  stage-cost accounting plus RLT-as-cheap-C-VISION, while keeping query-aware
+  routing as boundary/future-work evidence.
+- [ ] Resolve the untracked
+  `research/experiments/2026/artifacts/rlt_query_routing_hosted_sweep/`
+  scratch directory before any clean-tree paper-bundle gate: either delete it
+  with explicit approval, or validate/adopt it in a future query-aware branch.
+- [ ] Execute the first manuscript integration slice from
+  `paper/vlmaxxing-rlt-stage-cost-edit-plan.md`: first add the
+  `sync_sources.py` generator, generated snapshot/table, and any paper build
+  manifest entries needed for `rlt_cost_accounting`; then wire the table into
+  the manuscript. Do not remove the existing hand-written C-CEILING residual
+  table until its rows have a machine-readable generated replacement or are
+  deliberately moved to an appendix/source-traceability table. The new RLT
+  table must use the MVBench-hosted `kr=0.7` timing/boundary row as the
+  selective MVBench row, frame TOMATO composition as
+  "aggregate positive with choice-churn caveat" where applicable, add source
+  traceability, and keep the main manuscript length flat.
 - [ ] Implement a small, audited RLT mask module in `src/codec_through/`
   without installing, importing, executing, or vendoring RLT's training stack
   or third-party dependencies.
@@ -97,6 +115,16 @@
 
 ## Decisions
 
+- 2026-05-25 paper-editing pivot: stop broadening the local M3
+  query-routing/RLT implementation tree before manuscript integration. The
+  active next step is the paper edit slice described in
+  `paper/vlmaxxing-rlt-stage-cost-edit-plan.md`; the remaining mask-module and
+  autonomous-runner items below are deferred implementation backlog until that
+  slice lands.
+- `research/experiments/2026/artifacts/rlt_query_routing_hosted_sweep/` is an
+  untracked dry-run scratch artifact from the query-aware thread. It is not part
+  of the VLMaxxing + RLT paper-editing commit and should stay unstaged unless a
+  future query-aware branch explicitly validates and adopts it.
 - The first code implementation should measure composition, not assume
   multiplicative speedups. A combined arm must beat both single arms under the
   same manifest/model/hardware, pass per-bucket fidelity gates, and match an
@@ -122,6 +150,10 @@
 - sub-agent plan review focused on science, denominator accounting, and
   implementation risk
 - `ai-workflow run-checks`
+- `make paper-sync`
+- `make paper-build`
+- post-commit clean-tree verification: `make paper-bundle`
+- after the new `\input{}` is wired: `uv run pytest tests/test_arxiv_bundle_manifest.py`
 - `uv run --group vlm pytest tests/test_pruned_vision_tower.py`
 - `uv run pytest tests/test_qwen_vision_pruning.py tests/test_novelty_pruning.py tests/test_qwen_selective_reprefill.py`
 - new RLT mask unit tests after implementation

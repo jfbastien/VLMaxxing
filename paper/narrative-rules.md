@@ -18,19 +18,23 @@ Everything should hang off that.
 
 Order the story by reader impact, while keeping denominators visible:
 
-1. **C-PERSIST / after-ingest follow-up reuse** is the big-number regime.
-   Lead with it when the goal is attention, but say "after-ingest" and
-   "same-video follow-up" near every large multiplier.
-2. **C-CEILING / stage-share accounting** is the guardrail that keeps the
-   paper serious. It explains why first-pass speedups are smaller and why
-   composition does not multiply.
-3. **C-VISION / first-pass vision pruning** is the fresh-video speedup claim.
-   It is real, measured, and share-limited.
-4. **Qwen routing** explains temporal placement and failure boundaries. It is
+1. **C-CEILING / stage-share accounting** is the paper's explanatory spine.
+   Lead paper edits with the runtime bill: which stage was shortened, how much
+   dense wall-clock that stage owned, and whether paired answers survived.
+2. **RLT-as-C-VISION / first-pass vision evidence selection** is the cleanest
+   RLT mechanism result. Frame it as cheap visual evidence scoring that reaches
+   the speed class of expensive scorers, not as a universal scorer dominance
+   claim.
+3. **Composition** is a speed/quality frontier. Put aggressive rows and rescue
+   rows side by side; never describe the high-speed frontier as lossless.
+4. **C-PERSIST / after-ingest follow-up reuse** is the big-number regime.
+   Use it after the stage-accounting frame is established, and say
+   "after-ingest" and "same-video follow-up" near every large multiplier.
+5. **Qwen routing** explains temporal placement and failure boundaries. It is
    mechanism evidence under a dense backend. The 1.63E Qwen sparse-ViT 8f
    point is a measured sparse-execution boundary result: real skipped vision
    work and tight ceiling agreement, but not fidelity-preserving.
-5. **Scale-out streaming** should become a first-class lane only when matched
+6. **Scale-out streaming** should become a first-class lane only when matched
    artifacts and baselines exist. Until then, frame it as scale-out
    operational evidence pending artifact harmonization, not as "other" work.
 

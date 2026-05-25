@@ -16,7 +16,9 @@ automation:
 3. [claim-matrix.md](claim-matrix.md)
 4. [publishability-status.md](publishability-status.md)
 5. [framing.md](framing.md)
-6. [arxiv/README.md](arxiv/README.md)
+6. [vlmaxxing-rlt-stage-cost-edit-plan.md](vlmaxxing-rlt-stage-cost-edit-plan.md)
+   when editing the VLMaxxing + RLT manuscript update
+7. [arxiv/README.md](arxiv/README.md)
 
 Authority is split by question:
 
@@ -32,7 +34,15 @@ and update the stale file in the same change.
 
 ## Current Paper Position
 
-As of 2026-04-22, the manuscript should be centered on a single
+As of 2026-05-25, the VLMaxxing + RLT manuscript edit should foreground
+stage-cost accounting plus RLT-as-cheap-C-VISION. The active edit plan is
+[`vlmaxxing-rlt-stage-cost-edit-plan.md`](vlmaxxing-rlt-stage-cost-edit-plan.md).
+Integrate the n=19 Gemma/RLT prefill+vision cost-accounting audit as C-CEILING
+support; do not turn it into a query-aware-routing headline or a fourth
+regime. Query-aware routing, active repair, and text-rule routing stay boundary
+or future-work evidence until a separate branch earns stronger held-out claims.
+
+Superseded context from 2026-04-22: the manuscript was centered on a single
 anti-recomputation story with three first-class contributions plus one
 mechanism-validation backbone:
 
@@ -80,6 +90,8 @@ Update these together:
 2. [claim-matrix.md](claim-matrix.md)
 3. [publishability-status.md](publishability-status.md)
 4. [framing.md](framing.md)
-5. the affected LaTeX sections under [`paper/arxiv/sections/`](arxiv/sections/)
+5. [vlmaxxing-rlt-stage-cost-edit-plan.md](vlmaxxing-rlt-stage-cost-edit-plan.md)
+   when the change affects the RLT/stage-cost manuscript edit
+6. the affected LaTeX sections under [`paper/arxiv/sections/`](arxiv/sections/)
 
 The repo already has enough stale paper-routing text. Do not add more.
