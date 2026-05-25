@@ -59,6 +59,7 @@ AUDIT_EXTRA_FILES = (
     "paper/publishability-status.md",
     "paper/framing.md",
     "research/README.md",
+    "research/decision-log.md",
     "research/experiments/registry.md",
 )
 
@@ -275,6 +276,11 @@ def _arxiv_upload_bundle() -> Path:
 
 
 def _audit_bundle() -> Path:
+    repo_root = MANUSCRIPT_ROOT.parents[1]
+    for rel in AUDIT_EXTRA_FILES:
+        path = repo_root / rel
+        if not path.is_file():
+            raise SystemExit(f"Required audit bundle file is missing: {path}")
     DIST_DIR.mkdir(parents=True, exist_ok=True)
     out_path = DIST_DIR / AUDIT_BUNDLE_NAME
     exclude_prefixes = {
@@ -300,11 +306,9 @@ def _audit_bundle() -> Path:
             if path.name in {".DS_Store"} or path.name.startswith("._"):
                 continue
             archive.add(path, arcname=rel)
-        repo_root = MANUSCRIPT_ROOT.parents[1]
         for rel in AUDIT_EXTRA_FILES:
             path = repo_root / rel
-            if path.is_file():
-                archive.add(path, arcname=f"repo/{rel}")
+            archive.add(path, arcname=f"repo/{rel}")
     return out_path
 
 
