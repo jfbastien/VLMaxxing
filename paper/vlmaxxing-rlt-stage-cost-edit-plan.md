@@ -227,7 +227,7 @@ large rewrite. The minimum strong integration is:
      include a note showing the observed positive aggregate accuracy delta with
      a choice-churn caveat. Source the note to
      `accuracy_delta_composed_minus_dense` from the top-level row and
-     `summary.choice_agreement` from that row's `source_paths[0]` artifact. Do not
+     `summary.choice_agreement` from the artifact named by that row's input `source_path`. Do not
      put this note in `evidence_status`, and do not imply composition always
      improves quality.
 3. Add the generated RLT cost-accounting table near the current C-CEILING
@@ -522,10 +522,15 @@ because the current characterizations contain errors a reviewer will catch:
   metadata for patch pruning and selective KV-cache refresh, not a general
   "video understanding" system. Frame it as streaming-inference-efficiency.
 - QuoTA (`2503.08689`, AAAI 2026): query-oriented token assignment via CoT query
-  decomposition. The "50%->1.08x" external-validation pairing used in the
-  cost-model section is UNVERIFIED against the QuoTA paper's own reported
-  numbers; either confirm it from the source or drop that specific ratio. The
-  QTSplus "89%->28%" pairing (`2511.11910`) is confirmed against the source.
+  decomposition. The QuoTA paper's own headline is "+3.2% average across six
+  benchmarks at identical token budget" (matches `docs/related-work-table.md`),
+  NOT a compression/latency ratio. The "50%->1.08x" external-validation pairing
+  that circulated in review discussion does NOT currently appear in any
+  `sections/*.tex` (verified 2026-05-25). Forward guard: if a future external-
+  validation paragraph reproduces QuoTA in the cost-model section, the specific
+  speedup ratio must be sourced from the QuoTA paper before it ships; do not
+  transcribe it from discussion. The QTSplus "89%->28%" pairing (`2511.11910`)
+  is confirmed against the source and is safe to cite.
 - PARQO (`2406.01526`, VLDB 2024): full name "Penalty-Aware Robust Plan
   Selection in Query Optimization"; uncertain selectivity is the setting, while
   user-definable penalty metrics and sensitivity-aware robust plan selection are
@@ -540,7 +545,16 @@ because the current characterizations contain errors a reviewer will catch:
 - The token-pruning critique's strongest verified claim is that many pruning
   methods underperform random selection; cite it specifically for the
   random/fixed-baseline discipline, which directly supports our negative-control
-  framing.
+  framing. Note the repo's `docs/related-work-table.md` already tracks TWO
+  distinct random-baseline papers: the ACL Findings 2025 critique "Are We Solving
+  the Right Problem?" (`2502.11501` / `2025.findings-acl.802`) and the separate
+  preprint "All You Need Are Random Visual Tokens?" (`2512.07580`, DivPrune+random
+  keeps 96.9% of Qwen2.5-VL-7B at 50% pruning). Both are legitimate; the
+  negative-control paragraph may cite either or both, but must attribute the
+  specific numeric claim to the correct paper. The bibliography-status table
+  above tracks `90_references.tex` bibitem presence, not planning-doc coverage:
+  these critiques are already in `related-work-table.md` but still need a
+  `\bibitem` before the manuscript can `\cite` them.
 
 ### Discussion and Future Work: cut broad ambition, keep decision rules
 
@@ -1109,7 +1123,7 @@ Generator details:
     `prefill_speedup`, `vision_speedup`, `choice_agreement`, and
     `evidence_status`.
     For composition rows, `choice_agreement` must be read from
-    `summary.choice_agreement` in the row's `source_paths[0]` artifact, not
+    `summary.choice_agreement` in the artifact named by the row's input `source_path`, not
     from the top-level `cost_model_fit_n19.json` row where that field may be
     null.
     `display_name` and `evidence_status` are derived from the curated mappings
@@ -1118,9 +1132,10 @@ Generator details:
     stage-speedup inputs, observed speedup, predicted speedup, relative error,
     or accuracy delta. Hard-fail if either selected composition row
     (`m3_videomme_compose`, `m3_tomato_compose`) is missing `choice_agreement`
-    from `summary.choice_agreement` in its `source_paths[0]` artifact. Verified
-    source-path values are `0.750` for `m3_videomme_compose` and `0.533` for
-    `m3_tomato_compose`. Do not silently fill `None`.
+    from `summary.choice_agreement` in the artifact named by its input
+    `source_path`. Verified `choice_agreement` values are `0.750` for
+    `m3_videomme_compose` and `0.533` for `m3_tomato_compose`. Do not silently
+    fill `None`.
   - Hard-fail if a selected row's `source_paths` value is not a single-item
     list matching the exact source-path map above.
   - Assert `fidelity_verdict` is absent from the selected cost-model rows so the
@@ -1157,14 +1172,14 @@ Column-to-artifact-key map:
 | Relative error | `rows[*].prefill_plus_vision_relative_error` |
 | Delta accuracy | `rows[*].accuracy_delta_composed_minus_dense` |
 | Fidelity / evidence status | curated mapping sourced to the May 20 closeout |
-| Source paths | `rows[*].source_paths` |
+| Source paths | INPUT artifact field is singular `rows[*].source_path` (a string); the generator wraps it into the OUTPUT snapshot row's single-item `source_paths` list. Do not read `rows[*].source_paths` from `cost_model_fit_n19.json`; that plural key does not exist there. |
 
 Required table-note map for selected caveat rows:
 
 | Row | Required note source |
 | --- | --- |
-| `m3_videomme_compose` | Top-level row `accuracy_delta_composed_minus_dense` plus `summary.choice_agreement=0.750` from the row's `source_paths[0]` artifact for the composition choice-churn caveat; evidence status remains `timing/boundary`. |
-| `m3_tomato_compose` | Top-level row `accuracy_delta_composed_minus_dense` plus `summary.choice_agreement` from the row's `source_paths[0]` artifact for the aggregate-positive/choice-churn caveat; evidence status remains `timing/boundary`. |
+| `m3_videomme_compose` | Top-level row `accuracy_delta_composed_minus_dense` plus `summary.choice_agreement=0.750` from the artifact named by the row's input `source_path` for the composition choice-churn caveat; evidence status remains `timing/boundary`. |
+| `m3_tomato_compose` | Top-level row `accuracy_delta_composed_minus_dense` plus `summary.choice_agreement` from the artifact named by the row's input `source_path` for the aggregate-positive/choice-churn caveat; evidence status remains `timing/boundary`. |
 | `m3_mvbench_kr07` | Top-level row `accuracy_delta_composed_minus_dense=+0.019` may be reported only as aggregate delta next to a `timing only` evidence status; do not interpret it as a quality win because paired choice agreement is not clean. |
 
 ## M3 And M5 Experiment Policy
