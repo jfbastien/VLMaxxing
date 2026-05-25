@@ -6,12 +6,15 @@ Revise the manuscript so the OneVision-inspired H.264 metadata work reads like
 part of the original VLMaxxing argument, not a late appendix. The paper should
 present compressed-video metadata as:
 
-1. a calibration-robust refresh signal for cached visual evidence,
+1. a refresh signal for cached visual evidence that is answer-preserving at a
+   tested low-reuse point but no better than a trivial pixel proxy
+   (in-sample, and tied with pixel out-of-sample),
 2. a bounded sparse-token ranking prior at specific operating points, and
 3. a systems interface that becomes practical when codec evidence is sidecarized.
 
 It should not claim broad end-to-end VLM speedups, statistical superiority of
-codec pruning, TOMATO motion gains, or clean session-reuse composition.
+codec pruning over pixel for refresh, "calibration-free" refresh, TOMATO motion
+gains, or clean session-reuse composition.
 
 Preferred integration: fold the work into the existing codec/pruning narrative
 instead of adding a standalone "OneVision experiment" section. Use a short
@@ -19,12 +22,14 @@ reader-facing bridge to OneVision-Encoder in related work, then integrate the
 method and evidence into the existing first-query and temporal-reuse sections.
 This makes the paper stronger without making it feel like a patch note.
 
-## Peer-review findings (added 2026-05-25)
+## Peer-review findings (added 2026-05-25, extended 2026-05-26)
 
 A peer-review pass verified every number in this plan against the source
-JSON and surfaced four science-altering corrections that the plan must
+JSON and surfaced five science-altering corrections that the plan must
 enforce. They are folded into the checklist items below; this block records
-the reasoning so it is not lost.
+the reasoning so it is not lost. Findings 1--4 are from the first pass; finding
+5 (the calibration provenance) is from a second pass and is the most
+consequential.
 
 1. **The pooled refresh result does not beat the trivial pixel baseline.**
    The same probe that produced the codec rows also recorded a pixel-domain
@@ -48,8 +53,9 @@ the reasoning so it is not lost.
    agreement is *coupled* to the low reuse: if you only skip 10% of refreshes,
    the answers necessarily barely move. Agreement must never be presented as a
    standalone strength without the reuse budget and the pixel baseline beside
-   it. The genuine "wow" results are the sidecar systems win and the
-   calibration-free thresholding property, not the refresh agreement number.
+   it. The genuine "wow" results are the sidecar systems win and the clean
+   negative bound (codec does not beat pixel for refresh; see finding 5), not
+   the refresh agreement number or a "calibration-free" framing.
 
 3. **OneVision-style fusion does not transfer; report the `fused` source.** The
    pooled dir contains a fourth source, `fused` (motion+residual), which the
@@ -65,6 +71,36 @@ the reasoning so it is not lost.
    pooled threshold sweep, only a single operating point. A single low-reuse
    point cannot establish a useful agreement-vs-reuse frontier. Limitations must
    say so; do not imply a curve.
+
+5. **The refresh result is NOT "calibration-free", it is in-sample and
+   pixel-matched, and the only out-of-sample evidence shows codec = pixel
+   exactly.** Three coupled facts from
+   `scripts/run_phase1_29_planner_accuracy_probe.py`:
+   (a) **In-sample.** The pooled thresholds are fit on `pooled_scores`
+   concatenated over *all* evaluated items, and the target reuse share is
+   `np.mean(target_shares for item in items)` over those same N=57 items
+   (`_thresholds_by_item`, pooled branch). So 56/57 is an in-sample number; the
+   thresholds saw the test set. "Calibration-free" is the wrong word — the
+   correct claim is "no *per-item* threshold fitting (corpus-pooled), evaluated
+   in-sample".
+   (b) **Pixel-matched reuse by construction.** `calibration_source` is
+   `live-pixel` for every pooled summary, and the probe sets
+   `target_shares = class_share_vector(pixel_classifications)`. The codec
+   planner is calibrated to reuse the *same fraction the pixel baseline chose*,
+   which is exactly why codec reuse (0.106) ~= pixel reuse (0.108). The ~10.6%
+   is inherited from pixel, not an independently discovered codec operating
+   point. This is a fair matched-budget comparison, but the paper must say so.
+   (c) **Out-of-sample parity.** The disjoint short holdout
+   (`phase1_29_onevision_holdout_disjoint`, manifest
+   `videomme_holdout_v1_short_only.toml`, n=10, per-item) reports
+   `codec_pixel_agreement = 1.000` and `codec_minus_pixel_accuracy = +0.000`
+   for all four sources (codec 0.70 = pixel 0.70, agreement 0.90 = 0.90). Codec
+   and pixel make identical answer choices out-of-sample. There is therefore
+   **no out-of-sample evidence that codec beats pixel as a refresh signal.**
+   The honest framing of the whole refresh story is a parity/negative result:
+   codec metadata does not beat a trivial pixel-difference proxy for
+   frozen-VLM refresh planning; the durable wins are the sidecar systems result
+   and the negative-result bound itself, not a codec refresh advantage.
 
 Provenance facts confirmed in this pass: all pooled summaries carry
 `environment.git_dirty: true`; the OneVision-Encoder citation is real
@@ -142,6 +178,24 @@ canonical dense baseline; do not call it benign without item-level evidence.
     underperforms (accuracy 0.667, agreement 0.965). Report it or justify its
     exclusion in the snapshot and a footnote; do not silently drop the worst
     source.
+  - Mandatory in-sample disclosure: the N=57 pooled summaries have
+    `calibration_mode=pooled` and `calibration_source=live-pixel`. The pooled
+    thresholds are fit on the same 57 evaluated items and the reuse target is
+    taken from the pixel baseline's per-item class shares
+    (`target_shares = class_share_vector(pixel_classifications)`). The snapshot
+    must record both fields, and the manuscript must state that the 56/57 number
+    is in-sample and that the codec reuse budget is matched to pixel by
+    construction. Do not call the result "calibration-free"; say "no per-item
+    threshold fitting (corpus-pooled), evaluated in-sample, reuse matched to the
+    pixel baseline".
+  - Mandatory out-of-sample row: the disjoint holdout
+    `research/experiments/2026/artifacts/phase1_29_onevision_holdout_disjoint/comparison.json`
+    (manifest `videomme_holdout_v1_short_only.toml`, n=10, per-item) reports
+    `codec_minus_pixel_accuracy=0.0` and `codec_pixel_agreement=1.0` for all
+    four sources. Pull it into the snapshot and report it: there is no
+    out-of-sample evidence that codec beats pixel for refresh. A refresh
+    subsection that shows only the in-sample N=57 numbers and hides the holdout
+    parity is selective reporting.
   - Justification: denominator and provenance errors are fatal for this paper.
     The result can be important only if the reader can tell exactly what was
     measured and from what repository state, and only if the trivial baseline that
@@ -216,19 +270,21 @@ canonical dense baseline; do not call it benign without item-level evidence.
   - File: `paper/arxiv/sections/01_abstract.tex`.
   - Replace the current fresh-video pruning sentence with a two-clause sentence
     that includes both existing measured sparse-vision pruning and the new
-    codec-metadata result. Phrase the refresh clause as: pooled
-    (calibration-free) H.264 thresholds preserve dense answers on 56/57
-    VideoMME-short items for the simple single-source rows while skipping
-    refresh on only ~10--11% of active frame pairs. Do NOT write "reusing
-    10--11% of visual evidence" (a reader will misread it as using only 10%).
-    Do not state bare "56/57" as an all-codec result: the `fused` row is 55/57
-    and must be visible in the table/footnote. Label the pooled-threshold number
+    codec-metadata result. Phrase the refresh clause as: corpus-pooled H.264
+    thresholds preserve dense answers on 56/57 VideoMME-short items for the
+    simple single-source rows while skipping refresh on only ~10--11% of active
+    frame pairs. Do NOT write "reusing 10--11% of visual evidence" (a reader
+    will misread it as using only 10%). Do NOT write "calibration-free" (the
+    pooled thresholds are in-sample and the reuse budget is pixel-matched). Do
+    not state bare "56/57" as an all-codec result: the `fused` row is 55/57 and
+    must be visible in the table/footnote. Label the pooled-threshold number
     advisory until a clean rerun lands.
   - Do not imply codec beats the trivial baseline in the abstract: a pixel proxy
-    matches it within 2 items. If abstract space is tight, the strongest
-    honest codec mention is the sidecar systems result plus the
-    calibration-free property, not the refresh agreement number. Prefer leading
-    the codec mention with sidecars.
+    matches it within 2 items in-sample and ties it exactly out-of-sample. If
+    abstract space is tight, the only honest codec mention is the sidecar
+    systems result, not the refresh agreement number; the refresh finding is a
+    parity/negative bound and does not belong in the abstract as a positive
+    result. Prefer leading the codec mention with sidecars.
   - Replace or compress the final VLM-native media paragraph so it mentions
     codec sidecars as the concrete bridge: H.264 evidence is expensive through a
     separate PyAV pass but millisecond-scale when precomputed as sidecars.
@@ -289,7 +345,11 @@ canonical dense baseline; do not call it benign without item-level evidence.
     the evidence.
   - Define pooled thresholding for refresh planning: no per-item threshold
     fitting; thresholds are chosen from the corpus-level score distribution and
-    then applied item by item.
+    then applied item by item. State plainly that, for the promoted N=57 run,
+    that corpus is the evaluation set itself (in-sample) and the reuse target is
+    matched to the pixel baseline (`calibration_source=live-pixel`,
+    `target_shares` from pixel classifications). Do not present pooled
+    thresholding as "calibration-free"; it removes per-item fitting only.
   - Define sidecars as an ingest-time or research-loop artifact that binds item
     IDs, source video hashes, score source, projection version, geometry, score
     config, git provenance, and score-array hashes. Make live PyAV extraction
@@ -434,8 +494,8 @@ canonical dense baseline; do not call it benign without item-level evidence.
     order; Section 6 can then explain the routing mechanism.
 
 - [ ] Integrate the pooled H.264 refresh result into Qwen results as a
-      calibration-free, sidecarizable refresh signal (NOT as the strongest
-      headline win).
+      bounded, sidecarizable refresh signal that ties a trivial pixel proxy
+      (NOT as the strongest headline win, and NOT as "calibration-free").
   - Files: compact summary in
     `paper/arxiv/sections/07_results_cross_architecture.tex`, mechanism detail
     in `paper/arxiv/sections/06_results_qwen_routing.tex`.
@@ -468,16 +528,23 @@ canonical dense baseline; do not call it benign without item-level evidence.
     and 0 pixel fixes; report it as finite paired evidence, not as a
     significance claim. If the generator reports a McNemar p-value, it must
     compute the value from item rows rather than hard-coding it.
-  - State the key claim precisely: with pooled (calibration-free) thresholds,
-    codec metadata is an answer-preserving refresh trigger at this tested
-    low-reuse point: the simple single-source codec rows preserve dense answers
-    on 56/57 items while skipping refresh on only ~10--11% of active frame pairs
-    (the `fused` row is 55/57 and must remain visible).
-    Explicitly add that a trivial pixel-difference proxy does nearly as well
-    (54/57, +2 items behind codec, not significant) at the same reuse, so the
-    codec-specific accuracy advantage is bounded; the durable value is that the
-    signal is calibration-free and sidecarizable. It is refresh
-    planning, not sparse execution or session reuse.
+  - Add the out-of-sample holdout row/note from
+    `phase1_29_onevision_holdout_disjoint/comparison.json`: codec = pixel
+    exactly (codec-minus-pixel +0.000, codec-pixel agreement 1.000, n=10) on the
+    disjoint holdout manifest. This is the generalization check and it shows no
+    codec advantage.
+  - State the key claim precisely and honestly as a parity result: with
+    corpus-pooled thresholds (no per-item fitting, but evaluated in-sample and
+    with the reuse budget matched to the pixel baseline), codec metadata is an
+    answer-preserving refresh trigger at this tested low-reuse point -- the
+    simple single-source codec rows preserve dense answers on 56/57 items while
+    skipping refresh on only ~10--11% of active frame pairs (the `fused` row is
+    55/57 and must remain visible). A trivial pixel-difference proxy does nearly
+    as well in-sample (54/57, +2 items behind codec, not significant) and ties
+    codec exactly out-of-sample, so there is no demonstrated codec-over-pixel
+    refresh advantage. The durable value is the negative bound itself plus
+    sidecarizability, not a codec win and not a "calibration-free" property. It
+    is refresh planning, not sparse execution or session reuse.
   - Do not call this the strongest or cleanest result. The agreement number is
     coupled to the small reuse budget (skipping ~10% of refreshes necessarily
     preserves almost all answers), so it cannot carry a standalone efficiency
@@ -488,12 +555,14 @@ canonical dense baseline; do not call it benign without item-level evidence.
     the pooled result as final paper-grade evidence.
   - Remove stale or weaker codec-planner phrasing that only reports older
     per-item calibration or n=10/n=20 results if it no longer earns space.
-  - Justification: this is a legitimate calibration-free, sidecarizable refresh
-    result that belongs in the main results, but framed as an observed
-    answer-preserving, sidecarizable signal rather than a headline win.
-    Overstating it (omitting the pixel
-    baseline, dropping fused, or quoting agreement without the reuse budget)
-    would invite the exact denominator critique this plan exists to prevent.
+  - Justification: this is a legitimate sidecarizable refresh result and a clean
+    negative bound (codec ties pixel) that belongs in the main results, framed as
+    an observed answer-preserving signal with no out-of-sample advantage over
+    pixel, rather than a headline win. Overstating it (omitting the pixel
+    baseline, dropping fused, hiding the in-sample/pixel-matched calibration or
+    the holdout parity, or quoting agreement without the reuse budget) would
+    invite the exact denominator and generalization critiques this plan exists
+    to prevent.
 
 - [ ] Replace the stale Qwen random-keep sanity paragraph with the new
       sparse-pruning evidence.
@@ -588,13 +657,15 @@ canonical dense baseline; do not call it benign without item-level evidence.
   - Rewrite "Codec Signals Are Requirements Probes" so it says:
     OneVision-Encoder validates codec structure as a trainable representation
     prior; our frozen-backend results show what transfers without retraining:
-    codec metadata is a calibration-free, sidecarizable refresh trigger that is
-    answer-preserving at the tested low-reuse operating point
-    (but not measurably better than a pixel proxy at our operating point and not
-    via OneVision-style fusion, which underperformed), sparse ranking transfers
-    only at bounded operating points, and session composition remains blocked by
-    first-query drift. The transfer is "codec metadata as a sidecarizable physical-change
-    signal," not "OneVision's fusion recipe."
+    for refresh planning codec metadata does not beat a trivial pixel-difference
+    proxy -- it is answer-preserving at a tested low-reuse point but only +2/57
+    in-sample (with pooled thresholds fit in-sample and reuse matched to pixel)
+    and tied with pixel out-of-sample, and OneVision-style fusion underperformed;
+    sparse ranking transfers only at bounded operating points; and session
+    composition remains blocked by first-query drift. The one thing that clearly
+    transfers is operational: codec evidence is sidecarizable with zero drift.
+    The transfer is "codec metadata is a sidecarizable physical-change signal
+    that matches pixel for refresh," not "OneVision's fusion recipe wins".
   - Replace "oracle" language with "signals" or "priors".
   - Add one systems sentence: sidecars are not the final decoder-integrated
     interface, but they passed zero-drift smoke gates across three
@@ -608,14 +679,17 @@ canonical dense baseline; do not call it benign without item-level evidence.
   - File: `paper/arxiv/sections/09_limitations_reproducibility.tex`.
   - Replace the older codec-native bridge paragraph with current boundaries:
     the Qwen refresh result is Qwen-only and, at its single operating point,
-    codec gives only a +2/57 (non-significant) edge over a pixel-difference
-    proxy at ~10% reuse (and fused is only +1/57), so it is a bounded,
-    sidecarizable refresh trigger rather than a demonstrated codec-over-pixel win;
-    the refresh agreement-vs-reuse frontier
-    is uncharacterized (no N=57 pooled threshold sweep), so no efficiency-frontier
-    claim is made; OneVision-style fused motion+residual scoring did not help
-    (fused underperformed single sources); sparse ranking has favorable point
-    estimates but inconclusive paired tests; Gemma accuracy evidence is
+    codec gives only a +2/57 (non-significant) in-sample edge over a
+    pixel-difference proxy at ~10% reuse (fused is only +1/57), and on the
+    disjoint holdout codec ties pixel exactly (codec-pixel agreement 1.0,
+    +0.0 accuracy, n=10); the N=57 pooled thresholds are fit in-sample with a
+    pixel-matched reuse target, so the refresh result is a parity/negative bound,
+    not a demonstrated codec-over-pixel win; the refresh agreement-vs-reuse
+    frontier is uncharacterized (no N=57 pooled threshold sweep), so no
+    efficiency-frontier claim is made; OneVision-style fused motion+residual
+    scoring did not help (fused underperformed single sources); sparse ranking
+    has favorable point estimates but inconclusive paired tests; Gemma accuracy
+    evidence is
     smoke-level until M5; TOMATO dense baseline is too weak to promote; live
     PyAV extraction is not a deployable per-query path; session reuse
     composition is blocked by 12/57 first-query drift.
@@ -686,9 +760,12 @@ canonical dense baseline; do not call it benign without item-level evidence.
   - Confirm generated-table diffs are reproducible from the tracked JSON
     snapshots and canonical artifacts.
   - Run a vocabulary audit over `paper/arxiv/sections/*.tex` and paper-facing
-    docs for `oracle`, `Track A`, `Track B`, `OV-`, `WOW`, `safe`, `free codec`,
-    `10,000x`, and `codec wins`; any remaining hits must be in traceability,
-    explicit upper-bound language, or repo-facing terminology notes.
+    docs for `oracle`, `Track A`, `Track B`, `OV-`, `WOW`, `safe`,
+    `calibration-free`, `calibration-robust`, `free codec`, `10,000x`, and
+    `codec wins`; any remaining hits must be in traceability, explicit
+    upper-bound language, or repo-facing terminology notes. `calibration-free`
+    and `calibration-robust` must not describe the refresh result anywhere in
+    paper-facing prose.
     `safe` has a narrow carve-out for established non-codec terms that already
     describe a concrete invariant (for example topology-safe cache reuse,
     deadline-safe perception, denominator-safe paired rows, unsafe default cache
@@ -706,6 +783,10 @@ canonical dense baseline; do not call it benign without item-level evidence.
     source (or a footnoted justification for excluding fused), and that no
     manuscript sentence calls the refresh result the "strongest"/"cleanest"
     result or quotes its agreement without the reuse budget and pixel baseline.
+  - Confirm the refresh subsection discloses in-sample pooled calibration and
+    the pixel-matched reuse target, and reports the disjoint-holdout parity
+    (codec = pixel); confirm no sentence labels the refresh result
+    "calibration-free" or implies an out-of-sample codec advantage.
   - Confirm the refresh/pruning dense-baseline mismatch is either resolved by a
     single canonical rerun or explicitly footnoted with both source artifact
     paths and run-specific dense values (38/57 versus 39/57).
@@ -726,7 +807,15 @@ canonical dense baseline; do not call it benign without item-level evidence.
 - Do not promote TOMATO motion gains from the current smoke.
 - Do not present the pooled refresh result as a codec-over-pixel accuracy win;
   simple single-source codec rows beat the pixel proxy by only +2/57
-  (non-significant) at equal reuse, and the fused row is only +1/57.
+  (non-significant) in-sample at equal reuse, the fused row is only +1/57, and
+  on the disjoint holdout codec ties pixel exactly. The refresh result is a
+  parity/negative bound.
+- Do not call the pooled refresh result "calibration-free": the N=57 pooled
+  thresholds are fit in-sample and the reuse budget is matched to the pixel
+  baseline. Say "no per-item threshold fitting; in-sample corpus-pooled;
+  pixel-matched reuse".
+- Do not report the in-sample N=57 refresh numbers without the disjoint-holdout
+  parity (codec = pixel) beside them.
 - Do not call the pooled refresh trigger "safe" in paper-facing prose; say
   "answer-preserving at the tested low-reuse operating point" or an equivalent
   finite-scope phrase.
@@ -755,19 +844,21 @@ canonical dense baseline; do not call it benign without item-level evidence.
   anti-recomputation with separate first-query, follow-up, and ceiling
   denominators. The manuscript edit should preserve that distinction.
 - Evidence: current branch artifacts support three paper-useful claims:
-  pooled H.264 single-source refresh preserves dense answers 56/57 while
-  skipping refresh on only ~10--11% of active frame pairs (codec accuracy 0.684
-  vs pixel proxy 0.649, a non-significant +2/57 edge at equal reuse for the
-  simple single-source rows; fused source underperforms at 0.667, 55/57
-  agreement, and +1/57 over pixel), with a dirty-tree caveat
-  until rerun clean; Qwen sparse-pruning
-  favorable point estimate 35/57 versus 31/57 but McNemar p=0.2188; sidecar
-  extraction equivalence with zero drift and seconds-to-milliseconds
-  extraction-path speedup (n=3 per-source smoke gates, ~3,800--17,900x on the
-  extraction path only). The sidecar systems result and the calibration-free
-  thresholding property are the durable "wow"; the refresh agreement number is
-  not, because it is coupled to the small reuse budget and matched by a trivial
-  pixel baseline.
+  (1) a refresh parity/negative bound -- pooled H.264 single-source refresh
+  preserves dense answers 56/57 while skipping refresh on only ~10--11% of
+  active frame pairs (codec accuracy 0.684 vs pixel proxy 0.649, a
+  non-significant +2/57 in-sample edge at a pixel-matched reuse budget; fused
+  underperforms at 0.667, 55/57, +1/57), and the disjoint holdout shows codec
+  ties pixel exactly (codec-pixel agreement 1.0, +0.0, n=10); the N=57 pooled
+  thresholds are fit in-sample, so this is a bound, not a codec win, and carries
+  a dirty-tree caveat until rerun clean; (2) Qwen sparse-pruning favorable point
+  estimate 35/57 versus 31/57 but McNemar p=0.2188; (3) sidecar extraction
+  equivalence with zero drift and seconds-to-milliseconds extraction-path
+  speedup (n=3 per-source smoke gates, ~3,800--17,900x on the extraction path
+  only). The durable "wow" is the sidecar systems result plus the clean negative
+  bound (codec does not beat pixel for refresh); the refresh agreement number is
+  not a win on its own, because it is coupled to the small reuse budget, matched
+  to pixel by construction, and evaluated in-sample.
 - Open: M5 confirmations should update the table cells and scope language when
   they land, but they are not prerequisites for starting the edit.
 
