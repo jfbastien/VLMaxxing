@@ -123,6 +123,40 @@ pooled dev+holdout composition-frontier cells (n=60, rescue TOMATO remains a
 fidelity-gate failure). The table captions must carry those slice labels; do
 not rely on the surrounding paragraph alone.
 
+#### Evidence verification ledger (independent audit, 2026-05-26)
+
+Every headline number and citation in this plan was checked against the
+committed artifacts and primary sources across three review rounds. The
+manuscript-execution agent should treat the following as already verified and
+build tables from them directly rather than re-deriving:
+
+- Stage-cost fit: `r2 = 0.9709678`, MARE `0.017225`, max abs relative error
+  `0.078469` — read from `cost_model_fit_n19.json`. Observed-E2E range across
+  the 19 rows is `0.9840x` (`videomme_holdout_long`, the "long video does not
+  move" example) to `1.7790x` (`mvbench_holdout`); the "about 0.98x-1.78x"
+  prose is exact, not rounded loosely.
+- RLT-as-C-VISION (n=30, kr=0.5): E2E `1.0581 / 1.3153 / 1.4018`
+  (VideoMME/TOMATO/MVBench); scorer `19.18 / 20.83 / 36.32` ms vs max-min
+  `2334 / 2380 / 2943` ms (~122x / 114x / 81x). All Δacc CIs cross zero.
+- Composition (pooled n=60): aggressive `pass_fidelity = false` on all three
+  benchmarks; rescue `pass_fidelity = true/false/true`; `bucket_failures` lists
+  match `summary.bucket_failures` exactly; MVBench aggressive Δacc CI excludes
+  zero, all rescue CIs cross zero.
+- choice_agreement: `m3_videomme_compose = 0.75`, `m3_tomato_compose =
+  0.5333333333333333` (display `0.533`), read from each row's input
+  `source_path` artifact, not the null top-level row field.
+- References (primary-source verified): RLT = "Don't Look Twice:..."
+  (`2411.05222`, NeurIPS 2024); `2512.07580` = "When Token Pruning is Worse
+  than Random:..." (CVPR 2026; the older "All You Need Are Random Visual
+  Tokens?" title is wrong and was corrected in `related-work-table.md`);
+  CoPE-VideoLM TOMATO `28.3` is the paper's own `Ours-7B` open-model row, not a
+  proprietary SOTA number; QuoTA headline is `+3.2%` (no source-backed latency
+  ratio — do not cite one); QTSplus `89%->28%` confirmed.
+
+Re-verify only if the underlying artifacts change. If a future rerun alters
+`cost_model_fit_n19.json` or the `rlt_followup_queue` analyses, this ledger and
+every dependent table number must be re-audited before the manuscript ships.
+
 ## Validated Editorial Claims
 
 | Claim | Verdict | Evidence class | Manuscript action |
