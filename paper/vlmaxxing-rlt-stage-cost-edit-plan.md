@@ -13,7 +13,7 @@ The edit should make the paper feel as if the RLT and stage-cost experiments
 were part of the original design, not a late add-on. The central paper move is:
 
 > Token count does not predict wall-clock speedup. Stage share does. RLT is
-> useful when it cheaply shortens a stage that owns runtime; paired answer
+> useful when it cheaply shortens a stage with enough runtime share; paired answer
 > checks decide whether that speed is usable.
 
 This is not a query-aware-routing paper. Query-aware routing, active repair, and
@@ -50,7 +50,8 @@ Stage-cost model (evidence-plumbing slice, Result 1):
   - `n_artifacts` = 19
   - `models.observed_e2e_vs_prefill_plus_vision_ceiling.r2` = 0.9709678 (prose `~= 0.971`)
   - `error_summaries.prefill_plus_vision_ceiling.mean_abs_relative_error` = 0.017225 (1.72% MARE)
-  - `error_summaries.prefill_plus_vision_ceiling.max_abs_relative_error` = 0.078469 (7.85% max rel)
+  - `error_summaries.prefill_plus_vision_ceiling.max_abs_relative_error` =
+    0.078469 (7.85% max absolute relative error)
   - Do NOT use `models.observed_e2e_vs_prefill_plus_vision_ceiling.max_abs_error` = 0.0963; that is absolute speedup-space error, not relative.
   - The six selected rows live under the top-level `rows` list keyed by `label`; all six labels confirmed present.
 
@@ -103,14 +104,15 @@ Composition frontier (Result 3 / Table 3), pooled dev+holdout n=60:
 Denominator-collision warning: the pooled-n=60 composition rows above are a
 DIFFERENT experiment from the `m3_*_compose` rows in `cost_model_fit_n19.json`
 (n=20-30, same-run M3 cost-accounting). They will disagree in sign for TOMATO:
-`m3_tomato_compose` shows Δacc = +0.067 (small-sample, choice-churn caveat),
+`m3_tomato_compose` shows Δacc = +0.067
+(aggregate-positive/choice-churn caveat),
 while pooled `full_composition_rlt_rescue_combined_tomato` shows Δacc = -0.083.
 Both are correct for their own slice. The manuscript must never place these two
 TOMATO composition numbers in the same table or paragraph without naming the
 distinct slice and n; otherwise a reviewer sees a contradiction. Prefer the
 pooled n=60 rows for the composition-frontier table and the M3 rows only for
 the stage-cost-model fit table. The cost-accounting generator must hard-fail if
-the `m3_tomato_compose` selected row's `source_paths` list does not exactly
+the `m3_tomato_compose` selected row's input `source_path` does not exactly
 match the expected M3 cost-accounting artifact path in the source-path map
 below, because that is the guard against silently pulling the pooled
 sign-disagreeing TOMATO row into the M3 table.
@@ -125,8 +127,8 @@ not rely on the surrounding paragraph alone.
 
 | Claim | Verdict | Evidence class | Manuscript action |
 | --- | --- | --- | --- |
-| Stage-cost accounting is the strongest RLT/VLMaxxing narrative spine. | Valid. | Reproduced here. The n=19 prefill+vision model reports `R^2 = 0.97097`, 1.72% mean absolute relative error, and 7.85% max absolute relative error across observed E2E speedups from about 0.98x to 1.78x. | Put the predicted-vs-observed speedup result early and make it the main explanatory figure. |
-| RLT-as-C-VISION is the cleanest direct RLT result. | Valid, bounded. | Reproduced here. RLT reaches the speed class of expensive scorers while costing tens of ms/item rather than seconds/item. | Add an RLT scorer table. Say "same speed class at far lower scorer cost", not "RLT dominates". |
+| Stage-cost accounting is the strongest RLT/VLMaxxing narrative spine. | Valid. | Reproduced here. The n=19 prefill+vision model reports `R^2 = 0.97097`, 1.72% mean absolute relative error, and 7.85% max absolute relative error between predicted and observed E2E speedup pairs spanning about 0.98x to 1.78x. | Put the predicted-vs-observed speedup result early and make it the main explanatory figure. |
+| RLT-as-C-VISION is the bounded direct RLT result. | Valid, bounded. | Reproduced here. RLT reaches the speed class of expensive scorers while costing tens of ms/item rather than seconds/item. | Add an RLT scorer table. Say "same speed class at far lower scorer cost", not "RLT dominates". |
 | Full RLT composition is a frontier, not a clean universal win. | Valid. | Reproduced here. Aggressive MVBench composition reaches the high-speed frontier but has statistically decisive quality cost; rescue composition is safer but still bucket-caveated. | Add a small frontier table that separates aggressive speed frontier from rescue operating point. |
 | The H3B prompt-admission regression is a useful negative result. | Valid. | Reproduced here / systems diagnostic. The result shows token reduction can regress wall-clock when the runtime changes kernel path. | Keep as a compact systems lesson: token reduction is not speed unless the substrate makes the shortened stage faster. |
 | Query-aware routing is solved. | Reject. | Boundary evidence. Static typed routing and active repair did not clear gates; text routing is post-hoc and does not transfer. | Compress routing into a boundary/future-work subsection or appendix. |
@@ -154,8 +156,8 @@ project terms:
 The short abstract-level phrasing should be:
 
 > We turn VLM pruning from a token-count claim into a stage-accounting problem:
-> which stage got shorter, how much of the request did that stage own, and did
-> the answer stay acceptable?
+> which stage got shorter, what share of the request that stage represented,
+> and did the answer stay acceptable?
 
 Avoid the jargon stack "stage-cost C-VISION admission primitive" in first-use
 prose. Introduce the plain operation first, then name it.
@@ -173,7 +175,7 @@ stage accounting. Stopping after the generated table would fail the user's
 
 Acceptance criteria for the actual manuscript integration:
 
-1. The abstract opens on the runtime-bill problem and the n=19 stage-cost
+1. The abstract opens on the runtime-stage problem and the n=19 stage-cost
    result, not on experiment history or C-PERSIST alone.
 2. The introduction asks "which stage got shorter?" before introducing project
    names.
@@ -207,9 +209,10 @@ large rewrite. The minimum strong integration is:
 2. Add one compact generated table:
    - `paper/arxiv/generated/tables/rlt_cost_accounting.tex`
    - Caption carries the summary: prefill+vision model fit over 19 cells,
-     selected rows shown in the table body, `R^2 ~= 0.971`, 1.72% MARE, 7.85%
-     max error. The 7.85% max-error number is for the full 19-cell fit, not the
-     maximum over the six displayed rows.
+     selected rows shown in the table body, `R^2 ~= 0.971`, 1.72% MARE, and
+     7.85% max absolute relative error between predicted and observed E2E
+     speedup pairs. The 7.85% max-absolute-relative-error number is for the
+     full 19-cell fit, not the maximum over the six displayed rows.
    - Select exactly these row labels from the artifact:
      `m3_videomme_no_adm`, `m3_videomme_kr07`, `m3_videomme_kr03`,
      `m3_videomme_compose`, `m3_mvbench_kr07`, and `m3_tomato_compose`.
@@ -225,7 +228,7 @@ large rewrite. The minimum strong integration is:
      `evidence_status` label.
    - Because `m3_tomato_compose` is one of the selected rows, the table must
      include a note showing the observed positive aggregate accuracy delta with
-     a choice-churn caveat. Source the note to
+     an aggregate-positive/choice-churn caveat. Source the note to
      `accuracy_delta_composed_minus_dense` from the top-level row and
      `summary.choice_agreement` from the artifact named by that row's input `source_path`. Do not
      put this note in `evidence_status`, and do not imply composition always
@@ -256,7 +259,7 @@ the generated RLT cost-accounting table beside the existing C-CEILING evidence,
 then remove or move lower-value prose only after the old residual rows have a
 safe generated or appendix home.
 
-### Abstract: rewrite around the runtime bill
+### Abstract: rewrite around runtime stage share
 
 Current issue: the abstract centers the earlier C-PERSIST and cross-architecture
 story before the RLT/stage-accounting result is visible.
@@ -266,14 +269,14 @@ Edit:
 1. Open with the denominator problem: pruning papers often report token
    reductions or local stage wins, while users pay end-to-end runtime.
 2. State the stage-cost result: across 19 Gemma cells, the prefill+vision model
-   predicts E2E speedups with `R^2 ~= 0.971` and 1.72% mean absolute relative
-   error.
+   predicts E2E speedups with `R^2 ~= 0.971`, 1.72% mean absolute relative
+   error, and 7.85% max absolute relative error.
 3. State the RLT result: RLT is a cheap C-VISION scorer that reaches the speed
    class of expensive diversity scoring at roughly two orders of magnitude lower
    scorer cost.
 4. Keep C-PERSIST, but give it one sentence as a separate regime: large
    follow-up gains exist when the same video is already ingested; first-pass
-   gains obey the stage-cost bill.
+   gains obey the stage-cost model.
 5. Name the caveat in the abstract-level evidence class: composition is a
    speed/quality frontier, not a universal lossless win.
 
@@ -331,7 +334,7 @@ the new RLT/admission evidence needs one coherent cost model.
 
 Edit:
 
-1. Add a "Runtime bill" subsection before the specific mechanisms:
+1. Add a "Runtime stage breakdown" subsection before the specific mechanisms:
    - video decode / input handling,
    - vision encoding,
    - LM prefill / prompt reading,
@@ -410,11 +413,12 @@ Edit to this order:
 
 1. **Result 1: End-to-end speed follows stage share, not token count.**
    - Put the n=19 predicted-vs-observed figure first.
-   - State `R^2 ~= 0.971`, 1.72% mean absolute relative error, 7.85% max error.
+   - State `R^2 ~= 0.971`, 1.72% mean absolute relative error, 7.85% max
+     absolute relative error between predicted and observed E2E speedup pairs.
    - Explain one positive and one negative example:
-     - MVBench/TOMATO rows move when vision/prefill owns enough runtime.
-     - VideoMME-long does not move because the shortened stages do not own
-       enough runtime.
+     - MVBench/TOMATO rows move when vision/prefill has enough runtime share.
+     - VideoMME-long does not move because the shortened stages have too little
+       runtime share.
 2. **Result 2: RLT is a cheap C-VISION scorer.**
    - Add table with VideoMME, TOMATO, MVBench RLT rows.
    - Include E2E speedup, delta accuracy, vision reduction, scorer cost, and
@@ -467,7 +471,7 @@ Edit:
    they touch.
 4. Add one database analogy paragraph only if it earns space:
    - System R-style cost accounting is the analogy for choosing operators under
-     a runtime bill.
+     a runtime stage breakdown.
    - Do not turn this paper into a query-planning survey.
 
 Remove or shorten:
@@ -492,12 +496,13 @@ Required bibliography status:
 | Work | Primary source | `90_references.tex` status | Manuscript rule |
 | --- | --- | --- | --- |
 | RLT | `2411.05222`, NeurIPS 2024 Spotlight | Present as `\bibitem{rlt}` after this plan hardening. | Required. This is the source of the run-length idea. |
-| QuoTA | `2503.08689`, AAAI 2026 | Missing. | Add only if cited; do not use the unverified 50%->1.08x ratio without a source table. |
+| QuoTA | `2503.08689`, AAAI 2026 | Missing. | Add only if cited for query-oriented token assignment or its `+3.2%` average-performance headline at identical token budget; do not use the unsupported latency-ratio claim from review discussion in this manuscript plan. |
 | QTSplus | `2511.11910` | Missing. | Add if citing the 89% compression / 28% latency result. |
 | Q-Frame | `2506.22139`, ICCV 2025 | Missing. | Add if the query-aware boundary paragraph cites it. |
 | Static or Dynamic | `2504.21403`, EMNLP 2025 main | Missing. | Use this exact name; add if cited. |
 | VideoRouter | `2605.05848` | Missing. | Add if cited as trained query-adaptive routing prior. |
 | Token-pruning critique | `2502.11501`, Findings ACL 2025 | Missing. | Add if using the random/fixed-baseline discipline claim. |
+| When Token Pruning is Worse than Random: Understanding Visual Token Information in VLLMs | `2512.07580`, arXiv comments report CVPR 2026 acceptance | Missing. | Add if using the deep-layer random-pruning / DivPrune+random claim. |
 | System R | Selinger et al., SIGMOD 1979 | Missing. | Add only if the database analogy earns space. |
 | Eddies | Avnur and Hellerstein, SIGMOD 2000 | Missing. | Add only if adaptive query-routing analogy earns space. |
 | PARQO | `2406.01526`, VLDB 2024 | Missing. | Add only if robust-plan analogy earns space. |
@@ -517,19 +522,21 @@ because the current characterizations contain errors a reviewer will catch:
   positional-encoding CoPE work. This paper uses video codec primitives,
   specifically motion vectors and residuals, and aligns codec-derived tokens to
   image-encoder embeddings. Any "position-encoding" phrasing is FALSE and must
-  be removed.
+  be removed. If mentioning its TOMATO 28.3 number, qualify it as the
+  `Ours-7B` result in CoPE-VideoLM's open-source-model table, not as a
+  proprietary-model SOTA claim.
 - CodecSight (`2604.06036`): it is a streaming-VLM inference system using codec
   metadata for patch pruning and selective KV-cache refresh, not a general
   "video understanding" system. Frame it as streaming-inference-efficiency.
 - QuoTA (`2503.08689`, AAAI 2026): query-oriented token assignment via CoT query
   decomposition. The QuoTA paper's own headline is "+3.2% average across six
   benchmarks at identical token budget" (matches `docs/related-work-table.md`),
-  NOT a compression/latency ratio. The "50%->1.08x" external-validation pairing
-  that circulated in review discussion does NOT currently appear in any
-  `sections/*.tex` (verified 2026-05-25). Forward guard: if a future external-
-  validation paragraph reproduces QuoTA in the cost-model section, the specific
-  speedup ratio must be sourced from the QuoTA paper before it ships; do not
-  transcribe it from discussion. The QTSplus "89%->28%" pairing (`2511.11910`)
+  NOT a compression/latency ratio. The latency external-validation pairing that
+  circulated in review discussion does NOT currently appear in any
+  `sections/*.tex` (verified 2026-05-25) and is not source-backed enough for
+  this manuscript plan. Do not use it. If a future external-validation paragraph
+  wants to compare against QuoTA latency, open a separate source note against the
+  primary paper before adding the number. The QTSplus "89%->28%" pairing (`2511.11910`)
   is confirmed against the source and is safe to cite.
 - PARQO (`2406.01526`, VLDB 2024): full name "Penalty-Aware Robust Plan
   Selection in Query Optimization"; uncertain selectivity is the setting, while
@@ -547,14 +554,16 @@ because the current characterizations contain errors a reviewer will catch:
   random/fixed-baseline discipline, which directly supports our negative-control
   framing. Note the repo's `docs/related-work-table.md` already tracks TWO
   distinct random-baseline papers: the ACL Findings 2025 critique "Are We Solving
-  the Right Problem?" (`2502.11501` / `2025.findings-acl.802`) and the separate
-  preprint "All You Need Are Random Visual Tokens?" (`2512.07580`, DivPrune+random
-  keeps 96.9% of Qwen2.5-VL-7B at 50% pruning). Both are legitimate; the
+  the Right Problem?" (`2502.11501` / `2025.findings-acl.802`) and "When Token
+  Pruning is Worse than Random: Understanding Visual Token Information in VLLMs"
+  (`2512.07580`; arXiv comments report CVPR 2026 acceptance; DivPrune+random keeps
+  96.9% of Qwen2.5-VL-7B performance at 50% pruning). Both are legitimate; the
   negative-control paragraph may cite either or both, but must attribute the
-  specific numeric claim to the correct paper. The bibliography-status table
-  above tracks `90_references.tex` bibitem presence, not planning-doc coverage:
-  these critiques are already in `related-work-table.md` but still need a
-  `\bibitem` before the manuscript can `\cite` them.
+  specific numeric claim to the correct paper and use the current paper title.
+  The bibliography-status table above tracks `90_references.tex` bibitem
+  presence, not planning-doc coverage: these critiques are already in
+  `related-work-table.md` but still need a `\bibitem` before the manuscript can
+  `\cite` them.
 
 ### Discussion and Future Work: cut broad ambition, keep decision rules
 
@@ -564,8 +573,8 @@ future work. That weakens the paper by making it sound less finished.
 Edit:
 
 1. Lead with practitioner decision rules:
-   - measure the runtime bill,
-   - prune the stage that owns the bill,
+   - measure the runtime stage breakdown,
+   - prune the stage with enough runtime share to matter,
    - charge the scorer,
    - verify paired answers,
    - do not multiply component speedups without measuring composition.
@@ -600,8 +609,9 @@ Edit:
 1. Add a short limitation that VideoMME-short admission rows are parsed-choice
    clean, not raw-output identical unless raw text was explicitly audited.
 2. State that MVBench hosted admission rows are timing-only cost-model evidence
-   and TOMATO composition rows are timing/boundary evidence with choice-churn or
-   bucket caveats, not clean quality-frontier rows.
+   and TOMATO composition rows are timing/boundary evidence with
+   aggregate-positive/choice-churn or bucket caveats, not clean quality-frontier
+   rows.
 3. State that random-valid no-admission rows are denominator controls, not a
    broad claim that random pruning is always behaviorally identical.
 
@@ -712,8 +722,8 @@ Columns:
 Caption wording:
 
 > RLT reaches the speed class of expensive learned-diversity scoring (max-min)
-> while moving scorer cost from seconds to tens of milliseconds (~80-120x
-> cheaper across the three benchmarks).
+> while using a measured tens-of-milliseconds RLT scorer instead of max-min's
+> seconds-per-item scorer (~80-120x cheaper across the three benchmarks).
 
 Do not say RLT dominates every scorer, and do not imply RLT is the cheapest
 possible scorer: the magnitude scorer is effectively free (precomputed). The
@@ -764,8 +774,8 @@ Required wording:
   speed-positive boundary row with both aggregate fidelity failure and
   direction/rotation bucket failures.
 - If the M3 TOMATO composition row is included in this or the cost-accounting
-  table, describe its positive aggregate delta as small-sample aggregate
-  positive with choice-churn caveat, not as proof that composition improves
+  table, describe its positive aggregate delta with the
+  aggregate-positive/choice-churn caveat, not as proof that composition improves
   quality.
 
 ### Box or small figure: H3B substrate cliff
@@ -916,7 +926,7 @@ Cut:
 
 Modify:
 
-- Open with token count vs runtime bill.
+- Open with token count vs runtime stage share.
 - Add a compact operator/regime table or prose equivalent.
 - Update contributions to exactly these three paper claims:
   1. stage-cost accounting,
@@ -929,7 +939,7 @@ Modify:
 - Add a separate boundary paragraph after the contribution list for
   query-aware/routing failures. Do not count it as a contribution.
 - Replace the current C-CEILING contribution sentence with one that includes
-  both the earlier Qwen composition audit and the n=19 Gemma/RLT prefill+vision
+  both the earlier Qwen composition audit and the n=19 Gemma prefill+vision
   audit.
 - Do not add a new intro regime row for RLT/admission controls.
 
@@ -955,7 +965,7 @@ Cut:
 
 Modify:
 
-- Add runtime-bill decomposition and prefill+vision formula.
+- Add runtime-stage decomposition and prefill+vision formula.
 - Define RLT, admission, composition, and C-PERSIST by physical stage.
 - State scorer cost is charged.
 
@@ -999,7 +1009,7 @@ Modify:
 - First-pass implementation: add
   `\input{generated/tables/rlt_cost_accounting.tex}` near the current manual
   `tab:vshare-ceiling-residuals` and one short paragraph explaining that the
-  May 20 Gemma/RLT audit extends C-CEILING from vision-only share accounting to
+  May 20 Gemma stage-cost audit extends C-CEILING from vision-only share accounting to
   prefill+vision stage accounting. Keep the manual residual table unless its
   rows are first given a generated or appendix home.
 
@@ -1036,14 +1046,14 @@ Modify:
   is speed."
 - Keep the conclusion short.
 - Replace any generic "fresh-video pruning is smaller" sentence with the sharper
-  point: fresh-video pruning and the Gemma/RLT admission audit are diagnostic
+  point: fresh-video pruning and the Gemma stage-cost admission audit are diagnostic
   because gains obey measured stage shares, not dropped-token counts.
 
 ### `paper/arxiv/sections/appendix_a_source_traceability.tex`
 
 Modify:
 
-- Add one source-traceability row for the Gemma/RLT cost-accounting table,
+- Add one source-traceability row for the Gemma stage-cost table,
   pointing to the May 20 closeout note and `cost_model_fit_n19.json`.
 
 ### Generated assets
@@ -1075,7 +1085,7 @@ Generator details:
 
 - Pull `R^2` from
   `models.observed_e2e_vs_prefill_plus_vision_ceiling.r2`.
-- Pull MARE and max relative error from
+- Pull MARE and max absolute relative error from
   `error_summaries.prefill_plus_vision_ceiling.mean_abs_relative_error` and
   `error_summaries.prefill_plus_vision_ceiling.max_abs_relative_error`.
 - Do not confuse those relative-error fields with
@@ -1083,7 +1093,7 @@ Generator details:
   an absolute speedup-space error.
 - Add generator assertions for the expected source paths and values:
   `n_artifacts == 19`, rounded `R^2 == 0.971`, rounded MARE `== 1.72%`, and
-  rounded max relative error `== 7.85%`.
+  rounded max absolute relative error `== 7.85%`.
 - Assert exact row-selection completeness: the selected-label set must equal
   the six labels listed below. Hard-fail on any missing or extra selected label.
 - Select rows by exact membership in `rows[*].label` using:
@@ -1105,10 +1115,12 @@ Generator details:
   - `m3_tomato_compose`:
     `research/experiments/2026/artifacts/rlt_m3_cost_accounting_followup/tomato_motion_dev/tomato_motion_dev_rlt_composition_kr050_cost_model.json`
 - Snapshot schema:
-  - `source_paths`: list containing `cost_model_fit_n19.json`, the May 20
-    closeout note path, and every selected row source artifact. Use this
-    validated key instead of inventing `source_artifact`, `source_notes`, or
-    row-level `source_path` fields.
+  - Top-level `source_paths`: list containing `cost_model_fit_n19.json`, the
+    May 20 closeout note path, and every selected row source artifact. Use this
+    validated key instead of inventing `source_artifact` or `source_notes`.
+  - Each generated `rows[*].source_paths`: single-item list wrapping the
+    corresponding input artifact row's singular `source_path`. Do not emit
+    row-level singular `source_path` fields in the generated snapshot.
   - `summary_source`: string naming the May 20 closeout note as the source for
     curated fidelity/evidence labels. `summary_source` is part of the existing
     source-key validator vocabulary.
@@ -1128,16 +1140,21 @@ Generator details:
     null.
     `display_name` and `evidence_status` are derived from the curated mappings
     in this plan; they are not read from the artifact.
-  - Hard-fail if any selected row is missing `source_paths`, stage-share inputs,
+  - Hard-fail if any selected input row is missing `source_path`,
+    stage-share inputs,
     stage-speedup inputs, observed speedup, predicted speedup, relative error,
     or accuracy delta. Hard-fail if either selected composition row
     (`m3_videomme_compose`, `m3_tomato_compose`) is missing `choice_agreement`
     from `summary.choice_agreement` in the artifact named by its input
-    `source_path`. Verified `choice_agreement` values are `0.750` for
-    `m3_videomme_compose` and `0.533` for `m3_tomato_compose`. Do not silently
-    fill `None`.
-  - Hard-fail if a selected row's `source_paths` value is not a single-item
-    list matching the exact source-path map above.
+    `source_path`, or if the loaded value differs from the verified raw value by
+    more than `5e-4`: `0.75` for `m3_videomme_compose` and
+    `0.5333333333333333` for `m3_tomato_compose`. Display the latter as
+    `0.533`; do not compare the raw float to the rounded display string, and do
+    not silently fill `None`.
+  - Hard-fail if a selected input row's `source_path` value does not match the
+    exact source-path map above. Separately, hard-fail if the generated output
+    snapshot row's `source_paths` value is not a single-item list wrapping that
+    same input path.
   - Assert `fidelity_verdict` is absent from the selected cost-model rows so the
     generator cannot accidentally treat curated evidence labels as artifact
     fields.
@@ -1178,9 +1195,21 @@ Required table-note map for selected caveat rows:
 
 | Row | Required note source |
 | --- | --- |
-| `m3_videomme_compose` | Top-level row `accuracy_delta_composed_minus_dense` plus `summary.choice_agreement=0.750` from the artifact named by the row's input `source_path` for the composition choice-churn caveat; evidence status remains `timing/boundary`. |
-| `m3_tomato_compose` | Top-level row `accuracy_delta_composed_minus_dense` plus `summary.choice_agreement` from the artifact named by the row's input `source_path` for the aggregate-positive/choice-churn caveat; evidence status remains `timing/boundary`. |
+| `m3_videomme_compose` | Top-level row `accuracy_delta_composed_minus_dense` plus `summary.choice_agreement=0.750` from the artifact named by the row's input `source_path` for the choice-churn/fidelity caveat; evidence status remains `timing/boundary`. |
+| `m3_tomato_compose` | Top-level row `accuracy_delta_composed_minus_dense` plus `summary.choice_agreement=0.533` (display-rounded from raw `0.5333333333333333`) from the artifact named by the row's input `source_path` for the aggregate-positive/choice-churn caveat; evidence status remains `timing/boundary`. |
 | `m3_mvbench_kr07` | Top-level row `accuracy_delta_composed_minus_dense=+0.019` may be reported only as aggregate delta next to a `timing only` evidence status; do not interpret it as a quality win because paired choice agreement is not clean. |
+
+The generator must hard-fail if the generated table-note labels differ from
+these exact strings:
+
+- `m3_videomme_compose`: `choice-churn/fidelity caveat`
+- `m3_tomato_compose`: `aggregate-positive/choice-churn caveat`
+
+The TOMATO note uses the stronger "aggregate-positive/choice-churn" label
+because its selected M3 row has a positive aggregate accuracy delta despite
+substantial choice churn. The VideoMME composition note should not use
+"aggregate-positive" because its selected M3 row is accuracy-negative; it only
+needs the choice-churn/fidelity caveat.
 
 ## M3 And M5 Experiment Policy
 
@@ -1284,11 +1313,16 @@ That is better science for four reasons:
 3. It preserves negative results. H3B substrate cliffs, query-routing failures,
    active-repair cost failure, and text-rule leakage explain the boundaries.
 4. It is useful to practitioners. A reader can decide whether a pruning method
-   is worth implementing by measuring their runtime bill and asking which stage
-   the method actually shortens.
+   is worth implementing by measuring their runtime stage breakdown and asking
+   which stage the method actually shortens.
 
 The final manuscript should sound simple:
 
-> Prune the stage that owns the bill. Charge the scorer. Verify the answer.
+> Prune the stage with enough runtime share to matter. Charge the scorer.
+> Verify the answer.
+
+Rationale: this is the final canonical short form for the manuscript-editing
+plan. It avoids the ambiguous old billing metaphor while preserving the
+three scientific checks: stage share, scorer cost, and paired-answer fidelity.
 
 Everything else is implementation detail.

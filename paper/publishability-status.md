@@ -17,12 +17,13 @@ The manuscript should lead with stage-cost-accounted anti-recomputation, not
 with a Qwen-only routing note or a token-count story:
 
 - **C-CEILING / stage-cost accounting**: this is now the front-door claim. The
-  Gemma/RLT prefill+vision audit fits 19 cost-model cells at `R^2=0.97097`,
-  `1.72%` mean absolute relative error, and `7.85%` max relative error.
+  Gemma prefill+vision audit from the RLT/VLMaxxing branch fits 19 cost-model
+  cells at `R^2=0.97097`,
+  `1.72%` mean absolute relative error, and `7.85%` max absolute relative error.
 - **C-VISION / RLT-as-cheap-C-VISION**: RLT reaches the speed class of expensive
-  max-min diversity scoring while moving scorer cost from seconds to tens of
-  milliseconds on the measured Gemma rows. This is a scorer-cost result, not a
-  universal dominance claim.
+  max-min diversity scoring while the measured RLT scorer costs tens of
+  milliseconds per item rather than the max-min scorer's seconds. This is a
+  scorer-cost result, not a universal dominance claim.
 - **C-PERSIST**: persistent-KV reuse still delivers the largest local deployment
   numbers, but every multiplier is an after-ingest same-video follow-up number,
   not a fresh-video pruning result.
@@ -47,8 +48,9 @@ same evidence graph.
 **The goal is one results paper that advances the anti-recomputation evidence
 across three independent axes.** Codex rounds 25–26 retired the
 earlier "one big multiplicative number via claim 11" framing: the
-paper spine is now three already-earned, independently-evaluable
-contributions (all landed before Codex round-26 2026-04-21):
+paper spine is now three independently-evaluable contributions, with the
+original pre-April-21 evidence strengthened by the May 2026 RLT/stage-cost
+update:
 
 - **C-CEILING — arithmetic end-to-end ceiling** (claim 13).
   `E2E ≤ 1/(fixed + (1−fixed)/s)` validated across 7 independent
@@ -94,13 +96,14 @@ contributions (all landed before Codex round-26 2026-04-21):
 
 - **2026-05-20 Gemma cost-accounting update.** A separate admission/control
   audit now validates the same denominator discipline at `n=19` cost-model
-  rows: prefill+vision stage accounting reaches `R^2=0.97097`, mean absolute
-  relative error `1.72%`, and max absolute relative error `7.85%` over observed
+  rows: prefill+vision stage accounting reaches `R^2=0.97097`, `1.72%` mean
+  absolute relative error, and `7.85%` max absolute relative error over observed
   `0.984x-1.779x` E2E. This is a methodology/readiness upgrade, not a new
-  headline router. The cleanest new rows are VideoMME-short admission
+  headline router. The most reliable new rows are VideoMME-short admission
   `kr=0.3/0.7`, both `20/20` parsed-choice clean at `1.133x/1.121x`; MVBench
   hosted-dev remains timing-only evidence, while TOMATO composition remains
-  timing/boundary evidence with artifact-sourced choice-churn caveats.
+  timing/boundary evidence with artifact-sourced
+  aggregate-positive/choice-churn caveats.
 
 - **First-pass measured gains (Gemma / C-VISION).** This is the main
   reviewer-facing result today: measured end-to-end speedups on VideoMME,
@@ -362,27 +365,21 @@ queue once infra is in place.
 
 ## What is safe to say in a one-paragraph abstract TODAY
 
-> We study training-free anti-recomputation for video VLMs across three
-> reuse regimes: first-pass vision pruning on fresh videos, after-ingest
-> follow-up questions on the same video, and routing under a fixed dense
-> backend. On Gemma 4-E4B-4bit, mid-layer vision-tower pruning yields
-> measured first-pass gains from **1.113×** to **1.407×** on clean or
-> advisory holdout cells, and bounded measured sparse-vision runs now add
-> real skipped vision work, led by a clean **1.316×** 32f-short operating
-> point. On Qwen2.5-VL-7B-4bit, persistent-KV reuse cuts same-video follow-up
-> latency to **815 ms** median at **47.2×** speedup at 8 frames and **807 ms**
-> at **91.1×** speedup at 16 frames; the repair lane is now broader, with
-> adaptive selective re-prefill showing **0/93** observed paired drift at
-> **14.90×–35.92×** same-class follow-up speedup and a **15.28×–35.97×**
-> cold-all-query ratio.
-> Routing holdouts on TOMATO and MVBench then show the mechanism
-> boundary: a bounded-staleness planner preserves the quality-compute
-> frontier, while local novelty-ranked diagnostics suggest that
-> fresh-compute placement is not captured by novelty magnitude alone.
-> Candidate C-STREAM is now a checked mixed bundle rather than a headline:
-> default cache reuse is unsafe, prefix snapshots give small-N positive rows,
-> and fixed-evidence stream baselines favor low-FPS dense over the current
-> event-window proxy.
+> We study training-free anti-recomputation for video VLMs by asking which
+> runtime stage actually gets shorter. Across 19 Gemma 4-E4B-4bit
+> cost-accounting cells, a prefill+vision stage model predicts end-to-end
+> speedup with `R^2=0.97097`, `1.72%` mean absolute relative error, and
+> `7.85%` max absolute relative error, turning token pruning from a token-count
+> claim into a stage-accounting claim. RLT's bounded first-pass role is as a
+> cheap C-VISION scorer:
+> it reaches the speed class of expensive max-min diversity scoring while
+> the measured RLT scorer costs tens of milliseconds per item rather than the
+> max-min scorer's seconds. Composition is a speed/quality frontier rather than a lossless
+> multiplier, and query-aware routing remains mechanism/boundary evidence.
+> Separately, persistent-KV reuse remains the large after-ingest regime:
+> Qwen2.5-VL-7B-4bit same-video follow-up latency reaches **815 ms** median at
+> **47.2×** speedup at 8 frames and **807 ms** at **91.1×** speedup at 16
+> frames, with paired-drift gates reported beside every multiplier.
 
 ## What is NOT safe to say today
 

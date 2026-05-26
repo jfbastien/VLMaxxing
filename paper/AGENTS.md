@@ -37,9 +37,10 @@ and update the stale file in the same change.
 As of 2026-05-25, the VLMaxxing + RLT manuscript edit should foreground
 stage-cost accounting plus RLT-as-cheap-C-VISION. The active edit plan is
 [`vlmaxxing-rlt-stage-cost-edit-plan.md`](vlmaxxing-rlt-stage-cost-edit-plan.md).
-Integrate the n=19 Gemma/RLT prefill+vision cost-accounting audit as C-CEILING
-support; do not turn it into a query-aware-routing headline or a fourth
-regime. Query-aware routing, active repair, and text-rule routing stay boundary
+Integrate the n=19 Gemma 4-E4B-4bit prefill+vision cost-accounting audit
+from the RLT/VLMaxxing branch as C-CEILING support; do not turn it into a
+query-aware-routing headline or a fourth regime. Query-aware routing, active
+repair, and text-rule routing stay boundary
 or future-work evidence until a separate branch earns stronger held-out claims.
 
 Superseded context from 2026-04-22: the manuscript was centered on a single

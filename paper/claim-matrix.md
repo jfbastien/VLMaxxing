@@ -10,8 +10,8 @@ research program.
 ## Paper thesis
 
 > Token count is not a speedup claim. Training-free anti-recomputation improves
-> video-VLM efficiency only when it shortens a runtime stage that owns enough of
-> the end-to-end bill, and only when paired answer checks preserve the task.
+> video-VLM efficiency only when it shortens a stage with enough runtime share
+> to matter, and only when paired answer checks preserve the task.
 
 For the VLMaxxing + RLT update, the manuscript should foreground stage-cost
 accounting plus RLT-as-cheap-C-VISION. C-PERSIST remains the large after-ingest
@@ -56,6 +56,19 @@ operating point, the broader Gemma sweep has matched parse-failure caveats, and
 Qwen exposes a keep-rate/fidelity boundary rather than a broad success. The
 new Qwen 8f keep-rate sweep is timing-validation evidence, not a Qwen fidelity
 win.
+
+**2026-05-25 stage-cost/RLT update for Claims 13/15:** The VLMaxxing + RLT
+manuscript edit extends C-CEILING from the earlier LLM-side arithmetic ceiling
+to a prefill+vision stage-cost model on Gemma evidence from the RLT/VLMaxxing
+branch. The n=19 cost-accounting audit is now the front-door C-CEILING
+evidence: `R^2=0.97097`, `1.72%` mean absolute relative error, and `7.85%`
+max absolute relative error between predicted and observed E2E speedup pairs.
+RLT-as-C-VISION is the bounded direct RLT result: it reaches the speed class
+of max-min diversity while the measured RLT scorer costs tens of milliseconds
+per item rather than the max-min scorer's seconds.
+Composition stays under Claim 15 as boundary/frontier evidence, not a fourth
+main contribution; aggressive composition is fidelity-gate failing, and rescue
+composition is aggregate-safer but still bucket-caveated.
 
 ## Tested Deployment Envelope (claim 14, practitioner summary)
 
@@ -185,29 +198,39 @@ section conforms to it. The round-17 "claim 11 must be earned as the
 big-number gate" framing has been **retired** — the paper spine is now
 the three first-class contributions (claims 13, 14, 15), with claim 11
 providing composition-appendix evidence conditional on EXP10 n=60.
+The bullets below follow manuscript order for traceability through the planned
+paper edit: C-CEILING, C-VISION/RLT, then C-PERSIST.
 
 **Required for the current anti-recomputation paper to make sense at all:**
 
-- **Claim 13 earned (C-CEILING).** Already satisfied: 7 independent
-  LLM-side/token-pruning regime dimensions cross-validate the arithmetic
-  ceiling at median 2.1% / worst 5.2% error. Standalone analytical
-  contribution independent of any specific SOTA arm. Do not conflate this
-  historical validation set with the manuscript's expanded 17-regime
-  C-VISION scatter-back figure, which includes advisory and boundary cells.
+- **Claim 13 earned (C-CEILING / stage-cost accounting).** Already satisfied:
+  the historical 7 independent LLM-side/token-pruning regime dimensions
+  cross-validate the arithmetic ceiling at median 2.1% / worst 5.2% error, and
+  the 2026-05-25 Gemma stage-cost extension fits 19 prefill+vision
+  cost-accounting cells at `R^2=0.97097`, `1.72%` mean absolute relative
+  error, and `7.85%` max absolute relative error. This is the standalone
+  analytical contribution independent of any specific SOTA arm. Do not
+  conflate the historical validation set, the n=19 Gemma stage-cost fit, or
+  the manuscript's expanded C-VISION scatter-back figure; each has its own
+  denominator and evidence class.
+- **Claim 15 earned (C-VISION / RLT-as-cheap-C-VISION).** Already satisfied on
+  dev n=30 across three benchmarks, with the **holdout trifecta closed
+  2026-04-21** and differentiated advisory strength: VideoMME 8f CLEAN
+  (EXP17/18 session 3), MVBench 8f CLOSED-ADVISORY on thermal-calibration
+  footnote (EXP19/20 session 4), TOMATO 8f EARNED-ADVISORY on favorable-drift
+  footnote (EXP23/24 session 5). The 2026-05-25 RLT edit adds the stronger
+  paper-facing scorer story: RLT reaches the max-min speed class while replacing
+  max-min's seconds-per-item scorer with a measured tens-of-milliseconds RLT
+  scorer on Gemma rows.
+  Scatter-back / stage-cost accounting is predictive across dev, holdout, and
+  RLT cost-accounting cells; composition remains a boundary/frontier table, not
+  a quality-clean multiplier.
 - **Claim 14 earned (C-PERSIST).** Already satisfied: 6-point speedup
   curve (47×→150×) + 4-regime temperature matrix + bracketed cross-arch
   basin-onset relation. The deployment-facing tested envelope is
   reviewer-ready: 7B is clean at 16f / ~6.5k prefill and 8f remains within the
   preregistered criterion; 3B is bounded/tolerated through 36f / ~14.5k
   prefill on a Δacc=−0.19 plateau, not clean.
-- **Claim 15 earned (C-VISION).** Already satisfied on dev n=30 across
-  three benchmarks, with the **holdout trifecta closed 2026-04-21**
-  and differentiated advisory strength: VideoMME 8f CLEAN (EXP17/18
-  session 3), MVBench 8f CLOSED-ADVISORY on thermal-calibration
-  footnote (EXP19/20 session 4), TOMATO 8f EARNED-ADVISORY on
-  favorable-drift footnote (EXP23/24 session 5). Scatter-back ceiling
-  `E2E ≤ 1/(1 − V_share × V_red)` is predictive across dev and holdout
-  cells.
 - **Claim 8 earned (VideoMME lane).** Dev at 8f / 16f / 32f on Qwen
   7B-4bit with per-bucket scaling surface mapped, mechanism
   co-saturation evidence (phase 1.57), **plus holdout 16f** (agg

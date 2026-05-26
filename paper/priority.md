@@ -22,10 +22,10 @@ were removed from the public artifact tree.
 Narrative update 2026-05-25: the VLMaxxing + RLT edit should now foreground
 stage-cost accounting plus RLT-as-cheap-C-VISION, not query-aware routing. The
 active paper-editing plan is `paper/vlmaxxing-rlt-stage-cost-edit-plan.md`.
-The first manuscript slice should integrate the n=19 Gemma/RLT prefill+vision
-cost-accounting audit as C-CEILING support, using a compact generated table and
-source-traceability row while keeping query-aware routing as boundary/future
-work.
+The first manuscript slice should integrate the n=19 Gemma 4-E4B-4bit
+prefill+vision cost-accounting audit from the RLT/VLMaxxing branch as C-CEILING
+support, using a compact generated table and source-traceability row while
+keeping query-aware routing as boundary/future work.
 
 Narrative update 2026-04-26B: the manuscript should present the central
 scientific object as the quality-compute frontier of fresh visual evidence over

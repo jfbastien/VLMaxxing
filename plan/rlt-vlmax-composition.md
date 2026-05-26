@@ -24,6 +24,15 @@
 - [x] Land and harden a paper-editing plan that pivots the manuscript toward
   stage-cost accounting plus RLT-as-cheap-C-VISION, adds the missing RLT
   reference, and keeps query-aware routing as boundary/future-work evidence.
+- [x] Validate Claude's second-pass review of the paper-editing plan: keep the
+  singular-input `source_path` / emitted `source_paths` generator contract,
+  correct the `2512.07580` random-baseline title and record its arXiv-comment
+  acceptance status precisely, remove the unsupported QuoTA latency
+  external-validation ratio from the plan, qualify CoPE-VideoLM's TOMATO number,
+  and align stale claim/publishability text with the stage-cost/RLT spine.
+  - Scope: this validation commit hardens the plan and authority docs only.
+    The generator-first manuscript integration remains the next substantive
+    manuscript task and is intentionally still unchecked below.
 - [ ] Execute the manuscript integration from
   `paper/vlmaxxing-rlt-stage-cost-edit-plan.md` in two reviewable slices:
   first add the `sync_sources.py` generator, generated snapshot/table, and any
@@ -34,11 +43,11 @@
   table until its rows have a machine-readable generated replacement or are
   deliberately moved to an appendix/source-traceability table. The new RLT
   table must use the MVBench-hosted `kr=0.7` timing-only row as the
-  selective MVBench row, frame TOMATO composition as
-  "aggregate positive with choice-churn caveat" only as a required table note
-  sourced to the M3 cost-accounting row's `accuracy_delta_composed_minus_dense`
-  plus the row source artifact's `summary.choice_agreement`, add source
-  traceability, and keep the main manuscript length flat or shorter.
+  selective MVBench row, frame TOMATO composition as an
+  "aggregate-positive/choice-churn caveat" only as a required table note sourced
+  to the M3 cost-accounting row's `accuracy_delta_composed_minus_dense` plus the
+  row source artifact's `summary.choice_agreement`, add source traceability, and
+  keep the main manuscript length flat or shorter.
 - [ ] Implement a small, audited RLT mask module in `src/codec_through/`
   without installing, importing, executing, or vendoring RLT's training stack
   or third-party dependencies.

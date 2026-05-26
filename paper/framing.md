@@ -26,7 +26,8 @@ It is NOT the place for raw experimental detail. Evidence lives in:
 - [research/falsified-hypotheses.md](../research/falsified-hypotheses.md) —
   what the evidence has ruled out
 
-Last material update: 2026-05-25 (Gemma/RLT cost accounting now validated at
+Last material update: 2026-05-25 (Gemma stage-cost accounting from the
+RLT/VLMaxxing branch now validated at
 `n=19`; RLT/VLMaxxing should be framed through measured stage shares,
 selector-cost accounting, and paired-fidelity gates rather than token count,
 composition multiplication, or query-aware routing).
@@ -34,10 +35,10 @@ composition multiplication, or query-aware routing).
 ## Current Manuscript Position (stage-cost/RLT update, 2026-05-25)
 
 The manuscript should be centered on one anti-recomputation story: a video VLM
-only speeds up when a method shortens a runtime stage that owns enough of the
-dense request, and the speed is useful only if paired answers survive the right
-fidelity gate. That story has two main local regimes, one supporting frontier,
-one boundary lane, and one candidate scale-out lane:
+only speeds up when a method shortens a runtime stage with enough runtime share
+in the dense request, and the speed is useful only if paired answers survive the
+right fidelity gate. That story has two main local regimes, one supporting
+frontier, one boundary lane, and one candidate scale-out lane:
 
 - **First-pass stage-cost accounting** (C-CEILING + C-VISION/RLT) for measured
   fresh-video gains from vision and prefill-stage reductions.
@@ -50,8 +51,9 @@ one boundary lane, and one candidate scale-out lane:
   once artifact-compatible protocols and matched baselines are available.
 
 Those regimes matter for different reasons. C-CEILING is the explanation:
-measure the dense runtime bill, shorten the stages the method actually touches,
-charge scorer/planner cost, and predict the E2E effect. C-VISION/RLT is the
+measure the dense runtime stage breakdown, shorten the stages the method
+actually touches, charge scorer/planner cost, and predict the E2E effect.
+C-VISION/RLT is the
 fresh-video mechanism: RLT is a cheap visual-redundancy scorer that reaches the
 speed class of expensive diversity scoring on the measured Gemma rows.
 C-PERSIST is where the largest local multipliers live, because once a video has
@@ -77,22 +79,25 @@ codec-metadata by design, and any ``codec-guided'' wording should stay attached
 to the protocol it actually describes.
 
 The paper-grade story is stage-cost-accounted, training-free
-anti-recomputation: measure the runtime bill, shorten the stage that owns it,
-charge the selector, and verify paired answers. RLT strengthens the fresh-video
-side as a cheap C-VISION scorer, while C-PERSIST remains the separate
-after-ingest follow-up regime. Query-aware routing stays mechanism-boundary
-evidence until a future branch earns held-out wins.
+anti-recomputation: measure the runtime stage breakdown, shorten the stage that
+has enough runtime share to matter, charge the selector, and verify paired
+answers. RLT strengthens the fresh-video side as a cheap C-VISION scorer, while
+C-PERSIST remains the separate after-ingest follow-up regime. Query-aware
+routing stays mechanism-boundary evidence until a future branch earns held-out
+wins.
 For the per-claim breakdown, see
 [`paper/claim-matrix.md`](claim-matrix.md) and
 [docs/literature-map-2026-04-16.md § Current evidence level (2026-04-16)](../docs/literature-map-2026-04-16.md).
 
 ## Three Major Contributions (stage-cost/RLT update, 2026-05-25)
 
-The paper spine remains these three first-class contributions. Manuscript order
-should be C-CEILING / stage-cost accounting, C-VISION /
-RLT-as-cheap-C-VISION, then C-PERSIST; the numbered list below keeps historical
-claim IDs rather than final manuscript order. Composition is a supporting
+The paper spine remains these three first-class contributions in manuscript
+order: C-CEILING / stage-cost accounting, C-VISION /
+RLT-as-cheap-C-VISION, then C-PERSIST. Composition is a supporting
 speed/quality frontier under C-CEILING and C-VISION, not a fourth contribution.
+The historical claim IDs are not manuscript order; the paper should intentionally
+read claim 13 -> claim 15 -> claim 14 because the explanation must precede the
+first-pass mechanism, and both precede the after-ingest reuse regime.
 These contributions stay ordered ahead of the Qwen routing lane, which is
 reframed as the mechanism-validation backbone + null ledger
 (claims 6 and 8 release-surface earned; claims 1/2/9 diagnostic/local-only
@@ -100,7 +105,7 @@ until raw artifacts are materialized; halo-veto 1.37B retired + 1.51R VideoMME
 duration-conditional partial reproduction + 1.55D frontier-partial):
 
 1. **C-CEILING / stage-cost accounting (claim 13 plus the 2026-05-20
-   RLT/Gemma extension): arithmetic ceiling model for pruning wall-clock
+   Gemma stage-cost extension): arithmetic ceiling model for pruning wall-clock
    speedup.** Predicts E2E speedup within ≤5.2% across 7
    LLM-side/token-pruning regime dimensions on Gemma 4-E4B-4bit
    (8/32 frame counts × duration bucket × LLM-side keep-rate × anchor arm).
@@ -109,50 +114,23 @@ duration-conditional partial reproduction + 1.55D frontier-partial):
    further extended by 1.51V to a vision-axis analog
    `1/(1 − V_share × V_red)`. The current manuscript's 17-regime
    C-VISION scatter-back figure is the rendered accounting view and includes
-   advisory/boundary cells. The RLT/Gemma cost-accounting follow-up extends
+   advisory/boundary cells. The Gemma stage-cost follow-up extends
    this from a vision/generation share law to a prefill+vision stage model over
-   19 Gemma cells (`R^2=0.97097`, `1.72%` MARE), which is the front-door result
+   19 Gemma cells (`R^2=0.97097`, `1.72%` MARE, `7.85%` max absolute relative
+   error), which is the front-door result
    for the VLMaxxing + RLT manuscript update.
 
-2. **C-PERSIST (claim 14): Persistent follow-up reuse with paired-drift
-   tested deployment envelope.** All persistent-KV claims in this paper
-   are **after-ingest / follow-up-query** numbers: the user pays the
-   full first-query prefill once, subsequent questions on the *same
-   video* reuse the KV and return in sub-second time. These are not
-   "any-fresh-video" latencies. Qwen2.5-VL-7B-Instruct-4bit stays inside the
-   tested envelope through ≤16f / ≤6.5k prefill tokens, with a clean 16f
-   point (Δacc=0) and a slightly worse but still tolerated 8f point
-   (Δacc=−0.048); 3B at ≤36f / ≤14.5k prefill sits on a tolerated
-   Δacc=−0.19 plateau (not clean, bounded). Basin onset is bracketed rather
-   than a clean parameter-count ratio; basin geometry (non-letter attractor emergence) is
-   cross-architectural; sampler-side intervention is
-   architecture-conditional (insufficient at 7B basin at 20f AND 40f;
-   partial-only at 3B basin at 40f — disperses to pre-basin plateau,
-   not to baseline). The repair story is now broad on Qwen: fixed K=1
-   selective re-prefill gives 0/93 observed paired drift at 9.48×--20.37×
-   same-class follow-up speedup, while adaptive repaired-cache inheritance gives
-   0/93 observed paired drift at 14.90×--35.92× same-class follow-up speedup
-   (15.28×--35.97× cold-all-query ratio). Stage timing explains the adaptive gain:
-   the third follow-up reuses the repaired cache and avoids the fixed-K
-   last-frame re-prefill. The dense-answer-anchored prompt-variation stress
-   now bounds the aggressive policies: fixed K=1 has 0/133 observed follow-up
-   drift, while adaptive repair and refresh-10 show 6/133 paired drift at
-   roughly 0.7 s follow-up latency.
-   Tested deployment-regime table in [`paper/claim-matrix.md`](claim-matrix.md)
-   provides paper-grade practitioner guidance; paired-fidelity boundary result
-   in its own right.
-
-3. **C-VISION / RLT-as-cheap-C-VISION (claim 15): Vision-tower pruning transfers at `L=2`
-   `kr_V=0.50` across Gemma 4-E4B-4bit and Qwen2.5-VL-7B-Instruct-4bit, with
-   first-pass gains governed by the scatter-back ceiling
-   `1/(1 − V_share × V_red)`.**
+2. **C-VISION / RLT-as-cheap-C-VISION (claim 15): Vision-tower pruning
+   transfers at `L=2` `kr_V=0.50` across Gemma 4-E4B-4bit and
+   Qwen2.5-VL-7B-Instruct-4bit, with first-pass gains governed by the
+   scatter-back ceiling `1/(1 − V_share × V_red)`.**
    Dev n=30 headlines are TOMATO **1.24×**, MVBench **1.21×**, and
    VideoMME **1.08×** (8f) / **1.12×** (16f). Holdout status is now
    differentiated rather than missing: VideoMME 8f is **clean** at
    **1.113×** with zero aggregate accuracy delta; MVBench 8f is
    **advisory** at **1.407×** with a scheduler-scale decode note; and
-  TOMATO 8f is **earned-advisory** at **1.194×** from checked TOMATO holdout
-  artifacts. The matched Qwen VideoMME 8f cross-arch point lands
+   TOMATO 8f is **earned-advisory** at **1.194×** from checked TOMATO holdout
+   artifacts. The matched Qwen VideoMME 8f cross-arch point lands
    at **1.044× observed vs 1.043× predicted**, with smaller absolute lift
    because Qwen's dense vision share is only ~10\%. The mechanism is
    stable; the exact magnitude remains regime-dependent because `V_share`
@@ -189,11 +167,12 @@ duration-conditional partial reproduction + 1.55D frontier-partial):
    **Cost-accounting closeout update (2026-05-20):** the follow-on Gemma
    admission runs validate the same denominator discipline from a different
    angle. Removing image placeholders before LM prefill gives measured E2E
-   speedups when prefill owns enough of the dense bill, but the paper claim is
+   speedups when prefill has enough runtime share, but the paper claim is
    the accounting, not a new query-aware router. Across `19` Gemma
-   cost-model cells, the prefill+vision stage model reaches `R^2=0.97097` and
-   `1.72%` mean absolute relative error over observed `0.984x-1.779x` E2E.
-   The cleanest follow-up rows are VideoMME-short admission at `kr=0.3` and
+   cost-model cells, the prefill+vision stage model reaches `R^2=0.97097`,
+   `1.72%` mean absolute relative error, and `7.85%` max absolute relative
+   error over observed `0.984x-1.779x` E2E.
+   The most reliable follow-up rows are VideoMME-short admission at `kr=0.3` and
    `kr=0.7`: both keep `20/20` parsed choices unchanged at `1.133x` and
    `1.121x` E2E. They are not raw-output identity rows. MVBench hosted-dev
    and TOMATO validate timing while showing answer churn and/or bucket
@@ -212,17 +191,44 @@ duration-conditional partial reproduction + 1.55D frontier-partial):
 
    > Video VLM speedup is not predicted by how many tokens you drop; it is
    > predicted by which runtime stage you shorten, how much of the original
-   > request that stage owned, and whether paired answers still pass the right
+   > request that stage represented, and whether paired answers still pass the right
    > fidelity gate.
+
+3. **C-PERSIST (claim 14): Persistent follow-up reuse with paired-drift
+   tested deployment envelope.** All persistent-KV claims in this paper
+   are **after-ingest / follow-up-query** numbers: the user pays the
+   full first-query prefill once, subsequent questions on the *same
+   video* reuse the KV and return in sub-second time. These are not
+   "any-fresh-video" latencies. Qwen2.5-VL-7B-Instruct-4bit stays inside the
+   tested envelope through ≤16f / ≤6.5k prefill tokens, with a clean 16f
+   point (Δacc=0) and a slightly worse but still tolerated 8f point
+   (Δacc=−0.048); 3B at ≤36f / ≤14.5k prefill sits on a tolerated
+   Δacc=−0.19 plateau (not clean, bounded). Basin onset is bracketed rather
+   than a clean parameter-count ratio; basin geometry (non-letter attractor
+   emergence) is cross-architectural; sampler-side intervention is
+   architecture-conditional (insufficient at 7B basin at 20f AND 40f;
+   partial-only at 3B basin at 40f — disperses to pre-basin plateau,
+   not to baseline). The repair story is now broad on Qwen: fixed K=1
+   selective re-prefill gives 0/93 observed paired drift at 9.48×--20.37×
+   same-class follow-up speedup, while adaptive repaired-cache inheritance gives
+   0/93 observed paired drift at 14.90×--35.92× same-class follow-up speedup
+   (15.28×--35.97× cold-all-query ratio). Stage timing explains the adaptive gain:
+   the third follow-up reuses the repaired cache and avoids the fixed-K
+   last-frame re-prefill. The dense-answer-anchored prompt-variation stress
+   now bounds the aggressive policies: fixed K=1 has 0/133 observed follow-up
+   drift, while adaptive repair and refresh-10 show 6/133 paired drift at
+   roughly 0.7 s follow-up latency.
+   Tested deployment-regime table in [`paper/claim-matrix.md`](claim-matrix.md)
+   provides paper-grade practitioner guidance; paired-fidelity boundary result
+   in its own right.
 
 These three claims align on a common analytical frame: **share ×
 reduction → `1/(1 − share × reduction)` ceiling**, with
-architecture-specific and regime-specific bounds characterized. The
-paper presents these as three independent instantiations of a unified
-efficiency-ceiling theory: C-CEILING (LLM-generate axis), C-VISION
-(vision-tower axis), and the LLM-side composition analog. C-PERSIST
-adds the orthogonal fidelity-floor axis (where the ceiling falls apart
-entirely under cache reuse).
+architecture-specific and regime-specific bounds characterized. The paper
+presents C-CEILING as the explanatory model, C-VISION/RLT as the fresh-video
+operator governed by that model, and C-PERSIST as the separate after-ingest
+reuse regime where paired-fidelity floors dominate. Composition is supporting
+frontier evidence under C-CEILING/C-VISION, not one of the three contributions.
 
 **Venue targeting implication:** the combination of C-PERSIST (safety
 boundary, cross-architectural) + C-VISION (three-benchmark Gemma
@@ -654,7 +660,7 @@ work.
 
 ## Historical Likely Contribution Stack (superseded)
 
-This near-term paper path predates the 2026-05-20 Gemma/RLT cost-accounting
+This near-term paper path predates the 2026-05-20 Gemma stage-cost
 closeout. It should not be used as current manuscript routing guidance.
 
 Near-term paper path:
