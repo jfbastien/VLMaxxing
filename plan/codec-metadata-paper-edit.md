@@ -26,11 +26,13 @@ This makes the paper stronger without making it feel like a patch note.
 ## Peer-review findings (added 2026-05-25, extended 2026-05-26)
 
 A peer-review pass verified every number in this plan against the source
-JSON and surfaced five science-altering corrections that the plan must
+JSON and surfaced six science-altering corrections that the plan must
 enforce. They are folded into the checklist items below; this block records
 the reasoning so it is not lost. Findings 1--4 are from the first pass; finding
-5 (the calibration provenance) is from a second pass and is the most
-consequential.
+5 (refresh calibration provenance) is from a second pass and is the most
+consequential; finding 6 (the missing random-keep control for sparse pruning)
+is from a third pass and is the same weak-baseline pattern as the refresh
+result.
 
 1. **The pooled refresh result does not beat the trivial pixel baseline.**
    The same probe that produced the codec rows also recorded a pixel-domain
@@ -109,6 +111,24 @@ consequential.
    metadata does not beat a trivial pixel-difference proxy for
    frozen-VLM refresh planning; the durable wins are the sidecar systems result
    and the negative-result bound itself, not a codec refresh advantage.
+
+6. **The sparse-pruning result has the same weak-baseline asymmetry: no
+   random-keep control at the promoted kr=0.7 cell, and codec does not beat
+   random where the control exists.** The promoted operating point
+   `phase1_51V_ov6_n57_kr070_l2` contains only `magnitude_norm` and the three
+   `codec_*` arms -- there is no `uniform_random` arm at kr=0.7. So the headline
+   "codec_novel_coded 35/57 vs magnitude_norm 31/57 (+4, p=0.2188)" compares
+   codec only against magnitude, the weak baseline. The project's own
+   `ov6_track_b_statistical_audit.json` shows at kr=0.5 that `uniform_random`
+   beats `magnitude_norm` (8 vs 4 discordant) AND that
+   `codec_novel_coded_vs_uniform_random` favors *random* (6 codec fixes vs 9
+   random fixes, p=0.6072). The standard pruning control (uniform/random keep,
+   as in FastV/SparseVLM) is therefore missing at kr=0.7 and shows no codec
+   advantage at kr=0.5. The paper must either add a kr=0.7 `uniform_random` arm
+   or state explicitly that codec-over-random is untested at the promoted cell
+   and that the codec-over-magnitude gap may reflect a poor magnitude baseline
+   rather than good codec ranking. The kr=0.5 "magnitude is a poor default"
+   caution cuts against codec too: codec also fails to beat random there.
 
 Provenance facts confirmed in this pass: all pooled summaries carry
 `environment.git_dirty: true`; the OneVision-Encoder citation is real
@@ -656,6 +676,17 @@ canonical dense baseline; do not call it benign without item-level evidence.
   - Add one sentence that the point estimate is favorable but statistically
     bounded: five paired fixes and one break are not enough for a standard
     significance claim.
+  - Mandatory random-keep control disclosure: the kr=0.7 cell
+    (`phase1_51V_ov6_n57_kr070_l2`) has NO `uniform_random` arm, so codec is
+    compared only against `magnitude_norm` at the promoted operating point.
+    State this explicitly. Because the project's kr=0.5 audit shows random beats
+    magnitude (8 vs 4) and codec does not beat random (`codec_novel_coded`
+    6 fixes vs 9, p=0.6072), the +4 codec-over-magnitude gap may reflect a weak
+    magnitude baseline rather than good codec ranking. Either add a kr=0.7
+    `uniform_random` arm (preferred; the standard pruning control), or footnote
+    that codec-over-random is untested at kr=0.7. Do not present the
+    codec-over-magnitude gap as evidence codec ranking is good without this
+    caveat.
   - Preserve both configured target keep-rate (`vision_tower_keep_rate`) and
     actual mean effective keep-rate (`mean_effective_keep_rate`) in the
     generated snapshot. Apply the same target-versus-effective audit to the
@@ -663,12 +694,15 @@ canonical dense baseline; do not call it benign without item-level evidence.
   - Add a short caution paragraph for Qwen keep-rate 0.5, layer 2: four
     uniform-random seeds beat magnitude_norm, so hidden-state magnitude is a
     poor default at that operating point, not a generally reliable video-token
-    importance signal.
+    importance signal. Add that the same random control is not kind to codec:
+    at kr=0.5 `codec_novel_coded` does not beat `uniform_random` (6 vs 9,
+    p=0.6072), so the caution bounds codec ranking too, not just magnitude.
   - Keep Gemma N=10 as an implementation smoke result unless M5 N=57 lands
     before the paper edit is finalized.
   - Justification: this replaces a stale positive baseline story with the real
-    current result: codec ranking is promising but underpowered, and magnitude
-    needs operating-point scrutiny.
+    current result: codec ranking is promising but underpowered, lacks a
+    random-keep control at the promoted kr=0.7 cell, and does not beat random
+    where that control exists (kr=0.5); magnitude needs operating-point scrutiny.
 
 - [ ] Add a sidecar systems result without inflating the model-speed claim.
   - Candidate location: end of `paper/arxiv/sections/07_results_cross_architecture.tex`
@@ -744,7 +778,10 @@ canonical dense baseline; do not call it benign without item-level evidence.
     frontier is uncharacterized (no N=57 pooled threshold sweep), so no
     efficiency-frontier claim is made; OneVision-style fused motion+residual
     scoring did not help (fused underperformed single sources); sparse ranking
-    has favorable point estimates but inconclusive paired tests; Gemma accuracy
+    has a favorable point estimate over magnitude but inconclusive paired tests,
+    no random-keep control at the promoted kr=0.7 cell, and no codec-over-random
+    advantage at kr=0.5 (so the codec-over-magnitude gap may reflect a weak
+    magnitude baseline); Gemma accuracy
     evidence is
     smoke-level until M5; TOMATO dense baseline is too weak to promote; live
     PyAV extraction is not a deployable per-query path; session reuse
@@ -933,6 +970,9 @@ This is not a manuscript-edit prerequisite.
 - Do not call codec, pixel, or magnitude scores "oracles" unless the text is
   explicitly about a ground-truth upper bound.
 - Do not claim statistically significant codec sparse-pruning superiority.
+- Do not present codec-over-magnitude sparse pruning as evidence codec ranking
+  is good without disclosing that the kr=0.7 cell has no random-keep control and
+  that codec does not beat uniform_random at kr=0.5.
 - Do not claim broad end-to-end VLM speedup from sidecars.
 - Do not promote TOMATO motion gains from the current smoke.
 - Do not present the pooled refresh result as a codec-over-pixel accuracy win;
@@ -987,7 +1027,9 @@ This is not a manuscript-edit prerequisite.
   ties pixel exactly (codec-pixel agreement 1.0, +0.0, n=10); the N=57 pooled
   thresholds are fit in-sample, so this is a bound, not a codec win, and carries
   a dirty-tree caveat until rerun clean; (2) Qwen sparse-pruning favorable point
-  estimate 35/57 versus 31/57 but McNemar p=0.2188; (3) sidecar extraction
+  estimate 35/57 versus 31/57 (magnitude) but McNemar p=0.2188, with no
+  random-keep control at the promoted kr=0.7 cell and no codec-over-random
+  advantage at kr=0.5 (codec 6 vs random 9, p=0.61); (3) sidecar extraction
   equivalence with zero drift and seconds-to-milliseconds extraction-path
   speedup (n=3 per-source smoke gates, ~3,800--17,900x on the extraction path
   only). The durable reader payoff is the sidecar systems result plus the clean negative
