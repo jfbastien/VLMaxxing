@@ -1,6 +1,6 @@
 # Current Plan
 
-Last updated: 2026-05-13.
+Last updated: 2026-05-27.
 
 This file is the active roadmap only. Historical phase detail lives in dated
 experiment notes and [research/experiments/registry.md](research/experiments/registry.md).
@@ -23,19 +23,24 @@ notes.
   dense remains a serious baseline.
 - 26B follow-up reuse remains diagnostic until a topology-safe path preserves
   correctness without surrendering the speed path.
-- **OneVision x VLMaxxing Track A** has a bounded positive codec-source signal
-  on VideoMME short / Qwen2.5-VL-7B-4bit / 8 frames. Treat it as semantic
-  substitution evidence only: N=57 point estimates favor codec over pixel, but
-  per-source McNemar tests are inconclusive and frame=16 collapses codec to the
-  pixel answer set.
-- **OneVision x VLMaxxing Track B** has bounded Qwen evidence, not a broad
-  speedup claim. At VideoMME short / Qwen2.5-VL-7B-4bit / 8 frames,
+- **OneVision x VLMaxxing refresh planning** is currently a parity/boundary
+  result, not a codec-over-pixel win. The pooled N=57 Qwen/VideoMME-short rows
+  are dirty-tree/advisory, in-sample, and matched to the pixel proxy's reuse
+  budget; simple codec sources are only +2/57 over pixel there, and the
+  disjoint per-item holdout ties pixel exactly. Positive refresh language now
+  requires a clean frozen-threshold transfer run against the pixel proxy.
+- **OneVision x VLMaxxing sparse vision pruning** is bounded Qwen evidence, not
+  a broad speedup claim. At VideoMME short / Qwen2.5-VL-7B-4bit / 8 frames,
   `codec_novel_coded` at kr=0.7/layer=2 is the best tested sparse arm by point
-  estimate over `magnitude_norm`, but paired tests remain inconclusive and
-  current PyAV metadata extraction erases model-side wall-clock savings. The
-  follow-up sweep adds two boundaries: Qwen random beats magnitude on 4/4 seeds
-  at kr=0.5/layer=2, while TOMATO motion stays near chance and is not rescued by
-  codec scoring.
+  estimate over `magnitude_norm`, but paired tests remain inconclusive and that
+  cell lacks the matched random-keep control. The follow-up sweep adds two
+  boundaries: Qwen random beats magnitude on 4/4 seeds at kr=0.5/layer=2 and
+  codec does not beat random where that control exists, while TOMATO motion
+  stays near chance and is not rescued by codec scoring.
+- **OneVision x VLMaxxing sidecars** are the clean systems result: live PyAV
+  codec-score extraction is replaced by precomputed score sidecars with zero
+  sparse-choice drift in the landed Qwen/Gemma gates. This is an
+  extraction-path speedup, not a 10^4x model-pipeline speedup.
 
 ## Active Gates Before Paper/OSS Freeze
 
@@ -46,12 +51,14 @@ notes.
      markdown, personal handoff prompts, or screenshots
    - natural-dialogue C-PERSIST and one adjacent-method comparison are the
      highest-value main-track science gaps after the current integration pass
-   - OneVision follow-up: Qwen OV-6 has landed as bounded point-estimate Track B
-     evidence, Gemma N=10 smoke clears the cross-family wiring gate, TOMATO is a
-     boundary result, and pooled H.264 calibration preserves Track A
-     codec-to-dense agreement. Use M5 only for a preregistered broader-N or
-     frame-budget confirmation. Do not claim net codec wall-clock speedup until
-     metadata extraction is precomputed or decoder-integrated.
+   - OneVision follow-up: sidecar gates have landed; Gemma N=10 smoke clears
+     the cross-family wiring gate; TOMATO is a low-headroom boundary result;
+     and pooled H.264 refresh evidence is advisory until a clean frozen-threshold
+     transfer run. Use M5 only for preregistered confirmation cells. The Qwen
+     kr=0.7 parity/timing launcher must either point at a committed four-seed
+     random-control preregistration or explicitly close that clean-control
+     window with a committed closure note. Do not claim net codec model-pipeline
+     speedup; only claim the measured extraction-path sidecar speedup.
 
 2. **Freeze artifact provenance.**
    - every paper table/figure cell needs a source artifact path or a visible

@@ -122,13 +122,21 @@ result.
    `ov6_track_b_statistical_audit.json` shows at kr=0.5 that `uniform_random`
    beats `magnitude_norm` (8 vs 4 discordant) AND that
    `codec_novel_coded_vs_uniform_random` favors *random* (6 codec fixes vs 9
-   random fixes, p=0.6072). The standard pruning control (uniform/random keep,
-   as in FastV/SparseVLM) is therefore missing at kr=0.7 and shows no codec
-   advantage at kr=0.5. The paper must either add a kr=0.7 `uniform_random` arm
-   or state explicitly that codec-over-random is untested at the promoted cell
-   and that the codec-over-magnitude gap may reflect a poor magnitude baseline
-   rather than good codec ranking. The kr=0.5 "magnitude is a poor default"
-   caution cuts against codec too: codec also fails to beat random there.
+   random fixes, p=0.6072). The minimal sanity control for a token-ranking
+   method is uniform/random keep at matched keep-rate, because it tests whether
+   the ranking outperforms chance under the same budget; that control is
+   therefore missing at kr=0.7 and shows no codec advantage at kr=0.5. The
+   paper must either add/report a kr=0.7 `uniform_random` arm or state
+   explicitly that codec-over-random is untested at the promoted cell and that
+   the codec-over-magnitude gap may reflect a poor magnitude baseline rather
+   than good codec ranking. The kr=0.5 "magnitude is a poor default" caution cuts
+   against codec too: codec also fails to beat random there. Implementation
+   note: `scripts/run_ov6_m5_qwen_parity.sh` already includes a kr=0.7
+   `uniform_random` arm at seed 42; if the complete same-run M5 parity arm set
+   has already been launched or inspected and is later committed and validated
+   before manuscript finalization, use it as a single-seed M5 parity block
+   rather than inventing a separate artifact or mixing a lone M5 random row with
+   M3 codec/magnitude rows.
 
 Provenance facts confirmed in this pass: all pooled summaries carry
 `environment.git_dirty: true`; the OneVision-Encoder citation is real
@@ -229,18 +237,27 @@ canonical dense baseline; do not call it benign without item-level evidence.
     (manifest `videomme_holdout_v1_short_only.toml`, n=10, per-item,
     live-pixel calibrated) reports
     `codec_minus_pixel_accuracy=0.0` and `codec_pixel_agreement=1.0` for all
-    four sources, with codec-to-dense agreement 0.90 and pixel-to-dense
-    agreement 0.90. Pull metrics from `comparison.json`, but pull and verify
-    `calibration_mode` and `calibration_source` from the four per-source
-    summaries under
+    four sources, with `dense_accuracy=0.80`, codec-to-dense agreement 0.90,
+    and pixel-to-dense agreement 0.90. Pull metrics from
+    `comparison.json["rows"][]`, keyed by `source`, but pull and verify
+    `calibration_mode` and `calibration_source` from the four
+    per-source summaries under
     `phase1_29_onevision_holdout_disjoint/{novel_coded,motion,residual,fused}/summary.json`;
     the snapshot generator must hard-fail if those per-source provenance fields
-    are absent or do not equal `per-item` / `live-pixel`. Also record
+    are absent or do not equal `per-item` / `live-pixel`. Cross-validate the
+    overlapping aggregate metrics from each per-source
+    summary against the matching `comparison.json["rows"][]` entry; hard-fail
+    if `dense_accuracy`, `codec_accuracy`, `pixel_accuracy`,
+    `codec_dense_agreement`, `pixel_dense_agreement`,
+    `codec_minus_pixel_accuracy`, or `codec_pixel_agreement` disagree for the
+    same source. Also hard-fail if `dense_accuracy` differs across the four
+    disjoint-holdout source rows, because they share the same dense run and
+    manifest. Also record
     `environment.git_dirty` and `environment.git_sha` from each per-source
     holdout summary. The current four holdout summaries are dirty and span
     multiple SHAs (`novel_coded` and `motion` share `0de4886...`; `residual`
     uses `637b7d5...`; `fused` uses `2682249...`), so the generated
-    snapshot must store per-source provenance in `source_git_commits` and
+    snapshot must store per-source provenance in `source_git_shas` and
     `source_git_dirty` maps keyed by score source. The snapshot must always
     include a row-level `git_commit` field: set it to the common SHA when all
     source SHAs are identical, set it to `mixed` when source SHAs differ, and
@@ -504,6 +521,23 @@ canonical dense baseline; do not call it benign without item-level evidence.
     and
     `research/experiments/2026/artifacts/phase1_51V_ov6_n57_kr070_l2/codec_residual/summary.json`;
     do not recompute paired fixes/breaks from mismatched manifests.
+    If the manuscript includes the M5 kr=0.7 seed-42 random-control result, the
+    sparse-pruning snapshot must consume it as a separate same-run M5 parity
+    mini-table or as a full same-run M5 replacement block, not as a lone M5
+    random row inserted beside M3 codec/magnitude rows. The M5 block must read
+    and validate the complete M5 arm set:
+    `research/experiments/2026/artifacts/m5_ov6_qwen_n57_kr070_l2_parity/{dense,magnitude_norm,uniform_random,codec_novel_coded,codec_motion,codec_residual}/summary.json`,
+    the matching `results.jsonl` files for every arm, and
+    `research/experiments/2026/artifacts/m5_ov6_qwen_n57_kr070_l2_parity/track_b_arm_set_audit.json`.
+    The generator must hard-fail if the manuscript asks for an M5 random-control
+    comparison and any same-run M5 arm artifact is absent, fails
+    `validate_track_b_arm_artifact.py`, or disagrees on manifest/model/frame/
+    layer/keep-rate. The M5 `uniform_random` arm must additionally satisfy
+    `score_mode == uniform_random` and `score_seed == 42`, and the M5 audit must
+    contain same-root paired entries for `codec_novel_coded_vs_uniform_random`
+    and `codec_novel_coded_vs_magnitude_norm`. If no validated same-run M5 arm
+    set exists, the snapshot must retain the "kr=0.7 random control untested in
+    the current M3 artifact" caveat instead of fabricating or mixing a row.
   - For sidecar snapshots, read the three sidecar-equivalence JSON artifacts
     `research/experiments/2026/artifacts/phase1_51V_ov6_sidecar_equivalence/sidecar_equivalence.json`,
     `research/experiments/2026/artifacts/phase1_51V_ov6_sidecar_equivalence_f16/sidecar_equivalence.json`,
@@ -592,17 +626,20 @@ canonical dense baseline; do not call it benign without item-level evidence.
   - Add the disjoint-item holdout row/note from
     `phase1_29_onevision_holdout_disjoint/comparison.json`: codec = pixel
     exactly (codec-minus-pixel +0.000, codec-pixel agreement 1.000, n=10) on the
-    disjoint holdout manifest. Include `dense_accuracy=0.80` (n=10), codec
-    accuracy 0.70, pixel accuracy 0.70, codec-to-dense agreement 0.90, and
-    pixel-to-dense agreement 0.90 so the row remains comparable to the main N=57
-    refresh table. Also include the holdout active reuse-skipped denominators:
+    disjoint holdout manifest. Pull these fields from
+    `comparison.json["rows"][]`, keyed by `source`:
+    `dense_accuracy=0.80` (n=10), `codec_accuracy=0.70`,
+    `pixel_accuracy=0.70`, `codec_dense_agreement=0.90`,
+    `pixel_dense_agreement=0.90`, `codec_minus_pixel_accuracy=0.0`, and
+    `codec_pixel_agreement=1.0`. The row must remain comparable to the main
+    N=57 refresh table. Also include the holdout active reuse-skipped denominators:
     codec `codec_reuse_ratio_mean_active` spans 0.0726--0.0764 across sources,
     while pixel `pixel_reuse_ratio_mean_active` is 0.0801. These metrics are
-    already in `comparison.json`; the per-source summaries are still required
-    for calibration and environment provenance. This is a sanity check on
-    a disjoint item set, not a
-    frozen-threshold transfer test, because the run remains per-item and
-    live-pixel calibrated. It shows no codec advantage.
+    also read from `comparison.json["rows"][]`; the per-source summaries are
+    still required for calibration and environment provenance. This is a sanity
+    check on a disjoint item set, not a frozen-threshold transfer test, because
+    the run remains per-item and live-pixel calibrated. It shows no codec
+    advantage.
     Pair `comparison.json` with the four per-source holdout `summary.json`
     files so the generated snapshot can record and verify
     `calibration_mode=per-item` and `calibration_source=live-pixel` from
@@ -649,6 +686,13 @@ canonical dense baseline; do not call it benign without item-level evidence.
     `research/experiments/2026/artifacts/phase1_51V_ov6_n57_kr070_l2/codec_motion/summary.json`,
     and
     `research/experiments/2026/artifacts/phase1_51V_ov6_n57_kr070_l2/codec_residual/summary.json`.
+    Conditional source artifacts if the M5 seed-42 random-control result is
+    included: the complete same-run M5 arm set under
+    `research/experiments/2026/artifacts/m5_ov6_qwen_n57_kr070_l2_parity/`,
+    namely `{dense,magnitude_norm,uniform_random,codec_novel_coded,codec_motion,codec_residual}/summary.json`,
+    their matching `results.jsonl` files, and
+    `track_b_arm_set_audit.json`. Do not mix a lone M5 random row into the M3
+    sparse-pruning table.
   - Source artifact for paired fixes/breaks and McNemar p-values:
     `research/experiments/2026/artifacts/onevision_vlmaxxing_plan/ov6_track_b_statistical_audit.json`.
     The generated snapshot must store the paired inputs, fixes, breaks, and
@@ -673,6 +717,12 @@ canonical dense baseline; do not call it benign without item-level evidence.
     codec_novel_coded 35/57 = 0.614, codec_motion 32/57 = 0.561,
     codec_residual 33/57 = 0.579, and McNemar p=0.2188 for the
     codec_novel_coded versus magnitude_norm paired comparison.
+    If the complete same-run M5 parity arm set is committed and validated,
+    include it as a separate visibly labeled single-seed M5 sanity mini-table
+    or replace the M3 sparse-pruning table with the full M5 same-run block; if
+    it is absent, keep the table note that matched random keep is untested at
+    the promoted kr=0.7 cell. Never compare an M5 seed-42 random row visually or
+    statistically against M3 codec/magnitude rows.
   - Add one sentence that the point estimate is favorable but statistically
     bounded: five paired fixes and one break are not enough for a standard
     significance claim.
@@ -682,11 +732,19 @@ canonical dense baseline; do not call it benign without item-level evidence.
     State this explicitly. Because the project's kr=0.5 audit shows random beats
     magnitude (8 vs 4) and codec does not beat random (`codec_novel_coded`
     6 fixes vs 9, p=0.6072), the +4 codec-over-magnitude gap may reflect a weak
-    magnitude baseline rather than good codec ranking. Either add a kr=0.7
-    `uniform_random` arm (preferred; the standard pruning control), or footnote
-    that codec-over-random is untested at kr=0.7. Do not present the
-    codec-over-magnitude gap as evidence codec ranking is good without this
-    caveat.
+    magnitude baseline rather than good codec ranking. Either add/report a
+    kr=0.7 `uniform_random` arm, or footnote that codec-over-random is untested
+    at kr=0.7. The already queued
+    `scripts/run_ov6_m5_qwen_parity.sh` includes a seed-42 `uniform_random` arm
+    at this operating point; if the complete same-run M5 arm set is committed
+    and validated, treat it as a single-seed M5 sanity block for the paper
+    snapshot. A favorable seed-42 row still cannot support a positive
+    codec-over-random claim. If the paper wants to claim codec beats random
+    rather than merely disclosing the missing control, run the clean multiseed
+    variant specified below before any Qwen VideoMME-short N=57/8f/layer-2/
+    kr=0.7 `uniform_random` arm is launched or inspected outside a committed
+    four-seed protocol. Do not present the codec-over-magnitude gap
+    as evidence codec ranking is good without this caveat.
   - Preserve both configured target keep-rate (`vision_tower_keep_rate`) and
     actual mean effective keep-rate (`mean_effective_keep_rate`) in the
     generated snapshot. Apply the same target-versus-effective audit to the
@@ -779,9 +837,9 @@ canonical dense baseline; do not call it benign without item-level evidence.
     efficiency-frontier claim is made; OneVision-style fused motion+residual
     scoring did not help (fused underperformed single sources); sparse ranking
     has a favorable point estimate over magnitude but inconclusive paired tests,
-    no random-keep control at the promoted kr=0.7 cell, and no codec-over-random
-    advantage at kr=0.5 (so the codec-over-magnitude gap may reflect a weak
-    magnitude baseline); Gemma accuracy
+    no random-keep control in the current M3 artifact at the promoted kr=0.7
+    cell, and no codec-over-random advantage at kr=0.5 (so the
+    codec-over-magnitude gap may reflect a weak magnitude baseline); Gemma accuracy
     evidence is
     smoke-level until M5; TOMATO dense baseline is too weak to promote; live
     PyAV extraction is not a deployable per-query path; session reuse
@@ -795,7 +853,13 @@ canonical dense baseline; do not call it benign without item-level evidence.
   - Files: same manuscript and status docs as above.
   - Prepare wording so M5 can update the paper with one paragraph/table-row
     change:
-    Qwen parity confirms or weakens hardware stability;
+    Qwen parity confirms or weakens hardware stability and, because the queued
+    M5 parity script includes `uniform_random` at kr=0.7, supplies a
+    single-seed same-run sanity comparator for the promoted sparse-pruning
+    cell. It is not the matched random-keep control needed for a positive
+    codec-over-random claim unless the separate clean four-seed protocol below
+    is committed before any Qwen VideoMME-short N=57/8f/layer-2/kr=0.7
+    `uniform_random` arm is launched or inspected outside that protocol;
     Gemma N=57 confirms, bounds, or contradicts cross-family sparse ranking;
     Gemma random-vs-magnitude confirms or bounds the magnitude-pruner critique;
     Qwen 16f confirms or bounds frame-budget transfer.
@@ -807,6 +871,198 @@ canonical dense baseline; do not call it benign without item-level evidence.
     discovery, unless it overturns the current claim.
   - Justification: paper editing can proceed now, and the planned insert points
     avoid a rewrite when M5 results arrive.
+
+## Preferred: Qwen kr=0.7 Random-Keep Control
+
+This is not a manuscript-edit prerequisite if the paper explicitly leaves the
+codec-over-random question untested at kr=0.7. It is required before any
+manuscript sentence claims codec sparse ranking beats the matched random-keep
+control at the promoted Qwen operating point.
+
+  - Closure definition: a random arm is "inspected" once any agent opens,
+    parses, summarizes, compares, or uses its `summary.json`, `results.jsonl`,
+    run log, or generated audit for a scientific decision. Existence-only file
+    listings and scheduler/process checks are not inspection; reading accuracy,
+    correctness rows, choices, timings, or paired comparisons is inspection.
+  - Existing path: `scripts/run_ov6_m5_qwen_parity.sh` already runs
+    `uniform_random --score-seed 42` beside dense, `magnitude_norm`, and the
+    three codec sources at Qwen VideoMME-short N=57, 8 frames, layer 2,
+    keep-rate 0.7. This seed-42 arm is a single-seed sanity row unless the full
+    four-seed control below was preregistered before any Qwen VideoMME-short
+    N=57/8f/layer-2/kr=0.7 `uniform_random` arm is launched or inspected
+    outside that committed four-seed protocol. This clean-control window closes
+    as soon as any such random arm is launched or inspected outside the
+    protocol. The queued M5 parity script's seed-42 arm is a known closure
+    event if it is launched or inspected before the four-seed preregistration
+    protocol is committed; in that case only the
+    post-seed-42 follow-up path below remains. If the complete same-run M5 arm
+    set already exists and passes validation, consume it in the paper snapshot
+    as a single-seed M5 parity block; do not use it to decide whether to launch
+    more seeds or to support any positive codec-over-random claim. Validation
+    means every same-run arm passes `scripts/validate_track_b_arm_artifact.py`;
+    for the random arm specifically,
+    `scripts/validate_track_b_arm_artifact.py` accepts the arm, the manifest and
+    model/frame/layer/keep-rate fields match the codec/magnitude arms, and
+    `score_mode == uniform_random` with `score_seed == 42`.
+  - Clean four-seed control: if resources allow and no Qwen VideoMME-short
+    N=57/8f/layer-2/kr=0.7 `uniform_random` arm has been launched or inspected
+    outside a committed four-seed protocol, preregister seeds `{1, 7, 42, 100}`
+    at kr=0.7 before any such arm runs. This matches the kr=0.5
+    multiseed baseline on the same manifest, model, frame count, layer, and
+    configured keep-rate. Use the same sidecar-backed M5 setup when possible so
+    the codec arms do not pay live PyAV extraction. Commit the preregistration
+    note at
+    `research/experiments/2026/<dated-qwen-kr070-random-control-prereg>.md`
+    and update
+    `research/experiments/registry.md` before launch. The registry update must
+    name the exact preregistration path plus the comparator and clean-control
+    random arm paths
+    `m5_ov6_qwen_n57_kr070_l2_random_control/dense/`,
+    `m5_ov6_qwen_n57_kr070_l2_random_control/magnitude_norm/`,
+    `m5_ov6_qwen_n57_kr070_l2_random_control/codec_novel_coded/`,
+    `m5_ov6_qwen_n57_kr070_l2_random_control/uniform_random_seed1/`,
+    `m5_ov6_qwen_n57_kr070_l2_random_control/uniform_random_seed7/`,
+    `m5_ov6_qwen_n57_kr070_l2_random_control/uniform_random_seed42/`, and
+    `m5_ov6_qwen_n57_kr070_l2_random_control/uniform_random_seed100/`; the M5
+    parity launcher hard-fails without those committed registry markers unless
+    the operator explicitly accepts closing the clean-control window with
+    `OV6_ALLOW_CLOSE_RANDOM_CONTROL_WINDOW=1` and a committed closure record
+    matching
+    `research/experiments/2026/*qwen*kr070*random*control*closure*.md`. The
+    closure record must name `OV6_ALLOW_CLOSE_RANDOM_CONTROL_WINDOW=1`,
+    `seed-42`, and the clean-control window, and the registry must name the
+    exact closure-record path. This plan is mutable
+    before launch; once the dated preregistration note is committed, the
+    gate/falsifier criteria recorded there are authoritative, and later plan
+    edits do not override them. Operators satisfy the clean path with
+    `M5Q_CLEAN_CONTROL_PREREG=<repo-relative preregistration note>`. Operators
+    satisfy the explicit closure path with
+    `OV6_ALLOW_CLOSE_RANDOM_CONTROL_WINDOW=1` plus
+    `OV6_CLOSURE_RECORD=<repo-relative closure note>`.
+  - Post-seed-42 follow-up: if seed 42 has already been launched or inspected
+    before the full four-seed preregistration is committed, additional seeds
+    `{1, 7, 100}` must be treated as a separate follow-up distribution. They
+    cannot be combined with seed 42 to satisfy the 3/4 gate below, cannot erase an
+    unfavorable seed-42 sanity row, and cannot rescue a positive
+    codec-over-random claim. Record the follow-up seed set and criteria in a
+    dated preregistration note under `research/experiments/2026/`, update
+    `research/experiments/registry.md`, and commit both before inspecting any
+    additional seed result. The follow-up may characterize seed sensitivity
+    around the already-executed seed-42 sanity row, but it cannot bound toward
+    or support a positive codec-over-random claim. The manuscript must label it
+    as post-seed-42 follow-up evidence. It may support a negative or
+    inconclusive boundary statement, but favorable or mixed additional seeds
+    cannot support any positive codec-over-random claim. Even if every
+    post-seed-42 follow-up seed lands below codec, report that only as
+    sensitivity context around the already-executed seed-42 sanity row, not as
+    a codec-over-random positive result.
+  - Clean-control artifact requirement: a positive codec-over-random sentence
+    requires one same-run M5 control root,
+    `research/experiments/2026/artifacts/m5_ov6_qwen_n57_kr070_l2_random_control/`,
+    containing at minimum
+    `dense`, `magnitude_norm`, `codec_novel_coded`, and four explicit random
+    arms named
+    `uniform_random_seed1`, `uniform_random_seed7`,
+    `uniform_random_seed42`, and `uniform_random_seed100` on the same
+    manifest/model/frame/layer/keep-rate. Do not use the single
+    `uniform_random` directory convention from `analyze_track_b_arm_set.py` for
+    this clean-control protocol; that convention is reserved for one-seed
+    parity/sanity runs. Prefer also running
+    `codec_motion` and `codec_residual` for source-consistency, but do not use
+    historical M3 codec rows as substitutes. Every arm must pass
+    `validate_track_b_arm_artifact.py`, and the generated snapshot must
+    hard-fail if the same-run M5 `codec_novel_coded` summary/results are
+    missing.
+  - Clean-control analyzer requirement: before any manuscript-positive
+    codec-over-random sentence, add or extend an analyzer that glob-loads the
+    `uniform_random_seed*` directories, verifies each summary has
+    `score_mode == uniform_random` and the matching `score_seed`, and pairs
+    each seed's `results.jsonl` against the same-root
+    `codec_novel_coded/results.jsonl`. The analyzer must write
+    `codec_vs_random_multiseed_audit.json` under the control root. The emitted
+    JSON must include comparisons named at least
+    `codec_novel_coded_vs_uniform_random_seed1`,
+    `codec_novel_coded_vs_uniform_random_seed7`,
+    `codec_novel_coded_vs_uniform_random_seed42`, and
+    `codec_novel_coded_vs_uniform_random_seed100`, with fixes, breaks, exact
+    McNemar p, item-set equality checks, and per-arm effective keep-rate. The
+    existing Qwen/Gemma random multiseed analyzer compares random to
+    `magnitude_norm`; that is insufficient for this codec-vs-random paper gate
+    unless it is explicitly extended to produce the fields above.
+  - Hypothesis: if `codec_novel_coded` is a useful sparse-token ranking signal
+    beyond exposing a weak `magnitude_norm` baseline, the validated same-run M5
+    `codec_novel_coded` count should meet or exceed the matched random-keep
+    control distribution at the promoted kr=0.7/layer=2 operating point. The
+    historical M3 35/57 result is context only; it is not an input to this gate.
+  - Primary metrics: same-run M5 `codec_novel_coded` accuracy, per-seed random
+    accuracy, mean and range across random seeds, paired codec-vs-random
+    fixes/breaks and exact McNemar p for each seed, effective keep-rate,
+    model-side end-to-end time, and sidecar/extraction denominator.
+  - Gate for a bounded positive sentence: the same-run M5
+    `codec_novel_coded` count must be at least the random-seed mean by point
+    estimate and at least 3/4 random seeds must be <= that same-run codec count
+    by point estimate, with no random seed beating the same-run codec count by
+    >=3 items.
+    The >=3-item margin is a preregistered outlier threshold, chosen because it
+    is 3/57 = 5.3 percentage points and exceeds ordinary one- or two-item
+    random jitter on this N=57 slice. It should block a clean positive sentence
+    even if the seed mean remains lower. This gate applies only to a clean
+    four-seed control preregistered before any Qwen VideoMME-short
+    N=57/8f/layer-2/kr=0.7 `uniform_random` arm was launched or inspected
+    outside that protocol. It supports only
+    "codec exceeded matched random by point estimate
+    in this cell"; it still does not support broad or statistically significant
+    superiority unless paired tests and N justify it.
+  - Falsifier: random mean exceeds the same-run M5 `codec_novel_coded` count,
+    or at least two random seeds beat that same-run codec count by >=3 items.
+    Then the sparse-pruning story becomes a
+    negative/boundary result: the codec-over-magnitude gap was evidence that
+    magnitude is weak at this cell, not evidence that codec ranking is good.
+    The outlier logic is intentionally asymmetric: one bad random seed is
+    enough to block a positive sentence because the positive claim needs
+    robustness across seeds, while two bad seeds are required to falsify the
+    cell so a single-seed draw does not overrule the random-seed mean by itself.
+  - Boundary outcome: if the positive gate fails but the falsifier does not
+    trigger (for example, two random seeds exceed same-run codec by only
+    1--2 items, or one seed beats same-run codec by >=3 items while the random
+    mean remains below same-run codec),
+    report the result as inconclusive. Do not use it for a bounded positive
+    codec-over-random sentence or as a falsification; disclose the exact point
+    estimates and keep the sparse-pruning claim undercontrolled.
+  - Partial-seed outcome for a clean four-seed control: if only two or three of
+    the four planned random seeds land from a seed set preregistered before any
+    Qwen VideoMME-short N=57/8f/layer-2/kr=0.7 `uniform_random` arm was launched
+    or inspected outside that protocol, do not
+    apply the 3/4-seed gate. Report
+    the observed seed rows as a partial control. Do not make any positive
+    codec-over-random claim unless every landed seed is <= the same-run M5
+    codec count and the landed-seed mean is <= that same-run codec count; even
+    then, phrase it only as a
+    limitations/status sentence such as "the landed random seeds did not exceed
+    codec, but the preregistered 3/4-seed gate is incomplete". Do not put it in
+    the abstract, result headline, or figure/table caption as a
+    codec-over-random result. State that the 3/4-seed gate does not apply until
+    all four seeds are available. If any landed seed beats same-run codec, call
+    the result inconclusive until the full four-seed set is committed and
+    available. If one landed seed beats same-run codec by >=3 items, treat it
+    as an early warning and do not run extra seeds to rescue the claim without a
+    fresh preregistration note. If two or more landed seeds beat same-run codec
+    by >=3 items, classify the partial-seed result as falsified for any
+    codec-over-random positive paper claim even before the remaining seeds
+    finish. This partial-seed rule does not apply to the post-seed-42 follow-up
+    path; that path remains non-positive even if all additional seeds are
+    favorable.
+  - If only the existing seed-42 M5 random arm is committed and validated,
+    report it as a necessary sanity control but not a stable random
+    distribution. Do not decide to run more random seeds based on whether seed
+    42 helps or hurts the codec story; any later seeds are post-seed-42
+    follow-up evidence under the rule above. Even if seed 42 is below codec, do
+    not make any positive codec-over-random paper claim from a single arm; a
+    single seed is not a stable random distribution and does not support even a
+    preliminary partial-control positive finding.
+  - Justification: the current promoted sparse-pruning result is otherwise
+    undercontrolled. A matched random row is the minimal reader expectation for
+    any sparse-token ranking claim.
 
 ## Optional: Clean Held-Out Threshold-Transfer Experiment
 
@@ -844,7 +1100,8 @@ This is not a manuscript-edit prerequisite.
     `pixel_reuse_ratio_mean_active` in the current artifact schema), and paired
     codec-vs-pixel fixes/breaks, all reported with N and Wilson or exact
     paired-test context.
-  - Gate for promotion: use N>=57 for any promoted threshold-transfer claim.
+  - Gate for parity promotion: use N>=57 for any promoted
+    threshold-transfer parity claim.
     Codec must not lose to pixel by more than one item while matching the pixel
     proxy's active reuse-skipped budget within an absolute 0.01 tolerance, and
     the 95% two-sided Wilson lower bound for codec-to-dense agreement must be
@@ -855,8 +1112,14 @@ This is not a manuscript-edit prerequisite.
     (`pixel_reuse_ratio_mean_active`), signed reuse delta
     (`codec_reuse_ratio_mean_active - pixel_reuse_ratio_mean_active`), and the
     allowed tolerance in the generated snapshot. This gate would support "codec
-    matches pixel under frozen threshold transfer"; it still would not support
-    "codec beats pixel" unless paired fixes dominate breaks with enough N.
+    matches pixel under frozen threshold transfer"; it does not support
+    positive codec-over-pixel language.
+  - Additional gate for positive codec-over-pixel language: under the same
+    frozen-threshold transfer protocol, codec must beat pixel by at least two
+    items at N>=57, paired codec-vs-pixel fixes must exceed breaks, and the
+    result must satisfy the same reuse-skipped tolerance and codec-to-dense
+    Wilson lower-bound floor above. Without all of those conditions, matching
+    pixel or landing within one item is parity evidence only.
   - Falsifier: codec loses to pixel by at least two items, agreement falls below
     the 95% two-sided Wilson 0.80 lower-bound floor stated in the gate above, or
     the run needs live pixel classifications on the evaluation split to choose
@@ -971,8 +1234,13 @@ This is not a manuscript-edit prerequisite.
   explicitly about a ground-truth upper bound.
 - Do not claim statistically significant codec sparse-pruning superiority.
 - Do not present codec-over-magnitude sparse pruning as evidence codec ranking
-  is good without disclosing that the kr=0.7 cell has no random-keep control and
-  that codec does not beat uniform_random at kr=0.5.
+  is good without disclosing that the current M3 kr=0.7 artifact has no
+  random-keep control and that codec does not beat uniform_random at kr=0.5.
+  If an M5 kr=0.7 random control artifact is committed and validated, replace
+  this caveat with its actual result rather than keeping stale "missing
+  control" wording. State explicitly whether the result is positive, negative,
+  or inconclusive under the preregistered gate; a favorable single-seed row is
+  still only a sanity check, not a codec-over-random claim.
 - Do not claim broad end-to-end VLM speedup from sidecars.
 - Do not promote TOMATO motion gains from the current smoke.
 - Do not present the pooled refresh result as a codec-over-pixel accuracy win;
@@ -1028,8 +1296,9 @@ This is not a manuscript-edit prerequisite.
   thresholds are fit in-sample, so this is a bound, not a codec win, and carries
   a dirty-tree caveat until rerun clean; (2) Qwen sparse-pruning favorable point
   estimate 35/57 versus 31/57 (magnitude) but McNemar p=0.2188, with no
-  random-keep control at the promoted kr=0.7 cell and no codec-over-random
-  advantage at kr=0.5 (codec 6 vs random 9, p=0.61); (3) sidecar extraction
+  random-keep control in the current M3 artifact at the promoted kr=0.7 cell
+  and no codec-over-random advantage at kr=0.5 (codec 6 vs random 9, p=0.61);
+  (3) sidecar extraction
   equivalence with zero drift and seconds-to-milliseconds extraction-path
   speedup (n=3 per-source smoke gates, ~3,800--17,900x on the extraction path
   only). The durable reader payoff is the sidecar systems result plus the clean negative
@@ -1059,8 +1328,14 @@ This is not a manuscript-edit prerequisite.
   provenance from the four per-source holdout `summary.json` files and
   hard-fails if `calibration_mode != per-item` or
   `calibration_source != live-pixel` for the holdout sanity row. The snapshot
-  also records per-source holdout `environment.git_dirty` and
-  `environment.git_sha` in `source_git_dirty` and `source_git_commits` maps.
+  cross-validates each source row against `comparison.json["rows"][]` and
+  hard-fails if `dense_accuracy`, `codec_accuracy`, `pixel_accuracy`,
+  `codec_dense_agreement`, `pixel_dense_agreement`,
+  `codec_minus_pixel_accuracy`, or `codec_pixel_agreement` disagree. It also
+  hard-fails if `dense_accuracy` differs across the four holdout source rows,
+  because the dense run and manifest are shared. The snapshot also records
+  per-source holdout `environment.git_dirty` and
+  `environment.git_sha` in `source_git_dirty` and `source_git_shas` maps.
   The snapshot must always include row-level `git_commit`: set it to the common
   SHA if all four source SHAs match, set it to `mixed` if source SHAs differ,
   and set it to `null` only when all source SHAs are absent, which is a

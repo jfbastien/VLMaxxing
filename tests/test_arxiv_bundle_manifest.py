@@ -58,7 +58,9 @@ def test_arxiv_upload_manifest_excludes_audit_only_files() -> None:
     assert all(not path.startswith(("build/", "dist/")) for path in manifest)
 
 
-def test_audit_bundle_requires_declared_repo_files(tmp_path, monkeypatch) -> None:
+def test_audit_bundle_requires_declared_repo_files(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     build = _load_build_script()
     manuscript_root = tmp_path / "repo" / "paper" / "arxiv"
     manuscript_root.mkdir(parents=True)
