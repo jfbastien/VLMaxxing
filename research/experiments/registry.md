@@ -1,6 +1,6 @@
 # Experiment Registry (Machine-Readable)
 
-Last updated: 2026-05-20
+Last updated: 2026-05-26
 
 This is the primary source of per-phase experiment state. It is the phase
 ledger, not the paper claim ledger. Use `paper/claim-matrix.md` for
@@ -25,6 +25,10 @@ Each entry is a YAML-style block with these fields:
   `deferred`
 - `authoritative_note`: path to the phase note
 - `authoritative_artifacts`: paths to primary result artifacts
+- `planned_artifacts`: expected future artifact paths for preregistered or
+  queued runs that have not landed yet. When a run lands, move its result paths
+  to `authoritative_artifacts` in the same registry update that records the
+  outcome; do not leave completed outputs only under `planned_artifacts`.
 - `current_best_policy`: the winning policy (if any) — verbatim label
 - `supersedes`: phase IDs whose claims are narrowed or replaced
 - `paper_relevance`: `primary`, `diagnostic`, `methodology`, `historical`
@@ -85,7 +89,7 @@ Entries are ordered by phase_id (chronological within each 1.x range).
   prereg_outcome: Rejected for current-branch implementation
 
 - phase_id: onevision-vlmaxxing-20260508
-  status: completed through four-phase follow-up sweep; M3 sidecar gate and M5 confirmations preregistered
+  status: completed
   authoritative_note: research/experiments/2026/2026-05-08-onevision-vlmaxxing-prereg.md
   authoritative_artifacts:
     - research/experiments/2026/artifacts/onevision_vlmaxxing_plan/experiment_schedule.json
@@ -96,24 +100,44 @@ Entries are ordered by phase_id (chronological within each 1.x range).
     - research/experiments/2026/artifacts/phase1_63G_ov6_gemma_codec_smoke/
     - research/experiments/2026/artifacts/phase1_51V_ov6_tomato_motion_kr070_l2/statistical_audit.json
     - research/experiments/2026/artifacts/phase1_29_onevision_n57_pooled_calibration/
-  current_best_policy: "bounded codec-source evidence: Track A positive point estimates over pixel at N=57/8f and pooled-calibration codec->dense agreement 56/57 for simple sources; Track B codec_novel_coded is best tested Qwen sparse arm at kr=0.7/layer=2 by point estimate, but paired tests remain inconclusive and current PyAV extraction erases net wall-clock savings. Follow-up controls show random beats magnitude on 4/4 Qwen seeds at kr=0.5/layer=2, Gemma N=10 codec-grid smoke gates, and TOMATO motion is a low-headroom boundary."
+    - research/experiments/2026/artifacts/phase1_29_onevision_holdout_disjoint/
+  current_best_policy: "bounded codec-source evidence: refresh planning is answer-preserving at the tested low-reuse point but does not demonstrate codec-over-pixel advantage (pooled N=57 is dirty-tree/advisory/pending-clean-rerun evidence, in-sample/pixel-budget-matched, and only +2/57 over pixel; disjoint per-item holdout ties pixel exactly). Sparse vision pruning shows codec_novel_coded as the best tested Qwen kr=0.7/layer=2 point estimate versus magnitude_norm, but paired tests remain inconclusive, the current M3 artifact lacks a matched kr=0.7 random-keep control, and current PyAV extraction erases net wall-clock savings. Follow-up controls show random beats magnitude on 4/4 Qwen seeds at kr=0.5/layer=2 and codec does not beat random there; Gemma N=10 codec-grid smoke gates geometry only, and TOMATO motion is a low-headroom boundary."
   supersedes: []
   paper_relevance: diagnostic/proposed new science
-  prereg_outcome: Accepted with caveat / bounded
+  prereg_outcome: Accepted with caveat
 
 - phase_id: onevision-vlmaxxing-m5-20260513
-  status: preregistered
+  status: running
   authoritative_note: research/experiments/2026/2026-05-13-onevision-m5-confirmation-prereg.md
   authoritative_artifacts:
     - research/experiments/2026/artifacts/phase1_51V_ov6_sidecar_equivalence/
     - research/experiments/2026/artifacts/phase1_51V_ov6_sidecar_equivalence_f16/
     - research/experiments/2026/artifacts/phase1_63G_ov6_gemma_sidecar_equivalence/
     - research/experiments/2026/artifacts/phase1_51V_ov6_tomato_motion_kr090_l2_balanced_smoke/
+  planned_artifacts:
+    # Qwen parity contains a seed-42 random arm. Running it before a committed
+    # four-seed random-control preregistration closes the clean-control window
+    # unless the operator explicitly accepts that closure.
     - research/experiments/2026/artifacts/m5_ov6_qwen_n57_kr070_l2_parity/
+    - research/experiments/2026/artifacts/m5_ov6_qwen_n57_kr070_l2_parity/track_b_arm_set_audit.json
     - research/experiments/2026/artifacts/m5_ov6_gemma_n57_kr050_l2_random_multiseed/
+    - research/experiments/2026/artifacts/m5_ov6_gemma_n57_kr050_l2_random_multiseed/random_multiseed_summary.json
+    # Gemma kr=0.5 uses the multiseed analyzer, so its planned audit artifact
+    # is random_multiseed_summary.json rather than track_b_arm_set_audit.json.
     - research/experiments/2026/artifacts/m5_ov6_gemma_n57_kr070_l2_confirmation/
+    - research/experiments/2026/artifacts/m5_ov6_gemma_n57_kr070_l2_confirmation/track_b_arm_set_audit.json
     - research/experiments/2026/artifacts/m5_ov6_qwen_n57_16f_kr070_l2_boundary/
-  current_best_policy: "Run matching M3 sidecar equivalence before each sidecar-backed M5 confirmation. Use M3 for Qwen/Gemma sidecar gates and balanced TOMATO keep-rate boundary smoke. Use M5 for focused Qwen parity/timing, Gemma kr=0.5 random-vs-magnitude transfer, Gemma N=57 codec transfer, and one Qwen frame=16 boundary cell; do not run an open sweep."
+    - research/experiments/2026/artifacts/m5_ov6_qwen_n57_16f_kr070_l2_boundary/track_b_arm_set_audit.json
+    - research/experiments/2026/artifacts/m5_ov6_qwen_n57_kr070_l2_random_control/
+    - research/experiments/2026/artifacts/m5_ov6_qwen_n57_kr070_l2_random_control/dense/
+    - research/experiments/2026/artifacts/m5_ov6_qwen_n57_kr070_l2_random_control/magnitude_norm/
+    - research/experiments/2026/artifacts/m5_ov6_qwen_n57_kr070_l2_random_control/codec_novel_coded/
+    - research/experiments/2026/artifacts/m5_ov6_qwen_n57_kr070_l2_random_control/uniform_random_seed1/
+    - research/experiments/2026/artifacts/m5_ov6_qwen_n57_kr070_l2_random_control/uniform_random_seed7/
+    - research/experiments/2026/artifacts/m5_ov6_qwen_n57_kr070_l2_random_control/uniform_random_seed42/
+    - research/experiments/2026/artifacts/m5_ov6_qwen_n57_kr070_l2_random_control/uniform_random_seed100/
+    - research/experiments/2026/artifacts/m5_ov6_qwen_n57_kr070_l2_random_control/codec_vs_random_multiseed_audit.json
+  current_best_policy: "M3 sidecar gates are accepted, TOMATO boundary smoke is inconclusive, and M5 confirmations are pending. Run matching M3 sidecar equivalence before each sidecar-backed M5 confirmation. Before Qwen parity/timing, either point M5Q_CLEAN_CONTROL_PREREG at a four-seed kr=0.7 random-control preregistration tracked in HEAD, clean in the worktree/index, matching research/experiments/2026/*qwen*kr070*random*control*prereg.md, naming the clean-control artifact root, dense/magnitude_norm/codec_novel_coded comparator directories, all four seed directories, and codec_vs_random_multiseed_audit.json, and recorded by exact path plus the comparator and random arm paths in this registry, or explicitly accept that the seed-42 parity row closes the clean-control window with OV6_ALLOW_CLOSE_RANDOM_CONTROL_WINDOW=1 plus a committed closure record named in this registry. Use M3 for Qwen/Gemma sidecar gates and balanced TOMATO keep-rate boundary smoke. Use M5 for focused Qwen parity/timing, Gemma kr=0.5 random-vs-magnitude transfer, Gemma N=57 codec transfer, and one Qwen frame=16 boundary cell; do not run an open sweep."
   supersedes: []
   paper_relevance: diagnostic/confirmation
   prereg_outcome:

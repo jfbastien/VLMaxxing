@@ -4,15 +4,64 @@ Status: M3 gates run; M5 confirmations not yet run in this note.
 
 Branch: `onevision-vlmaxxing-research`
 
+## Revisions
+
+- 2026-05-26: the original M5 Qwen parity, Gemma N=57 confirmation, and
+  frame-16 boundary gates treated the single seed-42 `uniform_random` arm as a
+  success criterion or promotion floor. That criterion is superseded before the
+  M5 confirmations run. Seed 42 is now a required sanity comparator only; no
+  positive codec-over-random paper claim can rest on a single random seed. Any
+  positive codec-over-random manuscript sentence requires the clean four-seed
+  kr=0.7 random-control protocol described in
+  `plan/codec-metadata-paper-edit.md`, preregistered before any Qwen
+  VideoMME-short N=57/8f/layer-2/kr=0.7 `uniform_random` arm is launched or
+  inspected outside that committed four-seed protocol. In this note, the
+  queued `scripts/run_ov6_m5_qwen_parity.sh` seed-42 arm is a known closure
+  event if it is launched or inspected before the four-seed protocol is
+  committed. The script now hard-fails unless `M5Q_CLEAN_CONTROL_PREREG`
+  points to a clean-control preregistration file tracked in `HEAD`, clean in
+  the worktree and index, and matching
+  `research/experiments/2026/*qwen*kr070*random*control*prereg.md`. The
+  committed preregistration must be a blob that names the clean-control
+  artifact root, the comparator paths
+  `m5_ov6_qwen_n57_kr070_l2_random_control/dense/`,
+  `m5_ov6_qwen_n57_kr070_l2_random_control/magnitude_norm/`, and
+  `m5_ov6_qwen_n57_kr070_l2_random_control/codec_novel_coded/`, the four
+  random-control seed paths listed below, and
+  `codec_vs_random_multiseed_audit.json`; the committed, clean experiment
+  registry must also name that preregistration path plus the clean-control
+  comparator and random arm paths. The launcher also refuses the clean path if
+  the parity output root already contains a seed-42 `uniform_random` artifact.
+  Otherwise the operator must explicitly set
+  `OV6_ALLOW_CLOSE_RANDOM_CONTROL_WINDOW=1` and point
+  `OV6_CLOSURE_RECORD` at a committed closure note, clean in the worktree and
+  index, named in the experiment registry, and matching
+  `research/experiments/2026/*qwen*kr070*random*control*closure*.md`.
+
+  Required clean-control arm paths for both the preregistration note and the
+  registry entry:
+
+  - `m5_ov6_qwen_n57_kr070_l2_random_control/dense/`
+  - `m5_ov6_qwen_n57_kr070_l2_random_control/magnitude_norm/`
+  - `m5_ov6_qwen_n57_kr070_l2_random_control/codec_novel_coded/`
+  - `m5_ov6_qwen_n57_kr070_l2_random_control/uniform_random_seed1/`
+  - `m5_ov6_qwen_n57_kr070_l2_random_control/uniform_random_seed7/`
+  - `m5_ov6_qwen_n57_kr070_l2_random_control/uniform_random_seed42/`
+  - `m5_ov6_qwen_n57_kr070_l2_random_control/uniform_random_seed100/`
+
 ## Context
 
 OV-3 and OV-6 established bounded codec-score evidence on the M3:
 
-- Track A: H.264 score sources beat pixel `max_abs` by point estimate on
-  VideoMME-short / Qwen / 8f, with pooled-calibration robustness.
-- Track B: Qwen `codec_novel_coded` is the best N=57 point estimate at
-  kr=0.7/layer=2, but paired tests remain inconclusive and current live PyAV
-  extraction erases net wall-clock savings.
+- Refresh planning: H.264 score sources are answer-preserving at the tested
+  low-reuse point, but they do not demonstrate a codec-over-pixel advantage:
+  the pooled N=57 result is dirty-tree/advisory/pending-clean-rerun evidence,
+  in-sample/pixel-budget-matched, and only +2/57 over pixel, while the disjoint
+  per-item holdout ties pixel exactly.
+- Sparse vision pruning: Qwen `codec_novel_coded` is the best N=57 point
+  estimate at kr=0.7/layer=2 versus `magnitude_norm`, but paired tests remain
+  inconclusive, the current M3 artifact lacks a kr=0.7 random-keep control, and
+  current live PyAV extraction erases net wall-clock savings.
 - Gemma N=10 smoke gates the geometry path only; it is not yet a cross-family
   result.
 
@@ -21,7 +70,7 @@ This note separates the remaining M3 systems gate from M5 confirmation runs.
 ## M3 Sidecar Equivalence Gate
 
 Question: can precomputed H.264 score sidecars replace live PyAV extraction
-without changing Track B choices?
+without changing sparse-pruning choices?
 
 Hypothesis: sidecar-loaded score grids preserve live-PyAV codec-grid behavior
 while reducing per-item score runtime from ~19 s extraction to NPZ-load scale.
@@ -68,7 +117,7 @@ Interpretation:
 
 ## M3 TOMATO Keep-Rate Boundary Smoke
 
-Question: did the TOMATO motion Track B collapse come from an overly aggressive
+Question: did the TOMATO motion sparse-pruning collapse come from an overly aggressive
 keep rate, or from frame/content/model headroom at 8 frames?
 
 Hypothesis: if prune rate is the main boundary, a milder `kr=0.9` setting on a
@@ -120,27 +169,67 @@ or correctness drift caused by the sidecar path.
 
 Command:
 
+Replace the path below with the committed, repo-relative preregistration note
+you add for the clean four-seed control; do not copy it before that file
+exists and the registry names it.
+
 ```bash
-scripts/run_ov6_m5_qwen_parity.sh
+M5Q_CLEAN_CONTROL_PREREG=research/experiments/2026/2026-05-26-qwen-kr070-random-control-prereg.md scripts/run_ov6_m5_qwen_parity.sh
+```
+
+If the clean four-seed random-control window has intentionally been closed,
+record that decision first, then launch with the explicit closure override:
+
+```bash
+OV6_ALLOW_CLOSE_RANDOM_CONTROL_WINDOW=1 OV6_CLOSURE_RECORD=research/experiments/2026/2026-05-26-qwen-kr070-random-control-closure.md scripts/run_ov6_m5_qwen_parity.sh
 ```
 
 Artifacts:
 
 - `research/experiments/2026/artifacts/m5_ov6_qwen_n57_kr070_l2_parity/`
+- `research/experiments/2026/artifacts/m5_ov6_qwen_n57_kr070_l2_parity/track_b_arm_set_audit.json`
 
 Success gate:
 
-- `codec_novel_coded >= magnitude_norm` and `>= uniform_random` by point
-  estimate;
+- `codec_novel_coded >= magnitude_norm` by point estimate;
+- a PASS here means hardware-stable parity against the weak
+  `magnitude_norm` comparator only. It is not a sparse-ranking success over
+  random, and it cannot be promoted as codec-over-random even if
+  `codec_novel_coded` beats the seed-42 random row;
+- `codec_motion` and `codec_residual` are secondary source-consistency rows,
+  not the primary gate;
+- the seed-42 `uniform_random` row is a required sanity comparator, not a
+  success gate for any codec-over-random paper claim. A favorable seed-42 row
+  is still single-seed evidence only; it cannot support even a preliminary
+  positive codec-over-random sentence. Any positive codec-over-random claim
+  requires a separate clean four-seed kr=0.7 preregistration before any Qwen
+  VideoMME-short N=57/8f/layer-2/kr=0.7 `uniform_random` arm is launched or
+  inspected outside that committed four-seed protocol. If
+  `codec_novel_coded` trails the seed-42 random row, classify that under the
+  Boundary warning rules below rather than changing the magnitude-parity gate;
 - no parse-failure increase;
 - sidecar load timing reported separately;
 - paired tests and Wilson intervals emitted by `analyze_track_b_arm_set.py`.
 
 Falsification:
 
-- codec falls below magnitude by at least three items;
+- `codec_novel_coded` falls below magnitude by at least three items;
 - sidecar provenance or shape validation fails;
 - model-side timing gain disappears after excluding score runtime.
+
+Boundary warning:
+
+- If `codec_novel_coded` trails magnitude by one or two items, report this as
+  hardware-parity weakening, not success and not falsification.
+- If `codec_novel_coded` clears the primary gate but `codec_motion` or
+  `codec_residual` trails magnitude by at least three items, report
+  source-heterogeneity boundary evidence. Secondary-source failures do not
+  falsify the primary Qwen parity gate.
+- If `codec_novel_coded` falls below the seed-42 random sanity row by at least
+  three items, report this as a boundary warning, not as falsification or as a
+  codec-over-random statistical result. If secondary codec sources show the
+  same pattern, report that as source-consistency evidence for the boundary.
+  The random row is single-seed.
 
 ## M5 Gemma kr=0.5 Random-vs-Magnitude Confirmation
 
@@ -159,6 +248,10 @@ scripts/run_ov6_m5_gemma_kr05_inversion.sh
 Artifacts:
 
 - `research/experiments/2026/artifacts/m5_ov6_gemma_n57_kr050_l2_random_multiseed/`
+- `research/experiments/2026/artifacts/m5_ov6_gemma_n57_kr050_l2_random_multiseed/random_multiseed_summary.json`
+
+This run uses the multiseed analyzer; its summary artifact is
+`random_multiseed_summary.json`, not `track_b_arm_set_audit.json`.
 
 Success gate:
 
@@ -193,25 +286,41 @@ scripts/run_ov6_m5_gemma_n57_confirmation.sh
 Artifacts:
 
 - `research/experiments/2026/artifacts/m5_ov6_gemma_n57_kr070_l2_confirmation/`
+- `research/experiments/2026/artifacts/m5_ov6_gemma_n57_kr070_l2_confirmation/track_b_arm_set_audit.json`
 
 Success gate:
 
 - `codec_novel_coded` or another simple codec source is `>= magnitude_norm` by
   point estimate;
-- codec is not worse than `uniform_random` by three or more items;
+- the seed-42 `uniform_random` row is a required sanity comparator, not a
+  success gate for any codec-over-random paper claim. A single seed cannot
+  support even a preliminary positive codec-over-random sentence; if a codec
+  source is worse than seed-42 random by three or more items, report that as a
+  boundary warning;
 - unmatched parse/format regressions are absent or explicitly bounded by
   `M5G_MAX_PARSE_FAILURES` (default 3/57).
 
 Falsification:
 
 - all codec sources fall below magnitude by at least three items;
-- all codec sources fall below random by at least three items;
 - Gemma geometry/provenance validation fails.
+
+Boundary warning:
+
+- If all codec sources trail magnitude by one or two items, report this as a
+  cross-family boundary, not success and not falsification. Mixed outcomes
+  where some codec sources are competitive with magnitude and others are not
+  should be reported per source.
+- If all codec sources fall below the seed-42 random sanity row by at least
+  three items, report a strong boundary warning. Mixed results where only some
+  codec sources fall below seed-42 random by at least three items are weaker
+  boundary warnings. Neither case is falsification, because the random row is a
+  single-seed comparator.
 
 ## M5 Qwen Frame-Budget Boundary
 
-Question: does Track B codec ranking survive 16 frames, where Track A already
-showed codec-to-pixel collapse?
+Question: does sparse-pruning codec ranking survive 16 frames, where the
+refresh-planning probe already showed codec-to-pixel collapse?
 
 Hypothesis: frame=16 is a boundary condition; codec may converge toward random
 or magnitude and should not be presumed to transfer from the 8f result.
@@ -225,17 +334,34 @@ scripts/run_ov6_m5_qwen_frame16_boundary.sh
 Artifacts:
 
 - `research/experiments/2026/artifacts/m5_ov6_qwen_n57_16f_kr070_l2_boundary/`
+- `research/experiments/2026/artifacts/m5_ov6_qwen_n57_16f_kr070_l2_boundary/track_b_arm_set_audit.json`
 
 Success gate for promotion:
 
-- codec source `>= magnitude_norm` and `>= uniform_random` by point estimate;
+- at least one simple codec source is `>= magnitude_norm` by point estimate;
+- the seed-42 `uniform_random` row is a required boundary comparator, not a
+  success gate for any codec-over-random paper claim. A single seed cannot
+  support even a preliminary positive codec-over-random sentence;
 - no material dense-correct breakage;
 - memory and timing remain actionable.
 
 Falsification:
 
-- codec collapses to magnitude/random or breaks dense-correct rows without
-  compensating fixes.
+- all codec sources fall below magnitude_norm by at least three items; or
+- all codec sources break dense-correct rows without compensating fixes.
+
+Mixed source outcomes where only some codec sources fall below `magnitude_norm`
+by at least three items, or only some codec sources break dense-correct rows,
+are boundary/inconclusive evidence, not falsification.
+
+Boundary warning:
+
+- If all codec sources fall below the seed-42 random sanity row by at least
+  three items, report a strong frame-budget boundary warning. Mixed results
+  where only some codec sources fall below seed-42 random by at least three
+  items are weaker boundary warnings. Do not report either case as
+  falsification or as a codec-over-random statistical result, because the
+  random row is a single-seed comparator.
 
 ## OV-8 Composition Policy
 
