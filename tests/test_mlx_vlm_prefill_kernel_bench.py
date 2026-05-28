@@ -1,5 +1,24 @@
 from __future__ import annotations
 
+import sys
+
+import pytest
+
+from tests._mlx_probe import mlx_is_usable
+
+if sys.platform != "darwin":
+    pytest.skip(
+        "MLX/MLX-VLM prefill benchmark tests require macOS/Darwin; "
+        "Linux CI intentionally omits MLX.",
+        allow_module_level=True,
+    )
+if not mlx_is_usable():
+    pytest.skip(
+        "mlx.core not usable on this macOS host (import or Metal-init fails); "
+        "see tests/_mlx_probe.py",
+        allow_module_level=True,
+    )
+
 from scripts.benchmark_mlx_vlm_prefill_kernel import _measurement_plan, _substrate_verdict
 
 
