@@ -1,25 +1,34 @@
 from __future__ import annotations
 
-import sys
+import platform
 
 import pytest
 
 from tests._mlx_probe import mlx_is_usable
 
-if sys.platform != "darwin":
-    pytest.skip(
-        "MLX/MLX-VLM prefill benchmark tests require macOS/Darwin; "
-        "Linux CI intentionally omits MLX.",
-        allow_module_level=True,
-    )
-if not mlx_is_usable():
-    pytest.skip(
-        "mlx.core not usable on this macOS host (import or Metal-init fails); "
-        "see tests/_mlx_probe.py",
-        allow_module_level=True,
-    )
 
-from scripts.benchmark_mlx_vlm_prefill_kernel import _measurement_plan, _substrate_verdict
+def _mlx_prefill_skip_reason() -> str | None:
+    if platform.system() != "Darwin":
+        return (
+            "MLX/MLX-VLM prefill benchmark tests require macOS/Darwin; "
+            "Linux CI intentionally omits MLX."
+        )
+    if not mlx_is_usable():
+        return (
+            "mlx.core not usable on this macOS host (import or Metal-init fails); "
+            "see tests/_mlx_probe.py"
+        )
+    return None
+
+
+_skip_reason = _mlx_prefill_skip_reason()
+if _skip_reason is not None:
+    pytest.skip(_skip_reason, allow_module_level=True)
+
+from scripts.benchmark_mlx_vlm_prefill_kernel import (  # noqa: E402
+    _measurement_plan,
+    _substrate_verdict,
+)
 
 
 def test_measurement_plan_keeps_nested_order_without_shuffle() -> None:
