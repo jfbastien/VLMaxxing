@@ -904,6 +904,27 @@ control at the promoted Qwen operating point.
     `scripts/validate_track_b_arm_artifact.py` accepts the arm, the manifest and
     model/frame/layer/keep-rate fields match the codec/magnitude arms, and
     `score_mode == uniform_random` with `score_seed == 42`.
+  - Dedicated clean-control runner script: write a wrapper at
+    `scripts/run_ov6_m5_qwen_kr070_random_control.sh` (analogous to
+    `scripts/run_ov6_qwen_random_multiseed.sh` which targets the kr=0.5
+    `phase1_51V_ov6_random_multiseed` tree) that produces the canonical
+    artifact tree `m5_ov6_qwen_n57_kr070_l2_random_control/` with the seven
+    required arms and the sidecar-backed codec arms. Use this wrapper for
+    every clean-control launch, not ad-hoc invocations of
+    `scripts/run_phase1_51V.py`. Rationale: the existing M5 parity guard
+    refuses to close the clean-control window without a committed prereg, but
+    the underlying generic runner (`run_phase1_51V.py`) is intentionally
+    generic and contains no kr=0.7-specific guard, so an ad-hoc invocation can
+    produce the canonical arm paths without going through the protocol. The
+    dedicated wrapper closes that bypass by being the only blessed path to the
+    canonical tree, hard-coding the model/manifest/frame/layer/kr fields, and
+    hard-failing if those inputs deviate from the preregistered protocol or if
+    the prereg or registry is dirty/missing at launch. Mirror the M5 parity
+    guard's prereg/registry/closure-record checks here, with the
+    `m5_ov6_qwen_n57_kr070_l2_random_control` arm-path strings and the
+    `codec_vs_random_multiseed_audit.json` audit marker. Document the wrapper
+    as the only blessed launch path in the dated preregistration note and the
+    registry entry.
   - Clean four-seed control: if resources allow and no Qwen VideoMME-short
     N=57/8f/layer-2/kr=0.7 `uniform_random` arm has been launched or inspected
     outside a committed four-seed protocol, preregister seeds `{1, 7, 42, 100}`
