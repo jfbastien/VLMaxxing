@@ -7,6 +7,7 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = REPO_ROOT / "scripts" / "run_ov6_m5_qwen_parity.sh"
 REGISTRY_PATH = "research/experiments/registry.md"
+WRAPPER_PATH = "scripts/run_ov6_m5_qwen_kr070_random_control.sh"
 CONTROL_ROOT = "m5_ov6_qwen_n57_kr070_l2_random_control"
 COMPARATOR_PATHS = (
     f"{CONTROL_ROOT}/dense/",
@@ -32,6 +33,9 @@ def _base_env() -> dict[str, str]:
         "OV6_CLOSURE_RECORD",
         "OV6_PREFLIGHT_ONLY",
         "FAKE_GIT_DIRTY_PATH",
+        "FAKE_GIT_STATUS_OUTPUT",
+        "FAKE_GIT_STATUS_EXCLUDE_PATH",
+        "FAKE_GIT_CAT_FILE_ERROR",
     ):
         env.pop(key, None)
     return env
@@ -54,10 +58,15 @@ def _write_fake_git(
         f"""#!/usr/bin/env bash
 set -euo pipefail
 if [[ "$1" == "cat-file" && "$2" == "-t" ]]; then
+  if [[ -n "${{FAKE_GIT_CAT_FILE_ERROR:-}}" ]]; then
+    echo "fatal: injected cat-file failure" >&2
+    exit 128
+  fi
   case "$3" in
 {cat_cases}
   esac
-  exit 1
+  echo "fatal: path '${{3#HEAD:}}' does not exist in 'HEAD'" >&2
+  exit 128
 fi
 if [[ "$1" == "grep" ]]; then
   pattern=""
@@ -82,6 +91,19 @@ if [[ "$1" == "diff" ]]; then
   path="${{!#}}"
   if [[ "${{FAKE_GIT_DIRTY_PATH:-}}" == "$path" ]]; then
     exit 1
+  fi
+  exit 0
+fi
+if [[ "$1" == "status" ]]; then
+  if [[ -n "${{FAKE_GIT_STATUS_OUTPUT:-}}" ]]; then
+    if [[ -n "${{FAKE_GIT_STATUS_EXCLUDE_PATH:-}}" ]]; then
+      for arg in "$@"; do
+        if [[ "$arg" == ":(exclude)${{FAKE_GIT_STATUS_EXCLUDE_PATH}}" ]]; then
+          exit 0
+        fi
+      done
+    fi
+    echo "${{FAKE_GIT_STATUS_OUTPUT}}"
   fi
   exit 0
 fi
@@ -149,6 +171,7 @@ def test_m5_qwen_parity_clean_preregistration_preflight_passes(
 ) -> None:
     prereg_path = "research/experiments/2026/2026-05-26-qwen-kr070-random-control-prereg.md"
     required_prereg_markers = (
+        WRAPPER_PATH,
         CONTROL_ROOT,
         *COMPARATOR_PATHS,
         *SEED_PATHS,
@@ -156,6 +179,7 @@ def test_m5_qwen_parity_clean_preregistration_preflight_passes(
     )
     required_registry_markers = (
         prereg_path,
+        WRAPPER_PATH,
         *COMPARATOR_PATHS,
         *SEED_PATHS,
         AUDIT_FILENAME,
@@ -179,6 +203,8 @@ def test_m5_qwen_parity_clean_preregistration_preflight_passes(
     assert result.returncode == 0
     assert "preflight passed" in result.stdout
     log = (tmp_path / "git-grep.log").read_text()
+    assert f"{prereg_path}::{WRAPPER_PATH}" in log
+    assert f"{REGISTRY_PATH}::{WRAPPER_PATH}" in log
     assert f"{prereg_path}::{CONTROL_ROOT}" in log
     assert f"{REGISTRY_PATH}::{prereg_path}" in log
     for arm_path in (*COMPARATOR_PATHS, *SEED_PATHS):
@@ -193,6 +219,7 @@ def test_m5_qwen_parity_rejects_incomplete_preregistration(
 ) -> None:
     prereg_path = "research/experiments/2026/2026-05-26-qwen-kr070-random-control-prereg.md"
     required_prereg_markers = (
+        WRAPPER_PATH,
         CONTROL_ROOT,
         COMPARATOR_PATHS[0],
         COMPARATOR_PATHS[1],
@@ -201,6 +228,7 @@ def test_m5_qwen_parity_rejects_incomplete_preregistration(
     )
     required_registry_markers = (
         prereg_path,
+        WRAPPER_PATH,
         *COMPARATOR_PATHS,
         *SEED_PATHS,
         AUDIT_FILENAME,
@@ -227,7 +255,7 @@ def test_m5_qwen_parity_rejects_incomplete_preregistration(
     assert f"{prereg_path}::{COMPARATOR_PATHS[2]}" in log
 
 
-def test_m5_qwen_parity_rejects_registry_missing_audit_marker(
+def test_m5_qwen_parity_rejects_preregistration_missing_wrapper_marker(
     tmp_path: Path,
 ) -> None:
     prereg_path = "research/experiments/2026/2026-05-26-qwen-kr070-random-control-prereg.md"
@@ -237,7 +265,47 @@ def test_m5_qwen_parity_rejects_registry_missing_audit_marker(
         *SEED_PATHS,
         AUDIT_FILENAME,
     )
-    required_registry_markers = (prereg_path, *COMPARATOR_PATHS, *SEED_PATHS)
+    required_registry_markers = (
+        prereg_path,
+        WRAPPER_PATH,
+        *COMPARATOR_PATHS,
+        *SEED_PATHS,
+        AUDIT_FILENAME,
+    )
+    allowed_markers = (
+        *((prereg_path, marker) for marker in required_prereg_markers),
+        *((REGISTRY_PATH, marker) for marker in required_registry_markers),
+    )
+    env = _preflight_env(tmp_path, (prereg_path, REGISTRY_PATH), allowed_markers)
+    env["M5Q_CLEAN_CONTROL_PREREG"] = prereg_path
+
+    result = subprocess.run(
+        ["bash", str(SCRIPT)],
+        cwd=REPO_ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 2
+    assert "without a complete, committed clean-control" in result.stderr
+    log = (tmp_path / "git-grep.log").read_text()
+    assert f"{prereg_path}::{WRAPPER_PATH}" in log
+
+
+def test_m5_qwen_parity_rejects_registry_missing_audit_marker(
+    tmp_path: Path,
+) -> None:
+    prereg_path = "research/experiments/2026/2026-05-26-qwen-kr070-random-control-prereg.md"
+    required_prereg_markers = (
+        WRAPPER_PATH,
+        CONTROL_ROOT,
+        *COMPARATOR_PATHS,
+        *SEED_PATHS,
+        AUDIT_FILENAME,
+    )
+    required_registry_markers = (prereg_path, WRAPPER_PATH, *COMPARATOR_PATHS, *SEED_PATHS)
     allowed_markers = (
         *((prereg_path, marker) for marker in required_prereg_markers),
         *((REGISTRY_PATH, marker) for marker in required_registry_markers),
@@ -265,6 +333,7 @@ def test_m5_qwen_parity_rejects_incomplete_registry_marker(
 ) -> None:
     prereg_path = "research/experiments/2026/2026-05-26-qwen-kr070-random-control-prereg.md"
     required_prereg_markers = (
+        WRAPPER_PATH,
         CONTROL_ROOT,
         *COMPARATOR_PATHS,
         *SEED_PATHS,
@@ -272,6 +341,7 @@ def test_m5_qwen_parity_rejects_incomplete_registry_marker(
     )
     required_registry_markers = (
         prereg_path,
+        WRAPPER_PATH,
         COMPARATOR_PATHS[0],
         COMPARATOR_PATHS[1],
         *SEED_PATHS,
@@ -302,6 +372,7 @@ def test_m5_qwen_parity_rejects_incomplete_registry_marker(
 def test_m5_qwen_parity_rejects_dirty_preregistration(tmp_path: Path) -> None:
     prereg_path = "research/experiments/2026/2026-05-26-qwen-kr070-random-control-prereg.md"
     required_prereg_markers = (
+        WRAPPER_PATH,
         CONTROL_ROOT,
         *COMPARATOR_PATHS,
         *SEED_PATHS,
@@ -309,6 +380,7 @@ def test_m5_qwen_parity_rejects_dirty_preregistration(tmp_path: Path) -> None:
     )
     required_registry_markers = (
         prereg_path,
+        WRAPPER_PATH,
         *COMPARATOR_PATHS,
         *SEED_PATHS,
         AUDIT_FILENAME,
@@ -337,6 +409,7 @@ def test_m5_qwen_parity_rejects_dirty_preregistration(tmp_path: Path) -> None:
 def test_m5_qwen_parity_rejects_dirty_registry(tmp_path: Path) -> None:
     prereg_path = "research/experiments/2026/2026-05-26-qwen-kr070-random-control-prereg.md"
     required_prereg_markers = (
+        WRAPPER_PATH,
         CONTROL_ROOT,
         *COMPARATOR_PATHS,
         *SEED_PATHS,
@@ -344,6 +417,7 @@ def test_m5_qwen_parity_rejects_dirty_registry(tmp_path: Path) -> None:
     )
     required_registry_markers = (
         prereg_path,
+        WRAPPER_PATH,
         *COMPARATOR_PATHS,
         *SEED_PATHS,
         AUDIT_FILENAME,
@@ -376,6 +450,7 @@ def test_m5_qwen_parity_rejects_clean_prereg_after_seed42_artifact(
 ) -> None:
     prereg_path = "research/experiments/2026/2026-05-26-qwen-kr070-random-control-prereg.md"
     required_prereg_markers = (
+        WRAPPER_PATH,
         CONTROL_ROOT,
         *COMPARATOR_PATHS,
         *SEED_PATHS,
@@ -383,6 +458,7 @@ def test_m5_qwen_parity_rejects_clean_prereg_after_seed42_artifact(
     )
     required_registry_markers = (
         prereg_path,
+        WRAPPER_PATH,
         *COMPARATOR_PATHS,
         *SEED_PATHS,
         AUDIT_FILENAME,
@@ -419,6 +495,7 @@ def test_m5_qwen_parity_rejects_clean_prereg_after_seed42_directory(
 ) -> None:
     prereg_path = "research/experiments/2026/2026-05-26-qwen-kr070-random-control-prereg.md"
     required_prereg_markers = (
+        WRAPPER_PATH,
         CONTROL_ROOT,
         *COMPARATOR_PATHS,
         *SEED_PATHS,
@@ -426,6 +503,7 @@ def test_m5_qwen_parity_rejects_clean_prereg_after_seed42_directory(
     )
     required_registry_markers = (
         prereg_path,
+        WRAPPER_PATH,
         *COMPARATOR_PATHS,
         *SEED_PATHS,
         AUDIT_FILENAME,
@@ -458,6 +536,7 @@ def test_m5_qwen_parity_rejects_out_dir_override_on_clean_path(
 ) -> None:
     prereg_path = "research/experiments/2026/2026-05-26-qwen-kr070-random-control-prereg.md"
     required_prereg_markers = (
+        WRAPPER_PATH,
         CONTROL_ROOT,
         *COMPARATOR_PATHS,
         *SEED_PATHS,
@@ -465,6 +544,7 @@ def test_m5_qwen_parity_rejects_out_dir_override_on_clean_path(
     )
     required_registry_markers = (
         prereg_path,
+        WRAPPER_PATH,
         *COMPARATOR_PATHS,
         *SEED_PATHS,
         AUDIT_FILENAME,
@@ -488,6 +568,105 @@ def test_m5_qwen_parity_rejects_out_dir_override_on_clean_path(
 
     assert result.returncode == 2
     assert "M5Q_OUT_DIR override is not allowed" in result.stderr
+
+
+def test_m5_qwen_parity_rejects_unrelated_dirty_worktree(tmp_path: Path) -> None:
+    prereg_path = "research/experiments/2026/2026-05-26-qwen-kr070-random-control-prereg.md"
+    required_prereg_markers = (
+        WRAPPER_PATH,
+        CONTROL_ROOT,
+        *COMPARATOR_PATHS,
+        *SEED_PATHS,
+        AUDIT_FILENAME,
+    )
+    required_registry_markers = (
+        prereg_path,
+        WRAPPER_PATH,
+        *COMPARATOR_PATHS,
+        *SEED_PATHS,
+        AUDIT_FILENAME,
+    )
+    allowed_markers = (
+        *((prereg_path, marker) for marker in required_prereg_markers),
+        *((REGISTRY_PATH, marker) for marker in required_registry_markers),
+    )
+    env = _preflight_env(tmp_path, (prereg_path, REGISTRY_PATH), allowed_markers)
+    env["M5Q_CLEAN_CONTROL_PREREG"] = prereg_path
+    env["FAKE_GIT_STATUS_OUTPUT"] = " M README.md"
+
+    result = subprocess.run(
+        ["bash", str(SCRIPT)],
+        cwd=REPO_ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 2
+    assert "changes outside" in result.stderr
+    assert "README.md" in result.stderr
+
+
+def test_m5_qwen_parity_allows_absolute_in_repo_output_root_dirtiness(
+    tmp_path: Path,
+) -> None:
+    prereg_path = "research/experiments/2026/2026-05-26-qwen-kr070-random-control-prereg.md"
+    required_prereg_markers = (
+        WRAPPER_PATH,
+        CONTROL_ROOT,
+        *COMPARATOR_PATHS,
+        *SEED_PATHS,
+        AUDIT_FILENAME,
+    )
+    required_registry_markers = (
+        prereg_path,
+        WRAPPER_PATH,
+        *COMPARATOR_PATHS,
+        *SEED_PATHS,
+        AUDIT_FILENAME,
+    )
+    allowed_markers = (
+        *((prereg_path, marker) for marker in required_prereg_markers),
+        *((REGISTRY_PATH, marker) for marker in required_registry_markers),
+    )
+    env = _preflight_env(tmp_path, (prereg_path, REGISTRY_PATH), allowed_markers)
+    absolute_root = REPO_ROOT / "research/experiments/2026/artifacts/test-parity-root"
+    relative_root = "research/experiments/2026/artifacts/test-parity-root"
+    env["M5Q_CLEAN_CONTROL_PREREG"] = prereg_path
+    env["OV6_CANONICAL_OUT_DIR_FOR_TESTS"] = str(absolute_root)
+    env["FAKE_GIT_STATUS_OUTPUT"] = f"?? {relative_root}/dense/summary.json"
+    env["FAKE_GIT_STATUS_EXCLUDE_PATH"] = relative_root
+
+    result = subprocess.run(
+        ["bash", str(SCRIPT)],
+        cwd=REPO_ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0
+    assert "preflight passed" in result.stdout
+
+
+def test_m5_qwen_parity_rejects_unexpected_cat_file_failure(tmp_path: Path) -> None:
+    env = _preflight_env(tmp_path, (REGISTRY_PATH,), ())
+    env["FAKE_GIT_CAT_FILE_ERROR"] = "1"
+
+    result = subprocess.run(
+        ["bash", str(SCRIPT)],
+        cwd=REPO_ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 2
+    assert "git cat-file failed" in result.stderr
+    assert "injected cat-file failure" in result.stderr
 
 
 def test_m5_qwen_parity_rejects_wrong_clean_preregistration_name(

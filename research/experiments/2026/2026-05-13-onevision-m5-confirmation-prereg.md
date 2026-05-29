@@ -29,7 +29,8 @@ Branch: `onevision-vlmaxxing-research`
   `m5_ov6_qwen_n57_kr070_l2_random_control/codec_novel_coded/`, the four
   random-control seed paths listed below, and
   `codec_vs_random_multiseed_audit.json`; the committed, clean experiment
-  registry must also name that preregistration path plus the clean-control
+  registry must also name that preregistration path,
+  `scripts/run_ov6_m5_qwen_kr070_random_control.sh`, and the clean-control
   comparator and random arm paths. The launcher also refuses the clean path if
   the parity output root already contains a seed-42 `uniform_random` artifact.
   Otherwise the operator must explicitly set
@@ -48,6 +49,15 @@ Branch: `onevision-vlmaxxing-research`
   - `m5_ov6_qwen_n57_kr070_l2_random_control/uniform_random_seed7/`
   - `m5_ov6_qwen_n57_kr070_l2_random_control/uniform_random_seed42/`
   - `m5_ov6_qwen_n57_kr070_l2_random_control/uniform_random_seed100/`
+
+  The clean four-seed protocol is now preregistered in
+  `research/experiments/2026/2026-05-26-qwen-kr070-random-control-prereg.md`
+  and must be launched through the dedicated wrapper, not through ad-hoc
+  `run_phase1_51V.py` calls:
+
+  ```bash
+  M5Q_CLEAN_CONTROL_PREREG=research/experiments/2026/2026-05-26-qwen-kr070-random-control-prereg.md scripts/run_ov6_m5_qwen_kr070_random_control.sh
+  ```
 
 ## Context
 

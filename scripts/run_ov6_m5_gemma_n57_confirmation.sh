@@ -26,6 +26,47 @@ RSS_GUARD_MB="${M5G_RSS_GUARD_MB:-110000}"
 MAX_PARSE_FAILURES="${M5G_MAX_PARSE_FAILURES:-3}"
 SOURCES=(novel_coded motion residual)
 
+require_clean_except_output_root() {
+  local -a status_args=(status --short -- .)
+  local exclude_path
+  if exclude_path="$(output_root_exclude_path)"; then
+    status_args+=(":(exclude)$exclude_path")
+  fi
+  local status
+  status="$(git "${status_args[@]}")"
+  if [[ -n "$status" ]]; then
+    cat >&2 <<EOF
+[m5-gemma-n57] refusing to launch: worktree has changes outside the output root.
+[m5-gemma-n57] Commit, stash, or move unrelated changes before running this
+[m5-gemma-n57] experiment.
+[m5-gemma-n57] Allowed dirty root:
+[m5-gemma-n57]   $OUT_DIR
+[m5-gemma-n57] git status --short:
+$status
+EOF
+    exit 2
+  fi
+}
+
+output_root_exclude_path() {
+  local repo_root
+  repo_root="$(pwd -P)"
+  if [[ "$OUT_DIR" == /* ]]; then
+    case "$OUT_DIR" in
+      "$repo_root"/*)
+        printf "%s\n" "${OUT_DIR#$repo_root/}"
+        return 0
+        ;;
+      *)
+        return 1
+        ;;
+    esac
+  fi
+  printf "%s\n" "$OUT_DIR"
+}
+
+require_clean_except_output_root
+
 mkdir -p "$OUT_DIR"
 
 "${PY}" scripts/validate_ov6_sidecar_equivalence_gate.py \
@@ -94,6 +135,7 @@ run_arm() {
     --rss-guard-mb "$RSS_GUARD_MB" \
     --output "$arm_dir/results.jsonl" \
     --summary "$arm_dir/summary.json" \
+    --allow-dirty \
     "$@" \
     2>&1 | tee "$arm_dir/run.log"
   validate_arm "$label" "$@"

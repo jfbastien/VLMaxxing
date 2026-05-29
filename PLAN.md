@@ -63,7 +63,9 @@ notes.
      the cross-family wiring gate; TOMATO is a low-headroom boundary result;
      and pooled H.264 refresh evidence is advisory until a clean frozen-threshold
      transfer run. Use M5 only for preregistered confirmation cells. The Qwen
-     kr=0.7 parity/timing launcher must either point at a committed four-seed
+     kr=0.7 random-control protocol is preregistered and must run through
+     `scripts/run_ov6_m5_qwen_kr070_random_control.sh`; the Qwen kr=0.7
+     parity/timing launcher must either point at that committed four-seed
      random-control preregistration or explicitly close that clean-control
      window with a committed closure note. Do not claim net codec model-pipeline
      speedup; only claim the measured extraction-path sidecar speedup.

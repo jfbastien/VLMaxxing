@@ -31,6 +31,34 @@ CLEAN_CONTROL_PREREG="${M5Q_CLEAN_CONTROL_PREREG:-}"
 ALLOW_CLOSE_RANDOM_CONTROL_WINDOW="${OV6_ALLOW_CLOSE_RANDOM_CONTROL_WINDOW:-0}"
 CLOSURE_RECORD="${OV6_CLOSURE_RECORD:-}"
 REGISTRY_PATH="research/experiments/registry.md"
+WRAPPER_PATH="scripts/run_ov6_m5_qwen_kr070_random_control.sh"
+
+head_blob_exists() {
+  local path="$1"
+  local output
+  if output="$(git cat-file -t "HEAD:$path" 2>&1)"; then
+    if [[ "$output" == "blob" ]]; then
+      return 0
+    fi
+    cat >&2 <<EOF
+[m5-qwen-parity] refusing to launch: HEAD:$path exists but is a $output, not a
+[m5-qwen-parity] committed file blob.
+EOF
+    exit 2
+  fi
+  case "$output" in
+    *"does not exist in 'HEAD'"* | *"exists on disk, but not in 'HEAD'"* | *"Not a valid object name HEAD:"*)
+      return 1
+      ;;
+  esac
+  cat >&2 <<EOF
+[m5-qwen-parity] refusing to launch: git cat-file failed unexpectedly while
+[m5-qwen-parity] checking HEAD:$path:
+$output
+EOF
+  exit 2
+}
+
 out_dir_overridden=0
 if [[ "${M5Q_OUT_DIR:-$CANONICAL_OUT_DIR}" != "$CANONICAL_OUT_DIR" ]]; then
   out_dir_overridden=1
@@ -54,7 +82,7 @@ if [[ -n "$CLEAN_CONTROL_PREREG" && "$clean_control_prereg_path_ok" == "1" ]]; t
   fi
 fi
 
-if [[ "$(git cat-file -t "HEAD:$REGISTRY_PATH" 2>/dev/null || true)" == "blob" ]]; then
+if head_blob_exists "$REGISTRY_PATH"; then
   if ! git diff --quiet -- "$REGISTRY_PATH" \
     || ! git diff --cached --quiet -- "$REGISTRY_PATH"; then
     registry_dirty=1
@@ -63,7 +91,8 @@ fi
 
 if [[ -n "$CLEAN_CONTROL_PREREG" ]] \
   && [[ "$clean_control_prereg_path_ok" == "1" ]] \
-  && [[ "$(git cat-file -t "HEAD:$CLEAN_CONTROL_PREREG" 2>/dev/null || true)" == "blob" ]] \
+  && head_blob_exists "$CLEAN_CONTROL_PREREG" \
+  && git grep -q --fixed-strings "$WRAPPER_PATH" HEAD -- "$CLEAN_CONTROL_PREREG" \
   && git grep -q --fixed-strings "m5_ov6_qwen_n57_kr070_l2_random_control" HEAD -- "$CLEAN_CONTROL_PREREG" \
   && git grep -q --fixed-strings "m5_ov6_qwen_n57_kr070_l2_random_control/dense/" HEAD -- "$CLEAN_CONTROL_PREREG" \
   && git grep -q --fixed-strings "m5_ov6_qwen_n57_kr070_l2_random_control/magnitude_norm/" HEAD -- "$CLEAN_CONTROL_PREREG" \
@@ -73,8 +102,9 @@ if [[ -n "$CLEAN_CONTROL_PREREG" ]] \
   && git grep -q --fixed-strings "m5_ov6_qwen_n57_kr070_l2_random_control/uniform_random_seed42/" HEAD -- "$CLEAN_CONTROL_PREREG" \
   && git grep -q --fixed-strings "m5_ov6_qwen_n57_kr070_l2_random_control/uniform_random_seed100/" HEAD -- "$CLEAN_CONTROL_PREREG" \
   && git grep -q --fixed-strings "codec_vs_random_multiseed_audit.json" HEAD -- "$CLEAN_CONTROL_PREREG" \
-  && [[ "$(git cat-file -t "HEAD:$REGISTRY_PATH" 2>/dev/null || true)" == "blob" ]] \
+  && head_blob_exists "$REGISTRY_PATH" \
   && git grep -q --fixed-strings "$CLEAN_CONTROL_PREREG" HEAD -- "$REGISTRY_PATH" \
+  && git grep -q --fixed-strings "$WRAPPER_PATH" HEAD -- "$REGISTRY_PATH" \
   && git grep -q --fixed-strings "m5_ov6_qwen_n57_kr070_l2_random_control/dense/" HEAD -- "$REGISTRY_PATH" \
   && git grep -q --fixed-strings "m5_ov6_qwen_n57_kr070_l2_random_control/magnitude_norm/" HEAD -- "$REGISTRY_PATH" \
   && git grep -q --fixed-strings "m5_ov6_qwen_n57_kr070_l2_random_control/codec_novel_coded/" HEAD -- "$REGISTRY_PATH" \
@@ -109,7 +139,7 @@ fi
 
 if [[ -n "$CLOSURE_RECORD" ]] \
   && [[ "$closure_record_path_ok" == "1" ]] \
-  && [[ "$(git cat-file -t "HEAD:$CLOSURE_RECORD" 2>/dev/null || true)" == "blob" ]] \
+  && head_blob_exists "$CLOSURE_RECORD" \
   && git grep -q --fixed-strings "OV6_ALLOW_CLOSE_RANDOM_CONTROL_WINDOW=1" HEAD -- "$CLOSURE_RECORD" \
   && git grep -q --fixed-strings "seed-42" HEAD -- "$CLOSURE_RECORD" \
   && git grep -q --fixed-strings "clean-control window" HEAD -- "$CLOSURE_RECORD" \
@@ -232,9 +262,11 @@ if [[ "$ALLOW_CLOSE_RANDOM_CONTROL_WINDOW" != "1" && "$clean_control_prereg_comm
 [m5-qwen-parity] paths are rejected.
 [m5-qwen-parity] The committed file must be a blob and must name dense/,
 [m5-qwen-parity] magnitude_norm/, codec_novel_coded/, the four seed output
-[m5-qwen-parity] directories, and codec_vs_random_multiseed_audit.json.
+[m5-qwen-parity] directories, codec_vs_random_multiseed_audit.json, and:
+[m5-qwen-parity]   $WRAPPER_PATH
 [m5-qwen-parity] The committed, clean experiment registry must also name that
-[m5-qwen-parity] preregistration path plus the comparator and random arm paths.
+[m5-qwen-parity] preregistration path plus the wrapper, comparator, random arm,
+[m5-qwen-parity] and audit paths.
 [m5-qwen-parity] This refusal can mean the preregistration is missing or
 [m5-qwen-parity] incomplete, the registry is missing or incomplete, or either
 [m5-qwen-parity] file has staged or unstaged edits.
@@ -254,6 +286,47 @@ if [[ "$ALLOW_CLOSE_RANDOM_CONTROL_WINDOW" != "1" && "$clean_control_prereg_comm
 EOF
   exit 2
 fi
+
+require_clean_except_output_root() {
+  local -a status_args=(status --short -- .)
+  local exclude_path
+  if exclude_path="$(output_root_exclude_path)"; then
+    status_args+=(":(exclude)$exclude_path")
+  fi
+  local status
+  status="$(git "${status_args[@]}")"
+  if [[ -n "$status" ]]; then
+    cat >&2 <<EOF
+[m5-qwen-parity] refusing to launch: worktree has changes outside the output root.
+[m5-qwen-parity] Commit, stash, or move unrelated changes before running this
+[m5-qwen-parity] experiment.
+[m5-qwen-parity] Allowed dirty root:
+[m5-qwen-parity]   $OUT_DIR
+[m5-qwen-parity] git status --short:
+$status
+EOF
+    exit 2
+  fi
+}
+
+output_root_exclude_path() {
+  local repo_root
+  repo_root="$(pwd -P)"
+  if [[ "$OUT_DIR" == /* ]]; then
+    case "$OUT_DIR" in
+      "$repo_root"/*)
+        printf "%s\n" "${OUT_DIR#$repo_root/}"
+        return 0
+        ;;
+      *)
+        return 1
+        ;;
+    esac
+  fi
+  printf "%s\n" "$OUT_DIR"
+}
+
+require_clean_except_output_root
 
 if [[ "${OV6_PREFLIGHT_ONLY:-0}" == "1" ]]; then
   echo "[m5-qwen-parity] preflight passed"
@@ -327,6 +400,7 @@ run_arm() {
     --max-tokens "$MAX_TOKENS" \
     --output "$arm_dir/results.jsonl" \
     --summary "$arm_dir/summary.json" \
+    --allow-dirty \
     "$@" \
     2>&1 | tee "$arm_dir/run.log"
   validate_arm "$label" "$@"

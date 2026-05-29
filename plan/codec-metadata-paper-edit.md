@@ -904,7 +904,7 @@ control at the promoted Qwen operating point.
     `scripts/validate_track_b_arm_artifact.py` accepts the arm, the manifest and
     model/frame/layer/keep-rate fields match the codec/magnitude arms, and
     `score_mode == uniform_random` with `score_seed == 42`.
-  - Dedicated clean-control runner script: write a wrapper at
+  - Dedicated clean-control runner script: the clean-control wrapper lives at
     `scripts/run_ov6_m5_qwen_kr070_random_control.sh` (analogous to
     `scripts/run_ov6_qwen_random_multiseed.sh` which targets the kr=0.5
     `phase1_51V_ov6_random_multiseed` tree) that produces the canonical
@@ -933,7 +933,7 @@ control at the promoted Qwen operating point.
     configured keep-rate. Use the same sidecar-backed M5 setup when possible so
     the codec arms do not pay live PyAV extraction. Commit the preregistration
     note at
-    `research/experiments/2026/<dated-qwen-kr070-random-control-prereg>.md`
+    `research/experiments/2026/2026-05-26-qwen-kr070-random-control-prereg.md`
     and update
     `research/experiments/registry.md` before launch. The registry update must
     name the exact preregistration path plus the comparator and clean-control
