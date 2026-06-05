@@ -649,9 +649,7 @@ def _schema_row(args: argparse.Namespace) -> dict[str, Any]:
         "score_mode": args.score_mode,
         "score_seed": args.score_seed if args.score_mode == "uniform_random" else None,
         "codec_score_source": args.codec_score_source,
-        "codec_fusion_mode": (
-            args.fusion_mode if args.codec_score_source == "fused" else None
-        ),
+        "codec_fusion_mode": (args.fusion_mode if args.codec_score_source == "fused" else None),
         "codec_motion_weight": (
             float(args.motion_weight) if args.codec_score_source == "fused" else None
         ),
@@ -1045,9 +1043,7 @@ def main() -> int:
         args.vision_tower_score_mode = args.score_mode
     score_mode = str(args.vision_tower_score_mode)
     args.score_mode = (
-        score_mode
-        if score_mode in {"magnitude_norm", "uniform_random", "codec_grid"}
-        else None
+        score_mode if score_mode in {"magnitude_norm", "uniform_random", "codec_grid"} else None
     )
     run_provenance = artifact_metadata(
         REPO_ROOT,
@@ -1126,8 +1122,7 @@ def main() -> int:
                 "score_mode": args.score_mode if args.vision_tower_keep_rate < 1.0 else None,
                 "score_seed": (
                     args.score_seed
-                    if args.vision_tower_keep_rate < 1.0
-                    and args.score_mode == "uniform_random"
+                    if args.vision_tower_keep_rate < 1.0 and args.score_mode == "uniform_random"
                     else None
                 ),
                 "codec_score_source": (
@@ -1135,26 +1130,22 @@ def main() -> int:
                 ),
                 "codec_fusion_mode": (
                     args.fusion_mode
-                    if args.vision_tower_keep_rate < 1.0
-                    and args.codec_score_source == "fused"
+                    if args.vision_tower_keep_rate < 1.0 and args.codec_score_source == "fused"
                     else None
                 ),
                 "codec_motion_weight": (
                     float(args.motion_weight)
-                    if args.vision_tower_keep_rate < 1.0
-                    and args.codec_score_source == "fused"
+                    if args.vision_tower_keep_rate < 1.0 and args.codec_score_source == "fused"
                     else None
                 ),
                 "codec_residual_weight": (
                     float(args.residual_weight)
-                    if args.vision_tower_keep_rate < 1.0
-                    and args.codec_score_source == "fused"
+                    if args.vision_tower_keep_rate < 1.0 and args.codec_score_source == "fused"
                     else None
                 ),
                 "codec_normalize_fusion_inputs": (
                     not bool(args.no_normalize_fusion_inputs)
-                    if args.vision_tower_keep_rate < 1.0
-                    and args.codec_score_source == "fused"
+                    if args.vision_tower_keep_rate < 1.0 and args.codec_score_source == "fused"
                     else None
                 ),
                 "codec_extract_total_s": None,

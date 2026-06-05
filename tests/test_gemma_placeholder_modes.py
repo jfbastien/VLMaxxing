@@ -1,19 +1,22 @@
+# ruff: noqa: E402
+
 from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
 import pytest
 
-from tests._mlx_probe import mlx_is_usable
 
-if not mlx_is_usable():
-    pytest.skip(
-        "mlx.core not usable on this host (import or Metal-init fails); see tests/_mlx_probe.py",
-        allow_module_level=True,
-    )
+def _is_darwin() -> bool:
+    return sys.platform == "darwin"
+
+
+if not _is_darwin():
+    pytest.skip("MLX tests require macOS/Darwin", allow_module_level=True)
 
 import mlx.core as mx
 

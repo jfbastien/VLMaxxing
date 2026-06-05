@@ -4,19 +4,12 @@ import platform
 
 import pytest
 
-from tests._mlx_probe import mlx_is_usable
-
 
 def _mlx_prefill_skip_reason() -> str | None:
     if platform.system() != "Darwin":
         return (
             "MLX/MLX-VLM prefill benchmark tests require macOS/Darwin; "
             "Linux CI intentionally omits MLX."
-        )
-    if not mlx_is_usable():
-        return (
-            "mlx.core not usable on this macOS host (import or Metal-init fails); "
-            "see tests/_mlx_probe.py"
         )
     return None
 
